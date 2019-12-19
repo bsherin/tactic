@@ -1,9 +1,16 @@
+
+
+import React from "react";
+import PropTypes from 'prop-types';
+
+import { MenuItem, Menu, Popover, PopoverPosition, Button } from "@blueprintjs/core";
+
 import { showModalReact } from "./modal_react.js";
 import { postWithCallback } from "./communication_react.js";
 import { doFlash } from "./toaster.js";
-export { ProjectMenu, ColumnMenu, ViewMenu, MenuComponent };
+import { doBinding } from "./utilities_react.js";
 
-let Bp = blueprint;
+export { ProjectMenu, ColumnMenu, ViewMenu, MenuComponent };
 
 class MenuComponent extends React.Component {
     constructor(props) {
@@ -19,7 +26,7 @@ class MenuComponent extends React.Component {
         let pruned_list = Object.keys(this.props.option_dict).filter(this._filter_on_match_list);
         let choices = pruned_list.map((opt_name, index) => {
             let icon = this.props.icon_dict.hasOwnProperty(opt_name) ? this.props.icon_dict[opt_name] : null;
-            return React.createElement(Bp.MenuItem, { disabled: this.props.disable_all || this.props.disabled_items.includes(opt_name),
+            return React.createElement(MenuItem, { disabled: this.props.disable_all || this.props.disabled_items.includes(opt_name),
                 onClick: this.props.option_dict[opt_name],
                 icon: icon,
                 key: opt_name,
@@ -27,22 +34,22 @@ class MenuComponent extends React.Component {
             });
         });
         let the_menu = React.createElement(
-            Bp.Menu,
+            Menu,
             null,
             choices
         );
         if (this.props.alt_button) {
             let AltButton = this.props.alt_button;
             return React.createElement(
-                Bp.Popover,
-                { minimal: true, content: the_menu, position: Bp.PopoverPosition.BOTTOM_LEFT },
+                Popover,
+                { minimal: true, content: the_menu, position: PopoverPosition.BOTTOM_LEFT },
                 React.createElement(AltButton, null)
             );
         } else {
             return React.createElement(
-                Bp.Popover,
-                { minimal: true, content: the_menu, position: Bp.PopoverPosition.BOTTOM_LEFT },
-                React.createElement(Bp.Button, { text: this.props.menu_name, small: true, minimal: true })
+                Popover,
+                { minimal: true, content: the_menu, position: PopoverPosition.BOTTOM_LEFT },
+                React.createElement(Button, { text: this.props.menu_name, small: true, minimal: true })
             );
         }
     }

@@ -1,9 +1,16 @@
+
+
+import React from "react";
+import PropTypes from 'prop-types';
+
+import { MenuItem, Menu, Popover, PopoverPosition, Button } from "@blueprintjs/core";
+
 import {showModalReact} from "./modal_react.js";
 import {postWithCallback} from "./communication_react.js"
 import {doFlash} from "./toaster.js"
-export {ProjectMenu, ColumnMenu, ViewMenu, MenuComponent}
+import {doBinding} from "./utilities_react.js";
 
-let Bp = blueprint;
+export {ProjectMenu, ColumnMenu, ViewMenu, MenuComponent}
 
 class MenuComponent extends React.Component {
     constructor(props) {
@@ -20,31 +27,31 @@ class MenuComponent extends React.Component {
         let choices = pruned_list.map((opt_name, index) => {
                 let icon = this.props.icon_dict.hasOwnProperty(opt_name) ? this.props.icon_dict[opt_name] : null;
                 return (
-                    <Bp.MenuItem disabled={this.props.disable_all || this.props.disabled_items.includes(opt_name)}
+                    <MenuItem disabled={this.props.disable_all || this.props.disabled_items.includes(opt_name)}
                                  onClick={this.props.option_dict[opt_name]}
                                  icon={icon}
                                  key={opt_name}
                                  text={opt_name}
                     >
-                    </Bp.MenuItem>
+                    </MenuItem>
                 )
             }
         );
         let the_menu = (
-            <Bp.Menu>
+            <Menu>
                 {choices}
-            </Bp.Menu>
+            </Menu>
         );
         if (this.props.alt_button) {
             let AltButton = this.props.alt_button;
-            return (<Bp.Popover minimal={true} content={the_menu} position={Bp.PopoverPosition.BOTTOM_LEFT}>
+            return (<Popover minimal={true} content={the_menu} position={PopoverPosition.BOTTOM_LEFT}>
                 <AltButton/>
-            </Bp.Popover>)
+            </Popover>)
         } else {
             return (
-                <Bp.Popover minimal={true} content={the_menu} position={Bp.PopoverPosition.BOTTOM_LEFT}>
-                    <Bp.Button text={this.props.menu_name} small={true} minimal={true}/>
-                </Bp.Popover>
+                <Popover minimal={true} content={the_menu} position={PopoverPosition.BOTTOM_LEFT}>
+                    <Button text={this.props.menu_name} small={true} minimal={true}/>
+                </Popover>
             )
         }
     }

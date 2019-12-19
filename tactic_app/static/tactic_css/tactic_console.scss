@@ -1,0 +1,361 @@
+
+@import "blueprint_variables.scss";
+
+$console-panel-border-style: 1px solid #c7c7c7;
+
+$log-panel-border-style: 1px solid #c7c7c7;
+$log-panel-font-color: #616161;
+
+$button-notclose-opacity: .9;
+$button-notclose-hover-opacity: .3;
+
+body {
+    background-color: $light-gray1
+}
+
+/* console */
+
+.bottom-heading-element {
+    height: 30px !important;
+    line-height: 12px;
+}
+
+.bottom-heading-element-button {
+    margin-left: 13px !important;
+    align-items: baseline
+}
+
+#console {
+    text-align: left;
+    font-size: 14px;
+    overflow: auto;
+    padding: 20px 5px;
+}
+
+#console-panel {
+    margin-left: 0.5rem;
+
+    margin-right: 0;
+    padding: 0 !important;
+    &.am-shrunk {
+        margin-top: 0;
+    }
+    &.am-zoomed {
+        margin-top: 0.5rem;
+    }
+    &.not-shrunk {
+        margin-top: 0
+    }
+}
+#console-heading {
+    display: flex;
+    justify-content: space-between;
+    padding: 2px 2px 2px 2px;
+    background-color: $light-gray4 !important;
+    border-bottom: 1px solid #10161a26;
+    height: 32px;
+
+    .bp3-icon {
+        margin-right: 3px
+    }
+}
+
+#console-panel .CodeMirror{
+  height: auto !important;
+  margin-top: 2px;
+}
+
+.console-text {
+    padding: 10px;
+    display: inline-block;
+    background-color: $light-gray5 !important;
+    border: $console-panel-border-style !important;
+    width: 100%;
+}
+
+.console-code {
+    width: 100%;
+    padding-right: 10px !important;
+}
+
+
+.text-panel-output {
+    h1 {
+        font-size: 2.0rem;
+    }
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    h3 {
+        font-size: 1.25rem;
+    }
+    h4 {
+        font-size: 1.125rem
+    }
+
+    border: 1px solid #c7c7c7
+}
+
+.execution-counter {
+        padding-right: 17px;
+        padding-top: 8px;
+        color: #9B79CC;
+        font-size: 14px;
+        font-weight: 600;
+        white-space: nowrap
+    }
+
+.log-panel {
+    border: none;
+    margin: 1px;
+    box-shadow: none;
+    position: relative;
+    overflow: hidden;
+    transition:min-height .5s ease-in-out, max-height .5s ease-in-out;
+
+    .notclose {
+        font-size: 15px;
+        padding-bottom: 3px
+    }
+
+    &.running .card-header .button-div.spinner-div {
+        opacity: 100;
+    }
+
+    .button-div {
+        opacity: 0;
+        button {
+            align-self: baseline;
+            margin-top: 10px
+        }
+    }
+    .card-header {
+        position: absolute;
+        height: 100%;
+        width: 30px;
+        padding: 4px 4px !important;
+        text-align: center;
+        border-right: none;
+        overflow-y: hidden;
+        border-bottom: none;
+        background-color: white;
+        transition-delay: 0s;
+    }
+
+    .console-sorter {
+        padding-top: 6px;
+        display: flex;
+    }
+
+    .CodeMirror {
+        border: $console-panel-border-style !important;
+    }
+
+    .CodeMirror-lines {
+        background-color: $light-gray5 !important;
+    }
+
+    .CodeMirror-gutters {
+        background-color: $light-gray5;
+    }
+
+
+    &:focus-within, &:hover {
+        .button-div {
+            opacity: 100;
+            transition-delay: .1s;
+        }
+        .card-header {
+            border-right: $log-panel-border-style;
+
+        }
+    }
+
+    &.log-panel-visible {
+        max-height: 9999px;
+
+        .log-panel-body {
+            display: inline-flex;
+        }
+
+        .log-code-output {
+            display: block
+        }
+
+
+        &.fixed-log-panel{
+            //min-height: 82px;
+            .close-log-button, .shrink-log-button {
+                display: inline-block;
+            }
+            .card-header {
+                .button-div {
+                    opacity: 100;
+                    transition-delay: .25s;
+                }
+            }
+
+        }
+
+        .console-spin-outer {
+            display: none;
+        }
+        :not(:focus-within){
+            min-height: 0;
+        }
+        .convert-markdown-button, .close-log-button, .run-log-button, .clear-code-button, .console-spin-outer, .shrink-log-button, .expand-log-button {
+            display: none;
+        }
+
+        &.running {
+            .clear-code-button {
+                display: none;
+            }
+            .console-spin-outer {
+                display: inline-block;
+            }
+            &:focus-within {
+                .clear-code-button {
+                    display:none;
+                }
+            }
+        }
+        &:focus-within{
+            //min-height: 110px;
+            .convert-markdown-button, .close-log-button, .run-log-button, .clear-code-button, .shrink-log-button {
+                display: inline-block;
+            }
+        }
+
+        &.text-log-item:focus-within{
+            //min-height: 82px;
+        }
+
+
+        &:not(:focus-within):hover .button-div.shrink-expand-div {
+            opacity: 100;
+        }
+        &:not(:focus-within):hover .shrink-log-button {
+            display: inline-block
+        }
+    }
+
+    &.log-panel-invisible {
+        max-height: 40px;
+
+        .card-header {
+            border-right: 0;
+        }
+
+        .log-panel-summary {
+            display: block
+        }
+
+        .console-spin-outer {
+            display:none
+        }
+
+        .log-code-output {
+            display: none
+        }
+
+        .shrink-log-button {
+            display: none
+        }
+
+        &.fixed-log-panel:hover .expand-log-buton{
+            display: inline-block
+        }
+
+        &:hover .button-div.shrink-expand-div {
+            opacity: 100;
+        }
+        &:hover .expand-log-button {
+            display: inline-block
+        }
+        .convert-markdown-button, .close-log-button, .run-log-button, .clear-code-button {
+            display: none
+        }
+    }
+}
+
+.log-panel {
+    .bp3-editable-text:hover::before {
+        outline: none;
+        box-shadow: none;
+    }
+}
+
+.log-panel-body {
+    padding: 0;
+    color: $log-panel-font-color !important;
+
+    .bp3-input:focus {
+        outline: none;
+        box-shadow: none;
+    }
+}
+
+.log-panel-summary {
+    //color: $log-panel-font-color !important;
+    font-weight: 700;
+    padding: 5px 15px;
+    border: 1px solid #c7c7c7 !important;
+    margin-left: 27px;
+    margin-bottom: 10px;
+}
+
+.log-code-output {
+    padding: 10px 45px 10px 85px;
+}
+// exports
+
+#exports-heading {
+    display: flex;
+    justify-content: flex-start;
+    padding: 2px 2px 2px 2px;
+    background-color: $light-gray4 !important;
+    border-bottom: 1px solid #10161a26;
+    height: 32px;
+
+    .bp3-icon {
+        margin-right: 3px
+    }
+}
+
+#exports-info {
+    font-size: 14px;
+    line-height: 30px;
+}
+
+#exports-panel {
+    margin-right: 0;
+    padding: 0 !important;
+    &.am-shrunk {
+        //margin-top: 0.5rem;
+        margin-left: 0.5rem;
+    }
+    &.am-zoomed {
+        margin-top: 0.5rem;
+        margin-left: 0;
+    }
+    &.not-shrunk {
+        margin-top: 0;
+        margin-left: 0
+    }
+}
+
+button.notclose {
+    -webkit-appearance: none;
+    padding: 3px;
+    cursor: pointer;
+    background: transparent;
+    opacity: $button-notclose-opacity;
+    border: 0;
+    display: inline-flex;
+}
+
+button.notclose:hover {
+    opacity: $button-notclose-hover-opacity !important;
+}

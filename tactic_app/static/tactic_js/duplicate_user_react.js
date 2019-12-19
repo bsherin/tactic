@@ -1,8 +1,17 @@
+
+import "../tactic_css/tactic.scss";
+
+import React from "react";
+import * as ReactDOM from 'react-dom';
+
+import { FormGroup, InputGroup, Button } from "@blueprintjs/core";
+
 import { render_navbar } from "./blueprint_navbar.js";
 import { doFlash } from "./toaster.js";
 import { postAjax } from "./communication_react.js";
+import { doBinding, guid } from "./utilities_react.js";
 
-let Bp = blueprint;
+window.page_id = guid();
 
 function _duplicate_main() {
     render_navbar("account");
@@ -68,13 +77,13 @@ class DuplicateApp extends React.Component {
 
     render() {
         let field_items = Object.keys(this.state.fields).map(field_name => React.createElement(
-            Bp.FormGroup,
+            FormGroup,
             { key: field_name,
                 inline: true,
                 style: { padding: 10 },
                 label: field_name,
                 helperText: this.state.helper_text[field_name] },
-            React.createElement(Bp.InputGroup, { type: "text",
+            React.createElement(InputGroup, { type: "text",
                 onChange: event => this._onFieldChange(field_name, event.target.value),
                 style: { width: 250 },
                 large: true,
@@ -103,7 +112,7 @@ class DuplicateApp extends React.Component {
                     React.createElement(
                         "div",
                         { className: "d-flex flex-row" },
-                        React.createElement(Bp.Button, { icon: "log-in", large: true, text: "Submit", onClick: this._submit_duplicate_info })
+                        React.createElement(Button, { icon: "log-in", large: true, text: "Submit", onClick: this._submit_duplicate_info })
                     )
                 )
             )

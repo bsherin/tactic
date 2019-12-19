@@ -1,0 +1,242 @@
+
+@import "blueprint_variables.scss";
+
+$danger: #c23030;
+$warning: #bf7326;
+$primary: #106ba3;
+$success: #0d8050;
+$regular: #5c7080;
+
+.context-menu-header {
+    font-style: italic;
+    margin-bottom: 9px
+}
+
+#library-home-root {
+    max-height: 100%;
+
+    .selector-button {
+        td {
+            border: white;
+            padding-bottom: 2px !important;
+        }
+    }
+
+    .selector-button.active {
+        td {
+            background-color: rgba(19, 124, 189, 0.2) !important;
+            color: #106ba3;
+            font-weight: 900
+        }
+    }
+
+    .bp3-button.bp3-intent-danger {
+        background-color: $light-gray5;
+        color: $danger !important;
+
+        .bp3-icon {
+            color: $danger !important
+        }
+    }
+    .bp3-button.bp3-intent-warning {
+        background-color: $light-gray5;
+        color: $warning !important;
+
+        .bp3-icon {
+            color: $warning !important
+        }
+    }
+    .bp3-button.bp3-intent-success {
+        background-color: $light-gray5;
+        color: $success !important;
+
+        .bp3-icon {
+            color: $success !important
+        }
+    }
+    .bp3-button.bp3-intent-primary {
+        background-color: $light-gray5;
+        color: $primary !important;
+
+        .bp3-icon {
+            color: $primary !important
+        }
+    }
+    .bp3-button.bp3-intent-regular {
+        background-color: $light-gray5;
+        color: $regular !important;
+
+        .bp3-icon {
+            color: $regular !important
+        }
+    }
+
+    .selector-button:hover td {
+        color: #106ba3 !important;
+        //font-weight: 900
+    }
+
+    .elevation-1-shadow {
+        box-shadow: 0 0 0 1px rgba(16, 22, 26, 0.1), 0 0 0 rgba(16, 22, 26, 0), 0 1px 1px rgba(16, 22, 26, 0.2);
+    }
+
+    .elevation-0-shadow {
+        box-shadow: 0 0 0 1px rgba(16, 22, 26, 0.15), 0 0 0 rgba(16, 22, 26, 0), 0 0 0 rgba(16, 22, 26, 0);
+    }
+
+    .dropdown-toggle.toolbar-button::after {
+        display: none;
+    }
+
+    .dropdown-toggle.toolbar-button-sm::after {
+        display: none;
+    }
+
+    .dropdown-toggle.toolbar-button .button-text::after {
+        display: inline-block;
+        width: 0;
+        height: 0;
+        margin-left: .255em;
+        vertical-align: .255em;
+        content: "";
+        border-top: .4em solid;
+        border-right: .4em solid transparent;
+        border-bottom: 0;
+        border-left: .4em solid transparent;
+    }
+
+     .dropdown-toggle.toolbar-button-sm .button-text::after {
+        display: inline-block;
+        width: 0;
+        height: 0;
+        margin-left: .255em;
+        vertical-align: .255em;
+        content: "";
+        border-top: .4em solid;
+        border-right: .4em solid transparent;
+        border-bottom: 0;
+        border-left: .4em solid transparent;
+    }
+
+    .bp3-tabs.bp3-vertical {
+        height: 100%
+    }
+
+    .bp3-tabs.bp3-vertical > .bp3-tab-list .bp3-tab {
+        padding: 0 12px;
+        margin: 0;
+    }
+
+    .bp3-tab-list {
+        padding-top: 100px;
+        padding-left: 2px;
+        padding-right: 2px;
+        background-color: $dark-gray5;
+    }
+
+   .bp3-tab-indicator {
+       background-color: #48aff09e;
+       border-radius: 0;
+       width: 46px
+   }
+
+    .bp3-table-column-headers .bp3-table-header {
+        font-weight: 600
+    }
+
+    .bp3-tab:focus {
+        outline: none
+    }
+
+    .bp3-large > .bp3-tab{
+        //font-size: 16px;
+        //margin-left: 30px;
+        //margin-right: 0
+    }
+
+    .bp3-tabs.bp3-vertical > .bp3-tab-panel {
+        padding-left: 5px !important;
+        //background-color: #f5f8fa;
+        //border-left: 1px solid #CED9E0;
+        margin-left: 5px
+    }
+
+    .bp3-checkbox .bp3-control-indicator:focus {
+        outline: none
+    }
+
+    .bp3-table-cell {
+        font-size: 13px;
+        line-height: 23px
+    }
+
+    table {
+        line-height: 1.4;
+        font-size: 13px
+    }
+}
+
+#repository_container  {
+    .bp3-tabs.bp3-vertical > .bp3-tab-list .bp3-tab-indicator-wrapper .bp3-tab-indicator {
+        background-color: #e648f09e
+    }
+}
+
+#loaded_tile_widget {
+    margin-top: 15px;
+    margin-left: 15px;
+    h6 {
+        font-weight: 600
+    }
+    p {
+        margin-bottom: 0;
+        font-size: 12px
+    }
+}
+
+
+.tactic-tag-button-list {
+    margin-top: 65px;
+    overflow-y: hidden;
+    min-width: 165px;
+    &:hover {
+        overflow-y: auto;
+    }
+
+    .bp3-tree-node-selected {
+        .bp3-tree-node-content {
+            background-color: white;
+            color: $blue3;
+            font-weight: 900
+        }
+
+        .bp3-icon {
+            background-color: white;
+            color: $blue3 !important;
+            font-weight: 900
+        }
+    }
+}
+
+.tactic-tag-button-list {
+    margin-top: 65px;
+    overflow-y: hidden;
+    min-width: 165px;
+    &:hover {
+        overflow-y: auto;
+    }
+
+    .bp3-tree-node-selected {
+        .bp3-tree-node-content {
+            background-color: white;
+            color: $blue3;
+            font-weight: 900
+        }
+
+        .bp3-icon {
+            background-color: white;
+            color: $blue3 !important;
+            font-weight: 900
+        }
+    }
+}

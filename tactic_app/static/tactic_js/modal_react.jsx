@@ -1,9 +1,14 @@
 
-export {showModalReact, showConfirmDialogReact, showSelectDialog, showInformDialogReact}
-import {BpSelect} from "./blueprint_mdata_fields.js"
+import React from "react";
+import * as ReactDOM from 'react-dom'
+import PropTypes from 'prop-types';
 
-var Bp = blueprint;
-var Bps = bpselect;
+import { Checkbox, Dialog, FormGroup, Classes, Button, InputGroup, Intent} from "@blueprintjs/core";
+
+import {BpSelect} from "./blueprint_mdata_fields.js"
+import {doBinding} from "./utilities_react.js";
+
+export {showModalReact, showConfirmDialogReact, showSelectDialog, showInformDialogReact}
 
 class ModalDialog extends React.Component {
 
@@ -84,7 +89,7 @@ class ModalDialog extends React.Component {
         if ((this.props.checkboxes != null) && (this.props.checkboxes.length != 0)) {
             for (let checkbox of this.props.checkboxes) {
                 let new_item = (
-                    <Bp.Checkbox checked={this.state.checkbox_states[checkbox.checkname]}
+                    <Checkbox checked={this.state.checkbox_states[checkbox.checkname]}
                                     label={checkbox.checktext}
                                     id={checkbox.checkname}
                                     key={checkbox.checkname}
@@ -95,28 +100,28 @@ class ModalDialog extends React.Component {
             }
         }
         return (
-            <Bp.Dialog isOpen={this.state.show}
+            <Dialog isOpen={this.state.show}
                        title={this.props.title}
                        onClose={this._cancelHandler}
                        onOpened={()=>{$(this.input_ref).focus()}}
                        canEscapeKeyClose={true}>
                 <form onSubmit={this._submitHandler}>
-                    <div className={Bp.Classes.DIALOG_BODY}>
-                        <Bp.FormGroup label={this.props.field_title} helperText={this.state.warning_text}>
-                                <Bp.InputGroup inputRef={this._refHandler}
+                    <div className={Classes.DIALOG_BODY}>
+                        <FormGroup label={this.props.field_title} helperText={this.state.warning_text}>
+                                <InputGroup inputRef={this._refHandler}
                                                onChange={this._changeHandler}
                                                value={this.state.current_value}/>
-                        </Bp.FormGroup>
+                        </FormGroup>
                         {(checkbox_items.length != 0) && checkbox_items}
                     </div>
-                    <div className={Bp.Classes.DIALOG_FOOTER}>
-                        <div className={Bp.Classes.DIALOG_FOOTER_ACTIONS}>
-                            <Bp.Button onClick={this._cancelHandler}>Cancel</Bp.Button>
-                            <Bp.Button intent={Bp.Intent.PRIMARY} onClick={this._submitHandler}>Submit</Bp.Button>
+                    <div className={Classes.DIALOG_FOOTER}>
+                        <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+                            <Button onClick={this._cancelHandler}>Cancel</Button>
+                            <Button intent={Intent.PRIMARY} onClick={this._submitHandler}>Submit</Button>
                         </div>
                     </div>
                 </form>
-            </Bp.Dialog>
+            </Dialog>
         )
     }
 }
@@ -190,23 +195,23 @@ class SelectDialog extends React.Component {
 
     render() {
         return (
-            <Bp.Dialog isOpen={this.state.show}
+            <Dialog isOpen={this.state.show}
                        title={this.props.title}
                        onClose={this._cancelHandler}
                        canEscapeKeyClose={true}>
-                <div className={Bp.Classes.DIALOG_BODY}>
-                   <Bp.FormGroup title={this.props.select_label}>
+                <div className={Classes.DIALOG_BODY}>
+                   <FormGroup title={this.props.select_label}>
                         <BpSelect options={this.props.option_list} onChange={this._handleChange} value={this.state.value}/>
                        {/*<Bp.HTMLSelect options={this.props.option_list} onChange={this._handleChange} value={this.state.value}/>*/}
-                   </Bp.FormGroup>
+                   </FormGroup>
                 </div>
-                <div className={Bp.Classes.DIALOG_FOOTER}>
-                    <div className={Bp.Classes.DIALOG_FOOTER_ACTIONS}>
-                        <Bp.Button onClick={this._cancelHandler}>Cancel</Bp.Button>
-                        <Bp.Button intent={Bp.Intent.PRIMARY} onClick={this._submitHandler}>Submit</Bp.Button>
+                <div className={Classes.DIALOG_FOOTER}>
+                    <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+                        <Button onClick={this._cancelHandler}>Cancel</Button>
+                        <Button intent={Intent.PRIMARY} onClick={this._submitHandler}>Submit</Button>
                     </div>
                 </div>
-            </Bp.Dialog>
+            </Dialog>
         )
     }
 }
@@ -266,20 +271,20 @@ class ConfirmDialog extends React.Component {
 
     render() {
         return (
-            <Bp.Dialog isOpen={this.state.show}
+            <Dialog isOpen={this.state.show}
                        title={this.props.title}
                        onClose={this._cancelHandler}
                        canEscapeKeyClose={true}>
-                <div className={Bp.Classes.DIALOG_BODY}>
+                <div className={Classes.DIALOG_BODY}>
                     <p>{this.props.text_body}</p>
                 </div>
-                <div className={Bp.Classes.DIALOG_FOOTER}>
-                    <div className={Bp.Classes.DIALOG_FOOTER_ACTIONS}>
-                        <Bp.Button onClick={this._cancelHandler}>Cancel</Bp.Button>
-                        <Bp.Button intent={Bp.Intent.PRIMARY} onClick={this._submitHandler}>Submit</Bp.Button>
+                <div className={Classes.DIALOG_FOOTER}>
+                    <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+                        <Button onClick={this._cancelHandler}>Cancel</Button>
+                        <Button intent={Intent.PRIMARY} onClick={this._submitHandler}>Submit</Button>
                     </div>
                 </div>
-            </Bp.Dialog>
+            </Dialog>
         )
     }
 }
@@ -331,19 +336,19 @@ class InformDialog extends React.Component {
 
     render() {
         return (
-            <Bp.Dialog isOpen={this.state.show}
+            <Dialog isOpen={this.state.show}
                        title={this.props.title}
                        onClose={this._closeHandler}
                        canEscapeKeyClose={true}>
-                <div className={Bp.Classes.DIALOG_BODY}>
+                <div className={Classes.DIALOG_BODY}>
                     <p>{this.props.text_body}</p>
                 </div>
-                <div className={Bp.Classes.DIALOG_FOOTER}>
-                    <div className={Bp.Classes.DIALOG_FOOTER_ACTIONS}>
-                        <Bp.Button onClick={this._closeHandler}>Okay</Bp.Button>
+                <div className={Classes.DIALOG_FOOTER}>
+                    <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+                        <Button onClick={this._closeHandler}>Okay</Button>
                     </div>
                 </div>
-            </Bp.Dialog>
+            </Dialog>
         )
     }
 }

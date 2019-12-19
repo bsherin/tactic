@@ -4,6 +4,12 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
  * Created by bls910
  */
 
+import "../tactic_css/tactic.scss";
+
+import React from "react";
+import * as ReactDOM from 'react-dom';
+import PropTypes from 'prop-types';
+
 import { ResourceViewerSocket, ResourceViewerApp, copyToLibrary, sendToRepository } from "./resource_viewer_react_app.js";
 import { ReactCodemirror } from "./react-codemirror.js";
 import { ViewerContext } from "./resource_viewer_context.js";
@@ -13,6 +19,11 @@ import { doFlash, withStatus } from "./toaster.js";
 import { render_navbar } from "./blueprint_navbar.js";
 import { getUsableDimensions, BOTTOM_MARGIN, SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT } from "./sizing_tools.js";
 import { withErrorDrawer } from "./error_drawer.js";
+import { doBinding } from "./utilities_react.js";
+import { guid } from "./utilities_react";
+
+window.resource_viewer_id = guid();
+window.main_id = resource_viewer_id;
 
 function code_viewer_main() {
     render_navbar();

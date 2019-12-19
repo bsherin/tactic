@@ -1,9 +1,15 @@
 
+
+import React from "react";
+import * as ReactDOM from 'react-dom';
+import PropTypes from 'prop-types';
+
+import { Button, Navbar, NavbarDivider, OverflowList, Alignment } from "@blueprintjs/core";
+
 import { MenuComponent } from "./main_menus_react.js";
+import { doBinding, doSignOut } from "./utilities_react.js";
 
 export { render_navbar, TacticNavbar };
-
-var Bp = blueprint;
 
 let library_url = $SCRIPT_ROOT + '/library';
 let repository_url = $SCRIPT_ROOT + '/repository';
@@ -70,7 +76,7 @@ class TacticNavbar extends React.Component {
     }
 
     renderNav(item) {
-        return React.createElement(Bp.Button, { icon: item.icon, key: item.text, minimal: true, text: item.text, intent: item.intent, onClick: item.onClick });
+        return React.createElement(Button, { icon: item.icon, key: item.text, minimal: true, text: item.text, intent: item.intent, onClick: item.onClick });
     }
 
     _getLeftWidth() {
@@ -159,13 +165,13 @@ class TacticNavbar extends React.Component {
         let right_style = { width: right_width };
         right_style.justifyContent = "flex-end";
         return React.createElement(
-            Bp.Navbar,
+            Navbar,
             { style: { paddingLeft: 10 } },
             React.createElement(
                 'div',
                 { className: 'bp3-navbar-group bp3-align-left', ref: this.lg_ref },
                 React.createElement(
-                    Bp.Navbar.Heading,
+                    Navbar.Heading,
                     { className: 'd-flex align-items-center' },
                     React.createElement('img', { className: 'mr-2', src: window.tactic_img_url, alt: '', width: '32 ', height: '32' }),
                     'Tactic'
@@ -177,10 +183,10 @@ class TacticNavbar extends React.Component {
                 )
             ),
             React.createElement(
-                Bp.Navbar.Group,
-                { align: Bp.Alignment.RIGHT, style: right_style },
-                React.createElement(Bp.NavbarDivider, null),
-                React.createElement(Bp.OverflowList, { items: right_nav_items,
+                Navbar.Group,
+                { align: Alignment.RIGHT, style: right_style },
+                React.createElement(NavbarDivider, null),
+                React.createElement(OverflowList, { items: right_nav_items,
                     overflowRenderer: this._overflowRenderer,
                     visibleItemRenderer: this.renderNav,
                     onOverflow: this._onOverflow

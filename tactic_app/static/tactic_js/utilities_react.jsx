@@ -2,6 +2,10 @@
  * Created by bls910 much later
  */
 
+import _ from 'lodash';
+
+export {doBinding, propsAreEqual, arrayMove, arraysMatch, get_ppi, remove_duplicates, doSignOut, guid}
+
 function doBinding(obj, seq="_") {
     const proto = Object.getPrototypeOf(obj);
     for (const key of Object.getOwnPropertyNames(proto)) {
@@ -34,20 +38,12 @@ function propsAreEqual(p1, p2, skipProps=[]) {
 
 function arrayMoveMutate(array, from, to) {
 	array.splice(to < 0 ? array.length + to : to, 0, array.splice(from, 1)[0]);
-};
+}
 
 function arrayMove (array, from, to) {
 	array = array.slice();
 	arrayMoveMutate(array, from, to);
 	return array;
-};
-
-function updateObject(o1, o2) {
-    for (let prop in o2) {
-        if (o2.hasOwnProperty(prop)){
-            o1[prop] = o2[prop]
-        }
-    }
 }
 
 function arraysMatch (arr1, arr2) {
@@ -64,16 +60,6 @@ function arraysMatch (arr1, arr2) {
 
 }
 
-function doNothing() {}
-
-
-function set_datum(e, type, dat) {
-    e.dataTransfer.setData(type, dat);
-}
-
-function get_datum(e, type) {
-    return e.dataTransfer.getData(type);
-}
 
 String.prototype.format = function() {
   let str = this;
@@ -95,15 +81,6 @@ function remove_duplicates (arrArg) {
   return arrArg.filter((elem, pos, arr) => {
     return arr.indexOf(elem) == pos;
   });
-}
-
-function objectKeys(obj) {
-    const result = [];
-    for (let key in obj){
-        if (!obj.hasOwnProperty(key)) continue;
-        result.push(key)
-    }
-    return result
 }
 
 Array.prototype.empty = function () {
@@ -139,54 +116,6 @@ function altScrollIntoView(element, container) {
     }
 }
 
-function tooltipper() {
-    return tooltip_dict[this.id];
-}
-
-opts_top = {
-    delay: { "show": 1000, "hide": 100 },
-    title: tooltipper,
-    placement: "top"
-};
-
-opts_bottom = {
-    delay: { "show": 1000, "hide": 100 },
-    title: tooltipper,
-    placement: "bottom"
-};
-
-function initializeTooltips() {
-    $('.tooltip-top[data-toggle="tooltip"]').tooltip(options=opts_top);
-    $('.tooltip-bottom[data-toggle="tooltip"]').tooltip(options=opts_bottom);
-}
-
-function toggleTooltips() {
-    $('[data-toggle="tooltip"]').tooltip('toggle');
-    return (false)
-}
-
-
-function resize_dom_to_bottom_given_selector(selector, bottom_margin) {
-    if ($(selector).length > 0) {
-        $(selector).css('height', window.innerHeight - $(selector).offset().top - bottom_margin)
-    }
-}
-
-function fit_dom_in_parent(selector, parent_selector, bottom_margin) {
-    if ($(selector).length > 0) {
-        let me = $(selector);
-        let parent = $(parent_selector);
-        let new_max_height = parent.height() - (me.offset().top - parent.offset().top) - bottom_margin;
-        $(selector).css('max-height', new_max_height)
-    }
-}
-
-function resize_dom_to_bottom(dom, bottom_margin) {
-    if (dom.length > 0) {
-        const h = window.innerHeight - bottom_margin - dom.offset().top;
-        dom.outerHeight(h);
-    }
-}
 
 function guid() {
   function s4() {

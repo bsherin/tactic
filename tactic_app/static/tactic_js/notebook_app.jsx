@@ -1,10 +1,19 @@
 
+
+import "../tactic_css/tactic.scss";
+import "../tactic_css/tactic_console.scss";
+
+import React from "react";
+import * as ReactDOM from 'react-dom'
+import PropTypes from 'prop-types';
+
 import {TacticNavbar} from "./blueprint_navbar.js";
 import {ProjectMenu} from "./main_menus_react.js";
 import {TacticSocket} from "./tactic_socket.js";
 import {ConsoleComponent} from "./console_component.js";
 import {doFlash} from "./toaster.js"
 import {withStatus} from "./toaster.js";
+import {doBinding} from "./utilities_react.js";
 
 import {handleCallback, postWithCallback, postAsyncFalse} from "./communication_react.js"
 

@@ -1,8 +1,12 @@
 
-export {LabeledSelectList, LabeledFormField, SelectList, OrderableTable, BpOrderableTable, DragThing, GlyphButton, withTooltip}
+import React from "react";
+import PropTypes from 'prop-types';
 
-let Bp = blueprint;
-let Bpt = bptable;
+import { Tooltip, Button, FormGroup, InputGroup, HTMLSelect, HTMLTable } from "@blueprintjs/core";
+import {EditableCell, RowHeaderCell, Column, Table, RegionCardinality} from "@blueprintjs/table";
+
+export {LabeledSelectList, LabeledFormField, SelectList, OrderableTable, BpOrderableTable, DragThing, GlyphButton, withTooltip}
+import {doBinding} from "./utilities_react.js";
 
 function withTooltip(WrappedComponent) {
     return class extends React.Component {
@@ -10,9 +14,9 @@ function withTooltip(WrappedComponent) {
             if (this.props.tooltip) {
                 let delay = this.props.tooltipDelay ? this.props.tooltipDelay : 1000;
                 return (
-                        <Bp.Tooltip content={this.props.tooltip} hoverOpenDelay={delay}>
+                        <Tooltip content={this.props.tooltip} hoverOpenDelay={delay}>
                             <WrappedComponent {...this.props}/>
-                        </Bp.Tooltip>
+                        </Tooltip>
                     )
                 }
             else {
@@ -41,7 +45,7 @@ class GlyphButton extends React.Component {
     render () {
         let style = this.props.style == null ? {paddingLeft: 2, paddingRight:2} : this.props.style;
         return (
-           <Bp.Button type="button"
+           <Button type="button"
                       minimal={this.props.minimal}
                       small={true}
                       style={style}
@@ -52,7 +56,7 @@ class GlyphButton extends React.Component {
                {this.props.extra_glyph_text &&
                     <span className="extra-glyph-text">{this.props.extra_glyph_text}</span>
                }
-            </Bp.Button>
+            </Button>
         );
     }
 }
@@ -140,9 +144,9 @@ class LabeledFormField extends React.Component {
 
     render() {
         return (
-            <Bp.FormGroup label={this.props.label} style={{marginRight: 5}}>
-                <Bp.InputGroup onChange={this.props.onChange} value={this.props.the_value}/>
-            </Bp.FormGroup>
+            <FormGroup label={this.props.label} style={{marginRight: 5}}>
+                <InputGroup onChange={this.props.onChange} value={this.props.the_value}/>
+            </FormGroup>
         )
     }
 }
@@ -160,9 +164,9 @@ LabeledFormField.defaultProps = {
 
 function LabeledSelectList(props) {
     return (
-        <Bp.FormGroup label={props.label} style={{marginRight: 5}}>
-            <Bp.HTMLSelect options={props.option_list} onChange={props.onChange} value={props.the_value}/>
-        </Bp.FormGroup>
+        <FormGroup label={props.label} style={{marginRight: 5}}>
+            <HTMLSelect options={props.option_list} onChange={props.onChange} value={props.the_value}/>
+        </FormGroup>
     )
 }
 
@@ -194,13 +198,13 @@ class SelectList extends React.Component {
                 </option>
         );
         return (
-            <Bp.HTMLSelect style={sstyle}
+            <HTMLSelect style={sstyle}
                           onChange={this.handleChange}
                            minimal={this.props.minimal}
                           value={this.props.value}
             >
                 {option_items}
-            </Bp.HTMLSelect>
+            </HTMLSelect>
         )
     }
 }
@@ -366,7 +370,7 @@ class BpOrderableTable extends React.Component {
             else {
                 the_text = ""
             }
-            return (<Bpt.EditableCell key={column_name}
+            return (<EditableCell key={column_name}
                                       truncated={true}
                                       rowIndex={rowIndex}
                                       columnIndex={this.props.columns.indexOf(column_name)}
@@ -378,7 +382,7 @@ class BpOrderableTable extends React.Component {
     }
 
     _rowHeaderCellRenderer(rowIndex) {
-        return (<Bpt.RowHeaderCell key={rowIndex}
+        return (<RowHeaderCell key={rowIndex}
                                    name={rowIndex}/>)
     }
 
@@ -386,23 +390,23 @@ class BpOrderableTable extends React.Component {
         let self = this;
         let columns = this.props.columns.map((column_name)=> {
             const cellRenderer = self._cellRendererCreator(column_name);
-            return <Bpt.Column cellRenderer={cellRenderer}
+            return <Column cellRenderer={cellRenderer}
                                enableColumnReordering={false}
                                key={column_name}
                                name={column_name}/>
         });
         return (
-            <Bpt.Table  enableFocusedCell={true}
+            <Table  enableFocusedCell={true}
                        numRows={this.props.data_array.length}
                        enableColumnReordering={false}
-                       selectionModes={[Bpt.RegionCardinality.FULL_COLUMNS, Bpt.RegionCardinality.FULL_ROWS]}
+                       selectionModes={[RegionCardinality.FULL_COLUMNS, RegionCardinality.FULL_ROWS]}
                        enableRowReordering={true}
                        onRowsReordered={this._onRowsReordered}
                        onSelection={this._onSelection}
                        enableMultipleSelection={false}
                        >
                         {columns}
-                </Bpt.Table>
+                </Table>
         )
     }
 }
@@ -463,12 +467,12 @@ class OrderableTable extends React.Component {
         );
         return (
 
-            <Bp.HTMLTable style={{fontSize: 12}} bordered={true} condensed={true} interactive={true} striped={false}>
+            <HTMLTable style={{fontSize: 12}} bordered={true} condensed={true} interactive={true} striped={false}>
                 <TableHeader columns={this.props.columns}/>
                 <tbody ref={this.tbody_ref}>
                     {trows}
                 </tbody>
-            </Bp.HTMLTable>
+            </HTMLTable>
         )
     }
 

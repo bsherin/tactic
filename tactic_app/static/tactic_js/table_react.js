@@ -1,11 +1,16 @@
 
+
+import React from "react";
+import PropTypes from 'prop-types';
+
+import { Text, FormGroup, Spinner, InputGroup, ButtonGroup, Button, Card } from "@blueprintjs/core";
+
 import { GlyphButton } from "./blueprint_react_widgets.js";
 import { ReactCodemirror } from "./react-codemirror.js";
 import { BpSelect } from "./blueprint_mdata_fields.js";
+import { doBinding, propsAreEqual } from "./utilities_react.js";
 
 export { MainTableCard, MainTableCardHeader, FreeformBody };
-
-let Bp = blueprint;
 
 class FreeformBody extends React.Component {
     constructor(props) {
@@ -154,7 +159,7 @@ class MainTableCardHeader extends React.Component {
         let heading_right_opacity = this.state.hide_right_element ? 0 : 100;
         let select_style = { height: 30, maxWidth: 250 };
         let doc_button_text = React.createElement(
-            Bp.Text,
+            Text,
             { ellipsize: true },
             this.props.current_doc_name
         );
@@ -175,7 +180,7 @@ class MainTableCardHeader extends React.Component {
                             "form",
                             { className: "d-flex flex-row" },
                             React.createElement(
-                                Bp.FormGroup,
+                                FormGroup,
                                 { label: this.props.short_collection_name,
                                     inline: true,
                                     style: { marginBottom: 0, marginLeft: 5, marginRight: 10 } },
@@ -185,7 +190,7 @@ class MainTableCardHeader extends React.Component {
                                     buttonTextObject: doc_button_text,
                                     value: this.props.current_doc_name })
                             ),
-                            this.props.show_table_spinner && React.createElement(Bp.Spinner, { size: 15 })
+                            this.props.show_table_spinner && React.createElement(Spinner, { size: 15 })
                         )
                     )
                 )
@@ -196,7 +201,7 @@ class MainTableCardHeader extends React.Component {
                 React.createElement(
                     "form",
                     { onSubmit: this._handleSubmit, className: "d-flex flex-row" },
-                    React.createElement(Bp.InputGroup, { type: "search",
+                    React.createElement(InputGroup, { type: "search",
                         leftIcon: "search",
                         placeholder: "Search",
                         value: !this.props.search_text ? "" : this.props.search_text,
@@ -205,15 +210,15 @@ class MainTableCardHeader extends React.Component {
                         autoCorrect: "off",
                         className: "mr-2" }),
                     React.createElement(
-                        Bp.ButtonGroup,
+                        ButtonGroup,
                         null,
                         this.props.show_filter_button && React.createElement(
-                            Bp.Button,
+                            Button,
                             { onClick: this._handleFilter },
                             "Filter"
                         ),
                         React.createElement(
-                            Bp.Button,
+                            Button,
                             { onClick: this._handleUnFilter },
                             "Clear"
                         )
@@ -261,7 +266,7 @@ class MainTableCard extends React.Component {
 
     render() {
         return React.createElement(
-            Bp.Card,
+            Card,
             { id: "main-panel", elevation: 2 },
             this.props.card_header,
             React.createElement(

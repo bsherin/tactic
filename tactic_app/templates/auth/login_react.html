@@ -20,14 +20,12 @@
 
 {% endblock %}
 {% block scripts %}
-    <script src="{{url_for('static', filename='js/react_tools.js')}}"></script>
-    <script type="module" src="{{url_for('static', filename='tactic_js/auth_react.js', v=version_string)}}"></script>
+    <script type="module" src="{{javascript_source}}"></script>
 
     <script>
         window.current_user = "{{current_user.username}}";
         window._show_message = "{{show_message}}";
         window._message = "{{message}}";
         window._next_view = "{{next_view}}";
-        window.page_id = guid();
     </script>
 {% endblock %}

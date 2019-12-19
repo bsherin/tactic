@@ -1,15 +1,21 @@
 
+
+import React from "react";
+import PropTypes from 'prop-types';
+
+import { Icon, Card, EditableText, Button, Spinner, TextArea } from "@blueprintjs/core";
+import { SortableHandle, SortableElement } from 'react-sortable-hoc';
+import showdown from 'showdown';
+
 import { GlyphButton } from "./blueprint_react_widgets.js";
 import { ReactCodemirror } from "./react-codemirror.js";
 import { SortableComponent } from "./sortable_container.js";
 import { KeyTrap } from "./key_trap.js";
 import { postWithCallback } from "./communication_react.js";
 import { doFlash } from "./toaster.js";
+import { doBinding, arrayMove } from "./utilities_react.js";
 
 export { ConsoleComponent };
-
-let Bp = blueprint;
-let Shoc = window.react_sortable_hoc;
 
 const MAX_CONSOLE_WIDTH = 1140;
 const BUTTON_CONSUMED_SPACE = 203;
@@ -283,7 +289,7 @@ class ConsoleComponent extends React.Component {
         let outer_style = Object.assign({}, this.props.style);
         outer_style.width = this._bodyWidth();
         return React.createElement(
-            Bp.Card,
+            Card,
             { id: "console-panel", className: console_class, elevation: 2, style: outer_style },
             React.createElement(
                 "div",
@@ -346,7 +352,7 @@ class ConsoleComponent extends React.Component {
                         "div",
                         { id: "console-header-right",
                             className: "d-flex flex-row" },
-                        this.props.zoomable && React.createElement(Bp.Button, { onClick: this._toggleExports,
+                        this.props.zoomable && React.createElement(Button, { onClick: this._toggleExports,
                             style: { marginRight: 5 },
                             minimal: true,
                             small: true,
@@ -413,14 +419,14 @@ ConsoleComponent.defaultProps = {
 class RawSortHandle extends React.Component {
 
     render() {
-        return React.createElement(Bp.Icon, { icon: "drag-handle-vertical",
+        return React.createElement(Icon, { icon: "drag-handle-vertical",
             style: { marginLeft: 0, marginRight: 6 },
             iconSize: 20,
             className: "console-sorter" });
     }
 }
 
-const Shandle = Shoc.sortableHandle(RawSortHandle);
+const Shandle = SortableHandle(RawSortHandle);
 
 class SuperItem extends React.Component {
 
@@ -435,7 +441,7 @@ class SuperItem extends React.Component {
     }
 }
 
-const SSuperItem = Shoc.sortableElement(SuperItem);
+const SSuperItem = SortableElement(SuperItem);
 
 class LogItem extends React.Component {
     constructor(props) {
@@ -519,7 +525,7 @@ class LogItem extends React.Component {
                 this.props.am_shrunk && React.createElement(GlyphButton, { icon: "chevron-right",
                     handleClick: this._toggleShrink })
             ),
-            this.props.am_shrunk && React.createElement(Bp.EditableText, { value: this.props.summary_text,
+            this.props.am_shrunk && React.createElement(EditableText, { value: this.props.summary_text,
                 onChange: this._handleSummaryTextChange,
                 className: "log-panel-summary" }),
             !this.props.am_shrunk && React.createElement(
@@ -699,7 +705,7 @@ class ConsoleCodeItem extends React.Component {
                 this.props.am_shrunk && React.createElement(GlyphButton, { icon: "chevron-right",
                     handleClick: this._toggleShrink })
             ),
-            this.props.am_shrunk && React.createElement(Bp.EditableText, { value: this.props.summary_text,
+            this.props.am_shrunk && React.createElement(EditableText, { value: this.props.summary_text,
                 onChange: this._handleSummaryTextChange,
                 className: "log-panel-summary" }),
             !this.props.am_shrunk && React.createElement(
@@ -753,7 +759,7 @@ class ConsoleCodeItem extends React.Component {
                         this.props.show_spinner && React.createElement(
                             "div",
                             { style: { marginTop: 10, marginRight: 22 } },
-                            React.createElement(Bp.Spinner, { size: 13 })
+                            React.createElement(Spinner, { size: 13 })
                         )
                     ),
                     React.createElement("div", { className: "log-code-output", dangerouslySetInnerHTML: output_dict })
@@ -896,7 +902,7 @@ class ConsoleTextItem extends React.Component {
                 this.props.am_shrunk && React.createElement(GlyphButton, { icon: "chevron-right",
                     handleClick: this._toggleShrink })
             ),
-            this.props.am_shrunk && React.createElement(Bp.EditableText, { value: this.props.summary_text,
+            this.props.am_shrunk && React.createElement(EditableText, { value: this.props.summary_text,
                 onChange: this._handleSummaryTextChange,
                 className: "log-panel-summary" }),
             !this.props.am_shrunk && React.createElement(
@@ -916,7 +922,7 @@ class ConsoleTextItem extends React.Component {
                     !really_show_markdown && React.createElement(
                         React.Fragment,
                         null,
-                        React.createElement(Bp.TextArea, { value: this.props.console_text,
+                        React.createElement(TextArea, { value: this.props.console_text,
                             onChange: this._handleChange,
                             onKeyDown: this._handleKeyDown,
                             growVertically: true,

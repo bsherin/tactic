@@ -1,15 +1,20 @@
 
-import { SortableComponent } from "./sortable_container.js";
-import { postWithCallback } from "./communication_react.js";
-import { doFlash } from "./toaster.js";
+import React from "react";
+import PropTypes from 'prop-types';
 
-let Rtg = window.ReactTransitionGroup;
-let Bp = blueprint;
-let Shoc = window.react_sortable_hoc;
+import { Icon, Card, ButtonGroup, Spinner } from "@blueprintjs/core";
+import { Transition } from "react-transition-group";
+import { SortableHandle, SortableElement } from 'react-sortable-hoc';
+import _ from 'lodash';
 
 import { TileForm } from "./tile_form_react.js";
 import { GlyphButton } from "./blueprint_react_widgets.js";
 import { DragHandle } from "./resizing_layouts.js";
+
+import { SortableComponent } from "./sortable_container.js";
+import { postWithCallback } from "./communication_react.js";
+import { doFlash } from "./toaster.js";
+import { doBinding, propsAreEqual, arrayMove } from "./utilities_react.js";
 
 export { TileContainer };
 
@@ -212,7 +217,7 @@ class RawSortHandle extends React.Component {
         return React.createElement(
             "span",
             { className: "tile-name-div" },
-            React.createElement(Bp.Icon, { icon: "drag-handle-vertical", iconSize: 15 }),
+            React.createElement(Icon, { icon: "drag-handle-vertical", iconSize: 15 }),
             this.props.tile_name
         );
     }
@@ -222,7 +227,7 @@ RawSortHandle.propTypes = {
     tile_name: PropTypes.string
 };
 
-const Shandle = Shoc.sortableHandle(RawSortHandle);
+const Shandle = SortableHandle(RawSortHandle);
 
 class TileComponent extends React.Component {
     constructor(props) {
@@ -604,7 +609,7 @@ class TileComponent extends React.Component {
         let tph_class = this.props.source_changed ? "tile-panel-heading tile-source-changed" : "tile-panel-heading";
         let draghandle_position_dict = { position: "absolute", bottom: 2, right: 1 };
         return React.createElement(
-            Bp.Card,
+            Card,
             { ref: this.my_ref, elevation: 2, style: this.main_style, className: tile_class, id: this.props.tile_id },
             React.createElement(
                 "div",
@@ -613,7 +618,7 @@ class TileComponent extends React.Component {
                     "div",
                     { className: "left-glyphs", ref: this.left_glyphs_ref, style: this.lg_style },
                     React.createElement(
-                        Bp.ButtonGroup,
+                        ButtonGroup,
                         null,
                         this.props.shrunk && React.createElement(GlyphButton, {
                             icon: "chevron-right",
@@ -631,9 +636,9 @@ class TileComponent extends React.Component {
                     "div",
                     { className: "right-glyphs", ref: this.right_glyphs_ref },
                     React.createElement(
-                        Bp.ButtonGroup,
+                        ButtonGroup,
                         null,
-                        this.props.show_spinner && React.createElement(Bp.Spinner, { size: 17 }),
+                        this.props.show_spinner && React.createElement(Spinner, { size: 17 }),
                         React.createElement(GlyphButton, { handleClick: this._toggleTileLog,
                             tooltip: "Show tile container log",
                             icon: "console" }),
@@ -658,7 +663,7 @@ class TileComponent extends React.Component {
                 "div",
                 { ref: this.body_ref, style: this.panel_body_style, className: "tile-body" },
                 React.createElement(
-                    Rtg.Transition,
+                    Transition,
                     { "in": this.props.show_form, timeout: ANI_DURATION },
                     state => React.createElement(
                         "div",
@@ -670,7 +675,7 @@ class TileComponent extends React.Component {
                     )
                 ),
                 React.createElement(
-                    Rtg.Transition,
+                    Transition,
                     { "in": this.props.show_log, timeout: ANI_DURATION },
                     state => React.createElement(
                         "div",
@@ -687,7 +692,7 @@ class TileComponent extends React.Component {
                     )
                 ),
                 React.createElement(
-                    Rtg.Transition,
+                    Transition,
                     { "in": show_front, timeout: ANI_DURATION },
                     state => React.createElement(
                         "div",
@@ -732,4 +737,4 @@ TileComponent.defaultProps = {
     javascript_code: null
 };
 
-let STileComponent = Shoc.sortableElement(TileComponent);
+let STileComponent = SortableElement(TileComponent);

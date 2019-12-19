@@ -1,6 +1,15 @@
 /**
  * Created by bls910
  */
+
+import "../tactic_css/tactic.scss";
+
+import React from "react";
+import * as ReactDOM from 'react-dom'
+import PropTypes from 'prop-types';
+
+import { ResizeSensor, TextArea } from "@blueprintjs/core";
+
 import {ResourceViewerSocket, ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app.js";
 import {ViewerContext} from "./resource_viewer_context.js";
 import {postAjax, postAjaxPromise} from "./communication_react.js"
@@ -10,8 +19,11 @@ import {render_navbar} from "./blueprint_navbar.js";
 import {SIDE_MARGIN, BOTTOM_MARGIN, getUsableDimensions} from "./sizing_tools.js";
 import {withErrorDrawer} from "./error_drawer.js";
 import {withStatus} from "./toaster.js";
+import {doBinding} from "./utilities_react.js";
+import {guid} from "./utilities_react";
 
-var Bp = blueprint;
+window.resource_viewer_id = guid();
+window.main_id = resource_viewer_id;
 
 function list_viewer_main ()  {
     render_navbar();
@@ -57,7 +69,7 @@ class ListEditor extends React.Component {
         let tastyle = {resize: "horizontal", height: this.props.height};
         return (
             <div id="listarea-container" ref={this.props.outer_ref}>
-                <Bp.TextArea
+                <TextArea
                       cols="50"
                       style={tastyle}
                       disabled={this.context.readOnly}
@@ -173,7 +185,7 @@ class ListViewerApp extends React.Component {
 
         return (
             <ViewerContext.Provider value={the_context}>
-                <Bp.ResizeSensor onResize={this._handleResize} observeParents={true}>
+                <ResizeSensor onResize={this._handleResize} observeParents={true}>
                     <div className="resource-viewer-holder" ref={this.top_ref} style={outer_style}>
                         <ResourceViewerApp {...this.props.statusFuncs}
                                            resource_name={this.props.resource_name}
@@ -194,7 +206,7 @@ class ListViewerApp extends React.Component {
                                 />
                         </ResourceViewerApp>
                     </div>
-                </Bp.ResizeSensor>
+                </ResizeSensor>
             </ViewerContext.Provider>
         )
     }

@@ -14,7 +14,7 @@ import datetime
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 indent_unit = "    "
 
-from tactic_app.js_source_management import _develop
+from tactic_app.js_source_management import _develop, js_source_dict, css_source
 
 
 @app.route('/checkpoint_module', methods=['post'])
@@ -66,11 +66,12 @@ def checkpoint_to_recent():
 @app.route('/show_history_viewer/<module_name>', methods=['get', 'post'])
 @login_required
 def show_history_viewer(module_name):
-    javascript_source = url_for('static', filename='tactic_js/history_viewer_react.js')
+    javascript_source = url_for('static', filename=js_source_dict["history_viewer_react"])
     return render_template("library/resource_viewer_react.html",
                            resource_name=module_name,
                            use_ssl=use_ssl,
                            develop=str(_develop),
+                           css_source=css_source("history_viewer_react"),
                            javascript_source=javascript_source,
                            uses_codemirror="True",
                            version_string=tstring)
@@ -88,13 +89,14 @@ def get_api_dict():
 @app.route('/show_tile_differ/both_names/<module_name>/<second_module_name>')
 @login_required
 def show_tile_differ(module_name, second_module_name):
-    javascript_source = url_for('static', filename='tactic_js/tile_differ_react.js')
+    javascript_source = url_for('static', filename=js_source_dict["tile_differ_react"])
     return render_template("library/resource_viewer_react.html",
                            resource_name=module_name,
                            second_resource_name=second_module_name,
                            use_ssl=use_ssl,
                            develop=str(_develop),
                            javascript_source=javascript_source,
+                           css_source=css_source("tile_differ_react"),
                            uses_codemirror="True",
                            version_string=tstring)
 

@@ -1,5 +1,18 @@
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
+import "../tactic_css/tactic.scss";
+import "../tactic_css/tactic_main.scss";
+import "../tactic_css/tactic_table.scss";
+import "../tactic_css/tactic_console.scss";
+import "../tactic_css/tactic_select.scss";
+
+import React from "react";
+import * as ReactDOM from 'react-dom';
+import PropTypes from 'prop-types';
+
+import { NavbarDivider } from "@blueprintjs/core";
+import _ from 'lodash';
+
 import { TacticNavbar } from "./blueprint_navbar.js";
 import { MainTableCard, MainTableCardHeader, FreeformBody } from "./table_react.js";
 import { BlueprintTable, compute_added_column_width } from "./blueprint_table.js";
@@ -14,9 +27,7 @@ import { handleCallback, postAjax, postWithCallback, postAsyncFalse } from "./co
 import { doFlash } from "./toaster.js";
 import { withStatus } from "./toaster.js";
 import { withErrorDrawer } from "./error_drawer.js";
-
-let Bp = blueprint;
-let Bpt = bptable;
+import { doBinding, get_ppi } from "./utilities_react.js";
 
 export { MainTacticSocket };
 
@@ -333,7 +344,8 @@ class MainApp extends React.Component {
     }
 
     _updateTableSpec(spec_update, broadcast = false) {
-        let new_tspec = Object.assign(this.state.table_spec, spec_update);
+        let new_tspec = _.cloneDeep(this.state.table_spec);
+        new_tspec = Object.assign(new_tspec, spec_update);
         this.setState({ table_spec: new_tspec });
         if (broadcast) {
             this._broadcast_event_to_server("UpdateTableSpec", spec_update);
@@ -681,7 +693,7 @@ class MainApp extends React.Component {
                 toggleTableShrink: this._toggleTableShrink,
                 openErrorDrawer: this.props.openErrorDrawer
             })),
-            React.createElement(Bp.NavbarDivider, null),
+            React.createElement(NavbarDivider, null),
             this.create_tile_menus()
         );
         let table_available_height = hp_height;
