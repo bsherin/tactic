@@ -15,7 +15,7 @@ from tactic_app.users import User
 repository_user = User.get_user_by_username("repository")
 global_tile_manager = tactic_app.global_tile_manager
 
-from tactic_app.js_source_management import js_source_dict, _develop
+from tactic_app.js_source_management import js_source_dict, _develop, css_source
 
 import datetime
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
@@ -123,6 +123,7 @@ class CodeManager(LibraryResourceManager):
                                develop=str(_develop),
                                javascript_source=javascript_source,
                                uses_codemirror="True",
+                               css_source=css_source("code_viewer_react"),
                                version_string=tstring)
 
     def get_code_code(self, code_name):
@@ -219,6 +220,7 @@ class RepositoryCodeManager(CodeManager):
                                develop=str(_develop),
                                is_repository=True,
                                javascript_source=javascript_source,
+                               css_source=css_source("code_viewer_react"),
                                uses_codemirror="True",
                                version_string=tstring)
 

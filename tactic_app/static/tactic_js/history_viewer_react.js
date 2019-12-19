@@ -4,12 +4,22 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
  * Created by bls910
  */
 
+import "../tactic_css/tactic.scss";
+
+import React from "react";
+import * as ReactDOM from 'react-dom';
+import PropTypes from 'prop-types';
+
 import { MergeViewerSocket, MergeViewerApp } from "./merge_viewer_app.js";
 import { doFlash } from "./toaster.js";
 import { render_navbar } from "./blueprint_navbar.js";
 import { postAjax, postAjaxPromise } from "./communication_react.js";
 import { withErrorDrawer } from "./error_drawer.js";
 import { withStatus } from "./toaster.js";
+
+import { guid } from "./utilities_react.js";
+
+window.resource_viewer_id = guid();
 
 function history_viewer_main() {
     render_navbar();

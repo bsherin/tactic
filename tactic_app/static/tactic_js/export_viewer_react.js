@@ -1,11 +1,15 @@
 
+
+import React from "react";
+import PropTypes from 'prop-types';
+import { HTMLSelect, Card, Button, InputGroup, Spinner } from "@blueprintjs/core";
+
 import { GlyphButton, SelectList } from "./blueprint_react_widgets.js";
 import { postWithCallback } from "./communication_react.js";
 import { doFlash } from "./toaster.js";
+import { doBinding } from "./utilities_react.js";
 
 export { ExportsViewer };
-
-let Bp = blueprint;
 
 class ExportListSelect extends React.Component {
     constructor(props) {
@@ -58,7 +62,7 @@ class ExportListSelect extends React.Component {
 
     render() {
         return React.createElement(
-            Bp.HTMLSelect,
+            HTMLSelect,
             { elementRef: this._handleSelectRef,
                 onChange: this._updateMe,
                 minimal: true,
@@ -197,7 +201,7 @@ class ExportsViewer extends React.Component {
             exports_class = "am-zoomed";
         }
         return React.createElement(
-            Bp.Card,
+            Card,
             { id: "exports-panel", elevation: 2, className: "mr-3 " + exports_class },
             React.createElement(
                 "div",
@@ -217,7 +221,7 @@ class ExportsViewer extends React.Component {
                         tooltip: "Refresh the exports menu and info",
                         style: { marginLeft: 0 },
                         icon: "refresh" }),
-                    React.createElement(Bp.Button, { onClick: this._eval,
+                    React.createElement(Button, { onClick: this._eval,
                         intent: "success",
                         style: { marginRight: 0, marginLeft: 0, padding: 0 },
                         minimal: true,
@@ -235,7 +239,7 @@ class ExportsViewer extends React.Component {
                             minimal: true,
                             fontSize: 11
                         }),
-                        React.createElement(Bp.InputGroup, { type: "text",
+                        React.createElement(InputGroup, { type: "text",
                             small: true,
                             onChange: this._handleTailChange,
                             onSubmit: this._eval,
@@ -247,7 +251,7 @@ class ExportsViewer extends React.Component {
                         { id: "exports-info", className: "bottom-heading-element ml-2" },
                         this.state.exports_info_value
                     ),
-                    this.state.show_spinner && React.createElement(Bp.Spinner, { size: 13 })
+                    this.state.show_spinner && React.createElement(Spinner, { size: 13 })
                 ),
                 !this.props.console_is_shrunk && React.createElement("div", { style: { overflowY: "scroll", padding: 15, height: this._bodyHeight(), backgroundColor: "white" },
                     dangerouslySetInnerHTML: exports_body_dict })

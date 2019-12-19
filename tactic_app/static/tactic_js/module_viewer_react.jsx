@@ -2,6 +2,14 @@
  * Created by bls910
  */
 
+import "../tactic_css/tactic.scss";
+
+import React from "react";
+import * as ReactDOM from 'react-dom'
+import PropTypes from 'prop-types';
+
+import { ResizeSensor } from "@blueprintjs/core";
+
 import {ResourceViewerSocket, ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app.js";
 import {ReactCodemirror} from "./react-codemirror.js";
 import {ViewerContext} from "./resource_viewer_context.js";
@@ -10,10 +18,13 @@ import {postAjax, postAjaxPromise, postWithCallback} from "./communication_react
 import {doFlash} from "./toaster.js"
 import {withErrorDrawer} from "./error_drawer.js";
 import {withStatus} from "./toaster.js";
+import {doBinding} from "./utilities_react.js";
 
 import {SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, BOTTOM_MARGIN, getUsableDimensions} from "./sizing_tools.js";
+import {guid} from "./utilities_react";
 
-let Bp = blueprint;
+window.resource_viewer_id = guid();
+window.main_id = resource_viewer_id;
 
 function module_viewer_main ()  {
     render_navbar(null, true);
@@ -172,7 +183,7 @@ class ModuleViewerApp extends React.Component {
          let cc_height = this.get_new_cc_height();
         return (
             <ViewerContext.Provider value={the_context}>
-                <Bp.ResizeSensor onResize={this._handleResize} observeParents={true}>
+                <ResizeSensor onResize={this._handleResize} observeParents={true}>
                     <div className="resource-viewer-holder" ref={this.top_ref} style={outer_style}>
                             <ResourceViewerApp {...this.props.statusFuncs}
                                                res_type="tile"
@@ -193,7 +204,7 @@ class ModuleViewerApp extends React.Component {
                                   />
                             </ResourceViewerApp>
                         </div>
-                    </Bp.ResizeSensor>
+                    </ResizeSensor>
             </ViewerContext.Provider>
         )
     }

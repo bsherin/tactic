@@ -1,8 +1,15 @@
+import "../tactic_css/tactic.scss";
+
+import React from "react";
+import * as ReactDOM from 'react-dom';
+
+import { FormGroup, InputGroup, Button } from "@blueprintjs/core";
+
 import { render_navbar } from "./blueprint_navbar.js";
 import { doFlash } from "./toaster.js";
 import { postAjax } from "./communication_react.js";
-
-let Bp = blueprint;
+import { doBinding, guid } from "./utilities_react.js";
+window.page_id = guid();
 
 function _register_main() {
     render_navbar("account");
@@ -66,13 +73,13 @@ class RegisterApp extends React.Component {
 
     render() {
         let field_items = Object.keys(this.state.fields).map(field_name => React.createElement(
-            Bp.FormGroup,
+            FormGroup,
             { key: field_name,
                 inline: true,
                 style: { padding: 10 },
                 label: field_name,
                 helperText: this.state.helper_text[field_name] },
-            React.createElement(Bp.InputGroup, { type: "text",
+            React.createElement(InputGroup, { type: "text",
                 onChange: event => this._onFieldChange(field_name, event.target.value),
                 style: { width: 250 },
                 large: true,
@@ -101,7 +108,7 @@ class RegisterApp extends React.Component {
                     React.createElement(
                         "div",
                         { className: "d-flex flex-row" },
-                        React.createElement(Bp.Button, { icon: "log-in", large: true, text: "Submit", onClick: this._submit_register_info })
+                        React.createElement(Button, { icon: "log-in", large: true, text: "Submit", onClick: this._submit_register_info })
                     )
                 )
             )

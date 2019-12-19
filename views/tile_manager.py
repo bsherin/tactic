@@ -13,7 +13,7 @@ from tactic_app.resource_manager import ResourceManager, LibraryResourceManager
 from tactic_app.users import User
 from tactic_app.docker_functions import create_container
 
-from tactic_app.js_source_management import js_source_dict, _develop
+from tactic_app.js_source_management import js_source_dict, _develop, css_source
 
 global_tile_manager = tactic_app.global_tile_manager
 repository_user = User.get_user_by_username("repository")
@@ -167,6 +167,7 @@ class TileManager(LibraryResourceManager):
                                is_repository=False,
                                use_ssl=use_ssl,
                                develop=str(_develop),
+                               css_source=css_source("module_viewer_react"),
                                javascript_source=javascript_source,
                                uses_codemirror="True",
                                version_string=tstring)
@@ -214,6 +215,7 @@ class TileManager(LibraryResourceManager):
                                uses_codemirror="True",
                                version_string=tstring,
                                module_viewer_id=the_content["module_viewer_id"],
+                               css_source=css_source("tile_creator_react"),
                                module_source=js_source_dict["tile_creator_react"],
                                tile_collection_name=the_content["tile_collection_name"])
 
@@ -348,6 +350,7 @@ class RepositoryTileManager(TileManager):
                                is_repository=True,
                                use_ssl=use_ssl,
                                develop=str(_develop),
+                               css_source=css_source("module_viewer_react"),
                                javascript_source=javascript_source,
                                uses_codemirror="True",
                                version_string=tstring)

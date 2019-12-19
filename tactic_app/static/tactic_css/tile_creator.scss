@@ -1,0 +1,75 @@
+@import "blueprint_variables.scss";
+
+#creator-root {
+    margin-right: 25px;
+    vertical-align: top;
+
+    .code-holder {
+        height: 100%;
+
+    }
+
+    .bp3-tab:focus {
+        outline: none
+    }
+
+    .bp3-large > .bp3-tab {
+        font-size: 18px;
+        margin-top: 10px;
+        margin-left: 30px;
+        margin-right: 0
+    }
+
+    #rccode {
+        span {
+            margin-top: 10px
+        }
+    }
+
+    .CodeMirror-gutters {
+        background-color: $light-gray5;
+    }
+}
+
+#creator-resources {
+        height: 100%;
+
+        .tab-pane {
+            padding: 10px;
+            border-style: solid;
+            border-color: rgb(221, 221, 221);
+            border-width: 1px;
+            margin-right: 10px;
+            height: 100%
+        }
+
+        .tab-content {
+            height: 100%;
+            padding-bottom: 25px
+        }
+
+        .nav-tabs {
+            border-bottom: none;
+        }
+
+        .form-inline label {
+            margin-bottom: 0;
+            margin-left: 4px
+        }
+        .indent-row {
+            margin-bottom: 10px
+        }
+        .resource-module {
+            margin: 0;
+        }
+        input {
+            width: 150px;
+        }
+
+        .form-row {
+            button {
+                align-self: flex-end;
+                margin: 7px;
+            }
+        }
+    }

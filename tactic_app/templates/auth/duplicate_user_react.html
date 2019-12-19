@@ -21,12 +21,11 @@
 
 {% endblock %}
 {% block scripts %}
-    <script src="{{url_for('static', filename='js/react_tools.js')}}"></script>
+{#    <script src="{{url_for('static', filename='js/react_tools.js')}}"></script>#}
     <script type="module" src="{{url_for('static', filename=module_source, v=version_string)}}"></script>
 
     <script>
         window.current_user = "{{current_user.username}}";
         window.old_username = "{{old_username}}";
-        window.page_id = guid();
     </script>
 {% endblock %}

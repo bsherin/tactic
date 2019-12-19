@@ -1,11 +1,14 @@
 
-export {OptionModule, ExportModule}
+
+import React from "react";
+import PropTypes from 'prop-types';
+
+import { Button, Card } from "@blueprintjs/core";
 
 import {Toolbar} from "./blueprint_toolbar.js";
 import {LabeledSelectList, LabeledFormField, BpOrderableTable} from "./blueprint_react_widgets.js";
 
-var Bp = blueprint;
-
+export {OptionModule, ExportModule}
 
 class OptionModuleForm extends React.Component {
 
@@ -66,7 +69,7 @@ class OptionModuleForm extends React.Component {
                         <LabeledFormField label="Tag" onChange={this.handleTagChange} the_value={this.state.tag}/>
                     }
                 </div>
-            <Bp.Button onClick={this.handleSubmit} text="Create"/>
+            <Button onClick={this.handleSubmit} text="Create"/>
             </div>
         )
     }
@@ -135,7 +138,7 @@ class OptionModule extends React.Component {
             this.state.active_row = this.props.data_list.length - 1
         }
         return (
-            <Bp.Card elevation={1} id="options-pane" className="d-flex flex-column" style={options_pane_style}>
+            <Card elevation={1} id="options-pane" className="d-flex flex-column" style={options_pane_style}>
                 <div className="d-flex flex-row mb-2">
                     <Toolbar button_groups={this.button_groups}/>
                 </div>
@@ -150,7 +153,7 @@ class OptionModule extends React.Component {
                 }
 
                 <OptionModuleForm handleCreate={this.handleCreate}/>
-            </Bp.Card>
+            </Card>
         )
     }
 
@@ -196,7 +199,7 @@ class ExportModuleForm extends React.Component {
                     <LabeledFormField label="Name" onChange={this.handleNameChange} the_value={this.state.name} />
                     <LabeledFormField label="Tag" onChange={this.handleTagChange} the_value={this.state.tag}/>
                 </div>
-                <Bp.Button onClick={this.handleSubmit} text="Create"/>
+                <Button onClick={this.handleSubmit} text="Create"/>
             </div>
         )
     }
@@ -266,7 +269,7 @@ class ExportModule extends React.Component {
         }
         return (
 
-            <Bp.Card elevation={1} id="exports-pane" className="d-flex flex-column" style={exports_pane_style}>
+            <Card elevation={1} id="exports-pane" className="d-flex flex-column" style={exports_pane_style}>
                 <div className="d-flex flex-row mb-2">
                     <Toolbar button_groups={this.button_groups}/>
                 </div>
@@ -279,7 +282,7 @@ class ExportModule extends React.Component {
                                       content_editable={true}/>
                 }
                 <ExportModuleForm handleCreate={this.handleCreate}/>
-            </Bp.Card>
+            </Card>
         )
     }
 

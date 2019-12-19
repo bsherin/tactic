@@ -1,8 +1,17 @@
+
+import "../tactic_css/tactic.scss";
+
+import React from "react";
+import * as ReactDOM from 'react-dom';
+
+import { FormGroup, InputGroup, Button } from "@blueprintjs/core";
+
 import { render_navbar } from "./blueprint_navbar.js";
 import { doFlash, withStatus } from "./toaster.js";
 import { postAjax } from "./communication_react.js";
+import { doBinding, guid } from "./utilities_react.js";
 
-let Bp = blueprint;
+window.page_id = guid();
 
 function _login_main() {
     render_navbar("login");
@@ -100,11 +109,11 @@ class LoginApp extends React.Component {
                             this._submit_login_info();
                         } },
                     React.createElement(
-                        Bp.FormGroup,
+                        FormGroup,
                         { className: "d-flex flex-row justify-content-around",
                             helperText: this.state.username_warning_text
                         },
-                        React.createElement(Bp.InputGroup, { type: "text",
+                        React.createElement(InputGroup, { type: "text",
                             onChange: this._onUsernameChange,
                             large: true,
                             fill: false,
@@ -115,11 +124,11 @@ class LoginApp extends React.Component {
                         })
                     ),
                     React.createElement(
-                        Bp.FormGroup,
+                        FormGroup,
                         { className: "d-flex flex-row justify-content-around",
                             helperText: this.state.password_warning_text
                         },
-                        React.createElement(Bp.InputGroup, { type: "password",
+                        React.createElement(InputGroup, { type: "password",
                             onChange: this._onPasswordChange,
                             large: true,
                             fill: false,
@@ -131,7 +140,7 @@ class LoginApp extends React.Component {
                     React.createElement(
                         "div",
                         { className: "d-flex flex-row justify-content-around" },
-                        React.createElement(Bp.Button, { icon: "log-in", large: true, type: "submit", text: "Sign in" })
+                        React.createElement(Button, { icon: "log-in", large: true, type: "submit", text: "Sign in" })
                     )
                 )
             )

@@ -18,7 +18,7 @@ from wtforms.validators import ValidationError
 from tactic_app import ANYONE_CAN_REGISTER
 import tactic_app
 
-from tactic_app.js_source_management import js_source_dict, _develop
+from tactic_app.js_source_management import js_source_dict, _develop, css_source
 
 admin_user = User.get_user_by_username("admin")
 
@@ -38,7 +38,10 @@ def login():
         if current_user.is_authenticated:
             return redirect(url_for("library"))
         next_view = "/library"
+    javascript_source = url_for('static', filename=js_source_dict["auth_react"])
     return render_template('auth/login_react.html', develop=str(_develop),
+                           javascript_source=javascript_source,
+                           css_source=css_source("auth_react"),
                            after_register="no", message="", alert_type="",
                            next_view=next_view, version_string=tstring)
 
@@ -49,7 +52,10 @@ def relogin():
     next_view = request.args.get('next')
     if next_view is None:
         next_view = "/library"
+    javascript_source = url_for('static', filename=js_source_dict["auth_react"])
     return render_template('auth/login_react.html', after_register="no", message="",
+                           javascript_source=javascript_source,
+                           css_source=css_source("auth_react"),
                            alert_type="", next_view=next_view, version_string=tstring)
 
 
@@ -59,7 +65,9 @@ login_manager.refresh_view = "relogin"
 @app.route('/login_after_register', methods=['GET', 'POST'])
 def login_after_register():
     print "entering login view"
-    return render_template('auth/login_react.html', show_message="yes",
+    javascript_source = url_for('static', filename=js_source_dict["auth_react"])
+    return render_template('auth/login_react.html', show_message="yes", javascript_source=javascript_source,
+                           css_source=css_source("auth_react"),
                            message="You can now log in.", alert_type="alert-success", version_string=tstring)
 
 
@@ -110,7 +118,10 @@ def logout(page_id):
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if ANYONE_CAN_REGISTER or (current_user.username == "admin"):
-        return render_template('auth/register_react.html', module_source=js_source_dict["register_react"], version_string=tstring)
+        return render_template('auth/register_react.html',
+                               css_source=css_source("register_react"),
+                               module_source=js_source_dict["register_react"],
+                               version_string=tstring)
     else:
         return render_template
 
@@ -118,7 +129,10 @@ def register():
 @app.route('/user_duplicate/<old_username>', methods=['GET', 'POST'])
 def user_duplicate(old_username):
     if ANYONE_CAN_REGISTER or (current_user.username == "admin"):
-        return render_template('auth/duplicate_user_react.html', module_source=js_source_dict["duplicate_user_react"], old_username=old_username, version_string=tstring)
+        return render_template('auth/duplicate_user_react.html',
+                               css_source=css_source("duplicate_user_react"),
+                               module_source=js_source_dict["duplicate_user_react"],
+                               old_username=old_username, version_string=tstring)
     else:
         return render_template
 
@@ -166,7 +180,9 @@ def attempt_duplicate():
 @app.route('/account_info', methods=['GET', 'POST'])
 @fresh_login_required
 def account_info():
-    return render_template('account_react.html', module_source=js_source_dict["account_react"], version_string=tstring)
+    return render_template('account_react.html',
+                           css_source=css_source("account_react"),
+                           module_source=js_source_dict["account_react"], version_string=tstring)
 
 
 @app.route('/get_account_info', methods=['GET', 'POST'])
@@ -189,7 +205,13 @@ def update_account_info():
 
 @app.errorhandler(CSRFError)
 def csrf_error(reason):
-    return render_template('auth/login_react.html', show_message="yes", message=reason), 400
+    javascript_source = url_for('static', filename=js_source_dict["auth_react"])
+    return render_template('auth/login_react.html', develop=str(_develop),
+                           javascript_source=javascript_source,
+                           show_message="yes",
+                           css_source=css_source("auth_react"),
+                           after_register="no", message=reason, alert_type="",
+                           next_view=next_view, version_string=tstring), 400
 
 
 

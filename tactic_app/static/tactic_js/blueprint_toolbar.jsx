@@ -1,6 +1,13 @@
+
+
+import React from "react";
+import PropTypes from 'prop-types';
+
+import { Button, MenuItem, Menu, ButtonGroup, Popover, ControlGroup, FileInput} from "@blueprintjs/core";
+
 import {KeyTrap} from "./key_trap.js";
 import {withTooltip} from "./blueprint_react_widgets.js";
-
+import {doBinding} from "./utilities_react.js";
 
 export {Toolbar, ToolbarButton, Namebutton, ResourceviewerToolbar}
 import {showModalReact} from "./modal_react.js";
@@ -8,8 +15,6 @@ import {showModalReact} from "./modal_react.js";
 import {postAjax} from "./communication_react.js"
 
 const default_button_class = "btn-outline-secondary";
-
-var Bp = blueprint;
 
 const intent_colors = {
     danger: "#c23030",
@@ -40,7 +45,7 @@ class ToolbarButton extends React.Component {
         if (this.props.show_text) {
             let style = {flexDirection: "column", fontSize: 8, padding: "5px 8px", width: 42, height: 42};
             return (
-                <Bp.Button
+                <Button
                           text={this.props.name_text}
                            icon={this.props.icon_name}
                            // intent={this.props.intent == "regular" ? "primary" : this.props.intent}
@@ -54,7 +59,7 @@ class ToolbarButton extends React.Component {
         }
         else {
             return (
-                <Bp.Button
+                <Button
                            icon={this.props.icon_name}
                            // intent={this.props.intent == "regular" ? "primary" : this.props.intent}
                            large={false}
@@ -95,15 +100,15 @@ class PopupButton extends React.Component {
 
     render() {
         let menu_items = this.props.option_list.map((opt, index) => (
-            <Bp.MenuItem key={opt.opt_name} onClick={opt.opt_func} icon={opt.opt_icon} text={opt.opt_name}/>
+            <MenuItem key={opt.opt_name} onClick={opt.opt_func} icon={opt.opt_icon} text={opt.opt_name}/>
         ));
-        let the_menu = <Bp.Menu>{menu_items} </Bp.Menu>;
+        let the_menu = <Menu>{menu_items} </Menu>;
         return (
-            <Bp.ButtonGroup>
-                <Bp.Popover content={the_menu}>
-                    <Bp.Button id={this.props.name} text={this.props.name} icon={this.props.icon_name}/>
-                </Bp.Popover>
-            </Bp.ButtonGroup>
+            <ButtonGroup>
+                <Popover content={the_menu}>
+                    <Button id={this.props.name} text={this.props.name} icon={this.props.icon_name}/>
+                </Popover>
+            </ButtonGroup>
         )
     }
 }
@@ -152,7 +157,7 @@ class FileAdderButton extends React.Component {
          let file_input_style = {width: 200, fontSize: 12, marginBottom: 0};
          return (
              <React.Fragment>
-                 <Bp.ControlGroup>
+                 <ControlGroup>
              <ToolbarButton name_text={this.props.name_text}
                             icon_name={this.props.icon_name}
                             // style={style}
@@ -160,13 +165,13 @@ class FileAdderButton extends React.Component {
                             click_handler={this._do_submit}
                             tooltip={this.props.tooltip}
                 />
-                 <Bp.FileInput large={false}
+                 <FileInput large={false}
                                text={this.state.the_text}
                                style={file_input_style}
                                hasSelection={this.state.hasSelection}
                                onInputChange={this._handleFileChange}
                                inputProps={{multiple: this.props.multiple}}/>
-                 </Bp.ControlGroup>
+                 </ControlGroup>
 
             </React.Fragment>
 
@@ -232,13 +237,13 @@ class Toolbar extends React.Component {
         var group_counter = 0;
         if ((this.props.popup_buttons != null) && (this.props.popup_buttons.length != 0)) {
             let popup_items = this.props.popup_buttons.map((button, index) =>
-                <Bp.ButtonGroup className="toolbar-button-group" role="group" key={"popup_group" + String(index)}>
+                <ButtonGroup className="toolbar-button-group" role="group" key={"popup_group" + String(index)}>
                     <PopupButton name={button.name}
                                  key={button.name}
                                  icon_name={button.icon_name}
                                  option_list={button.option_list}
                                  button_class={this.get_button_class(button)}/>
-                 </Bp.ButtonGroup>
+                 </ButtonGroup>
             );
             items.push(popup_items)
         }
@@ -253,9 +258,9 @@ class Toolbar extends React.Component {
                                key={index}/>
             );
             items.push(
-                <Bp.ButtonGroup large={false} style={{justifyContent: "center"}} className="toolbar-button-group" role="group" key={group_counter}>
+                <ButtonGroup large={false} style={{justifyContent: "center"}} className="toolbar-button-group" role="group" key={group_counter}>
                     {group_items}
-                </Bp.ButtonGroup>
+                </ButtonGroup>
             );
             group_counter += 1
         }
@@ -280,9 +285,9 @@ class Toolbar extends React.Component {
                 />
             );
             items.push(
-                <Bp.ButtonGroup style={{justifyContent: "center"}} className="toolbar-button-group" role="group" key={group_counter}>
+                <ButtonGroup style={{justifyContent: "center"}} className="toolbar-button-group" role="group" key={group_counter}>
                     {file_adder_items}
-                </Bp.ButtonGroup>
+                </ButtonGroup>
             );
         }
         let outer_style;
@@ -369,14 +374,14 @@ class Namebutton extends React.Component {
         let name = this.props.handleRename == null ? this.state.current_name : this.props.resource_name;
         let style = {fontSize: 20};
         return (
-            <Bp.Button id="rename-button"
+            <Button id="rename-button"
                            large={true}
                            minimal={true}
                            style={style}
                            tabIndex={-1}
                            onClick={this.rename_me}>
                 <h5>{name}</h5>
-            </Bp.Button>
+            </Button>
         )
     }
 }

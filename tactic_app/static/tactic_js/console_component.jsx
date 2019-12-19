@@ -1,15 +1,21 @@
 
+
+import React from "react";
+import PropTypes from 'prop-types';
+
+import { Icon, Card, EditableText, Button, Spinner, TextArea } from "@blueprintjs/core";
+import { SortableHandle, SortableElement } from 'react-sortable-hoc';
+import showdown from 'showdown';
+
 import {GlyphButton} from "./blueprint_react_widgets.js";
 import {ReactCodemirror} from "./react-codemirror.js";
 import {SortableComponent} from "./sortable_container.js";
 import {KeyTrap} from "./key_trap.js";
 import {postWithCallback} from "./communication_react.js"
 import {doFlash} from "./toaster.js"
+import {doBinding, arrayMove} from "./utilities_react.js";
 
 export {ConsoleComponent}
-
-let Bp = blueprint;
-let Shoc = window.react_sortable_hoc;
 
 const MAX_CONSOLE_WIDTH = 1140;
 const BUTTON_CONSUMED_SPACE = 203;
@@ -296,7 +302,7 @@ const BUTTON_CONSUMED_SPACE = 203;
         let outer_style = Object.assign({}, this.props.style);
         outer_style.width = this._bodyWidth();
         return (
-            <Bp.Card id="console-panel" className={console_class} elevation={2} style={outer_style}>
+            <Card id="console-panel" className={console_class} elevation={2} style={outer_style}>
                 <div className="d-flex flex-column justify-content-around">
                     <div id="console-heading"
                          ref={this.header_ref}
@@ -355,7 +361,7 @@ const BUTTON_CONSUMED_SPACE = 203;
                             <div id="console-header-right"
                                  className="d-flex flex-row">
                                 {this.props.zoomable &&
-                                    <Bp.Button onClick={this._toggleExports}
+                                    <Button onClick={this._toggleExports}
                                                style={{marginRight: 5}}
                                                minimal={true}
                                                small={true}
@@ -401,7 +407,7 @@ const BUTTON_CONSUMED_SPACE = 203;
                     }
                 </div>
                 }
-            </Bp.Card>
+            </Card>
         );
     }
 }
@@ -429,7 +435,7 @@ ConsoleComponent.propTypes = {
 
     render () {
         return (
-            <Bp.Icon icon="drag-handle-vertical"
+            <Icon icon="drag-handle-vertical"
                              style={{marginLeft: 0, marginRight: 6}}
                              iconSize={20}
                              className="console-sorter"/>
@@ -437,7 +443,7 @@ ConsoleComponent.propTypes = {
     }
 }
 
-const Shandle = Shoc.sortableHandle(RawSortHandle);
+const Shandle = SortableHandle(RawSortHandle);
 
 class SuperItem extends React.Component {
 
@@ -452,7 +458,7 @@ class SuperItem extends React.Component {
     }
 }
 
-const SSuperItem = Shoc.sortableElement(SuperItem);
+const SSuperItem = SortableElement(SuperItem);
 
 class LogItem extends React.Component {
     constructor(props) {
@@ -540,7 +546,7 @@ class LogItem extends React.Component {
                         }
                 </div>
                 {this.props.am_shrunk &&
-                    <Bp.EditableText value={this.props.summary_text}
+                    <EditableText value={this.props.summary_text}
                                      onChange={this._handleSummaryTextChange}
                                      className="log-panel-summary"/>
                 }
@@ -719,7 +725,7 @@ class ConsoleCodeItem extends React.Component {
                         }
                     </div>
                 {this.props.am_shrunk &&
-                    <Bp.EditableText value={this.props.summary_text}
+                    <EditableText value={this.props.summary_text}
                                      onChange={this._handleSummaryTextChange}
                                      className="log-panel-summary"/>
                 }
@@ -758,7 +764,7 @@ class ConsoleCodeItem extends React.Component {
                                     }
                                     {this.props.show_spinner &&
                                         <div style={{marginTop: 10, marginRight: 22}}>
-                                            <Bp.Spinner size={13} />
+                                            <Spinner size={13} />
                                         </div>
                                     }
                                 </div>
@@ -910,7 +916,7 @@ class ConsoleTextItem extends React.Component {
                         }
                 </div>
                 {this.props.am_shrunk &&
-                    <Bp.EditableText value={this.props.summary_text}
+                    <EditableText value={this.props.summary_text}
                                      onChange={this._handleSummaryTextChange}
                                      className="log-panel-summary"/>
                 }
@@ -925,7 +931,7 @@ class ConsoleTextItem extends React.Component {
                                 </div>
                             {!really_show_markdown &&
                                 <React.Fragment>
-                                <Bp.TextArea value={this.props.console_text}
+                                <TextArea value={this.props.console_text}
                                              onChange={this._handleChange}
                                              onKeyDown={this._handleKeyDown}
                                              growVertically={true}

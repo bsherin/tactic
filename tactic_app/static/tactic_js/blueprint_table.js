@@ -1,7 +1,14 @@
 
-export { BlueprintTable, compute_added_column_width };
 
-let Bpt = bptable;
+import React from "react";
+import PropTypes from 'prop-types';
+
+import { Cell, EditableCell, RowHeaderCell, Column, Table, Regions, RegionCardinality } from "@blueprintjs/table";
+import hash from "object-hash";
+
+import { doBinding } from "./utilities_react.js";
+
+export { BlueprintTable, compute_added_column_width };
 
 const MAX_INITIAL_CELL_WIDTH = 400;
 const EXTRA_TABLE_AREA_SPACE = 500;
@@ -32,6 +39,15 @@ class BlueprintTable extends React.Component {
         this.set_scroll = null;
     }
 
+    get hash_value() {
+        let obj = {
+            cwidths: this.props.column_widths,
+            nrows: this.props.total_rows
+            // sscroll: this.set_scroll
+        };
+        return hash(obj);
+    }
+
     componentDidMount() {
         this.setState({ mounted: true });
         this.computeColumnWidths();
@@ -58,7 +74,7 @@ class BlueprintTable extends React.Component {
     _doScroll() {
         if (this.set_scroll != null && this.table_ref && this.table_ref.current) {
             try {
-                let singleCellRegion = Bpt.Regions.cell(this.set_scroll, 0);
+                let singleCellRegion = Regions.cell(this.set_scroll, 0);
                 this.table_ref.current.scrollToRegion(singleCellRegion);
                 this.set_scroll = null;
             } catch (e) {
@@ -84,10 +100,10 @@ class BlueprintTable extends React.Component {
 
     _rowHeaderCellRenderer(rowIndex) {
         if (this.haveRowData(rowIndex)) {
-            return React.createElement(Bpt.RowHeaderCell, { key: rowIndex,
+            return React.createElement(RowHeaderCell, { key: rowIndex,
                 name: this.props.data_row_dict[rowIndex].__id__ });
         } else {
-            return React.createElement(Bpt.RowHeaderCell, { key: rowIndex, loading: true, name: rowIndex });
+            return React.createElement(RowHeaderCell, { key: rowIndex, loading: true, name: rowIndex });
         }
     }
 
@@ -105,68 +121,74 @@ class BlueprintTable extends React.Component {
     _cellRendererCreator(column_name) {
         let self = this;
         return rowIndex => {
-            if (!this.haveRowData(rowIndex)) {
-                if (!self.props.awaiting_data) {
-                    self.props.initiateDataGrab(rowIndex);
-                }
-                return React.createElement(Bpt.Cell, { key: column_name,
-                    loading: true });
-            }
-            let text_color_dict = self._text_color_dict(rowIndex, column_name);
-            if (text_color_dict) {
-                let color_dict = text_color_dict.color_dict;
-                let token_text = text_color_dict.token_text;
-                let revised_text = [];
-                let index = 0;
-                for (let w of token_text) {
-                    if (color_dict.hasOwnProperty(w)) {
-                        revised_text.push(React.createElement(ColoredWord, { key: index, the_color: color_dict[w], the_word: w }));
-                    } else {
-                        revised_text.push(w + " ");
+            let the_text;
+            try {
+                if (!this.haveRowData(rowIndex)) {
+                    if (!self.props.awaiting_data) {
+                        self.props.initiateDataGrab(rowIndex);
                     }
-                    index += 1;
+                    return React.createElement(Cell, { key: column_name,
+                        loading: true });
                 }
-                let converted_dict = { __html: revised_text };
-                return React.createElement(
-                    Bpt.Cell,
-                    { key: column_name,
-                        truncated: true,
-                        wrapText: true },
-                    revised_text
-                );
-            }
-            let the_text = self.props.data_row_dict[rowIndex][column_name];
-            if (this.props.alt_search_text != null && this.props.alt_search_text != "") {
-                const regex = new RegExp(this.props.alt_search_text, "gi");
-                the_text = String(the_text).replace(regex, function (matched) {
-                    return "<mark>" + matched + "</mark>";
-                });
-                let converted_dict = { __html: the_text };
-                return React.createElement(
-                    Bpt.Cell,
-                    { key: column_name,
-                        truncated: true,
-                        wrapText: true },
-                    React.createElement("div", { dangerouslySetInnerHTML: converted_dict })
-                );
-            }
-            if (self.props.search_text != null && self.props.search_text != "") {
-                const regex = new RegExp(self.props.search_text, "gi");
-                the_text = String(the_text).replace(regex, function (matched) {
-                    return "<mark>" + matched + "</mark>";
-                });
-                let converted_dict = { __html: the_text };
-                return React.createElement(
-                    Bpt.Cell,
-                    { key: column_name,
-                        truncated: true,
-                        wrapText: true },
-                    React.createElement("div", { dangerouslySetInnerHTML: converted_dict })
-                );
+                let text_color_dict = self._text_color_dict(rowIndex, column_name);
+                if (text_color_dict) {
+                    let color_dict = text_color_dict.color_dict;
+                    let token_text = text_color_dict.token_text;
+                    let revised_text = [];
+                    let index = 0;
+                    for (let w of token_text) {
+                        if (color_dict.hasOwnProperty(w)) {
+                            revised_text.push(React.createElement(ColoredWord, { key: index, the_color: color_dict[w], the_word: w }));
+                        } else {
+                            revised_text.push(w + " ");
+                        }
+                        index += 1;
+                    }
+                    let converted_dict = { __html: revised_text };
+                    return React.createElement(
+                        Cell,
+                        { key: column_name,
+                            truncated: true,
+                            wrapText: true },
+                        revised_text
+                    );
+                }
+                the_text = self.props.data_row_dict[rowIndex][column_name];
+                if (this.props.alt_search_text != null && this.props.alt_search_text != "") {
+                    const regex = new RegExp(this.props.alt_search_text, "gi");
+                    the_text = String(the_text).replace(regex, function (matched) {
+                        return "<mark>" + matched + "</mark>";
+                    });
+                    let converted_dict = { __html: the_text };
+                    return React.createElement(
+                        Cell,
+                        { key: column_name,
+                            truncated: true,
+                            wrapText: true },
+                        React.createElement("div", { dangerouslySetInnerHTML: converted_dict })
+                    );
+                }
+                if (self.props.search_text != null && self.props.search_text != "") {
+                    const regex = new RegExp(self.props.search_text, "gi");
+                    the_text = String(the_text).replace(regex, function (matched) {
+                        return "<mark>" + matched + "</mark>";
+                    });
+                    let converted_dict = { __html: the_text };
+                    return React.createElement(
+                        Cell,
+                        { key: column_name,
+                            truncated: true,
+                            wrapText: true },
+                        React.createElement("div", { dangerouslySetInnerHTML: converted_dict })
+                    );
+                }
+            } catch (e) {
+                console.log(e.message);
+                the_text = "";
             }
             // Wrapping the contents of the cell in React.Fragment prevent React from
             // generating a warning for reasons that are mysterious
-            return React.createElement(Bpt.EditableCell, { key: column_name,
+            return React.createElement(EditableCell, { key: column_name,
                 truncated: true,
                 rowIndex: rowIndex,
                 columnIndex: this.props.filtered_column_names.indexOf(column_name),
@@ -220,7 +242,7 @@ class BlueprintTable extends React.Component {
         let self = this;
         let columns = this.props.filtered_column_names.map(column_name => {
             const cellRenderer = self._cellRendererCreator(column_name);
-            return React.createElement(Bpt.Column, { cellRenderer: cellRenderer,
+            return React.createElement(Column, { cellRenderer: cellRenderer,
                 enableColumnReordering: true,
                 key: column_name,
                 name: column_name });
@@ -244,16 +266,17 @@ class BlueprintTable extends React.Component {
             "div",
             { id: "table-area", ref: this.props.my_ref, style: style },
             React.createElement(
-                Bpt.Table,
+                Table,
                 { ref: this.table_ref,
-                    numRows: this.props.total_rows,
+                    key: this.hash_value // kludge: Having this prevents partial row rendering
+                    , numRows: this.props.total_rows,
                     enableColumnReordering: true,
                     onColumnsReordered: this._onColumnsReordered,
                     onSelection: this._onSelection,
                     onCompleteRender: this._doScroll,
                     onColumnWidthChanged: this._onColumnWidthChanged,
                     enableMultipleSelection: false,
-                    selectionModes: [Bpt.RegionCardinality.FULL_COLUMNS, Bpt.RegionCardinality.FULL_ROWS],
+                    selectionModes: [RegionCardinality.FULL_COLUMNS, RegionCardinality.FULL_ROWS],
                     minColumnWidth: 75,
                     columnWidths: cwidths,
                     rowHeaderCellRenderer: this._rowHeaderCellRenderer

@@ -2,13 +2,18 @@
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
+import React from "react";
+import PropTypes from 'prop-types';
+
+import { Toaster, Position, Spinner } from "@blueprintjs/core";
+
+import { doBinding } from "./utilities_react.js";
+
 export { doFlash, doFlashAlways, withStatus, Status };
 
-var Bp = blueprint;
-
-const AppToaster = Bp.Toaster.create({
+const AppToaster = Toaster.create({
     className: "recipe-toaster",
-    position: Bp.Position.TOP,
+    position: Position.TOP,
     autoFocus: true
 });
 
@@ -130,15 +135,15 @@ class Status extends React.Component {
     render() {
         let cname = this.props.dark_spinner ? "bp3-dark" : "";
         return React.createElement(
-            "div",
-            { className: "d-flex flex-row", style: { position: "absolute", bottom: 10, marginLeft: 15 } },
-            this.props.show_spinner && React.createElement(Bp.Spinner, { className: "bp3-dark", size: 20 }),
+            'div',
+            { className: 'd-flex flex-row', style: { position: "absolute", bottom: 10, marginLeft: 15 } },
+            this.props.show_spinner && React.createElement(Spinner, { className: 'bp3-dark', size: 20 }),
             this.props.status_message && React.createElement(
-                "div",
-                { className: "d-flex flex-column justify-content-around", style: { positoin: "absolute", marginLeft: 50 } },
+                'div',
+                { className: 'd-flex flex-column justify-content-around', style: { positoin: "absolute", marginLeft: 50 } },
                 React.createElement(
-                    "div",
-                    { id: "status-msg-area", className: "bp3-ui-text" },
+                    'div',
+                    { id: 'status-msg-area', className: 'bp3-ui-text' },
                     this.props.status_message
                 )
             )

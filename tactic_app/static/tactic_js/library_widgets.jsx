@@ -1,15 +1,21 @@
 
+import "../tactic_css/tactic_select.scss"
+
+import React from "react";
+import PropTypes from 'prop-types';
+
+import { InputGroup, Menu, MenuItem, Button, Switch, Card } from "@blueprintjs/core";
+import { Cell, Column, Table, ColumnHeaderCell, RegionCardinality } from "@blueprintjs/table";
+import {Omnibar} from "@blueprintjs/select"
+import _ from 'lodash';
+
 import {postAjax} from "./communication_react.js"
+import {doBinding} from "./utilities_react.js";
 
 export {SearchForm}
 export {BpSelectorTable}
 export {LoadedTileList}
 export {LibraryOmnibar}
-
-var Rtg = window.ReactTransitionGroup;
-var Bp = blueprint;
-let Bps = bpselect;
-let Bpt = bptable;
 
 function renderOmnibar (item, { modifiers, handleClick}) {
     return <SuggestionItem item={item} handleClick={handleClick}/>
@@ -27,7 +33,7 @@ class OmnibarItem extends React.Component{
 
     render() {
         return (
-            <Bp.MenuItem
+            <MenuItem
                 active={this.props.modifiers.active}
                 text={this.props.item.name}
                 key={this.props.item.name}
@@ -66,7 +72,7 @@ class LibraryOmnibar extends React.Component {
 
     render () {
         return (
-            <Bps.Omnibar items={this.props.items}
+            <Omnibar items={this.props.items}
                          isOpen={this.props.showOmnibar}
                          onItemSelect={this.props.onItemSelect}
                          itemRenderer={this._itemRenderer}
@@ -119,7 +125,7 @@ class SearchForm extends React.Component {
         return (
             <React.Fragment>
                 <div className="d-flex flex-row mb-2 mt-2">
-                    <Bp.InputGroup type="search"
+                    <InputGroup type="search"
                                       placeholder="Search"
                                    leftIcon="search"
                                       value={this.props.search_field_value}
@@ -128,12 +134,12 @@ class SearchForm extends React.Component {
                                     autoCapitalize="none"
                                        autoCorrect="off"
                     />
-                    <Bp.Button onClick={this._handleClearSearch} className="ml-2">
+                    <Button onClick={this._handleClearSearch} className="ml-2">
                             clear
-                    </Bp.Button>
+                    </Button>
 
                 {this.props.allow_search_metadata &&
-                    <Bp.Switch label="metadata"
+                    <Switch label="metadata"
                                  className="ml-2"
                                 large={false}
                                 checked={this.props.search_metadata_checked}
@@ -141,7 +147,7 @@ class SearchForm extends React.Component {
                     />
                 }
                 {this.props.allow_search_inside &&
-                    <Bp.Switch label="inside"
+                    <Switch label="inside"
                                className="ml-2"
                                large={false}
                                checked={this.props.search_inside_checked}
@@ -168,10 +174,12 @@ class BpSelectorTable extends React.Component {
         super(props);
         doBinding(this);
         this.state = {columnWidths: null}
+        this.saved_data_list = null;
     }
 
     componentDidMount() {
         this.computeColumnWidths();
+        this.saved_data_list = this.props.data_list;
     }
 
     computeColumnWidths() {
@@ -183,8 +191,9 @@ class BpSelectorTable extends React.Component {
 
     componentDidUpdate() {
         // this.props.my_ref.current.scrollTop = this.props.scroll_top;
-        if (this.state.columnWidths == null) {
-            this.computeColumnWidths()
+        if ((this.state.columnWidths == null) || !_.isEqual(this.props.data_list, this.saved_data_list)) {
+            this.computeColumnWidths();
+            this.saved_data_list = this.props.data_list;
         }
     }
 
@@ -192,7 +201,10 @@ class BpSelectorTable extends React.Component {
         let self = this;
         return (rowIndex) => {
             let the_text;
-            if (Object.keys(self.props.data_list[rowIndex]).includes(column_name)) {
+            if (rowIndex >= self.props.data_list.length) {
+                the_text = ""
+            }
+            else if (Object.keys(self.props.data_list[rowIndex]).includes(column_name)) {
                 the_text = self.props.data_list[rowIndex][column_name];
             }
             else {
@@ -200,7 +212,7 @@ class BpSelectorTable extends React.Component {
             }
             return (
 
-                <Bpt.Cell key={column_name}
+                <Cell key={column_name}
                           interactive={true}
                           truncated={true}
                           tabIndex={-1}
@@ -208,7 +220,7 @@ class BpSelectorTable extends React.Component {
                     <React.Fragment>
                         <div onDoubleClick={()=>self.props.handleRowDoubleClick(self.props.data_list[rowIndex])}>{the_text}</div>
                     </React.Fragment>
-                </Bpt.Cell>
+                </Cell>
             )
         };
     }
@@ -217,42 +229,43 @@ class BpSelectorTable extends React.Component {
             let sortAsc = () => {this.props.sortColumn(sortColumn, this.props.columns[sortColumn].sort_field, "ascending")};
             let sortDesc = () => {this.props.sortColumn(sortColumn, this.props.columns[sortColumn].sort_field, "descending")};
             return (
-                <Bp.Menu>
-                    <Bp.MenuItem icon="sort-asc" onClick={sortAsc} text="Sort Asc"/>
-                    <Bp.MenuItem icon="sort-desc" onClick={sortDesc} text="Sort Desc"/>
-                </Bp.Menu>
+                <Menu>
+                    <MenuItem icon="sort-asc" onClick={sortAsc} text="Sort Asc"/>
+                    <MenuItem icon="sort-desc" onClick={sortDesc} text="Sort Desc"/>
+                </Menu>
             );
         }
-
-
 
     render() {
         let self = this;
         let column_names = Object.keys(this.props.columns);
+        let numRows = this.props.data_list.length;
         let columns = column_names.map((column_name)=> {
             const cellRenderer = self._cellRendererCreator(column_name);
-            const columnHeaderCellRenderer = () => <Bpt.ColumnHeaderCell name={column_name}
-                                                                        menuRenderer={()=>{return(self._renderMenu(column_name))}}/>;
-            return <Bpt.Column cellRenderer={cellRenderer}
+            const columnHeaderCellRenderer = () => <ColumnHeaderCell name={column_name}
+                        menuRenderer={()=>{return(self._renderMenu(column_name))}}/>;
+
+            return <Column cellRenderer={cellRenderer}
                                enableColumnReordering={false}
                                columnHeaderCellRenderer={columnHeaderCellRenderer}
                                key={column_name}
                                name={column_name}/>
         });
         return (
-            <Bpt.Table numRows={this.props.data_list.length}
-                       bodyContextMenuRenderer={(mcontext)=>this.props.renderBodyContextMenu(mcontext, this.props.data_list)}
-                       enableColumnReordering={false}
-                       enableMultipleSelection={true}
-                       defaultRowHeight={23}
-                       selectedRegions={this.props.selectedRegions}
-                       enableRowHeader={false}
-                       columnWidths={this.state.columnWidths}
-                       selectionModes={[Bpt.RegionCardinality.FULL_ROWS, Bpt.RegionCardinality.CELLS]}
-                       onSelection={(regions)=>this.props.onSelection(regions, this.props.data_list)}
-                       >
+            <Table numRows={numRows}
+                   bodyContextMenuRenderer={(mcontext)=>this.props.renderBodyContextMenu(mcontext, this.props.data_list)}
+                   enableColumnReordering={false}
+                   enableColumnResizing={false}
+                   enableMultipleSelection={true}
+                   defaultRowHeight={23}
+                   selectedRegions={this.props.selectedRegions}
+                   enableRowHeader={false}
+                   columnWidths={this.state.columnWidths}
+                   selectionModes={[RegionCardinality.FULL_ROWS, RegionCardinality.CELLS]}
+                   onSelection={(regions)=>this.props.onSelection(regions, this.props.data_list)}
+                   >
                         {columns}
-                </Bpt.Table>
+                </Table>
         )
     }
 }
@@ -328,19 +341,19 @@ class LoadedTileList extends React.Component {
         ));
         return (
             <div id="loaded_tile_widget" className="d-flex flex-row">
-                <Bp.Card>
+                <Card>
                     <h6>
                         Loaded Default
                     </h6>
                         {default_items}
                         {failed_items}
-                </Bp.Card>
-                <Bp.Card style={{marginLeft: 10}}>
+                </Card>
+                <Card style={{marginLeft: 10}}>
                     <h6>
                         Loaded Other
                     </h6>
                         {other_loads}
-                </Bp.Card>
+                </Card>
             </div>
         )
     }
