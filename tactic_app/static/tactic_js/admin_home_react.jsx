@@ -23,8 +23,9 @@ import {AdminPane} from "./administer_pane.js"
 import {SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, getUsableDimensions} from "./sizing_tools.js";
 import {ViewerContext} from "./resource_viewer_context.js";
 import {withErrorDrawer} from "./error_drawer.js";
-import {doBinding} from "./utilities_react.js";
+import {doBinding, guid} from "./utilities_react.js";
 
+window.library_id = guid();
 const MARGIN_SIZE = 17;
 
 let tsocket;
