@@ -1,4 +1,7 @@
 
+import React from "react";
+import PropTypes from 'prop-types';
+
 import {ReactCodemirrorMergeView} from "./react-codemirror-mergeview.js";
 import {Toolbar} from "./blueprint_toolbar.js";
 import {TacticSocket} from "./tactic_socket.js";
@@ -7,8 +10,6 @@ import {handleCallback} from "./communication_react.js"
 import {BpSelect} from "./blueprint_mdata_fields.js";
 
 export{MergeViewerApp, MergeViewerSocket}
-
-let Bp = blueprint;
 
 class MergeViewerSocket extends TacticSocket {
     initialize_socket_stuff() {
@@ -25,7 +26,6 @@ class MergeViewerSocket extends TacticSocket {
         });
     }
 }
-
 
 class MergeViewerApp extends React.Component {
 

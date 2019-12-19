@@ -1,11 +1,16 @@
 
 
+import React from "react";
+import PropTypes from 'prop-types';
+
+import { FormGroup, InputGroup, Button, Switch, HTMLSelect, TextArea } from "@blueprintjs/core";
+import _ from 'lodash';
+
 import { ReactCodemirror } from "./react-codemirror.js";
 import { BpSelect, BpSelectAdvanced } from "./blueprint_mdata_fields.js";
+import { doBinding, propsAreEqual } from "./utilities_react.js";
 
 export { TileForm };
-
-let Bp = blueprint;
 
 let selector_types = ["column_select", "tokenizer_select", "weight_function_select", "cluster_metric", "tile_select", "document_select", "list_select", "collection_select", "function_select", "class_select", "palette_select", "custom_list"];
 
@@ -109,7 +114,7 @@ class TileForm extends React.Component {
                 { className: "form-display-area", onSubmit: this._submitOptions },
                 option_items
             ),
-            React.createElement(Bp.Button, { text: "Submit", intent: "primary", onClick: this._submitOptions })
+            React.createElement(Button, { text: "Submit", intent: "primary", onClick: this._submitOptions })
         );
     }
 
@@ -137,9 +142,9 @@ class TextOption extends React.Component {
     }
     render() {
         return React.createElement(
-            Bp.FormGroup,
+            FormGroup,
             { label: this.props.att_name },
-            React.createElement(Bp.InputGroup, { type: "text", small: false, leftIcon: this.props.leftIcon,
+            React.createElement(InputGroup, { type: "text", small: false, leftIcon: this.props.leftIcon,
                 onChange: this._updateMe, value: this.props.value })
         );
     }
@@ -236,7 +241,7 @@ class BoolOption extends React.Component {
     }
 
     render() {
-        return React.createElement(Bp.Switch, { label: this.props.att_name,
+        return React.createElement(Switch, { label: this.props.att_name,
             checked: this.boolify(this.props.value),
             onChange: this._updateMe,
             innerLabel: "False",
@@ -268,7 +273,7 @@ class CodeAreaOption extends React.Component {
 
     render() {
         return React.createElement(
-            Bp.FormGroup,
+            FormGroup,
             { label: this.props.att_name },
             React.createElement(ReactCodemirror, { handleChange: this._updateMe,
                 code_content: this.props.value,
@@ -300,9 +305,9 @@ class TextAreaOption extends React.Component {
     }
     render() {
         return React.createElement(
-            Bp.FormGroup,
+            FormGroup,
             { label: this.props.att_name },
-            React.createElement(Bp.TextArea, { onChange: this._updateMe,
+            React.createElement(TextArea, { onChange: this._updateMe,
                 small: false, value: this.props.value })
         );
     }
@@ -330,7 +335,7 @@ class SelectOption extends React.Component {
 
     render() {
         return React.createElement(
-            Bp.FormGroup,
+            FormGroup,
             { label: this.props.att_name },
             React.createElement(BpSelect, { onChange: this._updateMe,
                 value: this.props.value,
@@ -387,7 +392,7 @@ class PipeOption extends React.Component {
         let vdict = this._value_dict();
         let full_value = { text: vdict[this.props.value], value: this.props.value, isgroup: false };
         return React.createElement(
-            Bp.FormGroup,
+            FormGroup,
             { label: this.props.att_name },
             React.createElement(BpSelectAdvanced, { onChange: this._updateMe,
                 value: full_value,
@@ -432,10 +437,10 @@ class PipeOptionOld extends React.Component {
 
     render() {
         return React.createElement(
-            Bp.FormGroup,
+            FormGroup,
             { label: this.props.att_name },
             React.createElement(
-                Bp.HTMLSelect,
+                HTMLSelect,
                 { onChange: this._updateMe,
                     value: this.props.value },
                 this.create_groups()

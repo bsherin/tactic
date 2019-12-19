@@ -1,10 +1,14 @@
 
-export { OptionModule, ExportModule };
+
+import React from "react";
+import PropTypes from 'prop-types';
+
+import { Button, Card } from "@blueprintjs/core";
 
 import { Toolbar } from "./blueprint_toolbar.js";
 import { LabeledSelectList, LabeledFormField, BpOrderableTable } from "./blueprint_react_widgets.js";
 
-var Bp = blueprint;
+export { OptionModule, ExportModule };
 
 class OptionModuleForm extends React.Component {
 
@@ -63,7 +67,7 @@ class OptionModuleForm extends React.Component {
                 this.state.type == "custom_list" && React.createElement(LabeledFormField, { label: "Special List", onChange: this.handleSpecialListChange, the_value: this.state.special_list }),
                 this.taggable_types.includes(this.state.type) && React.createElement(LabeledFormField, { label: "Tag", onChange: this.handleTagChange, the_value: this.state.tag })
             ),
-            React.createElement(Bp.Button, { onClick: this.handleSubmit, text: "Create" })
+            React.createElement(Button, { onClick: this.handleSubmit, text: "Create" })
         );
     }
 }
@@ -128,7 +132,7 @@ class OptionModule extends React.Component {
             this.state.active_row = this.props.data_list.length - 1;
         }
         return React.createElement(
-            Bp.Card,
+            Card,
             { elevation: 1, id: "options-pane", className: "d-flex flex-column", style: options_pane_style },
             React.createElement(
                 "div",
@@ -190,7 +194,7 @@ class ExportModuleForm extends React.Component {
                 React.createElement(LabeledFormField, { label: "Name", onChange: this.handleNameChange, the_value: this.state.name }),
                 React.createElement(LabeledFormField, { label: "Tag", onChange: this.handleTagChange, the_value: this.state.tag })
             ),
-            React.createElement(Bp.Button, { onClick: this.handleSubmit, text: "Create" })
+            React.createElement(Button, { onClick: this.handleSubmit, text: "Create" })
         );
     }
 }
@@ -255,7 +259,7 @@ class ExportModule extends React.Component {
             this.state.active_row = this.props.data_list.length - 1;
         }
         return React.createElement(
-            Bp.Card,
+            Card,
             { elevation: 1, id: "exports-pane", className: "d-flex flex-column", style: exports_pane_style },
             React.createElement(
                 "div",

@@ -11,13 +11,14 @@ from tactic_app.communication_utils import read_temp_data, delete_temp_data
 from tactic_app.mongo_accesser import MongoAccessException
 import openpyxl
 from openpyxl.styles import Alignment, Font
+from openpyxl.utils import get_column_letter
 import cStringIO
 import tactic_app
 from tactic_app.file_handling import read_csv_file_to_list, read_tsv_file_to_list, read_txt_file_to_list
 from tactic_app.file_handling import read_freeform_file, read_excel_file
 from tactic_app.users import load_user
 
-from tactic_app.js_source_management import js_source_dict, _develop
+from tactic_app.js_source_management import js_source_dict, _develop, css_source
 
 from tactic_app.resource_manager import ResourceManager, LibraryResourceManager
 global_tile_manager = tactic_app.global_tile_manager
@@ -73,6 +74,7 @@ class CollectionManager(LibraryResourceManager):
                                uses_codemirror="True",
                                is_jupyter="False",
                                version_string=tstring,
+                               css_source=css_source("notebook_app"),
                                module_source=js_source_dict["notebook_app"])
 
     def open_notebook(self, unique_id):
@@ -90,6 +92,7 @@ class CollectionManager(LibraryResourceManager):
                                is_jupyter="False",
                                uses_codemirror="True",
                                version_string=tstring,
+                               css_source=css_source("notebook_app"),
                                module_source=js_source_dict["notebook_app"])
 
     def main(self, collection_name):
@@ -125,6 +128,7 @@ class CollectionManager(LibraryResourceManager):
                                uses_codemirror="True",
                                develop=str(_develop),
                                version_string=tstring,
+                               css_source=css_source("main_app"),
                                module_source=js_source_dict["main_app"])
 
     def rename_me(self, old_name):
@@ -146,7 +150,7 @@ class CollectionManager(LibraryResourceManager):
             if length > max_col_width:
                 length = max_col_width
                 wrap = True
-            col = ws.column_dimensions[column_cells[0].column]
+            col = ws.column_dimensions[get_column_letter(column_cells[0].column)]
             col.width = length
             if wrap:
                 for cell in column_cells:

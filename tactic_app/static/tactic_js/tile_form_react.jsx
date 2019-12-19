@@ -1,11 +1,16 @@
 
 
+import React from "react";
+import PropTypes from 'prop-types';
+
+import { FormGroup, InputGroup, Button, Switch, HTMLSelect, TextArea } from "@blueprintjs/core";
+import _ from 'lodash';
+
 import {ReactCodemirror} from "./react-codemirror.js";
 import {BpSelect, BpSelectAdvanced} from "./blueprint_mdata_fields.js"
+import {doBinding, propsAreEqual} from "./utilities_react.js";
 
 export {TileForm}
-
-let Bp = blueprint;
 
 let selector_types = ["column_select", "tokenizer_select", "weight_function_select",
             "cluster_metric", "tile_select", "document_select", "list_select", "collection_select",
@@ -117,7 +122,7 @@ class TileForm extends React.Component {
                 <form className="form-display-area" onSubmit={this._submitOptions}>
                     {option_items}
                 </form>
-                <Bp.Button text="Submit" intent="primary" onClick={this._submitOptions}/>
+                <Button text="Submit" intent="primary" onClick={this._submitOptions}/>
             </React.Fragment>
         )
     }
@@ -146,10 +151,10 @@ class TextOption extends React.Component {
     }
     render() {
         return (
-            <Bp.FormGroup label={this.props.att_name}>
-                <Bp.InputGroup type="text" small={false} leftIcon={this.props.leftIcon}
+            <FormGroup label={this.props.att_name}>
+                <InputGroup type="text" small={false} leftIcon={this.props.leftIcon}
                                onChange={this._updateMe} value={this.props.value}/>
-            </Bp.FormGroup>
+            </FormGroup>
         )
     }
 }
@@ -259,7 +264,7 @@ class BoolOption extends React.Component {
 
     render() {
         return (
-            <Bp.Switch label={this.props.att_name}
+            <Switch label={this.props.att_name}
                        checked={this.boolify(this.props.value)}
                        onChange={this._updateMe}
                        innerLabel="False"
@@ -294,13 +299,13 @@ class CodeAreaOption extends React.Component {
 
     render() {
         return (
-            <Bp.FormGroup label={this.props.att_name}>
+            <FormGroup label={this.props.att_name}>
                 <ReactCodemirror handleChange={this._updateMe}
                                  code_content={this.props.value}
                                  saveMe={null}
                                  code_container_height={100}
                 />
-            </Bp.FormGroup>
+            </FormGroup>
         )
     }
 }
@@ -328,10 +333,10 @@ class TextAreaOption extends React.Component {
     }
     render() {
         return (
-            <Bp.FormGroup label={this.props.att_name}>
-                <Bp.TextArea onChange={this._updateMe}
+            <FormGroup label={this.props.att_name}>
+                <TextArea onChange={this._updateMe}
                               small={false} value={this.props.value}/>
-            </Bp.FormGroup>
+            </FormGroup>
         )
     }
 }
@@ -361,12 +366,12 @@ class SelectOption extends React.Component {
 
     render() {
         return (
-            <Bp.FormGroup label={this.props.att_name}>
+            <FormGroup label={this.props.att_name}>
                 <BpSelect  onChange={this._updateMe}
                           value={this.props.value}
                            buttonIcon={this.props.buttonIcon}
                             options={this.props.choice_list}/>
-            </Bp.FormGroup>
+            </FormGroup>
         )
     }
 }
@@ -420,12 +425,12 @@ class PipeOption extends React.Component {
         let vdict = this._value_dict();
         let full_value = {text: vdict[this.props.value], value: this.props.value, isgroup: false};
         return (
-            <Bp.FormGroup label={this.props.att_name}>
+            <FormGroup label={this.props.att_name}>
                 <BpSelectAdvanced  onChange={this._updateMe}
                                    value={full_value}
                                    buttonIcon="flow-end"
                                    options={this.create_choice_list()}/>
-            </Bp.FormGroup>
+            </FormGroup>
         )
     }
 }
@@ -465,12 +470,12 @@ class PipeOptionOld extends React.Component {
 
     render() {
         return (
-        <Bp.FormGroup label={this.props.att_name}>
-            <Bp.HTMLSelect onChange={this._updateMe}
+        <FormGroup label={this.props.att_name}>
+            <HTMLSelect onChange={this._updateMe}
                         value={this.props.value}>
                 {this.create_groups()}
-            </Bp.HTMLSelect>
-        </Bp.FormGroup>
+            </HTMLSelect>
+        </FormGroup>
         )
     }
 }

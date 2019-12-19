@@ -1,13 +1,18 @@
+
+import React from "react";
+import PropTypes from 'prop-types';
+
+import { ResizeSensor } from "@blueprintjs/core";
+import {Regions} from "@blueprintjs/table";
+
 import {SearchForm, BpSelectorTable} from "./library_widgets.js";
 import {HorizontalPanes} from "./resizing_layouts.js";
 
 import {postAjax} from "./communication_react.js";
 import {getUsableDimensions} from "./sizing_tools.js";
+import {doBinding} from "./utilities_react.js";
 
 export {AdminPane}
-
-let Bp = blueprint;
-let Bpt = bptable;
 
 class AdminPane extends React.Component {
 
@@ -40,11 +45,11 @@ class AdminPane extends React.Component {
         for (let region of regions) {
             if (region.hasOwnProperty("rows")) {
                 let first_row = region["rows"][0];
-                revised_regions.push(Bpt.Regions.row(first_row));
+                revised_regions.push(Regions.row(first_row));
                 let last_row = region["rows"][1];
                 for (let i=first_row; i<=last_row; ++i) {
                     selected_rows.push(this.state.data_list[i]);
-                    revised_regions.push(Bpt.Regions.row(i));
+                    revised_regions.push(Regions.row(i));
                 }
             }
         }
@@ -365,7 +370,7 @@ class AdminPane extends React.Component {
             </React.Fragment>
         );
         return (
-            <Bp.ResizeSensor onResize={this._handleResize} observeParents={true}>
+            <ResizeSensor onResize={this._handleResize} observeParents={true}>
                 <div ref={this.top_ref} className="d-flex flex-column mt-3" >
                     <ToolbarClass selected_resource={this.props.selected_resource}
                                   list_of_selected={this.props.list_of_selected}
@@ -391,7 +396,7 @@ class AdminPane extends React.Component {
                             />
                       </div>
                 </div>
-            </Bp.ResizeSensor>
+            </ResizeSensor>
         )
     }
 }

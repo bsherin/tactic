@@ -1,16 +1,20 @@
 
-import {SortableComponent} from "./sortable_container.js";
-import {postWithCallback} from "./communication_react.js"
-import {doFlash} from "./toaster.js"
+import React from "react";
+import PropTypes from 'prop-types';
 
-let Rtg = window.ReactTransitionGroup;
-let Bp = blueprint;
-let Shoc = window.react_sortable_hoc;
+import { Icon, Card, ButtonGroup, Spinner } from "@blueprintjs/core";
+import {Transition} from "react-transition-group";
+import { SortableHandle, SortableElement } from 'react-sortable-hoc';
+import _ from 'lodash';
 
 import {TileForm} from "./tile_form_react.js";
 import {GlyphButton} from "./blueprint_react_widgets.js";
 import {DragHandle} from "./resizing_layouts.js"
 
+import {SortableComponent} from "./sortable_container.js";
+import {postWithCallback} from "./communication_react.js"
+import {doFlash} from "./toaster.js"
+import {doBinding, propsAreEqual, arrayMove} from "./utilities_react.js";
 
 export {TileContainer}
 
@@ -218,7 +222,7 @@ class RawSortHandle extends React.Component {
 
     render () {
         return (
-            <span className="tile-name-div" ><Bp.Icon icon="drag-handle-vertical" iconSize={15}/>{this.props.tile_name}</span>
+            <span className="tile-name-div" ><Icon icon="drag-handle-vertical" iconSize={15}/>{this.props.tile_name}</span>
         )
     }
 }
@@ -228,7 +232,7 @@ RawSortHandle.propTypes = {
 };
 
 
-const Shandle = Shoc.sortableHandle(RawSortHandle);
+const Shandle = SortableHandle(RawSortHandle);
 
 class TileComponent extends React.Component {
     constructor(props) {
@@ -617,10 +621,10 @@ class TileComponent extends React.Component {
         let tph_class = this.props.source_changed ? "tile-panel-heading tile-source-changed" : "tile-panel-heading";
         let draghandle_position_dict = {position: "absolute", bottom: 2, right: 1};
         return (
-            <Bp.Card ref={this.my_ref} elevation={2} style={this.main_style} className={tile_class} id={this.props.tile_id}>
+            <Card ref={this.my_ref} elevation={2} style={this.main_style} className={tile_class} id={this.props.tile_id}>
                 <div className={tph_class} >
                     <div className="left-glyphs" ref={this.left_glyphs_ref} style={this.lg_style}>
-                        <Bp.ButtonGroup>
+                        <ButtonGroup>
                         {this.props.shrunk &&
                             <GlyphButton
                                          icon="chevron-right"
@@ -634,12 +638,12 @@ class TileComponent extends React.Component {
                                      handleClick={this._toggleBack}
                                      icon="cog"/>
                          <Shandle tile_name={this.props.tile_name}/>
-                        </Bp.ButtonGroup>
+                        </ButtonGroup>
                     </div>
 
                     <div className="right-glyphs" ref={this.right_glyphs_ref}>
-                        <Bp.ButtonGroup>
-                        {this.props.show_spinner && <Bp.Spinner size={17} />}
+                        <ButtonGroup>
+                        {this.props.show_spinner && <Spinner size={17} />}
 
                         <GlyphButton handleClick={this._toggleTileLog}
                                      tooltip="Show tile container log"
@@ -658,12 +662,12 @@ class TileComponent extends React.Component {
                                      handleClick={this._closeTile}
                                      ttooltip="Remove tile"
                                      icon="trash"/>
-                        </Bp.ButtonGroup>
+                        </ButtonGroup>
                     </div>
                 </div>
                 {!this.props.shrunk &&
                     <div ref={this.body_ref} style={this.panel_body_style} className="tile-body">
-                        <Rtg.Transition in={this.props.show_form} timeout={ANI_DURATION}>
+                        <Transition in={this.props.show_form} timeout={ANI_DURATION}>
                             {state => (
                                 <div className="back" style={composeObjs(this.back_style, this.transitionStylesAltUp[state])}>
                                     <TileForm options={_.cloneDeep(this.props.form_data)}
@@ -672,8 +676,8 @@ class TileComponent extends React.Component {
                                               handleSubmit={this._handleSubmitOptions}/>
                                 </div>
                             )}
-                        </Rtg.Transition>
-                        <Rtg.Transition in={this.props.show_log} timeout={ANI_DURATION}>
+                        </Transition>
+                        <Transition in={this.props.show_log} timeout={ANI_DURATION}>
                             {state => (
                                 <div className="tile-log" style={composeObjs(this.tile_log_style, this.transitionFadeStyles[state])}>
                                     <div className="tile-log-area">
@@ -681,14 +685,14 @@ class TileComponent extends React.Component {
                                     </div>
                                 </div>
                             )}
-                        </Rtg.Transition>
-                        <Rtg.Transition in={show_front} timeout={ANI_DURATION}>
+                        </Transition>
+                        <Transition in={show_front} timeout={ANI_DURATION}>
                             {state => (
                             <div className="front" style={composeObjs(this.front_style, this.transitionStylesAltDown[state])}>
                                 <div className="tile-display-area" style={this.state.tda_style} ref={this.tda_ref} dangerouslySetInnerHTML={front_dict}></div>
                             </div>
                             )}
-                        </Rtg.Transition>
+                        </Transition>
                     </div>
                 }
                 <DragHandle position_dict={draghandle_position_dict}
@@ -697,7 +701,7 @@ class TileComponent extends React.Component {
                             dragEnd={this._stopResize}
                             direction="both"
                             iconSize={15}/>
-            </Bp.Card>
+            </Card>
         )
     }
 }
@@ -728,4 +732,4 @@ TileComponent.defaultProps = {
     javascript_code: null
 };
 
-let STileComponent = Shoc.sortableElement(TileComponent);
+let STileComponent = SortableElement(TileComponent);

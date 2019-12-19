@@ -1,4 +1,15 @@
 
+import "../tactic_css/tactic.scss";
+import "../tactic_css/tactic_table.scss";
+import "../tactic_css/library_home.scss";
+
+import React from "react";
+import * as ReactDOM from 'react-dom'
+import PropTypes from 'prop-types';
+
+import { Tabs, Tab, Tooltip, Icon, Position } from "@blueprintjs/core";
+import {Regions} from "@blueprintjs/table";
+
 import {Toolbar} from "./blueprint_toolbar.js"
 import {TacticSocket} from "./tactic_socket.js"
 import {showConfirmDialogReact} from "./modal_react.js";
@@ -7,14 +18,14 @@ import {render_navbar} from "./blueprint_navbar.js";
 import {handleCallback}  from "./communication_react.js"
 import {withStatus} from "./toaster.js";
 
-let Bp = blueprint;
-let Bpt = bptable;
 
 import {AdminPane} from "./administer_pane.js"
 import {SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, getUsableDimensions} from "./sizing_tools.js";
 import {ViewerContext} from "./resource_viewer_context.js";
 import {withErrorDrawer} from "./error_drawer.js";
+import {doBinding, guid} from "./utilities_react.js";
 
+window.library_id = guid();
 const MARGIN_SIZE = 17;
 
 let tsocket;
@@ -88,7 +99,7 @@ class AdministerHomeApp extends React.Component {
                 search_field_value: "",
                 search_inside_checked: false,
                 search_metadata_checked: false,
-                selectedRegions: [Bpt.Regions.row(0)]
+                selectedRegions: [Regions.row(0)]
             }
         }
         this.state.pane_states.container.selected_resource =
@@ -170,21 +181,21 @@ class AdministerHomeApp extends React.Component {
         return (
             <ViewerContext.Provider value={{readOnly: false}}>
                 <div className="pane-holder" ref={this.top_ref} style={outer_style}>
-                    <Bp.Tabs id="the_container" style={{marginTop: 100}}
+                    <Tabs id="the_container" style={{marginTop: 100}}
                              selectedTabId={this.state.selected_tab_id}
                              renderActiveTabPanelOnly={true}
                              vertical={true} large={true} onChange={this._handleTabChange}>
-                        <Bp.Tab id="containers-pane" panel={container_pane}>
-                            <Bp.Tooltip content="Containers" position={Bp.Position.RIGHT}>
-                                <Bp.Icon icon="box" iconSize={20} tabIndex={-1} color={this.getIconColor("collections-pane")}/>
-                            </Bp.Tooltip>
-                        </Bp.Tab>
-                        <Bp.Tab id="users-pane" panel={user_pane}>
-                            <Bp.Tooltip content="users" position={Bp.Position.RIGHT}>
-                                <Bp.Icon icon="user" iconSize={20} tabIndex={-1} color={this.getIconColor("collections-pane")}/>
-                            </Bp.Tooltip>
-                        </Bp.Tab>
-                    </Bp.Tabs>
+                        <Tab id="containers-pane" panel={container_pane}>
+                            <Tooltip content="Containers" position={Position.RIGHT}>
+                                <Icon icon="box" iconSize={20} tabIndex={-1} color={this.getIconColor("collections-pane")}/>
+                            </Tooltip>
+                        </Tab>
+                        <Tab id="users-pane" panel={user_pane}>
+                            <Tooltip content="users" position={Position.RIGHT}>
+                                <Icon icon="user" iconSize={20} tabIndex={-1} color={this.getIconColor("collections-pane")}/>
+                            </Tooltip>
+                        </Tab>
+                    </Tabs>
                 </div>
             </ViewerContext.Provider>
         )

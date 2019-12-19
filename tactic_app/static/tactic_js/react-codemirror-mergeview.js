@@ -1,4 +1,8 @@
 
+
+import PropTypes from 'prop-types';
+import React from "react";
+
 export { ReactCodemirrorMergeView };
 
 class ReactCodemirrorMergeView extends React.Component {

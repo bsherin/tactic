@@ -1,4 +1,5 @@
 
+
 function start_post_load() {
     $("#console").sortable({
         handle: '.card-header',

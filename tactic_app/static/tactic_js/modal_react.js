@@ -1,9 +1,14 @@
 
-export { showModalReact, showConfirmDialogReact, showSelectDialog, showInformDialogReact };
-import { BpSelect } from "./blueprint_mdata_fields.js";
+import React from "react";
+import * as ReactDOM from 'react-dom';
+import PropTypes from 'prop-types';
 
-var Bp = blueprint;
-var Bps = bpselect;
+import { Checkbox, Dialog, FormGroup, Classes, Button, InputGroup, Intent } from "@blueprintjs/core";
+
+import { BpSelect } from "./blueprint_mdata_fields.js";
+import { doBinding } from "./utilities_react.js";
+
+export { showModalReact, showConfirmDialogReact, showSelectDialog, showInformDialogReact };
 
 class ModalDialog extends React.Component {
 
@@ -81,7 +86,7 @@ class ModalDialog extends React.Component {
         let checkbox_items = [];
         if (this.props.checkboxes != null && this.props.checkboxes.length != 0) {
             for (let checkbox of this.props.checkboxes) {
-                let new_item = React.createElement(Bp.Checkbox, { checked: this.state.checkbox_states[checkbox.checkname],
+                let new_item = React.createElement(Checkbox, { checked: this.state.checkbox_states[checkbox.checkname],
                     label: checkbox.checktext,
                     id: checkbox.checkname,
                     key: checkbox.checkname,
@@ -91,7 +96,7 @@ class ModalDialog extends React.Component {
             }
         }
         return React.createElement(
-            Bp.Dialog,
+            Dialog,
             { isOpen: this.state.show,
                 title: this.props.title,
                 onClose: this._cancelHandler,
@@ -100,35 +105,35 @@ class ModalDialog extends React.Component {
                 },
                 canEscapeKeyClose: true },
             React.createElement(
-                "form",
+                'form',
                 { onSubmit: this._submitHandler },
                 React.createElement(
-                    "div",
-                    { className: Bp.Classes.DIALOG_BODY },
+                    'div',
+                    { className: Classes.DIALOG_BODY },
                     React.createElement(
-                        Bp.FormGroup,
+                        FormGroup,
                         { label: this.props.field_title, helperText: this.state.warning_text },
-                        React.createElement(Bp.InputGroup, { inputRef: this._refHandler,
+                        React.createElement(InputGroup, { inputRef: this._refHandler,
                             onChange: this._changeHandler,
                             value: this.state.current_value })
                     ),
                     checkbox_items.length != 0 && checkbox_items
                 ),
                 React.createElement(
-                    "div",
-                    { className: Bp.Classes.DIALOG_FOOTER },
+                    'div',
+                    { className: Classes.DIALOG_FOOTER },
                     React.createElement(
-                        "div",
-                        { className: Bp.Classes.DIALOG_FOOTER_ACTIONS },
+                        'div',
+                        { className: Classes.DIALOG_FOOTER_ACTIONS },
                         React.createElement(
-                            Bp.Button,
+                            Button,
                             { onClick: this._cancelHandler },
-                            "Cancel"
+                            'Cancel'
                         ),
                         React.createElement(
-                            Bp.Button,
-                            { intent: Bp.Intent.PRIMARY, onClick: this._submitHandler },
-                            "Submit"
+                            Button,
+                            { intent: Intent.PRIMARY, onClick: this._submitHandler },
+                            'Submit'
                         )
                     )
                 )
@@ -206,35 +211,35 @@ class SelectDialog extends React.Component {
 
     render() {
         return React.createElement(
-            Bp.Dialog,
+            Dialog,
             { isOpen: this.state.show,
                 title: this.props.title,
                 onClose: this._cancelHandler,
                 canEscapeKeyClose: true },
             React.createElement(
-                "div",
-                { className: Bp.Classes.DIALOG_BODY },
+                'div',
+                { className: Classes.DIALOG_BODY },
                 React.createElement(
-                    Bp.FormGroup,
+                    FormGroup,
                     { title: this.props.select_label },
                     React.createElement(BpSelect, { options: this.props.option_list, onChange: this._handleChange, value: this.state.value })
                 )
             ),
             React.createElement(
-                "div",
-                { className: Bp.Classes.DIALOG_FOOTER },
+                'div',
+                { className: Classes.DIALOG_FOOTER },
                 React.createElement(
-                    "div",
-                    { className: Bp.Classes.DIALOG_FOOTER_ACTIONS },
+                    'div',
+                    { className: Classes.DIALOG_FOOTER_ACTIONS },
                     React.createElement(
-                        Bp.Button,
+                        Button,
                         { onClick: this._cancelHandler },
-                        "Cancel"
+                        'Cancel'
                     ),
                     React.createElement(
-                        Bp.Button,
-                        { intent: Bp.Intent.PRIMARY, onClick: this._submitHandler },
-                        "Submit"
+                        Button,
+                        { intent: Intent.PRIMARY, onClick: this._submitHandler },
+                        'Submit'
                     )
                 )
             )
@@ -296,35 +301,35 @@ class ConfirmDialog extends React.Component {
 
     render() {
         return React.createElement(
-            Bp.Dialog,
+            Dialog,
             { isOpen: this.state.show,
                 title: this.props.title,
                 onClose: this._cancelHandler,
                 canEscapeKeyClose: true },
             React.createElement(
-                "div",
-                { className: Bp.Classes.DIALOG_BODY },
+                'div',
+                { className: Classes.DIALOG_BODY },
                 React.createElement(
-                    "p",
+                    'p',
                     null,
                     this.props.text_body
                 )
             ),
             React.createElement(
-                "div",
-                { className: Bp.Classes.DIALOG_FOOTER },
+                'div',
+                { className: Classes.DIALOG_FOOTER },
                 React.createElement(
-                    "div",
-                    { className: Bp.Classes.DIALOG_FOOTER_ACTIONS },
+                    'div',
+                    { className: Classes.DIALOG_FOOTER_ACTIONS },
                     React.createElement(
-                        Bp.Button,
+                        Button,
                         { onClick: this._cancelHandler },
-                        "Cancel"
+                        'Cancel'
                     ),
                     React.createElement(
-                        Bp.Button,
-                        { intent: Bp.Intent.PRIMARY, onClick: this._submitHandler },
-                        "Submit"
+                        Button,
+                        { intent: Intent.PRIMARY, onClick: this._submitHandler },
+                        'Submit'
                     )
                 )
             )
@@ -377,30 +382,30 @@ class InformDialog extends React.Component {
 
     render() {
         return React.createElement(
-            Bp.Dialog,
+            Dialog,
             { isOpen: this.state.show,
                 title: this.props.title,
                 onClose: this._closeHandler,
                 canEscapeKeyClose: true },
             React.createElement(
-                "div",
-                { className: Bp.Classes.DIALOG_BODY },
+                'div',
+                { className: Classes.DIALOG_BODY },
                 React.createElement(
-                    "p",
+                    'p',
                     null,
                     this.props.text_body
                 )
             ),
             React.createElement(
-                "div",
-                { className: Bp.Classes.DIALOG_FOOTER },
+                'div',
+                { className: Classes.DIALOG_FOOTER },
                 React.createElement(
-                    "div",
-                    { className: Bp.Classes.DIALOG_FOOTER_ACTIONS },
+                    'div',
+                    { className: Classes.DIALOG_FOOTER_ACTIONS },
                     React.createElement(
-                        Bp.Button,
+                        Button,
                         { onClick: this._closeHandler },
-                        "Okay"
+                        'Okay'
                     )
                 )
             )

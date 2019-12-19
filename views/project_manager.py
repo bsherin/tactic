@@ -16,7 +16,7 @@ global_tile_manager = tactic_app.global_tile_manager
 repository_user = User.get_user_by_username("repository")
 from tactic_app.file_handling import read_freeform_file
 
-from tactic_app.js_source_management import js_source_dict, _develop
+from tactic_app.js_source_management import js_source_dict, _develop, css_source
 
 import datetime
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
@@ -130,9 +130,11 @@ class ProjectManager(LibraryResourceManager):
         if doc_type in ['notebook', 'jupyter']:
             template_name = "main_notebook_react.html"
             data_dict["module_source"] = js_source_dict["notebook_app"]
+            data_dict["css_source"] = css_source("notebook_app")
         else:
             template_name = "main_react.html"
             data_dict["module_source"] = js_source_dict["main_app"]
+            data_dict["css_source"] = css_source("main_app")
 
         return render_template(template_name, **data_dict)
 

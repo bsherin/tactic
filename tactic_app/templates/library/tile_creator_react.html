@@ -3,7 +3,6 @@
 {% block title %}{{resource_name}}{% endblock %}
 
 {% block styles %}
-    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/loader.css', version_string=tstring)}}">
 {% endblock %}
 
 {% block page_content %}
@@ -18,15 +17,12 @@
 
     <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
     <script src="{{url_for('static', filename='js/javascript.js')}}"></script>
-    <script src="{{url_for('static', filename='js/react_tools.js')}}"></script>
-    <script src="{{url_for('static', filename='js/showdown.js')}}"></script>
     <script type="module" src="{{url_for('static', filename=module_source, v=version_string)}}"></script>
     <script>
         window.user_id = "{{current_user.get_id()}}";
         window.module_name = "{{module_name}}";
         window.use_ssl = "{{use_ssl}}"=="True";
         window.module_viewer_id = "{{module_viewer_id}}";
-        window.main_id = window.module_viewer_id;
         window.tile_collection_name = "{{tile_collection_name}}";
         window.version_string = "{{tstring}}";
     </script>

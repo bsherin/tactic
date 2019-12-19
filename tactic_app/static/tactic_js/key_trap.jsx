@@ -1,4 +1,9 @@
 
+import React from "react";
+import PropTypes from 'prop-types';
+
+import {doBinding} from "./utilities_react.js";
+
 export {KeyTrap}
 
 class KeyTrap extends React.Component {

@@ -1,20 +1,27 @@
 
+
+import "../tactic_css/tactic.scss";
+import "../tactic_css/tactic_table.scss";
+import "../tactic_css/library_home.scss";
+
+import React from "react";
+import * as ReactDOM from 'react-dom'
+import PropTypes from 'prop-types';
+
+import { Tabs, Tab, Tooltip, Icon, Position } from "@blueprintjs/core";
+
+
 import {Toolbar} from "./blueprint_toolbar.js"
 import {TacticSocket} from "./tactic_socket.js"
-
 import {render_navbar} from "./blueprint_navbar.js";
-
 import {handleCallback} from "./communication_react.js"
-
 import {doFlash} from "./toaster.js"
-
-let Bp = blueprint;
-
 import {LibraryPane} from "./library_pane.js"
-import {BOTTOM_MARGIN, getUsableDimensions, SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT} from "./sizing_tools.js";
+import {getUsableDimensions, SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT} from "./sizing_tools.js";
 import {ViewerContext} from "./resource_viewer_context.js";
 import {withStatus} from "./toaster.js";
 import {withErrorDrawer} from "./error_drawer.js";
+import {doBinding} from "./utilities_react.js";
 
 const MARGIN_SIZE = 17;
 
@@ -194,36 +201,36 @@ class RepositoryHomeApp extends React.Component {
         return (
             <ViewerContext.Provider value={{readOnly: true}}>
                 <div id="repository_container" className="pane-holder" ref={this.top_ref} style={outer_style}>
-                    <Bp.Tabs id="the_container" style={{marginTop: 100}}
+                    <Tabs id="the_container" style={{marginTop: 100}}
                              selectedTabId={this.state.selected_tab_id}
                              renderActiveTabPanelOnly={true}
                              vertical={true} large={true} onChange={this._handleTabChange}>
-                        <Bp.Tab id="collections-pane" panel={collection_pane}>
-                            <Bp.Tooltip content="Collections" position={Bp.Position.RIGHT}>
-                                <Bp.Icon icon="box" iconSize={20} tabIndex={-1} color={this.getIconColor("collections-pane")}/>
-                            </Bp.Tooltip>
-                        </Bp.Tab>
-                        <Bp.Tab id="projects-pane" panel={projects_pane}>
-                            <Bp.Tooltip content="Projects" position={Bp.Position.RIGHT}>
-                                <Bp.Icon icon="projects" iconSize={20} tabIndex={-1} color={this.getIconColor("projects-pane")}/>
-                            </Bp.Tooltip>
-                        </Bp.Tab>
-                        <Bp.Tab id="tiles-pane" panel={tiles_pane}>
-                            <Bp.Tooltip content="Tiles" position={Bp.Position.RIGHT}>
-                                <Bp.Icon icon="application" iconSize={20} tabIndex={-1} color={this.getIconColor("tiles-pane")}/>
-                            </Bp.Tooltip>
-                        </Bp.Tab>
-                        <Bp.Tab id="lists-pane" panel={lists_pane}>
-                            <Bp.Tooltip content="Lists" position={Bp.Position.RIGHT}>
-                                <Bp.Icon icon="list" iconSize={20} tabIndex={-1} color={this.getIconColor("lists-pane")}/>
-                            </Bp.Tooltip>
-                        </Bp.Tab>
-                        <Bp.Tab id="code-pane" panel={code_pane}>
-                            <Bp.Tooltip content="Code" position={Bp.Position.RIGHT}>
-                                <Bp.Icon icon="code" tabIndex={-1} color={this.getIconColor("code-pane")}/>
-                            </Bp.Tooltip>
-                        </Bp.Tab>
-                    </Bp.Tabs>
+                        <Tab id="collections-pane" panel={collection_pane}>
+                            <Tooltip content="Collections" position={Position.RIGHT}>
+                                <Icon icon="box" iconSize={20} tabIndex={-1} color={this.getIconColor("collections-pane")}/>
+                            </Tooltip>
+                        </Tab>
+                        <Tab id="projects-pane" panel={projects_pane}>
+                            <Tooltip content="Projects" position={Position.RIGHT}>
+                                <Icon icon="projects" iconSize={20} tabIndex={-1} color={this.getIconColor("projects-pane")}/>
+                            </Tooltip>
+                        </Tab>
+                        <Tab id="tiles-pane" panel={tiles_pane}>
+                            <Tooltip content="Tiles" position={Position.RIGHT}>
+                                <Icon icon="application" iconSize={20} tabIndex={-1} color={this.getIconColor("tiles-pane")}/>
+                            </Tooltip>
+                        </Tab>
+                        <Tab id="lists-pane" panel={lists_pane}>
+                            <Tooltip content="Lists" position={Position.RIGHT}>
+                                <Icon icon="list" iconSize={20} tabIndex={-1} color={this.getIconColor("lists-pane")}/>
+                            </Tooltip>
+                        </Tab>
+                        <Tab id="code-pane" panel={code_pane}>
+                            <Tooltip content="Code" position={Position.RIGHT}>
+                                <Icon icon="code" tabIndex={-1} color={this.getIconColor("code-pane")}/>
+                            </Tooltip>
+                        </Tab>
+                    </Tabs>
                 </div>
             </ViewerContext.Provider>
         )

@@ -1,17 +1,22 @@
 
+
+import React from "react";
+import PropTypes from 'prop-types';
+
+import { ResizeSensor } from "@blueprintjs/core";
+
 import { ResourceviewerToolbar } from "./blueprint_toolbar.js";
 import { CombinedMetadata } from "./blueprint_mdata_fields.js";
 import { showModalReact } from "./modal_react.js";
 import { TacticSocket } from "./tactic_socket.js";
 import { HorizontalPanes } from "./resizing_layouts.js";
 import { handleCallback, postAjax } from "./communication_react.js";
+import { doBinding } from "./utilities_react.js";
 
 import { doFlash, doFlashAlways } from "./toaster.js";
 import { getUsableDimensions } from "./sizing_tools.js";
 
 export { ResourceViewerApp, ResourceViewerSocket, copyToLibrary, sendToRepository };
-
-var Bp = blueprint;
 
 class ResourceViewerSocket extends TacticSocket {
     initialize_socket_stuff() {
@@ -121,7 +126,7 @@ class ResourceViewerApp extends React.Component {
             res_type: this.props.res_type });
 
         return React.createElement(
-            Bp.ResizeSensor,
+            ResizeSensor,
             { onResize: this._handleResize, observeParents: true },
             React.createElement(HorizontalPanes, { available_width: this.state.available_width,
                 available_height: this.state.available_height,

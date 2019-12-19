@@ -1,5 +1,13 @@
+
+
+import React from "react";
+import PropTypes from 'prop-types';
+
+import { Button, MenuItem, Menu, ButtonGroup, Popover, ControlGroup, FileInput } from "@blueprintjs/core";
+
 import { KeyTrap } from "./key_trap.js";
 import { withTooltip } from "./blueprint_react_widgets.js";
+import { doBinding } from "./utilities_react.js";
 
 export { Toolbar, ToolbarButton, Namebutton, ResourceviewerToolbar };
 import { showModalReact } from "./modal_react.js";
@@ -7,8 +15,6 @@ import { showModalReact } from "./modal_react.js";
 import { postAjax } from "./communication_react.js";
 
 const default_button_class = "btn-outline-secondary";
-
-var Bp = blueprint;
 
 const intent_colors = {
     danger: "#c23030",
@@ -38,7 +44,7 @@ class ToolbarButton extends React.Component {
     render() {
         if (this.props.show_text) {
             let style = { flexDirection: "column", fontSize: 8, padding: "5px 8px", width: 42, height: 42 };
-            return React.createElement(Bp.Button, {
+            return React.createElement(Button, {
                 text: this.props.name_text,
                 icon: this.props.icon_name
                 // intent={this.props.intent == "regular" ? "primary" : this.props.intent}
@@ -49,7 +55,7 @@ class ToolbarButton extends React.Component {
                 className: "bp-toolbar-button bp3-elevation-0"
             });
         } else {
-            return React.createElement(Bp.Button, {
+            return React.createElement(Button, {
                 icon: this.props.icon_name
                 // intent={this.props.intent == "regular" ? "primary" : this.props.intent}
                 , large: false,
@@ -86,20 +92,20 @@ class PopupButton extends React.Component {
     }
 
     render() {
-        let menu_items = this.props.option_list.map((opt, index) => React.createElement(Bp.MenuItem, { key: opt.opt_name, onClick: opt.opt_func, icon: opt.opt_icon, text: opt.opt_name }));
+        let menu_items = this.props.option_list.map((opt, index) => React.createElement(MenuItem, { key: opt.opt_name, onClick: opt.opt_func, icon: opt.opt_icon, text: opt.opt_name }));
         let the_menu = React.createElement(
-            Bp.Menu,
+            Menu,
             null,
             menu_items,
             " "
         );
         return React.createElement(
-            Bp.ButtonGroup,
+            ButtonGroup,
             null,
             React.createElement(
-                Bp.Popover,
+                Popover,
                 { content: the_menu },
-                React.createElement(Bp.Button, { id: this.props.name, text: this.props.name, icon: this.props.icon_name })
+                React.createElement(Button, { id: this.props.name, text: this.props.name, icon: this.props.icon_name })
             )
         );
     }
@@ -150,7 +156,7 @@ class FileAdderButton extends React.Component {
             React.Fragment,
             null,
             React.createElement(
-                Bp.ControlGroup,
+                ControlGroup,
                 null,
                 React.createElement(ToolbarButton, { name_text: this.props.name_text,
                     icon_name: this.props.icon_name
@@ -159,7 +165,7 @@ class FileAdderButton extends React.Component {
                     click_handler: this._do_submit,
                     tooltip: this.props.tooltip
                 }),
-                React.createElement(Bp.FileInput, { large: false,
+                React.createElement(FileInput, { large: false,
                     text: this.state.the_text,
                     style: file_input_style,
                     hasSelection: this.state.hasSelection,
@@ -226,7 +232,7 @@ class Toolbar extends React.Component {
         var group_counter = 0;
         if (this.props.popup_buttons != null && this.props.popup_buttons.length != 0) {
             let popup_items = this.props.popup_buttons.map((button, index) => React.createElement(
-                Bp.ButtonGroup,
+                ButtonGroup,
                 { className: "toolbar-button-group", role: "group", key: "popup_group" + String(index) },
                 React.createElement(PopupButton, { name: button.name,
                     key: button.name,
@@ -245,7 +251,7 @@ class Toolbar extends React.Component {
                 intent: button.hasOwnProperty("intent") ? button.intent : "regular",
                 key: index }));
             items.push(React.createElement(
-                Bp.ButtonGroup,
+                ButtonGroup,
                 { large: false, style: { justifyContent: "center" }, className: "toolbar-button-group", role: "group", key: group_counter },
                 group_items
             ));
@@ -269,7 +275,7 @@ class Toolbar extends React.Component {
                 key: index
             }));
             items.push(React.createElement(
-                Bp.ButtonGroup,
+                ButtonGroup,
                 { style: { justifyContent: "center" }, className: "toolbar-button-group", role: "group", key: group_counter },
                 file_adder_items
             ));
@@ -357,7 +363,7 @@ class Namebutton extends React.Component {
         let name = this.props.handleRename == null ? this.state.current_name : this.props.resource_name;
         let style = { fontSize: 20 };
         return React.createElement(
-            Bp.Button,
+            Button,
             { id: "rename-button",
                 large: true,
                 minimal: true,

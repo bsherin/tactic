@@ -1,11 +1,16 @@
 
+
+import React from "react";
+import PropTypes from 'prop-types';
+
+import { Text, FormGroup, Spinner, InputGroup, ButtonGroup, Button, Card } from "@blueprintjs/core";
+
 import {GlyphButton} from "./blueprint_react_widgets.js";
 import {ReactCodemirror} from "./react-codemirror.js";
 import {BpSelect} from "./blueprint_mdata_fields.js";
+import {doBinding, propsAreEqual} from "./utilities_react.js";
 
 export {MainTableCard, MainTableCardHeader, FreeformBody}
-
-let Bp = blueprint;
 
 class FreeformBody extends React.Component{
     constructor(props) {
@@ -161,7 +166,7 @@ class MainTableCardHeader extends React.Component {
     render () {
         let heading_right_opacity = this.state.hide_right_element ? 0 : 100;
         let select_style = {height: 30, maxWidth: 250};
-        let doc_button_text = <Bp.Text ellipsize={true}>{this.props.current_doc_name}</Bp.Text>;
+        let doc_button_text = <Text ellipsize={true}>{this.props.current_doc_name}</Text>;
         return (
             <div className="d-flex pl-2 pr-2 justify-content-between align-baseline main-heading" style={{height: 50}}>
                 <div id="heading-left" ref={this.heading_left_ref} className="d-flex flex-column justify-content-around">
@@ -169,7 +174,7 @@ class MainTableCardHeader extends React.Component {
                         <GlyphButton handleClick={this.props.toggleShrink} icon="minimize"/>
                         <div className="d-flex flex-column justify-content-around">
                             <form className="d-flex flex-row">
-                                <Bp.FormGroup label={this.props.short_collection_name}
+                                <FormGroup label={this.props.short_collection_name}
                                               inline={true}
                                               style={{marginBottom: 0, marginLeft: 5, marginRight: 10}}>
                                     <BpSelect options={this.props.doc_names}
@@ -177,9 +182,9 @@ class MainTableCardHeader extends React.Component {
                                               buttonStyle={select_style}
                                               buttonTextObject={doc_button_text}
                                               value={this.props.current_doc_name}/>
-                                </Bp.FormGroup>
+                                </FormGroup>
                                 {this.props.show_table_spinner &&
-                                    <Bp.Spinner size={15} />}
+                                    <Spinner size={15} />}
                             </form>
                         </div>
                     </div>
@@ -187,7 +192,7 @@ class MainTableCardHeader extends React.Component {
                 </div>
                 <div id="heading-right" ref={this.heading_right_ref} style={{opacity: heading_right_opacity}} className="d-flex flex-column justify-content-around">
                     <form onSubmit={this._handleSubmit} className="d-flex flex-row">
-                            <Bp.InputGroup type="search"
+                            <InputGroup type="search"
                                            leftIcon="search"
                                            placeholder="Search"
                                            value={!this.props.search_text ? "" : this.props.search_text}
@@ -195,16 +200,16 @@ class MainTableCardHeader extends React.Component {
                                            autoCapitalize="none"
                                            autoCorrect="off"
                                            className="mr-2"/>
-                           <Bp.ButtonGroup>
+                           <ButtonGroup>
                                 {this.props.show_filter_button &&
-                                    <Bp.Button onClick={this._handleFilter}>
+                                    <Button onClick={this._handleFilter}>
                                         Filter
-                                    </Bp.Button>
+                                    </Button>
                                 }
-                                <Bp.Button onClick={this._handleUnFilter}>
+                                <Button onClick={this._handleUnFilter}>
                                     Clear
-                                </Bp.Button>
-                           </Bp.ButtonGroup>
+                                </Button>
+                           </ButtonGroup>
                     </form>
                 </div>
             </div>
@@ -249,12 +254,12 @@ class MainTableCard extends React.Component {
 
     render () {
         return (
-            <Bp.Card id="main-panel" elevation={2}>
+            <Card id="main-panel" elevation={2}>
                 {this.props.card_header}
                 <div  id="table-wrapper">
                     {this.props.card_body}
                 </div>
-            </Bp.Card>
+            </Card>
         )
     }
 }

@@ -1,6 +1,10 @@
 
-export {ReactCodemirror}
+import React from "react";
+import PropTypes from 'prop-types';
+
 import {postAjax} from "./communication_react.js"
+
+export {ReactCodemirror}
 
 class ReactCodemirror extends React.Component {
 

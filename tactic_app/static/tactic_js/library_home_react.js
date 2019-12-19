@@ -1,5 +1,16 @@
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
+import "../tactic_css/tactic.scss";
+import "../tactic_css/tactic_table.scss";
+import "../tactic_css/library_home.scss";
+
+import React from "react";
+import * as ReactDOM from 'react-dom';
+import PropTypes from 'prop-types';
+
+import { Tabs, Tab, Tooltip, Icon, Position } from "@blueprintjs/core";
+import { Regions } from "@blueprintjs/table";
+
 import { showModalReact } from "./modal_react.js";
 import { Toolbar } from "./blueprint_toolbar.js";
 import { TacticSocket } from "./tactic_socket.js";
@@ -7,17 +18,15 @@ import { render_navbar } from "./blueprint_navbar.js";
 import { handleCallback, postAjaxPromise, postAjaxUploadPromise, postWithCallbackNoMain } from "./communication_react.js";
 import { doFlash } from "./toaster.js";
 import { ViewerContext } from "./resource_viewer_context.js";
-
-var Bp = blueprint;
-let Bpt = bptable;
-
 import { LibraryPane } from "./library_pane.js";
 import { LoadedTileList } from "./library_widgets.js";
 import { SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, getUsableDimensions } from "./sizing_tools.js";
 import { withStatus } from "./toaster.js";
 import { withErrorDrawer } from "./error_drawer.js";
 import { KeyTrap } from "./key_trap.js";
+import { doBinding, guid } from "./utilities_react.js";
 
+window.library_id = guid();
 const MARGIN_SIZE = 17;
 
 let tsocket;
@@ -81,7 +90,7 @@ class LibraryHomeApp extends React.Component {
                 search_field_value: "",
                 search_inside_checked: false,
                 search_metadata_checked: false,
-                selectedRegions: [Bpt.Regions.row(0)]
+                selectedRegions: [Regions.row(0)]
             };
         }
         this.top_ref = React.createRef();
@@ -207,54 +216,54 @@ class LibraryHomeApp extends React.Component {
                 "div",
                 { className: "pane-holder", ref: this.top_ref, style: outer_style },
                 React.createElement(
-                    Bp.Tabs,
+                    Tabs,
                     { id: "the_container", style: { marginTop: 100, height: "100%" },
                         selectedTabId: this.state.selected_tab_id,
                         renderActiveTabPanelOnly: true,
                         vertical: true, large: true, onChange: this._handleTabChange },
                     React.createElement(
-                        Bp.Tab,
+                        Tab,
                         { id: "collections-pane", panel: collection_pane },
                         React.createElement(
-                            Bp.Tooltip,
-                            { content: "Collections", position: Bp.Position.RIGHT, intent: "warning" },
-                            React.createElement(Bp.Icon, { icon: "database", iconSize: 20, tabIndex: -1, color: this.getIconColor("collections-pane") })
+                            Tooltip,
+                            { content: "Collections", position: Position.RIGHT, intent: "warning" },
+                            React.createElement(Icon, { icon: "database", iconSize: 20, tabIndex: -1, color: this.getIconColor("collections-pane") })
                         )
                     ),
                     React.createElement(
-                        Bp.Tab,
+                        Tab,
                         { id: "projects-pane", panel: projects_pane },
                         React.createElement(
-                            Bp.Tooltip,
-                            { content: "Projects", position: Bp.Position.RIGHT, intent: "warning" },
-                            React.createElement(Bp.Icon, { icon: "projects", iconSize: 20, tabIndex: -1, color: this.getIconColor("projects-pane") })
+                            Tooltip,
+                            { content: "Projects", position: Position.RIGHT, intent: "warning" },
+                            React.createElement(Icon, { icon: "projects", iconSize: 20, tabIndex: -1, color: this.getIconColor("projects-pane") })
                         )
                     ),
                     React.createElement(
-                        Bp.Tab,
+                        Tab,
                         { id: "tiles-pane", panel: tiles_pane },
                         React.createElement(
-                            Bp.Tooltip,
-                            { content: "Tiles", position: Bp.Position.RIGHT, intent: "warning" },
-                            React.createElement(Bp.Icon, { icon: "application", iconSize: 20, tabIndex: -1, color: this.getIconColor("tiles-pane") })
+                            Tooltip,
+                            { content: "Tiles", position: Position.RIGHT, intent: "warning" },
+                            React.createElement(Icon, { icon: "application", iconSize: 20, tabIndex: -1, color: this.getIconColor("tiles-pane") })
                         )
                     ),
                     React.createElement(
-                        Bp.Tab,
+                        Tab,
                         { id: "lists-pane", panel: lists_pane },
                         React.createElement(
-                            Bp.Tooltip,
-                            { content: "Lists", position: Bp.Position.RIGHT, intent: "warning" },
-                            React.createElement(Bp.Icon, { icon: "list", iconSize: 20, tabIndex: -1, color: this.getIconColor("lists-pane") })
+                            Tooltip,
+                            { content: "Lists", position: Position.RIGHT, intent: "warning" },
+                            React.createElement(Icon, { icon: "list", iconSize: 20, tabIndex: -1, color: this.getIconColor("lists-pane") })
                         )
                     ),
                     React.createElement(
-                        Bp.Tab,
+                        Tab,
                         { id: "code-pane", panel: code_pane },
                         React.createElement(
-                            Bp.Tooltip,
-                            { content: "Code", position: Bp.Position.RIGHT, intent: "warning" },
-                            React.createElement(Bp.Icon, { icon: "code", iconSize: 20, tabIndex: -1, color: this.getIconColor("code-pane") })
+                            Tooltip,
+                            { content: "Code", position: Position.RIGHT, intent: "warning" },
+                            React.createElement(Icon, { icon: "code", iconSize: 20, tabIndex: -1, color: this.getIconColor("code-pane") })
                         )
                     )
                 )
