@@ -1,3 +1,11 @@
+
+import React from "react";
+import PropTypes from 'prop-types';
+
+import { Menu, MenuItem, Button, Collapse, ResizeSensor } from "@blueprintjs/core";
+import {Regions} from "@blueprintjs/table";
+import _ from 'lodash';
+
 import {get_all_parent_tags, TagButtonList} from "./tag_buttons_react.js";
 import {CombinedMetadata} from "./blueprint_mdata_fields.js";
 import {SearchForm, BpSelectorTable, LibraryOmnibar} from "./library_widgets.js";
@@ -7,11 +15,9 @@ import {postAjax, postAjaxPromise} from "./communication_react.js"
 import {getUsableDimensions} from "./sizing_tools.js"
 import {doFlash} from "./toaster.js"
 import {KeyTrap} from "./key_trap.js";
+import {doBinding} from "./utilities_react.js";
 
 export {LibraryPane}
-
-let Bp = blueprint;
-let Bpt = bptable;
 
 
 class BodyMenu extends React.Component {
@@ -24,9 +30,9 @@ class BodyMenu extends React.Component {
         let disabled = false;
         let menu_items = this.props.items.map((item, index)=> {
                 if (item.text == "__divider__") {
-                    return <Bp.Menu.Divider key={index}/>
+                    return <Menu.Divider key={index}/>
                 } else {
-                    return (<Bp.MenuItem icon={item.icon} disabled={disabled}
+                    return (<MenuItem icon={item.icon} disabled={disabled}
                                          onClick={() => item.onClick(this.props.selected_rows[0].name)}
                                          intent={this.getIntent(item)}
                                          key={item.text}
@@ -35,10 +41,10 @@ class BodyMenu extends React.Component {
             }
         );
         return (
-            <Bp.Menu>
-                <Bp.Menu.Divider title={this.props.selected_rows[0].name} className="context-menu-header"/>
+            <Menu>
+                <Menu.Divider title={this.props.selected_rows[0].name} className="context-menu-header"/>
                 {menu_items}
-            </Bp.Menu>
+            </Menu>
         )
     }
 }
@@ -109,13 +115,13 @@ class LibraryPane extends React.Component {
         for (let region of regions) {
             if (region.hasOwnProperty("rows")) {
                 let first_row = region["rows"][0];
-                revised_regions.push(Bpt.Regions.row(first_row));
+                revised_regions.push(Regions.row(first_row));
                 let last_row = region["rows"][1];
                 for (let i=first_row; i<=last_row; ++i) {
                     if (!selected_row_indices.includes(i)) {
                         selected_row_indices.push(i);
                         selected_rows.push(current_data_list[i]);
-                        revised_regions.push(Bpt.Regions.row(i));
+                        revised_regions.push(Regions.row(i));
                     }
                 }
             }
@@ -631,7 +637,7 @@ class LibraryPane extends React.Component {
             }
         }
 
-        let new_regions = [Bpt.Regions.row(this.get_match_list_index(anames[new_index]))];
+        let new_regions = [Regions.row(this.get_match_list_index(anames[new_index]))];
         this._updatePaneState({selected_resource: this.state.data_list[new_index],
             list_of_selected: [anames[new_index]],
             selectedRegions: new_regions
@@ -865,16 +871,16 @@ class LibraryPane extends React.Component {
                 <React.Fragment>
                     {mdata_element}
                     <div  className="d-flex flex-row justify-content-around" style={{marginTop: 20}}>
-                        <Bp.Button fill={false}
+                        <Button fill={false}
                                    small={true}
                                    minimal={false}
                                    onClick={this._toggleAuxVisibility}>
                             {button_base + " " + this.props.aux_pane_title}
-                        </Bp.Button>
+                        </Button>
                     </div>
-                    <Bp.Collapse isOpen={this.state.auxIsOpen} keepChildrenMounted={true}>
+                    <Collapse isOpen={this.state.auxIsOpen} keepChildrenMounted={true}>
                         {this.props.aux_pane}
-                    </Bp.Collapse>
+                    </Collapse>
                 </React.Fragment>
             )
         }
@@ -888,7 +894,7 @@ class LibraryPane extends React.Component {
             "whiteSpace": "nowrap",
         };
 
-        let filtered_data_list = this.state.data_list.filter(this._filter_on_match_list);
+        let filtered_data_list = _.cloneDeep(this.state.data_list.filter(this._filter_on_match_list));
         let ToolbarClass = this.props.ToolbarClass;
 
         let table_width;
@@ -951,7 +957,7 @@ class LibraryPane extends React.Component {
             </React.Fragment>
         );
         return (
-            <Bp.ResizeSensor onResize={this._handleResize} observeParents={true}>
+            <ResizeSensor onResize={this._handleResize} observeParents={true}>
                 <div ref={this.top_ref} className="d-flex flex-column mt-3" >
                     <ToolbarClass selected_resource={this.props.selected_resource}
                                   multi_select={this.props.multi_select}
@@ -994,7 +1000,7 @@ class LibraryPane extends React.Component {
                                     handleClose={this._closeOmnibar}
                                     showOmnibar={this.state.showOmnibar}/>
                 </div>
-            </Bp.ResizeSensor>
+            </ResizeSensor>
         )
     }
 }

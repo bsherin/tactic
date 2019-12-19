@@ -1,12 +1,15 @@
 
-const MARGIN_SIZE = 17;
-const HANDLE_WIDTH = 20;
+import React from "react";
+import PropTypes from 'prop-types';
 
-var Bp = blueprint;
-
-let DraggableCore = window.react_draggable.DraggableCore;
+import { Icon } from "@blueprintjs/core";
+import { DraggableCore } from "react-draggable";
+import { doBinding, guid } from "./utilities_react.js";
 
 export { HorizontalPanes, VerticalPanes, HANDLE_WIDTH, DragHandle };
+
+const MARGIN_SIZE = 17;
+const HANDLE_WIDTH = 20;
 
 class DragHandle extends React.Component {
     constructor(props) {
@@ -37,8 +40,16 @@ class DragHandle extends React.Component {
     }
 
     _onDrag(e, ui) {
-        this.lastX = this.getMouseX(e);
-        this.lastY = this.getMouseY(e);
+        if (this.props.direction == "y") {
+            this.lastX = this.startX;
+        } else {
+            this.lastX = this.getMouseX(e);
+        }
+        if (this.props.direction == "x") {
+            this.lastY = this.startY;
+        } else {
+            this.lastY = this.getMouseY(e);
+        }
         let dx = this.lastX - this.startX;
         let dy = this.lastY - this.startY;
         if (this.props.onDrag) {
@@ -48,13 +59,15 @@ class DragHandle extends React.Component {
     }
 
     _dragEnd(e, ui) {
-        let x = this.getMouseX(e);
-        if (x) {
-            this.lastX = x;
+        if (this.props.direction == "y") {
+            this.lastX = this.startX;
+        } else {
+            this.lastX = this.getMouseX(e);
         }
-        let y = this.getMouseY(e);
-        if (y) {
-            this.lastY = y;
+        if (this.props.direction == "x") {
+            this.lastY = this.startY;
+        } else {
+            this.lastY = this.getMouseY(e);
         }
         let dx = this.lastX - this.startX;
         let dy = this.lastY - this.startY;
@@ -103,7 +116,7 @@ class DragHandle extends React.Component {
                 onDrag: this._onDrag,
                 grid: [5, 5],
                 scale: 1 },
-            React.createElement(Bp.Icon, { icon: this.icon_dict[this.props.direction],
+            React.createElement(Icon, { icon: this.icon_dict[this.props.direction],
                 iconSize: this.props.iconSize,
                 style: style
             })

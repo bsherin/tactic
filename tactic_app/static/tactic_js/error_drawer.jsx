@@ -1,8 +1,13 @@
+
+import React from "react";
+import PropTypes from 'prop-types';
+
+import { Card, Elevation, Drawer, Classes, Button} from "@blueprintjs/core";
+
 import {Status} from "./toaster.js";
+import {doBinding} from "./utilities_react.js";
 
 export {withErrorDrawer}
-
-var Bp = blueprint;
 
 function withErrorDrawer(WrappedComponent, tsocket=null, title=null, position="right", size="30%") {
     return class extends React.Component {
@@ -81,16 +86,16 @@ class ErrorDrawer extends React.Component {
         let items = this.props.contents.map((entry, index)=>{
             let content_dict = {__html: entry.content};
             return(
-                <Bp.Card key={index} interactive={true} elevation={Bp.Elevation.TWO} style={{marginBottom: 5}}>
+                <Card key={index} interactive={true} elevation={Elevation.TWO} style={{marginBottom: 5}}>
                     {entry.title &&
                         <h6 style={{overflow: "auto"}}><a href="#">{entry.title}</a></h6>
                     }
                     <div style={{fontSize: 13, overflow: "auto"}} dangerouslySetInnerHTML={content_dict}/>
-                </Bp.Card>
+                </Card>
             )
         });
         return (
-            <Bp.Drawer
+            <Drawer
                     icon="console"
                     title={this.props.title}
                     isOpen={this.props.show_drawer}
@@ -99,15 +104,15 @@ class ErrorDrawer extends React.Component {
                     onClose={this.props.onClose}
                     size={this.props.size}
                 >
-                <div className={Bp.Classes.DRAWER_BODY}>
+                <div className={Classes.DRAWER_BODY}>
                     <div className="d-flex flex-row justify-content-around mt-2">
-                        <Bp.Button text="Clear All" onClick={this.props.clearAll}/>
+                        <Button text="Clear All" onClick={this.props.clearAll}/>
                     </div>
-                    <div className={Bp.Classes.DIALOG_BODY}>
+                    <div className={Classes.DIALOG_BODY}>
                         {items}
                     </div>
                 </div>
-            </Bp.Drawer>
+            </Drawer>
         )
     }
 }

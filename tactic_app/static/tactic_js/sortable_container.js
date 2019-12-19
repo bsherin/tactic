@@ -1,8 +1,13 @@
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-export { SortableComponent };
+import React from "react";
+import PropTypes from 'prop-types';
 
-let Shoc = window.react_sortable_hoc;
+import { SortableContainer } from 'react-sortable-hoc';
+
+import { doBinding } from "./utilities_react.js";
+
+export { SortableComponent };
 
 class RawSortableComponent extends React.Component {
     constructor(props) {
@@ -24,7 +29,7 @@ class RawSortableComponent extends React.Component {
     render() {
         let WrappedComponent = this.props.ElementComponent;
         return React.createElement(
-            "div",
+            'div',
             { id: this.props.id, style: this.props.style, ref: this.container_ref },
             this.props.item_list.length > 0 && this.props.item_list.map((entry, index) => React.createElement(WrappedComponent, _extends({ key: entry[this.props.key_field_name],
                 index: index
@@ -48,4 +53,4 @@ RawSortableComponent.defaultProps = {
     container_ref: null
 };
 
-let SortableComponent = Shoc.sortableContainer(RawSortableComponent);
+let SortableComponent = SortableContainer(RawSortableComponent);

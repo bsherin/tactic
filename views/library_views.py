@@ -21,7 +21,7 @@ from tile_manager import TileManager, RepositoryTileManager
 from code_manager import CodeManager, RepositoryCodeManager
 from tactic_app.users import User
 
-from tactic_app.js_source_management import js_source_dict, _develop
+from tactic_app.js_source_management import js_source_dict, _develop, css_source
 
 
 global_tile_manager = tactic_app.global_tile_manager
@@ -130,6 +130,7 @@ def library():
                                version_string=tstring,
                                develop=str(_develop),
                                page_title="tactic admin",
+                               css_source=css_source("admin_home_react"),
                                module_source=js_source_dict["admin_home_react"])
     else:
 
@@ -138,6 +139,7 @@ def library():
                                use_ssl=str(use_ssl),
                                version_string=tstring,
                                page_title="tactic resources",
+                               css_source=css_source("library_home_react"),
                                module_source=js_source_dict["library_home_react"])
 
 
@@ -149,6 +151,7 @@ def repository():
                            version_string=tstring,
                            develop=str(_develop),
                            page_title="tactic repository",
+                           css_source=css_source("repository_home_react"),
                            module_source=js_source_dict["repository_home_react"]
                            )
 

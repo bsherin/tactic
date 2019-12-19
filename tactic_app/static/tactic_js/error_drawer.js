@@ -1,10 +1,14 @@
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
+import React from "react";
+import PropTypes from 'prop-types';
+
+import { Card, Elevation, Drawer, Classes, Button } from "@blueprintjs/core";
+
 import { Status } from "./toaster.js";
+import { doBinding } from "./utilities_react.js";
 
 export { withErrorDrawer };
-
-var Bp = blueprint;
 
 function withErrorDrawer(WrappedComponent, tsocket = null, title = null, position = "right", size = "30%") {
     return class extends React.Component {
@@ -82,8 +86,8 @@ class ErrorDrawer extends React.Component {
         let items = this.props.contents.map((entry, index) => {
             let content_dict = { __html: entry.content };
             return React.createElement(
-                Bp.Card,
-                { key: index, interactive: true, elevation: Bp.Elevation.TWO, style: { marginBottom: 5 } },
+                Card,
+                { key: index, interactive: true, elevation: Elevation.TWO, style: { marginBottom: 5 } },
                 entry.title && React.createElement(
                     "h6",
                     { style: { overflow: "auto" } },
@@ -97,7 +101,7 @@ class ErrorDrawer extends React.Component {
             );
         });
         return React.createElement(
-            Bp.Drawer,
+            Drawer,
             {
                 icon: "console",
                 title: this.props.title,
@@ -109,15 +113,15 @@ class ErrorDrawer extends React.Component {
             },
             React.createElement(
                 "div",
-                { className: Bp.Classes.DRAWER_BODY },
+                { className: Classes.DRAWER_BODY },
                 React.createElement(
                     "div",
                     { className: "d-flex flex-row justify-content-around mt-2" },
-                    React.createElement(Bp.Button, { text: "Clear All", onClick: this.props.clearAll })
+                    React.createElement(Button, { text: "Clear All", onClick: this.props.clearAll })
                 ),
                 React.createElement(
                     "div",
-                    { className: Bp.Classes.DIALOG_BODY },
+                    { className: Classes.DIALOG_BODY },
                     items
                 )
             )

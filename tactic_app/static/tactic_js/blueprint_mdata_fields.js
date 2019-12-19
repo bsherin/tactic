@@ -1,11 +1,21 @@
 
-export { NotesField, CombinedMetadata, BpSelect, BpSelectAdvanced };
+import "../tactic_css/tactic_select.scss";
+
+import React from "react";
+import PropTypes from 'prop-types';
+
+import { PopoverPosition, Button, MenuDivider, MenuItem, TagInput, TextArea, FormGroup, InputGroup, Card, Icon } from "@blueprintjs/core";
+import { Select, MultiSelect } from "@blueprintjs/select";
+
+import showdown from 'showdown';
+import _ from 'lodash';
 
 import { ViewerContext } from "./resource_viewer_context.js";
 import { postAjaxPromise } from "./communication_react.js";
 
-var Bp = blueprint;
-var Bps = bpselect;
+import { doBinding, propsAreEqual } from "./utilities_react.js";
+
+export { NotesField, CombinedMetadata, BpSelect, BpSelectAdvanced };
 
 let icon_dict = {
     collection: "database",
@@ -52,7 +62,7 @@ class BpSelectAdvanced extends React.Component {
 
     render() {
         return React.createElement(
-            Bps.Select,
+            Select,
             {
                 activeItem: this._getActiveItem(this.props.value),
                 onActiveItemChange: this._handleActiveItemChange,
@@ -63,8 +73,8 @@ class BpSelectAdvanced extends React.Component {
                 popoverProps: { minimal: true,
                     boundary: "window",
                     modifiers: { flip: false, preventOverflow: true },
-                    position: Bp.PopoverPosition.BOTTOM_LEFT } },
-            React.createElement(Bp.Button, { text: this.props.value["text"], className: "button-in-select", icon: this.props.buttonIcon })
+                    position: PopoverPosition.BOTTOM_LEFT } },
+            React.createElement(Button, { text: this.props.value["text"], className: "button-in-select", icon: this.props.buttonIcon })
         );
     }
 }
@@ -92,9 +102,9 @@ class SuggestionItemAdvanced extends React.Component {
 
     render() {
         if (this.props.item["isgroup"]) {
-            return React.createElement(Bp.MenuDivider, { className: "tile-form-menu-item", title: this.props.item["text"] });
+            return React.createElement(MenuDivider, { className: "tile-form-menu-item", title: this.props.item["text"] });
         } else {
-            return React.createElement(Bp.MenuItem, {
+            return React.createElement(MenuItem, {
                 className: "tile-form-menu-item",
                 text: this.props.item["text"],
                 key: this.props.item,
@@ -111,8 +121,8 @@ SuggestionItemAdvanced.propTypes = {
     handleClick: PropTypes.func
 };
 
-function renderSuggestionAdvanced(item, { modifiers, handleClick }) {
-    return React.createElement(SuggestionItemAdvanced, { item: item, modifiers: modifiers, handleClick: handleClick });
+function renderSuggestionAdvanced(item, { modifiers, handleClick, index }) {
+    return React.createElement(SuggestionItemAdvanced, { item: item, key: index, modifiers: modifiers, handleClick: handleClick });
 }
 
 class BpSelect extends React.Component {
@@ -143,7 +153,7 @@ class BpSelect extends React.Component {
 
     render() {
         return React.createElement(
-            Bps.Select,
+            Select,
             {
                 className: "tile-form-menu-item",
                 activeItem: this.state.activeItem,
@@ -155,8 +165,8 @@ class BpSelect extends React.Component {
                 popoverProps: { minimal: true,
                     boundary: "window",
                     modifiers: { flip: false, preventOverflow: true },
-                    position: Bp.PopoverPosition.BOTTOM_LEFT } },
-            React.createElement(Bp.Button, { className: "button-in-select",
+                    position: PopoverPosition.BOTTOM_LEFT } },
+            React.createElement(Button, { className: "button-in-select",
                 style: this.props.buttonStyle,
                 text: this.props.buttonTextObject ? this.props.buttonTextObject : this.props.value,
                 icon: this.props.buttonIcon })
@@ -190,10 +200,9 @@ class SuggestionItem extends React.Component {
     }
 
     render() {
-        return React.createElement(Bp.MenuItem, {
+        return React.createElement(MenuItem, {
             className: "tile-form-menu-item",
             text: this.props.item,
-            key: this.props.item,
             active: this.props.modifiers.active,
             onClick: this.props.handleClick,
             shouldDismissPopover: true
@@ -202,17 +211,18 @@ class SuggestionItem extends React.Component {
 }
 SuggestionItem.propTypes = {
     item: PropTypes.string,
+    index: PropTypes.number,
     modifiers: PropTypes.object,
     handleClick: PropTypes.func
 };
 
-function renderSuggestion(item, { modifiers, handleClick }) {
-    return React.createElement(SuggestionItem, { item: item, modifiers: modifiers, handleClick: handleClick });
+function renderSuggestion(item, { modifiers, handleClick, index }) {
+    return React.createElement(SuggestionItem, { item: item, key: index, modifiers: modifiers, handleClick: handleClick });
 }
 
 const renderCreateNewTag = (query, active, handleClick) => {
     let hclick = handleClick;
-    return React.createElement(Bp.MenuItem, {
+    return React.createElement(MenuItem, {
         icon: "add",
         key: "create_item",
         text: `Create "${query}"`,
@@ -273,9 +283,9 @@ class NativeTags extends React.Component {
 
     render() {
         if (this.context.readOnly) {
-            return React.createElement(Bp.TagInput, { values: this.props.tags, disabled: true });
+            return React.createElement(TagInput, { values: this.props.tags, disabled: true });
         }
-        return React.createElement(Bps.MultiSelect, {
+        return React.createElement(MultiSelect, {
             allowCreate: true,
             openOnKeyDown: true,
             createNewItemFromQuery: this._createItemFromQuery,
@@ -387,7 +397,7 @@ class NotesField extends React.Component {
         return React.createElement(
             React.Fragment,
             null,
-            React.createElement(Bp.TextArea, {
+            React.createElement(TextArea, {
                 rows: "20",
                 cols: "75",
                 inputRef: this._notesRefHandler,
@@ -457,36 +467,36 @@ class CombinedMetadata extends React.Component {
                     if (sresult != null) md = sresult[0].slice(1);
                 }
                 additional_items.push(React.createElement(
-                    Bp.FormGroup,
+                    FormGroup,
                     { label: field + ": ", key: field, inline: true },
-                    React.createElement(Bp.InputGroup, { disabled: true, style: { color: "#394B59" }, value: md, fill: true })
+                    React.createElement(InputGroup, { disabled: true, style: { color: "#394B59" }, value: md, fill: true })
                 ));
             }
         }
         return React.createElement(
-            Bp.Card,
+            Card,
             { elevation: this.props.elevation, className: "combined-metadata", style: this.props.outer_style },
             this.props.name != null && React.createElement(
                 "h6",
                 { style: { color: "#106ba3" } },
-                React.createElement(Bp.Icon, { icon: icon_dict[this.props.res_type], style: { marginRight: 4 } }),
+                React.createElement(Icon, { icon: icon_dict[this.props.res_type], style: { marginRight: 4 } }),
                 this.props.name
             ),
             React.createElement(
-                Bp.FormGroup,
+                FormGroup,
                 { label: "Tags" },
                 React.createElement(NativeTags, { tags: this.props.tags,
                     handleChange: this._handleTagsChange,
                     res_type: this.props.res_type })
             ),
             this.props.category != null && React.createElement(
-                Bp.FormGroup,
+                FormGroup,
                 { label: "Category" },
-                React.createElement(Bp.InputGroup, { onChange: this._handleCategoryChange,
+                React.createElement(InputGroup, { onChange: this._handleCategoryChange,
                     value: this.props.category })
             ),
             React.createElement(
-                Bp.FormGroup,
+                FormGroup,
                 { label: "Notes" },
                 React.createElement(NotesField, { notes: this.props.notes,
                     handleChange: this._handleNotesChange,
@@ -495,14 +505,14 @@ class CombinedMetadata extends React.Component {
                 })
             ),
             React.createElement(
-                Bp.FormGroup,
+                FormGroup,
                 { label: "Created ", inline: true },
-                React.createElement(Bp.InputGroup, { disabled: true, style: { color: "#394B59" }, value: this.props.created })
+                React.createElement(InputGroup, { disabled: true, style: { color: "#394B59" }, value: this.props.created })
             ),
             this.props.updated != null && React.createElement(
-                Bp.FormGroup,
+                FormGroup,
                 { label: "Updated: ", inline: true },
-                React.createElement(Bp.InputGroup, { disabled: true, style: { color: "#394B59" }, value: this.props.updated })
+                React.createElement(InputGroup, { disabled: true, style: { color: "#394B59" }, value: this.props.updated })
             ),
             this.props.additional_metadata != null && additional_items
         );

@@ -1,11 +1,15 @@
 
+
+import React from "react";
+import PropTypes from 'prop-types';
+import { HTMLSelect, Card, Button, InputGroup, Spinner } from "@blueprintjs/core";
+
 import {GlyphButton, SelectList} from "./blueprint_react_widgets.js";
 import {postWithCallback} from "./communication_react.js"
 import {doFlash} from "./toaster.js"
+import {doBinding} from "./utilities_react.js";
 
 export {ExportsViewer}
-
-let Bp = blueprint;
 
 class ExportListSelect extends React.Component {
     constructor(props) {
@@ -56,12 +60,12 @@ class ExportListSelect extends React.Component {
 
     render() {
         return (
-            <Bp.HTMLSelect elementRef={this._handleSelectRef}
+            <HTMLSelect elementRef={this._handleSelectRef}
                            onChange={this._updateMe}
                            minimal={true}
                            value={this.props.value}>
                 {this.create_groups()}
-            </Bp.HTMLSelect>
+            </HTMLSelect>
         )
     }
 }
@@ -199,7 +203,7 @@ class ExportsViewer extends React.Component {
             exports_class = "am-zoomed"
         }
         return (
-             <Bp.Card id="exports-panel" elevation={2} className={"mr-3 " + exports_class}>
+             <Card id="exports-panel" elevation={2} className={"mr-3 " + exports_class}>
                  <div className="d-flex flex-column justify-content-around">
                      <div id="exports-heading"
                           ref={this.header_ref}
@@ -214,7 +218,7 @@ class ExportsViewer extends React.Component {
                                       tooltip="Refresh the exports menu and info"
                                       style={{marginLeft: 0}}
                                       icon="refresh"/>
-                          <Bp.Button onClick={this._eval}
+                          <Button onClick={this._eval}
                                      intent="success"
                                        style={{marginRight: 0, marginLeft: 0, padding: 0}}
                                        minimal={true}
@@ -232,7 +236,7 @@ class ExportsViewer extends React.Component {
                                                                          fontSize={11}
                                      />
                                     }
-                                 <Bp.InputGroup type="text"
+                                 <InputGroup type="text"
                                                  small={true}
                                                  onChange={this._handleTailChange}
                                                  onSubmit={this._eval}
@@ -243,7 +247,7 @@ class ExportsViewer extends React.Component {
                          }
                          <span id="exports-info" className="bottom-heading-element ml-2">{this.state.exports_info_value}</span>
                          {this.state.show_spinner &&
-                            <Bp.Spinner size={13} />
+                            <Spinner size={13} />
                          }
 
 
@@ -253,7 +257,7 @@ class ExportsViewer extends React.Component {
                                     dangerouslySetInnerHTML={exports_body_dict}/>
                  }
                  </div>
-             </Bp.Card>
+             </Card>
         )
     }
 }

@@ -1,11 +1,20 @@
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
+import "../tactic_css/tactic.scss";
+
+import React from "react";
+import * as ReactDOM from 'react-dom';
+import PropTypes from 'prop-types';
+
 import { MergeViewerSocket, MergeViewerApp } from "./merge_viewer_app.js";
 import { doFlash } from "./toaster.js";
 import { render_navbar } from "./blueprint_navbar.js";
-import { postAjax, postAjaxPromise } from "./communication_react.js";
+import { postAjaxPromise } from "./communication_react.js";
 import { withErrorDrawer } from "./error_drawer.js";
 import { withStatus } from "./toaster.js";
+import { guid } from "./utilities_react.js";
+
+window.resource_viewer_id = guid();
 
 function tile_differ_main() {
     render_navbar();

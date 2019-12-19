@@ -1,8 +1,14 @@
 
-import { showConfirmDialogReact, showModalReact } from "./modal_react.js";
-export { TagButtonList, get_all_parent_tags };
 
-var Bp = blueprint;
+import React from "react";
+import PropTypes from 'prop-types';
+
+import { Menu, MenuItem, ContextMenu, Tree } from "@blueprintjs/core";
+
+import { showConfirmDialogReact, showModalReact } from "./modal_react.js";
+import { doBinding, arraysMatch, remove_duplicates } from "./utilities_react.js";
+
+export { TagButtonList, get_all_parent_tags };
 
 function has_slash(tag_text) {
     return tag_text.search("/") != -1;
@@ -41,10 +47,10 @@ class TagMenu extends React.Component {
     render() {
         let disabled = this.props.tagstring == "all";
         return React.createElement(
-            Bp.Menu,
+            Menu,
             null,
-            React.createElement(Bp.MenuItem, { icon: "edit", disabled: disabled, onClick: () => this.props.rename_tag(this.props.tagstring), text: "Rename" }),
-            React.createElement(Bp.MenuItem, { icon: "trash", disabled: disabled, onClick: () => this.props.delete_tag(this.props.tagstring), text: "Delete" })
+            React.createElement(MenuItem, { icon: "edit", disabled: disabled, onClick: () => this.props.rename_tag(this.props.tagstring), text: "Rename" }),
+            React.createElement(MenuItem, { icon: "trash", disabled: disabled, onClick: () => this.props.delete_tag(this.props.tagstring), text: "Delete" })
         );
     }
 }
@@ -193,7 +199,7 @@ class TagButtonList extends React.Component {
         let tmenu = React.createElement(TagMenu, { tagstring: node.nodeData.tag_string,
             delete_tag: this._delete_tag,
             rename_tag: this._rename_tag });
-        Bp.ContextMenu.show(tmenu, { left: e.clientX, top: e.clientY });
+        ContextMenu.show(tmenu, { left: e.clientX, top: e.clientY });
     }
 
     render() {
@@ -206,7 +212,7 @@ class TagButtonList extends React.Component {
         return React.createElement(
             "div",
             { className: "tactic-tag-button-list" },
-            React.createElement(Bp.Tree, { contents: tree,
+            React.createElement(Tree, { contents: tree,
                 onNodeContextMenu: this._showContextMenu,
                 onNodeClick: this._handleNodeClick,
                 onNodeCollapse: this._handleNodeShrink,

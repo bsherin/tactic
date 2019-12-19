@@ -1,7 +1,12 @@
 
-export {SortableComponent}
+import React from "react";
+import PropTypes from 'prop-types';
 
-let Shoc = window.react_sortable_hoc;
+import { SortableContainer } from 'react-sortable-hoc';
+
+import {doBinding} from "./utilities_react.js";
+
+export {SortableComponent}
 
 class RawSortableComponent extends React.Component {
     constructor(props) {
@@ -54,4 +59,4 @@ RawSortableComponent.defaultProps = {
     container_ref: null
 };
 
-let SortableComponent = Shoc.sortableContainer(RawSortableComponent);
+let SortableComponent = SortableContainer(RawSortableComponent);

@@ -1,8 +1,12 @@
 
-export { LabeledSelectList, LabeledFormField, SelectList, OrderableTable, BpOrderableTable, DragThing, GlyphButton, withTooltip };
+import React from "react";
+import PropTypes from 'prop-types';
 
-let Bp = blueprint;
-let Bpt = bptable;
+import { Tooltip, Button, FormGroup, InputGroup, HTMLSelect, HTMLTable } from "@blueprintjs/core";
+import { EditableCell, RowHeaderCell, Column, Table, RegionCardinality } from "@blueprintjs/table";
+
+export { LabeledSelectList, LabeledFormField, SelectList, OrderableTable, BpOrderableTable, DragThing, GlyphButton, withTooltip };
+import { doBinding } from "./utilities_react.js";
 
 function withTooltip(WrappedComponent) {
     return class extends React.Component {
@@ -10,7 +14,7 @@ function withTooltip(WrappedComponent) {
             if (this.props.tooltip) {
                 let delay = this.props.tooltipDelay ? this.props.tooltipDelay : 1000;
                 return React.createElement(
-                    Bp.Tooltip,
+                    Tooltip,
                     { content: this.props.tooltip, hoverOpenDelay: delay },
                     React.createElement(WrappedComponent, this.props)
                 );
@@ -40,7 +44,7 @@ class GlyphButton extends React.Component {
     render() {
         let style = this.props.style == null ? { paddingLeft: 2, paddingRight: 2 } : this.props.style;
         return React.createElement(
-            Bp.Button,
+            Button,
             { type: "button",
                 minimal: this.props.minimal,
                 small: true,
@@ -139,9 +143,9 @@ class LabeledFormField extends React.Component {
 
     render() {
         return React.createElement(
-            Bp.FormGroup,
+            FormGroup,
             { label: this.props.label, style: { marginRight: 5 } },
-            React.createElement(Bp.InputGroup, { onChange: this.props.onChange, value: this.props.the_value })
+            React.createElement(InputGroup, { onChange: this.props.onChange, value: this.props.the_value })
         );
     }
 }
@@ -159,9 +163,9 @@ LabeledFormField.defaultProps = {
 
 function LabeledSelectList(props) {
     return React.createElement(
-        Bp.FormGroup,
+        FormGroup,
         { label: props.label, style: { marginRight: 5 } },
-        React.createElement(Bp.HTMLSelect, { options: props.option_list, onChange: props.onChange, value: props.the_value })
+        React.createElement(HTMLSelect, { options: props.option_list, onChange: props.onChange, value: props.the_value })
     );
 }
 
@@ -193,7 +197,7 @@ class SelectList extends React.Component {
             opt
         ));
         return React.createElement(
-            Bp.HTMLSelect,
+            HTMLSelect,
             { style: sstyle,
                 onChange: this.handleChange,
                 minimal: this.props.minimal,
@@ -369,7 +373,7 @@ class BpOrderableTable extends React.Component {
             } else {
                 the_text = "";
             }
-            return React.createElement(Bpt.EditableCell, { key: column_name,
+            return React.createElement(EditableCell, { key: column_name,
                 truncated: true,
                 rowIndex: rowIndex,
                 columnIndex: this.props.columns.indexOf(column_name),
@@ -380,7 +384,7 @@ class BpOrderableTable extends React.Component {
     }
 
     _rowHeaderCellRenderer(rowIndex) {
-        return React.createElement(Bpt.RowHeaderCell, { key: rowIndex,
+        return React.createElement(RowHeaderCell, { key: rowIndex,
             name: rowIndex });
     }
 
@@ -388,17 +392,17 @@ class BpOrderableTable extends React.Component {
         let self = this;
         let columns = this.props.columns.map(column_name => {
             const cellRenderer = self._cellRendererCreator(column_name);
-            return React.createElement(Bpt.Column, { cellRenderer: cellRenderer,
+            return React.createElement(Column, { cellRenderer: cellRenderer,
                 enableColumnReordering: false,
                 key: column_name,
                 name: column_name });
         });
         return React.createElement(
-            Bpt.Table,
+            Table,
             { enableFocusedCell: true,
                 numRows: this.props.data_array.length,
                 enableColumnReordering: false,
-                selectionModes: [Bpt.RegionCardinality.FULL_COLUMNS, Bpt.RegionCardinality.FULL_ROWS],
+                selectionModes: [RegionCardinality.FULL_COLUMNS, RegionCardinality.FULL_ROWS],
                 enableRowReordering: true,
                 onRowsReordered: this._onRowsReordered,
                 onSelection: this._onSelection,
@@ -461,7 +465,7 @@ class OrderableTable extends React.Component {
             handleCellChange: this.handleCellChange
         }));
         return React.createElement(
-            Bp.HTMLTable,
+            HTMLTable,
             { style: { fontSize: 12 }, bordered: true, condensed: true, interactive: true, striped: false },
             React.createElement(TableHeader, { columns: this.props.columns }),
             React.createElement(

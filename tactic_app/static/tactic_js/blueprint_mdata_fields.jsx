@@ -1,11 +1,22 @@
 
-export {NotesField, CombinedMetadata, BpSelect, BpSelectAdvanced}
+import "../tactic_css/tactic_select.scss"
+
+import React from "react";
+import PropTypes from 'prop-types';
+
+import { PopoverPosition, Button, MenuDivider, MenuItem, TagInput, TextArea, FormGroup, InputGroup,
+    Card, Icon} from "@blueprintjs/core";
+import {Select, MultiSelect} from "@blueprintjs/select";
+
+import showdown from 'showdown';
+import _ from 'lodash';
 
 import {ViewerContext} from "./resource_viewer_context.js";
 import {postAjaxPromise} from "./communication_react.js"
 
-var Bp = blueprint;
-var Bps = bpselect;
+import {doBinding, propsAreEqual} from "./utilities_react.js";
+
+export {NotesField, CombinedMetadata, BpSelect, BpSelectAdvanced}
 
 let icon_dict = {
     collection: "database",
@@ -52,7 +63,7 @@ class BpSelectAdvanced extends React.Component {
 
     render () {
         return (
-            <Bps.Select
+            <Select
                 activeItem={this._getActiveItem(this.props.value)}
                 onActiveItemChange={this._handleActiveItemChange}
                 itemRenderer={renderSuggestionAdvanced}
@@ -62,9 +73,9 @@ class BpSelectAdvanced extends React.Component {
                 popoverProps={{minimal: true,
                     boundary: "window",
                     modifiers: {flip: false, preventOverflow: true},
-                    position: Bp.PopoverPosition.BOTTOM_LEFT}}>
-                <Bp.Button text={this.props.value["text"]} className="button-in-select" icon={this.props.buttonIcon}  />
-            </Bps.Select>
+                    position: PopoverPosition.BOTTOM_LEFT}}>
+                <Button text={this.props.value["text"]} className="button-in-select" icon={this.props.buttonIcon}  />
+            </Select>
         )
     }
 }
@@ -93,12 +104,12 @@ class SuggestionItemAdvanced extends React.Component{
     render() {
         if (this.props.item["isgroup"]) {
             return (
-                <Bp.MenuDivider className="tile-form-menu-item" title={this.props.item["text"]}/>
+                <MenuDivider className="tile-form-menu-item" title={this.props.item["text"]}/>
             )
         }
         else {
             return (
-                <Bp.MenuItem
+                <MenuItem
                     className="tile-form-menu-item"
                     text={this.props.item["text"]}
                     key={this.props.item}
@@ -116,8 +127,8 @@ SuggestionItemAdvanced.propTypes = {
     handleClick: PropTypes.func
 };
 
-function renderSuggestionAdvanced (item, {modifiers, handleClick}) {
-    return <SuggestionItemAdvanced item={item} modifiers={modifiers} handleClick={handleClick}/>
+function renderSuggestionAdvanced (item, {modifiers, handleClick, index}) {
+    return <SuggestionItemAdvanced item={item} key={index} modifiers={modifiers} handleClick={handleClick}/>
 }
 
 class BpSelect extends React.Component {
@@ -148,7 +159,7 @@ class BpSelect extends React.Component {
 
     render () {
         return (
-            <Bps.Select
+            <Select
                 className="tile-form-menu-item"
                 activeItem={this.state.activeItem}
                 onActiveItemChange={this._handleActiveItemChange}
@@ -159,12 +170,12 @@ class BpSelect extends React.Component {
                 popoverProps={{minimal: true,
                     boundary: "window",
                     modifiers: {flip: false, preventOverflow: true},
-                    position: Bp.PopoverPosition.BOTTOM_LEFT}}>
-                <Bp.Button className="button-in-select"
+                    position: PopoverPosition.BOTTOM_LEFT}}>
+                <Button className="button-in-select"
                            style={this.props.buttonStyle}
                            text={this.props.buttonTextObject ? this.props.buttonTextObject : this.props.value}
                            icon={this.props.buttonIcon} />
-            </Bps.Select>
+            </Select>
         )
     }
 }
@@ -197,10 +208,9 @@ class SuggestionItem extends React.Component{
 
     render() {
         return (
-            <Bp.MenuItem
+            <MenuItem
                 className="tile-form-menu-item"
                 text={this.props.item}
-                key={this.props.item}
                 active={this.props.modifiers.active}
                 onClick={this.props.handleClick}
                 shouldDismissPopover={true}
@@ -210,19 +220,20 @@ class SuggestionItem extends React.Component{
 }
 SuggestionItem.propTypes = {
     item: PropTypes.string,
+    index: PropTypes.number,
     modifiers: PropTypes.object,
     handleClick: PropTypes.func,
 };
 
 
-function renderSuggestion (item, { modifiers, handleClick}) {
-    return <SuggestionItem item={item} modifiers={modifiers} handleClick={handleClick}/>
+function renderSuggestion (item, { modifiers, handleClick, index}) {
+    return <SuggestionItem item={item} key={index} modifiers={modifiers} handleClick={handleClick}/>
 }
 
 const renderCreateNewTag = (query, active, handleClick) => {
     let hclick = handleClick;
     return(
-        <Bp.MenuItem
+        <MenuItem
             icon="add"
             key="create_item"
             text={`Create "${query}"`}
@@ -287,11 +298,11 @@ class NativeTags extends React.Component {
       render () {
         if (this.context.readOnly) {
             return (
-                <Bp.TagInput values={this.props.tags} disabled={true}/>
+                <TagInput values={this.props.tags} disabled={true}/>
             )
         }
         return (
-            <Bps.MultiSelect
+            <MultiSelect
                 allowCreate={true}
                 openOnKeyDown={true}
                 createNewItemFromQuery={this._createItemFromQuery}
@@ -314,6 +325,7 @@ NativeTags.proptypes = {
     handleChange: PropTypes.func,
     res_type: PropTypes.string
 };
+
 
 NativeTags.contextType = ViewerContext;
 
@@ -404,7 +416,7 @@ class NotesField extends React.Component {
         let converted_dict = {__html: converted_markdown};
         return (
         <React.Fragment>
-            <Bp.TextArea
+            <TextArea
                       rows="20"
                       cols="75"
                       inputRef={this._notesRefHandler}
@@ -477,50 +489,48 @@ class CombinedMetadata extends React.Component {
                     if (sresult != null)  md = sresult[0].slice(1)
                 }
                 additional_items.push(
-                     <Bp.FormGroup label={field + ": "} key={field} inline={true}>
-                            <Bp.InputGroup disabled={true} style={{color:"#394B59"}} value={md} fill={true}/>
-                        </Bp.FormGroup>
+                     <FormGroup label={field + ": "} key={field} inline={true}>
+                            <InputGroup disabled={true} style={{color:"#394B59"}} value={md} fill={true}/>
+                        </FormGroup>
                 )
             }
         }
         return (
-            <Bp.Card elevation={this.props.elevation} className="combined-metadata" style={this.props.outer_style}>
+            <Card elevation={this.props.elevation} className="combined-metadata" style={this.props.outer_style}>
                 {this.props.name != null &&
-                    <h6 style={{color: "#106ba3"}}><Bp.Icon icon={icon_dict[this.props.res_type]} style={{marginRight: 4}}/>{this.props.name}</h6>
+                    <h6 style={{color: "#106ba3"}}><Icon icon={icon_dict[this.props.res_type]} style={{marginRight: 4}}/>{this.props.name}</h6>
                 }
 
-                    <Bp.FormGroup label="Tags">
+                    <FormGroup label="Tags">
                         <NativeTags tags={this.props.tags}
                                      handleChange={this._handleTagsChange}
                                     res_type={this.props.res_type}/>
-                        {/*<Bp.TagInput values={this.props.tags}*/}
-                        {/*             onChange={this._handleTagsChange}/>*/}
-                    </Bp.FormGroup>
+                    </FormGroup>
                     {this.props.category != null &&
-                        <Bp.FormGroup label="Category">
-                            <Bp.InputGroup  onChange={this._handleCategoryChange}
+                        <FormGroup label="Category">
+                            <InputGroup  onChange={this._handleCategoryChange}
                                             value={this.props.category} />
-                        </Bp.FormGroup>
+                        </FormGroup>
                     }
-                    <Bp.FormGroup label="Notes">
+                    <FormGroup label="Notes">
                         <NotesField notes={this.props.notes}
                                     handleChange={this._handleNotesChange}
                                     show_markdown_initial={true}
                                     handleBlur={this.props.handleNotesBlur}
                         />
-                    </Bp.FormGroup>
-                    <Bp.FormGroup label="Created " inline={true}>
-                        <Bp.InputGroup disabled={true} style={{color:"#394B59"}} value={this.props.created}/>
-                    </Bp.FormGroup>
+                    </FormGroup>
+                    <FormGroup label="Created " inline={true}>
+                        <InputGroup disabled={true} style={{color:"#394B59"}} value={this.props.created}/>
+                    </FormGroup>
                     {this.props.updated != null &&
-                        <Bp.FormGroup label="Updated: " inline={true}>
-                            <Bp.InputGroup disabled={true} style={{color:"#394B59"}} value={this.props.updated}/>
-                        </Bp.FormGroup>
+                        <FormGroup label="Updated: " inline={true}>
+                            <InputGroup disabled={true} style={{color:"#394B59"}} value={this.props.updated}/>
+                        </FormGroup>
                     }
                     {this.props.additional_metadata != null &&
                         additional_items
                     }
-            </Bp.Card>
+            </Card>
         )
     }
 }

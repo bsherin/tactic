@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}Tactic - Administer{% endblock %}
+
+{% block styles %}
+{% endblock %}
+
+{% block page_content %}
+    <div id="modal-area">
+    </div>
+    <div class="container-fluid" style="padding-left: 0px">
+        <div class="d-flex">
+            <div class="d-flex flex-column justify-content-between" style="margin-bottom:25px">
+              <ul id="nav-list" style="margin-top:20px" class="nav nav-pills flex-column left-vertical-nav" role="tablist">
+                <li role="presentation" class="nav-item"><a class="nav-link active" href="#container-module" aria-controls="containers" role="tab" data-toggle="tab" value="container">containers</a></li>
+                <li role="presentation" class="nav-item"><a class="nav-link" href="#user-module" aria-controls="users" role="tab" data-toggle="tab" value="user">users</a></li>
+              </ul>
+            </div>
+            <div class="tab-content d-flex">
+                <div class="resource-module tab-pane fade active show" id="container-module"></div>
+                <div class="resource-module tab-pane fade" id="user-module"></div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+    <script src="{{url_for('static', filename='js/sorttable.js')}}"></script>
+    <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/resource_manager.js', version_string=tstring)}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/admin_resource_manager.js', version_string=tstring)}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/administer.js', version_string=tstring)}}"></script>
+    <script>
+        var user_id = "{{current_user.get_id()}}";
+        var use_ssl = "{{use_ssl}}"=="True";
+        window.onload = start_post_load;
+    </script>
+{% endblock %}

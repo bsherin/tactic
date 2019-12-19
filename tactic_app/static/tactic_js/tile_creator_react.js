@@ -1,4 +1,15 @@
 
+
+import "../tactic_css/tactic.scss";
+import "../tactic_css/tactic_table.scss";
+import "../tactic_css/tile_creator.scss";
+
+import React from "react";
+import * as ReactDOM from 'react-dom';
+import PropTypes from 'prop-types';
+
+import { Tab, Tabs, ResizeSensor } from "@blueprintjs/core";
+
 import { TacticSocket } from "./tactic_socket.js";
 import { Toolbar, Namebutton } from "./blueprint_toolbar.js";
 import { sendToRepository } from "./resource_viewer_react_app.js";
@@ -11,30 +22,31 @@ import { handleCallback, postAjax, postAjaxPromise, postWithCallback, postAsyncF
 import { withStatus, doFlash } from "./toaster.js";
 import { getUsableDimensions, SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT } from "./sizing_tools.js";
 import { withErrorDrawer } from "./error_drawer.js";
-
-var Bp = blueprint;
+import { doBinding, guid } from "./utilities_react.js";
 
 const BOTTOM_MARGIN = 50;
 const MARGIN_SIZE = 17;
 
+window.main_id = window.module_viewer_id; // This matters for communication_react
+
 const HEARTBEAT_INTERVAL = 10000; //milliseconds
 var heartbeat_timer = setInterval(function () {
-    postAjax("register_heartbeat", { "main_id": window.main_id }, function () {});
+    postAjax("register_heartbeat", { "main_id": window.module_viewer_id }, function () {});
 }, HEARTBEAT_INTERVAL);
 
 let tsocket;
 
 window.onunload = function (e) {
-    postAsyncFalse("host", "delete_container", { "container_id": window.main_id, "notify": false });
+    postAsyncFalse("host", "delete_container", { "container_id": window.module_viewer_id, "notify": false });
 };
 
 class CreatorViewerSocket extends TacticSocket {
     initialize_socket_stuff() {
         this.socket.emit('join', { "room": user_id });
-        this.socket.emit('join-main', { "room": module_viewer_id });
+        this.socket.emit('join-main', { "room": window.module_viewer_id });
         this.socket.on('handle-callback', handleCallback);
         this.socket.on('close-user-windows', data => {
-            if (!(data["originator"] == module_viewer_id)) {
+            if (!(data["originator"] == window.module_viewer_id)) {
                 window.close();
             }
         });
@@ -58,7 +70,7 @@ function tile_creator_main() {
             "version_string": window.version_string };
         postWithCallback(window.module_viewer_id, "initialize_parser", the_content, got_parsed_data);
     });
-    tsocket.socket.emit('ready-to-begin', { "room": window.main_id });
+    tsocket.socket.emit('ready-to-begin', { "room": window.module_viewer_id });
 }
 
 function got_parsed_data(data_object) {
@@ -595,13 +607,13 @@ class CreatorApp extends React.Component {
                 "div",
                 { id: "creator-resources", className: "d-block mt-2" },
                 React.createElement(
-                    Bp.Tabs,
+                    Tabs,
                     { id: "resource_tabs",
                         large: true, onChange: this._handleTabSelect },
-                    React.createElement(Bp.Tab, { id: "metadata", title: "metadata", panel: mdata_panel }),
-                    React.createElement(Bp.Tab, { id: "options", title: "options", panel: option_panel }),
-                    React.createElement(Bp.Tab, { id: "exports", title: "exports", panel: export_panel }),
-                    React.createElement(Bp.Tab, { id: "methods", title: "methods", panel: methods_panel })
+                    React.createElement(Tab, { id: "metadata", title: "metadata", panel: mdata_panel }),
+                    React.createElement(Tab, { id: "options", title: "options", panel: option_panel }),
+                    React.createElement(Tab, { id: "exports", title: "exports", panel: export_panel }),
+                    React.createElement(Tab, { id: "methods", title: "methods", panel: methods_panel })
                 )
             )
         );
@@ -614,7 +626,7 @@ class CreatorApp extends React.Component {
             React.Fragment,
             null,
             React.createElement(
-                Bp.ResizeSensor,
+                ResizeSensor,
                 { onResize: this._handleResize, observeParents: true },
                 React.createElement(
                     "div",

@@ -3,6 +3,15 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 /**
  * Created by bls910
  */
+
+import "../tactic_css/tactic.scss";
+
+import React from "react";
+import * as ReactDOM from 'react-dom';
+import PropTypes from 'prop-types';
+
+import { ResizeSensor, TextArea } from "@blueprintjs/core";
+
 import { ResourceViewerSocket, ResourceViewerApp, copyToLibrary, sendToRepository } from "./resource_viewer_react_app.js";
 import { ViewerContext } from "./resource_viewer_context.js";
 import { postAjax, postAjaxPromise } from "./communication_react.js";
@@ -12,8 +21,11 @@ import { render_navbar } from "./blueprint_navbar.js";
 import { SIDE_MARGIN, BOTTOM_MARGIN, getUsableDimensions } from "./sizing_tools.js";
 import { withErrorDrawer } from "./error_drawer.js";
 import { withStatus } from "./toaster.js";
+import { doBinding } from "./utilities_react.js";
+import { guid } from "./utilities_react";
 
-var Bp = blueprint;
+window.resource_viewer_id = guid();
+window.main_id = resource_viewer_id;
 
 function list_viewer_main() {
     render_navbar();
@@ -56,7 +68,7 @@ class ListEditor extends React.Component {
         return React.createElement(
             "div",
             { id: "listarea-container", ref: this.props.outer_ref },
-            React.createElement(Bp.TextArea, {
+            React.createElement(TextArea, {
                 cols: "50",
                 style: tastyle,
                 disabled: this.context.readOnly,
@@ -171,7 +183,7 @@ class ListViewerApp extends React.Component {
             ViewerContext.Provider,
             { value: the_context },
             React.createElement(
-                Bp.ResizeSensor,
+                ResizeSensor,
                 { onResize: this._handleResize, observeParents: true },
                 React.createElement(
                     "div",

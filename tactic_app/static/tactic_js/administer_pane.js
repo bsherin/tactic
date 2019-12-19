@@ -1,15 +1,19 @@
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
+import React from "react";
+import PropTypes from 'prop-types';
+
+import { ResizeSensor } from "@blueprintjs/core";
+import { Regions } from "@blueprintjs/table";
+
 import { SearchForm, BpSelectorTable } from "./library_widgets.js";
 import { HorizontalPanes } from "./resizing_layouts.js";
 
 import { postAjax } from "./communication_react.js";
 import { getUsableDimensions } from "./sizing_tools.js";
+import { doBinding } from "./utilities_react.js";
 
 export { AdminPane };
-
-let Bp = blueprint;
-let Bpt = bptable;
 
 class AdminPane extends React.Component {
 
@@ -42,11 +46,11 @@ class AdminPane extends React.Component {
         for (let region of regions) {
             if (region.hasOwnProperty("rows")) {
                 let first_row = region["rows"][0];
-                revised_regions.push(Bpt.Regions.row(first_row));
+                revised_regions.push(Regions.row(first_row));
                 let last_row = region["rows"][1];
                 for (let i = first_row; i <= last_row; ++i) {
                     selected_rows.push(this.state.data_list[i]);
-                    revised_regions.push(Bpt.Regions.row(i));
+                    revised_regions.push(Regions.row(i));
                 }
             }
         }
@@ -366,7 +370,7 @@ class AdminPane extends React.Component {
             )
         );
         return React.createElement(
-            Bp.ResizeSensor,
+            ResizeSensor,
             { onResize: this._handleResize, observeParents: true },
             React.createElement(
                 "div",

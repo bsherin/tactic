@@ -4,6 +4,14 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
  * Created by bls910
  */
 
+import "../tactic_css/tactic.scss";
+
+import React from "react";
+import * as ReactDOM from 'react-dom';
+import PropTypes from 'prop-types';
+
+import { ResizeSensor } from "@blueprintjs/core";
+
 import { ResourceViewerSocket, ResourceViewerApp, copyToLibrary, sendToRepository } from "./resource_viewer_react_app.js";
 import { ReactCodemirror } from "./react-codemirror.js";
 import { ViewerContext } from "./resource_viewer_context.js";
@@ -12,10 +20,13 @@ import { postAjax, postAjaxPromise, postWithCallback } from "./communication_rea
 import { doFlash } from "./toaster.js";
 import { withErrorDrawer } from "./error_drawer.js";
 import { withStatus } from "./toaster.js";
+import { doBinding } from "./utilities_react.js";
 
 import { SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, BOTTOM_MARGIN, getUsableDimensions } from "./sizing_tools.js";
+import { guid } from "./utilities_react";
 
-let Bp = blueprint;
+window.resource_viewer_id = guid();
+window.main_id = resource_viewer_id;
 
 function module_viewer_main() {
     render_navbar(null, true);
@@ -163,7 +174,7 @@ class ModuleViewerApp extends React.Component {
             ViewerContext.Provider,
             { value: the_context },
             React.createElement(
-                Bp.ResizeSensor,
+                ResizeSensor,
                 { onResize: this._handleResize, observeParents: true },
                 React.createElement(
                     "div",
