@@ -333,12 +333,12 @@ class TileComponent extends React.Component {
         let self = this;
         this.setState({mounted: true});
         this._broadcastTileSize(this.props.tile_width, this.props.tile_height);
-        this.listen_for_clicks();
         this.executeEmbeddedScripts();
         this.makeTablesSortable();
         if (this.props.javascript_code) {
             this._executeJavascript()
         }
+        this.listen_for_clicks();
     }
 
     componentDidUpdate() {
@@ -347,6 +347,7 @@ class TileComponent extends React.Component {
         if (this.props.javascript_code) {
             this._executeJavascript()
         }
+        this.listen_for_clicks();
     }
 
     _toggleTileLog() {
