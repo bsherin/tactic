@@ -12,6 +12,7 @@ networkx
 nltk==3.4.5
 numpy
 pandas
+pympler
 regex
 scipy
 scikit-learn
