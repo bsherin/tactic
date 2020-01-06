@@ -2,18 +2,40 @@
 import {guid} from "./utilities_react.js";
 
 export {handleCallback, postAjax, postAjaxPromise, postAjaxUploadPromise, postWithCallback,
-    postWithCallbackAsyncFalse, postWithCallbackNoMain, postAjaxUpload, postAsyncFalse}
+    postWithCallbackAsyncFalse, postWithCallbackNoMain, postAjaxUpload, postAsyncFalse,
+    setDudePort, postAjaxDude, getDudeUrl, getHostUrl}
 
 
 let callbacks = {};
+let dude_port = null;
 
-let megaplex_port = "8085";
+let sroot = window.location.host.replace(/:.*$/, "");
+
+const client_id = "client_" + window.dude_id;
 
 function handleCallback (task_packet) {
     let task_id = task_packet.callback_id;
     let func = callbacks[task_id];
     delete callbacks[task_id];
     func(task_packet.response_data);
+}
+
+function setDudePort(port) {
+    dude_port = port
+}
+
+function getDudeUrl(target) {
+    if (target[0] == "/") {
+        target = target.slice(1)
+    }
+    return window.location.protocol + "//" + sroot + ":" + String(dude_port) + "/" + target
+}
+
+function getHostUrl(target) {
+    if (target[0] == "/") {
+        target = target.slice(1)
+    }
+    return window.location.protocol + "//" + sroot + ":5000" + "/" + target
 }
 
 function postAjax(target, data, callback) {
@@ -27,6 +49,23 @@ function postAjax(target, data, callback) {
         async: true,
         data: JSON.stringify(data),
         dataType: 'json',
+        success: callback
+    });
+}
+
+function postAjaxDude(target, data, callback, errorfunc=null) {
+    if (target[0] == "/") {
+        target = target.slice(1)
+    }
+    let dude_address = window.location.protocol + "//" + sroot + ":" + String(dude_port);
+    $.ajax({
+        url: dude_address + "/" + target,
+        contentType: 'application/json',
+        type: 'POST',
+        async: true,
+        data: JSON.stringify(data),
+        dataType: 'json',
+        error: errorfunc,
         success: callback
     });
 }
@@ -90,7 +129,7 @@ function postAjaxUploadPromise(target, form_data) {
 
 function postWithCallback(dest_id, task_type, task_data, callback_func){
     const task_packet =  {
-        "source": "client",
+        "source": "client_" + window.dude_id,
         "dest": dest_id,
         "task_type": task_type,
         "task_data": task_data,
@@ -108,6 +147,7 @@ function postWithCallback(dest_id, task_type, task_data, callback_func){
         task_packet.callback_id = null;
         task_packet.callback_type = "no_callback"
     }
+    // $.post("http://0.0.0.0:8085/post_task", JSON.stringify(task_packet))
     $.ajax({
         url: $SCRIPT_ROOT + "/post_from_client",
         contentType : 'application/json',
@@ -120,7 +160,7 @@ function postWithCallback(dest_id, task_type, task_data, callback_func){
 
 function postWithCallbackAsyncFalse(dest_id, task_type, task_data, callback_func){
     const task_packet =  {
-        "source": "client",
+        "source": client_id,
         "dest": dest_id,
         "task_type": task_type,
         "task_data": task_data,
@@ -150,7 +190,7 @@ function postWithCallbackAsyncFalse(dest_id, task_type, task_data, callback_func
 
 function postAsyncFalse(dest_id, task_type, task_data){
     const task_packet =  {
-        "source": "client",
+        "source": client_id,
         "dest": dest_id,
         "task_type": task_type,
         "task_data": task_data,
@@ -173,7 +213,7 @@ function postAsyncFalse(dest_id, task_type, task_data){
 
 function postWithCallbackNoMain(dest_id, task_type, task_data, callback_func){
     const task_packet =  {
-        "source": "client",
+        "source": client_id,
         "dest": dest_id,
         "task_type": task_type,
         "task_data": task_data,

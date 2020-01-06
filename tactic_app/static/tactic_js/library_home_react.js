@@ -636,7 +636,7 @@ class TileToolbar extends React.Component {
     _load_tile(resource_name = null) {
         let self = this;
         if (!resource_name) resource_name = this.props.list_of_selected[0];
-        postWithCallbackNoMain("host", "load_tile_module_task", { "tile_module_name": resource_name, "user_id": window.user_id }, data => {
+        postWithCallbackNoMain(window.dude_id, "load_tile_module_task", { "tile_module_name": resource_name, "user_id": window.user_id }, data => {
             if (!data.success) {
                 self.props.addErrorDrawerEntry({ title: "Error loading tile", content: data.message });
             } else {

@@ -4,6 +4,7 @@ import datetime
 import os
 import copy
 
+DEBUG = True
 
 MAX_QUEUE_LENGTH = int(os.environ.get("MAX_QUEUE_LENGTH"))
 print("max_queue_length is " + str(MAX_QUEUE_LENGTH))
@@ -11,8 +12,18 @@ print("max_queue_length is " + str(MAX_QUEUE_LENGTH))
 timeout_on_queue_full = .01
 
 
+def handle_exception(ex, special_string=None):
+    if special_string is None:
+        template = "<pre>An exception of type {0} occured. Arguments:\n{1!r}</pre>"
+    else:
+        template = "<pre>" + special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}</pre>"
+    error_string = template.format(type(ex).__name__, ex.args)
+    return error_string
+
+
 class TaskManager(object):
     data_template = "cid: {}\ttasks: {}\tresponses: {}\twait_dict: {}\texpiration_dict: {}\texpired_tasks: {}"
+    task_template = "source: {}\tdest: {}\ttask_type: {}"
 
     def __init__(self, my_id, queue_dict):
         self.my_id = my_id
@@ -26,10 +37,12 @@ class TaskManager(object):
     def post_task(self, task_packet):
         try:
             task_packet["status"] = "on_megaplex_queue"
+            if DEBUG:
+                print(self.task_template.format(task_packet["source"], task_packet["dest"], task_packet["task_type"]))
             self.tasks.put(task_packet, block=True, timeout=timeout_on_queue_full)
-        except:
-            print("Queue was full. Couldn't post task")
-            return {"success": False, "message": "Megaplex task queue is full"}
+        except Exception as ex:
+            print (handle_exception(ex, special_string="Couldnt post task"))
+            return {"success": False, "message": "Error posting task"}
         return {"success": True}
 
     def get_data_string(self):

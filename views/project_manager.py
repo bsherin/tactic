@@ -2,7 +2,7 @@
 import sys
 import re
 import os
-import cStringIO
+import io
 from collections import OrderedDict
 from flask import jsonify, request, url_for, render_template, send_file
 from flask_login import login_required, current_user
@@ -53,7 +53,7 @@ class ProjectManager(LibraryResourceManager):
             return NotImplementedError
 
         project_dict = read_project_dict(fs, mdata, save_dict["file_id"])
-        str_io = cStringIO.StringIO()
+        str_io = io.StringIO()
         str_io.write(project_dict["jupyter_text"])
         str_io.seek(0)
         return send_file(str_io,

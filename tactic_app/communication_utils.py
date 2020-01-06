@@ -2,6 +2,7 @@ import requests
 import sys
 import time
 import os
+import re
 import json
 import types
 from bson import Binary
@@ -24,6 +25,10 @@ RETRIES = 60
 
 am_host = True
 megaplex_address = None
+
+
+def replace_port(url, new_port):
+    return re.sub(":[0-9]+", ":" + str(new_port), url)
 
 
 def is_jsonizable(dat):

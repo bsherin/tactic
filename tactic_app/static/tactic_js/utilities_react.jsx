@@ -3,6 +3,7 @@
  */
 
 import _ from 'lodash';
+import {getHostUrl} from "./communication_react.js";
 
 export {doBinding, propsAreEqual, arrayMove, arraysMatch, get_ppi, remove_duplicates, doSignOut, guid}
 
@@ -88,7 +89,7 @@ Array.prototype.empty = function () {
 };
 
 function doSignOut(page_id) {
-    window.open($SCRIPT_ROOT + "/logout/" + window.page_id, "_self");
+    window.open(getHostUrl("/logout/" + window.page_id), "_self");
     return false
 }
 

@@ -24,6 +24,14 @@ services:
       - tactic_base
     image: tactic_main_image
 
+  tactic_dude:
+    build:
+      context: .
+      dockerfile: Dockerfile-dude
+    depends_on:
+      - tactic_base
+    image: tactic_dude_image
+
   tactic_module_viewer:
     build:
       context: .
