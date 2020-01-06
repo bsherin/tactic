@@ -11,11 +11,11 @@ print "entering tactic_run"
 import docker_cleanup
 docker_cleanup.do_docker_cleanup()
 
-from tactic_app import app, socketio # global_stuff ?
+from tactic_app import app, socketio  # global_stuff ?
 
 from tactic_app import users, global_tile_management
-from views import auth_views, main_views, library_views, admin_views
-from views import module_viewer_views, history_viewer_views, tile_differ_views
+import auth_views  # main_views, library_views, admin_views
+# from views import module_viewer_views, history_viewer_views, tile_differ_views
 from tactic_app import host_workers
 
 print "imported app"
@@ -23,6 +23,5 @@ print "imported app"
 import tactic_app
 # tactic_app.global_tile_manager.get_all_default_tiles()
 
-from views import tester_views
 
 socketio.run(app, host="0.0.0.0", port=5000)

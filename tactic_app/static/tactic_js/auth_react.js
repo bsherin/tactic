@@ -8,10 +8,12 @@ import { FormGroup, InputGroup, Button } from "@blueprintjs/core";
 
 import { render_navbar } from "./blueprint_navbar.js";
 import { doFlash, withStatus } from "./toaster.js";
-import { postAjax } from "./communication_react.js";
+import { postAjax, setDudePort, getDudeUrl } from "./communication_react.js";
 import { doBinding, guid } from "./utilities_react.js";
 
 window.page_id = guid();
+
+let dude_id = null;
 
 function _login_main() {
     render_navbar("login");
@@ -64,10 +66,20 @@ class LoginApp extends React.Component {
         postAjax("attempt_login", data, this._return_from_submit_login);
     }
 
+    openAfterDelay() {
+        let otimer = setInterval(doOpen, 2000);
+        function doOpen() {
+            clearInterval(otimer);
+            window.open(getDudeUrl(window._next_view), "_self");
+        }
+    }
+
     _return_from_submit_login(data) {
         this.props.clearStatus();
         if (data.logged_in) {
-            window.open($SCRIPT_ROOT + window._next_view, "_self");
+            this.props.setStatus({ show_spinner: true, status_message: "Successful login ..." });
+            setDudePort(data.dude_port);
+            this.openAfterDelay();
         } else {
             this.setState({ password_warning_text: "Login failed" });
         }

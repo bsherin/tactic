@@ -3,6 +3,7 @@ import sys
 import logging
 import datetime
 
+
 sys.stdout = sys.stderr
 from megaplex_task_manager import TaskManager
 

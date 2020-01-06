@@ -1,0 +1,12 @@
+docker==3.7
+Flask
+flask-cors
+Flask-Login
+Flask-SocketIO
+Flask-SSLify
+Flask-WTF
+markdown
+gevent-websocket==0.10.1
+gunicorn
+openpyxl==2.6.4
+xmltodict==0.9.2

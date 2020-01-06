@@ -23,6 +23,8 @@ MAX_QUEUE_LENGTH = 5000
 CHUNK_SIZE = 100
 STEP_SIZE = 50
 
+_develop = ("DEVELOP" in os.environ) and (os.environ.get("DEVELOP") == "True")
+
 if "DEBUG_MAIN_CONTAINER" in os.environ:
     DEBUG_MAIN_CONTAINER = os.environ.get("DEBUG_MAIN_CONTAINER")
 else:
@@ -39,6 +41,10 @@ if "DB_NAME" in os.environ:
 else:
     db_name = "tacticdb"
 
+if "USE_SSL" in os.environ:
+    use_ssl = os.environ.get("USE_SSL")
+else:
+    use_ssl = False
 
 if "MONGO_URI" in os.environ:
     mongo_uri = os.environ.get("MONGO_URI")
@@ -71,6 +77,77 @@ def get_my_address():
 # Note that get_address assumes that the network is named usernet
 def get_address(container_identifier, network_name):
     return cli.containers.get(container_identifier).attrs["NetworkSettings"]["Networks"][network_name]["IPAddress"]
+
+
+class DudeContainerTracker(object):
+    def __init__(self):
+        self.dc_dict = {} # currently this dict isn't used for anything
+        self.last_port = 8086
+
+    def create_dude_container(self, user_id, username, test_tile_container_id):
+        dude_volume_dict = {"/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "rw"}}
+        # user_host_persist_dir = host_persist_dir + "/tile_manager/" + username
+        dude_volume_dict[host_persist_dir] = {"bind": "/code/persist", "mode": "rw"}
+        dude_volume_dict[os.getcwd() + "/tactic_app/static"] = {"bind": "/code/static", "mode": "ro"}
+        dude_volume_dict[os.getcwd() + "/tactic_app/templates"] = {"bind": "/code/templates", "mode": "ro"}
+        additional_labels = {"published_port": str(self.last_port)}
+        additional_environ = {"TEST_TILE_CONTAINER_ID": test_tile_container_id}
+        dude_id, _container_id = create_container("tactic_dude_image", network_mode="bridge",
+                                                  owner=user_id, username=username,
+                                                  volume_dict=dude_volume_dict,
+                                                  publish_all_ports=True, true_host_persist_dir=host_persist_dir,
+                                                  port_bindings={5000: self.last_port},
+                                                  additional_labels=additional_labels,
+                                                  additional_environ=additional_environ,
+                                                  true_host_nltk_data_dir=host_nltk_data_dir)
+        # currently this dict isn't used for anything
+        self.dc_dict[user_id] = {
+            "address": get_address(_container_id, "bridge"),
+            "container_id": _container_id,
+            "port": self.extract_port(_container_id),
+            "published_port": self.last_port
+        }
+        the_port = self.last_port
+        self.last_port += 1
+        return dude_id, the_port
+
+    def delete_dude(self, unique_id):
+        if unique_id in self.dc_dict:
+            del self.dc_dict[unique_id]
+        return
+
+    def port(self, unique_id):
+        return self.dc_dict[unique_id]["port"]
+
+    def extract_port(self, container_identifier):
+        return cli.containers.get(container_identifier).attrs["NetworkSettings"]["Ports"]["5000/tcp"]
+
+    def address(self, unique_id):
+        return self.dc_dict[unique_id]["address"]
+
+    def get_container_id(self, unique_id):
+        return self.dc_dict[user_id]["container_id"]
+
+    def is_dude(self, unique_id):
+        return unique_id in self.dc_dict
+
+
+def get_dude_container(cuser):
+    owner_id = cuser.get_id()
+    for cont in cli.containers.list():
+        if container_owner(cont) == owner_id and cont.attrs["Config"]["Image"] == "tactic_dude_image":
+            return cont
+    return None
+
+
+def get_dude_port(cuser):
+    cont = get_dude_container(cuser)
+    if cont is None:
+        return None
+    return container_published_port(cont)
+
+
+dude_container_info = DudeContainerTracker()
 
 
 class MainContainerTracker(object):
@@ -126,8 +203,16 @@ cont_type_dict = {"megaplex_main:app": "megaplex",
                   "tile_main:app": "tile",
                   "tile_main.py": "tile",
                   "main_main.py": "main",
+                  "dude_main:app": "dude",
+                  "dude_main.py": "dude",
                   "module_viewer_main.py": "module_viewer",
                   "module_viewer_main:app": "module_viewer"}
+
+
+type_from_image = {"tactic_tile_image": "tile",
+                   "tactic_main_image": "main",
+                   "module_viewer_image": "module_viewer",
+                   "tactic_dude_image": "dude"}
 
 
 def get_container_type(cont):
@@ -143,13 +228,17 @@ def create_container(image_name, container_name=None, network_mode="bridge",
                      env_vars=None, port_bindings=None, wait_retries=50,
                      other_name="none", volume_dict=None, username=None,
                      detach=True, register_container=True, publish_all_ports=False,
-                     main_address=None, true_host_persist_dir=None, true_host_nltk_data_dir=None, special_unique_id=None):
+                     main_address=None, true_host_persist_dir=None, true_host_nltk_data_dir=None,
+                     special_unique_id=None, additional_labels=None, additional_environ=None):
     if env_vars is None:
         env_vars = {}
     if special_unique_id is not None:
         unique_id = special_unique_id
     else:
         unique_id = str(uuid.uuid4())
+        if image_name in type_from_image:
+            unique_id = type_from_image[image_name] + "_" + unique_id
+
     environ = {"MAX_QUEUE_LENGTH": MAX_QUEUE_LENGTH,
                "RETRIES": RETRIES,
                "CHUNK_SIZE": CHUNK_SIZE,
@@ -158,14 +247,19 @@ def create_container(image_name, container_name=None, network_mode="bridge",
                "MY_ID": unique_id,
                "OWNER": owner,
                "PARENT": parent,
+               "USE_SSL": use_ssl,
                "DB_NAME": db_name,
                "IMAGE_NAME": image_name,
                "MONGO_URI": mongo_uri,
                "DEBUG_MAIN_CONTAINER": DEBUG_MAIN_CONTAINER,
                "DEBUG_TILE_CONTAINER": DEBUG_TILE_CONTAINER,
                "PYTHONUNBUFFERED": "Yes",
+               "DEVELOP": _develop,
                "TRUE_HOST_PERSIST_DIR": true_host_persist_dir,
                "TRUE_HOST_NLTK_DATA_DIR": true_host_nltk_data_dir}
+
+    if additional_environ is not None:
+        environ.update(additional_environ)
 
     if username is not None:
         environ["USERNAME"] = username
@@ -184,6 +278,8 @@ def create_container(image_name, container_name=None, network_mode="bridge",
         environ[key] = val
 
     labels = {"my_id": unique_id, "owner": owner, "parent": parent, "other_name": other_name}
+    if additional_labels is not None:
+        labels.update(additional_labels)
 
     if image_name == "tactic_tile_image":  # We don't want people to be able to see the mongo_uri
         del environ["MONGO_URI"]
@@ -231,6 +327,13 @@ def container_owner(container):
         return container.attrs["Config"]["Labels"]["owner"]
     else:
         return "system"
+
+
+def container_published_port(container):
+    if "published_port" in container.attrs["Config"]["Labels"]:
+        return container.attrs["Config"]["Labels"]["published_port"]
+    else:
+        return None
 
 
 def container_parent(container):

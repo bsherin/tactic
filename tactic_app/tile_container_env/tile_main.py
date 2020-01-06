@@ -105,21 +105,26 @@ class TileWorker(QWorker):
             return self.handle_exception(ex, "Error loading source")
         return result
 
+    def is_container_local(self, the_id):
+        return the_id not in ["host", "client"] and not the_id.startswith("dude_")
+
     def post_task(self, dest_id, task_type, task_data=None, callback_func=None,
                   callback_data=None, expiration=None, error_handler=None):
-        if dest_id in ["host", "client"]:
-            alt_address = None
-        else:
+        if self.is_container_local(dest_id):
             alt_address = main_address
+        else:
+            alt_address = None
+        print("about to return")
         return QWorker.post_task(self, dest_id, task_type, task_data, callback_func,
                                  callback_data, expiration, error_handler, alt_address)
 
     def post_and_wait(self, dest_id, task_type, task_data=None, sleep_time=.1,
                       timeout=10, tries=RETRIES):
-        if dest_id in ["host", "client"]:
-            alt_address = None
-        else:
+
+        if self.is_container_local(dest_id):
             alt_address = main_address
+        else:
+            alt_address = None
 
         return QWorker.post_and_wait(self, dest_id, task_type, task_data, sleep_time,
                                      timeout, tries, alt_address=alt_address)
@@ -156,10 +161,10 @@ class TileWorker(QWorker):
             task_packet["response_data"] = response_data
         if task_packet["task_type"] == "_transfer_pipe_value":
             alt_address = task_packet["task_data"]["requester_address"]
-        elif task_packet["source"] in ["host", "client"]:
-            alt_address = None
-        else:
+        elif self.is_container_local(task_packet["source"]):
             alt_address = main_address
+        else:
+            alt_address = None
         send_request_to_megaplex("submit_response", task_packet, alt_address=alt_address)
         return
 

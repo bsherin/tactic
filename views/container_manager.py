@@ -28,7 +28,7 @@ class ContainerManager(ResourceManager):
                          login_required(self.container_logs), methods=['get'])
 
     def clear_user_containers(self, library_id):
-        tactic_image_names = ["tactic_tile_image", "tactic_main_image", "module_viewer_image"]
+        tactic_image_names = ["tactic_tile_image", "tactic_main_image", "module_viewer_image", "tactic_dude_image"]
         tactic_image_ids = {}
         for iname in tactic_image_names:
             tactic_image_ids[iname] = cli.images.get(iname).id
@@ -57,6 +57,13 @@ class ContainerManager(ResourceManager):
                                              library_id, timeout=None)
                         cont.remove(force=True)
                     continue
+                if cont.attrs["Image"] == tactic_image_ids["tactic_dude_image"]:
+                    the_id = container_id(cont)
+                    if not the_id == global_tile_manager.test_tile_container_id:
+                        self.show_um_message("removing dude container " + cont.attrs["Name"],
+                                             library_id, timeout=None)
+                        cont.remove(force=True)
+                        continue
                 # if cont.attrs["Image"] == cont.attrs["ImageID"]:
                 #     self.show_um_message("removing image container " + cont["Id"], library_id)
                 #     cli.remove_container(cont["Id"], force=True)
@@ -107,7 +114,7 @@ class ContainerManager(ResourceManager):
 
     def get_resource_data_list(self, user_obj=None):
         tactic_image_names = ["tactic_tile_image", "tactic_main_image", "tactic_megaplex_image",
-                              "module_viewer_image"]
+                              "module_viewer_image", "tactic_dude_image"]
         image_id_names = {}
         for iname in tactic_image_names:
             image_id_names[cli.images.get(iname).id] = iname

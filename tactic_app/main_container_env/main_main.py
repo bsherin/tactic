@@ -51,7 +51,7 @@ class MainWorker(QWorker):
         return
 
     def is_container_local(self, the_id):
-        return the_id not in ["host", "client"]
+        return the_id not in ["host", "client"] and not the_id.startswith("dude_")
 
     def post_task(self, dest_id, task_type, task_data=None, callback_func=None,
                   callback_data=None, expiration=None, error_handler=None, alt_address=None):

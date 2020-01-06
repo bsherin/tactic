@@ -7,7 +7,8 @@ def do_docker_cleanup():
 
     all_containers = cli.containers.list(all=True)
 
-    tactic_image_names = ["tactic_tile_image", "tactic_main_image", "tactic_megaplex_image", "module_viewer_image"]
+    tactic_image_names = ["tactic_tile_image", "tactic_main_image", "tactic_megaplex_image",
+                          "module_viewer_image", "tactic_dude_image"]
     for cont in all_containers:
         if cont.attrs["Config"]["Image"] in tactic_image_names:
             cont.remove(force=True)
