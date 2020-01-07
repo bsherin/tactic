@@ -116,6 +116,7 @@ class ProjectManager(LibraryResourceManager):
                      "user_id": user_id,
                      "use_ssl": str(use_ssl),
                      "develop": str(_develop),
+                     "dude_id": common_data.dude_worker.my_id,
                      "main_id": main_id,
                      "temp_data_id": "",
                      "collection_name": "",

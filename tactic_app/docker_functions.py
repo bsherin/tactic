@@ -86,10 +86,10 @@ class DudeContainerTracker(object):
 
     def create_dude_container(self, user_id, username, test_tile_container_id):
         dude_volume_dict = {"/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "rw"}}
-        # user_host_persist_dir = host_persist_dir + "/tile_manager/" + username
         dude_volume_dict[host_persist_dir] = {"bind": "/code/persist", "mode": "rw"}
         dude_volume_dict[os.getcwd() + "/tactic_app/static"] = {"bind": "/code/static", "mode": "ro"}
         dude_volume_dict[os.getcwd() + "/tactic_app/templates"] = {"bind": "/code/templates", "mode": "ro"}
+        dude_volume_dict[os.getcwd() + "/docs"] = {"bind": "/code/docs", "mode": "ro"}
         additional_labels = {"published_port": str(self.last_port)}
         additional_environ = {"TEST_TILE_CONTAINER_ID": test_tile_container_id}
         dude_id, _container_id = create_container("tactic_dude_image", network_mode="bridge",

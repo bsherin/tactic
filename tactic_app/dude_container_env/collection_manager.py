@@ -71,6 +71,7 @@ class CollectionManager(LibraryResourceManager):
                                temp_data_id="",
                                use_ssl=str(use_ssl),
                                develop=str(_develop),
+                               dude_id=common_data.dude_worker.my_id,
                                uses_codemirror="True",
                                is_jupyter="False",
                                version_string=tstring,
@@ -88,6 +89,7 @@ class CollectionManager(LibraryResourceManager):
                                main_id=main_id,
                                temp_data_id=unique_id,
                                develop=str(_develop),
+                               dude_id=common_data.dude_worker.my_id,
                                use_ssl=str(use_ssl),
                                is_jupyter="False",
                                uses_codemirror="True",
@@ -127,6 +129,7 @@ class CollectionManager(LibraryResourceManager):
                                short_collection_name=short_collection_name,
                                uses_codemirror="True",
                                develop=str(_develop),
+                               dude_id=common_data.dude_worker.my_id,
                                version_string=tstring,
                                css_source=css_source("main_app"),
                                module_source=js_source_dict["main_app"])

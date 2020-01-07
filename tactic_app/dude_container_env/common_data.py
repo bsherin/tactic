@@ -16,7 +16,7 @@ from flask_wtf import CSRFProtect
 from docker_functions import create_container, get_address, ContainerCreateError
 import docker_functions
 from communication_utils import send_request_to_container, USE_FORWARDER
-# from integrated_docs import api_array
+from integrated_docs import api_array
 from docker_functions import db_name, mongo_uri
 import exception_mixin
 

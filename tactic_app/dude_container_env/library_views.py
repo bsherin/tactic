@@ -150,6 +150,7 @@ def repository():
                            use_ssl=str(use_ssl),
                            version_string=tstring,
                            develop=str(_develop),
+                           dude_id=common_data.dude_worker.my_id,
                            page_title="tactic repository",
                            css_source=css_source("repository_home_react"),
                            module_source=js_source_dict["repository_home_react"]
