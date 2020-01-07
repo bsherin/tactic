@@ -454,6 +454,7 @@ class TileComponent extends React.Component {
 
     listen_for_clicks () {
          let self = this;
+         $(this.body_ref.current).off();
          $(this.body_ref.current).on(click_event, '.element-clickable', function(e) {
              let data_dict = self._standard_click_data();
              const dset = e.target.dataset;
