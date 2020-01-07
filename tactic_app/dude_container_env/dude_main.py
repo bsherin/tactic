@@ -8,14 +8,15 @@ import common_data
 from common_data import db, app, csrf, socketio
 from dude_users import User
 import dude_tile_management
-import library_views, main_views
+import library_views, main_views, module_viewer_views
+# import history_viewer_views, tile_differ_views, main_views
 import tile_manager, project_manager, collection_manager, list_manager
 import dude_workers
 from docker_functions import destroy_user_containers
 from communication_utils import replace_port
-# import module_viewer_views, history_viewer_views, tile_differ_views, main_views
 
 CORS(app)
+
 
 @app.errorhandler(CSRFError)
 def csrf_error(reason):

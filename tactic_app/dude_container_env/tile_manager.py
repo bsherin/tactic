@@ -6,7 +6,7 @@ import re
 
 from flask import render_template, request, jsonify, url_for
 from flask_login import login_required, current_user
-# from tactic_app.integrated_docs import api_dict_by_category, ordered_api_categories
+from integrated_docs import api_dict_by_category, ordered_api_categories
 import common_data
 from common_data import app, db, socketio, use_ssl
 from resource_manager import ResourceManager, LibraryResourceManager
@@ -167,6 +167,7 @@ class TileManager(LibraryResourceManager):
                                is_repository=False,
                                use_ssl=use_ssl,
                                develop=str(_develop),
+                               dude_id=common_data.dude_worker.my_id,
                                css_source=css_source("module_viewer_react"),
                                javascript_source=javascript_source,
                                uses_codemirror="True",
@@ -214,6 +215,7 @@ class TileManager(LibraryResourceManager):
                                develop=str(_develop),
                                uses_codemirror="True",
                                version_string=tstring,
+                               dude_id=common_data.dude_worker.my_id,
                                module_viewer_id=the_content["module_viewer_id"],
                                css_source=css_source("tile_creator_react"),
                                module_source=js_source_dict["tile_creator_react"],
@@ -352,6 +354,7 @@ class RepositoryTileManager(TileManager):
                                is_repository=True,
                                use_ssl=use_ssl,
                                develop=str(_develop),
+                               dude_id=common_data.dude_worker.my_id,
                                css_source=css_source("module_viewer_react"),
                                javascript_source=javascript_source,
                                uses_codemirror="True",
