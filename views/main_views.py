@@ -68,18 +68,6 @@ def post_from_client():
     return jsonify({"success": True})
 
 
-@app.route('/get_menu_template', methods=['get'])
-@login_required
-def get_menu_template():
-    return send_file("templates/menu_template.html")
-
-
-@app.route('/get_table_templates', methods=['get'])
-@login_required
-def get_table_templates():
-    return send_file("templates/table_templates.html")
-
-
 def set_mainwindow_property(main_id, prop_name, prop_value):
     tactic_app.host_worker.post_task(main_id, "set_property", {"property": prop_name, "val": prop_value})
     return
