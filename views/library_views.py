@@ -446,11 +446,6 @@ def rename_resource(res_type, old_name):
     return manager.rename_me(old_name)
 
 
-@app.route('/get_modal_template', methods=['get'])
-def get_modal_template():
-    return send_file("templates/modal_text_request_template.html")
-
-
 @app.errorhandler(ContainerCreateError)
 def handle_container_create_error(e):
     return render_template("error_window_template.html",
