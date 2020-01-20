@@ -10,6 +10,7 @@ import qworker
 from flask import render_template, Flask
 from tile_code_parser import TileParser, remove_indents, insert_indents
 import exception_mixin
+from exception_mixin import ExceptionMixin
 
 import sys, os
 sys.stdout = sys.stderr
@@ -24,7 +25,7 @@ mongo_uri = os.environ.get("MONGO_URI")
 
 
 # noinspection PyUnusedLocal
-class ModuleViewerWorker(QWorker):
+class ModuleViewerWorker(QWorker, ExceptionMixin):
     def __init__(self):
         print("about to initialize QWorker")
         QWorker.__init__(self)

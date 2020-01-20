@@ -1,5 +1,7 @@
 markdown
-docker==3.7
-Flask==1.0.2
-gunicorn==18.0
+docker
+Flask
+gunicorn
 beautifulsoup4==4.5.1
+pika
+rabbitmq-admin

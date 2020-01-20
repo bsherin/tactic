@@ -152,7 +152,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
 
     def create_tile_container(self, data):
         try:
-            environ = {"PPI": data["ppi"]}
+            environ = {"PPI": data["ppi"], "USE_WAIT_TASKS": "True"}
             user_host_persist_dir = true_host_persist_dir + "/tile_manager/" + self.username
             tile_volume_dict = {}
             tile_volume_dict[user_host_persist_dir] = {"bind": "/persist", "mode": "rw"}

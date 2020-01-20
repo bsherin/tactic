@@ -1,8 +1,10 @@
 from qworker import QWorker, task_worthy, task_worthy_manual_submit
 from flask import render_template, url_for
 from flask_login import current_user
+import json
 from users import load_user, ModuleNotFoundError
 import gevent
+import pika
 from communication_utils import send_request_to_megaplex, make_python_object_jsonizable
 from docker_functions import create_container, destroy_container, destroy_child_containers, destroy_user_containers
 from docker_functions import get_log, ContainerCreateError, container_exec, restart_container, get_address
@@ -14,6 +16,8 @@ import uuid
 import sys
 import copy
 import datetime
+import time
+import os
 
 check_for_dead_time = 30  # How often, in seconds, to ask the megaplex to check for stalled containers
 no_heartbeat_time = 3600  # If a mainwindow does send a heartbeat after this amount of time, remove mainwindow.
@@ -21,14 +25,16 @@ global_tile_manager = tactic_app.global_tile_manager
 
 from tactic_app.js_source_management import _develop
 
+if "RESTART_RABBIT" in os.environ:
+    restart_rabbit = os.environ.get("RESTART_RABBIT") == "True"
+else:
+    restart_rabbit = True
+
 
 class HostWorker(QWorker):
     def __init__(self):
         QWorker.__init__(self)
         self.last_check_for_dead_containers = datetime.datetime.utcnow()
-        self.short_sleep_period = .01
-        self.hibernate_time = .1
-        self.gap_time_for_hiberate = 60
 
     @task_worthy
     def stop_library_spinner(self, data):
@@ -593,13 +599,20 @@ class ClientWorker(QWorker):
     def __init__(self):
         QWorker.__init__(self)
         self.my_id = "client"
-        self.short_sleep_period = .01
-        self.hibernate_time = .1
-        self.gap_time_for_hiberate = 60
         self.main_heartbeat_table = {}
 
     def forward_client_post(self, task_packet):
-        send_request_to_megaplex("post_task", task_packet)
+        dest_id = task_packet["dest"]
+        task_packet["status"] = "presend"
+        task_packet["reply_to"] = "client"
+        self.channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
+        self.channel.basic_publish(exchange='',
+                                   routing_key=dest_id,
+                                   properties=pika.BasicProperties(
+                                       reply_to="client",
+                                       correlation_id=task_packet["callback_id"],
+                                   ),
+                                   body=json.dumps(task_packet))
         return
 
     def update_heartbeat_table(self, main_id):
@@ -619,48 +632,38 @@ class ClientWorker(QWorker):
                 print "No heartbeat from mainwindow " + str(main_id)
                 self.post_task("host", "remove_mainwindow_task", {"main_id": main_id})
 
-    def _run(self):
-        self.running = True
-        while self.running:
-            self.check_for_dead_mainwindows()
-            try:
-                task_packet = self.get_next_task()
-            except Exception as ex:
-                special_string = "Error in get_next_task for my_id {}".format(self.my_id)
-                print self.get_traceback_message(ex, special_string)
+    def handle_event(self, task_packet):
+        print("entering handle_event in client_worker")
+        task_packet["table_message"] = task_packet["task_type"]
+        socketio.emit("table-message", task_packet, namespace='/main', room=task_packet["main_id"])
+        return
+
+    def handle_response(self, task_packet):
+        print("entering handle_response in client_worker")
+        try:
+            if "room" in task_packet:
+                room = task_packet["room"]
             else:
-                try:
-                    if "empty" not in task_packet:
-                        if task_packet["callback_id"] is not None:
-                            if "room" in task_packet:
-                                room = task_packet["room"]
-                            else:
-                                room = task_packet["main_id"]
-                            if "namespace" in task_packet:
-                                namespace = task_packet["namespace"]
-                            else:
-                                namespace = "/main"
-                            socketio.emit("handle-callback", task_packet, namespace=namespace, room=room)
-                        else:
-                            task_packet["table_message"] = task_packet["task_type"]
-                            socketio.emit("table-message", task_packet, namespace='/main', room=task_packet["main_id"])
-                        self.last_contact = datetime.datetime.utcnow()
-                        gevent.sleep(self.short_sleep_period)
-                    else:
-                        self.special_long_sleep_function()
-                        current_time = datetime.datetime.utcnow()
-                        tdelta = current_time - self.last_contact
-                        delta_seconds = tdelta.days * 24 * 60 + tdelta.seconds
-                        if delta_seconds > self.gap_time_for_hiberate:
-                            gevent.sleep(self.hibernate_time)
-                        else:
-                            gevent.sleep(self.short_sleep_period)
-                except Exception as ex:
-                    special_string = "Error handling task for my_id {}".format(self.my_id)
-                    print self.get_traceback_message(ex, special_string)
+                room = task_packet["main_id"]
+            if "namespace" in task_packet:
+                namespace = task_packet["namespace"]
+            else:
+                namespace = "/main"
+            socketio.emit("handle-callback", task_packet, namespace=namespace, room=room)
+        except Exception as ex:
+            special_string = "Error handling callback for task type {} for my_id {}".format(task_packet["task_type"],
+                                                                                            self.my_id)
+            self.handle_exception(ex, special_string)
+        return
+    #
+    # def _run(self):
+    #     print("starting qworker")
+    #     self.connection = tactic_app.host_worker.connection
+    #     self.on_connected(self.connection)
 
 
-tactic_app.host_worker = HostWorker()
 tactic_app.client_worker = ClientWorker()
+tactic_app.host_worker = HostWorker()
 tactic_app.host_worker.start()
 tactic_app.client_worker.start()
+

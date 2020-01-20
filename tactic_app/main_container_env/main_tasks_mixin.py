@@ -480,14 +480,12 @@ class LoadSaveTasksMixin:
         self.mworker.post_task(self.mworker.my_id, "compile_save_dict", {}, got_save_dict)
         return {"success": True}
 
-    @task_worthy
-    def change_collection(self, data_dict):
-        try:
-            short_collection_name = data_dict["new_collection_name"]
-            data = {"user_id": self.user_id, "collection_name": short_collection_name}
-            full_collection_name = self.mworker.post_and_wait("host",
-                                                              "get_full_collection_name",
-                                                              data)["full_collection_name"]
+    @task_worthy_manual_submit
+    def change_collection(self, data_dict, task_packet):
+        local_task_packet = task_packet
+
+        def got_full_collection_name(fcn_result):
+            full_collection_name = fcn_result["full_collection_name"]
             the_collection = self.db[full_collection_name]
             mdata = the_collection.find_one({"name": "__metadata__"})
             if "type" in mdata and mdata["type"] == "freeform":
@@ -517,13 +515,14 @@ class LoadSaveTasksMixin:
                            "collection_name": self.collection_name,
                            "short_collection_name": self.short_collection_name,
                            "doc_names": doc_names}
+            self.mworker.submit_respone(return_data, local_task_packet)
 
-        except Exception as ex:
-            self.mworker.debug_log("got an error in changing collection")
-            error_string = self.handle_exception(ex, "<pre>Error changing collection</pre>",
-                                                 print_to_console=False)
-            return_data = {"success": False, "message": error_string}
-        return return_data
+        short_collection_name = data_dict["new_collection_name"]
+        data = {"user_id": self.user_id, "collection_name": short_collection_name}
+
+        self.mworker.post_task("host", "get_full_collection_name", data, got_full_collection_name)
+
+        return
 
 
 class TileCreationTasksMixin:
@@ -553,6 +552,7 @@ class TileCreationTasksMixin:
 
         data_dict["base_figure_url"] = self.base_figure_url.replace("tile_id", tile_container_id)
         data_dict["doc_type"] = self.doc_type
+        print("about to get tile_code")
         data_dict["tile_code"] = self.get_tile_code(data_dict["tile_type"])
 
         def instantiated_result(instantiate_result):
@@ -578,6 +578,7 @@ class TileCreationTasksMixin:
             form_info = self.compile_form_info(tile_container_id)
             self.mworker.post_task(tile_container_id, "_create_form_data", form_info, got_form_data)
 
+        print("about to load source and instantiate tid = " + str(tile_container_id))
         self.mworker.post_task(tile_container_id, "load_source_and_instantiate", data_dict, instantiated_result)
         return
 
@@ -886,12 +887,14 @@ class APISupportTasksMixin:
 
     @task_worthy
     def get_collection_info(self, data):
+        print("in get_collection_info")
         info = {}
         for doc_name, ddict in self.doc_dict.items():
             info[doc_name] = {}
             info[doc_name]["number_rows"] = ddict.number_of_rows
             if self.doc_type == "table":
                 info[doc_name]["column_names"] = ddict.table_spec.header_list
+        print("about to return from get_collection_info")
         return info
 
     @task_worthy
