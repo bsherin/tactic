@@ -103,10 +103,12 @@ function postWithCallback(dest_id, task_type, task_data, callback_func){
         callbacks[unique_id] = callback_func;
         task_packet.callback_id = unique_id;
         task_packet.callback_type = "callback_no_context";
+        task_packet.reply_to = "client"
     }
     else {
         task_packet.callback_id = null;
-        task_packet.callback_type = "no_callback"
+        task_packet.callback_type = "no_callback";
+        task_packet.reply_to = null
     }
     $.ajax({
         url: $SCRIPT_ROOT + "/post_from_client",
@@ -133,10 +135,12 @@ function postWithCallbackAsyncFalse(dest_id, task_type, task_data, callback_func
         callbacks[unique_id] = callback_func;
         task_packet.callback_id = unique_id;
         task_packet.callback_type = "callback_no_context";
+        task_packet.reply_to = "client"
     }
     else {
         task_packet.callback_id = null;
-        task_packet.callback_type = "no_callback"
+        task_packet.callback_type = "no_callback";
+        task_packet.reply_to = null
     }
     $.ajax({
         url: $SCRIPT_ROOT + "/post_from_client",
@@ -156,6 +160,7 @@ function postAsyncFalse(dest_id, task_type, task_data){
         "task_data": task_data,
         "response_data": null,
         "main_id": main_id,
+        "reply_to": null,
         "callback_id": null,
         "callback_type": "no_callback",
         "expiration": null
@@ -185,10 +190,12 @@ function postWithCallbackNoMain(dest_id, task_type, task_data, callback_func){
         callbacks[unique_id] = callback_func;
         task_packet.callback_id = unique_id;
         task_packet.callback_type = "callback_no_context";
+        task_packet.reply_to = "client"
     }
     else {
         task_packet.callback_id = null;
-        task_packet.callback_type = "no_callback"
+        task_packet.callback_type = "no_callback";
+        task_packet.reply_to = null
     }
     $.ajax({
         url: $SCRIPT_ROOT + "/post_from_client",

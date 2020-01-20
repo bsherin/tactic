@@ -10,7 +10,6 @@ from pymongo import MongoClient
 from pymongo.database import Database
 import gridfs
 from flask_login import LoginManager
-from flask_bootstrap import Bootstrap
 from flask_socketio import SocketIO
 from flask_wtf import CSRFProtect
 from docker_functions import create_container, get_address, ContainerCreateError
@@ -18,12 +17,19 @@ import docker_functions
 from communication_utils import send_request_to_container, USE_FORWARDER
 from integrated_docs import api_array
 from docker_functions import db_name, mongo_uri
+from rabbit_manage import sleep_until_rabbit_alive, delete_all_queues
 import exception_mixin
 
 csrf = CSRFProtect()
 
 # global_stuff
 # these variables are imported by other modules
+
+if "RESTART_RABBIT" in os.environ:
+    restart_rabbit = os.environ.get("RESTART_RABBIT") == "True"
+else:
+    restart_rabbit = True
+
 
 use_ssl = os.environ.get("USE_SSL")
 app = None
@@ -40,12 +46,14 @@ def print_message():
 
 
 def create_megaplex():
-    global megaplex_id
     try:
-        unique_id, megaplex_id = create_container("tactic_megaplex_image",
-                                                  port_bindings={5000: 8085},
-                                                  register_container=False)
-        docker_functions.megaplex_address = get_address(megaplex_id, "bridge")
+        if restart_rabbit:
+            unique_id, megaplex_id = create_container("rabbitmq:3-management",
+                                                      container_name="megaplex",
+                                                      host_name="my-rabbit",
+                                                      port_bindings={5672: 5672, 15672: 15672},
+                                                      register_container=False)
+        docker_functions.megaplex_address = get_address("megaplex", "bridge")
     except ContainerCreateError:
         print "Error creating the Megaplex."
         exit()
@@ -109,12 +117,15 @@ try:
 
     "print starting login_manager, bootstratp, socketio"
     login_manager.init_app(app)
-    bootstrap = Bootstrap(app)
     socketio = SocketIO(app)
     csrf.init_app(app)
 
     print "creating the megaplex"
     create_megaplex()
+    success = sleep_until_rabbit_alive()
+    if not success:
+        print("seems like the rabbitmq server isn't answering")
+    delete_all_queues()
 
     if "temp_data" not in db.collection_names():
         db.create_collection("temp_data")

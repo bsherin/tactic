@@ -1,7 +1,7 @@
-from flask import jsonify
-import flask
+
 import traceback
 import os
+import json
 
 if "IMAGE_NAME" in os.environ:
     if os.environ.get("IMAGE_NAME") == "tactic_tile_image":
@@ -10,6 +10,7 @@ if "IMAGE_NAME" in os.environ:
         from megaplex_main import app
     else:
         app = None  # Will be here if in the module_viewer image is set externally
+
 else:
     app = None  # If running on server will be set when app is initialized
 

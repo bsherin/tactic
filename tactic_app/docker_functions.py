@@ -11,6 +11,7 @@ import communication_utils
 import subprocess
 import re
 from volume_manager import host_persist_dir, host_nltk_data_dir
+from rabbit_manage import delete_one_queue
 forwarder_address = None
 forwarder_id = None
 sys.stdout = sys.stderr
@@ -81,7 +82,9 @@ class MainContainerTracker(object):
         main_volume_dict = {"/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "rw"}}
         user_host_persist_dir = host_persist_dir + "/tile_manager/" + username
         main_volume_dict[user_host_persist_dir] = {"bind": "/persist", "mode": "ro"}
+        environ = {"USE_WAIT_TASKS": "True"}
         main_id, _container_id = create_container("tactic_main_image", network_mode="bridge",
+                                                  env_vars=environ,
                                                   owner=user_id, other_name=other_name, username=username,
                                                   volume_dict=main_volume_dict,
                                                   publish_all_ports=True, true_host_persist_dir=host_persist_dir,
@@ -138,7 +141,7 @@ def get_container_type(cont):
 
 
 # noinspection PyUnusedLocal
-def create_container(image_name, container_name=None, network_mode="bridge",
+def create_container(image_name, container_name=None, network_mode="bridge", host_name="none",
                      wait_until_running=True, owner="host", parent="host",
                      env_vars=None, port_bindings=None, wait_retries=50,
                      other_name="none", volume_dict=None, username=None,
@@ -188,25 +191,24 @@ def create_container(image_name, container_name=None, network_mode="bridge",
     if image_name == "tactic_tile_image":  # We don't want people to be able to see the mongo_uri
         del environ["MONGO_URI"]
 
-    if container_name is None:
-        container = cli.containers.run(image=image_name,
-                                       network_mode="bridge",
-                                       environment=environ,
-                                       ports=port_bindings,
-                                       detach=detach,
-                                       labels=labels,
-                                       volumes=volume_dict,
-                                       publish_all_ports=publish_all_ports)
-    else:
-        container = cli.containers.run(image=image_name,
-                                       name=container_name,
-                                       network_mode="bridge",
-                                       environment=environ,
-                                       ports=port_bindings,
-                                       detach=detach,
-                                       labels=labels,
-                                       volumes=volume_dict,
-                                       publish_all_ports=publish_all_ports)
+    run_args = {
+        "image": image_name,
+        "network_mode": "bridge",
+        "environment": environ,
+        "ports": port_bindings,
+        "detach": detach,
+        "labels": labels,
+        "volumes": volume_dict,
+        "publish_all_ports": publish_all_ports
+    }
+
+    if container_name is not None:
+        run_args["name"] = container_name
+    if host_name is not None:
+        run_args["hostname"] = host_name
+
+    container = cli.containers.run(**run_args)
+
     cont_id = container.id
     container = cli.containers.get(cont_id)
     print("status " + str(container.status))
@@ -221,8 +223,8 @@ def create_container(image_name, container_name=None, network_mode="bridge",
                 raise ContainerCreateError("Error creating container with image name " + str(image_name))
             print("sleeping while waiting for container {} to run".format(str(cont_id)))
             time.sleep(0.1)
-    if register_container:
-        send_request_to_megaplex("register_container", {"container_id": unique_id})
+    # if register_container:
+    #     send_request_to_megaplex("register_container", {"container_id": unique_id})
     return unique_id, cont_id
 
 
@@ -315,7 +317,7 @@ def destroy_container(tactic_id, notify=True):
             return -1
         else:
             cont_type = get_container_type(cont)
-            send_request_to_megaplex("deregister_container", {"container_id": tactic_id})
+            # send_request_to_megaplex("deregister_container", {"container_id": tactic_id})
 
             if notify:
                 if cont_type == "main" or cont_type == "module_viewer":
@@ -326,6 +328,7 @@ def destroy_container(tactic_id, notify=True):
                     dest_id = container_parent(cont)
                     message = "Container for tile {} has been destroyed".format(tile_name)
             cont.remove(force=True)
+            delete_one_queue(tactic_id)
             if cont_type == "main":
                 main_container_info.delete_main(tactic_id)
             if notify and message is not None:

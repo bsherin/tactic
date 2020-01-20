@@ -10,6 +10,7 @@ import pickle
 import cloudpickle
 import zlib
 import uuid
+import pika
 from exception_mixin import generic_exception_handler
 
 if ("USE_FORWARDER" in os.environ) and (os.environ.get("USE_FORWARDER") == "True"):
@@ -150,12 +151,17 @@ def post_task_noqworker(source_id, dest_id, task_type, task_data=None):
                   "task_data": task_data,
                   "response_data": None,
                   "callback_id": None,
+                  "reply_to": None,
                   "expiration": None}
-    result = send_request_to_megaplex("post_task", new_packet).json()
-    if not result["success"]:
-        error_string = "Error posting task with msg_type {} dest {} source {}. Error: {}".format(task_type,
-                                                                                                 dest_id,
-                                                                                                 source_id,
-                                                                                                 result["message"])
-        raise Exception(error_string)
+    # result = send_request_to_megaplex("post_task", new_packet).json()
+    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+    channel = connection.channel()
+    channel.basic_publish(exchange='',
+                          routing_key=dest_id,
+                          properties=pika.BasicProperties(
+                              reply_to=None,
+                              correlation_id=None,
+                          ),
+                          body=json.dumps(new_packet))
+    connection.close()
     return result
