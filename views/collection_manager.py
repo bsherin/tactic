@@ -116,7 +116,6 @@ class CollectionManager(LibraryResourceManager):
                                project_name='',
                                base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                                main_id=main_id,
-                               main_port=main_container_info.port(main_id),
                                temp_data_id="",
                                doc_names=doc_names,
                                use_ssl=str(use_ssl),

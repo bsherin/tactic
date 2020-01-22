@@ -236,12 +236,12 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
 
 
 if __name__ == "__main__":
+    app = Flask(__name__)
+    exception_mixin.app = app
     print("entering main")
     mworker = ModuleViewerWorker()
     print("mworker is created, about to start my_id is " + str(mworker.my_id))
     mworker.start()
     print("mworker started, my_id is " + str(mworker.my_id))
-    app = Flask(__name__)
-    exception_mixin.app = app
     while True:
         time.sleep(1000)

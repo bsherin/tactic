@@ -9,7 +9,9 @@
     "@blueprintjs/core": "^3.22.3",
     "@blueprintjs/select": "latest",
     "@blueprintjs/table": "latest",
+    "amqplib": "^0.5.5",
     "lodash": "^4.17.15",
+    "net": "^1.0.2",
     "object-hash": "^2.0.1",
     "prop-types": "latest",
     "react": "latest",
@@ -17,7 +19,8 @@
     "react-draggable": "latest",
     "react-sortable-hoc": "latest",
     "react-transition-group": "latest",
-    "showdown": "^1.9.1"
+    "showdown": "^1.9.1",
+    "tls": "0.0.1"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",

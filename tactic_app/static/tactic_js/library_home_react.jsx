@@ -1,5 +1,3 @@
-
-
 import "../tactic_css/tactic.scss";
 import "../tactic_css/tactic_table.scss";
 import "../tactic_css/library_home.scss";

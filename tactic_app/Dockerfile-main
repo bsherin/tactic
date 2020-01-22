@@ -3,8 +3,5 @@ WORKDIR /code
 ADD ./main_container_env /code
 RUN pip install -r requirements.txt
 MAINTAINER "Bruce L Sherin"
-ADD  ./tile_container_env ./volume_manager.py ./exception_mixin.py ./qworker.py ./communication_utils.py \
-       ./megaplex_container_env/megaplex_main.py ./megaplex_container_env/megaplex_task_manager.py \
-       ./docker_functions.py ./mongo_accesser.py ./rabbit_manage.py /code/
-EXPOSE 5000
-ENTRYPOINT ["/usr/local/bin/gunicorn", "-b", "0.0.0.0:5000", "main_main:app"]
+ADD  ./volume_manager.py ./exception_mixin.py ./qworker.py ./communication_utils.py ./docker_functions.py ./mongo_accesser.py ./rabbit_manage.py /code/
+CMD ["python", "-u", "main_main.py"]

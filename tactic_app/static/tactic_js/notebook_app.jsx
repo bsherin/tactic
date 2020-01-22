@@ -34,7 +34,7 @@ function _main_main() {
     console.log("entering _notebook_main");
     ppi = get_ppi();
     tsocket = new MainTacticSocket("main", 5000);
-    tsocket.socket.emit('join-main', {"room": main_id}, function() {
+    tsocket.socket.emit('join-main', {"room": main_id, "user_id": window.user_id}, function() {
             _after_main_joined();
         });
     tsocket.socket.on('finish-post-load', _finish_post_load)
@@ -51,7 +51,7 @@ function _after_main_joined() {
     };
     if (window.is_totally_new) {
         console.log("about to intialize");
-        postWithCallback(window.main_id, "initialize_mainwindow", data_dict)
+        postWithCallback(window.main_id, "initialize_mainwindow", data_dict, _finish_post_load)
     }
     else {
         if (window.is_jupyter) {

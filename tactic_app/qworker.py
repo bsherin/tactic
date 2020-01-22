@@ -57,40 +57,9 @@ def task_worthy_manual_submit(m):
     return m
 
 
-class QPublisher(gevent.Greenlet, ExceptionMixin):
-    def __init__(self, my_id, connection):
-        gevent.Greenlet.__init__(self)
-        self.my_id = my_id
-        self.connection = connection
-        self.channel = None
-
-    def on_connected(self):
-        """Called when we are fully connected to RabbitMQ"""
-        self.connection.channel(on_open_callback=self.on_channel_open)
-
-    def on_channel_open(self, new_channel):
-        """Called when our channel has opened"""
-        self.channel = new_channel
-
-    def _run(self):
-        print("starting waitworker")
-        self.on_connected()
-
-    def post_packet(self, dest_id, task_packet, reply_to=None, callback_id=None):
-        self.channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
-        self.channel.basic_publish(exchange='',
-                                   routing_key=dest_id,
-                                   properties=pika.BasicProperties(
-                                       reply_to=reply_to,
-                                       correlation_id=callback_id),
-                                   body=json.dumps(task_packet))
-        return
-
-
 # noinspection PyTypeChecker
-class QWorker(gevent.Greenlet, ExceptionMixin):
+class BlockingQWorker(ExceptionMixin):
     def __init__(self):
-        gevent.Greenlet.__init__(self)
         self.last_contact = datetime.datetime.utcnow()
         if "MY_ID" in os.environ:
             self.my_id = os.environ.get("MY_ID")
@@ -99,8 +68,7 @@ class QWorker(gevent.Greenlet, ExceptionMixin):
         self.handler_instances = {"this_worker": self}
         self.channel = None
         self.connection = None
-        self.wait_worker = None
-        self.post_worker = None
+        self.post_channel = None
         if use_wait_tasks:
             wait_queue = self.my_id + "_wait"
             self.wait_worker = BlockingWaitWorker(wait_queue)
@@ -113,8 +81,7 @@ class QWorker(gevent.Greenlet, ExceptionMixin):
     def handle_delivery(self, channel, method, props, body):
         try:
             task_packet = json.loads(body)
-            print("got task_packet with task_type {} and status {}".format(task_packet["task_type"], task_packet["status"]))
-
+            print("in handle_delivery with task_type {}".format(task_packet["task_type"]))
             if task_packet["status"] in response_statuses:
                 self.handle_response(task_packet)
             else:
@@ -126,17 +93,20 @@ class QWorker(gevent.Greenlet, ExceptionMixin):
 
     def post_packet(self, dest_id, task_packet, reply_to=None, callback_id=None):
         self.post_channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
+        print("in post_packet with task_type {}".format(task_packet["task_type"]))
         self.post_channel.basic_publish(exchange='',
                                         routing_key=dest_id,
                                         properties=pika.BasicProperties(
-                                           reply_to=reply_to,
-                                           correlation_id=callback_id),
+                                            reply_to=reply_to,
+                                            correlation_id=callback_id,
+                                            delivery_mode=1
+                                        ),
                                         body=json.dumps(task_packet))
         return
 
     def post_task(self, dest_id, task_type, task_data=None, callback_func=None,
                   callback_data=None, expiration=None, error_handler=None):
-        print("in post_task with task_type {} and dest_id {}".format(task_type, dest_id))
+
         try:
             if callback_func is not None:
                 callback_id = str(uuid.uuid4())
@@ -191,17 +161,7 @@ class QWorker(gevent.Greenlet, ExceptionMixin):
                       "reply_to": self.wait_worker.my_id,
                       "expiration": None}
 
-        # self.wait_worker.post_packet(dest_id, new_packet, self.wait_worker.my_id, callback_id)
-        #
-        # for i in range(tries):
-        #     if self.wait_worker.response is None:
-        #         gevent.sleep(.1)
-        #     else:
-        #         resp = self.wait_worker.response
-        #         self.wait_worker.response = None
-        #         print("post_and_wait succeeded")
-        #         return resp
-
+        # noinspection PyNoneFunctionAssignment
         resp = self.wait_worker.post_blocking_wait(dest_id, new_packet)
 
         if resp == "__ERROR__":
@@ -214,14 +174,10 @@ class QWorker(gevent.Greenlet, ExceptionMixin):
             return resp
 
     def submit_response(self, task_packet, response_data=None, alt_address=None):
-
         if response_data is not None:
             task_packet["response_data"] = response_data
         task_packet["status"] = "submitted_response"
-        self.channel.basic_publish(exchange='',
-                                   routing_key=task_packet["reply_to"],
-                                   properties=pika.BasicProperties(correlation_id=task_packet["callback_id"]),
-                                   body=json.dumps(task_packet))
+        self.post_packet(task_packet["reply_to"], task_packet, callback_id=task_packet["callback_id"])
         return
 
     def handle_response(self, task_packet):
@@ -293,19 +249,16 @@ class QWorker(gevent.Greenlet, ExceptionMixin):
     def on_connection_closed(self, _unused_connection, reason):
         self.channel = None
         print('Connection closed, reconnect necessary: {}'.format(reason))
-        self.connect()
+        self.start()
 
     def on_channel_closed(self, channel, reason):
         print('Channel closed, reconnect necessary: {}'.format(reason))
         self.channel = None
-        self.connection.ioloop.stop()
         if not (self.connection.is_closing or self.connection.is_closed):
             self.connection.close()
-        self.connect()
+        self.start()
 
     def connect(self):
-        print("starting qworker")
-
         if communication_utils.am_host:
             taddress = "0.0.0.0"
         else:
@@ -318,28 +271,21 @@ class QWorker(gevent.Greenlet, ExceptionMixin):
 
         self.connection = pika.BlockingConnection(params)
 
+    def start(self):
+        print("starting qworker")
+        self.connect()
         self.channel = self.connection.channel()
         self.post_channel = self.connection.channel()
-
         self.channel.queue_declare(queue=self.my_id, durable=False, exclusive=False)
-
-        self.channel.basic_consume(
-            queue=self.my_id,
-            on_message_callback=self.handle_delivery,
-            auto_ack=True
-        )
-
-    def on_connection_open_error(self, _unused_connection, err):
-        print("error opening connection. I'll try again.")
-        self.connect()
-
-    def _run(self):
-        print("starting blocking qworker")
-        self.connect()
+        try:
+            self.channel.basic_consume(queue=self.my_id, auto_ack=True, on_message_callback=self.handle_delivery)
+            self.channel.start_consuming()
+        except Exception as ex:
+            print(self.handle_exception(ex, special_string))
 
 
 # noinspection PyTypeChecker
-class QWorkerNonBlocking(gevent.Greenlet, ExceptionMixin):
+class QWorker(gevent.Greenlet, ExceptionMixin):
     def __init__(self):
         gevent.Greenlet.__init__(self)
         self.last_contact = datetime.datetime.utcnow()
@@ -358,18 +304,24 @@ class QWorkerNonBlocking(gevent.Greenlet, ExceptionMixin):
 
     def on_connected(self, connection):
         """Called when we are fully connected to RabbitMQ"""
+        print("in on_connected")
         connection.channel(on_open_callback=self.on_channel_open)
         self.post_channel = connection.channel()
-        # self.post_worker = QPublisher(self.my_id, connection)
-        # self.post_worker.start()
 
     def on_channel_open(self, new_channel):
         """Called when our channel has opened"""
+        print("in on_channel_open")
         self.channel = new_channel
         self.channel.add_on_close_callback(self.on_channel_closed)
         self.channel.queue_declare(queue=self.my_id, callback=self.on_queue_declared, durable=False, exclusive=False)
 
     def on_queue_declared(self, frame):
+        print("queue declared")
+        """Called when RabbitMQ has told us our Queue has been declared, frame is the response from RabbitMQ"""
+        self.channel.basic_qos(
+            prefetch_count=11, callback=self.on_basic_qos_ok)
+
+    def on_basic_qos_ok(self, frame):
         """Called when RabbitMQ has told us our Queue has been declared, frame is the response from RabbitMQ"""
         try:
             self.channel.basic_consume(queue=self.my_id, auto_ack=True, on_message_callback=self.handle_delivery)
@@ -383,8 +335,7 @@ class QWorkerNonBlocking(gevent.Greenlet, ExceptionMixin):
     def handle_delivery(self, channel, method, props, body):
         try:
             task_packet = json.loads(body)
-            print("got task_packet with task_type {} and status {}".format(task_packet["task_type"], task_packet["status"]))
-
+            print("in handle_delivery with task_type {}".format(task_packet["task_type"]))
             if task_packet["status"] in response_statuses:
                 self.handle_response(task_packet)
             else:
@@ -396,17 +347,20 @@ class QWorkerNonBlocking(gevent.Greenlet, ExceptionMixin):
 
     def post_packet(self, dest_id, task_packet, reply_to=None, callback_id=None):
         self.post_channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
+        print("in post_packet with task_type {}".format(task_packet["task_type"]))
         self.post_channel.basic_publish(exchange='',
                                         routing_key=dest_id,
                                         properties=pika.BasicProperties(
                                            reply_to=reply_to,
-                                           correlation_id=callback_id),
+                                           correlation_id=callback_id,
+                                            delivery_mode=1
+                                        ),
                                         body=json.dumps(task_packet))
         return
 
     def post_task(self, dest_id, task_type, task_data=None, callback_func=None,
                   callback_data=None, expiration=None, error_handler=None):
-        print("in post_task with task_type {} and dest_id {}".format(task_type, dest_id))
+
         try:
             if callback_func is not None:
                 callback_id = str(uuid.uuid4())
@@ -461,17 +415,7 @@ class QWorkerNonBlocking(gevent.Greenlet, ExceptionMixin):
                       "reply_to": self.wait_worker.my_id,
                       "expiration": None}
 
-        # self.wait_worker.post_packet(dest_id, new_packet, self.wait_worker.my_id, callback_id)
-        #
-        # for i in range(tries):
-        #     if self.wait_worker.response is None:
-        #         gevent.sleep(.1)
-        #     else:
-        #         resp = self.wait_worker.response
-        #         self.wait_worker.response = None
-        #         print("post_and_wait succeeded")
-        #         return resp
-
+        # noinspection PyNoneFunctionAssignment
         resp = self.wait_worker.post_blocking_wait(dest_id, new_packet)
 
         if resp == "__ERROR__":
@@ -484,14 +428,10 @@ class QWorkerNonBlocking(gevent.Greenlet, ExceptionMixin):
             return resp
 
     def submit_response(self, task_packet, response_data=None, alt_address=None):
-
         if response_data is not None:
             task_packet["response_data"] = response_data
         task_packet["status"] = "submitted_response"
-        self.channel.basic_publish(exchange='',
-                                   routing_key=task_packet["reply_to"],
-                                   properties=pika.BasicProperties(correlation_id=task_packet["callback_id"]),
-                                   body=json.dumps(task_packet))
+        self.post_packet(task_packet["reply_to"], task_packet, callback_id=task_packet["callback_id"])
         return
 
     def handle_response(self, task_packet):
@@ -584,10 +524,15 @@ class QWorkerNonBlocking(gevent.Greenlet, ExceptionMixin):
             virtual_host='/'
         )
 
-        self.connection = pika.SelectConnection(params,
-                                                on_open_callback=self.on_connected,
-                                                on_open_error_callback=self.on_connection_open_error,
-                                                on_close_callback=self.on_connection_closed)
+        print("connecting")
+        try:
+            self.connection = pika.SelectConnection(params,
+                                                    on_open_callback=self.on_connected,
+                                                    on_open_error_callback=self.on_connection_open_error,
+                                                    on_close_callback=self.on_connection_closed)
+        except Exception as ex:
+            print(self.handle_exception(ex, "Error creating connection"))
+        print("about to start ioloop")
         self.connection.ioloop.start()
 
     def on_connection_open_error(self, _unused_connection, err):
@@ -596,28 +541,10 @@ class QWorkerNonBlocking(gevent.Greenlet, ExceptionMixin):
 
     def _run(self):
         print("starting qworker")
-
-        if communication_utils.am_host:
-            taddress = "0.0.0.0"
-        else:
-            taddress = communication_utils.megaplex_address
-        params = pika.ConnectionParameters(
-            host=taddress,
-            port=5672,
-            virtual_host='/'
-        )
-
-        self.connection = pika.BlockingConnection(params)
-
-        self.channel = self.connection.channel()
-        self.post_channel = connection.channel()
-
-        self.channel.queue_declare(queue=self.my_id, durable=False, exclusive=False)
-
-        self.channel.basic_consume(
-            queue=self.my_id,
-            on_message_callback=self.handle_delivery,
-            auto_ack=True)
+        try:
+            self.connect()
+        except Exception as ex:
+            print(self.handle_exception(ex, "Error in _run"))
 
 
 class BlockingWaitWorker:
@@ -636,7 +563,7 @@ class BlockingWaitWorker:
 
         self.channel = self.connection.channel()
 
-        self.channel.queue_declare(queue=queue_name, exclusive=False)
+        self.channel.queue_declare(queue=queue_name, durable=False, exclusive=False)
         self.callback_queue = queue_name
 
         self.channel.basic_consume(
@@ -647,12 +574,14 @@ class BlockingWaitWorker:
     def post_blocking_wait(self, dest_id, task_packet):
         self.response = None
         self.corr_id = str(uuid.uuid4())
+        self.channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
         self.channel.basic_publish(
             exchange='',
             routing_key=dest_id,
             properties=pika.BasicProperties(
                 reply_to=self.callback_queue,
                 correlation_id=self.corr_id,
+                delivery_mode=1
             ),
             body=json.dumps(task_packet))
         while self.response is None:
@@ -661,91 +590,3 @@ class BlockingWaitWorker:
 
     def on_response(self, ch, method, props, body):
         self.response = json.loads(body)["response_data"]
-
-
-class WaitWorker(gevent.Greenlet, ExceptionMixin):
-    def __init__(self, queue_name):
-        gevent.Greenlet.__init__(self)
-        self.channel = None
-        self.post_channel = None
-        self.my_id = queue_name
-        self.response = None
-
-    def on_connected(self, connection):
-        """Called when we are fully connected to RabbitMQ"""
-        print("in on_connected in WaitWorker")
-        connection.channel(on_open_callback=self.on_channel_open)
-        self.post_channel = connection.channel()
-        print("post_channel is " + str(self.post_channel))
-
-    def on_channel_open(self, new_channel):
-        """Called when our channel has opened"""
-        self.channel = new_channel
-        self.channel.queue_declare(queue=self.my_id, callback=self.on_queue_declared, durable=False, exclusive=False)
-
-    def on_queue_declared(self, frame):
-        """Called when RabbitMQ has told us our Queue has been declared, frame is the response from RabbitMQ"""
-        try:
-            self.channel.basic_consume(queue=self.my_id, auto_ack=True, on_message_callback=self.handle_delivery)
-        except Exception as ex:
-            print(self.handle_exception(ex, special_string))
-
-    def debug_log(self, msg):
-        timestring = datetime.datetime.utcnow().strftime("%b %d, %Y, %H:%M:%S")
-        print(timestring + ": " + msg)
-
-    def handle_delivery(self, channel, method, props, body):
-        print('got wait response in waitworker')
-        self.response = json.loads(body)["response_data"]
-        return
-
-    def post_packet(self, dest_id, task_packet, reply_to=None, callback_id=None):
-        self.post_channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
-        self.post_channel.basic_publish(exchange='',
-                                        routing_key=dest_id,
-                                        properties=pika.BasicProperties(
-                                           reply_to=reply_to,
-                                           correlation_id=callback_id),
-                                        body=json.dumps(task_packet))
-        return
-
-    def handle_exception(self, ex, special_string=None):
-        return self.extract_short_error_message(ex, special_string)
-
-    def on_connection_closed(self, _unused_connection, reason):
-        self.channel = None
-        print('Connection closed, reconnect necessary: {}'.format(reason))
-        self.connect()
-
-    def on_channel_closed(self, channel, reason):
-        print('Channel closed, reconnect necessary: {}'.format(reason))
-        self.channel = None
-        self.connection.ioloop.stop()
-        if not (self.connection.is_closing or self.connection.is_closed):
-            self.connection.close()
-        self.connect()
-
-    def connect(self):
-        if communication_utils.am_host:
-            taddress = "0.0.0.0"
-        else:
-            taddress = communication_utils.megaplex_address
-        params = pika.ConnectionParameters(
-            host=taddress,
-            port=5672,
-            virtual_host='/'
-        )
-
-        self.connection = pika.SelectConnection(params,
-                                                on_open_callback=self.on_connected,
-                                                on_open_error_callback=self.on_connection_open_error,
-                                                on_close_callback=self.on_connection_closed)
-        self.connection.ioloop.start()
-
-    def on_connection_open_error(self, _unused_connection, err):
-        print("error opening connection. I'll try again.")
-        self.connect()
-
-    def _run(self):
-        print("starting wqitworker")
-        self.connect()

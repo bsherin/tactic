@@ -4,7 +4,6 @@ import {guid} from "./utilities_react.js";
 export {handleCallback, postAjax, postAjaxPromise, postAjaxUploadPromise, postWithCallback,
     postWithCallbackAsyncFalse, postWithCallbackNoMain, postAjaxUpload, postAsyncFalse}
 
-
 let callbacks = {};
 
 let megaplex_port = "8085";

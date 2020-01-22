@@ -18,12 +18,7 @@ def get_queues():
 
 
 def delete_all_queues():
-    queues = get_queues()
-    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
-    channel = connection.channel()
-    for queue_name in queues:
-        channel.queue_delete(queue=queue_name)
-    connection.close()
+    delete_list_of_queues(get_queues())
     return
 
 
@@ -31,6 +26,14 @@ def delete_one_queue(tactic_id):
     connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
     channel = connection.channel()
     channel.queue_delete(queue=tactic_id)
+    connection.close()
+
+
+def delete_list_of_queues(qlist):
+    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+    channel = connection.channel()
+    for q in qlist:
+        channel.queue_delete(queue=q)
     connection.close()
 
 

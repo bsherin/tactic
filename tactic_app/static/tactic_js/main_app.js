@@ -54,7 +54,8 @@ function _main_main() {
     console.log("entering start_post_load");
     ppi = get_ppi();
     tsocket = new MainTacticSocket("main", 5000);
-    tsocket.socket.emit('join-main', { "room": main_id }, function () {
+    tsocket.socket.emit('join-main', { "room": main_id, "user_id": window.user_id }, function (response) {
+        window.initial_tile_types = response.tile_types;
         _after_main_joined();
     });
     tsocket.socket.on('finish-post-load', _finish_post_load);
@@ -81,7 +82,7 @@ function _after_main_joined() {
             "user_id": window.user_id,
             "ppi": ppi
         };
-        postWithCallback(main_id, "initialize_mainwindow", data_dict);
+        postWithCallback(main_id, "initialize_mainwindow", data_dict, _finish_post_load);
     }
 }
 
@@ -95,33 +96,41 @@ function _finish_post_load(data) {
         interface_state = data.interface_state;
     }
     if (window.is_freeform) {
-        postWithCallback(window.main_id, "grab_freeform_data", { "doc_name": window.doc_names[0], "set_visible_doc": true }, function (data) {
-            let domContainer = document.querySelector('#main-root');
-            if (window.is_project) {
-                ReactDOM.render(React.createElement(MainAppPlus, { is_project: true,
-                    interface_state: interface_state,
-                    initial_data_text: data.data_text,
-                    initial_doc_names: window.doc_names }), domContainer);
-            } else {
+
+        let domContainer = document.querySelector('#main-root');
+        if (window.is_project) {
+            // postWithCallback(window.main_id, "grab_freeform_data", {"doc_name":window.doc_names[0], "set_visible_doc": true}, function (data) {
+            ReactDOM.render(React.createElement(MainAppPlus, { is_project: true,
+                interface_state: interface_state,
+                initial_data_text: data.data_text,
+                initial_doc_names: window.doc_names }), domContainer);
+        }
+        // )
+        // }
+        else {
                 ReactDOM.render(React.createElement(MainAppPlus, { is_project: false,
                     interface_state: null,
                     initial_data_text: data.data_text,
                     initial_doc_names: window.doc_names }), domContainer);
             }
-        });
+        // });
     } else {
-        postWithCallback(window.main_id, "grab_chunk_by_row_index", { "doc_name": window.doc_names[0], "row_index": 0, "set_visible_doc": true }, function (data) {
-            let domContainer = document.querySelector('#main-root');
-            if (window.is_project) {
-                ReactDOM.render(React.createElement(MainAppPlus, { is_project: true,
-                    interface_state: interface_state,
-                    total_rows: data.total_rows,
-                    initial_column_names: data.table_spec.header_list,
-                    initial_data_row_dict: data.data_row_dict,
-                    initial_column_widths: data.table_spec.column_widths,
-                    initial_hidden_columns_list: data.table_spec.hidden_columns_list,
-                    initial_doc_names: window.doc_names }), domContainer);
-            } else {
+
+        let domContainer = document.querySelector('#main-root');
+        if (window.is_project) {
+            // postWithCallback(window.main_id, "grab_chunk_by_row_index", {"doc_name":window.doc_names[0], "row_index": 0, "set_visible_doc": true}, function (data) {
+            ReactDOM.render(React.createElement(MainAppPlus, { is_project: true,
+                interface_state: interface_state,
+                total_rows: data.total_rows,
+                initial_column_names: data.table_spec.header_list,
+                initial_data_row_dict: data.data_row_dict,
+                initial_column_widths: data.table_spec.column_widths,
+                initial_hidden_columns_list: data.table_spec.hidden_columns_list,
+                initial_doc_names: window.doc_names }), domContainer);
+        }
+        //     )
+        // }
+        else {
 
                 ReactDOM.render(React.createElement(MainAppPlus, { is_project: false,
                     interface_state: null,
@@ -132,7 +141,7 @@ function _finish_post_load(data) {
                     initial_hidden_columns_list: data.table_spec.hidden_columns_list,
                     initial_doc_names: window.doc_names }), domContainer);
             }
-        });
+        // });
     }
 }
 
@@ -157,7 +166,7 @@ class MainApp extends React.Component {
             console_is_shrunk: true,
             show_exports_pane: false,
             console_is_zoomed: false,
-            tile_types: {},
+            tile_types: window.initial_tile_types,
             tile_list: [],
             search_text: "",
             usable_width: window.innerWidth - 2 * MARGIN_SIZE,
@@ -245,9 +254,9 @@ class MainApp extends React.Component {
         tsocket.socket.on('table-message', function (data) {
             self._handleTableMessage(data);
         });
-        postWithCallback("host", "get_tile_types", { "user_id": window.user_id }, function (data) {
-            self.setState({ tile_types: data.tile_types });
-        });
+        // postWithCallback("host", "get_tile_types", {"user_id": window.user_id}, function (data) {
+        //     self.setState({tile_types: data.tile_types});
+        // });
 
         tsocket.socket.on("update-menus", function () {
             postWithCallback("host", "get_tile_types", { "user_id": window.user_id }, function (data) {
