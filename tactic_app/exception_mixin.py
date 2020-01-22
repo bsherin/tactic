@@ -6,8 +6,6 @@ import json
 if "IMAGE_NAME" in os.environ:
     if os.environ.get("IMAGE_NAME") == "tactic_tile_image":
         from tile_o_plex import app
-    elif os.environ.get("IMAGE_NAME") == "tactic_main_image":
-        from megaplex_main import app
     else:
         app = None  # Will be here if in the module_viewer image is set externally
 

@@ -10,6 +10,9 @@ from gevent import monkey; monkey.patch_all()
 import pika
 import json
 print("entering tile__main")
+from flask import Flask
+import exception_mixin
+from exception_mixin import ExceptionMixin
 
 from communication_utils import send_request_to_megaplex
 
@@ -22,23 +25,26 @@ import qworker
 import tile_env
 from tile_env import class_info
 from tile_env import exec_tile_code
+print("importing tile_base")
 import tile_base
+print("importing document_object")
 import document_object
+print("importing remote_tile_object")
 import remote_tile_object
 from tile_base import clear_and_exec_user_code, TileBase
 from pseudo_tile_base import PseudoTileClass
+print("importing pseudo_tile_base")
 import pseudo_tile_base
+print("importing library_object")
 import library_object
 import gevent
 from communication_utils import make_python_object_jsonizable
 import uuid
 
-from tile_o_plex import app
-import tile_o_plex
-
 import sys, os
 sys.stdout = sys.stderr
 import time
+print("done with imports in tile_main")
 
 if "MAIN_ADDRESS" in os.environ:
     main_address = os.environ["MAIN_ADDRESS"]
@@ -107,25 +113,6 @@ class TileWorker(QWorker):
             return self.handle_exception(ex, "Error loading source")
         return result
 
-    # def post_task(self, dest_id, task_type, task_data=None, callback_func=None,
-    #               callback_data=None, expiration=None, error_handler=None):
-    #     if dest_id in ["host", "client"]:
-    #         alt_address = None
-    #     else:
-    #         alt_address = main_address
-    #     return QWorker.post_task(self, dest_id, task_type, task_data, callback_func,
-    #                              callback_data, expiration, error_handler, alt_address)
-    #
-    # def post_and_wait(self, dest_id, task_type, task_data=None, sleep_time=.1,
-    #                   timeout=10, tries=RETRIES):
-    #     if dest_id in ["host", "client"]:
-    #         alt_address = None
-    #     else:
-    #         alt_address = main_address
-    #
-    #     return QWorker.post_and_wait(self, dest_id, task_type, task_data, sleep_time,
-    #                                  timeout, tries, alt_address=alt_address)
-
     def post_and_wait_for_pipe(self, dest_id, task_type, task_data=None, sleep_time=.1,
                                timeout=10, tries=RETRIES, alt_address=None):
         callback_id = str(uuid.uuid4())
@@ -152,23 +139,6 @@ class TileWorker(QWorker):
                                                                                                    self.my_id)
         self.debug_log(error_string)
         raise Exception(error_string)
-
-    # def submit_response(self, task_packet, response_data=None):
-    #     print("submitting response for task_type {}".format(task_packet["task_type"]))
-    #     if response_data is not None:
-    #         task_packet["response_data"] = response_data
-    #     if task_packet["task_type"] == "_transfer_pipe_value":
-    #         alt_address = task_packet["task_data"]["requester_address"]
-    #     elif task_packet["source"] in ["host", "client"]:
-    #         alt_address = None
-    #     else:
-    #         alt_address = main_address
-    #     task_packet["status"] = "submitted_response"
-    #     self.channel.basic_publish(exchange='',
-    #                                routing_key=task_packet["source"],
-    #                                properties=pika.BasicProperties(correlation_id=task_packet["callback_id"]),
-    #                                body=json.dumps(task_packet))
-    #     return
 
     @task_worthy
     def get_options(self, data_dict):
@@ -319,13 +289,17 @@ class TileWorker(QWorker):
 
     @task_worthy
     def create_pseudo_tile_collection_object(self, data):
+        print("in create_pseudoe_tile_collection_object")
         am_notebook = data["am_notebook"]
         if not am_notebook:
+            print("calling __fully_initialize__")
             document_object.Collection.__fully_initialize__()
+            print("return from __fully_initialize")
             pseudo_tile_base.Collection = document_object.Collection
             pseudo_tile_base.Tiles = remote_tile_object.Tiles
             pseudo_tile_base.Pipes = remote_tile_object.Pipes
         pseudo_tile_base.Library = library_object.Library
+        print("about to return in create_pseudo_tile_collection_object")
         return data
 
     @task_worthy
@@ -334,7 +308,10 @@ class TileWorker(QWorker):
         result = self.load_source(data)
         if not result["success"]:
             return result
-        return self.instantiate_tile_class(data)
+        instantiate_result = self.instantiate_tile_class(data)
+        form_data = self.tile_instance._create_form_data(data["form_info"])["form_data"]
+        instantiate_result["form_data"] = form_data
+        return instantiate_result
 
     @task_worthy
     def instantiate_tile_class(self, data):
@@ -372,15 +349,17 @@ class TileWorker(QWorker):
         return self.tile_instance._render_me(data)
 
 
-# if __name__ == "__main__":
-print("entering main")
-tile_base._tworker = TileWorker()
-document_object._tworker = tile_base._tworker
-library_object._tworker = tile_base._tworker
-remote_tile_object._tworker = tile_base._tworker
+if __name__ == "__main__":
+    print("entering tile_main")
+    app = Flask(__name__)
+    exception_mixin.app = app
+    tile_base._tworker = TileWorker()
+    document_object._tworker = tile_base._tworker
+    library_object._tworker = tile_base._tworker
+    remote_tile_object._tworker = tile_base._tworker
 
-print("tworker is created, about to start my_id is " + str(tile_base._tworker.my_id))
-tile_base._tworker.start()
-print("tworker started, my_id is " + str(tile_base._tworker.my_id))
-# while True:
-#     time.sleep(1000)
+    print("tworker is created, about to start my_id is " + str(tile_base._tworker.my_id))
+    tile_base._tworker.start()
+    print("tworker started, my_id is " + str(tile_base._tworker.my_id))
+    while True:
+        time.sleep(1000)

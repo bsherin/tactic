@@ -156,11 +156,13 @@ def post_task_noqworker(source_id, dest_id, task_type, task_data=None):
     # result = send_request_to_megaplex("post_task", new_packet).json()
     connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
     channel = connection.channel()
+    channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
     channel.basic_publish(exchange='',
                           routing_key=dest_id,
                           properties=pika.BasicProperties(
                               reply_to=None,
                               correlation_id=None,
+                              delivery_mode=1
                           ),
                           body=json.dumps(new_packet))
     connection.close()

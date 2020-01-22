@@ -89,15 +89,27 @@ class GlobalTileManager(object):
                     return cat[tile_type].value
         return None
 
-    def get_user_available_tile_types(self, username):
+    def get_user_available_tile_types(self, username, nested=False):
         self.add_user(username)
         tile_types = {}
         umanager = self.tile_manager[username]
-        for category in umanager.user_tiles.keys():
-            cat = umanager.user_tiles[category]
-            if category not in tile_types:
-                tile_types[category] = []
-            tile_types[category] += cat.keys()
+        try:
+            for category in umanager.user_tiles.keys():
+                cat = umanager.user_tiles[category]
+                if category not in tile_types:
+                    tile_types[category] = []
+                tile_types[category] += cat.keys()
+            if len(list(tile_types.keys())) == 0:
+                print("user tiles don't seem to be loaded. so load them")
+                self.load_user_default_tiles(username)
+                return self.get_user_available_tile_types(username, nested=True)
+
+        except AttributeError:
+            if nested:  # avoid infinite recursion
+                return {}
+            print("user tiles don't seem to be loaded. so load them")
+            self.load_user_default_tiles(username)
+            return self.get_user_available_tile_types(username, nested=True)
         return tile_types
 
     @staticmethod

@@ -47,6 +47,8 @@ def on_join_main(data):
 
     print "user joined room " + room
     socketio.emit("joined-mainid", room=room)
+    tile_types = tactic_app.host_worker.get_tile_types({"user_id": data["user_id"]})
+    return tile_types
 
 
 @app.route("/register_heartbeat", methods=["GET", "POST"])
@@ -64,7 +66,7 @@ def register_heartbeat():
 @login_required
 def post_from_client():
     task_packet = request.json
-    tactic_app.client_worker.forward_client_post(task_packet)
+    tactic_app.host_worker.forward_client_post(task_packet)
     return jsonify({"success": True})
 
 

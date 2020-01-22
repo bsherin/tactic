@@ -62,12 +62,12 @@ class OtherAPIMIxin:
         else:  # otherwise assume first argument is the tile name
             tile_id = self.tiles[key_or_tile_name]._tile_id
 
-        result = self._tworker.post_and_wait_for_pipe(tile_id,
-                                                      "_transfer_pipe_value",
-                                                      {"export_name": export_name,
-                                                       "requester_address": self.my_address},
-                                                      timeout=60,
-                                                      tries=self.RETRIES)
+        result = self._tworker.post_and_wait(tile_id,
+                                             "_transfer_pipe_value",
+                                             {"export_name": export_name,
+                                              "requester_address": self.my_address},
+                                             timeout=60,
+                                             tries=self.RETRIES)
         encoded_val = result["encoded_val"]
         val = debinarize_python_object(encoded_val)
         self._restore_stdout()

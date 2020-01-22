@@ -236,11 +236,20 @@ class LoadSaveTasksMixin:
 
         self.show_main_status_message("Recreating the console")
 
-        self.mworker.ask_host("emit_to_client", {"message": "finish-post-load",
-                                                 "collection_name": self.collection_name,
-                                                 "short_collection_name": self.short_collection_name,
-                                                 "doc_names": self.doc_names,
-                                                 "interface_state": interface_state})
+        task_data = {"message": "finish-post-load",
+                     "collection_name": self.collection_name,
+                     "short_collection_name": self.short_collection_name,
+                     "doc_names": self.doc_names,
+                     "interface_state": interface_state}
+
+        if self.doc_type == "table":
+            task_data.update(self.grab_chunk_by_row_index(
+                {"doc_name": self.doc_names[0], "row_index": 0, "set_visible_doc": True}))
+        else:
+            task_data.update(
+                self.grab_freeform_data({"doc_name": self.doc_names[0], "set_visible_doc": True}))
+
+        self.mworker.ask_host("emit_to_client", task_data)
 
         self.show_main_status_message("Making modules available")
         modules_to_load = copy.copy(loaded_modules)
@@ -554,6 +563,7 @@ class TileCreationTasksMixin:
         data_dict["doc_type"] = self.doc_type
         print("about to get tile_code")
         data_dict["tile_code"] = self.get_tile_code(data_dict["tile_type"])
+        data_dict["form_info"] = self.compile_form_info(tile_container_id)
 
         def instantiated_result(instantiate_result):
             print("got instantiate result, time is {}".format(self.microdsecs(self.tstart)))
@@ -565,18 +575,25 @@ class TileCreationTasksMixin:
             exports = instantiate_result["exports"]
             self.update_pipe_dict(exports, tile_container_id, tile_name)
 
-            def got_form_data(response):
-                print("got form data, time is {}".format(self.microdsecs(self.tstart)))
-                self.tstart = datetime.datetime.now()
-                form_data = response["form_data"]
-                self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task",
-                                       {"tile_id": tile_container_id})
-                self.tile_sort_list.append(tile_container_id)
-                response_data = {"success": True, "form_data": form_data, "tile_id": tile_container_id}
-                self.mworker.submit_response(local_task_packet, response_data)
+            form_data = instantiate_result["form_data"]
+            self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task",
+                                   {"tile_id": tile_container_id})
+            self.tile_sort_list.append(tile_container_id)
+            response_data = {"success": True, "form_data": form_data, "tile_id": tile_container_id}
+            self.mworker.submit_response(local_task_packet, response_data)
+            #
+            # def got_form_data(response):
+            #     print("got form data, time is {}".format(self.microdsecs(self.tstart)))
+            #     self.tstart = datetime.datetime.now()
+            #     form_data = response["form_data"]
+            #     self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task",
+            #                            {"tile_id": tile_container_id})
+            #     self.tile_sort_list.append(tile_container_id)
+            #     response_data = {"success": True, "form_data": form_data, "tile_id": tile_container_id}
+            #     self.mworker.submit_response(local_task_packet, response_data)
 
-            form_info = self.compile_form_info(tile_container_id)
-            self.mworker.post_task(tile_container_id, "_create_form_data", form_info, got_form_data)
+            # form_info = self.compile_form_info(tile_container_id)
+            # self.mworker.post_task(tile_container_id, "_create_form_data", form_info, got_form_data)
 
         print("about to load source and instantiate tid = " + str(tile_container_id))
         self.mworker.post_task(tile_container_id, "load_source_and_instantiate", data_dict, instantiated_result)

@@ -1,7 +1,6 @@
 markdown
 docker
 Flask
-gunicorn
 beautifulsoup4==4.5.1
 pika
 rabbitmq-admin

@@ -11,6 +11,10 @@ print("entering main_main")
 import uuid
 import datetime
 import flask
+from flask import Flask
+import exception_mixin
+from exception_mixin import ExceptionMixin
+
 import pika
 import json
 import copy
@@ -26,20 +30,12 @@ import qworker
 
 import sys
 import time
-# sys.stdout = sys.stderr
-from megaplex_main import app
-import megaplex_main
-print("imported megaplex_main")
+
 
 queue_check_time = 60  # How often, in seconds, to inspect the queues
 
 
-@app.route('/main_hello', methods=["get", "post"])
-def main_hello():
-    return 'This is the main communicating'
-
-
-class MainWorker(QWorker):
+class MainWorker(QWorker, ExceptionMixin):
     def __init__(self, ):
         QWorker.__init__(self)
         self.mwindow = None
@@ -54,95 +50,6 @@ class MainWorker(QWorker):
 
     def is_container_local(self, the_id):
         return the_id not in ["host", "client"]
-
-    # def post_task(self, dest_id, task_type, task_data=None, callback_func=None,
-    #               callback_data=None, expiration=None, error_handler=None, alt_address=None):
-    #     if callback_func is not None:
-    #         callback_id = str(uuid.uuid4())
-    #         callback_dict[callback_id] = callback_func
-    #         if error_handler is not None:
-    #             error_handler_dict[callback_id] = error_handler
-    #         if callback_data is not None:
-    #             cdata = copy.copy(callback_data)
-    #             callback_data_dict[callback_id] = cdata
-    #             callback_type = "callback_with_context"
-    #         else:
-    #             callback_type = "callback_no_context"
-    #     else:
-    #         callback_id = None
-    #         callback_type = "no_callback"
-    #
-    #     new_packet = {"source": self.my_id,
-    #                   "status": "presend",
-    #                   "callback_type": callback_type,
-    #                   "dest": dest_id,
-    #                   "task_type": task_type,
-    #                   "task_data": task_data,
-    #                   "response_data": None,
-    #                   "callback_id": callback_id,
-    #                   "expiration": expiration}
-    #     if self.is_container_local(dest_id):
-    #         result = megaplex_main.post_task_local(new_packet).json
-    #     else:
-    #         result = send_request_to_megaplex("post_task", new_packet, alt_address=alt_address).json()
-    #     if not result["success"]:
-    #         error_string = "Error posting task with msg_type {} dest {} source {}. Error: {}".format(task_type,
-    #                                                                                                  dest_id,
-    #                                                                                                  self.my_id,
-    #                                                                                                  result["message"])
-    #         raise Exception(error_string)
-    #     return result
-
-    # noinspection PyUnusedLocal
-    # def post_and_wait(self, dest_id, task_type, task_data=None, sleep_time=.1,
-    #                   timeout=10, tries=RETRIES, alt_address=None):
-    #     callback_id = str(uuid.uuid4())
-    #     new_packet = {"source": self.my_id,
-    #                   "callback_type": "wait",
-    #                   "callback_id": callback_id,
-    #                   "status": "presend",
-    #                   "dest": dest_id,
-    #                   "task_type": task_type,
-    #                   "task_data": task_data,
-    #                   "response_data": None,
-    #                   "expiration": None}
-    #     # self.debug_log("in post and wait with new_packet " + str(new_packet))
-    #     post_local = self.is_container_local(dest_id)
-    #     if post_local:
-    #         megaplex_main.post_wait_task_local(new_packet)
-    #     else:
-    #         send_request_to_megaplex("post_wait_task", new_packet, alt_address=alt_address)
-    #     for i in range(tries):
-    #         if post_local:
-    #             res = megaplex_main.check_wait_task_local(new_packet).json
-    #         else:
-    #             res = send_request_to_megaplex("check_wait_task", new_packet, alt_address=alt_address).json()
-    #         if res["success"]:
-    #             return res["result"]
-    #         else:
-    #             time.sleep(sleep_time)
-    #     error_string = "post_and_wait timed out with msg_type {}, destination {}, and source".format(task_type,
-    #                                                                                                  dest_id,
-    #                                                                                                  self.my_id)
-    #     self.debug_log(error_string)
-    #     raise Exception(error_string)
-    #
-    # def submit_response(self, task_packet, response_data=None):
-    #     if response_data is not None:
-    #         task_packet["response_data"] = response_data
-    #     if self.is_container_local(task_packet["source"]):
-    #         megaplex_main.submit_response_local(task_packet)
-    #     else:
-    #         send_request_to_megaplex("submit_response", task_packet)
-    #     return
-    #
-    # def get_next_task(self):
-    #     if self.get_megaplex_task_now:
-    #         result = QWorker.get_next_task(self)
-    #     else:
-    #         result = megaplex_main.get_next_task_local(self.my_id).json
-    #     self.get_megaplex_task_now = not self.get_megaplex_task_now
-    #     return result
 
     def handle_response(self, task_packet):
         if flask.has_app_context():
@@ -236,11 +143,17 @@ class MainWorker(QWorker):
             self.mwindow = mainWindow(self, data_dict)
             self.handler_instances["mainwindow"] = self.mwindow
             print("ready to emit to client")
-            self.ask_host("emit_to_client", {"message": "finish-post-load",
-                                             "collection_name": self.mwindow.collection_name,
-                                             "doc_names": self.mwindow.doc_names,
-                                             "console_html": ""})
-            return {"success": True}
+            task_data = {"success": True,
+                         "message": "finish-post-load",
+                         "collection_name": self.mwindow.collection_name,
+                         "doc_names": self.mwindow.doc_names,
+                         "console_html": ""}
+            if data_dict["doc_type"] == "table":
+                task_data.update(self.mwindow.grab_chunk_by_row_index({"doc_name": self.mwindow.doc_names[0], "row_index": 0, "set_visible_doc": True}))
+            else:
+                task_data.update(self.mwindow.grab_freeform_data({"doc_name": self.mwindow.doc_names[0], "set_visible_doc": True}))
+            # self.ask_host("emit_to_client", task_data)
+            return task_data
         except Exception as Ex:
             return self.handle_exception(Ex, "Error initializing mainwindow")
 
@@ -284,8 +197,14 @@ class MainWorker(QWorker):
         return {"cell_data": self.mwindow.jupyter_cells}
 
 
-# if __name__ == "__main__":
-mworker = MainWorker()
-mworker.start()
-# while True:
-#     time.sleep(1000)
+if __name__ == "__main__":
+    app = Flask(__name__)
+    exception_mixin.app = app
+    print("entering main")
+    mworker = MainWorker()
+    print("mworker is created, about to start my_id is " + str(mworker.my_id))
+    mworker.start()
+    print("mworker started, my_id is " + str(mworker.my_id))
+    while True:
+        time.sleep(1000)
+

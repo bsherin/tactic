@@ -28,17 +28,21 @@ Pipes = None
 
 # noinspection PyTypeChecker
 class ConsoleStringIO(StringIO):
-    def __init__(self, tile, data):
+    def __init__(self, tile, data, old_stdout):
         self.my_tile = tile
         self.data = data
+        self.old_stdout = old_stdout
         StringIO.__init__(self)
         return
 
     def write(self, s):
+        sv_stdout = sys.stdout
+        sys.stdout = self.old_stdout  # This is necessary in case there is a print statement in post_task.
         StringIO.write(self, s)
         if not s == "\n":   # The print commmand automatically adds a \n. We don't want to print it.
             self.data["result_string"] = s
             self.my_tile._tworker.post_task(self.my_tile._main_id, "got_console_print", self.data)
+        sys.stdout = sv_stdout
         return
 
 
@@ -167,12 +171,15 @@ class PseudoTileClass(TileBase, MplFigure):
 
     @_task_worthy
     def exec_console_code(self, data):
+        print("in exec_console_code")
         old_stdout = sys.stdout
         try:
             if not Collection:
                 self._tworker.create_pseudo_tile_collection_object(data)
+            print("back in exec_console_code")
             self._pipe_dict = data["pipe_dict"]
-            redirected_output = ConsoleStringIO(self, data)
+            print("creating redirected_output")
+            redirected_output = ConsoleStringIO(self, data, old_stdout)
             sys.stdout = redirected_output
             the_code = data["the_code"]
             as_tree = ast.parse(the_code)
@@ -192,4 +199,5 @@ class PseudoTileClass(TileBase, MplFigure):
             data["execution_count"] = "*"
             data["result_string"] = self._handle_exception(ex, "Error executing console code", print_to_console=False)
             sys.stdout = old_stdout
+        print("about to return from exec_console_code")
         return data

@@ -11,7 +11,7 @@ import communication_utils
 import subprocess
 import re
 from volume_manager import host_persist_dir, host_nltk_data_dir
-from rabbit_manage import delete_one_queue
+from rabbit_manage import delete_list_of_queues
 forwarder_address = None
 forwarder_id = None
 sys.stdout = sys.stderr
@@ -91,8 +91,7 @@ class MainContainerTracker(object):
                                                   true_host_nltk_data_dir=host_nltk_data_dir)
         self.mc_dict[main_id] = {
             "address": get_address(_container_id, "bridge"),
-            "container_id": _container_id,
-            "port": self.extract_port(_container_id)
+            "container_id": _container_id
         }
         return main_id
 
@@ -328,7 +327,7 @@ def destroy_container(tactic_id, notify=True):
                     dest_id = container_parent(cont)
                     message = "Container for tile {} has been destroyed".format(tile_name)
             cont.remove(force=True)
-            delete_one_queue(tactic_id)
+            delete_list_of_queues([tactic_id, tactic_id + "_wait"])
             if cont_type == "main":
                 main_container_info.delete_main(tactic_id)
             if notify and message is not None:

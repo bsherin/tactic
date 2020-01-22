@@ -422,7 +422,7 @@ class HostWorker(QWorker):
     def emit_to_client(self, data):
         from tactic_app import socketio
         socketio.emit(data["message"], data, namespace='/main', room=data["main_id"])
-        print data["message"] + " emitted to client"
+
         return {"success": True}
 
     @task_worthy
@@ -594,6 +594,54 @@ class HostWorker(QWorker):
             self.last_check_for_dead_containers = current_time
             self.clear_stale_containers()
 
+    def forward_client_post(self, task_packet):
+        dest_id = task_packet["dest"]
+        task_packet["status"] = "presend"
+        task_packet["reply_to"] = "host"
+        task_packet["client_post"] = "Yes"
+        if dest_id == "host":
+            super(HostWorker, self).handle_event(task_packet)
+        else:
+
+            self.post_packet(dest_id, task_packet, reply_to="host", callback_id=task_packet["callback_id"])
+        return
+
+    def handle_event(self, task_packet):
+        if "client_post" in task_packet:
+            self.handle_client_event(task_packet)
+        else:
+            super(HostWorker, self).handle_event(task_packet)
+
+    def handle_client_event(self, task_packet):
+
+        task_packet["table_message"] = task_packet["task_type"]
+        socketio.emit("table-message", task_packet, namespace='/main', room=task_packet["main_id"])
+        return
+
+    def handle_response(self, task_packet):
+        if "client_post" in task_packet:
+            self.handle_client_response(task_packet)
+        else:
+            super(HostWorker, self).handle_response(task_packet)
+
+    def handle_client_response(self, task_packet):
+
+        try:
+            if "room" in task_packet:
+                room = task_packet["room"]
+            else:
+                room = task_packet["main_id"]
+            if "namespace" in task_packet:
+                namespace = task_packet["namespace"]
+            else:
+                namespace = "/main"
+            socketio.emit("handle-callback", task_packet, namespace=namespace, room=room)
+        except Exception as ex:
+            special_string = "Error handling callback for task type {} for my_id {}".format(task_packet["task_type"],
+                                                                                            self.my_id)
+            self.handle_exception(ex, special_string)
+        return
+
 
 class ClientWorker(QWorker):
     def __init__(self):
@@ -605,14 +653,10 @@ class ClientWorker(QWorker):
         dest_id = task_packet["dest"]
         task_packet["status"] = "presend"
         task_packet["reply_to"] = "client"
-        self.channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
-        self.channel.basic_publish(exchange='',
-                                   routing_key=dest_id,
-                                   properties=pika.BasicProperties(
-                                       reply_to="client",
-                                       correlation_id=task_packet["callback_id"],
-                                   ),
-                                   body=json.dumps(task_packet))
+        if dest_id == "host":
+            tactic_app.host_worker.handle_delivery(None, None, None, json.dumps(task_packet))
+        else:
+            self.post_packet(dest_id, task_packet, reply_to="client", callback_id=task_packet["callback_id"])
         return
 
     def update_heartbeat_table(self, main_id):
@@ -633,13 +677,13 @@ class ClientWorker(QWorker):
                 self.post_task("host", "remove_mainwindow_task", {"main_id": main_id})
 
     def handle_event(self, task_packet):
-        print("entering handle_event in client_worker")
+
         task_packet["table_message"] = task_packet["task_type"]
         socketio.emit("table-message", task_packet, namespace='/main', room=task_packet["main_id"])
         return
 
     def handle_response(self, task_packet):
-        print("entering handle_response in client_worker")
+
         try:
             if "room" in task_packet:
                 room = task_packet["room"]
@@ -655,15 +699,10 @@ class ClientWorker(QWorker):
                                                                                             self.my_id)
             self.handle_exception(ex, special_string)
         return
-    #
-    # def _run(self):
-    #     print("starting qworker")
-    #     self.connection = tactic_app.host_worker.connection
-    #     self.on_connected(self.connection)
 
 
 tactic_app.client_worker = ClientWorker()
 tactic_app.host_worker = HostWorker()
 tactic_app.host_worker.start()
-tactic_app.client_worker.start()
+# tactic_app.client_worker.start()
 
