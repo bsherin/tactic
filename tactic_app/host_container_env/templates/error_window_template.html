@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}{{ window_title }}{% endblock %}
+
+{% block head %}
+{% endblock %}
+
+{% block styles %}
+{% endblock %}
+
+{% block page_content %}
+    {% include 'modals/show_image_modal.html' %}
+    <div id="error-message" class="container-fluid" style="padding-top:25px">
+        {{ base_string | safe }}: {{error_string | safe}}
+    </div>
+
+{% endblock %}
+{% block scripts %}
+    <script src="{{url_for('static', filename='js/d3.js')}}"></script>
+    <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/sorttable.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/logwindow.js', version_string=tstring)}}"></script>
+    <script>
+        window.onload = start_post_load;
+    </script>
+{% endblock %}

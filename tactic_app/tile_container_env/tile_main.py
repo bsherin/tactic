@@ -1,12 +1,6 @@
+from gevent import monkey
+monkey.patch_all()
 import os
-if "DEBUG_TILE_CONTAINER" in os.environ:
-    if os.environ.get("DEBUG_TILE_CONTAINER") == "True":
-        import pydevd
-        # pydevd.settrace('docker.for.mac.localhost', port=21000, stdoutToServer=True,
-        # stderrToServer=True, suspend=False)
-        print("settrace done")
-
-from gevent import monkey; monkey.patch_all()
 import pika
 import json
 print("entering tile__main")
@@ -38,7 +32,7 @@ import pseudo_tile_base
 print("importing library_object")
 import library_object
 import gevent
-from communication_utils import make_python_object_jsonizable
+from communication_utils import make_python_object_jsonizable, emit_direct
 import uuid
 
 import sys, os
@@ -69,15 +63,6 @@ class TileWorker(QWorker):
     def hello(self, data_dict):
         return {"success": True, "message": 'This is a tile communicating'}
 
-    # def get_next_task(self):
-    #     if self.get_megaplex_task_now:
-    #         alt_address = None
-    #     else:
-    #         alt_address = main_address
-    #     result = QWorker.get_next_task(self, alt_address)
-    #     self.get_megaplex_task_now = not self.get_megaplex_task_now
-    #     return result
-
     def ask_host(self, msg_type, task_data=None, callback_func=None):
         task_data["main_id"] = self.tile_instance._main_id
         self.post_task("host", msg_type, task_data, callback_func)
@@ -91,10 +76,14 @@ class TileWorker(QWorker):
         self.ask_host("emit_tile_message", data)
         return
 
+    def emit_to_client(self, message, data):
+        emit_direct(message, data, namespace="/main", room=self.tile_instance._main_id)
+
     def send_error_entry(self, title, content):
-        self.ask_host("emit_to_client", {"message": "add-error-drawer-entry",
-                                         "title": title,
-                                         "content": content})
+        data = {"message": "add-error-drawer-entry",
+                "title": title,
+                "content": content}
+        self.emit_to_client("add-error-drawer-entry", data)
         return {"success": True}
 
     def handle_exception(self, ex, special_string=None):
@@ -228,6 +217,7 @@ class TileWorker(QWorker):
 
     @task_worthy
     def kill_me(self, data):
+        self.connection.close()
         print("about to exit")
         sys.exit()
 

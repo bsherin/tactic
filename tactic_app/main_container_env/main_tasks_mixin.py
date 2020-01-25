@@ -9,6 +9,7 @@ from qworker import task_worthy_methods, task_worthy_manual_submit_methods
 from communication_utils import make_python_object_jsonizable, debinarize_python_object, store_temp_data
 from communication_utils import make_jsonizable_and_compress, read_project_dict
 import docker_functions
+from mongo_accesser import bytes_to_string
 
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
 STEP_SIZE = int(os.environ.get("STEP_SIZE"))
@@ -170,11 +171,11 @@ class LoadSaveTasksMixin:
             converted_cells = self.convert_jupyter_cells(jupyter_dict["cells"])
             interface_state = {"console_items": converted_cells}
             self.clear_main_status_message()
-            self.mworker.ask_host("emit_to_client", {"message": "finish-post-load",
-                                                     "collection_name": "",
-                                                     "short_collection_name": "",
-                                                     "interface_state": interface_state,
-                                                     "doc_names": []})
+            self.mworker.emit_to_main_client("finish-post-load", {"message": "finish-post-load",
+                                                                  "collection_name": "",
+                                                                  "short_collection_name": "",
+                                                                  "interface_state": interface_state,
+                                                                  "doc_names": []})
 
         except Exception as ex:
             error_string = self.get_traceback_message(ex)
@@ -191,8 +192,8 @@ class LoadSaveTasksMixin:
             def track_recreated_tiles(trcdata):
                 print("tracking created tiles")
                 if trcdata["old_tile_id"] in tiles_to_recreate:
-                    self.mworker.ask_host("emit_to_client", {"message": "tile-finished-loading",
-                                                             "tile_id": trcdata["old_tile_id"]})
+                    self.mworker.emit_to_main_client("tile-finished-loading", {"message": "tile-finished-loading",
+                                                                               "tile_id": trcdata["old_tile_id"]})
                     tiles_to_recreate.remove(trcdata["old_tile_id"])
                     tsdict = self.project_dict["tile_instances"][trcdata["old_tile_id"]]
                     self.tile_id_dict[tsdict["tile_name"]] = trcdata["old_tile_id"]
@@ -249,7 +250,7 @@ class LoadSaveTasksMixin:
             task_data.update(
                 self.grab_freeform_data({"doc_name": self.doc_names[0], "set_visible_doc": True}))
 
-        self.mworker.ask_host("emit_to_client", task_data)
+        self.mworker.emit_to_main_client("finish-post-load", task_data)
 
         self.show_main_status_message("Making modules available")
         modules_to_load = copy.copy(loaded_modules)
@@ -283,11 +284,12 @@ class LoadSaveTasksMixin:
 
             self.clear_main_status_message()
             print("about to emit finished to client")
-            self.mworker.ask_host("emit_to_client", {"message": "finish-post-load",
-                                                     "collection_name": "",
-                                                     "short_collection_name": "",
-                                                     "interface_state": interface_state,
-                                                     "doc_names": []})
+            self.mworker.emit_to_main_client("finish-post-load",
+                                             {"message": "finish-post-load",
+                                              "collection_name": "",
+                                              "short_collection_name": "",
+                                              "interface_state": interface_state,
+                                              "doc_names": []})
         except Exception as ex:
             error_string = self.get_traceback_message(ex)
             self.show_error_window(error_string)
@@ -483,7 +485,7 @@ class LoadSaveTasksMixin:
             save_dict["file_id"] = self.fs.put(cdict)
             save_dict["user_id"] = self.user_id
             unique_id = store_temp_data(self.db, save_dict)
-            self.mworker.ask_host("emit_to_client", {"message": "notebook-open", "the_id": unique_id})
+            self.mworker.emit_to_main_client("notebook-open", {"message": "notebook-open", "the_id": unique_id})
             return
 
         self.mworker.post_task(self.mworker.my_id, "compile_save_dict", {}, got_save_dict)
@@ -509,7 +511,7 @@ class LoadSaveTasksMixin:
             self.short_collection_name = short_collection_name
             self.collection_name = full_collection_name
             for f in the_collection.find():
-                fname = f["name"]
+                fname = bytes_to_string(f["name"])
                 if fname == "__metadata__":
                     continue
                 else:
@@ -563,7 +565,9 @@ class TileCreationTasksMixin:
         data_dict["doc_type"] = self.doc_type
         print("about to get tile_code")
         data_dict["tile_code"] = self.get_tile_code(data_dict["tile_type"])
+        print("got tile code")
         data_dict["form_info"] = self.compile_form_info(tile_container_id)
+        print("compiled form info")
 
         def instantiated_result(instantiate_result):
             print("got instantiate result, time is {}".format(self.microdsecs(self.tstart)))
@@ -686,7 +690,9 @@ class TileCreationTasksMixin:
     @task_worthy_manual_submit
     def reload_tile(self, ddict, task_packet):
         local_task_packet = task_packet
-        tile_id = ddict["tile_id"]
+        tile_id = bytes_to_string(ddict["tile_id"])
+        print("got tile_id {}".format(str(tile_id)))
+        print(str(ddict))
 
         def got_tile_type(gtp_response):
             tile_type = gtp_response["val"]
@@ -699,9 +705,14 @@ class TileCreationTasksMixin:
                     saved_options = copy.copy(gco_response["val"])
                     reload_dict.update(saved_options)
                     reload_dict["old_option_names"] = list(saved_options.keys())
+                    print("tile_id is {}".format(tile_id))
+                    print("tile container status is {}".format(docker_functions.container_status(tile_id)))
                     self.mworker.post_task(tile_id, "kill_me", {})
+                    docker_functions.wait_until_stopped(tile_id)
                     print("restarting container from main")
+                    print("tile container status is {}".format(docker_functions.container_status(tile_id)))
                     docker_functions.restart_container(tile_id)
+                    docker_functions.wait_until_running(tile_id)
                     # self.mworker.post_task("host", "restart_container", {"tile_id": tile_id})
 
                     def reinstantiate_done(reinst_result):
@@ -720,6 +731,8 @@ class TileCreationTasksMixin:
                     form_info = self.compile_form_info(tile_id)
                     reload_dict["form_info"] = form_info
                     reload_dict["tile_address"] = self.tile_addresses[tile_id]
+                    print("about to load_source")
+                    print("tile container status is {}".format(docker_functions.container_status(tile_id)))
                     self.mworker.post_task(tile_id, "load_source_and_reinstantiate", {"tile_code": module_code,
                                                                                       "reload_dict": reload_dict},
                                            reinstantiate_done)
@@ -1331,7 +1344,7 @@ class ConsoleTasksMixin:
         data["pipe_dict"] = self.dict
         data["am_notebook"] = self.am_notebook_type
         print("posting exec_console_code to the pseudo_tile")
-        self.mworker.post_task(self.pseudo_tile_id, "exec_console_code", data, self.got_console_result)
+        self.mworker.post_task(self.pseudo_tile_id, "exec_console_code", data)
         return {"success": True}
 
     @task_worthy

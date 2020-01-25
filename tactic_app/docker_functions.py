@@ -10,7 +10,6 @@ from communication_utils import USE_FORWARDER
 import communication_utils
 import subprocess
 import re
-from volume_manager import host_persist_dir, host_nltk_data_dir
 from rabbit_manage import delete_list_of_queues
 forwarder_address = None
 forwarder_id = None
@@ -54,6 +53,7 @@ else:
     host_ip = re.search("inet (.*?)/", ip_info).group(1)
     mongo_uri = "mongodb://{}:27017/{}".format(host_ip, db_name)
 
+_develop = ("DEVELOP" in os.environ) and (os.environ.get("DEVELOP") == "True")
 
 megaplex_address = None  # This is set in __init__.py
 RETRIES = 60
@@ -74,21 +74,33 @@ def get_address(container_identifier, network_name):
     return cli.containers.get(container_identifier).attrs["NetworkSettings"]["Networks"][network_name]["IPAddress"]
 
 
+if "TRUE_HOST_PERSIST_DIR" in os.environ:
+    true_host_persist_dir = os.environ.get("TRUE_HOST_PERSIST_DIR")
+else:
+    true_host_persist_dir = None
+
+if "TRUE_HOST_NLTK_DATA_DIR" in os.environ:
+    true_host_nltk_data_dir = os.environ.get("TRUE_HOST_NLTK_DATA_DIR")
+else:
+    true_host_nltk_data_dir = None
+
+
 class MainContainerTracker(object):
     def __init__(self):
         self.mc_dict = {}
 
     def create_main_container(self, other_name, user_id, username):
         main_volume_dict = {"/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "rw"}}
-        user_host_persist_dir = host_persist_dir + "/tile_manager/" + username
-        main_volume_dict[user_host_persist_dir] = {"bind": "/persist", "mode": "ro"}
+        user_host_persist_dir = true_host_persist_dir + "/tile_manager/" + username
+        main_volume_dict[user_host_persist_dir] = {"bind": "/code/persist", "mode": "ro"}
         environ = {"USE_WAIT_TASKS": "True"}
         main_id, _container_id = create_container("tactic_main_image", network_mode="bridge",
                                                   env_vars=environ,
                                                   owner=user_id, other_name=other_name, username=username,
                                                   volume_dict=main_volume_dict,
-                                                  publish_all_ports=True, true_host_persist_dir=host_persist_dir,
-                                                  true_host_nltk_data_dir=host_nltk_data_dir)
+                                                  publish_all_ports=True,
+                                                  local_true_host_persist_dir=true_host_persist_dir,
+                                                  local_true_host_nltk_data_dir=true_host_nltk_data_dir)
         self.mc_dict[main_id] = {
             "address": get_address(_container_id, "bridge"),
             "container_id": _container_id
@@ -145,7 +157,9 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
                      env_vars=None, port_bindings=None, wait_retries=50,
                      other_name="none", volume_dict=None, username=None,
                      detach=True, register_container=True, publish_all_ports=False,
-                     main_address=None, true_host_persist_dir=None, true_host_nltk_data_dir=None, special_unique_id=None):
+                     main_address=None, local_true_host_persist_dir=None,
+                     local_true_host_nltk_data_dir=None, special_unique_id=None):
+    print("in create_container")
     if env_vars is None:
         env_vars = {}
     if special_unique_id is not None:
@@ -163,11 +177,12 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
                "DB_NAME": db_name,
                "IMAGE_NAME": image_name,
                "MONGO_URI": mongo_uri,
+               "DEVELOP": _develop,
                "DEBUG_MAIN_CONTAINER": DEBUG_MAIN_CONTAINER,
                "DEBUG_TILE_CONTAINER": DEBUG_TILE_CONTAINER,
                "PYTHONUNBUFFERED": "Yes",
-               "TRUE_HOST_PERSIST_DIR": true_host_persist_dir,
-               "TRUE_HOST_NLTK_DATA_DIR": true_host_nltk_data_dir}
+               "TRUE_HOST_PERSIST_DIR": local_true_host_persist_dir,
+               "TRUE_HOST_NLTK_DATA_DIR": local_true_host_nltk_data_dir}
 
     if username is not None:
         environ["USERNAME"] = username
@@ -206,7 +221,9 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
     if host_name is not None:
         run_args["hostname"] = host_name
 
+    print("about to run the container")
     container = cli.containers.run(**run_args)
+    print("ran the container")
 
     cont_id = container.id
     container = cli.containers.get(cont_id)
@@ -275,7 +292,7 @@ def remove_network(network_name):
 
 
 def get_container(tactic_id):
-    conts = cli.containers.list()
+    conts = cli.containers.list(all=True)
     for cont in conts:
         if container_id(cont) == tactic_id:
             return cont
@@ -292,6 +309,43 @@ def restart_container(tactic_id):
     cont = get_container(tactic_id)
     cont.restart()
     return None
+
+
+def container_status(tactic_id):
+    cont = get_container(tactic_id)
+    return cont.status
+
+
+def wait_until_stopped(tactic_id, wait_retries=30):
+    print("in wait_until_stopped")
+    container = get_container(tactic_id)
+    retries = 0
+    print("container.status is {}".format(container.status))
+    while container.status == "running":
+        container = get_container(tactic_id)
+        retries += 1
+        if retries > wait_retries:
+            print("container failed to stop")
+            return
+        time.sleep(0.1)
+    print("leaving wait_until_stopped")
+    return
+
+
+def wait_until_running(tactic_id, wait_retries=30):
+    print("in wait_until_running")
+    container = get_container(tactic_id)
+    retries = 0
+    print("container.status is {}".format(container.status))
+    while not container.status == "running":
+        retries += 1
+        if retries > wait_retries:
+            print("container failed to start")
+            return
+        print("sleeping while waiting for container to run")
+        time.sleep(0.1)
+    print("in wait_until_running")
+    return
 
 
 def get_id_from_name_and_parent(cont_name, parent_id):

@@ -11,6 +11,7 @@ from flask import render_template, Flask
 from tile_code_parser import TileParser, remove_indents, insert_indents
 import exception_mixin
 from exception_mixin import ExceptionMixin
+from communication_utils import emit_direct
 
 import sys, os
 sys.stdout = sys.stderr
@@ -154,8 +155,10 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
                                                                     "last_saved": "creator"}})
             self.create_recent_checkpoint(module_name)
             # self.post_task("host", "update_tile_selector_list", {'user_id': self.user_id})
-            self.post_task("host", "send_tile_source_changed_message", {'user_id': self.user_id,
-                                                                        'tile_type': self.module_name})
+            data = {'tile_type': self.module_name}
+            emit_direct("tile-source_change", data, namespace='/main', room=self.user_id)
+            # self.post_task("host", "send_tile_source_changed_message", {'user_id': self.user_id,
+            #                                                             'tile_type': self.module_name})
             return {"success": True, "message": "Module Successfully Saved",
                     "alert_type": "alert-success", "render_content_line_number": render_content_line_number,
                     "draw_plot_line_number": draw_plot_line_number,

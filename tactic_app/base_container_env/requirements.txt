@@ -1,5 +1,4 @@
 gevent
-greenlet==0.4.14
-pymongo==3.6.1
-requests==2.21.0
+pymongo
+requests
 cloudpickle

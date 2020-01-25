@@ -44,7 +44,7 @@ window.onunload = function (e) {
 class CreatorViewerSocket extends TacticSocket {
     initialize_socket_stuff () {
         this.socket.emit('join', {"room": user_id});
-        this.socket.emit('join-main', {"room": window.module_viewer_id});
+        this.socket.emit('join-main', {"room": window.module_viewer_id, "user_id": user_id});
         this.socket.on('handle-callback', handleCallback);
         this.socket.on('close-user-windows', (data) => {
             if (!(data["originator"] == window.module_viewer_id)) {

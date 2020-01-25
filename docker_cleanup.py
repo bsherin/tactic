@@ -14,7 +14,8 @@ def do_docker_cleanup():
 
     all_containers = cli.containers.list(all=True)
 
-    tactic_image_names = ["tactic_tile_image", "tactic_main_image", "tactic_megaplex_image", "module_viewer_image"]
+    tactic_image_names = ["tactic_tile_image", "tactic_main_image", "tactic_megaplex_image", "module_viewer_image",
+                          "tactic_host_image"]
     if restart_rabbit:
         tactic_image_names += ["rabbitmq:3-management", "rabbitmq"]
     for cont in all_containers:

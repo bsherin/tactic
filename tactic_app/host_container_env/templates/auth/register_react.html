@@ -1,0 +1,30 @@
+{% extends "base_reactns.html" %}
+
+{% block title %}Register New User{% endblock %}
+
+{% block styles %}
+    <style>
+    html, body, .body-outer, #root {
+        height: 100%
+    }
+    </style>
+
+{% endblock %}
+
+{% block page_content %}
+
+<div class="body-outer" style="text-align:center">
+    <div id="status-area"></div>
+    <div class="form" id="root">
+    </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+{#    <script src="{{url_for('static', filename='js/react_tools.js')}}"></script>#}
+    <script type="module" src="{{url_for('static', filename=module_source, v=version_string)}}"></script>
+
+    <script>
+        window.current_user = "{{current_user.username}}";
+    </script>
+{% endblock %}

@@ -8,13 +8,15 @@ services:
         dockerfile: Dockerfile-base
       image: tactic_base_image
 
-  tactic_megaplex:
+  tactic_host:
     build:
       context: .
-      dockerfile: Dockerfile-megaplex
-    image: tactic_megaplex_image
+      dockerfile: Dockerfile-host
+    depends_on:
+      - tactic_base
+    image: tactic_host_image
     environment:
-      PYTHONUNBUFFERED: "Yes"
+      PYTHONUNBUFFERED: 1
 
   tactic_main:
     build:

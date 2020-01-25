@@ -1,0 +1,28 @@
+{% extends "base_reactns.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block head %}
+{% endblock %}
+
+{% block styles %}
+{% endblock %}
+
+{% block page_content %}
+    <div id="modal-area">
+    </div>
+    <div id="library-home-root" class="container-fluid d-flex">
+
+    </div>
+    <canvas id="measure-canvas" style="display:none"></canvas>
+{% endblock %}
+{% block scripts %}
+    <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
+    <script type="module" src="{{url_for('static', filename=module_source, v=version_string)}}"></script>
+    <script>
+        window.user_id = "{{current_user.get_id()}}";
+        window.use_ssl = "{{use_ssl}}"=="True";
+
+        window.page_id = window.library_id;  // This is used to sign out
+    </script>
+{% endblock %}

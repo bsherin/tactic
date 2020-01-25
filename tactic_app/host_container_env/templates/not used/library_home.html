@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}{{current_user.username}} library{% endblock %}
+
+{% block head %}
+{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{{url_for('static', filename='css/jquery-ui.min.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/jquery.tag-editor.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/loader.css', v=version_string)}}">
+{% endblock %}
+
+{% block page_content %}
+    <div id="modal-area">
+    </div>
+    <div class="container-fluid d-flex" style="padding-left: 10px">
+        <div class="d-flex flex-column justify-content-between" style="margin-bottom:25px">
+          <ul id="nav-list" style="margin-top:40px" class="nav nav-pills flex-column left-vertical-nav" role="tablist">
+            <li role="presentation" class="nav-item">
+                <a class="nav-link d-flex align-baseline active" href="#collection-module-outer" aria-controls="collections" role="tab" data-toggle="tab" value="collection">
+                    <span class="far fa-file-alt um-nav-icon"></span>
+                    <span class="um-nav-text">collections</span>
+                </a>
+            </li>
+            <li role="presentation" class="nav-item">
+                <a class="nav-link d-flex align-baseline " href="#project-module-outer" aria-controls="projects" role="tab" data-toggle="tab" value="project">
+                    <span class="fas fa-project-diagram um-nav-icon"></span>
+                    <span class="um-nav-text">projects</span>
+                </a>
+            </li>
+            <li role="presentation" class="nav-item">
+                <a class="nav-link" href="#tile-module-outer" aria-controls="tiles" role="tab" data-toggle="tab" value="tile">
+                    <span class="far fa-window um-nav-icon"></span>
+                    <span class="um-nav-text">tiles</span>
+                </a>
+            </li>
+            <li role="presentation" class="nav-item">
+                <a class="nav-link" href="#list-module-outer" aria-controls="lists" role="tab" data-toggle="tab" value="list">
+                    <span class="far fa-list-alt um-nav-icon"></span>
+                    <span class="um-nav-text">lists</span>
+                </a>
+            </li>
+            <li role="presentation" class="nav-item">
+                <a class="nav-link" href="#code-module-outer" aria-controls="code" role="tab" data-toggle="tab" value="code">
+                    <span class="far fa-file-code um-nav-icon"></span>
+                    <span class="um-nav-text">code</span>
+                </a>
+            </li>
+              <li role="presentation" class="nav-item">
+                  <a class="nav-link" href="#all-module-outer" aria-controls="all" role="tab" data-toggle="tab" value="all">
+                      <span class="far fa-archive um-nav-icon"></span>
+                      <span class="um-nav-text">all</span>
+                  </a>
+              </li>
+          </ul>
+            {% if current_user.username != "repository" %}
+                <button id="toggle-repository-button" class="btn btn-sm btn-warning" onclick="return toggleRepository();">Show Repository</button>
+            {% endif %}
+        </div>
+        <div class="tab-content d-flex" id="module-area">
+            <div class="resource-module tab-pane fade active show" id="collection-module-outer"></div>
+            <div class="resource-module tab-pane fade" id="project-module-outer"></div>
+            <div class="resource-module tab-pane fade" id="tile-module-outer"></div>
+            <div class="resource-module tab-pane fade" id="list-module-outer"></div>
+            <div class="resource-module tab-pane fade" id="code-module-outer"></div>
+            <div class="resource-module tab-pane fade" id="all-module-outer"></div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+    <script src="{{url_for('static', filename='js/sorttable.js')}}"></script>
+    <script src="{{url_for('static', filename='js/jquery.caret.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/jquery.tag-editor.min.js')}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/markdown_utilities.js', v=version_string)}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/drag_manager.js', v=version_string)}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/tag_buttons.js', v=version_string)}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/resource_manager.js', v=version_string)}}"></script>
+    <script src="{{url_for('static', filename='tactic_js/library_resource_manager.js', v=version_string)}}"></script>
+    <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/tab.js')}}"></script>
+
+    <script src="{{url_for('static', filename='tactic_js/library_home.js', v=version_string)}}"></script>
+    <script>
+        let user_id = "{{current_user.get_id()}}";
+        let use_ssl = "{{use_ssl}}"=="True";
+        window.onload = _library_home_main();
+    </script>
+{% endblock %}

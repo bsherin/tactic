@@ -59,6 +59,9 @@ function _main_main() {
         _after_main_joined();
     });
     tsocket.socket.on('finish-post-load', _finish_post_load);
+    tsocket.socket.on('myevent', function () {
+        console.log("got the event");
+    });
 }
 
 function _after_main_joined() {

@@ -1,10 +1,7 @@
 
 import os
 import copy
-
-
-host_persist_dir = os.getcwd() + "/persist"
-host_nltk_data_dir = os.getcwd() + "/tactic_app/nltk_data"
+import os
 
 
 class VolumeManager:
