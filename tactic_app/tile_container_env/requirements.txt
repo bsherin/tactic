@@ -18,3 +18,5 @@ scikit-learn
 tweepy
 wordcloud
 yellowbrick
+Flask-SocketIO
+kombu

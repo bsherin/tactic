@@ -9,10 +9,10 @@ import pymongo
 import gridfs
 import datetime
 import os
-from communication_utils import debinarize_python_object, store_temp_data
+from communication_utils import debinarize_python_object, store_temp_data, emit_direct
 from communication_utils import make_jsonizable_and_compress, read_project_dict, read_temp_data, delete_temp_data
 import docker_functions
-from volume_manager import VolumeManager, host_persist_dir
+from volume_manager import VolumeManager
 from mongo_accesser import MongoAccess
 from main_tasks_mixin import StateTasksMixin, LoadSaveTasksMixin, TileCreationTasksMixin, APISupportTasksMixin
 from main_tasks_mixin import ExportsTasksMixin, ConsoleTasksMixin, DataSupportTasksMixin
@@ -89,7 +89,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
 
         self.ppi = data_dict["ppi"]
         self.username = os.environ.get("USERNAME")
-        self.vmanager = VolumeManager("/persist")
+        self.vmanager = VolumeManager("/code/persist")
 
         if ("project_name" not in data_dict) or (data_dict["doc_type"] == "jupyter"):
             self.doc_type = data_dict["doc_type"]
@@ -121,31 +121,32 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
 
     def show_main_message(self, message, timeout=None):
         data = {"message": message, "timeout": timeout, "main_id": self.mworker.my_id}
-        self.mworker.post_task("host", "show_main_status_message_task", data)
+        self.mworker.emit_to_main_client("show-status-message", data)
+        # self.mworker.post_task("host", "show_main_status_message_task", data)
 
     def clear_um_message(self, library_id):
-        data = {"library_id": library_id}
-        self.mworker.post_task("host", "clear_um_status_message_task", data)
+        self.emit("clear-status", {}, namespace='/library', room=library_id)
 
     def show_main_status_message(self, message, timeout=None):
         data = {"message": message, "timeout": timeout, "main_id": self.mworker.my_id}
-        self.mworker.post_task("host", "show_main_status_message", data)
+        self.mworker.emit_to_main_client("show-status-msg")
+        # self.mworker.post_task("host", "show_main_status_message", data)
 
     def show_error_window(self, error_string):
         data_dict = {"error_string": str(error_string),
                      "uses_codemirror": "False",
                      "template_name": "error_window_template.html"}
         unique_id = store_temp_data(self.db, data_dict)
-        self.mworker.ask_host("emit_to_client", {"message": "window-open", "the_id": unique_id})
+        self.mworker.emit_to_main_client("window-open", {"the_id": unique_id})
         return
 
     def clear_main_status_message(self):
         data = {"main_id": self.mworker.my_id}
-        self.mworker.post_task("host", "clear_main_status_message", data)
+        self.mworker.emit_to_main_client("clear-status-msg", data)
 
     def stop_main_status_spinner(self):
         data = {"main_id": self.mworker.my_id}
-        self.mworker.post_task("host", "stop_main_status_spinner", data)
+        self.mworker.emit_to_main_client('stop-spinner', data)
 
     def dmsg(self, tname, msg):
         print("rot: {} {}".format(tname, msg))
@@ -155,7 +156,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             environ = {"PPI": data["ppi"], "USE_WAIT_TASKS": "True"}
             user_host_persist_dir = true_host_persist_dir + "/tile_manager/" + self.username
             tile_volume_dict = {}
-            tile_volume_dict[user_host_persist_dir] = {"bind": "/persist", "mode": "rw"}
+            tile_volume_dict[user_host_persist_dir] = {"bind": "/code/persist", "mode": "rw"}
             tile_volume_dict[true_host_nltk_data_dir] = {"bind": "/root/nltk_data", "mode": "ro"}
             tile_container_id, container_id = docker_functions.create_container("tactic_tile_image",
                                                                                 network_mode="bridge",

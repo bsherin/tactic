@@ -1,13 +1,9 @@
-import os
-if "DEBUG_MAIN_CONTAINER" in os.environ:
-    if os.environ.get("DEBUG_MAIN_CONTAINER") == "True":
-        import pydevd
-        # pydevd.settrace('docker.for.mac.localhost', port=21000, stdoutToServer=True, stderrToServer=True, suspend=False)
-        print("settrace done")
 
-from gevent import monkey; monkey.patch_all()
+from gevent import monkey
+monkey.patch_all()
+import pika
 print("entering main_main")
-
+import os
 import uuid
 import datetime
 import flask
@@ -15,10 +11,9 @@ from flask import Flask
 import exception_mixin
 from exception_mixin import ExceptionMixin
 
-import pika
 import json
 import copy
-from communication_utils import send_request_to_megaplex
+from communication_utils import send_request_to_megaplex, emit_direct
 
 from main import mainWindow
 import main
@@ -31,7 +26,6 @@ import qworker
 import sys
 import time
 
-
 queue_check_time = 60  # How often, in seconds, to inspect the queues
 
 
@@ -41,7 +35,6 @@ class MainWorker(QWorker, ExceptionMixin):
         self.mwindow = None
         self.get_megaplex_task_now = False
         self.last_queue_check = datetime.datetime.utcnow()
-        print("starting mainworker")
 
     def ask_host(self, msg_type, task_data=None, callback_func=None):
         task_data["main_id"] = self.my_id
@@ -69,31 +62,36 @@ class MainWorker(QWorker, ExceptionMixin):
         self.post_task(tile_id, msg_type, task_data, callback_func)
         return
 
-    def emit_table_message(self, message, data=None, callback_func=None):
+    def emit_table_message(self, message, data=None):
         if data is None:
             data = {}
         data["table_message"] = message
-        self.ask_host("emit_table_message", data, callback_func)
+        self.emit_to_main_client("table-message", data)
         return
 
-    def emit_console_message(self, message, data=None, callback_func=None):
-        if data is None:
-            data = {}
-        data["console_message"] = message
-        self.ask_host("emit_console_message", data, callback_func)
+    def emit_to_main_client(self, message, data):
+        emit_direct(message, data, namespace='/main', room=self.my_id)
+
+    def emit_console_message(self, console_message, task_data=None, force_open=True):
+        if task_data is None:
+            task_data = {}
+        ldata = copy.copy(task_data)
+        ldata["console_message"] = console_message
+        ldata["force_open"] = force_open
+        self.emit_to_main_client("console-message", ldata)
         return
 
-    def emit_export_viewer_message(self, message, data=None, callback_func=None):
+    def emit_export_viewer_message(self, message, data=None):
         if data is None:
             data = {}
         data["export_viewer_message"] = message
-        self.ask_host("emit_export_viewer_message", data, callback_func)
+        self.emit_to_main_client("export-viewer-message", data)
         return
 
     def send_error_entry(self, title, content):
-        self.ask_host("emit_to_client", {"message": "add-error-drawer-entry",
-                                         "title": title,
-                                         "content": content})
+        self.emit_to_main_client("add-error-drawer-entry", {"message": "add-error-drawer-entry",
+                                                            "title": title,
+                                                            "content": content})
         return {"success": True}
 
     def print_to_console(self, message, force_open=False, is_error=False, summary=None):

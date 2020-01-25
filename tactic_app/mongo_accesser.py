@@ -19,6 +19,13 @@ def make_name_unique(new_name, existing_names):
     return revised_name
 
 
+def bytes_to_string(bstr):
+    if isinstance(bstr, bytes):
+        return bstr.decode()
+    else:
+        return bstr
+
+
 class MongoAccessException(Exception):
     pass
 
@@ -215,7 +222,8 @@ class MongoAccess(object):
         doc_names = []
 
         for f in the_collection.find():
-            fname = f["name"].encode("ascii", "ignore")
+            # fname = f["name"].encode("ascii", "ignore")
+            fname = bytes_to_string(f["name"])
             if fname == "__metadata__":
                 continue
             else:
@@ -248,7 +256,7 @@ class MongoAccess(object):
             else:
                 doc_type = "table"
             for f in the_collection.find():
-                fname = f["name"]
+                fname = bytes_to_string(f["name"])
 
                 if fname == "__metadata__":
                     continue

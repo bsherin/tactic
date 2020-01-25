@@ -13,6 +13,8 @@ import uuid
 import pika
 from exception_mixin import generic_exception_handler
 
+from flask_socketio import SocketIO
+
 if ("USE_FORWARDER" in os.environ) and (os.environ.get("USE_FORWARDER") == "True"):
     USE_FORWARDER = True
 else:
@@ -23,8 +25,17 @@ RETRIES = 60
 # set am_host to True when this is initially loaded.
 # in this case where this isn't the host, this will get changed when qworker is imported.
 
-am_host = True
-megaplex_address = None
+if "MEGAPLEX_ADDRESS" in os.environ:
+    megaplex_address = os.environ.get("MEGAPLEX_ADDRESS")
+    am_host = False
+    message_queue = 'amqp://{}:5672//'.format(megaplex_address)
+    socketio = SocketIO(message_queue=message_queue)
+else:
+    am_host = True
+
+
+def emit_direct(event_name, data, namespace, room):
+    socketio.emit(event_name, data, namespace=namespace, room=room)
 
 
 def is_jsonizable(dat):
@@ -93,15 +104,8 @@ def read_project_dict(fs, mdata, file_id):
 
 def send_request_to_megaplex(msg_type, data_dict=None, wait_for_success=True, timeout=3, tries=RETRIES, wait_time=.1,
                              alt_address=None):
-    if alt_address is not None:
-        taddress = alt_address
-        port = "5000"
-    elif am_host is True:
-        taddress = "0.0.0.0"
-        port = "8085"
-    else:
-        taddress = megaplex_address
-        port = "5000"
+    taddress = megaplex_address
+    port = "5000"
     last_fail = ""
     if wait_for_success:
         for attempt in range(tries):

@@ -21,7 +21,7 @@ export { ResourceViewerApp, ResourceViewerSocket, copyToLibrary, sendToRepositor
 class ResourceViewerSocket extends TacticSocket {
     initialize_socket_stuff() {
         this.socket.emit('join', { "room": window.user_id });
-        this.socket.emit('join-main', { "room": window.resource_viewer_id });
+        this.socket.emit('join-main', { "room": window.resource_viewer_id, "user_id": user_id });
         this.socket.on('handle-callback', handleCallback);
         this.socket.on('close-user-windows', data => {
             if (!(data["originator"] == window.resource_viewer_id)) {

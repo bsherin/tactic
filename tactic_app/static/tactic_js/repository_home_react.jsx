@@ -22,7 +22,10 @@ import {ViewerContext} from "./resource_viewer_context.js";
 import {withStatus} from "./toaster.js";
 import {withErrorDrawer} from "./error_drawer.js";
 import {doBinding} from "./utilities_react.js";
+import {guid} from "./utilities_react";
 
+window.library_id = guid();
+window.page_id = window.library_id;
 const MARGIN_SIZE = 17;
 
 let tsocket;

@@ -1,0 +1,26 @@
+<script id="header-template" type="text/html">
+    <thead>
+        <tr>
+            {{#headers}}
+                <th id='{{hsan}}' class='header can-resize column-{{hsan}}'>{{header}}</th>
+            {{/headers}}
+        </tr>
+    </thead>
+</script>
+<script id="body-template" type="text/html">
+    <tr id="{{row_id}}">
+        {{#cells}}
+            <td contenteditable='true' id='row-{{rownumber}}-col-{{header}}' class='searchit can-resize column-{{header}}'>{{value}}</td>
+        {{/cells}}
+    </tr>
+</script>
+
+<script id="body-template-hidden" type="text/html">
+    <tr id="{{row_id}}" class="hidden-row">
+        {{#cells}}
+            <td contenteditable='true' id='row-{{rownumber}}-col-{{header}}' class='searchit can-resize column-{{header}}'>{{value}}</td>
+        {{/cells}}
+    </tr>
+</script>
+
+

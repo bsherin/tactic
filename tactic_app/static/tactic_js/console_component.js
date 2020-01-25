@@ -175,17 +175,17 @@ class ConsoleComponent extends React.Component {
         this.props.setMainStateValue("show_exports_pane", !this.props.show_exports_pane);
     }
 
-    _setConsoleItemValue(unique_id, field, value) {
+    _setConsoleItemValue(unique_id, field, value, callback = null) {
         let entry = this.get_console_item_entry(unique_id);
         entry[field] = value;
-        this.replace_console_item_entry(unique_id, entry);
+        this.replace_console_item_entry(unique_id, entry, callback);
     }
 
-    replace_console_item_entry(unique_id, new_entry) {
+    replace_console_item_entry(unique_id, new_entry, callback = null) {
         let new_console_items = [...this.props.console_items];
         let cindex = this._consoleItemIndex(unique_id);
         new_console_items.splice(cindex, 1, new_entry);
-        this.props.setMainStateValue("console_items", new_console_items);
+        this.props.setMainStateValue("console_items", new_console_items, callback);
     }
 
     get_console_item_entry(unique_id) {
@@ -637,18 +637,21 @@ class ConsoleCodeItem extends React.Component {
     }
 
     _runMe(go_to_next = false) {
-        this._startMySpinner();
-        let self = this;
-        this._clearOutput();
-        postWithCallback(main_id, "exec_console_code", { "the_code": this.props.console_text, "console_id": this.props.unique_id }, function () {
+        this._startMySpinner(() => {
+            let self = this;
+            this._clearOutput();
+            postWithCallback(main_id, "exec_console_code", {
+                "the_code": this.props.console_text,
+                "console_id": this.props.unique_id
+            });
             if (go_to_next) {
                 self.props.goToNextCell(self.props.unique_id);
             }
         });
     }
 
-    _startMySpinner() {
-        this.props.setConsoleItemValue(this.props.unique_id, "show_spinner", true);
+    _startMySpinner(callback = null) {
+        this.props.setConsoleItemValue(this.props.unique_id, "show_spinner", true, callback);
     }
 
     _stoptMySpinner() {

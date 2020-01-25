@@ -1,0 +1,31 @@
+{% extends "base_reactns.html" %}
+
+{% block title %}Tactic - Login{% endblock %}
+
+{% block styles %}
+    <style>
+    html, body, .body-outer, #root {
+        height: 100%
+    }
+    </style>
+
+{% endblock %}
+
+{% block page_content %}
+
+<div class="body-outer" style="text-align:center">
+    <div id="root">
+    </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+    <script type="module" src="{{javascript_source}}"></script>
+
+    <script>
+        window.current_user = "{{current_user.username}}";
+        window._show_message = "{{show_message}}";
+        window._message = "{{message}}";
+        window._next_view = "{{next_view}}";
+    </script>
+{% endblock %}

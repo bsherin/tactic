@@ -27,6 +27,7 @@ import { KeyTrap } from "./key_trap.js";
 import { doBinding, guid } from "./utilities_react.js";
 
 window.library_id = guid();
+window.page_id = window.library_id;
 const MARGIN_SIZE = 17;
 
 let tsocket;

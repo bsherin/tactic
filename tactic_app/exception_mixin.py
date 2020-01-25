@@ -23,7 +23,7 @@ class ExceptionMixin(object):
         pass
 
     def do_jsonify(self, msg):
-
+        import flask
         res = {"success": False, "message": msg, "alert_type": "alert-warning"}
         if flask.has_app_context():
             return jsonify(res)

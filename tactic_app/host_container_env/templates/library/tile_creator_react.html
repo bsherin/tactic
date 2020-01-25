@@ -1,0 +1,29 @@
+{% extends "base_reactns.html" %}
+
+{% block title %}{{resource_name}}{% endblock %}
+
+{% block styles %}
+{% endblock %}
+
+{% block page_content %}
+    <div id="modal-area">
+    </div>
+    <div class="container-fluid d-flex" id="creator-root" style="width:100%;height:100%">
+    </div>
+
+{%  endblock %}
+
+{% block scripts %}
+
+    <script src="{{url_for('static', filename='js/mousetrap.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/javascript.js')}}"></script>
+    <script type="module" src="{{url_for('static', filename=module_source, v=version_string)}}"></script>
+    <script>
+        window.user_id = "{{current_user.get_id()}}";
+        window.module_name = "{{module_name}}";
+        window.use_ssl = "{{use_ssl}}"=="True";
+        window.module_viewer_id = "{{module_viewer_id}}";
+        window.tile_collection_name = "{{tile_collection_name}}";
+        window.version_string = "{{tstring}}";
+    </script>
+{% endblock %}

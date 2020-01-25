@@ -1,0 +1,29 @@
+<div class='card log-panel log-panel-visible text-log-item' id='{{unique_id}}'>
+    <div class="card-header">
+        <div class="button-div shrink-expand-div">
+            <button type="button" class="notclose shrink-log-button">
+                <span class="fas fa-chevron-circle-down"> </span>
+            </button>
+            <button type="button" class="notclose expand-log-button">
+                <span class="fas fa-chevron-circle-right"></span>
+            </button>
+        </div>
+        <div class="button-div">
+            <button type="button" class="notclose close-log-button">
+                <span  class="fas fa-trash-alt"></span>
+            </button>
+        </div>
+        <div class="button-div">
+            <button type="button" class="notclose convert-markdown-button">
+                <span  class="fas fa-font"></span>
+            </button>
+        </div>
+    </div>
+    <div class='log-panel-summary' contenteditable="true">
+         {{summary_text | safe}}
+     </div>
+    <div class="log-panel-body text-box">
+        <div class='console-text' contenteditable='true'></div>
+        <div class="text-panel-output"></div>
+    </div>
+ </div>

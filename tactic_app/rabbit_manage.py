@@ -1,5 +1,6 @@
 
 from rabbitmq_admin import AdminAPI
+import communication_utils
 import pika
 import time
 
@@ -17,23 +18,41 @@ def get_queues():
     return result
 
 
-def delete_all_queues():
-    delete_list_of_queues(get_queues())
+def delete_all_queues(use_localhost=False):
+    delete_list_of_queues(get_queues(), use_localhost)
     return
 
 
 def delete_one_queue(tactic_id):
-    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+    taddress = communication_utils.megaplex_address
+    params = pika.ConnectionParameters(
+        host=taddress,
+        port=5672,
+        virtual_host='/'
+    )
+    connection = pika.BlockingConnection(params)
     channel = connection.channel()
     channel.queue_delete(queue=tactic_id)
     connection.close()
 
 
-def delete_list_of_queues(qlist):
-    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+def delete_list_of_queues(qlist, use_localhost=False):
+    if use_localhost:
+        params = pika.ConnectionParameters('localhost')
+    else:
+        taddress = communication_utils.megaplex_address
+        params = pika.ConnectionParameters(
+            host=taddress,
+            port=5672,
+            virtual_host='/'
+        )
+    connection = pika.BlockingConnection(params)
     channel = connection.channel()
     for q in qlist:
-        channel.queue_delete(queue=q)
+        try:
+            channel.queue_delete(queue=q)
+        except:
+            print("problem deleting a queue")
     connection.close()
 
 

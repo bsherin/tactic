@@ -8,6 +8,7 @@ import pickle
 from pickle import UnpicklingError
 from tile_base import TileBase, _task_worthy, _jsonizable_types
 from communication_utils import is_jsonizable, make_python_object_jsonizable, debinarize_python_object
+from communication_utils import emit_direct
 import document_object
 
 # noinspection PyUnresolvedReferences
@@ -40,8 +41,11 @@ class ConsoleStringIO(StringIO):
         sys.stdout = self.old_stdout  # This is necessary in case there is a print statement in post_task.
         StringIO.write(self, s)
         if not s == "\n":   # The print commmand automatically adds a \n. We don't want to print it.
-            self.data["result_string"] = s
-            self.my_tile._tworker.post_task(self.my_tile._main_id, "got_console_print", self.data)
+            self.data["force_open"] = True
+            self.data["message"] = s
+            self.data["console_message"] = "consoleCodePrint"
+            # self.my_tile._tworker.post_task(self.my_tile._main_id, "got_console_print", self.data)
+            self.my_tile.emit_console_message("consoleCodePrint", self.data)
         sys.stdout = sv_stdout
         return
 
@@ -61,6 +65,13 @@ class PseudoTileClass(TileBase, MplFigure):
         self._saved_globals = copy.copy(globals())
         self.execution_counter = 0
         return
+
+    # Note that task_data must contain console_id
+    def emit_console_message(self, console_message, task_data, force_open=True):
+        ldata = copy.copy(task_data)
+        ldata["console_message"] = console_message
+        ldata["force_open"] = force_open
+        emit_direct("console-message", ldata, namespace="/main", room=self._main_id)
 
     @_task_worthy
     def compile_save_dict(self, data):
@@ -195,9 +206,11 @@ class PseudoTileClass(TileBase, MplFigure):
             sys.stdout = old_stdout
             self.execution_counter += 1
             data["execution_count"] = self.execution_counter
+            data["message"] = "success"
         except Exception as ex:
             data["execution_count"] = "*"
-            data["result_string"] = self._handle_exception(ex, "Error executing console code", print_to_console=False)
+            data["message"] = self._handle_exception(ex, "Error executing console code", print_to_console=False)
             sys.stdout = old_stdout
         print("about to return from exec_console_code")
-        return data
+        self.emit_console_message("stopConsoleSpinner", data)
+        return
