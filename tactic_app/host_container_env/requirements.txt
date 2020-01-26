@@ -13,6 +13,7 @@ markdown
 nose
 openpyxl
 pika
+redis
 requests
 rabbitmq-admin
 WTForms

@@ -110,7 +110,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         else:
             self.tile_name = tile_name
         self.doc_type = None
-        self.vmanager = VolumeManager("/persist")
+        self.vmanager = VolumeManager("/code/persist")
         self.width = ""
         self.height = ""
         self.full_tile_width = ""

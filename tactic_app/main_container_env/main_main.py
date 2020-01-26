@@ -13,7 +13,7 @@ from exception_mixin import ExceptionMixin
 
 import json
 import copy
-from communication_utils import send_request_to_megaplex, emit_direct
+from communication_utils import emit_direct
 
 from main import mainWindow
 import main

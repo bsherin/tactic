@@ -16,6 +16,7 @@ from flask_socketio import SocketIO
 from flask_wtf import CSRFProtect
 from docker_functions import create_container, get_address, ContainerCreateError
 import docker_functions as docker_functions
+import communication_utils
 from communication_utils import send_request_to_container, USE_FORWARDER, megaplex_address
 from integrated_docs import api_array
 from docker_functions import db_name, mongo_uri
@@ -39,11 +40,11 @@ db = None
 fs = None
 socketio = None
 global_tile_manager = None
-client_worker = None
 host_worker = None
+health_tracker = None
 
 
-docker_functions.megaplex_address = os.environ.get("MEGAPLEX_ADDRESS")
+# docker_functions.megaplex_address = os.environ.get("MEGAPLEX_ADDRESS")
 
 
 # The purpose of this function is that db.collection_names doesn't work in on Azure
@@ -110,9 +111,10 @@ try:
     print("starting login_manager")
     login_manager.init_app(app)
     print("starting socketio")
-    message_queue = 'amqp://{}:5672//'.format(docker_functions.megaplex_address)
+    message_queue = 'amqp://{}:5672//'.format(megaplex_address)
     print("message queue is {}".format(message_queue))
     socketio = SocketIO(app, message_queue=message_queue)
+    communication_utils.socketio = socketio
     print("starting csrf.init_app")
     csrf.init_app(app)
     print("started it all")

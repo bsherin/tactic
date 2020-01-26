@@ -8,10 +8,11 @@ import datetime
 import json
 import os
 import copy
-from communication_utils import send_request_to_megaplex, emit_direct, socketio
+from communication_utils import emit_direct, socketio
 import communication_utils
 from exception_mixin import ExceptionMixin, MessagePostException
 from threading import Lock
+
 thread = None
 thread_lock = Lock()
 
@@ -67,14 +68,11 @@ class QWorker(ExceptionMixin):
         self.handler_instances = {"this_worker": self}
         self.channel = None
         self.connection = None
-        self.post_channel = None
         if use_wait_tasks:
             wait_queue = self.my_id + "_wait"
             self.wait_worker = BlockingWaitWorker(wait_queue)
-            # self.wait_worker.start()
 
     def start_background_thread(self):
-        # This does not work:
         print("entering start_background_thread")
         taddress = communication_utils.megaplex_address
         params = pika.ConnectionParameters(
@@ -95,31 +93,6 @@ class QWorker(ExceptionMixin):
             if thread is None:
                 thread = socketio.start_background_task(target=self.start_background_thread)
         print('Background thread started')
-
-    def on_connected(self, connection):
-        """Called when we are fully connected to RabbitMQ"""
-        print("in on_connected")
-        connection.channel(on_open_callback=self.on_channel_open)
-        self.post_channel = connection.channel()
-
-    def on_channel_open(self, new_channel):
-        """Called when our channel has opened"""
-        print("in on_channel_open")
-        self.channel = new_channel
-        self.channel.queue_declare(queue=self.my_id, callback=self.on_queue_declared, durable=False, exclusive=False)
-
-    def on_queue_declared(self, frame):
-        print("queue declared")
-        """Called when RabbitMQ has told us our Queue has been declared, frame is the response from RabbitMQ"""
-        self.channel.basic_qos(
-            prefetch_count=11, callback=self.on_basic_qos_ok)
-
-    def on_basic_qos_ok(self, frame):
-        """Called when RabbitMQ has told us our Queue has been declared, frame is the response from RabbitMQ"""
-        try:
-            self.channel.basic_consume(queue=self.my_id, auto_ack=True, on_message_callback=self.handle_delivery)
-        except Exception as ex:
-            print(self.handle_exception(ex, special_string))
 
     def debug_log(self, msg):
         timestring = datetime.datetime.utcnow().strftime("%b %d, %Y, %H:%M:%S")
@@ -308,49 +281,6 @@ class QWorker(ExceptionMixin):
 
     def handle_exception(self, ex, special_string=None):
         return self.extract_short_error_message(ex, special_string)
-
-    def on_connection_closed(self, _unused_connection, reason):
-        self.channel = None
-        print('Connection closed, reconnect necessary: {}'.format(reason))
-        self.connect()
-
-    def on_channel_closed(self, channel, reason):
-        print('Channel closed, reconnect necessary: {}'.format(reason))
-        self.channel = None
-        self.connection.ioloop.stop()
-        if not (self.connection.is_closing or self.connection.is_closed):
-            self.connection.close()
-        self.connect()
-
-    def connect(self):
-        taddress = communication_utils.megaplex_address
-        params = pika.ConnectionParameters(
-            host=taddress,
-            port=5672,
-            virtual_host='/'
-        )
-
-        print("connecting")
-        try:
-            self.connection = pika.SelectConnection(params,
-                                                    on_open_callback=self.on_connected,
-                                                    on_open_error_callback=self.on_connection_open_error,
-                                                    on_close_callback=self.on_connection_closed)
-        except Exception as ex:
-            print(self.handle_exception(ex, "Error creating connection"))
-        print("about to start ioloop")
-        self.connection.ioloop.start()
-
-    def on_connection_open_error(self, _unused_connection, err):
-        print("error opening connection. I'll try again.")
-        self.connect()
-
-    def _run(self):
-        print("starting qworker")
-        try:
-            self.connect()
-        except Exception as ex:
-            print(self.handle_exception(ex, "Error in _run"))
 
 
 class BlockingWaitWorker:

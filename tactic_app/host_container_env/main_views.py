@@ -11,7 +11,7 @@ from tactic_app import app, db, fs, socketio
 from library_views import collection_manager
 from docker_functions import destroy_container, destroy_child_containers
 from users import load_user
-from communication_utils import send_request_to_megaplex, debinarize_python_object
+from communication_utils import debinarize_python_object
 from communication_utils import read_temp_data, delete_temp_data
 from exception_mixin import generic_exception_handler
 import tactic_app
@@ -20,6 +20,7 @@ import datetime
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
 from js_source_management import _develop
+
 
 # The main window should join a room associated with the user
 @socketio.on('connect', namespace='/main')
@@ -56,7 +57,7 @@ def on_join_main(data):
 def register_heartbeat():
     data = request.json
     try:
-        tactic_app.client_worker.update_heartbeat_table(data["main_id"])
+        tactic_app.health_tracker.update_heartbeat_table(data["main_id"])
     except Exception as ex:
         return generic_exception_handler.get_traceback_exception_for_ajax(ex)
     return jsonify({"success": True})

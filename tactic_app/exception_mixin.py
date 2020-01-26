@@ -2,6 +2,7 @@
 import traceback
 import os
 import json
+from flask import jsonify
 
 if "IMAGE_NAME" in os.environ:
     if os.environ.get("IMAGE_NAME") == "tactic_tile_image":

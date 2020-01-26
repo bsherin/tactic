@@ -8,7 +8,7 @@ import datetime
 import json
 import os
 import copy
-from communication_utils import send_request_to_megaplex, emit_direct
+from communication_utils import emit_direct
 import communication_utils
 from exception_mixin import ExceptionMixin, MessagePostException
 
