@@ -13,7 +13,10 @@ import uuid
 import pika
 from exception_mixin import generic_exception_handler
 
+
 from flask_socketio import SocketIO
+
+print("in communication utils")
 
 if ("USE_FORWARDER" in os.environ) and (os.environ.get("USE_FORWARDER") == "True"):
     USE_FORWARDER = True
@@ -22,16 +25,22 @@ else:
 
 RETRIES = 60
 
-# set am_host to True when this is initially loaded.
-# in this case where this isn't the host, this will get changed when qworker is imported.
+socketio = None
+megaplex = None
 
-if "MEGAPLEX_ADDRESS" in os.environ:
+if "MEGAPLEX_ADDRESS" in os.environ:  # This will be True in a tile or module_viewer
     megaplex_address = os.environ.get("MEGAPLEX_ADDRESS")
-    am_host = False
+else:
+    from docker_functions import get_address
+    megaplex_address = get_address("megaplex", "bridge")
+
+
+if "AM_TACTIC_HOST" not in os.environ and "AM_LAUNCHER" not in os.environ:
+    print("making a new socketio")
     message_queue = 'amqp://{}:5672//'.format(megaplex_address)
     socketio = SocketIO(message_queue=message_queue)
 else:
-    am_host = True
+    print("not making a new socketio")
 
 
 def emit_direct(event_name, data, namespace, room):
@@ -102,28 +111,6 @@ def read_project_dict(fs, mdata, file_id):
     return project_dict
 
 
-def send_request_to_megaplex(msg_type, data_dict=None, wait_for_success=True, timeout=3, tries=RETRIES, wait_time=.1,
-                             alt_address=None):
-    taddress = megaplex_address
-    port = "5000"
-    last_fail = ""
-    if wait_for_success:
-        for attempt in range(tries):
-            try:
-                res = requests.post("http://{0}:{1}/{2}".format(taddress, port, msg_type),
-                                    timeout=timeout, json=data_dict)
-                return res
-            except Exception as ex:
-                last_fail = generic_exception_handler.get_traceback_message(ex)
-                time.sleep(wait_time)
-                continue
-        error_string = "Send request to megaplex timed out with msg_type {} and last fail {}".format(msg_type,
-                                                                                                     last_fail)
-        raise Exception(error_string)
-    else:
-        return requests.post("http://{0}:{1}/{2}".format(taddress, port, msg_type), timeout=timeout, json=data_dict)
-
-
 def send_request_to_container(taddress, msg_type, data_dict=None, wait_for_success=True,
                               timeout=3, tries=RETRIES, wait_time=.1):
     last_fail = ""
@@ -145,29 +132,3 @@ def send_request_to_container(taddress, msg_type, data_dict=None, wait_for_succe
     else:
         return requests.post("http://{0}:5000/{1}".format(taddress, msg_type), timeout=timeout, json=data_dict)
 
-
-def post_task_noqworker(source_id, dest_id, task_type, task_data=None):
-    new_packet = {"source": source_id,
-                  "callback_type": "no_callback",
-                  "status": "presend",
-                  "dest": dest_id,
-                  "task_type": task_type,
-                  "task_data": task_data,
-                  "response_data": None,
-                  "callback_id": None,
-                  "reply_to": None,
-                  "expiration": None}
-    # result = send_request_to_megaplex("post_task", new_packet).json()
-    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
-    channel = connection.channel()
-    channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
-    channel.basic_publish(exchange='',
-                          routing_key=dest_id,
-                          properties=pika.BasicProperties(
-                              reply_to=None,
-                              correlation_id=None,
-                              delivery_mode=1
-                          ),
-                          body=json.dumps(new_packet))
-    connection.close()
-    return result

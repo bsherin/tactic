@@ -5,12 +5,10 @@ import os
 import sys
 import uuid
 import datetime
-from communication_utils import send_request_to_megaplex, post_task_noqworker
-from communication_utils import USE_FORWARDER
-import communication_utils
 import subprocess
 import re
-from rabbit_manage import delete_list_of_queues
+import pika
+from rabbit_manage import get_queues
 forwarder_address = None
 forwarder_id = None
 sys.stdout = sys.stderr
@@ -39,12 +37,19 @@ if "DB_NAME" in os.environ:
 else:
     db_name = "tacticdb"
 
+cli = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
-if "MONGO_URI" in os.environ:
+
+# Note that get_address assumes that the network is named usernet
+def get_address(container_identifier, network_name):
+    return cli.containers.get(container_identifier).attrs["NetworkSettings"]["Networks"][network_name]["IPAddress"]
+
+
+if "MONGO_URI" in os.environ:  # This should be true except in launch_tactic
     mongo_uri = os.environ.get("MONGO_URI")
 else:
     # ip_info is only used as a step to getting the host_ip
-    if USE_FORWARDER:  # This means we're working on the mac
+    if ("USE_FORWARDER" in os.environ) and (os.environ.get("USE_FORWARDER") == "True"):  # This means we're working on the mac
         # I used to have en0 here. Now it seems to need to be en3
         ip_info = subprocess.check_output(['/usr/local/bin/ip', '-4', 'addr', 'show', 'en0'])
     else:
@@ -55,11 +60,7 @@ else:
 
 _develop = ("DEVELOP" in os.environ) and (os.environ.get("DEVELOP") == "True")
 
-megaplex_address = None  # This is set in __init__.py
 RETRIES = 60
-
-
-cli = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
 
 # noinspection PyTypeChecker
@@ -67,11 +68,6 @@ def get_my_address():
     res = subprocess.check_output(["hostname", "-i"]).decode()
     res = re.sub(r"\s", r"", res)
     return res
-
-
-# Note that get_address assumes that the network is named usernet
-def get_address(container_identifier, network_name):
-    return cli.containers.get(container_identifier).attrs["NetworkSettings"]["Networks"][network_name]["IPAddress"]
 
 
 if "TRUE_HOST_PERSIST_DIR" in os.environ:
@@ -157,7 +153,7 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
                      env_vars=None, port_bindings=None, wait_retries=50,
                      other_name="none", volume_dict=None, username=None,
                      detach=True, register_container=True, publish_all_ports=False,
-                     main_address=None, local_true_host_persist_dir=None,
+                     local_true_host_persist_dir=None,
                      local_true_host_nltk_data_dir=None, special_unique_id=None):
     print("in create_container")
     if env_vars is None:
@@ -170,7 +166,6 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
                "RETRIES": RETRIES,
                "CHUNK_SIZE": CHUNK_SIZE,
                "STEP_SIZE": STEP_SIZE,
-               "MEGAPLEX_ADDRESS": megaplex_address,
                "MY_ID": unique_id,
                "OWNER": owner,
                "PARENT": parent,
@@ -186,12 +181,6 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
 
     if username is not None:
         environ["USERNAME"] = username
-
-    if not communication_utils.am_host:
-        environ["MAIN_ADDRESS"] = get_my_address()
-        print("got my address {}".format(environ["MAIN_ADDRESS"]))
-    elif main_container_info.is_main(parent):
-        environ["MAIN_ADDRESS"] = main_container_info.address(parent)
 
     if DEBUG_MAIN_CONTAINER or DEBUG_TILE_CONTAINER:
         environ["PYCHARM_DEBUG"] = True
@@ -408,3 +397,68 @@ def destroy_child_containers(parent_id):
 
 def connect_to_network(container, network):
     return cli.connect_container_to_network(container, network)
+
+
+def delete_all_queues(use_localhost=False):
+    delete_list_of_queues(get_queues(), use_localhost)
+    return
+
+
+def delete_one_queue(tactic_id):
+    taddress = get_address("megaplex", "bridge")
+    params = pika.ConnectionParameters(
+        host=taddress,
+        port=5672,
+        virtual_host='/'
+    )
+    connection = pika.BlockingConnection(params)
+    channel = connection.channel()
+    channel.queue_delete(queue=tactic_id)
+    connection.close()
+
+
+def delete_list_of_queues(qlist, use_localhost=False):
+    if use_localhost:
+        params = pika.ConnectionParameters('localhost')
+    else:
+        taddress = get_address("megaplex", "bridge")
+        params = pika.ConnectionParameters(
+            host=taddress,
+            port=5672,
+            virtual_host='/'
+        )
+    connection = pika.BlockingConnection(params)
+    channel = connection.channel()
+    for q in qlist:
+        try:
+            channel.queue_delete(queue=q)
+        except:
+            print("problem deleting a queue")
+    connection.close()
+
+
+def post_task_noqworker(source_id, dest_id, task_type, task_data=None):
+    new_packet = {"source": source_id,
+                  "callback_type": "no_callback",
+                  "status": "presend",
+                  "dest": dest_id,
+                  "task_type": task_type,
+                  "task_data": task_data,
+                  "response_data": None,
+                  "callback_id": None,
+                  "reply_to": None,
+                  "expiration": None}
+    # result = send_request_to_megaplex("post_task", new_packet).json()
+    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+    channel = connection.channel()
+    channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
+    channel.basic_publish(exchange='',
+                          routing_key=dest_id,
+                          properties=pika.BasicProperties(
+                              reply_to=None,
+                              correlation_id=None,
+                              delivery_mode=1
+                          ),
+                          body=json.dumps(new_packet))
+    connection.close()
+    return result

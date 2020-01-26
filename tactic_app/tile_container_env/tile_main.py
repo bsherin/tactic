@@ -8,8 +8,6 @@ from flask import Flask
 import exception_mixin
 from exception_mixin import ExceptionMixin
 
-from communication_utils import send_request_to_megaplex
-
 import copy
 # noinspection PyUnresolvedReferences
 from qworker import QWorker, task_worthy, RETRIES
@@ -39,14 +37,6 @@ import sys, os
 sys.stdout = sys.stderr
 import time
 print("done with imports in tile_main")
-
-if "MAIN_ADDRESS" in os.environ:
-    main_address = os.environ["MAIN_ADDRESS"]
-else:
-    main_address = None  # this should only happen in the tile test container
-
-print("got main_address {}".format(main_address))
-
 
 # noinspection PyUnusedLocal
 class TileWorker(QWorker):
@@ -101,33 +91,6 @@ class TileWorker(QWorker):
         except Exception as ex:
             return self.handle_exception(ex, "Error loading source")
         return result
-
-    def post_and_wait_for_pipe(self, dest_id, task_type, task_data=None, sleep_time=.1,
-                               timeout=10, tries=RETRIES, alt_address=None):
-        callback_id = str(uuid.uuid4())
-        new_packet = {"source": self.my_id,
-                      "callback_type": "wait",
-                      "callback_id": callback_id,
-                      "status": "presend",
-                      "dest": dest_id,
-                      "task_type": task_type,
-                      "task_data": task_data,
-                      "response_data": None,
-                      "expiration": None}
-        # self.debug_log("in post and wait with new_packet " + str(new_packet))
-        tile_o_plex.transmitted_pipe_value = None
-        tile_o_plex.awaiting_pipe = True
-        send_request_to_megaplex("post_task", new_packet, alt_address=main_address)
-        for i in range(tries):
-            if not tile_o_plex.awaiting_pipe:
-                return tile_o_plex.transmitted_pipe_value
-            else:
-                time.sleep(sleep_time)
-        error_string = "post_and_wait_for_pipe timed out with msg_type {}, dest {}, source".format(task_type,
-                                                                                                   dest_id,
-                                                                                                   self.my_id)
-        self.debug_log(error_string)
-        raise Exception(error_string)
 
     @task_worthy
     def get_options(self, data_dict):

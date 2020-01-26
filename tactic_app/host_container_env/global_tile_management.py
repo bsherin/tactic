@@ -1,6 +1,7 @@
 
 print ("in gtm")
 from docker_functions import create_container, ContainerCreateError
+from communication_utils import megaplex_address
 import copy
 import datetime
 import os
@@ -25,13 +26,14 @@ class GlobalTileManager(object):
         vmanager.delete_all_contents()
         self.tile_manager = vmanager["tile_manager"]
         print("about to create the test_tile_container")
+        env_vars = {"PPI": 0, "MEGAPLEX_ADDRESS": megaplex_address}
         try:
             self.test_tile_container_id, container_id = create_container("tactic_tile_image",
                                                                          network_mode="bridge",
                                                                          container_name="tile_test_container",
                                                                          register_container=False,
                                                                          other_name="test_container",
-                                                                         env_vars={"PPI": 0})
+                                                                         env_vars=env_vars)
             print('created the test_tile_container')
         except ContainerCreateError:
             print("failed to create the test tile_container. That's very bad.")

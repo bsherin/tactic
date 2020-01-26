@@ -5,7 +5,7 @@ import json
 from users import load_user, ModuleNotFoundError
 import gevent
 import pika
-from communication_utils import send_request_to_megaplex, make_python_object_jsonizable
+from communication_utils import make_python_object_jsonizable
 from docker_functions import create_container, destroy_container, destroy_child_containers, destroy_user_containers
 from docker_functions import get_log, ContainerCreateError, container_exec, restart_container, get_address
 from tactic_app import app, socketio, use_ssl, db
@@ -209,7 +209,7 @@ class HostWorker(QWorker):
         destroy_child_containers(main_id)
         destroy_container(main_id, notify=True)
         socketio.emit('stop-heartbeat', {}, namespace='/main', room=main_id)
-        tactic_app.client_worker.remove_from_heartbeat_table(main_id)
+        tactic_app.health_tracker.remove_from_heartbeat_table(main_id)
         return {"success": True}
 
     @task_worthy
@@ -532,23 +532,6 @@ class HostWorker(QWorker):
         return {"success": True}
 
     @task_worthy
-    def create_tile_container(self, data):
-        try:
-            environ = {"PPI": data["ppi"]}
-            tile_container_id, container_id = create_container("tactic_tile_image", network_mode="bridge",
-                                                               owner=data["user_id"],
-                                                               parent=data["parent"],
-                                                               other_name=data["other_name"],
-                                                               env_vars=environ,
-                                                               publish_all_ports=True)
-            tile_address = get_address(container_id, "bridge")
-        except ContainerCreateError as ex:
-            special_string = "Error creating tile container"
-            print(special_string)
-            return self.get_short_exception_dict(ex, special_string)
-        return {"success": True, "tile_id": tile_container_id, "tile_address": tile_address}
-
-    @task_worthy
     def get_empty_tile_containers(self, data):
         tile_containers = []
         for i in range(data["number"]):
@@ -587,11 +570,11 @@ class HostWorker(QWorker):
         ddict["html"] = the_html
         return ddict
 
-    def clear_stale_containers(self):
-        res = send_request_to_megaplex("get_old_inactive_stalled_containers").json()
-        cont_list = res["old_inactive_stalled_containers"]
-        for cont_id in cont_list:
-            destroy_container(cont_id)
+    # def clear_stale_containers(self):
+    #     res = send_request_to_megaplex("get_old_inactive_stalled_containers").json()
+    #     cont_list = res["old_inactive_stalled_containers"]
+    #     for cont_id in cont_list:
+    #         destroy_container(cont_id)
 
     def special_long_sleep_function(self):
         current_time = datetime.datetime.utcnow()
@@ -650,7 +633,7 @@ class HostWorker(QWorker):
         return
 
 
-class ClientWorker(QWorker):
+class HealthTracker(QWorker):
     def __init__(self):
         QWorker.__init__(self)
         self.my_id = "client"
@@ -683,32 +666,8 @@ class ClientWorker(QWorker):
                 print("No heartbeat from mainwindow " + str(main_id))
                 self.post_task("host", "remove_mainwindow_task", {"main_id": main_id})
 
-    def handle_event(self, task_packet):
 
-        task_packet["table_message"] = task_packet["task_type"]
-        socketio.emit("table-message", task_packet, namespace='/main', room=task_packet["main_id"])
-        return
-
-    def handle_response(self, task_packet):
-
-        try:
-            if "room" in task_packet:
-                room = task_packet["room"]
-            else:
-                room = task_packet["main_id"]
-            if "namespace" in task_packet:
-                namespace = task_packet["namespace"]
-            else:
-                namespace = "/main"
-            socketio.emit("handle-callback", task_packet, namespace=namespace, room=room)
-        except Exception as ex:
-            special_string = "Error handling callback for task type {} for my_id {}".format(task_packet["task_type"],
-                                                                                            self.my_id)
-            self.handle_exception(ex, special_string)
-        return
-
-
-tactic_app.client_worker = ClientWorker()
+tactic_app.health_tracker = HealthTracker()
 tactic_app.host_worker = HostWorker()
 tactic_app.host_worker.start()
 # tactic_app.client_worker.start()

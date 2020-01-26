@@ -21,6 +21,9 @@ print("imported views")
 import host_workers
 print("imported host_workers")
 
+print("trying redis stuff")
+import redis_tools
+
 import tactic_app
 
 print("about to do socketio.run")

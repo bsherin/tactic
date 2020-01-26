@@ -9,7 +9,7 @@ import pymongo
 import gridfs
 import datetime
 import os
-from communication_utils import debinarize_python_object, store_temp_data, emit_direct
+from communication_utils import debinarize_python_object, store_temp_data, emit_direct, megaplex_address
 from communication_utils import make_jsonizable_and_compress, read_project_dict, read_temp_data, delete_temp_data
 import docker_functions
 from volume_manager import VolumeManager
@@ -18,7 +18,7 @@ from main_tasks_mixin import StateTasksMixin, LoadSaveTasksMixin, TileCreationTa
 from main_tasks_mixin import ExportsTasksMixin, ConsoleTasksMixin, DataSupportTasksMixin
 from exception_mixin import ExceptionMixin
 
-docker_functions.megaplex_address = os.environ.get("MEGAPLEX_ADDRESS")
+# docker_functions.megaplex_address = os.environ.get("MEGAPLEX_ADDRESS")
 
 from doc_info import docInfo, FreeformDocInfo
 
@@ -129,7 +129,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
 
     def show_main_status_message(self, message, timeout=None):
         data = {"message": message, "timeout": timeout, "main_id": self.mworker.my_id}
-        self.mworker.emit_to_main_client("show-status-msg")
+        self.mworker.emit_to_main_client("show-status-msg", data)
         # self.mworker.post_task("host", "show_main_status_message", data)
 
     def show_error_window(self, error_string):
@@ -153,7 +153,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
 
     def create_tile_container(self, data):
         try:
-            environ = {"PPI": data["ppi"], "USE_WAIT_TASKS": "True"}
+            environ = {"PPI": data["ppi"], "USE_WAIT_TASKS": "True", "MEGAPLEX_ADDRESS": megaplex_address}
             user_host_persist_dir = true_host_persist_dir + "/tile_manager/" + self.username
             tile_volume_dict = {}
             tile_volume_dict[user_host_persist_dir] = {"bind": "/code/persist", "mode": "rw"}

@@ -12,6 +12,7 @@ from tactic_app import app, db, socketio, use_ssl
 from resource_manager import ResourceManager, LibraryResourceManager
 from users import User
 from docker_functions import create_container
+from communication_utils import megaplex_address
 
 from js_source_management import js_source_dict, _develop, css_source
 
@@ -187,8 +188,9 @@ class TileManager(LibraryResourceManager):
 
     def initialize_module_viewer_container(self, module_name):
         user_obj = current_user
+        env_vars = {"MEGAPLEX_ADDRESS": megaplex_address}
         module_viewer_id, container_id = create_container("module_viewer_image", owner=user_obj.get_id(),
-                                                          other_name=module_name)
+                                                          other_name=module_name, env_vars=env_vars)
 
         the_content = {"module_name": module_name,
                        "module_viewer_id": module_viewer_id,

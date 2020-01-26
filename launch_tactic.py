@@ -20,10 +20,10 @@ else:
 print "entering launch_tactic"
 import docker_cleanup
 print "entering tactic_run"
-from tactic_app.rabbit_manage import sleep_until_rabbit_alive, delete_all_queues
 import docker_functions
 from docker_functions import create_container, get_address, ContainerCreateError
-from docker_functions import db_name, mongo_uri
+from docker_functions import db_name, mongo_uri, delete_all_queues
+from tactic_app.rabbit_manage import sleep_until_rabbit_alive
 docker_cleanup.do_docker_cleanup()
 
 host_persist_dir = os.getcwd() + "/persist"
@@ -36,12 +36,25 @@ def create_megaplex():
         if restart_rabbit:
             _unique_id, _megaplex_id = create_container("rabbitmq:3-management",
                                                         container_name="megaplex",
-                                                        host_name="my-rabbit",
+                                                        host_name="megaplex",
                                                         port_bindings={5672: 5672, 15672: 15672},
                                                         register_container=False)
-        docker_functions.megaplex_address = get_address("megaplex", "bridge")
+        # docker_functions.megaplex_address = get_address("megaplex", "bridge")
     except ContainerCreateError:
         print "Error creating the Megaplex."
+        exit()
+
+
+def create_redis():
+    try:
+        if restart_rabbit:
+            _unique_id, _redis_id = create_container("redis:alpine",
+                                                     container_name="tactic-redis",
+                                                     host_name="tactic-redis",
+                                                     port_bindings={6379: 6379},
+                                                     register_container=False)
+    except ContainerCreateError:
+        print "Error creating the redis container."
         exit()
 
 
@@ -50,7 +63,7 @@ def create_host():
         host_volume_dict = {"/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "rw"}}
         host_volume_dict[host_persist_dir] = {"bind": "/code/persist", "mode": "rw"}
         host_volume_dict[host_static_dir] = {"bind": "/code/static", "mode": "ro"}
-        env_vars = {"USE_SSL": use_ssl}
+        env_vars = {"USE_SSL": use_ssl, "AM_TACTIC_HOST": True}
         _unique_id, _tactic_host_id = create_container("tactic_host_image",
                                                        container_name="tactic_host",
                                                        volume_dict=host_volume_dict,
@@ -100,6 +113,10 @@ try:
         ANYONE_CAN_REGISTER = False
 
     create_megaplex()
+
+    # import rabbit_manage here because we don't want communication_utils
+    # imported until the megaplex exists
+
     success = sleep_until_rabbit_alive()
     if not success:
         print("seems like the rabbitmq server isn't answering")
