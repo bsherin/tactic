@@ -28,17 +28,10 @@ RETRIES = 60
 socketio = None
 megaplex = None
 
-if "MEGAPLEX_ADDRESS" in os.environ:  # This will be True in a tile or module_viewer
-    megaplex_address = os.environ.get("MEGAPLEX_ADDRESS")
-else:
-    from docker_functions import get_address
-    megaplex_address = get_address("megaplex", "bridge")
-
 
 if "AM_TACTIC_HOST" not in os.environ and "AM_LAUNCHER" not in os.environ:
-    print("making a new socketio")
-    message_queue = 'amqp://{}:5672//'.format(megaplex_address)
-    socketio = SocketIO(message_queue=message_queue)
+    print("making a new socketio. connecting by name")
+    socketio = SocketIO(message_queue="megaplex")
 else:
     print("not making a new socketio")
 

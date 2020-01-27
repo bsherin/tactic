@@ -13,7 +13,8 @@ from tactic_app import app, socketio
 print("back in host_main")
 import users
 print("imported user")
-import global_tile_management
+import loaded_tile_management
+loaded_tile_management.initialize_loaded_tile_indices()
 print("imported gtm")
 import auth_views, main_views, library_views, admin_views
 import module_viewer_views, history_viewer_views, tile_differ_views

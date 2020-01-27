@@ -5,4 +5,5 @@ Flask-SocketIO
 kombu
 beautifulsoup4==4.5.1
 pika
+redis
 rabbitmq-admin

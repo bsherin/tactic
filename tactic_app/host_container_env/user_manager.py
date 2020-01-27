@@ -10,7 +10,7 @@ from resource_manager import ResourceManager
 from pymongo import MongoClient
 from mongo_accesser import bytes_to_string
 import gridfs
-from tactic_app import Database, global_tile_manager
+from tactic_app import Database
 
 if "DB_NAME" in os.environ:
     db_name = os.environ.get("DB_NAME")

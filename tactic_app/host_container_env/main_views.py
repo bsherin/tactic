@@ -57,7 +57,7 @@ def on_join_main(data):
 def register_heartbeat():
     data = request.json
     try:
-        tactic_app.health_tracker.update_heartbeat_table(data["main_id"])
+        tactic_app.health_tracker.register_heartbeat(data["main_id"])
     except Exception as ex:
         return generic_exception_handler.get_traceback_exception_for_ajax(ex)
     return jsonify({"success": True})

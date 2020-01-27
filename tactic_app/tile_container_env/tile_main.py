@@ -38,6 +38,7 @@ sys.stdout = sys.stderr
 import time
 print("done with imports in tile_main")
 
+
 # noinspection PyUnusedLocal
 class TileWorker(QWorker):
     def __init__(self):
@@ -48,6 +49,7 @@ class TileWorker(QWorker):
         tile_env.Tile = None
         self.get_megaplex_task_now = False
         self.use_svg = True
+        self.generate_heartbeats = True
 
     @task_worthy
     def hello(self, data_dict):

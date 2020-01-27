@@ -38,6 +38,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
         self.db = None
         self.tile_collection_name = None
         self.tile_instance = None
+        self.generate_heartbeats = True
         return
 
     @task_worthy

@@ -10,7 +10,7 @@ import tactic_app
 from file_handling import load_a_list
 from resource_manager import ResourceManager, LibraryResourceManager
 from users import User
-global_tile_manager = tactic_app.global_tile_manager
+import loaded_tile_management
 repository_user = User.get_user_by_username("repository")
 
 import datetime
@@ -159,7 +159,7 @@ class ListManager(LibraryResourceManager):
             return jsonify({"success": False, "alert_type": "alert-warning",
                             "message": "A list with that name already exists"})
         the_list = load_a_list(the_file)
-        metadata = global_tile_manager.create_initial_metadata()
+        metadata = loaded_tile_management.create_initial_metadata()
         data_dict = {"list_name": the_file.filename, "the_list": the_list, "metadata": metadata}
         db[user_obj.list_collection_name].insert_one(data_dict)
         new_row = self.build_res_dict(the_file.filename, metadata, user_obj)

@@ -12,11 +12,10 @@ from tactic_app import app, db, socketio, use_ssl
 from resource_manager import ResourceManager, LibraryResourceManager
 from users import User
 from docker_functions import create_container
-from communication_utils import megaplex_address
 
 from js_source_management import js_source_dict, _develop, css_source
 
-global_tile_manager = tactic_app.global_tile_manager
+import loaded_tile_management
 repository_user = User.get_user_by_username("repository")
 
 import datetime
@@ -188,9 +187,8 @@ class TileManager(LibraryResourceManager):
 
     def initialize_module_viewer_container(self, module_name):
         user_obj = current_user
-        env_vars = {"MEGAPLEX_ADDRESS": megaplex_address}
         module_viewer_id, container_id = create_container("module_viewer_image", owner=user_obj.get_id(),
-                                                          other_name=module_name, env_vars=env_vars)
+                                                          other_name=module_name, register_container=True)
 
         the_content = {"module_name": module_name,
                        "module_viewer_id": module_viewer_id,
@@ -223,7 +221,7 @@ class TileManager(LibraryResourceManager):
 
     def unload_all_tiles(self):
         try:
-            global_tile_manager.unload_user_tiles(current_user.username)
+            loaded_tile_management.unload_user_tiles(current_user.username)
             socketio.emit('update-loaded-tile-list', {"tile_load_dict": self.loaded_tile_lists(current_user)},
                           namespace='/library', room=current_user.get_id())
             socketio.emit('update-menus', {}, namespace='/main', room=current_user.get_id())
@@ -241,7 +239,7 @@ class TileManager(LibraryResourceManager):
             return jsonify({"success": False, "alert_type": "alert-warning",
                             "message": "A module with that name already exists"})
         the_module = f.read()
-        metadata = global_tile_manager.create_initial_metadata()
+        metadata = loaded_tile_management.create_initial_metadata()
         tp = TileParser(the_module)
         metadata["type"] = tp.type
         data_dict = {"tile_module_name": f.filename, "tile_module": the_module, "metadata": metadata}
@@ -297,7 +295,7 @@ class TileManager(LibraryResourceManager):
         mongo_dict = db["repository.tiles"].find_one({"tile_module_name": template_name})
         template = mongo_dict["tile_module"]
 
-        metadata = global_tile_manager.create_initial_metadata()
+        metadata = loaded_tile_management.create_initial_metadata()
         metadata["type"] = ""
 
         data_dict = {"tile_module_name": new_tile_name, "tile_module": template, "metadata": metadata,
@@ -322,9 +320,9 @@ class TileManager(LibraryResourceManager):
         if user_obj is None:
             user_obj = current_user
         uname = user_obj.username
-        result = {"nondefault_tiles": global_tile_manager.get_nondefault_tiles_list(uname),
-                  "default_tiles": global_tile_manager.get_default_tiles(uname),
-                  "failed_loads": global_tile_manager.get_failed_loads_list(uname)}
+        result = {"nondefault_tiles": loaded_tile_management.get_nondefault_tiles_list(uname),
+                  "default_tiles": loaded_tile_management.get_default_tiles(uname),
+                  "failed_loads": loaded_tile_management.get_failed_loads_list(uname)}
         return result
 
     def get_loaded_tile_lists(self, user_obj=None):

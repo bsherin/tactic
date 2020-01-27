@@ -17,6 +17,7 @@ from tactic_app import app, socketio, csrf, db, fs
 from wtforms.validators import ValidationError
 from tactic_app import ANYONE_CAN_REGISTER
 import tactic_app
+import loaded_tile_management
 
 from js_source_management import js_source_dict, _develop, css_source
 
@@ -81,7 +82,7 @@ def attempt_login():
         user.set_user_timezone_offset(data["tzOffset"])
         user.set_last_login()
         print("about to call load_user_default_tiles")
-        error_list = tactic_app.global_tile_manager.load_user_default_tiles(current_user.username)
+        error_list = loaded_tile_management.load_user_default_tiles(current_user.username)
         result_dict["logged_in"] = True
         result_dict["tile_loading_errors"] = error_list
     else:
@@ -109,7 +110,7 @@ def logout(page_id):
     user_id = current_user.get_id()
     socketio.emit('close-user-windows', {"originator": page_id}, namespace='/library', room=user_id)
     socketio.emit('close-user-windows', {"originator": page_id}, namespace='/main', room=user_id)
-    tactic_app.global_tile_manager.remove_user(current_user.username)
+    loaded_tile_management.remove_user(current_user.username)
     # The containers should be gone by this point. But make sure.
     tactic_app.host_worker.post_task("host", "destroy_a_users_containers", {"user_id": user_id})
     logout_user()

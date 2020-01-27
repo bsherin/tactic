@@ -34,7 +34,7 @@ class MainWorker(QWorker, ExceptionMixin):
         QWorker.__init__(self)
         self.mwindow = None
         self.get_megaplex_task_now = False
-        self.last_queue_check = datetime.datetime.utcnow()
+        self.generate_heartbeats = True
 
     def ask_host(self, msg_type, task_data=None, callback_func=None):
         task_data["main_id"] = self.my_id
@@ -154,16 +154,6 @@ class MainWorker(QWorker, ExceptionMixin):
             return task_data
         except Exception as Ex:
             return self.handle_exception(Ex, "Error initializing mainwindow")
-
-    def special_long_sleep_function(self):
-        current_time = datetime.datetime.utcnow()
-        tdelta = current_time - self.last_queue_check
-        delta_seconds = tdelta.days * 24 * 60 + tdelta.seconds
-        if delta_seconds > queue_check_time:
-            print("Checking queue status")
-            for tmanager in megaplex_main.queue_dict.values():
-                print(tmanager.get_data_string())
-            self.last_queue_check = current_time
 
     @task_worthy
     def initialize_project_mainwindow(self, data_dict):

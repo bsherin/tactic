@@ -1,15 +1,11 @@
 # The unused imports here are required so that the
 # various handlers are registered via decorators
 
-# Much of the setup is done in tactic_app/__init__.py
+# Much of the setup is done in tactic_app
 # This avoids circular imports since the view functions make use
 # of things such as app, socketio, and db that are created in __init__.py
 
 import os, sys
-import pymongo
-from pymongo import MongoClient
-from pymongo.database import Database
-import gridfs
 
 use_ssl = os.environ.get("USE_SSL")
 if "RESTART_RABBIT" in os.environ:
@@ -55,7 +51,6 @@ def create_megaplex():
                                                         host_name="megaplex",
                                                         port_bindings={5672: 5672, 15672: 15672},
                                                         register_container=False)
-        # docker_functions.megaplex_address = get_address("megaplex", "bridge")
     except ContainerCreateError:
         print "Error creating the Megaplex."
         exit()
@@ -93,64 +88,39 @@ def create_host():
         exit()
 
 
-def list_collections(self):
-    dictlist = self.command("listCollections")["cursor"]["firstBatch"]
-    return [d["name"] for d in dictlist]
+def create_tile_test_container():
+    print("about to create the test_tile_container")
+    env_vars = {"PPI": 0}
+    try:
+        test_tile_container_id, container_id = create_container("tactic_tile_image",
+                                                                network_mode="bridge",
+                                                                container_name="tile_test_container",
+                                                                special_unique_id="tile_test_container",
+                                                                register_container=False,
+                                                                other_name="test_container",
+                                                                env_vars=env_vars)
+        print('created the test_tile_container')
+    except ContainerCreateError:
+        print("failed to create the test tile_container. That's very bad.")
+        exit()
 
 
-Database.collection_names = list_collections
+CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
+STEP_SIZE = int(os.environ.get("STEP_SIZE"))
 
+if ("ANYONE_CAN_REGISTER" in os.environ) and (os.environ.get("ANYONE_CAN_REGISTER") == "True"):
+    ANYONE_CAN_REGISTER = True
+else:
+    ANYONE_CAN_REGISTER = False
 
-def create_collection(self, collection_name):
-    self.command("create", collection_name)
-    return
+create_megaplex()
+create_redis()
+create_tile_test_container()
 
+success = sleep_until_rabbit_alive()
+if not success:
+    print("seems like the rabbitmq server isn't answering")
+delete_all_queues(use_localhost=True)
 
-Database.create_collection = create_collection
-
-try:
-    print "getting client"
-    CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
-    STEP_SIZE = int(os.environ.get("STEP_SIZE"))
-
-    # Now the local server branch is what executes on the remote server
-    client = MongoClient(mongo_uri, serverSelectionTimeoutMS=30000)
-    # force connection on a request as the
-    # connect=True parameter of MongoClient seems
-    # to be useless here
-    client.server_info()
-    # noinspection PyUnresolvedReferences
-    db = client[db_name]
-    fs = gridfs.GridFS(db)
-
-    if ("ANYONE_CAN_REGISTER" in os.environ) and (os.environ.get("ANYONE_CAN_REGISTER") == "True"):
-        ANYONE_CAN_REGISTER = True
-    else:
-        ANYONE_CAN_REGISTER = False
-
-    create_megaplex()
-    create_redis()
-
-    # import rabbit_manage here because we don't want communication_utils
-    # imported until the megaplex exists
-
-    success = sleep_until_rabbit_alive()
-    if not success:
-        print("seems like the rabbitmq server isn't answering")
-    delete_all_queues(use_localhost=True)
-
-    print("creating the host")
-    create_host()
-    if "temp_data" not in db.collection_names():
-        db.create_collection("temp_data")
-    else:
-        for rec in db["temp_data"].find():
-            if "file_id" in rec:
-                fs.delete(rec["file_id"])
-        db["temp_data"].remove()
-
-except pymongo.errors.PyMongoError as err:
-    print("There's a problem with the PyMongo database. ", err)
-    sys.exit()
-
-# tactic_app.global_tile_manager.get_all_default_tiles()
+print("creating the host")
+create_host()

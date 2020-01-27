@@ -24,7 +24,7 @@ from users import User
 from js_source_management import js_source_dict, _develop, css_source
 
 
-global_tile_manager = tactic_app.global_tile_manager
+import loaded_tile_management
 repository_user = User.get_user_by_username("repository")
 admin_user = User.get_user_by_username("admin")
 

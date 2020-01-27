@@ -12,7 +12,7 @@ from exception_mixin import generic_exception_handler
 import tactic_app
 
 admin_user = User.get_user_by_username("admin")
-global_tile_manager = tactic_app.global_tile_manager
+import loaded_tile_management
 
 
 class ContainerManager(ResourceManager):
@@ -45,14 +45,14 @@ class ContainerManager(ResourceManager):
                     continue
                 if cont.attrs["Image"] == tactic_image_ids["tactic_tile_image"]:
                     the_id = container_id(cont)
-                    if not the_id == global_tile_manager.test_tile_container_id:
+                    if not the_id == "tile_test_container":
                         self.show_um_message("removing tile container " + cont.attrs["Name"],
                                              library_id, timeout=None)
                         cont.remove(force=True)
                     continue
                 if cont.attrs["Image"] == tactic_image_ids["module_viewer_image"]:
                     the_id = container_id(cont)
-                    if not the_id == global_tile_manager.test_tile_container_id:
+                    if not the_id == "tile_test_container":
                         self.show_um_message("removing module viewer container " + cont.attrs["Name"],
                                              library_id, timeout=None)
                         cont.remove(force=True)
@@ -76,7 +76,7 @@ class ContainerManager(ResourceManager):
             self.show_um_message("recreating the megaplex", library_id)
             create_megaplex()
             self.show_um_message("initializing the global tile manager", library_id)
-            global_tile_manager.initialize()
+            loaded_tile_management.initialize()
             self.show_um_message("getting default tiles", library_id)
             # global_tile_manager.get_all_default_tiles()
         except Exception as ex:

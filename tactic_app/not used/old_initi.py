@@ -53,7 +53,7 @@ def create_megaplex():
                                                       host_name="my-rabbit",
                                                       port_bindings={5672: 5672, 15672: 15672},
                                                       register_container=False)
-        docker_functions.megaplex_address = get_address("megaplex", "bridge")
+        # docker_functions.megaplex_address = get_address("megaplex", "bridge")
     except ContainerCreateError:
         print "Error creating the Megaplex."
         exit()
