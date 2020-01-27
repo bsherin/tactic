@@ -22,7 +22,7 @@ from users import load_user
 from js_source_management import js_source_dict, _develop, css_source
 
 from resource_manager import ResourceManager, LibraryResourceManager
-global_tile_manager = tactic_app.global_tile_manager
+import loaded_tile_management
 repository_user = User.get_user_by_username("repository")
 
 ILLEGAL_CHARACTERS_RE = re.compile(r'[\000-\010]|[\013-\014]|[\016-\037]')
@@ -100,7 +100,6 @@ class CollectionManager(LibraryResourceManager):
         user_obj = current_user
         cname = user_obj.build_data_collection_name(collection_name)
         main_id = main_container_info.create_main_container(collection_name, user_obj.get_id(), user_obj.username)
-        global_tile_manager.add_user(user_obj.username)
 
         short_collection_name = user_obj.short_collection_name(collection_name)
         mdata = user_obj.get_collection_metadata(short_collection_name)
@@ -282,7 +281,7 @@ class CollectionManager(LibraryResourceManager):
         user_obj = current_user
         file_list = request.files.getlist("file")
 
-        collection_mdata = global_tile_manager.create_initial_metadata()
+        collection_mdata = loaded_tile_management.create_initial_metadata()
 
         known_extensions = [".xlsx", ".csv", ".tsv", ".txt"]
 
@@ -343,7 +342,7 @@ class CollectionManager(LibraryResourceManager):
         user_obj = current_user
         file_list = request.files.getlist("file")
 
-        collection_mdata = global_tile_manager.create_initial_metadata()
+        collection_mdata = loaded_tile_management.create_initial_metadata()
         file_decoding_errors = OrderedDict()
         new_doc_dict = {}
         for the_file in file_list:

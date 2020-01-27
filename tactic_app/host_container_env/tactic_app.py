@@ -17,7 +17,7 @@ from flask_wtf import CSRFProtect
 from docker_functions import create_container, get_address, ContainerCreateError
 import docker_functions as docker_functions
 import communication_utils
-from communication_utils import send_request_to_container, USE_FORWARDER, megaplex_address
+from communication_utils import send_request_to_container, USE_FORWARDER
 from integrated_docs import api_array
 from docker_functions import db_name, mongo_uri
 from rabbit_manage import sleep_until_rabbit_alive
@@ -39,12 +39,8 @@ app = None
 db = None
 fs = None
 socketio = None
-global_tile_manager = None
 host_worker = None
 health_tracker = None
-
-
-# docker_functions.megaplex_address = os.environ.get("MEGAPLEX_ADDRESS")
 
 
 # The purpose of this function is that db.collection_names doesn't work in on Azure
@@ -89,6 +85,16 @@ try:
 
     fs = gridfs.GridFS(db)
     print("got fs")
+
+    print("creating, clearning temp_data")
+    if "temp_data" not in db.collection_names():
+        db.create_collection("temp_data")
+    else:
+        for rec in db["temp_data"].find():
+            if "file_id" in rec:
+                fs.delete(rec["file_id"])
+        db["temp_data"].remove()
+
     login_manager = LoginManager()
     login_manager.session_protection = 'basic'
     login_manager.login_view = 'login'
@@ -110,10 +116,8 @@ try:
     print("starting login_manager, bootstratp, socketio")
     print("starting login_manager")
     login_manager.init_app(app)
-    print("starting socketio")
-    message_queue = 'amqp://{}:5672//'.format(megaplex_address)
-    print("message queue is {}".format(message_queue))
-    socketio = SocketIO(app, message_queue=message_queue)
+    print("starting socketio. connecting by name")
+    socketio = SocketIO(app, message_queue="megaplex")
     communication_utils.socketio = socketio
     print("starting csrf.init_app")
     csrf.init_app(app)

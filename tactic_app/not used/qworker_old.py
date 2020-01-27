@@ -33,7 +33,7 @@ else:
     use_wait_tasks = False
 
 
-print("got megaplex " + str(communication_utils.megaplex_address))
+# print("got megaplex " + str(communication_utils.megaplex_address))
 
 RETRIES = 60
 

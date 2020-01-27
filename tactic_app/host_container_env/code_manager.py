@@ -13,7 +13,7 @@ from flask_login import login_required, current_user
 
 from users import User
 repository_user = User.get_user_by_username("repository")
-global_tile_manager = tactic_app.global_tile_manager
+import loaded_tile_management
 
 from js_source_management import js_source_dict, _develop, css_source
 
@@ -155,7 +155,7 @@ class CodeManager(LibraryResourceManager):
         mongo_dict = db[repository_user.code_collection_name].find_one({"code_name": template_name})
         template = mongo_dict["the_code"]
 
-        metadata = global_tile_manager.create_initial_metadata()
+        metadata = loaded_tile_management.create_initial_metadata()
         metadata["functions"] = []
         metadata["classes"] = []
         data_dict = {"code_name": new_code_name, "the_code": template, "metadata": metadata}

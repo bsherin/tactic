@@ -520,7 +520,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         data = {"tile_type": self.tile_type, "user_id": self.user_id}
         result["tile_id"] = self._tworker.my_id
         tmi_string = "tile_manager.{}.tile_module_index".format(os.environ.get("USERNAME"))
-        result["module_name"] = redis_client.hget(tmi_string, self.tyle_type)
+        result["module_name"] = redis_client.hget(tmi_string, self.tile_type)
         print("done compiling attributes")
         return result
     # </editor-fold>

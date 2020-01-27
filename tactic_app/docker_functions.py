@@ -8,6 +8,7 @@ import datetime
 import subprocess
 import re
 import pika
+import json
 from rabbit_manage import get_queues
 forwarder_address = None
 forwarder_id = None
@@ -229,8 +230,10 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
                 raise ContainerCreateError("Error creating container with image name " + str(image_name))
             print("sleeping while waiting for container {} to run".format(str(cont_id)))
             time.sleep(0.1)
-    # if register_container:
-    #     send_request_to_megaplex("register_container", {"container_id": unique_id})
+
+    if register_container:
+        print("posting register_container to the host with id {}".format(unique_id))
+        post_task_noqworker("host", "host", "register_container", {"container_id": unique_id})
     return unique_id, cont_id
 
 
@@ -360,7 +363,7 @@ def destroy_container(tactic_id, notify=True):
             return -1
         else:
             cont_type = get_container_type(cont)
-            # send_request_to_megaplex("deregister_container", {"container_id": tactic_id})
+            post_task_noqworker("host", "host", "deregister_container", {"container_id": tactic_id})
 
             if notify:
                 if cont_type == "main" or cont_type == "module_viewer":
@@ -376,6 +379,7 @@ def destroy_container(tactic_id, notify=True):
                 main_container_info.delete_main(tactic_id)
             if notify and message is not None:
                 data = {"message": message, "alert_type": "alert-warning", "main_id": dest_id}
+                print("about to flash to main")
                 post_task_noqworker("host", "host", "flash_to_main", data)
             return
     except:
@@ -450,7 +454,12 @@ def post_task_noqworker(source_id, dest_id, task_type, task_data=None):
                   "reply_to": None,
                   "expiration": None}
     # result = send_request_to_megaplex("post_task", new_packet).json()
-    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+    params = pika.ConnectionParameters(
+        host="megaplex",
+        port=5672,
+        virtual_host='/'
+    )
+    connection = pika.BlockingConnection(params)
     channel = connection.channel()
     channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
     channel.basic_publish(exchange='',
@@ -462,4 +471,4 @@ def post_task_noqworker(source_id, dest_id, task_type, task_data=None):
                           ),
                           body=json.dumps(new_packet))
     connection.close()
-    return result
+    return

@@ -12,7 +12,7 @@ from docker_functions import create_container, main_container_info
 from resource_manager import ResourceManager, LibraryResourceManager
 from users import User
 from communication_utils import make_jsonizable_and_compress, read_project_dict
-global_tile_manager = tactic_app.global_tile_manager
+import loaded_tile_management
 repository_user = User.get_user_by_username("repository")
 from file_handling import read_freeform_file
 
@@ -75,7 +75,7 @@ class ProjectManager(LibraryResourceManager):
             return jsonify({"message": e.message, "alert_type": "alert-danger"})
         if len(decoding_problems) > 0:
             file_decoding_errors[filename] = decoding_problems
-        mdata = global_tile_manager.create_initial_metadata()
+        mdata = loaded_tile_management.create_initial_metadata()
         mdata["type"] = "jupyter"
         mdata["save_style"] = "b64save_react"
 
@@ -101,7 +101,6 @@ class ProjectManager(LibraryResourceManager):
 
         # noinspection PyTypeChecker
         main_id = main_container_info.create_main_container(project_name, user_id, user_obj.username)
-        global_tile_manager.add_user(user_obj.username)
 
         save_dict = db[user_obj.project_collection_name].find_one({"project_name": project_name})
         mdata = save_dict["metadata"]

@@ -11,7 +11,7 @@ import datetime
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
 admin_user = User.get_user_by_username("admin")
-global_tile_manager = tactic_app.global_tile_manager
+import loaded_tile_management
 
 container_manager = ContainerManager("container")
 user_manager = UserManager("user")

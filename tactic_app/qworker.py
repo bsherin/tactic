@@ -36,9 +36,6 @@ if "USE_WAIT_TASKS" in os.environ:
 else:
     use_wait_tasks = False
 
-
-print("got megaplex " + str(communication_utils.megaplex_address))
-
 RETRIES = 60
 
 
@@ -59,22 +56,29 @@ def task_worthy_manual_submit(m):
 print("in the new qworker with new submit_response")
 
 
+heartbeat_time = 60
+
+
+def current_timestamp():
+    return datetime.datetime.timestamp(datetime.datetime.utcnow())
+
+
 # noinspection PyTypeChecker
 class QWorker(ExceptionMixin):
     def __init__(self):
         # gevent.Greenlet.__init__(self)
-        self.last_contact = datetime.datetime.utcnow()
         self.my_id = os.environ.get("MY_ID")
         self.handler_instances = {"this_worker": self}
         self.channel = None
         self.connection = None
+        self.generate_heartbeats = False
+        self.last_heartbeat = current_timestamp()
         if use_wait_tasks:
             wait_queue = self.my_id + "_wait"
             self.wait_worker = BlockingWaitWorker(wait_queue)
 
     def start_background_thread(self):
         print("entering start_background_thread")
-        taddress = communication_utils.megaplex_address
         params = pika.ConnectionParameters(
             host="megaplex",
             port=5672,
@@ -97,6 +101,14 @@ class QWorker(ExceptionMixin):
     def debug_log(self, msg):
         timestring = datetime.datetime.utcnow().strftime("%b %d, %Y, %H:%M:%S")
         print(timestring + ": " + msg)
+
+    def do_heartbeat(self):
+        if self.generate_heartbeats:
+            current_time = current_timestamp()
+            if (current_time - self.last_heartbeat) > heartbeat_time:
+                self.post_task("host", "container_heartbeat", {"container_id": self.my_id})
+                self.last_heartbeat = current_time
+        return
 
     def handle_delivery(self, channel, method, props, body):
         print("in the modified handle_delivery")
@@ -285,9 +297,8 @@ class QWorker(ExceptionMixin):
 
 class BlockingWaitWorker:
     def __init__(self, queue_name):
-        taddress = communication_utils.megaplex_address
         params = pika.ConnectionParameters(
-            host=taddress,
+            host="megaplex",
             port=5672,
             virtual_host='/'
         )

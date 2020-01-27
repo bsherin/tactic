@@ -9,16 +9,15 @@ import pymongo
 import gridfs
 import datetime
 import os
-from communication_utils import debinarize_python_object, store_temp_data, emit_direct, megaplex_address
+from communication_utils import debinarize_python_object, store_temp_data, emit_direct
 from communication_utils import make_jsonizable_and_compress, read_project_dict, read_temp_data, delete_temp_data
 import docker_functions
-from volume_manager import VolumeManager
+import loaded_tile_management
+# from volume_manager import VolumeManager
 from mongo_accesser import MongoAccess
 from main_tasks_mixin import StateTasksMixin, LoadSaveTasksMixin, TileCreationTasksMixin, APISupportTasksMixin
 from main_tasks_mixin import ExportsTasksMixin, ConsoleTasksMixin, DataSupportTasksMixin
 from exception_mixin import ExceptionMixin
-
-# docker_functions.megaplex_address = os.environ.get("MEGAPLEX_ADDRESS")
 
 from doc_info import docInfo, FreeformDocInfo
 
@@ -89,7 +88,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
 
         self.ppi = data_dict["ppi"]
         self.username = os.environ.get("USERNAME")
-        self.vmanager = VolumeManager("/code/persist")
+        # self.vmanager = VolumeManager("/code/persist")
 
         if ("project_name" not in data_dict) or (data_dict["doc_type"] == "jupyter"):
             self.doc_type = data_dict["doc_type"]
@@ -153,7 +152,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
 
     def create_tile_container(self, data):
         try:
-            environ = {"PPI": data["ppi"], "USE_WAIT_TASKS": "True", "MEGAPLEX_ADDRESS": megaplex_address}
+            environ = {"PPI": data["ppi"], "USE_WAIT_TASKS": "True"}
             user_host_persist_dir = true_host_persist_dir + "/tile_manager/" + self.username
             tile_volume_dict = {}
             tile_volume_dict[user_host_persist_dir] = {"bind": "/code/persist", "mode": "rw"}
@@ -466,16 +465,11 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         return td.seconds * 1000000 + td.microseconds
 
     def get_tile_code(self, tile_type):
-        user_tiles = self.vmanager["user_tiles"]
-        for category in user_tiles.keys():
-            cat = user_tiles[category]
-            catnames = cat.keys()
-            if tile_type in catnames:
-                return cat[tile_type].value
-        return None
+        print("in get_tile_code in main")
+        return loaded_tile_management.get_tile_code(tile_type, self.username)
 
     def get_loaded_user_modules(self):
-        return self.vmanager["loaded_user_modules"].keys()
+        return loaded_tile_management.get_loaded_user_modules(self.username)
 
     def create_pseudo_tile(self, globals_dict=None):
         print("entering create_pseudo_tile")
