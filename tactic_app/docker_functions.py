@@ -42,7 +42,8 @@ cli = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
 # Note that get_address assumes that the network is named usernet
 def get_address(container_identifier, network_name):
-    return cli.containers.get(container_identifier).attrs["NetworkSettings"]["Networks"][network_name]["IPAddress"]
+    new_network_name = "tactic-net"
+    return cli.containers.get(container_identifier).attrs["NetworkSettings"]["Networks"][new_network_name]["IPAddress"]
 
 
 if "MONGO_URI" in os.environ:  # This should be true except in launch_tactic
@@ -196,12 +197,12 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
 
     run_args = {
         "image": image_name,
-        "network_mode": "bridge",
         "environment": environ,
         "ports": port_bindings,
         "detach": detach,
         "labels": labels,
         "volumes": volume_dict,
+        "network": "tactic-net",
         "publish_all_ports": publish_all_ports
     }
 

@@ -2,5 +2,5 @@ FROM tactic_base_image
 WORKDIR /code
 ADD ./tile_container_env/requirements.txt /code/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
-ADD  ./tile_container_env ./volume_manager.py ./exception_mixin.py ./qworker.py ./communication_utils.py /code/
+ADD  ./tile_container_env ./volume_manager.py ./exception_mixin.py ./redis_tools.py ./qworker.py ./communication_utils.py /code/
 CMD ["python", "-u", "tile_main.py"]

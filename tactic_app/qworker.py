@@ -76,7 +76,7 @@ class QWorker(ExceptionMixin):
         print("entering start_background_thread")
         taddress = communication_utils.megaplex_address
         params = pika.ConnectionParameters(
-            host=taddress,
+            host="megaplex",
             port=5672,
             virtual_host='/'
         )
