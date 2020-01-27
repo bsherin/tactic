@@ -26,6 +26,22 @@ from docker_functions import db_name, mongo_uri, delete_all_queues
 from tactic_app.rabbit_manage import sleep_until_rabbit_alive
 docker_cleanup.do_docker_cleanup()
 
+
+def get_tactic_networks():
+    networks = docker_functions.cli.networks.list()
+    nets = []
+    for network in networks:
+        if network.name == "tactic-net":
+            nets.append(network)
+    return nets
+
+
+tnets = get_tactic_networks()
+if restart_rabbit:
+    for tnet in tnets:
+        tnet.remove()
+    docker_functions.cli.networks.create("tactic-net", driver="bridge")
+
 host_persist_dir = os.getcwd() + "/persist"
 host_nltk_data_dir = os.getcwd() + "/tactic_app/nltk_data"
 host_static_dir = os.getcwd() + "/tactic_app/static"
@@ -113,6 +129,7 @@ try:
         ANYONE_CAN_REGISTER = False
 
     create_megaplex()
+    create_redis()
 
     # import rabbit_manage here because we don't want communication_utils
     # imported until the megaplex exists

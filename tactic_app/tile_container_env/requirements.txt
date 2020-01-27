@@ -12,6 +12,7 @@ nltk
 numpy
 pandas
 pika
+redis
 regex
 scipy
 scikit-learn
