@@ -14,7 +14,7 @@ import redis
 if "USE_SSL" in os.environ:
     use_ssl = os.environ.get("USE_SSL")
 else:
-    use_ssl = "True"
+    use_ssl = "False"
 if "RESTART_RABBIT" in os.environ:
     restart_rabbit = os.environ.get("RESTART_RABBIT") == "True"
 else:
@@ -129,7 +129,6 @@ def create_tile_test_container():
                                                                 network_mode="bridge",
                                                                 container_name="tile_test_container",
                                                                 special_unique_id="tile_test_container",
-                                                                restart_policy=restart_policy,
                                                                 register_container=False,
                                                                 other_name="test_container",
                                                                 env_vars=env_vars)
@@ -146,9 +145,8 @@ else:
 
 create_megaplex()
 create_redis()
-create_tile_test_container()
-
 success = sleep_until_rabbit_alive()
+create_tile_test_container()
 if not success:
     print("seems like the rabbitmq server isn't answering")
 delete_all_queues(use_localhost=True)
