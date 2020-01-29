@@ -23,15 +23,15 @@ else:
 print "entering launch_tactic"
 import docker_cleanup
 print "entering tactic_run"
-import docker_functions
-from docker_functions import create_container, get_address, ContainerCreateError
-from docker_functions import db_name, mongo_uri, delete_all_queues
+import tactic_app
+from tactic_app.docker_functions import create_container, get_address, ContainerCreateError
+from tactic_app.docker_functions import db_name, mongo_uri, delete_all_queues
 from tactic_app.rabbit_manage import sleep_until_rabbit_alive
 docker_cleanup.do_docker_cleanup()
 
 
 def get_tactic_networks():
-    networks = docker_functions.cli.networks.list()
+    networks = tactic_app.docker_functions.cli.networks.list()
     nets = []
     for network in networks:
         if network.name == "tactic-net":
@@ -43,7 +43,7 @@ tnets = get_tactic_networks()
 if restart_rabbit:
     for tnet in tnets:
         tnet.remove()
-    docker_functions.cli.networks.create("tactic-net", driver="bridge")
+    tactic_app.docker_functions.cli.networks.create("tactic-net", driver="bridge")
 
 host_persist_dir = os.getcwd() + "/persist"
 host_nltk_data_dir = os.getcwd() + "/tactic_app/nltk_data"
