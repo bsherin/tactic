@@ -5,3 +5,4 @@ root@bbda4be70452:/code# celery worker -A tasks.cel --loglevel=info
 ENTRYPOINT ["/usr/local/bin/gunicorn", "-k", "geventwebsocket.gunicorn.workers.GeventWebSocketWorker", "-b", "0.0.0.0:5000", "host_main:app"]
 
 
+ENTRYPOINT ["/usr/local/bin/uwsgi", "--http", "0.0.0.0:5000", "--gevent", "1000", "--http-websockets", "--master", "--wsgi-file", "host_main.py", "--callable", "app"]

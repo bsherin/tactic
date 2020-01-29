@@ -17,7 +17,7 @@ from flask_wtf import CSRFProtect
 from docker_functions import create_container, get_address, ContainerCreateError
 import docker_functions as docker_functions
 import communication_utils
-from communication_utils import send_request_to_container, USE_FORWARDER
+from communication_utils import send_request_to_container
 from integrated_docs import api_array
 from docker_functions import db_name, mongo_uri
 from rabbit_manage import sleep_until_rabbit_alive

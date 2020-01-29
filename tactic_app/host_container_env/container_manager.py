@@ -5,7 +5,7 @@ from tactic_app import app # create_megaplex
 from users import User, load_user
 from resource_manager import ResourceManager
 from docker_functions import cli, destroy_container, container_owner, get_log
-from docker_functions import container_id, container_memory_usage
+from docker_functions import container_id, container_memory_usage, restart_container
 from docker_functions import container_other_name
 from exception_mixin import generic_exception_handler
 # from docker_cleanup import do_docker_cleanup
@@ -71,13 +71,15 @@ class ContainerManager(ResourceManager):
         if not (current_user.get_id() == admin_user.get_id()):
             return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
         try:
-            self.show_um_message("removing all containers", library_id)
-            do_docker_cleanup()
-            self.show_um_message("recreating the megaplex", library_id)
-            create_megaplex()
-            self.show_um_message("initializing the global tile manager", library_id)
-            loaded_tile_management.initialize()
-            self.show_um_message("getting default tiles", library_id)
+            self.show_um_message("Restarting the host container", library_id)
+            restart_container("host")
+            # self.show_um_message("removing all containers", library_id)
+            # do_docker_cleanup()
+            # self.show_um_message("recreating the megaplex", library_id)
+            # create_megaplex()
+            # self.show_um_message("initializing the global tile manager", library_id)
+            # loaded_tile_management.initialize()
+            # self.show_um_message("getting default tiles", library_id)
             # global_tile_manager.get_all_default_tiles()
         except Exception as ex:
             return generic_exception_handler.get_traceback_exception_for_ajax(ex, "Error resetting server")

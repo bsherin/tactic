@@ -18,22 +18,12 @@ from flask_socketio import SocketIO
 
 print("in communication utils")
 
-if ("USE_FORWARDER" in os.environ) and (os.environ.get("USE_FORWARDER") == "True"):
-    USE_FORWARDER = True
-else:
-    USE_FORWARDER = False
-
 RETRIES = 60
 
-socketio = None
 megaplex = None
 
 
-if "AM_TACTIC_HOST" not in os.environ and "AM_LAUNCHER" not in os.environ:
-    print("making a new socketio. connecting by name")
-    socketio = SocketIO(message_queue="megaplex")
-else:
-    print("not making a new socketio")
+socketio = SocketIO(message_queue="megaplex")
 
 
 def emit_direct(event_name, data, namespace, room):

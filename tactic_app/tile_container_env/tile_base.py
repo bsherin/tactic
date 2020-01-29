@@ -11,7 +11,7 @@ from pickle import UnpicklingError
 from communication_utils import is_jsonizable, make_python_object_jsonizable, debinarize_python_object
 from fuzzywuzzy import fuzz, process
 # from volume_manager import VolumeManager
-from redis_tools import redis_client
+from redis_tools import redis_tm
 from tile_o_plex import app
 from flask import render_template
 from data_access_mixin import DataAccessMixin
@@ -520,7 +520,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         data = {"tile_type": self.tile_type, "user_id": self.user_id}
         result["tile_id"] = self._tworker.my_id
         tmi_string = "tile_manager.{}.tile_module_index".format(os.environ.get("USERNAME"))
-        result["module_name"] = redis_client.hget(tmi_string, self.tile_type)
+        result["module_name"] = redis_tm.hget(tmi_string, self.tile_type)
         print("done compiling attributes")
         return result
     # </editor-fold>

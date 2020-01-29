@@ -124,6 +124,7 @@ def stop_spinner(user_id=None):
 @app.route('/library')
 @login_required
 def library():
+    print("*** in library ***")
     if current_user.get_id() == admin_user.get_id():
         return render_template("library/library_home_react.html",
                                use_ssl=str(use_ssl),
@@ -133,7 +134,6 @@ def library():
                                css_source=css_source("admin_home_react"),
                                module_source=js_source_dict["admin_home_react"])
     else:
-
         return render_template('library/library_home_react.html',
                                develop=str(_develop),
                                use_ssl=str(use_ssl),

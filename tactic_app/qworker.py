@@ -140,12 +140,15 @@ class QWorker(ExceptionMixin):
         return
 
     def post_task(self, dest_id, task_type, task_data=None, callback_func=None,
-                  callback_data=None, expiration=None, error_handler=None):
+                  callback_data=None, expiration=None, error_handler=None, special_reply_to=None):
 
         try:
             if callback_func is not None:
                 callback_id = str(uuid.uuid4())
-                reply_to = self.my_id
+                if special_reply_to is None:
+                    reply_to = self.my_id
+                else:
+                    reply_to = special_reply_to
                 callback_dict[callback_id] = callback_func
                 if error_handler is not None:
                     error_handler_dict[callback_id] = error_handler
@@ -185,6 +188,7 @@ class QWorker(ExceptionMixin):
     def post_and_wait(self, dest_id, task_type, task_data=None, sleep_time=.1,
                       timeout=10, tries=RETRIES, alt_address=None):
         callback_id = str(uuid.uuid4())
+
         new_packet = {"source": self.my_id,
                       "callback_type": "wait",
                       "callback_id": callback_id,
@@ -225,7 +229,8 @@ class QWorker(ExceptionMixin):
                 namespace = "/main"
             emit_direct("handle-callback", task_packet, namespace=namespace, room=room)
         else:
-            self.post_packet(task_packet["reply_to"], task_packet, callback_id=task_packet["callback_id"])
+            reply_to = task_packet["reply_to"]
+            self.post_packet(reply_to, task_packet, callback_id=task_packet["callback_id"])
         return
 
     def handle_response(self, task_packet):
