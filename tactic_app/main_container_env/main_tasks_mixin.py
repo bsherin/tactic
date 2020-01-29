@@ -1344,7 +1344,7 @@ class ConsoleTasksMixin:
         data["pipe_dict"] = self.dict
         data["am_notebook"] = self.am_notebook_type
         print("posting exec_console_code to the pseudo_tile")
-        self.mworker.post_task(self.pseudo_tile_id, "exec_console_code", data)
+        self.mworker.post_task(self.pseudo_tile_id, "exec_console_code", data, self.got_console_print)
         return {"success": True}
 
     @task_worthy

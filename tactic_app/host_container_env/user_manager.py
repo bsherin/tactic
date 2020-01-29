@@ -89,6 +89,8 @@ class UserManager(ResourceManager):
     def delete_user(self, userid):
         if not (current_user.username == "admin"):
             return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
+        if userid == current_user.get_id():
+            return jsonify({"success": False, "message": "Don't delete the admin user!", "alert_type": "alert-warning"})
         result = remove_user(userid)
         self.refresh_selector_list()
         return jsonify(result)

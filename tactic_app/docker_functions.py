@@ -51,7 +51,7 @@ if "MONGO_URI" in os.environ:  # This should be true except in launch_tactic
     mongo_uri = os.environ.get("MONGO_URI")
 else:
     # ip_info is only used as a step to getting the host_ip
-    if ("USE_FORWARDER" in os.environ) and (os.environ.get("USE_FORWARDER") == "True"):  # This means we're working on the mac
+    if ("ON_MAC" in os.environ) and (os.environ.get("ON_MAC") == "True"):  # This means we're working on the mac
         # I used to have en0 here. Now it seems to need to be en3
         ip_info = subprocess.check_output(['/usr/local/bin/ip', '-4', 'addr', 'show', 'en0'])
     else:
@@ -155,7 +155,7 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
                      env_vars=None, port_bindings=None, wait_retries=50,
                      other_name="none", volume_dict=None, username=None,
                      detach=True, register_container=True, publish_all_ports=False,
-                     local_true_host_persist_dir=None,
+                     local_true_host_persist_dir=None, restart_policy=None,
                      local_true_host_nltk_data_dir=None, special_unique_id=None):
     print("in create_container")
     if env_vars is None:
@@ -211,6 +211,9 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
         run_args["name"] = container_name
     if host_name is not None:
         run_args["hostname"] = host_name
+
+    if restart_policy is not None:
+        run_args["restart_policy"] = restart_policy
 
     print("about to run the container")
     container = cli.containers.run(**run_args)

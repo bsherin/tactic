@@ -11,13 +11,12 @@ gevent
 python-socketio
 gevent-websocket
 greenlet
-gunicorn
 markdown
 nose
-openpyxl
 pika
 pymongo
 requests
+redis
 rabbitmq-admin
 WTForms
 xmltodict

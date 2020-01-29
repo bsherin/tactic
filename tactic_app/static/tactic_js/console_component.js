@@ -635,15 +635,11 @@ class ConsoleCodeItem extends React.Component {
             sorttable.makeSortable(table);
         }
     }
-
     _runMe(go_to_next = false) {
-        this._startMySpinner(() => {
-            let self = this;
-            this._clearOutput();
-            postWithCallback(main_id, "exec_console_code", {
-                "the_code": this.props.console_text,
-                "console_id": this.props.unique_id
-            });
+        this._startMySpinner();
+        let self = this;
+        this._clearOutput();
+        postWithCallback(main_id, "exec_console_code", { "the_code": this.props.console_text, "console_id": this.props.unique_id }, function () {
             if (go_to_next) {
                 self.props.goToNextCell(self.props.unique_id);
             }

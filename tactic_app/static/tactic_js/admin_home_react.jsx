@@ -216,7 +216,8 @@ class AdminToolbar extends React.Component {
                     new_button = {name_text: button[0],
                         click_handler: button[1],
                         icon_name: button[2],
-                        multi_select: button[3]};
+                        multi_select: button[3],
+                        tooltip: button[4]};
                     new_group.push(new_button)
                 }
             }
@@ -300,12 +301,12 @@ class ContainerToolbar extends React.Component {
 
     get button_groups() {
         return [
-            [["reset", this._reset_server_func, "reset", false],
-                ["killall", this._clear_user_func, "clean", false],
-                ["killone", this._destroy_container, "delete", false]
+            [["reset", this._reset_server_func, "reset", false, "Reset host container"],
+                ["killall", this._clear_user_func, "clean", false, "Clear user containers"],
+                ["killone", this._destroy_container, "delete", false, "Destroy one container"]
             ],
-            [["log", this._container_logs, "console", false],
-            ["refresh", this.props.refresh_func, "refresh", false]]
+            [["log", this._container_logs, "console", false, "Container logs"],
+            ["refresh", this.props.refresh_func, "refresh", false, "Refresh"]]
 
         ];
      }
@@ -374,11 +375,11 @@ class UserToolbar extends React.Component {
 
     get button_groups() {
         return [
-            [["create", this._create_user, "new-object", false],
-                ["duplicate", this._duplicate_user, "duplicate", false],
-                ["delete", this._delete_user, "delete", false],
-                ["update", this._update_user_starters, "automatic-updates", false],
-                ["refresh", this.props.refresh_func, "refresh", false]
+            [["create", this._create_user, "new-object", false, "Create user"],
+                // ["duplicate", this._duplicate_user, "duplicate", false],
+                ["delete", this._delete_user, "delete", false, "Delete user", "Delete user"],
+                // ["update", this._update_user_starters, "automatic-updates", false, "],
+                ["refresh", this.props.refresh_func, "refresh", false, "Refresh"]
             ]
         ];
      }

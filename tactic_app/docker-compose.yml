@@ -1,4 +1,4 @@
-version: '2'
+version: '3.7'
 
 services:
 
@@ -43,3 +43,9 @@ services:
     image: tactic_tile_image
     environment:
       PYTHONUNBUFFERED: 0
+
+  tactic_redis:
+    image: redis:alpine
+
+  tactic_rabbit:
+    image: rabbitmq:3-management

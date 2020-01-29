@@ -11,7 +11,7 @@ from docker_functions import get_log, ContainerCreateError, container_exec, rest
 from tactic_app import app, socketio, use_ssl, db
 from library_views import tile_manager, project_manager, collection_manager, list_manager
 from library_views import code_manager
-from redis_tools import redis_client
+from redis_tools import redis_ht
 import datetime
 from mongo_accesser import bytes_to_string
 import tactic_app
@@ -23,19 +23,21 @@ import time
 import os
 
 no_heartbeat_time = 10 * 60  # If a mainwindow does send a heartbeat after this amount of time, remove mainwindow.
+
 # inactive_container_time is the max time a tile can
 # go without making active contact with the megaplex.
-
+# we will let containers hang around for quite a while.
 inactive_container_time = 10 * 3600
 
 # old_container_time is the max time a tile can exist after being created.
 old_container_time = 3 * 24 * 3600
 
 # how frequently we will look for dead containers and dead mainwindows
-health_check_time = 10
+health_check_time = 10 * 60
 
 
 import loaded_tile_management
+import os
 
 from js_source_management import _develop
 
@@ -44,11 +46,29 @@ if "RESTART_RABBIT" in os.environ:
 else:
     restart_rabbit = True
 
+myport = os.environ.get("MYPORT")
+
 
 class HostWorker(QWorker):
     def __init__(self):
         QWorker.__init__(self)
-        self.my_id = "host"
+        self.my_id = "host" + str(myport)
+
+    def start_background_thread(self):
+        print("entering start_background_thread")
+        params = pika.ConnectionParameters(
+            host="megaplex",
+            port=5672,
+            virtual_host='/'
+        )
+        self.connection = pika.BlockingConnection(params)
+        self.channel = self.connection.channel()
+        self.channel.queue_declare(queue="host", durable=False, exclusive=False)
+        self.channel.queue_declare(queue=self.my_id, durable=False, exclusive=False)
+        self.channel.basic_consume(queue="host", auto_ack=True, on_message_callback=self.handle_delivery)
+        self.channel.basic_consume(queue=self.my_id, auto_ack=True, on_message_callback=self.handle_delivery)
+        print(' [*] Waiting for messages:')
+        self.channel.start_consuming()
 
     @task_worthy
     def stop_library_spinner(self, data):
@@ -156,7 +176,7 @@ class HostWorker(QWorker):
             return
 
         try:
-            print("in load_tile_module_task")
+            print("in load_tile_module_task with tile module {}".format(data["tile_module_name"]))
             user_id = data["user_id"]
             tile_module_name = data["tile_module_name"]
             user_obj = load_user(user_id)
@@ -653,21 +673,12 @@ class HostWorker(QWorker):
 
 class HealthTracker:
     def __init__(self):
-        all_keys = redis_client.keys()
-        delete_list = []
-        for k in all_keys:
-            if self.is_health_data(k):
-                delete_list.append(k)
-        if len(delete_list) > 0:
-            redis_client.delete(*delete_list)
-        if redis_client.exists("heartbeat_table"):
-            redis_client.delete("heartbeat_table")
         self.last_health_check = current_timestamp()  # I don't want to be hitting redis constantly
-        if not redis_client.exists("last_health_check"):
-            redis_client.set("last_health_check", current_timestamp())
+        if not redis_ht.exists("last_health_check"):
+            redis_ht.set("last_health_check", current_timestamp())
 
-    def is_health_data(self, k):
-        return redis_client.type(k) == "hash" and redis_client.hexists(k, "am_health_data")
+    def is_container_health_data(self, k):
+        return redis_ht.type(k) == "hash" and redis_ht.hexists(k, "am_health_data")
 
     def register_container(self, container_id):
         print("in register_container in healthtracker with container_id {}".format(container_id))
@@ -678,52 +689,52 @@ class HealthTracker:
             "am_health_data": "True"
         }
         print("about to register in redis")
-        redis_client.hmset(container_id, starting_data)
+        redis_ht.hmset(container_id, starting_data)
         print("did the register")
 
     def register_container_heartbeat(self, container_id):
-        if not redis_client.exists(container_id):
+        if not redis_ht.exists(container_id):
             self.register_container(container_id)
         else:
-            redis_client.hset(container_id, "last_contact", current_timestamp())
+            redis_ht.hset(container_id, "last_contact", current_timestamp())
 
     def register_heartbeat(self, main_id):
-        redis_client.hset("heartbeat_table", main_id, current_timestamp())
+        redis_ht.hset("heartbeat_table", main_id, current_timestamp())
 
     def check_health(self):
         print("entering check_health")
         current_time = current_timestamp()
         if (current_time - self.last_health_check) > health_check_time:
             print("doing a health check")
-            if not redis_client.exists("last_health_check"):
+            if not redis_ht.exists("last_health_check"):
                 # we want to see if another worker has done a check more recently
-                last_worker_check = float(redis_client.get("last_health_check"))
+                last_worker_check = float(redis_ht.get("last_health_check"))
                 if (current_time - last_worker_check) < health_check:
                     return
             self.check_for_dead_containers()
             self.check_for_dead_mainwindows()
-            redis_client.set("last_health_check", current_time)
+            redis_ht.set("last_health_check", current_time)
         return
 
     def deregister_container(self, container_id):
-        if redis_client.exists(container_id):
-            redis_client.delete(container_id)
+        if redis_ht.exists(container_id):
+            redis_ht.delete(container_id)
 
     def update_contact(self, container_id):
-        if redis_client.exists(container_id):
-            redis_client.hset(container_id, "last_contact", current_timestamp())
+        if redis_ht.exists(container_id):
+            redis_ht.hset(container_id, "last_contact", current_timestamp())
 
     def update_heartbeat_table(self, main_id):
         self.main_heartbeat_table[main_id] = datetime.datetime.utcnow()
 
     def remove_from_heartbeat_table(self, main_id):
-        if redis_client.exists("heartbeat_table"):
-            if redis_client.hexists("heartbeat_table", main_id):
-                redis_client.hdel("heartbeat_table", main_id)
+        if redis_ht.exists("heartbeat_table"):
+            if redis_ht.hexists("heartbeat_table", main_id):
+                redis_ht.hdel("heartbeat_table", main_id)
 
     def check_for_dead_mainwindows(self):
         current_time = current_timestamp()
-        htable = redis_client.hgetall("heartbeat_table")
+        htable = redis_ht.hgetall("heartbeat_table")
         for main_id, last_contact in htable.items():
             tdelta = current_time - float(last_contact)
             if tdelta > no_heartbeat_time:
@@ -731,17 +742,17 @@ class HealthTracker:
                 tactic_app.host_worker.post_task("host", "remove_mainwindow_task", {"main_id": main_id})
 
     def last_contact(self, container_id):
-        return float(redis_client.hget(container_id, "last_contact"))
+        return float(redis_ht.hget(container_id, "last_contact"))
 
     def created(self, container_id):
-        return float(redis_client.hget(container_id, "created"))
+        return float(redis_ht.hget(container_id, "created"))
 
     def check_for_dead_containers(self):
         current_time = current_timestamp()
         cont_list = []
-        all_keys = redis_client.keys()
+        all_keys = redis_ht.keys()
         for k in all_keys:
-            if self.is_health_data(k):
+            if self.is_container_health_data(k):
                 if (current_time - self.last_contact(k)) > inactive_container_time:
                     print("found an inactive container")
                     cont_list.append(k)
