@@ -108,10 +108,10 @@ try:
     if ("TESTING" in os.environ) and (os.environ.get("TESTING") == "True"):
         app.config["WTF_CSRF_ENABLED"] = False
 
-    if use_ssl == "True":
-        print("enabling sslify")
-        from flask_sslify import SSLify
-        sslify = SSLify(app)
+    # if use_ssl == "True":
+    #     print("enabling sslify")
+    #     from flask_sslify import SSLify
+    #     sslify = SSLify(app)
 
     print("starting login_manager, bootstratp, socketio")
     print("starting login_manager")

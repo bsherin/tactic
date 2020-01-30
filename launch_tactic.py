@@ -9,7 +9,7 @@ import redis
 if "USE_SSL" in os.environ:
     use_ssl = os.environ.get("USE_SSL")
 else:
-    use_ssl = "False"
+    use_ssl = "True"
 if "RESTART_RABBIT" in os.environ:
     restart_rabbit = os.environ.get("RESTART_RABBIT") == "True"
 else:
