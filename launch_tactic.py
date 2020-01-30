@@ -1,9 +1,4 @@
-# The unused imports here are required so that the
-# various handlers are registered via decorators
 
-# Much of the setup is done in tactic_app
-# This avoids circular imports since the view functions make use
-# of things such as app, socketio, and db that are created in __init__.py
 
 WORKERS = 2
 
@@ -14,7 +9,7 @@ import redis
 if "USE_SSL" in os.environ:
     use_ssl = os.environ.get("USE_SSL")
 else:
-    use_ssl = "False"
+    use_ssl = "True"
 if "RESTART_RABBIT" in os.environ:
     restart_rabbit = os.environ.get("RESTART_RABBIT") == "True"
 else:
