@@ -1,6 +1,7 @@
 # This module creates many of the objects that
 # need to be imported by other modules.
 from flask import Flask
+from werkzeug.middleware.proxy_fix import ProxyFix
 import pymongo
 import sys
 import subprocess
@@ -117,7 +118,8 @@ try:
     print("starting login_manager")
     login_manager.init_app(app)
     print("starting socketio. connecting by name")
-    socketio = SocketIO(app, message_queue="megaplex")
+    socketio = SocketIO(app, message_queue="megaplex", engineio_logger=True)
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
     communication_utils.socketio = socketio
     print("starting csrf.init_app")
     csrf.init_app(app)
