@@ -117,7 +117,7 @@ try:
     print("starting login_manager")
     login_manager.init_app(app)
     print("starting socketio. connecting by name")
-    socketio = SocketIO(app, message_queue="megaplex")
+    socketio = SocketIO(app, message_queue="megaplex", cors_allowed_origins="*")
     communication_utils.socketio = socketio
     print("starting csrf.init_app")
     csrf.init_app(app)
