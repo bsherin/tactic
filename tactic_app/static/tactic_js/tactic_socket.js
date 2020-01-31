@@ -16,12 +16,9 @@ class TacticSocket {
     }
 
     connectme() {
-        if (use_ssl) {
-            this.socket = io.connect(`https://${document.domain}:${location.port}/${this.name_space}`);
-        }
-        else {
-            this.socket = io.connect(`http://${document.domain}:${location.port}/${this.name_space}`);
-        }
+        var protocol = window.location.protocol;
+        // this.socket = io.connect(`${protocol}//${document.domain}:${location.port}/${this.name_space}`);
+        this.socket = io(`/${this.name_space}`)
     }
 
     initialize_socket_stuff() {}
