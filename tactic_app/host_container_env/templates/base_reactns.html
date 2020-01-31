@@ -29,7 +29,6 @@
         $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
     </script>
 
-    <script src="{{url_for('static', filename='js/socket.io.js')}}"></script>
     <script src="{{url_for('static', filename='js/jquery-3.4.1.min.js')}}"></script>
     {% if uses_codemirror == "True" %}
         <script src="{{url_for('static', filename='js/codemirror.js')}}"></script>
