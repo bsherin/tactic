@@ -36,7 +36,7 @@ Finally:
 
 ```
 >/az_resdocker/
->/azdeploy/
+>/azdeploy/  # Just to change directories
 >/azplay/
 ```
 

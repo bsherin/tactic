@@ -19,8 +19,6 @@ from matplotlib_utilities import MplFigure, ColorMapper
 PSEUDO_WIDTH = 300
 PSEUDO_HEIGHT = 300
 
-print("initializing objects")
-
 Tile = None
 Collection = None
 Tiles = None

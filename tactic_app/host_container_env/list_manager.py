@@ -4,7 +4,7 @@ import re
 from flask_login import login_required, current_user
 from flask import jsonify, render_template, url_for, request
 
-from tactic_app import app, db, use_ssl
+from tactic_app import app, db
 import tactic_app
 
 from file_handling import load_a_list
@@ -50,7 +50,6 @@ class ListManager(LibraryResourceManager):
                                include_above_main_area=False,
                                include_right=True,
                                read_only=False,
-                               use_ssl=use_ssl,
                                develop=str(_develop),
                                is_repository=False,
                                css_source=css_source("list_viewer_react"),
@@ -231,7 +230,6 @@ class RepositoryListManager(ListManager):
                                include_above_main_area=False,
                                include_right=True,
                                read_only=True,
-                               use_ssl=use_ssl,
                                develop=str(_develop),
                                is_repository=True,
                                javascript_source=javascript_source,

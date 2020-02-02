@@ -99,11 +99,15 @@ class ContainerManager(ResourceManager):
         return jsonify({"success": True, "message": "Container Destroeyd", "alert_type": "alert-success"})
 
     def container_logs(self, cont_id):
+        print("in container_logs in container_manager")
         if not (current_user.get_id() == admin_user.get_id()):
             return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
         try:
-            log_text = get_log(cont_id)
+            print("passed admin_user test")
+            log_text = get_log(cont_id).decode()
+            print("got the logs")
         except Exception as ex:
+            print("got an exception")
             return generic_exception_handler.get_traceback_exception_for_ajax(ex, "Error getting container logs")
         return jsonify({"success": True, "message": "Got Logs", "log_text": log_text, "alert_type": "alert-success"})
 

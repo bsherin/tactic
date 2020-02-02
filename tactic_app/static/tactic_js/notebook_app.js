@@ -43,7 +43,6 @@ function _after_main_joined() {
     let data_dict = {
         "doc_type": "notebook",
         "base_figure_url": window.base_figure_url,
-        "use_ssl": window.use_ssl,
         "user_id": window.user_id,
         "library_id": window.main_id,
         "ppi": ppi

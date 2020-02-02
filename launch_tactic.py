@@ -1,23 +1,20 @@
 
+# WORKERS determines how many instances of the tactic_host container are created
+# Note that this requires a simultaneous change to the nginx config
 
+from __future__ import print_function
 WORKERS = 2
 
 import os, sys
 import redis
 
-
-if "USE_SSL" in os.environ:
-    use_ssl = os.environ.get("USE_SSL")
-else:
-    use_ssl = "True"
 if "RESTART_RABBIT" in os.environ:
     restart_rabbit = os.environ.get("RESTART_RABBIT") == "True"
 else:
     restart_rabbit = True
 
-print "entering launch_tactic"
+print("entering launch_tactic")
 import docker_cleanup
-print "entering tactic_run"
 import tactic_app
 from tactic_app.docker_functions import create_container, get_address, ContainerCreateError
 from tactic_app.docker_functions import db_name, mongo_uri, delete_all_queues
@@ -49,14 +46,20 @@ restart_policy = {"Name": "on-failure", "MaximumRetryCount": 5}
 
 def create_megaplex():
     try:
-        if restart_rabbit:
+        megaplex_exists = tactic_app.docker_functions.container_exists("megaplex")
+        if not restart_rabbit and not megaplex_exists:
+            print("megaplex doesn't yet exist so I'm making it")
+        if restart_rabbit or not megaplex_exists:
+            print("creating the megaplex")
             _unique_id, _megaplex_id = create_container("rabbitmq:3-management",
                                                         container_name="megaplex",
                                                         host_name="megaplex",
                                                         port_bindings={5672: 5672, 15672: 15672},
                                                         register_container=False)
+        else:
+            print("no need to create the megaplex")
     except ContainerCreateError:
-        print "Error creating the Megaplex."
+        print("Error creating the Megaplex.")
         exit()
 
 
@@ -81,7 +84,11 @@ def clear_tile_db():
 
 def create_redis():
     try:
-        if restart_rabbit:
+        redis_exists = tactic_app.docker_functions.container_exists("tactic-redis")
+        if not restart_rabbit and not redis_exists:
+            print("redis doesn't yet exist so I'm making it")
+        if restart_rabbit or not redis_exists:
+            print("creating tactic-redis")
             _unique_id, _redis_id = create_container("redis:alpine",
                                                      container_name="tactic-redis",
                                                      host_name="tactic-redis",
@@ -89,19 +96,22 @@ def create_redis():
                                                      restart_policy=restart_policy,
                                                      register_container=False)
         else:
+            print("no need to recreate tactic-redis")
             clear_health_db()
             clear_tile_db()
     except ContainerCreateError:
-        print "Error creating the redis container."
+        print("Error creating the redis container.")
         exit()
 
 
-def create_host(port=5000):
+def create_host(port=5000, debug=False):
     try:
         host_volume_dict = {"/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "rw"}}
         host_volume_dict[host_persist_dir] = {"bind": "/code/persist", "mode": "rw"}
         host_volume_dict[host_static_dir] = {"bind": "/code/static", "mode": "ro"}
-        env_vars = {"USE_SSL": use_ssl, "AM_TACTIC_HOST": True, "MYPORT": port}
+        env_vars = {"AM_TACTIC_HOST": True, "MYPORT": port}
+        if debug:
+            env_vars["DEBUG_CONTAINER"] = True
         _unique_id, _tactic_host_id = create_container("tactic_host_image",
                                                        container_name="tactic_host" + str(port),
                                                        volume_dict=host_volume_dict,
@@ -112,22 +122,21 @@ def create_host(port=5000):
                                                        local_true_host_nltk_data_dir=host_nltk_data_dir,
                                                        register_container=False)
     except ContainerCreateError:
-        print "Error creating the host."
+        print("Error creating the host.")
         exit()
 
 
 def create_tile_test_container():
-    print("about to create the test_tile_container")
+    print("Creating the test_tile_container")
     env_vars = {"PPI": 0}
     try:
-        test_tile_container_id, container_id = create_container("tactic_tile_image",
-                                                                network_mode="bridge",
-                                                                container_name="tile_test_container",
-                                                                special_unique_id="tile_test_container",
-                                                                register_container=False,
-                                                                other_name="test_container",
-                                                                env_vars=env_vars)
-        print('created the test_tile_container')
+        _test_tile_container_id, _container_id = create_container("tactic_tile_image",
+                                                                  network_mode="bridge",
+                                                                  container_name="tile_test_container",
+                                                                  special_unique_id="tile_test_container",
+                                                                  register_container=False,
+                                                                  other_name="test_container",
+                                                                  env_vars=env_vars)
     except ContainerCreateError:
         print("failed to create the test tile_container. That's very bad.")
         exit()
@@ -149,4 +158,8 @@ delete_all_queues(use_localhost=True)
 print("creating the host")
 base_port = 5000
 for wn in range(WORKERS):
-    create_host(base_port + wn)
+    if "DEBUG_CONTAINER" in os.environ and wn == 1:
+        debug = True
+    else:
+        debug = False
+    create_host(base_port + wn, debug)

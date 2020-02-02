@@ -7,7 +7,7 @@ api = AdminAPI(url='http://0.0.0.0:15672', auth=('guest', 'guest'))
 
 
 def get_queues():
-    ignore = ["aliveness-test"]
+    ignore = ["aliveness-test", ""]
     bindings = api.list_bindings()
     result = []
     for binding in bindings:
@@ -30,6 +30,4 @@ def rabbit_alive():
         return api.is_vhost_alive("/")["status"] == "ok"
     except:
         return False
-
-
 

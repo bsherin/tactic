@@ -8,7 +8,7 @@ from flask import render_template, request, jsonify, url_for
 from flask_login import login_required, current_user
 from integrated_docs import api_dict_by_category, ordered_api_categories
 import tactic_app
-from tactic_app import app, db, socketio, use_ssl
+from tactic_app import app, db, socketio
 from resource_manager import ResourceManager, LibraryResourceManager
 from users import User
 from docker_functions import create_container
@@ -165,7 +165,6 @@ class TileManager(LibraryResourceManager):
                                include_above_main_area=False,
                                read_only=False,
                                is_repository=False,
-                               use_ssl=use_ssl,
                                develop=str(_develop),
                                css_source=css_source("module_viewer_react"),
                                javascript_source=javascript_source,
@@ -210,7 +209,6 @@ class TileManager(LibraryResourceManager):
         the_content = self.initialize_module_viewer_container(module_name)
         return render_template("library/tile_creator_react.html",
                                module_name=module_name,
-                               use_ssl=use_ssl,
                                develop=str(_develop),
                                uses_codemirror="True",
                                version_string=tstring,
@@ -348,7 +346,6 @@ class RepositoryTileManager(TileManager):
                                include_above_main_area=False,
                                read_only=True,
                                is_repository=True,
-                               use_ssl=use_ssl,
                                develop=str(_develop),
                                css_source=css_source("module_viewer_react"),
                                javascript_source=javascript_source,

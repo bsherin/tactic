@@ -1,6 +1,6 @@
 from flask import render_template, jsonify
 from flask_login import login_required, current_user
-from tactic_app import app, use_ssl
+from tactic_app import app
 from users import User
 import tactic_app
 
@@ -34,7 +34,6 @@ def admin_list_with_metadata(res_type):
 def admin_interface():
     if current_user.get_id() == admin_user.get_id():
         return render_template("library/library_home_react.html",
-                               use_ssl=str(use_ssl),
                                develop=str(_develop),
                                version_string=tstring,
                                page_title="tactic admin",

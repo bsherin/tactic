@@ -5,7 +5,7 @@ from flask_login import login_required, current_user
 from flask import jsonify, render_template, url_for, request, send_file
 from users import User
 from docker_functions import create_container, main_container_info
-from tactic_app import app, db, fs, use_ssl
+from tactic_app import app, db, fs
 from communication_utils import make_python_object_jsonizable, debinarize_python_object
 from communication_utils import read_temp_data, delete_temp_data
 from mongo_accesser import MongoAccessException
@@ -70,7 +70,6 @@ class CollectionManager(LibraryResourceManager):
                                base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                                main_id=main_id,
                                temp_data_id="",
-                               use_ssl=str(use_ssl),
                                develop=str(_develop),
                                uses_codemirror="True",
                                is_jupyter="False",
@@ -89,7 +88,6 @@ class CollectionManager(LibraryResourceManager):
                                main_id=main_id,
                                temp_data_id=unique_id,
                                develop=str(_develop),
-                               use_ssl=str(use_ssl),
                                is_jupyter="False",
                                uses_codemirror="True",
                                version_string=tstring,
@@ -118,7 +116,6 @@ class CollectionManager(LibraryResourceManager):
                                main_id=main_id,
                                temp_data_id="",
                                doc_names=doc_names,
-                               use_ssl=str(use_ssl),
                                console_html="",
                                is_table=(doc_type == "table"),
                                is_notebook=False,
@@ -278,6 +275,7 @@ class CollectionManager(LibraryResourceManager):
             return self.get_exception_for_ajax(ex, "Error combining collection")
 
     def import_as_table(self, collection_name, library_id):
+        self.start_library_spinner(library_id)
         user_obj = current_user
         file_list = request.files.getlist("file")
 
@@ -290,16 +288,19 @@ class CollectionManager(LibraryResourceManager):
         header_list_dict = {}
         for the_file in file_list:
             filename, file_extension = os.path.splitext(the_file.filename)
-            filename = filename.encode("ascii", "ignore")
             if file_extension not in known_extensions:
+                self.stop_library_spinner(library_id)
                 return jsonify({"success": False, "message": "Invalid file extension " + file_extension,
                                 "alert_type": "alert-warning"})
 
             decoding_problems = []
             if file_extension == ".xlsx":
+                self.show_um_message("Reading excel file {}".format(filename), library_id,
+                                     timeout=10)
                 (success, doc_dict, header_dict) = read_excel_file(the_file)
                 if not success:  # then doc_dict contains an error object
                     e = doc_dict
+                    self.stop_library_spinner(library_id)
                     return jsonify({"message": e["message"], "alert_type": "alert-danger"})
                 new_doc_dict.update(doc_dict)
                 header_list_dict.update(header_dict)
@@ -313,11 +314,13 @@ class CollectionManager(LibraryResourceManager):
                 elif file_extension == ".txt":
                     (success, row_list, header_list, encoding, decoding_problems) = read_txt_file_to_list(the_file)
                 else:
+                    self.stop_library_spinner(library_id)
                     return jsonify({"message": "unkown file extension", "alert_type": "alert-danger"})
                 self.show_um_message("Got encoding {} for {}".format(encoding, filename), library_id, timeout=10)
 
                 if not success:  # then row_list contains an error object
                     e = row_list
+                    self.stop_library_spinner(library_id)
                     return jsonify({"message": e["message"], "alert_type": "alert-danger"})
                 new_doc_dict[filename] = row_list
                 header_list_dict[filename] = header_list
@@ -329,11 +332,14 @@ class CollectionManager(LibraryResourceManager):
             result = user_obj.create_complete_collection(collection_name, new_doc_dict, "table", None,
                                                          header_list_dict, collection_mdata)
         except Exception as ex:
+            self.stop_library_spinner(library_id)
             return self.get_exception_for_ajax(ex, "Error creating collection")
 
         new_row = self.build_res_dict(collection_name, result["metadata"], user_obj)
         if len(file_decoding_errors.keys()) == 0:
             file_decoding_errors = None
+        self.stop_library_spinner(library_id)
+        self.clear_um_message(library_id)
         return jsonify({"success": True, "new_row": new_row,
                         "message": "Collection successfully loaded", "alert_type": "alert-success",
                         "file_decoding_errors": file_decoding_errors})

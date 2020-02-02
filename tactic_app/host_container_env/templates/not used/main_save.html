@@ -149,7 +149,6 @@
     var page_id = main_id;
     var user_id = "{{current_user.get_id()}}";
     var doc_names = {{ doc_names | safe }};
-    var use_ssl = "{{use_ssl}}"=="True";
     var new_tile_info = "{{new_tile_info | safe}}";
     window.onload = start_post_load;
     window.onresize = function () {

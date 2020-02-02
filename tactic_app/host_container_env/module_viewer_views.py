@@ -5,7 +5,7 @@ import datetime
 import copy
 from flask import render_template, request, jsonify, url_for
 from flask_login import login_required, current_user
-from tactic_app import app, db, use_ssl
+from tactic_app import app, db
 from integrated_docs import api_dict_by_category, api_dict_by_name, ordered_api_categories
 from exception_mixin import generic_exception_handler
 
@@ -69,7 +69,6 @@ def show_history_viewer(module_name):
     javascript_source = url_for('static', filename=js_source_dict["history_viewer_react"])
     return render_template("library/resource_viewer_react.html",
                            resource_name=module_name,
-                           use_ssl=use_ssl,
                            develop=str(_develop),
                            css_source=css_source("history_viewer_react"),
                            javascript_source=javascript_source,
@@ -93,7 +92,6 @@ def show_tile_differ(module_name, second_module_name):
     return render_template("library/resource_viewer_react.html",
                            resource_name=module_name,
                            second_resource_name=second_module_name,
-                           use_ssl=use_ssl,
                            develop=str(_develop),
                            javascript_source=javascript_source,
                            css_source=css_source("tile_differ_react"),

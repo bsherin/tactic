@@ -17,17 +17,12 @@ import qworker
 import tile_env
 from tile_env import class_info
 from tile_env import exec_tile_code
-print("importing tile_base")
 import tile_base
-print("importing document_object")
 import document_object
-print("importing remote_tile_object")
 import remote_tile_object
 from tile_base import clear_and_exec_user_code, TileBase
 from pseudo_tile_base import PseudoTileClass
-print("importing pseudo_tile_base")
 import pseudo_tile_base
-print("importing library_object")
 import library_object
 import gevent
 from communication_utils import make_python_object_jsonizable, emit_direct
@@ -36,15 +31,12 @@ import uuid
 import sys, os
 sys.stdout = sys.stderr
 import time
-print("done with imports in tile_main")
-
-
 # noinspection PyUnusedLocal
+
+
 class TileWorker(QWorker):
     def __init__(self):
-        print("about to initialize QWorker")
         QWorker.__init__(self)
-        print("QWorker initialized")
         self.tile_instance = None
         tile_env.Tile = None
         self.get_megaplex_task_now = False
@@ -87,7 +79,6 @@ class TileWorker(QWorker):
     @task_worthy
     def load_source(self, data_dict):
         try:
-            print("entering load_source")
             tile_code = data_dict["tile_code"]
             result = exec_tile_code(tile_code)
         except Exception as ex:
@@ -139,13 +130,11 @@ class TileWorker(QWorker):
             print("entering recreate_from_save. class_name is " + class_info["class_name"])
             self.tile_instance = class_info["tile_class"](None, None, tile_name=data["tile_name"])
             tile_env.Tile = self.tile_instance
-            print("created class instance")
             self.handler_instances["tilebase"] = self.tile_instance
             # if "tile_log_width" not in data:
             #     data["tile_log_width"] = data["back_width"]
             #     data["tile_log_height"] = data["back_height"]
             self.tile_instance.recreate_from_save(data)
-            print("returning from tile_instance.recreate_from_save")
             if self.tile_instance.current_html is not None:
                 self.tile_instance.current_html = self.tile_instance.current_html.replace(data["base_figure_url"],
                                                                                           data["new_base_figure_url"])
@@ -156,7 +145,6 @@ class TileWorker(QWorker):
             else:
                 self.tile_instance.doc_type = "table"
             document_object.Collection.__fully_initialize__()
-            print("tile instance started")
         except Exception as ex:
             result = self.handle_exception(ex, "Error loading source in tile_main recreate from save")
         return {"success": True,
@@ -183,13 +171,12 @@ class TileWorker(QWorker):
     @task_worthy
     def kill_me(self, data):
         self.connection.close()
-        print("about to exit")
+
         sys.exit()
 
     @task_worthy
     def reinstantiate_tile(self, reload_dict):
         try:
-            print("entering reinstantiate_tile_class")
             self.tile_instance = class_info["tile_class"](None, None, tile_name=reload_dict["tile_name"])
             tile_env.Tile = self.tile_instance
             self.handler_instances["tilebase"] = self.tile_instance
@@ -201,14 +188,14 @@ class TileWorker(QWorker):
                 attr_list = list(reload_dict.keys())
                 for attr in attr_list:
                     if attr in old_option_names and attr not in new_option_names:
-                        print("removing options " + attr)
+
                         del reload_dict[attr]
             for (attr, val) in reload_dict.items():
                 setattr(self.tile_instance, attr, val)
             form_data = self.tile_instance._create_form_data(reload_dict["form_info"])["form_data"]
             self.tile_instance.my_address = reload_dict["tile_address"]
             document_object.Collection.__fully_initialize__()
-            print("leaving reinstantiate_tile_class")
+
             if not self.tile_instance.exports:
                 self.tile_instance.exports = []
             return {"success": True, "form_data": form_data,
@@ -220,10 +207,8 @@ class TileWorker(QWorker):
     @task_worthy
     def instantiate_as_pseudo_tile(self, data):
         try:
-            print("entering load_source")
             self.tile_instance = PseudoTileClass()
             pseudo_tile_base.Tile = self.tile_instance
-            print("getting collection object")
             self.handler_instances["tilebase"] = self.tile_instance
             self.tile_instance.user_id = os.environ["OWNER"]
             self.tile_instance.base_figure_url = data["base_figure_url"]
@@ -236,7 +221,6 @@ class TileWorker(QWorker):
             # There won't be many of these old notebooks
             if (data["globals_dict"] is not None) and (isinstance(data["globals_dict"], dict)):  # legacy
                 self.tile_instance.recreate_from_save(data["globals_dict"])
-            print("leaving instantiate_tile_class")
             result = {"success": True}
             return result
         except Exception as ex:
@@ -244,17 +228,13 @@ class TileWorker(QWorker):
 
     @task_worthy
     def create_pseudo_tile_collection_object(self, data):
-        print("in create_pseudoe_tile_collection_object")
         am_notebook = data["am_notebook"]
         if not am_notebook:
-            print("calling __fully_initialize__")
             document_object.Collection.__fully_initialize__()
-            print("return from __fully_initialize")
             pseudo_tile_base.Collection = document_object.Collection
             pseudo_tile_base.Tiles = remote_tile_object.Tiles
             pseudo_tile_base.Pipes = remote_tile_object.Pipes
         pseudo_tile_base.Library = library_object.Library
-        print("about to return in create_pseudo_tile_collection_object")
         return data
 
     @task_worthy
@@ -286,7 +266,7 @@ class TileWorker(QWorker):
                 self.tile_instance.exports = []
             document_object.Collection.__fully_initialize__()
             data["exports"] = self.tile_instance.exports
-            print("leaving instantiate_tile_class")
+
             data["success"] = True
             return data
         except Exception as ex:
