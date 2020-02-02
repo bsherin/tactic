@@ -12,7 +12,7 @@ from the `tactic` directory
 note that scripts that can be run with `npm run`, as below are specified in package.json
 The webpack configuration is in webpack.config.js
 
-####Develop
+#### Develop
 
 run either:
 `webpack —env.mode=development`, or `npm run build` 
@@ -38,5 +38,8 @@ Finally:
 >/az_resdocker/
 >/azdeploy/  # Just to change directories
 >/azplay/
+# alternatively, if I want to also update the nginx config:
+# see discussion in readme.md in the tactic-azure-development project
+> ansible-playbook -i staging deploy_with_nginxupdate.yml
 ```
 

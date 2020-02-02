@@ -57,7 +57,7 @@ function _main_main() {
             window.initial_tile_types = response.tile_types;
             _after_main_joined();
         });
-    tsocket.socket.on('finish-post-load', _finish_post_load)
+    tsocket.socket.on('finish-post-load', _finish_post_load);
     tsocket.socket.on('myevent', function() {
         console.log("got the event")
     })

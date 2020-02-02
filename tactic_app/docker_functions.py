@@ -399,6 +399,8 @@ def delete_list_of_queues(qlist, use_localhost=False):
         params = pika.ConnectionParameters('localhost')
     else:
         params = pika.ConnectionParameters(
+            heartbeat=600,
+            blocked_connection_timeout=300,
             host="megaplex",
             port=5672,
             virtual_host='/'
@@ -426,20 +428,25 @@ def post_task_noqworker(source_id, dest_id, task_type, task_data=None):
                   "expiration": None}
     # result = send_request_to_megaplex("post_task", new_packet).json()
     params = pika.ConnectionParameters(
+        heartbeat=600,
+        blocked_connection_timeout=300,
         host="megaplex",
         port=5672,
         virtual_host='/'
     )
-    connection = pika.BlockingConnection(params)
-    channel = connection.channel()
-    channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
-    channel.basic_publish(exchange='',
-                          routing_key=dest_id,
-                          properties=pika.BasicProperties(
-                              reply_to=None,
-                              correlation_id=None,
-                              delivery_mode=1
-                          ),
-                          body=json.dumps(new_packet))
+    try:
+        connection = pika.BlockingConnection(params)
+        channel = connection.channel()
+        channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
+        channel.basic_publish(exchange='',
+                              routing_key=dest_id,
+                              properties=pika.BasicProperties(
+                                  reply_to=None,
+                                  correlation_id=None,
+                                  delivery_mode=1
+                              ),
+                              body=json.dumps(new_packet))
+    except:
+        print("got an exception in post_task_noqworker trying to publish")
     connection.close()
     return
