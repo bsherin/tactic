@@ -70,7 +70,6 @@ function _after_main_joined() {
             "doc_type": window.doc_type,
             "library_id": window.main_id,
             "base_figure_url": window.base_figure_url,
-            "use_ssl": window.use_ssl,
             "user_id": window.user_id,
             "ppi": ppi
         };
@@ -81,7 +80,6 @@ function _after_main_joined() {
             "collection_name": window._collection_name,
             "doc_type": window.doc_type,
             "base_figure_url": window.base_figure_url,
-            "use_ssl": window.use_ssl,
             "user_id": window.user_id,
             "ppi": ppi
         };

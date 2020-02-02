@@ -7,7 +7,7 @@ from collections import OrderedDict
 from flask import jsonify, request, url_for, render_template, send_file
 from flask_login import login_required, current_user
 import tactic_app
-from tactic_app import app, db, fs, use_ssl
+from tactic_app import app, db, fs
 from docker_functions import create_container, main_container_info
 from resource_manager import ResourceManager, LibraryResourceManager
 from users import User
@@ -112,7 +112,6 @@ class ProjectManager(LibraryResourceManager):
         data_dict = {"project_name": project_name,
                      "window_title": project_name,
                      "user_id": user_id,
-                     "use_ssl": str(use_ssl),
                      "develop": str(_develop),
                      "main_id": main_id,
                      "temp_data_id": "",

@@ -5,7 +5,7 @@ import copy
 import re
 
 import tactic_app
-from tactic_app import app, db, use_ssl  # global_stuff
+from tactic_app import app, db  # global_stuff
 
 from resource_manager import ResourceManager, LibraryResourceManager
 from flask import render_template, jsonify, url_for, request
@@ -119,7 +119,6 @@ class CodeManager(LibraryResourceManager):
                                include_above_main_area=False,
                                read_only=False,
                                is_repository=False,
-                               use_ssl=use_ssl,
                                develop=str(_develop),
                                javascript_source=javascript_source,
                                uses_codemirror="True",
@@ -216,7 +215,6 @@ class RepositoryCodeManager(CodeManager):
                                include_right=True,
                                include_above_main_area=False,
                                read_only=True,
-                               use_ssl=use_ssl,
                                develop=str(_develop),
                                is_repository=True,
                                javascript_source=javascript_source,

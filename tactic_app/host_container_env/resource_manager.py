@@ -128,11 +128,18 @@ class ResourceManager(ExceptionMixin):
 
     def show_um_message(self, message, library_id, timeout=3):
         data = {"message": message, "timeout": timeout}
-
         socketio.emit('show-status-msg', data, namespace='/library', room=library_id)
 
     def clear_um_message(self, library_id):
         socketio.emit('clear-status-msg', {}, namespace='/library', room=library_id)
+
+    def start_library_spinner(self, library_id):
+        print("starting the library spinner")
+        socketio.emit('start-spinner', {}, namespace='/library', room=library_id)
+
+    def stop_library_spinner(self, library_id):
+        print("stopping the library spinner")
+        socketio.emit('stop-spinner', {}, namespace='/library', room=library_id)
 
 
 class LibraryResourceManager(ResourceManager):

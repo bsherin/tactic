@@ -120,7 +120,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
 
     def show_main_message(self, message, timeout=None):
         data = {"message": message, "timeout": timeout, "main_id": self.mworker.my_id}
-        self.mworker.emit_to_main_client("show-status-message", data)
+        self.mworker.emit_to_main_client("show-status-msg", data)
         # self.mworker.post_task("host", "show_main_status_message_task", data)
 
     def clear_um_message(self, library_id):

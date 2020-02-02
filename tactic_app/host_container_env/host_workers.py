@@ -8,7 +8,7 @@ import pika
 from communication_utils import make_python_object_jsonizable
 from docker_functions import create_container, destroy_container, destroy_child_containers, destroy_user_containers
 from docker_functions import get_log, ContainerCreateError, container_exec, restart_container, get_address
-from tactic_app import app, socketio, use_ssl, db
+from tactic_app import app, socketio, db
 from library_views import tile_manager, project_manager, collection_manager, list_manager
 from library_views import code_manager
 from redis_tools import redis_ht
@@ -69,10 +69,6 @@ class HostWorker(QWorker):
         self.channel.basic_consume(queue=self.my_id, auto_ack=True, on_message_callback=self.handle_delivery)
         print(' [*] Waiting for messages:')
         self.channel.start_consuming()
-
-    @task_worthy
-    def stop_library_spinner(self, data):
-        socketio.emit('stop-spinner', {}, namespace='/library', room=data["library_id"])
 
     def show_um_status_message(self, msg, library_id, timeout=3):
         if timeout is None:

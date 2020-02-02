@@ -35,7 +35,6 @@ else:
     restart_rabbit = True
 
 
-use_ssl = os.environ.get("USE_SSL")
 app = None
 db = None
 fs = None
@@ -109,16 +108,15 @@ try:
     if ("TESTING" in os.environ) and (os.environ.get("TESTING") == "True"):
         app.config["WTF_CSRF_ENABLED"] = False
 
-    # if use_ssl == "True":
-    #     print("enabling sslify")
-    #     from flask_sslify import SSLify
-    #     sslify = SSLify(app)
-
     print("starting login_manager, bootstratp, socketio")
     print("starting login_manager")
     login_manager.init_app(app)
     print("starting socketio. connecting by name")
     socketio = SocketIO(app, message_queue="megaplex", engineio_logger=True)
+
+    # This stuff with ProxyFix seems to be critical.
+    # Without it, I get major errors when accessing via ssl on the server
+    # See: https://github.com/miguelgrinberg/Flask-SocketIO/issues/1047
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
     communication_utils.socketio = socketio
     print("starting csrf.init_app")

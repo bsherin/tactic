@@ -19,7 +19,6 @@ class TacticSocket {
     connectme() {
         var protocol = window.location.protocol;
         this.socket = io.connect(`${protocol}//${document.domain}:${location.port}/${this.name_space}`);
-        // this.socket = io(`/${this.name_space}`)
     }
 
     initialize_socket_stuff() {}

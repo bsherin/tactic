@@ -21,7 +21,6 @@
     <script src="{{url_for('static', filename='tactic_js/stub_loader.js', v=version_string)}}"></script>
     <script>
         let user_id = "{{current_user.get_id()}}";
-        let use_ssl = "{{use_ssl}}"=="True";
         let saved_title = $("#view-title").text();
         let task = "{{post_task}}";
 

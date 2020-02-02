@@ -28,7 +28,6 @@ mongo_uri = os.environ.get("MONGO_URI")
 # noinspection PyUnusedLocal
 class ModuleViewerWorker(QWorker, ExceptionMixin):
     def __init__(self):
-        print("about to initialize QWorker")
         QWorker.__init__(self)
         print("QWorker initialized")
         self.tp = None
@@ -157,7 +156,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
             self.create_recent_checkpoint(module_name)
             # self.post_task("host", "update_tile_selector_list", {'user_id': self.user_id})
             data = {'tile_type': self.module_name}
-            emit_direct("tile-source_change", data, namespace='/main', room=self.user_id)
+            emit_direct("tile-source-change", data, namespace='/main', room=self.user_id)
             # self.post_task("host", "send_tile_source_changed_message", {'user_id': self.user_id,
             #                                                             'tile_type': self.module_name})
             return {"success": True, "message": "Module Successfully Saved",

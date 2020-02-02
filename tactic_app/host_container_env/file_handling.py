@@ -80,26 +80,33 @@ def read_table_file_to_list(tsvfile, separator):
         raw_text = tsvfile.read()
         encoding = chardet.detect(raw_text[:100000])["encoding"]
         raw_lines = raw_text.splitlines()
-        header_list = raw_lines[0].rstrip().split(separator)
-        header_list = [utf_solver(header) for header in header_list]
+        header_list = raw_lines[0].decode(encoding, "ignore").rstrip().split(separator)
+        header_list = [header for header in header_list]
         header_list = make_fieldnames_unique(header_list)
         filename, file_extension = os.path.splitext(tsvfile.filename)
         result_list = []
         decoding_problems = []
-        for line in csv.reader(raw_lines[1:], delimiter=separator):
-            row = {}
-            for col, val in enumerate(line):
+        for k, raw_line in enumerate(raw_lines[1:]):
+            try:
+                decoded_line = raw_line.decode(encoding)
+            except UnicodeDecodeError as ex:
+                decoding_problems.append(generic_exception_handler.extract_short_error_message(ex))
+            else:
                 try:
-                    if header_list[col] in standard_fields:
-                        continue
-                    row[header_list[col]] = val.decode(encoding)
-                except UnicodeDecodeError as ex:
+                    line = decoded_line.split(separator)
+                    row = {}
+                    for col, val in enumerate(line):
+                        if header_list[col] in standard_fields:
+                            continue
+                        row[header_list[col]] = val
+                    row["__filename__"] = filename
+                    row["__id__"] = i
+                except Exception as ex:
                     decoding_problems.append(generic_exception_handler.extract_short_error_message(ex))
-                    row[header_list[col]] = val.decode(encoding, "ignore")
-            row["__filename__"] = filename
-            row["__id__"] = i
-            result_list.append(row)
-            i += 1
+                else:
+                    result_list.append(row)
+                    i += 1
+
         tsvfile.seek(0)
         header_list = add_standard_fields(header_list)
     except Exception as ex:
@@ -135,7 +142,7 @@ def read_excel_file(xlfile):
                     elif not c.data_type == openpyxl.cell.cell.TYPE_STRING:
                         header_list.append(str(c.value))
                     else:
-                        header_list.append(utf_solver(c.value))
+                        header_list.append(c.value)
                 except Exception as ex:
                     erstr = "Error getting cell {} of excel sheet {}".format(c.coordinate, sname)
                     ermsg = generic_exception_handler.extract_short_error_message(ex, erstr)
@@ -183,10 +190,6 @@ def read_csv_file_to_list(csvfile):
 
 def read_tsv_file_to_list(tsvfile):
     return read_table_file_to_list(tsvfile, "\t")
-
-
-def utf_solver(txt):
-    return txt.decode("utf-8", 'ignore').encode("ascii", "ignore")
 
 
 def read_txt_file_to_list(txtfile):

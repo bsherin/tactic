@@ -8,13 +8,8 @@ const page_id = library_id;
 
 
 function start_post_load() {
-    let socket;
-    if (use_ssl) {
-        socket = io.connect(`https://${document.domain}:${location.port}/library`);
-    }
-    else {
-        socket = io.connect(`http://${document.domain}:${location.port}/library`);
-    }
+    var protocol = window.location.protocol;
+    let socket = io.connect(`${protocol}//${document.domain}:${location.port}/library`);
 
     socket.emit('join', {"user_id":  user_id, "library_id":  library_id});
 

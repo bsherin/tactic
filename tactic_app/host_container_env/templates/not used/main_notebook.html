@@ -88,7 +88,6 @@
     var page_id = main_id;
     var user_id = "{{current_user.get_id()}}";
     var is_project = _project_name != "";
-    var use_ssl = "{{use_ssl}}"=="True";
     var is_notebook = true;
     var is_jupyter = "{{is_jupyter}}" == "True";
     var is_totally_new = !is_jupyter && !is_project && (temp_data_id == "");

@@ -83,7 +83,6 @@
     <script src="{{url_for('static', filename='tactic_js/library_home.js', v=version_string)}}"></script>
     <script>
         let user_id = "{{current_user.get_id()}}";
-        let use_ssl = "{{use_ssl}}"=="True";
         window.onload = _library_home_main();
     </script>
 {% endblock %}

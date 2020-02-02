@@ -53,9 +53,6 @@ def task_worthy_manual_submit(m):
     return m
 
 
-print("in the new qworker with new submit_response")
-
-
 heartbeat_time = 60
 
 
@@ -78,7 +75,6 @@ class QWorker(ExceptionMixin):
             self.wait_worker = BlockingWaitWorker(wait_queue)
 
     def start_background_thread(self):
-        print("entering start_background_thread")
         params = pika.ConnectionParameters(
             host="megaplex",
             port=5672,
@@ -111,15 +107,12 @@ class QWorker(ExceptionMixin):
         return
 
     def handle_delivery(self, channel, method, props, body):
-        print("in the modified handle_delivery")
         try:
             task_packet = json.loads(body)
             print("in handle_delivery with task_type {}".format(task_packet["task_type"]))
             if task_packet["status"] in response_statuses:
-                print("it's a response")
                 self.handle_response(task_packet)
             else:
-                print("it's an event")
                 self.handle_event(task_packet)
         except Exception as ex:
             special_string = "Got error in handle delivery"
@@ -128,7 +121,6 @@ class QWorker(ExceptionMixin):
 
     def post_packet(self, dest_id, task_packet, reply_to=None, callback_id=None):
         self.channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
-        print("in post_packet with task_type {}".format(task_packet["task_type"]))
         self.channel.basic_publish(exchange='',
                                    routing_key=dest_id,
                                    properties=pika.BasicProperties(
@@ -216,9 +208,9 @@ class QWorker(ExceptionMixin):
         if response_data is not None:
             task_packet["response_data"] = response_data
         task_packet["status"] = "submitted_response"
-        print("in modified submit_response")
+
         if "client_post" in task_packet:
-            print("emitting direct response")
+
             if "room" in task_packet:
                 room = task_packet["room"]
             else:

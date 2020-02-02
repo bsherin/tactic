@@ -84,8 +84,6 @@ else:
 
 
 class MainContainerTracker(object):
-    def __init__(self):
-        self.mc_dict = {}
 
     def create_main_container(self, other_name, user_id, username):
         main_volume_dict = {"/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "rw"}}
@@ -99,31 +97,11 @@ class MainContainerTracker(object):
                                                   publish_all_ports=True,
                                                   local_true_host_persist_dir=true_host_persist_dir,
                                                   local_true_host_nltk_data_dir=true_host_nltk_data_dir)
-        self.mc_dict[main_id] = {
-            "address": get_address(_container_id, "bridge"),
-            "container_id": _container_id
-        }
+
         return main_id
-
-    def delete_main(self, unique_id):
-        if unique_id in self.mc_dict:
-            del self.mc_dict[unique_id]
-        return
-
-    def port(self, unique_id):
-        return self.mc_dict[unique_id]["port"]
 
     def extract_port(self, container_identifier):
         return cli.containers.get(container_identifier).attrs["NetworkSettings"]["Ports"]["5000/tcp"]
-
-    def address(self, unique_id):
-        return self.mc_dict[unique_id]["address"]
-
-    def get_container_id(self, unique_id):
-        return self.mc_dict[unique_id]["container_id"]
-
-    def is_main(self, unique_id):
-        return unique_id in self.mc_dict
 
 
 main_container_info = MainContainerTracker()
@@ -157,7 +135,6 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
                      detach=True, register_container=True, publish_all_ports=False,
                      local_true_host_persist_dir=None, restart_policy=None,
                      local_true_host_nltk_data_dir=None, special_unique_id=None):
-    print("in create_container")
     if env_vars is None:
         env_vars = {}
     if special_unique_id is not None:
@@ -215,13 +192,10 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
     if restart_policy is not None:
         run_args["restart_policy"] = restart_policy
 
-    print("about to run the container")
     container = cli.containers.run(**run_args)
-    print("ran the container")
 
     cont_id = container.id
     container = cli.containers.get(cont_id)
-    print("status " + str(container.status))
 
     retries = 0
     if wait_until_running:
@@ -312,6 +286,16 @@ def container_status(tactic_id):
     return cont.status
 
 
+def container_names():
+    cs = cli.containers.list()
+    cnames = [c.name for c in cs]
+    return cnames
+
+
+def container_exists(name):
+    return name in container_names()
+
+
 def wait_until_stopped(tactic_id, wait_retries=30):
     print("in wait_until_stopped")
     container = get_container(tactic_id)
@@ -378,8 +362,6 @@ def destroy_container(tactic_id, notify=True):
                     message = "Container for tile {} has been destroyed".format(tile_name)
             cont.remove(force=True)
             delete_list_of_queues([tactic_id, tactic_id + "_wait"])
-            if cont_type == "main":
-                main_container_info.delete_main(tactic_id)
             if notify and message is not None:
                 data = {"message": message, "alert_type": "alert-warning", "main_id": dest_id}
                 print("about to flash to main")
@@ -412,26 +394,12 @@ def delete_all_queues(use_localhost=False):
     return
 
 
-def delete_one_queue(tactic_id):
-    taddress = get_address("megaplex", "bridge")
-    params = pika.ConnectionParameters(
-        host=taddress,
-        port=5672,
-        virtual_host='/'
-    )
-    connection = pika.BlockingConnection(params)
-    channel = connection.channel()
-    channel.queue_delete(queue=tactic_id)
-    connection.close()
-
-
 def delete_list_of_queues(qlist, use_localhost=False):
     if use_localhost:
         params = pika.ConnectionParameters('localhost')
     else:
-        taddress = get_address("megaplex", "bridge")
         params = pika.ConnectionParameters(
-            host=taddress,
+            host="megaplex",
             port=5672,
             virtual_host='/'
         )

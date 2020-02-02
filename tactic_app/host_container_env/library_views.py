@@ -7,7 +7,7 @@ from flask_socketio import join_room
 import markdown
 
 import tactic_app
-from tactic_app import app, socketio, use_ssl, db, fs
+from tactic_app import app, socketio, db, fs
 from mongo_accesser import name_keys
 from communication_utils import make_jsonizable_and_compress, read_project_dict
 from exception_mixin import generic_exception_handler
@@ -127,7 +127,6 @@ def library():
     print("*** in library ***")
     if current_user.get_id() == admin_user.get_id():
         return render_template("library/library_home_react.html",
-                               use_ssl=str(use_ssl),
                                version_string=tstring,
                                develop=str(_develop),
                                page_title="tactic admin",
@@ -136,7 +135,6 @@ def library():
     else:
         return render_template('library/library_home_react.html',
                                develop=str(_develop),
-                               use_ssl=str(use_ssl),
                                version_string=tstring,
                                page_title="tactic resources",
                                css_source=css_source("library_home_react"),
@@ -147,7 +145,6 @@ def library():
 @login_required
 def repository():
     return render_template('library/library_home_react.html',
-                           use_ssl=str(use_ssl),
                            version_string=tstring,
                            develop=str(_develop),
                            page_title="tactic repository",

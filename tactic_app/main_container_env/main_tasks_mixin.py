@@ -1045,7 +1045,7 @@ class APISupportTasksMixin:
                                                      metadata_dict,
                                                      header_list_dict)
             self.mworker.ask_host("update_collection_selector_list", {"user_id": self.user_id})
-            return result
+            return {"success": True}
         except Exception as ex:
             error_string = self.handle_exception(ex, print_to_console=True)
             return {"success": False, "message": error_string}
@@ -1066,7 +1066,7 @@ class APISupportTasksMixin:
                 print("got success")
                 self.mworker.ask_host("update_collection_selector_list", {"user_id": self.user_id})
             print("done with create_collection")
-            return result
+            return {"success": True, "message": "Collection successfully created."}
         except Exception as ex:
             error_string = self.handle_exception(ex, print_to_console=True)
             return {"success": False, "message": error_string}
