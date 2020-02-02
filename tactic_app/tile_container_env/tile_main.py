@@ -57,7 +57,7 @@ class TileWorker(QWorker):
             data = {}
         data["tile_message"] = message
         data["tile_id"] = self.my_id
-        self.ask_host("emit_tile_message", data)
+        emit_direct("tile-message", data, namespace="/main", room=self.tile_instance.user_id)
         return
 
     def emit_to_client(self, message, data):

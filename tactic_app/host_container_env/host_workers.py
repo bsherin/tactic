@@ -48,27 +48,41 @@ else:
 
 myport = os.environ.get("MYPORT")
 
+from qworker import max_pika_retries
+
 
 class HostWorker(QWorker):
     def __init__(self):
         QWorker.__init__(self)
         self.my_id = "host" + str(myport)
 
-    def start_background_thread(self):
-        print("entering start_background_thread")
-        params = pika.ConnectionParameters(
-            host="megaplex",
-            port=5672,
-            virtual_host='/'
-        )
-        self.connection = pika.BlockingConnection(params)
-        self.channel = self.connection.channel()
-        self.channel.queue_declare(queue="host", durable=False, exclusive=False)
-        self.channel.queue_declare(queue=self.my_id, durable=False, exclusive=False)
-        self.channel.basic_consume(queue="host", auto_ack=True, on_message_callback=self.handle_delivery)
-        self.channel.basic_consume(queue=self.my_id, auto_ack=True, on_message_callback=self.handle_delivery)
-        print(' [*] Waiting for messages:')
-        self.channel.start_consuming()
+    def start_background_thread(self, retries=0):
+        try:
+            print("entering start_background_thread")
+            params = pika.ConnectionParameters(
+                heartbeat=600,
+                blocked_connection_timeout=300,
+                host="megaplex",
+                port=5672,
+                virtual_host='/'
+            )
+            self.connection = pika.BlockingConnection(params)
+            self.channel = self.connection.channel()
+            self.channel.queue_declare(queue="host", durable=False, exclusive=False)
+            self.channel.queue_declare(queue=self.my_id, durable=False, exclusive=False)
+            self.channel.basic_consume(queue="host", auto_ack=True, on_message_callback=self.handle_delivery)
+            self.channel.basic_consume(queue=self.my_id, auto_ack=True, on_message_callback=self.handle_delivery)
+            print(' [*] Waiting for messages:')
+            self.channel.start_consuming()
+        except Exception as ex:
+            print(self.handle_exception(ex, "Got a pika error"))
+            if retries > max_pika_retries:
+                print("giving up. No more processing of tasks by this qworker")
+            else:
+                print("sleeping ...")
+                gevent.sleep(3)
+                new_retries = retries + 1
+                self.start_background_thread(retries=new_retries)
 
     def show_um_status_message(self, msg, library_id, timeout=3):
         if timeout is None:

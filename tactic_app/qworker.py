@@ -60,6 +60,9 @@ def current_timestamp():
     return datetime.datetime.timestamp(datetime.datetime.utcnow())
 
 
+max_pika_retries = 10
+
+
 # noinspection PyTypeChecker
 class QWorker(ExceptionMixin):
     def __init__(self):
@@ -74,18 +77,30 @@ class QWorker(ExceptionMixin):
             wait_queue = self.my_id + "_wait"
             self.wait_worker = BlockingWaitWorker(wait_queue)
 
-    def start_background_thread(self):
-        params = pika.ConnectionParameters(
-            host="megaplex",
-            port=5672,
-            virtual_host='/'
-        )
-        self.connection = pika.BlockingConnection(params)
-        self.channel = self.connection.channel()
-        self.channel.queue_declare(queue=self.my_id, durable=False, exclusive=False)
-        self.channel.basic_consume(queue=self.my_id, auto_ack=True, on_message_callback=self.handle_delivery)
-        print(' [*] Waiting for messages:')
-        self.channel.start_consuming()
+    def start_background_thread(self, retries=0):
+        try:
+            params = pika.ConnectionParameters(
+                heartbeat=600,
+                blocked_connection_timeout=300,
+                host="megaplex",
+                port=5672,
+                virtual_host='/'
+            )
+            self.connection = pika.BlockingConnection(params)
+            self.channel = self.connection.channel()
+            self.channel.queue_declare(queue=self.my_id, durable=False, exclusive=False)
+            self.channel.basic_consume(queue=self.my_id, auto_ack=True, on_message_callback=self.handle_delivery)
+            print(' [*] Waiting for messages:')
+            self.channel.start_consuming()
+        except Exception as ex:
+            print(self.handle_exception(ex, "Got a pika error"))
+            if retries > max_pika_retries:
+                print("giving up. No more processing of tasks by this qworker")
+            else:
+                print("sleeping ...")
+                gevent.sleep(3)
+                new_retries = retries + 1
+                self.start_background_thread(retries=new_retries)
 
     def start(self):
         global thread
@@ -196,9 +211,9 @@ class QWorker(ExceptionMixin):
         resp = self.wait_worker.post_blocking_wait(dest_id, new_packet)
 
         if resp == "__ERROR__":
-            error_string = "post_and_wait timed out with msg_type {}, destination {}, and source".format(task_type,
-                                                                                                         dest_id,
-                                                                                                         self.my_id)
+            error_string = "Got post_blocking_wait error with msg_type {}, destination {}, and source {}".format(task_type,
+                                                                                                                 dest_id,
+                                                                                                                 self.my_id)
             self.debug_log(error_string)
             raise MessagePostException(error_string)
         else:
@@ -294,18 +309,24 @@ class QWorker(ExceptionMixin):
 
 class BlockingWaitWorker:
     def __init__(self, queue_name):
+        self.queue_name = queue_name
+        self.initialize_me()
+
+    def initialize_me(self):
         params = pika.ConnectionParameters(
+            heartbeat=600,
+            blocked_connection_timeout=300,
             host="megaplex",
             port=5672,
             virtual_host='/'
         )
-        self.my_id = queue_name
+        self.my_id = self.queue_name
         self.connection = pika.BlockingConnection(params)
 
         self.channel = self.connection.channel()
 
-        self.channel.queue_declare(queue=queue_name, durable=False, exclusive=False)
-        self.callback_queue = queue_name
+        self.channel.queue_declare(queue=self.queue_name, durable=False, exclusive=False)
+        self.callback_queue = self.queue_name
 
         self.channel.basic_consume(
             queue=self.callback_queue,
@@ -313,21 +334,27 @@ class BlockingWaitWorker:
             auto_ack=True)
 
     def post_blocking_wait(self, dest_id, task_packet):
-        self.response = None
-        self.corr_id = str(uuid.uuid4())
-        self.channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
-        self.channel.basic_publish(
-            exchange='',
-            routing_key=dest_id,
-            properties=pika.BasicProperties(
-                reply_to=self.callback_queue,
-                correlation_id=self.corr_id,
-                delivery_mode=1
-            ),
-            body=json.dumps(task_packet))
-        while self.response is None:
-            self.connection.process_data_events()
-        return self.response
+        try:
+            if self.channel.is_closed:  # If closed, take one crack at fixing
+                self.connection.close()
+                self.initialize_me()
+            self.response = None
+            self.corr_id = str(uuid.uuid4())
+            self.channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
+            self.channel.basic_publish(
+                exchange='',
+                routing_key=dest_id,
+                properties=pika.BasicProperties(
+                    reply_to=self.callback_queue,
+                    correlation_id=self.corr_id,
+                    delivery_mode=1
+                ),
+                body=json.dumps(task_packet))
+            while self.response is None:
+                self.connection.process_data_events()
+            return self.response
+        except:
+            return "__ERROR__"
 
     def on_response(self, ch, method, props, body):
         self.response = json.loads(body)["response_data"]
