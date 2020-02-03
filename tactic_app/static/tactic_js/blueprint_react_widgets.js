@@ -368,7 +368,7 @@ class BpOrderableTable extends React.Component {
         let self = this;
         return rowIndex => {
             let the_text;
-            if (Object.keys(self.props.data_array[rowIndex]).includes(column_name)) {
+            if (rowIndex < self.props.data_array.length && Object.keys(self.props.data_array[rowIndex]).includes(column_name)) {
                 the_text = self.props.data_array[rowIndex][column_name];
             } else {
                 the_text = "";
