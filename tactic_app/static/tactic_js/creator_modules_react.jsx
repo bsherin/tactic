@@ -7,6 +7,7 @@ import { Button, Card } from "@blueprintjs/core";
 
 import {Toolbar} from "./blueprint_toolbar.js";
 import {LabeledSelectList, LabeledFormField, BpOrderableTable} from "./blueprint_react_widgets.js";
+import _ from 'lodash';
 
 export {OptionModule, ExportModule}
 
@@ -91,7 +92,7 @@ class OptionModule extends React.Component {
     }
 
     delete_option() {
-        let new_data_list = this.props.data_list;
+        let new_data_list = _.cloneDeep(this.props.data_list);
         new_data_list.splice(this.state.active_row, 1);
         this.props.handleChange(new_data_list)
     }
