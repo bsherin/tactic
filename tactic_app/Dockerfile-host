@@ -3,11 +3,6 @@ WORKDIR /code
 ARG debug=False
 ADD ./host_container_env/requirements.txt /code/requirements.txt
 RUN pip install -r requirements.txt
-RUN if [ "$debug" = "True" ]; \
-    then echo "*** Building for debug ***" && \
-         pip install pydevd-pycharm~=193.5233.109; \
-    else echo "*** Not building for debug ***"; \
-    fi
 MAINTAINER "Bruce L Sherin"
 ADD  ./host_container_env /code
 ADD  ./volume_manager.py ./exception_mixin.py ./qworker.py ./redis_tools.py ./communication_utils.py \

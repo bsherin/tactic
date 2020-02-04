@@ -274,12 +274,15 @@ class QWorker(ExceptionMixin):
     def handle_event(self, task_packet):
         task_type = task_packet["task_type"]
         if task_type in task_worthy_methods:
-            try:
-                response_data = getattr(self.handler_instances[task_worthy_methods[task_type]], task_type)(task_packet["task_data"])
-            except Exception as ex:
-                special_string = "Error handling task of type {} for my_id {}".format(task_type,
-                                                                                      self.my_id)
-                response_data = self.handle_exception(ex, special_string)
+            if task_worthy_methods[task_type] == "tilebase" and "tilebase" not in self.handler_instances:
+                print("it seems like tilebase is not ready yet. skipping event {}".format(task_type))
+            else:
+                try:
+                    response_data = getattr(self.handler_instances[task_worthy_methods[task_type]], task_type)(task_packet["task_data"])
+                except Exception as ex:
+                    special_string = "Error handling task of type {} for my_id {}".format(task_type,
+                                                                                          self.my_id)
+                    response_data = self.handle_exception(ex, special_string)
 
             if task_packet["callback_id"] is not None:
                 try:

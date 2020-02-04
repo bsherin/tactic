@@ -5,9 +5,8 @@
 # This avoids circular imports since the view functions make use
 # of things such as app, socketio, and db that are created in __init__.py
 
-import os
-
 from gevent import monkey; monkey.patch_all()
+import os
 import time
 print("entering host main")
 print("monkey patching")
