@@ -162,6 +162,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                                                                                 owner=data["user_id"],
                                                                                 parent=data["parent"],
                                                                                 other_name=data["other_name"],
+                                                                                username=self.username,
                                                                                 env_vars=environ,
                                                                                 volume_dict=tile_volume_dict,
                                                                                 publish_all_ports=True,

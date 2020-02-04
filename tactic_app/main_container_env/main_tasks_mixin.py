@@ -58,6 +58,7 @@ class LoadSaveTasksMixin:
 
     @task_worthy_manual_submit
     def compile_save_dict(self, data, task_packet):
+
         def track_tile_compile_receipts(tile_save_dict):
             tile_id = tile_save_dict["tile_id"]
             del tile_save_dict["tile_id"]
@@ -230,6 +231,8 @@ class LoadSaveTasksMixin:
         self.show_main_status_message("Entering do_full_recreation")
         self.tile_instances = []
         tile_info_dict, loaded_modules, interface_state, success = self.recreate_from_save(data_dict["project_name"])
+        print("loaded modules is {}".format(str(loaded_modules)))
+
         if not success:
             self.show_main_status_message("Error trying to recreate the project from save")
             self.show_error_window(tile_info_dict)
@@ -385,6 +388,7 @@ class LoadSaveTasksMixin:
         print("entering update_project")
 
         def got_save_dict(project_dict):
+
             try:
                 print("got save dict in update_project")
                 pname = data_dict["project_name"]
