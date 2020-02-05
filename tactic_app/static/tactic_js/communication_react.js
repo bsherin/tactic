@@ -2,7 +2,7 @@
 import {guid} from "./utilities_react.js";
 
 export {handleCallback, postAjax, postAjaxPromise, postAjaxUploadPromise, postWithCallback,
-    postWithCallbackAsyncFalse, postWithCallbackNoMain, postAjaxUpload, postAsyncFalse}
+    postWithCallbackAsyncFalse, postWithCallbackNoMain, postAjaxUpload, postAsyncFalse, postBeacon}
 
 let callbacks = {};
 
@@ -151,6 +151,22 @@ function postWithCallbackAsyncFalse(dest_id, task_type, task_data, callback_func
     });
 }
 
+function postBeacon(dest_id, task_type, task_data) {
+    const task_packet =  {
+        "source": "client",
+        "dest": dest_id,
+        "task_type": task_type,
+        "task_data": task_data,
+        "response_data": null,
+        "main_id": main_id,
+        "reply_to": null,
+        "callback_id": null,
+        "callback_type": "no_callback",
+        "expiration": null
+    };
+    navigator.sendBeacon($SCRIPT_ROOT + "/post_from_client", json.stringify(task_packet))
+}
+
 function postAsyncFalse(dest_id, task_type, task_data){
     const task_packet =  {
         "source": "client",
@@ -171,7 +187,7 @@ function postAsyncFalse(dest_id, task_type, task_data){
         type : 'POST',
         async: false,
         data: JSON.stringify(task_packet),
-        dataType: 'json'
+        dataType: 'json',
     });
 }
 

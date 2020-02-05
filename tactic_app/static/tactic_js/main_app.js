@@ -45,7 +45,7 @@ var heartbeat_timer = setInterval(function () {
 let tsocket;
 let ppi;
 
-window.onunload = function (e) {
+window.onbeforeunload = function (e) {
     postAsyncFalse("host", "remove_mainwindow_task", { "main_id": window.main_id });
 };
 

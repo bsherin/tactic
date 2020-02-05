@@ -310,7 +310,7 @@ class QWorker(ExceptionMixin):
         return self.extract_short_error_message(ex, special_string)
 
 
-class BlockingWaitWorker:
+class BlockingWaitWorker(ExceptionMixin):
     def __init__(self, queue_name):
         self.queue_name = queue_name
         self.initialize_me()
@@ -336,11 +336,13 @@ class BlockingWaitWorker:
             on_message_callback=self.on_response,
             auto_ack=True)
 
-    def post_blocking_wait(self, dest_id, task_packet):
+    def post_blocking_wait(self, dest_id, task_packet, retries=0):
+        max_retries = 3
         try:
             if self.channel.is_closed:  # If closed, take one crack at fixing
                 self.connection.close()
                 self.initialize_me()
+                time.sleep(1)
             self.response = None
             self.corr_id = str(uuid.uuid4())
             self.channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
@@ -356,8 +358,17 @@ class BlockingWaitWorker:
             while self.response is None:
                 self.connection.process_data_events()
             return self.response
-        except:
-            return "__ERROR__"
+        except Exception as ex:
+            print(self.handle_exception(ex, "Got an exception in post_blocking wait"))
+            if retries > max_retries:
+                return "__ERROR__"
+            else:
+                self.initialize_me()
+                time.sleep(1)
+                self.post_blocking_wait(dest_id, task_packet, retries + 1)
+
+    def handle_exception(self, ex, special_string=None):
+        return self.extract_short_error_message(ex, special_string)
 
     def on_response(self, ch, method, props, body):
         self.response = json.loads(body)["response_data"]
