@@ -46,6 +46,7 @@ def on_join_main(data):
     room = data["room"]
     join_room(room)
 
+    tactic_app.health_tracker.register_heartbeat(room)  # Its important to do this immediately
     print("user joined room " + room)
     socketio.emit("joined-mainid", room=room)
     tile_types = tactic_app.host_worker.get_tile_types({"user_id": data["user_id"]})

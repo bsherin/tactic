@@ -22,7 +22,7 @@ import datetime
 import time
 import os
 
-no_heartbeat_time = 10 * 60  # If a mainwindow does send a heartbeat after this amount of time, remove mainwindow.
+no_heartbeat_time = 3 * 60  # If a mainwindow does send a heartbeat after this amount of time, remove mainwindow.
 
 # inactive_container_time is the max time a tile can
 # go without making active contact with the megaplex.
@@ -33,7 +33,7 @@ inactive_container_time = 10 * 3600
 old_container_time = 3 * 24 * 3600
 
 # how frequently we will look for dead containers and dead mainwindows
-health_check_time = 10 * 60
+health_check_time = 5 * 60
 
 
 import loaded_tile_management
@@ -253,6 +253,7 @@ class HostWorker(QWorker):
 
     @task_worthy
     def remove_mainwindow_task(self, data):
+        print("in remove_mainwindow_task")
         main_id = data["main_id"]
         destroy_child_containers(main_id)
         destroy_container(main_id, notify=True)
@@ -709,6 +710,7 @@ class HealthTracker:
             redis_ht.hset(container_id, "last_contact", current_timestamp())
 
     def register_heartbeat(self, main_id):
+        print("in register_heartbeat in healthtracker")
         redis_ht.hset("heartbeat_table", main_id, current_timestamp())
 
     def check_health(self):
@@ -743,10 +745,13 @@ class HealthTracker:
                 redis_ht.hdel("heartbeat_table", main_id)
 
     def check_for_dead_mainwindows(self):
+        print("checking for dead mainwindows")
         current_time = current_timestamp()
         htable = redis_ht.hgetall("heartbeat_table")
+        print("got heartbeat table " + str(htable))
         for main_id, last_contact in htable.items():
             tdelta = current_time - float(last_contact)
+            print("got tdelta {}".format(str(tdelta)))
             if tdelta > no_heartbeat_time:
                 print("No heartbeat from mainwindow " + str(main_id))
                 tactic_app.host_worker.post_task("host", "remove_mainwindow_task", {"main_id": main_id})

@@ -342,6 +342,7 @@ def get_log(tactic_id):
 
 
 def destroy_container(tactic_id, notify=True):
+    print("in destory_container")
     try:
         cont = get_container(tactic_id)
         message = None
