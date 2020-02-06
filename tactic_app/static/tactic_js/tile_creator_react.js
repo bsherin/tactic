@@ -29,16 +29,14 @@ const MARGIN_SIZE = 17;
 
 window.main_id = window.module_viewer_id; // This matters for communication_react
 
-const HEARTBEAT_INTERVAL = 10000; //milliseconds
-var heartbeat_timer = setInterval(function () {
-    postAjax("register_heartbeat", { "main_id": window.module_viewer_id }, function () {});
-}, HEARTBEAT_INTERVAL);
 
 let tsocket;
 
-window.onunload = function (e) {
-    postAsyncFalse("host", "delete_container", { "container_id": window.module_viewer_id, "notify": false });
-};
+// Note: it seems like the sendbeacon doesn't work if this callback has a line
+// before the sendbeacon
+window.addEventListener("beforeunload", function sendRemove() {
+    navigator.sendBeacon("/delete_container_on_unload", JSON.stringify({ "container_id": window.module_viewer_id, "notify": false }));
+});
 
 class CreatorViewerSocket extends TacticSocket {
     initialize_socket_stuff() {
@@ -49,9 +47,6 @@ class CreatorViewerSocket extends TacticSocket {
             if (!(data["originator"] == window.module_viewer_id)) {
                 window.close();
             }
-        });
-        this.socket.on('stop-heartbeat', function (data) {
-            clearInterval(heartbeat_timer);
         });
         this.socket.on("doFlash", function (data) {
             doFlash(data);

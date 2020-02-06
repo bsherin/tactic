@@ -25,9 +25,13 @@ const USUAL_TOOLBAR_HEIGHT = 50;
 let tsocket;
 let ppi;
 
-window.onunload = function (e) {
-    postAsyncFalse("host", "remove_mainwindow_task", {"main_id": window.main_id})
-};
+
+// Note: it seems like the sendbeacon doesn't work if this callback has a line
+// before the sendbeacon
+window.addEventListener("beforeunload", function sendRemove() {
+    navigator.sendBeacon("/remove_mainwindow", JSON.stringify({"main_id": window.main_id}));
+});
+
 
 function _main_main() {
     //render_navbar();
@@ -224,9 +228,6 @@ class MainTacticSocket extends TacticSocket {
                         window.close()
                     }
                 });
-        this.socket.on('stop-heartbeat', function(data) {
-            clearInterval(heartbeat_timer)
-        });
         this.socket.on("window-open", function(data) {
             window.open($SCRIPT_ROOT + "/load_temp_page/" + data["the_id"])
         });

@@ -22,8 +22,6 @@ import datetime
 import time
 import os
 
-no_heartbeat_time = 3 * 60  # If a mainwindow does send a heartbeat after this amount of time, remove mainwindow.
-
 # inactive_container_time is the max time a tile can
 # go without making active contact with the megaplex.
 # we will let containers hang around for quite a while.
@@ -257,8 +255,6 @@ class HostWorker(QWorker):
         main_id = data["main_id"]
         destroy_child_containers(main_id)
         destroy_container(main_id, notify=True)
-        socketio.emit('stop-heartbeat', {}, namespace='/main', room=main_id)
-        tactic_app.health_tracker.remove_from_heartbeat_table(main_id)
         return {"success": True}
 
     @task_worthy
@@ -709,10 +705,6 @@ class HealthTracker:
         else:
             redis_ht.hset(container_id, "last_contact", current_timestamp())
 
-    def register_heartbeat(self, main_id):
-        print("in register_heartbeat in healthtracker")
-        redis_ht.hset("heartbeat_table", main_id, current_timestamp())
-
     def check_health(self):
         print("entering check_health")
         current_time = current_timestamp()
@@ -724,7 +716,6 @@ class HealthTracker:
                 if (current_time - last_worker_check) < health_check:
                     return
             self.check_for_dead_containers()
-            self.check_for_dead_mainwindows()
             redis_ht.set("last_health_check", current_time)
         return
 
@@ -735,26 +726,6 @@ class HealthTracker:
     def update_contact(self, container_id):
         if redis_ht.exists(container_id):
             redis_ht.hset(container_id, "last_contact", current_timestamp())
-
-    def update_heartbeat_table(self, main_id):
-        self.main_heartbeat_table[main_id] = datetime.datetime.utcnow()
-
-    def remove_from_heartbeat_table(self, main_id):
-        if redis_ht.exists("heartbeat_table"):
-            if redis_ht.hexists("heartbeat_table", main_id):
-                redis_ht.hdel("heartbeat_table", main_id)
-
-    def check_for_dead_mainwindows(self):
-        print("checking for dead mainwindows")
-        current_time = current_timestamp()
-        htable = redis_ht.hgetall("heartbeat_table")
-        print("got heartbeat table " + str(htable))
-        for main_id, last_contact in htable.items():
-            tdelta = current_time - float(last_contact)
-            print("got tdelta {}".format(str(tdelta)))
-            if tdelta > no_heartbeat_time:
-                print("No heartbeat from mainwindow " + str(main_id))
-                tactic_app.host_worker.post_task("host", "remove_mainwindow_task", {"main_id": main_id})
 
     def last_contact(self, container_id):
         return float(redis_ht.hget(container_id, "last_contact"))
