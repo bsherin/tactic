@@ -1,13 +1,14 @@
 import io
 import datetime
 import sys
+import json
 import copy
 import requests
 
 from flask import request, jsonify, render_template, send_file, url_for
 from flask_login import current_user, login_required
 from flask_socketio import join_room
-from tactic_app import app, db, fs, socketio
+from tactic_app import app, db, fs, socketio, csrf
 from library_views import collection_manager
 from docker_functions import destroy_container, destroy_child_containers
 from users import load_user
@@ -45,22 +46,29 @@ def on_join(data):
 def on_join_main(data):
     room = data["room"]
     join_room(room)
-
-    tactic_app.health_tracker.register_heartbeat(room)  # Its important to do this immediately
     print("user joined room " + room)
     socketio.emit("joined-mainid", room=room)
     tile_types = tactic_app.host_worker.get_tile_types({"user_id": data["user_id"]})
     return tile_types
 
 
-@app.route("/register_heartbeat", methods=["GET", "POST"])
+@app.route('/delete_container_on_unload', methods=["POST"])
 @login_required
-def register_heartbeat():
-    data = request.json
-    try:
-        tactic_app.health_tracker.register_heartbeat(data["main_id"])
-    except Exception as ex:
-        return generic_exception_handler.get_traceback_exception_for_ajax(ex)
+@csrf.exempt
+def delete_container_on_unload():
+    print("in delete_container_on_unload")
+    data = json.loads(request.data)
+    tactic_app.host_worker.delete_container(data)
+    return jsonify({"success": True})
+
+
+@app.route('/remove_mainwindow', methods=["POST"])
+@login_required
+@csrf.exempt
+def remove_mainwindow():
+    print("in remove_mainwindow")
+    data = json.loads(request.data)
+    tactic_app.host_worker.remove_mainwindow_task(data)
     return jsonify({"success": True})
 
 

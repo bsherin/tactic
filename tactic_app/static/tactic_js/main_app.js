@@ -37,17 +37,14 @@ const MARGIN_ADJUSTMENT = 8; // This is the amount at the top of both the table 
 const CONSOLE_HEADER_HEIGHT = 35;
 const EXTRA_TABLE_AREA_SPACE = 500;
 
-const HEARTBEAT_INTERVAL = 10000; //milliseconds
-var heartbeat_timer = setInterval(function () {
-    postAjax("register_heartbeat", { "main_id": window.main_id }, function () {});
-}, HEARTBEAT_INTERVAL);
-
 let tsocket;
 let ppi;
 
-window.onbeforeunload = function (e) {
-    postAsyncFalse("host", "remove_mainwindow_task", { "main_id": window.main_id });
-};
+// Note: it seems like the sendbeacon doesn't work if this callback has a line
+// before the sendbeacon
+window.addEventListener("beforeunload", function sendRemove() {
+    navigator.sendBeacon("/remove_mainwindow", JSON.stringify({ "main_id": window.main_id }));
+});
 
 function _main_main() {
     //render_navbar();
@@ -886,9 +883,7 @@ class MainTacticSocket extends TacticSocket {
                 window.close();
             }
         });
-        this.socket.on('stop-heartbeat', function (data) {
-            clearInterval(heartbeat_timer);
-        });
+
         this.socket.on("window-open", function (data) {
             window.open($SCRIPT_ROOT + "/load_temp_page/" + data["the_id"]);
         });
