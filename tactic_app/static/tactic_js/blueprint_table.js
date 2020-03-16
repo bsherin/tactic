@@ -276,6 +276,7 @@ class BlueprintTable extends React.Component {
                     onCompleteRender: this._doScroll,
                     onColumnWidthChanged: this._onColumnWidthChanged,
                     enableMultipleSelection: false,
+                    enableFocusedCell: false,
                     selectionModes: [RegionCardinality.FULL_COLUMNS, RegionCardinality.FULL_ROWS],
                     minColumnWidth: 75,
                     columnWidths: cwidths,
