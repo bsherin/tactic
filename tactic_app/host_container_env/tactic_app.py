@@ -108,7 +108,6 @@ try:
     if ("TESTING" in os.environ) and (os.environ.get("TESTING") == "True"):
         app.config["WTF_CSRF_ENABLED"] = False
 
-    print("starting login_manager, bootstratp, socketio")
     print("starting login_manager")
     login_manager.init_app(app)
     print("starting socketio. connecting by name")

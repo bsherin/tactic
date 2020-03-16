@@ -530,7 +530,8 @@ class LoadSaveTasksMixin:
                            "collection_name": self.collection_name,
                            "short_collection_name": self.short_collection_name,
                            "doc_names": doc_names}
-            self.mworker.submit_respone(return_data, local_task_packet)
+            print("in revised main_tasks_mixin")
+            self.mworker.submit_response(local_task_packet, return_data)
 
         short_collection_name = data_dict["new_collection_name"]
         data = {"user_id": self.user_id, "collection_name": short_collection_name}
@@ -666,6 +667,7 @@ class TileCreationTasksMixin:
 
     @task_worthy
     def rebuild_tile_forms_task(self, ddict):
+        print('entering rebuild_tile_forms_task')
         if "tile_id" not in ddict:
             tile_id = None
         else:
@@ -689,6 +691,7 @@ class TileCreationTasksMixin:
             if tile_id is None or not tid == tile_id:
                 form_info["other_tile_names"] = self.get_other_tile_names(tid)
                 self.mworker.post_task(tid, "RebuildTileForms", form_info)
+        print('leaving rebuild_tile_forms_task')
         return
 
     @task_worthy_manual_submit

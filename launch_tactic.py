@@ -82,6 +82,28 @@ def clear_tile_db():
         redis_tm.delete(*all_keys)
 
 
+def create_mongo():
+    try:
+        mongo_exists = tactic_app.docker_functions.container_exists("tactic-mongo")
+        if not restart_rabbit and not mongo_exists:
+            print("mongo doesn't yet exist so I'm making it")
+        if restart_rabbit or not mongo_exists:
+            print("creating tactic-mongo")
+            mongo_volume_dict = {"/Users/bls910/data/db": {"bind": "/data/db", "mode": "rw"}}
+            _unique_id, _mongo_id = create_container("mongo",
+                                                     container_name="tactic-mongo",
+                                                     host_name="tactic-mongo",
+                                                     volume_dict=mongo_volume_dict,
+                                                     port_bindings={27017: 27017},
+                                                     register_container=False)
+        else:
+            print("no need to recreate tactic-mongo")
+
+    except ContainerCreateError:
+        print("Error creating the mongo container.")
+        exit()
+
+
 def create_redis():
     try:
         redis_exists = tactic_app.docker_functions.container_exists("tactic-redis")
@@ -147,6 +169,7 @@ if ("ANYONE_CAN_REGISTER" in os.environ) and (os.environ.get("ANYONE_CAN_REGISTE
 else:
     ANYONE_CAN_REGISTER = False
 
+# create_mongo()
 create_megaplex()
 create_redis()
 success = sleep_until_rabbit_alive()
