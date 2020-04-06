@@ -571,11 +571,7 @@ class TileComponent extends React.Component {
 
     logText(the_text) {
         let self = this;
-        postWithCallback("host", "print_to_console", { "message": the_text, is_error: false, "user_id": window.user_id, "main_id": window.main_id }, function (data) {
-            if (!data.success) {
-                doFlash(data);
-            }
-        });
+        postWithCallback(this.props.tile_id, "LogTile", {});
     }
     _logMe() {
         this.logText(this.props.front_content);

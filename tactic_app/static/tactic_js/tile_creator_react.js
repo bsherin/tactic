@@ -34,7 +34,7 @@ let tsocket;
 
 // Note: it seems like the sendbeacon doesn't work if this callback has a line
 // before the sendbeacon
-window.addEventListener("beforeunload", function sendRemove() {
+window.addEventListener("unload", function sendRemove() {
     navigator.sendBeacon("/delete_container_on_unload", JSON.stringify({ "container_id": window.module_viewer_id, "notify": false }));
 });
 

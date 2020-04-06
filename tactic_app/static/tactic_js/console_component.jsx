@@ -14,6 +14,7 @@ import {KeyTrap} from "./key_trap.js";
 import {postWithCallback} from "./communication_react.js"
 import {doFlash} from "./toaster.js"
 import {doBinding, arrayMove} from "./utilities_react.js";
+import {showConfirmDialogReact} from "./modal_react";
 
 export {ConsoleComponent}
 
@@ -102,7 +103,11 @@ const BUTTON_CONSUMED_SPACE = 203;
     }
 
     _clearConsole() {
-        this.props.setMainStateValue("console_items", []);
+        const confirm_text = "Are you sure that you want to erase everything in this log?";
+        let self = this;
+        showConfirmDialogReact("Clear entire log", confirm_text, "do nothing", "clear", function () {
+            self.props.setMainStateValue("console_items", []);
+        });
     }
     _toggleConsoleLog() {
         let self = this;

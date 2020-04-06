@@ -10,6 +10,7 @@ from communication_utils import make_python_object_jsonizable, debinarize_python
 from communication_utils import make_jsonizable_and_compress, read_project_dict
 import docker_functions
 from mongo_accesser import bytes_to_string
+from doc_info import docInfo, FreeformDocInfo
 
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
 STEP_SIZE = int(os.environ.get("STEP_SIZE"))
@@ -1113,7 +1114,11 @@ class APISupportTasksMixin:
     def UnfilterTable(self, data):
         for doc in self.doc_dict.values():
             doc.current_data_rows = doc.data_rows
-        self.refill_table()
+        if "selected_row" in data and data["selected_row"] is not None:
+            self.mworker.ask_host("go_to_row_in_document", {"doc_name": self.visible_doc_name,
+                                                            "row_id": data["selected_row"]})
+        else:
+            self.refill_table()
         return None
 
     @task_worthy
@@ -1206,7 +1211,7 @@ class APISupportTasksMixin:
         return None
 
     @task_worthy
-    def get_code_with_class(self, data):  # tactic_working This won't work now
+    def get_code_with_class(self, data):
         class_name = data["class_name"]
         the_code = mongo_accesser.get_code_with_class(class_name)
         if the_code is None:
@@ -1381,6 +1386,85 @@ class ConsoleTasksMixin:
 
 class DataSupportTasksMixin:
 
+    @task_worthy
+    def insert_row(self, data):
+        doc_name = data["document_name"]
+        index = data["index"]
+        row_dict = data["row_dict"]
+
+        dinfo = self.doc_dict[doc_name]
+        fixed_row_dict = {}
+        for cname in dinfo.table_spec.header_list:
+            if cname in row_dict:
+                fixed_row_dict[cname] = row_dict[cname]
+            else:
+                fixed_row_dict[cname] = ""
+
+        drows = copy.deepcopy(dinfo.all_sorted_data_rows)
+        drows.insert(index, fixed_row_dict)
+        doc_as_dict = {}
+        for r, the_row in enumerate(drows):
+            the_row.pop("__id__", None)
+            the_row.pop("__filename__", None)
+            the_row["__id__"] = r
+            the_row["__filename__"] = doc_name
+            doc_as_dict[str(r)] = the_row
+        dinfo.data_rows = doc_as_dict
+        data = {"doc_name": doc_name,
+                "row_id": index}
+        self.mworker.ask_host('go_to_row_in_document', data)
+
+    @task_worthy
+    def add_document(self, data):  # tactic_working
+        new_doc_name = data["document_name"]
+        header_list = data["column_names"]
+        dict_list = data["dict_list"]
+        doc_as_dict = {}
+        for r, the_row in enumerate(dict_list):
+            the_row.pop("__id__", None)
+            the_row.pop("__filename__", None)
+            the_row["__id__"] = r
+            the_row["__filename__"] = new_doc_name
+            doc_as_dict[str(r)] = the_row
+        if "__filename__" not in header_list:
+            header_list = ["__filename__"] + header_list
+        if "__id__" not in header_list:
+            header_list = ["__id__"] + header_list
+        dinfo = docInfo(new_doc_name, header_list, {}, doc_as_dict)
+        self.visible_doc_name = new_doc_name
+        self.doc_dict[new_doc_name] = dinfo
+        self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
+        doc_names = list(self.doc_dict.keys())
+        doc_names.sort()
+        self.mworker.emit_table_message("updateDocList", {"doc_names": doc_names,
+                                                          "visible_doc": new_doc_name})
+        return
+
+    @task_worthy
+    def add_freeform_document(self, data):  # tactic_working
+        new_doc_name = data["document_name"]
+        doc_text = data["doc_text"]
+        dinfo = FreeformDocInfo(new_doc_name, {}, doc_text)
+        self.visible_doc_name = new_doc_name
+        self.doc_dict[new_doc_name] = dinfo
+        self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
+        doc_names = list(self.doc_dict.keys())
+        doc_names.sort()
+        self.mworker.emit_table_message("updateDocList", {"doc_names": doc_names,
+                                                          "visible_doc": new_doc_name})
+
+    @task_worthy
+    def remove_document(self, data):  # tactic_working
+        doc_name = data["document_name"]
+        del self.doc_dict[doc_name]
+        self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
+        doc_names = list(self.doc_dict.keys())
+        doc_names.sort()
+        if self.visible_doc_name == doc_name:
+            self.visible_doc_name = doc_names[0]
+        self.mworker.emit_table_message("updateDocList", {"doc_names": doc_names,
+                                                          "visible_doc": self.visible_doc_name})
+
     def grab_chunk(self, doc_name, row_index):
         chunk_number = int(int(row_index) / CHUNK_SIZE)
         chunk_start = chunk_number * CHUNK_SIZE
@@ -1446,6 +1530,8 @@ class DataSupportTasksMixin:
         column_name = data["column_name"]
         for doc in self.doc_dict.values():
             if column_name in doc.table_spec.header_list and column_name not in doc.table_spec.hidden_columns_list:
+                col_index = doc.table_spec.visible_columns.index(column_name)
+                del doc.table_spec.column_widths[col_index]
                 doc.table_spec.hidden_columns_list.append(column_name)
         return None
 
@@ -1473,6 +1559,30 @@ class DataSupportTasksMixin:
                 for r in doc.data_rows.values():
                     r[column_name] = ""
 
+        self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
+        return None
+
+    def DeleteColumnOneDoc(self, doc, data):
+        print("in DeleteColumnOneDoc with " + doc.table_spec.doc_name)
+        column_name = data["column_name"]
+        if column_name in doc.table_spec.header_list:
+            doc.table_spec.header_list.remove(column_name)
+            col_index = doc.table_spec.visible_columns.index(column_name)
+            del doc.table_spec.column_widths[col_index]
+        for r in doc.data_rows.values():
+            if column_name in r:
+                del r[column_name]
+
+        return
+
+    @task_worthy
+    def DeleteColumn(self, data):
+        if not data["all_docs"]:
+            print("just deleting in one")
+            self.DeleteColumnOneDoc(self.doc_dict[data["doc_name"]], data)
+        else:
+            for doc in self.doc_dict.values():
+                self.DeleteColumnOneDoc(doc, data)
         self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
         return None
 

@@ -23,7 +23,7 @@ import { TileContainer } from "./tile_react.js";
 import { ExportsViewer } from "./export_viewer_react.js";
 import { showModalReact, showSelectDialog } from "./modal_react.js";
 import { ConsoleComponent } from "./console_component.js";
-import { handleCallback, postAjax, postWithCallback, postAsyncFalse } from "./communication_react.js";
+import { handleCallback, postWithCallback, postAsyncFalse } from "./communication_react.js";
 import { doFlash } from "./toaster.js";
 import { withStatus } from "./toaster.js";
 import { withErrorDrawer } from "./error_drawer.js";
@@ -42,7 +42,7 @@ let ppi;
 
 // Note: it seems like the sendbeacon doesn't work if this callback has a line
 // before the sendbeacon
-window.addEventListener("beforeunload", function sendRemove() {
+window.addEventListener("unload", function sendRemove(event) {
     navigator.sendBeacon("/remove_mainwindow", JSON.stringify({ "main_id": window.main_id }));
 });
 
@@ -192,7 +192,9 @@ class MainApp extends React.Component {
                 force_row_to_top: null,
                 selected_column: null,
                 selected_row: null,
+                selected_regions: null,
                 table_is_filtered: false,
+                spreadsheet_mode: false,
                 table_spec: { column_names: this.props.initial_column_names,
                     column_widths: this.props.initial_column_widths,
                     hidden_columns_list: this.props.initial_hidden_columns_list,
@@ -296,10 +298,14 @@ class MainApp extends React.Component {
             front_content: "" };
     }
 
-    _setMainStateValue(field_name, value, callback = null) {
-        let new_state = {};
-        new_state[field_name] = value;
-        this.setState(new_state, callback);
+    _setMainStateValue(field_name, value = null, callback = null) {
+        if (typeof field_name == "object") {
+            this.setState(field_name, callback);
+        } else {
+            let new_state = {};
+            new_state[field_name] = value;
+            this.setState(new_state, callback);
+        }
     }
 
     _handleSearchFieldChange(search_text) {
@@ -307,6 +313,10 @@ class MainApp extends React.Component {
         if (search_text == null && !window.is_freeform) {
             this.setState({ cells_to_color_text: {} });
         }
+    }
+
+    _handleSpreadsheetModeChange(event) {
+        this.setState({ "spreadsheet_mode": event.target.checked });
     }
 
     _setAltSearchText(the_text) {
@@ -355,7 +365,9 @@ class MainApp extends React.Component {
         new_tspec = Object.assign(new_tspec, spec_update);
         this.setState({ table_spec: new_tspec });
         if (broadcast) {
-            this._broadcast_event_to_server("UpdateTableSpec", spec_update);
+            spec_update["doc_name"] = this.state.table_spec.current_doc_name;
+            postWithCallback(window.main_id, "UpdateTableSpec", spec_update);
+            // this._broadcast_event_to_server("UpdateTableSpec", spec_update)
         }
     }
 
@@ -462,7 +474,8 @@ class MainApp extends React.Component {
             highlightTxtInDocument: data => self._setAltSearchText(data.text_to_find),
             setCellContent: data => self._setCellContent(data.row, data.column_header, data.new_content),
             colorTxtInCell: data => self._colorTextInCell(data.row_id, data.column_header, data.token_text, data.color_dict),
-            setFreeformContent: data => self._setFreeformDoc(data.doc_name, data.new_content)
+            setFreeformContent: data => self._setFreeformDoc(data.doc_name, data.new_content),
+            updateDocList: data => self._updateDocList(data.doc_names, data.visible_doc)
         };
         handlerDict[data.table_message](data);
     }
@@ -500,18 +513,29 @@ class MainApp extends React.Component {
         let colnames = [...this.state.table_spec.column_names];
         let start_index = colnames.indexOf(tag_to_move);
         colnames.splice(start_index, 1);
-        let end_index = colnames.indexOf(place_to_move);
-        colnames.splice(end_index, 0, tag_to_move);
+
+        if (!place_to_move) {
+            colnames.push(tag_to_move);
+        } else {
+            let end_index = colnames.indexOf(place_to_move);
+            colnames.splice(end_index, 0, tag_to_move);
+        }
 
         let fnames = this._filteredColumnNames();
         start_index = fnames.indexOf(tag_to_move);
         fnames.splice(start_index, 1);
-        end_index = fnames.indexOf(place_to_move);
 
         let cwidths = [...this.state.table_spec.column_widths];
         let width_to_move = cwidths[start_index];
         cwidths.splice(start_index, 1);
-        cwidths.splice(end_index, 0, width_to_move);
+
+        if (!place_to_move) {
+            cwidths.push(width_to_move);
+        } else {
+            let end_index = fnames.indexOf(place_to_move);
+            cwidths.splice(end_index, 0, width_to_move);
+        }
+
         this._updateTableSpec({ column_names: colnames, column_widths: cwidths }, true);
     }
 
@@ -541,6 +565,24 @@ class MainApp extends React.Component {
 
     _unhideAllColumns() {
         this._updateTableSpec({ hidden_columns_list: ["__filename__"] }, true);
+    }
+
+    _deleteColumn(delete_in_all = false) {
+        let fnames = this._filteredColumnNames();
+        let cname = this.state.selected_column;
+        let col_index = fnames.indexOf(cname);
+        let cwidths = [...this.state.table_spec.column_widths];
+        cwidths.splice(col_index, 1);
+        let hc_list = _.without(this.state.table_spec.hidden_columns_list, cname);
+        let cnames = _.without(this.state.table_spec.column_names, cname);
+        this._updateTableSpec({
+            column_names: cnames,
+            hidden_columns_list: hc_list,
+            column_widths: cwidths }, false);
+        const data_dict = { "column_name": cname,
+            "doc_name": this.state.table_spec.current_doc_name,
+            "all_docs": delete_in_all };
+        postWithCallback(window.main_id, "DeleteColumn", data_dict);
     }
 
     _addColumn(add_in_all = false) {
@@ -619,6 +661,13 @@ class MainApp extends React.Component {
         }
     }
 
+    _updateDocList(doc_names, visible_doc) { // tactic_working
+        let self = this;
+        this.setState({ doc_names: doc_names }, () => {
+            self._handleChangeDoc(visible_doc);
+        });
+    }
+
     get interface_state() {
         let interface_state = {};
         for (let attr of save_attrs) {
@@ -693,7 +742,8 @@ class MainApp extends React.Component {
                 hideColumn: this._hideColumn,
                 hideInAll: this._hideColumnInAll,
                 unhideAllColumns: this._unhideAllColumns,
-                addColumn: this._addColumn
+                addColumn: this._addColumn,
+                deleteColumn: this._deleteColumn
             })),
             React.createElement(ViewMenu, _extends({}, this.props.statusFuncs, {
                 table_is_shrunk: this.state.table_is_shrunk,
@@ -710,11 +760,14 @@ class MainApp extends React.Component {
             doc_names: this.state.doc_names,
             current_doc_name: this.state.table_spec.current_doc_name,
             show_table_spinner: this.state.show_table_spinner,
+            selected_row: this.state.selected_row,
             handleSearchFieldChange: this._handleSearchFieldChange,
             search_text: this.state.search_text,
             setMainStateValue: this._setMainStateValue,
             table_is_filtered: this.state.table_is_filtered,
             show_filter_button: !window.is_freeform,
+            spreadsheet_mode: this.state.spreadsheet_mode,
+            handleSpreadsheetModeChange: this._handleSpreadsheetModeChange,
             broadcast_event_to_server: this._broadcast_event_to_server
         });
         let card_body;
@@ -739,6 +792,7 @@ class MainApp extends React.Component {
                 hidden_columns_list: this.state.table_spec.hidden_columns_list,
                 updateTableSpec: this._updateTableSpec,
                 setMainStateValue: this._setMainStateValue,
+                selected_regions: this.state.selected_regions,
                 selected_column: this.state.selected_column,
                 selected_row: this.state.selected_row,
                 search_text: this.state.search_text,
@@ -746,6 +800,7 @@ class MainApp extends React.Component {
                 cells_to_color_text: this.state.cells_to_color_text,
                 total_rows: this.state.total_rows,
                 broadcast_event_to_server: this._broadcast_event_to_server,
+                spreadsheet_mode: this.state.spreadsheet_mode,
                 data_row_dict: this.state.data_row_dict });
         }
 

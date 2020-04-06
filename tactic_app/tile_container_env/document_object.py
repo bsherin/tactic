@@ -337,7 +337,8 @@ class FreeformTacticDocument:
 
     def __str__(self):
         res = ""
-        for k in range(ROWS_TO_PRINT):
+        to_print = min([ROWS_TO_PRINT, self._number_lines])
+        for k in range(to_print):
             res += str(self[k]) + "\n"
         return "<pre>{}</pre>".format(res)
 
@@ -455,6 +456,16 @@ class TacticDocument:
         self._unprotected_column_names = remove_protected_fields_from_list(self._column_names)
         self._current_chunk_start = 0
         self._row_list = None
+        self._get_chunk()
+        return
+
+    def _reinitialize(self, docname=None, number_rows=None, column_names=None):
+        if docname is not None:
+            self._docname = docname
+        if number_rows is not None:
+            self._number_rows = number_rows
+        if column_names is not None:
+            self._column_names = column_names
         self._get_chunk()
         return
 
@@ -584,6 +595,14 @@ class TacticDocument:
 
     def rewind(self):
         self._iter_value = -1
+
+    def insert(self, position, dict_or_element=None):  # tactic_working
+        if isinstance(element, DetachedTacticRow):
+            rdict = dict_or_element.row_dict
+        else:
+            rdict = dict_or_element
+        _tworker.tile_instance.insert_row(self.name, position, rdict)
+        return
 
     def __next__(self):
         self._iter_value += 1
@@ -843,7 +862,12 @@ class TacticCollection:
         if grab_all_docs:
             self._doc_dict = {dname: self._create_doc_object(dname) for dname in self._doc_names}
         else:
-            self._doc_dict = None
+            self._doc_dict = {}
+        return
+
+    def _reinitializeDoc(self, docname, number_rows):
+        if docname in self._doc_dict:
+            self._doc_dict[docname]._reinitialize(None, number_rows, None)
         return
 
     def detach(self):
@@ -895,10 +919,9 @@ class TacticCollection:
     def __getitem__(self, x):
         if x not in self._doc_names:
             raise KeyError("No document named '{}'".format(x))
-        if self._grab_all_docs:
-            return self._doc_dict[x]
-        else:
-            return self._create_doc_object(x)
+        if x not in self._doc_dict:
+            self._doc_dict[x] = self._create_doc_object(x)
+        return self._doc_dict[x]
 
     def __iter__(self):
         return self
@@ -916,8 +939,35 @@ class TacticCollection:
     def __len__(self):
         return self._number_docs
 
-    def __setitem__(self, docname, new_data):
-        raise NotImplementedError
+    def append(self, new_doc):  # tactic_working
+        if self._doc_type == "freeform":
+            if not isinstance(new_doc, DetachedFreeformTacticDocument):
+                raise TypeError("Not a DetachedFreeformTacticDocument")
+            _tworker.tile_instance.add_freeform_document(new_doc.name, new_doc.text)
+        else:
+            if not isinstance(new_doc, DetachedTacticDocument):
+                raise TypeError("Not a DetachedTacticDocument")
+            _tworker.tile_instance.add_document(new_doc.name, new_doc.column_names,
+                                                new_doc.dict_list)
+
+    def __setitem__(self, docname, new_doc):
+        if self._doc_type == "freeform":
+            if not isinstance(new_doc, DetachedFreeformTacticDocument):
+                raise TypeError("Not a DetachedFreeformTacticDocument")
+            new_doc._docname = docname
+            _tworker.tile_instance.add_freeform_document(docname, new_doc.text)
+        else:
+            if not isinstance(new_doc, DetachedTacticDocument):
+                raise TypeError("Not a DetachedTacticDocument")
+            new_doc._docname = docname
+            _tworker.tile_instance.add_document(docname, new_doc.column_names,
+                                                new_doc.dict_list)
+
+    def __delitem__(self, docname):
+        _tworker.tile_instance.remove_document(docname)
+
+    def __delattr__(self, attr):
+        self.__delitem__(attr)
 
     def __repr__(self):
         return "TacticCollection with {} docs".format(str(len(self)))

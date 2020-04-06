@@ -29,6 +29,10 @@ class TableSpec(object):
         else:
             self.hidden_columns_list = hidden_columns_list
 
+    @property
+    def visible_columns(self):
+        return [cname for cname in self.header_list if cname not in self.hidden_columns_list]
+
     def remove_duplicates(self, seq):
         seen = set()
         seen_add = seen.add

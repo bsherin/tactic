@@ -207,6 +207,7 @@ class BlueprintTable extends React.Component {
 
     _onSelection(regions) {
         if (regions.length == 0) return;  // Without this get an error when clicking on a body cell
+        this.props.setMainStateValue("selected_regions", regions);
         if (regions[0].hasOwnProperty("cols")) {
             this._setSelectedColumn(this.props.filtered_column_names[regions[0]["cols"][0]])
         }
@@ -275,10 +276,11 @@ class BlueprintTable extends React.Component {
                        enableColumnReordering={true}
                        onColumnsReordered={this._onColumnsReordered}
                        onSelection={this._onSelection}
+                       selectedRegions={this.props.selected_regions}
                        onCompleteRender={this._doScroll}
                        onColumnWidthChanged={this._onColumnWidthChanged}
                        enableMultipleSelection={false}
-                       enableFocusedCell={false}
+                       enableFocusedCell={this.props.spreadsheet_mode}
                        selectionModes={[RegionCardinality.FULL_COLUMNS, RegionCardinality.FULL_ROWS]}
                        minColumnWidth={75}
                        columnWidths={cwidths}
@@ -308,6 +310,7 @@ BlueprintTable.propTypes = {
     column_widths: PropTypes.array,
     hidden_columns_list: PropTypes.array,
     search_text: PropTypes.string,
+    spreadsheet_mode: PropTypes.bool,
     alt_search_text: PropTypes.string
 };
 
