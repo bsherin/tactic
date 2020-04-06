@@ -324,12 +324,12 @@ class ConfirmDialog extends React.Component {
                     React.createElement(
                         Button,
                         { onClick: this._cancelHandler },
-                        'Cancel'
+                        this.props.cancel_text
                     ),
                     React.createElement(
                         Button,
                         { intent: Intent.PRIMARY, onClick: this._submitHandler },
-                        'Submit'
+                        this.props.submit_text
                     )
                 )
             )
@@ -344,6 +344,11 @@ ConfirmDialog.propTypes = {
     text_body: PropTypes.string,
     submit_text: PropTypes.string,
     cancel_text: PropTypes.string
+};
+
+ConfirmDialog.defaultProps = {
+    submit_text: "Submit",
+    cancel_text: "Cancel"
 };
 
 function showConfirmDialogReact(title, text_body, cancel_text, submit_text, submit_function) {

@@ -12,26 +12,6 @@ I just need to place a settrace whereever
 1. There needs to be a dockerfile for the container that does this.
 
     ```RUN pip install pydevd-pycharm~=193.5233.109```
-    
-    There is currently a dockerfile for tactic_host and tactic_tile that has a conditional. So if I run:
-
-    **actually I don't think this conditional stuff works**
-
- ```
- RUN if [ "$debug" = "True" ]; \
-    then echo "*** Building for debug ***" && \
-         pip install pydevd-pycharm~=193.5233.109; \
-    else echo "*** Not building for debug ***"; \
-    fi
-```
-
-    ```docker-compose build --build-arg debug=True tactic_host```
-    
-    It will build a container that has pdevd installed. Just running:
-    
-    ```docker-compose build tactic_host```
-    
-    gets the normal container.
 
 2. Insert these lines somewhere near to where I want to debug. I also need to import pydevd_pycharm before monkey_patching.
 

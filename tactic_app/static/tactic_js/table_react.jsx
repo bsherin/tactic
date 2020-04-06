@@ -3,12 +3,13 @@
 import React from "react";
 import PropTypes from 'prop-types';
 
-import { Text, FormGroup, Spinner, InputGroup, ButtonGroup, Button, Card } from "@blueprintjs/core";
+import { Text, FormGroup, Spinner, InputGroup, ButtonGroup, Button, Card, Switch } from "@blueprintjs/core";
 
 import {GlyphButton} from "./blueprint_react_widgets.js";
 import {ReactCodemirror} from "./react-codemirror.js";
 import {BpSelect} from "./blueprint_mdata_fields.js";
 import {doBinding, propsAreEqual} from "./utilities_react.js";
+import {postWithCallback} from "./communication_react.js"
 
 export {MainTableCard, MainTableCardHeader, FreeformBody}
 
@@ -138,10 +139,12 @@ class MainTableCardHeader extends React.Component {
         // this.props.handleFilter(this.state.search_field_value);
         let self = this;
         const data_dict = {"text_to_find": this.props.search_text};
-        this.props.broadcast_event_to_server("UnfilterTable", data_dict, function () {
+        postWithCallback(window.main_id, "UnfilterTable", data_dict, function () {
             if (self.props.search_text !== "") {
-                self.props.broadcast_event_to_server("FilterTable", data_dict);
-                self.props.setMainStateValue("table_is_filtered", true)
+                postWithCallback(window.main_id, "FilterTable", data_dict);
+                self.props.setMainStateValue({"table_is_filtered": true,
+                    "selected_regions": null,
+                    "selected_row": null})
             }
         });
     }
@@ -149,10 +152,11 @@ class MainTableCardHeader extends React.Component {
     _handleUnFilter() {
         this.props.handleSearchFieldChange(null);
         if (this.props.table_is_filtered) {
-            this.props.broadcast_event_to_server("UnfilterTable", {});
-            this.props.setMainStateValue("table_is_filtered", false)
+            postWithCallback(window.main_id, "UnfilterTable", {selected_row: this.props.selected_row});
+            this.props.setMainStateValue({"table_is_filtered": false,
+                "selected_regions": null,
+                "selected_row": null})
         }
-
     }
 
     _handleSubmit(e) {
@@ -191,7 +195,13 @@ class MainTableCardHeader extends React.Component {
 
                 </div>
                 <div id="heading-right" ref={this.heading_right_ref} style={{opacity: heading_right_opacity}} className="d-flex flex-column justify-content-around">
-                    <form onSubmit={this._handleSubmit} className="d-flex flex-row">
+                    <form onSubmit={this._handleSubmit} style={{alignItems: "center"}} className="d-flex flex-row">
+                            <Switch label="edit"
+                                     className="mr-4 mb-0"
+                                    large={false}
+                                    checked={this.props.spreadsheet_mode}
+                                    onChange={this.props.handleSpreadsheetModeChange}
+                            />
                             <InputGroup type="search"
                                            leftIcon="search"
                                            placeholder="Search"
@@ -219,6 +229,7 @@ class MainTableCardHeader extends React.Component {
 
 MainTableCardHeader.propTypes = {
     toggleShrink: PropTypes.func,
+    selected_row: PropTypes.number,
     table_is_filtered: PropTypes.bool,
     setMainStateValue: PropTypes.func,
     handleSearchFieldChange: PropTypes.func,
@@ -227,6 +238,8 @@ MainTableCardHeader.propTypes = {
     short_collection_name: PropTypes.string,
     current_doc_name: PropTypes.string,
     handleChangeDoc: PropTypes.func,
+    spreadsheet_mode: PropTypes.bool,
+    handleSpreadsheetModeChange: PropTypes.func,
     doc_names: PropTypes.array,
     show_table_spinner: PropTypes.bool,
     show_filter_button: PropTypes.bool,
@@ -243,7 +256,6 @@ class MainTableCard extends React.Component {
         super(props);
         this.state = {
             mounted: false,
-            selected_row: null,
         };
         doBinding(this);
     }

@@ -45,7 +45,8 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                   "doc_dict", "project_name", "loaded_modules", "user_id",
                   "doc_type", "purgetiles"]
     notebook_save_attrs = ["project_name", "user_id", "doc_type"]
-    update_events = ["CellChange", "FreeformTextChange", "CreateColumn", "SearchTable", "SaveTableSpec", "MainClose",
+    update_events = ["CellChange", "FreeformTextChange", "CreateColumn", "DeleteColumn", "SearchTable",
+                     "SaveTableSpec", "MainClose",
                      "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell",
                      "FilterTable", "UnfilterTable", "TextSelect", "UpdateSortList", "UpdateLeftFraction",
                      "UpdateTableShrinkState", "UpdateHeaderListOrder", "HideColumnInAllDocs", "UpdateColumnWidths",
@@ -346,7 +347,6 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
     def _build_doc_dict(self):
         print("in _build_doc_dict")
         result = {}
-
         coll_dict, dm_dict, hl_dict, coll_mdata = self.get_all_collection_info(self.short_collection_name,
                                                                                return_lists=False)
         for fname in coll_dict.keys():

@@ -281,11 +281,24 @@ class ColumnMenu extends React.Component {
         this.props.moveColumn(this.props.selected_column, target_col);
     }
 
+    _shift_column_to_start() {
+        let cnum = this.props.filtered_column_names.indexOf(this.props.selected_column);
+        if (cnum == 0) return;
+        let target_col = this.props.filtered_column_names[0];
+        this.props.moveColumn(this.props.selected_column, target_col);
+    }
+
     _shift_column_right() {
         let cnum = this.props.table_spec.column_names.indexOf(this.props.selected_column);
         if (cnum == this.props.table_spec.column_names.length - 1) return;
         let target_col = this.props.table_spec.column_names[cnum + 2];
         this.props.moveColumn(this.props.selected_column, target_col);
+    }
+
+    _shift_column_to_end() {
+        let cnum = this.props.table_spec.column_names.indexOf(this.props.selected_column);
+        if (cnum == this.props.table_spec.column_names.length - 1) return;
+        this.props.moveColumn(this.props.selected_column, null);
     }
 
     get option_dict() {
@@ -296,7 +309,9 @@ class ColumnMenu extends React.Component {
             "Hide in All Docs": this.props.hideInAll,
             "Unhide All": this.props.unhideAllColumns,
             "Add Column": () => this.props.addColumn(false),
-            "Add Column In All Docs": () => this.props.addColumn(true)
+            "Add Column In All Docs": () => this.props.addColumn(true),
+            "Delete Column": () => this.props.deleteColumn(false),
+            "Delete Column In All Docs": () => this.props.deleteColumn(true)
         };
     }
 
@@ -308,7 +323,9 @@ class ColumnMenu extends React.Component {
             "Hide in All Docs": "eye-off",
             "Unhide All": "eye-on",
             "Add Column": "add-column-right",
-            "Add Column In All Docs": "add-column-right"
+            "Add Column In All Docs": "add-column-right",
+            "Delete Column": "remove-column",
+            "Delete Column In All Docs": "remove-column"
         };
     }
 
@@ -330,6 +347,7 @@ ColumnMenu.propTypes = {
     hideInAll: PropTypes.func,
     unhideAllColumns: PropTypes.func,
     addColumn: PropTypes.func,
+    deleteColumn: PropTypes.func,
     disabled_items: PropTypes.array
 };
 

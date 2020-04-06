@@ -280,8 +280,8 @@ class ConfirmDialog extends React.Component {
                 </div>
                 <div className={Classes.DIALOG_FOOTER}>
                     <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-                        <Button onClick={this._cancelHandler}>Cancel</Button>
-                        <Button intent={Intent.PRIMARY} onClick={this._submitHandler}>Submit</Button>
+                        <Button onClick={this._cancelHandler}>{this.props.cancel_text}</Button>
+                        <Button intent={Intent.PRIMARY} onClick={this._submitHandler}>{this.props.submit_text}</Button>
                     </div>
                 </div>
             </Dialog>
@@ -297,6 +297,11 @@ ConfirmDialog.propTypes = {
     submit_text: PropTypes.string,
     cancel_text: PropTypes.string,
 };
+
+ConfirmDialog.defaultProps = {
+    submit_text: "Submit",
+    cancel_text: "Cancel"
+}
 
 function showConfirmDialogReact(title, text_body, cancel_text, submit_text, submit_function) {
 

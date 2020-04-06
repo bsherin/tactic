@@ -1,3 +1,5 @@
+import document_object
+
 
 class DataAccessMixin:
     def gdn(self):
@@ -219,3 +221,46 @@ class DataAccessMixin:
         self._restore_stdout()
         return
 
+    def insert_row(self, docname, position, row_dict):  # tactic_working
+        def got_response(data):
+            document_object.Collection._reinitializeDoc(docname, number_rows + 1)
+        self._save_stdout()
+        number_rows = self.get_number_rows(docname)
+        self._tworker.post_task(self._main_id, "insert_row",
+                                {"document_name": docname, "index": position, "row_dict": row_dict},
+                                got_response)
+
+        self._restore_stdout()
+
+    def remove_document(self, docname):  # tactic_working
+        def got_response(data):
+            document_object.Collection.__fully_initialize__()
+            return
+        self._save_stdout()
+        self._tworker.post_task(self._main_id, "remove_document",
+                                {"document_name": docname},
+                                got_response)
+
+        self._restore_stdout()
+
+    def add_document(self, docname, column_names, dict_list):  # tactic_working
+        def got_response(data):
+            document_object.Collection.__fully_initialize__()
+            return
+        self._save_stdout()
+        self._tworker.post_task(self._main_id, "add_document",
+                                {"document_name": docname, "column_names": column_names, "dict_list": dict_list},
+                                got_response)
+
+        self._restore_stdout()
+
+    def add_freeform_document(self, docname, doc_text):  # tactic_working
+        def got_response(data):
+            document_object.Collection.__fully_initialize__()
+            return
+        self._save_stdout()
+        self._tworker.post_task(self._main_id, "add_freeform_document",
+                                {"document_name": docname, "doc_text": doc_text},
+                                got_response)
+
+        self._restore_stdout()
