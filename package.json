@@ -8,7 +8,7 @@
   "dependencies": {
     "@blueprintjs/core": "^3.22.3",
     "@blueprintjs/select": "latest",
-    "@blueprintjs/table": "latest",
+    "@blueprintjs/table": "^3.8.3",
     "amqplib": "^0.5.5",
     "lodash": "^4.17.15",
     "net": "^1.0.2",
