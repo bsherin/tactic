@@ -2,7 +2,6 @@ FROM tactic_base_image
 WORKDIR /code
 ADD ./main_container_env /code
 RUN pip install -r requirements.txt
-RUN pip install pydevd-pycharm~=193.5233.109
 MAINTAINER "Bruce L Sherin"
 ADD  ./volume_manager.py ./exception_mixin.py ./redis_tools.py ./qworker.py ./communication_utils.py \
 ./docker_functions.py ./mongo_accesser.py ./loaded_tile_management.py  ./rabbit_manage.py /code/
