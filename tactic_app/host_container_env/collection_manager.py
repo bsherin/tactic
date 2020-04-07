@@ -139,7 +139,7 @@ class CollectionManager(LibraryResourceManager):
         def as_text(value):
             if value is None:
                 return ""
-            return unicode(value)
+            return str(value)
         for column_cells in ws.columns:
             wrap = False
             length = max(len(as_text(cell.value)) for cell in column_cells) + 5
@@ -178,12 +178,12 @@ class CollectionManager(LibraryResourceManager):
             for r, _id in enumerate(sorted_int_keys, start=2):
                 row = data_rows[str(_id)]
                 for c, header in enumerate(header_list, start=1):
-                    val = re.sub(ILLEGAL_CHARACTERS_RE, " ", unicode(row[header]))
+                    val = re.sub(ILLEGAL_CHARACTERS_RE, " ", str(row[header]))
                     _ = ws.cell(row=r, column=c, value=val)
             self.adjust_ws_col_widths(ws, max_col_width)
             # noinspection PyUnresolvedReferences
         virtual_notebook = openpyxl.writer.excel.save_virtual_workbook(wb)
-        str_io = io.StringIO()
+        str_io = io.BytesIO()
         str_io.write(virtual_notebook)
         str_io.seek(0)
         return send_file(str_io,
