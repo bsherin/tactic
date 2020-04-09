@@ -66,7 +66,13 @@ class FreeformBody extends React.Component{
         }};
       }
 
-    _handleChange() {
+    _handleBlur(new_data_text) {  // tactic_working
+        postWithCallback(window.main_id, "add_freeform_document",
+            {document_name: this.props.document_name,
+                doc_text: new_data_text})
+    }
+
+    _handleChange(new_data_text) {
 
     }
 
@@ -75,25 +81,27 @@ class FreeformBody extends React.Component{
         this._doSearch();
         return (
             <div ref={this.props.my_ref}>
-                <ReactCodemirror handleChange={this._handleChange}
+                <ReactCodemirror handleBlur={this._handleBlur}
+                                 handleChange={null}
                                  code_content={this.props.data_text}
                                  sync_to_prop={true}
                                  mode="Plain Text"
                                  code_container_height={this.props.code_container_height}
                                  setCMObject={this._setCMObject}
-                                 readOnly={true}/>
+                                 readOnly={false}/>
             </div>
         )
     }
-
 }
 
 FreeformBody.propTypes = {
+    document_name: PropTypes.string,
     my_ref: PropTypes.object,
     data_text: PropTypes.string,
     code_container_height: PropTypes.number,
     search_text: PropTypes.string,
-    alt_search_text: PropTypes.string
+    alt_search_text: PropTypes.string,
+    setMainStateValue: PropTypes.func
 };
 
 

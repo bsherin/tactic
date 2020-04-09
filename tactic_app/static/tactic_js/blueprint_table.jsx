@@ -182,6 +182,14 @@ class BlueprintTable extends React.Component {
                         </Cell>
                     )
                 }
+                if (!self.props.spreadsheet_mode) {
+                    return (<Cell key={column_name}
+                                  truncated={true}
+                                  wrapText={true}>
+                            {the_text}
+                        </Cell>
+                    )
+                }
             }
             catch (e) {
                 console.log(e.message);
@@ -189,20 +197,18 @@ class BlueprintTable extends React.Component {
             }
             // Wrapping the contents of the cell in React.Fragment prevent React from
             // generating a warning for reasons that are mysterious
-            return (<EditableCell key={column_name}
-                                      truncated={true}
-                                      rowIndex={rowIndex}
-                                      columnIndex={this.props.filtered_column_names.indexOf(column_name)}
-                                      wrapText={true}
-                                      onConfirm={self._onConfirmCellEdit}
-                                      value={the_text}/>
+            return (<EnhancedEditableCell key={column_name}  // tactic_working
+                                          truncated={true}
+                                          rowIndex={rowIndex}
+                                          className="cell-class"
+                                          interactive={false}
+                                          columnIndex={this.props.filtered_column_names.indexOf(column_name)}
+                                          columnHeader={column_name}Fse
+                                          wrapText={true}
+                                          setCellContent={this.props.setCellContent}
+                                          value={the_text}/>
             )
         };
-    }
-
-    _onConfirmCellEdit(value, rowIndex, columnIndex) {
-        this.props.setCellContent(this.props.data_row_dict[rowIndex].__id__,
-            this.props.filtered_column_names[columnIndex], value, true)
     }
 
     _onSelection(regions) {
@@ -217,11 +223,13 @@ class BlueprintTable extends React.Component {
     }
 
     _setSelectedColumn(column_name) {
-        this.props.setMainStateValue("selected_column", column_name)
+        this.props.setMainStateValue({"selected_column": column_name, "selected_row": null})
     }
 
     _setSelectedRow(rowIndex) {
-        this.props.setMainStateValue("selected_row", this.props.data_row_dict[rowIndex].__id__)
+        this.props.setMainStateValue({"selected_row": this.props.data_row_dict[rowIndex].__id__,
+            "selected_column": null}
+        )
     }
 
     broadcast_column_widths(docname, cwidths) {
@@ -313,6 +321,50 @@ BlueprintTable.propTypes = {
     spreadsheet_mode: PropTypes.bool,
     alt_search_text: PropTypes.string
 };
+
+class EnhancedEditableCell extends React.Component {  // tactic_working
+
+    constructor(props) {
+        super(props);
+        doBinding(this);
+        this.cell_ref = React.createRef();
+        this.state = {am_editing: false, saved_text: ""}
+    }
+
+    _handleKeyDown(event) {
+        if (this.cell_ref && this.cell_ref.current) {
+            this.cell_ref.current.handleEdit();
+            this.setState({am_editing: true, saved_text: this.props.value})
+        }
+    }
+
+    _onChange(value, rowIndex, columnIndex) {
+        this.props.setCellContent(this.props.rowIndex, this.props.columnHeader, value, false)
+    }
+
+    _onCancel() {
+        this.props.setCellContent(this.props.rowIndex, this.props.columnHeader, this.saved_text, false);
+        this.setState({am_editing: false})
+    }
+
+    _onConfirmCellEdit(value, rowIndex, columnIndex) {
+        let self = this;
+        this.setState({am_editing: false}, ()=> {
+            self.props.setCellContent(this.props.rowIndex, this.props.columnHeader, value, true);
+        })
+    }
+
+    render() {
+
+        return (
+            <EditableCell ref={this.cell_ref}
+                          onConfirm={this._onConfirmCellEdit}
+                          onChange={this._onChange}
+                          onKeyDown={this.state.am_editing ? null : this._handleKeyDown}
+                          {...this.props}/>
+        )
+    }
+}
 
 function compute_added_column_width(header_text) {
     const max_field_width = MAX_INITIAL_CELL_WIDTH;

@@ -18,7 +18,7 @@ import { MainTableCard, MainTableCardHeader, FreeformBody } from "./table_react.
 import { BlueprintTable, compute_added_column_width } from "./blueprint_table.js";
 import { TacticSocket } from "./tactic_socket.js";
 import { HorizontalPanes, VerticalPanes } from "./resizing_layouts.js";
-import { ProjectMenu, ColumnMenu, ViewMenu, MenuComponent } from "./main_menus_react.js";
+import { ProjectMenu, DocumentMenu, ColumnMenu, RowMenu, ViewMenu, MenuComponent } from "./main_menus_react.js";
 import { TileContainer } from "./tile_react.js";
 import { ExportsViewer } from "./export_viewer_react.js";
 import { showModalReact, showSelectDialog } from "./modal_react.js";
@@ -472,6 +472,7 @@ class MainApp extends React.Component {
             refill_table: self._refill_table,
             dehighlightAllText: data => self._handleSearchFieldChange(null),
             highlightTxtInDocument: data => self._setAltSearchText(data.text_to_find),
+            updateNumberRows: data => self._updateNumberRows(data.doc_name, data.number_rows),
             setCellContent: data => self._setCellContent(data.row, data.column_header, data.new_content),
             colorTxtInCell: data => self._colorTextInCell(data.row_id, data.column_header, data.token_text, data.color_dict),
             setFreeformContent: data => self._setFreeformDoc(data.doc_name, data.new_content),
@@ -565,6 +566,29 @@ class MainApp extends React.Component {
 
     _unhideAllColumns() {
         this._updateTableSpec({ hidden_columns_list: ["__filename__"] }, true);
+    }
+
+    _deleteRow() {
+        // tactic_working
+        postWithCallback(window.main_id, "delete_row", { "document_name": this.state.table_spec.current_doc_name,
+            "index": this.state.selected_row
+        });
+    }
+
+    _insertRow(index) {
+        // tactic_working
+        postWithCallback(window.main_id, "insert_row", { "document_name": this.state.table_spec.current_doc_name,
+            "index": index,
+            "row_dict": {}
+        });
+    }
+
+    _duplicateRow() {
+        // tactic_working
+        postWithCallback(window.main_id, "insert_row", { "document_name": this.state.table_spec.current_doc_name,
+            "index": this.state.selected_row,
+            "row_dict": this.state.data_row_dict[this.state.selected_row]
+        });
     }
 
     _deleteColumn(delete_in_all = false) {
@@ -661,7 +685,8 @@ class MainApp extends React.Component {
         }
     }
 
-    _updateDocList(doc_names, visible_doc) { // tactic_working
+    _updateDocList(doc_names, visible_doc) {
+        // tactic_working
         let self = this;
         this.setState({ doc_names: doc_names }, () => {
             self._handleChangeDoc(visible_doc);
@@ -719,8 +744,12 @@ class MainApp extends React.Component {
             }
         }
         let disabled_column_items = [];
-        if (!this.state.selected_column) {
-            disabled_column_items = ["Shift Left", "Shift Right", "Hide", "Hide in All Docs"];
+        if (this.state.selected_column == null) {
+            disabled_column_items = ["Shift Left", "Shift Right", "Hide", "Hide in All Docs", "Delete Column", "Delete Column In All Docs"];
+        }
+        let disabled_row_items = [];
+        if (this.state.selected_row == null) {
+            disabled_row_items = ["Delete Row", "Insert Row Before", "Insert Row After", "Duplicate Row"];
         }
         let menus = React.createElement(
             React.Fragment,
@@ -733,6 +762,11 @@ class MainApp extends React.Component {
                 disabled_items: window.is_project ? [] : ["Save"],
                 hidden_items: ["Export as Jupyter Notebook"]
             })),
+            React.createElement(DocumentMenu, _extends({}, this.props.statusFuncs, {
+                documentNames: this.state.doc_names,
+                currentDoc: this.state.table_spec.current_doc_name
+
+            })),
             !window.is_freeform && React.createElement(ColumnMenu, _extends({}, this.props.statusFuncs, {
                 moveColumn: this._moveColumn,
                 table_spec: this.state.table_spec,
@@ -744,6 +778,18 @@ class MainApp extends React.Component {
                 unhideAllColumns: this._unhideAllColumns,
                 addColumn: this._addColumn,
                 deleteColumn: this._deleteColumn
+            })),
+            !window.is_freeform && React.createElement(RowMenu, _extends({}, this.props.statusFuncs, { // tactic_working
+                deleteRow: this._deleteRow,
+                insertRowBefore: () => {
+                    this._insertRow(this.state.selected_row);
+                },
+                insertRowAfter: () => {
+                    this._insertRow(this.state.selected_row + 1);
+                },
+                duplicateRow: this._duplicateRow,
+                selected_row: this.state.selected_row,
+                disabled_items: disabled_row_items
             })),
             React.createElement(ViewMenu, _extends({}, this.props.statusFuncs, {
                 table_is_shrunk: this.state.table_is_shrunk,
@@ -773,9 +819,11 @@ class MainApp extends React.Component {
         let card_body;
         if (window.is_freeform) {
             card_body = React.createElement(FreeformBody, { my_ref: this.tbody_ref,
+                document_name: this.state.table_spec.current_doc_name,
                 data_text: this.state.data_text,
                 code_container_height: this._getTableBodyHeight(table_available_height),
                 search_text: this.state.search_text,
+                setMainStateValue: this._setMainStateValue,
                 alt_search_text: this.state.alt_search_text
             });
         } else {

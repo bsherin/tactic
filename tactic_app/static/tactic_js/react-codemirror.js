@@ -17,6 +17,7 @@ class ReactCodemirror extends React.Component {
         }
 
         this.handleChange = this.handleChange.bind(this);
+        this.handleBlur = this.handleBlur.bind(this);
         this.mousetrap = new Mousetrap();
         this.create_api();
     }
@@ -46,11 +47,20 @@ class ReactCodemirror extends React.Component {
         cmobject.setOption("extraKeys", all_extra_keys);
         cmobject.setSize(null, "100%");
         cmobject.on("change", this.handleChange);
+        cmobject.on("blur", this.handleBlur);
         return cmobject;
     }
 
     handleChange(cm, changeObject) {
-        this.props.handleChange(cm.getDoc().getValue());
+        if (this.props.handleChange) {
+            this.props.handleChange(cm.getDoc().getValue());
+        }
+    }
+
+    handleBlur(cm, changeObject) {
+        if (this.props.handleBlur) {
+            this.props.handleBlur(cm.getDoc().getValue());
+        }
     }
 
     componentDidMount() {
@@ -159,6 +169,7 @@ class ReactCodemirror extends React.Component {
 
 ReactCodemirror.propTypes = {
     handleChange: PropTypes.func,
+    handleBlur: PropTypes.func,
     code_content: PropTypes.string,
     sync_to_prop: PropTypes.bool,
     mode: PropTypes.string,
@@ -175,6 +186,8 @@ ReactCodemirror.propTypes = {
 ReactCodemirror.defaultProps = {
     first_line_number: 1,
     code_container_height: "100%",
+    handleChange: null,
+    handleBlur: null,
     sync_to_prop: false,
     mode: "python",
     readOnly: false,

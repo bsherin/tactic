@@ -9,7 +9,7 @@ from qworker import task_worthy_methods, task_worthy_manual_submit_methods
 from communication_utils import make_python_object_jsonizable, debinarize_python_object, store_temp_data
 from communication_utils import make_jsonizable_and_compress, read_project_dict
 import docker_functions
-from mongo_accesser import bytes_to_string
+from mongo_accesser import bytes_to_string, NameExistsError
 from doc_info import docInfo, FreeformDocInfo
 
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
@@ -1387,83 +1387,192 @@ class ConsoleTasksMixin:
 class DataSupportTasksMixin:
 
     @task_worthy
-    def insert_row(self, data):
-        doc_name = data["document_name"]
-        index = data["index"]
-        row_dict = data["row_dict"]
+    def delete_row(self, data):  # tactic_working
+        try:
+            doc_name = data["document_name"]
+            index = data["index"]
+            dinfo = self.doc_dict[doc_name]
+            drows = copy.deepcopy(dinfo.all_sorted_data_rows)
+            del drows[index]
+            doc_as_dict = {}
+            for r, the_row in enumerate(drows):
+                the_row["__id__"] = r
+                doc_as_dict[str(r)] = the_row
+            dinfo.data_rows = doc_as_dict
+            dinfo.metadata["number_of_rows"] = len(drows)
+            self.UnfilterTable({})
+            return {"success": True}
+        except Exception as ex:
+            error_string = self.handle_exception(ex, print_to_console=True)
+            return {"success": False, "message": error_string}
 
-        dinfo = self.doc_dict[doc_name]
-        fixed_row_dict = {}
-        for cname in dinfo.table_spec.header_list:
-            if cname in row_dict:
-                fixed_row_dict[cname] = row_dict[cname]
-            else:
-                fixed_row_dict[cname] = ""
+    @task_worthy
+    def insert_row(self, data):  # tactic_working
+        try:
+            doc_name = data["document_name"]
+            index = data["index"]
+            row_dict = data["row_dict"]
 
-        drows = copy.deepcopy(dinfo.all_sorted_data_rows)
-        drows.insert(index, fixed_row_dict)
-        doc_as_dict = {}
-        for r, the_row in enumerate(drows):
-            the_row.pop("__id__", None)
-            the_row.pop("__filename__", None)
-            the_row["__id__"] = r
-            the_row["__filename__"] = doc_name
-            doc_as_dict[str(r)] = the_row
-        dinfo.data_rows = doc_as_dict
-        data = {"doc_name": doc_name,
-                "row_id": index}
-        self.mworker.ask_host('go_to_row_in_document', data)
+            dinfo = self.doc_dict[doc_name]
+            fixed_row_dict = {}
+            for cname in dinfo.table_spec.header_list:
+                if cname in row_dict:
+                    fixed_row_dict[cname] = row_dict[cname]
+                else:
+                    fixed_row_dict[cname] = ""
+
+            drows = copy.deepcopy(dinfo.all_sorted_data_rows)
+            drows.insert(index, fixed_row_dict)
+            doc_as_dict = {}
+            for r, the_row in enumerate(drows):
+                the_row.pop("__id__", None)
+                the_row.pop("__filename__", None)
+                the_row["__id__"] = r
+                the_row["__filename__"] = doc_name
+                doc_as_dict[str(r)] = the_row
+            dinfo.data_rows = doc_as_dict
+            dinfo.metadata["number_of_rows"] = len(drows)
+            self.UnfilterTable({})
+            return {"success": True}
+        except Exception as ex:
+            error_string = self.handle_exception(ex, print_to_console=True)
+            return {"success": False, "message": error_string}
+
+    @task_worthy
+    def duplicate_document(self, data):  # tactic_working
+        try:
+            new_doc_name = data["new_document_name"]
+            original_doc_name = data["original_document_name"]
+            dinfo = copy.deepcopy(self.doc_dict[original_doc_name])
+            self.visible_doc_name = new_doc_name
+            self.doc_dict[new_doc_name] = dinfo
+            self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
+            doc_names = list(self.doc_dict.keys())
+            doc_names.sort()
+            self.mworker.emit_table_message("updateDocList", {"doc_names": doc_names,
+                                                              "visible_doc": new_doc_name})
+            return {"success": True}
+        except Exception as ex:
+            error_string = self.handle_exception(ex, print_to_console=True)
+            return {"success": False, "message": error_string}
+
+    @task_worthy
+    def new_blank_document(self, data):  # tactic_working
+        try:
+            new_doc_name = data["new_document_name"]
+            model_doc_name = data["model_document_name"]
+            model_dinfo = self.doc_dict[model_doc_name]
+            header_list = model_dinfo.table_spec.header_list
+            doc_as_dict = {}
+            the_row = {}
+            for h in header_list:
+                the_row[h] = ""
+            the_row["__id__"] = 0
+            the_row["__filename__"] = new_doc_name
+            doc_as_dict["0"] = the_row
+
+            dinfo = docInfo(new_doc_name, header_list, {}, doc_as_dict)
+            self.doc_dict[new_doc_name] = dinfo
+            self.visible_doc_name = new_doc_name
+            self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
+            doc_names = list(self.doc_dict.keys())
+            doc_names.sort()
+            self.mworker.emit_table_message("updateDocList", {"doc_names": doc_names,
+                                                              "visible_doc": new_doc_name})
+            return {"success": True}
+        except Exception as ex:
+            error_string = self.handle_exception(ex, print_to_console=True)
+            return {"success": False, "message": error_string}
 
     @task_worthy
     def add_document(self, data):  # tactic_working
-        new_doc_name = data["document_name"]
-        header_list = data["column_names"]
-        dict_list = data["dict_list"]
-        doc_as_dict = {}
-        for r, the_row in enumerate(dict_list):
-            the_row.pop("__id__", None)
-            the_row.pop("__filename__", None)
-            the_row["__id__"] = r
-            the_row["__filename__"] = new_doc_name
-            doc_as_dict[str(r)] = the_row
-        if "__filename__" not in header_list:
-            header_list = ["__filename__"] + header_list
-        if "__id__" not in header_list:
-            header_list = ["__id__"] + header_list
-        dinfo = docInfo(new_doc_name, header_list, {}, doc_as_dict)
-        self.visible_doc_name = new_doc_name
-        self.doc_dict[new_doc_name] = dinfo
-        self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
-        doc_names = list(self.doc_dict.keys())
-        doc_names.sort()
-        self.mworker.emit_table_message("updateDocList", {"doc_names": doc_names,
-                                                          "visible_doc": new_doc_name})
-        return
+        try:
+            new_doc_name = data["document_name"]
+            header_list = data["column_names"]
+            dict_list = data["dict_list"]
+            doc_as_dict = {}
+            for r, the_row in enumerate(dict_list):
+                the_row.pop("__id__", None)
+                the_row.pop("__filename__", None)
+                the_row["__id__"] = r
+                the_row["__filename__"] = new_doc_name
+                doc_as_dict[str(r)] = the_row
+            if "__filename__" not in header_list:
+                header_list = ["__filename__"] + header_list
+            if "__id__" not in header_list:
+                header_list = ["__id__"] + header_list
+            dinfo = docInfo(new_doc_name, header_list, {}, doc_as_dict)
+            self.visible_doc_name = new_doc_name
+            self.doc_dict[new_doc_name] = dinfo
+            self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
+            doc_names = list(self.doc_dict.keys())
+            doc_names.sort()
+            self.mworker.emit_table_message("updateDocList", {"doc_names": doc_names,
+                                                              "visible_doc": new_doc_name})
+            return {"success": True}
+        except Exception as ex:
+            error_string = self.handle_exception(ex, print_to_console=True)
+            return {"success": False, "message": error_string}
 
     @task_worthy
     def add_freeform_document(self, data):  # tactic_working
-        new_doc_name = data["document_name"]
-        doc_text = data["doc_text"]
-        dinfo = FreeformDocInfo(new_doc_name, {}, doc_text)
-        self.visible_doc_name = new_doc_name
-        self.doc_dict[new_doc_name] = dinfo
-        self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
-        doc_names = list(self.doc_dict.keys())
-        doc_names.sort()
-        self.mworker.emit_table_message("updateDocList", {"doc_names": doc_names,
-                                                          "visible_doc": new_doc_name})
+        try:
+            new_doc_name = data["document_name"]
+            doc_text = data["doc_text"]
+            dinfo = FreeformDocInfo(new_doc_name, {}, doc_text)
+            self.visible_doc_name = new_doc_name
+            self.doc_dict[new_doc_name] = dinfo
+            self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
+            doc_names = list(self.doc_dict.keys())
+            doc_names.sort()
+            self.mworker.emit_table_message("updateDocList", {"doc_names": doc_names,
+                                                              "visible_doc": new_doc_name})
+            return {"success": True}
+        except Exception as ex:
+            error_string = self.handle_exception(ex, print_to_console=True)
+            return {"success": False, "message": error_string}
 
     @task_worthy
     def remove_document(self, data):  # tactic_working
-        doc_name = data["document_name"]
-        del self.doc_dict[doc_name]
-        self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
-        doc_names = list(self.doc_dict.keys())
-        doc_names.sort()
-        if self.visible_doc_name == doc_name:
-            self.visible_doc_name = doc_names[0]
-        self.mworker.emit_table_message("updateDocList", {"doc_names": doc_names,
-                                                          "visible_doc": self.visible_doc_name})
+        try:
+            doc_name = data["document_name"]
+            del self.doc_dict[doc_name]
+            # self.mworker.post_and_wait(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
+            doc_names = list(self.doc_dict.keys())
+            doc_names.sort()
+            if self.visible_doc_name == doc_name:
+                self.visible_doc_name = doc_names[0]
+            self.rebuild_tile_forms_task({})
+            self.mworker.emit_table_message("updateDocList", {"doc_names": doc_names,
+                                                              "visible_doc": self.visible_doc_name})
+            return {"success": True}
+        except Exception as ex:
+            error_string = self.handle_exception(ex, print_to_console=True)
+            return {"success": False, "message": error_string}
+
+    @task_worthy
+    def rename_document(self, data):  # tactic_working
+        try:
+            oldname = data["old_document_name"]
+            newname = data["new_document_name"]
+            name_exists = newname in self.doc_dict
+            if name_exists:
+                raise NameExistsError("Collection name {} already exists".format(newname))
+            dinfo = self.doc_dict[oldname]
+            dinfo.table_spec.doc_name = newname
+            del self.doc_dict[oldname]
+            self.doc_dict[newname] = dinfo
+            self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
+            doc_names = list(self.doc_dict.keys())
+            doc_names.sort()
+            if self.visible_doc_name == oldname:
+                self.visible_doc_name = newname
+            self.mworker.emit_table_message("updateDocList", {"doc_names": doc_names,
+                                                              "visible_doc": self.visible_doc_name})
+            return {"success": True, "message": "Successfully renamed document to " + str(newname)}
+        except Exception as ex:
+            error_string = self.handle_exception(ex, print_to_console=True)
+            return {"success": False, "message": error_string}
 
     def grab_chunk(self, doc_name, row_index):
         chunk_number = int(int(row_index) / CHUNK_SIZE)

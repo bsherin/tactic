@@ -597,12 +597,15 @@ class TacticDocument:
         self._iter_value = -1
 
     def insert(self, position, dict_or_element=None):  # tactic_working
-        if isinstance(element, DetachedTacticRow):
+        if isinstance(dict_or_element, DetachedTacticRow):
             rdict = dict_or_element.row_dict
         else:
             rdict = dict_or_element
         _tworker.tile_instance.insert_row(self.name, position, rdict)
         return
+
+    def __delitem__(self, rownum):  # tactic_working
+        _tworker.tile_instance.delete_row(self.name, rownum)
 
     def __next__(self):
         self._iter_value += 1
