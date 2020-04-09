@@ -62,7 +62,13 @@ class FreeformBody extends React.Component {
             } };
     }
 
-    _handleChange() {}
+    _handleBlur(new_data_text) {
+        // tactic_working
+        postWithCallback(window.main_id, "add_freeform_document", { document_name: this.props.document_name,
+            doc_text: new_data_text });
+    }
+
+    _handleChange(new_data_text) {}
 
     render() {
         this._clearSearch();
@@ -70,24 +76,26 @@ class FreeformBody extends React.Component {
         return React.createElement(
             "div",
             { ref: this.props.my_ref },
-            React.createElement(ReactCodemirror, { handleChange: this._handleChange,
+            React.createElement(ReactCodemirror, { handleBlur: this._handleBlur,
+                handleChange: null,
                 code_content: this.props.data_text,
                 sync_to_prop: true,
                 mode: "Plain Text",
                 code_container_height: this.props.code_container_height,
                 setCMObject: this._setCMObject,
-                readOnly: true })
+                readOnly: false })
         );
     }
-
 }
 
 FreeformBody.propTypes = {
+    document_name: PropTypes.string,
     my_ref: PropTypes.object,
     data_text: PropTypes.string,
     code_container_height: PropTypes.number,
     search_text: PropTypes.string,
-    alt_search_text: PropTypes.string
+    alt_search_text: PropTypes.string,
+    setMainStateValue: PropTypes.func
 };
 
 function SmallSpinner() {

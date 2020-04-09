@@ -10,7 +10,7 @@ import { postWithCallback } from "./communication_react.js";
 import { doFlash } from "./toaster.js";
 import { doBinding } from "./utilities_react.js";
 
-export { ProjectMenu, ColumnMenu, ViewMenu, MenuComponent };
+export { ProjectMenu, DocumentMenu, ColumnMenu, RowMenu, ViewMenu, MenuComponent };
 
 class MenuComponent extends React.Component {
     constructor(props) {
@@ -268,6 +268,94 @@ ProjectMenu.propTypes = {
     hidden_items: PropTypes.array
 };
 
+class DocumentMenu extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this);
+    }
+
+    _newDocument() {
+        this.props.startSpinner();
+        let self = this;
+        showModalReact("New Document", "New Document Name", doNew, this.props.currentDoc, this.props.documentNames, null, doCancel);
+
+        function doCancel() {
+            self.props.stopSpinner();
+        }
+
+        function doNew(new_name) {
+            postWithCallback(window.main_id, "new_blank_document", { model_document_name: self.props.currentDoc,
+                new_document_name: new_name }, result => {
+                self.props.stopSpinner();
+            });
+        }
+    }
+
+    _duplicateDocument() {
+        this.props.startSpinner();
+        let self = this;
+        showModalReact("Duplicate Document", "New Document Name", doDuplicate, this.props.currentDoc, this.props.documentNames, null, doCancel);
+
+        function doCancel() {
+            self.props.stopSpinner();
+        }
+
+        function doDuplicate(new_name) {
+            postWithCallback(window.main_id, "duplicate_document", { original_document_name: self.props.currentDoc,
+                new_document_name: new_name }, result => {
+                self.props.stopSpinner();
+            });
+        }
+    }
+
+    _renameDocument() {
+        this.props.startSpinner();
+        let self = this;
+        showModalReact("Rename Document", "New Document Name", doRename, this.props.currentDoc, this.props.documentNames, null, doCancel);
+
+        function doCancel() {
+            self.props.stopSpinner();
+        }
+
+        function doRename(new_name) {
+            postWithCallback(window.main_id, "rename_document", { old_document_name: self.props.currentDoc,
+                new_document_name: new_name }, result => {
+                self.props.stopSpinner();
+            });
+        }
+    }
+
+    get option_dict() {
+        return {
+
+            "New": this._newDocument,
+            "Duplicate": this._duplicateDocument,
+            "Rename": this._renameDocument
+        };
+    }
+
+    get icon_dict() {
+        return {
+            "New": "document",
+            "Duplicate": "duplicate",
+            "Rename": "edit"
+        };
+    }
+
+    render() {
+        return React.createElement(MenuComponent, { menu_name: "Document",
+            option_dict: this.option_dict,
+            icon_dict: this.icon_dict,
+            disabled_items: this.props.disabled_items,
+            hidden_items: []
+        });
+    }
+}
+DocumentMenu.propTypes = {
+    documentNames: PropTypes.array,
+    currentDoc: PropTypes.string
+};
+
 class ColumnMenu extends React.Component {
     constructor(props) {
         super(props);
@@ -305,6 +393,8 @@ class ColumnMenu extends React.Component {
         return {
             "Shift Left": this._shift_column_left,
             "Shift Right": this._shift_column_right,
+            "Shift to Start": this._shift_column_to_start,
+            "Shift to End": this._shift_column_to_end,
             "Hide": this.props.hideColumn,
             "Hide in All Docs": this.props.hideInAll,
             "Unhide All": this.props.unhideAllColumns,
@@ -319,6 +409,8 @@ class ColumnMenu extends React.Component {
         return {
             "Shift Left": "direction-left",
             "Shift Right": "direction-right",
+            "Shift to Start": "double-chevron-left",
+            "Shift to End": "double-chevron-right",
             "Hide": "eye-off",
             "Hide in All Docs": "eye-off",
             "Unhide All": "eye-on",
@@ -348,6 +440,49 @@ ColumnMenu.propTypes = {
     unhideAllColumns: PropTypes.func,
     addColumn: PropTypes.func,
     deleteColumn: PropTypes.func,
+    disabled_items: PropTypes.array
+};
+
+class RowMenu extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this);
+    }
+
+    get option_dict() {
+        return {
+
+            "Insert Row Before": this.props.insertRowBefore,
+            "Insert Row After": this.props.insertRowAfter,
+            "Duplicate Row": this.props.duplicateRow,
+            "Delete Row": this.props.deleteRow
+        };
+    }
+
+    get icon_dict() {
+        return {
+            "Insert Row Before": "add-row-top",
+            "Insert Row After": "add-row-bottom",
+            "Duplicate Row": "add-row-bottom",
+            "Delete Row": "remove-row-bottom"
+        };
+    }
+
+    render() {
+        return React.createElement(MenuComponent, { menu_name: "Row",
+            option_dict: this.option_dict,
+            icon_dict: this.icon_dict,
+            disabled_items: this.props.disabled_items,
+            hidden_items: []
+        });
+    }
+}
+RowMenu.propTypes = {
+    selected_row: PropTypes.number,
+    deleteRow: PropTypes.func,
+    insertRowBefore: PropTypes.func,
+    insertRowAfter: PropTypes.func,
+    duplicateRow: PropTypes.func,
     disabled_items: PropTypes.array
 };
 

@@ -222,45 +222,75 @@ class DataAccessMixin:
         return
 
     def insert_row(self, docname, position, row_dict):  # tactic_working
-        def got_response(data):
-            document_object.Collection._reinitializeDoc(docname, number_rows + 1)
         self._save_stdout()
         number_rows = self.get_number_rows(docname)
-        self._tworker.post_task(self._main_id, "insert_row",
-                                {"document_name": docname, "index": position, "row_dict": row_dict},
-                                got_response)
+        result = self._tworker.post_and_wait(self._main_id, "insert_row",
+                                             {"document_name": docname, "index": position, "row_dict": row_dict})
 
+        if not result["success"]:
+            self._restore_stdout()
+            raise Exception(result["message"])
+        document_object.Collection._reinitializeDoc(docname, number_rows + 1)
         self._restore_stdout()
+        return
+
+    def delete_row(self, docname, position):  # tactic_working
+        self._save_stdout()
+        number_rows = self.get_number_rows(docname)
+        result = self._tworker.post_and_wait(self._main_id, "delete_row",
+                                             {"document_name": docname, "index": position})
+
+        if not result["success"]:
+            self._restore_stdout()
+            raise Exception(result["message"])
+        document_object.Collection._reinitializeDoc(docname, number_rows - 1)
+        self._restore_stdout()
+        return
 
     def remove_document(self, docname):  # tactic_working
-        def got_response(data):
-            document_object.Collection.__fully_initialize__()
-            return
         self._save_stdout()
-        self._tworker.post_task(self._main_id, "remove_document",
-                                {"document_name": docname},
-                                got_response)
+        result = self._tworker.post_and_wait(self._main_id, "remove_document",
+                                             {"document_name": docname})
 
+        if not result["success"]:
+            self._restore_stdout()
+            raise Exception(result["message"])
+        document_object.Collection.__fully_initialize__()
         self._restore_stdout()
+        return
+
+    def rename_document(self, oldname, newname):  # tactic_working
+        self._save_stdout()
+        result = self._tworker.post_and_wait(self._main_id, "rename_document",
+                                             {"old_document_name": oldname,
+                                              "new_document_name": newname})
+        if not result["success"]:
+            self._restore_stdout()
+            raise Exception(result["message"])
+        document_object.Collection.__fully_initialize__()
+        self._restore_stdout()
+        return result["message"]
 
     def add_document(self, docname, column_names, dict_list):  # tactic_working
-        def got_response(data):
-            document_object.Collection.__fully_initialize__()
-            return
         self._save_stdout()
-        self._tworker.post_task(self._main_id, "add_document",
-                                {"document_name": docname, "column_names": column_names, "dict_list": dict_list},
-                                got_response)
+        result = self._tworker.post_and_wait(self._main_id, "add_document",
+                                             {"document_name": docname, "column_names": column_names, "dict_list": dict_list})
 
+        if not result["success"]:
+            self._restore_stdout()
+            raise Exception(result["message"])
+        document_object.Collection.__fully_initialize__()
         self._restore_stdout()
+        return
 
     def add_freeform_document(self, docname, doc_text):  # tactic_working
-        def got_response(data):
-            document_object.Collection.__fully_initialize__()
-            return
         self._save_stdout()
-        self._tworker.post_task(self._main_id, "add_freeform_document",
-                                {"document_name": docname, "doc_text": doc_text},
-                                got_response)
+        result = self._tworker.post_and_wait(self._main_id, "add_freeform_document",
+                                             {"document_name": docname, "doc_text": doc_text})
 
+        if not result["success"]:
+            self._restore_stdout()
+            raise Exception(result["message"])
+        document_object.Collection.__fully_initialize__()
         self._restore_stdout()
+        return
