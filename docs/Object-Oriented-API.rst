@@ -20,12 +20,13 @@ Accessing and manipulating the collection
 
     .. code-block:: python
 
-        my_col = self.collection
-        doc = my_col["doc_name"]  # Get the document named doc_name
-        for doc in my_col:  # iterate of over documents in the collection
+        doc = Collection["doc_name"]  # Get the document named doc_name
+        for doc in Collection:  # iterate of over documents in the collection
             print(doc.name)
 
-        len(my_col)  # returns the number of documents in the collection
+        len(Collection)  # returns the number of documents in the collection
+        Collection[docname] = detached_doc  # adds or replaces a document to the collection
+        del Collection[docname]  # deletes the document from the collection
 
     .. py:attribute:: document_names
 
@@ -74,6 +75,7 @@ Accessing and manipulating the collection
         doc[3]  # Gets the third row in the document as a TacticRow
         doc[3] = new_row  # new_row can be either a dict or a TacticRow
         doc[3:5]  # Gets the third and fourth rows
+        del doc[3]  # Deletes the third row
         len(doc)  # Returns the number of rows
 
     It is possible to change a row in the document by assigning it to a new value.
@@ -100,6 +102,12 @@ Accessing and manipulating the collection
     .. py:attribute:: df
 
         Returns the document as a pandas DataFrame.
+
+
+    .. py:method:: insert(index, detached_row_or_row_dict)
+
+        Inserts a new row at the specified index. The new row can either be a
+        :py:class:`DetachedTacticRow` or a dict.
 
     .. py:method:: column(column_name)
 
