@@ -160,6 +160,33 @@ Data Setting
 
         Synonym: ``sc``
 
+    .. py:function:: add_document(document_name, column_names, list_of_dicts)
+
+        Adds a new table document to the collection. **list_of_dicts** is a list of dictionaries
+        corresponding to the rows in the new document. Note that if the name of an existing
+        document is given that document is overwritten.
+
+    .. py:function:: remove_document(document_name)
+
+        Removes a document from the collection.
+
+    .. py:function:: add_freeform_document(document_name, doc_text)
+
+        Adds a new freeform document to the collection. Note that if the name of an existing
+        document is given that document is overwritten.
+
+    .. py:function:: insert_row(document_name, index, row_as_dict)
+
+        Insert a new row in a document at the specified index.
+
+    .. py:function:: delete_row(document_name, index)
+
+        Delete a row from a document.
+
+    .. py:function:: rename_document(old name, newname)
+
+        Rename a document in the collection.
+
     .. py:method:: set_document(document_name, new_data, cellchange=False)
 
         This is a general utility for setting document data. For table documents, **new_data**
