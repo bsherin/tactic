@@ -6,6 +6,7 @@ from bson.binary import Binary
 from matplotlib_utilities import MplFigure, color_palette_names, ColorMapper
 # from types import NoneType
 import os
+import traceback
 import pickle
 from pickle import UnpicklingError
 from communication_utils import is_jsonizable, make_python_object_jsonizable, debinarize_python_object
@@ -757,8 +758,10 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         error_string = self.get_traceback_message(ex, special_string)
         self._tworker.debug_log(error_string)
         summary = "Exception of type {}".format(type(ex).__name__)
+        tb = ex.__traceback__
+        line_number = traceback.extract_tb(tb)[-1].lineno
         if print_to_console:
-            self._tworker.send_error_entry(summary, error_string)
+            self._tworker.send_error_entry(summary, error_string, line_number)
         return error_string
 
     def _refresh_from_save(self):

@@ -64,10 +64,13 @@ class TileWorker(QWorker):
     def emit_to_client(self, message, data):
         emit_direct(message, data, namespace="/main", room=self.tile_instance._main_id)
 
-    def send_error_entry(self, title, content):
+    def send_error_entry(self, title, content, line_number):
         data = {"message": "add-error-drawer-entry",
                 "title": title,
-                "content": content}
+                "content": content,
+                "line_number": line_number,
+                "tile_type": self.tile_instance.tile_type
+                }
         self.emit_to_client("add-error-drawer-entry", data)
         return {"success": True}
 

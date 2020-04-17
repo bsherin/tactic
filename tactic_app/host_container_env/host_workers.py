@@ -8,6 +8,7 @@ import pika
 from communication_utils import make_python_object_jsonizable
 from docker_functions import create_container, destroy_container, destroy_child_containers, destroy_user_containers
 from docker_functions import get_log, ContainerCreateError, container_exec, restart_container, get_address
+from docker_functions import get_matching_user_containers
 from tactic_app import app, socketio, db
 from library_views import tile_manager, project_manager, collection_manager, list_manager
 from library_views import code_manager
@@ -248,6 +249,17 @@ class HostWorker(QWorker):
     def destroy_a_users_containers(self, data):
         destroy_user_containers(data["user_id"])
         return {"success": True}
+
+    @task_worthy
+    def go_to_module_viewer_if_exists(self, data):
+        user_id = data["user_id"]
+        tile_type = data["tile_type"]
+        matching_ids = get_matching_user_containers(user_id, "module_viewer_image", tile_type)
+        if len(matching_ids) == 0:
+            return {"success": False}
+        else:
+            socketio.emit("focus-me", {"line_number": data["line_number"]}, namespace='/main', room=matching_ids[0])
+            return {"success": True, "window_name": matching_ids[0]}
 
     @task_worthy
     def remove_mainwindow_task(self, data):

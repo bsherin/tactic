@@ -40,6 +40,7 @@ if restart_rabbit:
 host_persist_dir = os.getcwd() + "/persist"
 host_nltk_data_dir = os.getcwd() + "/tactic_app/nltk_data"
 host_static_dir = os.getcwd() + "/tactic_app/static"
+host_docs_dir = os.getcwd() + "/docs"
 
 restart_policy = {"Name": "on-failure", "MaximumRetryCount": 5}
 
@@ -131,6 +132,7 @@ def create_host(port=5000, debug=False):
         host_volume_dict = {"/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "rw"}}
         host_volume_dict[host_persist_dir] = {"bind": "/code/persist", "mode": "rw"}
         host_volume_dict[host_static_dir] = {"bind": "/code/static", "mode": "ro"}
+        host_volume_dict[host_docs_dir] = {"bind": "/code/docs", "mode": "ro"}
         env_vars = {"AM_TACTIC_HOST": True, "MYPORT": port}
         if debug:
             env_vars["DEBUG_CONTAINER"] = True

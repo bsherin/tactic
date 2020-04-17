@@ -1,6 +1,7 @@
 import requests, markdown
 import re, os
 
+
 def get_api_from_rst():
     f = open("./docs/Tile-Commands.rst")
     txt = f.read()
@@ -26,6 +27,7 @@ def get_api_html(ar):
             result += "<button class='accordion btn btn-info'>{}</button>\n<div class='accordion-panel'><p>{}</p></div>\n".format(entry[0], entry[1])
     return result
 
+
 def create_api_dict_by_category(api_array):
     result = {}
     ordered_categories = []
@@ -38,6 +40,7 @@ def create_api_dict_by_category(api_array):
         result[cat_array[0]] = revised_cat_list
         ordered_categories.append(cat_array[0])
     return result, ordered_categories
+
 
 def create_api_dict_by_name(api_dict_by_category):
     result = {}

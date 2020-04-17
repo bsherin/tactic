@@ -203,7 +203,7 @@ class BlueprintTable extends React.Component {
                                           className="cell-class"
                                           interactive={false}
                                           columnIndex={this.props.filtered_column_names.indexOf(column_name)}
-                                          columnHeader={column_name}Fse
+                                          columnHeader={column_name}
                                           wrapText={true}
                                           setCellContent={this.props.setCellContent}
                                           value={the_text}/>
