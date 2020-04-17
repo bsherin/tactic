@@ -28,6 +28,7 @@ const BOTTOM_MARGIN = 50;
 const MARGIN_SIZE = 17;
 
 window.main_id = window.module_viewer_id; // This matters for communication_react
+window.name = window.module_viewer_id;
 
 
 let tsocket;
@@ -42,8 +43,8 @@ window.addEventListener("unload", function sendRemove() {
 
 class CreatorViewerSocket extends TacticSocket {
     initialize_socket_stuff () {
-        this.socket.emit('join', {"room": user_id});
-        this.socket.emit('join-main', {"room": window.module_viewer_id, "user_id": user_id});
+        this.socket.emit('join', {"room": window.user_id});
+        this.socket.emit('join-main', {"room": window.module_viewer_id, "user_id": window.user_id});
         this.socket.on('handle-callback', handleCallback);
         this.socket.on('close-user-windows', (data) => {
             if (!(data["originator"] == window.module_viewer_id)) {
@@ -86,6 +87,7 @@ function got_parsed_data (data_object) {
                                         render_content_line_number={parsed_data.render_content_line_number}
                                         extra_methods_line_number={parsed_data.extra_methods_line_number}
                                         draw_plot_line_number={parsed_data.draw_plot_line_number}
+                                        initial_line_number={window.line_number}
                                         category={category}
                                         extra_functions={parsed_data.extra_functions}
                                         draw_plot_code={parsed_data.draw_plot_code}
@@ -136,6 +138,10 @@ class CreatorApp extends React.Component {
         this.methods_ref = React.createRef();
         this.draw_plot_bounding_ref = React.createRef();
         this.last_save = {};
+        this.dpObject = null;
+        this.rcObject = null;
+        this.emObject = null;
+        this.line_number = this.props.initial_line_number;
         this.state = {
             tile_name: this.props.tile_name,
             foregrounded_panes: {
@@ -157,6 +163,7 @@ class CreatorApp extends React.Component {
             export_list: this.props.export_list,
             category: this.props.category,
             total_height: window.innerHeight,
+            selectedTabId: "metadata",
             usable_width: awidth,
             old_usable_width: 0,
             usable_height: aheight,
@@ -219,9 +226,14 @@ class CreatorApp extends React.Component {
         doFlash(data)
     }
 
-    _logErrorStopSpinner(content, title=null, open=true) {
+    _selectLineNumber(lnumber) {
+        this.line_number = lnumber;
+        this._goToLineNumber()
+    }
+
+    _logErrorStopSpinner(content, title=null, open=true, line_number=null) {
         this.props.stopSpinner();
-        this.props.addErrorDrawerEntry({title: title, content: content});
+        this.props.addErrorDrawerEntry({title: title, content: content, line_number: line_number}, true);
         if (open) {
             this.props.openErrorDrawer();
         }
@@ -246,7 +258,7 @@ class CreatorApp extends React.Component {
                 self.props.statusMessage("Loading Module");
                 postWithCallback("host", "load_tile_module_task", {"tile_module_name": self.state.tile_name, "user_id": user_id}, load_success)
             })
-            .catch((data)=>{self._logErrorStopSpinner(data.message, "Error loading module")});
+            .catch((data)=>{self._logErrorStopSpinner(data.message, "Error loading module", true, data.line_number)});
 
         function load_success(data) {
             if (data.success) {
@@ -372,14 +384,75 @@ class CreatorApp extends React.Component {
         this.last_save = this._getSaveDict();
     }
 
+    _selectLine(cm, lnumber) {
+        let doc = cm.getDoc();
+        doc.setSelection(
+            {line: lnumber, ch: 0},
+            {line: lnumber, ch: doc.getLine(lnumber).length},
+            {scroll: true})
+    }
+
+    _goToLineNumber() {
+        if (this.line_number) {
+            if (this.props.is_mpl || this.props.is_d3) {
+                if (this.line_number < this.props.draw_plot_line_number) {
+                    if (this.emObject) {
+                        this._handleTabSelect("methods")
+                        this._selectLine(this.emObject, this.line_number - this.props.extra_methods_line_number);
+                        this.line_number = null
+
+                    } else {
+                        return
+                    }
+                }
+                if (this.line_number < this.props.render_content_line_number) {
+                    if (this.dpObject) {
+                        this._selectLine(this.dpObject, this.line_number - this.props.draw_plot_line_number - 1)
+                        this.line_number = null
+                    } else {
+                        return
+                    }
+                } else if (this.rcObject) {
+                    this._selectLine(this.rcObject, this.line_number - this.props.render_content_line_number - 1)
+                    this.line_number = null
+                }
+            }
+            else {
+                if (this.line_number < this.props.render_content_line_number) {
+                    if (this.emObject) {
+                        this._handleTabSelect("methods")
+                        this._selectLine(this.emObject, this.line_number - this.props.extra_methods_line_number)
+                        this.line_number = null
+                    } else {
+                        return
+                    }
+                } else {
+                    if (this.rcObject) {
+                        this._selectLine(this.rcObject, this.line_number - this.props.render_content_line_number - 1)
+                        this.line_number = null
+                    }
+                }
+            }
+        }
+    }
+
     componentDidMount() {
         this.setState({"mounted": true});
         document.title = this.state.tile_name;
-
+        this._goToLineNumber();
+        this.props.setGoToLineNumber(this._selectLineNumber)
         window.addEventListener("resize", this.update_window_dimensions);
         this.update_window_dimensions();
         this._update_saved_state();
         this.props.stopSpinner();
+        tsocket.socket.on('focus-me', (data)=>{
+            window.focus();
+            this._selectLineNumber(data.line_number)
+        })
+    }
+
+    componentDidUpdate() {
+        this._goToLineNumber();
     }
 
     // This toggles methodsTabRefreshRequired back and forth to force a refresh
@@ -389,12 +462,12 @@ class CreatorApp extends React.Component {
         }
     }
 
-    _handleTabSelect(newTabId) {
+    _handleTabSelect(newTabId, prevTabid, event) {
         this._refreshMethodsIfNecessary(newTabId);
-        if (this.state.foregrounded_panes[newTabId]) return;
+        // if (this.state.foregrounded_panes[newTabId]) return;
         let new_fg = Object.assign({}, this.state.foregrounded_panes);
         new_fg[newTabId] = true;
-        this.setState({foregrounded_panes: new_fg}, ()=>{
+        this.setState({selectedTabId: newTabId, foregrounded_panes: new_fg}, ()=>{
             this.update_window_dimensions();
         })
     }
@@ -491,6 +564,18 @@ class CreatorApp extends React.Component {
         }
     }
 
+    _setDpObject(cmobject){
+        this.dpObject = cmobject
+    }
+
+    _setRcObject(cmobject){
+        this.rcObject = cmobject
+    }
+
+    _setEmObject(cmobject){
+        this.emObject = cmobject
+    }
+
     render() {
         //let hp_height = this.get_height_minus_top_offset(this.hp_ref);
         let vp_height = this.get_height_minus_top_offset(this.vp_ref);
@@ -513,6 +598,7 @@ class CreatorApp extends React.Component {
                                      handleChange={this.handleTopCodeChange}
                                      saveMe={this._saveAndCheckpoint}
                                      readOnly={false}
+                                     setCMObject={this._setDpObject}
                                      first_line_number={first_line_number}
                                      code_container_height={tc_height}
                     />
@@ -534,6 +620,7 @@ class CreatorApp extends React.Component {
                                  handleChange={this.handleRenderContentChange}
                                  saveMe={this._saveAndCheckpoint}
                                  readOnly={false}
+                                 setCMObject={this._setRcObject}
                                  first_line_number={this.state.render_content_line_number + 1}
                                  code_container_height={rc_height}
                 />
@@ -605,6 +692,7 @@ class CreatorApp extends React.Component {
             <ReactCodemirror handleChange={this.handleMethodsChange}
                              code_content={this.state.extra_functions}
                              saveMe={this._saveAndCheckpoint}
+                             setCMObject={this._setEmObject}
                              readOnly={false}
                              code_container_ref={this.methods_ref}
                              code_container_height={methods_height}
@@ -615,7 +703,7 @@ class CreatorApp extends React.Component {
         let right_pane = (
                 <React.Fragment>
                     <div id="creator-resources" className="d-block mt-2">
-                        <Tabs id="resource_tabs"
+                        <Tabs id="resource_tabs" selectedTabId={this.state.selectedTabId}
                                  large={true} onChange={this._handleTabSelect}>
                             <Tab id="metadata" title="metadata" panel={mdata_panel}/>
                             <Tab id="options" title="options" panel={option_panel}/>

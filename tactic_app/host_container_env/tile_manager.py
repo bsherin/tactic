@@ -36,6 +36,8 @@ class TileManager(LibraryResourceManager):
                          login_required(self.get_module_code), methods=['get', 'post'])
         app.add_url_rule('/view_in_creator/<module_name>', "view_in_creator",
                          login_required(self.view_in_creator), methods=['get'])
+        app.add_url_rule('/view_location_in_creator/<module_name>/<line_number>', "view_location_in_creator",
+                         login_required(self.view_in_creator), methods=['get'])
         app.add_url_rule('/last_saved_view/<module_name>', "last_saved_view",
                          login_required(self.last_saved_view), methods=['get'])
         app.add_url_rule('/get_api_html', "get_api_html",
@@ -196,7 +198,7 @@ class TileManager(LibraryResourceManager):
 
         return the_content
 
-    def view_in_creator(self, module_name):
+    def view_in_creator(self, module_name, line_number=None):
         self.clear_old_recent_history(module_name)
         revised_api_dlist = []
         for cat in ordered_api_categories:
@@ -212,6 +214,7 @@ class TileManager(LibraryResourceManager):
                                develop=str(_develop),
                                uses_codemirror="True",
                                version_string=tstring,
+                               line_number=line_number,
                                module_viewer_id=the_content["module_viewer_id"],
                                css_source=css_source("tile_creator_react"),
                                module_source=js_source_dict["tile_creator_react"],
@@ -228,7 +231,7 @@ class TileManager(LibraryResourceManager):
             return self.get_exception_for_ajax(ex, "Error unloading tiles")
 
     def send_tile_source_changed_message(self, data):
-        socketio.emit('tile-source-change', data, namespace='/main', room=data["user_id"])
+        socketio.emit('tile-source-change', data, nhandamespace='/main', room=data["user_id"])
 
     def add_tile_module(self):
         user_obj = current_user

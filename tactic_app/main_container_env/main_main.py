@@ -1,6 +1,5 @@
 
 from gevent import monkey
-import pydevd_pycharm
 monkey.patch_all()
 import pika
 print("entering main_main")

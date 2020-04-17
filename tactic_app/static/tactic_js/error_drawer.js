@@ -7,6 +7,7 @@ import { Card, Elevation, Drawer, Classes, Button } from "@blueprintjs/core";
 
 import { Status } from "./toaster.js";
 import { doBinding } from "./utilities_react.js";
+import { postWithCallback } from "./communication_react.js";
 
 export { withErrorDrawer };
 
@@ -20,7 +21,8 @@ function withErrorDrawer(WrappedComponent, tsocket = null, title = null, positio
                 show_drawer: false,
                 contents: [],
                 error_drawer_size: size,
-                position: position
+                position: position,
+                goToLineNumber: null
             };
         }
 
@@ -57,13 +59,18 @@ function withErrorDrawer(WrappedComponent, tsocket = null, title = null, positio
             this.setState({ "show_drawer": false });
         }
 
+        _setGoToLineNumber(gtfunc) {
+            this.setState({ goToLineNumber: gtfunc });
+        }
+
         render() {
             let errorDrawerFuncs = {
                 openErrorDrawer: this._open,
                 closeErrorDrawer: this._close,
                 clearErrorDrawer: this._clearAll,
                 addErrorDrawerEntry: this._addEntry,
-                toggleErrorDrawer: this._toggle
+                toggleErrorDrawer: this._toggle,
+                setGoToLineNumber: this._setGoToLineNumber
             };
             return React.createElement(
                 React.Fragment,
@@ -72,6 +79,7 @@ function withErrorDrawer(WrappedComponent, tsocket = null, title = null, positio
                     errorDrawerFuncs: errorDrawerFuncs
                 })),
                 React.createElement(ErrorDrawer, _extends({}, this.state, {
+                    goToLineNumberFunc: this.state.goToLineNumber,
                     title: "Error Drawer",
                     size: this.state.error_drawer_size,
                     onClose: this._onClose,
@@ -81,24 +89,77 @@ function withErrorDrawer(WrappedComponent, tsocket = null, title = null, positio
     };
 }
 
+class ErrorItem extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this);
+    }
+
+    _openError() {
+        if (this.props.goToLineNumberFunc) {
+            this.props.goToLineNumberFunc(this.props.line_number);
+        } else {
+            window.blur();
+            postWithCallback("host", "go_to_module_viewer_if_exists", { user_id: window.user_id,
+                tile_type: this.props.tile_type,
+                line_number: this.props.line_number }, data => {
+                if (!data.success) {
+                    window.open($SCRIPT_ROOT + "/view_location_in_creator/" + this.props.tile_type + "/" + this.props.line_number);
+                } else {
+                    window.open("", data.window_name);
+                }
+            });
+        }
+    }
+
+    render() {
+        let content_dict = { __html: this.props.content };
+        return React.createElement(
+            Card,
+            { interactive: true, elevation: Elevation.TWO, style: { marginBottom: 5 } },
+            this.props.title && React.createElement(
+                "h6",
+                { style: { overflow: "auto" } },
+                React.createElement(
+                    "a",
+                    { href: "#" },
+                    this.props.title
+                )
+            ),
+            React.createElement("div", { style: { fontSize: 13, overflow: "auto" }, dangerouslySetInnerHTML: content_dict }),
+            React.createElement(Button, { text: "show", icon: "eye-open", small: true, onClick: this._openError })
+        );
+    }
+}
+
+ErrorItem.propTypes = {
+    title: PropTypes.string,
+    content: PropTypes.string,
+    has_link: PropTypes.bool,
+    line_number: PropTypes.number,
+    goToLineNumberFunc: PropTypes.func,
+    tile_type: PropTypes.string
+};
+
+ErrorItem.defaultProps = {
+    title: null,
+    has_link: false,
+    line_number: null,
+    goToLineNumberfunc: null,
+    tile_type: null
+};
+
 class ErrorDrawer extends React.Component {
     render() {
         let items = this.props.contents.map((entry, index) => {
             let content_dict = { __html: entry.content };
-            return React.createElement(
-                Card,
-                { key: index, interactive: true, elevation: Elevation.TWO, style: { marginBottom: 5 } },
-                entry.title && React.createElement(
-                    "h6",
-                    { style: { overflow: "auto" } },
-                    React.createElement(
-                        "a",
-                        { href: "#" },
-                        entry.title
-                    )
-                ),
-                React.createElement("div", { style: { fontSize: 13, overflow: "auto" }, dangerouslySetInnerHTML: content_dict })
-            );
+            let has_link = false;
+            if (entry.hasOwnProperty("line_number")) {
+                has_link = true;
+            }
+            return React.createElement(ErrorItem, { key: index, title: entry.title, content: entry.content, has_link: has_link,
+                goToLineNumberFunc: this.props.goToLineNumberFunc,
+                line_number: entry.line_number, tile_type: entry.tile_type });
         });
         return React.createElement(
             Drawer,
@@ -136,6 +197,7 @@ Status.propTypes = {
     onClose: PropTypes.func,
     position: PropTypes.string,
     clearAll: PropTypes.func,
+    goToLineNumberFunc: PropTypes.func,
     size: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
 };
 
@@ -144,5 +206,6 @@ Status.defaultProps = {
     contents: [],
     position: "right",
     title: null,
-    size: "30%"
+    size: "30%",
+    goToLineNumberfunc: null
 };

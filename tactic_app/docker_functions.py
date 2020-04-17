@@ -242,6 +242,10 @@ def container_id(container):
         return "system"
 
 
+def container_image(container):
+    return container.attrs["Config"]["Image"]
+
+
 def container_memory_usage(container, convert_to_mib=True):
     try:
         musage = container.stats(stream=False)["memory_stats"]["usage"]
@@ -377,6 +381,14 @@ def destroy_user_containers(owner_id):
         if container_owner(cont) == owner_id:
             uid = container_id(cont)
             destroy_container(uid)
+
+
+def get_matching_user_containers(owner_id, image_name, other_name):
+    matches = []
+    for cont in cli.containers.list():
+        if container_owner(cont) == owner_id and container_image(cont) == image_name and container_other_name(cont) == other_name:
+            matches.append(container_id(cont))
+    return matches
 
 
 def destroy_child_containers(parent_id):

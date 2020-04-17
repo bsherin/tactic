@@ -38,7 +38,15 @@ class ExceptionMixin(object):
 
     def get_traceback_exception_dict(self, e, special_string=None):
         msg = self.get_traceback_message(e, special_string)
-        return {"success": False, "message": msg, "alert_type": "alert-warning"}
+        # The traceback object doesn't seem to have the line number
+        # If it's a syntax error at least, then it has it as an attribute of
+        # the exception object
+        if hasattr(e, "lineno"):
+            line_number = e.lineno
+        else:
+            line_number = None
+
+        return {"success": False, "message": msg, "alert_type": "alert-warning", "line_number": line_number}
 
     def get_exception_for_ajax(self, e, special_string=None):
         msg = self.extract_short_error_message(e, special_string)
