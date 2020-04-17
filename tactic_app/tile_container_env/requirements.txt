@@ -16,8 +16,6 @@ redis
 regex
 scipy
 scikit-learn
-torch
-torchtext
 tweepy
 wordcloud
 yellowbrick
