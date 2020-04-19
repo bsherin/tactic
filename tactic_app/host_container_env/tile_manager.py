@@ -198,7 +198,7 @@ class TileManager(LibraryResourceManager):
 
         return the_content
 
-    def view_in_creator(self, module_name, line_number=None):
+    def view_in_creator(self, module_name, line_number=0):
         self.clear_old_recent_history(module_name)
         revised_api_dlist = []
         for cat in ordered_api_categories:

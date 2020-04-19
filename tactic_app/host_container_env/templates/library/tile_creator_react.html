@@ -25,5 +25,8 @@
         window.tile_collection_name = "{{tile_collection_name}}";
         window.version_string = "{{tstring}}";
         window.line_number = {{ line_number }}
+        if (window.line_number == 0) {
+            window.line_number = null
+        }
     </script>
 {% endblock %}

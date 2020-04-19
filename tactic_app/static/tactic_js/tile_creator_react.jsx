@@ -395,25 +395,25 @@ class CreatorApp extends React.Component {
     _goToLineNumber() {
         if (this.line_number) {
             if (this.props.is_mpl || this.props.is_d3) {
-                if (this.line_number < this.props.draw_plot_line_number) {
+                if (this.line_number < this.state.draw_plot_line_number) {
                     if (this.emObject) {
                         this._handleTabSelect("methods")
-                        this._selectLine(this.emObject, this.line_number - this.props.extra_methods_line_number);
+                        this._selectLine(this.emObject, this.line_number - this.state.extra_methods_line_number);
                         this.line_number = null
 
                     } else {
                         return
                     }
                 }
-                if (this.line_number < this.props.render_content_line_number) {
+                if (this.line_number < this.state.render_content_line_number) {
                     if (this.dpObject) {
-                        this._selectLine(this.dpObject, this.line_number - this.props.draw_plot_line_number - 1)
+                        this._selectLine(this.dpObject, this.line_number - this.state.draw_plot_line_number - 1)
                         this.line_number = null
                     } else {
                         return
                     }
                 } else if (this.rcObject) {
-                    this._selectLine(this.rcObject, this.line_number - this.props.render_content_line_number - 1)
+                    this._selectLine(this.rcObject, this.line_number - this.state.render_content_line_number - 1)
                     this.line_number = null
                 }
             }
@@ -421,14 +421,14 @@ class CreatorApp extends React.Component {
                 if (this.line_number < this.props.render_content_line_number) {
                     if (this.emObject) {
                         this._handleTabSelect("methods")
-                        this._selectLine(this.emObject, this.line_number - this.props.extra_methods_line_number)
+                        this._selectLine(this.emObject, this.line_number - this.state.extra_methods_line_number)
                         this.line_number = null
                     } else {
                         return
                     }
                 } else {
                     if (this.rcObject) {
-                        this._selectLine(this.rcObject, this.line_number - this.props.render_content_line_number - 1)
+                        this._selectLine(this.rcObject, this.line_number - this.state.render_content_line_number - 1)
                         this.line_number = null
                     }
                 }
