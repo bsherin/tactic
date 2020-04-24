@@ -27,6 +27,8 @@ repository_user = User.get_user_by_username("repository")
 
 ILLEGAL_CHARACTERS_RE = re.compile(r'[\000-\010]|[\013-\014]|[\016-\037]')
 
+CHUNK_SIZE = int(int(os.environ.get("CHUNK_SIZE")) / 2)
+
 AUTOSPLIT = False
 AUTOSPLIT_SIZE = 10000
 
@@ -60,6 +62,8 @@ class CollectionManager(LibraryResourceManager):
                          login_required(self.combine_collections), methods=['post', 'get'])
         app.add_url_rule('/combine_to_new_collection', "combine_to_new_collection",
                          login_required(self.combine_to_new_collection), methods=['post'])
+        app.add_url_rule('/grab_collection_list_chunk', "grab_collection_list_chunk",
+                         login_required(self.grab_collection_list_chunk), methods=['get', 'post'])
 
     def new_notebook(self):
         user_obj = current_user
@@ -190,6 +194,74 @@ class CollectionManager(LibraryResourceManager):
                          attachment_filename=new_name,
                          as_attachment=True)
 
+    def grab_collection_list_chunk(self):
+
+        def sort_mdata_key(item):
+            if sort_field not in item:
+                return ""
+            return item[sort_field]
+
+        def sort_created_key(item):
+            return item["created_for_sort"]
+
+        def sort_updated_key(item):
+            return item["updated_for_sort"]
+
+        try:
+            if request.json["is_repository"]:
+                user_obj = repository_user
+            else:
+                user_obj = current_user
+            search_spec = request.json["search_spec"]
+            row_number = request.json["row_number"]
+            search_text = search_spec['search_string']
+            if search_text == "":
+                search_text = ".*"
+            else:
+                search_text = ".*" + search_text
+            cnames = db.collection_names()
+            string_start = user_obj.username + ".data_collection."
+            found_collections = []
+            all_tags = []
+            for cname in cnames:
+                m = re.search(string_start + "(.*)", cname)
+                if m:
+                    mdata = db[cname].find_one({"name": "__metadata__"})
+                    entry = self.build_res_dict(m.group(1), mdata, user_obj)
+                    if re.match(search_text, m.group(1)):
+                        if search_spec["active_tag"]:
+                            if search_spec["active_tag"] in self.get_all_subtags(entry["tags"]):
+                                found_collections.append(entry)
+                                all_tags += entry["tags"].split()
+                        else:
+                            found_collections.append(entry)
+                            all_tags += entry["tags"].split()
+
+            all_tags = list(set(all_tags))
+            if search_spec["sort_direction"] == "ascending":
+                reverse = False
+            else:
+                reverse = True
+
+            sort_field = search_spec["sort_field"]
+            if sort_field == "created":
+                sort_key_func = sort_created_key
+            elif sort_field == "updated":
+                sort_key_func = sort_updated_key
+            else:
+                sort_key_func = sort_mdata_key
+
+            sorted_results = sorted(found_collections, key=sort_key_func, reverse=reverse)
+            chunk_start = int(row_number / CHUNK_SIZE) * CHUNK_SIZE
+            chunk_list = sorted_results[chunk_start: chunk_start + CHUNK_SIZE]
+            chunk_dict = {}
+            for n, r in enumerate(chunk_list):
+                chunk_dict[n + chunk_start] = r
+            return jsonify({"success": True, "chunk_dict": chunk_dict, "all_tags": all_tags, "num_rows": len(sorted_results)})
+
+        except Exception as ex:
+            return self.get_exception_for_ajax(ex, "Error getting chunk")
+
     def grab_metadata(self, res_name):
         if self.is_repository:
             user_obj = repository_user
@@ -270,7 +342,9 @@ class CollectionManager(LibraryResourceManager):
                                                        hl_dict[dname], dm_dict[dname])
             user_obj.update_collection_time(base_collection_name)
             self.update_selector_row(self.build_res_dict(base_collection_name, coll_mdata))
-            return jsonify({"message": "Collections successfull combined", "alert_type": "alert-success"})
+            return jsonify({"success": True,
+                            "message": "Collections successfull combined",
+                            "alert_type": "alert-success"})
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error combining collection")
 

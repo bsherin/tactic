@@ -66,7 +66,7 @@ class FreeformBody extends React.Component{
         }};
       }
 
-    _handleBlur(new_data_text) {  // tactic_working
+    _handleBlur(new_data_text) {
         postWithCallback(window.main_id, "add_freeform_document",
             {document_name: this.props.document_name,
                 doc_text: new_data_text})

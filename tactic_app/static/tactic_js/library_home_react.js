@@ -81,16 +81,13 @@ class LibraryHomeApp extends React.Component {
                     active_tag: "all",
                     tree: []
                 },
-                search_from_field: false,
-                search_from_tag: false,
                 sorting_column: "updated",
-                sorting_field: "updated_for_sort",
                 sorting_direction: "descending",
                 multi_select: false,
                 list_of_selected: [],
-                search_field_value: "",
-                search_inside_checked: false,
-                search_metadata_checked: false,
+                search_string: "",
+                search_inside: false,
+                search_metadata: false,
                 selectedRegions: [Regions.row(0)]
             };
         }
@@ -165,18 +162,14 @@ class LibraryHomeApp extends React.Component {
             res_type: "project",
             allow_search_inside: false,
             allow_search_metadata: true,
-            search_metadata_view: "search_project_metadata",
             ToolbarClass: ProjectToolbar,
             updatePaneState: this._updatePaneState
         }, this.props.errorDrawerFuncs, this.state.pane_states["project"], {
-
             tsocket: tsocket }));
         let tiles_pane = React.createElement(LibraryPane, _extends({}, this.props, {
             res_type: "tile",
             allow_search_inside: true,
             allow_search_metadata: true,
-            search_inside_view: "search_inside_tiles",
-            search_metadata_view: "search_tile_metadata",
             ToolbarClass: TileToolbar,
             updatePaneState: this._updatePaneState
         }, this.props.errorDrawerFuncs, this.state.pane_states["tile"], {
@@ -187,8 +180,6 @@ class LibraryHomeApp extends React.Component {
             res_type: "list",
             allow_search_inside: true,
             allow_search_metadata: true,
-            search_inside_view: "search_inside_lists",
-            search_metadata_view: "search_list_metadata",
             ToolbarClass: ListToolbar
         }, this.props.errorDrawerFuncs, {
             updatePaneState: this._updatePaneState
@@ -198,13 +189,11 @@ class LibraryHomeApp extends React.Component {
             res_type: "code",
             allow_search_inside: true,
             allow_search_metadata: true,
-            search_inside_view: "search_inside_code",
-            search_metadata_view: "search_code_metadata",
             ToolbarClass: CodeToolbar
         }, this.props.errorDrawerFuncs, {
             updatePaneState: this._updatePaneState
         }, this.state.pane_states["code"], {
-            tsocket: tsocket }));
+            socket: tsocket }));
         let outer_style = { width: this.state.usable_width,
             height: this.state.usable_height,
             paddingLeft: 0
@@ -412,12 +401,12 @@ class CollectionToolbar extends React.Component {
     }
 
     _combineCollections() {
-        var res_names;
+        var res_name = this.props.selected_resource.name;
         let self = this;
         if (!this.props.multi_select) {
-            showModalReact("Name of collection to combine with " + this.props.selected_resource.name, "collection Name", function (other_name) {
+            showModalReact("Name of collection to combine with " + res_name, "collection Name", function (other_name) {
                 self.props.startSpinner(true);
-                const target = `${$SCRIPT_ROOT}/combine_collections/${res_names[0]}/${other_name}`;
+                const target = `${$SCRIPT_ROOT}/combine_collections/${res_name}/${other_name}`;
                 $.post(target, data => {
                     self.props.stopSpinner();
                     if (!data.success) {
@@ -436,7 +425,8 @@ class CollectionToolbar extends React.Component {
 
         function CreateCombinedCollection(new_name) {
             postAjaxPromise("combine_to_new_collection", { "original_collections": self.props.list_of_selected, "new_name": new_name }).then(data => {
-                self.props.add_new_row(data.new_row);
+                self.props.refresh_func();
+                data.new_row;
             }).catch(data => {
                 self.props.addErrorDrawerEntry({ title: "Error combining collections", content: data.message });
             });
@@ -490,7 +480,7 @@ class CollectionToolbar extends React.Component {
             postAjaxUploadPromise(`${url_base}/${new_name}/${window.library_id}`, the_data).then(data => {
                 self.props.clearStatusMessage();
                 self.displayImportResults(data);
-                self.props.add_new_row(data.new_row);
+                self.props.refresh_func();
                 self.props.stopSpinner();
             }).catch(data => {
                 self.props.addErrorDrawerEntry({ title: "Error importing documents", content: data.message });
@@ -557,7 +547,7 @@ class ProjectToolbar extends React.Component {
             self.props.startSpinner(true);
             postAjaxUploadPromise(`import_as_jupyter/${new_name}/${library_id}`, the_data).then(data => {
                 self.props.clearStatusMessage();
-                self.props.add_new_row(data.new_row);
+                self.props.refresh_func();
                 self.props.stopSpinner();
             }).catch(data => {
                 self.props.addErrorDrawerEntry({ title: "Error importing jupyter notebook", content: data.message });
@@ -666,7 +656,7 @@ class TileToolbar extends React.Component {
                 "last_saved": "viewer"
             };
             postAjaxPromise("/create_tile_module", result_dict).then(data => {
-                self.props.add_new_row(data.new_row);
+                self.props.refresh_func();
                 window.open($SCRIPT_ROOT + "/view_module/" + String(new_name));
             }).catch(data => {
                 self.props.addErrorDrawerEntry({ title: "Error creating new tile", content: data.message });
@@ -686,7 +676,7 @@ class TileToolbar extends React.Component {
                 "last_saved": "creator"
             };
             postAjaxPromise("/create_tile_module", result_dict).then(data => {
-                self.props.add_new_row(data.new_row);
+                self.props.refresh_func();
                 window.open($SCRIPT_ROOT + "/view_in_creator/" + String(new_name));
             }).catch(data => {
                 self.props.addErrorDrawerEntry({ title: "Error creating new tile", content: data.message });
@@ -752,7 +742,7 @@ class ListToolbar extends React.Component {
         }
         let self = this;
         postAjaxUploadPromise("add_list", the_data).then(data => {
-            self.props.add_new_row(data.new_row);
+            self.props.refresh_func();
         }).catch(data => {
             self.props.addErrorDrawerEntry({ title: "Error creating new list", content: data.message });
         });
@@ -803,7 +793,7 @@ class CodeToolbar extends React.Component {
                 "new_res_name": new_name
             };
             postAjaxPromise("/create_code", result_dict).then(data => {
-                self.props.add_new_row(data.new_row);
+                self.props.refresh_func();
                 window.open($SCRIPT_ROOT + "/view_code/" + String(new_name));
             }).catch(data => {
                 self.props.addErrorDrawerEntry({ title: "Error creating new code resource", content: data.message });

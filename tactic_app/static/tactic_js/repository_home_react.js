@@ -84,9 +84,9 @@ class RepositoryHomeApp extends React.Component {
                 sorting_direction: "descending",
                 multi_select: false,
                 list_of_selected: [],
-                search_field_value: "",
-                search_inside_checked: false,
-                search_metadata_checked: false
+                search_string: "",
+                search_inside: false,
+                search_metadata: false
             };
         }
         this.top_ref = React.createRef();
@@ -127,8 +127,7 @@ class RepositoryHomeApp extends React.Component {
     }
 
     render() {
-        let collection_pane = React.createElement(LibraryPane, _extends({
-            res_type: "collection",
+        let collection_pane = React.createElement(LibraryPane, _extends({ res_type: "collection",
             allow_search_inside: false,
             allow_search_metadata: false,
             ToolbarClass: RepositoryCollectionToolbar,
@@ -137,47 +136,36 @@ class RepositoryHomeApp extends React.Component {
             errorDrawerFuncs: this.props.errorDrawerFuncs,
             is_repository: true,
             tsocket: tsocket }));
-        let projects_pane = React.createElement(LibraryPane, _extends({
-            res_type: "project",
+        let projects_pane = React.createElement(LibraryPane, _extends({ res_type: "project",
             allow_search_inside: false,
             allow_search_metadata: true,
-            search_metadata_view: "search_project_metadata",
             ToolbarClass: RepositoryProjectToolbar,
             updatePaneState: this._updatePaneState
         }, this.state.pane_states["project"], this.props.errorDrawerFuncs, {
             errorDrawerFuncs: this.props.errorDrawerFuncs,
             is_repository: true,
             tsocket: tsocket }));
-        let tiles_pane = React.createElement(LibraryPane, _extends({
-            res_type: "tile",
+        let tiles_pane = React.createElement(LibraryPane, _extends({ res_type: "tile",
             allow_search_inside: true,
             allow_search_metadata: true,
-            search_inside_view: "search_inside_tiles",
-            search_metadata_view: "search_tile_metadata",
             ToolbarClass: RepositoryTileToolbar,
             updatePaneState: this._updatePaneState
         }, this.state.pane_states["tile"], this.props.errorDrawerFuncs, {
             errorDrawerFuncs: this.props.errorDrawerFuncs,
             is_repository: true,
             tsocket: tsocket }));
-        let lists_pane = React.createElement(LibraryPane, _extends({
-            res_type: "list",
+        let lists_pane = React.createElement(LibraryPane, _extends({ res_type: "list",
             allow_search_inside: true,
             allow_search_metadata: true,
-            search_inside_view: "search_inside_lists",
-            search_metadata_view: "search_list_metadata",
             ToolbarClass: RepositoryListToolbar,
             updatePaneState: this._updatePaneState
         }, this.state.pane_states["list"], this.props.errorDrawerFuncs, {
             errorDrawerFuncs: this.props.errorDrawerFuncs,
             is_repository: true,
             tsocket: tsocket }));
-        let code_pane = React.createElement(LibraryPane, _extends({
-            res_type: "code",
+        let code_pane = React.createElement(LibraryPane, _extends({ res_type: "code",
             allow_search_inside: true,
             allow_search_metadata: true,
-            search_inside_view: "search_inside_code",
-            search_metadata_view: "search_code_metadata",
             ToolbarClass: RepositoryCodeToolbar,
             updatePaneState: this._updatePaneState
         }, this.state.pane_states["code"], this.props.errorDrawerFuncs, {

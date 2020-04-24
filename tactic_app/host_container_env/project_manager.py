@@ -37,12 +37,12 @@ class ProjectManager(LibraryResourceManager):
                          methods=['post'])
         app.add_url_rule('/duplicate_project', "duplicate_project",
                          login_required(self.duplicate_project), methods=['get', 'post'])
-        app.add_url_rule('/search_project_metadata', "search_project_metadata",
-                         login_required(self.search_project_metadata), methods=['get', 'post'])
         app.add_url_rule('/import_as_jupyter/<jupyter_name>/<library_id>', "import_as_jupyter",
                          login_required(self.import_as_jupyter), methods=['get', "post"])
         app.add_url_rule('/download_jupyter/<project_name>/<new_name>', "download_jupyter",
                          login_required(self.download_jupyter), methods=['get', "post"])
+        app.add_url_rule('/grab_project_list_chunk', "grab_projec_list_chunk",
+                         login_required(self.grab_project_list_chunk), methods=['get', 'post'])
 
     def download_jupyter(self, project_name, new_name):
         user_obj = current_user
@@ -136,18 +136,6 @@ class ProjectManager(LibraryResourceManager):
 
         return render_template(template_name, **data_dict)
 
-    def search_project_metadata(self):
-        user_obj = current_user
-        search_text = request.json['search_text']
-        reg = re.compile(".*" + search_text + ".*", re.IGNORECASE)
-        res = db[user_obj.project_collection_name].find({"$or": [{"project_name": reg}, {"metadata.notes": reg},
-                                                        {"metadata.tags": reg}, {"metadata.loaded_tiles": reg},
-                                                        {"metadata.collection_name": reg}]})
-        res_list = []
-        for t in res:
-            res_list.append(t["project_name"])
-        return jsonify({"success": True, "match_list": res_list})
-
     def duplicate_project(self):
         user_obj = current_user
         project_to_copy = request.json['res_to_copy']
@@ -168,6 +156,14 @@ class ProjectManager(LibraryResourceManager):
 
         new_row = self.build_res_dict(new_project_name, mdata, user_obj)
         return jsonify({"success": True, "new_row": new_row})
+
+    def grab_project_list_chunk(self):
+        if request.json["is_repository"]:
+            colname = repository_user.project_collection_name
+        else:
+            colname = current_user.project_collection_name
+
+        return self.grab_resource_list_chunk(colname, "project_name", None)
 
     def rename_me(self, old_name):
         try:

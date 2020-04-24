@@ -11,6 +11,7 @@ import {HorizontalPanes} from "./resizing_layouts.js";
 import {postAjax} from "./communication_react.js";
 import {getUsableDimensions} from "./sizing_tools.js";
 import {doBinding} from "./utilities_react.js";
+import _ from "../js/lodash";
 
 export {AdminPane}
 
@@ -22,19 +23,31 @@ class AdminPane extends React.Component {
         this.table_ref = React.createRef();
         let aheight = getUsableDimensions().usable_height_no_bottom;
         let awidth = getUsableDimensions().usable_width - 170;
+        this.get_url = `grab_${props.res_type}_list_chunk`
         this.state = {
-            data_list: [],
+            data_dict: {},
+            num_rows: 0,
+            awaiting_data: false,
             mounted: false,
             available_height: aheight,
             available_width: awidth,
             top_pane_height: aheight / 2 - 50,
-            match_list: [],
+            total_width: 500,
         };
         doBinding(this);
         this.toolbarRef = null;
         if (props.tsocket != null) {
             props.tsocket.socket.on(`update-${props.res_type}-selector-row`, this._handleRowUpdate);
             props.tsocket.socket.on(`refresh-${props.res_type}-selector`, this._refresh_func);
+        }
+        this.previous_search_spec = null
+    }
+
+    _getSearchSpec(){
+        return {
+            search_string: this.props.search_string,
+            sort_field: this.props.sorting_column,
+            sort_direction: this.props.sorting_direction
         }
     }
 
@@ -48,7 +61,7 @@ class AdminPane extends React.Component {
                 revised_regions.push(Regions.row(first_row));
                 let last_row = region["rows"][1];
                 for (let i=first_row; i<=last_row; ++i) {
-                    selected_rows.push(this.state.data_list[i]);
+                    selected_rows.push(this.state.data_dict[i]);
                     revised_regions.push(Regions.row(i));
                 }
             }
@@ -79,59 +92,91 @@ class AdminPane extends React.Component {
         let self = this;
         this.setState({"mounted": true});
         let path;
-        path = "admin_list_with_metadata";
-        postAjax(`${path}/${this.props.res_type}`, {}, function(data) {
-            self.setState({"data_list": data.data_list}, () => {
-                self._update_match_lists();
-                // I need the next line to force a resize update
-                self._set_sort_state(self.props.sorting_column, self.props.sorting_field, self.props.sorting_direction)
+        this._grabNewChunkWithRow(0, true, null, true, null)
+    }
+
+    _grabNewChunkWithRow(row_index, flush=false, spec_update=null, select=false, select_by_name=null, callback=null) {
+        let search_spec = this._getSearchSpec()
+        if (spec_update) {
+            search_spec = Object.assign(search_spec, spec_update)
+        }
+        let data = {search_spec: search_spec, row_number: row_index};
+        let self = this;
+        postAjax(this.get_url, data, function(data) {
+            let new_data_dict
+            if (flush) {
+                new_data_dict = data.chunk_dict
+            }
+            else {
+                new_data_dict = _.cloneDeep(self.state.data_dict)
+                new_data_dict = Object.assign(new_data_dict, data.chunk_dict)
+            }
+            self.previous_search_spec = search_spec;
+            self.setState({data_dict: new_data_dict, num_rows: data.num_rows}, ()=>{
+                if (callback) {
+                    callback()
+                }
+                else if (select) {
+                    self._selectRow(row_index)
+                }
+                else if (select_by_name) {
+                    let ind = self.get_data_dict_index(select_by_name)
+                    if (!ind) {
+                        ind = 0
+                    }
+                    self._selectRow(ind)
+                }
             });
 
-            }
-        )
+        })
+    }
+
+    _initiateDataGrab(row_index) {
+        this.setState({awaiting_data: true}, () => {this._grabNewChunkWithRow(row_index)})
     }
 
     _handleRowUpdate(res_dict) {
-        let res_name = res_dict[this.props.id_field];
-        let ind = this.get_data_list_index(res_name);
-        if (ind == -1) {
-            this._add_new_row(res_dict)
+        let res_name = res_dict.name;
+        let ind = this.get_data_dict_index(res_name);
+        let new_data_dict = _.cloneDeep(this.state.data_dict);
+        let the_row = new_data_dict[ind];
+        for (let field in res_dict) {
+            the_row[field] = res_dict[field];
         }
-        else {
-            let new_data_list = [...this.state.data_list];
-            let the_row = new_data_list[ind];
-            for (let field in res_dict) {
-                the_row[field] = res_dict[field];
-            }
-            if (res_name == this.props.selected_resource[this.props.id_field]) {
-                this.props.updatePaneState({"selected_resource": the_row})
-            }
-            this.setState({ "data_list": new_data_list }, () => {
-                this._update_match_lists();
-            });
+        if (res_name == this.props.selected_resource.name) {
+            this.props.updatePaneState({"selected_resource": the_row})
         }
+        let new_state = {"data_dict": new_data_dict };
+
+        this.setState(new_state);
     }
 
     _updatePaneState(new_state, callback) {
         this.props.updatePaneState(this.props.res_type, new_state, callback)
     }
 
-    set_in_data_list(names, new_val_dict, data_list) {
-        let new_data_list = [];
+    set_in_data_dict(names, new_val_dict, data_dict) {
+        let new_data_dict = {};
 
-        for (let it of data_list) {
-            if (names.includes(it[this.props.id_field])){
+        for (let index in data_dict) {
+            let entry = data_dict[index];
+            if (names.includes(data_dict[index].name)){
                 for (let k in new_val_dict) {
-                    it[k] = new_val_dict[k]
-                }
-            }
-            new_data_list.push(it)
+                    entry[k] = new_val_dict[k]
+             }             }
+
+            new_data_dict[index] = entry
         }
-        return new_data_list
+        return new_data_dict
     }
 
-    get_data_list_index(name) {
-        return this.state.data_list.findIndex((rec) => (rec[this.props.id_field] == name))
+    get_data_dict_index(name) {
+        for (let index in this.state.data_dict) {
+            if (this.state.data_dict[index].name == name) {
+                return index
+            }
+        }
+        return null
     }
 
     _delete_row(idval) {
@@ -141,10 +186,10 @@ class AdminPane extends React.Component {
         this.setState({data_list: new_data_list});
     }
 
-    get_data_list_entry(Id) {
-        for (let it of this.state.data_list) {
-            if (it[this.props.id_field] == Id) {
-                return it
+    get_data_dict_entry(name) {
+        for (let index in this.state.data_dict) {
+            if (this.state.data_dict[index].name == name) {
+                return this.state.data_dict[index]
             }
         }
         return null
@@ -173,101 +218,79 @@ class AdminPane extends React.Component {
         })
     }
 
-    _filter_func(resource_dict, search_field_value) {
+    _filter_func(resource_dict, search_string) {
         for (let key in resource_dict) {
-            if (resource_dict[key].toLowerCase().search(search_field_value) != -1){
+            if (resource_dict[key].toLowerCase().search(search_string) != -1){
                 return true
             }
         }
-        return resource_dict[this.props.id_field].toLowerCase().search(search_field_value) != -1
-    }
-
-    get all_ids() {
-        return this.state.data_list.map((rec) => rec[this.props.id_field]);
-    }
-
-    match_all() {
-        let new_match_list = this.all_ids;
-        this.setState({"match_list": new_match_list})
+        return resource_dict[this.props.id_field].toLowerCase().search(search_string) != -1
     }
 
     _update_search_state(new_state) {
-        new_state.search_from_field = true;
-        new_state.search_from_tags = false;
-        this._updatePaneState(new_state, this._update_match_lists)
+        this._updatePaneState(new_state, ()=> {
+            if (this.search_spec_changed(new_state)) {
+                this._grabNewChunkWithRow(0, true, new_state, true)
+            }
+        })
     }
 
-    _update_match_lists() {
-        if (this.props.search_field_value == "") {
-            this.match_all()
+    search_spec_changed(new_spec) {
+        if (!this.previous_search_spec) {
+            return true
         }
-        else {
-            let new_match_list = [];
-            for (let rec of this.state.data_list) {
-                if (this._filter_func(rec, this.props.search_field_value)) {
-                    new_match_list.push(rec[this.props.id_field])
+        for (let key in this.previous_search_spec) {
+            if(new_spec.hasOwnProperty(key)) {
+                // noinspection TypeScriptValidateTypes
+                if (new_spec[key] != this.previous_search_spec[key]) {
+                    return true
                 }
             }
-            this.setState({"match_list": new_match_list})
         }
+        return false
     }
 
-    _sort_data_list() {
-        if (this.props.sorting_field == null) return this.state.data_list;
-        let sort_field = this.props.sorting_field;
-        let direction = this.props.sorting_direction;
-        function compare_func (a, b) {
-            let result;
-            if (a[sort_field] < b[sort_field]) {
-                result = -1
+    _set_sort_state(column_name, sort_field, direction) {
+        let spec_update = {sort_field: column_name, sort_direction: direction}
+        this._updatePaneState(spec_update, ()=>{
+            if (this.search_spec_changed(spec_update)) {
+                this._grabNewChunkWithRow(0, true, spec_update, true)
             }
-            else if (a[sort_field] > b[sort_field]){
-                result = 1
-            }
-            else {
-                result = 0
-            }
-            if (direction == "descending") {
-                result = -1 * result
-            }
-            return result
+        })
+    }
+
+    _handleArrowKeyPress(key) {
+        let current_index = parseInt(this.get_data_dict_index(this.props.selected_resource.name));
+        let new_index;
+        let new_selected_res;
+        if (key == "ArrowDown") {
+            new_index =  current_index + 1;
+        }
+        else {
+            new_index = current_index - 1;
+            if (new_index < 0) return
+        }
+        this._selectRow(new_index)
+    }
+
+    _selectRow(new_index) {
+        if (!Object.keys(this.state.data_dict).includes(String(new_index))) {
+            this._grabNewChunkWithRow(new_index, false, null, false, null, ()=>{
+                this._selectRow(new_index)
+            })
+        }
+        else {
+            let new_regions = [Regions.row(new_index)];
+            this._updatePaneState({selected_resource: this.state.data_dict[new_index],
+                list_of_selected: [this.state.data_dict[new_index].name],
+                selectedRegions: new_regions
+            })
         }
 
-        let new_data_list = [...this.state.data_list];
-        new_data_list.sort(compare_func);
-
-        this._updatePaneState({
-            selected_resource: new_data_list[0],
-            list_of_selected: [new_data_list[0][this.props.id_field]],
-            multi_select: false}
-        );
-
-     this.setState({data_list: new_data_list})
     }
 
-    _set_sort_state(column_name, sort_field, direction,) {
-
-        this._updatePaneState({sorting_column: column_name, sorting_field: sort_field, sorting_direction: direction},
-            this._sort_data_list)
-    }
-
-    _refresh_for_new_data_list() {
-        this._update_match_lists();
-        this._sort_data_list();
-    }
-
-    _filter_on_match_list(resource_dict) {
-        return this.state.match_list.includes(resource_dict[this.props.id_field])
-    }
-
-    _add_new_row(new_row) {
-        let new_data_list = [...this.state.data_list];
-        new_data_list.push(new_row);
-        this.setState({data_list: new_data_list}, this._refresh_for_new_data_list)
-    }
-
-    _refresh_func() {
-        this.componentDidMount()
+    _refresh_func(callback=null) {
+        this._grabNewChunkWithRow(0, true, null, true, callback)
     }
 
     _setConsoleText(the_text) {
@@ -288,6 +311,10 @@ class AdminPane extends React.Component {
 
     _sendToolbarRef(the_ref) {
         this.toolbarRef = the_ref;
+    }
+
+    _communicateColumnWidthSum(total_width) {
+        this.setState({total_width: total_width})
     }
 
     render() {
@@ -320,7 +347,6 @@ class AdminPane extends React.Component {
             "overflowX": "hidden"
         };
 
-        let filtered_data_list = this.state.data_list.filter(this._filter_on_match_list);
         let ToolbarClass = this.props.ToolbarClass;
 
         let column_specs = {};
@@ -350,19 +376,22 @@ class AdminPane extends React.Component {
             <React.Fragment>
                 <div className="d-flex flex-row" style={{"maxHeight": "100%"}}>
                     <div ref={this.table_ref}
-                         className="d-flex flex-column"
-                         style={{width: table_width, padding: 15, marginTop: 10, backgroundColor: "white"}}>
+                         style={{width: table_width, maxWidth: this.state.total_width, padding: 15, marginTop: 10, backgroundColor: "white"}}>
                         <SearchForm allow_search_inside={false}
                                     allow_search_metadata={false}
                                     update_search_state={this._update_search_state}
-                                    search_field_value={this.props.search_field_value}
+                                    search_string={this.props.search_string}
                         />
-                        <BpSelectorTable data_list={filtered_data_list}
-                                          sortColumn={this._set_sort_state}
-                                          selectedRegions={this.props.selectedRegions}
-                                          onSelection={this._onTableSelection}
-                                          columns={column_specs}
-                                          identifier_field={this.props.id_field}
+                        <BpSelectorTable data_dict={this.state.data_dict}
+                                         num_rows={this.state.num_rows}
+                                         awaiting_data={this.state.awaiting_data}
+                                         sortColumn={this._set_sort_state}
+                                         selectedRegions={this.props.selectedRegions}
+                                         communicateColumnWidthSum={this._communicateColumnWidthSum}
+                                         onSelection={this._onTableSelection}
+                                         initiateDataGrab={this._initiateDataGrab}
+                                         columns={column_specs}
+                                         identifier_field={this.props.id_field}
 
                         />
                     </div>

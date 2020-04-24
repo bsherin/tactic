@@ -153,8 +153,17 @@ class ExportsViewer extends React.Component {
             };
             if (data.hasOwnProperty("key_list")) {
                 new_state.key_list = data.key_list
+                if (data.hasOwnProperty("key_list_value")) {
+                    new_state.key_list_value = data.key_list_value
+                }
+                else {
+                    if (new_state.key_list.length > 0) {
+                        new_state.key_list_value = data.key_list[0]
+                    }
+                }
             } else {
                 new_state.key_list = null
+                new_state.key_list_value = null
             }
             self.setState(new_state)
         })

@@ -97,9 +97,9 @@ class AdministerHomeApp extends React.Component {
                 sorting_direction: "descending",
                 multi_select: false,
                 list_of_selected: [],
-                search_field_value: "",
-                search_inside_checked: false,
-                search_metadata_checked: false,
+                search_string: "",
+                search_inside: false,
+                search_metadata: false,
                 selectedRegions: [Regions.row(0)]
             };
         }

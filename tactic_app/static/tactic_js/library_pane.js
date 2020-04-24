@@ -7,7 +7,7 @@ import { Menu, MenuItem, Button, Collapse, ResizeSensor } from "@blueprintjs/cor
 import { Regions } from "@blueprintjs/table";
 import _ from 'lodash';
 
-import { get_all_parent_tags, TagButtonList } from "./tag_buttons_react.js";
+import { TagButtonList } from "./tag_buttons_react.js";
 import { CombinedMetadata } from "./blueprint_mdata_fields.js";
 import { SearchForm, BpSelectorTable, LibraryOmnibar } from "./library_widgets.js";
 import { HorizontalPanes, HANDLE_WIDTH } from "./resizing_layouts.js";
@@ -62,17 +62,20 @@ class LibraryPane extends React.Component {
         this.resizing = false;
         let aheight = getUsableDimensions().usable_height_no_bottom;
         let awidth = getUsableDimensions().usable_width - 170;
+        this.get_url = `grab_${props.res_type}_list_chunk`;
         this.state = {
-            data_list: [],
+            data_dict: {},
+            num_rows: 0,
             mounted: false,
             available_height: aheight,
             available_width: awidth,
             top_pane_height: aheight / 2 - 50,
-            match_list: [],
+            // match_list: [],
             tag_list: [],
             auxIsOpen: false,
             showOmnibar: false,
-            contextMenuItems: []
+            contextMenuItems: [],
+            total_width: 500
         };
         doBinding(this);
         this.toolbarRef = null;
@@ -80,13 +83,25 @@ class LibraryPane extends React.Component {
             props.tsocket.socket.on(`update-${props.res_type}-selector-row`, this._handleRowUpdate);
             props.tsocket.socket.on(`refresh-${props.res_type}-selector`, this._refresh_func);
         }
+        this.previous_search_spec = null;
     }
 
     _sendContextMenuItems(items) {
         this.setState({ contextMenuItems: items });
     }
 
-    _renderBodyContextMenu(menu_context, current_data_list) {
+    _getSearchSpec() {
+        return {
+            active_tag: this.props.tag_button_state.active_tag == "all" ? null : this.props.tag_button_state.active_tag,
+            search_string: this.props.search_string,
+            search_inside: this.props.search_inside,
+            search_metadata: this.props.search_metadata,
+            sort_field: this.props.sorting_column,
+            sort_direction: this.props.sorting_direction
+        };
+    }
+
+    _renderBodyContextMenu(menu_context) {
         let regions = menu_context.regions;
         if (regions.length == 0) return; // Without this get an error when clicking on a body cell
         let selected_rows = [];
@@ -96,7 +111,7 @@ class LibraryPane extends React.Component {
                 let last_row = region["rows"][1];
                 for (let i = first_row; i <= last_row; ++i) {
                     if (!selected_rows.includes(i)) {
-                        selected_rows.push(current_data_list[i]);
+                        selected_rows.push(this.state.data_dict[i]);
                     }
                 }
             }
@@ -104,7 +119,7 @@ class LibraryPane extends React.Component {
         return React.createElement(BodyMenu, { items: this.state.contextMenuItems, selected_rows: selected_rows });
     }
 
-    _onTableSelection(regions, current_data_list) {
+    _onTableSelection(regions) {
         if (regions.length == 0) return; // Without this get an error when clicking on a body cell
         let selected_rows = [];
         let selected_row_indices = [];
@@ -117,7 +132,7 @@ class LibraryPane extends React.Component {
                 for (let i = first_row; i <= last_row; ++i) {
                     if (!selected_row_indices.includes(i)) {
                         selected_row_indices.push(i);
-                        selected_rows.push(current_data_list[i]);
+                        selected_rows.push(this.state.data_dict[i]);
                         revised_regions.push(Regions.row(i));
                     }
                 }
@@ -131,41 +146,74 @@ class LibraryPane extends React.Component {
         let self = this;
         this.setState({ "mounted": true });
         let path;
-        if (this.props.is_repository) {
-            path = "repository_resource_list_with_metadata";
-        } else {
-            path = "resource_list_with_metadata";
-        }
 
-        postAjax(`${path}/${this.props.res_type}`, {}, function (data) {
-            self.setState({ "data_list": data.data_list }, () => {
-                self.update_tag_list();
-                self._update_match_lists();
-                // I need the next line to force a resize update
-                self._set_sort_state(self.props.sorting_column, self.props.sorting_field, self.props.sorting_direction);
+        this._grabNewChunkWithRow(0, true, null, true, null);
+    }
+
+    _grabNewChunkWithRow(row_index, flush = false, spec_update = null, select = false, select_by_name = null, callback = null) {
+        let search_spec = this._getSearchSpec();
+        if (spec_update) {
+            search_spec = Object.assign(search_spec, spec_update);
+        }
+        if (search_spec.active_tag && search_spec.active_tag[0] != "/") {
+            search_spec.active_tag = "/" + search_spec.active_tag;
+        }
+        let data = { search_spec: search_spec, row_number: row_index, is_repository: this.props.is_repository };
+        let self = this;
+        postAjax(this.get_url, data, function (data) {
+            let new_data_dict;
+            if (flush) {
+                new_data_dict = data.chunk_dict;
+            } else {
+                new_data_dict = _.cloneDeep(self.state.data_dict);
+                new_data_dict = Object.assign(new_data_dict, data.chunk_dict);
+            }
+            self.previous_search_spec = search_spec;
+            self.setState({ data_dict: new_data_dict, num_rows: data.num_rows, tag_list: data.all_tags }, () => {
+                if (callback) {
+                    callback();
+                } else if (select) {
+                    self._selectRow(row_index);
+                } else if (select_by_name) {
+                    let ind = self.get_data_dict_index(select_by_name);
+                    if (!ind) {
+                        ind = 0;
+                    }
+                    self._selectRow(ind);
+                }
             });
         });
     }
 
+    _initiateDataGrab(row_index) {
+        this._grabNewChunkWithRow(row_index);
+    }
+
     _handleRowUpdate(res_dict) {
         let res_name = res_dict.name;
-        let ind = this.get_data_list_index(res_name);
-        if (ind == -1) {
-            this._add_new_row(res_dict);
-        } else {
-            let new_data_list = [...this.state.data_list];
-            let the_row = new_data_list[ind];
-            for (let field in res_dict) {
-                the_row[field] = res_dict[field];
-            }
-            if (res_name == this.props.selected_resource.name) {
-                this.props.updatePaneState({ "selected_resource": the_row });
-            }
-            this.setState({ "data_list": new_data_list }, () => {
-                this._update_match_lists();
-                this.update_tag_list();
-            });
+        let res_tags = res_dict.tags.split(" ");
+        let ind = this.get_data_dict_index(res_name);
+        let new_data_dict = _.cloneDeep(this.state.data_dict);
+        let the_row = new_data_dict[ind];
+        for (let field in res_dict) {
+            the_row[field] = res_dict[field];
         }
+        if (res_name == this.props.selected_resource.name) {
+            this.props.updatePaneState({ "selected_resource": the_row });
+        }
+        let new_state = { "data_dict": new_data_dict };
+        let new_tag_list = _.cloneDeep(this.state.tag_list);
+        let new_tag_found = false;
+        for (let tag of res_tags) {
+            if (!new_tag_list.includes(tag)) {
+                new_tag_list.push(tag);
+                new_tag_found = true;
+            }
+        }
+        if (new_tag_found) {
+            new_state["tag_list"] = new_tag_list;
+        }
+        this.setState(new_state);
     }
 
     delete_row(name) {
@@ -179,31 +227,38 @@ class LibraryPane extends React.Component {
         this.setState({ data_list: new_data_list }, this.update_tag_list);
     }
 
-    get_data_list_entry(name) {
-        for (let it of this.state.data_list) {
-            if (it.name == name) {
-                return it;
+    get_data_dict_entry(name) {
+        for (let index in this.state.data_dict) {
+            if (this.state.data_dict[index].name == name) {
+                return this.state.data_dict[index];
             }
         }
         return null;
     }
 
-    set_in_data_list(names, new_val_dict, data_list) {
-        let new_data_list = [];
+    set_in_data_dict(names, new_val_dict, data_dict) {
+        let new_data_dict = {};
 
-        for (let it of data_list) {
-            if (names.includes(it.name)) {
+        for (let index in data_dict) {
+            let entry = data_dict[index];
+            if (names.includes(data_dict[index].name)) {
                 for (let k in new_val_dict) {
-                    it[k] = new_val_dict[k];
+                    entry[k] = new_val_dict[k];
                 }
             }
-            new_data_list.push(it);
+
+            new_data_dict[index] = entry;
         }
-        return new_data_list;
+        return new_data_dict;
     }
 
-    get_data_list_index(name) {
-        return this.state.data_list.findIndex(rec => rec.name == name);
+    get_data_dict_index(name) {
+        for (let index in this.state.data_dict) {
+            if (this.state.data_dict[index].name == name) {
+                return index;
+            }
+        }
+        return null;
     }
 
     _saveFromSelectedResource() {
@@ -216,11 +271,8 @@ class LibraryPane extends React.Component {
 
         let self = this;
         postAjaxPromise("save_metadata", result_dict).then(function (data) {
-            let new_data_list = self.set_in_data_list(saved_list_of_selected, saved_selected_resource, self.state.data_list);
-            self.setState({ "data_list": new_data_list }, () => {
-                self._update_match_lists();
-                self.update_tag_list();
-            });
+            let new_data_list = self.set_in_data_dict(saved_list_of_selected, saved_selected_resource, self.state.data_dict);
+            self.setState({ "data_dict": new_data_list });
         }).catch(doFlash);
     }
 
@@ -231,12 +283,11 @@ class LibraryPane extends React.Component {
         const self = this;
         postAjaxPromise("overwrite_common_tags", result_dict).then(function (data) {
             let utags = data.updated_tags;
-            let new_data_list = [...self.state.data_list];
+            let new_data_dict = _.cloneDeep(this.state.data_dict);
             for (let res_name in utags) {
-                new_data_list = self.set_in_data_list([res_name], { tags: utags[res_name] }, new_data_list);
+                new_data_dict = self.set_in_data_dict([res_name], { tags: utags[res_name] }, new_data_dict);
             }
-            self.setState({ data_list: new_data_list }, () => {
-                self._update_match_lists();
+            self.setState({ data_dict: new_data_dict }, () => {
                 self.update_tag_list();
             });
         }).catch(doFlash);
@@ -261,7 +312,7 @@ class LibraryPane extends React.Component {
     }
 
     addOneTag(res_name, the_tag) {
-        let dl_entry = this.get_data_list_entry(res_name);
+        let dl_entry = this.get_data_dict_entry(res_name);
         if (dl_entry.tags.split(' ').includes(the_tag)) return;
         let new_tags = dl_entry.tags + " " + the_tag;
         new_tags = new_tags.trim();
@@ -284,20 +335,8 @@ class LibraryPane extends React.Component {
         let old_tb_state = Object.assign({}, this.props.tag_button_state);
         let new_tb_state = Object.assign(old_tb_state, new_state);
         let new_pane_state = { tag_button_state: new_tb_state };
-        let callback;
-        if (new_state.hasOwnProperty("active_tag") && new_state.active_tag != this.props.tag_button_state.active_tag) {
-            if (new_state.active_tag == "all") {
-                new_pane_state.search_from_tag = false;
-                new_pane_state.search_from_field = false;
-            } else {
-                new_pane_state.search_from_tag = true;
-                new_pane_state.search_from_field = false;
-            }
-            callback = this._update_match_lists;
-        } else {
-            callback = null;
-        }
-        this.props.updatePaneState(this.props.res_type, new_pane_state, callback);
+
+        this._update_search_state(new_pane_state);
     }
 
     _handleAddTag(res_name, the_tag) {
@@ -381,7 +420,7 @@ class LibraryPane extends React.Component {
     }
 
     _handleRowSelection(selected_rows) {
-        if (!this.props.multi_select && this.props.selected_resource.name != "" && this.props.selected_resource.notes != this.get_data_list_entry(this.props.selected_resource.name).notes) {
+        if (!this.props.multi_select && this.props.selected_resource.name != "" && this.props.selected_resource.notes != this.get_data_dict_entry(this.props.selected_resource.name).notes) {
             this._saveFromSelectedResource();
         }
         if (selected_rows.length > 1) {
@@ -414,184 +453,79 @@ class LibraryPane extends React.Component {
         }
     }
 
-    _filter_func(resource_dict, search_field_value) {
+    _filter_func(resource_dict, search_string) {
         try {
-            return resource_dict.name.toLowerCase().search(search_field_value) != -1;
+            return resource_dict.name.toLowerCase().search(search_string) != -1;
         } catch (e) {
             return false;
         }
     }
 
-    get all_names() {
-        return this.state.data_list.map(rec => rec.name);
-    }
-
-    match_all() {
-        let new_match_list = this.all_names;
-        this.setState({ "match_list": new_match_list });
-    }
-
     _update_search_state(new_state) {
-        new_state.search_from_field = true;
-        new_state.search_from_tags = false;
-        this._updatePaneState(new_state, this._update_match_lists);
+        //new_state.search_from_tags = false;
+        this._updatePaneState(new_state, () => {
+            if (this.search_spec_changed(new_state)) {
+                this._grabNewChunkWithRow(0, true, new_state, true);
+            }
+        });
     }
 
-    update_tag_list() {
-        let tag_list = [];
-        for (let rec of this.state.data_list) {
-            if (rec.tags == "") continue;
-            let rtags = rec.tags.split(" ");
-            for (let tag of rtags) {
-                if (!tag_list.includes(tag)) {
-                    tag_list.push(tag);
+    search_spec_changed(new_spec) {
+        if (!this.previous_search_spec) {
+            return true;
+        }
+        for (let key in this.previous_search_spec) {
+            if (key == "active_tag") {
+                if (new_spec.hasOwnProperty("tag_button_state")) {
+                    if (new_spec.tag_button_state.active_tag != this.previous_search_spec.active_tag) {
+                        return true;
+                    }
+                }
+            } else if (new_spec.hasOwnProperty(key)) {
+                // noinspection TypeScriptValidateTypes
+                if (new_spec[key] != this.previous_search_spec[key]) {
+                    return true;
                 }
             }
         }
-        this.setState({ "tag_list": tag_list });
-    }
-
-    _update_match_lists() {
-        if (this.props.search_from_tag) {
-            this._searchFromTag(this.props.tag_button_state.active_tag);
-            return;
-        }
-        if (!this.props.search_from_field || this.props.search_field_value == "") {
-            this.match_all();
-        } else if (this.props.search_inside_checked) {
-            this.doSearchInside(this.props.search_field_value, this.props.search_metadata_checked);
-        } else if (this.props.search_metadata_checked) {
-            this.doSearchMetadata(this.props.search_field_value);
-        } else {
-            let new_match_list = [];
-            for (let rec of this.state.data_list) {
-                if (this._filter_func(rec, this.props.search_field_value)) {
-                    new_match_list.push(rec.name);
-                }
-            }
-            this.setState({ "match_list": new_match_list });
-        }
-    }
-
-    _sort_data_list() {
-        if (this.state.data_list.length == 0) return;
-        if (this.props.sorting_field == null) return this.state.data_list;
-        let sort_field = this.props.sorting_field;
-        let direction = this.props.sorting_direction;
-        function compare_func(a, b) {
-            let result;
-            if (a[sort_field] < b[sort_field]) {
-                result = -1;
-            } else if (a[sort_field] > b[sort_field]) {
-                result = 1;
-            } else {
-                result = 0;
-            }
-            if (direction == "descending") {
-                result = -1 * result;
-            }
-            return result;
-        }
-
-        let new_data_list = [...this.state.data_list];
-        new_data_list.sort(compare_func);
-        if (this.props.list_of_selected.length == 0) {
-            this._updatePaneState({
-                selected_resource: new_data_list[0],
-                list_of_selected: [new_data_list[0].name],
-                multi_select: false });
-        }
-        this.setState({ data_list: new_data_list });
+        return false;
     }
 
     _set_sort_state(column_name, sort_field, direction) {
-        this._updatePaneState({ sorting_column: column_name, sorting_field: sort_field, sorting_direction: direction }, this._sort_data_list);
-    }
-    _refresh_for_new_data_list() {
-        this._update_match_lists();
-        this._sort_data_list();
-        this.update_tag_list();
-    }
-
-    doSearchMetadata(search_field_value) {
-        let self = this;
-        let search_info = { "search_text": search_field_value };
-        postAjaxPromise(this.props.search_metadata_view, search_info).then(data => {
-            var match_list = data.match_list;
-            self.setState({ "match_list": match_list });
-        }).catch(doFlash);
-    }
-
-    doSearchInside(search_field_value, search_metadata_also) {
-        let search_info = { "search_text": search_field_value };
-        let self = this;
-        postAjaxPromise(this.props.search_inside_view, search_info).then(data => {
-            var match_list = data.match_list;
-            if (search_metadata_also) {
-                postAjaxPromise(self.props.search_metadata_view, search_info).then(data => {
-                    match_list = match_list.concat(data.match_list);
-                    self.setState({ "match_list": match_list });
-                }).catch(doFlash);
-            } else {
-                self.setState({ "match_list": match_list });
+        let spec_update = { sort_field: column_name, sort_direction: direction };
+        this._updatePaneState(spec_update, () => {
+            if (this.search_spec_changed(spec_update)) {
+                this._grabNewChunkWithRow(0, true, spec_update, true);
             }
-        }).catch(doFlash);
-    }
-
-    _filter_on_match_list(resource_dict) {
-        return this.state.match_list.includes(resource_dict.name);
-    }
-
-    tagMatch(search_tag, item_tags) {
-        let tags_to_match = item_tags.concat(get_all_parent_tags(item_tags));
-        return tags_to_match.includes(search_tag);
-    }
-
-    _searchFromTag(search_tag) {
-        if (search_tag == "all") {
-            this.match_all();
-        } else {
-            let new_match_list = [];
-            for (let rec of this.state.data_list) {
-                let rtags = rec.tags.toLowerCase().split(" ");
-                if (this.tagMatch(search_tag, rtags)) {
-                    new_match_list.push(rec.name);
-                }
-            }
-            this.setState({ "match_list": new_match_list });
-        }
-    }
-
-    get_match_list_index(name) {
-        let filtered_data_list = this.state.data_list.filter(this._filter_on_match_list);
-        return filtered_data_list.findIndex(rec => rec.name == name);
+        });
     }
 
     _handleArrowKeyPress(key) {
         if (this.props.multi_select) return;
-        let anames = this.all_names;
-        let current_index = anames.indexOf(this.props.selected_resource.name);
+        let current_index = parseInt(this.get_data_dict_index(this.props.selected_resource.name));
         let new_index;
         let new_selected_res;
         if (key == "ArrowDown") {
             new_index = current_index + 1;
-            while (!this.state.match_list.includes(anames[new_index])) {
-                new_index += 1;
-                if (new_index >= anames.length) return;
-            }
         } else {
             new_index = current_index - 1;
-            while (!this.state.match_list.includes(anames[new_index])) {
-                new_index -= 1;
-                if (new_index < 0) return;
-            }
+            if (new_index < 0) return;
         }
+        this._selectRow(new_index);
+    }
 
-        let new_regions = [Regions.row(this.get_match_list_index(anames[new_index]))];
-        this._updatePaneState({ selected_resource: this.state.data_list[new_index],
-            list_of_selected: [anames[new_index]],
-            selectedRegions: new_regions
-        });
+    _selectRow(new_index) {
+        if (!Object.keys(this.state.data_dict).includes(String(new_index))) {
+            this._grabNewChunkWithRow(new_index, false, null, false, null, () => {
+                this._selectRow(new_index);
+            });
+        } else {
+            let new_regions = [Regions.row(new_index)];
+            this._updatePaneState({ selected_resource: this.state.data_dict[new_index],
+                list_of_selected: [this.state.data_dict[new_index].name],
+                selectedRegions: new_regions
+            });
+        }
     }
 
     _view_func(the_view = null) {
@@ -610,12 +544,6 @@ class LibraryPane extends React.Component {
         window.open($SCRIPT_ROOT + the_view + resource_name);
     }
 
-    _add_new_row(new_row) {
-        let new_data_list = [...this.state.data_list];
-        new_data_list.push(new_row);
-        this.setState({ data_list: new_data_list }, this._refresh_for_new_data_list);
-    }
-
     _duplicate_func(duplicate_view, resource_name = null) {
         let res_type = this.props.res_type;
         let res_name = resource_name ? resource_name : this.props.selected_resource.name;
@@ -629,7 +557,7 @@ class LibraryPane extends React.Component {
                 "res_to_copy": res_name
             };
             postAjaxPromise(duplicate_view, result_dict).then(data => {
-                self._add_new_row(data.new_row);
+                self._grabNewChunkWithRow(0, true, null, false, new_name);
             }).catch(doFlash);
         }
     }
@@ -645,12 +573,20 @@ class LibraryPane extends React.Component {
             confirm_text = `Are you sure that you want to delete multiple items?`;
         }
         let self = this;
+        let first_index = 99999;
+        for (let res of res_names) {
+            let ind = parseInt(this.get_data_dict_index(res));
+            if (ind < first_index) {
+                first_index = ind;
+            }
+        }
         showConfirmDialogReact(`Delete ${res_type}`, confirm_text, "do nothing", "delete", function () {
             postAjaxPromise(delete_view, { "resource_names": res_names }).then(() => {
-                for (let i = 0; i < res_names.length; ++i) {
-                    self.delete_row(res_names[i]);
+                let new_index = 0;
+                if (first_index > 0) {
+                    new_index = first_index - 1;
                 }
-                self._refresh_for_new_data_list();
+                self._grabNewChunkWithRow(new_index, true, null, true);
             }).catch(doFlash);
         });
     }
@@ -675,10 +611,10 @@ class LibraryPane extends React.Component {
                     doFlash(data);
                     return false;
                 } else {
-                    let ind = self.get_data_list_index(res_name);
-                    let new_data_list = [...self.state.data_list];
-                    new_data_list[ind].name = new_name;
-                    self.setState({ data_list: new_data_list }, self._refresh_for_new_data_list);
+                    let ind = self.get_data_dict_index(res_name);
+                    let new_data_dict = _.cloneDeep(self.state.data_dict);
+                    new_data_dict[ind].name = new_name;
+                    self.setState({ data_dict: new_data_dict });
                 }
             }
         }
@@ -719,8 +655,8 @@ class LibraryPane extends React.Component {
         return res_name;
     }
 
-    _refresh_func() {
-        this.componentDidMount();
+    _refresh_func(callback = null) {
+        this._grabNewChunkWithRow(0, true, null, true, callback);
     }
 
     _handleTopRightPaneResize(top_height, bottom_height, top_fraction) {
@@ -762,9 +698,13 @@ class LibraryPane extends React.Component {
         this.toolbarRef = the_ref;
     }
 
+    // This total_width machinery is all part of a trick to get the table to fully render all rows
+    // It seems to matter that the containing box is very tight.
+    _communicateColumnWidthSum(total_width) {
+        this.setState({ total_width: total_width });
+    }
+
     render() {
-        // let available_width = this.get_width_minus_left_offset(this.top_ref);
-        // let available_height = this.get_height_minus_top_offset(this.top_ref);
         let new_button_groups;
         let left_width = (this.state.available_width - HANDLE_WIDTH) * this.props.left_width_fraction;
         const primary_mdata_fields = ["name", "created", "created_for_sort", "updated", "updated_for_sort", "tags", "notes"];
@@ -832,7 +772,7 @@ class LibraryPane extends React.Component {
             "whiteSpace": "nowrap"
         };
 
-        let filtered_data_list = _.cloneDeep(this.state.data_list.filter(this._filter_on_match_list));
+        // let filtered_data_list = _.cloneDeep(this.state.data_list.filter(this._filter_on_match_list));
         let ToolbarClass = this.props.ToolbarClass;
 
         let table_width;
@@ -852,6 +792,7 @@ class LibraryPane extends React.Component {
         }
 
         let key_bindings = [[["up"], () => this._handleArrowKeyPress("ArrowUp")], [["down"], () => this._handleArrowKeyPress("ArrowDown")], [["ctrl+space"], this._showOmnibar]];
+
         let left_pane = React.createElement(
             React.Fragment,
             null,
@@ -872,20 +813,23 @@ class LibraryPane extends React.Component {
                 ),
                 React.createElement(
                     "div",
-                    { ref: this.table_ref,
-                        className: "d-flex flex-column",
-                        style: { width: table_width, padding: 5, backgroundColor: "white" } },
+                    { ref: this.table_ref
+                        // className="d-flex flex-column"
+                        , style: { width: table_width, maxWidth: this.state.total_width, padding: 5, backgroundColor: "white" } },
                     React.createElement(SearchForm, { allow_search_inside: this.props.allow_search_inside,
                         allow_search_metadata: this.props.allow_search_metadata,
                         update_search_state: this._update_search_state,
-                        search_field_value: this.props.search_field_value,
-                        search_inside_checked: this.props.search_inside_checked,
-                        search_metadata_checked: this.props.search_metadata_checked
+                        search_string: this.props.search_string,
+                        search_inside: this.props.search_inside,
+                        search_metadata: this.props.search_metadata
                     }),
-                    React.createElement(BpSelectorTable, { data_list: filtered_data_list,
+                    React.createElement(BpSelectorTable, { data_dict: this.state.data_dict,
+                        num_rows: this.state.num_rows,
                         sortColumn: this._set_sort_state,
                         selectedRegions: this.props.selectedRegions,
+                        communicateColumnWidthSum: this._communicateColumnWidthSum,
                         onSelection: this._onTableSelection,
+                        initiateDataGrab: this._initiateDataGrab,
                         renderBodyContextMenu: this._renderBodyContextMenu,
                         handleRowDoubleClick: this._handleRowDoubleClick,
                         handleAddTag: this._handleAddTag
@@ -909,7 +853,6 @@ class LibraryPane extends React.Component {
                     refresh_func: this._refresh_func,
                     delete_func: this._delete_func,
                     rename_func: this._rename_func,
-                    add_new_row: this._add_new_row,
                     startSpinner: this.props.startSpinner,
                     stopSpinner: this.props.stopSpinner,
                     clearStatusMessage: this.props.clearStatusMessage,
@@ -936,7 +879,7 @@ class LibraryPane extends React.Component {
                     })
                 ),
                 React.createElement(KeyTrap, { global: true, bindings: key_bindings }),
-                React.createElement(LibraryOmnibar, { items: this.state.data_list,
+                React.createElement(LibraryOmnibar, { items: Object.values(this.state.data_dict),
                     onItemSelect: this._omnibarSelect,
                     handleClose: this._closeOmnibar,
                     showOmnibar: this.state.showOmnibar })
@@ -949,8 +892,6 @@ LibraryPane.propTypes = {
     res_type: PropTypes.string,
     allow_search_inside: PropTypes.bool,
     allow_search_metadata: PropTypes.bool,
-    search_inside_view: PropTypes.string,
-    search_metadata_view: PropTypes.string,
     ToolbarClass: PropTypes.func,
     updatePaneState: PropTypes.func,
     is_repository: PropTypes.bool,
@@ -963,12 +904,10 @@ LibraryPane.propTypes = {
     sorting_direction: PropTypes.string,
     multi_select: PropTypes.bool,
     list_of_selected: PropTypes.array,
-    search_field_value: PropTypes.string,
-    search_inside_checked: PropTypes.bool,
-    search_metadata_checked: PropTypes.bool,
+    search_string: PropTypes.string,
+    search_inside: PropTypes.bool,
+    search_metadata: PropTypes.bool,
     search_tag: PropTypes.string,
-    search_from_field: PropTypes.bool,
-    search_from_tag: PropTypes.bool,
     tag_button_state: PropTypes.object,
     contextItems: PropTypes.array
 

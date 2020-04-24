@@ -24,7 +24,6 @@ class ListManager(LibraryResourceManager):
     collection_list = "list_names"
     collection_list_with_metadata = "list_names_with_metadata"
     collection_name = "list_collection_name"
-
     name_field = "list_name"
 
     def add_rules(self):
@@ -37,10 +36,8 @@ class ListManager(LibraryResourceManager):
                          login_required(self.create_duplicate_list), methods=['get', 'post'])
         app.add_url_rule('/update_list', "update_list",
                          login_required(self.update_list), methods=['get', 'post'])
-        app.add_url_rule('/search_inside_lists', "search_inside_lists",
-                         login_required(self.search_inside_lists), methods=['get', 'post'])
-        app.add_url_rule('/search_list_metadata', "search_list_metadata",
-                         login_required(self.search_list_metadata), methods=['get', 'post'])
+        app.add_url_rule('/grab_list_list_chunk', "grab_list_list_chunk",
+                         login_required(self.grab_list_list_chunk), methods=['get', 'post'])
 
     def view_list(self, list_name):
         javascript_source = url_for('static', filename=js_source_dict["list_viewer_react"])
@@ -150,6 +147,14 @@ class ListManager(LibraryResourceManager):
                     res_name = doc["list_name"]
                     db[current_user.list_collection_name].update_one({"list_name": res_name}, {'$set': {"metadata": mdata}})
         return
+
+    def grab_list_list_chunk(self):
+        if request.json["is_repository"]:
+            colname = repository_user.list_collection_name
+        else:
+            colname = current_user.list_collection_name
+
+        return self.grab_resource_list_chunk(colname, "list_name", "the_list")
 
     def add_list(self):
         user_obj = current_user
