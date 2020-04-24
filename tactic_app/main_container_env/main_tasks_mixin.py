@@ -1387,7 +1387,7 @@ class ConsoleTasksMixin:
 class DataSupportTasksMixin:
 
     @task_worthy
-    def delete_row(self, data):  # tactic_working
+    def delete_row(self, data):
         try:
             doc_name = data["document_name"]
             index = data["index"]
@@ -1407,7 +1407,7 @@ class DataSupportTasksMixin:
             return {"success": False, "message": error_string}
 
     @task_worthy
-    def insert_row(self, data):  # tactic_working
+    def insert_row(self, data):
         try:
             doc_name = data["document_name"]
             index = data["index"]
@@ -1439,7 +1439,7 @@ class DataSupportTasksMixin:
             return {"success": False, "message": error_string}
 
     @task_worthy
-    def duplicate_document(self, data):  # tactic_working
+    def duplicate_document(self, data):
         try:
             new_doc_name = data["new_document_name"]
             original_doc_name = data["original_document_name"]
@@ -1457,7 +1457,7 @@ class DataSupportTasksMixin:
             return {"success": False, "message": error_string}
 
     @task_worthy
-    def new_blank_document(self, data):  # tactic_working
+    def new_blank_document(self, data):
         try:
             new_doc_name = data["new_document_name"]
             model_doc_name = data["model_document_name"]
@@ -1485,7 +1485,7 @@ class DataSupportTasksMixin:
             return {"success": False, "message": error_string}
 
     @task_worthy
-    def add_document(self, data):  # tactic_working
+    def add_document(self, data):
         try:
             new_doc_name = data["document_name"]
             header_list = data["column_names"]
@@ -1515,7 +1515,7 @@ class DataSupportTasksMixin:
             return {"success": False, "message": error_string}
 
     @task_worthy
-    def add_freeform_document(self, data):  # tactic_working
+    def add_freeform_document(self, data):
         try:
             new_doc_name = data["document_name"]
             doc_text = data["doc_text"]
@@ -1533,7 +1533,7 @@ class DataSupportTasksMixin:
             return {"success": False, "message": error_string}
 
     @task_worthy
-    def remove_document(self, data):  # tactic_working
+    def remove_document(self, data):
         try:
             doc_name = data["document_name"]
             del self.doc_dict[doc_name]
@@ -1551,7 +1551,7 @@ class DataSupportTasksMixin:
             return {"success": False, "message": error_string}
 
     @task_worthy
-    def rename_document(self, data):  # tactic_working
+    def rename_document(self, data):
         try:
             oldname = data["old_document_name"]
             newname = data["new_document_name"]

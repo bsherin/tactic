@@ -3,9 +3,10 @@ import "../tactic_css/tactic_select.scss";
 
 import React from "react";
 import PropTypes from 'prop-types';
+import hash from "object-hash";
 
 import { InputGroup, Menu, MenuItem, Button, Switch, Card } from "@blueprintjs/core";
-import { Cell, Column, Table, ColumnHeaderCell, RegionCardinality } from "@blueprintjs/table";
+import { Cell, Column, Table, ColumnHeaderCell, RegionCardinality, Regions } from "@blueprintjs/table";
 import { Omnibar } from "@blueprintjs/select";
 import _ from 'lodash';
 
@@ -96,19 +97,19 @@ class SearchForm extends React.Component {
     }
 
     _handleSearchFieldChange(event) {
-        this.props.update_search_state({ "search_field_value": event.target.value });
+        this.props.update_search_state({ "search_string": event.target.value });
     }
 
     _handleClearSearch() {
-        this.props.update_search_state({ "search_field_value": "" });
+        this.props.update_search_state({ "search_string": "" });
     }
 
     _handleSearchMetadataChange(event) {
-        this.props.update_search_state({ "search_metadata_checked": event.target.checked });
+        this.props.update_search_state({ "search_metadata": event.target.checked });
     }
 
     _handleSearchInsideChange(event) {
-        this.props.update_search_state({ "search_inside_checked": event.target.checked });
+        this.props.update_search_state({ "search_inside": event.target.checked });
     }
 
     _handleSubmit(event) {
@@ -125,7 +126,7 @@ class SearchForm extends React.Component {
                 React.createElement(InputGroup, { type: "search",
                     placeholder: "Search",
                     leftIcon: "search",
-                    value: this.props.search_field_value,
+                    value: this.props.search_string,
                     onChange: this._handleSearchFieldChange,
                     style: { "width": 265 },
                     autoCapitalize: "none",
@@ -139,13 +140,13 @@ class SearchForm extends React.Component {
                 this.props.allow_search_metadata && React.createElement(Switch, { label: "metadata",
                     className: "ml-2",
                     large: false,
-                    checked: this.props.search_metadata_checked,
+                    checked: this.props.search_metadata,
                     onChange: this._handleSearchMetadataChange
                 }),
                 this.props.allow_search_inside && React.createElement(Switch, { label: "inside",
                     className: "ml-2",
                     large: false,
-                    checked: this.props.search_inside_checked,
+                    checked: this.props.search_inside,
                     onChange: this._handleSearchInsideChange
                 })
             )
@@ -157,9 +158,9 @@ SearchForm.propTypes = {
     allow_search_inside: PropTypes.bool,
     allow_search_metadata: PropTypes.bool,
     update_search_state: PropTypes.func,
-    search_field_value: PropTypes.string,
-    search_inside_checked: PropTypes.bool,
-    search_metadata_checked: PropTypes.bool
+    search_string: PropTypes.string,
+    search_inside: PropTypes.bool,
+    search_metadata: PropTypes.bool
 };
 
 class BpSelectorTable extends React.Component {
@@ -167,37 +168,62 @@ class BpSelectorTable extends React.Component {
         super(props);
         doBinding(this);
         this.state = { columnWidths: null };
-        this.saved_data_list = null;
+        this.saved_data_dict = null;
+        this.data_update_required = null;
+        this.table_ref = React.createRef();
     }
 
     componentDidMount() {
         this.computeColumnWidths();
-        this.saved_data_list = this.props.data_list;
+        this.saved_data_dict = this.props.data_dict;
     }
 
     computeColumnWidths() {
-        if (this.props.data_list.length == 0) return;
+        if (Object.keys(this.props.data_dict).length == 0) return;
         let column_names = Object.keys(this.props.columns);
-        let cwidths = compute_initial_column_widths(column_names, this.props.data_list);
-        this.setState({ columnWidths: cwidths });
+        let cwidths = compute_initial_column_widths(column_names, Object.values(this.props.data_dict));
+        let self = this;
+        this.setState({ columnWidths: cwidths }, () => {
+            let the_sum = this.state.columnWidths.reduce((a, b) => a + b, 0);
+            self.props.communicateColumnWidthSum(the_sum);
+        });
     }
 
     componentDidUpdate() {
         // this.props.my_ref.current.scrollTop = this.props.scroll_top;
-        if (this.state.columnWidths == null || !_.isEqual(this.props.data_list, this.saved_data_list)) {
+        if (this.state.columnWidths == null || !_.isEqual(this.props.data_dict, this.saved_data_dict)) {
             this.computeColumnWidths();
-            this.saved_data_list = this.props.data_list;
+            this.saved_data_dict = this.props.data_dict;
         }
+    }
+
+    _onCompleteRender() {
+        if (this.data_update_required != null) {
+            this.props.initiateDataGrab(this.data_update_required);
+            this.data_update_required = null;
+        }
+        // const lastColumnRegion = Regions.column(Object.keys(this.props.columns).length - 1) // Your table last column
+        // this.table_ref.current.scrollToRegion(lastColumnRegion)
+    }
+
+    haveRowData(rowIndex) {
+        return this.props.data_dict.hasOwnProperty(rowIndex);
     }
 
     _cellRendererCreator(column_name) {
         let self = this;
         return rowIndex => {
+            if (!this.haveRowData(rowIndex)) {
+                if (self.data_update_required == null) {
+                    self.data_update_required = rowIndex;
+                }
+
+                return React.createElement(Cell, { key: column_name,
+                    loading: true });
+            }
             let the_text;
-            if (rowIndex >= self.props.data_list.length) {
-                the_text = "";
-            } else if (Object.keys(self.props.data_list[rowIndex]).includes(column_name)) {
-                the_text = self.props.data_list[rowIndex][column_name];
+            if (Object.keys(self.props.data_dict[rowIndex]).includes(column_name)) {
+                the_text = self.props.data_dict[rowIndex][column_name];
             } else {
                 the_text = "";
             }
@@ -213,7 +239,7 @@ class BpSelectorTable extends React.Component {
                     null,
                     React.createElement(
                         "div",
-                        { onDoubleClick: () => self.props.handleRowDoubleClick(self.props.data_list[rowIndex]) },
+                        { onDoubleClick: () => self.props.handleRowDoubleClick(self.props.data_dict[rowIndex]) },
                         the_text
                     )
                 )
@@ -239,7 +265,6 @@ class BpSelectorTable extends React.Component {
     render() {
         let self = this;
         let column_names = Object.keys(this.props.columns);
-        let numRows = this.props.data_list.length;
         let columns = column_names.map(column_name => {
             const cellRenderer = self._cellRendererCreator(column_name);
             const columnHeaderCellRenderer = () => React.createElement(ColumnHeaderCell, { name: column_name,
@@ -253,11 +278,15 @@ class BpSelectorTable extends React.Component {
                 key: column_name,
                 name: column_name });
         });
+        let obj = { cwidths: this.state.columnWidths, nrows: this.props.num_rows };
+        let hsh = hash(obj);
+
         return React.createElement(
             Table,
-            { numRows: numRows,
-                key: numRows,
-                bodyContextMenuRenderer: mcontext => this.props.renderBodyContextMenu(mcontext, this.props.data_list),
+            { numRows: this.props.num_rows
+                // key={this.props.num_rows}
+                , ref: this.table_ref,
+                bodyContextMenuRenderer: mcontext => this.props.renderBodyContextMenu(mcontext),
                 enableColumnReordering: false,
                 enableColumnResizing: false,
                 enableMultipleSelection: true,
@@ -265,8 +294,9 @@ class BpSelectorTable extends React.Component {
                 selectedRegions: this.props.selectedRegions,
                 enableRowHeader: false,
                 columnWidths: this.state.columnWidths,
+                onCompleteRender: this._onCompleteRender,
                 selectionModes: [RegionCardinality.FULL_ROWS, RegionCardinality.CELLS],
-                onSelection: regions => this.props.onSelection(regions, this.props.data_list)
+                onSelection: regions => this.props.onSelection(regions)
             },
             columns
         );
@@ -276,7 +306,9 @@ class BpSelectorTable extends React.Component {
 BpSelectorTable.propTypes = {
     columns: PropTypes.object,
     selectedRegions: PropTypes.array,
-    data_list: PropTypes.array,
+    data_dict: PropTypes.object,
+    num_rows: PropTypes.number,
+    communicateColumnWidthSum: PropTypes.func,
     sortColumn: PropTypes.func,
     onSelection: PropTypes.func,
     handleRowDoubleClick: PropTypes.func,

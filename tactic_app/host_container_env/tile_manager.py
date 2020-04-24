@@ -3,7 +3,9 @@ import datetime
 import sys
 import copy
 import re
+import os
 
+import pymongo
 from flask import render_template, request, jsonify, url_for
 from flask_login import login_required, current_user
 from integrated_docs import api_dict_by_category, ordered_api_categories
@@ -54,10 +56,8 @@ class TileManager(LibraryResourceManager):
                          login_required(self.create_tile_module), methods=['get', 'post'])
         app.add_url_rule('/create_duplicate_tile', "create_duplicate_tile",
                          login_required(self.create_duplicate_tile), methods=['get', 'post'])
-        app.add_url_rule('/search_inside_tiles', "search_inside_tiles",
-                         login_required(self.search_inside_tiles), methods=['get', 'post'])
-        app.add_url_rule('/search_tile_metadata', "search_tile_metadata",
-                         login_required(self.search_tile_metadata), methods=['get', 'post'])
+        app.add_url_rule('/grab_tile_list_chunk', "grab_tile_list_chunk",
+                         login_required(self.grab_tile_list_chunk), methods=['get', 'post'])
 
     def rename_me(self, old_name):
         try:
@@ -264,26 +264,14 @@ class TileManager(LibraryResourceManager):
 
         return jsonify({"success": True, "new_row": new_row})
 
-    def search_inside_tiles(self):
-        user_obj = current_user
-        search_text = request.json['search_text']
-        reg = re.compile(".*" + search_text + ".*", re.IGNORECASE)
-        res = db[user_obj.tile_collection_name].find({"tile_module": reg})
-        res_list = []
-        for t in res:
-            res_list.append(t["tile_module_name"])
-        return jsonify({"success": True, "match_list": res_list})
+    def grab_tile_list_chunk(self):
+        #  search_spec has active_tag, search_string, search_inside, search_metadata, sort_field, sort_direction
+        if request.json["is_repository"]:
+            colname = repository_user.tile_collection_name
+        else:
+            colname = current_user.tile_collection_name
 
-    def search_tile_metadata(self):
-        user_obj = current_user
-        search_text = request.json['search_text']
-        reg = re.compile(".*" + search_text + ".*", re.IGNORECASE)
-        res = db[user_obj.tile_collection_name].find({"$or": [{"tile_module_name": reg}, {"metadata.notes": reg},
-                                                     {"metadata.tags": reg}, {"metadata.type": reg}]})
-        res_list = []
-        for t in res:
-            res_list.append(t["tile_module_name"])
-        return jsonify({"success": True, "match_list": res_list})
+        return self.grab_resource_list_chunk(colname, "tile_module_name", "tile_module")
 
     def create_tile_module(self):
         user_obj = current_user

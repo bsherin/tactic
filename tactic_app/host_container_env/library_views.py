@@ -196,8 +196,7 @@ def copy_from_repository():
     metadata, result = copy_between_accounts(repository_user, current_user, res_type, new_res_name, res_name)
     if metadata is not None:
         manager = get_manager_for_type(res_type)
-        new_row = manager.build_res_dict(new_res_name, metadata)
-        manager.update_selector_row(new_row)
+        manager.refresh_selector_list()
     return result
 
 
@@ -222,6 +221,7 @@ def get_resource_data_list(res_type):
 @login_required
 def get_repository_resource_data_list(res_type):
     return jsonify({"data_list": managers[res_type][1].get_resource_data_list()})
+
 
 # Metadata views
 @app.route('/grab_metadata', methods=['POST'])

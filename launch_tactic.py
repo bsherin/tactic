@@ -183,7 +183,7 @@ delete_all_queues(use_localhost=True)
 print("creating the host")
 base_port = 5000
 for wn in range(WORKERS):
-    if "DEBUG_CONTAINER" in os.environ and wn == 1:
+    if "DEBUG_CONTAINER" in os.environ and wn == 0:
         debug = True
     else:
         debug = False

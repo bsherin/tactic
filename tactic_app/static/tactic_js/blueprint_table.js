@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import { Cell, EditableCell, RowHeaderCell, Column, Table, Regions, RegionCardinality } from "@blueprintjs/table";
 import hash from "object-hash";
 
-import { doBinding } from "./utilities_react.js";
+import { doBinding, propsAreEqual } from "./utilities_react.js";
 
 export { BlueprintTable, compute_added_column_width };
 
@@ -37,6 +37,8 @@ class BlueprintTable extends React.Component {
         this.mismatched_column_widths = false;
         this.table_ref = React.createRef();
         this.set_scroll = null;
+        this.data_update_required = null;
+        this.state = { focusedCell: null };
     }
 
     get hash_value() {
@@ -46,6 +48,13 @@ class BlueprintTable extends React.Component {
             // sscroll: this.set_scroll
         };
         return hash(obj);
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        if (this.set_scroll || this.data_update_required) {
+            return true;
+        }
+        return !propsAreEqual(nextProps, this.props) || !propsAreEqual(nextState, this.state);
     }
 
     componentDidMount() {
@@ -72,7 +81,11 @@ class BlueprintTable extends React.Component {
     }
 
     _doScroll() {
-        if (this.set_scroll != null && this.table_ref && this.table_ref.current) {
+        if (this.data_update_required != null) {
+            let rindex = this.data_update_required;
+            this.data_update_required = null;
+            this.props.initiateDataGrab(rindex);
+        } else if (this.set_scroll != null && this.table_ref && this.table_ref.current) {
             try {
                 let singleCellRegion = Regions.cell(this.set_scroll, 0);
                 this.table_ref.current.scrollToRegion(singleCellRegion);
@@ -124,8 +137,8 @@ class BlueprintTable extends React.Component {
             let the_text;
             try {
                 if (!this.haveRowData(rowIndex)) {
-                    if (!self.props.awaiting_data) {
-                        self.props.initiateDataGrab(rowIndex);
+                    if (self.data_update_required == null) {
+                        self.data_update_required = rowIndex;
                     }
                     return React.createElement(Cell, { key: column_name,
                         loading: true });
@@ -197,8 +210,8 @@ class BlueprintTable extends React.Component {
             }
             // Wrapping the contents of the cell in React.Fragment prevent React from
             // generating a warning for reasons that are mysterious
-            return React.createElement(EnhancedEditableCell, { key: column_name // tactic_working
-                , truncated: true,
+            return React.createElement(EnhancedEditableCell, { key: column_name,
+                truncated: true,
                 rowIndex: rowIndex,
                 className: "cell-class",
                 interactive: false,
@@ -248,6 +261,10 @@ class BlueprintTable extends React.Component {
         this.props.moveColumn(col_to_move, target_col);
     }
 
+    _onFocusedCell(focusedCell) {
+        this.setState({ focusedCell: focusedCell });
+    }
+
     render() {
         let self = this;
         let columns = this.props.filtered_column_names.map(column_name => {
@@ -286,6 +303,8 @@ class BlueprintTable extends React.Component {
                     selectedRegions: this.props.selected_regions,
                     onCompleteRender: this._doScroll,
                     onColumnWidthChanged: this._onColumnWidthChanged,
+                    onFocusedCell: this._onFocusedCell,
+                    focusedCell: this.state.focusedCell,
                     enableMultipleSelection: false,
                     enableFocusedCell: this.props.spreadsheet_mode,
                     selectionModes: [RegionCardinality.FULL_COLUMNS, RegionCardinality.FULL_ROWS],
@@ -321,7 +340,6 @@ BlueprintTable.propTypes = {
 };
 
 class EnhancedEditableCell extends React.Component {
-    // tactic_working
 
     constructor(props) {
         super(props);

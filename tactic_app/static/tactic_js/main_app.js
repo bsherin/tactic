@@ -160,7 +160,6 @@ class MainApp extends React.Component {
             doc_names: props.initial_doc_names,
             short_collection_name: window.short_collection_name,
             console_items: [],
-            awaiting_data: false,
             console_is_shrunk: true,
             show_exports_pane: false,
             console_is_zoomed: false,
@@ -569,14 +568,12 @@ class MainApp extends React.Component {
     }
 
     _deleteRow() {
-        // tactic_working
         postWithCallback(window.main_id, "delete_row", { "document_name": this.state.table_spec.current_doc_name,
             "index": this.state.selected_row
         });
     }
 
     _insertRow(index) {
-        // tactic_working
         postWithCallback(window.main_id, "insert_row", { "document_name": this.state.table_spec.current_doc_name,
             "index": index,
             "row_dict": {}
@@ -584,7 +581,6 @@ class MainApp extends React.Component {
     }
 
     _duplicateRow() {
-        // tactic_working
         postWithCallback(window.main_id, "insert_row", { "document_name": this.state.table_spec.current_doc_name,
             "index": this.state.selected_row,
             "row_dict": this.state.data_row_dict[this.state.selected_row]
@@ -637,16 +633,14 @@ class MainApp extends React.Component {
     }
 
     _initiateDataGrab(row_index) {
-        this.setState({ awaiting_data: true }, () => {
-            this._grabNewChunkWithRow(row_index);
-        });
+        this._grabNewChunkWithRow(row_index);
     }
 
     _grabNewChunkWithRow(row_index) {
         let self = this;
         postWithCallback(window.main_id, "grab_chunk_by_row_index", { doc_name: this.state.table_spec.current_doc_name, row_index: row_index }, function (data) {
             let new_data_row_dict = Object.assign(self.state.data_row_dict, data.data_row_dict);
-            self.setState({ data_row_dict: new_data_row_dict, awaiting_data: false });
+            self.setState({ data_row_dict: new_data_row_dict });
         });
     }
 
@@ -686,7 +680,6 @@ class MainApp extends React.Component {
     }
 
     _updateDocList(doc_names, visible_doc) {
-        // tactic_working
         let self = this;
         this.setState({ doc_names: doc_names }, () => {
             self._handleChangeDoc(visible_doc);
@@ -779,7 +772,7 @@ class MainApp extends React.Component {
                 addColumn: this._addColumn,
                 deleteColumn: this._deleteColumn
             })),
-            !window.is_freeform && React.createElement(RowMenu, _extends({}, this.props.statusFuncs, { // tactic_working
+            !window.is_freeform && React.createElement(RowMenu, _extends({}, this.props.statusFuncs, {
                 deleteRow: this._deleteRow,
                 insertRowBefore: () => {
                     this._insertRow(this.state.selected_row);
@@ -829,7 +822,6 @@ class MainApp extends React.Component {
         } else {
             card_body = React.createElement(BlueprintTable, { my_ref: this.tbody_ref,
                 ref: this.table_ref,
-                awaiting_data: this.state.awaiting_data,
                 initiateDataGrab: this._initiateDataGrab,
                 height: this._getTableBodyHeight(table_available_height),
                 column_names: this.state.table_spec.column_names,

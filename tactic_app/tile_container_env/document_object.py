@@ -596,7 +596,7 @@ class TacticDocument:
     def rewind(self):
         self._iter_value = -1
 
-    def insert(self, position, dict_or_element=None):  # tactic_working
+    def insert(self, position, dict_or_element=None):
         if isinstance(dict_or_element, DetachedTacticRow):
             rdict = dict_or_element.row_dict
         else:
@@ -604,7 +604,7 @@ class TacticDocument:
         _tworker.tile_instance.insert_row(self.name, position, rdict)
         return
 
-    def __delitem__(self, rownum):  # tactic_working
+    def __delitem__(self, rownum):
         _tworker.tile_instance.delete_row(self.name, rownum)
 
     def __next__(self):
@@ -942,7 +942,7 @@ class TacticCollection:
     def __len__(self):
         return self._number_docs
 
-    def append(self, new_doc):  # tactic_working
+    def append(self, new_doc):
         if self._doc_type == "freeform":
             if not isinstance(new_doc, DetachedFreeformTacticDocument):
                 raise TypeError("Not a DetachedFreeformTacticDocument")

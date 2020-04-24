@@ -1,7 +1,10 @@
 
-from flask import jsonify
+import re
+import os
+
+from flask import jsonify, request
 from flask_login import login_required, current_user
-from tactic_app import app # create_megaplex
+from tactic_app import app  # create_megaplex
 from users import User, load_user
 from resource_manager import ResourceManager
 from docker_functions import cli, destroy_container, container_owner, get_log
@@ -12,6 +15,8 @@ from exception_mixin import generic_exception_handler
 import tactic_app
 
 admin_user = User.get_user_by_username("admin")
+CHUNK_SIZE = int(int(os.environ.get("CHUNK_SIZE")) / 2)
+
 import loaded_tile_management
 
 
@@ -26,6 +31,8 @@ class ContainerManager(ResourceManager):
                          login_required(self.kill_container), methods=['get'])
         app.add_url_rule('/container_logs/<cont_id>', "container_logs",
                          login_required(self.container_logs), methods=['get'])
+        app.add_url_rule('/grab_container_list_chunk', "grab_container_list_chunk",
+                         login_required(self.grab_container_list_chunk), methods=['get', 'post'])
 
     def clear_user_containers(self, library_id):
         tactic_image_names = ["tactic_tile_image", "tactic_main_image", "module_viewer_image"]
@@ -111,39 +118,75 @@ class ContainerManager(ResourceManager):
             return generic_exception_handler.get_traceback_exception_for_ajax(ex, "Error getting container logs")
         return jsonify({"success": True, "message": "Got Logs", "log_text": log_text, "alert_type": "alert-success"})
 
-    def get_resource_data_list(self, user_obj=None):
+    def build_res_dict(self, cont):
         tactic_image_names = ["tactic_tile_image", "tactic_main_image", "tactic_megaplex_image",
                               "module_viewer_image", "tactic_host_image"]
         image_id_names = {}
         for iname in tactic_image_names:
             image_id_names[cli.images.get(iname).id] = iname
+        owner_id = container_owner(cont)
+        if owner_id == "host":
+            owner_name = "host"
+        elif owner_id == "system":
+            owner_name = "system"
+        else:
+            owner_name = load_user(owner_id).username
+        image_id = cont.attrs["Image"]
+        if image_id in image_id_names:
+            image_name = image_id_names[image_id]
+        else:
+            image_name = image_id
 
-        result = []
+        new_row = {"Id": container_id(cont),
+                   "Other_name": container_other_name(cont),
+                   "Name": cont.attrs["Name"],
+                   "Image": image_name,
+                   "Owner": owner_name,
+                   "Status": cont.status,
+                   "Created": cont.attrs["Created"]
+                   }
+        return new_row
+
+    def grab_container_list_chunk(self):
+        if not current_user.get_id() == admin_user.get_id():
+            return
+
+        def sort_regular_key(item):
+            if sort_field not in item:
+                return ""
+            return item[sort_field]
+
+        search_spec = request.json["search_spec"]
+        row_number = request.json["row_number"]
+        search_text = search_spec['search_string']
+        reg = re.compile(".*" + search_text + ".*", re.IGNORECASE)
 
         all_containers = cli.containers.list(all=True)
+        filtered_res = []
+        match_keys = ["Other_name", "Name", "Image", "Owner", "Status"]
         for cont in all_containers:
-            owner_id = container_owner(cont)
-            if owner_id == "host":
-                owner_name = "host"
-            elif owner_id == "system":
-                owner_name = "system"
-            else:
-                owner_name = load_user(owner_id).username
-            image_id = cont.attrs["Image"]
-            if image_id in image_id_names:
-                image_name = image_id_names[image_id]
-            else:
-                image_name = image_id
+            new_row = self.build_res_dict(cont)
+            for k in match_keys:
+                if reg.match(new_row[k], re.IGNORECASE):
+                    filtered_res.append(new_row)
+                    break
 
-            new_row = {"Id": container_id(cont),
-                       "Other_name": container_other_name(cont),
-                       "Name": cont.attrs["Name"],
-                       "Image": image_name,
-                       "Owner": owner_name,
-                       "Status": cont.status,
-                       "Created": cont.attrs["Created"]
-                       }
-            result.append(new_row)
-        return result
+        if search_spec["sort_direction"] == "ascending":
+            reverse = False
+        else:
+            reverse = True
+
+        sort_field = search_spec["sort_field"]
+        sort_key_func = sort_regular_key
+
+        sorted_results = sorted(filtered_res, key=sort_key_func, reverse=reverse)
+
+        chunk_start = int(row_number / CHUNK_SIZE) * CHUNK_SIZE
+        chunk_list = sorted_results[chunk_start: chunk_start + CHUNK_SIZE]
+        chunk_dict = {}
+        for n, r in enumerate(chunk_list):
+            chunk_dict[n + chunk_start] = r
+        return jsonify(
+            {"success": True, "chunk_dict": chunk_dict, "num_rows": len(sorted_results)})
 
 

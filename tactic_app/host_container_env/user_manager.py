@@ -1,7 +1,7 @@
 import re
 import os
 import copy
-from flask import jsonify
+from flask import jsonify, request
 from flask_login import login_required, current_user
 from tactic_app import app, db, fs
 from users import get_all_users, remove_user, load_user, User
@@ -11,6 +11,10 @@ from pymongo import MongoClient
 from mongo_accesser import bytes_to_string
 import gridfs
 from tactic_app import Database
+
+admin_user = User.get_user_by_username("admin")
+
+CHUNK_SIZE = int(int(os.environ.get("CHUNK_SIZE")) / 2)
 
 if "DB_NAME" in os.environ:
     db_name = os.environ.get("DB_NAME")
@@ -26,6 +30,8 @@ class UserManager(ResourceManager):
                          login_required(self.update_user_starter_tiles), methods=['get', "post"])
         app.add_url_rule('/update_all_collections', "update_all_collections",
                          login_required(self.update_all_collections), methods=['get'])
+        app.add_url_rule('/grab_user_list_chunk', "grab_user_list_chunk",
+                         login_required(self.grab_user_list_chunk), methods=['get', 'post'])
 
     def update_all_collections(self):
         if not (current_user.username == "admin"):
@@ -154,17 +160,53 @@ class UserManager(ResourceManager):
 
         return jsonify({"success": True})
 
-    def get_resource_data_list(self, user_obj=None):
-        user_list = get_all_users()
-        result = []
+    def build_res_dict(self, user):
         larray = ["_id", "username", "full_name", "last_login", "email"]
-        for user in user_list:
-            urow = {}
-            for field in larray:
-                if field in user:
-                    urow[field] = str(user[field])
-                else:
-                    urow[field] = ""
-            result.append(urow)
-        return result
+        urow = {}
+        for field in larray:
+            if field in user:
+                urow[field] = str(user[field])
+            else:
+                urow[field] = ""
+        return urow
+
+    def grab_user_list_chunk(self):
+        if not current_user.get_id() == admin_user.get_id():
+            return
+
+        def sort_regular_key(item):
+            if sort_field not in item:
+                return ""
+            return item[sort_field]
+
+        search_spec = request.json["search_spec"]
+        row_number = request.json["row_number"]
+        search_text = search_spec['search_string']
+        reg = re.compile(".*" + search_text + ".*", re.IGNORECASE)
+        or_list = [{"full_name": reg}, {"username": reg}]
+
+        db.user_collection.find()
+        res = db["user_collection"].find({"$or": or_list})
+        filtered_res = []
+        for doc in res:
+            filtered_res.append(self.build_res_dict(doc))
+
+        if search_spec["sort_direction"] == "ascending":
+            reverse = False
+        else:
+            reverse = True
+
+        sort_field = search_spec["sort_field"]
+        sort_key_func = sort_regular_key
+
+        sorted_results = sorted(filtered_res, key=sort_key_func, reverse=reverse)
+
+        chunk_start = int(row_number / CHUNK_SIZE) * CHUNK_SIZE
+        chunk_list = sorted_results[chunk_start: chunk_start + CHUNK_SIZE]
+        chunk_dict = {}
+        for n, r in enumerate(chunk_list):
+            chunk_dict[n + chunk_start] = r
+        return jsonify(
+            {"success": True, "chunk_dict": chunk_dict, "num_rows": len(sorted_results)})
+
 

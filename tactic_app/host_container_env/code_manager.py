@@ -39,10 +39,8 @@ class CodeManager(LibraryResourceManager):
                          login_required(self.create_code), methods=['get', 'post'])
         app.add_url_rule('/create_duplicate_code', "create_duplicate_code",
                          login_required(self.create_duplicate_code), methods=['get', 'post'])
-        app.add_url_rule('/search_inside_code', "search_inside_code",
-                         login_required(self.search_inside_code), methods=['get', 'post'])
-        app.add_url_rule('/search_code_metadata', "search_code_metadata",
-                         login_required(self.search_code_metadata), methods=['get', 'post'])
+        app.add_url_rule('/grab_code_list_chunk', "grab_code_list_chunk",
+                         login_required(self.grab_code_list_chunk), methods=['get', 'post'])
 
     def rename_me(self, old_name):
         try:
@@ -174,27 +172,14 @@ class CodeManager(LibraryResourceManager):
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error deleting tiles")
 
-    def search_inside_code(self):
-        user_obj = current_user
-        search_text = request.json['search_text']
-        reg = re.compile(".*" + search_text + ".*", re.IGNORECASE)
-        res = db[user_obj.code_collection_name].find({"the_code": reg})
-        res_list = []
-        for t in res:
-            res_list.append(t["code_name"])
-        return jsonify({"success": True, "match_list": res_list})
+    def grab_code_list_chunk(self):
 
-    def search_code_metadata(self):
-        user_obj = current_user
-        search_text = request.json['search_text']
-        reg = re.compile(".*" + search_text + ".*", re.IGNORECASE)
-        res = db[user_obj.code_collection_name].find({"$or": [{"code_name": reg}, {"metadata.notes": reg},
-                                                     {"metadata.tags": reg}, {"metadata.functions": reg},
-                                                     {"metadata.classes": reg}]})
-        res_list = []
-        for t in res:
-            res_list.append(t["code_name"])
-        return jsonify({"success": True, "match_list": res_list})
+        if request.json["is_repository"]:
+            colname = repository_user.code_collection_name
+        else:
+            colname = current_user.code_collection_name
+
+        return self.grab_resource_list_chunk(colname, "code_name", "the_code")
 
 
 class RepositoryCodeManager(CodeManager):

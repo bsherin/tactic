@@ -85,9 +85,9 @@ class RepositoryHomeApp extends React.Component {
                 sorting_direction: "descending",
                 multi_select: false,
                 list_of_selected: [],
-                search_field_value: "",
-                search_inside_checked: false,
-                search_metadata_checked: false,
+                search_string: "",
+                search_inside: false,
+                search_metadata: false,
             }
         }
         this.top_ref = React.createRef();
@@ -130,8 +130,7 @@ class RepositoryHomeApp extends React.Component {
 
     render () {
         let collection_pane = (
-                        <LibraryPane
-                                     res_type="collection"
+                        <LibraryPane res_type="collection"
                                      allow_search_inside={false}
                                      allow_search_metadata={false}
                                      ToolbarClass={RepositoryCollectionToolbar}
@@ -142,60 +141,49 @@ class RepositoryHomeApp extends React.Component {
                                      is_repository={true}
                                      tsocket={tsocket}/>
         );
-        let projects_pane = (<LibraryPane
-                                     res_type="project"
-                                     allow_search_inside={false}
-                                     allow_search_metadata={true}
-                                     search_metadata_view = "search_project_metadata"
-                                     ToolbarClass={RepositoryProjectToolbar}
-                                     updatePaneState={this._updatePaneState}
-                                     {...this.state.pane_states["project"]}
-                                     {...this.props.errorDrawerFuncs}
-                                     errorDrawerFuncs={this.props.errorDrawerFuncs}
-                                     is_repository={true}
-                                     tsocket={tsocket}/>
+        let projects_pane = (<LibraryPane res_type="project"
+                                          allow_search_inside={false}
+                                          allow_search_metadata={true}
+                                          ToolbarClass={RepositoryProjectToolbar}
+                                          updatePaneState={this._updatePaneState}
+                                          {...this.state.pane_states["project"]}
+                                          {...this.props.errorDrawerFuncs}
+                                          errorDrawerFuncs={this.props.errorDrawerFuncs}
+                                          is_repository={true}
+                                          tsocket={tsocket}/>
         );
-        let tiles_pane = (<LibraryPane
-                                     res_type="tile"
-                                     allow_search_inside={true}
-                                     allow_search_metadata={true}
-                                     search_inside_view="search_inside_tiles"
-                                     search_metadata_view = "search_tile_metadata"
-                                     ToolbarClass={RepositoryTileToolbar}
-                                     updatePaneState={this._updatePaneState}
-                                     {...this.state.pane_states["tile"]}
-                                     {...this.props.errorDrawerFuncs}
-                                     errorDrawerFuncs={this.props.errorDrawerFuncs}
-                                     is_repository={true}
-                                     tsocket={tsocket}/>
+        let tiles_pane = (<LibraryPane res_type="tile"
+                                       allow_search_inside={true}
+                                       allow_search_metadata={true}
+                                       ToolbarClass={RepositoryTileToolbar}
+                                       updatePaneState={this._updatePaneState}
+                                       {...this.state.pane_states["tile"]}
+                                       {...this.props.errorDrawerFuncs}
+                                       errorDrawerFuncs={this.props.errorDrawerFuncs}
+                                       is_repository={true}
+                                       tsocket={tsocket}/>
         );
-        let lists_pane = (<LibraryPane
-                                    res_type="list"
-                                     allow_search_inside={true}
-                                     allow_search_metadata={true}
-                                     search_inside_view="search_inside_lists"
-                                     search_metadata_view = "search_list_metadata"
-                                     ToolbarClass={RepositoryListToolbar}
-                                    updatePaneState={this._updatePaneState}
-                                    {...this.state.pane_states["list"]}
-                                    {...this.props.errorDrawerFuncs}
-                                     errorDrawerFuncs={this.props.errorDrawerFuncs}
-                                    is_repository={true}
-                                     tsocket={tsocket}/>
+        let lists_pane = (<LibraryPane res_type="list"
+                                       allow_search_inside={true}
+                                       allow_search_metadata={true}
+                                       ToolbarClass={RepositoryListToolbar}
+                                       updatePaneState={this._updatePaneState}
+                                       {...this.state.pane_states["list"]}
+                                       {...this.props.errorDrawerFuncs}
+                                       errorDrawerFuncs={this.props.errorDrawerFuncs}
+                                       is_repository={true}
+                                       tsocket={tsocket}/>
         );
-        let code_pane = (<LibraryPane
-                                res_type="code"
-                                allow_search_inside={true}
-                                allow_search_metadata={true}
-                                search_inside_view="search_inside_code"
-                                search_metadata_view = "search_code_metadata"
-                                ToolbarClass={RepositoryCodeToolbar}
-                                updatePaneState={this._updatePaneState}
-                                {...this.state.pane_states["code"]}
-                                 {...this.props.errorDrawerFuncs}
-                                     errorDrawerFuncs={this.props.errorDrawerFuncs}
-                                is_repository={true}
-                                tsocket={tsocket}/>
+        let code_pane = (<LibraryPane res_type="code"
+                                      allow_search_inside={true}
+                                      allow_search_metadata={true}
+                                      ToolbarClass={RepositoryCodeToolbar}
+                                      updatePaneState={this._updatePaneState}
+                                      {...this.state.pane_states["code"]}
+                                      {...this.props.errorDrawerFuncs}
+                                      errorDrawerFuncs={this.props.errorDrawerFuncs}
+                                      is_repository={true}
+                                      tsocket={tsocket}/>
         );
         let outer_style = {width: this.state.usable_width,
             height: this.state.usable_height,
