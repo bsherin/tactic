@@ -42,7 +42,7 @@ window.addEventListener("unload", function sendRemove() {
 
 
 class CreatorViewerSocket extends TacticSocket {
-    initialize_socket_stuff () {
+    initialize_socket_stuff () {_
         this.socket.emit('join', {"room": window.user_id});
         this.socket.emit('join-main', {"room": window.module_viewer_id, "user_id": window.user_id});
         this.socket.on('handle-callback', handleCallback);
@@ -405,7 +405,7 @@ class CreatorApp extends React.Component {
                         return
                     }
                 }
-                if (this.line_number < this.state.render_content_line_number) {
+                else if (this.line_number < this.state.render_content_line_number) {
                     if (this.dpObject) {
                         this._selectLine(this.dpObject, this.line_number - this.state.draw_plot_line_number - 1)
                         this.line_number = null
