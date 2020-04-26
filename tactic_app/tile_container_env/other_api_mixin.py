@@ -91,7 +91,7 @@ class OtherAPIMIxin:
             new_df = df
         if not include_row_labels:
             columns = list(new_df.columns)
-            mat = new_df.get_values()
+            mat = new_df.to_numpy()
             res = [columns] + mat.tolist()
         else:
             res = [["label"] + list(new_df.columns)]
