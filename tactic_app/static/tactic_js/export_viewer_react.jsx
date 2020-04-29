@@ -63,6 +63,7 @@ class ExportListSelect extends React.Component {
             <HTMLSelect elementRef={this._handleSelectRef}
                            onChange={this._updateMe}
                            minimal={true}
+                            name="exportlist"
                            value={this.props.value}>
                 {this.create_groups()}
             </HTMLSelect>

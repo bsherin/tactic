@@ -224,7 +224,8 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     @_task_worthy
     def SelectChange(self, data):
         try:
-            self.handle_select_change(data["select_value"], data["doc_name"], data["active_row_id"])
+            self.handle_select_change(data["select_value"], data["doc_name"],
+                                      data["active_row_id"], data["select_name"])
         except Exception as ex:
             self._handle_exception(ex)
         return None
@@ -826,7 +827,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     def handle_form_submit(self, form_data, doc_name, active_row_id):
         return
 
-    def handle_select_change(self, value, doc_name, active_row_id):
+    def handle_select_change(self, value, doc_name, active_row_id, select_name):
         return
 
     def handle_textarea_change(self, value):

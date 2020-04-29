@@ -177,7 +177,7 @@ custom behavior.
    where value is the button value. By default, this does nothing.
 -  *TileSelectChange*. This event is generated when the user changes the
    value of a select element in the body of the the child. TileBase
-   calls ``handle_select_change(value, doc_name, active_row_index)``,
+   calls ``handle_select_change(value, doc_name, active_row_index, select_name)``,
    where value is the value selected.
 -  *TileFormSubmit*. This event is generated when the user clicks a
    submit in a form within the body of a tile (i.e., one that was placed
