@@ -506,6 +506,7 @@ class TileComponent extends React.Component {
         $(this.body_ref.current).on("change", '.front select', function (e) {
             let data_dict = self._standard_click_data();
             data_dict.select_value = e.target.value;
+            data_dict.select_name = e.target.name;
             postWithCallback(self.props.tile_id, "SelectChange", data_dict);
         });
         $(this.body_ref.current).on('change', '.front textarea', function (e) {
