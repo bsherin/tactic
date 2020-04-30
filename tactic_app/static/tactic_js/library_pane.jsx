@@ -416,7 +416,7 @@ class LibraryPane extends React.Component {
         }
         else {
             return {
-                collection: "/main/",
+                collection: "/main_collection/",
                 project: "/main_project/",
                 tile: "/last_saved_view/",
                 list: "/view_list/",

@@ -47,7 +47,7 @@ class CollectionManager(LibraryResourceManager):
         app.add_url_rule('/new_notebook', "new_notebook", login_required(self.new_notebook), methods=['get'])
         app.add_url_rule('/open_notebook/<unique_id>', "open_notebook",
                          login_required(self.open_notebook), methods=['get'])
-        app.add_url_rule('/main/<collection_name>', "main", login_required(self.main), methods=['get'])
+        app.add_url_rule('/main_collection/<collection_name>', "main", login_required(self.main_collection), methods=['get'])
         app.add_url_rule('/import_as_table/<collection_name>/<library_id>', "import_as_table",
                          login_required(self.import_as_table), methods=['get', "post"])
         app.add_url_rule('/import_as_freeform/<collection_name>/<library_id>', "import_as_freeform",
@@ -98,7 +98,7 @@ class CollectionManager(LibraryResourceManager):
                                css_source=css_source("notebook_app"),
                                module_source=js_source_dict["notebook_app"])
 
-    def main(self, collection_name):
+    def main_collection(self, collection_name):
         user_obj = current_user
         cname = user_obj.build_data_collection_name(collection_name)
         main_id = main_container_info.create_main_container(collection_name, user_obj.get_id(), user_obj.username)
