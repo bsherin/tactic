@@ -176,7 +176,8 @@ class NotebookApp extends React.Component {
         let menus = (
             <React.Fragment>
                 <ProjectMenu {...this.props.statusFuncs}
-                            console_items={this.state.console_items}
+                             postAjaxFailure={this.props.postAjaxFailure}
+                             console_items={this.state.console_items}
                              interface_state={this.interface_state}
                              updateLastSave={this._updateLastSave}
                              changeCollection={null}

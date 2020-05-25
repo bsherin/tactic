@@ -51,8 +51,13 @@ function withErrorDrawer(WrappedComponent, tsocket = null, title = null, positio
             this.setState({ contents: [...this.state.contents, entry], show_drawer: open });
         }
 
+        _postAjaxFailure(qXHR, textStatus, errorThrown) {
+            this._addEntry({ title: "Post Ajax Failure: {}".format(textStatus),
+                content: errorThrown });
+        }
+
         _clearAll() {
-            this.setState({ contents: [] });
+            this.setState({ contents: [], show_drawer: false });
         }
 
         _onClose() {
@@ -69,6 +74,7 @@ function withErrorDrawer(WrappedComponent, tsocket = null, title = null, positio
                 closeErrorDrawer: this._close,
                 clearErrorDrawer: this._clearAll,
                 addErrorDrawerEntry: this._addEntry,
+                postAjaxFailure: this._postAjaxFailure,
                 toggleErrorDrawer: this._toggle,
                 setGoToLineNumber: this._setGoToLineNumber
             };

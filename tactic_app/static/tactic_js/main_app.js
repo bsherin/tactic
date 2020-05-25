@@ -748,6 +748,7 @@ class MainApp extends React.Component {
             React.Fragment,
             null,
             React.createElement(ProjectMenu, _extends({}, this.props.statusFuncs, {
+                postAjaxFailure: this.props.postAjaxFailure,
                 console_items: this.state.console_items,
                 interface_state: this.interface_state,
                 changeCollection: this._changeCollection,

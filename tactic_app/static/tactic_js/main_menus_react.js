@@ -101,10 +101,10 @@ class ProjectMenu extends React.Component {
 
             result_dict.interface_state = self.props.interface_state;
             if (window.is_notebook) {
-                postWithCallback(window.main_id, "save_new_notebook_project", result_dict, save_as_success);
+                postWithCallback(window.main_id, "save_new_notebook_project", result_dict, save_as_success, self.props.postAjaxFailure);
             } else {
                 result_dict["purgetiles"] = true;
-                postWithCallback(window.main_id, "save_new_project", result_dict, save_as_success);
+                postWithCallback(window.main_id, "save_new_project", result_dict, save_as_success, self.props.postAjaxFailure);
             }
 
             function save_as_success(data_object) {
@@ -143,7 +143,7 @@ class ProjectMenu extends React.Component {
 
         //tableObject.startTableSpinner();
         this.props.startSpinner();
-        postWithCallback(window.main_id, "update_project", result_dict, updateSuccess);
+        postWithCallback(window.main_id, "update_project", result_dict, updateSuccess, self.props.postAjaxFailure);
         function updateSuccess(data) {
             self.props.startSpinner();
             if (data.success) {
@@ -183,7 +183,7 @@ class ProjectMenu extends React.Component {
                 "main_id": window.main_id,
                 "cell_list": cell_list
             };
-            postWithCallback(window.main_id, "export_to_jupyter_notebook", result_dict, save_as_success);
+            postWithCallback(window.main_id, "export_to_jupyter_notebook", result_dict, save_as_success, self.props.postAjaxFailure);
 
             function save_as_success(data_object) {
                 self.props.clearStatusMessage();
@@ -261,6 +261,7 @@ class ProjectMenu extends React.Component {
 
 ProjectMenu.propTypes = {
     console_items: PropTypes.array,
+    postAjaxFailure: PropTypes.func,
     interface_state: PropTypes.object,
     updateLastSave: PropTypes.func,
     changeCollection: PropTypes.func,
