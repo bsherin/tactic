@@ -192,6 +192,7 @@ class LoadSaveTasksMixin:
             print("entering track_loaded_modules")
 
             def track_recreated_tiles(trcdata):
+                self.show_main_status_message("Entering do_full_recreation")
                 print("tracking created tiles")
                 if trcdata["old_tile_id"] in tiles_to_recreate:
                     self.mworker.emit_to_main_client("tile-finished-loading", {"message": "tile-finished-loading",
@@ -201,7 +202,7 @@ class LoadSaveTasksMixin:
                     self.tile_id_dict[tsdict["tile_name"]] = trcdata["old_tile_id"]
                 if not tiles_to_recreate:
                     print("done recreating tiles")
-                    self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {})
+                    self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id_map": tile_id_map})
                     self.clear_main_status_message()
                     self.stop_main_status_spinner()
                 return
@@ -214,6 +215,13 @@ class LoadSaveTasksMixin:
                 self.show_main_status_message("Recreating tiles")
                 self.tile_save_results = {}
 
+                new_tile_instances = {}
+                for old_tile_id, tile_save_dict in self.project_dict["tile_instances"].items():
+                    new_tile_id = tile_id_map[old_tile_id]
+                    tile_save_dict["tile_id"] = new_tile_id
+                    new_tile_instances[new_tile_id] = tile_save_dict
+                    self.project_dict["tile_instances"] = new_tile_instances
+
                 tiles_to_recreate = list(self.project_dict["tile_instances"].keys())
                 if not tiles_to_recreate:
                     print("no tiles to recreate")
@@ -222,6 +230,7 @@ class LoadSaveTasksMixin:
                     self.stop_main_status_spinner()
                     return
                 print("about to recreate tiles one at a time")
+
                 for old_tile_id, tile_save_dict in self.project_dict["tile_instances"].items():
                     data_for_tile = {"old_tile_id": old_tile_id,
                                      "tile_save_dict": tile_save_dict}
@@ -229,9 +238,15 @@ class LoadSaveTasksMixin:
                                            track_recreated_tiles)
 
         print("Entering do_full_recreation")
-        self.show_main_status_message("Entering do_full_recreation")
         self.tile_instances = []
         tile_info_dict, loaded_modules, interface_state, success = self.recreate_from_save(data_dict["project_name"])
+        tile_id_map = {}
+        for old_id in tile_info_dict.keys():
+            tile_id_map[old_id] = str(uuid.uuid4())
+
+        for tile_entry in interface_state["tile_list"]:
+            tile_entry["tile_id"] = tile_id_map[tile_entry["tile_id"]]
+
         print("loaded modules is {}".format(str(loaded_modules)))
 
         if not success:
@@ -688,10 +703,18 @@ class TileCreationTasksMixin:
                      "collection_names": self.data_collection_tags_dict,
                      "other_tile_names": other_tile_names}
 
+        if "tile_id_map" in ddict:
+            tile_id_map = ddict["tile_id_map"]
+        else:
+            tile_id_map = None
         for tid in self.tile_instances:
             if tile_id is None or not tid == tile_id:
                 form_info["other_tile_names"] = self.get_other_tile_names(tid)
-                self.mworker.post_task(tid, "RebuildTileForms", form_info)
+                if tile_id_map is not None:
+                    the_id = tile_id_map[tid]
+                else:
+                    the_id = tid
+                self.mworker.post_task(the_id, "RebuildTileForms", form_info)
         print('leaving rebuild_tile_forms_task')
         return
 

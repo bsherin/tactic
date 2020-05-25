@@ -87,7 +87,7 @@ function postAjaxUploadPromise(target, form_data) {
     })
 }
 
-function postWithCallback(dest_id, task_type, task_data, callback_func){
+function postWithCallback(dest_id, task_type, task_data, callback_func, error_callback=null){
     const task_packet =  {
         "source": "client",
         "dest": dest_id,
@@ -115,7 +115,8 @@ function postWithCallback(dest_id, task_type, task_data, callback_func){
         type : 'POST',
         async: true,
         data: JSON.stringify(task_packet),
-        dataType: 'json'
+        dataType: 'json',
+        error: error_callback
     });
 }
 

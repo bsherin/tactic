@@ -182,7 +182,10 @@ class CollectionManager(LibraryResourceManager):
             for r, _id in enumerate(sorted_int_keys, start=2):
                 row = data_rows[str(_id)]
                 for c, header in enumerate(header_list, start=1):
-                    val = re.sub(ILLEGAL_CHARACTERS_RE, " ", str(row[header]))
+                    try:
+                        val = re.sub(ILLEGAL_CHARACTERS_RE, " ", str(row[header]))
+                    except:
+                        val = None
                     _ = ws.cell(row=r, column=c, value=val)
             self.adjust_ws_col_widths(ws, max_col_width)
             # noinspection PyUnresolvedReferences

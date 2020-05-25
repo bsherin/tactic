@@ -386,10 +386,13 @@ class CreatorApp extends React.Component {
 
     _selectLine(cm, lnumber) {
         let doc = cm.getDoc();
-        doc.setSelection(
-            {line: lnumber, ch: 0},
-            {line: lnumber, ch: doc.getLine(lnumber).length},
-            {scroll: true})
+        if (doc.getLine(lnumber)) {
+            doc.setSelection(
+                {line: lnumber, ch: 0},
+                {line: lnumber, ch: doc.getLine(lnumber).length},
+                {scroll: true})
+        }
+
     }
 
     _goToLineNumber() {

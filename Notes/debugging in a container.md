@@ -12,6 +12,7 @@ I just need to place a settrace whereever
 1. There needs to be a dockerfile for the container that does this.
 
     ```RUN pip install pydevd-pycharm~=193.5233.109```
+    new vesion ```RUN pip install pydevd-pycharm~=201.6668.115```
 
 2. Insert these lines somewhere near to where I want to debug. I also need to import pydevd_pycharm before monkey_patching.
 
