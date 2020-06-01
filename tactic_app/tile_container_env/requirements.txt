@@ -12,6 +12,7 @@ nltk
 numpy
 pandas
 pika
+plotly==4.7.1
 redis
 regex
 scipy

@@ -404,7 +404,7 @@ class MainApp extends React.Component {
                     self.props.clearStatusMessage();
                     self.props.stopSpinner();
                 } else {
-                    self.props.addErrorDrawerEntry({ title: "Error creating tile", content: data.message });
+                    self.props.addErrorDrawerEntry({ title: "Error creating tile", content: create_data });
                 }
             });
         }

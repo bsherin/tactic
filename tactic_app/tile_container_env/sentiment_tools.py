@@ -36,4 +36,4 @@ class TacticVader(SentimentIntensityAnalyzer):
 
         return self.score_valence(sentiments, text), words_and_emoticons, sentiment_dict
 
-vader_sentiment_analyzer = TacticVader("/root/nltk_data/vader_sentiment_lexicon.txt")
+vader_sentiment_analyzer = TacticVader("/root/resources/nltk_data/vader_sentiment_lexicon.txt")

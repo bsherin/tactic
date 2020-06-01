@@ -35,7 +35,7 @@ else:
 
 mongo_uri = os.environ.get("MONGO_URI")
 true_host_persist_dir = os.environ.get("TRUE_HOST_PERSIST_DIR")
-true_host_nltk_data_dir = os.environ.get("TRUE_HOST_NLTK_DATA_DIR")
+true_host_resources_dir = os.environ.get("TRUE_HOST_RESOURCES_DIR")
 
 
 # noinspection PyPep8Naming,PyUnusedLocal,PyTypeChecker
@@ -157,7 +157,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             user_host_persist_dir = true_host_persist_dir + "/tile_manager/" + self.username
             tile_volume_dict = {}
             tile_volume_dict[user_host_persist_dir] = {"bind": "/code/persist", "mode": "rw"}
-            tile_volume_dict[true_host_nltk_data_dir] = {"bind": "/root/nltk_data", "mode": "ro"}
+            tile_volume_dict[true_host_resources_dir] = {"bind": "/root/resources", "mode": "ro"}
             tile_container_id, container_id = docker_functions.create_container("tactic_tile_image",
                                                                                 network_mode="bridge",
                                                                                 owner=data["user_id"],
