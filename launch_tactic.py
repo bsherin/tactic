@@ -38,9 +38,9 @@ if restart_rabbit:
     tactic_app.docker_functions.cli.networks.create("tactic-net", driver="bridge")
 
 host_persist_dir = os.getcwd() + "/persist"
-host_nltk_data_dir = os.getcwd() + "/tactic_app/nltk_data"
 host_static_dir = os.getcwd() + "/tactic_app/static"
 host_docs_dir = os.getcwd() + "/docs"
+host_resources_dir = os.getcwd() + "/tactic_app/resources"
 
 restart_policy = {"Name": "on-failure", "MaximumRetryCount": 5}
 
@@ -143,7 +143,7 @@ def create_host(port=5000, debug=False):
                                                        env_vars=env_vars,
                                                        special_unique_id="host",
                                                        local_true_host_persist_dir=host_persist_dir,
-                                                       local_true_host_nltk_data_dir=host_nltk_data_dir,
+                                                       local_true_host_resources_dir=host_resources_dir,
                                                        register_container=False)
     except ContainerCreateError:
         print("Error creating the host.")

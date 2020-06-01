@@ -77,10 +77,11 @@ if "TRUE_HOST_PERSIST_DIR" in os.environ:
 else:
     true_host_persist_dir = None
 
-if "TRUE_HOST_NLTK_DATA_DIR" in os.environ:
-    true_host_nltk_data_dir = os.environ.get("TRUE_HOST_NLTK_DATA_DIR")
+
+if "TRUE_HOST_RESOURCES_DIR" in os.environ:
+    true_host_resources_dir = os.environ.get("TRUE_HOST_RESOURCES_DIR")
 else:
-    true_host_nltk_data_dir = None
+    true_host_resources_dir = None
 
 
 class MainContainerTracker(object):
@@ -96,7 +97,7 @@ class MainContainerTracker(object):
                                                   volume_dict=main_volume_dict,
                                                   publish_all_ports=True,
                                                   local_true_host_persist_dir=true_host_persist_dir,
-                                                  local_true_host_nltk_data_dir=true_host_nltk_data_dir)
+                                                  local_true_host_resources_dir=true_host_resources_dir)
 
         return main_id
 
@@ -134,7 +135,7 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
                      other_name="none", volume_dict=None, username=None,
                      detach=True, register_container=True, publish_all_ports=False,
                      local_true_host_persist_dir=None, restart_policy=None,
-                     local_true_host_nltk_data_dir=None, special_unique_id=None):
+                     local_true_host_resources_dir=None, special_unique_id=None):
     if env_vars is None:
         env_vars = {}
     if special_unique_id is not None:
@@ -156,7 +157,9 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
                "DEBUG_TILE_CONTAINER": DEBUG_TILE_CONTAINER,
                "PYTHONUNBUFFERED": "Yes",
                "TRUE_HOST_PERSIST_DIR": local_true_host_persist_dir,
-               "TRUE_HOST_NLTK_DATA_DIR": local_true_host_nltk_data_dir}
+               "TRUE_HOST_RESOURCES_DIR": local_true_host_resources_dir
+
+               }
 
     if username is not None:
         environ["USERNAME"] = username
