@@ -3,6 +3,7 @@ from communication_utils import debinarize_python_object
 # noinspection PyPackageRequirements
 import pandas as _pd
 import nltk
+nltk.data.path.append("/root/resources/nltk_data")
 
 
 class OtherAPIMIxin:
