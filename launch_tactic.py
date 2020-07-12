@@ -136,7 +136,7 @@ def create_host(port=5000, debug=False):
         env_vars = {"AM_TACTIC_HOST": True, "MYPORT": port}
         if debug:
             env_vars["DEBUG_CONTAINER"] = True
-        _unique_id, _tactic_host_id = create_container("tactic_host_image",
+        _unique_id, _tactic_host_id = create_container("bsherin/tactic:host",
                                                        container_name="tactic_host" + str(port),
                                                        volume_dict=host_volume_dict,
                                                        port_bindings={5000: port},
@@ -154,7 +154,7 @@ def create_tile_test_container():
     print("Creating the test_tile_container")
     env_vars = {"PPI": 0}
     try:
-        _test_tile_container_id, _container_id = create_container("tactic_tile_image",
+        _test_tile_container_id, _container_id = create_container("bsherin/tactic:tile",
                                                                   network_mode="bridge",
                                                                   container_name="tile_test_container",
                                                                   special_unique_id="tile_test_container",

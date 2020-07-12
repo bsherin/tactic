@@ -1,4 +1,4 @@
-FROM tactic_base_image
+FROM bsherin/tactic:base
 WORKDIR /code
 ARG debug=False
 ADD ./host_container_env/requirements.txt /code/requirements.txt

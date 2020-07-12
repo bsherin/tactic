@@ -5,7 +5,7 @@ import json
 from flask import jsonify
 
 if "IMAGE_NAME" in os.environ:
-    if os.environ.get("IMAGE_NAME") == "tactic_tile_image":
+    if os.environ.get("IMAGE_NAME") == "bsherin/tactic:tile":
         from tile_o_plex import app
     else:
         app = None  # Will be here if in the module_viewer image is set externally

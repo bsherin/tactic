@@ -158,7 +158,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             tile_volume_dict = {}
             tile_volume_dict[user_host_persist_dir] = {"bind": "/code/persist", "mode": "rw"}
             tile_volume_dict[true_host_resources_dir] = {"bind": "/root/resources", "mode": "ro"}
-            tile_container_id, container_id = docker_functions.create_container("tactic_tile_image",
+            tile_container_id, container_id = docker_functions.create_container("bsherin/tactic:tile",
                                                                                 network_mode="bridge",
                                                                                 owner=data["user_id"],
                                                                                 parent=data["parent"],

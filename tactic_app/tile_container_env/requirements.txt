@@ -13,6 +13,7 @@ numpy
 pandas
 pika
 plotly==4.7.1
+pyldavis
 redis
 regex
 scipy

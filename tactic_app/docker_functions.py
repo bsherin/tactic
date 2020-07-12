@@ -91,7 +91,7 @@ class MainContainerTracker(object):
         user_host_persist_dir = true_host_persist_dir + "/tile_manager/" + username
         main_volume_dict[user_host_persist_dir] = {"bind": "/code/persist", "mode": "ro"}
         environ = {"USE_WAIT_TASKS": "True"}
-        main_id, _container_id = create_container("tactic_main_image", network_mode="bridge",
+        main_id, _container_id = create_container("bsherin/tactic:main", network_mode="bridge",
                                                   env_vars=environ,
                                                   owner=user_id, other_name=other_name, username=username,
                                                   volume_dict=main_volume_dict,
@@ -173,7 +173,7 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
 
     labels = {"my_id": unique_id, "owner": owner, "parent": parent, "other_name": other_name}
 
-    if image_name == "tactic_tile_image":  # We don't want people to be able to see the mongo_uri
+    if image_name == "bsherin/tactic:tile":  # We don't want people to be able to see the mongo_uri
         del environ["MONGO_URI"]
 
     run_args = {
