@@ -18,7 +18,7 @@ import { showConfirmDialogReact } from "./modal_react";
 
 export { ConsoleComponent };
 
-const MAX_CONSOLE_WIDTH = 1140;
+const MAX_CONSOLE_WIDTH = 1800;
 const BUTTON_CONSUMED_SPACE = 203;
 
 class ConsoleComponent extends React.Component {

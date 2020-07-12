@@ -254,7 +254,7 @@ class HostWorker(QWorker):
     def go_to_module_viewer_if_exists(self, data):
         user_id = data["user_id"]
         tile_type = data["tile_type"]
-        matching_ids = get_matching_user_containers(user_id, "module_viewer_image", tile_type)
+        matching_ids = get_matching_user_containers(user_id, "bsherin/tactic:module_viewer", tile_type)
         if len(matching_ids) == 0:
             return {"success": False}
         else:
@@ -593,7 +593,7 @@ class HostWorker(QWorker):
     def get_empty_tile_containers(self, data):
         tile_containers = []
         for i in range(data["number"]):
-            tile_container_id, container_id = create_container("tactic_tile_image",
+            tile_container_id, container_id = create_container("bsherin/tactic:tile",
                                                                network_mode="bridge",
                                                                owner=data["user_id"],
                                                                parent=data["parent"])

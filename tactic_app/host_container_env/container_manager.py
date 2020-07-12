@@ -35,7 +35,7 @@ class ContainerManager(ResourceManager):
                          login_required(self.grab_container_list_chunk), methods=['get', 'post'])
 
     def clear_user_containers(self, library_id):
-        tactic_image_names = ["tactic_tile_image", "tactic_main_image", "module_viewer_image"]
+        tactic_image_names = ["bsherin/tactic:tile", "bsherin/tactic:main", "bsherin/tactic:module_viewer"]
         tactic_image_ids = {}
         for iname in tactic_image_names:
             tactic_image_ids[iname] = cli.images.get(iname).id
@@ -46,18 +46,18 @@ class ContainerManager(ResourceManager):
             self.show_um_message("removing user containers", library_id, timeout=None)
             all_containers = cli.containers.list(all=True)
             for cont in all_containers:
-                if cont.attrs["Image"] == tactic_image_ids["tactic_main_image"]:
+                if cont.attrs["Image"] == tactic_image_ids["bsherin/tactic:main"]:
                     self.show_um_message("removing main container " + cont.attrs["Name"], library_id, timeout=None)
                     cont.remove(force=True)
                     continue
-                if cont.attrs["Image"] == tactic_image_ids["tactic_tile_image"]:
+                if cont.attrs["Image"] == tactic_image_ids["bsherin/tactic:tile"]:
                     the_id = container_id(cont)
                     if not the_id == "tile_test_container":
                         self.show_um_message("removing tile container " + cont.attrs["Name"],
                                              library_id, timeout=None)
                         cont.remove(force=True)
                     continue
-                if cont.attrs["Image"] == tactic_image_ids["module_viewer_image"]:
+                if cont.attrs["Image"] == tactic_image_ids["bsherin/tactic:module_viewer"]:
                     the_id = container_id(cont)
                     if not the_id == "tile_test_container":
                         self.show_um_message("removing module viewer container " + cont.attrs["Name"],
@@ -119,8 +119,8 @@ class ContainerManager(ResourceManager):
         return jsonify({"success": True, "message": "Got Logs", "log_text": log_text, "alert_type": "alert-success"})
 
     def build_res_dict(self, cont):
-        tactic_image_names = ["tactic_tile_image", "tactic_main_image", "tactic_megaplex_image",
-                              "module_viewer_image", "tactic_host_image"]
+        tactic_image_names = ["bsherin/tactic:tile", "bsherin/tactic:main", "tactic_megaplex_image",
+                              "bsherin/tactic:module_viewer", "bsherrin/tactic:host"]
         image_id_names = {}
         for iname in tactic_image_names:
             image_id_names[cli.images.get(iname).id] = iname

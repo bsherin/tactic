@@ -1,4 +1,4 @@
-FROM tactic_base_image
+FROM bsherin/tactic:basee
 WORKDIR /code
 ADD ./main_container_env /code
 RUN pip install -r requirements.txt

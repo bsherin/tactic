@@ -6,7 +6,7 @@ services:
       build:
         context: .
         dockerfile: Dockerfile-base
-      image: tactic_base_image
+      image: bsherin/tactic:base
 
   tactic_host:
     build:
@@ -14,7 +14,7 @@ services:
       dockerfile: Dockerfile-host
     depends_on:
       - tactic_base
-    image: tactic_host_image
+    image: bsherin/tactic:host
     environment:
       PYTHONUNBUFFERED: 1
 
@@ -24,7 +24,7 @@ services:
       dockerfile: Dockerfile-main
     depends_on:
       - tactic_base
-    image: tactic_main_image
+    image: bsherin/tactic:main
 
   tactic_module_viewer:
     build:
@@ -32,7 +32,7 @@ services:
       dockerfile: Dockerfile-module-viewer
     depends_on:
       - tactic_base
-    image: module_viewer_image
+    image: bsherin/tactic:module_viewer
 
   tactic_tile:
     build:
@@ -40,7 +40,7 @@ services:
       dockerfile: Dockerfile-tile
     depends_on:
       - tactic_base
-    image: tactic_tile_image
+    image: bsherin/tactic:tile
     environment:
       PYTHONUNBUFFERED: 0
 

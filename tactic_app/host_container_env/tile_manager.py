@@ -188,7 +188,7 @@ class TileManager(LibraryResourceManager):
 
     def initialize_module_viewer_container(self, module_name):
         user_obj = current_user
-        module_viewer_id, container_id = create_container("module_viewer_image", owner=user_obj.get_id(),
+        module_viewer_id, container_id = create_container("bsherin/tactic:module_viewer", owner=user_obj.get_id(),
                                                           other_name=module_name, register_container=True)
 
         the_content = {"module_name": module_name,
