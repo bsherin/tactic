@@ -626,6 +626,7 @@ class TileCreationTasksMixin:
 
     @task_worthy_manual_submit
     def recreate_one_tile(self, data, task_packet):
+        print('entering rebuild_tile_forms_task')
         print("in recreate one tile")
         old_tile_id = data["old_tile_id"]
         tile_save_dict = data["tile_save_dict"]
@@ -703,17 +704,10 @@ class TileCreationTasksMixin:
                      "collection_names": self.data_collection_tags_dict,
                      "other_tile_names": other_tile_names}
 
-        if "tile_id_map" in ddict:
-            tile_id_map = ddict["tile_id_map"]
-        else:
-            tile_id_map = None
         for tid in self.tile_instances:
             if tile_id is None or not tid == tile_id:
                 form_info["other_tile_names"] = self.get_other_tile_names(tid)
-                if tile_id_map is not None:
-                    the_id = tile_id_map[tid]
-                else:
-                    the_id = tid
+                the_id = tid
                 self.mworker.post_task(the_id, "RebuildTileForms", form_info)
         print('leaving rebuild_tile_forms_task')
         return

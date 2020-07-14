@@ -984,4 +984,7 @@ table.sortable thead {
 .monospace {
   font-family: monospace; }
 
+.bp3-icon path {
+  fill: inherit; }
+
 /*# sourceMappingURL=tactic.css.map */
