@@ -182,6 +182,7 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
         "ports": port_bindings,
         "detach": detach,
         "labels": labels,
+        "init": True,
         "volumes": volume_dict,
         "network": "tactic-net",
         "publish_all_ports": publish_all_ports

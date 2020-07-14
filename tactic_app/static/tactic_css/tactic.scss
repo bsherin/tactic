@@ -135,6 +135,13 @@ table.sortable thead {
 }
 
 
+// This below is necessary to intercept a problem
+// with pyLDAvis where it would make buttons disappear
+.bp3-icon path {
+    fill: inherit
+}
+
+
 
 
 
