@@ -119,8 +119,8 @@ class ContainerManager(ResourceManager):
         return jsonify({"success": True, "message": "Got Logs", "log_text": log_text, "alert_type": "alert-success"})
 
     def build_res_dict(self, cont):
-        tactic_image_names = ["bsherin/tactic:tile", "bsherin/tactic:main", "tactic_megaplex_image",
-                              "bsherin/tactic:module_viewer", "bsherrin/tactic:host"]
+        tactic_image_names = ["bsherin/tactic:tile", "bsherin/tactic:main",
+                              "bsherin/tactic:module_viewer", "bsherin/tactic:host"]
         image_id_names = {}
         for iname in tactic_image_names:
             image_id_names[cli.images.get(iname).id] = iname
