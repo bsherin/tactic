@@ -156,7 +156,7 @@ def repository():
 @socketio.on('connect', namespace='/library')
 @login_required
 def connected_msg():
-    print("client connected")
+    print("client connected for user {}".format(current_user.username))
 
 
 @socketio.on('join', namespace='/library')
