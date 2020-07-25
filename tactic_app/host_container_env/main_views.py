@@ -26,7 +26,7 @@ from js_source_management import _develop
 # The main window should join a room associated with the user
 @socketio.on('connect', namespace='/main')
 def connected_msg():
-    print("client connected")
+    print("client connected for user {} in main_views".format(current_user.username))
 
 
 @socketio.on('disconnect', namespace='/test')
