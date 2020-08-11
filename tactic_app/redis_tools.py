@@ -42,4 +42,3 @@ def hkeys(username, d):
 
 def vset(username, k, v):
     redis_tm.set("{}.{}".format(username, k), v)
-

@@ -48,7 +48,16 @@ class OptionModuleForm extends React.Component {
     }
 
     handleTypeChange(event) {
-        this.setState({ "type": event.currentTarget.value });
+        let new_type = event.currentTarget.value;
+        let updater = { "type": new_type };
+        if (new_type != "custom_list") {
+            updater["special_list"] = "";
+        }
+        if (!this.taggable_types.includes(new_type)) {
+            updater["tags"] = "";
+        }
+
+        this.setState(updater);
     }
 
     handleSubmit() {
@@ -57,7 +66,7 @@ class OptionModuleForm extends React.Component {
 
     render() {
         return React.createElement(
-            "div",
+            "form",
             null,
             React.createElement(
                 "div",
@@ -68,7 +77,10 @@ class OptionModuleForm extends React.Component {
                 this.state.type == "custom_list" && React.createElement(LabeledFormField, { label: "Special List", onChange: this.handleSpecialListChange, the_value: this.state.special_list }),
                 this.taggable_types.includes(this.state.type) && React.createElement(LabeledFormField, { label: "Tag", onChange: this.handleTagChange, the_value: this.state.tag })
             ),
-            React.createElement(Button, { onClick: this.handleSubmit, text: "Create" })
+            React.createElement(Button, { type: "submit", text: "Create", onClick: e => {
+                    e.preventDefault();
+                    this.handleSubmit();
+                } })
         );
     }
 }
@@ -187,7 +199,7 @@ class ExportModuleForm extends React.Component {
 
     render() {
         return React.createElement(
-            "div",
+            "form",
             null,
             React.createElement(
                 "div",
@@ -195,7 +207,10 @@ class ExportModuleForm extends React.Component {
                 React.createElement(LabeledFormField, { label: "Name", onChange: this.handleNameChange, the_value: this.state.name }),
                 React.createElement(LabeledFormField, { label: "Tag", onChange: this.handleTagChange, the_value: this.state.tag })
             ),
-            React.createElement(Button, { onClick: this.handleSubmit, text: "Create" })
+            React.createElement(Button, { text: "Create", type: "submit", onClick: e => {
+                    e.preventDefault();
+                    this.handleSubmit();
+                } })
         );
     }
 }

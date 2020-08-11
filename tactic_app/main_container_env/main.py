@@ -622,9 +622,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         doc = self.doc_dict[doc_name]
         doc.set_background_color(the_id, column_header, color)
         if doc_name == self.visible_doc_name:
-            actual_row = doc.get_actual_row(the_id)
-            if actual_row is not None:
-                data = {"row": actual_row,
-                        "column_header": column_header,
-                        "color": color}
-                self.mworker.emit_table_message("setCellBackground", data)
+            data = {"row": the_id,
+                    "column_header": column_header,
+                    "color": color}
+            self.mworker.emit_table_message("setCellBackground", data)

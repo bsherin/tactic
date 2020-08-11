@@ -172,7 +172,7 @@ def unload_one_tile(username, tile_name, tile_module_name):
 def add_user_tile_module(username, category, tile_name, tile_module, tile_module_name, is_default=False):
     print("adding tile {}".format(tile_name))
 
-    # self.unload_one_tile(username, tile_name, tile_module_name)
+    unload_one_tile(username, tile_name, tile_module_name)
     if hexists(username, "failed_loaded_default_modules"):
         if tile_module_name in hkeys(username, "failed_loaded_default_modules"):
             hdel(username, "failed_loaded_default_modules", tile_module_name)
