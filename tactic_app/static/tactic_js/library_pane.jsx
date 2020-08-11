@@ -660,7 +660,7 @@ class LibraryPane extends React.Component {
                     let ind = self.get_data_dict_index(res_name);
                     let new_data_dict = _.cloneDeep(self.state.data_dict);
                     new_data_dict[ind].name = new_name;
-                    self.setState({data_dict: new_data_dict})
+                    self.setState({data_dict: new_data_dict}, ()=>{self._selectRow(ind)})
                 }
             }
         }

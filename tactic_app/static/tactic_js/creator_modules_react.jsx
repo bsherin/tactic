@@ -3,7 +3,7 @@
 import React from "react";
 import PropTypes from 'prop-types';
 
-import { Button, Card } from "@blueprintjs/core";
+import { Button, Card} from "@blueprintjs/core";
 
 import {Toolbar} from "./blueprint_toolbar.js";
 import {LabeledSelectList, LabeledFormField, BpOrderableTable} from "./blueprint_react_widgets.js";
@@ -50,7 +50,16 @@ class OptionModuleForm extends React.Component {
     }
     
     handleTypeChange(event) {
-        this.setState({"type": event.currentTarget.value})
+        let new_type = event.currentTarget.value;
+        let updater = {"type": new_type};
+        if (new_type != "custom_list") {
+            updater["special_list"] = ""
+        }
+        if (!this.taggable_types.includes(new_type)) {
+            updater["tags"] = ""
+        }
+
+        this.setState(updater)
     }
 
     handleSubmit() {
@@ -59,7 +68,7 @@ class OptionModuleForm extends React.Component {
 
     render () {
         return (
-            <div>
+            <form>
                 <div style={{display: "flex", flexDirection: "row", padding: 25}}>
                     <LabeledFormField label="Name" onChange={this.handleNameChange} the_value={this.state.name} />
                     <LabeledSelectList label="Type" option_list={this.option_types} onChange={this.handleTypeChange} the_value={this.state.type}/>
@@ -70,8 +79,10 @@ class OptionModuleForm extends React.Component {
                         <LabeledFormField label="Tag" onChange={this.handleTagChange} the_value={this.state.tag}/>
                     }
                 </div>
-            <Button onClick={this.handleSubmit} text="Create"/>
-            </div>
+                <Button type="submit" text="Create" onClick={e => {
+                    e.preventDefault();
+                    this.handleSubmit()}} />
+            </form>
         )
     }
 }
@@ -195,13 +206,15 @@ class ExportModuleForm extends React.Component {
 
     render () {
         return (
-            <div>
+            <form>
                 <div style={{display: "flex", flexDirection: "row", padding: 25}}>
                     <LabeledFormField label="Name" onChange={this.handleNameChange} the_value={this.state.name} />
                     <LabeledFormField label="Tag" onChange={this.handleTagChange} the_value={this.state.tag}/>
                 </div>
-                <Button onClick={this.handleSubmit} text="Create"/>
-            </div>
+                <Button text="Create" type="submit" onClick={e => {
+                    e.preventDefault();
+                    this.handleSubmit()}}/>
+            </form>
         )
     }
 }

@@ -396,7 +396,8 @@ class ConsoleComponent extends React.Component {
                     addNewCodeItem: this._addBlankCode,
                     useDragHandle: true,
                     axis: "y"
-                })
+                }),
+                React.createElement("div", { id: "padding-div", style: { height: 500 } })
             )
         );
     }

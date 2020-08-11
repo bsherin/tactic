@@ -15,6 +15,7 @@ const EXTRA_TABLE_AREA_SPACE = 500;
 
 class ColoredWord extends React.Component {
 
+
     render() {
         let style = {backgroundColor: this.props.the_color};
         return (
@@ -133,6 +134,17 @@ class BlueprintTable extends React.Component {
         return null
     }
 
+    _cell_background_color(row_id, colname) {
+        if (this.props.cell_backgrounds.hasOwnProperty(row_id)) {
+            let cell_background_dict = this.props.cell_backgrounds[row_id];
+            if (cell_background_dict.hasOwnProperty(colname)) {
+                return cell_background_dict[colname]
+            }
+            return null
+        }
+        return null
+    }
+
     _cellRendererCreator(column_name) {
         let self = this;
         return (rowIndex) => {
@@ -169,6 +181,7 @@ class BlueprintTable extends React.Component {
                         </Cell>
                     )
                 }
+                let cell_bg_color = self._cell_background_color(rowIndex, column_name)
                 the_text = self.props.data_row_dict[rowIndex][column_name];
                 if ((this.props.alt_search_text != null) && (this.props.alt_search_text != "")) {
                     const regex = new RegExp(this.props.alt_search_text, "gi");
@@ -177,6 +190,7 @@ class BlueprintTable extends React.Component {
                     });
                     let converted_dict = {__html: the_text};
                     return (<Cell key={column_name}
+                                  style={{backgroundColor: cell_bg_color}}
                                   truncated={true}
                                   wrapText={true}>
                             <div dangerouslySetInnerHTML={converted_dict}></div>
@@ -190,6 +204,7 @@ class BlueprintTable extends React.Component {
                     });
                     let converted_dict = {__html: the_text};
                     return (<Cell key={column_name}
+                                  style={{backgroundColor: cell_bg_color}}
                                   truncated={true}
                                   wrapText={true}>
                             <div dangerouslySetInnerHTML={converted_dict}></div>
@@ -198,6 +213,7 @@ class BlueprintTable extends React.Component {
                 }
                 if (!self.props.spreadsheet_mode) {
                     return (<Cell key={column_name}
+                                  style={{backgroundColor: cell_bg_color}}
                                   truncated={true}
                                   wrapText={true}>
                             {the_text}
@@ -220,6 +236,7 @@ class BlueprintTable extends React.Component {
                                           columnHeader={column_name}
                                           wrapText={true}
                                           setCellContent={this.props.setCellContent}
+                                          bgColor={cell_bg_color}
                                           value={the_text}/>
             )
         };
@@ -335,6 +352,7 @@ BlueprintTable.propTypes = {
     setMainStateValue: PropTypes.func,
     broadcast_event_to_server: PropTypes.func,
     cells_to_color_text: PropTypes.object,
+    cell_backgrounds: PropTypes.object,
     column_widths: PropTypes.array,
     hidden_columns_list: PropTypes.array,
     search_text: PropTypes.string,
@@ -380,6 +398,7 @@ class EnhancedEditableCell extends React.Component {
             <EditableCell ref={this.cell_ref}
                           onConfirm={this._onConfirmCellEdit}
                           onChange={this._onChange}
+                          style={{backgroundColor: this.props.bgColor}}
                           onKeyDown={this.state.am_editing ? null : this._handleKeyDown}
                           {...this.props}/>
         )

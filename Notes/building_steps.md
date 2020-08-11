@@ -31,14 +31,14 @@ note that the `npm run …` commands run a named script from package.json
 * Push changes to github
     * note that the flask config file in `tactic_app/config.py` is no longer part of the repository.
     I think this shouldn't matter because I build my images locally.
-* Push images to docker hub: `docker push` is all it takes, I think
+* Push images to docker hub: `docker push bsherin/tactic` is all it takes, I think
 * On github, Pull onto main branch, if necessary
 
 Finally:
 * run these scripts (They require a vpn connection
 
 ```
->/az_resdocker/
+>/az_resdocker/  # actually I haven't been doing this lately
 >/azdeploy/  # Just to change directories
 >/azplay/
 # alternatively, if I want to also update the nginx config:

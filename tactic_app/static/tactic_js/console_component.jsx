@@ -410,6 +410,7 @@ const BUTTON_CONSUMED_SPACE = 203;
                                        axis="y"
                     />
                     }
+                    <div id="padding-div" style={{height:500}}></div>
                 </div>
                 }
             </Card>

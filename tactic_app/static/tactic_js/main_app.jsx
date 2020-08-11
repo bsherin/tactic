@@ -26,7 +26,7 @@ import {handleCallback, postWithCallback, postAsyncFalse} from "./communication_
 import {doFlash} from "./toaster.js"
 import {withStatus} from "./toaster.js";
 import {withErrorDrawer} from "./error_drawer.js";
-import {doBinding, get_ppi} from "./utilities_react.js";
+import {doBinding, get_ppi, propsAreEqual} from "./utilities_react.js";
 
 export {MainTacticSocket}
 
@@ -128,11 +128,11 @@ function _finish_post_load(data) {
                                                  initial_data_row_dict={data.data_row_dict}
                                                  initial_column_widths={data.table_spec.column_widths}
                                                  initial_hidden_columns_list={data.table_spec.hidden_columns_list}
+                                                 initial_cell_backgrounds={data.table_spec.cell_backgrounds}
                                                  initial_doc_names={window.doc_names}/>,
                         domContainer)
             }
-        //     )
-        // }
+
         else {
 
             ReactDOM.render(<MainAppPlus is_project={false}
@@ -142,6 +142,7 @@ function _finish_post_load(data) {
                                          initial_data_row_dict={data.data_row_dict}
                                          initial_column_widths={data.table_spec.column_widths}
                                          initial_hidden_columns_list={data.table_spec.hidden_columns_list}
+                                         initial_cell_backgrounds={data.table_spec.cell_backgrounds}
                                          initial_doc_names={window.doc_names}/>,
                 domContainer)
         }
@@ -205,6 +206,7 @@ class MainApp extends React.Component {
                 spreadsheet_mode: false,
                 table_spec: {column_names: this.props.initial_column_names,
                     column_widths: this.props.initial_column_widths,
+                    cell_backgrounds: this.props.initial_cell_backgrounds,
                     hidden_columns_list: this.props.initial_hidden_columns_list,
                     current_doc_name: props.initial_doc_names[0]
                 },
@@ -429,9 +431,13 @@ class MainApp extends React.Component {
 
     create_tile_menus() {
         let menu_items = [];
-        for (let category in this.state.tile_types) {
+        let sorted_categories = [...Object.keys(this.state.tile_types)];
+        sorted_categories.sort();
+        for (let category of sorted_categories) {
             let option_dict = {};
-            for (let ttype of this.state.tile_types[category]) {
+            let sorted_types = [...this.state.tile_types[category]];
+            sorted_types.sort();
+            for (let ttype of sorted_types) {
                 option_dict[ttype] = () => this._tile_command(ttype);
             }
             menu_items.push(<MenuComponent menu_name={category}
@@ -493,7 +499,8 @@ class MainApp extends React.Component {
             setCellContent: (data)=>self._setCellContent(data.row, data.column_header, data.new_content),
             colorTxtInCell: (data)=>self._colorTextInCell(data.row_id, data.column_header, data.token_text, data.color_dict),
             setFreeformContent: (data)=>self._setFreeformDoc(data.doc_name, data.new_content),
-            updateDocList: (data)=>self._updateDocList(data.doc_names, data.visible_doc)
+            updateDocList: (data)=>self._updateDocList(data.doc_names, data.visible_doc),
+            setCellBackground: (data)=>self._setCellBackgroundColor(data.row, data.column_header, data.color)
         };
         handlerDict[data.table_message](data)
     }
@@ -508,6 +515,15 @@ class MainApp extends React.Component {
         if (broadcast) {
             this._broadcast_event_to_server("SetCellContent", data, null)
         }
+    }
+
+    _setCellBackgroundColor(row_id, column_header, color) {
+        let new_table_spec = _.cloneDeep(this.state.table_spec);
+        if (!new_table_spec.cell_backgrounds.hasOwnProperty(row_id)) {
+            new_table_spec.cell_backgrounds[row_id] = {}
+        }
+        new_table_spec.cell_backgrounds[row_id][column_header] = color;
+        this._updateTableSpec(new_table_spec)
     }
 
     _colorTextInCell(row_id, column_header, token_text, color_dict) {
@@ -654,6 +670,7 @@ class MainApp extends React.Component {
             table_spec: {column_names: data.table_spec.header_list,
                 column_widths: data.table_spec.column_widths,
                 hidden_columns_list: data.table_spec.hidden_columns_list,
+                cell_backgrounds: data.table_spec.cell_backgrounds,
                 current_doc_name: doc_name
             }
         }, func);
@@ -876,6 +893,7 @@ class MainApp extends React.Component {
                                 search_text={this.state.search_text}
                                 alt_search_text={this.state.alt_search_text}
                                 cells_to_color_text={this.state.cells_to_color_text}
+                                cell_backgrounds={this.state.table_spec.cell_backgrounds}
                                 total_rows={this.state.total_rows}
                                 broadcast_event_to_server={this._broadcast_event_to_server}
                                 spreadsheet_mode={this.state.spreadsheet_mode}
