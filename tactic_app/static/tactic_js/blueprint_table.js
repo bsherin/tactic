@@ -146,6 +146,7 @@ class BlueprintTable extends React.Component {
         let self = this;
         return rowIndex => {
             let the_text;
+            let cell_bg_color;
             try {
                 if (!this.haveRowData(rowIndex)) {
                     if (self.data_update_required == null) {
@@ -177,7 +178,7 @@ class BlueprintTable extends React.Component {
                         revised_text
                     );
                 }
-                let cell_bg_color = self._cell_background_color(rowIndex, column_name);
+                cell_bg_color = self._cell_background_color(rowIndex, column_name);
                 the_text = self.props.data_row_dict[rowIndex][column_name];
                 if (this.props.alt_search_text != null && this.props.alt_search_text != "") {
                     const regex = new RegExp(this.props.alt_search_text, "gi");
