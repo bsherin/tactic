@@ -216,6 +216,8 @@ class LibraryPane extends React.Component {
         this.setState(new_state);
     }
 
+    update_tag_list() {}
+
     delete_row(name) {
         let ind = this.get_data_list_index(name);
         let new_data_list = [...this.state.data_list];
@@ -283,7 +285,7 @@ class LibraryPane extends React.Component {
         const self = this;
         postAjaxPromise("overwrite_common_tags", result_dict).then(function (data) {
             let utags = data.updated_tags;
-            let new_data_dict = _.cloneDeep(this.state.data_dict);
+            let new_data_dict = _.cloneDeep(self.state.data_dict);
             for (let res_name in utags) {
                 new_data_dict = self.set_in_data_dict([res_name], { tags: utags[res_name] }, new_data_dict);
             }
