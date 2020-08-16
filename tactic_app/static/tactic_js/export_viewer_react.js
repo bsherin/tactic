@@ -21,14 +21,14 @@ class ExportListSelect extends React.Component {
 
     _updateMe(event) {
         let fullname = event.target.value;
-        this.props.handleChange(fullname, this.export_index[fullname]);
+        this.props.handleChange(fullname, this.export_index[fullname].shortname, this.export_index[fullname].tilename);
     }
 
     componentDidUpdate() {
         if (this.select_ref) {
             let currently_selected = this.select_ref.value;
             if (currently_selected && currently_selected != this.props.value) {
-                this.props.handleChange(currently_selected, this.export_index[currently_selected]);
+                this.props.handleChange(currently_selected, this.export_index[currently_selected].shortname, this.export_index[currently_selected].tilename);
             }
         }
     }
@@ -40,7 +40,7 @@ class ExportListSelect extends React.Component {
             for (let entry of this.props.pipe_dict[group]) {
                 let fullname = entry[0];
                 let shortname = entry[1];
-                this.export_index[fullname] = shortname;
+                this.export_index[fullname] = { tilename: group, shortname: shortname };
                 group_items.push(React.createElement(
                     "option",
                     { key: fullname, value: fullname },
@@ -86,6 +86,7 @@ class ExportsViewer extends React.Component {
         this.header_ref = React.createRef();
         this.state = {
             selected_export: "",
+            selected_export_tilename: null,
             key_list: null,
             key_list_value: null,
             tail_value: "",
@@ -141,10 +142,13 @@ class ExportsViewer extends React.Component {
         this.setState({ show_spinner: true });
     }
 
-    _handleExportListChange(fullname, shortname, force_refresh = false) {
+    _handleExportListChange(fullname, shortname, tilename, force_refresh = false) {
         let self = this;
         if (!force_refresh && fullname == this.state.selected_export) return;
-        this.setState({ show_spinner: true, selected_export: fullname, selected_export_short_name: shortname });
+        this.setState({ show_spinner: true,
+            selected_export: fullname,
+            selected_export_tilename: tilename,
+            selected_export_short_name: shortname });
         postWithCallback(window.main_id, "get_export_info", { "export_name": fullname }, function (data) {
             let new_state = {
                 type: data.type,
@@ -187,12 +191,15 @@ class ExportsViewer extends React.Component {
 
     _sendToConsole() {
         const tail = this.state.tail_value;
-        let full_export_name = this.state.selected_export;
+        let tilename = this.state.selected_export_tilename;
+        let shortname = this.state.selected_export_short_name;
+
         let key_string = "";
         if (!(this.state.key_list == null)) {
             key_string = `["${this.state.key_list_value}"]`;
         }
-        let the_text = `self.get_pipe_value("${full_export_name}")` + key_string + tail;
+
+        let the_text = `Tiles["${tilename}"]["${shortname}"]` + key_string + tail;
 
         let self = this;
         postWithCallback("host", "print_code_area_to_console", { "console_text": the_text, "user_id": window.user_id, "main_id": window.main_id }, function (data) {

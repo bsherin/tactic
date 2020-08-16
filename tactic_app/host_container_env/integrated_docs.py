@@ -13,7 +13,7 @@ def get_api_from_rst():
         mlist = []
         for m in methods:
             msig = re.findall(r"(^.*)", m)[0]
-            mbody =re.findall(r"\n\n([\s\S]*)", m)[0]
+            mbody = re.findall(r"\n\n([\s\S]*)", m)[0]
             mlist.append([msig, mbody])
         newres.append([catname, mlist])
     return newres
@@ -28,10 +28,10 @@ def get_api_html(ar):
     return result
 
 
-def create_api_dict_by_category(api_array):
+def create_api_dict_by_category(_api_array):
     result = {}
     ordered_categories = []
-    for cat_array in api_array:
+    for cat_array in _api_array:
         cat_list = [entry[0] for entry in cat_array[1]]
         revised_cat_list = []
         for signature in cat_list:
@@ -42,9 +42,9 @@ def create_api_dict_by_category(api_array):
     return result, ordered_categories
 
 
-def create_api_dict_by_name(api_dict_by_category):
+def create_api_dict_by_name(_api_dict_by_category):
     result = {}
-    for cat_name, cat_list in api_dict_by_category.items():
+    for cat_name, cat_list in _api_dict_by_category.items():
         for entry in cat_list:
             result[entry["name"]] = {"signature": entry["signature"], "category": cat_name}
     return result

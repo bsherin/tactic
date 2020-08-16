@@ -46,7 +46,9 @@ function postAjaxPromise(target, data) {
                 if (data.success) {
                     resolve(data)
                 }
-                reject(data)
+                else {
+                    reject(data)
+                }
             }
         })
     });
