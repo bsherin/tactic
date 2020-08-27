@@ -107,7 +107,7 @@ class TacticNavbar extends React.Component {
                 icon: "database", text: "Repository", intent: this.getIntent("repository"),
                     onClick: ()=>{window.open(repository_url)}
                 }, {
-                icon: "settings", text: this.props.user_name, intent: this.getIntent("account"),
+                icon: "person", text: this.props.user_name, intent: this.getIntent("account"),
                     onClick: ()=>{window.open(account_url)}
                 }, {
                 icon: "log-out", text: "Logout", intent: this.getIntent("logout"),

@@ -6,7 +6,7 @@
     "build-production": "webpack --env.mode=production"
   },
   "dependencies": {
-    "@blueprintjs/core": "^3.22.3",
+    "@blueprintjs/core": "^3.31.0",
     "@blueprintjs/select": "latest",
     "@blueprintjs/table": "^3.8.3",
     "amqplib": "^0.5.5",

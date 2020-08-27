@@ -194,7 +194,7 @@ class CreatorApp extends React.Component {
         let bgs = [[{ "name_text": "Save", "icon_name": "saved", "click_handler": this._saveMe, key_bindings: ['ctrl+s', "command+s"], tooltip: "Save" }, { "name_text": "Mark", "icon_name": "map-marker", "click_handler": this._saveAndCheckpoint, key_bindings: ['ctrl+m'], tooltip: "Save and checkpoint" }, { "name_text": "SaveAs", "icon_name": "floppy-disk", "click_handler": this._saveModuleAs, tooltip: "Save as" }, { "name_text": "Load", "icon_name": "upload", "click_handler": this._loadModule, key_bindings: ['ctrl+l'], tooltip: "Load tile" }, { "name_text": "Share", "icon_name": "share",
             "click_handler": () => {
                 sendToRepository("tile", this.props.tile_name);
-            }, tooltip: "Send to repository" }], [{ "name_text": "History", "icon_name": "history", "click_handler": this._showHistoryViewer, tooltip: "Show history viewer" }, { "name_text": "Compare", "icon_name": "comparison", "click_handler": this._showTileDiffer, tooltip: "Compare to another tile" }], [{ "name_text": "Drawer", "icon_name": "console", "click_handler": this.props.toggleErrorDrawer, tooltip: "Toggle error drawer" }]];
+            }, tooltip: "Send to repository" }], [{ "name_text": "History", "icon_name": "history", "click_handler": this._showHistoryViewer, tooltip: "Show history viewer" }, { "name_text": "Compare", "icon_name": "comparison", "click_handler": this._showTileDiffer, tooltip: "Compare to another tile" }], [{ "name_text": "Drawer", "icon_name": "drawer-right", "click_handler": this.props.toggleErrorDrawer, tooltip: "Toggle error drawer" }]];
 
         for (let bg of bgs) {
             for (let but of bg) {

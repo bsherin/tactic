@@ -488,7 +488,7 @@ class CollectionToolbar extends React.Component {
              ["share", this.props.send_repository_func, "share", false, "regular", [], "Share to repository"]],
             [["delete", this._collection_delete, "trash", true, "danger", [], "Delete"]],
             [["refresh", this.props.refresh_func, "refresh", false, "regular", [], "Refresh list"]],
-            [["drawer", this.props.toggleErrorDrawer, "console", false, "regular", [], "Toggle Error Drawer"]]
+            [["drawer", this.props.toggleErrorDrawer, "drawer-right", false, "regular", [], "Toggle Error Drawer"]]
         ];
      }
 
@@ -761,7 +761,7 @@ class TileToolbar extends React.Component {
             [["share", this.props.send_repository_func, "share", false, "regular", [], "Share to repository"]],
             [["delete", this._tile_delete, "trash", true, "regular", [], "Delete"]],
             [["refresh", this.props.refresh_func, "refresh", false, "regular", [], "Refresh"]],
-            [["drawer", this.props.toggleErrorDrawer, "console", false, "regular", [], "Toggle Error Drawer"]]
+            [["drawer", this.props.toggleErrorDrawer, "drawer-right", false, "regular", [], "Toggle Error Drawer"]]
         ];
      }
 
