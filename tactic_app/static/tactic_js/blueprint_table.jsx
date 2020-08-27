@@ -382,7 +382,7 @@ class EnhancedEditableCell extends React.Component {
     }
 
     _onCancel() {
-        this.props.setCellContent(this.props.rowIndex, this.props.columnHeader, this.saved_text, false);
+        this.props.setCellContent(this.props.rowIndex, this.props.columnHeader, this.state.saved_text, false);
         this.setState({am_editing: false})
     }
 
@@ -399,6 +399,7 @@ class EnhancedEditableCell extends React.Component {
             <EditableCell ref={this.cell_ref}
                           onConfirm={this._onConfirmCellEdit}
                           onChange={this._onChange}
+                          onCancel={this._onCancel}
                           style={{backgroundColor: this.props.bgColor}}
                           onKeyDown={this.state.am_editing ? null : this._handleKeyDown}
                           {...this.props}/>

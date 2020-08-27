@@ -202,7 +202,7 @@ class CreatorApp extends React.Component {
                         "click_handler": () => {sendToRepository("tile", this.props.tile_name)}, tooltip: "Send to repository"}],
                     [{"name_text": "History", "icon_name": "history", "click_handler": this._showHistoryViewer, tooltip: "Show history viewer"},
                      {"name_text": "Compare", "icon_name": "comparison", "click_handler": this._showTileDiffer, tooltip: "Compare to another tile"}],
-                    [{"name_text": "Drawer", "icon_name": "console", "click_handler": this.props.toggleErrorDrawer, tooltip: "Toggle error drawer"}]
+                    [{"name_text": "Drawer", "icon_name": "drawer-right", "click_handler": this.props.toggleErrorDrawer, tooltip: "Toggle error drawer"}]
             ];
 
         for (let bg of bgs) {
