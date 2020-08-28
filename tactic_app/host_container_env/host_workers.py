@@ -5,7 +5,7 @@ import json
 from users import load_user, ModuleNotFoundError
 import gevent
 import pika
-from communication_utils import make_python_object_jsonizable
+from communication_utils import make_python_object_jsonizable, store_temp_data, read_temp_data, delete_temp_data
 from docker_functions import create_container, destroy_container, destroy_child_containers, destroy_user_containers
 from docker_functions import get_log, ContainerCreateError, container_exec, restart_container, get_address
 from docker_functions import get_matching_user_containers
@@ -414,6 +414,18 @@ class HostWorker(QWorker):
         return {"project_names": user_obj.project_names}
 
     @task_worthy
+    def get_tile_names(self, data):
+        user_id = data["user_id"]
+        user_obj = load_user(user_id)
+        return {"tile_names": user_obj.tile_module_names}
+
+    @task_worthy
+    def get_code_names(self, data):
+        user_id = data["user_id"]
+        user_obj = load_user(user_id)
+        return {"code_names": user_obj.code_names}
+
+    @task_worthy
     def delete_container(self, data):
         container_id = data["container_id"]
         if "notify" in data:
@@ -577,6 +589,24 @@ class HostWorker(QWorker):
         data["console_message"] = "consoleLog"
         self.emit_console_message(data)
         return {"success": True}
+
+    @task_worthy
+    def copy_console_cell(self, data):
+        uid = "copied_cell_" + data["user_id"]
+        delete_temp_data(db, uid)
+        store_temp_data(db, {"console_item": data["console_item"]}, uid)
+        return {"success": True}
+
+    @task_worthy
+    def get_copied_console_cell(self, data):
+        uid = "copied_cell_" + data["user_id"]
+        res_dict = read_temp_data(db, uid)
+        if res_dict:
+            citem = res_dict["console_item"]
+            citem["unique_id"] = str(uuid.uuid4())
+            return {"success": True, "console_item": res_dict["console_item"]}
+        else:
+            return {"success": False, "message": "No copied cell found"}
 
     @task_worthy
     def go_to_row_in_document(self, data):

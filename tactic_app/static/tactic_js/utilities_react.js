@@ -6,8 +6,10 @@ import _ from 'lodash';
 
 export { doBinding, propsAreEqual, arrayMove, arraysMatch, get_ppi, remove_duplicates, doSignOut, guid };
 
-function doBinding(obj, seq = "_") {
-    const proto = Object.getPrototypeOf(obj);
+function doBinding(obj, seq = "_", proto=null) {
+    if (!proto) {
+        proto = Object.getPrototypeOf(obj)
+    }
     for (const key of Object.getOwnPropertyNames(proto)) {
         if (key.startsWith(seq)) {
             obj[key] = obj[key].bind(obj);

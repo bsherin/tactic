@@ -26,7 +26,7 @@ let ppi;
 
 // Note: it seems like the sendbeacon doesn't work if this callback has a line
 // before the sendbeacon
-window.addEventListener("beforeunload", function sendRemove() {
+window.addEventListener("unload", function sendRemove() {
     navigator.sendBeacon("/remove_mainwindow", JSON.stringify({ "main_id": window.main_id }));
 });
 

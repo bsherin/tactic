@@ -4,6 +4,11 @@ import React from "react";
 import PropTypes from 'prop-types';
 
 import { Icon, Card, EditableText, Button, Spinner, TextArea } from "@blueprintjs/core";
+import { Menu, MenuItem } from "@blueprintjs/core";
+
+// The next line is an ugly workaround
+// See blueprintjs issue 3891
+import { ContextMenuTarget } from '@blueprintjs/core/lib/esnext/components/context-menu/contextMenuTarget.js';
 import { SortableHandle, SortableElement } from 'react-sortable-hoc';
 import showdown from 'showdown';
 
@@ -14,21 +19,22 @@ import { KeyTrap } from "./key_trap.js";
 import { postWithCallback } from "./communication_react.js";
 import { doFlash } from "./toaster.js";
 import { doBinding, arrayMove } from "./utilities_react.js";
-import { showConfirmDialogReact } from "./modal_react";
+import { showConfirmDialogReact, showSelectResourceDialog } from "./modal_react.js";
 
 export { ConsoleComponent };
 
 const MAX_CONSOLE_WIDTH = 1800;
 const BUTTON_CONSUMED_SPACE = 203;
 
-class ConsoleComponent extends React.Component {
+class RawConsoleComponent extends React.Component {
     constructor(props) {
         super(props);
-        doBinding(this);
+        doBinding(this, "_", RawConsoleComponent.prototype);
         this.header_ref = React.createRef();
         this.body_ref = React.createRef();
         this.state = {
             console_item_with_focus: null,
+            console_item_saved_focus: null,
             console_error_log_text: "",
             show_console_error_log: false
         };
@@ -69,9 +75,57 @@ class ConsoleComponent extends React.Component {
         this.addConsoleText("");
     }
 
+    _insertTextInCell(the_text) {
+        let unique_id = this.state.console_item_saved_focus;
+        let entry = this.get_console_item_entry(unique_id);
+        this._setConsoleItemValue(unique_id, "console_text", entry.console_text + the_text);
+    }
+
+    _copyCell(unique_id = null) {
+        if (!unique_id) {
+            unique_id = this.state.console_item_saved_focus;
+            if (!unique_id) return;
+        }
+        let entry = this.get_console_item_entry(unique_id);
+        const result_dict = {
+            "main_id": window.main_id,
+            "console_item": entry,
+            "user_id": window.user_id
+        };
+        postWithCallback("host", "copy_console_cell", result_dict);
+    }
+
+    _pasteCell(unique_id = null) {
+        postWithCallback("host", "get_copied_console_cell", { user_id: window.user_id }, data => {
+            if (!data.success) {
+                doFlash(data);
+            } else {
+                this._addConsoleEntry(data.console_item, true, false, unique_id);
+            }
+        });
+    }
+
+    _insertResourceLink() {
+        if (!this.state.console_item_saved_focus) return;
+        let entry = this.get_console_item_entry(this.state.console_item_saved_focus);
+        if (!entry || entry.type != "text") return;
+        const type_paths = {
+            collection: "main_collection",
+            project: "main_project",
+            tile: "last_saved_view",
+            list: "view_list",
+            code: "view_code"
+        };
+        function build_link(type, selected_resource) {
+            return `[\`${selected_resource}\`](${type_paths[type]}/${selected_resource})`;
+        }
+        showSelectResourceDialog("cancel", "insert link", result => {
+            this._insertTextInCell(build_link(result.type, result.selected_resource));
+        });
+    }
+
     _addBlankCode(e) {
         this._addCodeArea("");
-        e.preventDefault();
     }
 
     _addCodeArea(the_text) {
@@ -154,7 +208,11 @@ class ConsoleComponent extends React.Component {
     }
 
     _setFocusedItem(unique_id) {
-        this.setState({ "console_item_with_focus": unique_id });
+        if (unique_id == null) {
+            this.setState({ console_item_with_focus: unique_id });
+        } else {
+            this.setState({ console_item_with_focus: unique_id, console_item_saved_focus: unique_id });
+        }
     }
 
     _zoomConsole() {
@@ -228,13 +286,15 @@ class ConsoleComponent extends React.Component {
         this.props.setMainStateValue("console_items", new_console_items);
     }
 
-    _addConsoleEntry(new_entry, force_open = true, set_focus = false) {
+    _addConsoleEntry(new_entry, force_open = true, set_focus = false, unique_id = null) {
         new_entry.set_focus = set_focus;
         let insert_index;
-        if (this.state.console_item_with_focus == null) {
+        if (unique_id) {
+            insert_index = this._consoleItemIndex(unique_id) + 1;
+        } else if (this.state.console_item_saved_focus == null) {
             insert_index = this.props.console_items.length;
         } else {
-            insert_index = this._consoleItemIndex(this.state.console_item_with_focus) + 1;
+            insert_index = this._consoleItemIndex(this.state.console_item_saved_focus) + 1;
         }
         let new_console_items = [...this.props.console_items];
         new_console_items.splice(insert_index, 0, new_entry);
@@ -285,6 +345,34 @@ class ConsoleComponent extends React.Component {
         }
     }
 
+    renderContextMenu() {
+        // return a single element, or nothing to use default browser behavior
+        return React.createElement(
+            Menu,
+            null,
+            React.createElement(MenuItem, { icon: "new-text-box",
+                onClick: this._addBlankText,
+                text: "New Text Cell" }),
+            React.createElement(MenuItem, { icon: "code",
+                onClick: this._addBlankCode,
+                text: "New Code Cell" }),
+            React.createElement(MenuItem, { icon: "clipboard",
+                onClick: () => {
+                    this._pasteCell();
+                },
+                text: "Paste Cell" }),
+            React.createElement(Menu.Divider, null),
+            React.createElement(MenuItem, { icon: "reset",
+                onClick: this._resetConsole,
+                intent: "warning",
+                text: "Clear output and reset" }),
+            React.createElement(MenuItem, { icon: "trash",
+                onClick: this._clearConsole,
+                intent: "danger",
+                text: "Erase everything" })
+        );
+    }
+
     render() {
         let gbstyle = { marginLeft: 1, marginTop: 1 };
         let console_class = this.props.console_is_shrunk ? "am-shrunk" : "not-shrunk";
@@ -330,6 +418,28 @@ class ConsoleComponent extends React.Component {
                             intent: "primary",
                             style: gbstyle,
                             icon: "code" }),
+                        React.createElement(GlyphButton, { extra_glyph_text: "link",
+                            handleClick: this._insertResourceLink,
+                            tooltip: "Insert a resource link",
+                            intent: "primary",
+                            style: gbstyle,
+                            icon: "link" }),
+                        React.createElement(GlyphButton, { extra_glyph_text: "copy",
+                            handleClick: () => {
+                                this._copyCell();
+                            },
+                            tooltip: "Copy cell",
+                            intent: "primary",
+                            style: gbstyle,
+                            icon: "duplicate" }),
+                        React.createElement(GlyphButton, { extra_glyph_text: "paste",
+                            handleClick: () => {
+                                this._pasteCell();
+                            },
+                            tooltip: "Paste cell",
+                            intent: "primary",
+                            style: gbstyle,
+                            icon: "clipboard" }),
                         React.createElement(GlyphButton, { handleClick: this._resetConsole,
                             style: gbstyle,
                             tooltip: "Clear all output and reset namespace",
@@ -394,6 +504,9 @@ class ConsoleComponent extends React.Component {
                     setFocus: this._setFocusedItem,
                     addNewTextItem: this._addBlankText,
                     addNewCodeItem: this._addBlankCode,
+                    copyCell: this._copyCell,
+                    pasteCell: this._pasteCell,
+                    insertResourceLink: this._insertResourceLink,
                     useDragHandle: true,
                     axis: "y"
                 }),
@@ -403,7 +516,7 @@ class ConsoleComponent extends React.Component {
     }
 }
 
-ConsoleComponent.propTypes = {
+RawConsoleComponent.propTypes = {
     console_items: PropTypes.array,
     console_is_shrunk: PropTypes.bool,
     show_exports_pane: PropTypes.bool,
@@ -416,11 +529,13 @@ ConsoleComponent.propTypes = {
     zoomable: PropTypes.bool
 };
 
-ConsoleComponent.defaultProps = {
+RawConsoleComponent.defaultProps = {
     style: {},
     shrinkable: true,
     zoomable: true
 };
+
+const ConsoleComponent = ContextMenuTarget(RawConsoleComponent);
 
 class RawSortHandle extends React.Component {
 
@@ -444,19 +559,20 @@ class SuperItem extends React.Component {
         } else if (this.props.type == "fixed") {
             return React.createElement(LogItem, this.props);
         }
+        return null;
     }
 }
 
 const SSuperItem = SortableElement(SuperItem);
 
-class LogItem extends React.Component {
+class RawLogItem extends React.Component {
     constructor(props) {
         super(props);
         this.ce_summary0ref = React.createRef();
-        doBinding(this);
+        doBinding(this, "_", RawLogItem.prototype);
         this.update_props = ["is_error", "am_shrunk", "summary_text", "console_text", "console_available_width"];
         this.update_state_vars = [];
-        this.state = {};
+        this.state = { selected: false };
         this.last_output_text = "";
     }
 
@@ -512,6 +628,33 @@ class LogItem extends React.Component {
         }
     }
 
+    _copyMe() {
+        this.props.copyCell(this.props.unique_id);
+    }
+
+    _pasteCell() {
+        this.props.pasteCell(this.props.unique_id);
+    }
+
+    renderContextMenu() {
+        // return a single element, or nothing to use default browser behavior
+        return React.createElement(
+            Menu,
+            null,
+            React.createElement(MenuItem, { icon: "duplicate",
+                onClick: this._copyMe,
+                text: "Copy Cell" }),
+            React.createElement(MenuItem, { icon: "clipboard",
+                onClick: this._pasteCell,
+                text: "Paste Cell" }),
+            React.createElement(Menu.Divider, null),
+            React.createElement(MenuItem, { icon: "trash",
+                onClick: this._deleteMe,
+                intent: "danger",
+                text: "Delete Cell" })
+        );
+    }
+
     render() {
         let converted_dict = { __html: this.props.console_text };
         let panel_class = this.props.am_shrunk ? "log-panel log-panel-invisible fixed-log-panel" : "log-panel log-panel-visible fixed-log-panel";
@@ -529,6 +672,7 @@ class LogItem extends React.Component {
                 !this.props.am_shrunk && React.createElement(GlyphButton, { icon: "chevron-down",
                     handleClick: this._toggleShrink }),
                 this.props.am_shrunk && React.createElement(GlyphButton, { icon: "chevron-right",
+                    style: { marginTop: 5 },
                     handleClick: this._toggleShrink })
             ),
             this.props.am_shrunk && React.createElement(EditableText, { value: this.props.summary_text,
@@ -557,7 +701,7 @@ class LogItem extends React.Component {
     }
 }
 
-LogItem.propTypes = {
+RawLogItem.propTypes = {
     unique_id: PropTypes.string,
     is_error: PropTypes.bool,
     am_shrunk: PropTypes.bool,
@@ -568,10 +712,12 @@ LogItem.propTypes = {
     console_available_width: PropTypes.number
 };
 
-class ConsoleCodeItem extends React.Component {
+const LogItem = ContextMenuTarget(RawLogItem);
+
+class RawConsoleCodeItem extends React.Component {
     constructor(props) {
         super(props);
-        doBinding(this);
+        doBinding(this, "_", RawConsoleCodeItem.prototype);
         this.cmobject = null;
         this.update_props = ["am_shrunk", "set_focus", "summary_text", "console_text", "show_spinner", "execution_count", "output_text", "console_available_width"];
         this.update_state_vars = [];
@@ -694,6 +840,51 @@ class ConsoleCodeItem extends React.Component {
         this.cmobject = cmobject;
     }
 
+    _getFirstLine() {
+        let re = /^(.*)$/m;
+        if (this.props.console_text == "") {
+            return "empty text cell";
+        } else {
+            return re.exec(this.props.console_text)[0];
+        }
+    }
+
+    _copyMe() {
+        this.props.copyCell(this.props.unique_id);
+    }
+
+    _pasteCell() {
+        this.props.pasteCell(this.props.unique_id);
+    }
+
+    renderContextMenu() {
+        // return a single element, or nothing to use default browser behavior
+        return React.createElement(
+            Menu,
+            null,
+            React.createElement(MenuItem, { icon: "play",
+                intent: "success",
+                onClick: this._runMe,
+                text: "Run Cell" }),
+            React.createElement(Menu.Divider, null),
+            React.createElement(MenuItem, { icon: "duplicate",
+                onClick: this._copyMe,
+                text: "Copy Cell" }),
+            React.createElement(MenuItem, { icon: "clipboard",
+                onClick: this._pasteCell,
+                text: "Paste Cell" }),
+            React.createElement(Menu.Divider, null),
+            React.createElement(MenuItem, { icon: "trash",
+                onClick: this._deleteMe,
+                intent: "danger",
+                text: "Delete Cell" }),
+            React.createElement(MenuItem, { icon: "clean",
+                intent: "warning",
+                onClick: this._clearOutput,
+                text: "Clear Output" })
+        );
+    }
+
     render() {
         let panel_style = this.props.am_shrunk ? "log-panel log-panel-invisible" : "log-panel log-panel-visible";
         let output_dict = { __html: this.props.output_text };
@@ -708,11 +899,14 @@ class ConsoleCodeItem extends React.Component {
                 !this.props.am_shrunk && React.createElement(GlyphButton, { icon: "chevron-down",
                     handleClick: this._toggleShrink }),
                 this.props.am_shrunk && React.createElement(GlyphButton, { icon: "chevron-right",
+                    style: { marginTop: 5 },
                     handleClick: this._toggleShrink })
             ),
-            this.props.am_shrunk && React.createElement(EditableText, { value: this.props.summary_text,
-                onChange: this._handleSummaryTextChange,
-                className: "log-panel-summary" }),
+            this.props.am_shrunk && React.createElement(
+                "div",
+                { className: "log-panel-summary code-panel-summary" },
+                this._getFirstLine()
+            ),
             !this.props.am_shrunk && React.createElement(
                 React.Fragment,
                 null,
@@ -774,7 +968,7 @@ class ConsoleCodeItem extends React.Component {
     }
 }
 
-ConsoleCodeItem.propTypes = {
+RawConsoleCodeItem.propTypes = {
     unique_id: PropTypes.string,
     am_shrunk: PropTypes.bool,
     set_focus: PropTypes.bool,
@@ -792,10 +986,12 @@ ConsoleCodeItem.propTypes = {
     setFocus: PropTypes.func
 };
 
-class ConsoleTextItem extends React.Component {
+const ConsoleCodeItem = ContextMenuTarget(RawConsoleCodeItem);
+
+class RawConsoleTextItem extends React.Component {
     constructor(props) {
         super(props);
-        doBinding(this, "_");
+        doBinding(this, "_", RawConsoleTextItem.prototype);
         this.ce_summary_ref = React.createRef();
         this.converter = new showdown.Converter();
         this.update_props = ["am_shrunk", "set_focus", "show_markdown", "summary_text", "console_text", "console_available_width"];
@@ -884,6 +1080,50 @@ class ConsoleTextItem extends React.Component {
         this.setState({ ce_ref: the_ref });
     }
 
+    _getFirstLine() {
+        let re = /^(.*)$/m;
+        if (this.props.console_text == "") {
+            return "empty text cell";
+        } else {
+            return re.exec(this.props.console_text)[0];
+        }
+    }
+
+    _copyMe() {
+        this.props.copyCell(this.props.unique_id);
+    }
+
+    _pasteCell() {
+        this.props.pasteCell(this.props.unique_id);
+    }
+
+    renderContextMenu() {
+        // return a single element, or nothing to use default browser behavior
+        return React.createElement(
+            Menu,
+            null,
+            React.createElement(MenuItem, { icon: "paragraph",
+                intent: "success",
+                onClick: this._showMarkdown,
+                text: "Show Markdown" }),
+            React.createElement(Menu.Divider, null),
+            React.createElement(MenuItem, { icon: "link",
+                onClick: this.props.insertResourceLink,
+                text: "Insert ResourceLink" }),
+            React.createElement(MenuItem, { icon: "duplicate",
+                onClick: this._copyMe,
+                text: "Copy Cell" }),
+            React.createElement(MenuItem, { icon: "clipboard",
+                onClick: this._pasteCell,
+                text: "Paste Cell" }),
+            React.createElement(Menu.Divider, null),
+            React.createElement(MenuItem, { icon: "trash",
+                onClick: this._deleteMe,
+                intent: "danger",
+                text: "Delete Cell" })
+        );
+    }
+
     render() {
         let really_show_markdown = this.hasOnlyWhitespace ? false : this.props.show_markdown;
         var converted_markdown;
@@ -905,11 +1145,14 @@ class ConsoleTextItem extends React.Component {
                 !this.props.am_shrunk && React.createElement(GlyphButton, { icon: "chevron-down",
                     handleClick: this._toggleShrink }),
                 this.props.am_shrunk && React.createElement(GlyphButton, { icon: "chevron-right",
+                    style: { marginTop: 5 },
                     handleClick: this._toggleShrink })
             ),
-            this.props.am_shrunk && React.createElement(EditableText, { value: this.props.summary_text,
-                onChange: this._handleSummaryTextChange,
-                className: "log-panel-summary" }),
+            this.props.am_shrunk && React.createElement(
+                "div",
+                { className: "log-panel-summary" },
+                this._getFirstLine()
+            ),
             !this.props.am_shrunk && React.createElement(
                 "div",
                 { className: "d-flex flex-column", style: { width: "100%" } },
@@ -958,7 +1201,7 @@ class ConsoleTextItem extends React.Component {
     }
 }
 
-ConsoleTextItem.propTypes = {
+RawConsoleTextItem.propTypes = {
     unique_id: PropTypes.string,
     am_shrunk: PropTypes.bool,
     set_focus: PropTypes.bool,
@@ -972,3 +1215,5 @@ ConsoleTextItem.propTypes = {
     tsocket: PropTypes.object,
     setFocus: PropTypes.func
 };
+
+const ConsoleTextItem = ContextMenuTarget(RawConsoleTextItem);

@@ -7,8 +7,9 @@ import { Checkbox, Dialog, FormGroup, Classes, Button, InputGroup, Intent } from
 
 import { BpSelect } from "./blueprint_mdata_fields.js";
 import { doBinding } from "./utilities_react.js";
+import { postWithCallback } from "./communication_react.js";
 
-export { showModalReact, showConfirmDialogReact, showSelectDialog, showInformDialogReact };
+export { showModalReact, showConfirmDialogReact, showSelectDialog, showSelectResourceDialog, showInformDialogReact };
 
 class ModalDialog extends React.Component {
 
@@ -271,6 +272,116 @@ function showSelectDialog(title, select_label, cancel_text, submit_text, submit_
         select_label: select_label,
         submit_text: submit_text,
         option_list: option_list,
+        cancel_text: cancel_text }), domContainer);
+}
+
+var res_types = ["collection", "project", "tile", "list", "code"];
+
+class SelectResourceDialog extends React.Component {
+
+    constructor(props) {
+        super(props);
+        doBinding(this);
+        this.state = {
+            show: false,
+            type: "collection",
+            value: null,
+            option_names: [],
+            selected_resource: null
+        };
+    }
+
+    componentDidMount() {
+        this._handleTypeChange("collection");
+    }
+
+    _handleTypeChange(val) {
+        let get_url = `get_${val}_names`;
+        let dict_hash = `${val}_names`;
+        let self = this;
+        postWithCallback("host", get_url, { "user_id": user_id }, function (data) {
+            let option_names = data[dict_hash];
+            self.setState({ show: true, type: val, option_names: option_names, selected_resource: option_names[0] });
+        });
+    }
+
+    _handleResourceChange(val) {
+        this.setState({ selected_resource: val });
+    }
+
+    _submitHandler(event) {
+        this.setState({ "show": false }, () => {
+            this.props.handleSubmit({ type: this.state.type, selected_resource: this.state.selected_resource });
+            this.props.handleClose();
+        });
+    }
+
+    _cancelHandler() {
+        this.setState({ "show": false });
+        this.props.handleClose();
+    }
+
+    render() {
+        return React.createElement(
+            Dialog,
+            { isOpen: this.state.show,
+                title: 'Select a library resource',
+                onClose: this._cancelHandler,
+                canEscapeKeyClose: true },
+            React.createElement(
+                'div',
+                { className: Classes.DIALOG_BODY },
+                React.createElement(
+                    FormGroup,
+                    { label: 'Resource Type' },
+                    React.createElement(BpSelect, { options: res_types, onChange: this._handleTypeChange, value: this.state.type })
+                ),
+                React.createElement(
+                    FormGroup,
+                    { label: 'Specific Resource' },
+                    React.createElement(BpSelect, { options: this.state.option_names, onChange: this._handleResourceChange, value: this.state.selected_resource })
+                )
+            ),
+            React.createElement(
+                'div',
+                { className: Classes.DIALOG_FOOTER },
+                React.createElement(
+                    'div',
+                    { className: Classes.DIALOG_FOOTER_ACTIONS },
+                    React.createElement(
+                        Button,
+                        { onClick: this._cancelHandler },
+                        'Cancel'
+                    ),
+                    React.createElement(
+                        Button,
+                        { intent: Intent.PRIMARY, onClick: this._submitHandler },
+                        'Submit'
+                    )
+                )
+            )
+        );
+    }
+}
+
+SelectResourceDialog.propTypes = {
+    handleSubmit: PropTypes.func,
+    handleClose: PropTypes.func,
+    handleCancel: PropTypes.func,
+    submit_text: PropTypes.string,
+    cancel_text: PropTypes.string
+};
+
+function showSelectResourceDialog(cancel_text, submit_text, submit_function) {
+
+    let domContainer = document.querySelector('#modal-area');
+
+    function handle_close() {
+        ReactDOM.unmountComponentAtNode(domContainer);
+    }
+    ReactDOM.render(React.createElement(SelectResourceDialog, { handleSubmit: submit_function,
+        handleClose: handle_close,
+        submit_text: submit_text,
         cancel_text: cancel_text }), domContainer);
 }
 
