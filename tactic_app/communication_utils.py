@@ -64,8 +64,9 @@ def debinarize_python_object(bdat):
     return pickle.loads(dat)
 
 
-def store_temp_data(db, data_dict):
-    unique_id = str(uuid.uuid4())
+def store_temp_data(db, data_dict, unique_id=None):
+    if not unique_id:
+        unique_id = str(uuid.uuid4())
     data_dict["unique_id"] = unique_id
     db["temp_data"].insert_one(data_dict)
     return unique_id
