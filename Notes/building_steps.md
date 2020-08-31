@@ -31,7 +31,7 @@ note that the `npm run …` commands run a named script from package.json
 * Push changes to github
     * note that the flask config file in `tactic_app/config.py` is no longer part of the repository.
     I think this shouldn't matter because I build my images locally.
-* On github, ull changes onto master if necessary
+* On github, pull changes onto master if necessary
 * Push images to docker hub: `docker push bsherin/tactic` is all it takes, I think
 * On github, Pull onto main branch, if necessary
 
