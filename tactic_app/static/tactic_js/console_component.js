@@ -1045,6 +1045,14 @@ class RawConsoleTextItem extends React.Component {
         }
     }
 
+    _toggleMarkdown() {
+        if (this.props.show_markdown) {
+            this._hideMarkdown();
+        } else {
+            this._showMarkdown();
+        }
+    }
+
     _hideMarkdown() {
         this.props.setConsoleItemValue(this.props.unique_id, "show_markdown", false);
     }
@@ -1162,7 +1170,7 @@ class RawConsoleTextItem extends React.Component {
                     React.createElement(
                         "div",
                         { className: "button-div d-inline-flex pr-1" },
-                        React.createElement(GlyphButton, { handleClick: this._showMarkdown,
+                        React.createElement(GlyphButton, { handleClick: this._toggleMarkdown,
                             intent: "success",
                             tooltip: "Convert to/from markdown",
                             icon: "paragraph" })
@@ -1183,7 +1191,7 @@ class RawConsoleTextItem extends React.Component {
                         React.createElement(KeyTrap, { target_ref: this.state.ce_ref, bindings: key_bindings })
                     ),
                     really_show_markdown && React.createElement("div", { className: "text-panel-output",
-                        onClick: this._hideMarkdown,
+                        onDoubleClick: this._hideMarkdown,
                         style: { width: body_width, padding: 9 },
                         dangerouslySetInnerHTML: converted_dict }),
                     React.createElement(

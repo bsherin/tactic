@@ -38,6 +38,7 @@ displays the formatted text.
 .. figure:: images/bpconverted_markdown.png
 
 Clicking the bottom button again toggles the display back to plain text.
+You can also double-click on the converted markdown to go back to editing.
 
 Code fields
 -----------
