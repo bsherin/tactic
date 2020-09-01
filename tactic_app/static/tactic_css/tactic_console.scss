@@ -295,6 +295,11 @@ body {
         outline: none;
         box-shadow: none;
     }
+    .tile-table {
+        display: inline-block;
+        margin-right: 10px;
+        border: none;
+    }
 }
 
 .log-panel-summary {
