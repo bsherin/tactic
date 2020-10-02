@@ -258,7 +258,7 @@ class TileManager(LibraryResourceManager):
         old_tile_dict = db[user_obj.tile_collection_name].find_one({"tile_module_name": tile_to_copy})
         metadata = copy.copy(old_tile_dict["metadata"])
         new_tile_dict = {"tile_module_name": new_tile_name, "tile_module": old_tile_dict["tile_module"],
-                         "metadata": metadata}
+                         "metadata": metadata, "last_saved": old_tile_dict["last_saved"]}
         db[user_obj.tile_collection_name].insert_one(new_tile_dict)
         new_row = self.build_res_dict(new_tile_name, metadata, user_obj)
 
