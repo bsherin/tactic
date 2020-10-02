@@ -40,33 +40,42 @@ This command will create a **bind-mount** persistent volumne
 [site](https://dominicmotuka.com/posts/mongodump-and-mongorestore-mongodb-database/)
 
 
-copy to container
+#### copy to container
+
 `docker cp ~/smalldump/sdump tactic-mongo:/restore`
 
-mongorestore /restore
+Then in the container:
+`mongorestore /restore`
 
 https://www.mongodb.com/blog/post/archiving-and-compression-in-mongodb-tools
 https://docs.mongodb.com/v4.2/reference/program/mongodump/
 
-dump to archive
+#### dump to archive
 
-mongodump --db=totaldump --collection=bsherinrem.tiles --archive=btiles.archive
+`mongodump --db=totaldump --collection=bsherinrem.tiles --archive=btiles.archive`
+
 `docker cp btiles.archive tactic-mongo:/`
 
 Then, in the container
-mongorestore --archive=btiles.archive
+
+`mongorestore --archive=btiles.archive`
 
 With compression
-mongodump --db=totaldump --collection=bsherinrem.lists --archive=blists.archive --gzip
+
+`mongodump --db=totaldump --collection=bsherinrem.lists --archive=blists.archive --gzip`
+
 `docker cp blists.archive tactic-mongo:/`
 
 Then, in the container (this seems to overwrite whatever was already there)
-mongorestore --gzip --archive=blists.archive
 
-dump whole db (not compressed)
-mongodump --db=totaldump --archive=tdump.archive
+`mongorestore --gzip --archive=blists.archive`
+
+### dump whole db (not compressed)
+
+`mongodump --db=totaldump --archive=tdump.archive`
 
 `docker run -p 27017:27017 -v ~/mongo/data:/data/db -v ~/restore:/restore --name tactic-mongo -d mongo:latest`
-mongorestore --archive=/restore/tdump.archive
 
-docker run -p 27017:27017 -v ~/mongo/data:/data/db --name tactic-mongo -d mongo:latest
+`mongorestore --archive=/restore/tdump.archive`
+
+`docker run -p 27017:27017 -v ~/mongo/data:/data/db --name tactic-mongo -d mongo:latest`

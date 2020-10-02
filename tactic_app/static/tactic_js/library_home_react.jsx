@@ -276,6 +276,12 @@ class LibraryToolbar extends React.Component {
                     if (button.length > 6) {
                         new_button.tooltip = button[6]
                     }
+                    if (button.length > 7) {
+                        new_button.show_text = button[7]
+                    }
+                    else {
+                        new_button.show_text = false
+                    }
                     new_group.push(new_button)
                 }
             }
@@ -584,8 +590,8 @@ class ProjectToolbar extends React.Component {
 
     get button_groups() {
         return [
-            [["notebook", this.new_notebook,"book", false, "regular", ["ctrl+n"], "New notebook"],
-                ["open", this.props.view_func, "document-open", false, "regular", ["space", "return", "ctrl+o"], "View"]],
+            [["notebook", this.new_notebook,"new-text-box", false, "regular", ["ctrl+n"], "New notebook", "Notebook"]],
+            [["open", this.props.view_func, "document-open", false, "regular", ["space", "return", "ctrl+o"], "View"]],
             [["duplicate", this._project_duplicate, "duplicate", false, "regular", [], "Duplicate"],
              ["rename", this.props.rename_func, "edit", false, "regular", [], "Rename"]],
             [["toJupyter", this._downloadJupyter, "cloud-download", false, "regular", [], "Download as Jupyter Notebook"],
@@ -723,12 +729,7 @@ class TileToolbar extends React.Component {
 
     get popup_buttons() {
         return [
-            ["new", "new-text-box", [
-                ["BasicTileTemplate", ()=>{this._new_tile("BasicTileTemplate")}, "code"],
-                ["ExpandedTileTemplate", ()=>{this._new_tile("ExpandedTileTemplate")}, "code"],
-                ["MatplotlibTileTemplate", ()=>{this._new_tile("MatplotlibTileTemplate")}, "timeline-line-chart"]]
-            ],
-            ["creator", "new-text-box", [
+            ["tile", "new-text-box", [
                 ["StandardTile", ()=>{this._new_in_creator("BasicTileTemplate")}, "code"],
                 ["MatplotlibTile", ()=>{this._new_in_creator("MatplotlibTileTemplate")}, "timeline-line-chart"],
                 ["D3Tile", ()=>{this._new_in_creator("D3TileTemplate")}, "timeline-area-chart"]]
@@ -751,8 +752,8 @@ class TileToolbar extends React.Component {
 
     get button_groups() {
         return [
-            [["edit", this._tile_view, "edit", false,"regular", [], "View in tile viewer"],
-             ["creator", this._creator_view, "annotation", false, "regular", ["space", "return", "ctrl+o"], "View in tile creator"],
+            [
+             ["creator", this._creator_view, "document-open", false, "regular", ["space", "return", "ctrl+o"], "View in tile creator"],
                 ["compare", this._compare_tiles, "comparison", true, "regular", [], "Compare tiles"],
                 ["load", this._load_tile, "upload", false, "regular", [], "Load tile"],
                 ["unload", this._unload_all_tiles, "clean", false, "regular", [], "Unload all tiles"]],
@@ -886,7 +887,7 @@ class CodeToolbar extends React.Component {
 
     get popup_buttons() {
         return [
-            ["new", "new-text-box", [
+            ["code", "new-text-box", [
                 ["BasicCodeTemplate", ()=>{this._new_code("BasicCodeTemplate")}, "code"]]
             ]
         ]

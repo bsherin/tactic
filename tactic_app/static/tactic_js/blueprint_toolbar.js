@@ -43,16 +43,16 @@ class ToolbarButton extends React.Component {
 
     render() {
         if (this.props.show_text) {
-            let style = { flexDirection: "column", fontSize: 8, padding: "5px 8px", width: 42, height: 42 };
+            // let style = {flexDirection: "column", fontSize: 8, padding: "5px 8px", width: 42, height: 42};
             return React.createElement(Button, {
                 text: this.props.name_text,
                 icon: this.props.icon_name
                 // intent={this.props.intent == "regular" ? "primary" : this.props.intent}
-                , style: style,
-                large: true,
+                // style={style}
+                , large: false,
                 minimal: false,
-                onClick: () => this.props.click_handler(),
-                className: "bp-toolbar-button bp3-elevation-0"
+                onClick: () => this.props.click_handler()
+                // className="bp-toolbar-button bp3-elevation-0"
             });
         } else {
             return React.createElement(Button, {
@@ -245,6 +245,7 @@ class Toolbar extends React.Component {
         for (let group of this.props.button_groups) {
             let group_items = group.map((button, index) => React.createElement(ToolbarButton, { name_text: button.name_text,
                 icon_name: button.icon_name,
+                show_text: button.show_text,
                 tooltip: this.getTooltip(button),
                 tooltipDeleay: this.getTooltipDelay(button),
                 click_handler: button.click_handler,
