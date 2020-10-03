@@ -690,7 +690,7 @@ class LibraryPane extends React.Component {
 
     _omnibarSelect(item) {
         let the_view = this.view_views[this.props.res_type];
-        window.open($SCRIPT_ROOT + the_view + item.name);
+        window.open($SCRIPT_ROOT + the_view + item);
         this._closeOmnibar();
     }
 
@@ -883,7 +883,7 @@ class LibraryPane extends React.Component {
                     })
                 ),
                 React.createElement(KeyTrap, { global: true, bindings: key_bindings }),
-                React.createElement(LibraryOmnibar, { items: Object.values(this.state.data_dict),
+                React.createElement(LibraryOmnibar, { res_type: this.props.res_type,
                     onItemSelect: this._omnibarSelect,
                     handleClose: this._closeOmnibar,
                     showOmnibar: this.state.showOmnibar })
