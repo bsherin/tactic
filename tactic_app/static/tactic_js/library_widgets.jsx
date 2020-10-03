@@ -36,8 +36,8 @@ class OmnibarItem extends React.Component{
         return (
             <MenuItem
                 active={this.props.modifiers.active}
-                text={this.props.item.name}
-                key={this.props.item.name}
+                text={this.props.item}
+                key={this.props.item}
                 onClick={this._handleClick}
                 shouldDismissPopover={true}
             />
@@ -55,6 +55,16 @@ class LibraryOmnibar extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this);
+        this.state = {items: []}
+    }
+
+    componentDidUpdate(prevProps) {
+        if (this.props.showOmnibar && !prevProps.showOmnibar) {
+            let self = this;
+            $.getJSON($SCRIPT_ROOT + `get_resource_names/${this.props.res_type}`, function (data) {
+                self.setState({items: data["resource_names"]});
+            })
+        }
     }
 
     _itemRenderer(item, { modifiers, handleClick}) {
@@ -66,14 +76,14 @@ class LibraryOmnibar extends React.Component {
             return false
         }
         let lquery = query.toLowerCase();
-        let re = new RegExp("^" + query);
+        let re = new RegExp(query);
 
-        return re.test(item.name.toLowerCase())
+        return re.test(item.toLowerCase())
     }
 
     render () {
         return (
-            <Omnibar items={this.props.items}
+            <Omnibar items={this.state.items}
                          isOpen={this.props.showOmnibar}
                          onItemSelect={this.props.onItemSelect}
                          itemRenderer={this._itemRenderer}
@@ -87,7 +97,7 @@ class LibraryOmnibar extends React.Component {
 }
 
 LibraryOmnibar.propTypes = {
-    items: PropTypes.array,
+    res_type: PropTypes.string,
     onItemSelect: PropTypes.func,
     showOmnibar: PropTypes.bool,
     handleClose: PropTypes.func
