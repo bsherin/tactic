@@ -1,3 +1,4 @@
+# noinspection PyPackageRequirements
 from flask import render_template, jsonify, request
 from flask_login import current_user
 import re, os
@@ -162,7 +163,7 @@ class LibraryResourceManager(ResourceManager):
     def __init__(self, res_type):
         ResourceManager.__init__(self, res_type)
 
-    def grab_resource_list_chunk(self, collection_name, name_field, content_field):
+    def grab_resource_list_chunk(self, collection_name, name_field, content_field, additional_mdata_fields=None):
         #  search_spec has active_tag, search_string, search_inside, search_metadata, sort_field, sort_direction
         def sort_mdata_key(item):
             if sort_field not in item:
@@ -182,6 +183,9 @@ class LibraryResourceManager(ResourceManager):
         or_list = [{name_field: reg}]
         if search_spec["search_metadata"]:
             or_list += [{"metadata.notes": reg}, {"metadata.tags": reg}, {"metadata.type": reg}]
+            if additional_mdata_fields:
+                for fld in additional_mdata_fields:
+                    or_list.append({"metadata." + fld: reg})
         if content_field and search_spec["search_inside"]:
             or_list += [{content_field: reg}]
         res = db[collection_name].find({"$or": or_list}, projection=[name_field, "metadata"])

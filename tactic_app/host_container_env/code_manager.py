@@ -179,7 +179,7 @@ class CodeManager(LibraryResourceManager):
         else:
             colname = current_user.code_collection_name
 
-        return self.grab_resource_list_chunk(colname, "code_name", "the_code")
+        return self.grab_resource_list_chunk(colname, "code_name", "the_code", ["functions", "classes"])
 
 
 class RepositoryCodeManager(CodeManager):
