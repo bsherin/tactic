@@ -14,15 +14,70 @@ the Project menu and select :guilabel:`open-console-as-notebook`. This will
 start a Notebook project using the current contents of the Log.
 
 The second way to create a Notebook project is from the Library
-manager. Click on the projects tab on the left sidebar. Then click the :guilabel:`new notebook` button as as shown in the figure
-below.
+manager. Click on the projects tab on the left sidebar. Then click |new notebook but reference| in the toolbar.
 
-.. figure:: images/bpnew_notebook.png
+.. |new notebook but reference| image:: images/new_notebook_button.png
+   :height: 25
+   :class: inimage
+
+.. image:: images/bpnew_notebook.png
 
 Logs and Notebooks pretty much work the same way. You use the buttons at
 the top to manually add new elements:
 
-.. figure:: images/bpconsole_top_annotated.png
+.. figure:: images/bp_console_top.png
+
+|new text but|
+    Add a new text cell.
+|new code but|
+    Add a new code cell.
+|new link but|
+    Add a link to a library resources. You will be prompted to select the resource.
+    The link is currently always added at the end of the cell.
+|copy cell but|
+    Copies the current cell to a special cell clipboard. It provides a mechanism for
+    copying cells across projects.
+|paste cell but|
+    Pastes the cell from the special cell clipbaord
+|reset but|
+    Clears the log namespace and clear all code output
+|clear but|
+    Entirely erases all contents from the log.
+|log but|
+    Shows the error console for the log container.
+|main log but|
+    Shows the error console for the main container.
+
+.. |new code but| image:: images/new_code_but.png
+   :height: 25
+   :class: inimage
+
+.. |new text but| image:: images/new_text_but.png
+   :height: 25
+   :class: inimage
+
+.. |new link but| image:: images/new_link_but.png
+   :height: 25
+   :class: inimage
+
+.. |copy cell but| image:: images/copy_cell_but.png
+   :height: 25
+   :class: inimage
+.. |paste cell but| image:: images/paste_cell_but.png
+   :height: 25
+   :class: inimage
+.. |reset but| image:: images/reset_but.png
+   :height: 25
+   :class: inimage
+.. |clear but| image:: images/clear_but.png
+   :height: 25
+   :class: inimage
+.. |log but| image:: images/log_but.png
+   :height: 25
+   :class: inimage
+.. |main log but| image:: images/main_log_but.png
+   :height: 25
+   :class: inimage
 
 Text fields
 -----------
@@ -94,6 +149,13 @@ About the :guilabel:`clear` button:
 
 Clicking the clear button button does everything that reset does, and
 it also removes absolutely everything from the log.
+
+About the **copy and paste** buttons:
+
+These provide a means of copying and pasting cells across projects.
+Copy will copy the current cell. Paste will paste a copied cell, if there is one.
+So, for example, you can create a notebook into which you copy results, such as plots,
+from the log of a project.
 
 About the **log and main** buttons:
 
