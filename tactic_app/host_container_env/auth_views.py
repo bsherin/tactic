@@ -74,6 +74,7 @@ def login_after_register():
 
 @app.route('/attempt_login', methods=['GET', 'POST'])
 def attempt_login():
+    print("entering attempt login")
     data = request.json
     result_dict = {}
     user = User.get_user_by_username(data["username"])

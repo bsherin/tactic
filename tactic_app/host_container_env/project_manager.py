@@ -163,7 +163,8 @@ class ProjectManager(LibraryResourceManager):
         else:
             colname = current_user.project_collection_name
 
-        return self.grab_resource_list_chunk(colname, "project_name", None)
+        return self.grab_resource_list_chunk(colname, "project_name", None,
+                                             ["collection_name", "loaded_tiles", "type"])
 
     def rename_me(self, old_name):
         try:
