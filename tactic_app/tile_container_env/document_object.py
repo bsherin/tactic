@@ -7,7 +7,7 @@ import pandas as _pd
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
 _protected_column_names = ["__id__", "__filename__"]
 
-ROWS_TO_PRINT = 10
+ROWS_TO_PRINT = 25
 
 
 def remove_protected_fields_from_dict(adict):
@@ -671,6 +671,8 @@ class DetachedTacticDocument(TacticDocument):
                 for r in doc_data:
                     if isinstance(r, DetachedTacticRow):
                         self._row_list.append(r)
+                    elif isinstance(r, TacticRow):
+                        self._row_list.append(r.detach())
                     else:
                         self._row_list.append(DetachedTacticRow(r))
         self.update_props()

@@ -47,8 +47,9 @@ class GlyphButton extends React.Component {
         return (
            <Button type="button"
                       minimal={this.props.minimal}
-                      small={true}
+                      small={this.props.small}
                       style={style}
+                      className={this.props.className}
                       onMouseDown={(e)=>{e.preventDefault()}}
                       onClick={this.props.handleClick}
                       intent={this.props.intent}
@@ -64,6 +65,8 @@ class GlyphButton extends React.Component {
 GlyphButton.propTypes = {
     icon: PropTypes.string,
     minimal: PropTypes.bool,
+    small: PropTypes.bool,
+    className: PropTypes.string,
     extra_glyph_text: PropTypes.string,
     style: PropTypes.object,
     handleClick: PropTypes.func,
@@ -72,9 +75,11 @@ GlyphButton.propTypes = {
 
 GlyphButton.defaultProps = {
     style: null,
+    className: "",
     extra_glyph_text: null,
     minimal: true,
     intent: "none",
+    small: true
 };
 
 GlyphButton = withTooltip(GlyphButton);

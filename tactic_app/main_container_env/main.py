@@ -41,7 +41,7 @@ true_host_resources_dir = os.environ.get("TRUE_HOST_RESOURCES_DIR")
 # noinspection PyPep8Naming,PyUnusedLocal,PyTypeChecker
 class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationTasksMixin, APISupportTasksMixin,
                  ExportsTasksMixin, ConsoleTasksMixin, DataSupportTasksMixin, ExceptionMixin):
-    save_attrs = ["short_collection_name", "collection_name", "tile_sort_list",
+    save_attrs = ["short_collection_name", "collection_name",
                   "doc_dict", "project_name", "loaded_modules", "user_id",
                   "doc_type", "purgetiles"]
     notebook_save_attrs = ["project_name", "user_id", "doc_type"]
@@ -94,7 +94,6 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         if ("project_name" not in data_dict) or (data_dict["doc_type"] == "jupyter"):
             self.doc_type = data_dict["doc_type"]
             self.tile_instances = []
-            self.tile_sort_list = []
             self.left_fraction = INITIAL_LEFT_FRACTION
             self.is_shrunk = False
             self.project_name = None
@@ -397,8 +396,8 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         return dinfo.table_spec.header_list
 
     def _delete_tile_instance(self, tile_id):
+        print("in delete_tile_instance")
         self.tile_instances.remove(tile_id)
-        self.tile_sort_list.remove(tile_id)
         del self.tile_addresses[tile_id]
         for n, tid in self.tile_id_dict.items():
             if tid == tile_id:
@@ -408,6 +407,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         if tile_id in self._pipe_dict:
             del self._pipe_dict[tile_id]
             self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
+
         self.mworker.ask_host("delete_container", {"container_id": tile_id, "notify": False})
         self.mworker.emit_export_viewer_message("update_exports_popup", {})
         return
@@ -494,6 +494,23 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             if not instantiate_result["success"]:
                 self.mworker.debug_log("got an exception " + instantiate_result["message"])
                 raise Exception(instantiate_result["message"])
+            else:
+                if len(instantiate_result["current_globals"]) == 0:
+                    if self.pseudo_tile_id in self._pipe_dict:
+                        del self._pipe_dict[self.pseudo_tile_id]
+                else:
+                    self._pipe_dict[self.pseudo_tile_id] = {}
+                    tile_name = "__log__"
+                    for gname, gtype in instantiate_result["current_globals"]:
+                        self._pipe_dict[self.pseudo_tile_id][tile_name + "_" + gname] = {
+                            "export_name": gname,
+                            "export_tags": "",
+                            "tile_id": self.pseudo_tile_id,
+                            "type": gtype
+                        }
+
+            self.mworker.emit_export_viewer_message("update_exports_popup", {})
+            self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
 
         self.mworker.post_task(self.pseudo_tile_id, "instantiate_as_pseudo_tile", data_dict, instantiate_done)
 
@@ -508,17 +525,20 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             return
 
     def update_pipe_dict(self, exports, tile_id, tile_name):
+        print("got exports " + str(exports))
         if len(exports) == 0:
             if tile_id in self._pipe_dict:
                 del self._pipe_dict[tile_id]
         else:
             self._pipe_dict[tile_id] = {}
             if not isinstance(exports[0], dict):
-                exports = [{"name": exp, "tags": ""} for exp in exports]  # legacy old form of exports list of strings
+                exports = [{"name": exp["name"], "tags": "", "type": "unknown"} for exp in exports]  # legacy old form of exports list of strings
             for export in exports:
+                print("got export " + str(export))
                 self._pipe_dict[tile_id][tile_name + "_" + export["name"]] = {
                     "export_name": export["name"],
                     "export_tags": export["tags"],
+                    "type": export["type"],
                     "tile_id": tile_id}
         return
 

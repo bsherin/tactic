@@ -34,11 +34,6 @@ class StateTasksMixin:
         return None
 
     @task_worthy
-    def UpdateSortList(self, data):
-        self.tile_sort_list = data["sort_list"]
-        return None
-
-    @task_worthy
     def UpdateLeftFraction(self, data):
         self.left_fraction = data["left_fraction"]
         return None
@@ -603,22 +598,9 @@ class TileCreationTasksMixin:
             form_data = instantiate_result["form_data"]
             self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task",
                                    {"tile_id": tile_container_id})
-            self.tile_sort_list.append(tile_container_id)
+            # self.tile_sort_list.append(tile_container_id)
             response_data = {"success": True, "form_data": form_data, "tile_id": tile_container_id}
             self.mworker.submit_response(local_task_packet, response_data)
-            #
-            # def got_form_data(response):
-            #     print("got form data, time is {}".format(self.microdsecs(self.tstart)))
-            #     self.tstart = datetime.datetime.now()
-            #     form_data = response["form_data"]
-            #     self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task",
-            #                            {"tile_id": tile_container_id})
-            #     self.tile_sort_list.append(tile_container_id)
-            #     response_data = {"success": True, "form_data": form_data, "tile_id": tile_container_id}
-            #     self.mworker.submit_response(local_task_packet, response_data)
-
-            # form_info = self.compile_form_info(tile_container_id)
-            # self.mworker.post_task(tile_container_id, "_create_form_data", form_info, got_form_data)
 
         print("about to load source and instantiate tid = " + str(tile_container_id))
         self.mworker.post_task(tile_container_id, "load_source_and_instantiate", data_dict, instantiated_result)
@@ -635,7 +617,6 @@ class TileCreationTasksMixin:
 
         def handle_response_error(task_packet_passed):
             tphrc = copy.copy(task_packet_passed)
-            self.tile_sort_list.remove(old_tile_id)
             if "response_data" in tphrc and tphrc["response_data"] is not None:
                 response_data = tphrc["response_data"]
             else:
@@ -1246,16 +1227,28 @@ class APISupportTasksMixin:
 class ExportsTasksMixin:
 
     @task_worthy
+    def update_pipe_dict_task(self, data):
+        self.update_pipe_dict(data["exports"], data["tile_id"], data["tile_name"])
+        self.mworker.emit_export_viewer_message("update_exports_popup", {})
+        return {"success": True}
+
+    @task_worthy
     def get_full_pipe_dict(self, data):
         converted_pipe_dict = {}
         for tile_id, tile_entry in self._pipe_dict.items():
-            first_full_name = list(tile_entry)[0]
-            first_short_name = list(tile_entry.values())[0]["export_name"]
-            tile_name = re.sub("_" + first_short_name, "", first_full_name)
+            if tile_id == self.pseudo_tile_id:
+                tile_name = "__log__"
+            else:
+                first_full_name = list(tile_entry)[0]
+                first_short_name = list(tile_entry.values())[0]["export_name"]
+                tile_name = re.sub("_" + first_short_name, "", first_full_name)
             converted_pipe_dict[tile_name] = []
 
             for full_export_name, edict in tile_entry.items():
-                converted_pipe_dict[tile_name].append([full_export_name, edict["export_name"]])
+                new_entry = [full_export_name, edict["export_name"]]
+                if "type" in edict:
+                    new_entry.append(edict["type"])
+                converted_pipe_dict[tile_name].append(new_entry)
 
         return {"success": True, "pipe_dict": converted_pipe_dict}
 
@@ -1362,6 +1355,25 @@ class ConsoleTasksMixin:
                                                                "force_open": True})
         return {"success": True}
 
+    def updated_globals(self, data):
+        if data["globals_changed"]:
+            if len(data["current_globals"]) == 0:
+                if self.pseudo_tile_id in self._pipe_dict:
+                    del self._pipe_dict[self.pseudo_tile_id]
+            else:
+                self._pipe_dict[self.pseudo_tile_id] = {}
+                tile_name = "__log__"
+                for gname, gtype in data["current_globals"]:
+                    self._pipe_dict[self.pseudo_tile_id][tile_name + "_" + gname] = {
+                        "export_name": gname,
+                        "export_tags": "",
+                        "tile_id": self.pseudo_tile_id,
+                        "type": gtype
+                    }
+            self.mworker.emit_export_viewer_message("update_exports_popup", {})
+            self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
+        return
+
     @task_worthy
     def exec_console_code(self, data):
         print("in exec_console_code")
@@ -1373,7 +1385,7 @@ class ConsoleTasksMixin:
         data["pipe_dict"] = self.dict
         data["am_notebook"] = self.am_notebook_type
         print("posting exec_console_code to the pseudo_tile")
-        self.mworker.post_task(self.pseudo_tile_id, "exec_console_code", data, self.got_console_print)
+        self.mworker.post_task(self.pseudo_tile_id, "exec_console_code", data, self.updated_globals)
         return {"success": True}
 
     @task_worthy
@@ -1388,8 +1400,9 @@ class ConsoleTasksMixin:
                     self.mworker.debug_log("got an exception " + instantiate_result["message"])
                     self.show_main_message("Error resetting notebook", 7)
                     raise Exception(instantiate_result["message"])
-                # self.mworker.post_task(self.pseudo_tile_id, "create_pseudo_tile_collection_object",
-                #                        {"am_notebook": self.am_notebook_type})
+                else:
+                    instantiate_result["globals_changed"] = True
+                    self.updated_globals(instantiate_result)
                 self.show_main_message("Notebook reset", 7)
 
             data_dict = {"base_figure_url": self.base_figure_url.replace("tile_id", self.pseudo_tile_id),

@@ -3,7 +3,7 @@
 import React from "react";
 import PropTypes from 'prop-types';
 
-import { Icon, Card, EditableText, Button, Spinner, TextArea } from "@blueprintjs/core";
+import { Icon, Card, EditableText, Spinner, TextArea } from "@blueprintjs/core";
 import { Menu, MenuItem } from "@blueprintjs/core";
 
 // The next line is an ugly workaround
@@ -331,7 +331,7 @@ class RawConsoleComponent extends React.Component {
 
     _bodyHeight() {
         if (this.state.mounted) {
-            return this.props.console_available_height - $(this.header_ref.current).outerHeight();
+            return this.props.console_available_height - $(this.header_ref.current).outerHeight() - 2;
         } else {
             return this.props.console_available_height - 75;
         }
@@ -373,14 +373,26 @@ class RawConsoleComponent extends React.Component {
         );
     }
 
+    _glif_text(show_glif_text, txt) {
+        if (show_glif_text) {
+            return txt;
+        }
+        return null;
+    }
+
     render() {
-        let gbstyle = { marginLeft: 1, marginTop: 1 };
+        let gbstyle = { marginLeft: 1, marginTop: 2 };
         let console_class = this.props.console_is_shrunk ? "am-shrunk" : "not-shrunk";
         if (this.props.console_is_zoomed) {
             console_class = "am-zoomed";
         }
         let outer_style = Object.assign({}, this.props.style);
         outer_style.width = this._bodyWidth();
+        let show_glif_text = outer_style.width > 800;
+        let header_style = {};
+        if (!this.props.shrinkable) {
+            header_style["paddingLeft"] = 10;
+        }
         return React.createElement(
             Card,
             { id: "console-panel", className: console_class, elevation: 2, style: outer_style },
@@ -391,6 +403,7 @@ class RawConsoleComponent extends React.Component {
                     "div",
                     { id: "console-heading",
                         ref: this.header_ref,
+                        style: header_style,
                         className: "d-flex flex-row justify-content-between" },
                     React.createElement(
                         "div",
@@ -401,30 +414,25 @@ class RawConsoleComponent extends React.Component {
                         !this.props.console_is_shrunk && this.props.shrinkable && React.createElement(GlyphButton, { handleClick: this._shrinkConsole,
                             style: { marginLeft: 2 },
                             icon: "chevron-down" }),
-                        this.props.shrinkable && React.createElement(
-                            "b",
-                            { style: { alignSelf: "center", marginRight: 5 } },
-                            "Log"
-                        ),
-                        React.createElement(GlyphButton, { extra_glyph_text: "text",
+                        React.createElement(GlyphButton, { extra_glyph_text: this._glif_text(show_glif_text, "text"),
                             style: gbstyle,
                             intent: "primary",
                             tooltip: "Add new text area",
                             handleClick: this._addBlankText,
                             icon: "new-text-box" }),
-                        React.createElement(GlyphButton, { extra_glyph_text: "code",
+                        React.createElement(GlyphButton, { extra_glyph_text: this._glif_text(show_glif_text, "code"),
                             handleClick: this._addBlankCode,
                             tooltip: "Add new code area",
                             intent: "primary",
                             style: gbstyle,
                             icon: "code" }),
-                        React.createElement(GlyphButton, { extra_glyph_text: "link",
+                        React.createElement(GlyphButton, { extra_glyph_text: this._glif_text(show_glif_text, "link"),
                             handleClick: this._insertResourceLink,
                             tooltip: "Insert a resource link",
                             intent: "primary",
                             style: gbstyle,
                             icon: "link" }),
-                        React.createElement(GlyphButton, { extra_glyph_text: "copy",
+                        React.createElement(GlyphButton, { extra_glyph_text: this._glif_text(show_glif_text, "copy"),
                             handleClick: () => {
                                 this._copyCell();
                             },
@@ -432,7 +440,7 @@ class RawConsoleComponent extends React.Component {
                             intent: "primary",
                             style: gbstyle,
                             icon: "duplicate" }),
-                        React.createElement(GlyphButton, { extra_glyph_text: "paste",
+                        React.createElement(GlyphButton, { extra_glyph_text: this._glif_text(show_glif_text, "paste"),
                             handleClick: () => {
                                 this._pasteCell();
                             },
@@ -444,20 +452,20 @@ class RawConsoleComponent extends React.Component {
                             style: gbstyle,
                             tooltip: "Clear all output and reset namespace",
                             intent: "warning",
-                            extra_glyph_text: "reset",
+                            extra_glyph_text: this._glif_text(show_glif_text, "reset"),
                             icon: "reset" }),
-                        React.createElement(GlyphButton, { extra_glyph_text: "clear",
+                        React.createElement(GlyphButton, { extra_glyph_text: this._glif_text(show_glif_text, "clear"),
                             style: gbstyle,
                             tooltip: "Totally erase everything",
                             handleClick: this._clearConsole,
                             intent: "danger",
                             icon: "trash" }),
-                        React.createElement(GlyphButton, { extra_glyph_text: "log",
+                        React.createElement(GlyphButton, { extra_glyph_text: this._glif_text(show_glif_text, "log"),
                             style: gbstyle,
                             tooltip: "Show container log for the log",
                             handleClick: this._toggleConsoleLog,
                             icon: "console" }),
-                        React.createElement(GlyphButton, { extra_glyph_text: "main",
+                        React.createElement(GlyphButton, { extra_glyph_text: this._glif_text(show_glif_text, "main"),
                             tooltip: "Show container log for the main project container",
                             style: gbstyle,
                             handleClick: this._toggleMainLog,
@@ -467,11 +475,13 @@ class RawConsoleComponent extends React.Component {
                         "div",
                         { id: "console-header-right",
                             className: "d-flex flex-row" },
-                        this.props.zoomable && React.createElement(Button, { onClick: this._toggleExports,
-                            style: { marginRight: 5 },
-                            minimal: true,
+                        React.createElement(GlyphButton, { extra_glyph_text: this._glif_text(show_glif_text, "exports"),
+                            tooltip: "Show export browser",
                             small: true,
-                            text: "exports" }),
+                            className: "show-exports-but",
+                            style: { marginRight: 5, marginTop: 2 },
+                            handleClick: this._toggleExports,
+                            icon: "variable" }),
                         !this.props.console_is_zoomed && this.props.zoomable && React.createElement(GlyphButton, { handleClick: this._zoomConsole,
                             icon: "maximize" }),
                         this.props.console_is_zoomed && this.props.zoomable && React.createElement(GlyphButton, { handleClick: this._unzoomConsole,

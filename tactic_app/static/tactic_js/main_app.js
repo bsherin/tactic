@@ -27,7 +27,7 @@ import { handleCallback, postWithCallback, postAsyncFalse } from "./communicatio
 import { doFlash } from "./toaster.js";
 import { withStatus } from "./toaster.js";
 import { withErrorDrawer } from "./error_drawer.js";
-import { doBinding, get_ppi, propsAreEqual } from "./utilities_react.js";
+import { doBinding, get_ppi } from "./utilities_react.js";
 
 export { MainTacticSocket };
 
@@ -160,7 +160,7 @@ class MainApp extends React.Component {
             short_collection_name: window.short_collection_name,
             console_items: [],
             console_is_shrunk: true,
-            show_exports_pane: false,
+            show_exports_pane: true,
             console_is_zoomed: false,
             tile_types: window.initial_tile_types,
             tile_list: [],

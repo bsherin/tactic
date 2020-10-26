@@ -319,6 +319,12 @@ body {
 }
 // exports
 
+#selected-export {
+    font-size: 14px;
+    line-height: 30px;
+    font-weight: bold
+}
+
 #exports-heading {
     display: flex;
     justify-content: flex-start;
@@ -353,6 +359,48 @@ body {
         margin-left: 0
     }
 }
+
+#exports-button-list .bp3-button-group.bp3-vertical {
+    max-width: 100%
+}
+
+.export-tail {
+    height: 24px;
+    margin-top: 2px;
+}
+
+.export-button {
+    font-size: 90%;
+
+    svg {
+        width: 80%;
+        height: 80%
+    }
+    span {
+        margin-right: 3px
+    }
+    .bp3-button-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+.export-label {
+    font-size: 90%;
+    font-weight: 400;
+}
+
+.export-label label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.show-exports-but .bp3-icon{
+    margin-top: 2px
+}
+
 
 button.notclose {
     -webkit-appearance: none;

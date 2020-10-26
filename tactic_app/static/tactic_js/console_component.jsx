@@ -3,7 +3,7 @@
 import React from "react";
 import PropTypes from 'prop-types';
 
-import { Icon, Card, EditableText, Button, Spinner, TextArea} from "@blueprintjs/core";
+import { Icon, Card, EditableText, Spinner, TextArea} from "@blueprintjs/core";
 import { Menu, MenuItem } from "@blueprintjs/core";
 
 // The next line is an ugly workaround
@@ -345,7 +345,7 @@ const BUTTON_CONSUMED_SPACE = 203;
 
     _bodyHeight() {
         if (this.state.mounted) {
-            return this.props.console_available_height - $(this.header_ref.current).outerHeight()
+            return this.props.console_available_height - $(this.header_ref.current).outerHeight() - 2
         }
         else {
             return this.props.console_available_height - 75
@@ -387,20 +387,32 @@ const BUTTON_CONSUMED_SPACE = 203;
         );
     }
 
+    _glif_text(show_glif_text, txt) {
+        if (show_glif_text) {
+            return txt
+        }
+        return null
+    }
 
     render() {
-        let gbstyle={marginLeft: 1, marginTop: 1};
+        let gbstyle={marginLeft: 1, marginTop: 2};
         let console_class = this.props.console_is_shrunk ? "am-shrunk" : "not-shrunk";
         if (this.props.console_is_zoomed) {
             console_class = "am-zoomed"
         }
         let outer_style = Object.assign({}, this.props.style);
         outer_style.width = this._bodyWidth();
+        let show_glif_text = outer_style.width > 800;
+        let header_style = {};
+        if (!this.props.shrinkable) {
+            header_style["paddingLeft"] = 10
+        }
         return (
             <Card id="console-panel" className={console_class} elevation={2} style={outer_style}>
                 <div className="d-flex flex-column justify-content-around">
                     <div id="console-heading"
                          ref={this.header_ref}
+                         style={header_style}
                          className="d-flex flex-row justify-content-between">
                         <div id="console-header-left" className="d-flex flex-row">
                             {this.props.console_is_shrunk && this.props.shrinkable &&
@@ -413,35 +425,35 @@ const BUTTON_CONSUMED_SPACE = 203;
                                              style={{marginLeft: 2}}
                                              icon="chevron-down"/>
                                 }
-                            {this.props.shrinkable &&
-                                <b style={{alignSelf: "center", marginRight: 5}}>Log</b>
-                            }
+                            {/*{this.props.shrinkable &&*/}
+                            {/*    <b style={{alignSelf: "center", marginRight: 5}}>Log</b>*/}
+                            {/*}*/}
 
-                            <GlyphButton extra_glyph_text="text"
+                            <GlyphButton extra_glyph_text={this._glif_text(show_glif_text, "text")}
                                          style={gbstyle}
                                          intent="primary"
                                          tooltip="Add new text area"
                                          handleClick={this._addBlankText}
                                          icon="new-text-box"/>
-                            <GlyphButton extra_glyph_text="code"
+                            <GlyphButton extra_glyph_text={this._glif_text(show_glif_text, "code")}
                                          handleClick={this._addBlankCode}
                                          tooltip="Add new code area"
                                          intent="primary"
                                          style={gbstyle}
                                          icon="code"/>
-                             <GlyphButton extra_glyph_text="link"
+                             <GlyphButton extra_glyph_text={this._glif_text(show_glif_text, "link")}
                                          handleClick={this._insertResourceLink}
                                          tooltip="Insert a resource link"
                                          intent="primary"
                                          style={gbstyle}
                                          icon="link"/>
-                             <GlyphButton extra_glyph_text="copy"
+                             <GlyphButton extra_glyph_text={this._glif_text(show_glif_text, "copy")}
                                          handleClick={()=>{this._copyCell()}}
                                          tooltip="Copy cell"
                                          intent="primary"
                                          style={gbstyle}
                                          icon="duplicate"/>
-                             <GlyphButton extra_glyph_text="paste"
+                             <GlyphButton extra_glyph_text={this._glif_text(show_glif_text, "paste")}
                                          handleClick={()=>{this._pasteCell()}}
                                          tooltip="Paste cell"
                                          intent="primary"
@@ -451,20 +463,20 @@ const BUTTON_CONSUMED_SPACE = 203;
                                          style={gbstyle}
                                          tooltip="Clear all output and reset namespace"
                                          intent="warning"
-                                         extra_glyph_text="reset"
+                                         extra_glyph_text={this._glif_text(show_glif_text, "reset")}
                                          icon="reset"/>
-                            <GlyphButton extra_glyph_text="clear"
+                            <GlyphButton extra_glyph_text={this._glif_text(show_glif_text, "clear")}
                                          style={gbstyle}
                                          tooltip="Totally erase everything"
                                          handleClick={this._clearConsole}
                                          intent="danger"
                                          icon="trash"/>
-                            <GlyphButton extra_glyph_text="log"
+                            <GlyphButton extra_glyph_text={this._glif_text(show_glif_text, "log")}
                                          style={gbstyle}
                                          tooltip="Show container log for the log"
                                          handleClick={this._toggleConsoleLog}
                                          icon="console"/>
-                            <GlyphButton extra_glyph_text="main"
+                            <GlyphButton extra_glyph_text={this._glif_text(show_glif_text, "main")}
                                          tooltip="Show container log for the main project container"
                                          style={gbstyle}
                                          handleClick={this._toggleMainLog}
@@ -473,13 +485,14 @@ const BUTTON_CONSUMED_SPACE = 203;
 
                             <div id="console-header-right"
                                  className="d-flex flex-row">
-                                {this.props.zoomable &&
-                                    <Button onClick={this._toggleExports}
-                                               style={{marginRight: 5}}
-                                               minimal={true}
-                                               small={true}
-                                               text="exports"/>
-                                   }
+                            <GlyphButton extra_glyph_text={this._glif_text(show_glif_text, "exports")}
+                                         tooltip="Show export browser"
+                                         small={true}
+                                         className="show-exports-but"
+                                         style={{marginRight: 5, marginTop: 2}}
+                                         handleClick={this._toggleExports}
+                                         icon="variable"/>
+
                             {!this.props.console_is_zoomed && this.props.zoomable &&
                                 <GlyphButton handleClick={this._zoomConsole}
                                              icon="maximize"/>
