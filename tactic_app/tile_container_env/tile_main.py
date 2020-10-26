@@ -1,6 +1,9 @@
 
+# import pydevd_pycharm
 from gevent import monkey
 monkey.patch_all()
+# pydevd_pycharm.settrace('docker.for.mac.localhost', port=21000, stdoutToServer=True, stderrToServer=True,
+#                         suspend=True)
 import os
 import pika
 import json
@@ -135,9 +138,6 @@ class TileWorker(QWorker):
             self.tile_instance = class_info["tile_class"](None, None, tile_name=data["tile_name"])
             tile_env.Tile = self.tile_instance
             self.handler_instances["tilebase"] = self.tile_instance
-            # if "tile_log_width" not in data:
-            #     data["tile_log_width"] = data["back_width"]
-            #     data["tile_log_height"] = data["back_height"]
             self.tile_instance.recreate_from_save(data)
             if self.tile_instance.current_html is not None:
                 self.tile_instance.current_html = self.tile_instance.current_html.replace(data["base_figure_url"],
@@ -149,12 +149,13 @@ class TileWorker(QWorker):
             else:
                 self.tile_instance.doc_type = "table"
             document_object.Collection.__fully_initialize__()
+
         except Exception as ex:
             result = self.handle_exception(ex, "Error loading source in tile_main recreate from save")
         return {"success": True,
                 "is_shrunk": self.tile_instance.is_shrunk,
                 "saved_size": self.tile_instance.full_tile_height,
-                "exports": self.tile_instance.exports,
+                "exports": self.tile_instance.get_export_type_info(),
                 "tile_name": self.tile_instance.tile_name,
                 "is_d3": self.tile_instance.is_d3}
 
@@ -203,7 +204,7 @@ class TileWorker(QWorker):
             if not self.tile_instance.exports:
                 self.tile_instance.exports = []
             return {"success": True, "form_data": form_data,
-                    "exports": self.tile_instance.exports,
+                    "exports": self.tile_instance.get_export_type_info(),
                     "options_changed": options_changed}
         except Exception as ex:
             return self.handle_exception(ex, "Error reinstantiating tile")
@@ -225,7 +226,7 @@ class TileWorker(QWorker):
             # There won't be many of these old notebooks
             if (data["globals_dict"] is not None) and (isinstance(data["globals_dict"], dict)):  # legacy
                 self.tile_instance.recreate_from_save(data["globals_dict"])
-            result = {"success": True}
+            result = {"success": True, "current_globals": self.tile_instance._last_globals}
             return result
         except Exception as ex:
             return self.handle_exception(ex, "Error initializing pseudo tile")
@@ -269,7 +270,9 @@ class TileWorker(QWorker):
             if not self.tile_instance.exports:
                 self.tile_instance.exports = []
             document_object.Collection.__fully_initialize__()
-            data["exports"] = self.tile_instance.exports
+            data["exports"] = copy.deepcopy(self.tile_instance.exports)
+            for exp in data["exports"]:
+                exp["type"] = "unknown"
 
             data["success"] = True
             return data

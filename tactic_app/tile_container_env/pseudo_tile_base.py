@@ -3,6 +3,7 @@ from io import StringIO
 import ast
 from bson.binary import Binary
 import os
+import re
 import types
 import pickle
 from pickle import UnpicklingError
@@ -10,6 +11,7 @@ from tile_base import TileBase, _task_worthy, _jsonizable_types
 from communication_utils import is_jsonizable, make_python_object_jsonizable, debinarize_python_object
 from communication_utils import emit_direct
 import document_object
+from document_object import ROWS_TO_PRINT, DetachedTacticCollection
 
 # noinspection PyUnresolvedReferences
 from qworker import task_worthy_methods
@@ -61,6 +63,7 @@ class PseudoTileClass(TileBase, MplFigure):
         MplFigure.__init__(self)
         globals()["self"] = self
         self._saved_globals = copy.copy(globals())
+        self._last_globals = []
         self.execution_counter = 0
         return
 
@@ -149,7 +152,7 @@ class PseudoTileClass(TileBase, MplFigure):
                 if type(attr_val) == dict and hasattr(attr_val, "recreate_from_save"):
                     cls = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])
                     globals()[attr] = cls.recreate_from_save(attr_val)
-                elif((type(attr_val) == dict) and(len(attr_val) > 0) and
+                elif((type(attr_val) == dict) and (len(attr_val) > 0) and
                      hasattr(list(attr_val.values())[0], "recreate_from_save")):
                     cls = getattr(sys.modules[__name__], list(attr_val.values())[0]["my_class_for_recreate"])
                     res = {}
@@ -174,7 +177,7 @@ class PseudoTileClass(TileBase, MplFigure):
                         globals()[attr] = attr_val
             except:
                 print("failed to recreate attribute " + attr)
-
+        self._last_globals = self.get_user_globals()
         self._main_id = os.environ["PARENT"]  # this is for backward compatibility with some old project saves
         return None
 
@@ -183,6 +186,138 @@ class PseudoTileClass(TileBase, MplFigure):
         encoded_img = data["img"]
         self.img_dict[data["figure_name"]] = debinarize_python_object(encoded_img)
         return {"success": True}
+
+    def get_user_globals(self):
+        attrs = globals().keys()
+        user_globals = []
+        for attr in attrs:
+            try:
+                if attr in self._saved_globals or attr == "Library":
+                    continue
+                attr_val = globals()[attr]
+                if isinstance(attr_val, types.ModuleType):
+                    continue
+                else:
+                    user_globals.append([attr, type(attr_val).__name__])
+            except Exception as ex:
+                error_string = self._handle_exception(ex, "Error getting attr {}".format(attr),
+                                                      print_to_console=False)
+                print(error_string)
+        return user_globals
+
+    @_task_worthy
+    def _transfer_pipe_value(self, data):
+        print("in _transfer_pipe_value in pseudo_tile_base")
+        self._save_stdout()
+        export_name = data["export_name"]
+        if export_name in globals().keys():
+            res = globals()[export_name]
+        else:
+            res = "__none__"
+        encoded_val = make_python_object_jsonizable(res)
+        self._restore_stdout()
+        return {"encoded_val": encoded_val}
+
+    def _eval_name(self, name):
+        return eval(name, globals(), globals())
+
+    @_task_worthy
+    def _get_export_info(self, data):
+        try:
+            ename = data["export_name"]
+            self._pipe_dict = data["pipe_dict"]
+            pipe_value = self.get_pipe_value(ename)
+            result = self._get_type_info(pipe_value)
+            result["success"] = True
+        except Exception as Ex:
+            result = {"success": False,
+                      "info_string": self._handle_exception(Ex, "", print_to_console=False)}
+        return result
+
+    @_task_worthy
+    def _evaluate_export(self, data):
+        self._pipe_dict = data["pipe_dict"]
+        pipe_val = self.get_pipe_value(data["export_name"])
+        success = True
+        if isinstance(pipe_val, str) and pipe_val == "__none__":
+            success = False
+            the_html = "pipe not found"
+        else:
+            ev_string = "pipe_val"
+            if "key" in data:
+                ev_string += "['{}']".format(data["key"])
+            ev_string += data["tail"]
+            try:
+                print("evaluating string " + ev_string)
+                eval_result = eval(ev_string)
+                eval_type_info = self._get_type_info(eval_result)
+                use_html_table = False
+                for c in self.html_table_classes:
+                    if isinstance(eval_result, c):
+                        use_html_table = True
+                if use_html_table:
+                    the_html = self.html_table(eval_result, title=eval_type_info["info_string"],
+                                               header_style="font-size:12px",
+                                               body_style="font-size:12px",
+                                               max_rows=ROWS_TO_PRINT)
+                else:
+                    the_html = "<h5>{}</h5>".format(eval_type_info["info_string"])
+                    the_html += str(eval_result)
+            except Exception as ex:
+                succcess = False
+                print("error in _evaluate_export in tile_base")
+                the_html = self.get_traceback_message(ex)
+        return {"success": success, "the_html": the_html}
+
+    def _get_type_info(self, avar):
+        result = {}
+        if isinstance(avar, str) and avar == "__none__":
+            result["type"] = "none"
+            result["info_string"] = "Not set"
+        elif type(avar) is dict:
+            result["type"] = "dict"
+            result["info_string"] = "Dict with {} keys".format(str(len(avar.keys())))
+            keys_html = ""
+            klist = list(avar.keys())
+            klist.sort()
+            result["key_list"] = klist
+        elif isinstance(avar, DetachedTacticCollection):
+            result["type"] = "DetachedTacticCollection"
+            result["info_string"] = str(avar)
+            klist = list(avar.document_names)
+            klist.sort()
+            result["key_list"] = klist
+        elif type(avar) is list:
+            result["type"] = "list"
+            result["info_string"] = "List with {} elements".format(str(len(avar)))
+        elif type(avar) is set:
+            result["type"] = "set"
+            result["info_string"] = "Set with {} elements".format(str(len(avar)))
+        elif type(avar) is str:
+            result["type"] = "string"
+            result["info_string"] = "String with {} characters".format(str(len(avar)))
+        else:
+            findtype = re.findall("(?:type|class) \'(.*?)\'", str(type(avar)))
+            if len(findtype) > 0:
+                result["type"] = findtype[0]
+            else:
+                result["type"] = "no type"
+            try:
+                thel = len(avar)
+                result["info_string"] = "{} of length {}".format(result["type"], thel)
+            except:
+                result["info_string"] = result["type"]
+        return result
+
+    def globals_have_changed(self, new_globals):
+        ng_dict = {k: v for k, v in new_globals}
+        og_dict = {k: v for k, v in self._last_globals}
+        if not set(ng_dict.keys()) == set(og_dict.keys()):
+            return True
+        for g, t in ng_dict.items():
+            if not og_dict[g] == t:
+                return True
+        return False
 
     @_task_worthy
     def exec_console_code(self, data):
@@ -217,4 +352,9 @@ class PseudoTileClass(TileBase, MplFigure):
             sys.stdout = old_stdout
         print("about to return from exec_console_code")
         self.emit_console_message("stopConsoleSpinner", data)
-        return
+        current_globals = self.get_user_globals()
+        if self.globals_have_changed(current_globals):
+            self._last_globals = current_globals
+            return {"globals_changed": True, "current_globals": current_globals}
+        else:
+            return {"globals_changed": False}

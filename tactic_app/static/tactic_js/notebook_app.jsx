@@ -16,9 +16,11 @@ import {withStatus} from "./toaster.js";
 import {doBinding, get_ppi} from "./utilities_react.js";
 
 import {handleCallback, postWithCallback, postAsyncFalse} from "./communication_react.js"
+import {ExportsViewer} from "./export_viewer_react";
+import {HorizontalPanes} from "./resizing_layouts";
 
 const MARGIN_SIZE = 17;
-const BOTTOM_MARGIN = 35;
+const BOTTOM_MARGIN = 20;
 const USUAL_TOOLBAR_HEIGHT = 50;
 
 
@@ -92,7 +94,7 @@ function _finish_post_load(data) {
         }
 }
 
-const save_attrs = ["console_items"];
+const save_attrs = ["console_items", "show_export_pane", "console_width_fraction"];
 
 class NotebookApp extends React.Component {
     constructor (props) {
@@ -104,6 +106,8 @@ class NotebookApp extends React.Component {
             console_items: [],
             usable_width: window.innerWidth - 2 * MARGIN_SIZE,
             usable_height: window.innerHeight - BOTTOM_MARGIN,
+            console_width_fraction: .5,
+            show_exports_pane: true,
         };
         if (this.props.is_project) {
             for (let attr of save_attrs) {
@@ -132,6 +136,10 @@ class NotebookApp extends React.Component {
             "usable_width": window.innerWidth - 2 * MARGIN_SIZE,
             "usable_height": window.innerHeight - BOTTOM_MARGIN
         });
+    }
+
+    _handleConsoleFractionChange(left_width, right_width, new_fraction) {
+        this.setState({console_width_fraction: new_fraction})
     }
 
     _setMainStateValue(field_name, value, callback=null) {
@@ -173,6 +181,7 @@ class NotebookApp extends React.Component {
         if (!window.is_project || window.is_jupyter) {
             disabled_items.push("Save")
         }
+        let console_available_height = this.state.usable_height - USUAL_TOOLBAR_HEIGHT;
         let menus = (
             <React.Fragment>
                 <ProjectMenu {...this.props.statusFuncs}
@@ -186,6 +195,35 @@ class NotebookApp extends React.Component {
                 />
             </React.Fragment>
         );
+        let console_pane = (
+            <ConsoleComponent {...this.props.statusFuncs}
+                  console_items={this.state.console_items}
+                  console_is_shrunk={false}
+                  console_is_zoomed={true}
+                  show_exports_pane={this.state.show_exports_pane}
+                  setMainStateValue={this._setMainStateValue}
+                  console_available_height={console_available_height - MARGIN_SIZE}
+                  console_available_width={this.state.usable_width * this.state.console_width_fraction - 16}
+                  zoomable={false}
+                  shrinkable={false}
+                  tsocket={tsocket}
+                  style={{marginTop: MARGIN_SIZE}}
+                  />
+        )
+        let exports_pane;
+        if (this.state.show_exports_pane) {
+            exports_pane = <ExportsViewer setUpdate={(ufunc)=>this.updateExportsList = ufunc}
+                                          available_height={console_available_height - MARGIN_SIZE}
+                                          console_is_shrunk={false}
+                                          console_is_zoomed={this.state.console_is_zoomed}
+                                          tsocket={tsocket}
+                                          style={{marginTop: MARGIN_SIZE}}
+            />
+        }
+        else {
+            exports_pane = <div></div>
+        }
+
         return (
             <React.Fragment>
                 <TacticNavbar is_authenticated={window.is_authenticated}
@@ -193,19 +231,17 @@ class NotebookApp extends React.Component {
                               menus={menus}
                               show_api_links={true}
                 />
-                <ConsoleComponent {...this.props.statusFuncs}
-                                  console_items={this.state.console_items}
-                                  console_is_shrunk={false}
-                                  console_is_zoomed={true}
-                                  show_exports_pane={false}
-                                  setMainStateValue={this._setMainStateValue}
-                                  console_available_height={this.state.usable_height - USUAL_TOOLBAR_HEIGHT - MARGIN_SIZE}
-                                  console_available_width={this.state.usable_width}
-                                  zoomable={false}
-                                  shrinkable={false}
-                                  tsocket={tsocket}
-                                      style={{marginLeft: MARGIN_SIZE, marginRight: MARGIN_SIZE, marginTop: MARGIN_SIZE}}
-                                  />
+                <HorizontalPanes left_pane={console_pane}
+                                 right_pane={exports_pane}
+                                 show_handle={true}
+                                 available_height={console_available_height}
+                                 available_width={this.state.usable_width}
+                                 initial_width_fraction={this.state.console_width_fraction}
+                                 controlled={true}
+                                 left_margin={MARGIN_SIZE}
+                                 dragIconSize={15}
+                                 handleSplitUpdate={this._handleConsoleFractionChange}
+                    />
             </React.Fragment>
         )
     }

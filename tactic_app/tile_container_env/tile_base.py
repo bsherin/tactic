@@ -22,7 +22,8 @@ from object_api_mixin import ObjectAPIMixin
 from other_api_mixin import OtherAPIMIxin
 from refreshing_mixin import RefreshingMixin
 from exception_mixin import ExceptionMixin, generic_exception_handler
-from document_object import ROWS_TO_PRINT
+from document_object import ROWS_TO_PRINT, DetachedTacticCollection
+import copy
 
 RETRIES = 60
 
@@ -132,6 +133,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         self._remote_tiles = None
         self.RETRIES = RETRIES  # This is here so that it can be easily accessible form the mixins
         self._std_out_nesting = 0
+        self._last_exports = {}
         return
 
     # <editor-fold desc="_task_worthy methods (events)">
@@ -431,60 +433,6 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         return {"success": True}
 
     @_task_worthy
-    def _get_export_info(self, data):
-        try:
-            ename = data["export_name"]
-            self._pipe_dict = data["pipe_dict"]
-            pipe_value = self.get_pipe_value(ename)
-            result = self._get_type_info(pipe_value)
-            result["success"] = True
-        except Exception as Ex:
-            result = {"success": False,
-                      "info_string": self._handle_exception(Ex, "", print_to_console=False)}
-        return result
-
-    @_task_worthy
-    def _evaluate_export(self, data):
-        self._pipe_dict = data["pipe_dict"]
-        pipe_val = self.get_pipe_value(data["export_name"])
-        success = True
-        if isinstance(pipe_val, str) and pipe_val == "__none__":
-            success = False
-            the_html = "pipe not found"
-        else:
-            ev_string = "pipe_val"
-            if "key" in data:
-                ev_string += "['{}']".format(data["key"])
-            ev_string += data["tail"]
-            try:
-                print("evaluating string " + ev_string)
-                eval_result = eval(ev_string)
-                eval_type_info = self._get_type_info(eval_result)
-                use_html_table = False
-                for c in self.html_table_classes:
-                    if isinstance(eval_result, c):
-                        use_html_table = True
-                if use_html_table:
-                    the_html = self.html_table(eval_result, title=eval_type_info["info_string"],
-                                               header_style="font-size:12px",
-                                               body_style="font-size:12px",
-                                               max_rows=ROWS_TO_PRINT)
-                elif eval_type_info["type"] == "list":
-                    the_array = []
-                    for i, the_val in enumerate(eval_result):
-                        the_array.append([i, the_val])
-                    the_html = self._build_html_table_for_exports(the_array, title=eval_type_info["info_string"],
-                                                                  has_header=False)
-                else:
-                    the_html = "<h5>{}</h5>".format(eval_type_info["info_string"])
-                    the_html += str(eval_result)
-            except Exception as ex:
-                succcess = False
-                print("error in _evaluate_export in tile_base")
-                the_html = self.get_traceback_message(ex)
-        return {"success": success, "the_html": the_html}
-
-    @_task_worthy
     def compile_save_dict(self, data):
         result = {"my_class_for_recreate": "TileBase",
                   "binary_attrs": []}
@@ -635,6 +583,27 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     def _hide_options(self):
         self._tworker.emit_tile_message("hideOptions")
 
+    def exports_have_changed(self, new_exports):
+        ne_dict = {exp["name"]: exp["type"] for exp in new_exports}
+        oe_dict = {exp["name"]: exp["type"] for exp in self._last_exports}
+        if not set(ne_dict.keys()) == set(oe_dict.keys()):
+            return True
+        for g, t in ne_dict.items():
+            if not oe_dict[g] == t:
+                return True
+        return False
+
+    def get_export_type_info(self):
+        exports_with_type_info = []
+        for exp in self.exports:
+            new_exp = copy.deepcopy(exp)
+            if hasattr(self, exp["name"]):
+                new_exp["type"] = type(getattr(self, exp["name"])).__name__
+            else:
+                new_exp["type"] = "unknown"
+            exports_with_type_info.append(new_exp)
+        return exports_with_type_info
+
     def _do_the_refresh(self, new_html=None):
         try:
             if new_html is None:
@@ -643,7 +612,17 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                 else:
                     new_html = self.render_content()
             self.current_html = new_html
-            self._tworker.emit_tile_message("displayTileContent", {"html": new_html})
+            current_exports = self.get_export_type_info()
+            if self.exports_have_changed(current_exports):
+                self._last_exports = current_exports
+                self._tworker.post_task(self._main_id, "update_pipe_dict_task",
+                                        {"exports": current_exports,
+                                         "tile_id": self._tworker.my_id,
+                                         "tile_name": self.tile_name})
+                message = {"html": new_html, "exports_changed": True}
+            else:
+                message = {"html": new_html, "exports_changed": False}
+            self._tworker.emit_tile_message("displayTileContent", message)
         except Exception as ex:
             self._handle_exception(ex)
         return
@@ -657,7 +636,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
             if type(attr_val) == dict and hasattr(attr_val, "recreate_from_save"):
                 cls = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])
                 setattr(self, attr, cls.recreate_from_save(attr_val))
-            elif((type(attr_val) == dict) and(len(attr_val) > 0) and
+            elif((type(attr_val) == dict) and (len(attr_val) > 0) and
                  hasattr(list(attr_val.values())[0], "recreate_from_save")):
                 cls = getattr(sys.modules[__name__], list(attr_val.values())[0]["my_class_for_recreate"])
                 res = {}
@@ -683,40 +662,6 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                     setattr(self, attr, attr_val)
         self._main_id = os.environ["PARENT"]  # this is for backward compatibility with some old project saves
         return None
-
-    def _get_type_info(self, avar):
-        result = {}
-        if isinstance(avar, str) and avar == "__none__":
-            result["type"] = "none"
-            result["info_string"] = "Not set"
-        elif type(avar) is dict:
-            result["type"] = "dict"
-            result["info_string"] = "Dict with {} keys".format(str(len(avar.keys())))
-            keys_html = ""
-            klist = list(avar.keys())
-            klist.sort()
-            result["key_list"] = klist
-        elif type(avar) is list:
-            result["type"] = "list"
-            result["info_string"] = "List with {} elements".format(str(len(avar)))
-        elif type(avar) is set:
-            result["type"] = "set"
-            result["info_string"] = "Set with {} elements".format(str(len(avar)))
-        elif type(avar) is str:
-            result["type"] = "string"
-            result["info_string"] = "String with {} characters".format(str(len(avar)))
-        else:
-            findtype = re.findall("(?:type|class) \'(.*?)\'", str(type(avar)))
-            if len(findtype) > 0:
-                result["type"] = findtype[0]
-            else:
-                result["type"] = "no type"
-            try:
-                thel = len(avar)
-                result["info_string"] = "{} of length {}".format(result["type"], thel)
-            except:
-                result["info_string"] = result["type"]
-        return result
 
     def _render_me(self, form_info):
         form_html = self._create_form_html(form_info)["form_html"]

@@ -3,7 +3,18 @@ from communication_utils import debinarize_python_object
 # noinspection PyPackageRequirements
 import pandas as _pd
 import nltk
+from document_object import TacticDocument, TacticRow, DetachedTacticRow
 nltk.data.path.append("/root/resources/nltk_data")
+
+import collections
+import six
+
+
+def iterable(arg):
+    return (
+        isinstance(arg, collections.Iterable)
+        and not isinstance(arg, six.string_types)
+    )
 
 
 class OtherAPIMIxin:
@@ -62,22 +73,24 @@ class OtherAPIMIxin:
                 return None
         else:  # otherwise assume first argument is the tile name
             tile_id = self.tiles[key_or_tile_name]._tile_id
-
-        result = self._tworker.post_and_wait(tile_id,
-                                             "_transfer_pipe_value",
-                                             {"export_name": export_name,
-                                              "requester_address": self.my_address},
-                                             timeout=60,
-                                             tries=self.RETRIES)
-        encoded_val = result["encoded_val"]
-        val = debinarize_python_object(encoded_val)
+        if tile_id == self._tworker.my_id:  # then this is a global from the pseudo_tile
+            val = self._eval_name(export_name)
+        else:
+            result = self._tworker.post_and_wait(tile_id,
+                                                 "_transfer_pipe_value",
+                                                 {"export_name": export_name,
+                                                  "requester_address": self.my_address},
+                                                 timeout=60,
+                                                 tries=self.RETRIES)
+            encoded_val = result["encoded_val"]
+            val = debinarize_python_object(encoded_val)
         self._restore_stdout()
         return val
     # </editor-fold>
 
     # <editor-fold desc="Odd utility methods">
 
-    html_table_classes = [_pd.DataFrame, nltk.FreqDist, dict, _pd.Series]
+    html_table_classes = [_pd.DataFrame, nltk.FreqDist, dict, _pd.Series, list, TacticDocument]
 
     def dict_to_list(self, the_dict):
         result = []
@@ -96,7 +109,7 @@ class OtherAPIMIxin:
             res = [columns] + mat.tolist()
         else:
             res = [["label"] + list(new_df.columns)]
-            for label, s in df.iterrows():
+            for label, s in new_df.iterrows():
                 res.append([label] + s.tolist())
         return res
 
@@ -105,6 +118,9 @@ class OtherAPIMIxin:
                    column_order=None, include_row_labels=True):
         self._save_stdout()
         show_header = has_header
+        if isinstance(data, list) and (isinstance(data[0], TacticRow) or isinstance(data[0], DetachedTacticRow)):
+            data = self.create_document(data)
+
         if isinstance(data, _pd.DataFrame):
             if column_order is not None:
                 df = data.reindex(columns=column_order)
@@ -118,6 +134,9 @@ class OtherAPIMIxin:
                 df = df.reindex(columns=column_order)
             dlist = self.convert_df_to_datalist(df, max_rows, include_row_labels=include_row_labels)
             show_header = True
+        elif isinstance(data, TacticDocument):
+            return data.to_html(title, click_type, sortable, sidebyside, has_header, max_rows, header_style, body_style,
+                                column_order, include_row_labels)
         elif isinstance(data, nltk.FreqDist):
             if max_rows is None:
                 nrows = 100
@@ -129,7 +148,10 @@ class OtherAPIMIxin:
             dlist = [["key", "value"]]
             for key, the_val in data.items():
                 dlist.append([key, the_val])
+            dlist = dlist[:max_rows]
             show_header = True
+        elif isinstance(data, list):
+            dlist = data[:max_rows]
         elif isinstance(data, _pd.Series):
             ddict = dict(data)
             dlist = [["key", "value"]]
@@ -175,8 +197,11 @@ class OtherAPIMIxin:
             the_html += u"<caption>{0}</caption>".format(title)
         if has_header:
             the_html += u"<thead><tr>"
-            for c in data_list[0]:
-                the_html += u"<th style='{1}'>{0}</th>".format(c, hstyle)
+            if iterable(data_list[0]):
+                for c in data_list[0]:
+                    the_html += u"<th style='{1}'>{0}</th>".format(c, hstyle)
+            else:
+                the_html += u"<th style='{1}'>{0}</th>".format(data_list[0], hstyle)
             the_html += u"</tr></thead>"
             start_from = 1
         else:
@@ -186,19 +211,29 @@ class OtherAPIMIxin:
         for rnum, r in enumerate(data_list[start_from:]):
             if click_type == u"row-clickable":
                 the_html += u"<tr class='row-clickable'>"
-                for c in r:
-                    the_html += u"<td style='{1}'>{0}</td>".format(c, bstyle)
+                if iterable(r):
+                    for c in r:
+                        the_html += u"<td style='{1}'>{0}</td>".format(c, bstyle)
+                else:
+                    the_html += u"<td style='{1}'>{0}</td>".format(r, bstyle)
                 the_html += u"</tr>"
             elif click_type == u"word-clickable":
                 the_html += u"<tr>"
-                for c in r:
-                    the_html += u"<td class='word-clickable' style='{1}'>{0}</td>".format(c, bstyle)
+                if iterable(r):
+                    for c in r:
+                        the_html += u"<td class='word-clickable' style='{1}'>{0}</td>".format(c, bstyle)
+                else:
+                    the_html += u"<td class='word-clickable' style='{1}'>{0}</td>".format(r, bstyle)
                 the_html += u"</tr>"
             else:
                 the_html += u"<tr>"
-                for cnum, c in enumerate(r):
+                if iterable(r):
+                    for cnum, c in enumerate(r):
+                        the_html += "<td class='element-clickable' data-row='{1}' style='{3}' " \
+                                    "data-col='{2}' data-val='{0}'>{0}</td>".format(c, str(rnum), str(cnum), bstyle)
+                else:
                     the_html += "<td class='element-clickable' data-row='{1}' style='{3}' " \
-                                "data-col='{2}' data-val='{0}'>{0}</td>".format(c, str(rnum), str(cnum), bstyle)
+                                "data-col='{2}' data-val='{0}'>{0}</td>".format(r, str(rnum), str(0), bstyle)
                 the_html += "</tr>"
         the_html += "</tbody></table>"
         self._restore_stdout()

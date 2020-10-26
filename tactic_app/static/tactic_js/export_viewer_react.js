@@ -2,7 +2,7 @@
 
 import React from "react";
 import PropTypes from 'prop-types';
-import { HTMLSelect, Card, Button, InputGroup, Spinner } from "@blueprintjs/core";
+import { Card, Button, InputGroup, Spinner, ButtonGroup, FormGroup, Divider } from "@blueprintjs/core";
 
 import { GlyphButton, SelectList } from "./blueprint_react_widgets.js";
 import { postWithCallback } from "./communication_react.js";
@@ -11,7 +11,78 @@ import { doBinding } from "./utilities_react.js";
 
 export { ExportsViewer };
 
-class ExportListSelect extends React.Component {
+class TextIcon extends React.Component {
+    render() {
+        return React.createElement(
+            React.Fragment,
+            null,
+            React.createElement(
+                "span",
+                { className: "bp3-icon", style: { fontWeight: 500 } },
+                this.props.the_text
+            )
+        );
+    }
+}
+
+TextIcon.propTypes = {
+    the_text: PropTypes.strin
+};
+
+const export_icon_dict = {
+    str: "font",
+    list: "array",
+    range: "array",
+    dict: React.createElement(TextIcon, { the_text: "{#}" }),
+    set: React.createElement(TextIcon, { the_text: "{..}" }),
+    tuple: React.createElement(TextIcon, { the_text: "(..)" }),
+    bool: React.createElement(TextIcon, { the_text: "tf" }),
+    bytes: React.createElement(TextIcon, { the_text: "b" }),
+    NoneType: "small-cross",
+    int: "numerical",
+    float: "numerical",
+    complex: "numerical",
+    function: "function",
+    TacticDocument: "th",
+    DetachedTacticDocument: "th",
+    TacticCollection: "database",
+    DetachedTacticCollection: "database",
+    DetachedTacticRow: "th-derived",
+    TacticRow: "th-derived",
+    ndarray: "array-numeric",
+    DataFrame: React.createElement(TextIcon, { the_text: "df" }),
+    other: "cube",
+    unknown: React.createElement(TextIcon, { the_text: "?" })
+};
+
+class ExportButtonListButton extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this);
+    }
+
+    _onPressed() {
+        this.props.buttonPress(this.props.fullname);
+    }
+
+    render() {
+        return React.createElement(Button, { className: "export-button", icon: export_icon_dict[this.props.type], minimal: false,
+            onClick: this._onPressed, key: this.props.fullname,
+            active: this.props.active, small: true, value: this.props.fullname, text: this.props.shortname });
+    }
+
+}
+
+ExportButtonListButton.propTypes = {
+    fullname: PropTypes.string,
+    shortname: PropTypes.string,
+    type: PropTypes.string,
+    buttonPress: PropTypes.func,
+    active: PropTypes.bool
+
+};
+
+class ExportButtonList extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this);
@@ -19,8 +90,7 @@ class ExportListSelect extends React.Component {
         this.export_index = {};
     }
 
-    _updateMe(event) {
-        let fullname = event.target.value;
+    _buttonPress(fullname) {
         this.props.handleChange(fullname, this.export_index[fullname].shortname, this.export_index[fullname].tilename);
     }
 
@@ -33,25 +103,56 @@ class ExportListSelect extends React.Component {
         }
     }
 
+    _compareEntries(a, b) {
+        if (a[1].toLowerCase() == b[1].toLowerCase()) return 0;
+        if (b[1].toLowerCase() > a[1].toLowerCase()) return -1;
+        return 1;
+    }
+
     create_groups() {
         let groups = [];
-        for (let group in this.props.pipe_dict) {
+        let group_names = Object.keys(this.props.pipe_dict);
+        group_names.sort();
+        for (let group of group_names) {
             let group_items = [];
-            for (let entry of this.props.pipe_dict[group]) {
+            let entries = this.props.pipe_dict[group];
+            entries.sort(this._compareEntries);
+            for (let entry of entries) {
                 let fullname = entry[0];
                 let shortname = entry[1];
+                let type = entry.length == 3 ? entry[2] : "unknown";
+                if (!(type in export_icon_dict)) {
+                    type = "other";
+                }
                 this.export_index[fullname] = { tilename: group, shortname: shortname };
-                group_items.push(React.createElement(
-                    "option",
-                    { key: fullname, value: fullname },
-                    shortname
+                group_items.push(React.createElement(ExportButtonListButton, { fullname: fullname,
+                    shortname: shortname,
+                    type: type,
+                    active: this.props.value == fullname,
+                    buttonPress: this._buttonPress
+                }));
+            }
+            if (group == "__log__") {
+                groups.unshift(React.createElement(
+                    FormGroup,
+                    { inline: false, label: null, className: "export-label" },
+                    React.createElement(
+                        ButtonGroup,
+                        { minimal: false, vertical: true, alignText: "left", key: group },
+                        group_items
+                    )
+                ));
+            } else {
+                groups.push(React.createElement(
+                    FormGroup,
+                    { inline: false, label: group, className: "export-label" },
+                    React.createElement(
+                        ButtonGroup,
+                        { minimal: false, vertical: true, alignText: "left", key: group },
+                        group_items
+                    )
                 ));
             }
-            groups.push(React.createElement(
-                "optgroup",
-                { key: group, label: group },
-                group_items
-            ));
         }
         return groups;
     }
@@ -59,22 +160,18 @@ class ExportListSelect extends React.Component {
     _handleSelectRef(the_ref) {
         this.select_ref = the_ref;
     }
-
     render() {
         return React.createElement(
-            HTMLSelect,
-            { elementRef: this._handleSelectRef,
-                onChange: this._updateMe,
-                minimal: true,
-                name: "exportlist",
-                value: this.props.value },
+            "div",
+            { id: "exports-button-list", style: { flexDirection: "column", display: "inline-block", verticalAlign: "top", padding: 15, overflowY: "scroll", height: this.props.body_height } },
             this.create_groups()
         );
     }
 }
 
-ExportListSelect.propTypes = {
+ExportButtonList.propTypes = {
     pipe_dict: PropTypes.object,
+    body_height: PropTypes.number,
     value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     handleChange: PropTypes.func
 };
@@ -169,12 +266,12 @@ class ExportsViewer extends React.Component {
                 new_state.key_list = null;
                 new_state.key_list_value = null;
             }
-            self.setState(new_state);
+            self.setState(new_state, self._eval);
         });
     }
 
     _handleKeyListChange(new_value) {
-        this.setState({ key_list_value: new_value });
+        this.setState({ key_list_value: new_value }, this._eval);
     }
 
     _handleTailChange(event) {
@@ -199,7 +296,12 @@ class ExportsViewer extends React.Component {
             key_string = `["${this.state.key_list_value}"]`;
         }
 
-        let the_text = `Tiles["${tilename}"]["${shortname}"]` + key_string + tail;
+        let the_text;
+        if (tilename == "__log__") {
+            the_text = shortname + key_string + tail;
+        } else {
+            the_text = `Tiles["${tilename}"]["${shortname}"]` + key_string + tail;
+        }
 
         let self = this;
         postWithCallback("host", "print_code_area_to_console", { "console_text": the_text, "user_id": window.user_id, "main_id": window.main_id }, function (data) {
@@ -218,7 +320,7 @@ class ExportsViewer extends React.Component {
         }
         return React.createElement(
             Card,
-            { id: "exports-panel", elevation: 2, className: "mr-3 " + exports_class },
+            { id: "exports-panel", elevation: 2, className: "mr-3 " + exports_class, style: this.props.style },
             React.createElement(
                 "div",
                 { className: "d-flex flex-column justify-content-around" },
@@ -230,25 +332,17 @@ class ExportsViewer extends React.Component {
                     React.createElement(GlyphButton, { handleClick: this._sendToConsole,
                         intent: "primary",
                         tooltip: "Send code to the console",
-                        style: { marginLeft: 6 },
-                        icon: "direction-left" }),
-                    React.createElement(GlyphButton, { handleClick: this._refresh,
-                        intent: "success",
-                        tooltip: "Refresh the exports menu and info",
-                        style: { marginLeft: 0 },
-                        icon: "refresh" }),
-                    React.createElement(Button, { onClick: this._eval,
-                        intent: "success",
-                        style: { marginRight: 0, marginLeft: 0, padding: 0 },
-                        minimal: true,
-                        small: true,
-                        text: "Eval" }),
+                        style: { marginLeft: 6, marginTop: 2 },
+                        icon: "circle-arrow-left" }),
                     Object.keys(this.state.pipe_dict).length > 0 && React.createElement(
                         "form",
                         { onSubmit: this._eval, className: "d-flex flex-row" },
-                        React.createElement(ExportListSelect, { pipe_dict: this.state.pipe_dict,
-                            value: this.state.selected_export,
-                            handleChange: this._handleExportListChange }),
+                        React.createElement(
+                            "span",
+                            { id: "selected-export",
+                                className: "bottom-heading-element mr-2" },
+                            this.state.selected_export_short_name
+                        ),
                         this.state.key_list && React.createElement(SelectList, { option_list: this.state.key_list,
                             onChange: this._handleKeyListChange,
                             the_value: this.state.key_list_value,
@@ -259,7 +353,8 @@ class ExportsViewer extends React.Component {
                             small: true,
                             onChange: this._handleTailChange,
                             onSubmit: this._eval,
-                            value: this.state.tail_value
+                            value: this.state.tail_value,
+                            className: "export-tail"
                         })
                     ),
                     React.createElement(
@@ -269,8 +364,18 @@ class ExportsViewer extends React.Component {
                     ),
                     this.state.show_spinner && React.createElement(Spinner, { size: 13 })
                 ),
-                !this.props.console_is_shrunk && React.createElement("div", { style: { overflowY: "scroll", padding: 15, height: this._bodyHeight(), backgroundColor: "white" },
-                    dangerouslySetInnerHTML: exports_body_dict })
+                !this.props.console_is_shrunk && React.createElement(
+                    "div",
+                    { className: "d-flex flex_row" },
+                    React.createElement(ExportButtonList, { pipe_dict: this.state.pipe_dict,
+                        body_height: this._bodyHeight(),
+                        value: this.state.selected_export,
+                        handleChange: this._handleExportListChange
+                    }),
+                    React.createElement(Divider, null),
+                    React.createElement("div", { style: { overflowY: "scroll", padding: 15, width: "80%", height: this._bodyHeight(), backgroundColor: "white", display: "inline-block" },
+                        dangerouslySetInnerHTML: exports_body_dict })
+                )
             )
         );
     }
@@ -281,5 +386,10 @@ ExportsViewer.propTypes = {
     console_is_shrunk: PropTypes.bool,
     console_is_zoomed: PropTypes.bool,
     setUpdate: PropTypes.func,
-    tsocket: PropTypes.object
+    tsocket: PropTypes.object,
+    style: PropTypes.object
+};
+
+ExportsViewer.defaultProps = {
+    style: {}
 };

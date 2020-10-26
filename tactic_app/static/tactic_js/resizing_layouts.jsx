@@ -280,8 +280,12 @@ class HorizontalPanes extends React.Component {
 
         let dstyle = this.props.hide_me ? {display: "none"} : {};
         let position_dict = {position: "relative", left: 0, top: (this.props.available_height - this.props.bottom_margin) / 2};
+        let outer_style = {width: "100%"}
+        if (this.props.left_margin) {
+            outer_style["marginLeft"] = this.props.left_margin
+        }
         return (
-            <div id={this.unique_id} className="d-flex flex-row horizontal-panes" style={{width: "100%"}} ref={this.top_ref}>
+            <div id={this.unique_id} className="d-flex flex-row horizontal-panes" style={outer_style} ref={this.top_ref}>
                 <div ref={this.left_pane_ref} style={left_div_style} className="res-viewer-resizer">
                         {this.props.left_pane}
                 </div>
