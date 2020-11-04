@@ -85,7 +85,7 @@ function _finish_post_load(data) {
     }
 }
 
-const save_attrs = ["console_items", "show_export_pane", "console_width_fraction"];
+const save_attrs = ["console_items", "show_exports_pane", "console_width_fraction"];
 
 class NotebookApp extends React.Component {
     constructor(props) {

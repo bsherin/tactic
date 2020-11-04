@@ -1289,6 +1289,7 @@ class ExportsTasksMixin:
         if "key" in data:
             ndata["key"] = data["key"]
         ndata["tail"] = data["tail"]
+        ndata["max_rows"] = int(data["max_rows"])
 
         def got_evaluation(eval_result):
             self.mworker.submit_response(local_task_packet, eval_result)

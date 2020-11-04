@@ -322,7 +322,8 @@ body {
 #selected-export {
     font-size: 14px;
     line-height: 30px;
-    font-weight: bold
+    font-weight: 400;
+    color: #5c7080
 }
 
 #exports-heading {
@@ -338,9 +339,35 @@ body {
     }
 }
 
+#exports-footing {
+    display: flex;
+    justify-content: flex-start;
+    padding: 2px 2px 2px 2px;
+    background-color: $light-gray4 !important;
+    border-top: 1px solid #10161a26;
+    height: 23px;
+
+    select {
+        height: 20px
+    }
+
+    label {
+        line-height: 19px;
+        margin-right: 0;
+        font-size: 11px
+    }
+
+    .bp3-icon {
+        margin-right: 3px;
+        height: 20px;
+        top: 2px
+    }
+
+}
+
 #exports-info {
-    font-size: 14px;
-    line-height: 30px;
+    font-size: 12px;
+    line-height: 20px;
 }
 
 #exports-panel {
@@ -400,6 +427,12 @@ body {
 
 .show-exports-but .bp3-icon{
     margin-top: 2px
+}
+
+.export-header-text {
+    color: #6c757d;
+    text-align: left;
+    font-size: 14px
 }
 
 

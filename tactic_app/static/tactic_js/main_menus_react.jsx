@@ -3,7 +3,7 @@
 import React from "react";
 import PropTypes from 'prop-types';
 
-import { MenuItem, Menu, Popover, PopoverPosition, Button } from "@blueprintjs/core";
+import { MenuItem, MenuDivider, Menu, Popover, PopoverPosition, Button } from "@blueprintjs/core";
 
 import {showModalReact} from "./modal_react.js";
 import {postWithCallback} from "./communication_react.js"
@@ -25,6 +25,9 @@ class MenuComponent extends React.Component {
     render () {
         let pruned_list = Object.keys(this.props.option_dict).filter(this._filter_on_match_list);
         let choices = pruned_list.map((opt_name, index) => {
+                if (opt_name.startsWith("divider")) {
+                    return <MenuDivider/>
+                }
                 let icon = this.props.icon_dict.hasOwnProperty(opt_name) ? this.props.icon_dict[opt_name] : null;
                 return (
                     <MenuItem disabled={this.props.disable_all || this.props.disabled_items.includes(opt_name)}
@@ -242,9 +245,11 @@ class ProjectMenu extends React.Component {
         return {
             "Save As...": this._saveProjectAs,
             "Save": this._saveProject,
+            "divider1": "divider",
             "Export as Jupyter Notebook": this._exportAsJupyter,
-            "Open Console as Notebook": this._consoleToNotebook,
             "Export Table as Collection": this._exportDataTable,
+            "Open Console as Notebook": this._consoleToNotebook,
+            "divider2": "divider",
             "Change collection": this.props.changeCollection
         }
     }
@@ -427,9 +432,11 @@ class ColumnMenu extends React.Component {
             "Shift Right": this._shift_column_right,
             "Shift to Start": this._shift_column_to_start,
             "Shift to End": this._shift_column_to_end,
+            "divider1": "divider",
             "Hide": this.props.hideColumn,
             "Hide in All Docs": this.props.hideInAll,
             "Unhide All": this.props.unhideAllColumns,
+            "divider2": "divider",
             "Add Column": () => this.props.addColumn(false),
             "Add Column In All Docs": () => this.props.addColumn(true),
             "Delete Column": () => this.props.deleteColumn(false),
@@ -544,11 +551,25 @@ class ViewMenu extends React.Component {
         this._moveColumn(this.props.selected_column, target_col);
     }
 
+    _toggleExports() {
+        this.props.setMainStateValue("show_exports_pane", !this.props.show_exports_pane)
+    }
+
+    _toggleConsole() {
+        this.props.setMainStateValue("show_console_pane", !this.props.show_console_pane)
+    }
+
 
     get option_dict () {
-        let opt_name = this.props.table_is_shrunk ? "Maximize Table" : "Minimize Table";
+        let table_opt_name = this.props.table_is_shrunk ? "Maximize Table" : "Minimize Table";
         let result = {};
-        result[opt_name] = this.props.toggleTableShrink;
+        result[table_opt_name] = this.props.toggleTableShrink;
+        result["divider1"] = "divider";
+        let console_opt_name = this.props.show_console_pane ? "Hide Log" : "Show Log";
+        result[console_opt_name] = this._toggleConsole;
+        let exports_opt_name = this.props.show_exports_pane ? "Hide Exports" : "Show Exports";
+        result[exports_opt_name] = this._toggleExports;
+        result["divider2"] = "divider";
         result["Show Error Drawer"] = this.props.openErrorDrawer;
         return result
     }
@@ -557,6 +578,11 @@ class ViewMenu extends React.Component {
         let opt_name = this.props.table_is_shrunk ? "Maximize Table" : "Minimize Table";
         let result = {};
         result[opt_name] = this.props.table_is_shrunk ? "maximize" : "minimize";
+
+        let console_opt_name = this.props.show_console_pane ? "Hide Log" : "Show Log";
+        let exports_opt_name = this.props.show_exports_pane ? "Hide Exports" : "Show Exports";
+        result[console_opt_name] = "code";
+        result[exports_opt_name] = "variable";
         result["Show Error Drawer"] = "panel-stats";
         return result
     }
@@ -576,5 +602,8 @@ class ViewMenu extends React.Component {
 ViewMenu.propTypes = {
     table_is_shrunk: PropTypes.bool,
     toggleTableShrink: PropTypes.func,
-    openErrorDrawer: PropTypes.func
+    openErrorDrawer: PropTypes.func,
+    show_exports_pane: PropTypes.bool,
+    show_console_pane: PropTypes.bool,
+    setMainStateValue: PropTypes.func,
 };
