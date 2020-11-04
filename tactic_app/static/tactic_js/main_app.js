@@ -92,6 +92,13 @@ function _finish_post_load(data) {
         window.doc_names = data.doc_names;
         window.short_collection_name = data.short_collection_name;
         interface_state = data.interface_state;
+        // legacy below lines needed for older saves
+        if (!("show_exports_pane" in interface_state)) {
+            interface_state["show_exports_pane"] = true;
+        }
+        if (!("show_console_pane" in interface_state)) {
+            interface_state["show_console_pane"] = true;
+        }
     }
     if (window.is_freeform) {
 
@@ -142,7 +149,7 @@ function _finish_post_load(data) {
     }
 }
 
-const save_attrs = ["tile_list", "table_is_shrunk", "console_width_fraction", "horizontal_fraction", "pipe_dict", "console_items", "console_is_shrunk", "height_fraction", "show_exports_pane", 'console_is_zoomed'];
+const save_attrs = ["tile_list", "table_is_shrunk", "console_width_fraction", "horizontal_fraction", "pipe_dict", "console_items", "console_is_shrunk", "height_fraction", "show_exports_pane", "show_console_pane", 'console_is_zoomed'];
 
 class MainApp extends React.Component {
     constructor(props) {
@@ -161,6 +168,7 @@ class MainApp extends React.Component {
             console_items: [],
             console_is_shrunk: true,
             show_exports_pane: true,
+            show_console_pane: true,
             console_is_zoomed: false,
             tile_types: window.initial_tile_types,
             tile_list: [],
@@ -799,7 +807,10 @@ class MainApp extends React.Component {
             React.createElement(ViewMenu, _extends({}, this.props.statusFuncs, {
                 table_is_shrunk: this.state.table_is_shrunk,
                 toggleTableShrink: this._toggleTableShrink,
-                openErrorDrawer: this.props.openErrorDrawer
+                openErrorDrawer: this.props.openErrorDrawer,
+                show_exports_pane: this.state.show_exports_pane,
+                show_console_pane: this.state.show_console_pane,
+                setMainStateValue: this._setMainStateValue
             })),
             React.createElement(NavbarDivider, null),
             this.create_tile_menus()
@@ -880,16 +891,21 @@ class MainApp extends React.Component {
         } else {
             exports_pane = React.createElement("div", null);
         }
-
-        let console_pane = React.createElement(ConsoleComponent, { console_items: this.state.console_items,
-            console_is_shrunk: this.state.console_is_shrunk,
-            console_is_zoomed: this.state.console_is_zoomed,
-            show_exports_pane: this.state.show_exports_pane,
-            setMainStateValue: this._setMainStateValue,
-            console_available_height: console_available_height,
-            console_available_width: this.state.usable_width * this.state.console_width_fraction - 16,
-            tsocket: tsocket
-        });
+        let console_pane;
+        if (this.state.show_console_pane) {
+            console_pane = React.createElement(ConsoleComponent, { console_items: this.state.console_items,
+                console_is_shrunk: this.state.console_is_shrunk,
+                console_is_zoomed: this.state.console_is_zoomed,
+                show_exports_pane: this.state.show_exports_pane,
+                setMainStateValue: this._setMainStateValue,
+                console_available_height: console_available_height,
+                console_available_width: this.state.usable_width * this.state.console_width_fraction - 16,
+                tsocket: tsocket
+            });
+        } else {
+            let console_available_width = this.state.usable_width * this.state.console_width_fraction - 16;
+            console_pane = React.createElement("div", { style: { width: console_available_width } });
+        }
 
         let bottom_pane = React.createElement(HorizontalPanes, { left_pane: console_pane,
             right_pane: exports_pane,

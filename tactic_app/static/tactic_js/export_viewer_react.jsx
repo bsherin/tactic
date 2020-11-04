@@ -188,12 +188,14 @@ class ExportsViewer extends React.Component {
         super(props);
         doBinding(this);
         this.header_ref = React.createRef();
+        this.footer_ref = React.createRef();
         this.state = {
             selected_export: "",
             selected_export_tilename: null,
             key_list: null,
             key_list_value: null,
             tail_value: "",
+            max_rows: 25,
             exports_info_value: null,
             selected_export_short_name: null,
             show_spinner: false,
@@ -218,6 +220,11 @@ class ExportsViewer extends React.Component {
         handlerDict[data.export_viewer_message](data)
     }
 
+    _handleMaxRowsChange(new_value){
+        this.setState({max_rows: new_value}, this._eval)
+
+    }
+
     _updateExportsList() {
         let self = this;
         postWithCallback(window.main_id, "get_full_pipe_dict", {}, function (data) {
@@ -231,7 +238,11 @@ class ExportsViewer extends React.Component {
 
     _eval(e = null) {
         this._startSpinner();
-        let send_data = {"export_name": this.state.selected_export, "tail": this.state.tail_value};
+        let send_data = {
+            "export_name": this.state.selected_export,
+            "tail": this.state.tail_value,
+            "max_rows": this.state.max_rows
+        };
         if (this.state.key_list) {
             send_data.key = this.state.key_list_value
         }
@@ -287,8 +298,8 @@ class ExportsViewer extends React.Component {
     }
 
     _bodyHeight() {
-        if (this.header_ref && this.header_ref.current) {
-            return this.props.available_height - $(this.header_ref.current).outerHeight()
+        if (this.header_ref && this.header_ref.current && this.footer_ref && this.footer_ref.current) {
+            return this.props.available_height - $(this.header_ref.current).outerHeight() - $(this.footer_ref.current).outerHeight()
         }
         else {
             return this.props.available_height - 75
@@ -361,7 +372,7 @@ class ExportsViewer extends React.Component {
                              </form>
                              )
                          }
-                         <span id="exports-info" className="bottom-heading-element ml-2">{this.state.exports_info_value}</span>
+
                          {this.state.show_spinner &&
                             <Spinner size={13} />
                          }
@@ -369,16 +380,31 @@ class ExportsViewer extends React.Component {
 
                      </div>
                      {!this.props.console_is_shrunk &&
-                         <div className="d-flex flex_row">
-                             <ExportButtonList pipe_dict={this.state.pipe_dict}
-                                               body_height={this._bodyHeight()}
-                                               value={this.state.selected_export}
-                                               handleChange={this._handleExportListChange}
-                             />
-                             <Divider/>
-                             <div style={{overflowY: "scroll", padding: 15, width: "80%", height: this._bodyHeight(), backgroundColor: "white", display: "inline-block"}}
-                                        dangerouslySetInnerHTML={exports_body_dict}/>
-                         </div>
+                         <React.Fragment>
+                             <div className="d-flex flex_row">
+                                 <ExportButtonList pipe_dict={this.state.pipe_dict}
+                                                   body_height={this._bodyHeight()}
+                                                   value={this.state.selected_export}
+                                                   handleChange={this._handleExportListChange}
+                                 />
+                                 <Divider/>
+                                 <div style={{overflowY: "scroll", padding: 15, width: "80%", height: this._bodyHeight(), backgroundColor: "white", display: "inline-block"}}
+                                            dangerouslySetInnerHTML={exports_body_dict}/>
+                             </div>
+                             <div id="exports-footing"
+                                  ref={this.footer_ref}
+                                  className="d-flex flex-row justify-content-between">
+                                 <span id="exports-info" className="bottom-heading-element ml-2">{this.state.exports_info_value}</span>
+                                 <FormGroup label="max rows" inline={true}>
+                                     <SelectList option_list={[25, 100, 250, 500]}
+                                                 onChange={this._handleMaxRowsChange}
+                                                 the_value={this.state.max_rows}
+                                                 minimal={true}
+                                                 fontSize={11}
+                                         />
+                                 </FormGroup>
+                             </div>
+                         </React.Fragment>
                  }
                  </div>
              </Card>

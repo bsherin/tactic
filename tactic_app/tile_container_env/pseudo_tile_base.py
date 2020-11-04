@@ -259,9 +259,9 @@ class PseudoTileClass(TileBase, MplFigure):
                     the_html = self.html_table(eval_result, title=eval_type_info["info_string"],
                                                header_style="font-size:12px",
                                                body_style="font-size:12px",
-                                               max_rows=ROWS_TO_PRINT)
+                                               max_rows=data["max_rows"])
                 else:
-                    the_html = "<h5>{}</h5>".format(eval_type_info["info_string"])
+                    the_html = "<div class='export-header-text'>{}</div>".format(eval_type_info["info_string"])
                     the_html += str(eval_result)
             except Exception as ex:
                 succcess = False
