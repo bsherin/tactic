@@ -21,6 +21,10 @@ class LibraryAccessMixin:
         result = self.get_user_function_with_metadata(function_name)
         return result["the_function"]
 
+    def get_user_class(self, class_name):
+        result = self.get_user_class_with_metadata(class_name)
+        return result["the_class"]
+
     def guclass(self, class_name):
         return self.get_user_class(class_name)
 
@@ -51,28 +55,18 @@ class LibraryAccessMixin:
         return result["list_names"]
 
     def get_function_names(self, tag=None):
-        func_tag_dict = self._tworker.post_and_wait("host", "get_function_tags_dict",
-                                                    {"user_id": self.user_id})["function_names"]
-        if tag is None:
-            fnames = list(func_tag_dict.keys())
-        else:
-            fnames = []
-            for func_name, tags in func_tag_dict.items():
-                if tag in tags.split():
-                    fnames.append(func_name)
-        return fnames
+        self._save_stdout()
+        result = self._tworker.post_and_wait(self._main_id, "get_function_names",
+                                            {"tag_filter": tag, "search_filter": None})
+        self._restore_stdout()
+        return result["function_names"]
 
     def get_class_names(self, tag=None):
-        class_tag_dict = self._tworker.post_and_wait("host", "get_class_tags_dict",
-                                                     {"user_id": self.user_id})["class_names"]
-        if tag is None:
-            cnames = list(class_tag_dict.keys())
-        else:
-            cnames = []
-            for class_name, tags in class_tag_dict.items():
-                if tag in tags.split():
-                    cnames.append(class_name)
-        return cnames
+        self._save_stdout()
+        result = self._tworker.post_and_wait(self._main_id, "get_class_names",
+                                             {"tag_filter": tag, "search_filter": None})
+        self._restore_stdout()
+        return result["class_names"]
 
     def cc(self, name, doc_dict, doc_type="table", doc_metadata=None):
         self.create_collection(name, doc_dict, doc_type, doc_metadata)

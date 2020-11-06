@@ -9,6 +9,7 @@ class TacticLibrary:
         self._cnames = None
         self.lists = TacticListSet(self)
         self.functions = TacticFunctionSet(self)
+        self.classes = TacticClassSet(self)
         self.collections = TacticCollectionSet(self)
 
     @property
@@ -113,6 +114,24 @@ class TacticFunctionSet(TacticResourceSet):
                                 function_dict["code_name"])
 
 
+class TacticClassSet(TacticResourceSet):
+    def __init__(self, library_object):
+        TacticResourceSet.__init__(self, library_object, "class")
+        return
+
+    def names(self, tag_filter=None, search_filter=None):
+        self._tinst._save_stdout()
+        result = _tworker.post_and_wait(self._tinst._main_id, "get_class_names",
+                                        {"tag_filter": tag_filter, "search_filter": search_filter})
+        self._tinst._restore_stdout()
+        return result["class_names"]
+
+    def __getitem__(self, name):
+        class_dict = self._tinst.get_user_class_with_metadata(name)
+        return ClassResource(class_dict["the_class"], class_dict["metadata"],
+                             class_dict["code_name"])
+
+
 class ListResource(list):
     def __init__(self, the_list, metadata):
         self.metadata = metadata
@@ -129,6 +148,16 @@ class FunctionResource:
 
     def __call__(self, *argv):
         return self.the_function(*argv)
+
+
+class ClassResource:
+    def __init__(self, the_class, metadata, code_resource):
+        self.the_class = the_class
+        self.metadata = metadata
+        self.code_resource = code_resource
+
+    def __call__(self, *argv):
+        return self.the_class(*argv)
 
 
 Library = TacticLibrary()
