@@ -826,10 +826,6 @@ class APISupportTasksMixin:
         return {"success": True, "list_names": self.list_names}
 
     @task_worthy
-    def get_function_tags_dict(self, data):
-        return {"success": True, "list_names": self.function_tags_dict}
-
-    @task_worthy
     def get_resource_names_task(self, data):
         print("in get_resource_names_task")
         res_names = self.get_resource_names(data["res_type"], data["tag_filter"], data["search_filter"])
@@ -891,6 +887,32 @@ class APISupportTasksMixin:
         return {"function_names": function_names}
 
     @task_worthy
+    def get_class_names(self, data):
+        tag_filter = data["tag_filter"]
+        search_filter = data["search_filter"]
+        if tag_filter is not None:
+            tag_filter = tag_filter.lower()
+        if search_filter is not None:
+            search_filter = search_filter.lower()
+        if self.code_collection_name not in self.db.collection_names():
+            self.db.create_collection(self.code_collection_name)
+            return {}
+        class_names = []
+        for doc in self.db[self.code_collection_name].find():
+            if tag_filter is not None:
+                if "metadata" in doc:
+                    if "tags" in doc["metadata"]:
+                        if tag_filter in doc["metadata"]["tags"].lower():
+                            class_names += doc["metadata"]["classes"]
+            elif search_filter is not None:
+                for fname in doc["metadata"]["classes"]:
+                    if search_filter in fname.lower():
+                        class_names += doc[fnames]
+            else:
+                class_names += doc["metadata"]["classes"]
+        return {"class_names": class_names}
+
+    @task_worthy
     def get_function_with_metadata(self, data):
         function_name = data["function_name"]
         if self.code_collection_name not in self.db.collection_names():
@@ -908,6 +930,25 @@ class APISupportTasksMixin:
                              "code_name": doc["code_name"],
                              "metadata": doc["metadata"]}
         return {"function_data": make_python_object_jsonizable(function_dict)}
+
+    @task_worthy
+    def get_class_with_metadata(self, data):
+        class_name = data["class_name"]
+        if self.code_collection_name not in self.db.collection_names():
+            self.db.create_collection(self.code_collection_name)
+        found = False
+        doc = None
+        for doc in self.db[self.code_collection_name].find():
+            if class_name in doc["metadata"]["classes"]:
+                found = True
+                break
+        if not found:
+            class_dict = None
+        else:
+            class_dict = {"the_code": doc["the_code"],
+                          "code_name": doc["code_name"],
+                          "metadata": doc["metadata"]}
+        return {"class_data": make_python_object_jsonizable(class_dict)}
 
     @task_worthy
     def get_document_data(self, data):
@@ -1725,19 +1766,3 @@ class DataSupportTasksMixin:
                 self.DeleteColumnOneDoc(doc, data)
         self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
         return None
-
-    #  tactic_todo this might not be used
-    @task_worthy
-    def update_document(self, data):
-        new_data = data["new_data"]
-        doc_name = data["document_name"]
-        doc = self.doc_dict[doc_name]
-        if self.doc_type == "table":
-            for key, r in new_data.items():
-                for c, val in r.items():
-                    doc.data_rows[key][c] = val
-        else:
-            self._set_freeform_data(doc_name, new_data)
-        if doc_name == self.visible_doc_name:
-            self.refill_table()
-        return {"success": True}

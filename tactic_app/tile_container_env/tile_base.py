@@ -54,6 +54,12 @@ _code_names = {"classes": {},
 _tworker = None
 
 
+# I need this here I think for this to work in code resources
+def global_import(imp):
+    globals()[imp] = __import__(imp, globals(), locals(), [], 0)
+    return
+
+
 def user_function(the_func):
     _code_names["functions"][the_func.__name__] = the_func
     return the_func
@@ -836,18 +842,15 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         self._restore_stdout()
         return result
 
-    def get_user_class(self, class_name):
+    def get_user_class_with_metadata(self, class_name):
         self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "get_code_with_class", {"class_name": class_name})
+        raw_result = self._tworker.post_and_wait(self._main_id, "get_class_with_metadata",
+                                                 {"class_name": class_name})
+
+        result = debinarize_python_object(raw_result["class_data"])
+
         the_code = result["the_code"]
         _ = exec_user_code(the_code)
+        result["the_class"] = _code_names["classes"][class_name]
         self._restore_stdout()
-        return _code_names["classes"][class_name]
-
-    # tactic_todo This doesn't seem to be used
-    def update_document(self, new_data, document_name):
-        self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "update_document",
-                                             {"new_data": new_data, "document_name": document_name})
-        self._restore_stdout()
-        return
+        return result

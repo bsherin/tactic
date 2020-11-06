@@ -326,18 +326,6 @@ class HostWorker(QWorker):
         return {"collection_names": the_user.data_collection_tags_dict}
 
     @task_worthy
-    def get_class_names(self, data):
-        user_id = data["user_id"]
-        the_user = load_user(user_id)
-        return {"class_names": the_user.class_tags_dict}
-
-    @task_worthy
-    def get_function_tags_dict(self, data):
-        user_id = data["user_id"]
-        the_user = load_user(user_id)
-        return {"function_names": the_user.function_tags_dict}
-
-    @task_worthy
     def get_class_tags_dict(self, data):
         user_id = data["user_id"]
         the_user = load_user(user_id)
