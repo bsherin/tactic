@@ -11,7 +11,7 @@
 {% block page_content %}
     <div id="modal-area">
     </div>
-    <div id="main-root">
+    <div id="main-root" style="height: 100%">
 
     </div>
     <canvas id="measure-canvas" style="display:none"></canvas>
@@ -26,6 +26,7 @@
         window._project_name = "{{project_name}}";
         window.base_figure_url = "{{base_figure_url}}";
         window.main_id = "{{main_id}}";
+        window.theme="{{theme}}"
         window.temp_data_id = "{{temp_data_id}}";
         window.page_id = main_id;
         window.user_id = "{{current_user.get_id()}}";

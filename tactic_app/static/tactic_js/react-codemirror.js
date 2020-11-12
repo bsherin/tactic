@@ -6,6 +6,9 @@ import { postAjax } from "./communication_react.js";
 
 export { ReactCodemirror };
 
+// const DARK_THEME = "pastel-on-dark"
+const DARK_THEME = window.dark_theme_name;
+
 class ReactCodemirror extends React.Component {
 
     constructor(props) {
@@ -20,6 +23,7 @@ class ReactCodemirror extends React.Component {
         this.handleBlur = this.handleBlur.bind(this);
         this.mousetrap = new Mousetrap();
         this.create_api();
+        this.saved_theme = null;
     }
 
     createCMArea(codearea, first_line_number = 1) {
@@ -29,6 +33,7 @@ class ReactCodemirror extends React.Component {
             highlightSelectionMatches: true,
             autoCloseBrackets: true,
             indentUnit: 4,
+            theme: this.props.dark_theme ? DARK_THEME : "default",
             mode: this.props.mode,
             readOnly: this.props.readOnly
         });
@@ -70,9 +75,18 @@ class ReactCodemirror extends React.Component {
         if (this.props.setCMObject != null) {
             this.props.setCMObject(this.cmobject);
         }
+        this.saved_theme = this.props.dark_theme;
     }
 
     componentDidUpdate() {
+        if (this.props.dark_theme != this.saved_theme) {
+            if (this.props.dark_theme) {
+                this.cmobject.setOption("theme", DARK_THEME);
+            } else {
+                this.cmobject.setOption("theme", "default");
+            }
+            this.saved_theme = this.props.dark_theme;
+        }
         if (this.props.sync_to_prop) {
             this.cmobject.setValue(this.props.code_content);
         }
@@ -163,7 +177,7 @@ class ReactCodemirror extends React.Component {
             lineHeight: "21px",
             overflow: "auto"
         };
-        return React.createElement("div", { id: "code-container", style: ccstyle, ref: this.code_container_ref });
+        return React.createElement("div", { className: "code-container", style: ccstyle, ref: this.code_container_ref });
     }
 }
 
@@ -173,6 +187,7 @@ ReactCodemirror.propTypes = {
     code_content: PropTypes.string,
     sync_to_prop: PropTypes.bool,
     mode: PropTypes.string,
+    dark_theme: PropTypes.bool,
     saveMe: PropTypes.func,
     readOnly: PropTypes.bool,
     first_line_number: PropTypes.number,
@@ -189,6 +204,7 @@ ReactCodemirror.defaultProps = {
     handleChange: null,
     handleBlur: null,
     sync_to_prop: false,
+    dark_theme: false,
     mode: "python",
     readOnly: false,
     extraKeys: {},

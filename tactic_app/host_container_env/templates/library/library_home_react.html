@@ -11,7 +11,7 @@
 {% block page_content %}
     <div id="modal-area">
     </div>
-    <div id="library-home-root" class="container-fluid d-flex">
+    <div id="library-home-root" class="container-fluid">
 
     </div>
     <canvas id="measure-canvas" style="display:none"></canvas>
@@ -21,7 +21,7 @@
     <script type="module" src="{{url_for('static', filename=module_source, v=version_string)}}"></script>
     <script>
         window.user_id = "{{current_user.get_id()}}";
-
+        window.theme="{{theme}}"
         window.page_id = window.library_id;  // This is used to sign out
     </script>
 {% endblock %}

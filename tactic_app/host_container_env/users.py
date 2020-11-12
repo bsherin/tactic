@@ -14,7 +14,9 @@ from exception_mixin import generic_exception_handler
 from werkzeug.security import generate_password_hash, check_password_hash
 from mongo_accesser import MongoAccess
 
-user_data_fields = ["username", "email", "full_name", "favorite_dumpling", "tzoffset"]
+user_data_fields = ["username", "email", "full_name", "favorite_dumpling", "tzoffset", "theme", "preferred_dark_theme"]
+default_dark_theme = "nord"
+possible_dark_themes = ["material", "nord", "oceanic-next", "pastel-on-dark"]
 
 
 def put_docs_in_collection(collection_name, dict_list):
@@ -110,6 +112,22 @@ class User(UserMixin, MongoAccess):
         else:
             return User(result)
 
+    def get_theme(self):
+        print("in get theme")
+        theme = self.user_data_dict["theme"]
+        print("got theme {}".format(str(theme)))
+        if theme == "dark":
+            return "dark"
+        else:
+            return "light"
+
+    def get_preferred_dark_theme(self):
+        preferred_dark_theme = self.user_data_dict["preferred_dark_theme"]
+        if preferred_dark_theme is None:
+            return default_dark_theme
+        else:
+            return preferred_dark_theme
+
     def get_tzoffset(self):
         return self.user_data_dict["tzoffset"]
 
@@ -117,7 +135,10 @@ class User(UserMixin, MongoAccess):
     def user_data_dict(self):
         result = OrderedDict()
         for key in user_data_fields:
-            result[key] = getattr(self, key)
+            if hasattr(self, key):
+                result[key] = getattr(self, key)
+            else:
+                result[key] = None
         return result
 
     def create_collection_meta_data(self, collection_type):
@@ -130,12 +151,13 @@ class User(UserMixin, MongoAccess):
 
     def update_account(self, data_dict):
         update_dict = {}
+        print("in update_account with " + str(data_dict))
         if "password" in data_dict:
             if len(data_dict["password"]) < 4:
                 return {"success": False, "message": "Passwords must be at least 4 characters."}
             update_dict["password_hash"] = generate_password_hash(data_dict["password"])
         for (key, val) in data_dict.items():
-            if not key == "password":
+            if "password" not in key:
                 update_dict[key] = val
         try:
             db["user_collection"].update_one({"username": self.username},
@@ -159,7 +181,8 @@ class User(UserMixin, MongoAccess):
         password_hash = generate_password_hash(password)
         new_user_dict = {"username": username,
                          "password_hash": password_hash,
-                         "email": ""}
+                         "email": "",
+                         "preferred_dark_theme": default_dark_theme}
         db.user_collection.insert_one(new_user_dict)
         return {"success": True, "message": "", "username": username}
 

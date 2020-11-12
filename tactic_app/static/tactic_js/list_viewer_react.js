@@ -17,18 +17,17 @@ import { ViewerContext } from "./resource_viewer_context.js";
 import { postAjax, postAjaxPromise } from "./communication_react.js";
 import { doFlash } from "./toaster.js";
 
-import { render_navbar } from "./blueprint_navbar.js";
 import { SIDE_MARGIN, BOTTOM_MARGIN, getUsableDimensions } from "./sizing_tools.js";
 import { withErrorDrawer } from "./error_drawer.js";
 import { withStatus } from "./toaster.js";
 import { doBinding } from "./utilities_react.js";
 import { guid } from "./utilities_react";
+import { TacticNavbar } from "./blueprint_navbar";
 
 window.resource_viewer_id = guid();
 window.main_id = resource_viewer_id;
 
 function list_viewer_main() {
-    render_navbar();
     let get_url = window.is_repository ? "repository_get_list" : "get_list";
     let get_mdata_url = window.is_repository ? "grab_repository_metadata" : "grab_metadata";
 
@@ -46,6 +45,7 @@ function list_viewer_main() {
                 tags: split_tags,
                 notes: data.notes,
                 readOnly: window.read_only,
+                initial_theme: window.theme,
                 is_repository: window.is_repository,
                 meta_outer: "#right-div" }), domContainer);
         }).catch(function () {
@@ -55,6 +55,7 @@ function list_viewer_main() {
                 tags: [],
                 notes: "",
                 readOnly: window.read_only,
+                initial_theme: window.theme,
                 is_repository: window.is_repository,
                 meta_outer: "#right-div" }), domContainer);
         });
@@ -64,7 +65,7 @@ function list_viewer_main() {
 class ListEditor extends React.Component {
 
     render() {
-        let tastyle = { resize: "horizontal", height: this.props.height };
+        let tastyle = { resize: "horizontal", height: this.props.height, margin: 2 };
         return React.createElement(
             "div",
             { id: "listarea-container", ref: this.props.outer_ref },
@@ -113,14 +114,22 @@ class ListViewerApp extends React.Component {
             notes: props.notes,
             tags: props.tags,
             usable_width: awidth,
-            usable_height: aheight
+            usable_height: aheight,
+            dark_theme: this.props.initial_theme == "dark"
         };
     }
 
     componentDidMount() {
         this.props.stopSpinner();
+        window.dark_theme = this.state.dark_theme;
     }
 
+    _setTheme(dark_theme) {
+        this.setState({ dark_theme: dark_theme }, () => {
+            this.props.setStatusTheme(dark_theme);
+            window.dark_theme = this.state.dark_theme;
+        });
+    }
     get button_groups() {
         let bgs;
         if (this.props.is_repository) {
@@ -174,20 +183,31 @@ class ListViewerApp extends React.Component {
     render() {
 
         let the_context = { "readOnly": this.props.readOnly };
-        let outer_style = { width: this.state.usable_width,
+        let outer_style = { width: "100%",
             height: this.state.usable_height,
             paddingLeft: SIDE_MARGIN
         };
-
+        let outer_class = "resource-viewer-holder";
+        if (this.state.dark_theme) {
+            outer_class = outer_class + " bp3-dark";
+        } else {
+            outer_class = outer_class + " light-theme";
+        }
         return React.createElement(
             ViewerContext.Provider,
             { value: the_context },
+            React.createElement(TacticNavbar, { is_authenticated: window.is_authenticated,
+                selected: null,
+                show_api_links: false,
+                dark_theme: this.state.dark_theme,
+                set_parent_theme: this._setTheme,
+                user_name: window.username }),
             React.createElement(
                 ResizeSensor,
                 { onResize: this._handleResize, observeParents: true },
                 React.createElement(
                     "div",
-                    { className: "resource-viewer-holder", ref: this.top_ref, style: outer_style },
+                    { className: outer_class, ref: this.top_ref, style: outer_style },
                     React.createElement(
                         ResourceViewerApp,
                         _extends({}, this.props.statusFuncs, {
@@ -200,6 +220,7 @@ class ListViewerApp extends React.Component {
                             handleStateChange: this._handleStateChange,
                             notes: this.state.notes,
                             tags: this.state.tags,
+                            dark_theme: this.state.dark_theme,
                             saveMe: this._saveMe }),
                         React.createElement(ListEditor, { the_content: this.state.list_content,
                             outer_ref: this.le_ref,

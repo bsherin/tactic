@@ -102,6 +102,7 @@ class ModalDialog extends React.Component {
         }
         return (
             <Dialog isOpen={this.state.show}
+                    className={window.dark_theme ? "bp3-dark" : ""}
                        title={this.props.title}
                        onClose={this._cancelHandler}
                        onOpened={()=>{$(this.input_ref).focus()}}
@@ -134,16 +135,17 @@ ModalDialog.propTypes = {
     field_title: PropTypes.string,
     default_value: PropTypes.string,
     existing_names: PropTypes.array,
-    checkboxes: PropTypes.array
+    checkboxes: PropTypes.array,
 };
 
 ModalDialog.defaultProps = {
     existing_names: [],
     default_value: "",
-    checkboxes: null
+    checkboxes: null,
 };
 
-function showModalReact(modal_title, field_title, submit_function, default_value, existing_names, checkboxes=null, cancel_function=null) {
+function showModalReact(modal_title, field_title, submit_function, default_value, existing_names,
+                        checkboxes=null, cancel_function=null) {
 
     if (typeof existing_names == "undefined") {
         existing_names = []
@@ -197,6 +199,7 @@ class SelectDialog extends React.Component {
     render() {
         return (
             <Dialog isOpen={this.state.show}
+                    className={window.dark_theme ? "bp3-dark" : ""}
                        title={this.props.title}
                        onClose={this._cancelHandler}
                        canEscapeKeyClose={true}>
@@ -226,9 +229,11 @@ SelectDialog.propTypes = {
     option_list: PropTypes.array,
     submit_text: PropTypes.string,
     cancel_text: PropTypes.string,
+
 };
 
-function showSelectDialog(title, select_label, cancel_text, submit_text, submit_function, option_list) {
+
+function showSelectDialog(title, select_label, cancel_text, submit_text, submit_function, option_list, dark_theme=false) {
 
     let domContainer = document.querySelector('#modal-area');
 
@@ -293,6 +298,7 @@ class SelectResourceDialog extends React.Component {
     render() {
         return (
             <Dialog isOpen={this.state.show}
+                    className={window.dark_theme ? "bp3-dark" : ""}
                        title="Select a library resource"
                        onClose={this._cancelHandler}
                        canEscapeKeyClose={true}>
@@ -320,10 +326,10 @@ SelectResourceDialog.propTypes = {
     handleClose: PropTypes.func,
     handleCancel: PropTypes.func,
     submit_text: PropTypes.string,
-    cancel_text: PropTypes.string,
+    cancel_text: PropTypes.string
 };
 
-function showSelectResourceDialog(cancel_text, submit_text, submit_function) {
+function showSelectResourceDialog(cancel_text, submit_text, submit_function, dark_theme=false) {
 
     let domContainer = document.querySelector('#modal-area');
 
@@ -365,6 +371,7 @@ class ConfirmDialog extends React.Component {
     render() {
         return (
             <Dialog isOpen={this.state.show}
+                    className={window.dark_theme ? "bp3-dark" : ""}
                        title={this.props.title}
                        onClose={this._cancelHandler}
                        canEscapeKeyClose={true}>
@@ -388,7 +395,7 @@ ConfirmDialog.propTypes = {
     title: PropTypes.string,
     text_body: PropTypes.string,
     submit_text: PropTypes.string,
-    cancel_text: PropTypes.string,
+    cancel_text: PropTypes.string
 };
 
 ConfirmDialog.defaultProps = {
@@ -435,6 +442,7 @@ class InformDialog extends React.Component {
     render() {
         return (
             <Dialog isOpen={this.state.show}
+                    className={window.dark_theme ? "bp3-dark" : ""}
                        title={this.props.title}
                        onClose={this._closeHandler}
                        canEscapeKeyClose={true}>

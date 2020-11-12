@@ -40,11 +40,13 @@ class ListManager(LibraryResourceManager):
                          login_required(self.grab_list_list_chunk), methods=['get', 'post'])
 
     def view_list(self, list_name):
+        user_obj = current_user
         javascript_source = url_for('static', filename=js_source_dict["list_viewer_react"])
         return render_template("library/resource_viewer_react.html",
                                resource_name=list_name,
                                include_metadata=True,
                                include_above_main_area=False,
+                               theme=user_obj.get_theme(),
                                include_right=True,
                                read_only=False,
                                develop=str(_develop),
@@ -228,11 +230,13 @@ class RepositoryListManager(ListManager):
                          login_required(self.repository_get_list), methods=['get', 'post'])
 
     def repository_view_list(self, list_name):
-        javascript_source = url_for('static', filename='tactic_js/list_viewer_react.js')
+        user_obj = current_user
+        javascript_source = url_for('static', filename=js_source_dict["list_viewer_react"])
         return render_template("library/resource_viewer_react.html",
                                resource_name=list_name,
                                include_metadata=True,
                                include_above_main_area=False,
+                               theme=user_obj.get_theme(),
                                include_right=True,
                                read_only=True,
                                develop=str(_develop),

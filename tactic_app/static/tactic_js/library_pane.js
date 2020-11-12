@@ -60,8 +60,8 @@ class LibraryPane extends React.Component {
         this.top_ref = React.createRef();
         this.table_ref = React.createRef();
         this.resizing = false;
-        let aheight = getUsableDimensions().usable_height_no_bottom;
-        let awidth = getUsableDimensions().usable_width - 170;
+        let aheight = getUsableDimensions(true).usable_height_no_bottom;
+        let awidth = getUsableDimensions(true).usable_width - 200;
         this.get_url = `grab_${props.res_type}_list_chunk`;
         this.state = {
             data_dict: {},
@@ -671,8 +671,8 @@ class LibraryPane extends React.Component {
     _handleResize(entries) {
         if (this.resizing) return;
         for (let entry of entries) {
-            if (entry.target.className == "pane-holder") {
-                this.setState({ available_width: entry.contentRect.width - this.top_ref.current.offsetLeft,
+            if (entry.target.className.includes("pane-holder")) {
+                this.setState({ available_width: entry.contentRect.width - this.top_ref.current.offsetLeft - 30,
                     available_height: entry.contentRect.height - this.top_ref.current.offsetTop
                 });
                 return;
@@ -725,7 +725,7 @@ class LibraryPane extends React.Component {
         let right_pane;
         let split_tags = this.props.selected_resource.tags == "" ? [] : this.props.selected_resource.tags.split(" ");
         let outer_style = { marginLeft: 5, marginRight: 5, marginTop: 90, overflow: "auto",
-            padding: 15, backgroundColor: "#f5f8fa" };
+            padding: 15 };
         let mdata_element = React.createElement(CombinedMetadata, { tags: split_tags,
             elevation: 2,
             name: this.props.selected_resource.name,
@@ -819,7 +819,7 @@ class LibraryPane extends React.Component {
                     "div",
                     { ref: this.table_ref
                         // className="d-flex flex-column"
-                        , style: { width: table_width, maxWidth: this.state.total_width, padding: 5, backgroundColor: "white" } },
+                        , style: { width: table_width, maxWidth: this.state.total_width, padding: 5 } },
                     React.createElement(SearchForm, { allow_search_inside: this.props.allow_search_inside,
                         allow_search_metadata: this.props.allow_search_metadata,
                         update_search_state: this._update_search_state,
@@ -913,12 +913,14 @@ LibraryPane.propTypes = {
     search_metadata: PropTypes.bool,
     search_tag: PropTypes.string,
     tag_button_state: PropTypes.object,
-    contextItems: PropTypes.array
+    contextItems: PropTypes.array,
+    dark_theme: PropTypes.bool
 
 };
 
 LibraryPane.defaultProps = {
     is_repository: false,
     tsocket: null,
-    aux_pane: null
+    aux_pane: null,
+    dark_theme: false
 };

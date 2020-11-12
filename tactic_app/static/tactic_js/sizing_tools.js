@@ -12,13 +12,21 @@ const BOTTOM_MARGIN = 35;
 const TOP_MARGIN = 25;
 const INITIAL_DECREMENT = 50;
 const USUAL_TOOLBAR_HEIGHT = 50;
+const USUAL_NAVBAR_HEIGHT = 50;
 
-function getUsableDimensions() {
+function getUsableDimensions(subtract_navbar = false) {
+    let subtractor;
+    if (subtract_navbar) {
+        subtractor = USUAL_NAVBAR_HEIGHT
+    }
+    else {
+        subtractor = 0
+    }
     return {
-        "usable_width": window.innerWidth - 2 * SIDE_MARGIN,
-        "usable_height": window.innerHeight - BOTTOM_MARGIN - USUAL_TOOLBAR_HEIGHT,
-        usable_height_no_bottom: window.innerHeight - USUAL_TOOLBAR_HEIGHT,
-        body_height: window.innerHeight - BOTTOM_MARGIN
+        usable_width: window.innerWidth - 2 * SIDE_MARGIN,
+        usable_height: window.innerHeight - BOTTOM_MARGIN - USUAL_TOOLBAR_HEIGHT - subtractor,
+        usable_height_no_bottom: window.innerHeight - USUAL_TOOLBAR_HEIGHT - subtractor,
+        body_height: window.innerHeight - BOTTOM_MARGIN -  subtractor
     };
 }
 

@@ -469,16 +469,16 @@ class CombinedMetadata extends React.Component {
                 additional_items.push(React.createElement(
                     FormGroup,
                     { label: field + ": ", key: field, inline: true },
-                    React.createElement(InputGroup, { disabled: true, style: { color: "#394B59" }, value: md, fill: true })
+                    React.createElement(InputGroup, { disabled: true, value: md, fill: true })
                 ));
             }
         }
         return React.createElement(
             Card,
-            { elevation: this.props.elevation, className: "combined-metadata", style: this.props.outer_style },
+            { elevation: this.props.elevation, className: "combined-metadata accent-bg", style: this.props.outer_style },
             this.props.name != null && React.createElement(
                 "h6",
-                { style: { color: "#106ba3" } },
+                null,
                 React.createElement(Icon, { icon: icon_dict[this.props.res_type], style: { marginRight: 4 } }),
                 this.props.name
             ),
@@ -507,12 +507,12 @@ class CombinedMetadata extends React.Component {
             React.createElement(
                 FormGroup,
                 { label: "Created ", inline: true },
-                React.createElement(InputGroup, { disabled: true, style: { color: "#394B59" }, value: this.props.created })
+                React.createElement(InputGroup, { disabled: true, value: this.props.created })
             ),
             this.props.updated != null && React.createElement(
                 FormGroup,
                 { label: "Updated: ", inline: true },
-                React.createElement(InputGroup, { disabled: true, style: { color: "#394B59" }, value: this.props.updated })
+                React.createElement(InputGroup, { disabled: true, value: this.props.updated })
             ),
             this.props.additional_metadata != null && additional_items
         );
@@ -535,8 +535,7 @@ CombinedMetadata.propTypes = {
 };
 
 CombinedMetadata.defaultProps = {
-    outer_style: { marginLeft: 20, overflow: "auto",
-        padding: 15, backgroundColor: "#f5f8fa" },
+    outer_style: { marginLeft: 20, overflow: "auto", padding: 15 },
     elevation: 0,
     handleNotesBlur: null,
     category: null,

@@ -174,24 +174,26 @@ class OtherAPIMIxin:
                                         sortable=True, sidebyside=False, has_header=True,
                                         header_style=None, body_style=None):
         self._save_stdout()
+        # base_class_string = "tile-table table table-striped table-bordered table-sm"
+        base_class_string = "bp3-html-table bp3-html-table-bordered bp3-html-table-condensed bp3-html-table-striped bp3-small"
         if header_style is None:
             hstyle = "{}"
         else:
             hstyle = header_style
         if body_style is None:
-            bstyle = "{}"
+            bstyle = "font-size:13px"
         else:
             bstyle = body_style
         if sortable:
             if not sidebyside:
-                the_html = u"<table class='tile-table table table-striped table-bordered table-sm sortable'>"
+                the_html = u"<table class='{} fw-table sortable'>".format(base_class_string)
             else:
-                the_html = u"<table class='tile-table sidebyside-table table-striped table-bordered table-sm sortable'>"
+                the_html = u"<table class='{} sidebyside-table sortable'>".format(base_class_string)
         else:
             if not sidebyside:
-                the_html = u"<table class='tile-table table table-striped table-bordered table-sm'>"
+                the_html = u"<table class='{} fw-table'>".format(base_class_string)
             else:
-                the_html = u"<table class='tile-table sidebyside-table table-striped table-bordered table-sm'>"
+                the_html = u"<table class='{} sidebyside-table'>".format(base_class_string)
 
         if title is not None:
             the_html += u"<caption>{0}</caption>".format(title)

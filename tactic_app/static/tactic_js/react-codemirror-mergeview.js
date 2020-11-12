@@ -148,7 +148,7 @@ class ReactCodemirrorMergeView extends React.Component {
         let ccstyle = {
             "height": "100%"
         };
-        return React.createElement("div", { id: "code-container", style: ccstyle, ref: this.code_container_ref });
+        return React.createElement("div", { className: "code-container", style: ccstyle, ref: this.code_container_ref });
     }
 }
 

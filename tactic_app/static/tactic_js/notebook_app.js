@@ -76,11 +76,13 @@ function _finish_post_load(data) {
     let domContainer = document.querySelector('#main-root');
     if (window.is_project || window.opening_from_temp_id) {
         ReactDOM.render(React.createElement(NotebookAppPlus, { is_project: true,
-            interface_state: interface_state
+            interface_state: interface_state,
+            initial_theme: window.theme
         }), domContainer);
     } else {
         ReactDOM.render(React.createElement(NotebookAppPlus, { is_project: false,
-            interface_state: null
+            interface_state: null,
+            initial_theme: window.theme
         }), domContainer);
     }
 }
@@ -98,7 +100,8 @@ class NotebookApp extends React.Component {
             usable_width: window.innerWidth - 2 * MARGIN_SIZE,
             usable_height: window.innerHeight - BOTTOM_MARGIN,
             console_width_fraction: .5,
-            show_exports_pane: true
+            show_exports_pane: true,
+            dark_theme: this.props.initial_theme == "dark"
         };
         if (this.props.is_project) {
             for (let attr of save_attrs) {
@@ -120,6 +123,15 @@ class NotebookApp extends React.Component {
         document.title = window.is_project ? window._project_name : "New Notebook";
         this._updateLastSave();
         this.props.stopSpinner();
+        this.props.setStatusTheme(this.state.dark_theme);
+        window.dark_theme = this.state.dark_theme;
+    }
+
+    _setTheme(dark_theme) {
+        this.setState({ dark_theme: dark_theme }, () => {
+            this.props.setStatusTheme(dark_theme);
+            window.dark_theme = this.state.dark_theme;
+        });
     }
 
     _update_window_dimensions() {
@@ -197,6 +209,7 @@ class NotebookApp extends React.Component {
             zoomable: false,
             shrinkable: false,
             tsocket: tsocket,
+            dark_theme: this.state.dark_theme,
             style: { marginTop: MARGIN_SIZE }
         }));
         let exports_pane;
@@ -211,26 +224,37 @@ class NotebookApp extends React.Component {
         } else {
             exports_pane = React.createElement("div", null);
         }
-
+        let outer_class = "main-outer";
+        if (this.state.dark_theme) {
+            outer_class = outer_class + " bp3-dark";
+        } else {
+            outer_class = outer_class + " light-theme";
+        }
         return React.createElement(
             React.Fragment,
             null,
-            React.createElement(TacticNavbar, { is_authenticated: window.is_authenticated,
-                user_name: window.username,
-                menus: menus,
-                show_api_links: true
-            }),
-            React.createElement(HorizontalPanes, { left_pane: console_pane,
-                right_pane: exports_pane,
-                show_handle: true,
-                available_height: console_available_height,
-                available_width: this.state.usable_width,
-                initial_width_fraction: this.state.console_width_fraction,
-                controlled: true,
-                left_margin: MARGIN_SIZE,
-                dragIconSize: 15,
-                handleSplitUpdate: this._handleConsoleFractionChange
-            })
+            React.createElement(
+                "div",
+                { className: outer_class },
+                React.createElement(TacticNavbar, { is_authenticated: window.is_authenticated,
+                    user_name: window.username,
+                    menus: menus,
+                    dark_theme: this.state.dark_theme,
+                    set_parent_theme: this._setTheme,
+                    show_api_links: true
+                }),
+                React.createElement(HorizontalPanes, { left_pane: console_pane,
+                    right_pane: exports_pane,
+                    show_handle: true,
+                    available_height: console_available_height,
+                    available_width: this.state.usable_width,
+                    initial_width_fraction: this.state.console_width_fraction,
+                    controlled: true,
+                    left_margin: MARGIN_SIZE,
+                    dragIconSize: 15,
+                    handleSplitUpdate: this._handleConsoleFractionChange
+                })
+            )
         );
     }
 }

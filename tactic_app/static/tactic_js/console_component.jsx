@@ -507,7 +507,7 @@ const BUTTON_CONSUMED_SPACE = 203;
                 {!this.props.console_is_shrunk &&
                 <div id="console"
                      ref={this.body_ref}
-                     style={{height: this._bodyHeight(), backgroundColor: "white"}}>
+                     style={{height: this._bodyHeight()}}>
                     {this.state.show_console_error_log &&
                     <pre>{this.state.console_error_log_text}</pre>
                     }
@@ -516,6 +516,7 @@ const BUTTON_CONSUMED_SPACE = 203;
                                        ElementComponent={SSuperItem}
                                        key_field_name="unique_id"
                                        item_list={this.props.console_items}
+                                       dark_theme={this.props.dark_theme}
                                        handle=".console-sorter"
                                        onSortStart={(_, event) => event.preventDefault()} // This prevents Safari weirdness
                                        onSortEnd={this._resortConsoleItems}
@@ -552,13 +553,15 @@ RawConsoleComponent.propTypes = {
     tsocket: PropTypes.object,
     style: PropTypes.object,
     shrinkable: PropTypes.bool,
-    zoomable: PropTypes.bool
+    zoomable: PropTypes.bool,
+    dark_theme: PropTypes.bool
 };
 
  RawConsoleComponent.defaultProps = {
      style: {},
      shrinkable: true,
-     zoomable: true
+     zoomable: true,
+     dark_theme: false
  };
 
 const ConsoleComponent = ContextMenuTarget(RawConsoleComponent)
@@ -754,9 +757,13 @@ class RawConsoleCodeItem extends React.Component {
         this.update_state_vars = [];
         this.state = {};
         this.last_output_text = ""
+        this.saved_theme = null;
     }
 
     shouldComponentUpdate(nextProps, nextState) {
+        if (this.props.dark_theme != this.saved_theme) {
+            return true
+        }
         for (let prop of this.update_props) {
             if (nextProps[prop] != this.props[prop]) {
                 return true
@@ -792,6 +799,7 @@ class RawConsoleCodeItem extends React.Component {
             }
             this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false)
         }
+         this.saved_theme = this.props.theme
     }
 
     executeEmbeddedScripts() {
@@ -951,6 +959,7 @@ class RawConsoleCodeItem extends React.Component {
                                         <ReactCodemirror handleChange={this._handleChange}
                                                          code_content={this.props.console_text}
                                                          setCMObject={this._setCMObject}
+                                                         dark_theme={this.props.dark_theme}
                                                          extraKeys={this._extraKeys()}
                                                          code_container_width={this.props.console_available_width - BUTTON_CONSUMED_SPACE}
                                                          saveMe={null}/>
@@ -995,6 +1004,7 @@ RawConsoleCodeItem.propTypes = {
     summary_text: PropTypes.string,
     console_text: PropTypes.string,
     output_text: PropTypes.string,
+    dark_theme: PropTypes.bool,
     execution_count: PropTypes.number,
     console_available_width: PropTypes.number,
     setConsoleItemValue: PropTypes.func,

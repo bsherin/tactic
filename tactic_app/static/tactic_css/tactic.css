@@ -168,8 +168,7 @@ a > code {
 
 pre {
   display: block;
-  font-size: 87.5%;
-  color: #212529; }
+  font-size: 87.5%; }
 
 pre code {
   font-size: inherit;
@@ -895,6 +894,140 @@ pre code {
   visibility: hidden !important; }
 
 /*# sourceMappingURL=bootstrap.css.map */
+/*
+ * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
+ */
+.light-theme.resource-viewer-holder {
+  background-color: white; }
+.light-theme.account-settings {
+  background-color: white; }
+.light-theme.pane-holder {
+  background-color: white; }
+.light-theme .combined-metadata {
+  background-color: #f5f8fa; }
+.light-theme .notes-field-markdown-output {
+  background: rgba(255, 255, 255, 0.7);
+  color: #5c7080; }
+.light-theme .tactic-tag-button-list .bp3-tree-node-selected .bp3-tree-node-content {
+  background-color: white;
+  color: #137cbd;
+  font-weight: 900; }
+.light-theme .tactic-tag-button-list .bp3-tree-node-selected .bp3-icon {
+  background-color: white;
+  color: #137cbd !important;
+  font-weight: 900; }
+.light-theme #creator-root .light-theme .CodeMirror-gutters {
+  background-color: #f5f8fa; }
+.light-theme.main-outer {
+  background-color: #ced9e0; }
+.light-theme #main-panel .main-heading {
+  color: #5c7080;
+  background-color: #f6f8fa;
+  border-bottom: 1px solid #10161a26; }
+.light-theme #table-area {
+  border-right: 1px solid #ddd; }
+  .light-theme #table-area mark {
+    background-color: #cebde6; }
+.light-theme .tile-panel-heading {
+  color: #5c7080;
+  background-color: #f6f8fa;
+  border-bottom: 1px solid #10161a26; }
+  .light-theme .tile-panel-heading.tile-source-changed {
+    background-color: #ffb366 !important; }
+.light-theme .tile-panel {
+  background-color: white !important; }
+  .light-theme .tile-panel.tile-source-changed {
+    background-color: #f7d66b80;
+    border: 2px solid #f7d66b80 !important; }
+.light-theme #console, .light-theme #exports-panel {
+  background-color: white; }
+.light-theme .console-text {
+  background-color: #f5f8fa !important;
+  border: 1px solid #c7c7c7 !important; }
+.light-theme #console-heading, .light-theme #exports-heading, .light-theme #exports-footing {
+  background-color: #ebf1f5 !important; }
+.light-theme #exports-body {
+  background-color: white; }
+.light-theme #selected-export {
+  color: #5c7080; }
+.light-theme .export-header-text {
+  color: #6c757d; }
+.light-theme .log-panel .CodeMirror {
+  border: 1px solid #c7c7c7 !important; }
+.light-theme .log-panel .CodeMirror-lines {
+  background-color: #f5f8fa !important; }
+.light-theme .log-panel .CodeMirror-gutters {
+  background-color: #f5f8fa; }
+.light-theme .CodeMirror {
+  border: 1.5px solid #80808063;
+  border-radius: 3px; }
+.light-theme caption {
+  color: #6c757d; }
+.light-theme .account-pane {
+  background-color: #ebf1f5; }
+
+.bp3-dark.resource-viewer-holder {
+  background-color: #30404d; }
+.bp3-dark.account-settings {
+  background-color: #30404d; }
+.bp3-dark.pane-holder {
+  background-color: #30404d; }
+.bp3-dark .combined-metadata {
+  background-color: #293742; }
+.bp3-dark .notes-field-markdown-output {
+  background-color: #394b59;
+  color: #f5f8fa; }
+.bp3-dark .tactic-tag-button-list .bp3-tree-node-selected .bp3-tree-node-content {
+  background-color: #30404d;
+  color: #48aff0;
+  font-weight: 900; }
+.bp3-dark .tactic-tag-button-list .bp3-tree-node-selected .bp3-icon {
+  background-color: #30404d;
+  color: #48aff0 !important;
+  font-weight: 900; }
+.bp3-dark.main-outer {
+  background-color: #5c7080; }
+.bp3-dark #main-panel .main-heading {
+  background-color: #293742;
+  border-bottom: 1px solid #10161a26; }
+.bp3-dark #table-area {
+  border-right: 1px solid; }
+  .bp3-dark #table-area mark {
+    background-color: #cebde6; }
+.bp3-dark .tile-panel-heading {
+  background-color: #293742;
+  border-bottom: 1px solid #10161a26; }
+  .bp3-dark .tile-panel-heading.tile-source-changed {
+    background-color: #ffb366 !important; }
+.bp3-dark .tile-panel {
+  background-color: #30404d !important; }
+  .bp3-dark .tile-panel.tile-source-changed {
+    background-color: #f7d66b80;
+    border: 2px solid #f7d66b80 !important; }
+.bp3-dark #console, .bp3-dark #exports {
+  background-color: #30404d; }
+.bp3-dark #console-heading, .bp3-dark #exports-heading, .bp3-dark #exports-footing {
+  background-color: #394b59 !important; }
+.bp3-dark .export-header-text {
+  color: #bfccd6; }
+.bp3-dark .console-text {
+  border: 1px solid #c7c7c7 !important; }
+.bp3-dark .text-panel-output {
+  background-color: #394b59;
+  color: #f5f8fa; }
+.bp3-dark caption {
+  color: #ced9e0; }
+.bp3-dark .account-pane {
+  background-color: #394b59; }
+
+.status-holder.light-theme {
+  background-color: white; }
+.status-holder.bp3-dark {
+  background-color: #5c7080; }
+
+#main-root .status-holder.light-theme {
+  background-color: #ced9e0; }
+
 /* main navbar */
 .cm-matchhighlight {
   background-color: lightgreen; }
@@ -915,13 +1048,10 @@ table caption {
 .table-striped tbody tr:nth-of-type(odd) {
   background-color: #f9f9f9; }
 
-/* General resources */
-table.sortable thead {
-  background-color: #eee;
-  color: #666666;
-  font-weight: bold;
-  cursor: default; }
+.code-container {
+  padding-bottom: 25px; }
 
+/* General resources */
 /* navbar */
 #menu-area .dropdown-toggle {
   padding-right: 6px;
@@ -953,10 +1083,7 @@ table.sortable thead {
   padding: 10px;
   border-radius: 3px;
   -webkit-box-shadow: inset 0 0 0 1px rgba(16, 22, 26, 0.2);
-  box-shadow: inset 0 0 0 1px rgba(16, 22, 26, 0.2);
-  background: rgba(255, 255, 255, 0.7);
-  color: #5c7080;
-  overflow: auto; }
+  box-shadow: inset 0 0 0 1px rgba(16, 22, 26, 0.2); }
 
 #listarea-container {
   height: 100%; }
@@ -970,8 +1097,6 @@ table.sortable thead {
   height: auto;
   width: auto; }
 
-.combined-metadata .notes-field {
-  background-color: #f7f7f7; }
 .combined-metadata .bp3-form-content {
   width: 100%; }
 .combined-metadata .bp3-form-group.bp3-inline {
@@ -986,5 +1111,18 @@ table.sortable thead {
 
 .bp3-icon path {
   fill: inherit; }
+
+.account-settings {
+  padding-left: 50px;
+  padding-top: 50px;
+  display: flex !important;
+  flex-direction: row !important;
+  height: 100%; }
+
+.account-pane {
+  height: fit-content;
+  border-radius: 6px;
+  padding: 20px;
+  margin: 10px; }
 
 /*# sourceMappingURL=tactic.css.map */

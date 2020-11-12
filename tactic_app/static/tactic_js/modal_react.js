@@ -99,6 +99,7 @@ class ModalDialog extends React.Component {
         return React.createElement(
             Dialog,
             { isOpen: this.state.show,
+                className: window.dark_theme ? "bp3-dark" : "",
                 title: this.props.title,
                 onClose: this._cancelHandler,
                 onOpened: () => {
@@ -214,6 +215,7 @@ class SelectDialog extends React.Component {
         return React.createElement(
             Dialog,
             { isOpen: this.state.show,
+                className: window.dark_theme ? "bp3-dark" : "",
                 title: this.props.title,
                 onClose: this._cancelHandler,
                 canEscapeKeyClose: true },
@@ -257,9 +259,10 @@ SelectDialog.propTypes = {
     option_list: PropTypes.array,
     submit_text: PropTypes.string,
     cancel_text: PropTypes.string
+
 };
 
-function showSelectDialog(title, select_label, cancel_text, submit_text, submit_function, option_list) {
+function showSelectDialog(title, select_label, cancel_text, submit_text, submit_function, option_list, dark_theme = false) {
 
     let domContainer = document.querySelector('#modal-area');
 
@@ -325,6 +328,7 @@ class SelectResourceDialog extends React.Component {
         return React.createElement(
             Dialog,
             { isOpen: this.state.show,
+                className: window.dark_theme ? "bp3-dark" : "",
                 title: 'Select a library resource',
                 onClose: this._cancelHandler,
                 canEscapeKeyClose: true },
@@ -372,7 +376,7 @@ SelectResourceDialog.propTypes = {
     cancel_text: PropTypes.string
 };
 
-function showSelectResourceDialog(cancel_text, submit_text, submit_function) {
+function showSelectResourceDialog(cancel_text, submit_text, submit_function, dark_theme = false) {
 
     let domContainer = document.querySelector('#modal-area');
 
@@ -414,6 +418,7 @@ class ConfirmDialog extends React.Component {
         return React.createElement(
             Dialog,
             { isOpen: this.state.show,
+                className: window.dark_theme ? "bp3-dark" : "",
                 title: this.props.title,
                 onClose: this._cancelHandler,
                 canEscapeKeyClose: true },
@@ -500,6 +505,7 @@ class InformDialog extends React.Component {
         return React.createElement(
             Dialog,
             { isOpen: this.state.show,
+                className: window.dark_theme ? "bp3-dark" : "",
                 title: this.props.title,
                 onClose: this._closeHandler,
                 canEscapeKeyClose: true },

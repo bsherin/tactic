@@ -99,6 +99,15 @@ class HostWorker(QWorker):
         tactic_app.health_tracker.register_container_heartbeat(container_id)
         return
 
+    @task_worthy
+    def set_user_theme(self, data):
+        print("in set_user_theme")
+        print("data is " + str(data))
+        user_id = data["user_id"]
+        user_obj = load_user(user_id)
+        print("got user_obj")
+        return user_obj.update_account({"theme": data["theme"]})
+
     @task_worthy_manual_submit
     def update_code_task(self, data_dict, task_packet):
         try:

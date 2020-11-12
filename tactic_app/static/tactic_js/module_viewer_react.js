@@ -15,7 +15,6 @@ import { ResizeSensor } from "@blueprintjs/core";
 import { ResourceViewerSocket, ResourceViewerApp, copyToLibrary, sendToRepository } from "./resource_viewer_react_app.js";
 import { ReactCodemirror } from "./react-codemirror.js";
 import { ViewerContext } from "./resource_viewer_context.js";
-import { render_navbar } from "./blueprint_navbar.js";
 import { postAjax, postAjaxPromise, postWithCallback } from "./communication_react.js";
 import { doFlash } from "./toaster.js";
 import { withErrorDrawer } from "./error_drawer.js";
@@ -24,12 +23,12 @@ import { doBinding } from "./utilities_react.js";
 
 import { SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, BOTTOM_MARGIN, getUsableDimensions } from "./sizing_tools.js";
 import { guid } from "./utilities_react";
+import { TacticNavbar } from "./blueprint_navbar";
 
 window.resource_viewer_id = guid();
 window.main_id = resource_viewer_id;
 
 function module_viewer_main() {
-    render_navbar(null, true);
     let get_url = window.is_repository ? "repository_get_module_code" : "get_module_code";
     let get_mdata_url = window.is_repository ? "grab_repository_metadata" : "grab_metadata";
 
@@ -47,6 +46,7 @@ function module_viewer_main() {
                 tags: split_tags,
                 notes: data.notes,
                 readOnly: window.read_only,
+                initial_theme: window.theme,
                 is_repository: window.is_repository,
                 meta_outer: "#right-div" }), domContainer);
         }).catch(function () {
@@ -55,6 +55,7 @@ function module_viewer_main() {
                 created: "",
                 tags: [],
                 notes: "",
+                initial_theme: window.theme,
                 readOnly: window.read_only,
                 is_repository: window.is_repository,
                 meta_outer: "#right-div" }), domContainer);
@@ -87,7 +88,8 @@ class ModuleViewerApp extends React.Component {
             notes: props.notes,
             tags: props.tags,
             usable_width: awidth,
-            usable_height: aheight
+            usable_height: aheight,
+            dark_theme: this.props.initial_theme == "dark"
         };
     }
 
@@ -95,6 +97,8 @@ class ModuleViewerApp extends React.Component {
         window.addEventListener("resize", this._update_window_dimensions);
         this._update_window_dimensions();
         this.props.stopSpinner();
+        this.props.setStatusTheme(this.state.dark_theme);
+        window.dark_theme = this.state.dark_theme;
     }
 
     _update_window_dimensions() {
@@ -108,6 +112,12 @@ class ModuleViewerApp extends React.Component {
         this.setState({ usable_height: uheight, usable_width: uwidth });
     }
 
+    _setTheme(dark_theme) {
+        this.setState({ dark_theme: dark_theme }, () => {
+            this.props.setStatusTheme(dark_theme);
+            window.dark_theme = this.state.dark_theme;
+        });
+    }
     get button_groups() {
         let bgs;
         if (this.props.is_repository) {
@@ -151,6 +161,7 @@ class ModuleViewerApp extends React.Component {
 
     _doFlashStopSpinner(data) {
         this.props.stopSpinner();
+        this.props.clearStatusMessage();
         doFlash(data);
     }
 
@@ -165,20 +176,32 @@ class ModuleViewerApp extends React.Component {
 
     render() {
         let the_context = { "readOnly": this.props.readOnly };
-        let outer_style = { width: this.state.usable_width,
+        let outer_style = { width: "100%",
             height: this.state.usable_height,
             paddingLeft: SIDE_MARGIN
         };
         let cc_height = this.get_new_cc_height();
+        let outer_class = "resource-viewer-holder";
+        if (this.state.dark_theme) {
+            outer_class = outer_class + " bp3-dark";
+        } else {
+            outer_class = outer_class + " light-theme";
+        }
         return React.createElement(
             ViewerContext.Provider,
             { value: the_context },
+            React.createElement(TacticNavbar, { is_authenticated: window.is_authenticated,
+                selected: null,
+                show_api_links: true,
+                dark_theme: this.state.dark_theme,
+                set_parent_theme: this._setTheme,
+                user_name: window.username }),
             React.createElement(
                 ResizeSensor,
                 { onResize: this._handleResize, observeParents: true },
                 React.createElement(
                     "div",
-                    { className: "resource-viewer-holder", ref: this.top_ref, style: outer_style },
+                    { className: outer_class, ref: this.top_ref, style: outer_style },
                     React.createElement(
                         ResourceViewerApp,
                         _extends({}, this.props.statusFuncs, {
@@ -190,11 +213,13 @@ class ModuleViewerApp extends React.Component {
                             notes: this.state.notes,
                             tags: this.state.tags,
                             saveMe: this._saveMe,
+                            dark_theme: this.state.dark_theme,
                             meta_outer: this.props.meta_outer }),
                         React.createElement(ReactCodemirror, { code_content: this.state.code_content,
                             handleChange: this._handleCodeChange,
                             saveMe: this._saveMe,
                             readOnly: this.props.readOnly,
+                            dark_theme: this.state.dark_theme,
                             code_container_ref: this.cc_ref,
                             code_container_height: cc_height
                         })
@@ -311,6 +336,7 @@ ModuleViewerApp.propTypes = {
     created: PropTypes.string,
     tags: PropTypes.array,
     notes: PropTypes.string,
+    dark_theme: PropTypes.bool,
     readOnly: PropTypes.bool,
     is_repository: PropTypes.bool,
     meta_outer: PropTypes.string

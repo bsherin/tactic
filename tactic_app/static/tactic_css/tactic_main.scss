@@ -1,22 +1,12 @@
 @import "blueprint_variables.scss";
 
 
-/* tile parameters */
-$tile-header-sourcechange-color: #f7d66b80;
-$tile-panel-sourcechange-border-style: 2px solid #f7d66b80;
-$tile-panel-background-color: white;
-
 // Panel header stuff for main table
 #main-panel {
     padding: 0;
     margin-top: 0.5rem;
     margin-left: 0.5rem;
-    //font-family: $table-font-family;
-
     .main-heading{
-        color: #5c7080;
-        background-color: #f6f8fa;
-        border-bottom: 1px solid #10161a26;
 
         .button-in-select .bp3-button-text {
             max-width: 100%
@@ -45,24 +35,13 @@ $tile-panel-background-color: white;
         line-height: 100%;
         cursor: move;
         align-self: center;
-        color: #5c7080; //
+        //color: #5c7080; //
     }
 
     font-weight: 400;
     white-space: nowrap;
     overflow: hidden;
     padding: 5px 3px 4px 3px;
-    background-color: #f6f8fa !important;
-
-    &.tile-source-changed {
-        background-color: $orange5 !important
-    }
-}
-
-.tile-source-changed {
-    .tile-panel-heading {
-        background-color: $tile-header-sourcechange-color !important;
-    }
 }
 
 .tile-body .back button {
@@ -101,15 +80,11 @@ $tile-panel-background-color: white;
     margin-right: 0.5rem;
     margin-top: 0.5rem;
     padding: 0 !important;
-    background-color: $tile-panel-background-color !important;;
+
 
     .ui-resizable-handle {
         z-index: 10 !important
     }
-}
-
-.tile-panel.tile-source-changed {
-    border: $tile-panel-sourcechange-border-style !important;
 }
 
 .tile-panel-float {
@@ -223,6 +198,10 @@ $tile-panel-background-color: white;
     display: inline-block;
     margin-right: 10px;
     border: none;
+}
+
+.fw-table {
+    width: 100%
 }
 
 .row-clickable:hover {

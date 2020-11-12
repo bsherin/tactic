@@ -108,6 +108,7 @@ function _finish_post_load(data) {
             ReactDOM.render(React.createElement(MainAppPlus, { is_project: true,
                 interface_state: interface_state,
                 initial_data_text: data.data_text,
+                initial_theme: window.theme,
                 initial_doc_names: window.doc_names }), domContainer);
         }
         // )
@@ -116,6 +117,7 @@ function _finish_post_load(data) {
                 ReactDOM.render(React.createElement(MainAppPlus, { is_project: false,
                     interface_state: null,
                     initial_data_text: data.data_text,
+                    initial_theme: window.theme,
                     initial_doc_names: window.doc_names }), domContainer);
             }
         // });
@@ -127,6 +129,7 @@ function _finish_post_load(data) {
             ReactDOM.render(React.createElement(MainAppPlus, { is_project: true,
                 interface_state: interface_state,
                 total_rows: data.total_rows,
+                initial_theme: window.theme,
                 initial_column_names: data.table_spec.header_list,
                 initial_data_row_dict: data.data_row_dict,
                 initial_column_widths: data.table_spec.column_widths,
@@ -138,6 +141,7 @@ function _finish_post_load(data) {
             ReactDOM.render(React.createElement(MainAppPlus, { is_project: false,
                 interface_state: null,
                 total_rows: data.total_rows,
+                initial_theme: window.theme,
                 initial_column_names: data.table_spec.header_list,
                 initial_data_row_dict: data.data_row_dict,
                 initial_column_widths: data.table_spec.column_widths,
@@ -179,7 +183,8 @@ class MainApp extends React.Component {
             alt_search_text: null,
             table_is_shrunk: false,
             console_width_fraction: .5,
-            horizontal_fraction: .65
+            horizontal_fraction: .65,
+            dark_theme: this.props.initial_theme == "dark"
         };
         let additions;
         if (window.is_freeform) {
@@ -282,6 +287,15 @@ class MainApp extends React.Component {
             self.props.stopSpinner();
         }
         this._updateLastSave();
+        this.props.setStatusTheme(this.state.dark_theme);
+        window.dark_theme = this.state.dark_theme;
+    }
+
+    _setTheme(dark_theme) {
+        this.setState({ dark_theme: dark_theme }, () => {
+            this.props.setStatusTheme(dark_theme);
+            window.dark_theme = this.state.dark_theme;
+        });
     }
 
     // Every item in tile_list is a list of this form
@@ -899,6 +913,7 @@ class MainApp extends React.Component {
                 show_exports_pane: this.state.show_exports_pane,
                 setMainStateValue: this._setMainStateValue,
                 console_available_height: console_available_height,
+                dark_theme: this.state.dark_theme,
                 console_available_width: this.state.usable_width * this.state.console_width_fraction - 16,
                 tsocket: tsocket
             });
@@ -960,28 +975,40 @@ class MainApp extends React.Component {
                 this.state.console_is_shrunk && bottom_pane
             );
         }
+        let outer_class = "main-outer";
+        if (this.state.dark_theme) {
+            outer_class = outer_class + " bp3-dark";
+        } else {
+            outer_class = outer_class + " light-theme";
+        }
         return React.createElement(
             React.Fragment,
             null,
             React.createElement(TacticNavbar, { is_authenticated: window.is_authenticated,
                 user_name: window.username,
+                dark_theme: this.state.dark_theme,
+                set_parent_theme: this._setTheme,
                 menus: menus
             }),
-            this.state.console_is_zoomed && bottom_pane,
-            !this.state.console_is_zoomed && this.state.console_is_shrunk && top_pane,
-            !this.state.console_is_zoomed && !this.state.console_is_shrunk && React.createElement(VerticalPanes, { top_pane: top_pane,
-                bottom_pane: bottom_pane,
-                show_handle: true,
-                available_width: this.state.usable_width,
-                available_height: vp_height,
-                initial_height_fraction: this.state.height_fraction,
-                dragIconSize: 15,
-                scrollAdjustSelectors: [".bp3-table-quadrant-scroll-container", "#tile-div"],
-                handleSplitUpdate: this._handleVerticalSplitUpdate,
-                handleResizeStart: this._handleResizeStart,
-                handleResizeEnd: this._handleResizeEnd,
-                overflow: "hidden"
-            })
+            React.createElement(
+                "div",
+                { className: outer_class },
+                this.state.console_is_zoomed && bottom_pane,
+                !this.state.console_is_zoomed && this.state.console_is_shrunk && top_pane,
+                !this.state.console_is_zoomed && !this.state.console_is_shrunk && React.createElement(VerticalPanes, { top_pane: top_pane,
+                    bottom_pane: bottom_pane,
+                    show_handle: true,
+                    available_width: this.state.usable_width,
+                    available_height: vp_height,
+                    initial_height_fraction: this.state.height_fraction,
+                    dragIconSize: 15,
+                    scrollAdjustSelectors: [".bp3-table-quadrant-scroll-container", "#tile-div"],
+                    handleSplitUpdate: this._handleVerticalSplitUpdate,
+                    handleResizeStart: this._handleResizeStart,
+                    handleResizeEnd: this._handleResizeEnd,
+                    overflow: "hidden"
+                })
+            )
         );
     }
 }

@@ -8,7 +8,7 @@
 {% block page_content %}
     <div id="modal-area">
     </div>
-    <div class="container-fluid d-flex" id="creator-root" style="width:100%;height:100%">
+    <div class="container-fluid" id="creator-root" style="width:100%;height:100%">
     </div>
 
 {%  endblock %}
@@ -20,6 +20,7 @@
     <script type="module" src="{{url_for('static', filename=module_source, v=version_string)}}"></script>
     <script>
         window.user_id = "{{current_user.get_id()}}";
+        window.theme="{{theme}}"
         window.module_name = "{{module_name}}";
         window.module_viewer_id = "{{module_viewer_id}}";
         window.tile_collection_name = "{{tile_collection_name}}";

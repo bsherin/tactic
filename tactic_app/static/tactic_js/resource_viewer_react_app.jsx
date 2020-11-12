@@ -21,7 +21,7 @@ export {ResourceViewerApp, ResourceViewerSocket, copyToLibrary, sendToRepository
 class ResourceViewerSocket extends TacticSocket {
     initialize_socket_stuff() {
         this.socket.emit('join', {"room": window.user_id});
-        this.socket.emit('join-main', {"room": window.resource_viewer_id, "user_id": user_id});
+        this.socket.emit('join-main', {"room": window.resource_viewer_id, "user_id": window.user_id});
         this.socket.on('handle-callback', handleCallback);
         this.socket.on('close-user-windows', (data) => {
             if (!(data["originator"] == window.resource_viewer_id)) {
@@ -123,7 +123,7 @@ class ResourceViewerApp extends React.Component {
         let right_pane = (
             <CombinedMetadata tags={this.props.tags}
                               outer_style={{marginTop: 100, marginLeft: 20, overflow: "auto", padding: 15,
-                                  backgroundColor: "#f5f8fa", marginRight: 20}}
+                                            marginRight: 20}}
                               created={this.props.created}
                               notes={this.props.notes}
                               handleChange={this.props.handleStateChange}
@@ -153,6 +153,10 @@ ResourceViewerApp.propTypes = {
     notes: PropTypes.string,
     handleStateChange: PropTypes.func,
     meta_outer: PropTypes.string,
+    dark_theme: PropTypes.bool,
     saveMe: PropTypes.func,
     children: PropTypes.element
 };
+ResourceViewerApp.defaultProps ={
+    dark_theme: false
+}

@@ -4,10 +4,11 @@ import React from "react";
 import * as ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 
-import { Button, Navbar, NavbarDivider, OverflowList, Alignment } from "@blueprintjs/core";
+import { Button, Navbar, NavbarDivider, OverflowList, Alignment, Switch } from "@blueprintjs/core";
 
 import { MenuComponent } from "./main_menus_react.js";
 import { doBinding, doSignOut } from "./utilities_react.js";
+import { postWithCallback } from "./communication_react";
 
 export { render_navbar, TacticNavbar };
 
@@ -30,7 +31,7 @@ class TacticNavbar extends React.Component {
         };
         this.overflow_items = [];
         this.update_state_vars = ["usable_width", "old_left_width"];
-        this.update_props = ["is_authenticated", "user_name", "menus", "selected", "show_api_links"];
+        this.update_props = ["is_authenticated", "user_name", "menus", "selected", "show_api_links", "dark_theme"];
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -51,6 +52,7 @@ class TacticNavbar extends React.Component {
         window.addEventListener("resize", this._update_window_dimensions);
         this._update_window_dimensions();
         this.setState({ old_left_width: this._getLeftWidth() });
+        this.last_theme = this.props.dark_theme;
     }
 
     // For some reason sizing things are a little flaky without old_left_width stuff
@@ -69,6 +71,27 @@ class TacticNavbar extends React.Component {
 
     handle_signout() {
         doSignOut(window.page_id);
+    }
+
+    _toggleTheme() {
+        const result_dict = {
+            "user_id": window.user_id,
+            "theme": !this.props.dark_theme ? "dark" : "light"
+        };
+        postWithCallback("host", "set_user_theme", result_dict, null, null);
+        if (this.props.set_parent_theme) {
+            this.props.set_parent_theme(!this.props.dark_theme);
+        }
+    }
+    _setTheme(event) {
+        const result_dict = {
+            "user_id": window.user_id,
+            "theme": event.target.checked ? "dark" : "light"
+        };
+        postWithCallback("host", "set_user_theme", result_dict, null, null);
+        if (this.props.set_parent_theme) {
+            this.props.set_parent_theme(event.target.checked);
+        }
     }
 
     getIntent(butname) {
@@ -107,6 +130,9 @@ class TacticNavbar extends React.Component {
                 window.open(repository_url);
             }
         }, {
+            // icon: "moon", text: "Theme", intent: this.getIntent("theme"),
+            //     onClick: this._toggleTheme
+            // }, {
             icon: "person", text: this.props.user_name, intent: this.getIntent("account"),
             onClick: () => {
                 window.open(account_url);
@@ -164,9 +190,10 @@ class TacticNavbar extends React.Component {
         let right_width = this._getRightWidth();
         let right_style = { width: right_width };
         right_style.justifyContent = "flex-end";
+        let theme_class = this.props.dark_theme ? "bp3-dark" : "light-theme";
         return React.createElement(
             Navbar,
-            { style: { paddingLeft: 10 } },
+            { style: { paddingLeft: 10 }, className: theme_class },
             React.createElement(
                 'div',
                 { className: 'bp3-navbar-group bp3-align-left', ref: this.lg_ref },
@@ -190,6 +217,16 @@ class TacticNavbar extends React.Component {
                     overflowRenderer: this._overflowRenderer,
                     visibleItemRenderer: this.renderNav,
                     onOverflow: this._onOverflow
+                }),
+                React.createElement(NavbarDivider, null),
+                React.createElement(Switch, {
+                    checked: this.props.dark_theme,
+                    onChange: this._setTheme,
+                    large: false,
+                    style: { marginBottom: 0 },
+                    innerLabel: 'Light',
+                    innerLabelChecked: 'Dark',
+                    alignIndicator: 'center'
                 })
             )
         );
@@ -201,19 +238,23 @@ TacticNavbar.propTypes = {
     user_name: PropTypes.string,
     menus: PropTypes.object,
     selected: PropTypes.string,
-    show_api_links: PropTypes.bool
+    dark_theme: PropTypes.bool,
+    set_parent_theme: PropTypes.func
 };
 
 TacticNavbar.defaultProps = {
     menus: null,
     selected: null,
-    show_api_links: false
+    show_api_links: false,
+    dark_theme: false,
+    set_parent_theme: null
 };
 
-function render_navbar(selected = null, show_api_links = false) {
+function render_navbar(selected = null, show_api_links = false, dark_theme = false) {
     let domContainer = document.querySelector('#navbar-root');
     ReactDOM.render(React.createElement(TacticNavbar, { is_authenticated: window.is_authenticated,
         selected: selected,
         show_api_links: show_api_links,
+        dark_theme: dark_theme,
         user_name: window.username }), domContainer);
 }
