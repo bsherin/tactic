@@ -158,6 +158,7 @@ class TileManager(LibraryResourceManager):
         return
 
     def view_module(self, module_name):
+        user_obj = current_user
         self.clear_old_recent_history(module_name)
         javascript_source = url_for('static', filename=js_source_dict["module_viewer_react"])
         return render_template("library/resource_viewer_react.html",
@@ -165,12 +166,14 @@ class TileManager(LibraryResourceManager):
                                include_metadata=True,
                                include_right=True,
                                include_above_main_area=False,
+                               theme=user_obj.get_theme(),
                                read_only=False,
                                is_repository=False,
                                develop=str(_develop),
                                css_source=css_source("module_viewer_react"),
                                javascript_source=javascript_source,
                                uses_codemirror="True",
+                               dark_theme_name=user_obj.get_preferred_dark_theme(),
                                version_string=tstring)
 
     def get_module_code(self, module_name):
@@ -201,6 +204,7 @@ class TileManager(LibraryResourceManager):
     def view_in_creator(self, module_name, line_number=0):
         self.clear_old_recent_history(module_name)
         revised_api_dlist = []
+        user_obj = current_user
         for cat in ordered_api_categories:
             the_list = api_dict_by_category[cat]
             new_list = []
@@ -213,6 +217,8 @@ class TileManager(LibraryResourceManager):
                                module_name=module_name,
                                develop=str(_develop),
                                uses_codemirror="True",
+                               theme=user_obj.get_theme(),
+                               dark_theme_name=user_obj.get_preferred_dark_theme(),
                                version_string=tstring,
                                line_number=line_number,
                                module_viewer_id=the_content["module_viewer_id"],
@@ -330,17 +336,20 @@ class RepositoryTileManager(TileManager):
 
     def repository_view_module(self, module_name):
         javascript_source = url_for('static', filename=js_source_dict["module_viewer_react"])
+        user_obj = current_user
         return render_template("library/resource_viewer_react.html",
                                resource_name=module_name,
                                include_metadata=True,
                                include_right=True,
                                include_above_main_area=False,
                                read_only=True,
+                               theme=user_obj.get_theme(),
                                is_repository=True,
                                develop=str(_develop),
                                css_source=css_source("module_viewer_react"),
                                javascript_source=javascript_source,
                                uses_codemirror="True",
+                               dark_theme_name=user_obj.get_preferred_dark_theme(),
                                version_string=tstring)
 
     def repository_get_module_code(self, module_name):

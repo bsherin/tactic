@@ -1,35 +1,32 @@
 @import "blueprint_variables.scss";
 
 #creator-root {
-    margin-right: 25px;
-    vertical-align: top;
+  margin-right: 25px;
+  vertical-align: top;
 
-    .code-holder {
-        height: 100%;
+  .code-holder {
+    height: 100%;
 
+  }
+
+  .bp3-tab:focus {
+    outline: none
+  }
+
+  .bp3-large > .bp3-tab {
+    font-size: 18px;
+    margin-top: 10px;
+    margin-left: 30px;
+    margin-right: 0
+  }
+
+  #rccode {
+    span {
+      margin-top: 10px
     }
-
-    .bp3-tab:focus {
-        outline: none
-    }
-
-    .bp3-large > .bp3-tab {
-        font-size: 18px;
-        margin-top: 10px;
-        margin-left: 30px;
-        margin-right: 0
-    }
-
-    #rccode {
-        span {
-            margin-top: 10px
-        }
-    }
-
-    .CodeMirror-gutters {
-        background-color: $light-gray5;
-    }
+  }
 }
+
 
 #creator-resources {
         height: 100%;

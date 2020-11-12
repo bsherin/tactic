@@ -5,7 +5,7 @@ from flask_login import login_user, login_required, logout_user, fresh_login_req
 from flask_login import current_user
 from tactic_app import login_manager
 
-from users import User
+from users import User, default_dark_theme, possible_dark_themes
 from mongo_accesser import res_types
 from library_views import copy_between_accounts
 from flask_wtf import Form
@@ -183,8 +183,10 @@ def attempt_duplicate():
 @app.route('/account_info', methods=['GET', 'POST'])
 @fresh_login_required
 def account_info():
+    user_obj = current_user
     return render_template('account_react.html',
                            css_source=css_source("account_react"),
+                           theme=user_obj.get_theme(),
                            module_source=js_source_dict["account_react"], version_string=tstring)
 
 
@@ -193,8 +195,19 @@ def get_account_info():
     user_data = current_user.user_data_dict
     field_list = []
     for key, val in user_data.items():
-        if not key == "username" and not key == "tzoffset":
-            field_list.append({"name": key, "val": val})
+        if key == "preferred_dark_theme":
+            field_list.append({"name": "preferred_dark_theme", "val": val,
+                               "kind": "select", "options": possible_dark_themes})
+        elif key == "theme":
+            field_list.append({"name": "theme", "val": val,
+                               "kind": "select", "options": ["light", "dark"]})
+        elif not key == "username" and not key == "tzoffset":
+            field_list.append({"name": key, "val": val, "kind": "text"})
+    if "preferred_dark_theme" not in user_data:
+        field_list.append({"name": "preferred_dark_theme", "val": default_dark_theme, "options": possible_dark_themes})
+        f
+    if "theme" not in user_data:
+        field_list.append({"name": "theme", "options": ["light", "dark"]})
     return jsonify({"field_list": field_list})
 
 

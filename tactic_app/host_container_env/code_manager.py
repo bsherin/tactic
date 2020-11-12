@@ -109,17 +109,20 @@ class CodeManager(LibraryResourceManager):
         return
 
     def view_code(self, code_name):
+        user_obj = current_user
         javascript_source = url_for('static', filename=js_source_dict["code_viewer_react"])
         return render_template("library/resource_viewer_react.html",
                                resource_name=code_name,
                                include_metadata=True,
                                include_right=True,
                                include_above_main_area=False,
+                               theme=user_obj.get_theme(),
                                read_only=False,
                                is_repository=False,
                                develop=str(_develop),
                                javascript_source=javascript_source,
                                uses_codemirror="True",
+                               dark_theme_name=user_obj.get_preferred_dark_theme(),
                                css_source=css_source("code_viewer_react"),
                                version_string=tstring)
 
@@ -193,18 +196,21 @@ class RepositoryCodeManager(CodeManager):
                          login_required(self.repository_get_code_code), methods=['get', 'post'])
 
     def repository_view_code(self, code_name):
+        user_obj = current_user
         javascript_source = url_for('static', filename=js_source_dict["code_viewer_react"])
         return render_template("library/resource_viewer_react.html",
                                resource_name=code_name,
                                include_metadata=True,
                                include_right=True,
                                include_above_main_area=False,
+                               theme=user_obj.get_theme(),
                                read_only=True,
                                develop=str(_develop),
                                is_repository=True,
                                javascript_source=javascript_source,
                                css_source=css_source("code_viewer_react"),
                                uses_codemirror="True",
+                               dark_theme_name=user_obj.get_preferred_dark_theme(),
                                version_string=tstring)
 
     def repository_get_code_code(self, code_name):

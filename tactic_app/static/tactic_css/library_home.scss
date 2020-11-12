@@ -203,40 +203,5 @@ $regular: #5c7080;
         overflow-y: auto;
     }
 
-    .bp3-tree-node-selected {
-        .bp3-tree-node-content {
-            background-color: white;
-            color: $blue3;
-            font-weight: 900
-        }
-
-        .bp3-icon {
-            background-color: white;
-            color: $blue3 !important;
-            font-weight: 900
-        }
-    }
 }
 
-.tactic-tag-button-list {
-    margin-top: 65px;
-    overflow-y: hidden;
-    min-width: 165px;
-    &:hover {
-        overflow-y: auto;
-    }
-
-    .bp3-tree-node-selected {
-        .bp3-tree-node-content {
-            background-color: white;
-            color: $blue3;
-            font-weight: 900
-        }
-
-        .bp3-icon {
-            background-color: white;
-            color: $blue3 !important;
-            font-weight: 900
-        }
-    }
-}

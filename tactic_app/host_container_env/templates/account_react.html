@@ -13,11 +13,11 @@
 
 {% block page_content %}
 
-<div class="body-outer" style="text-align:center">
-    <div id="status-area"></div>
-    <div class="form-signin" id="root">
+<div id="modal-area">
     </div>
-</div>
+<div class="container-fluid" id="root">
+    </div>
+
 
 {% endblock %}
 {% block scripts %}
@@ -25,6 +25,8 @@
     <script type="module" src="{{url_for('static', filename=module_source, v=version_string)}}"></script>
 
     <script>
+        window.user_id = "{{current_user.get_id()}}";
+        window.theme="{{theme}}"
         window.current_user = "{{current_user.username}}";
         window._show_message = "{{show_message}}";
         window._message = "{{message}}";

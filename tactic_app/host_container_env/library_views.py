@@ -130,12 +130,14 @@ def library():
                                version_string=tstring,
                                develop=str(_develop),
                                page_title="tactic admin",
+                               theme=current_user.get_theme(),
                                css_source=css_source("admin_home_react"),
                                module_source=js_source_dict["admin_home_react"])
     else:
         return render_template('library/library_home_react.html',
                                develop=str(_develop),
                                version_string=tstring,
+                               theme=current_user.get_theme(),
                                page_title="tactic resources",
                                css_source=css_source("library_home_react"),
                                module_source=js_source_dict["library_home_react"])
@@ -147,6 +149,7 @@ def repository():
     return render_template('library/library_home_react.html',
                            version_string=tstring,
                            develop=str(_develop),
+                           theme=current_user.get_theme(),
                            page_title="tactic repository",
                            css_source=css_source("repository_home_react"),
                            module_source=js_source_dict["repository_home_react"]

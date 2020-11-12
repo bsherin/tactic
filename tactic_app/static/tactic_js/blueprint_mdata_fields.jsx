@@ -490,15 +490,15 @@ class CombinedMetadata extends React.Component {
                 }
                 additional_items.push(
                      <FormGroup label={field + ": "} key={field} inline={true}>
-                            <InputGroup disabled={true} style={{color:"#394B59"}} value={md} fill={true}/>
+                            <InputGroup disabled={true} value={md} fill={true}/>
                         </FormGroup>
                 )
             }
         }
         return (
-            <Card elevation={this.props.elevation} className="combined-metadata" style={this.props.outer_style}>
+            <Card elevation={this.props.elevation} className="combined-metadata accent-bg" style={this.props.outer_style}>
                 {this.props.name != null &&
-                    <h6 style={{color: "#106ba3"}}><Icon icon={icon_dict[this.props.res_type]} style={{marginRight: 4}}/>{this.props.name}</h6>
+                    <h6><Icon icon={icon_dict[this.props.res_type]} style={{marginRight: 4}}/>{this.props.name}</h6>
                 }
 
                     <FormGroup label="Tags">
@@ -520,11 +520,11 @@ class CombinedMetadata extends React.Component {
                         />
                     </FormGroup>
                     <FormGroup label="Created " inline={true}>
-                        <InputGroup disabled={true} style={{color:"#394B59"}} value={this.props.created}/>
+                        <InputGroup disabled={true} value={this.props.created}/>
                     </FormGroup>
                     {this.props.updated != null &&
                         <FormGroup label="Updated: " inline={true}>
-                            <InputGroup disabled={true} style={{color:"#394B59"}} value={this.props.updated}/>
+                            <InputGroup disabled={true} value={this.props.updated}/>
                         </FormGroup>
                     }
                     {this.props.additional_metadata != null &&
@@ -551,8 +551,7 @@ CombinedMetadata.propTypes = {
 };
 
 CombinedMetadata.defaultProps = {
-    outer_style: {marginLeft: 20, overflow: "auto",
-            padding: 15, backgroundColor: "#f5f8fa"},
+    outer_style: {marginLeft: 20, overflow: "auto", padding: 15},
     elevation: 0,
     handleNotesBlur: null,
     category: null,

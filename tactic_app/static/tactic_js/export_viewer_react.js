@@ -381,7 +381,7 @@ class ExportsViewer extends React.Component {
                             handleChange: this._handleExportListChange
                         }),
                         React.createElement(Divider, null),
-                        React.createElement("div", { style: { overflowY: "scroll", padding: 15, width: "80%", height: this._bodyHeight(), backgroundColor: "white", display: "inline-block" },
+                        React.createElement("div", { id: "exports-body", style: { overflowY: "scroll", padding: 15, width: "80%", height: this._bodyHeight(), display: "inline-block" },
                             dangerouslySetInnerHTML: exports_body_dict })
                     ),
                     React.createElement(

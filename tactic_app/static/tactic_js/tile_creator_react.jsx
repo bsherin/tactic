@@ -17,12 +17,13 @@ import {ReactCodemirror} from "./react-codemirror.js";
 import {CombinedMetadata} from "./blueprint_mdata_fields.js";
 import {OptionModule, ExportModule} from "./creator_modules_react.js";
 import {HorizontalPanes, VerticalPanes} from "./resizing_layouts.js";
-import {render_navbar} from "./blueprint_navbar.js";
 import {handleCallback, postAjax, postAjaxPromise, postWithCallback, postAsyncFalse} from "./communication_react.js"
 import {withStatus, doFlash} from "./toaster.js"
 import {getUsableDimensions, SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT} from "./sizing_tools.js";
 import {withErrorDrawer} from "./error_drawer.js";
 import {doBinding, guid} from "./utilities_react.js"
+import {TacticNavbar} from "./blueprint_navbar";
+import {ViewerContext} from "./resource_viewer_context";
 
 const BOTTOM_MARGIN = 50;
 const MARGIN_SIZE = 17;
@@ -58,7 +59,6 @@ class CreatorViewerSocket extends TacticSocket {
 }
 
 function tile_creator_main() {
-    render_navbar(null, true);
     tsocket = new CreatorViewerSocket("main", 5000);
     tsocket.socket.on("begin-post-load", function () {
             let the_content = {"module_name": window.module_name,
@@ -81,22 +81,23 @@ function got_parsed_data (data_object) {
             let split_tags = data.tags == "" ? [] : data.tags.split(" ");
             let category = parsed_data.category ? parsed_data.category : "basic";
             ReactDOM.render(<CreatorAppPlus tile_name={window.module_name}
-                                        is_mpl={parsed_data.is_mpl}
-                                        is_d3={parsed_data.is_d3}
-                                        render_content_code={parsed_data.render_content_code}
-                                        render_content_line_number={parsed_data.render_content_line_number}
-                                        extra_methods_line_number={parsed_data.extra_methods_line_number}
-                                        draw_plot_line_number={parsed_data.draw_plot_line_number}
-                                        initial_line_number={window.line_number}
-                                        category={category}
-                                        extra_functions={parsed_data.extra_functions}
-                                        draw_plot_code={parsed_data.draw_plot_code}
-                                        jscript_code={parsed_data.jscript_code}
-                                        tags={split_tags}
-                                        notes={data.notes}
-                                        option_list={parsed_data.option_dict}
-                                        export_list={parsed_data.export_list}
-                                        created={data.datestring}
+                                            is_mpl={parsed_data.is_mpl}
+                                            is_d3={parsed_data.is_d3}
+                                            render_content_code={parsed_data.render_content_code}
+                                            render_content_line_number={parsed_data.render_content_line_number}
+                                            extra_methods_line_number={parsed_data.extra_methods_line_number}
+                                            draw_plot_line_number={parsed_data.draw_plot_line_number}
+                                            initial_line_number={window.line_number}
+                                            category={category}
+                                            extra_functions={parsed_data.extra_functions}
+                                            draw_plot_code={parsed_data.draw_plot_code}
+                                            jscript_code={parsed_data.jscript_code}
+                                            tags={split_tags}
+                                            notes={data.notes}
+                                            initial_theme={window.theme}
+                                            option_list={parsed_data.option_dict}
+                                            export_list={parsed_data.export_list}
+                                            created={data.datestring}
 
             />, domContainer);
         })
@@ -167,6 +168,7 @@ class CreatorApp extends React.Component {
             usable_width: awidth,
             old_usable_width: 0,
             usable_height: aheight,
+            dark_theme: this.props.initial_theme == "dark",
             body_height: bheight,
             top_pane_height: this.props.is_mpl || this.props.is_d3 ? aheight / 2 - 25 : null,
             bottom_pane_height: this.props.is_mpl || this.props.is_d3 ? aheight / 2 - 25 : null,
@@ -211,6 +213,13 @@ class CreatorApp extends React.Component {
             }
         }
         return bgs
+    }
+
+    _setTheme(dark_theme) {
+        this.setState({dark_theme: dark_theme}, ()=> {
+            this.props.setStatusTheme(dark_theme);
+            window.dark_theme = this.state.dark_theme
+        })
     }
 
     _showHistoryViewer () {
@@ -448,10 +457,12 @@ class CreatorApp extends React.Component {
         this.update_window_dimensions();
         this._update_saved_state();
         this.props.stopSpinner();
+        this.props.setStatusTheme(this.state.dark_theme)
         tsocket.socket.on('focus-me', (data)=>{
             window.focus();
             this._selectLineNumber(data.line_number)
-        })
+        });
+        window.dark_theme = this.state.dark_theme
     }
 
     componentDidUpdate() {
@@ -602,6 +613,7 @@ class CreatorApp extends React.Component {
                                      saveMe={this._saveAndCheckpoint}
                                      readOnly={false}
                                      setCMObject={this._setDpObject}
+                                     dark_theme={this.state.dark_theme}
                                      first_line_number={first_line_number}
                                      code_container_height={tc_height}
                     />
@@ -624,6 +636,7 @@ class CreatorApp extends React.Component {
                                  saveMe={this._saveAndCheckpoint}
                                  readOnly={false}
                                  setCMObject={this._setRcObject}
+                                 dark_theme={this.state.dark_theme}
                                  first_line_number={this.state.render_content_line_number + 1}
                                  code_container_height={rc_height}
                 />
@@ -692,16 +705,19 @@ class CreatorApp extends React.Component {
         );
         let methods_height = this.get_height_minus_top_offset(this.methods_ref, 128, 128);
         let methods_panel = (
-            <ReactCodemirror handleChange={this.handleMethodsChange}
-                             code_content={this.state.extra_functions}
-                             saveMe={this._saveAndCheckpoint}
-                             setCMObject={this._setEmObject}
-                             readOnly={false}
-                             code_container_ref={this.methods_ref}
-                             code_container_height={methods_height}
-                             first_line_number={this.state.extra_methods_line_number}
-                             refresh_required={this.state.methodsTabRefreshRequired}
-        />
+            <div style={{marginTop: 30}}>
+                <ReactCodemirror handleChange={this.handleMethodsChange}
+                                 code_content={this.state.extra_functions}
+                                 saveMe={this._saveAndCheckpoint}
+                                 setCMObject={this._setEmObject}
+                                 readOnly={false}
+                                 code_container_ref={this.methods_ref}
+                                 code_container_height={methods_height}
+                                 dark_theme={this.state.dark_theme}
+                                 first_line_number={this.state.extra_methods_line_number}
+                                 refresh_required={this.state.methodsTabRefreshRequired}/>
+             </div>
+
         );
         let right_pane = (
                 <React.Fragment>
@@ -717,14 +733,27 @@ class CreatorApp extends React.Component {
                 </React.Fragment>
         );
         let outer_style = {
-            width: this.state.usable_width,
+            width: "100%",
             height: this.state.usable_height,
             paddingLeft: SIDE_MARGIN
         };
+        let outer_class = "resource-viewer-holder"
+        if (this.state.dark_theme) {
+            outer_class = outer_class + " bp3-dark";
+        }
+        else {
+            outer_class = outer_class + " light-theme"
+        }
         return (
             <React.Fragment>
+                <TacticNavbar is_authenticated={window.is_authenticated}
+                              selected={null}
+                              show_api_links={true}
+                              dark_theme={this.state.dark_theme}
+                              set_parent_theme={this._setTheme}
+                              user_name={window.username}/>
                 <ResizeSensor onResize={this._handleResize} observeParents={true}>
-                    <div className="resource-viewer-holder" ref={this.top_ref} style={outer_style}>
+                    <div className={outer_class} ref={this.top_ref} style={outer_style}>
                         <HorizontalPanes left_pane={left_pane}
                                          right_pane={right_pane}
                                          show_handle={true}

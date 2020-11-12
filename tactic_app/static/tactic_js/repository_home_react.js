@@ -12,7 +12,6 @@ import { Tabs, Tab, Tooltip, Icon, Position } from "@blueprintjs/core";
 
 import { Toolbar } from "./blueprint_toolbar.js";
 import { TacticSocket } from "./tactic_socket.js";
-import { render_navbar } from "./blueprint_navbar.js";
 import { handleCallback } from "./communication_react.js";
 import { doFlash } from "./toaster.js";
 import { LibraryPane } from "./library_pane.js";
@@ -22,6 +21,7 @@ import { withStatus } from "./toaster.js";
 import { withErrorDrawer } from "./error_drawer.js";
 import { doBinding } from "./utilities_react.js";
 import { guid } from "./utilities_react";
+import { TacticNavbar } from "./blueprint_navbar";
 
 window.library_id = guid();
 window.page_id = window.library_id;
@@ -30,11 +30,10 @@ const MARGIN_SIZE = 17;
 let tsocket;
 
 function _repository_home_main() {
-    render_navbar("repository");
     tsocket = new LibraryTacticSocket("library", 5000);
     let RepositoryHomeAppPlus = withErrorDrawer(withStatus(RepositoryHomeApp, tsocket), tsocket);
     let domContainer = document.querySelector('#library-home-root');
-    ReactDOM.render(React.createElement(RepositoryHomeAppPlus, null), domContainer);
+    ReactDOM.render(React.createElement(RepositoryHomeAppPlus, { initial_theme: window.theme }), domContainer);
 }
 
 class LibraryTacticSocket extends TacticSocket {
@@ -60,12 +59,13 @@ class RepositoryHomeApp extends React.Component {
 
     constructor(props) {
         super(props);
-        let aheight = getUsableDimensions().usable_height_no_bottom;
-        let awidth = getUsableDimensions().usable_width - 170;
+        let aheight = getUsableDimensions(true).usable_height_no_bottom;
+        let awidth = getUsableDimensions(true).usable_width - 170;
         this.state = {
             selected_tab_id: "collections-pane",
             usable_width: awidth,
             usable_height: aheight,
+            dark_theme: props.initial_theme == "dark",
             pane_states: {}
         };
         for (let res_type of res_types) {
@@ -98,6 +98,8 @@ class RepositoryHomeApp extends React.Component {
         this.setState({ "mounted": true });
         this._update_window_dimensions();
         this.props.stopSpinner();
+        this.props.setStatusTheme(this.state.dark_theme);
+        window.dark_theme = this.state.dark_theme;
     }
 
     _updatePaneState(res_type, state_update, callback = null) {
@@ -118,6 +120,13 @@ class RepositoryHomeApp extends React.Component {
         this.setState({ usable_height: uheight, usable_width: uwidth });
     }
 
+    _setTheme(dark_theme) {
+        this.setState({ dark_theme: dark_theme }, () => {
+            this.props.setStatusTheme(dark_theme);
+            window.dark_theme = this.state.dark_theme;
+        });
+    }
+
     _handleTabChange(newTabId, prevTabId, event) {
         this.setState({ selected_tab_id: newTabId }, this._update_window_dimensions);
     }
@@ -135,6 +144,7 @@ class RepositoryHomeApp extends React.Component {
         }, this.state.pane_states["collection"], this.props.errorDrawerFuncs, {
             errorDrawerFuncs: this.props.errorDrawerFuncs,
             is_repository: true,
+            dark_theme: this.state.dark_theme,
             tsocket: tsocket }));
         let projects_pane = React.createElement(LibraryPane, _extends({ res_type: "project",
             allow_search_inside: false,
@@ -144,6 +154,7 @@ class RepositoryHomeApp extends React.Component {
         }, this.state.pane_states["project"], this.props.errorDrawerFuncs, {
             errorDrawerFuncs: this.props.errorDrawerFuncs,
             is_repository: true,
+            dark_theme: this.state.dark_theme,
             tsocket: tsocket }));
         let tiles_pane = React.createElement(LibraryPane, _extends({ res_type: "tile",
             allow_search_inside: true,
@@ -153,6 +164,7 @@ class RepositoryHomeApp extends React.Component {
         }, this.state.pane_states["tile"], this.props.errorDrawerFuncs, {
             errorDrawerFuncs: this.props.errorDrawerFuncs,
             is_repository: true,
+            dark_theme: this.state.dark_theme,
             tsocket: tsocket }));
         let lists_pane = React.createElement(LibraryPane, _extends({ res_type: "list",
             allow_search_inside: true,
@@ -162,6 +174,7 @@ class RepositoryHomeApp extends React.Component {
         }, this.state.pane_states["list"], this.props.errorDrawerFuncs, {
             errorDrawerFuncs: this.props.errorDrawerFuncs,
             is_repository: true,
+            dark_theme: this.state.dark_theme,
             tsocket: tsocket }));
         let code_pane = React.createElement(LibraryPane, _extends({ res_type: "code",
             allow_search_inside: true,
@@ -171,66 +184,83 @@ class RepositoryHomeApp extends React.Component {
         }, this.state.pane_states["code"], this.props.errorDrawerFuncs, {
             errorDrawerFuncs: this.props.errorDrawerFuncs,
             is_repository: true,
+            dark_theme: this.state.dark_theme,
             tsocket: tsocket }));
-        let outer_style = { width: this.state.usable_width,
+        let outer_style = { width: "100%",
             height: this.state.usable_height,
             paddingLeft: 0
         };
+        let outer_class = "pane-holder  ";
+        if (this.state.dark_theme) {
+            outer_class = outer_class + " bp3-dark";
+        } else {
+            outer_class = outer_class + " light-theme";
+        }
         return React.createElement(
             ViewerContext.Provider,
             { value: { readOnly: true } },
+            React.createElement(TacticNavbar, { is_authenticated: window.is_authenticated,
+                selected: null,
+                show_api_links: false,
+                dark_theme: this.state.dark_theme,
+                set_parent_theme: this._setTheme,
+                user_name: window.username }),
             React.createElement(
                 "div",
-                { id: "repository_container", className: "pane-holder", ref: this.top_ref, style: outer_style },
+                { id: "repository_container", className: outer_class, ref: this.top_ref, style: outer_style },
                 React.createElement(
-                    Tabs,
-                    { id: "the_container", style: { marginTop: 100 },
-                        selectedTabId: this.state.selected_tab_id,
-                        renderActiveTabPanelOnly: true,
-                        vertical: true, large: true, onChange: this._handleTabChange },
+                    "div",
+                    { style: { width: this.state.usable_width } },
                     React.createElement(
-                        Tab,
-                        { id: "collections-pane", panel: collection_pane },
+                        Tabs,
+                        { id: "the_container", style: { marginTop: 100 },
+                            selectedTabId: this.state.selected_tab_id,
+                            renderActiveTabPanelOnly: true,
+                            vertical: true, large: true, onChange: this._handleTabChange },
                         React.createElement(
-                            Tooltip,
-                            { content: "Collections", position: Position.RIGHT },
-                            React.createElement(Icon, { icon: "box", iconSize: 20, tabIndex: -1, color: this.getIconColor("collections-pane") })
-                        )
-                    ),
-                    React.createElement(
-                        Tab,
-                        { id: "projects-pane", panel: projects_pane },
+                            Tab,
+                            { id: "collections-pane", panel: collection_pane },
+                            React.createElement(
+                                Tooltip,
+                                { content: "Collections", position: Position.RIGHT },
+                                React.createElement(Icon, { icon: "box", iconSize: 20, tabIndex: -1, color: this.getIconColor("collections-pane") })
+                            )
+                        ),
                         React.createElement(
-                            Tooltip,
-                            { content: "Projects", position: Position.RIGHT },
-                            React.createElement(Icon, { icon: "projects", iconSize: 20, tabIndex: -1, color: this.getIconColor("projects-pane") })
-                        )
-                    ),
-                    React.createElement(
-                        Tab,
-                        { id: "tiles-pane", panel: tiles_pane },
+                            Tab,
+                            { id: "projects-pane", panel: projects_pane },
+                            React.createElement(
+                                Tooltip,
+                                { content: "Projects", position: Position.RIGHT },
+                                React.createElement(Icon, { icon: "projects", iconSize: 20, tabIndex: -1, color: this.getIconColor("projects-pane") })
+                            )
+                        ),
                         React.createElement(
-                            Tooltip,
-                            { content: "Tiles", position: Position.RIGHT },
-                            React.createElement(Icon, { icon: "application", iconSize: 20, tabIndex: -1, color: this.getIconColor("tiles-pane") })
-                        )
-                    ),
-                    React.createElement(
-                        Tab,
-                        { id: "lists-pane", panel: lists_pane },
+                            Tab,
+                            { id: "tiles-pane", panel: tiles_pane },
+                            React.createElement(
+                                Tooltip,
+                                { content: "Tiles", position: Position.RIGHT },
+                                React.createElement(Icon, { icon: "application", iconSize: 20, tabIndex: -1, color: this.getIconColor("tiles-pane") })
+                            )
+                        ),
                         React.createElement(
-                            Tooltip,
-                            { content: "Lists", position: Position.RIGHT },
-                            React.createElement(Icon, { icon: "list", iconSize: 20, tabIndex: -1, color: this.getIconColor("lists-pane") })
-                        )
-                    ),
-                    React.createElement(
-                        Tab,
-                        { id: "code-pane", panel: code_pane },
+                            Tab,
+                            { id: "lists-pane", panel: lists_pane },
+                            React.createElement(
+                                Tooltip,
+                                { content: "Lists", position: Position.RIGHT },
+                                React.createElement(Icon, { icon: "list", iconSize: 20, tabIndex: -1, color: this.getIconColor("lists-pane") })
+                            )
+                        ),
                         React.createElement(
-                            Tooltip,
-                            { content: "Code", position: Position.RIGHT },
-                            React.createElement(Icon, { icon: "code", tabIndex: -1, color: this.getIconColor("code-pane") })
+                            Tab,
+                            { id: "code-pane", panel: code_pane },
+                            React.createElement(
+                                Tooltip,
+                                { content: "Code", position: Position.RIGHT },
+                                React.createElement(Icon, { icon: "code", tabIndex: -1, color: this.getIconColor("code-pane") })
+                            )
                         )
                     )
                 )

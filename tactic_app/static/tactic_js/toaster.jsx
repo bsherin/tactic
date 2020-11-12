@@ -48,7 +48,7 @@ function withStatus(WrappedComponent, tsocket=null) {
             this.state = {
                 show_spinner: false,
                 status_message: null,
-                dark_spinner: false,
+                dark_theme: false,
                 spinner_size: this.props.spinner_size ? this.props.spinner_size : 25
             }
         }
@@ -99,6 +99,10 @@ function withStatus(WrappedComponent, tsocket=null) {
             this.setState(sstate)
         }
 
+        _setStatusTheme(dark_theme) {
+            this.setState({dark_theme: dark_theme})
+        }
+
         _statusFuncs() {
             return {
                 startSpinner: this._startSpinner,
@@ -106,7 +110,8 @@ function withStatus(WrappedComponent, tsocket=null) {
                 clearStatus: this._clearStatus,
                 clearStatusMessage: this._clearStatusMessage,
                 statusMessage: this._statusMessage,
-                setStatus: this._setStatus
+                setStatus: this._setStatus,
+                setStatusTheme: this._setStatusTheme
             }
         }
 
@@ -121,6 +126,7 @@ function withStatus(WrappedComponent, tsocket=null) {
                                       clearStatusMessage={this._clearStatus}
                                       statusMessage={this._statusMessage}
                                       setStatus={this._setStatus}
+                                      setStatusTheme={this._setStatusTheme}
                     />
                     <Status {...this.state}/>
                 </React.Fragment>
@@ -132,16 +138,25 @@ function withStatus(WrappedComponent, tsocket=null) {
 class Status extends React.Component {
 
     render () {
-        let cname = this.props.dark_spinner ? "bp3-dark" : "";
+        let cname = "d-flex flex-row"
+        let outer_cname
+        if (this.props.dark_theme) {
+            outer_cname = "status-holder bp3-dark"
+        }
+        else {
+            outer_cname = "status-holder light-theme"
+        }
         return (
-            <div className="d-flex flex-row" style={{position: "absolute", bottom: 10, marginLeft: 15}}>
-                {this.props.show_spinner &&
-                    <Spinner className="bp3-dark" size={20} />}
-                {this.props.status_message &&
-                    <div className="d-flex flex-column justify-content-around" style={{positoin: "absolute", marginLeft: 50}}>
-                        <div id="status-msg-area" className="bp3-ui-text">{this.props.status_message}</div>
-                    </div>
-                }
+            <div style={{height: "100%", width: "100%"}} className={outer_cname}>
+                <div className={cname} style={{position: "absolute", bottom: 10, marginLeft: 15}}>
+                    {this.props.show_spinner &&
+                        <Spinner size={20} />}
+                    {this.props.status_message &&
+                        <div className="d-flex flex-column justify-content-around" style={{positoin: "absolute", marginLeft: 50}}>
+                            <div id="status-msg-area" className="bp3-ui-text">{this.props.status_message}</div>
+                        </div>
+                    }
+                </div>
             </div>
         )
     }
@@ -150,10 +165,12 @@ Status.propTypes = {
     show_spinner: PropTypes.bool,
     status_message: PropTypes.string,
     spinner_size: PropTypes.number,
+    dark_theme: PropTypes.bool
 };
 
 Status.defaultProps = {
     show_spinner: false,
     status_message: null,
     spinner_size: 25,
+    dark_theme: false
 };

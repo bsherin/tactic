@@ -12,7 +12,6 @@ import {Regions} from "@blueprintjs/table";
 import {showModalReact} from "./modal_react.js";
 import {Toolbar} from "./blueprint_toolbar.js"
 import {TacticSocket} from "./tactic_socket.js"
-import {render_navbar} from "./blueprint_navbar.js";
 import {handleCallback, postAjaxPromise, postAjaxUploadPromise, postWithCallbackNoMain} from "./communication_react.js"
 import {doFlash} from "./toaster.js"
 import {ViewerContext} from "./resource_viewer_context.js";
@@ -23,19 +22,20 @@ import {withStatus} from "./toaster.js";
 import {withErrorDrawer} from "./error_drawer.js";
 import {KeyTrap} from "./key_trap.js";
 import {doBinding, guid} from "./utilities_react.js";
+import {TacticNavbar} from "./blueprint_navbar";
 
 window.library_id = guid();
 window.page_id = window.library_id;
+window.main_id = window.library_id;
 const MARGIN_SIZE = 17;
 
 let tsocket;
 
 function _library_home_main () {
-    render_navbar("library");
     tsocket = new LibraryTacticSocket("library", 5000);
     let LibraryHomeAppPlus = withErrorDrawer(withStatus(LibraryHomeApp, tsocket), tsocket);
     let domContainer = document.querySelector('#library-home-root');
-    ReactDOM.render(<LibraryHomeAppPlus/>, domContainer)
+    ReactDOM.render(<LibraryHomeAppPlus initial_theme={window.theme}/>, domContainer)
 }
 
 class LibraryTacticSocket extends TacticSocket {
@@ -62,12 +62,13 @@ class LibraryHomeApp extends React.Component {
 
     constructor(props) {
         super(props);
-        let aheight = getUsableDimensions().usable_height_no_bottom;
-        let awidth = getUsableDimensions().usable_width - 170;
+        let aheight = getUsableDimensions(true).usable_height_no_bottom;
+        let awidth = getUsableDimensions(true).usable_width - 170;
         this.state = {
             selected_tab_id: "collections-pane",
             usable_width: awidth,
             usable_height: aheight,
+            dark_theme: props.initial_theme == "dark",
             pane_states: {},
         };
         for (let res_type of res_types) {
@@ -98,6 +99,8 @@ class LibraryHomeApp extends React.Component {
         this.setState({"mounted": true});
         this._update_window_dimensions();
         this.props.stopSpinner()
+        this.props.setStatusTheme(this.state.dark_theme);
+        window.dark_theme = this.state.dark_theme
     }
 
     _updatePaneState (res_type, state_update, callback=null) {
@@ -117,6 +120,13 @@ class LibraryHomeApp extends React.Component {
             uheight = uheight - USUAL_TOOLBAR_HEIGHT
         }
         this.setState({usable_height: uheight, usable_width: uwidth})
+    }
+
+    _setTheme(dark_theme) {
+        this.setState({dark_theme: dark_theme}, ()=> {
+            this.props.setStatusTheme(dark_theme)
+            window.dark_theme = dark_theme
+        })
     }
 
     // This mechanism in _handleTabChange necessary in order to force the pane to change
@@ -158,6 +168,7 @@ class LibraryHomeApp extends React.Component {
                                      {...this.state.pane_states["collection"]}
                                      {...this.props.errorDrawerFuncs}
                                      errorDrawerFuncs={this.props.errorDrawerFuncs}
+                                     dark_theme={this.state.dark_theme}
                                      tsocket={tsocket}/>
         );
         let projects_pane = (<LibraryPane {...this.props}
@@ -168,6 +179,7 @@ class LibraryHomeApp extends React.Component {
                                           updatePaneState={this._updatePaneState}
                                           {...this.props.errorDrawerFuncs}
                                           {...this.state.pane_states["project"]}
+                                          dark_theme={this.state.dark_theme}
                                           tsocket={tsocket}/>
         );
         let tiles_pane = (<LibraryPane {...this.props}
@@ -180,6 +192,7 @@ class LibraryHomeApp extends React.Component {
                                        {...this.state.pane_states["tile"]}
                                        tsocket={tsocket}
                                        aux_pane_title="loaded tile list"
+                                       dark_theme={this.state.dark_theme}
                                        aux_pane={tile_widget}/>
         );
         let lists_pane = (<LibraryPane {...this.props}
@@ -190,6 +203,7 @@ class LibraryHomeApp extends React.Component {
                                        {...this.props.errorDrawerFuncs}
                                        updatePaneState={this._updatePaneState}
                                        {...this.state.pane_states["list"]}
+                                        dark_theme={this.state.dark_theme}
                                        tsocket={tsocket}/>
         );
         let code_pane = (<LibraryPane {...this.props}
@@ -200,46 +214,62 @@ class LibraryHomeApp extends React.Component {
                                       {...this.props.errorDrawerFuncs}
                                       updatePaneState={this._updatePaneState}
                                       {...this.state.pane_states["code"]}
+                                      dark_theme={this.state.dark_theme}
                                       socket={tsocket}/>
         );
-        let outer_style = {width: this.state.usable_width,
+        let outer_style = {width: "100%",
             height: this.state.usable_height,
             paddingLeft: 0
         };
+        let outer_class = "pane-holder  "
+        if (this.state.dark_theme) {
+            outer_class = outer_class + " bp3-dark";
+        }
+        else {
+            outer_class = outer_class + " light-theme";
+        }
         let key_bindings = [[["tab"], this._goToNextPane], [["shift+tab"], this._goToPreviousPane]];
         return (
             <ViewerContext.Provider value={{readOnly: false}}>
-                <div className="pane-holder" ref={this.top_ref} style={outer_style}>
-                    <Tabs id="the_container" style={{marginTop: 100, height: "100%"}}
-                             selectedTabId={this.state.selected_tab_id}
-                             renderActiveTabPanelOnly={true}
-                             vertical={true} large={true} onChange={this._handleTabChange}>
-                        <Tab id="collections-pane" panel={collection_pane}>
-                            <Tooltip content="Collections" position={Position.RIGHT} intent="warning">
-                                <Icon icon="database" iconSize={20} tabIndex={-1} color={this.getIconColor("collections-pane")}/>
-                            </Tooltip>
-                        </Tab>
-                        <Tab id="projects-pane" panel={projects_pane}>
-                            <Tooltip content="Projects" position={Position.RIGHT} intent="warning">
-                                <Icon icon="projects" iconSize={20} tabIndex={-1} color={this.getIconColor("projects-pane")}/>
-                            </Tooltip>
-                        </Tab>
-                        <Tab id="tiles-pane" panel={tiles_pane}>
-                            <Tooltip content="Tiles" position={Position.RIGHT} intent="warning">
-                                <Icon icon="application" iconSize={20} tabIndex={-1} color={this.getIconColor("tiles-pane")}/>
-                            </Tooltip>
-                        </Tab>
-                        <Tab id="lists-pane" panel={lists_pane}>
-                            <Tooltip content="Lists" position={Position.RIGHT} intent="warning">
-                                <Icon icon="list" iconSize={20} tabIndex={-1} color={this.getIconColor("lists-pane")}/>
-                            </Tooltip>
-                        </Tab>
-                        <Tab id="code-pane" panel={code_pane}>
-                            <Tooltip content="Code" position={Position.RIGHT} intent="warning">
-                                <Icon icon="code" iconSize={20} tabIndex={-1} color={this.getIconColor("code-pane")}/>
-                            </Tooltip>
-                        </Tab>
-                    </Tabs>
+                <TacticNavbar is_authenticated={window.is_authenticated}
+                          selected={null}
+                          show_api_links={false}
+                          dark_theme={this.state.dark_theme}
+                          set_parent_theme={this._setTheme}
+                          user_name={window.username}/>
+                <div className={outer_class} ref={this.top_ref} style={outer_style}>
+                    <div style={{width: this.state.usable_width}}>
+                        <Tabs id="the_container" style={{marginTop: 100, height: "100%"}}
+                                 selectedTabId={this.state.selected_tab_id}
+                                 renderActiveTabPanelOnly={true}
+                                 vertical={true} large={true} onChange={this._handleTabChange}>
+                            <Tab id="collections-pane" panel={collection_pane}>
+                                <Tooltip content="Collections" position={Position.RIGHT} intent="warning">
+                                    <Icon icon="database" iconSize={20} tabIndex={-1} color={this.getIconColor("collections-pane")}/>
+                                </Tooltip>
+                            </Tab>
+                            <Tab id="projects-pane" panel={projects_pane}>
+                                <Tooltip content="Projects" position={Position.RIGHT} intent="warning">
+                                    <Icon icon="projects" iconSize={20} tabIndex={-1} color={this.getIconColor("projects-pane")}/>
+                                </Tooltip>
+                            </Tab>
+                            <Tab id="tiles-pane" panel={tiles_pane}>
+                                <Tooltip content="Tiles" position={Position.RIGHT} intent="warning">
+                                    <Icon icon="application" iconSize={20} tabIndex={-1} color={this.getIconColor("tiles-pane")}/>
+                                </Tooltip>
+                            </Tab>
+                            <Tab id="lists-pane" panel={lists_pane}>
+                                <Tooltip content="Lists" position={Position.RIGHT} intent="warning">
+                                    <Icon icon="list" iconSize={20} tabIndex={-1} color={this.getIconColor("lists-pane")}/>
+                                </Tooltip>
+                            </Tab>
+                            <Tab id="code-pane" panel={code_pane}>
+                                <Tooltip content="Code" position={Position.RIGHT} intent="warning">
+                                    <Icon icon="code" iconSize={20} tabIndex={-1} color={this.getIconColor("code-pane")}/>
+                                </Tooltip>
+                            </Tab>
+                        </Tabs>
+                    </div>
                 </div>
                 <KeyTrap global={true} bindings={key_bindings} />
             </ViewerContext.Provider>
@@ -407,11 +437,12 @@ class CollectionToolbar extends React.Component {
                         doFlash(data);
                     }
                 });
-            })
+            }, null, null, null, null)
         }
         else {
             $.getJSON(`${$SCRIPT_ROOT}get_resource_names/collection`, function (data) {
-                showModalReact("Combine Collections", "Name for combined collection", CreateCombinedCollection, "NewCollection", data["resource_names"])
+                showModalReact("Combine Collections", "Name for combined collection",
+                    CreateCombinedCollection, "NewCollection", data["resource_names"])
             });
         }
 

@@ -117,11 +117,14 @@ class ProjectManager(LibraryResourceManager):
                      "temp_data_id": "",
                      "collection_name": "",
                      "doc_names": [],
+                     "theme": user_obj.get_theme(),
+
                      "short_collection_name": "",
                      "is_table": (doc_type == "table"),
                      "is_notebook": (doc_type == 'notebook' or doc_type == 'jupyter'),
                      "is_freeform": (doc_type == 'freeform'),
                      "is_jupyter":  (doc_type == 'jupyter'),
+                     "dark_theme_name": user_obj.get_preferred_dark_theme(),
                      "base_figure_url": url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                      "uses_codemirror": "True",
                      "version_string": tstring}

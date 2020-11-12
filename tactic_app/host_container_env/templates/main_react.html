@@ -12,7 +12,7 @@
 {% block page_content %}
     <div id="modal-area">
     </div>
-    <div id="main-root">
+    <div id="main-root" style="height: 100%">
 
     </div>
     <canvas id="measure-canvas" style="display:none"></canvas>
@@ -29,6 +29,7 @@
     <script>
         window.user_id = "{{current_user.get_id()}}";
         window.short_collection_name = "{{short_collection_name}}";
+        window.theme="{{theme}}"
         window._collection_name = "{{collection_name}}";
         window._project_name = "{{project_name}}";
         window.base_figure_url = "{{base_figure_url}}";

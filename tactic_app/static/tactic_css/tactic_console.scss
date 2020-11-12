@@ -1,7 +1,6 @@
 
 @import "blueprint_variables.scss";
-
-$console-panel-border-style: 1px solid #c7c7c7;
+//
 
 $log-panel-border-style: 1px solid #c7c7c7;
 $log-panel-font-color: #616161;
@@ -51,7 +50,6 @@ body {
     display: flex;
     justify-content: space-between;
     padding: 2px 2px 2px 2px;
-    background-color: $light-gray4 !important;
     border-bottom: 1px solid #10161a26;
     height: 32px;
 
@@ -68,8 +66,8 @@ body {
 .console-text {
     padding: 10px;
     display: inline-block;
-    background-color: $light-gray5 !important;
-    border: $console-panel-border-style !important;
+
+    //border: $console-panel-border-style !important;
     width: 100%;
 }
 
@@ -95,7 +93,16 @@ body {
     }
 
     border: 1px solid #c7c7c7
+
+
 }
+
+//.bp3-dark {
+//    .text-panel-output {
+//        background-color: $dark-de-accent-bg-color;
+//        color: $dark-text-color
+//    }
+//}
 
 .execution-counter {
         padding-right: 17px;
@@ -146,18 +153,6 @@ body {
     .console-sorter {
         padding-top: 6px;
         display: flex;
-    }
-
-    .CodeMirror {
-        border: $console-panel-border-style !important;
-    }
-
-    .CodeMirror-lines {
-        background-color: $light-gray5 !important;
-    }
-
-    .CodeMirror-gutters {
-        background-color: $light-gray5;
     }
 
 
@@ -323,14 +318,12 @@ body {
     font-size: 14px;
     line-height: 30px;
     font-weight: 400;
-    color: #5c7080
 }
 
 #exports-heading {
     display: flex;
     justify-content: flex-start;
     padding: 2px 2px 2px 2px;
-    background-color: $light-gray4 !important;
     border-bottom: 1px solid #10161a26;
     height: 32px;
 
@@ -343,7 +336,6 @@ body {
     display: flex;
     justify-content: flex-start;
     padding: 2px 2px 2px 2px;
-    background-color: $light-gray4 !important;
     border-top: 1px solid #10161a26;
     height: 23px;
 
@@ -430,11 +422,9 @@ body {
 }
 
 .export-header-text {
-    color: #6c757d;
     text-align: left;
     font-size: 14px
 }
-
 
 button.notclose {
     -webkit-appearance: none;

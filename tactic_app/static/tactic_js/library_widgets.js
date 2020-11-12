@@ -81,6 +81,7 @@ class LibraryOmnibar extends React.Component {
 
     render() {
         return React.createElement(Omnibar, { items: this.state.items,
+            className: window.dark_theme ? "bp3-dark" : "",
             isOpen: this.props.showOmnibar,
             onItemSelect: this.props.onItemSelect,
             itemRenderer: this._itemRenderer,
@@ -96,7 +97,12 @@ LibraryOmnibar.propTypes = {
     res_type: PropTypes.string,
     onItemSelect: PropTypes.func,
     showOmnibar: PropTypes.bool,
-    handleClose: PropTypes.func
+    handleClose: PropTypes.func,
+    dark_theme: PropTypes.bool
+};
+
+LibraryOmnibar.propTypes = {
+    dark_theme: false
 };
 
 class SearchForm extends React.Component {
