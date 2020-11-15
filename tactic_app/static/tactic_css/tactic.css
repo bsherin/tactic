@@ -897,7 +897,7 @@ pre code {
 /*
  * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
  */
-.light-theme.resource-viewer-holder {
+.light-theme.resource-viewer-holder, .light-theme.merge-viewer-outer .light-theme.login-body {
   background-color: white; }
 .light-theme.account-settings {
   background-color: white; }
@@ -933,12 +933,9 @@ pre code {
   background-color: #f6f8fa;
   border-bottom: 1px solid #10161a26; }
   .light-theme .tile-panel-heading.tile-source-changed {
-    background-color: #ffb366 !important; }
+    background-color: #d1f26d !important; }
 .light-theme .tile-panel {
   background-color: white !important; }
-  .light-theme .tile-panel.tile-source-changed {
-    background-color: #f7d66b80;
-    border: 2px solid #f7d66b80 !important; }
 .light-theme #console, .light-theme #exports-panel {
   background-color: white; }
 .light-theme .console-text {
@@ -966,7 +963,7 @@ pre code {
 .light-theme .account-pane {
   background-color: #ebf1f5; }
 
-.bp3-dark.resource-viewer-holder {
+.bp3-dark.resource-viewer-holder, .bp3-dark.merge-viewer-outer, .bp3-dark.login-body {
   background-color: #30404d; }
 .bp3-dark.account-settings {
   background-color: #30404d; }
@@ -998,12 +995,9 @@ pre code {
   background-color: #293742;
   border-bottom: 1px solid #10161a26; }
   .bp3-dark .tile-panel-heading.tile-source-changed {
-    background-color: #ffb366 !important; }
+    background-color: #728c23 !important; }
 .bp3-dark .tile-panel {
   background-color: #30404d !important; }
-  .bp3-dark .tile-panel.tile-source-changed {
-    background-color: #f7d66b80;
-    border: 2px solid #f7d66b80 !important; }
 .bp3-dark #console, .bp3-dark #exports {
   background-color: #30404d; }
 .bp3-dark #console-heading, .bp3-dark #exports-heading, .bp3-dark #exports-footing {
@@ -1019,11 +1013,19 @@ pre code {
   color: #ced9e0; }
 .bp3-dark .account-pane {
   background-color: #394b59; }
+.bp3-dark .CodeMirror-merge-gap {
+  background: #5c7080; }
+.bp3-dark .CodeMirror-merge-r-chunk {
+  background: #30404d; }
+.bp3-dark .CodeMirror-merge-r-connect {
+  fill: #30404d; }
 
 .status-holder.light-theme {
   background-color: white; }
 .status-holder.bp3-dark {
-  background-color: #5c7080; }
+  background-color: #30404d; }
+  .status-holder.bp3-dark.light-dark {
+    background-color: #5c7080; }
 
 #main-root .status-holder.light-theme {
   background-color: #ced9e0; }
@@ -1049,7 +1051,7 @@ table caption {
   background-color: #f9f9f9; }
 
 .code-container {
-  padding-bottom: 25px; }
+  padding-bottom: 0px; }
 
 /* General resources */
 /* navbar */

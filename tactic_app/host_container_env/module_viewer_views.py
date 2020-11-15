@@ -66,6 +66,7 @@ def checkpoint_to_recent():
 @app.route('/show_history_viewer/<module_name>', methods=['get', 'post'])
 @login_required
 def show_history_viewer(module_name):
+    user_obj = current_user
     javascript_source = url_for('static', filename=js_source_dict["history_viewer_react"])
     return render_template("library/resource_viewer_react.html",
                            resource_name=module_name,
@@ -90,6 +91,7 @@ def get_api_dict():
 @app.route('/show_tile_differ/both_names/<module_name>/<second_module_name>')
 @login_required
 def show_tile_differ(module_name, second_module_name):
+    user_obj = current_user
     javascript_source = url_for('static', filename=js_source_dict["tile_differ_react"])
     return render_template("library/resource_viewer_react.html",
                            resource_name=module_name,

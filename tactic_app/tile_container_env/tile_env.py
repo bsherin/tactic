@@ -27,6 +27,7 @@ from document_object import Collection
 from library_object import Library
 from remote_tile_object import Tiles
 from remote_tile_object import Pipes
+from settings_object import Settings
 
 
 def global_import(imp):

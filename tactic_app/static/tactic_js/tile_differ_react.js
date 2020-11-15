@@ -8,16 +8,16 @@ import PropTypes from 'prop-types';
 
 import { MergeViewerSocket, MergeViewerApp } from "./merge_viewer_app.js";
 import { doFlash } from "./toaster.js";
-import { render_navbar } from "./blueprint_navbar.js";
 import { postAjaxPromise } from "./communication_react.js";
 import { withErrorDrawer } from "./error_drawer.js";
 import { withStatus } from "./toaster.js";
-import { guid } from "./utilities_react.js";
+import { doBinding, guid } from "./utilities_react.js";
+import { TacticNavbar } from "./blueprint_navbar";
 
 window.resource_viewer_id = guid();
+window.main_id = window.resource_viewer_id;
 
 function tile_differ_main() {
-    render_navbar();
     let get_url = "get_module_code";
     var tsocket = new MergeViewerSocket("main", 5000);
     let TileDifferAppPlus = withErrorDrawer(withStatus(TileDifferApp, tsocket), tsocket);
@@ -29,6 +29,7 @@ function tile_differ_main() {
             ReactDOM.render(React.createElement(TileDifferAppPlus, { resource_name: window.resource_name,
                 tile_list: tile_list,
                 edit_content: edit_content,
+                initial_theme: window.theme,
                 second_resource_name: window.second_resource_name
             }), domContainer);
         }).catch(doFlash);
@@ -39,6 +40,7 @@ class TileDifferApp extends React.Component {
 
     constructor(props) {
         super(props);
+        doBinding(this);
         let self = this;
         window.onbeforeunload = function (e) {
             if (self.dirty()) {
@@ -50,12 +52,24 @@ class TileDifferApp extends React.Component {
             "edit_content": props.edit_content,
             "right_content": "",
             "tile_popup_val": props.second_resource_name == "none" ? props.resource_name : props.second_resource_name,
-            "tile_list": props.tile_list
+            "tile_list": props.tile_list,
+            dark_theme: this.props.initial_theme == "dark"
         };
         this.handleEditChange = this.handleEditChange.bind(this);
         this.handleSelectChange = this.handleSelectChange.bind(this);
         this.saveFromLeft = this.saveFromLeft.bind(this);
         this.savedContent = props.edit_content;
+    }
+    componentDidMount() {
+        this.props.setStatusTheme(this.state.dark_theme);
+        window.dark_theme = this.state.dark_theme;
+    }
+
+    _setTheme(dark_theme) {
+        this.setState({ dark_theme: dark_theme }, () => {
+            this.props.setStatusTheme(dark_theme);
+            window.dark_theme = this.state.dark_theme;
+        });
     }
 
     handleSelectChange(new_value) {
@@ -71,16 +85,27 @@ class TileDifferApp extends React.Component {
     }
 
     render() {
-        return React.createElement(MergeViewerApp, _extends({}, this.props.statusFuncs, {
-            resource_name: this.props.resource_name,
-            option_list: this.state.tile_list,
-            select_val: this.state.tile_popup_val,
-            edit_content: this.state.edit_content,
-            right_content: this.state.right_content,
-            handleSelectChange: this.handleSelectChange,
-            handleEditChange: this.handleEditChange,
-            saveHandler: this.saveFromLeft
-        }));
+        return React.createElement(
+            React.Fragment,
+            null,
+            React.createElement(TacticNavbar, { is_authenticated: window.is_authenticated,
+                selected: null,
+                show_api_links: true,
+                dark_theme: this.state.dark_theme,
+                set_parent_theme: this._setTheme,
+                user_name: window.username }),
+            React.createElement(MergeViewerApp, _extends({}, this.props.statusFuncs, {
+                resource_name: this.props.resource_name,
+                option_list: this.state.tile_list,
+                select_val: this.state.tile_popup_val,
+                edit_content: this.state.edit_content,
+                right_content: this.state.right_content,
+                handleSelectChange: this.handleSelectChange,
+                handleEditChange: this.handleEditChange,
+                dark_theme: this.state.dark_theme,
+                saveHandler: this.saveFromLeft
+            }))
+        );
     }
 
     saveFromLeft() {

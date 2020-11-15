@@ -78,7 +78,7 @@ class MergeViewerApp extends React.Component {
     }
 
     render() {
-        let toolbar_holder_style = {"marginTop": 20, paddingLeft: 50};
+        let toolbar_holder_style = {"paddingTop": 20, paddingLeft: 50};
         let new_ld_height;
         let max_merge_height;
         [new_ld_height, max_merge_height] = this.get_new_heights(40);
@@ -89,9 +89,16 @@ class MergeViewerApp extends React.Component {
             paddingRight: 25
 
         };
+        let outer_class = "merge-viewer-outer"
+        if (this.props.dark_theme) {
+            outer_class = outer_class + " bp3-dark";
+        }
+        else {
+            outer_class = outer_class + " light-theme"
+        }
         let current_style = {"bottom": 0};
         return (
-            <React.Fragment>
+            <div className={outer_class}>
                 <div style={toolbar_holder_style}>
                     <Toolbar button_groups={this.button_groups}/>
                 </div>
@@ -108,11 +115,12 @@ class MergeViewerApp extends React.Component {
                                               right_content={this.props.right_content}
                                               saveMe={this.props.saveHandler}
                                               max_height={max_merge_height}
+                                              dark_theme={this.props.dark_theme}
                                               ref={this.merge_element_ref}
 
                     />
                 </div>
-            </React.Fragment>
+            </div>
         )
     }
 }
@@ -125,5 +133,6 @@ MergeViewerApp.propTypes = {
     right_content: PropTypes.string,
     handleSelectChange: PropTypes.func,
     handleEditChange: PropTypes.func,
-    saveHandler: PropTypes.func
+    saveHandler: PropTypes.func,
+    dark_theme: PropTypes.bool
 };

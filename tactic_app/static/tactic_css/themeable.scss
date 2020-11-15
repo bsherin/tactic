@@ -8,7 +8,7 @@ $dark-table-border-style: $table-border-thickness solid;
 
 
 .light-theme {
-    &.resource-viewer-holder {
+    &.resource-viewer-holder, &.merge-viewer-outer &.login-body {
       background-color: white
     }
 
@@ -78,15 +78,15 @@ $dark-table-border-style: $table-border-thickness solid;
         background-color: #f6f8fa;
         border-bottom: 1px solid #10161a26;
         &.tile-source-changed {
-            background-color: $orange5 !important
+            background-color: $lime5 !important
         }
     }
     .tile-panel {
         background-color: white !important;
-        &.tile-source-changed {
-            background-color: #f7d66b80;
-            border: 2px solid #f7d66b80 !important;
-        }
+        //&.tile-source-changed {
+        //    background-color: #f7d66b80;
+        //    border: 2px solid #f7d66b80 !important;
+        //}
     }
 
     #console, #exports-panel {
@@ -145,7 +145,7 @@ $dark-table-border-style: $table-border-thickness solid;
 
 
 .bp3-dark {
-    &.resource-viewer-holder {
+    &.resource-viewer-holder, &.merge-viewer-outer, &.login-body {
       background-color: $dark-gray4
     }
 
@@ -204,16 +204,16 @@ $dark-table-border-style: $table-border-thickness solid;
         background-color: $dark-gray3;
         border-bottom: 1px solid #10161a26;
         &.tile-source-changed {
-            background-color: $orange5 !important
+            background-color: $lime1 !important
         }
     }
 
     .tile-panel {
         background-color: $dark-gray4 !important;
-        &.tile-source-changed {
-            background-color: #f7d66b80;
-            border: 2px solid #f7d66b80 !important;
-        }
+        //&.tile-source-changed {
+        //    background-color: #f7d66b80;
+        //    border: 2px solid #f7d66b80 !important;
+        //}
     }
 
     #console, #exports {
@@ -242,6 +242,15 @@ $dark-table-border-style: $table-border-thickness solid;
     .account-pane {
         background-color: $dark-gray5;
     }
+    .CodeMirror-merge-gap {
+        background: $gray1;
+    }
+    .CodeMirror-merge-r-chunk {
+        background: $dark-gray4;
+    }
+    .CodeMirror-merge-r-connect {
+        fill: $dark-gray4;
+    }
 }
 
 
@@ -251,7 +260,10 @@ $dark-table-border-style: $table-border-thickness solid;
       }
 
     &.bp3-dark {
-          background-color: $gray1;
+        background-color: $dark-gray4;
+        &.light-dark{
+            background-color: $gray1;
+        }
       }
 }
 

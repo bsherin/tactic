@@ -34,7 +34,7 @@ class AccountTextField extends React.Component {
             <FormGroup key={this.props.name}
                           inline={false}
                           style={{padding: 10}}
-                          label={this.props.name}
+                          label={this.props.display_text}
                           helperText={this.props.helper_text}>
                             <InputGroup type="text"
                                            onChange={(event)=>this.props.onFieldChange(this.props.name, event.target.value, false)}
@@ -62,7 +62,7 @@ class AccountSelectField extends React.Component {
             <FormGroup key={this.props.name}
                        inline={false}
                        style={{padding: 10}}
-                       label={this.props.name}
+                       label={this.props.display_text}
                        helperText={this.props.helper_text}>
                 <HTMLSelect options={this.props.options}
                             onChange={(e)=>{this.props.onFieldChange(this.props.name, e.currentTarget.value, true)}}
@@ -210,28 +210,36 @@ class AccountApp extends React.Component {
     }
     
     _getFieldItems() {
-        let items = [];
+        let info_items = [];
+        let setting_items = [];
         for (let fdict of this.state.fields) {
-            if (fdict.kind == "text") {
-                items.push(
+            let new_item;
+            if (fdict.type == "text") {
+                new_item = (
                     <AccountTextField name={fdict.name}
                                       value={fdict.val}
+                                      display_text={fdict.display_text}
                                       helper_text={fdict.helper_text}
                                       onBlur={this._submitUpdatedField}
                                       onFieldChange={this._onFieldChange}/>)
             }
             else {
-                items.push (
+                new_item = (
                     <AccountSelectField name={fdict.name}
                                         value={fdict.val}
+                                        display_text={fdict.display_text}
                                         options={fdict.options}
                                         helper_text={fdict.helper_text}
-                                         onFieldChange={this._onFieldChange}/>)
-
-
+                                        onFieldChange={this._onFieldChange}/>)
+            }
+            if (fdict.info_type == "info") {
+                info_items.push(new_item)
+            }
+            else {
+                setting_items.push(new_item)
             }
         }
-        return items
+        return [info_items, setting_items]
     }
 
     render () {
@@ -254,10 +262,18 @@ class AccountApp extends React.Component {
                               set_parent_theme={this._setTheme}
                               user_name={window.username}/>
                 <div className={outer_class}>
-                    <div className="account-pane bp3-card">
-                        {field_items}
+                    <div style={{display: "flex", "flex-direction": "column"}}>
+                        <div className="account-pane bp3-card">
+                            <h6>User Info</h6>
+                            {field_items[0]}
+                        </div>
+                        <div className="account-pane bp3-card">
+                            <h6>User Settings</h6>
+                            {field_items[1]}
+                        </div>
                     </div>
                     <div className="account-pane bp3-card">
+                        <h6>Change Password</h6>
                         <AccountTextField name="password"
                                       value={this.state.password}
                                       helper_text={this.state.password_helper}

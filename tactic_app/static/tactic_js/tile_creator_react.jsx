@@ -17,13 +17,12 @@ import {ReactCodemirror} from "./react-codemirror.js";
 import {CombinedMetadata} from "./blueprint_mdata_fields.js";
 import {OptionModule, ExportModule} from "./creator_modules_react.js";
 import {HorizontalPanes, VerticalPanes} from "./resizing_layouts.js";
-import {handleCallback, postAjax, postAjaxPromise, postWithCallback, postAsyncFalse} from "./communication_react.js"
+import {handleCallback, postAjax, postAjaxPromise, postWithCallback} from "./communication_react.js"
 import {withStatus, doFlash} from "./toaster.js"
 import {getUsableDimensions, SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT} from "./sizing_tools.js";
 import {withErrorDrawer} from "./error_drawer.js";
-import {doBinding, guid} from "./utilities_react.js"
+import {doBinding} from "./utilities_react.js"
 import {TacticNavbar} from "./blueprint_navbar";
-import {ViewerContext} from "./resource_viewer_context";
 
 const BOTTOM_MARGIN = 50;
 const MARGIN_SIZE = 17;
@@ -381,7 +380,7 @@ class CreatorApp extends React.Component {
         let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
         let uheight = window.innerHeight - BOTTOM_MARGIN;
         if (this.top_ref && this.top_ref.current) {
-            uheight = uheight - this.top_ref.current.offsetTop;
+            uheight = window.innerHeight - BOTTOM_MARGIN - this.top_ref.current.offsetTop;
         }
         else {
             uheight = uheight - USUAL_TOOLBAR_HEIGHT
