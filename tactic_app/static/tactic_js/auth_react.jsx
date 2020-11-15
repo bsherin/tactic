@@ -7,19 +7,19 @@ import * as ReactDOM from 'react-dom'
 import { FormGroup, InputGroup, Button } from "@blueprintjs/core";
 
 
-import {render_navbar} from "./blueprint_navbar.js";
 import {doFlash, withStatus} from "./toaster.js"
 import {postAjax} from "./communication_react.js";
 import {doBinding, guid} from "./utilities_react.js";
+import {TacticNavbar, get_theme_cookie, set_theme_cookie} from "./blueprint_navbar";
 
 window.page_id = guid();
 
 function _login_main() {
-    render_navbar("login");
     if (window._show_message) doFlash(window._message);
     let domContainer = document.querySelector('#root');
     ReactDOM.render(<LoginAppWithStatus/>, domContainer)
 }
+
 
 class LoginApp extends React.Component {
     constructor(props) {
@@ -30,12 +30,22 @@ class LoginApp extends React.Component {
             password: null,
             username_warning_text: "",
             password_warning_text: "",
+            dark_theme: get_theme_cookie() == "dark"
         };
         this.input_ref = null
     }
 
     componentDidMount() {
         $(this.input_ref).focus()
+        this.props.setStatusTheme(this.state.dark_theme);
+        window.dark_theme = this.state.dark_theme
+    }
+
+    _setTheme(dark_theme) {
+        this.setState({dark_theme: dark_theme}, ()=> {
+            this.props.setStatusTheme(dark_theme);
+            window.dark_theme = this.state.dark_theme
+        })
     }
 
     _onUsernameChange(event) {
@@ -80,10 +90,22 @@ class LoginApp extends React.Component {
     }
 
     render () {
-
+        let outer_class = "login-body d-flex flex-column justify-content-center"
+        if (this.state.dark_theme) {
+            outer_class = outer_class + " bp3-dark";
+        }
+        else {
+            outer_class = outer_class + " light-theme"
+        }
         return (
             <React.Fragment>
-                <div className="d-flex flex-column justify-content-center" style={{textAlign:"center", height: "100%"}}>
+                <TacticNavbar is_authenticated={window.is_authenticated}
+                              selected={null}
+                              show_api_links={false}
+                              dark_theme={this.state.dark_theme}
+                              set_parent_theme={this._setTheme}
+                              user_name={window.username}/>
+                <div className={outer_class} style={{textAlign:"center", height: "100%"}}>
                     <div id="status-area"></div>
                     <div className="d-flex flex-row justify-content-around">
                         <img className="mb-4"

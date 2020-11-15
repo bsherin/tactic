@@ -10,7 +10,7 @@ import { MenuComponent } from "./main_menus_react.js";
 import { doBinding, doSignOut } from "./utilities_react.js";
 import { postWithCallback } from "./communication_react";
 
-export { render_navbar, TacticNavbar };
+export { render_navbar, TacticNavbar, get_theme_cookie, set_theme_cookie };
 
 let library_url = $SCRIPT_ROOT + '/library';
 let repository_url = $SCRIPT_ROOT + '/repository';
@@ -18,6 +18,19 @@ let account_url = $SCRIPT_ROOT + '/account_info';
 let login_url = $SCRIPT_ROOT + "/login";
 
 const padding = 10;
+
+function get_theme_cookie() {
+    let cookie_str = document.cookie.split('; ').find(row => row.startsWith('tactic_theme'));
+    if (cookie_str == undefined) {
+        set_theme_cookie("light");
+        return "light";
+    }
+    return cookie_str.split('=')[1];
+}
+
+function set_theme_cookie(theme) {
+    document.cookie = "tactic_theme=" + theme;
+}
 
 class TacticNavbar extends React.Component {
 
@@ -84,11 +97,16 @@ class TacticNavbar extends React.Component {
         }
     }
     _setTheme(event) {
-        const result_dict = {
-            "user_id": window.user_id,
-            "theme": event.target.checked ? "dark" : "light"
-        };
-        postWithCallback("host", "set_user_theme", result_dict, null, null);
+        if (window.user_id == undefined) {
+            let theme = event.target.checked ? "dark" : "light";
+            set_theme_cookie(theme);
+        } else {
+            const result_dict = {
+                "user_id": window.user_id,
+                "theme": event.target.checked ? "dark" : "light"
+            };
+            postWithCallback("host", "set_user_theme", result_dict, null, null);
+        }
         if (this.props.set_parent_theme) {
             this.props.set_parent_theme(event.target.checked);
         }

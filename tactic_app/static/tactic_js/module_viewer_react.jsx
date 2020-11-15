@@ -83,7 +83,7 @@ class ModuleViewerApp extends React.Component {
             }
         });
 
-        let aheight = getUsableDimensions().usable_height;
+        let aheight = window.innerHeight - BOTTOM_MARGIN - USUAL_TOOLBAR_HEIGHT;
         let awidth = getUsableDimensions().usable_width;
         this.state = {
             code_content: props.the_content,
@@ -105,13 +105,7 @@ class ModuleViewerApp extends React.Component {
 
     _update_window_dimensions() {
         let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
-        let uheight = window.innerHeight - BOTTOM_MARGIN;
-        if (this.top_ref && this.top_ref.current) {
-            uheight = uheight - this.top_ref.current.offsetTop;
-        }
-        else {
-            uheight = uheight - USUAL_TOOLBAR_HEIGHT
-        }
+        let uheight = window.innerHeight - BOTTOM_MARGIN - USUAL_TOOLBAR_HEIGHT;
         this.setState({usable_height: uheight, usable_width: uwidth})
     }
 
@@ -162,7 +156,8 @@ class ModuleViewerApp extends React.Component {
         for (let entry of entries) {
             if (entry.target.id == "root") {
                 this.setState({usable_width: entry.contentRect.width,
-                    usable_height: entry.contentRect.height - BOTTOM_MARGIN - entry.target.getBoundingClientRect().top
+                    // usable_height: entry.contentRect.height - BOTTOM_MARGIN - entry.target.getBoundingClientRect().top
+                    usable_height: window.innerHeight - BOTTOM_MARGIN - USUAL_TOOLBAR_HEIGHT
                 });
                 return
             }
@@ -178,7 +173,7 @@ class ModuleViewerApp extends React.Component {
 
     get_new_cc_height () {
         if (this.cc_ref && this.cc_ref.current) {  // This will be true after the initial render
-            return this.state.usable_height - this.cc_ref.current.offsetTop
+            return window.innerHeight - BOTTOM_MARGIN - this.cc_ref.current.offsetTop
         }
         else {
             return this.state.usable_height - 100
@@ -189,7 +184,7 @@ class ModuleViewerApp extends React.Component {
         let the_context = {"readOnly": this.props.readOnly};
         let outer_style = {width: "100%",
             height: this.state.usable_height,
-            paddingLeft: SIDE_MARGIN
+            paddingLeft: SIDE_MARGIN,
         };
         let cc_height = this.get_new_cc_height();
         let outer_class = "resource-viewer-holder"

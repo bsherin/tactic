@@ -28,6 +28,7 @@ from tile_base import clear_and_exec_user_code, TileBase
 from pseudo_tile_base import PseudoTileClass
 import pseudo_tile_base
 import library_object
+import settings_object
 import gevent
 from communication_utils import make_python_object_jsonizable, emit_direct
 import uuid
@@ -240,6 +241,7 @@ class TileWorker(QWorker):
             pseudo_tile_base.Tiles = remote_tile_object.Tiles
             pseudo_tile_base.Pipes = remote_tile_object.Pipes
         pseudo_tile_base.Library = library_object.Library
+        pseudo_tile_base.Settings = settings_object.Settings
         return data
 
     @task_worthy
@@ -298,6 +300,7 @@ if __name__ == "__main__":
     tile_base._tworker = TileWorker()
     document_object._tworker = tile_base._tworker
     library_object._tworker = tile_base._tworker
+    settings_object._tworker = tile_base._tworker
     remote_tile_object._tworker = tile_base._tworker
 
     print("tworker is created, about to start my_id is " + str(tile_base._tworker.my_id))

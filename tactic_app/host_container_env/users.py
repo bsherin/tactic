@@ -14,9 +14,7 @@ from exception_mixin import generic_exception_handler
 from werkzeug.security import generate_password_hash, check_password_hash
 from mongo_accesser import MongoAccess
 
-user_data_fields = ["username", "email", "full_name", "favorite_dumpling", "tzoffset", "theme", "preferred_dark_theme"]
-default_dark_theme = "nord"
-possible_dark_themes = ["material", "nord", "oceanic-next", "pastel-on-dark"]
+from user_fields import user_data_fields
 
 
 def put_docs_in_collection(collection_name, dict_list):
@@ -64,11 +62,12 @@ class User(UserMixin, MongoAccess):
         self.username = ""  # This is just to be make introspection happy
         self.db = db  # This is to make mongoaccesser work
         self.fs = fs  # This is to make mongoaccesser work
-        for key in user_data_fields:
+        for fdict in user_data_fields:
+            key = fdict["name"]
             if key in user_dict:
                 setattr(self, key, user_dict[key])
             else:
-                setattr(self, key, "")
+                setattr(self, key, fdict["default"])
         self.password_hash = user_dict["password_hash"]
 
     def is_authenticated(self):
@@ -134,7 +133,8 @@ class User(UserMixin, MongoAccess):
     @property
     def user_data_dict(self):
         result = OrderedDict()
-        for key in user_data_fields:
+        for fdict in user_data_fields:
+            key = fdict["name"]
             if hasattr(self, key):
                 result[key] = getattr(self, key)
             else:
@@ -181,8 +181,7 @@ class User(UserMixin, MongoAccess):
         password_hash = generate_password_hash(password)
         new_user_dict = {"username": username,
                          "password_hash": password_hash,
-                         "email": "",
-                         "preferred_dark_theme": default_dark_theme}
+                         "email": ""}
         db.user_collection.insert_one(new_user_dict)
         return {"success": True, "message": "", "username": username}
 

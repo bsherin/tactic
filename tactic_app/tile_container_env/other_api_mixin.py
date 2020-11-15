@@ -52,6 +52,12 @@ class OtherAPIMIxin:
         self._restore_stdout()
         return result["log_text"]
 
+    def get_user_settings(self):
+        self._save_stdout()
+        result = self._tworker.post_and_wait("host", "get_user_settings", {"user_id": self.user_id})
+        self._restore_stdout()
+        return result["settings"]
+
     # noinspection PyPackageRequirements
     def create_bokeh_html(self, the_plot):
         from bokeh.embed import file_html

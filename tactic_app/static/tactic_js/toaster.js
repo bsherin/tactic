@@ -40,7 +40,7 @@ function doFlashAlways(data) {
     doFlash(data);
 }
 
-function withStatus(WrappedComponent, tsocket = null) {
+function withStatus(WrappedComponent, tsocket = null, light_dark = false) {
     return class extends React.Component {
         constructor(props) {
             super(props);
@@ -50,6 +50,7 @@ function withStatus(WrappedComponent, tsocket = null) {
                 show_spinner: false,
                 status_message: null,
                 dark_theme: false,
+                light_dark: light_dark,
                 spinner_size: this.props.spinner_size ? this.props.spinner_size : 25
             };
         }
@@ -143,6 +144,9 @@ class Status extends React.Component {
         let outer_cname;
         if (this.props.dark_theme) {
             outer_cname = "status-holder bp3-dark";
+            if (this.props.light_dark) {
+                outer_cname += " light-dark";
+            }
         } else {
             outer_cname = "status-holder light-theme";
         }

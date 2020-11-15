@@ -86,7 +86,7 @@ function _after_main_joined() {
 }
 
 function _finish_post_load(data) {
-    let MainAppPlus = withErrorDrawer(withStatus(MainApp, tsocket), tsocket);
+    let MainAppPlus = withErrorDrawer(withStatus(MainApp, tsocket, true), tsocket);
     var interface_state;
     if (window.is_project) {
         window._collection_name = data.collection_name;

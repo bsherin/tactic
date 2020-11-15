@@ -2,8 +2,11 @@
 
 import PropTypes from 'prop-types';
 import React from "react";
+import {ReactCodemirror} from "./react-codemirror";
 
 export {ReactCodemirrorMergeView}
+
+const DARK_THEME = window.dark_theme_name;
 
 class ReactCodemirrorMergeView extends React.Component {
 
@@ -12,6 +15,7 @@ class ReactCodemirrorMergeView extends React.Component {
         this.code_container_ref = React.createRef();
         this.handleChange = this.handleChange.bind(this);
         this.mousetrap = new Mousetrap();
+        this.saved_theme = null;
     }
 
     createMergeArea(codearea) {
@@ -22,6 +26,7 @@ class ReactCodemirrorMergeView extends React.Component {
             highlightSelectionMatches: true,
             autoCloseBrackets: true,
             indentUnit: 4,
+            theme: this.props.dark_theme ? DARK_THEME : "default",
             origRight: this.props.right_content
         });
 
@@ -54,6 +59,17 @@ class ReactCodemirrorMergeView extends React.Component {
     }
 
     componentDidUpdate() {
+        if (this.props.dark_theme != this.saved_theme) {
+            if (this.props.dark_theme) {
+                this.cmobject.editor().setOption("theme", DARK_THEME);
+                this.cmobject.rightOriginal().setOption("theme", DARK_THEME)
+            }
+            else {
+                this.cmobject.editor().setOption("theme", "default");
+                this.cmobject.rightOriginal().setOption("theme", "default")
+            }
+            this.saved_theme = this.props.dark_theme
+        }
         if (this.cmobject.editor().getValue() != this.props.editor_content) {
             this.cmobject.editor().setValue(this.props.editor_content)
         }
@@ -65,7 +81,8 @@ class ReactCodemirrorMergeView extends React.Component {
         this.cmobject = this.createMergeArea(this.code_container_ref.current);
         this.resizeHeights(this.props.max_height);
         this.refreshAreas();
-        this.create_keymap()
+        this.create_keymap();
+        this.saved_theme = this.props.dark_theme
     }
 
     handleChange(cm, changeObject) {
@@ -157,6 +174,11 @@ ReactCodemirrorMergeView.propTypes = {
     handleEditChange: PropTypes.func,
     editor_content: PropTypes.string,
     right_content: PropTypes.string,
+    dark_theme: PropTypes.bool,
     saveMe: PropTypes.func,
     max_height: PropTypes.number
+};
+
+ReactCodemirror.defaultProps = {
+    dark_theme: false,
 };

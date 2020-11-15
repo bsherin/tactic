@@ -10,17 +10,17 @@ import PropTypes from 'prop-types';
 
 import {MergeViewerSocket, MergeViewerApp} from "./merge_viewer_app.js";
 import {doFlash} from "./toaster.js"
-import {render_navbar} from "./blueprint_navbar.js";
 import {postAjax, postAjaxPromise} from "./communication_react.js"
 import {withErrorDrawer} from "./error_drawer.js";
 import {withStatus} from "./toaster.js";
 
-import {guid} from "./utilities_react.js";
+import {doBinding, guid} from "./utilities_react.js";
+import {TacticNavbar} from "./blueprint_navbar";
 
 window.resource_viewer_id = guid();
+window.main_id = window.resource_viewer_id;
 
 function history_viewer_main ()  {
-    render_navbar();
     let get_url = "get_module_code";
     var tsocket = new MergeViewerSocket("main", 5000);
     let HistoryViewerAppPlus = withErrorDrawer(withStatus(HistoryViewerApp, tsocket), tsocket);
@@ -32,7 +32,8 @@ function history_viewer_main ()  {
                     let history_list = data.checkpoints;
                     let domContainer = document.querySelector('#root');
                     ReactDOM.render(<HistoryViewerAppPlus resource_name={window.resource_name}
-                                                      history_list={history_list}
+                                                          history_list={history_list}
+                                                          initial_theme={window.theme}
                                                       edit_content={edit_content}/>, domContainer);
                 })
                 .catch(doFlash)
@@ -46,6 +47,7 @@ class HistoryViewerApp extends React.Component {
 
     constructor(props) {
         super(props);
+        doBinding(this);
         let self = this;
         window.onbeforeunload = function(e) {
             if (self.dirty()) {
@@ -58,11 +60,23 @@ class HistoryViewerApp extends React.Component {
             "right_content": "",
             "history_popup_val": props.history_list[0]["updatestring"],
             "history_list": props.history_list,
+            dark_theme: this.props.initial_theme == "dark"
         };
         this.handleEditChange = this.handleEditChange.bind(this);
         this.handleSelectChange = this.handleSelectChange.bind(this);
         this.checkpointThenSaveFromLeft = this.checkpointThenSaveFromLeft.bind(this);
         this.savedContent = props.edit_content
+    }
+    componentDidMount() {
+        this.props.setStatusTheme(this.state.dark_theme);
+        window.dark_theme = this.state.dark_theme
+    }
+
+    _setTheme(dark_theme) {
+        this.setState({dark_theme: dark_theme}, ()=> {
+            this.props.setStatusTheme(dark_theme);
+            window.dark_theme = this.state.dark_theme
+        })
     }
 
     handleSelectChange(new_value) {
@@ -88,16 +102,25 @@ class HistoryViewerApp extends React.Component {
     render() {
         let option_list = this.state.history_list.map((item) => item["updatestring"]);
         return (
-            <MergeViewerApp {...this.props.statusFuncs}
-                            resource_name={this.props.resource_name}
-                            option_list={option_list}
-                            select_val={this.state.history_popup_val}
-                            edit_content={this.state.edit_content}
-                            right_content={this.state.right_content}
-                            handleSelectChange={this.handleSelectChange}
-                            handleEditChange={this.handleEditChange}
-                            saveHandler={this.checkpointThenSaveFromLeft}
+            <React.Fragment>
+                <TacticNavbar is_authenticated={window.is_authenticated}
+                                  selected={null}
+                                  show_api_links={true}
+                                  dark_theme={this.state.dark_theme}
+                                  set_parent_theme={this._setTheme}
+                                  user_name={window.username}/>
+                <MergeViewerApp {...this.props.statusFuncs}
+                                resource_name={this.props.resource_name}
+                                option_list={option_list}
+                                select_val={this.state.history_popup_val}
+                                edit_content={this.state.edit_content}
+                                right_content={this.state.right_content}
+                                handleSelectChange={this.handleSelectChange}
+                                handleEditChange={this.handleEditChange}
+                                dark_theme={this.state.dark_theme}
+                                saveHandler={this.checkpointThenSaveFromLeft}
             />
+            </React.Fragment>
         )
     }
 

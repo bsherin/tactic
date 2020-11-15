@@ -74,7 +74,7 @@ function _after_main_joined() {
 }
 
 function _finish_post_load(data) {
-    let NotebookAppPlus = withStatus(NotebookApp, tsocket);
+    let NotebookAppPlus = withStatus(NotebookApp, tsocket, true);
     var interface_state;
     if (window.is_project || window.opening_from_temp_id) {
         interface_state = data.interface_state
@@ -146,7 +146,7 @@ class NotebookApp extends React.Component {
     _update_window_dimensions() {
         this.setState({
             "usable_width": window.innerWidth - 2 * MARGIN_SIZE,
-            "usable_height": window.innerHeight - BOTTOM_MARGIN
+            "usable_height": window.innerHeight - BOTTOM_MARGIN - USUAL_TOOLBAR_HEIGHT
         });
     }
 

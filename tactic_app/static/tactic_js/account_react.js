@@ -35,7 +35,7 @@ class AccountTextField extends React.Component {
             { key: this.props.name,
                 inline: false,
                 style: { padding: 10 },
-                label: this.props.name,
+                label: this.props.display_text,
                 helperText: this.props.helper_text },
             React.createElement(InputGroup, { type: "text",
                 onChange: event => this.props.onFieldChange(this.props.name, event.target.value, false),
@@ -63,7 +63,7 @@ class AccountSelectField extends React.Component {
             { key: this.props.name,
                 inline: false,
                 style: { padding: 10 },
-                label: this.props.name,
+                label: this.props.display_text,
                 helperText: this.props.helper_text },
             React.createElement(HTMLSelect, { options: this.props.options,
                 onChange: e => {
@@ -207,23 +207,32 @@ class AccountApp extends React.Component {
     }
 
     _getFieldItems() {
-        let items = [];
+        let info_items = [];
+        let setting_items = [];
         for (let fdict of this.state.fields) {
-            if (fdict.kind == "text") {
-                items.push(React.createElement(AccountTextField, { name: fdict.name,
+            let new_item;
+            if (fdict.type == "text") {
+                new_item = React.createElement(AccountTextField, { name: fdict.name,
                     value: fdict.val,
+                    display_text: fdict.display_text,
                     helper_text: fdict.helper_text,
                     onBlur: this._submitUpdatedField,
-                    onFieldChange: this._onFieldChange }));
+                    onFieldChange: this._onFieldChange });
             } else {
-                items.push(React.createElement(AccountSelectField, { name: fdict.name,
+                new_item = React.createElement(AccountSelectField, { name: fdict.name,
                     value: fdict.val,
+                    display_text: fdict.display_text,
                     options: fdict.options,
                     helper_text: fdict.helper_text,
-                    onFieldChange: this._onFieldChange }));
+                    onFieldChange: this._onFieldChange });
+            }
+            if (fdict.info_type == "info") {
+                info_items.push(new_item);
+            } else {
+                setting_items.push(new_item);
             }
         }
-        return items;
+        return [info_items, setting_items];
     }
 
     render() {
@@ -249,12 +258,36 @@ class AccountApp extends React.Component {
                 { className: outer_class },
                 React.createElement(
                     "div",
-                    { className: "account-pane bp3-card" },
-                    field_items
+                    { style: { display: "flex", "flex-direction": "column" } },
+                    React.createElement(
+                        "div",
+                        { className: "account-pane bp3-card" },
+                        React.createElement(
+                            "h6",
+                            null,
+                            "User Info"
+                        ),
+                        field_items[0]
+                    ),
+                    React.createElement(
+                        "div",
+                        { className: "account-pane bp3-card" },
+                        React.createElement(
+                            "h6",
+                            null,
+                            "User Settings"
+                        ),
+                        field_items[1]
+                    )
                 ),
                 React.createElement(
                     "div",
                     { className: "account-pane bp3-card" },
+                    React.createElement(
+                        "h6",
+                        null,
+                        "Change Password"
+                    ),
                     React.createElement(AccountTextField, { name: "password",
                         value: this.state.password,
                         helper_text: this.state.password_helper,

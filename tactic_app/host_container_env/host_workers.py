@@ -2,7 +2,7 @@ from qworker import QWorker, task_worthy, task_worthy_manual_submit, current_tim
 from flask import render_template, url_for
 from flask_login import current_user
 import json
-from users import load_user, ModuleNotFoundError
+from users import load_user, ModuleNotFoundError, user_data_fields
 import gevent
 import pika
 from communication_utils import make_python_object_jsonizable, store_temp_data, read_temp_data, delete_temp_data
@@ -107,6 +107,19 @@ class HostWorker(QWorker):
         user_obj = load_user(user_id)
         print("got user_obj")
         return user_obj.update_account({"theme": data["theme"]})
+
+    @task_worthy
+    def get_user_settings(self, data):
+        user_id = data["user_id"]
+        user_obj = load_user(user_id)
+        user_data = user_obj.user_data_dict
+        setting_dict = {}
+        for fdict in user_data_fields:
+            if not fdict["editable"]:
+                continue
+            if fdict["info_type"] == "setting":
+                setting_dict[fdict["name"]] = user_data[fdict["name"]]
+        return {"settings": setting_dict}
 
     @task_worthy_manual_submit
     def update_code_task(self, data_dict, task_packet):

@@ -74,6 +74,7 @@ class MplFigure(Figure):
     def __init__(self, **kwargs):
         # self.ppi = self._tworker.ppi
         self.use_svg = self._tworker.use_svg
+        self.user_set_facecolor = False
         if "figsize" not in kwargs:
             kwargs["figsize"] = (self.width / PPI, self.height / PPI)
         Figure.__init__(self, **kwargs)
@@ -100,12 +101,12 @@ class MplFigure(Figure):
         FigureCanvas(self)  # This does seem to be necessary or savefig won't work.
         if use_svg:
             img_file = io.StringIO()
-            self.savefig(img_file, format="svg")
+            self.savefig(img_file, format="svg", facecolor=self.get_facecolor())
             img_file.seek(0)
             the_html = img_file.read()
         else:
             img_file = io.BytesIO()
-            self.savefig(img_file)
+            self.savefig(img_file, facecolor=self.get_facecolor())
             img_file.seek(0)
             figname = str(uuid.uuid4())
             self.img_dict[figname] = img_file.getvalue()
@@ -119,12 +120,12 @@ class MplFigure(Figure):
         self._tworker.use_svg = use_svg
         if use_svg:
             img_file = io.StringIO()
-            plt.savefig(img_file, format="svg")
+            self.savefig(img_file, format="svg", facecolor=self.get_facecolor())
             img_file.seek(0)
             the_html = img_file.read()
         else:
             img_file = io.BytesIO()
-            plt.savefig(img_file)
+            self.savefig(img_file, facecolor=self.get_facecolor())
             img_file.seek(0)
             figname = str(uuid.uuid4())
             self.img_dict[figname] = img_file.getvalue()

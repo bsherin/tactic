@@ -192,7 +192,7 @@ class PseudoTileClass(TileBase, MplFigure):
         user_globals = []
         for attr in attrs:
             try:
-                if attr in self._saved_globals or attr == "Library":
+                if attr in self._saved_globals or attr == "Library" or attr == "Settings":
                     continue
                 attr_val = globals()[attr]
                 if isinstance(attr_val, types.ModuleType):

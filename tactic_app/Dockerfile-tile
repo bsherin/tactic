@@ -5,5 +5,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN apt-get update && apt-get -y install default-jre
 RUN wget http://mallet.cs.umass.edu/dist/mallet-2.0.8.tar.gz && mkdir -p /opt/mallet && tar -xvzf mallet-2.0.8.tar.gz -C /opt/mallet --strip-components=1 && rm -f mallet-2.0.8.tar.gz
 ADD  ./tile_container_env ./volume_manager.py ./exception_mixin.py ./redis_tools.py ./qworker.py ./communication_utils.py /code/
+ADD ./tactic_dark.mplstyle /usr/local/lib/python3.7/site-packages/matplotlib/mpl-data/stylelib/
 # RUN pip install pydevd-pycharm~=201.6668.115
 CMD ["python", "-u", "tile_main.py"]
