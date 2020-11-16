@@ -121,7 +121,7 @@ class OtherAPIMIxin:
 
     def html_table(self, data, title=None, click_type="word-clickable", sortable=True,
                    sidebyside=False, has_header=True, max_rows=None, header_style=None, body_style=None,
-                   column_order=None, include_row_labels=True):
+                   column_order=None, include_row_labels=True, outer_border=False):
         self._save_stdout()
         show_header = has_header
         if isinstance(data, list) and (isinstance(data[0], TacticRow) or isinstance(data[0], DetachedTacticRow)):
@@ -168,20 +168,22 @@ class OtherAPIMIxin:
             dlist = data
         self._restore_stdout()
         return self.build_html_table_from_data_list(dlist, title, click_type, sortable, sidebyside,
-                                                    show_header, header_style, body_style)
+                                                    show_header, header_style, body_style, outer_border)
 
     def bht(self, data_list, title=None, click_type="word-clickable",
-            sortable=True, sidebyside=False, has_header=True, header_style=None, body_style=None):
+            sortable=True, sidebyside=False, has_header=True, header_style=None, body_style=None, outer_border=False):
         return self.build_html_table_from_data_list(data_list, title, click_type,
                                                     sortable, sidebyside, has_header,
                                                     header_style, body_style)
 
     def build_html_table_from_data_list(self, data_list, title=None, click_type="word-clickable",
                                         sortable=True, sidebyside=False, has_header=True,
-                                        header_style=None, body_style=None):
+                                        header_style=None, body_style=None, outer_border=False):
         self._save_stdout()
         # base_class_string = "tile-table table table-striped table-bordered table-sm"
-        base_class_string = "bp3-html-table bp3-html-table-bordered bp3-html-table-condensed bp3-html-table-striped bp3-small"
+        base_class_string = "bp3-html-table bp3-html-table-bordered bp3-html-table-condensed bp3-html-table-striped bp3-small html-table"
+        if outer_border:
+            base_class_string += " html-table-bordered"
         if header_style is None:
             hstyle = "{}"
         else:
