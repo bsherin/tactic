@@ -148,9 +148,6 @@ class TacticNavbar extends React.Component {
                 window.open(repository_url);
             }
         }, {
-            // icon: "moon", text: "Theme", intent: this.getIntent("theme"),
-            //     onClick: this._toggleTheme
-            // }, {
             icon: "person", text: this.props.user_name, intent: this.getIntent("account"),
             onClick: () => {
                 window.open(account_url);

@@ -1051,7 +1051,7 @@ table caption {
   background-color: #f9f9f9; }
 
 .code-container {
-  padding-bottom: 0px; }
+  padding-bottom: 0; }
 
 /* General resources */
 /* navbar */
@@ -1110,6 +1110,11 @@ table caption {
 
 .monospace {
   font-family: monospace; }
+
+.html-table {
+  margin-bottom: 10px; }
+  .html-table.html-table-bordered {
+    border: 1px solid rgba(16, 22, 26, 0.15); }
 
 .bp3-icon path {
   fill: inherit; }

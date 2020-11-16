@@ -38,7 +38,7 @@ table {
 }
 
 .code-container {
-    padding-bottom: 0px
+    padding-bottom: 0
 }
 
 /* General resources */
@@ -135,10 +135,18 @@ table {
     font-family: monospace
 }
 
+.html-table {
+    margin-bottom: 10px;
+    &.html-table-bordered {
+        border: 1px solid rgba(16, 22, 26, .15);
+    }
+}
+
 
 // This below is necessary to intercept a problem
 // with pyLDAvis where it would make buttons disappear
 .bp3-icon path {
+    //noinspection CssInvalidPropertyValue
     fill: inherit
 }
 

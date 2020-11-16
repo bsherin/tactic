@@ -120,12 +120,12 @@ class MplFigure(Figure):
         self._tworker.use_svg = use_svg
         if use_svg:
             img_file = io.StringIO()
-            self.savefig(img_file, format="svg", facecolor=self.get_facecolor())
+            plt.gcf().savefig(img_file, format="svg", facecolor=self.get_facecolor())
             img_file.seek(0)
             the_html = img_file.read()
         else:
             img_file = io.BytesIO()
-            self.savefig(img_file, facecolor=self.get_facecolor())
+            plt.gcf().savefig(img_file, facecolor=self.get_facecolor())
             img_file.seek(0)
             figname = str(uuid.uuid4())
             self.img_dict[figname] = img_file.getvalue()
