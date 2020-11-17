@@ -732,17 +732,13 @@ class RawConsoleCodeItem extends React.Component {
         super(props);
         doBinding(this, "_", RawConsoleCodeItem.prototype);
         this.cmobject = null;
-        this.update_props = ["am_shrunk", "set_focus", "summary_text", "console_text", "show_spinner", "execution_count", "output_text", "console_available_width"];
+        this.update_props = ["am_shrunk", "set_focus", "summary_text", "console_text", "show_spinner", "execution_count", "output_text", "console_available_width", "dark_theme"];
         this.update_state_vars = [];
         this.state = {};
         this.last_output_text = "";
-        this.saved_theme = null;
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        if (this.props.dark_theme != this.saved_theme) {
-            return true;
-        }
         for (let prop of this.update_props) {
             if (nextProps[prop] != this.props[prop]) {
                 return true;
@@ -782,7 +778,6 @@ class RawConsoleCodeItem extends React.Component {
             }
             this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false);
         }
-        this.saved_theme = this.props.theme;
     }
 
     executeEmbeddedScripts() {
