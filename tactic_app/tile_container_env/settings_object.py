@@ -14,8 +14,9 @@ class TacticSettings:
         settings = self._tinst.get_user_settings()
         return settings[name]
 
+    @property
     def names(self):
-        self._tinst.get_user_settings().keys()
+        return list(self._tinst.get_user_settings().keys())
 
 
 Settings = TacticSettings()

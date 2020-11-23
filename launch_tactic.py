@@ -55,6 +55,7 @@ def create_megaplex():
             _unique_id, _megaplex_id = create_container("rabbitmq:3-management",
                                                         container_name="megaplex",
                                                         host_name="megaplex",
+                                                        restart_policy=restart_policy,
                                                         port_bindings={5672: 5672, 15672: 15672},
                                                         register_container=False)
         else:
@@ -142,6 +143,7 @@ def create_host(port=5000, debug=False):
                                                        port_bindings={5000: port},
                                                        env_vars=env_vars,
                                                        special_unique_id="host",
+                                                       restart_policy=restart_policy,
                                                        local_true_host_persist_dir=host_persist_dir,
                                                        local_true_host_resources_dir=host_resources_dir,
                                                        register_container=False)
@@ -159,6 +161,7 @@ def create_tile_test_container():
                                                                   container_name="tile_test_container",
                                                                   special_unique_id="tile_test_container",
                                                                   register_container=False,
+                                                                  restart_policy=restart_policy,
                                                                   other_name="test_container",
                                                                   env_vars=env_vars)
     except ContainerCreateError:
