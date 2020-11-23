@@ -7,6 +7,7 @@ Tactic Text
    :caption: Using Tactic
 
    Getting-Started
+   Account-Interface
    Library-Interface
    Uploading-Data
    Main-interface

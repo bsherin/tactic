@@ -159,7 +159,6 @@ mark,
   background-color: #fcf8e3; }
 
 code {
-  font-size: 87.5%;
   color: #e83e8c;
   word-break: break-word; }
 
@@ -167,8 +166,7 @@ a > code {
   color: inherit; }
 
 pre {
-  display: block;
-  font-size: 87.5%; }
+  display: block; }
 
 pre code {
   font-size: inherit;

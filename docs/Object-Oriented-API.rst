@@ -578,3 +578,26 @@ The Library Object
         Returns the the name of the code resource containing the function.
 
 .. category_end
+
+.. category_start
+
+The Settings Object
+-------------------
+
+    This class provides easy access to user's account-level settings.
+
+
+.. py:class:: Settings()
+
+    ``Pipes`` returns a :py:class:`TacticSettings` object
+
+    .. code-block:: python
+
+        Settings.names  # Returns the keys for all of the settings
+        Settings["theme"]  # Returns the value of the setting "theme"
+
+    .. py:attribute:: names
+
+        Returns the keys for all of the settings.
+
+.. category_end

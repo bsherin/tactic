@@ -41,3 +41,4 @@ associated value will be added to the html of the tile within
 Most of the time, you will `create and edit D3 tiles in the Tile
 Creator <Tile-Creator.html#creating-d3-tiles>`__. That hides some of the
 ugliness.
+

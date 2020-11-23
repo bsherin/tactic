@@ -150,7 +150,7 @@ Data Setting
 ------------
 
     The following methods make it possible to set the data. Note that much of the same functionality is provided by the
-    `object-oriented interface <Object-Oriented-Interface.html# Accessing and manipulating the collection>`__.
+    `object-oriented API <Object-Oriented-API.html# Accessing and manipulating the collection>`__.
     The object-oriented interface is a bit more intuitive. However, the commands listed here will often produce tiles that run more quickly.
 
     .. py:function:: set_cell(document_name, row_id, column_name, text, cellchange=True)
@@ -508,6 +508,12 @@ Other TileBase
         respectively.
 
         Synonym: ``bht``
+
+    .. py:method:: get_user_settings()
+
+        Returns a dictionary with the current value of user's account-level settings. There's not
+        much there at this point. The same functionality is available from the
+        `object-oriented API <Object-Oriented-API.html#the-settings-object>`__.
 
 .. category_end
 
