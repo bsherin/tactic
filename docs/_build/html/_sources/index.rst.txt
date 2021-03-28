@@ -36,6 +36,7 @@ Tactic Text
    Object-Oriented-API
    Matplotlib-Tiles
    D3-Tiles
+   Handler-Methods
    Working-With-Code-Resources
 
 .. toctree::
