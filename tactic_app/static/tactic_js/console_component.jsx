@@ -10,7 +10,12 @@ import { Menu, MenuItem } from "@blueprintjs/core";
 // See blueprintjs issue 3891
 import {ContextMenuTarget} from '@blueprintjs/core/lib/esnext/components/context-menu/contextMenuTarget.js';
 import { SortableHandle, SortableElement } from 'react-sortable-hoc';
-import showdown from 'showdown';
+import markdownIt from 'markdown-it'
+import 'markdown-it-latex/dist/index.css'
+import markdownItLatex from 'markdown-it-latex'
+const mdi = markdownIt({html: true})
+mdi.use(markdownItLatex)
+
 
 import {GlyphButton} from "./blueprint_react_widgets.js";
 import {ReactCodemirror} from "./react-codemirror.js";
@@ -1017,7 +1022,6 @@ class RawConsoleTextItem extends React.Component {
         super(props);
         doBinding(this, "_", RawConsoleTextItem.prototype);
         this.ce_summary_ref = React.createRef();
-        this.converter = new showdown.Converter();
         this.update_props = ["am_shrunk", "set_focus", "show_markdown", "summary_text", "console_text", "console_available_width"];
         this.update_state_vars = ["ce_ref"];
         this.state = {ce_ref: null}
@@ -1165,7 +1169,8 @@ class RawConsoleTextItem extends React.Component {
         let really_show_markdown =  this.hasOnlyWhitespace ? false : this.props.show_markdown;
         var converted_markdown;
         if (really_show_markdown) {
-            converted_markdown = this.converter.makeHtml(this.props.console_text);
+            // converted_markdown = this.converter.makeHtml(this.props.console_text);
+            converted_markdown = mdi.render(this.props.console_text)
         }
         let key_bindings = [[["ctrl+enter", "command+enter"], this._gotEnter]];
         let converted_dict = {__html: converted_markdown};

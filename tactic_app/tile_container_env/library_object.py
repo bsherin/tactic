@@ -1,5 +1,5 @@
 from communication_utils import debinarize_python_object
-from document_object import DetachedTacticCollection, DetachedTacticDocument
+from document_object import DetachedTacticCollection, DetachedTacticDocument, DetachedFreeformTacticDocument
 
 _tworker = None
 
@@ -79,10 +79,16 @@ class TacticCollectionSet(TacticResourceSet):
         collection_metadata = collection_dict["collection_metadata"]
         doc_dict = collection_dict["the_collection"]
         doc_metadata = collection_dict["doc_metadata"]
+        if "type" not in collection_metadata:
+            collection_metadata["type"] = "table"
+        is_freeform = collection_metadata["type"] == "freeform"
         doc_object_dict = {}
         for docname, dlist in doc_dict.items():
             mdata = doc_metadata[docname]
-            doc_object_dict[docname] = DetachedTacticDocument(dlist, docname, mdata)
+            if is_freeform:
+                doc_object_dict[docname] = DetachedFreeformTacticDocument(docname, dlist, mdata)
+            else:
+                doc_object_dict[docname] = DetachedTacticDocument(dlist, docname, mdata)
         if "type" not in collection_metadata:
             collection_metadata["type"] = "table"
         return DetachedTacticCollection(collection_metadata["type"], doc_object_dict, collection_metadata)
