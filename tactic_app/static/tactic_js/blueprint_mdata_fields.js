@@ -7,7 +7,11 @@ import PropTypes from 'prop-types';
 import { PopoverPosition, Button, MenuDivider, MenuItem, TagInput, TextArea, FormGroup, InputGroup, Card, Icon } from "@blueprintjs/core";
 import { Select, MultiSelect } from "@blueprintjs/select";
 
-import showdown from 'showdown';
+import markdownIt from 'markdown-it';
+import 'markdown-it-latex/dist/index.css';
+import markdownItLatex from 'markdown-it-latex';
+const mdi = markdownIt({ html: true });
+mdi.use(markdownItLatex);
 import _ from 'lodash';
 
 import { ViewerContext } from "./resource_viewer_context.js";
@@ -322,7 +326,6 @@ class NotesField extends React.Component {
         doBinding(this);
         // this.notes_ref = React.createRef();
         this.md_ref = React.createRef();
-        this.converter = new showdown.Converter();
         this.awaiting_focus = false;
     }
 
@@ -390,7 +393,8 @@ class NotesField extends React.Component {
         };
         var converted_markdown;
         if (really_show_markdown) {
-            converted_markdown = this.converter.makeHtml(this.props.notes);
+            // converted_markdown = this.converter.makeHtml(this.props.notes);
+            converted_markdown = mdi.render(this.props.notes);
         }
 
         let converted_dict = { __html: converted_markdown };
