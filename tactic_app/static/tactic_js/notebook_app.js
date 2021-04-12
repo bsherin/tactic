@@ -68,6 +68,7 @@ function _after_main_joined() {
 }
 
 function _finish_post_load(data) {
+    console.log("entering _finish_post_load");
     let NotebookAppPlus = withStatus(NotebookApp, tsocket, true);
     var interface_state;
     if (window.is_project || window.opening_from_temp_id) {
@@ -75,6 +76,7 @@ function _finish_post_load(data) {
     }
     let domContainer = document.querySelector('#main-root');
     if (window.is_project || window.opening_from_temp_id) {
+        console.log("about to render");
         ReactDOM.render(React.createElement(NotebookAppPlus, { is_project: true,
             interface_state: interface_state,
             initial_theme: window.theme
