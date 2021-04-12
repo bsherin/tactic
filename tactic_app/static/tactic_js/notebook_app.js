@@ -34,13 +34,13 @@ window.addEventListener("unload", function sendRemove() {
 
 function _main_main() {
     //render_navbar();
-    console.log("entering _notebook_main");
+    console.log("entering _notebook_main with flipped finish-post-load position");
     ppi = get_ppi();
     tsocket = new MainTacticSocket("main", 5000);
+    tsocket.socket.on('finish-post-load', _finish_post_load);
     tsocket.socket.emit('join-main', { "room": main_id, "user_id": window.user_id }, function () {
         _after_main_joined();
     });
-    tsocket.socket.on('finish-post-load', _finish_post_load);
 }
 
 function _after_main_joined() {
