@@ -310,7 +310,9 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
 
         if "pseudo_tile_instance" in project_dict:
             globals_dict = project_dict["pseudo_tile_instance"]
+            print("about to call create_pseudo_tile in recreate_from-save")
             self.create_pseudo_tile(globals_dict)
+            print("returned from create_pseudo_tile")
 
         if self.doc_type != "notebook":
             tile_info_dict = {}
@@ -491,6 +493,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         def instantiate_done(instantiate_result):
             # self.mworker.post_task(self.pseudo_tile_id, "create_pseudo_tile_collection_object",
             #                        {"am_notebook": self.am_notebook_type})
+            print("in instantiate_done in main")
             if not instantiate_result["success"]:
                 self.mworker.debug_log("got an exception " + instantiate_result["message"])
                 raise Exception(instantiate_result["message"])
@@ -510,7 +513,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                         }
 
             self.mworker.emit_export_viewer_message("update_exports_popup", {})
-            self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
+            # self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
 
         self.mworker.post_task(self.pseudo_tile_id, "instantiate_as_pseudo_tile", data_dict, instantiate_done)
 

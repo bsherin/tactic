@@ -189,11 +189,13 @@ class NotebookApp extends React.Component {
     }
 
     render () {
+        console.log("entering render in notebook_app")
         let disabled_items = [];
         if (!window.is_project || window.is_jupyter) {
             disabled_items.push("Save")
         }
         let console_available_height = this.state.usable_height - USUAL_TOOLBAR_HEIGHT;
+        console.log("creating menu");
         let menus = (
             <React.Fragment>
                 <ProjectMenu {...this.props.statusFuncs}
@@ -207,6 +209,7 @@ class NotebookApp extends React.Component {
                 />
             </React.Fragment>
         );
+        console.log("creating console component");
         let console_pane = (
             <ConsoleComponent {...this.props.statusFuncs}
                   console_items={this.state.console_items}
@@ -225,6 +228,7 @@ class NotebookApp extends React.Component {
         )
         let exports_pane;
         if (this.state.show_exports_pane) {
+            console.log("creating exports component");
             exports_pane = <ExportsViewer setUpdate={(ufunc)=>this.updateExportsList = ufunc}
                                           available_height={console_available_height - MARGIN_SIZE}
                                           console_is_shrunk={false}
@@ -243,6 +247,7 @@ class NotebookApp extends React.Component {
         else {
             outer_class = outer_class + " light-theme"
         }
+        console.log("returning");
         return (
             <React.Fragment>
                 <div className={outer_class}>
