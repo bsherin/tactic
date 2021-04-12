@@ -87,13 +87,20 @@ something that looks like this:
 
 .. figure:: images/bptext_item_annotated.png
 
-You can enter text as Markdown. If you do, clicking the :guilabel:`convert markdown` button
-displays the formatted text.
+You can enter text as Markdown and Latex (see below). If you do,
+clicking the :guilabel:`convert markdown` button
+displays the formatted text. You can also hit command-enter to convert.
 
 .. figure:: images/bpconverted_markdown.png
 
 Clicking the bottom button again toggles the display back to plain text.
 You can also double-click on the converted markdown to go back to editing.
+
+Currently, the library that is used to do the conversion of the markdown to
+html is `markdown-it <https://github.com/markdown-it/markdown-it>`__.
+The library used to convert Latex is
+`markdown-it-latex <https://github.com/tylingsoft/markdown-it-latex>`__.
+Refer to the docs for these libraries for syntax specifics.
 
 Code fields
 -----------
@@ -176,5 +183,3 @@ About **saving**:
 When you save a standard project or notebook, Tactic attempts to save both
 the appearance *and internal state* of the Notebook. The saving of internal
 state is still an iffy business however.
-
-

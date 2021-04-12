@@ -46,5 +46,11 @@ Javascript
 -  `bootstrap <https://getbootstrap.com>`__ (mostly phased out now)
 -  `d3 <https://d3js.org>`__
 -  `jquery <https://jquery.com>`__
+-  `markdown-it <https://github.com/markdown-it/markdown-it>`__
+-  `markdown-it-latex <https://github.com/tylingsoft/markdown-it-latex>`__
 -  `mousetrap <https://craig.is/killing/mice>`__
 -  `codemirror <https://codemirror.net>`__
+
+markdown to
+html is
+The library used to convert Latex is
