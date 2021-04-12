@@ -675,16 +675,18 @@ class TileCreationTasksMixin:
             other_tile_names = list(self.tile_id_dict.keys())
         else:
             other_tile_names = self.get_other_tile_names(tile_id)
-
-        form_info = {"current_header_list": self.current_header_list,
-                     "pipe_dict": self._pipe_dict,
-                     "doc_names": self.doc_names,
-                     "list_names": self.list_tags_dict,
-                     "function_names": self.function_tags_dict,
-                     "class_names": self.class_tags_dict,
-                     "collection_names": self.data_collection_tags_dict,
-                     "other_tile_names": other_tile_names}
-
+        try:
+            form_info = {"current_header_list": self.current_header_list,
+                         "pipe_dict": self._pipe_dict,
+                         "doc_names": self.doc_names,
+                         "list_names": self.list_tags_dict,
+                         "function_names": self.function_tags_dict,
+                         "class_names": self.class_tags_dict,
+                         "collection_names": self.data_collection_tags_dict,
+                         "other_tile_names": other_tile_names}
+        except Exception as ex:
+            error_string = self.handle_exception(ex, "Error assembling form info")
+            print(error_string)
         for tid in self.tile_instances:
             if tile_id is None or not tid == tile_id:
                 form_info["other_tile_names"] = self.get_other_tile_names(tid)

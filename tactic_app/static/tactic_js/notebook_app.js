@@ -180,11 +180,13 @@ class NotebookApp extends React.Component {
     }
 
     render() {
+        console.log("entering render in notebook_app");
         let disabled_items = [];
         if (!window.is_project || window.is_jupyter) {
             disabled_items.push("Save");
         }
         let console_available_height = this.state.usable_height - USUAL_TOOLBAR_HEIGHT;
+        console.log("creating menu");
         let menus = React.createElement(
             React.Fragment,
             null,
@@ -198,6 +200,7 @@ class NotebookApp extends React.Component {
                 hidden_items: ["Open Console as Notebook", "Export Table as Collection", "Change collection"]
             }))
         );
+        console.log("creating console component");
         let console_pane = React.createElement(ConsoleComponent, _extends({}, this.props.statusFuncs, {
             console_items: this.state.console_items,
             console_is_shrunk: false,
@@ -214,6 +217,7 @@ class NotebookApp extends React.Component {
         }));
         let exports_pane;
         if (this.state.show_exports_pane) {
+            console.log("creating exports component");
             exports_pane = React.createElement(ExportsViewer, { setUpdate: ufunc => this.updateExportsList = ufunc,
                 available_height: console_available_height - MARGIN_SIZE,
                 console_is_shrunk: false,
@@ -230,6 +234,7 @@ class NotebookApp extends React.Component {
         } else {
             outer_class = outer_class + " light-theme";
         }
+        console.log("returning");
         return React.createElement(
             React.Fragment,
             null,
