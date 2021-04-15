@@ -2,13 +2,15 @@ const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TerserJSPlugin = require('terser-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+var webpack = require('webpack');
 
 
-module.exports = env => {
+module.exports = (env, argv) => {
 
     console.log("starting");
-    console.log("env.mode = " + env.mode);
-    const devmode = env.mode != 'production';
+    console.log("mode = " + argv.mode);
+    const devmode = argv.mode != 'production';
+    // var devmode = true
 
     if (devmode) {
         console.log("got devmode")
@@ -40,6 +42,9 @@ module.exports = env => {
                 filename: '[name].css',
                 chunkFilename: '[id].css',
             }),
+            new webpack.DefinePlugin({
+            "process.env": "{}",
+          })
         ],
         module: {
             rules: [
@@ -58,6 +63,7 @@ module.exports = env => {
                 },
             ],
         },
+        mode: argv.mode,
     };
     if (!devmode) {
         result.mode = "production";

@@ -1,7 +1,7 @@
 git+https://github.com/jacksonllee/pylangacq.git
 beautifulsoup4
-bokeh==2.0.2
 eli5
+bokeh==2.0.2
 fuzzywuzzy
 Flask
 gensim

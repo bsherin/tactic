@@ -23,8 +23,8 @@ const MARGIN_SIZE = 17;
 const BOTTOM_MARGIN = 20;
 const USUAL_TOOLBAR_HEIGHT = 50;
 
-let tsocket;
-let ppi;
+var tsocket;
+var ppi;
 
 // Note: it seems like the sendbeacon doesn't work if this callback has a line
 // before the sendbeacon
