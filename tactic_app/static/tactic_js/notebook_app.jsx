@@ -45,6 +45,7 @@ function _main_main() {
     tsocket.socket.emit('join-main', {"room": main_id, "user_id": window.user_id});
     tsocket.socket.emit('client-ready', {"room": main_id, "user_id": window.user_id, "participant": "client",
         "rb_id": window.ready_block_id})
+    console.log("finishe main main")
 }
 
 function _everyone_ready() {

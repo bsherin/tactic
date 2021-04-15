@@ -60,9 +60,10 @@ class CreatorViewerSocket extends TacticSocket {
 function tile_creator_main() {
     tsocket = new CreatorViewerSocket("main", 5000);
     tsocket.socket.on("remove-ready-block", _everyone_ready);
-    tsocket.socket.emit('join-main', {"room": window.module_viewer_id, "user_id": window.user_id});
-    tsocket.socket.emit('client-ready', {"room": window.module_viewer_id, "user_id": window.user_id, "participant": "client",
-        "rb_id": window.ready_block_id, "main_id": window.module_viewer_id})
+    tsocket.socket.emit('join-main', {"room": window.module_viewer_id, "user_id": window.user_id}, function(response) {
+        tsocket.socket.emit('client-ready', {"room": window.module_viewer_id, "user_id": window.user_id, "participant": "client",
+                "rb_id": window.ready_block_id, "main_id": window.module_viewer_id})
+    });
 }
 
 function _everyone_ready() {
