@@ -8,7 +8,7 @@
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
  */
 @import url(~@blueprintjs/core/lib/css/blueprint.css);
-@import url(~@blueprintjs/icons/dist/blueprint-icons.css);
+@import url(~@blueprintjs/icons/lib/css/blueprint-icons.css);
 body {
   margin: 0; }
 
