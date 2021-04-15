@@ -55,13 +55,14 @@ function _main_main() {
     tsocket.socket.on("remove-ready-block", _everyone_ready);
     tsocket.socket.emit('join-main', {"room": main_id, "user_id": window.user_id}, function(response) {
             window.initial_tile_types = response.tile_types;
+            tsocket.socket.emit('client-ready', {"room": main_id, "user_id": window.user_id,
+                "participant": "client", "rb_id": window.ready_block_id, "main_id": main_id})
         });
 
     tsocket.socket.on('myevent', function() {
         console.log("got the event")
     })
-    tsocket.socket.emit('client-ready', {"room": main_id, "user_id": window.user_id, "participant": "client",
-        "rb_id": window.ready_block_id, "main_id": main_id})
+
 }
 
 function _everyone_ready() {
