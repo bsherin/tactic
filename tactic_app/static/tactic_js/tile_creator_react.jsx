@@ -42,9 +42,9 @@ window.addEventListener("unload", function sendRemove() {
 
 
 class CreatorViewerSocket extends TacticSocket {
-    initialize_socket_stuff () {_
+
+    initialize_socket_stuff () {
         this.socket.emit('join', {"room": window.user_id});
-        this.socket.emit('join-main', {"room": window.module_viewer_id, "user_id": window.user_id});
         this.socket.on('handle-callback', handleCallback);
         this.socket.on('close-user-windows', (data) => {
             if (!(data["originator"] == window.module_viewer_id)) {
@@ -59,15 +59,19 @@ class CreatorViewerSocket extends TacticSocket {
 
 function tile_creator_main() {
     tsocket = new CreatorViewerSocket("main", 5000);
-    tsocket.socket.on("begin-post-load", function () {
-            let the_content = {"module_name": window.module_name,
-                                "module_viewer_id": window.module_viewer_id,
-                                "tile_collection_name": window.tile_collection_name,
-                                "user_id": window.user_id,
-                                "version_string": window.version_string};
-            postWithCallback(window.module_viewer_id, "initialize_parser", the_content, got_parsed_data);
-        });
-    tsocket.socket.emit('ready-to-begin', {"room": window.module_viewer_id});
+    tsocket.socket.on("remove-ready-block", _everyone_ready);
+    tsocket.socket.emit('join-main', {"room": window.module_viewer_id, "user_id": window.user_id});
+    tsocket.socket.emit('client-ready', {"room": window.module_viewer_id, "user_id": window.user_id, "participant": "client",
+        "rb_id": window.ready_block_id, "main_id": window.module_viewer_id})
+}
+
+function _everyone_ready() {
+    let the_content = {"module_name": window.module_name,
+                    "module_viewer_id": window.module_viewer_id,
+                    "tile_collection_name": window.tile_collection_name,
+                    "user_id": window.user_id,
+                    "version_string": window.version_string};
+    postWithCallback(window.module_viewer_id, "initialize_parser", the_content, got_parsed_data);
 }
 
 function got_parsed_data (data_object) {

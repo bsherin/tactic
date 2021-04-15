@@ -31,6 +31,9 @@ import time
 
 queue_check_time = 60  # How often, in seconds, to inspect the queues
 
+import os
+rb_id = os.environ.get("RB_ID")
+
 
 class MainWorker(QWorker, ExceptionMixin):
     def __init__(self, ):
@@ -186,6 +189,12 @@ class MainWorker(QWorker, ExceptionMixin):
     def get_jupyter_cell_data(self, data_dict):
         print("entering get_jupyter_cell_data")
         return {"cell_data": self.mwindow.jupyter_cells}
+
+    def ready(self):
+        self.ask_host("participant_ready", {"rb_id": rb_id, "user_id": os.environ.get("OWNER"),
+                                            "participant": self.my_id, "main_id": self.my_id
+                                            })
+        return
 
 
 if __name__ == "__main__":

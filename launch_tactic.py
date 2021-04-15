@@ -84,6 +84,13 @@ def clear_tile_db():
         redis_tm.delete(*all_keys)
 
 
+def clear_ready_db():
+    redis_rb = redis.StrictRedis(db=3)
+    all_keys = redis_rb.keys()
+    if len(all_keys) > 0:
+        redis_rb.delete(*all_keys)
+
+
 def create_mongo():
     try:
         mongo_exists = tactic_app.docker_functions.container_exists("tactic-mongo")
@@ -123,6 +130,7 @@ def create_redis():
             print("no need to recreate tactic-redis")
             clear_health_db()
             clear_tile_db()
+            clear_ready_db()
     except ContainerCreateError:
         print("Error creating the redis container.")
         exit()

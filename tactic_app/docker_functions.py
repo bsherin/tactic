@@ -90,7 +90,8 @@ class MainContainerTracker(object):
         main_volume_dict = {"/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "rw"}}
         user_host_persist_dir = true_host_persist_dir + "/tile_manager/" + username
         main_volume_dict[user_host_persist_dir] = {"bind": "/code/persist", "mode": "ro"}
-        environ = {"USE_WAIT_TASKS": "True"}
+        rb_id = str(uuid.uuid4())
+        environ = {"USE_WAIT_TASKS": "True", "RB_ID": rb_id}
         main_id, _container_id = create_container("bsherin/tactic:main", network_mode="bridge",
                                                   env_vars=environ,
                                                   owner=user_id, other_name=other_name, username=username,
@@ -99,7 +100,7 @@ class MainContainerTracker(object):
                                                   local_true_host_persist_dir=true_host_persist_dir,
                                                   local_true_host_resources_dir=true_host_resources_dir)
 
-        return main_id
+        return main_id, rb_id
 
     def extract_port(self, container_identifier):
         return cli.containers.get(container_identifier).attrs["NetworkSettings"]["Ports"]["5000/tcp"]

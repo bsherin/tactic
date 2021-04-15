@@ -91,6 +91,7 @@ class QWorker(ExceptionMixin):
             self.channel.queue_declare(queue=self.my_id, durable=False, exclusive=False)
             self.channel.basic_consume(queue=self.my_id, auto_ack=True, on_message_callback=self.handle_delivery)
             print(' [*] Waiting for messages:')
+            self.ready()
             self.channel.start_consuming()
         except Exception as ex:
             print(self.handle_exception(ex, "Got a pika error"))
@@ -108,6 +109,9 @@ class QWorker(ExceptionMixin):
             if thread is None:
                 thread = socketio.start_background_task(target=self.start_background_thread)
         print('Background thread started')
+
+    def ready(self):
+        return
 
     def debug_log(self, msg):
         timestring = datetime.datetime.utcnow().strftime("%b %d, %Y, %H:%M:%S")
@@ -131,6 +135,7 @@ class QWorker(ExceptionMixin):
                 self.handle_event(task_packet)
         except Exception as ex:
             special_string = "Got error in handle delivery"
+            print(special_string)
             print(self.handle_exception(ex, special_string))
         return
 
@@ -148,7 +153,6 @@ class QWorker(ExceptionMixin):
 
     def post_task(self, dest_id, task_type, task_data=None, callback_func=None,
                   callback_data=None, expiration=None, error_handler=None, special_reply_to=None):
-
         try:
             if callback_func is not None:
                 callback_id = str(uuid.uuid4())
@@ -182,12 +186,12 @@ class QWorker(ExceptionMixin):
                           "expiration": expiration}
             # self.channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
             self.post_packet(dest_id, new_packet, reply_to, callback_id)
-
             result = {"success": True}
 
         except Exception as ex:
             special_string = "Error handling callback for task type {} for my_id {}".format(task_type, self.my_id)
             error_string = self.handle_exception(ex, special_string)
+            print(error_string)
             result = {"success": False, "message": error_string}
         return result
 
@@ -242,7 +246,6 @@ class QWorker(ExceptionMixin):
         return
 
     def handle_response(self, task_packet):
-
         try:
             cbid = task_packet["callback_id"]
             if cbid in error_handler_dict:

@@ -15,6 +15,7 @@ from communication_utils import make_jsonizable_and_compress, read_project_dict
 import loaded_tile_management
 repository_user = User.get_user_by_username("repository")
 from file_handling import read_freeform_file
+from redis_tools import create_ready_block
 
 from js_source_management import js_source_dict, _develop, css_source
 
@@ -100,7 +101,8 @@ class ProjectManager(LibraryResourceManager):
         user_id = user_obj.get_id()
 
         # noinspection PyTypeChecker
-        main_id = main_container_info.create_main_container(project_name, user_id, user_obj.username)
+
+        main_id, rb_id = main_container_info.create_main_container(project_name, user_id, user_obj.username)
 
         save_dict = db[user_obj.project_collection_name].find_one({"project_name": project_name})
         mdata = save_dict["metadata"]
@@ -109,8 +111,12 @@ class ProjectManager(LibraryResourceManager):
         else:
             doc_type = "table"
 
+        create_ready_block(rb_id, user_obj.username, [main_id, "client"], main_id)
+
         data_dict = {"project_name": project_name,
                      "window_title": project_name,
+                     "host_id": "host" + os.environ.get("MYPORT"),
+                     "ready_block_id": rb_id,
                      "user_id": user_id,
                      "develop": str(_develop),
                      "main_id": main_id,
@@ -118,7 +124,6 @@ class ProjectManager(LibraryResourceManager):
                      "collection_name": "",
                      "doc_names": [],
                      "theme": user_obj.get_theme(),
-
                      "short_collection_name": "",
                      "is_table": (doc_type == "table"),
                      "is_notebook": (doc_type == 'notebook' or doc_type == 'jupyter'),

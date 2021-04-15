@@ -51,17 +51,20 @@ function _main_main() {
     console.log("entering start_post_load");
     ppi = get_ppi();
     tsocket = new MainTacticSocket("main", 5000);
+    tsocket.socket.on('finish-post-load', _finish_post_load);
+    tsocket.socket.on("remove-ready-block", _everyone_ready);
     tsocket.socket.emit('join-main', {"room": main_id, "user_id": window.user_id}, function(response) {
             window.initial_tile_types = response.tile_types;
-            _after_main_joined();
         });
-    tsocket.socket.on('finish-post-load', _finish_post_load);
+
     tsocket.socket.on('myevent', function() {
         console.log("got the event")
     })
+    tsocket.socket.emit('client-ready', {"room": main_id, "user_id": window.user_id, "participant": "client",
+        "rb_id": window.ready_block_id, "main_id": main_id})
 }
 
-function _after_main_joined() {
+function _everyone_ready() {
     if (window.is_project) {
         let data_dict = {
             "project_name": window._project_name,

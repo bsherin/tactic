@@ -666,6 +666,8 @@ class TileCreationTasksMixin:
     @task_worthy
     def rebuild_tile_forms_task(self, ddict):
         print('entering rebuild_tile_forms_task')
+        if self.am_notebooktype:
+            return
         if "tile_id" not in ddict:
             tile_id = None
         else:
