@@ -23,6 +23,9 @@ else:
 
 mongo_uri = os.environ.get("MONGO_URI")
 
+import os
+rb_id = os.environ.get("RB_ID")
+
 
 # noinspection PyUnusedLocal
 class ModuleViewerWorker(QWorker, ExceptionMixin):
@@ -37,6 +40,11 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
         self.tile_collection_name = None
         self.tile_instance = None
         self.generate_heartbeats = True
+        return
+
+    def ask_host(self, msg_type, task_data=None, callback_func=None):
+        task_data["main_id"] = self.my_id
+        self.post_task("host", msg_type, task_data, callback_func)
         return
 
     @task_worthy
@@ -235,6 +243,12 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
         self.kill()
         print("I'm killed")
         return {"success": True}
+
+    def ready(self):
+        self.ask_host("participant_ready", {"rb_id": rb_id, "user_id": os.environ.get("OWNER"),
+                                            "participant": self.my_id, "main_id": self.my_id
+                                            })
+        return
 
 
 if __name__ == "__main__":

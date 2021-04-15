@@ -52,6 +52,12 @@ def on_join_main(data):
     return tile_types
 
 
+@socketio.on('client-ready', namespace='/main')
+def on_client_ready(data):
+    tactic_app.host_worker.participant_ready(data)
+    return
+
+
 @app.route('/delete_container_on_unload', methods=["POST"])
 @login_required
 @csrf.exempt
@@ -111,7 +117,6 @@ def export_data():
         if result["success"]:
             socketio.emit("doFlash", {"alert_type": "alert-success", "message": "Data successfully exported"},
                           namespace='/main', room=data_dict["main_id"])
-        user_obj = load_user(data_dict["user_id"])
         # collection_manager.update_selector_list(user_obj=user_obj)
         return
     data_dict = request.json

@@ -9,6 +9,7 @@ from tactic_app import app, db, fs
 from communication_utils import make_python_object_jsonizable, debinarize_python_object
 from communication_utils import read_temp_data, delete_temp_data
 from mongo_accesser import MongoAccessException
+# noinspection PyPackageRequirements
 import openpyxl
 from openpyxl.styles import Alignment, Font
 from openpyxl.utils import get_column_letter
@@ -18,6 +19,7 @@ import tactic_app
 from file_handling import read_csv_file_to_list, read_tsv_file_to_list, read_txt_file_to_list
 from file_handling import read_freeform_file, read_excel_file
 from users import load_user
+from redis_tools import create_ready_block
 
 from js_source_management import js_source_dict, _develop, css_source
 
@@ -67,12 +69,14 @@ class CollectionManager(LibraryResourceManager):
 
     def new_notebook(self):
         user_obj = current_user
-        main_id = main_container_info.create_main_container("new_notebook", user_obj.get_id(), user_obj.username)
+        main_id, rb_id = main_container_info.create_main_container("new_notebook", user_obj.get_id(), user_obj.username)
+        create_ready_block(rb_id, user_obj.username, [main_id, "client"], main_id)
         return render_template("main_notebook_react.html",
                                window_title="new notebook",
                                project_name='',
                                base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                                main_id=main_id,
+                               ready_block_id=rb_id,
                                temp_data_id="",
                                develop=str(_develop),
                                uses_codemirror="True",
@@ -86,12 +90,14 @@ class CollectionManager(LibraryResourceManager):
     def open_notebook(self, unique_id):
         the_data = read_temp_data(db, unique_id)
         user_obj = load_user(the_data["user_id"])
-        main_id = main_container_info.create_main_container("new_notebook", the_data["user_id"], user_obj.username)
+        main_id, rb_id = main_container_info.create_main_container("new_notebook", the_data["user_id"], user_obj.username)
+        create_ready_block(rb_id, user_obj.username, [main_id, "client"], main_id)
         return render_template("main_notebook_react.html",
                                window_title="new notebook",
                                project_name='',
                                base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                                main_id=main_id,
+                               ready_block_id=rb_id,
                                temp_data_id=unique_id,
                                develop=str(_develop),
                                theme=user_obj.get_theme(),
@@ -105,8 +111,8 @@ class CollectionManager(LibraryResourceManager):
     def main_collection(self, collection_name):
         user_obj = current_user
         cname = user_obj.build_data_collection_name(collection_name)
-        main_id = main_container_info.create_main_container(collection_name, user_obj.get_id(), user_obj.username)
-
+        main_id, rb_id = main_container_info.create_main_container(collection_name, user_obj.get_id(), user_obj.username)
+        create_ready_block(rb_id, user_obj.username, [main_id, "client"], main_id)
         short_collection_name = user_obj.short_collection_name(collection_name)
         mdata = user_obj.get_collection_metadata(short_collection_name)
         if "type" in mdata and mdata["type"] == "freeform":
@@ -122,6 +128,7 @@ class CollectionManager(LibraryResourceManager):
                                project_name='',
                                base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                                main_id=main_id,
+                               ready_block_id=rb_id,
                                temp_data_id="",
                                doc_names=doc_names,
                                console_html="",

@@ -12,7 +12,7 @@ from docker_functions import get_matching_user_containers
 from tactic_app import app, socketio, db
 from library_views import tile_manager, project_manager, collection_manager, list_manager
 from library_views import code_manager
-from redis_tools import redis_ht
+from redis_tools import redis_ht, delete_ready_block_participant
 import datetime
 from mongo_accesser import bytes_to_string
 import tactic_app
@@ -92,6 +92,24 @@ class HostWorker(QWorker):
 
     def clear_um_status_message(self, library_id):
         socketio.emit('clear-status-msg', {}, namespace='/library', room=library_id)
+
+    @task_worthy
+    def participant_ready(self, data):
+        user_id = data["user_id"]
+        user_obj = load_user(user_id)
+        rb_id = data["rb_id"]
+        participant = data["participant"]
+        result, main_id = delete_ready_block_participant(user_obj.username, rb_id, participant)
+        if result:
+            print("** all participants ready **")
+            for pid in result:
+                if pid == "main_id":
+                    continue
+                if pid == "client":
+                    print(str(data))
+                    socketio.emit("remove-ready-block", {}, namespace='/main', room=main_id)
+                else:
+                    self.post_task(pid, "remove_ready_block", data)
 
     @task_worthy
     def container_heartbeat(self, data):
@@ -384,8 +402,6 @@ class HostWorker(QWorker):
             self.submit_response(task_packet, result_data)
             return
 
-        user_id = data["user_id"]
-        user_obj = load_user(user_id)
         if data["tile_type"] in loaded_tile_management.get_loaded_tile_types(username):
             self.submit_response(task_packet, {"success": True})
             return
@@ -805,4 +821,3 @@ class HealthTracker:
 tactic_app.health_tracker = HealthTracker()
 tactic_app.host_worker = HostWorker()
 tactic_app.host_worker.start()
-

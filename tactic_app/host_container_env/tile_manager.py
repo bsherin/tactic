@@ -4,7 +4,7 @@ import sys
 import copy
 import re
 import os
-
+import uuid
 import pymongo
 from flask import render_template, request, jsonify, url_for
 from flask_login import login_required, current_user
@@ -16,6 +16,7 @@ from users import User
 from docker_functions import create_container
 
 from js_source_management import js_source_dict, _develop, css_source
+from redis_tools import create_ready_block
 
 import loaded_tile_management
 repository_user = User.get_user_by_username("repository")
@@ -191,12 +192,17 @@ class TileManager(LibraryResourceManager):
 
     def initialize_module_viewer_container(self, module_name):
         user_obj = current_user
-        module_viewer_id, container_id = create_container("bsherin/tactic:module_viewer", owner=user_obj.get_id(),
+        rb_id = str(uuid.uuid4())
+        environ = {"RB_ID": rb_id}
+        module_viewer_id, container_id = create_container("bsherin/tactic:module_viewer",
+                                                          env_vars=environ,
+                                                          owner=user_obj.get_id(),
                                                           other_name=module_name, register_container=True)
 
         the_content = {"module_name": module_name,
                        "module_viewer_id": module_viewer_id,
                        "container_id": container_id,
+                       "rb_id": rb_id,
                        "tile_collection_name": user_obj.tile_collection_name}
 
         return the_content
@@ -213,11 +219,14 @@ class TileManager(LibraryResourceManager):
             if len(new_list) > 0:
                 revised_api_dlist.append({"cat_name": cat, "cat_list": new_list})
         the_content = self.initialize_module_viewer_container(module_name)
+        create_ready_block(the_content["rb_id"], user_obj.username, [the_content["module_viewer_id"], "client"],
+                           the_content["module_viewer_id"],)
         return render_template("library/tile_creator_react.html",
                                module_name=module_name,
                                develop=str(_develop),
                                uses_codemirror="True",
                                theme=user_obj.get_theme(),
+                               ready_block_id=the_content["rb_id"],
                                dark_theme_name=user_obj.get_preferred_dark_theme(),
                                version_string=tstring,
                                line_number=line_number,
