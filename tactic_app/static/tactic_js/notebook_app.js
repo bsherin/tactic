@@ -39,8 +39,8 @@ function _main_main() {
     tsocket = new MainTacticSocket("main", 5000);
     tsocket.socket.on('finish-post-load', _finish_post_load);
     tsocket.socket.on("remove-ready-block", _everyone_ready);
-    tsocket.socket.emit('join-main', { "room": main_id, "user_id": window.user_id }, function(response) {
-        console.log("main joined")
+    tsocket.socket.emit('join-main', { "room": main_id, "user_id": window.user_id }, function (response) {
+        console.log("emitting client-read");
         tsocket.socket.emit('client-ready', { "room": main_id, "user_id": window.user_id, "participant": "client",
             "rb_id": window.ready_block_id });
     });
@@ -49,7 +49,7 @@ function _main_main() {
 }
 
 function _everyone_ready() {
-    console.log("entering everyone_ready")
+    console.log("entering everyone ready");
     let data_dict = {
         "doc_type": "notebook",
         "base_figure_url": window.base_figure_url,
