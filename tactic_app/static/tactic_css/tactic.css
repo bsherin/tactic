@@ -1052,6 +1052,11 @@ table caption {
   padding-bottom: 0; }
 
 /* General resources */
+.contingent-scroll {
+  overflow: hidden; }
+  .contingent-scroll:hover {
+    overflow: auto; }
+
 /* navbar */
 #menu-area .dropdown-toggle {
   padding-right: 6px;

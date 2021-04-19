@@ -27,7 +27,6 @@ body {
 #console {
     text-align: left;
     font-size: 14px;
-    overflow: auto;
     padding: 20px 5px;
 }
 
@@ -69,6 +68,10 @@ body {
 
     //border: $console-panel-border-style !important;
     width: 100%;
+    overflow-y: hidden;
+    &:hover {
+        overflow-y: auto
+    }
 }
 
 .console-code {
@@ -378,6 +381,7 @@ body {
         margin-left: 0
     }
 }
+
 
 #exports-button-list .bp3-button-group.bp3-vertical {
     max-width: 100%

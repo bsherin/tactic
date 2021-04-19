@@ -60,7 +60,27 @@ module.exports = (env, argv) => {
                 {
                     test: /\.(eot|ttf|woff|woff2|svg|png|gif|jpe?g)$/,
                     loader: require.resolve("file-loader"),
-                },
+                }
+            //     {
+            //         test: /\.(jsx|js)$/,
+            //         include: path.resolve(__dirname, 'src'),
+            //         exclude: /node_modules/,
+            //         use: [{
+            //           loader: 'babel-loader',
+            //           options: {
+            //             presets: [
+            //               ['@babel/preset-env', {
+            //                 "targets": "defaults"
+            //               }],
+            //               '@babel/preset-react'
+            //             ],
+            //               plugins: [
+            //                   '@babel/plugin-proposal-class-properties'
+            //
+            //               ]
+            //           }
+            //         }]
+            //     }
             ],
         },
         mode: argv.mode,

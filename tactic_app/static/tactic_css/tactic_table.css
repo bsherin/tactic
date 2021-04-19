@@ -34,6 +34,10 @@
     white-space: pre-wrap; }
   #table-area .hidden-row {
     display: none !important; }
+  #table-area .bp3-table-quadrant-scroll-container {
+    overflow: hidden; }
+    #table-area .bp3-table-quadrant-scroll-container:hover {
+      overflow: auto; }
 
 .ui-resizable-e, .ui-resizable-w {
   width: 10px !important; }

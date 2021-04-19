@@ -1,214 +1,308 @@
+"use strict";
 
-import React from "react";
-import PropTypes from 'prop-types';
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-import { postAjax } from "./communication_react.js";
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ReactCodemirror = void 0;
 
-export { ReactCodemirror };
+var _react = _interopRequireDefault(require("react"));
+
+var _propTypes = _interopRequireDefault(require("prop-types"));
+
+var _communication_react = require("./communication_react.js");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
 // const DARK_THEME = "pastel-on-dark"
-const DARK_THEME = window.dark_theme_name;
+var DARK_THEME = window.dark_theme_name;
 
-class ReactCodemirror extends React.Component {
+var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
+  _inherits(ReactCodemirror, _React$Component);
 
-    constructor(props) {
-        super(props);
-        if (this.props.code_container_ref) {
-            this.code_container_ref = this.props.code_container_ref;
+  var _super = _createSuper(ReactCodemirror);
+
+  function ReactCodemirror(props) {
+    var _this;
+
+    _classCallCheck(this, ReactCodemirror);
+
+    _this = _super.call(this, props);
+
+    if (_this.props.code_container_ref) {
+      _this.code_container_ref = _this.props.code_container_ref;
+    } else {
+      _this.code_container_ref = /*#__PURE__*/_react["default"].createRef();
+    }
+
+    _this.handleChange = _this.handleChange.bind(_assertThisInitialized(_this));
+    _this.handleBlur = _this.handleBlur.bind(_assertThisInitialized(_this));
+    _this.mousetrap = new Mousetrap();
+
+    _this.create_api();
+
+    _this.saved_theme = null;
+    return _this;
+  }
+
+  _createClass(ReactCodemirror, [{
+    key: "createCMArea",
+    value: function createCMArea(codearea) {
+      var first_line_number = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
+      var cmobject = CodeMirror(codearea, {
+        lineNumbers: true,
+        matchBrackets: true,
+        highlightSelectionMatches: true,
+        autoCloseBrackets: true,
+        indentUnit: 4,
+        theme: this.props.dark_theme ? DARK_THEME : "default",
+        mode: this.props.mode,
+        readOnly: this.props.readOnly
+      });
+
+      if (first_line_number != 1) {
+        cmobject.setOption("firstLineNumber", first_line_number);
+      }
+
+      var all_extra_keys = Object.assign(this.props.extraKeys, {
+        Tab: function Tab(cm) {
+          var spaces = new Array(5).join(" ");
+          cm.replaceSelection(spaces);
+        },
+        "Ctrl-Space": "autocomplete"
+      });
+      cmobject.setOption("extraKeys", all_extra_keys);
+      cmobject.setSize(null, "100%");
+      cmobject.on("change", this.handleChange);
+      cmobject.on("blur", this.handleBlur);
+      return cmobject;
+    }
+  }, {
+    key: "handleChange",
+    value: function handleChange(cm, changeObject) {
+      if (this.props.handleChange) {
+        this.props.handleChange(cm.getDoc().getValue());
+      }
+    }
+  }, {
+    key: "handleBlur",
+    value: function handleBlur(cm, changeObject) {
+      if (this.props.handleBlur) {
+        this.props.handleBlur(cm.getDoc().getValue());
+      }
+    }
+  }, {
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      this.cmobject = this.createCMArea(this.code_container_ref.current, this.props.first_line_number);
+      this.cmobject.setValue(this.props.code_content);
+      this.create_keymap();
+
+      if (this.props.setCMObject != null) {
+        this.props.setCMObject(this.cmobject);
+      }
+
+      this.saved_theme = this.props.dark_theme;
+    }
+  }, {
+    key: "componentDidUpdate",
+    value: function componentDidUpdate() {
+      if (this.props.dark_theme != this.saved_theme) {
+        if (this.props.dark_theme) {
+          this.cmobject.setOption("theme", DARK_THEME);
         } else {
-            this.code_container_ref = React.createRef();
+          this.cmobject.setOption("theme", "default");
         }
 
-        this.handleChange = this.handleChange.bind(this);
-        this.handleBlur = this.handleBlur.bind(this);
-        this.mousetrap = new Mousetrap();
-        this.create_api();
-        this.saved_theme = null;
-    }
-
-    createCMArea(codearea, first_line_number = 1) {
-        let cmobject = CodeMirror(codearea, {
-            lineNumbers: true,
-            matchBrackets: true,
-            highlightSelectionMatches: true,
-            autoCloseBrackets: true,
-            indentUnit: 4,
-            theme: this.props.dark_theme ? DARK_THEME : "default",
-            mode: this.props.mode,
-            readOnly: this.props.readOnly
-        });
-        if (first_line_number != 1) {
-            cmobject.setOption("firstLineNumber", first_line_number);
-        }
-
-        let all_extra_keys = Object.assign(this.props.extraKeys, {
-            Tab: function (cm) {
-                let spaces = new Array(5).join(" ");
-                cm.replaceSelection(spaces);
-            },
-            "Ctrl-Space": "autocomplete"
-        });
-
-        cmobject.setOption("extraKeys", all_extra_keys);
-        cmobject.setSize(null, "100%");
-        cmobject.on("change", this.handleChange);
-        cmobject.on("blur", this.handleBlur);
-        return cmobject;
-    }
-
-    handleChange(cm, changeObject) {
-        if (this.props.handleChange) {
-            this.props.handleChange(cm.getDoc().getValue());
-        }
-    }
-
-    handleBlur(cm, changeObject) {
-        if (this.props.handleBlur) {
-            this.props.handleBlur(cm.getDoc().getValue());
-        }
-    }
-
-    componentDidMount() {
-        this.cmobject = this.createCMArea(this.code_container_ref.current, this.props.first_line_number);
-        this.cmobject.setValue(this.props.code_content);
-        this.create_keymap();
-        if (this.props.setCMObject != null) {
-            this.props.setCMObject(this.cmobject);
-        }
         this.saved_theme = this.props.dark_theme;
-    }
+      }
 
-    componentDidUpdate() {
-        if (this.props.dark_theme != this.saved_theme) {
-            if (this.props.dark_theme) {
-                this.cmobject.setOption("theme", DARK_THEME);
-            } else {
-                this.cmobject.setOption("theme", "default");
+      if (this.props.sync_to_prop) {
+        this.cmobject.setValue(this.props.code_content);
+      }
+
+      if (this.props.first_line_number != 1) {
+        this.cmobject.setOption("firstLineNumber", this.props.first_line_number);
+      }
+
+      this.cmobject.refresh();
+    }
+  }, {
+    key: "searchCM",
+    value: function searchCM() {
+      CodeMirror.commands.find(this.cmobject);
+    }
+  }, {
+    key: "clearSelections",
+    value: function clearSelections() {
+      CodeMirror.commands.clearSearch(this.cmobject);
+      CodeMirror.commands.singleSelection(this.cmobject);
+    }
+  }, {
+    key: "create_api",
+    value: function create_api() {
+      var self = this;
+      (0, _communication_react.postAjax)("get_api_dict", {}, function (data) {
+        self.api_dict_by_category = data.api_dict_by_category;
+        self.api_dict_by_name = data.api_dict_by_name;
+        self.ordered_api_categories = data.ordered_api_categories;
+        self.api_list = [];
+
+        var _iterator = _createForOfIteratorHelper(self.ordered_api_categories),
+            _step;
+
+        try {
+          for (_iterator.s(); !(_step = _iterator.n()).done;) {
+            var cat = _step.value;
+
+            var _iterator2 = _createForOfIteratorHelper(self.api_dict_by_category[cat]),
+                _step2;
+
+            try {
+              for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+                var entry = _step2.value;
+                self.api_list.push(entry["name"]);
+              }
+            } catch (err) {
+              _iterator2.e(err);
+            } finally {
+              _iterator2.f();
             }
-            this.saved_theme = this.props.dark_theme;
+          } //noinspection JSUnresolvedVariable
+
+        } catch (err) {
+          _iterator.e(err);
+        } finally {
+          _iterator.f();
         }
-        if (this.props.sync_to_prop) {
-            this.cmobject.setValue(this.props.code_content);
-        }
-        if (this.props.first_line_number != 1) {
-            this.cmobject.setOption("firstLineNumber", this.props.first_line_number);
-        }
-        this.cmobject.refresh();
-    }
 
-    searchCM() {
-        CodeMirror.commands.find(this.cmobject);
-    }
-
-    clearSelections() {
-        CodeMirror.commands.clearSearch(this.cmobject);
-        CodeMirror.commands.singleSelection(this.cmobject);
-    }
-
-    create_api() {
-        let self = this;
-        postAjax("get_api_dict", {}, function (data) {
-            self.api_dict_by_category = data.api_dict_by_category;
-            self.api_dict_by_name = data.api_dict_by_name;
-            self.ordered_api_categories = data.ordered_api_categories;
-
-            self.api_list = [];
-            for (let cat of self.ordered_api_categories) {
-                for (let entry of self.api_dict_by_category[cat]) {
-                    self.api_list.push(entry["name"]);
-                }
-            }
-            //noinspection JSUnresolvedVariable
-            CodeMirror.commands.autocomplete = function (cm) {
-                //noinspection JSUnresolvedFunction
-                cm.showHint({
-                    hint: CodeMirror.hint.anyword, api_list: self.api_list,
-                    extra_autocomplete_list: self.extra_autocomplete_list
-                });
-            };
-        });
-    }
-
-    create_keymap() {
-        let self = this;
-        CodeMirror.keyMap["default"]["Esc"] = function () {
-            self.clearSelections();
+        CodeMirror.commands.autocomplete = function (cm) {
+          //noinspection JSUnresolvedFunction
+          cm.showHint({
+            hint: CodeMirror.hint.anyword,
+            api_list: self.api_list,
+            extra_autocomplete_list: self.extra_autocomplete_list
+          });
         };
-        let is_mac = CodeMirror.keyMap["default"].hasOwnProperty("Cmd-S");
-
-        this.mousetrap.bind(['escape'], function (e) {
-            self.clearSelections();
-            e.preventDefault();
-        });
-
-        if (is_mac) {
-            CodeMirror.keyMap["default"]["Cmd-S"] = function () {
-                self.props.saveMe();
-            };
-
-            this.mousetrap.bind(['command+l'], function (e) {
-                // self.loadModule();
-                e.preventDefault();
-            });
-            this.mousetrap.bind(['command+f'], function (e) {
-                self.searchCM();
-                e.preventDefault();
-            });
-        } else {
-            CodeMirror.keyMap["default"]["Ctrl-S"] = function () {
-                self.props.saveMe();
-            };
-
-            this.mousetrap.bind(['ctrl+l'], function (e) {
-                // self.loadModule();
-                e.preventDefault();
-            });
-            this.mousetrap.bind(['ctrl+f'], function (e) {
-                self.searchCM();
-                e.preventDefault();
-            });
-        }
+      });
     }
+  }, {
+    key: "create_keymap",
+    value: function create_keymap() {
+      var self = this;
 
-    render() {
-        let ccstyle = {
-            "height": this.props.code_container_height,
-            "width": this.props.code_container_width,
-            lineHeight: "21px",
-            overflow: "auto"
+      CodeMirror.keyMap["default"]["Esc"] = function () {
+        self.clearSelections();
+      };
+
+      var is_mac = CodeMirror.keyMap["default"].hasOwnProperty("Cmd-S");
+      this.mousetrap.bind(['escape'], function (e) {
+        self.clearSelections();
+        e.preventDefault();
+      });
+
+      if (is_mac) {
+        CodeMirror.keyMap["default"]["Cmd-S"] = function () {
+          self.props.saveMe();
         };
-        return React.createElement("div", { className: "code-container", style: ccstyle, ref: this.code_container_ref });
-    }
-}
 
+        this.mousetrap.bind(['command+l'], function (e) {
+          // self.loadModule();
+          e.preventDefault();
+        });
+        this.mousetrap.bind(['command+f'], function (e) {
+          self.searchCM();
+          e.preventDefault();
+        });
+      } else {
+        CodeMirror.keyMap["default"]["Ctrl-S"] = function () {
+          self.props.saveMe();
+        };
+
+        this.mousetrap.bind(['ctrl+l'], function (e) {
+          // self.loadModule();
+          e.preventDefault();
+        });
+        this.mousetrap.bind(['ctrl+f'], function (e) {
+          self.searchCM();
+          e.preventDefault();
+        });
+      }
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var ccstyle = {
+        "height": this.props.code_container_height,
+        "width": this.props.code_container_width,
+        lineHeight: "21px"
+      };
+      return /*#__PURE__*/_react["default"].createElement("div", {
+        className: "code-container",
+        style: ccstyle,
+        ref: this.code_container_ref
+      });
+    }
+  }]);
+
+  return ReactCodemirror;
+}(_react["default"].Component);
+
+exports.ReactCodemirror = ReactCodemirror;
 ReactCodemirror.propTypes = {
-    handleChange: PropTypes.func,
-    handleBlur: PropTypes.func,
-    code_content: PropTypes.string,
-    sync_to_prop: PropTypes.bool,
-    mode: PropTypes.string,
-    dark_theme: PropTypes.bool,
-    saveMe: PropTypes.func,
-    readOnly: PropTypes.bool,
-    first_line_number: PropTypes.number,
-    extraKeys: PropTypes.object,
-    setCMObject: PropTypes.func,
-    code_container_ref: PropTypes.object,
-    code_container_width: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    code_container_height: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+  handleChange: _propTypes["default"].func,
+  handleBlur: _propTypes["default"].func,
+  code_content: _propTypes["default"].string,
+  sync_to_prop: _propTypes["default"].bool,
+  mode: _propTypes["default"].string,
+  dark_theme: _propTypes["default"].bool,
+  saveMe: _propTypes["default"].func,
+  readOnly: _propTypes["default"].bool,
+  first_line_number: _propTypes["default"].number,
+  extraKeys: _propTypes["default"].object,
+  setCMObject: _propTypes["default"].func,
+  code_container_ref: _propTypes["default"].object,
+  code_container_width: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
+  code_container_height: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number])
 };
-
 ReactCodemirror.defaultProps = {
-    first_line_number: 1,
-    code_container_height: "100%",
-    handleChange: null,
-    handleBlur: null,
-    sync_to_prop: false,
-    dark_theme: false,
-    mode: "python",
-    readOnly: false,
-    extraKeys: {},
-    setCMObject: null,
-    code_container_ref: null,
-    code_container_width: "100%"
+  first_line_number: 1,
+  code_container_height: "100%",
+  handleChange: null,
+  handleBlur: null,
+  sync_to_prop: false,
+  dark_theme: false,
+  mode: "python",
+  readOnly: false,
+  extraKeys: {},
+  setCMObject: null,
+  code_container_ref: null,
+  code_container_width: "100%"
 };

@@ -17,7 +17,10 @@
 /*main window*/
 
 #tile-div {
-  overflow: auto
+    overflow: hidden;
+    &:hover {
+        overflow: auto
+    }
 }
 
 /* Tile related */
