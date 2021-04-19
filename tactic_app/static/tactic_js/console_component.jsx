@@ -1,5 +1,4 @@
 
-
 import React from "react";
 import PropTypes from 'prop-types';
 
@@ -512,6 +511,7 @@ const BUTTON_CONSUMED_SPACE = 203;
                 {!this.props.console_is_shrunk &&
                 <div id="console"
                      ref={this.body_ref}
+                     className="contingent-scroll"
                      style={{height: this._bodyHeight()}}>
                     {this.state.show_console_error_log &&
                     <pre>{this.state.console_error_log_text}</pre>
@@ -1212,7 +1212,7 @@ class RawConsoleTextItem extends React.Component {
                                              onFocus={()=>this.props.setFocus(this.props.unique_id)}
                                              onBlur={()=>this.props.setFocus(null)}
                                              disabled={false}
-                                             className="console-text"
+                                             className="console-text contingent-scroll"
                                              style={{width: body_width}}
                                              inputRef={this._notesRefHandler}/>
                                      <KeyTrap target_ref={this.state.ce_ref} bindings={key_bindings} />

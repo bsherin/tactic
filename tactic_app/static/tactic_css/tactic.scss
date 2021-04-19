@@ -41,6 +41,7 @@ table {
     padding-bottom: 0
 }
 
+
 /* General resources */
 
 //table.sortable thead {
@@ -49,6 +50,14 @@ table {
 //    font-weight: bold;
 //    cursor: default;
 //}
+
+
+.contingent-scroll {
+    overflow: hidden;
+    &:hover {
+        overflow: auto
+    }
+}
 
 /* navbar */
 

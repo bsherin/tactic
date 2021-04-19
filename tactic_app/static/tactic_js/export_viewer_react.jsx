@@ -1,5 +1,4 @@
 
-
 import React from "react";
 import PropTypes from 'prop-types';
 import { Card, Button, InputGroup, Spinner, ButtonGroup, FormGroup, Divider} from "@blueprintjs/core";
@@ -167,7 +166,8 @@ class ExportButtonList extends React.Component {
     }
     render() {
         return (
-            <div id="exports-button-list" style={{flexDirection: "column", display: "inline-block", verticalAlign: "top", padding: 15, overflowY: "scroll", height:this.props.body_height}}>
+            <div id="exports-button-list" style={{flexDirection: "column", display: "inline-block", verticalAlign: "top", padding: 15, height:this.props.body_height}}
+                className="contingent-scroll">
                 {this.create_groups()}
             </div>
         )
@@ -388,8 +388,8 @@ class ExportsViewer extends React.Component {
                                                    handleChange={this._handleExportListChange}
                                  />
                                  <Divider/>
-                                 <div id="exports-body" style={{overflowY: "scroll", padding: 15, width: "80%", height: this._bodyHeight(), display: "inline-block"}}
-                                            dangerouslySetInnerHTML={exports_body_dict}/>
+                                 <div id="exports-body" style={{padding: 15, width: "80%", height: this._bodyHeight(), display: "inline-block"}}
+                                      className="contingent-scroll" dangerouslySetInnerHTML={exports_body_dict}/>
                              </div>
                              <div id="exports-footing"
                                   ref={this.footer_ref}

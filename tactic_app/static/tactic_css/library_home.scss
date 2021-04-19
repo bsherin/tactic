@@ -71,6 +71,13 @@ $regular: #5c7080;
         }
     }
 
+    .bp3-table-quadrant-scroll-container {
+        overflow: hidden;
+        &:hover {
+            overflow: auto;
+        }
+    }
+
     .selector-button:hover td {
         color: #106ba3 !important;
         //font-weight: 900

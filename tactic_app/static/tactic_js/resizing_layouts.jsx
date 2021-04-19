@@ -275,8 +275,14 @@ class HorizontalPanes extends React.Component {
             width: this.right_width,
             height: this.props.available_height - this.props.bottom_margin,
             flexDirection: "column",
-            overflowY: this.props.right_pane_overflow
         };
+        let cname = ""
+        if (this.props.right_pane_overflow == "auto") {
+            cname = "contingent-scroll"
+        }
+        else {
+            right_div_style["overflowY"] = this.props.right_pane_overflow
+        }
 
         let dstyle = this.props.hide_me ? {display: "none"} : {};
         let position_dict = {position: "relative", left: 0, top: (this.props.available_height - this.props.bottom_margin) / 2};
@@ -299,7 +305,7 @@ class HorizontalPanes extends React.Component {
 
                     />
                 }
-                <div ref={this.right_pane_ref} style={right_div_style}>
+                <div ref={this.right_pane_ref} className={cname} style={right_div_style}>
                     {this.props.right_pane}
                 </div>
 

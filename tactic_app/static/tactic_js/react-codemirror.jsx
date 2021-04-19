@@ -175,7 +175,6 @@ class ReactCodemirror extends React.Component {
             "height": this.props.code_container_height,
             "width": this.props.code_container_width,
             lineHeight: "21px",
-            overflow: "auto"
         };
         return (
             <div className="code-container" style={ccstyle} ref={this.code_container_ref}>

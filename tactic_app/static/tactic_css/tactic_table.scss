@@ -51,6 +51,13 @@
     .hidden-row {
         display: none !important;
     }
+
+    .bp3-table-quadrant-scroll-container {
+        overflow: hidden;
+        &:hover {
+            overflow: auto;
+        }
+    }
 }
 
 .ui-resizable-e, .ui-resizable-w {

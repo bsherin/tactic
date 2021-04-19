@@ -608,7 +608,6 @@ class TileCreationTasksMixin:
 
     @task_worthy_manual_submit
     def recreate_one_tile(self, data, task_packet):
-        print('entering rebuild_tile_forms_task')
         print("in recreate one tile")
         old_tile_id = data["old_tile_id"]
         tile_save_dict = data["tile_save_dict"]
@@ -666,18 +665,20 @@ class TileCreationTasksMixin:
     @task_worthy
     def rebuild_tile_forms_task(self, ddict):
         print('entering rebuild_tile_forms_task')
-        if self.am_notebooktype:
-            return
-        if "tile_id" not in ddict:
-            tile_id = None
-        else:
-            tile_id = ddict["tile_id"]
-
-        if tile_id is None:
-            other_tile_names = list(self.tile_id_dict.keys())
-        else:
-            other_tile_names = self.get_other_tile_names(tile_id)
         try:
+            if self.am_notebook_type:
+                return
+            if "tile_id" not in ddict:
+                tile_id = None
+            else:
+                tile_id = ddict["tile_id"]
+
+            if tile_id is None:
+                other_tile_names = list(self.tile_id_dict.keys())
+            else:
+                other_tile_names = self.get_other_tile_names(tile_id)
+            print("getting the form info")
+
             form_info = {"current_header_list": self.current_header_list,
                          "pipe_dict": self._pipe_dict,
                          "doc_names": self.doc_names,
@@ -689,11 +690,17 @@ class TileCreationTasksMixin:
         except Exception as ex:
             error_string = self.handle_exception(ex, "Error assembling form info")
             print(error_string)
-        for tid in self.tile_instances:
-            if tile_id is None or not tid == tile_id:
-                form_info["other_tile_names"] = self.get_other_tile_names(tid)
-                the_id = tid
-                self.mworker.post_task(the_id, "RebuildTileForms", form_info)
+            return
+        print("got form_info")
+        try:
+            for tid in self.tile_instances:
+                if tile_id is None or not tid == tile_id:
+                    form_info["other_tile_names"] = self.get_other_tile_names(tid)
+                    the_id = tid
+                    self.mworker.post_task(the_id, "RebuildTileForms", form_info)
+        except Exception as ex:
+            error_string = self.handle_exception(ex, "Error rebuilding the forms")
+            print(error_string)
         print('leaving rebuild_tile_forms_task')
         return
 
