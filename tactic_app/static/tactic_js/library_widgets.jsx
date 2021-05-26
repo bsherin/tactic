@@ -258,6 +258,7 @@ class BpSelectorTable extends React.Component {
                           interactive={true}
                           truncated={true}
                           tabIndex={-1}
+                          onKeyDown={this.props.keyHandler}
                           wrapText={true}>
                     <React.Fragment>
                         <div onDoubleClick={()=>self.props.handleRowDoubleClick(self.props.data_dict[rowIndex])}>{the_text}</div>
@@ -322,6 +323,7 @@ BpSelectorTable.propTypes = {
     selectedRegions: PropTypes.array,
     data_dict: PropTypes.object,
     num_rows: PropTypes.number,
+    keyHandler: PropTypes.func,
     communicateColumnWidthSum: PropTypes.func,
     sortColumn: PropTypes.func,
     onSelection: PropTypes.func,
@@ -339,6 +341,7 @@ BpSelectorTable.defaultProps = {
     active_row: 0,
     show_animations: false,
     handleSpaceBarPress: null,
+    keyHandler: null,
     draggable: true
 };
 

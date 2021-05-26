@@ -3,6 +3,7 @@ import React from "react";
 import PropTypes from 'prop-types';
 
 import {doBinding} from "./utilities_react.js";
+import Mousetrap from "mousetrap";
 
 export {KeyTrap}
 
