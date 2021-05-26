@@ -846,6 +846,15 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       this._selectRow(new_index);
     }
   }, {
+    key: "_handleTableKeyPress",
+    value: function _handleTableKeyPress(key) {
+      if (key.code == "ArrowUp") {
+        this._handleArrowKeyPress("ArrowUp");
+      } else if (key.code == "ArrowDown") {
+        this._handleArrowKeyPress("ArrowDown");
+      }
+    }
+  }, {
     key: "_selectRow",
     value: function _selectRow(new_index) {
       var _this5 = this;
@@ -1264,6 +1273,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         selectedRegions: this.props.selectedRegions,
         communicateColumnWidthSum: this._communicateColumnWidthSum,
         onSelection: this._onTableSelection,
+        keyHandler: this._handleTableKeyPress,
         initiateDataGrab: this._initiateDataGrab,
         renderBodyContextMenu: this._renderBodyContextMenu,
         handleRowDoubleClick: this._handleRowDoubleClick,

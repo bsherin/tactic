@@ -553,6 +553,15 @@ class LibraryPane extends React.Component {
         this._selectRow(new_index)
     }
 
+    _handleTableKeyPress(key) {
+        if (key.code == "ArrowUp") {
+            this._handleArrowKeyPress("ArrowUp")
+        }
+        else if  (key.code == "ArrowDown") {
+            this._handleArrowKeyPress("ArrowDown")
+        }
+    }
+
     _selectRow(new_index) {
         if (!Object.keys(this.state.data_dict).includes(String(new_index))) {
             this._grabNewChunkWithRow(new_index, false, null, false, null, ()=>{
@@ -883,6 +892,7 @@ class LibraryPane extends React.Component {
                                          selectedRegions={this.props.selectedRegions}
                                          communicateColumnWidthSum={this._communicateColumnWidthSum}
                                          onSelection={this._onTableSelection}
+                                         keyHandler={this._handleTableKeyPress}
                                          initiateDataGrab={this._initiateDataGrab}
                                          renderBodyContextMenu={this._renderBodyContextMenu}
                                          handleRowDoubleClick={this._handleRowDoubleClick}
