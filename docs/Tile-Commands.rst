@@ -306,11 +306,10 @@ Object API
         ``self.collection`` returns a TacticCollection object corresponding to the collection in the current project.
         It is equivalent to typing ``Collection``.
 
-    .. py:method:: create_collection_object(doc_type, doc_dict=None)
+    .. py:method:: create_collection_object(doc_type, doc_list=None)
 
-        Creates a new :py:class:`DetachedTacticCollection` object. *doc_dict*, if provided
-        must be a dictionary with keys that are the names of the documents, and values that are
-        :py:class:`DetachedTacticDocument` objects.
+        Creates a new :py:class:`DetachedTacticCollection` object. *doc_list*, if provided
+        must be a list of :py:class:`DetachedTacticDocument` objects.
 
     .. py:method:: create_document(doc_data=None, docname="document1", metadata=None)
 
