@@ -103,6 +103,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
       show_console_error_log: false
     };
     _this.pseudo_tile_id = null;
+    _this.socket_counter = null;
     return _this;
   }
 
@@ -111,13 +112,26 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
     value: function componentDidMount() {
       this.setState({
         "mounted": true
-      }); // It is necessary to delete and remake these callbacks
+      });
+      this.initSocket();
+    }
+  }, {
+    key: "componentDidUpdate",
+    value: function componentDidUpdate() {
+      if (this.props.tsocket.counter != this.socket_counter) {
+        this.initSocket();
+      }
+    }
+  }, {
+    key: "initSocket",
+    value: function initSocket() {
+      // It is necessary to delete and remake these callbacks
       // If I dont delete I end up with duplicatesSelectList
       // If I just keep the original one then I end up something with a handler linked
       // to an earlier state
-
       this.props.tsocket.socket.off("console-message");
       this.props.tsocket.socket.on("console-message", this._handleConsoleMessage);
+      this.socket_counter = this.props.tsocket.counter;
     }
   }, {
     key: "_createTextEntry",

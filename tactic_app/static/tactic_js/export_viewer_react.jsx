@@ -203,13 +203,25 @@ class ExportsViewer extends React.Component {
             type: null,
             pipe_dict: {},
         }
+        this.socket_counter = null;
     }
 
     componentDidMount(){
         this.props.setUpdate(this._updateExportsList);
+        this.initSocket();
+        this._updateExportsList()
+    }
+
+    componentDidUpdate () {
+        if (this.props.tsocket.counter != this.socket_counter) {
+            this.initSocket();
+        }
+    }
+
+    initSocket() {
         this.props.tsocket.socket.off("export-viewer-message");
         this.props.tsocket.socket.on("export-viewer-message", this._handleExportViewerMessage);
-        this._updateExportsList()
+        this.socket_counter = this.props.tsocket.counter;
     }
 
     _handleExportViewerMessage(data) {

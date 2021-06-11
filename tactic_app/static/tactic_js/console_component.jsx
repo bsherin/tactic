@@ -40,19 +40,32 @@ const BUTTON_CONSUMED_SPACE = 203;
             console_item_with_focus: null,
             console_item_saved_focus: null,
             console_error_log_text: "",
-            show_console_error_log: false
+            show_console_error_log: false,
+
         };
-        this.pseudo_tile_id = null
+        this.pseudo_tile_id = null;
+        this.socket_counter = null;
     }
 
     componentDidMount(){
         this.setState({"mounted": true});
+        this.initSocket()
+    }
+
+    componentDidUpdate () {
+        if (this.props.tsocket.counter != this.socket_counter) {
+            this.initSocket();
+        }
+    }
+
+    initSocket() {
         // It is necessary to delete and remake these callbacks
         // If I dont delete I end up with duplicatesSelectList
         // If I just keep the original one then I end up something with a handler linked
         // to an earlier state
         this.props.tsocket.socket.off("console-message");
         this.props.tsocket.socket.on("console-message", this._handleConsoleMessage);
+        this.socket_counter = this.props.tsocket.counter
     }
 
     _createTextEntry(unique_id, summary_text) {

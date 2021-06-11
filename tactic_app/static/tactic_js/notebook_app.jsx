@@ -292,9 +292,18 @@ NotebookApp.propTypes = {
 
 class MainTacticSocket extends TacticSocket {
 
-    initialize_socket_stuff() {
+    initialize_socket_stuff(reconnect=false) {
         this.socket.emit('join', {"room": user_id});
+        if (reconnect) {
+            this.socket.emit('join-main', {"room": main_id, "user_id": window.user_id}, function (response) {
+            })
+        }
+
         this.socket.on('handle-callback', handleCallback);
+        let self = this;
+        this.socket.on('forcedisconnect', function() {
+            self.socket.disconnect()
+        })
         this.socket.on('close-user-windows', function(data){
                     postAsyncFalse("host", "remove_mainwindow_task", {"main_id": main_id});
                     if (!(data["originator"] == main_id)) {

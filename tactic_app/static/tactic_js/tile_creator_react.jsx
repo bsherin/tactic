@@ -43,8 +43,12 @@ window.addEventListener("unload", function sendRemove() {
 
 class CreatorViewerSocket extends TacticSocket {
 
-    initialize_socket_stuff () {
+    initialize_socket_stuff (reconnect=false) {
         this.socket.emit('join', {"room": window.user_id});
+        if (reconnect) {
+            this.socket.emit('join-main', {"room": window.module_viewer_id, "user_id": window.user_id}, function (response) {
+            })
+        }
         this.socket.on('handle-callback', handleCallback);
         this.socket.on('close-user-windows', (data) => {
             if (!(data["originator"] == window.module_viewer_id)) {
@@ -147,6 +151,7 @@ class CreatorApp extends React.Component {
         this.rcObject = null;
         this.emObject = null;
         this.line_number = this.props.initial_line_number;
+        this.socket_counter = null;
         this.state = {
             tile_name: this.props.tile_name,
             foregrounded_panes: {
@@ -462,15 +467,23 @@ class CreatorApp extends React.Component {
         this._update_saved_state();
         this.props.stopSpinner();
         this.props.setStatusTheme(this.state.dark_theme)
-        tsocket.socket.on('focus-me', (data)=>{
-            window.focus();
-            this._selectLineNumber(data.line_number)
-        });
+        this.initSocket();
         window.dark_theme = this.state.dark_theme
     }
 
     componentDidUpdate() {
         this._goToLineNumber();
+        if (tsocket.counter != this.socket_counter) {
+            this.initSocket();
+        }
+    }
+    
+    initSocket() {
+        tsocket.socket.on('focus-me', (data)=>{
+            window.focus();
+            this._selectLineNumber(data.line_number)
+        });
+        this.socket_counter = tsocket.counter
     }
 
     // This toggles methodsTabRefreshRequired back and forth to force a refresh
@@ -790,6 +803,6 @@ CreatorApp.propTypes = {
     created: PropTypes.string
 };
 
-var CreatorAppPlus = withStatus(withErrorDrawer(CreatorApp));
+var CreatorAppPlus = withStatus(withErrorDrawer(CreatorApp, tsocket));
 
 tile_creator_main();

@@ -52,15 +52,32 @@ function withStatus(WrappedComponent, tsocket=null, light_dark=false) {
                 light_dark: light_dark,
                 spinner_size: this.props.spinner_size ? this.props.spinner_size : 25
             }
+            this.socket_counter = null;
         }
 
         componentDidMount() {
             if (this.tsocket) {
-                this.tsocket.socket.on('stop-spinner', this._stopSpinner);
-                this.tsocket.socket.on('start-spinner', this._startSpinner);
-                this.tsocket.socket.on('show-status-msg', this._statusMessageFromData);
-                this.tsocket.socket.on("clear-status-msg", this._clearStatusMessage);
+                this.initSocket();
             }
+        }
+
+        componentDidUpdate () {
+            if (this.tsocket && (this.tsocket.counter != this.socket_counter)) {
+                this.initSocket();
+            }
+        }
+
+        initSocket() {
+            this.tsocket.socket.off('stop-spinner');
+            this.tsocket.socket.off('start-spinner');
+            this.tsocket.socket.off('show-status-msg');
+            this.tsocket.socket.off("clear-status-msg");
+
+            this.tsocket.socket.on('stop-spinner', this._stopSpinner);
+            this.tsocket.socket.on('start-spinner', this._startSpinner);
+            this.tsocket.socket.on('show-status-msg', this._statusMessageFromData);
+            this.tsocket.socket.on("clear-status-msg", this._clearStatusMessage);
+            this.socket_counter = this.tsocket.counter
         }
 
          _stopSpinner() {

@@ -343,6 +343,7 @@ var ExportsViewer = /*#__PURE__*/function (_React$Component4) {
       type: null,
       pipe_dict: {}
     };
+    _this3.socket_counter = null;
     return _this3;
   }
 
@@ -350,10 +351,23 @@ var ExportsViewer = /*#__PURE__*/function (_React$Component4) {
     key: "componentDidMount",
     value: function componentDidMount() {
       this.props.setUpdate(this._updateExportsList);
-      this.props.tsocket.socket.off("export-viewer-message");
-      this.props.tsocket.socket.on("export-viewer-message", this._handleExportViewerMessage);
+      this.initSocket();
 
       this._updateExportsList();
+    }
+  }, {
+    key: "componentDidUpdate",
+    value: function componentDidUpdate() {
+      if (this.props.tsocket.counter != this.socket_counter) {
+        this.initSocket();
+      }
+    }
+  }, {
+    key: "initSocket",
+    value: function initSocket() {
+      this.props.tsocket.socket.off("export-viewer-message");
+      this.props.tsocket.socket.on("export-viewer-message", this._handleExportViewerMessage);
+      this.socket_counter = this.props.tsocket.counter;
     }
   }, {
     key: "_handleExportViewerMessage",

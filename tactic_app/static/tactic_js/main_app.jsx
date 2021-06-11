@@ -179,6 +179,7 @@ class MainApp extends React.Component {
         this.table_ref = React.createRef();
         this.last_save = {};
         this.resizing = false;
+        this.socket_counter = null;
         let base_state = {
                 mounted: false,
                 doc_names: props.initial_doc_names,
@@ -277,20 +278,35 @@ class MainApp extends React.Component {
         this.setState({"mounted": true});
         window.addEventListener("resize", this._update_window_dimensions);
         document.title = window.is_project ? window._project_name : this.state.short_collection_name;
+        this.initSocket();
+        this._updateLastSave()
+        this.props.setStatusTheme(this.state.dark_theme);
+        window.dark_theme = this.state.dark_theme
+    }
+
+    componentDidUpdate () {
+        if (tsocket.counter != this.socket_counter) {
+            this.initSocket();
+        }
+    }
+
+    initSocket() {
         let self = this;
+        tsocket.socket.off('forcedisconnect');
+        tsocket.socket.on('forcedisconnect', function() {
+            tsocket.socket.disconnect()
+        })
+        tsocket.socket.off('table-message');
         tsocket.socket.on('table-message', function (data) {
             self._handleTableMessage(data)
         });
-        // postWithCallback("host", "get_tile_types", {"user_id": window.user_id}, function (data) {
-        //     self.setState({tile_types: data.tile_types});
-        // });
-
+        tsocket.socket.off('update-menus');
         tsocket.socket.on("update-menus", function () {
             postWithCallback("host", "get_tile_types", {"user_id": window.user_id}, function (data) {
                 self.setState({tile_types: data.tile_types});
             });
         });
-
+        tsocket.socket.off('change-doc');
         tsocket.socket.on('change-doc', function(data){
             let row_id = data.hasOwnProperty("row_id") ? data.row_id : null;
             if (self.state.table_is_shrunk) {
@@ -298,13 +314,10 @@ class MainApp extends React.Component {
             }
             self._handleChangeDoc(data.doc_name, row_id)
         });
-        if (!window.is_project) {
-            self.props.stopSpinner();
-        }
-        this._updateLastSave()
-        this.props.setStatusTheme(this.state.dark_theme);
-        window.dark_theme = this.state.dark_theme
+        this.socket_counter = tsocket.counter
     }
+
+
 
     _setTheme(dark_theme) {
         this.setState({dark_theme: dark_theme}, ()=> {
@@ -1088,8 +1101,12 @@ MainApp.propTypes = {
 
 class MainTacticSocket extends TacticSocket {
 
-    initialize_socket_stuff() {
+    initialize_socket_stuff(reconnect=false) {
         this.socket.emit('join', {"room": user_id});
+        if (reconnect) {
+            this.socket.emit('join-main', {"room": main_id, "user_id": window.user_id}, function (response) {
+            })
+        }
         this.socket.on('handle-callback', handleCallback);
         this.socket.on('close-user-windows', function(data){
                     postAsyncFalse("host", "remove_mainwindow_task", {"main_id": main_id});

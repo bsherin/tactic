@@ -43,6 +43,7 @@ class TileContainer extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this)
+        this.socket_counter = null;
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -54,8 +55,18 @@ class TileContainer extends React.Component {
     }
 
     componentDidMount() {
-        let self = this;
         this.setState({"mounted": true});
+        this.initSocket()
+    }
+
+    componentDidUpdate () {
+        if (this.props.tsocket.counter != this.socket_counter) {
+            this.initSocket();
+        }
+    }
+
+    initSocket() {
+        let self = this;
         this.props.tsocket.socket.off("tile-message");
         this.props.tsocket.socket.on("tile-message", this._handleTileMessage);
         this.props.tsocket.socket.off("tile-finished-loading");
@@ -66,8 +77,9 @@ class TileContainer extends React.Component {
         this.props.tsocket.socket.on('tile-source-change', function (data) {
             self._markSourceChange(data.tile_type)
         });
-
+        this.socket_counter = this.props.tsocket.counter
     }
+
      _resortTilesOld(new_sort_list) {
         let new_tile_list = [];
         for (let tid of new_sort_list) {

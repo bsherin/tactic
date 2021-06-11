@@ -40,7 +40,7 @@ function _library_home_main () {
 
 class LibraryTacticSocket extends TacticSocket {
 
-    initialize_socket_stuff() {
+    initialize_socket_stuff(reconnect=false) {
 
         this.socket.emit('join', {"user_id":  window.user_id, "library_id":  window.library_id});
 
@@ -215,7 +215,7 @@ class LibraryHomeApp extends React.Component {
                                       updatePaneState={this._updatePaneState}
                                       {...this.state.pane_states["code"]}
                                       dark_theme={this.state.dark_theme}
-                                      socket={tsocket}/>
+                                      tsocket={tsocket}/>
         );
         let outer_style = {width: "100%",
             height: this.state.usable_height,

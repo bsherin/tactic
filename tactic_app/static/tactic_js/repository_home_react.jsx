@@ -39,7 +39,7 @@ function _repository_home_main () {
 
 class LibraryTacticSocket extends TacticSocket {
 
-    initialize_socket_stuff() {
+    initialize_socket_stuff(reconnect=false) {
 
         this.socket.emit('join', {"user_id":  window.user_id, "library_id":  window.library_id});
 

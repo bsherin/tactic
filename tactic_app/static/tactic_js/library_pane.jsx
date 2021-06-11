@@ -80,11 +80,24 @@ class LibraryPane extends React.Component {
         };
         doBinding(this);
         this.toolbarRef = null;
-        if ((props.tsocket != null) && (!this.props.is_repository)) {
-            props.tsocket.socket.on(`update-${props.res_type}-selector-row`, this._handleRowUpdate);
-            props.tsocket.socket.on(`refresh-${props.res_type}-selector`, this._refresh_func);
-        }
         this.previous_search_spec = null
+        this.socket_counter = null;
+    }
+
+    initSocket() {
+        if ((this.props.tsocket != null) && (!this.props.is_repository)) {
+            this.props.tsocket.socket.off(`update-${this.props.res_type}-selector-row`);
+            this.props.tsocket.socket.off(`refresh-${this.props.res_type}-selector`);
+            this.props.tsocket.socket.on(`update-${this.props.res_type}-selector-row`, this._handleRowUpdate);
+            this.props.tsocket.socket.on(`refresh-${this.props.res_type}-selector`, this._refresh_func);
+        }
+        this.socket_counter = this.props.tsocket.counter
+    }
+
+    componentDidUpdate () {
+        if (this.props.tsocket.counter != this.socket_counter) {
+            this.initSocket();
+        }
     }
 
     _sendContextMenuItems(items) {
@@ -147,6 +160,7 @@ class LibraryPane extends React.Component {
 
     componentDidMount() {
         let self = this;
+        this.initSocket();
         this.setState({"mounted": true});
         let path;
 

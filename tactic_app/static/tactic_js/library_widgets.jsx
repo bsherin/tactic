@@ -354,6 +354,7 @@ class LoadedTileList extends React.Component {
                 other_list: []
 
         }
+        this.socket_counter = null;
     }
 
     set_state_from_dict(tldict) {
@@ -366,11 +367,23 @@ class LoadedTileList extends React.Component {
 
     componentDidMount() {
         let self = this;
-        this.props.tsocket.socket.on('update-loaded-tile-list', (data)=>self.set_state_from_dict(data.tile_load_dict));
+        this.initSocket();
         postAjax("get_loaded_tile_lists", {}, function(data) {
             let tldict = data.tile_load_dict;
             self.set_state_from_dict(tldict)
         })
+    }
+
+    initSocket() {
+        let self = this;
+        this.props.tsocket.socket.on('update-loaded-tile-list', (data)=>self.set_state_from_dict(data.tile_load_dict));
+        this.socket_counter = this.props.tsocket.counter
+    }
+
+    componentDidUpdate () {
+        if (this.props.tsocket.counter != this.socket_counter) {
+            this.initSocket();
+        }
     }
 
     render () {

@@ -12,7 +12,7 @@ import {BpSelect} from "./blueprint_mdata_fields.js";
 export{MergeViewerApp, MergeViewerSocket}
 
 class MergeViewerSocket extends TacticSocket {
-    initialize_socket_stuff() {
+    initialize_socket_stuff(reconnect=false) {
         this.socket.emit('join', {"room": user_id});
         this.socket.emit('join-main', {"room": resource_viewer_id, "user_id": user_id});
         this.socket.on('handle-callback', handleCallback);
