@@ -51,3 +51,8 @@ class ObjectAPIMixin:
         if self._remote_tiles is None:
             self._remote_tiles = RemoteTiles()
         return self._remote_tiles
+
+    def force_client_disconnect(self):
+        self._tworker.emit_to_client("forcedisconnect", {})
+        return None
+
