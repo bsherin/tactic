@@ -19,7 +19,7 @@ import {getUsableDimensions} from "./sizing_tools.js"
 export {ResourceViewerApp, ResourceViewerSocket, copyToLibrary, sendToRepository}
 
 class ResourceViewerSocket extends TacticSocket {
-    initialize_socket_stuff() {
+    initialize_socket_stuff(reconnect=false) {
         this.socket.emit('join', {"room": window.user_id});
         this.socket.emit('join-main', {"room": window.resource_viewer_id, "user_id": window.user_id});
         this.socket.on('handle-callback', handleCallback);

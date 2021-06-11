@@ -14,14 +14,16 @@ class TacticSocket {
         this.connectme();
         this.initialize_socket_stuff();
         this.watchForDisconnect();
+        this.counter = null;
     }
 
     connectme() {
         var protocol = window.location.protocol;
         this.socket = io.connect(`${protocol}//${document.domain}:${location.port}/${this.name_space}`);
+        this.counter = 0;
     }
 
-    initialize_socket_stuff() {}
+    initialize_socket_stuff(reconnect=false) {}
 
     watchForDisconnect() {
         let self = this;
@@ -36,7 +38,8 @@ class TacticSocket {
     attemptReconnect() {
         if (this.socket.connected) {
             clearInterval(this.recInterval);
-            this.initialize_socket_stuff();
+            this.counter += 1;
+            this.initialize_socket_stuff(true);
             this.watchForDisconnect();
             doFlash({"message": "reconnected to server"})
         }

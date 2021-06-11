@@ -533,6 +533,7 @@ var LoadedTileList = /*#__PURE__*/function (_React$Component5) {
       failed_list: [],
       other_list: []
     };
+    _this9.socket_counter = null;
     return _this9;
   }
 
@@ -549,13 +550,27 @@ var LoadedTileList = /*#__PURE__*/function (_React$Component5) {
     key: "componentDidMount",
     value: function componentDidMount() {
       var self = this;
-      this.props.tsocket.socket.on('update-loaded-tile-list', function (data) {
-        return self.set_state_from_dict(data.tile_load_dict);
-      });
+      this.initSocket();
       (0, _communication_react.postAjax)("get_loaded_tile_lists", {}, function (data) {
         var tldict = data.tile_load_dict;
         self.set_state_from_dict(tldict);
       });
+    }
+  }, {
+    key: "initSocket",
+    value: function initSocket() {
+      var self = this;
+      this.props.tsocket.socket.on('update-loaded-tile-list', function (data) {
+        return self.set_state_from_dict(data.tile_load_dict);
+      });
+      this.socket_counter = this.props.tsocket.counter;
+    }
+  }, {
+    key: "componentDidUpdate",
+    value: function componentDidUpdate() {
+      if (this.props.tsocket.counter != this.socket_counter) {
+        this.initSocket();
+      }
     }
   }, {
     key: "render",
