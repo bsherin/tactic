@@ -37,15 +37,16 @@ def read_xml_file_to_dict(the_file):
     return collection_name, new_list_of_dicts
 
 
-def load_a_list(the_file):
-    raw_list = the_file.readlines()
+def load_a_list(raw_text):
+    raw_list = raw_text.splitlines()
     fixed_list = []
 
     # the next loop is to get rid of weird characters that tend to appera
-    # the second line in the loop might not be needed anymore.
+    # all of it is commented out at this point. doesn't seem to be necessary any longer
     for w in raw_list:
-        w = "".join([x for x in w if (x.isalnum() or x == "\'" or x == "-")])
-        fixed_list.append(re.sub(r'\s+$', '', w))
+        # w = "".join([x for x in w if (x.isalnum() or x == "\'" or x == "-")])
+        # fixed_list.append(re.sub(r'\s+$', '', w))
+        fixed_list.append(w)
     return fixed_list
 
 
@@ -207,8 +208,8 @@ def read_txt_file_to_list(txtfile):
         lines = decoded_text.splitlines()
         result_list = []
         i = 0
-        for l in lines:
-            result_list.append({"__id__": i, "__filename__": filename, "text": l})
+        for ln in lines:
+            result_list.append({"__id__": i, "__filename__": filename, "text": ln})
             i = i + 1
 
         header_list = ["__id__", "__filename__", "text"]

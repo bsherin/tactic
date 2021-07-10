@@ -142,7 +142,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
             else:
                 extra_methods_line_number = self.tp.get_starting_line(list(self.tp.extra_methods)[0])
             doc = self.db[self.tile_collection_name].find_one({"tile_module_name": module_name})
-            if "metadata" in doc:
+            if doc and "metadata" in doc:
                 mdata = doc["metadata"]
             else:
                 mdata = {}

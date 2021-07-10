@@ -114,6 +114,7 @@ class ResourceViewerApp extends React.Component {
         let left_pane = (
             <React.Fragment>
                 <ResourceviewerToolbar button_groups={this.props.button_groups}
+                                       setResourceNameState={this.props.setResourceNameState}
                                        resource_name={this.props.resource_name}
                                        res_type={this.props.res_type}/>
                 {this.props.children}
@@ -146,6 +147,7 @@ class ResourceViewerApp extends React.Component {
 
 ResourceViewerApp.propTypes = {
     resource_name: PropTypes.string,
+    setResourceNameState: PropTypes.func,
     res_type: PropTypes.string,
     button_groups: PropTypes.array,
     created: PropTypes.string,

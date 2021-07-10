@@ -45,9 +45,18 @@ class CodeManager(LibraryResourceManager):
     def rename_me(self, old_name):
         try:
             new_name = request.json["new_name"]
+            update_selector = "update_selector" in request.json and request.json["update_selector"] == "True"
             db[current_user.code_collection_name].update_one({"code_name": old_name},
                                                              {'$set': {"code_name": new_name}})
-            # self.update_selector_list()
+            if update_selector:
+                doc = db[current_user.code_collection_name].find_one({"code_name": new_name})
+                if "metadata" in doc:
+                    mdata = doc["metadata"]
+                else:
+                    mdata = {}
+                res_dict = self.build_res_dict(old_name, mdata)
+                res_dict["new_name"] = new_name
+                self.update_selector_row(res_dict)
             return jsonify({"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"})
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error renaming module")

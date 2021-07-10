@@ -12,7 +12,7 @@ import {Regions} from "@blueprintjs/table";
 import {showModalReact} from "./modal_react.js";
 import {Toolbar} from "./blueprint_toolbar.js"
 import {TacticSocket} from "./tactic_socket.js"
-import {handleCallback, postAjaxPromise, postAjaxUploadPromise, postWithCallbackNoMain} from "./communication_react.js"
+import {handleCallback, postAjaxPromise, postWithCallbackNoMain} from "./communication_react.js"
 import {doFlash} from "./toaster.js"
 import {ViewerContext} from "./resource_viewer_context.js";
 import {LibraryPane} from "./library_pane.js"
@@ -33,6 +33,7 @@ let tsocket;
 
 function _library_home_main () {
     tsocket = new LibraryTacticSocket("library", 5000);
+    window.tsocket = tsocket;
     let LibraryHomeAppPlus = withErrorDrawer(withStatus(LibraryHomeApp, tsocket), tsocket);
     let domContainer = document.querySelector('#library-home-root');
     ReactDOM.render(<LibraryHomeAppPlus initial_theme={window.theme}/>, domContainer)
@@ -328,12 +329,15 @@ class LibraryToolbar extends React.Component {
         let file_adders = [];
         for (let button of this.props.file_adders) {
             let new_button = {name_text: button[0],
-                click_handler: button[1],
-                icon_name: button[2],
-                multiple: button[3]};
-            if (button.length > 4) {
-                new_button.tooltip = button[4]
-            }
+                resource_type: button[1],
+                process_handler: button[2],
+                allowed_file_types: button[3],
+                icon_name: button[4],
+                checkboxes: button[5],
+                combine: button[6],
+                tooltip: button[7]
+            };
+
             file_adders.push(new_button)
         }
         return file_adders
@@ -411,6 +415,7 @@ class CollectionToolbar extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this);
+        this.upload_name = null
     }
 
     _collection_duplicate(resource_name=null) {
@@ -463,7 +468,7 @@ class CollectionToolbar extends React.Component {
         }, res_name + ".xlsx")
     };
 
-    displayImportResults(data) {
+    _displayImportResults(data) {
         let title = "Collection Created";
         let message = "";
         let number_of_errors;
@@ -482,38 +487,18 @@ class CollectionToolbar extends React.Component {
         }
     }
 
-    _import_collection(file_list) {
-        let the_data = new FormData();
-        for (let f of file_list) {
-            the_data.append('file', f);
+    _import_collection(myDropZone, new_name, check_results) {
+        var url_base;
+        if (check_results["import_as_freeform"]) {
+            url_base = "import_as_freeform"
+        } else {
+            url_base = "import_as_table"
         }
-
-        let self = this;
-        let checkboxes = [{"checkname": "import_as_freeform", "checktext": "Import as freeform"}];
-        $.getJSON(`${$SCRIPT_ROOT}get_resource_names/collection`, function (data) {
-                showModalReact("Import collection", "New collection Name",
-                    CreateNewCollection, "NewCollection", data["resource_names"], checkboxes)
-            }
-        );
-        function CreateNewCollection(new_name, check_results) {
-            self.props.startSpinner(true);
-            let url_base;
-            if (check_results["import_as_freeform"]) {
-                url_base = "import_as_freeform"
-            }
-            else {
-                url_base = "import_as_table"
-            }
-            postAjaxUploadPromise(`${url_base}/${new_name}/${window.library_id}`, the_data)
-                .then((data) => {
-                        self.props.clearStatusMessage();
-                        self.displayImportResults(data);
-                        self.props.refresh_func();
-                        self.props.stopSpinner();
-                })
-                .catch((data)=>{self.props.addErrorDrawerEntry({title: "Error importing documents", content: data.message})});
-        }
+        myDropZone.options.url = `${url_base}/${new_name}/${window.library_id}`;
+        this.upload_name = new_name
+        myDropZone.processQueue();
     }
+
 
     get button_groups() {
         return [
@@ -543,7 +528,10 @@ class CollectionToolbar extends React.Component {
 
      get file_adders() {
          return[
-             [null, this._import_collection, "cloud-upload", true, "Import collection"]
+             ["Upload", "collection", this._import_collection, ".csv,.tsv,.txt,.xls,.xlsx",
+                 "cloud-upload",
+                 [{"checkname": "import_as_freeform", "checktext": "Import as freeform"}],
+                 true, "Import collection"]
          ]
      }
 
@@ -582,28 +570,11 @@ class ProjectToolbar extends React.Component {
         }, res_name + ".ipynb")
     };
 
-   _import_jupyter (file_list) {
-        let the_data = new FormData();
-        for (let f of file_list) {
-            the_data.append('file', f);
-        }
-        let self = this;
-        $.getJSON(`${$SCRIPT_ROOT}get_resource_names/project`, function (data) {
-                showModalReact("Import jupyter", "New Jupyter Name", CreateNewJupyter, "NewJupyterNotebook", data["resource_names"], [])
-            }
-        );
-        function CreateNewJupyter(new_name, check_results) {
-            self.props.startSpinner(true);
-            postAjaxUploadPromise(`import_as_jupyter/${new_name}/${library_id}`, the_data)
-                .then((data) => {
-                        self.props.clearStatusMessage();
-                        self.props.refresh_func();
-                        self.props.stopSpinner();
-                })
-                .catch((data)=>{self.props.addErrorDrawerEntry({title: "Error importing jupyter notebook", content: data.message})});
-        }
+   _import_jupyter (myDropZone, check_results) {
+        let url_base = "import_jupyter"
+        myDropZone.options.url = `${url_base}/${window.library_id}`
+        myDropZone.processQueue();
     };
-
 
     _project_delete(resource_name=null) {
         this.props.delete_func("/delete_project", resource_name)
@@ -634,7 +605,8 @@ class ProjectToolbar extends React.Component {
 
     get file_adders() {
          return[
-             [null, this._import_jupyter, "cloud-upload", false, "Import Jupyter notebook"]
+             ["Upload", "project", this._import_jupyter, ".ipynb",
+                 "cloud-upload", [], false, "Import Jupyter notebook"]
          ]
      }
 
@@ -824,17 +796,10 @@ class ListToolbar extends React.Component {
         this.props.delete_func("/delete_list", resource_name)
     }
 
-    _add_list (file_list) {
-        let the_data = new FormData();
-        for (let f of file_list) {
-            the_data.append('file', f);
-        }
-        let self = this;
-        postAjaxUploadPromise("add_list", the_data)
-            .then((data) => {
-                    self.props.refresh_func()
-            })
-            .catch((data)=>{self.props.addErrorDrawerEntry({title: "Error creating new list", content: data.message})});
+    _add_list (myDropZone, check_results) {
+        let url_base = "import_list"
+        myDropZone.options.url = `${url_base}/${window.library_id}`
+        myDropZone.processQueue();
     }
 
      get context_menu_items() {
@@ -860,7 +825,8 @@ class ListToolbar extends React.Component {
 
      get file_adders() {
          return[
-             [null, this._add_list, "cloud-upload", true, "Import list"]
+             ["Upload", "list", this._add_list, "text/*",
+                 "cloud-upload", [], false, "Import list"]
          ]
      }
 

@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.withErrorDrawer = withErrorDrawer;
+exports.ErrorItem = void 0;
 
 var _react = _interopRequireDefault(require("react"));
 
@@ -256,7 +257,7 @@ var ErrorItem = /*#__PURE__*/function (_React$Component2) {
           overflow: "auto"
         },
         dangerouslySetInnerHTML: content_dict
-      }), /*#__PURE__*/_react["default"].createElement(_core.Button, {
+      }), this.props.has_link && /*#__PURE__*/_react["default"].createElement(_core.Button, {
         text: "show",
         icon: "eye-open",
         small: true,
@@ -268,6 +269,7 @@ var ErrorItem = /*#__PURE__*/function (_React$Component2) {
   return ErrorItem;
 }(_react["default"].Component);
 
+exports.ErrorItem = ErrorItem;
 ErrorItem.propTypes = {
   title: _propTypes["default"].string,
   content: _propTypes["default"].string,

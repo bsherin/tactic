@@ -218,7 +218,14 @@ class LibraryPane extends React.Component {
         let new_data_dict = _.cloneDeep(this.state.data_dict);
         let the_row = new_data_dict[ind];
         for (let field in res_dict) {
-            the_row[field] = res_dict[field];
+            if ("new_name" in res_dict && field == "name") {}
+            else if (field == "new_name") {
+                the_row["name"] = res_dict[field]
+            }
+            else {
+                the_row[field] = res_dict[field];
+            }
+
         }
         if (res_name == this.props.selected_resource.name) {
             this.props.updatePaneState({"selected_resource": the_row})

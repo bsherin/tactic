@@ -211,6 +211,7 @@ var ResourceViewerApp = /*#__PURE__*/function (_React$Component) {
     value: function render() {
       var left_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_blueprint_toolbar.ResourceviewerToolbar, {
         button_groups: this.props.button_groups,
+        setResourceNameState: this.props.setResourceNameState,
         resource_name: this.props.resource_name,
         res_type: this.props.res_type
       }), this.props.children); //let available_height = this.get_new_hp_height(this.hp_ref);
@@ -251,6 +252,7 @@ var ResourceViewerApp = /*#__PURE__*/function (_React$Component) {
 exports.ResourceViewerApp = ResourceViewerApp;
 ResourceViewerApp.propTypes = {
   resource_name: _propTypes["default"].string,
+  setResourceNameState: _propTypes["default"].func,
   res_type: _propTypes["default"].string,
   button_groups: _propTypes["default"].array,
   created: _propTypes["default"].string,

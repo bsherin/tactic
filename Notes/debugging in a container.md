@@ -14,20 +14,21 @@ I just need to place a settrace whereever
     ```RUN pip install pydevd-pycharm~=193.5233.109```
     new vesion ```RUN pip install pydevd-pycharm~=201.6668.115```
 
-2. Insert these lines somewhere near to where I want to debug. I also need to import pydevd_pycharm before monkey_patching.
-
-    ```python
-    import pydevd_pycharm
-    pydevd_pycharm.settrace('docker.for.mac.localhost', port=21000, stdoutToServer=True, stderrToServer=True, suspend=True)
-    ```
+2. Insert these lines somewhere near to where I want to debug. I also need to import pydevd_pycharm before 
+   monkey_patching.
+   
+```python
+import pydevd_pycharm
+pydevd_pycharm.settrace('docker.for.mac.localhost', port=21000, stdoutToServer=True, stderrToServer=True, suspend=True)
+```
    
 2a. If I want to debug in only one of the host containers, then I will need this instead
 
-    ```python
-    if "DEBUG_CONTAINER" in os.environ:
-        import pydevd_pycharm
-        pydevd_pycharm.settrace('docker.for.mac.localhost', port=21000, stdoutToServer=True, stderrToServer=True, suspend=True)
-    ```
+```python
+if "DEBUG_CONTAINER" in os.environ:
+    import pydevd_pycharm
+    pydevd_pycharm.settrace('docker.for.mac.localhost', port=21000, stdoutToServer=True, stderrToServer=True, suspend=True)
+```
 
 3. Launch one of the Python Remote Debug configurations.
 

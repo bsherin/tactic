@@ -3,14 +3,18 @@
 import React from "react";
 import PropTypes from 'prop-types';
 
-import { Button, MenuItem, Menu, ButtonGroup, Popover, ControlGroup, FileInput} from "@blueprintjs/core";
+import "../css/dzcss/dropzone.css";
+import "../css/dzcss/filepicker.css";
+import "../css/dzcss/basic.css";
+
+import { Button, MenuItem, Menu, ButtonGroup, Popover} from "@blueprintjs/core";
 
 import {KeyTrap} from "./key_trap.js";
 import {withTooltip} from "./blueprint_react_widgets.js";
 import {doBinding} from "./utilities_react.js";
 
 export {Toolbar, ToolbarButton, Namebutton, ResourceviewerToolbar}
-import {showModalReact} from "./modal_react.js";
+import {showModalReact, showFileImportDialog} from "./modal_react.js";
 
 import {postAjax} from "./communication_react.js"
 
@@ -30,6 +34,7 @@ function ResourceviewerToolbar(props) {
         <div style={tstyle}>
             <Toolbar button_groups={props.button_groups}/>
             <Namebutton resource_name={props.resource_name}
+                        setResourceNameState={props.setResourceNameState}
                         res_type={props.res_type}/>
         </div>
     )
@@ -43,13 +48,10 @@ class ToolbarButton extends React.Component {
 
     render() {
         if (this.props.show_text) {
-            // let style = {flexDirection: "column", fontSize: 8, padding: "5px 8px", width: 42, height: 42};
             return (
                 <Button
                           text={this.props.name_text}
                            icon={this.props.icon_name}
-                           // intent={this.props.intent == "regular" ? "primary" : this.props.intent}
-                          // style={style}
                            large={false}
                            minimal={false}
                            onClick={()=>this.props.click_handler()}
@@ -129,73 +131,41 @@ class FileAdderButton extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this);
-        this.state = {file_list: null,
-            hasSelection: false,
-            the_text: "Choose file..."
-        }
     }
 
-    _handleFileChange(event) {
-        let file_list = event.target.files;
-        if (file_list.length == 0) return;
-        let the_text;
-        if (file_list.length == 1) {
-            the_text = file_list[0].name
-        }
-        else {
-            the_text = "<multiple>"
-        }
-        this.setState({file_list: file_list, hasSelection: true, the_text: the_text})
-    }
-    
-    _do_submit() {
-        this.props.click_handler(this.state.file_list)
+    _showDialog () {
+        showFileImportDialog(this.props.resource_type, this.props.allowed_file_types,
+            this.props.checkboxes, this.props.process_handler, this.props.combine)
     }
 
      render() {
-         // let style = {flexDirection: "column", fontSize: 8, marginRight: 4, width: 42, height: 42};
-         let file_input_style = {width: 200, fontSize: 12, marginBottom: 0};
-         return (
-             <React.Fragment>
-                 <ControlGroup>
-             <ToolbarButton name_text={this.props.name_text}
-                            icon_name={this.props.icon_name}
-                            // style={style}
-                            large={false}
-                            click_handler={this._do_submit}
-                            tooltip={this.props.tooltip}
-                />
-                 <FileInput large={false}
-                               text={this.state.the_text}
-                               style={file_input_style}
-                               hasSelection={this.state.hasSelection}
-                               onInputChange={this._handleFileChange}
-                               inputProps={{multiple: this.props.multiple}}/>
-                 </ControlGroup>
 
-            </React.Fragment>
+         return (
+                 <ToolbarButton name_text={this.props.name_text}
+                                icon_name={this.props.icon_name}
+                                large={false}
+                                click_handler={this._showDialog}
+                                tooltip={this.props.tooltip}
+                    />
 
          )
      }
-
 }
 
 FileAdderButton.propTypes = {
-    click_handler: PropTypes.func,
-    button_class: PropTypes.string,
     name_text: PropTypes.string,
-    multiple: PropTypes.bool,
+    resource_type: PropTypes.string,
+    process_handler: PropTypes.func,
+    allowed_file_types: PropTypes.array,
     icon_name: PropTypes.string,
-    small_size: PropTypes.bool,
-    tooltip: PropTypes.string
+    checkboxes: PropTypes.array,
+    combine: PropTypes.bool,
+    tooltip: PropTypes.string,
 };
 
 FileAdderButton.defaultProps = {
-    small_size: true,
-    multiple: false,
-    tooltip: null
-};
-
+    multiple: false
+}
 
 class Toolbar extends React.Component {
     constructor(props) {
@@ -275,13 +245,15 @@ class Toolbar extends React.Component {
 
         if ((this.props.file_adders != null) && (this.props.file_adders.length != 0)) {
             let file_adder_items = this.props.file_adders.map((button, index) =>
-                <FileAdderButton icon_name={button.icon_name}
-                                 click_handler={button.click_handler}
-                                 button_class={this.get_button_class(button)}
-                                 name_text={button.name_text}
-                                 multiple={button.multiple}
+                <FileAdderButton name_text={button.name_text}
+                                 resource_type={button.resource_type}
+                                 process_handler={button.process_handler}
+                                 allowed_file_types={button.allowed_file_types}
+                                 icon_name={button.icon_name}
+                                 checkboxes={button.checkboxes}
+                                 combine={button.combine}
                                  tooltip={this.getTooltip(button)}
-                                 tooltipDeleay={this.getTooltipDelay(button)}
+                                 tooltipDelay={this.getTooltipDelay(button)}
                                  key={index}
                 />
             );
@@ -333,16 +305,16 @@ class Namebutton extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {"current_name": props.resource_name};
+        // this.state = {"current_name": props.resource_name};
         this.rename_me = this.rename_me.bind(this);
-        this.RenameResource = this.props.handleRename == null ? this.defaultRenameResource.bind(this) : this.props.handleRename
+        this.RenameResource = this.defaultRenameResource.bind(this)
     }
 
     rename_me() {
         console.log("entering rename");
         var self = this;
         var res_type = this.props.res_type;
-        var current_name = this.state.current_name;
+        var current_name = this.props.resource_name;
         $.getJSON($SCRIPT_ROOT + `get_resource_names/${res_type}`, function (data) {
                 const res_names = data["resource_names"];
                 const index = res_names.indexOf(current_name);
@@ -355,13 +327,14 @@ class Namebutton extends React.Component {
     }
 
     defaultRenameResource(new_name) {
-        const the_data = {"new_name": new_name};
+        const the_data = {"new_name": new_name, "update_selector": "True"};
         var self = this;
-        postAjax(`rename_resource/${this.props.res_type}/${this.state.current_name}`, the_data, renameSuccess);
+        postAjax(`rename_resource/${this.props.res_type}/${this.props.resource_name}`, the_data, renameSuccess);
 
         function renameSuccess(data) {
             if (data.success) {
-                self.setState({"current_name": new_name});
+                // self.setState({"current_name": new_name});
+                self.props.setResourceNameState(new_name)
                 doFlash(data)
             } else {
                 doFlash(data);
@@ -372,7 +345,8 @@ class Namebutton extends React.Component {
     }
 
     render() {
-        let name = this.props.handleRename == null ? this.state.current_name : this.props.resource_name;
+        // let name = this.props.handleRename == null ? this.state.current_name : this.props.resource_name;
+        let name = this.props.resource_name;
         let style = {fontSize: 20};
         return (
             <Button id="rename-button"
@@ -389,8 +363,8 @@ class Namebutton extends React.Component {
 
 Namebutton.propTypes = {
     resource_name: PropTypes.string,
+    setResourceNameState: PropTypes.func,
     res_type: PropTypes.string,
-    handleRename: PropTypes.func
 };
 
 Namebutton.defaultProps = {

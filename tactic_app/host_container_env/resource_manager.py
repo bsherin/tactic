@@ -157,6 +157,34 @@ class ResourceManager(ExceptionMixin):
         print("stopping the library spinner")
         socketio.emit('stop-spinner', {}, namespace='/library', room=library_id)
 
+    def send_import_report(self, result, library_id):
+        if "content" in result:
+            content = result["content"]
+        else:
+            content = ""
+        new_resource_name = None
+
+        title = result["title"]
+
+        if result["success"] == "partial":
+            content += "{} files not read successfully. ".format(len(result["failed_reads"].keys()))
+
+        if "file_decoding_errors" in result and len(result["file_decoding_errors"].keys()) > 0:
+            content += "<br><b>Decoding errors were enountered</b>"
+            for filename, val in result["file_decoding_errors"].items():
+                number_of_errors = str(len(val))
+                content += "<br>{}: {} errors".format(filename, number_of_errors)
+                for error_detail in val:
+                    content += "<br>{}".format(error_detail)
+        if "failed_reads" in result and len(result["failed_reads"].keys()) > 0:
+            content += "<br><b>Reads failed for the following reasons:</b>"
+            for filename, val in result["failed_reads"].items():
+                content += "<br>File {}:</br>".format(filename)
+                content += "{}".format(val)
+        data = {"title": title, "content": content, "resource_name": new_resource_name, "success": result["success"]}
+        socketio.emit("upload-response", data, namespace='/library', room=library_id)
+        return
+
 
 class LibraryResourceManager(ResourceManager):
 

@@ -371,7 +371,11 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       var the_row = new_data_dict[ind];
 
       for (var field in res_dict) {
-        the_row[field] = res_dict[field];
+        if ("new_name" in res_dict && field == "name") {} else if (field == "new_name") {
+          the_row["name"] = res_dict[field];
+        } else {
+          the_row[field] = res_dict[field];
+        }
       }
 
       if (res_name == this.props.selected_resource.name) {

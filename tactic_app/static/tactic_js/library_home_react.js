@@ -86,6 +86,7 @@ var tsocket;
 
 function _library_home_main() {
   tsocket = new LibraryTacticSocket("library", 5000);
+  window.tsocket = tsocket;
   var LibraryHomeAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(LibraryHomeApp, tsocket), tsocket);
   var domContainer = document.querySelector('#library-home-root');
   ReactDOM.render( /*#__PURE__*/_react["default"].createElement(LibraryHomeAppPlus, {
@@ -571,15 +572,14 @@ var LibraryToolbar = /*#__PURE__*/function (_React$Component2) {
           var button = _step4.value;
           var new_button = {
             name_text: button[0],
-            click_handler: button[1],
-            icon_name: button[2],
-            multiple: button[3]
+            resource_type: button[1],
+            process_handler: button[2],
+            allowed_file_types: button[3],
+            icon_name: button[4],
+            checkboxes: button[5],
+            combine: button[6],
+            tooltip: button[7]
           };
-
-          if (button.length > 4) {
-            new_button.tooltip = button[4];
-          }
-
           file_adders.push(new_button);
         }
       } catch (err) {
@@ -702,6 +702,7 @@ var CollectionToolbar = /*#__PURE__*/function (_React$Component3) {
 
     _this3 = _super4.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this3));
+    _this3.upload_name = null;
     return _this3;
   }
 
@@ -773,8 +774,8 @@ var CollectionToolbar = /*#__PURE__*/function (_React$Component3) {
       }, res_name + ".xlsx");
     }
   }, {
-    key: "displayImportResults",
-    value: function displayImportResults(data) {
+    key: "_displayImportResults",
+    value: function _displayImportResults(data) {
       var title = "Collection Created";
       var message = "";
       var number_of_errors;
@@ -799,54 +800,18 @@ var CollectionToolbar = /*#__PURE__*/function (_React$Component3) {
     }
   }, {
     key: "_import_collection",
-    value: function _import_collection(file_list) {
-      var the_data = new FormData();
+    value: function _import_collection(myDropZone, new_name, check_results) {
+      var url_base;
 
-      var _iterator7 = _createForOfIteratorHelper(file_list),
-          _step7;
-
-      try {
-        for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
-          var f = _step7.value;
-          the_data.append('file', f);
-        }
-      } catch (err) {
-        _iterator7.e(err);
-      } finally {
-        _iterator7.f();
+      if (check_results["import_as_freeform"]) {
+        url_base = "import_as_freeform";
+      } else {
+        url_base = "import_as_table";
       }
 
-      var self = this;
-      var checkboxes = [{
-        "checkname": "import_as_freeform",
-        "checktext": "Import as freeform"
-      }];
-      $.getJSON("".concat($SCRIPT_ROOT, "get_resource_names/collection"), function (data) {
-        (0, _modal_react.showModalReact)("Import collection", "New collection Name", CreateNewCollection, "NewCollection", data["resource_names"], checkboxes);
-      });
-
-      function CreateNewCollection(new_name, check_results) {
-        self.props.startSpinner(true);
-        var url_base;
-
-        if (check_results["import_as_freeform"]) {
-          url_base = "import_as_freeform";
-        } else {
-          url_base = "import_as_table";
-        }
-
-        (0, _communication_react.postAjaxUploadPromise)("".concat(url_base, "/").concat(new_name, "/").concat(window.library_id), the_data).then(function (data) {
-          self.props.clearStatusMessage();
-          self.displayImportResults(data);
-          self.props.refresh_func();
-          self.props.stopSpinner();
-        })["catch"](function (data) {
-          self.props.addErrorDrawerEntry({
-            title: "Error importing documents",
-            content: data.message
-          });
-        });
-      }
+      myDropZone.options.url = "".concat(url_base, "/").concat(new_name, "/").concat(window.library_id);
+      this.upload_name = new_name;
+      myDropZone.processQueue();
     }
   }, {
     key: "button_groups",
@@ -888,7 +853,10 @@ var CollectionToolbar = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "file_adders",
     get: function get() {
-      return [[null, this._import_collection, "cloud-upload", true, "Import collection"]];
+      return [["Upload", "collection", this._import_collection, ".csv,.tsv,.txt,.xls,.xlsx", "cloud-upload", [{
+        "checkname": "import_as_freeform",
+        "checktext": "Import as freeform"
+      }], true, "Import collection"]];
     }
   }, {
     key: "render",
@@ -946,41 +914,10 @@ var ProjectToolbar = /*#__PURE__*/function (_React$Component4) {
     }
   }, {
     key: "_import_jupyter",
-    value: function _import_jupyter(file_list) {
-      var the_data = new FormData();
-
-      var _iterator8 = _createForOfIteratorHelper(file_list),
-          _step8;
-
-      try {
-        for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
-          var f = _step8.value;
-          the_data.append('file', f);
-        }
-      } catch (err) {
-        _iterator8.e(err);
-      } finally {
-        _iterator8.f();
-      }
-
-      var self = this;
-      $.getJSON("".concat($SCRIPT_ROOT, "get_resource_names/project"), function (data) {
-        (0, _modal_react.showModalReact)("Import jupyter", "New Jupyter Name", CreateNewJupyter, "NewJupyterNotebook", data["resource_names"], []);
-      });
-
-      function CreateNewJupyter(new_name, check_results) {
-        self.props.startSpinner(true);
-        (0, _communication_react.postAjaxUploadPromise)("import_as_jupyter/".concat(new_name, "/").concat(library_id), the_data).then(function (data) {
-          self.props.clearStatusMessage();
-          self.props.refresh_func();
-          self.props.stopSpinner();
-        })["catch"](function (data) {
-          self.props.addErrorDrawerEntry({
-            title: "Error importing jupyter notebook",
-            content: data.message
-          });
-        });
-      }
+    value: function _import_jupyter(myDropZone, check_results) {
+      var url_base = "import_jupyter";
+      myDropZone.options.url = "".concat(url_base, "/").concat(window.library_id);
+      myDropZone.processQueue();
     }
   }, {
     key: "_project_delete",
@@ -1022,7 +959,7 @@ var ProjectToolbar = /*#__PURE__*/function (_React$Component4) {
   }, {
     key: "file_adders",
     get: function get() {
-      return [[null, this._import_jupyter, "cloud-upload", false, "Import Jupyter notebook"]];
+      return [["Upload", "project", this._import_jupyter, ".ipynb", "cloud-upload", [], false, "Import Jupyter notebook"]];
     }
   }, {
     key: "render",
@@ -1286,32 +1223,10 @@ var ListToolbar = /*#__PURE__*/function (_React$Component6) {
     }
   }, {
     key: "_add_list",
-    value: function _add_list(file_list) {
-      var the_data = new FormData();
-
-      var _iterator9 = _createForOfIteratorHelper(file_list),
-          _step9;
-
-      try {
-        for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
-          var f = _step9.value;
-          the_data.append('file', f);
-        }
-      } catch (err) {
-        _iterator9.e(err);
-      } finally {
-        _iterator9.f();
-      }
-
-      var self = this;
-      (0, _communication_react.postAjaxUploadPromise)("add_list", the_data).then(function (data) {
-        self.props.refresh_func();
-      })["catch"](function (data) {
-        self.props.addErrorDrawerEntry({
-          title: "Error creating new list",
-          content: data.message
-        });
-      });
+    value: function _add_list(myDropZone, check_results) {
+      var url_base = "import_list";
+      myDropZone.options.url = "".concat(url_base, "/").concat(window.library_id);
+      myDropZone.processQueue();
     }
   }, {
     key: "context_menu_items",
@@ -1347,7 +1262,7 @@ var ListToolbar = /*#__PURE__*/function (_React$Component6) {
   }, {
     key: "file_adders",
     get: function get() {
-      return [[null, this._add_list, "cloud-upload", true, "Import list"]];
+      return [["Upload", "list", this._add_list, "text/*", "cloud-upload", [], false, "Import list"]];
     }
   }, {
     key: "render",

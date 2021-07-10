@@ -88,7 +88,7 @@ function got_parsed_data (data_object) {
         .then(function (data) {
             let split_tags = data.tags == "" ? [] : data.tags.split(" ");
             let category = parsed_data.category ? parsed_data.category : "basic";
-            ReactDOM.render(<CreatorAppPlus tile_name={window.module_name}
+            ReactDOM.render(<CreatorAppPlus
                                             is_mpl={parsed_data.is_mpl}
                                             is_d3={parsed_data.is_d3}
                                             render_content_code={parsed_data.render_content_code}
@@ -119,8 +119,8 @@ function TileCreatorToolbar(props) {
     return (
         <div style={tstyle} className="d-flex flex-row justify-content-between">
             <Namebutton resource_name={props.tile_name}
+                        setResourceNameState={props.setResourceNameState}
                         res_type={props.res_type}
-                        handleRename={props.handleRename}
             />
             <div>
                 <Toolbar button_groups={props.button_groups}/>
@@ -153,7 +153,7 @@ class CreatorApp extends React.Component {
         this.line_number = this.props.initial_line_number;
         this.socket_counter = null;
         this.state = {
-            tile_name: this.props.tile_name,
+            tile_name: window.module_name,
             foregrounded_panes: {
                 "metadata": true,
                 "options": false,
@@ -184,7 +184,7 @@ class CreatorApp extends React.Component {
             left_pane_width: awidth / 2 - 25,
             methodsTabRefreshRequired: true // This is toggled back and forth to force refresh
         };
-        this.handleRename = this.handleRename.bind(this);
+        this._setResourceNameState = this._setResourceNameState.bind(this);
         this.handleStateChange = this.handleStateChange.bind(this);
         this.handleRenderContentChange = this.handleRenderContentChange.bind(this);
         this.handleTopCodeChange = this.handleTopCodeChange.bind(this);
@@ -210,7 +210,7 @@ class CreatorApp extends React.Component {
                      {"name_text": "SaveAs", "icon_name": "floppy-disk", "click_handler": this._saveModuleAs, tooltip: "Save as"},
                      {"name_text": "Load", "icon_name": "upload", "click_handler": this._loadModule, key_bindings: ['ctrl+l'], tooltip: "Load tile"},
                      {"name_text": "Share", "icon_name": "share",
-                        "click_handler": () => {sendToRepository("tile", this.props.tile_name)}, tooltip: "Send to repository"}],
+                        "click_handler": () => {sendToRepository("tile", this.state.tile_name)}, tooltip: "Send to repository"}],
                     [{"name_text": "History", "icon_name": "history", "click_handler": this._showHistoryViewer, tooltip: "Show history viewer"},
                      {"name_text": "Compare", "icon_name": "comparison", "click_handler": this._showTileDiffer, tooltip: "Compare to another tile"}],
                     [{"name_text": "Drawer", "icon_name": "drawer-right", "click_handler": this.props.toggleErrorDrawer, tooltip: "Toggle error drawer"}]
@@ -232,11 +232,11 @@ class CreatorApp extends React.Component {
     }
 
     _showHistoryViewer () {
-        window.open(`${$SCRIPT_ROOT}/show_history_viewer/${this.props.tile_name}`)
+        window.open(`${$SCRIPT_ROOT}/show_history_viewer/${this.state.tile_name}`)
     }
 
     _showTileDiffer () {
-        window.open(`${$SCRIPT_ROOT}/show_tile_differ/${this.props.tile_name}`)
+        window.open(`${$SCRIPT_ROOT}/show_tile_differ/${this.state.tile_name}`)
     }
 
     _doFlashStopSpinner(data) {
@@ -578,8 +578,8 @@ class CreatorApp extends React.Component {
         this.setState({"render_content_code": new_code})
     }
 
-    handleRename(new_name) {
-        // this.setState({"tile_name": new_name})
+    _setResourceNameState(new_name) {
+        this.setState({"tile_name": new_name})
     }
 
     _handleResize(entries) {
@@ -664,8 +664,8 @@ class CreatorApp extends React.Component {
             left_pane = (
                 <React.Fragment>
                     <TileCreatorToolbar tile_name={this.state.tile_name}
+                                        setResourceNameState={this._setResourceNameState}
                                         res_type="tile"
-                                        handleRename={this.handleRename}
                                         button_groups={this.button_groups}
                                         key="toolbar"
                                         />
@@ -685,8 +685,8 @@ class CreatorApp extends React.Component {
             left_pane = (
                 <React.Fragment>
                     <TileCreatorToolbar tile_name={this.state.tile_name}
+                                        setResourceNameState={this._setResourceNameState}
                                         res_type="tile"
-                                        handleRename={this.handleRename}
                                         button_groups={this.button_groups}
                                         key="toolbar"
                                         />
@@ -787,7 +787,6 @@ class CreatorApp extends React.Component {
 }
 
 CreatorApp.propTypes = {
-    tile_name: PropTypes.string,
     is_mpl: PropTypes.bool,
     render_content_code: PropTypes.string,
     render_content_line_number: PropTypes.number,
