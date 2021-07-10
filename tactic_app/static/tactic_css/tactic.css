@@ -901,7 +901,7 @@ pre code {
   background-color: white; }
 .light-theme.pane-holder {
   background-color: white; }
-.light-theme .combined-metadata {
+.light-theme .combined-metadata, .light-theme div.filepicker {
   background-color: #f5f8fa; }
 .light-theme .notes-field-markdown-output {
   background: rgba(255, 255, 255, 0.7);
@@ -967,7 +967,7 @@ pre code {
   background-color: #30404d; }
 .bp3-dark.pane-holder {
   background-color: #30404d; }
-.bp3-dark .combined-metadata {
+.bp3-dark .combined-metadata, .bp3-dark div.filepicker {
   background-color: #293742; }
 .bp3-dark .notes-field-markdown-output {
   background-color: #394b59;

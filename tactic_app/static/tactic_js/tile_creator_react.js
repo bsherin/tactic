@@ -170,7 +170,6 @@ function got_parsed_data(data_object) {
     var split_tags = data.tags == "" ? [] : data.tags.split(" ");
     var category = parsed_data.category ? parsed_data.category : "basic";
     ReactDOM.render( /*#__PURE__*/_react["default"].createElement(CreatorAppPlus, {
-      tile_name: window.module_name,
       is_mpl: parsed_data.is_mpl,
       is_d3: parsed_data.is_d3,
       render_content_code: parsed_data.render_content_code,
@@ -205,8 +204,8 @@ function TileCreatorToolbar(props) {
     className: "d-flex flex-row justify-content-between"
   }, /*#__PURE__*/_react["default"].createElement(_blueprint_toolbar.Namebutton, {
     resource_name: props.tile_name,
-    res_type: props.res_type,
-    handleRename: props.handleRename
+    setResourceNameState: props.setResourceNameState,
+    res_type: props.res_type
   }), /*#__PURE__*/_react["default"].createElement("div", null, /*#__PURE__*/_react["default"].createElement(_blueprint_toolbar.Toolbar, {
     button_groups: props.button_groups
   })));
@@ -244,7 +243,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     _this.line_number = _this.props.initial_line_number;
     _this.socket_counter = null;
     _this.state = {
-      tile_name: _this.props.tile_name,
+      tile_name: window.module_name,
       foregrounded_panes: {
         "metadata": true,
         "options": false,
@@ -276,7 +275,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       methodsTabRefreshRequired: true // This is toggled back and forth to force refresh
 
     };
-    _this.handleRename = _this.handleRename.bind(_assertThisInitialized(_this));
+    _this._setResourceNameState = _this._setResourceNameState.bind(_assertThisInitialized(_this));
     _this.handleStateChange = _this.handleStateChange.bind(_assertThisInitialized(_this));
     _this.handleRenderContentChange = _this.handleRenderContentChange.bind(_assertThisInitialized(_this));
     _this.handleTopCodeChange = _this.handleTopCodeChange.bind(_assertThisInitialized(_this));
@@ -330,7 +329,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         "name_text": "Share",
         "icon_name": "share",
         "click_handler": function click_handler() {
-          (0, _resource_viewer_react_app.sendToRepository)("tile", _this2.props.tile_name);
+          (0, _resource_viewer_react_app.sendToRepository)("tile", _this2.state.tile_name);
         },
         tooltip: "Send to repository"
       }], [{
@@ -386,12 +385,12 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_showHistoryViewer",
     value: function _showHistoryViewer() {
-      window.open("".concat($SCRIPT_ROOT, "/show_history_viewer/").concat(this.props.tile_name));
+      window.open("".concat($SCRIPT_ROOT, "/show_history_viewer/").concat(this.state.tile_name));
     }
   }, {
     key: "_showTileDiffer",
     value: function _showTileDiffer() {
-      window.open("".concat($SCRIPT_ROOT, "/show_tile_differ/").concat(this.props.tile_name));
+      window.open("".concat($SCRIPT_ROOT, "/show_tile_differ/").concat(this.state.tile_name));
     }
   }, {
     key: "_doFlashStopSpinner",
@@ -845,8 +844,11 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       });
     }
   }, {
-    key: "handleRename",
-    value: function handleRename(new_name) {// this.setState({"tile_name": new_name})
+    key: "_setResourceNameState",
+    value: function _setResourceNameState(new_name) {
+      this.setState({
+        "tile_name": new_name
+      });
     }
   }, {
     key: "_handleResize",
@@ -957,8 +959,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       if (this.props.is_mpl || this.props.is_d3) {
         left_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(TileCreatorToolbar, {
           tile_name: this.state.tile_name,
+          setResourceNameState: this._setResourceNameState,
           res_type: "tile",
-          handleRename: this.handleRename,
           button_groups: this.button_groups,
           key: "toolbar"
         }), /*#__PURE__*/_react["default"].createElement("div", {
@@ -975,8 +977,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       } else {
         left_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(TileCreatorToolbar, {
           tile_name: this.state.tile_name,
+          setResourceNameState: this._setResourceNameState,
           res_type: "tile",
-          handleRename: this.handleRename,
           button_groups: this.button_groups,
           key: "toolbar"
         }), /*#__PURE__*/_react["default"].createElement("div", {
@@ -1095,7 +1097,6 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
 }(_react["default"].Component);
 
 CreatorApp.propTypes = {
-  tile_name: _propTypes["default"].string,
   is_mpl: _propTypes["default"].bool,
   render_content_code: _propTypes["default"].string,
   render_content_line_number: _propTypes["default"].number,

@@ -5,7 +5,7 @@ from flask_login import login_required, current_user
 from flask import jsonify, render_template, url_for, request, send_file
 from users import User
 from docker_functions import create_container, main_container_info
-from tactic_app import app, db, fs
+from tactic_app import app, db
 from communication_utils import make_python_object_jsonizable, debinarize_python_object
 from communication_utils import read_temp_data, delete_temp_data
 from mongo_accesser import MongoAccessException
@@ -365,38 +365,48 @@ class CollectionManager(LibraryResourceManager):
             return self.get_exception_for_ajax(ex, "Error combining collection")
 
     def import_as_table(self, collection_name, library_id):
-        self.start_library_spinner(library_id)
+        file_list = []
+        for the_file in request.files.values():
+            file_list.append(the_file)
+        result = self.import_as_table_full(file_list, collection_name)
+        result["new_resource_name"] = collection_name
+        self.send_import_report(result, library_id)
+        if result["success"]:
+            self.refresh_selector_list()
+        return {"success": True}
+
+    def import_as_table_full(self, file_list, collection_name):
+        if len(file_list) == 0:
+            return {"success": "false", "title": "Error creating collection", "content": "No files received"}
         user_obj = current_user
-        file_list = request.files.getlist("file")
 
         collection_mdata = loaded_tile_management.create_initial_metadata()
 
         known_extensions = [".xlsx", ".csv", ".tsv", ".txt"]
 
         file_decoding_errors = OrderedDict()
+        successful_reads = []
+        failed_reads = OrderedDict()
         new_doc_dict = {}
         header_list_dict = {}
+
         for the_file in file_list:
             filename, file_extension = os.path.splitext(the_file.filename)
+            print("file is {}".format(filename))
             if file_extension not in known_extensions:
-                self.stop_library_spinner(library_id)
-                return jsonify({"success": False, "message": "Invalid file extension " + file_extension,
-                                "alert_type": "alert-warning"})
-
+                failed_reads[filename] = "Invalid file extension " + file_extension
+                continue
             decoding_problems = []
             if file_extension == ".xlsx":
-                self.show_um_message("Reading excel file {}".format(filename), library_id,
-                                     timeout=10)
                 (success, doc_dict, header_dict) = read_excel_file(the_file)
+
                 if not success:  # then doc_dict contains an error object
                     e = doc_dict
-                    self.stop_library_spinner(library_id)
-                    return jsonify({"message": e["message"], "alert_type": "alert-danger"})
+                    failed_reads[filename] = e["message"]
+                    continue
                 new_doc_dict.update(doc_dict)
                 header_list_dict.update(header_dict)
             else:
-                self.show_um_message("Reading file {} and checking encoding".format(filename), library_id,
-                                     timeout=10)
                 if file_extension == ".csv":
                     (success, row_list, header_list, encoding, decoding_problems) = read_csv_file_to_list(the_file)
                 elif file_extension == ".tsv":
@@ -404,69 +414,100 @@ class CollectionManager(LibraryResourceManager):
                 elif file_extension == ".txt":
                     (success, row_list, header_list, encoding, decoding_problems) = read_txt_file_to_list(the_file)
                 else:
-                    self.stop_library_spinner(library_id)
-                    return jsonify({"message": "unkown file extension", "alert_type": "alert-danger"})
-                self.show_um_message("Got encoding {} for {}".format(encoding, filename), library_id, timeout=10)
+                    failed_reads[filename] = "unkown file extension"
+                    continue
 
                 if not success:  # then row_list contains an error object
                     e = row_list
-                    self.stop_library_spinner(library_id)
-                    return jsonify({"message": e["message"], "alert_type": "alert-danger"})
+                    failed_reads[filename] = e["message"]
+                    continue
                 new_doc_dict[filename] = row_list
                 header_list_dict[filename] = header_list
 
             if len(decoding_problems) > 0:
                 file_decoding_errors[filename] = decoding_problems
-
+            successful_reads.append(filename)
         try:
-            result = user_obj.create_complete_collection(collection_name, new_doc_dict, "table", None,
-                                                         header_list_dict, collection_mdata)
+            if len(successful_reads) == 0:
+                return {"success": "false",
+                        "title": "No files successfully read",
+                        "successful_reads": successful_reads,
+                        "file_decoding_errors": file_decoding_errors,
+                        "failed_reads": failed_reads}
+            _ = user_obj.create_complete_collection(collection_name, new_doc_dict, "table", None,
+                                                    header_list_dict, collection_mdata)
         except Exception as ex:
-            self.stop_library_spinner(library_id)
-            return self.get_exception_for_ajax(ex, "Error creating collection")
+            msg = self.extract_short_error_message(ex, "Error creating collection")
+            return {"success": "false", "title": "Error creating collection", "content": msg}
 
-        new_row = self.build_res_dict(collection_name, result["metadata"], user_obj)
-        if len(file_decoding_errors.keys()) == 0:
-            file_decoding_errors = None
-        self.stop_library_spinner(library_id)
-        self.clear_um_message(library_id)
-        return jsonify({"success": True, "new_row": new_row,
-                        "message": "Collection successfully loaded", "alert_type": "alert-success",
-                        "file_decoding_errors": file_decoding_errors})
+        if len(failed_reads.keys()) > 0:
+            final_success = "partial"
+        else:
+            final_success = "true"
+
+        return {"success": final_success,
+                "title": "Collection {} created".format(collection_name),
+                "file_decoding_errors": file_decoding_errors,
+                "successful_reads": successful_reads,
+                "failed_reads": failed_reads}
 
     def import_as_freeform(self, collection_name, library_id):
+        file_list = []
+        for the_file in request.files.values():
+            print(the_file.filename)
+            file_list.append(the_file)
+        result = self.import_as_freeform_full(file_list, collection_name)
+        self.send_import_report(result, library_id)
+        if result["success"]:
+            self.refresh_selector_list()
+        return {"success": True}
+
+    def import_as_freeform_full(self, file_list, collection_name):
+        if len(file_list) == 0:
+            return {"success": "false", "title": "Error creating collection", "content": "No files received"}
         user_obj = current_user
-        file_list = request.files.getlist("file")
 
         collection_mdata = loaded_tile_management.create_initial_metadata()
         file_decoding_errors = OrderedDict()
+        successful_reads = []
+        failed_reads = OrderedDict()
         new_doc_dict = {}
         for the_file in file_list:
 
             filename, file_extension = os.path.splitext(the_file.filename)
             filename = filename.encode("ascii", "ignore")
-            self.show_um_message("Reading file {} and checking encoding".format(filename), library_id, timeout=10)
             (success, result_txt, encoding, decoding_problems) = read_freeform_file(the_file)
-            self.show_um_message("Got encoding {} for {}".format(encoding, filename), library_id, timeout=10)
             if not success:  # then result_txt contains an error object
                 e = result_txt
-                return jsonify({"message": e.message, "alert_type": "alert-danger"})
+                failed_reads[filename] = e["message"]
+                continue
             new_doc_dict[filename] = result_txt
             if len(decoding_problems) > 0:
                 file_decoding_errors[filename] = decoding_problems
-
+            successful_reads.append(filename)
         try:
-            result = user_obj.create_complete_collection(collection_name, new_doc_dict, "freeform", None,
-                                                         None, collection_mdata)
+            if len(successful_reads) == 0:
+                return {"success": "false",
+                        "title": "No files successfully read",
+                        "file_decoding_errors": file_decoding_errors,
+                        "successful_reads": successful_reads,
+                        "failed_reads": failed_reads}
+            _ = user_obj.create_complete_collection(collection_name, new_doc_dict, "freeform", None,
+                                                    None, collection_mdata)
         except Exception as ex:
-            return self.get_exception_for_ajax(ex, "Error creating collection")
+            msg = self.extract_short_error_messsage(ex, "Error creating collection")
+            return {"success": "false", "title": "Error creating collection", "content": msg}
 
-        new_row = self.build_res_dict(collection_name, result["metadata"], user_obj)
-        if len(file_decoding_errors.keys()) == 0:
-            file_decoding_errors = None
-        return jsonify({"success": True, "new_row": new_row,
-                        "alert_type": "alert-success",
-                        "file_decoding_errors": file_decoding_errors})
+        if len(failed_reads.keys()) > 0:
+            final_success = "partial"
+        else:
+            final_success = "true"
+
+        return {"success": final_success,
+                "title": "Collection {} created".format(collection_name),
+                "file_decoding_errors": file_decoding_errors,
+                "successful_reads": successful_reads,
+                "failed_reads": failed_reads}
 
     def delete_collection(self):
         try:

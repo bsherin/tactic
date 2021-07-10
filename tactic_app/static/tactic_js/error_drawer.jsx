@@ -8,7 +8,7 @@ import {Status} from "./toaster.js";
 import {doBinding} from "./utilities_react.js";
 import {postWithCallback} from "./communication_react.js";
 
-export {withErrorDrawer}
+export {withErrorDrawer, ErrorItem}
 
 function withErrorDrawer(WrappedComponent, tsocket=null, title=null, position="right", size="30%") {
     return class extends React.Component {
@@ -142,7 +142,9 @@ class ErrorItem extends React.Component {
                     <h6 style={{overflow: "auto"}}><a href="#">{this.props.title}</a></h6>
                 }
                 <div style={{fontSize: 13, overflow: "auto"}} dangerouslySetInnerHTML={content_dict}/>
-                <Button text="show" icon="eye-open" small={true} onClick={this._openError}/>
+                {this.props.has_link && <Button text="show" icon="eye-open" small={true} onClick={this._openError}/>
+                }
+
             </Card>
         )
     }

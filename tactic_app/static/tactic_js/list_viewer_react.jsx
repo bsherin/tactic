@@ -39,7 +39,7 @@ function list_viewer_main ()  {
             postAjaxPromise(get_mdata_url, result_dict)
 			        .then(function (data) {
 			            let split_tags = data.tags == "" ? [] : data.tags.split(" ");
-                        ReactDOM.render(<ListViewerAppPlus resource_name={window.resource_name}
+                        ReactDOM.render(<ListViewerAppPlus
                                                        the_content={the_content}
                                                        created={data.datestring}
                                                        tags={split_tags}
@@ -50,7 +50,7 @@ function list_viewer_main ()  {
                                                        meta_outer="#right-div"/>, domContainer);
 			        })
 			        .catch(function () {
-			            ReactDOM.render(<ListViewerAppPlus resource_name={window.resource_name}
+			            ReactDOM.render(<ListViewerAppPlus
                                                        the_content={the_content}
                                                        created=""
                                                        tags={[]}
@@ -113,6 +113,7 @@ class ListViewerApp extends React.Component {
         let aheight = getUsableDimensions().usable_height;
         let awidth = getUsableDimensions().usable_width;
         this.state = {
+            resource_name: window.resource_name,
             list_content: props.the_content,
             notes: props.notes,
             tags: props.tags,
@@ -137,14 +138,14 @@ class ListViewerApp extends React.Component {
         let bgs;
         if (this.props.is_repository) {
             bgs = [[{"name_text": "Copy", "icon_name": "share",
-                        "click_handler": () => {copyToLibrary("list", this.props.resource_name)}, tooltip: "Copy to library"}]
+                        "click_handler": () => {copyToLibrary("list", this.state.resource_name)}, tooltip: "Copy to library"}]
             ]
         }
         else {
             bgs = [[{"name_text": "Save", "icon_name": "saved", "click_handler": this._saveMe, tooltip: "Save"},
                     {"name_text": "SaveAs", "icon_name": "floppy-disk", "click_handler": this._saveMeAs, tooltip: "Save As"},
                     {"name_text": "Share", "icon_name": "share",
-                          "click_handler": () => {sendToRepository("list", this.props.resource_name)},
+                          "click_handler": () => {sendToRepository("list", this.state.resource_name)},
                         tooltip: "Share to repository"}]
             ]
         }
@@ -184,6 +185,10 @@ class ListViewerApp extends React.Component {
         }
     }
 
+    _setResourceNameState(new_name) {
+        this.setState({resource_name: new_name})
+    }
+
     render() {
 
         let the_context = {"readOnly": this.props.readOnly};
@@ -209,7 +214,8 @@ class ListViewerApp extends React.Component {
                 <ResizeSensor onResize={this._handleResize} observeParents={true}>
                     <div className={outer_class} ref={this.top_ref} style={outer_style}>
                         <ResourceViewerApp {...this.props.statusFuncs}
-                                           resource_name={this.props.resource_name}
+                                           setResourceNameState={this._setResourceNameState}
+                                           resource_name={this.state.resource_name}
                                            created={this.props.created}
                                            meta_outer={this.props.meta_outer}
                                            readOnly={window.read_only}
@@ -239,7 +245,7 @@ class ListViewerApp extends React.Component {
         const notes = this.state.notes;
         const tags = this.state.tags;  // In case it's modified wile saving
         const result_dict = {
-            "list_name": this.props.resource_name,
+            "list_name": this.state.resource_name,
             "new_list_as_string": new_list_as_string,
             "tags": tagstring,
             "notes": notes
@@ -273,7 +279,6 @@ class ListViewerApp extends React.Component {
 }
 
 ListViewerApp.propTypes = {
-    resource_name: PropTypes.string,
     the_content: PropTypes.string,
     created: PropTypes.string,
     tags: PropTypes.array,

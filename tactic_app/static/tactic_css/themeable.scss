@@ -20,7 +20,7 @@ $dark-table-border-style: $table-border-thickness solid;
       background-color: white
     }
 
-    .combined-metadata {
+    .combined-metadata, div.filepicker {
       background-color: $light-gray5
 
     }
@@ -157,7 +157,7 @@ $dark-table-border-style: $table-border-thickness solid;
       background-color: $dark-gray4
     }
 
-    .combined-metadata {
+    .combined-metadata, div.filepicker {
       background-color: $dark-gray3;
     }
 

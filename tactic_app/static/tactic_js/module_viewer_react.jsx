@@ -40,7 +40,7 @@ function module_viewer_main ()  {
             postAjaxPromise(get_mdata_url, result_dict)
 			        .then(function (data) {
 			            let split_tags = data.tags == "" ? [] : data.tags.split(" ");
-                        ReactDOM.render(<ModuleViewerAppPlus resource_name={window.resource_name}
+                        ReactDOM.render(<ModuleViewerAppPlus
                                                        the_content={the_content}
                                                        created={data.datestring}
                                                        tags={split_tags}
@@ -51,7 +51,7 @@ function module_viewer_main ()  {
                                                        meta_outer="#right-div"/>, domContainer);
 			        })
 			        .catch(function () {
-			            ReactDOM.render(<ModuleViewerAppPlus resource_name={window.resource_name}
+			            ReactDOM.render(<ModuleViewerAppPlus
                                                        the_content={the_content}
                                                        created=""
                                                        tags={[]}
@@ -86,6 +86,7 @@ class ModuleViewerApp extends React.Component {
         let aheight = window.innerHeight - BOTTOM_MARGIN - USUAL_TOOLBAR_HEIGHT;
         let awidth = getUsableDimensions().usable_width;
         this.state = {
+            resource_name: window.resource_name,
             code_content: props.the_content,
             notes: props.notes,
             tags: props.tags,
@@ -120,7 +121,7 @@ class ModuleViewerApp extends React.Component {
         if (this.props.is_repository) {
             bgs = [
                     [{"name_text": "Copy", "icon_name": "share",
-                        "click_handler": () => {copyToLibrary("modules", this.props.resource_name)}, tooltip: "Copy to library"}]
+                        "click_handler": () => {copyToLibrary("modules", this.state.resource_name)}, tooltip: "Copy to library"}]
             ]
         }
         else {
@@ -130,7 +131,7 @@ class ModuleViewerApp extends React.Component {
                      {"name_text": "SaveAs", "icon_name": "floppy-disk", "click_handler": this._saveMeAs, tooltip: "Save as"},
                      {"name_text": "Load", "icon_name": "upload", "click_handler": this._loadModule, tooltip: "Load tile"},
                      {"name_text": "Share", "icon_name": "share",
-                        "click_handler": () => {sendToRepository("tile", this.props.resource_name)}, tooltip: "Share to repository"}],
+                        "click_handler": () => {sendToRepository("tile", this.state.resource_name)}, tooltip: "Share to repository"}],
                     [{"name_text": "History", "icon_name": "history", "click_handler": this._showHistoryViewer, tooltip: "Show history viewer"},
                      {"name_text": "Compare", "icon_name": "comparison", "click_handler": this._showTileDiffer, tooltip: "Compare to another tile"}]
             ]
@@ -180,6 +181,10 @@ class ModuleViewerApp extends React.Component {
         }
     }
 
+    _setResourceNameState(new_name) {
+        this.setState({resource_name: new_name})
+    }
+
     render() {
         let the_context = {"readOnly": this.props.readOnly};
         let outer_style = {width: "100%",
@@ -205,8 +210,9 @@ class ModuleViewerApp extends React.Component {
                 <ResizeSensor onResize={this._handleResize} observeParents={true}>
                     <div className={outer_class} ref={this.top_ref} style={outer_style}>
                             <ResourceViewerApp {...this.props.statusFuncs}
+                                               setResourceNameState={this._setResourceNameState}
                                                res_type="tile"
-                                               resource_name={this.props.resource_name}
+                                               resource_name={this.state.resource_name}
                                                button_groups={this.button_groups}
                                                handleStateChange={this._handleStateChange}
                                                created={this.props.created}
@@ -251,7 +257,7 @@ class ModuleViewerApp extends React.Component {
             let category;
             category = null;
             result_dict = {
-                "module_name": self.props.resource_name,
+                "module_name": self.state.resource_name,
                 "category": category,
                 "tags": tagstring,
                 "notes": notes,
@@ -284,7 +290,7 @@ class ModuleViewerApp extends React.Component {
         this.doSavePromise()
             .then(function () {
                 self.props.statusMessage("Loading Module");
-                postWithCallback("host", "load_tile_module_task", {"tile_module_name": self.props.resource_name, "user_id": user_id}, load_success)
+                postWithCallback("host", "load_tile_module_task", {"tile_module_name": self.state.resource_name, "user_id": user_id}, load_success)
             })
             .catch(self._doFlashStopSpinner);
 
@@ -315,7 +321,7 @@ class ModuleViewerApp extends React.Component {
     doCheckpointPromise() {
         let self = this;
         return new Promise (function (resolve, reject) {
-            postAjax("checkpoint_module", {"module_name": self.props.resource_name}, function (data) {
+            postAjax("checkpoint_module", {"module_name": self.state.resource_name}, function (data) {
                 if (data.success) {
                     resolve(data)
                 }
@@ -327,11 +333,11 @@ class ModuleViewerApp extends React.Component {
     }
 
     _showHistoryViewer () {
-        window.open(`${$SCRIPT_ROOT}/show_history_viewer/${this.props.resource_name}`)
+        window.open(`${$SCRIPT_ROOT}/show_history_viewer/${this.state.resource_name}`)
     }
 
     _showTileDiffer () {
-        window.open(`${$SCRIPT_ROOT}/show_tile_differ/${this.props.resource_name}`)
+        window.open(`${$SCRIPT_ROOT}/show_tile_differ/${this.state.resource_name}`)
     }
 
 
@@ -344,7 +350,6 @@ class ModuleViewerApp extends React.Component {
 }
 
 ModuleViewerApp.propTypes = {
-    resource_name: PropTypes.string,
     the_content: PropTypes.string,
     created: PropTypes.string,
     tags: PropTypes.array,

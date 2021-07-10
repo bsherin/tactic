@@ -13,6 +13,7 @@ from resource_manager import ResourceManager, LibraryResourceManager
 from users import User
 from communication_utils import make_jsonizable_and_compress, read_project_dict
 import loaded_tile_management
+from mongo_accesser import make_name_unique
 repository_user = User.get_user_by_username("repository")
 from file_handling import read_freeform_file
 from redis_tools import create_ready_block
@@ -38,8 +39,8 @@ class ProjectManager(LibraryResourceManager):
                          methods=['post'])
         app.add_url_rule('/duplicate_project', "duplicate_project",
                          login_required(self.duplicate_project), methods=['get', 'post'])
-        app.add_url_rule('/import_as_jupyter/<jupyter_name>/<library_id>', "import_as_jupyter",
-                         login_required(self.import_as_jupyter), methods=['get', "post"])
+        app.add_url_rule('/import_jupyter/<library_id>', "import_jupyter",
+                         login_required(self.import_jupyter), methods=['get', "post"])
         app.add_url_rule('/download_jupyter/<project_name>/<new_name>', "download_jupyter",
                          login_required(self.download_jupyter), methods=['get', "post"])
         app.add_url_rule('/grab_project_list_chunk', "grab_projec_list_chunk",
@@ -61,40 +62,71 @@ class ProjectManager(LibraryResourceManager):
                          attachment_filename=new_name,
                          as_attachment=True)
 
-    def import_as_jupyter(self, jupyter_name, library_id):
+    def import_jupyter(self, library_id):
+        file_list = []
+        for the_file in request.files.values():
+            file_list.append(the_file)
+        print("got {} files".format(str(len(file_list))))
+        result = self.import_as_jupyter_full(file_list)
+        self.send_import_report(result, library_id)
+        if result["success"] == "true":
+            self.refresh_selector_list()
+        return {"success": True}
+
+    def import_as_jupyter_full(self, file_list):
+        if len(file_list) == 0:
+            return {"success": "false", "title": "Error creating notebooks", "content": "No files received"}
         user_obj = current_user
-        file_list = request.files.getlist("file")
-        the_file = file_list[0]
-        filename, file_extension = os.path.splitext(the_file.filename)
-        filename = filename.encode("ascii", "ignore")
-        self.show_um_message("Reading file {} and checking encoding".format(filename), library_id, timeout=10)
         file_decoding_errors = OrderedDict()
-        (success, result_txt, encoding, decoding_problems) = read_freeform_file(the_file)
-        self.show_um_message("Got encoding {} for {}".format(encoding, filename), library_id, timeout=10)
-        if not success:  # then result_dict contains an error object
-            e = result_txt
-            return jsonify({"message": e.message, "alert_type": "alert-danger"})
-        if len(decoding_problems) > 0:
-            file_decoding_errors[filename] = decoding_problems
-        mdata = loaded_tile_management.create_initial_metadata()
-        mdata["type"] = "jupyter"
-        mdata["save_style"] = "b64save_react"
+        failed_reads = OrderedDict()
+        successful_reads = []
+        for the_file in file_list:
+            filename, file_extension = os.path.splitext(the_file.filename)
+            jupyter_name = make_name_unique(filename, user_obj.project_names)
+            print("got file " + filename)
+            filename = filename.encode("ascii", "ignore")
+            (success, result_txt, encoding, decoding_problems) = read_freeform_file(the_file)
+            if not success:  # then result_dict contains an error object
+                e = result_txt
+                failed_reads[the_file.filename] = e.message
+                continue
+            if len(decoding_problems) > 0:
+                file_decoding_errors[the_file.filename] = decoding_problems
 
-        save_dict = {"metadata": mdata,
-                     "project_name": jupyter_name}
+            mdata = loaded_tile_management.create_initial_metadata()
+            mdata["type"] = "jupyter"
+            mdata["save_style"] = "b64save_react"
 
-        project_dict = {"jupyter_text": result_txt}
+            save_dict = {"metadata": mdata,
+                         "project_name": jupyter_name}
 
-        pdict = make_jsonizable_and_compress(project_dict)
-        save_dict["file_id"] = fs.put(pdict)
-        db[current_user.project_collection_name].insert_one(save_dict)
+            project_dict = {"jupyter_text": result_txt}
 
-        new_row = self.build_res_dict(jupyter_name, mdata, user_obj)
-        if len(file_decoding_errors.keys()) == 0:
-            file_decoding_errors = None
-        return jsonify({"success": True, "new_row": new_row,
-                        "alert_type": "alert-success",
-                        "file_decoding_errors": file_decoding_errors})
+            pdict = make_jsonizable_and_compress(project_dict)
+            save_dict["file_id"] = fs.put(pdict)
+            db[current_user.project_collection_name].insert_one(save_dict)
+            if len(decoding_problems) > 0:
+                file_decoding_errors[filename] = decoding_problems
+            successful_reads.append(filename)
+        if len(successful_reads) == 0:
+            return {"success": "false",
+                    "title": "No files successfully read",
+                    "file_decoding_errors": file_decoding_errors,
+                    "successful_reads": successful_reads,
+                    "failed_reads": failed_reads}
+
+        if len(failed_reads.keys()) > 0:
+            final_success = "partial"
+            title = "Some notebooks successfully created"
+        else:
+            title = "All notebooks successfully created"
+            final_success = "true"
+
+        return {"success": final_success,
+                "title": title,
+                "file_decoding_errors": file_decoding_errors,
+                "successful_reads": successful_reads,
+                "failed_reads": failed_reads}
 
     def main_project(self, project_name):
         user_obj = current_user

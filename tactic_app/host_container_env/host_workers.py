@@ -93,6 +93,10 @@ class HostWorker(QWorker):
     def clear_um_status_message(self, library_id):
         socketio.emit('clear-status-msg', {}, namespace='/library', room=library_id)
 
+    def add_error_drawer_entry(self, title, content, library_id):
+        data = {"title": title, "content": content}
+        socketio.emit("add-error-drawer-entry", data, namespace='/library', room=library_id)
+
     @task_worthy
     def participant_ready(self, data):
         user_id = data["user_id"]

@@ -37,7 +37,7 @@ function code_viewer_main ()  {
             postAjaxPromise(get_mdata_url, result_dict)
 			        .then(function (data) {
 			            let split_tags = data.tags == "" ? [] : data.tags.split(" ");
-                        ReactDOM.render(<CodeViewerAppPlus resource_name={window.resource_name}
+                        ReactDOM.render(<CodeViewerAppPlus
                                                        the_content={the_content}
                                                        created={data.datestring}
                                                        tags={split_tags}
@@ -48,7 +48,7 @@ function code_viewer_main ()  {
                                                        meta_outer="#right-div"/>, domContainer);
 			        })
 			        .catch(function () {
-			            ReactDOM.render(<CodeViewerAppPlus resource_name={window.resource_name}
+			            ReactDOM.render(<CodeViewerAppPlus
                                                        the_content={the_content}
                                                        created=""
                                                        tags={[]}
@@ -83,6 +83,7 @@ class CodeViewerApp extends React.Component {
         let aheight = getUsableDimensions().usable_height;
         let awidth = getUsableDimensions().usable_width;
         this.state = {
+            resource_name: window.resource_name,
             code_content: props.the_content,
             notes: props.notes,
             tags: props.tags,
@@ -123,14 +124,14 @@ class CodeViewerApp extends React.Component {
         let bgs;
         if (this.props.is_repository) {
              bgs =[[{"name_text": "Copy", "icon_name": "share",
-                        "click_handler": () => {copyToLibrary("code", this.props.resource_name)}, tooltip: "Copy to library"}]
+                        "click_handler": () => {copyToLibrary("code", this.state.resource_name)}, tooltip: "Copy to library"}]
             ]
         }
         else {
             bgs = [[{"name_text": "Save", "icon_name": "saved", "click_handler": this._saveMe, tooltip: "Save"},
                     {"name_text": "SaveAs", "icon_name": "floppy-disk", "click_handler": this._saveMeAs, tooltip: "Save as"},
                     {"name_text": "Share", "icon_name": "share",
-                          "click_handler": () => {sendToRepository("code", this.props.resource_name)}, tooltip: "Share to repository"}]
+                          "click_handler": () => {sendToRepository("code", this.state.resource_name)}, tooltip: "Share to repository"}]
             ]
         }
 
@@ -141,6 +142,10 @@ class CodeViewerApp extends React.Component {
         }
         return bgs
 
+    }
+
+    _setResourceNameState(new_name) {
+        this.setState({resource_name: new_name})
     }
 
     _handleCodeChange(new_code) {
@@ -184,8 +189,9 @@ class CodeViewerApp extends React.Component {
                           user_name={window.username}/>
                 <div className={outer_class} ref={this.top_ref} style={outer_style}>
                     <ResourceViewerApp {...this.props.statusFuncs}
+                                       setResourceNameState={this._setResourceNameState}
                                        res_type="code"
-                                       resource_name={this.props.resource_name}
+                                       resource_name={this.state.resource_name}
                                        button_groups={this.button_groups}
                                        handleStateChange={this._handleStateChange}
                                        created={this.props.created}
@@ -214,7 +220,7 @@ class CodeViewerApp extends React.Component {
         const notes = this.state.notes;
         const tags = this.state.tags;  // In case it's modified wile saving
         const result_dict = {
-            "code_name": this.props.resource_name,
+            "code_name": this.state.resource_name,
             "new_code": new_code,
             "tags": tagstring,
             "notes": notes,
@@ -249,7 +255,6 @@ class CodeViewerApp extends React.Component {
 }
 
 CodeViewerApp.propTypes = {
-    resource_name: PropTypes.string,
     the_content: PropTypes.string,
     created: PropTypes.string,
     tags: PropTypes.array,

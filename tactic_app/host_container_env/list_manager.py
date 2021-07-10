@@ -1,17 +1,20 @@
 
 import sys, datetime, copy
 import re
+from collections import OrderedDict
+import os
 from flask_login import login_required, current_user
 from flask import jsonify, render_template, url_for, request
 
 from tactic_app import app, db
 import tactic_app
-
+from mongo_accesser import make_name_unique
 from file_handling import load_a_list
 from resource_manager import ResourceManager, LibraryResourceManager
 from users import User
 import loaded_tile_management
 repository_user = User.get_user_by_username("repository")
+from file_handling import read_freeform_file
 
 import datetime
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
@@ -30,7 +33,8 @@ class ListManager(LibraryResourceManager):
         app.add_url_rule('/view_list/<list_name>', "view_list", login_required(self.view_list), methods=['get'])
 
         app.add_url_rule('/get_list/<list_name>', "get_list", login_required(self.get_list), methods=['get', 'post'])
-        app.add_url_rule('/add_list', "add_list", login_required(self.add_list), methods=['get', "post"])
+        app.add_url_rule('/import_list/<library_id>', "import_list",
+                         login_required(self.import_list), methods=['get', "post"])
         app.add_url_rule('/delete_list', "delete_list", login_required(self.delete_list), methods=['post'])
         app.add_url_rule('/create_duplicate_list', "create_duplicate_list",
                          login_required(self.create_duplicate_list), methods=['get', 'post'])
@@ -81,9 +85,19 @@ class ListManager(LibraryResourceManager):
     def rename_me(self, old_name):
         try:
             new_name = request.json["new_name"]
+            update_selector = "update_selector" in request.json and request.json["update_selector"] == "True"
             db[current_user.list_collection_name].update_one({"list_name": old_name},
                                                              {'$set': {"list_name": new_name}})
             # self.update_selector_list()
+            if update_selector:
+                doc = db[current_user.list_collection_name].find_one({"list_name": new_name})
+                if "metadata" in doc:
+                    mdata = doc["metadata"]
+                else:
+                    mdata = {}
+                res_dict = self.build_res_dict(old_name, mdata)
+                res_dict["new_name"] = new_name
+                self.update_selector_row(res_dict)
             return jsonify({"success": True, "message": "List name changed", "alert_type": "alert-success"})
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error renaming list")
@@ -158,18 +172,66 @@ class ListManager(LibraryResourceManager):
 
         return self.grab_resource_list_chunk(colname, "list_name", "the_list")
 
-    def add_list(self):
+    def import_list(self, library_id):
+        file_list = []
+        for the_file in request.files.values():
+            file_list.append(the_file)
+        result = self.import_as_list_full(file_list)
+        self.send_import_report(result, library_id)
+        if result["success"] == "true":
+            self.refresh_selector_list()
+        return {"success": True}
+
+    def import_as_list_full(self, file_list):
+        if len(file_list) == 0:
+            return {"success": "false", "title": "Error creating lists", "content": "No files received"}
         user_obj = current_user
-        the_file = request.files['file']
-        if db[user_obj.list_collection_name].find_one({"list_name": the_file.filename}) is not None:
-            return jsonify({"success": False, "alert_type": "alert-warning",
-                            "message": "A list with that name already exists"})
-        the_list = load_a_list(the_file)
-        metadata = loaded_tile_management.create_initial_metadata()
-        data_dict = {"list_name": the_file.filename, "the_list": the_list, "metadata": metadata}
-        db[user_obj.list_collection_name].insert_one(data_dict)
-        new_row = self.build_res_dict(the_file.filename, metadata, user_obj)
-        return jsonify({"success": True, "new_row": new_row})
+        file_decoding_errors = OrderedDict()
+        failed_reads = OrderedDict()
+        successful_reads = []
+
+        for the_file in file_list:
+            filename, file_extension = os.path.splitext(the_file.filename)
+            list_name = make_name_unique(filename, user_obj.list_names)
+            filename = filename.encode("ascii", "ignore")
+
+            (success, result_txt, encoding, decoding_problems) = read_freeform_file(the_file)
+            if not success:  # then result_dict contains an error object
+                e = result_txt
+                failed_reads[the_file.filename] = e.message
+                continue
+
+            the_list = load_a_list(result_txt)
+            if len(decoding_problems) > 0:
+                file_decoding_errors[the_file.filename] = decoding_problems
+
+            mdata = loaded_tile_management.create_initial_metadata()
+            data_dict = {"list_name": list_name, "the_list": the_list, "metadata": mdata}
+
+            db[user_obj.list_collection_name].insert_one(data_dict)
+            if len(decoding_problems) > 0:
+                file_decoding_errors[filename] = decoding_problems
+            successful_reads.append(filename)
+
+        if len(successful_reads) == 0:
+            return {"success": "false",
+                    "title": "No files successfully read",
+                    "file_decoding_errors": file_decoding_errors,
+                    "successful_reads": successful_reads,
+                    "failed_reads": failed_reads}
+
+        if len(failed_reads.keys()) > 0:
+            final_success = "partial"
+            title = "Some lists successfully created"
+        else:
+            title = "All lists successfully created"
+            final_success = "true"
+
+        return {"success": final_success,
+                "title": title,
+                "file_decoding_errors": file_decoding_errors,
+                "successful_reads": successful_reads,
+                "failed_reads": failed_reads}
 
     def delete_list(self):
         try:
