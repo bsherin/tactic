@@ -888,6 +888,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         this._updatePaneState({
           selected_resource: this.state.data_dict[new_index],
           list_of_selected: [this.state.data_dict[new_index].name],
+          multi_select: false,
           selectedRegions: new_regions
         });
       }

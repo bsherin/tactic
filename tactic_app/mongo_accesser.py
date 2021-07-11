@@ -103,6 +103,9 @@ class MongoAccess(object):
         self.db[full_collection_name].update_one({"name": "__metadata__"},
                                                  {'$set': {"updated": datetime.datetime.utcnow()}})
 
+    def create_empty_collection(self, new_name, doc_type, collection_metadata=None):
+        return self.create_complete_collection(new_name, {}, doc_type, None, None, collection_metadata)
+
     def create_complete_collection(self, new_name, doc_dict, doc_type, document_metadata=None,
                                    header_list_dict=None, collection_metadata=None):
         print("in create_complete_collection")

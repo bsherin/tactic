@@ -348,7 +348,6 @@ function showSelectResourceDialog(cancel_text, submit_text, submit_function, dar
 
 var defaultImportDialogWidth = 700;
 class FileImportDialog extends React.Component {
-
     constructor(props) {
         super(props);
         doBinding(this);
@@ -357,6 +356,7 @@ class FileImportDialog extends React.Component {
         var default_name = initial_default_name;
         this.picker_ref = React.createRef();
         this.existing_names = props.existing_names;
+        this.current_url = "dummy"
         while (this._name_exists(default_name)) {
             name_counter += 1;
             default_name = initial_default_name + String(name_counter)
@@ -417,7 +417,7 @@ class FileImportDialog extends React.Component {
     }
 
     componentDidUpdate() {
-        this._updatePickerSize()
+        this._updatePickerSize();
         if (window.tsocket.counter != this.socket_counter) {
             this.initSocket();
         }
@@ -447,8 +447,7 @@ class FileImportDialog extends React.Component {
             this.setState({"warning_text": msg})
         }
         else {
-            // this.setState({"show": false});
-            this.props.process_handler(this.myDropzone, this.state.current_value, this.state.checkbox_states);
+            this.props.process_handler(this.myDropzone, this._setCurrentUrl, this.state.current_value, this.state.checkbox_states);
             }
     }
 
@@ -460,7 +459,25 @@ class FileImportDialog extends React.Component {
         this.myDropzone = dropzone;
     }
 
-    _uploadComplete() {
+    _setCurrentUrl(new_url) {
+        this.myDropzone.options.url = new_url  //
+        this.current_url = new_url
+    }
+
+    // There's trickiness with setting the current url in the dropzone object.
+    // If I don't set it below in uploadComplete, then the second file processed
+    // gets the dummy url in some cases. It's related to the component re-rendering
+    // I think, perhaps when messages are shown in the dialog.
+
+    _uploadComplete(f) {
+        if (this.myDropzone.getQueuedFiles().length > 0) {
+            this.myDropzone.options.url = this.current_url
+            this.myDropzone.processQueue()
+        }
+    }
+
+    _onSending(f) {
+        f.previewElement.scrollIntoView(false)
     }
 
     _name_exists(name) {
@@ -481,26 +498,26 @@ class FileImportDialog extends React.Component {
         }
     }
 
-
     _nameChangeHandler(event) {
         this.setState({"current_value": event.target.value, warning_text: "  "})
     }
 
     render() {
         // let preview_style = {width: "unset", minHeight: "fit-content"};
+        console.log("entering render with this.current_url " + this.current_url)
         let half_width = .5 * this.state.current_picker_width - 10
          let name_style = {display: "inline-block", maxWidth: half_width}
          let progress_style = {position: "relative", width: half_width - 100, marginRight: 5,
              marginLeft: "unset", left: "unset", right: "unset"}
          let size_style = {marginLeft: 5, width: 75}
          var componentConfig = {
-             postUrl: '/import_as_table',  // Must have this even though will never be used
+             postUrl: this.current_url,  // Must have this even though will never be used
              // iconFiletypes: this.props.allowed_file_types,
              // showFiletypeIcon: true
         };
          var djsConfig = {
-             uploadMultiple: true,
-             parallelUploads: 1000,
+             uploadMultiple: false,
+             parallelUploads: 1,
              autoProcessQueue: false,
              dictDefaultMessage: "Click or drop files here to upload",
              acceptedFiles: this.props.allowed_file_types,
@@ -508,8 +525,8 @@ class FileImportDialog extends React.Component {
              // dictRemoveFile: "x",
              previewTemplate: renderToStaticMarkup(
                 <div className="dz-preview dz-file-preview">
-                      <div style={name_style} data-dz-name="true"></div>
-                     <div style={{display: "flex", width: half_width, flexDirection:
+                        <div style={name_style} data-dz-name="true"></div>
+                        <div style={{display: "flex", width: half_width, flexDirection:
                              "row", justifyContent:"space-bewteen"}}>
                         <div className="dz-progress" style={progress_style}>
                             <div className="dz-upload" data-dz-uploadprogress="true"></div>
@@ -529,6 +546,7 @@ class FileImportDialog extends React.Component {
          eventHandlers = {
              init: this._initCallback,
              complete: this._uploadComplete,
+             sending: this._onSending,
              drop: this._handleDrop,
              error: this._handleError,
          }
@@ -564,7 +582,6 @@ class FileImportDialog extends React.Component {
         }
         let body_style = {
             marginTop: 25,
-            // width: this.state.current_picker_width - 50,
             display: "flex",
             flexDirection: "row",
             justifyContent: "space-around",

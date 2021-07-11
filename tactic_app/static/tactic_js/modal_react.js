@@ -576,6 +576,7 @@ var FileImportDialog = /*#__PURE__*/function (_React$Component4) {
     var default_name = initial_default_name;
     _this6.picker_ref = /*#__PURE__*/_react["default"].createRef();
     _this6.existing_names = props.existing_names;
+    _this6.current_url = "dummy";
 
     while (_this6._name_exists(default_name)) {
       name_counter += 1;
@@ -714,8 +715,7 @@ var FileImportDialog = /*#__PURE__*/function (_React$Component4) {
           "warning_text": msg
         });
       } else {
-        // this.setState({"show": false});
-        this.props.process_handler(this.myDropzone, this.state.current_value, this.state.checkbox_states);
+        this.props.process_handler(this.myDropzone, this._setCurrentUrl, this.state.current_value, this.state.checkbox_states);
       }
     }
   }, {
@@ -729,8 +729,29 @@ var FileImportDialog = /*#__PURE__*/function (_React$Component4) {
       this.myDropzone = dropzone;
     }
   }, {
+    key: "_setCurrentUrl",
+    value: function _setCurrentUrl(new_url) {
+      this.myDropzone.options.url = new_url; //
+
+      this.current_url = new_url;
+    } // There's trickiness with setting the current url in the dropzone object.
+    // If I don't set it below in uploadComplete, then the second file processed
+    // gets the dummy url in some cases. It's related to the component re-rendering
+    // I think, perhaps when messages are shown in the dialog.
+
+  }, {
     key: "_uploadComplete",
-    value: function _uploadComplete() {}
+    value: function _uploadComplete(f) {
+      if (this.myDropzone.getQueuedFiles().length > 0) {
+        this.myDropzone.options.url = this.current_url;
+        this.myDropzone.processQueue();
+      }
+    }
+  }, {
+    key: "_onSending",
+    value: function _onSending(f) {
+      f.previewElement.scrollIntoView(false);
+    }
   }, {
     key: "_name_exists",
     value: function _name_exists(name) {
@@ -769,6 +790,7 @@ var FileImportDialog = /*#__PURE__*/function (_React$Component4) {
     key: "render",
     value: function render() {
       // let preview_style = {width: "unset", minHeight: "fit-content"};
+      console.log("entering render with this.current_url " + this.current_url);
       var half_width = .5 * this.state.current_picker_width - 10;
       var name_style = {
         display: "inline-block",
@@ -787,14 +809,14 @@ var FileImportDialog = /*#__PURE__*/function (_React$Component4) {
         width: 75
       };
       var componentConfig = {
-        postUrl: '/import_as_table' // Must have this even though will never be used
+        postUrl: this.current_url // Must have this even though will never be used
         // iconFiletypes: this.props.allowed_file_types,
         // showFiletypeIcon: true
 
       };
       var djsConfig = {
-        uploadMultiple: true,
-        parallelUploads: 1000,
+        uploadMultiple: false,
+        parallelUploads: 1,
         autoProcessQueue: false,
         dictDefaultMessage: "Click or drop files here to upload",
         acceptedFiles: this.props.allowed_file_types,
@@ -836,6 +858,7 @@ var FileImportDialog = /*#__PURE__*/function (_React$Component4) {
       eventHandlers = {
         init: this._initCallback,
         complete: this._uploadComplete,
+        sending: this._onSending,
         drop: this._handleDrop,
         error: this._handleError
       };
@@ -889,7 +912,6 @@ var FileImportDialog = /*#__PURE__*/function (_React$Component4) {
 
       var body_style = {
         marginTop: 25,
-        // width: this.state.current_picker_width - 50,
         display: "flex",
         flexDirection: "row",
         justifyContent: "space-around",
