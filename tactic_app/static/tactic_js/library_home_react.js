@@ -800,18 +800,28 @@ var CollectionToolbar = /*#__PURE__*/function (_React$Component3) {
     }
   }, {
     key: "_import_collection",
-    value: function _import_collection(myDropZone, new_name, check_results) {
-      var url_base;
+    value: function _import_collection(myDropZone, setCurrentUrl, new_name, check_results) {
+      var _this4 = this;
+
+      var doc_type;
 
       if (check_results["import_as_freeform"]) {
-        url_base = "import_as_freeform";
+        doc_type = "freeform";
       } else {
-        url_base = "import_as_table";
+        doc_type = "table";
       }
 
-      myDropZone.options.url = "".concat(url_base, "/").concat(new_name, "/").concat(window.library_id);
-      this.upload_name = new_name;
-      myDropZone.processQueue();
+      (0, _communication_react.postAjaxPromise)("create_empty_collection", {
+        "collection_name": new_name,
+        "doc_type": doc_type,
+        "library_id": window.library_id
+      }).then(function (data) {
+        var new_url = "append_documents_to_collection/".concat(new_name, "/").concat(doc_type, "/").concat(window.library_id);
+        myDropZone.options.url = new_url;
+        setCurrentUrl(new_url);
+        _this4.upload_name = new_name;
+        myDropZone.processQueue();
+      })["catch"](function (data) {});
     }
   }, {
     key: "button_groups",
@@ -853,7 +863,7 @@ var CollectionToolbar = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "file_adders",
     get: function get() {
-      return [["Upload", "collection", this._import_collection, ".csv,.tsv,.txt,.xls,.xlsx", "cloud-upload", [{
+      return [["Upload", "collection", this._import_collection, ".csv,.tsv,.txt,.xls,.xlsx,.html", "cloud-upload", [{
         "checkname": "import_as_freeform",
         "checktext": "Import as freeform"
       }], true, "Import collection"]];
@@ -884,13 +894,13 @@ var ProjectToolbar = /*#__PURE__*/function (_React$Component4) {
   var _super5 = _createSuper(ProjectToolbar);
 
   function ProjectToolbar(props) {
-    var _this4;
+    var _this5;
 
     _classCallCheck(this, ProjectToolbar);
 
-    _this4 = _super5.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this4));
-    return _this4;
+    _this5 = _super5.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this5));
+    return _this5;
   }
 
   _createClass(ProjectToolbar, [{
@@ -914,9 +924,10 @@ var ProjectToolbar = /*#__PURE__*/function (_React$Component4) {
     }
   }, {
     key: "_import_jupyter",
-    value: function _import_jupyter(myDropZone, check_results) {
-      var url_base = "import_jupyter";
-      myDropZone.options.url = "".concat(url_base, "/").concat(window.library_id);
+    value: function _import_jupyter(myDropZone, setCurrentUrl) {
+      var new_url = "import_jupyter/".concat(window.library_id);
+      myDropZone.options.url = new_url;
+      setCurrentUrl(new_url);
       myDropZone.processQueue();
     }
   }, {
@@ -987,13 +998,13 @@ var TileToolbar = /*#__PURE__*/function (_React$Component5) {
   var _super6 = _createSuper(TileToolbar);
 
   function TileToolbar(props) {
-    var _this5;
+    var _this6;
 
     _classCallCheck(this, TileToolbar);
 
-    _this5 = _super6.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this5));
-    return _this5;
+    _this6 = _super6.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this6));
+    return _this6;
   }
 
   _createClass(TileToolbar, [{
@@ -1123,14 +1134,14 @@ var TileToolbar = /*#__PURE__*/function (_React$Component5) {
   }, {
     key: "popup_buttons",
     get: function get() {
-      var _this6 = this;
+      var _this7 = this;
 
       return [["tile", "new-text-box", [["StandardTile", function () {
-        _this6._new_in_creator("BasicTileTemplate");
+        _this7._new_in_creator("BasicTileTemplate");
       }, "code"], ["MatplotlibTile", function () {
-        _this6._new_in_creator("MatplotlibTileTemplate");
+        _this7._new_in_creator("MatplotlibTileTemplate");
       }, "timeline-line-chart"], ["D3Tile", function () {
-        _this6._new_in_creator("D3TileTemplate");
+        _this7._new_in_creator("D3TileTemplate");
       }, "timeline-area-chart"]]]];
     }
   }, {
@@ -1200,13 +1211,13 @@ var ListToolbar = /*#__PURE__*/function (_React$Component6) {
   var _super7 = _createSuper(ListToolbar);
 
   function ListToolbar(props) {
-    var _this7;
+    var _this8;
 
     _classCallCheck(this, ListToolbar);
 
-    _this7 = _super7.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this7));
-    return _this7;
+    _this8 = _super7.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this8));
+    return _this8;
   }
 
   _createClass(ListToolbar, [{
@@ -1223,9 +1234,10 @@ var ListToolbar = /*#__PURE__*/function (_React$Component6) {
     }
   }, {
     key: "_add_list",
-    value: function _add_list(myDropZone, check_results) {
-      var url_base = "import_list";
-      myDropZone.options.url = "".concat(url_base, "/").concat(window.library_id);
+    value: function _add_list(myDropZone, setCurrentUrl) {
+      var new_url = "import_list/".concat(window.library_id);
+      myDropZone.options.url = new_url;
+      setCurrentUrl(new_url);
       myDropZone.processQueue();
     }
   }, {
@@ -1291,13 +1303,13 @@ var CodeToolbar = /*#__PURE__*/function (_React$Component7) {
   var _super8 = _createSuper(CodeToolbar);
 
   function CodeToolbar(props) {
-    var _this8;
+    var _this9;
 
     _classCallCheck(this, CodeToolbar);
 
-    _this8 = _super8.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this8));
-    return _this8;
+    _this9 = _super8.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this9));
+    return _this9;
   }
 
   _createClass(CodeToolbar, [{
@@ -1339,10 +1351,10 @@ var CodeToolbar = /*#__PURE__*/function (_React$Component7) {
   }, {
     key: "popup_buttons",
     get: function get() {
-      var _this9 = this;
+      var _this10 = this;
 
       return [["code", "new-text-box", [["BasicCodeTemplate", function () {
-        _this9._new_code("BasicCodeTemplate");
+        _this10._new_code("BasicCodeTemplate");
       }, "code"]]]];
     }
   }, {

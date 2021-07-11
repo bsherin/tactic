@@ -456,7 +456,7 @@ class CollectionToolbar extends React.Component {
                 {"original_collections": self.props.list_of_selected, "new_name": new_name})
                 .then((data) => {
                     self.props.refresh_func()
-               data.new_row })
+                    data.new_row })
                 .catch((data)=>{self.props.addErrorDrawerEntry({title: "Error combining collections", content: data.message})})
         }
     }
@@ -487,16 +487,23 @@ class CollectionToolbar extends React.Component {
         }
     }
 
-    _import_collection(myDropZone, new_name, check_results) {
-        var url_base;
+    _import_collection(myDropZone, setCurrentUrl, new_name, check_results) {
+        let doc_type
         if (check_results["import_as_freeform"]) {
-            url_base = "import_as_freeform"
+            doc_type = "freeform"
         } else {
-            url_base = "import_as_table"
+            doc_type = "table"
         }
-        myDropZone.options.url = `${url_base}/${new_name}/${window.library_id}`;
-        this.upload_name = new_name
-        myDropZone.processQueue();
+        postAjaxPromise("create_empty_collection",
+            {"collection_name": new_name, "doc_type": doc_type, "library_id": window.library_id})
+            .then((data)=> {
+                let new_url = `append_documents_to_collection/${new_name}/${doc_type}/${window.library_id}`;
+                myDropZone.options.url = new_url;
+                setCurrentUrl(new_url)
+                this.upload_name = new_name;
+                myDropZone.processQueue();
+            })
+            .catch((data)=>{})
     }
 
 
@@ -527,8 +534,7 @@ class CollectionToolbar extends React.Component {
      }
 
      get file_adders() {
-         return[
-             ["Upload", "collection", this._import_collection, ".csv,.tsv,.txt,.xls,.xlsx",
+         return[["Upload", "collection", this._import_collection, ".csv,.tsv,.txt,.xls,.xlsx,.html",
                  "cloud-upload",
                  [{"checkname": "import_as_freeform", "checktext": "Import as freeform"}],
                  true, "Import collection"]
@@ -538,7 +544,7 @@ class CollectionToolbar extends React.Component {
      render () {
         return <LibraryToolbar sendContextMenuItems={this.props.sendContextMenuItems}
                                context_menu_items={this.context_menu_items}
-                              button_groups={this.button_groups}
+                                button_groups={this.button_groups}
                                file_adders={this.file_adders}
                                left_position={this.props.left_position}
                                sendRef={this.props.sendRef}
@@ -570,9 +576,10 @@ class ProjectToolbar extends React.Component {
         }, res_name + ".ipynb")
     };
 
-   _import_jupyter (myDropZone, check_results) {
-        let url_base = "import_jupyter"
-        myDropZone.options.url = `${url_base}/${window.library_id}`
+   _import_jupyter (myDropZone, setCurrentUrl) {
+        let new_url = `import_jupyter/${window.library_id}`;
+        myDropZone.options.url = new_url;
+        setCurrentUrl(new_url)
         myDropZone.processQueue();
     };
 
@@ -796,9 +803,10 @@ class ListToolbar extends React.Component {
         this.props.delete_func("/delete_list", resource_name)
     }
 
-    _add_list (myDropZone, check_results) {
-        let url_base = "import_list"
-        myDropZone.options.url = `${url_base}/${window.library_id}`
+    _add_list (myDropZone, setCurrentUrl) {
+        let new_url = `import_list/${window.library_id}`;
+        myDropZone.options.url = new_url;
+        setCurrentUrl(new_url)
         myDropZone.processQueue();
     }
 

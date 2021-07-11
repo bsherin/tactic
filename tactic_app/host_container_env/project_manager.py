@@ -66,16 +66,18 @@ class ProjectManager(LibraryResourceManager):
         file_list = []
         for the_file in request.files.values():
             file_list.append(the_file)
-        print("got {} files".format(str(len(file_list))))
+        if len(file_list) == 0:
+            result = {"success": "false", "title": "Error creating notebooks", "content": "No files received"}
+            self.send_import_report(result, library_id)
+            return {"success": True}
         result = self.import_as_jupyter_full(file_list)
-        self.send_import_report(result, library_id)
+        if result["success"] in ["false", "partial"]:
+            self.send_import_report(result, library_id)
         if result["success"] == "true":
             self.refresh_selector_list()
         return {"success": True}
 
     def import_as_jupyter_full(self, file_list):
-        if len(file_list) == 0:
-            return {"success": "false", "title": "Error creating notebooks", "content": "No files received"}
         user_obj = current_user
         file_decoding_errors = OrderedDict()
         failed_reads = OrderedDict()
@@ -84,7 +86,7 @@ class ProjectManager(LibraryResourceManager):
             filename, file_extension = os.path.splitext(the_file.filename)
             jupyter_name = make_name_unique(filename, user_obj.project_names)
             print("got file " + filename)
-            filename = filename.encode("ascii", "ignore")
+            filename = filename.encode("ascii", "ignore").decode()
             (success, result_txt, encoding, decoding_problems) = read_freeform_file(the_file)
             if not success:  # then result_dict contains an error object
                 e = result_txt
@@ -110,16 +112,16 @@ class ProjectManager(LibraryResourceManager):
             successful_reads.append(filename)
         if len(successful_reads) == 0:
             return {"success": "false",
-                    "title": "No files successfully read",
+                    "title": "No notebooks successfully read",
                     "file_decoding_errors": file_decoding_errors,
                     "successful_reads": successful_reads,
                     "failed_reads": failed_reads}
 
-        if len(failed_reads.keys()) > 0:
+        if len(failed_reads.keys()) > 0 or len(file_decoding_errors.keys()) > 0:
             final_success = "partial"
-            title = "Some notebooks successfully created"
+            title = "Some errors reading notebooks"
         else:
-            title = "All notebooks successfully created"
+            title = ""
             final_success = "true"
 
         return {"success": final_success,

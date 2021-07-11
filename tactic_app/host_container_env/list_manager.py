@@ -176,15 +176,18 @@ class ListManager(LibraryResourceManager):
         file_list = []
         for the_file in request.files.values():
             file_list.append(the_file)
+        if len(file_list) == 0:
+            result = {"success": "false", "title": "Error creating lists", "content": "No files received"}
+            self.send_import_report(result, library_id)
+            return {"success": True}
         result = self.import_as_list_full(file_list)
-        self.send_import_report(result, library_id)
+        if result["success"] in ["false", "partial"]:
+            self.send_import_report(result, library_id)
         if result["success"] == "true":
             self.refresh_selector_list()
         return {"success": True}
 
     def import_as_list_full(self, file_list):
-        if len(file_list) == 0:
-            return {"success": "false", "title": "Error creating lists", "content": "No files received"}
         user_obj = current_user
         file_decoding_errors = OrderedDict()
         failed_reads = OrderedDict()
@@ -193,7 +196,7 @@ class ListManager(LibraryResourceManager):
         for the_file in file_list:
             filename, file_extension = os.path.splitext(the_file.filename)
             list_name = make_name_unique(filename, user_obj.list_names)
-            filename = filename.encode("ascii", "ignore")
+            filename = filename.encode("ascii", "ignore").decode()
 
             (success, result_txt, encoding, decoding_problems) = read_freeform_file(the_file)
             if not success:  # then result_dict contains an error object
@@ -215,17 +218,17 @@ class ListManager(LibraryResourceManager):
 
         if len(successful_reads) == 0:
             return {"success": "false",
-                    "title": "No files successfully read",
+                    "title": "Failed to read list(s)",
                     "file_decoding_errors": file_decoding_errors,
                     "successful_reads": successful_reads,
                     "failed_reads": failed_reads}
 
-        if len(failed_reads.keys()) > 0:
+        if len(failed_reads.keys()) > 0 or len(file_decoding_errors.keys()) > 0:
             final_success = "partial"
-            title = "Some lists successfully created"
+            title = "Some errors reading lists"
         else:
-            title = "All lists successfully created"
             final_success = "true"
+            title = ""
 
         return {"success": final_success,
                 "title": title,

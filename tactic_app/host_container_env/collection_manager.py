@@ -50,10 +50,10 @@ class CollectionManager(LibraryResourceManager):
         app.add_url_rule('/open_notebook/<unique_id>', "open_notebook",
                          login_required(self.open_notebook), methods=['get'])
         app.add_url_rule('/main_collection/<collection_name>', "main", login_required(self.main_collection), methods=['get'])
-        app.add_url_rule('/import_as_table/<collection_name>/<library_id>', "import_as_table",
-                         login_required(self.import_as_table), methods=['get', "post"])
-        app.add_url_rule('/import_as_freeform/<collection_name>/<library_id>', "import_as_freeform",
-                         login_required(self.import_as_freeform), methods=['get', "post"])
+        app.add_url_rule('/create_empty_collection', "create_empty_collection",
+                         login_required(self.create_empty_collection), methods=['get', "post"])
+        app.add_url_rule('/append_documents_to_collection/<collection_name>/<doc_type>/<library_id>', "append_documents_to_collection",
+                         login_required(self.append_documents_to_collection), methods=['get', "post"])
         app.add_url_rule('/delete_collection', "delete_collection",
                          login_required(self.delete_collection), methods=['post'])
         app.add_url_rule('/duplicate_collection', "duplicate_collection",
@@ -364,35 +364,89 @@ class CollectionManager(LibraryResourceManager):
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error combining collection")
 
-    def import_as_table(self, collection_name, library_id):
-        file_list = []
-        for the_file in request.files.values():
-            file_list.append(the_file)
-        result = self.import_as_table_full(file_list, collection_name)
-        result["new_resource_name"] = collection_name
-        self.send_import_report(result, library_id)
-        if result["success"]:
-            self.refresh_selector_list()
-        return {"success": True}
-
-    def import_as_table_full(self, file_list, collection_name):
-        if len(file_list) == 0:
-            return {"success": "false", "title": "Error creating collection", "content": "No files received"}
+    def create_empty_collection(self):
+        collection_name = request.json["collection_name"]
+        doc_type = request.json["doc_type"]
+        library_id = request.json["library_id"]
         user_obj = current_user
 
         collection_mdata = loaded_tile_management.create_initial_metadata()
+        try:
+            result = user_obj.create_empty_collection(collection_name, doc_type, collection_mdata)
+            result["title"] = "Collection {} created".format(collection_name)
+        except Exception as ex:
+            msg = self.extract_short_error_message(ex, "Error creating collection")
+            result = {"success": False, "title": "Error creating collection", "content": msg}
+            self.send_import_report(result, library_id)
+        self.refresh_selector_list()
+        return result
 
-        known_extensions = [".xlsx", ".csv", ".tsv", ".txt"]
+    def append_documents_to_collection(self, collection_name, doc_type, library_id):
+        file_list = []
+        for the_file in request.files.values():
+            file_list.append(the_file)
+        if len(file_list) == 0:
+            return {"success": "false", "title": "Error creating collection", "content": "No files received"}
+        if doc_type == "table":
+            result = self.append_table_documents(collection_name, file_list)
+        else:
+            result = self.append_freeform_documents(collection_name, file_list)
+        if result["success"] in ["false", "partial"]:
+            self.send_import_report(result, library_id)
+        return result
 
+    def append_freeform_documents(self, collection_name, file_list):
+        user_obj = current_user
+        new_doc_dict = {}
         file_decoding_errors = OrderedDict()
         successful_reads = []
         failed_reads = OrderedDict()
-        new_doc_dict = {}
-        header_list_dict = {}
 
         for the_file in file_list:
             filename, file_extension = os.path.splitext(the_file.filename)
-            print("file is {}".format(filename))
+            filename = filename.encode("ascii", "ignore").decode()
+            (success, result_txt, encoding, decoding_problems) = read_freeform_file(the_file)
+            if not success:  # then result_txt contains an error object
+                e = result_txt
+                failed_reads[filename] = e["message"]
+                continue
+            new_doc_dict[filename] = result_txt
+            if len(decoding_problems) > 0:
+                file_decoding_errors[filename] = decoding_problems
+
+        for dname, doc in new_doc_dict.items():
+            try:
+                _ = user_obj.append_document_to_collection(collection_name, dname, doc, "freeform")
+            except Exception as ex:
+                msg = self.extract_short_error_message(ex, "Error appending document {}".format(dname))
+                failed_reads[dname] = msg
+                continue
+            successful_reads.append(dname)
+
+        if len(successful_reads) == 0:
+            final_success = "false"
+        elif len(failed_reads.keys()) > 0:
+            final_success = "partial"
+        else:
+            final_success = "true"
+
+        return {"success": final_success,
+                "title": "Collection {} created".format(collection_name),
+                "file_decoding_errors": file_decoding_errors,
+                "successful_reads": successful_reads,
+                "failed_reads": failed_reads}
+
+    def append_table_documents(self, collection_name, file_list):
+        user_obj = current_user
+        new_doc_dict = {}
+        header_list_dict = {}
+        file_decoding_errors = OrderedDict()
+        successful_reads = []
+        failed_reads = OrderedDict()
+        known_extensions = [".xlsx", ".csv", ".tsv", ".txt"]
+        for the_file in file_list:
+            filename, file_extension = os.path.splitext(the_file.filename)
+            filename = filename.encode("ascii", "ignore").decode()
             if file_extension not in known_extensions:
                 failed_reads[filename] = "Invalid file extension " + file_extension
                 continue
@@ -426,85 +480,32 @@ class CollectionManager(LibraryResourceManager):
 
             if len(decoding_problems) > 0:
                 file_decoding_errors[filename] = decoding_problems
-            successful_reads.append(filename)
-        try:
-            if len(successful_reads) == 0:
-                return {"success": "false",
-                        "title": "No files successfully read",
-                        "successful_reads": successful_reads,
-                        "file_decoding_errors": file_decoding_errors,
-                        "failed_reads": failed_reads}
-            _ = user_obj.create_complete_collection(collection_name, new_doc_dict, "table", None,
-                                                    header_list_dict, collection_mdata)
-        except Exception as ex:
-            msg = self.extract_short_error_message(ex, "Error creating collection")
-            return {"success": "false", "title": "Error creating collection", "content": msg}
-
-        if len(failed_reads.keys()) > 0:
-            final_success = "partial"
-        else:
-            final_success = "true"
-
-        return {"success": final_success,
-                "title": "Collection {} created".format(collection_name),
-                "file_decoding_errors": file_decoding_errors,
-                "successful_reads": successful_reads,
-                "failed_reads": failed_reads}
-
-    def import_as_freeform(self, collection_name, library_id):
-        file_list = []
-        for the_file in request.files.values():
-            print(the_file.filename)
-            file_list.append(the_file)
-        result = self.import_as_freeform_full(file_list, collection_name)
-        self.send_import_report(result, library_id)
-        if result["success"]:
-            self.refresh_selector_list()
-        return {"success": True}
-
-    def import_as_freeform_full(self, file_list, collection_name):
-        if len(file_list) == 0:
-            return {"success": "false", "title": "Error creating collection", "content": "No files received"}
-        user_obj = current_user
-
-        collection_mdata = loaded_tile_management.create_initial_metadata()
-        file_decoding_errors = OrderedDict()
-        successful_reads = []
-        failed_reads = OrderedDict()
-        new_doc_dict = {}
-        for the_file in file_list:
-
-            filename, file_extension = os.path.splitext(the_file.filename)
-            filename = filename.encode("ascii", "ignore")
-            (success, result_txt, encoding, decoding_problems) = read_freeform_file(the_file)
-            if not success:  # then result_txt contains an error object
-                e = result_txt
-                failed_reads[filename] = e["message"]
+        for dname, doc in new_doc_dict.items():
+            try:
+                _ = user_obj.append_document_to_collection(collection_name, dname, doc, "table",
+                                                           header_list_dict[dname])
+            except Exception as ex:
+                msg = self.extract_short_error_message(ex, "Error appending document {}".format(dname))
+                failed_reads[dname] = msg
                 continue
-            new_doc_dict[filename] = result_txt
-            if len(decoding_problems) > 0:
-                file_decoding_errors[filename] = decoding_problems
-            successful_reads.append(filename)
-        try:
-            if len(successful_reads) == 0:
-                return {"success": "false",
-                        "title": "No files successfully read",
-                        "file_decoding_errors": file_decoding_errors,
-                        "successful_reads": successful_reads,
-                        "failed_reads": failed_reads}
-            _ = user_obj.create_complete_collection(collection_name, new_doc_dict, "freeform", None,
-                                                    None, collection_mdata)
-        except Exception as ex:
-            msg = self.extract_short_error_messsage(ex, "Error creating collection")
-            return {"success": "false", "title": "Error creating collection", "content": msg}
+            successful_reads.append(dname)
 
-        if len(failed_reads.keys()) > 0:
+        if len(successful_reads) == 0:
+            return {"success": "false",
+                    "title": "Failed to read document(s)",
+                    "file_decoding_errors": file_decoding_errors,
+                    "successful_reads": successful_reads,
+                    "failed_reads": failed_reads}
+
+        elif len(failed_reads.keys()) > 0 or len(file_decoding_errors.keys()) > 0:
             final_success = "partial"
+            title = "Error(s) reading documents"
         else:
             final_success = "true"
+            title = ""
 
         return {"success": final_success,
-                "title": "Collection {} created".format(collection_name),
+                "title": title,
                 "file_decoding_errors": file_decoding_errors,
                 "successful_reads": successful_reads,
                 "failed_reads": failed_reads}
