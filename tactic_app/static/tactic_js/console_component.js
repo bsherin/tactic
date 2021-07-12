@@ -114,6 +114,10 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
         "mounted": true
       });
       this.initSocket();
+
+      if (this.props.console_items.length == 0) {
+        this._addCodeArea("", false);
+      }
     }
   }, {
     key: "componentDidUpdate",
@@ -238,11 +242,13 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_addCodeArea",
     value: function _addCodeArea(the_text) {
+      var force_open = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
       var self = this;
       (0, _communication_react.postWithCallback)("host", "print_code_area_to_console", {
-        "console_text": the_text,
-        "user_id": window.user_id,
-        "main_id": window.main_id
+        console_text: the_text,
+        user_id: window.user_id,
+        main_id: window.main_id,
+        force_open: force_open
       }, function (data) {
         if (!data.success) {
           (0, _toaster.doFlash)(data);
@@ -479,10 +485,23 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
     key: "_goToNextCell",
     value: function _goToNextCell(unique_id) {
       var next_index = this._consoleItemIndex(unique_id) + 1;
-      if (next_index == this.props.console_items.length) return;
-      var next_id = this.props.console_items[next_index].unique_id;
 
-      this._setConsoleItemValue(next_id, "set_focus", true);
+      while (next_index < this.props.console_items.length) {
+        var next_id = this.props.console_items[next_index].unique_id;
+        var next_item = this.props.console_items[next_index];
+
+        if (!next_item.am_shrunk && (next_item.type == "code" || next_item.type == "text" && !next_item.show_markdown)) {
+          this._setConsoleItemValue(next_id, "set_focus", true);
+
+          return;
+        }
+
+        next_index += 1;
+      }
+
+      this._addCodeArea("");
+
+      return;
     }
   }, {
     key: "_closeConsoleItem",

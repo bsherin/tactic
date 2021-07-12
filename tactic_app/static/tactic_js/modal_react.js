@@ -731,8 +731,7 @@ var FileImportDialog = /*#__PURE__*/function (_React$Component4) {
   }, {
     key: "_setCurrentUrl",
     value: function _setCurrentUrl(new_url) {
-      this.myDropzone.options.url = new_url; //
-
+      this.myDropzone.options.url = new_url;
       this.current_url = new_url;
     } // There's trickiness with setting the current url in the dropzone object.
     // If I don't set it below in uploadComplete, then the second file processed

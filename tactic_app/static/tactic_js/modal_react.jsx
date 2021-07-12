@@ -460,7 +460,7 @@ class FileImportDialog extends React.Component {
     }
 
     _setCurrentUrl(new_url) {
-        this.myDropzone.options.url = new_url  //
+        this.myDropzone.options.url = new_url;
         this.current_url = new_url
     }
 
@@ -471,7 +471,7 @@ class FileImportDialog extends React.Component {
 
     _uploadComplete(f) {
         if (this.myDropzone.getQueuedFiles().length > 0) {
-            this.myDropzone.options.url = this.current_url
+            this.myDropzone.options.url = this.current_url;
             this.myDropzone.processQueue()
         }
     }
