@@ -50,6 +50,9 @@ const BUTTON_CONSUMED_SPACE = 203;
     componentDidMount(){
         this.setState({"mounted": true});
         this.initSocket()
+        if (this.props.console_items.length == 0) {
+            this._addCodeArea("", false)
+        }
     }
 
     componentDidUpdate () {
@@ -147,10 +150,11 @@ const BUTTON_CONSUMED_SPACE = 203;
         this._addCodeArea("");
     }
 
-    _addCodeArea(the_text) {
+    _addCodeArea(the_text, force_open=true) {
         let self = this;
         postWithCallback("host", "print_code_area_to_console",
-            {"console_text": the_text, "user_id": window.user_id, "main_id": window.main_id}, function (data) {
+            {console_text: the_text, user_id: window.user_id, main_id: window.main_id, force_open: force_open},
+            function (data) {
             if (!data.success) {
                 doFlash(data)
             }
@@ -302,9 +306,18 @@ const BUTTON_CONSUMED_SPACE = 203;
 
     _goToNextCell(unique_id) {
         let next_index = this._consoleItemIndex(unique_id) + 1;
-        if (next_index == this.props.console_items.length) return;
-        let next_id = this.props.console_items[next_index].unique_id;
-        this._setConsoleItemValue(next_id, "set_focus", true)
+        while (next_index < this.props.console_items.length) {
+            let next_id = this.props.console_items[next_index].unique_id;
+            let next_item = this.props.console_items[next_index]
+            if (!next_item.am_shrunk &&
+                ((next_item.type == "code") || ((next_item.type == "text") && (!next_item.show_markdown)))){
+                this._setConsoleItemValue(next_id, "set_focus", true)
+                return
+            }
+            next_index += 1;
+        }
+        this._addCodeArea("");
+        return
     }
 
     _closeConsoleItem(unique_id) {

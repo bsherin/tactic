@@ -385,6 +385,7 @@ class CollectionManager(LibraryResourceManager):
         file_list = []
         for the_file in request.files.values():
             file_list.append(the_file)
+        print("** received {} files.".format(len(file_list)))
         if len(file_list) == 0:
             return {"success": "false", "title": "Error creating collection", "content": "No files received"}
         if doc_type == "table":
