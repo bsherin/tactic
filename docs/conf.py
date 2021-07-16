@@ -43,7 +43,7 @@ extensions = [
 
 
 def setup(app):
-    app.add_stylesheet('css/custom.css')
+    app.add_css_file('css/custom.css')
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
