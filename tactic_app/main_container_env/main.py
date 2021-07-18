@@ -20,6 +20,7 @@ from main_tasks_mixin import ExportsTasksMixin, ConsoleTasksMixin, DataSupportTa
 from exception_mixin import ExceptionMixin
 
 from doc_info import docInfo, FreeformDocInfo
+from qworker import debug_log
 
 # getting environment variables
 INITIAL_LEFT_FRACTION = .69
@@ -63,7 +64,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             self.db = client[db_name]
             self.fs = gridfs.GridFS(self.db)
         except Exception as ex:
-            self.mworker.debug_log(self.extract_short_error_message(ex, "error getting pymongo client"))
+            debug_log(self.extract_short_error_message(ex, "error getting pymongo client"))
             sys.exit()
 
         self.base_figure_url = data_dict["base_figure_url"]
@@ -248,7 +249,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             interface_state["console_items"] = self.convert_legacy_console(project_dict)
             return interface_state
         except Exception as ex:
-            self.mworker.debug_log(self.extract_short_error_message(ex, "got an error converting a legacy save"))
+            debug_log(self.extract_short_error_message(ex, "got an error converting a legacy save"))
             return False
 
     def recreate_from_save(self, project_name, unique_id=None):
@@ -416,7 +417,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
 
     def handle_exception(self, ex, special_string=None, print_to_console=True):
         error_string = self.get_traceback_message(ex, special_string)
-        self.mworker.debug_log(error_string)
+        debug_log(error_string)
         if print_to_console:
             title = "An exception of type {}".format(type(ex).__name__)
             self.mworker.send_error_entry(title, error_string)
@@ -495,7 +496,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             #                        {"am_notebook": self.am_notebook_type})
             print("in instantiate_done in main")
             if not instantiate_result["success"]:
-                self.mworker.debug_log("got an exception " + instantiate_result["message"])
+                debug_log("got an exception " + instantiate_result["message"])
                 raise Exception(instantiate_result["message"])
             else:
                 if len(instantiate_result["current_globals"]) == 0:

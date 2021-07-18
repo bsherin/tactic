@@ -286,6 +286,11 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
       (0, _communication_react.postWithCallback)(window.main_id, "clear_console_namespace", {});
     }
   }, {
+    key: "_stopAll",
+    value: function _stopAll() {
+      (0, _communication_react.postWithCallback)(window.main_id, "stop_all_console_code", {});
+    }
+  }, {
     key: "_clearConsole",
     value: function _clearConsole() {
       var confirm_text = "Are you sure that you want to erase everything in this log?";
@@ -540,11 +545,18 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
       }
     }
   }, {
+    key: "_startSpinner",
+    value: function _startSpinner(data) {
+      var new_entry = this.get_console_item_entry(data.console_id);
+      new_entry.running = true;
+      this.replace_console_item_entry(data.console_id, new_entry);
+    }
+  }, {
     key: "_stopConsoleSpinner",
     value: function _stopConsoleSpinner(data) {
       var new_entry = this.get_console_item_entry(data.console_id);
       new_entry.show_spinner = false;
-      new_entry.execution_count = data.execution_count;
+      new_entry.running = false;
       this.replace_console_item_entry(data.console_id, new_entry);
     }
   }, {
@@ -566,8 +578,9 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
         consoleLog: function consoleLog(data) {
           return self._addConsoleEntry(data.message, data.force_open);
         },
-        stopConsoleSpinner: this._stopConsoleSpinner,
-        consoleCodePrint: this._appendConsoleItemOutput
+        stopConsoleSpinner: self._stopConsoleSpinner,
+        consoleCodePrint: this._appendConsoleItemOutput,
+        consoleCodeRun: this._startSpinner
       };
       handlerDict[data.console_message](data);
     }
@@ -727,6 +740,13 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
         intent: "warning",
         extra_glyph_text: this._glif_text(show_glif_text, "reset"),
         icon: "reset"
+      }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+        handleClick: this._stopAll,
+        style: gbstyle,
+        tooltip: "Stop all",
+        intent: "warning",
+        extra_glyph_text: this._glif_text(show_glif_text, "stop"),
+        icon: "stop"
       }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
         extra_glyph_text: this._glif_text(show_glif_text, "clear"),
         style: gbstyle,
@@ -1255,32 +1275,42 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component5) {
   }, {
     key: "_runMe",
     value: function _runMe() {
+      var _this10 = this;
+
       var go_to_next = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
 
-      this._startMySpinner();
+      this._clearOutput(function () {
+        _this10._showMySpinner();
 
-      var self = this;
-
-      this._clearOutput();
-
-      (0, _communication_react.postWithCallback)(main_id, "exec_console_code", {
-        "the_code": this.props.console_text,
-        "console_id": this.props.unique_id
-      }, function () {
-        if (go_to_next) {
-          self.props.goToNextCell(self.props.unique_id);
-        }
+        var self = _this10;
+        (0, _communication_react.postWithCallback)(main_id, "exec_console_code", {
+          "the_code": _this10.props.console_text,
+          "console_id": _this10.props.unique_id
+        }, function () {
+          if (go_to_next) {
+            self.props.goToNextCell(self.props.unique_id);
+          }
+        });
       });
     }
   }, {
-    key: "_startMySpinner",
-    value: function _startMySpinner() {
+    key: "_stopMe",
+    value: function _stopMe() {
+      this._stopMySpinner();
+
+      (0, _communication_react.postWithCallback)(main_id, "stop_console_code", {
+        "console_id": this.props.unique_id
+      });
+    }
+  }, {
+    key: "_showMySpinner",
+    value: function _showMySpinner() {
       var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
       this.props.setConsoleItemValue(this.props.unique_id, "show_spinner", true, callback);
     }
   }, {
-    key: "_stoptMySpinner",
-    value: function _stoptMySpinner() {
+    key: "_stopMySpinner",
+    value: function _stopMySpinner() {
       this.props.setConsoleItemValue(this.props.unique_id, "show_spinner", false);
     }
   }, {
@@ -1301,12 +1331,17 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component5) {
   }, {
     key: "_deleteMe",
     value: function _deleteMe() {
+      if (this.props.show_spinner) {
+        this._stopMe();
+      }
+
       this.props.handleDelete(this.props.unique_id);
     }
   }, {
     key: "_clearOutput",
     value: function _clearOutput() {
-      this.props.setConsoleItemValue(this.props.unique_id, "output_text", "");
+      var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      this.props.setConsoleItemValue(this.props.unique_id, "output_text", "", callback);
     }
   }, {
     key: "_extraKeys",
@@ -1352,12 +1387,19 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component5) {
   }, {
     key: "renderContextMenu",
     value: function renderContextMenu() {
+      var _this11 = this;
+
       // return a single element, or nothing to use default browser behavior
-      return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, !this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "play",
         intent: "success",
         onClick: this._runMe,
         text: "Run Cell"
+      }), this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+        icon: "stop",
+        intent: "danger",
+        onClick: this._stopMe,
+        text: "Stop Cell"
       }), /*#__PURE__*/_react["default"].createElement(_core.Menu.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "duplicate",
         onClick: this._copyMe,
@@ -1374,17 +1416,22 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component5) {
       }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "clean",
         intent: "warning",
-        onClick: this._clearOutput,
+        onClick: function onClick() {
+          _this11._clearOutput();
+        },
         text: "Clear Output"
       }));
     }
   }, {
     key: "render",
     value: function render() {
+      var _this12 = this;
+
       var panel_style = this.props.am_shrunk ? "log-panel log-panel-invisible" : "log-panel log-panel-visible";
       var output_dict = {
         __html: this.props.output_text
       };
+      var spinner_val = this.props.running ? null : 0;
       return /*#__PURE__*/_react["default"].createElement("div", {
         className: panel_style + " d-flex flex-row",
         id: this.props.unique_id
@@ -1412,11 +1459,16 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component5) {
         className: "log-panel-body d-flex flex-row console-code"
       }, /*#__PURE__*/_react["default"].createElement("div", {
         className: "button-div d-flex pr-1"
-      }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+      }, !this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
         handleClick: this._runMe,
         intent: "success",
         tooltip: "Execute this item",
         icon: "play"
+      }), this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+        handleClick: this._stopMe,
+        intent: "danger",
+        tooltip: "Stop this item",
+        icon: "stop"
       })), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
         handleChange: this._handleChange,
         code_content: this.props.console_text,
@@ -1437,7 +1489,9 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component5) {
         },
         icon: "trash"
       }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        handleClick: this._clearOutput,
+        handleClick: function handleClick() {
+          _this12._clearOutput();
+        },
         intent: "warning",
         tooltip: "Clear this item's output",
         style: {
@@ -1453,7 +1507,8 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component5) {
           marginRight: 22
         }
       }, /*#__PURE__*/_react["default"].createElement(_core.Spinner, {
-        size: 13
+        size: 13,
+        value: spinner_val
       }))), /*#__PURE__*/_react["default"].createElement("div", {
         className: "log-code-output",
         dangerouslySetInnerHTML: output_dict
@@ -1469,6 +1524,7 @@ RawConsoleCodeItem.propTypes = {
   am_shrunk: _propTypes["default"].bool,
   set_focus: _propTypes["default"].bool,
   show_spinner: _propTypes["default"].bool,
+  running: _propTypes["default"].bool,
   summary_text: _propTypes["default"].string,
   console_text: _propTypes["default"].string,
   output_text: _propTypes["default"].string,
@@ -1490,19 +1546,19 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component6) {
   var _super6 = _createSuper(RawConsoleTextItem);
 
   function RawConsoleTextItem(props) {
-    var _this10;
+    var _this13;
 
     _classCallCheck(this, RawConsoleTextItem);
 
-    _this10 = _super6.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this10), "_", RawConsoleTextItem.prototype);
-    _this10.ce_summary_ref = /*#__PURE__*/_react["default"].createRef();
-    _this10.update_props = ["am_shrunk", "set_focus", "show_markdown", "summary_text", "console_text", "console_available_width"];
-    _this10.update_state_vars = ["ce_ref"];
-    _this10.state = {
+    _this13 = _super6.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this13), "_", RawConsoleTextItem.prototype);
+    _this13.ce_summary_ref = /*#__PURE__*/_react["default"].createRef();
+    _this13.update_props = ["am_shrunk", "set_focus", "show_markdown", "summary_text", "console_text", "console_available_width"];
+    _this13.update_state_vars = ["ce_ref"];
+    _this13.state = {
       ce_ref: null
     };
-    return _this10;
+    return _this13;
   }
 
   _createClass(RawConsoleTextItem, [{
@@ -1689,7 +1745,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component6) {
   }, {
     key: "render",
     value: function render() {
-      var _this11 = this;
+      var _this14 = this;
 
       var really_show_markdown = this.hasOnlyWhitespace ? false : this.props.show_markdown;
       var converted_markdown;
@@ -1747,10 +1803,10 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component6) {
         onKeyDown: this._handleKeyDown,
         growVertically: true,
         onFocus: function onFocus() {
-          return _this11.props.setFocus(_this11.props.unique_id);
+          return _this14.props.setFocus(_this14.props.unique_id);
         },
         onBlur: function onBlur() {
-          return _this11.props.setFocus(null);
+          return _this14.props.setFocus(null);
         },
         disabled: false,
         className: "console-text contingent-scroll",

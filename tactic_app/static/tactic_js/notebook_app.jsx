@@ -7,6 +7,8 @@ import React from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
+import { Spinner } from "@blueprintjs/core";
+
 import {TacticNavbar} from "./blueprint_navbar.js";
 import {ProjectMenu} from "./main_menus_react.js";
 import {TacticSocket} from "./tactic_socket.js";
@@ -37,7 +39,8 @@ window.addEventListener("unload", function sendRemove() {
 
 function _main_main() {
     //render_navbar();
-    console.log("entering _notebook_main with flipped finish-post-load position");
+    let domContainer = document.querySelector('#main-root');
+    ReactDOM.render(<Spinner size={100} className="screen-center"/>, domContainer)
     ppi = get_ppi();
     tsocket = new MainTacticSocket("main", 5000);
     tsocket.socket.on('finish-post-load', _finish_post_load)

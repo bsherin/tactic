@@ -11,6 +11,7 @@ from communication_utils import make_jsonizable_and_compress, read_project_dict
 import docker_functions
 from mongo_accesser import bytes_to_string, NameExistsError
 from doc_info import docInfo, FreeformDocInfo
+from qworker import debug_log
 
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
 STEP_SIZE = int(os.environ.get("STEP_SIZE"))
@@ -157,7 +158,7 @@ class LoadSaveTasksMixin:
     def do_full_jupyter_recreation(self, data_dict):
         tile_containers = {}
         try:
-            print("Entering do_full_jupyter_recreation")
+            debug_log("Entering do_full_jupyter_recreation")
             self.show_main_status_message("Entering do_full_jupyter_recreation")
             project_name = data_dict["project_name"]
             save_dict = self.db[self.project_collection_name].find_one({"project_name": project_name})
@@ -184,11 +185,11 @@ class LoadSaveTasksMixin:
     @task_worthy
     def do_full_recreation(self, data_dict):
         def track_loaded_modules(tlmdata):
-            print("entering track_loaded_modules")
+            debug_log("entering track_loaded_modules")
 
             def track_recreated_tiles(trcdata):
                 self.show_main_status_message("Entering do_full_recreation")
-                print("tracking created tiles")
+                debug_log("tracking created tiles")
                 if trcdata["old_tile_id"] in tiles_to_recreate:
                     self.mworker.emit_to_main_client("tile-finished-loading", {"message": "tile-finished-loading",
                                                                                "tile_id": trcdata["old_tile_id"]})
@@ -196,7 +197,7 @@ class LoadSaveTasksMixin:
                     tsdict = self.project_dict["tile_instances"][trcdata["old_tile_id"]]
                     self.tile_id_dict[tsdict["tile_name"]] = trcdata["old_tile_id"]
                 if not tiles_to_recreate:
-                    print("done recreating tiles")
+                    debug_log("done recreating tiles")
                     self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id_map": tile_id_map})
                     self.clear_main_status_message()
                     self.stop_main_status_spinner()
@@ -206,7 +207,7 @@ class LoadSaveTasksMixin:
                 if tlmdata["module_name"] in modules_to_load:
                     modules_to_load.remove(tlmdata["module_name"])
             if not modules_to_load:
-                print("finished loading modules, ready to recreate tiles")
+                debug_log("finished loading modules, ready to recreate tiles")
                 self.show_main_status_message("Recreating tiles")
                 self.tile_save_results = {}
 
@@ -224,7 +225,7 @@ class LoadSaveTasksMixin:
                     self.clear_main_status_message()
                     self.stop_main_status_spinner()
                     return
-                print("about to recreate tiles one at a time")
+                debug_log("about to recreate tiles one at a time")
 
                 for old_tile_id, tile_save_dict in self.project_dict["tile_instances"].items():
                     data_for_tile = {"old_tile_id": old_tile_id,
@@ -232,7 +233,7 @@ class LoadSaveTasksMixin:
                     self.mworker.post_task(self.mworker.my_id, "recreate_one_tile", data_for_tile,
                                            track_recreated_tiles)
 
-        print("Entering do_full_recreation")
+        debug_log("Entering do_full_recreation")
         self.tile_instances = []
         tile_info_dict, loaded_modules, interface_state, success = self.recreate_from_save(data_dict["project_name"])
         tile_id_map = {}
@@ -242,7 +243,7 @@ class LoadSaveTasksMixin:
         for tile_entry in interface_state["tile_list"]:
             tile_entry["tile_id"] = tile_id_map[tile_entry["tile_id"]]
 
-        print("loaded modules is {}".format(str(loaded_modules)))
+        debug_log("loaded modules is {}".format(str(loaded_modules)))
 
         if not success:
             self.show_main_status_message("Error trying to recreate the project from save")
@@ -347,7 +348,7 @@ class LoadSaveTasksMixin:
             self.mworker.post_task(self.mworker.my_id, "compile_save_dict", {}, got_save_dict)
 
         except Exception as ex:
-            self.mworker.debug_log("got an error in save_new_project")
+            debug_log("got an error in save_new_project")
             error_string = self.handle_exception(ex, "<pre>Error saving new project</pre>", print_to_console=False)
             _return_data = {"success": False, "message": error_string}
             self.mworker.submit_reponse(task_packet, _return_data)
@@ -387,7 +388,7 @@ class LoadSaveTasksMixin:
             self.mworker.post_task(self.mworker.my_id, "compile_save_dict", {}, got_save_dict)
 
         except Exception as ex:
-            self.mworker.debug_log("got an error in save_new_project")
+            debug_log("got an error in save_new_project")
             error_string = self.handle_exception(ex, "<pre>Error saving new project</pre>", print_to_console=False)
             _return_data = {"success": False, "message": error_string}
             self.mworker.submit_response(task_packet, _return_data)
@@ -482,7 +483,7 @@ class LoadSaveTasksMixin:
                             "message": "Notebook Successfully Exported"}
 
         except Exception as ex:
-            self.mworker.debug_log("got an error in export_to_jupyter_notebook")
+            debug_log("got an error in export_to_jupyter_notebook")
             error_string = self.handle_exception(ex, "<pre>Error exporting to jupyter notebook</pre>",
                                                  print_to_console=False)
             _return_data = {"success": False, "message": error_string}
@@ -589,7 +590,7 @@ class TileCreationTasksMixin:
             print("got instantiate result, time is {}".format(self.microdsecs(self.tstart)))
             self.tstart = datetime.datetime.now()
             if not instantiate_result["success"]:
-                self.mworker.debug_log("got an exception " + instantiate_result["message"])
+                debug_log("got an exception " + instantiate_result["message"])
                 raise Exception(instantiate_result["message"])
 
             exports = instantiate_result["exports"]
@@ -664,7 +665,7 @@ class TileCreationTasksMixin:
 
     @task_worthy
     def rebuild_tile_forms_task(self, ddict):
-        print('entering rebuild_tile_forms_task')
+        debug_log('entering rebuild_tile_forms_task')
         try:
             if self.am_notebook_type:
                 return
@@ -677,7 +678,7 @@ class TileCreationTasksMixin:
                 other_tile_names = list(self.tile_id_dict.keys())
             else:
                 other_tile_names = self.get_other_tile_names(tile_id)
-            print("getting the form info")
+            debug_log("getting the form info")
 
             form_info = {"current_header_list": self.current_header_list,
                          "pipe_dict": self._pipe_dict,
@@ -1330,9 +1331,8 @@ class ExportsTasksMixin:
                 the_html += group_html
         return {"success": True, "the_html": the_html, "export_list": export_list}
 
-    @task_worthy_manual_submit
-    def evaluate_export(self, data, task_packet):
-        local_task_packet = task_packet
+    @task_worthy
+    def evaluate_export(self, data):
         if self.pseudo_tile_id is None:
             self.create_pseudo_tile()
         ndata = {}
@@ -1342,28 +1342,32 @@ class ExportsTasksMixin:
             ndata["key"] = data["key"]
         ndata["tail"] = data["tail"]
         ndata["max_rows"] = int(data["max_rows"])
+        ndata["console_id"] = "export_viewer"
+        #
+        # def got_evaluation(eval_result):
+        #     self.mworker.submit_response(local_task_packet, eval_result)
+        #     return
 
-        def got_evaluation(eval_result):
-            self.mworker.submit_response(local_task_packet, eval_result)
-            return
-
-        self.mworker.post_task(self.pseudo_tile_id, "_evaluate_export", ndata, got_evaluation)
+        self.mworker.post_task(self.pseudo_tile_id, "_evaluate_export", ndata)
         return
 
-    @task_worthy_manual_submit
-    def get_export_info(self, data, task_packet):
-        local_task_packet = task_packet
+    @task_worthy
+    def stop_evaluate_export(self, data):
+        if self.pseudo_tile_id is None:
+            return
+
+        self.mworker.post_task(self.pseudo_tile_id, "stop_console_code", {"console_id": "export_viewer"})
+        return
+
+    @task_worthy
+    def get_export_info(self, data):
         if self.pseudo_tile_id is None:
             self.create_pseudo_tile()
         ndata = {}
         ndata["export_name"] = data["export_name"]
         ndata["pipe_dict"] = self._pipe_dict
-
-        def got_info(info):
-            self.mworker.submit_response(local_task_packet, info)
-            return
-
-        self.mworker.post_task(self.pseudo_tile_id, "_get_export_info", ndata, got_info)
+        ndata["console_id"] = "export_viewer"
+        self.mworker.post_task(self.pseudo_tile_id, "_get_export_info", ndata)
         return
 
 
@@ -1408,6 +1412,7 @@ class ConsoleTasksMixin:
                                                                "force_open": True})
         return {"success": True}
 
+    @task_worthy
     def updated_globals(self, data):
         if data["globals_changed"]:
             if len(data["current_globals"]) == 0:
@@ -1425,20 +1430,33 @@ class ConsoleTasksMixin:
                     }
             self.mworker.emit_export_viewer_message("update_exports_popup", {})
             self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
-        return
+        return {"success": True}
 
     @task_worthy
     def exec_console_code(self, data):
-        print("in exec_console_code")
         if self.pseudo_tile_id is None:
             self.create_pseudo_tile()
-        print("pseudo_tile is created")
         the_code = data["the_code"]
         self.dict = self._pipe_dict
         data["pipe_dict"] = self.dict
         data["am_notebook"] = self.am_notebook_type
-        print("posting exec_console_code to the pseudo_tile")
-        self.mworker.post_task(self.pseudo_tile_id, "exec_console_code", data, self.updated_globals)
+        self.mworker.post_task(self.pseudo_tile_id, "exec_console_code", data)
+        return {"success": True}
+
+    @task_worthy
+    def stop_console_code(self, data):
+        self.dict = self._pipe_dict
+        data["pipe_dict"] = self.dict
+        data["am_notebook"] = self.am_notebook_type
+        self.mworker.post_task(self.pseudo_tile_id, "stop_console_code", data)
+        return {"success": True}
+
+    @task_worthy
+    def stop_all_console_code(self, data):
+        self.dict = self._pipe_dict
+        data["pipe_dict"] = self.dict
+        data["am_notebook"] = self.am_notebook_type
+        self.mworker.post_task(self.pseudo_tile_id, "stop_all_console_code", data)
         return {"success": True}
 
     @task_worthy
@@ -1450,7 +1468,7 @@ class ConsoleTasksMixin:
 
             def instantiate_done(instantiate_result):
                 if not instantiate_result["success"]:
-                    self.mworker.debug_log("got an exception " + instantiate_result["message"])
+                    debug_log("got an exception " + instantiate_result["message"])
                     self.show_main_message("Error resetting notebook", 7)
                     raise Exception(instantiate_result["message"])
                 else:

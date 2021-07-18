@@ -117,6 +117,11 @@ window.addEventListener("unload", function sendRemove(event) {
 function _main_main() {
   //render_navbar();
   console.log("entering start_post_load");
+  var domContainer = document.querySelector('#main-root');
+  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(_core.Spinner, {
+    size: 100,
+    className: "screen-center"
+  }), domContainer);
   ppi = (0, _utilities_react.get_ppi)();
   tsocket = new MainTacticSocket("main", 5000);
   tsocket.socket.on('finish-post-load', _finish_post_load);
