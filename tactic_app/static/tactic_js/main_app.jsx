@@ -9,7 +9,7 @@ import React from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
-import { NavbarDivider } from "@blueprintjs/core";
+import { NavbarDivider, Spinner } from "@blueprintjs/core";
 import _ from 'lodash';
 
 import {TacticNavbar} from "./blueprint_navbar.js";
@@ -49,6 +49,8 @@ window.addEventListener("unload", function sendRemove(event) {
 function _main_main() {
     //render_navbar();
     console.log("entering start_post_load");
+    let domContainer = document.querySelector('#main-root');
+    ReactDOM.render(<Spinner size={100} className="screen-center"/>, domContainer)
     ppi = get_ppi();
     tsocket = new MainTacticSocket("main", 5000);
     tsocket.socket.on('finish-post-load', _finish_post_load);

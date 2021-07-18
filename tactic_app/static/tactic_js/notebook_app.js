@@ -12,6 +12,8 @@ var ReactDOM = _interopRequireWildcard(require("react-dom"));
 
 var _propTypes = _interopRequireDefault(require("prop-types"));
 
+var _core = require("@blueprintjs/core");
+
 var _blueprint_navbar = require("./blueprint_navbar.js");
 
 var _main_menus_react = require("./main_menus_react.js");
@@ -79,7 +81,11 @@ window.addEventListener("unload", function sendRemove() {
 
 function _main_main() {
   //render_navbar();
-  console.log("entering _notebook_main with flipped finish-post-load position");
+  var domContainer = document.querySelector('#main-root');
+  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(_core.Spinner, {
+    size: 100,
+    className: "screen-center"
+  }), domContainer);
   ppi = (0, _utilities_react.get_ppi)();
   tsocket = new MainTacticSocket("main", 5000);
   tsocket.socket.on('finish-post-load', _finish_post_load);
