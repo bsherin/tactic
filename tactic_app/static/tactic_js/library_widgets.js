@@ -319,7 +319,32 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
 
       if (Object.keys(this.props.data_dict).length == 0) return;
       var column_names = Object.keys(this.props.columns);
-      var cwidths = compute_initial_column_widths(column_names, Object.values(this.props.data_dict));
+      var bcwidths = compute_initial_column_widths(column_names, Object.values(this.props.data_dict));
+      var cwidths = [];
+
+      if (this.props.maxColumnWidth) {
+        var _iterator = _createForOfIteratorHelper(bcwidths),
+            _step;
+
+        try {
+          for (_iterator.s(); !(_step = _iterator.n()).done;) {
+            var c = _step.value;
+
+            if (c > this.props.maxColumnWidth) {
+              cwidths.push(this.props.maxColumnWidth);
+            } else {
+              cwidths.push(c);
+            }
+          }
+        } catch (err) {
+          _iterator.e(err);
+        } finally {
+          _iterator.f();
+        }
+      } else {
+        cwidths = bcwidths;
+      }
+
       var self = this;
       this.setState({
         columnWidths: cwidths
@@ -392,7 +417,7 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
           onDoubleClick: function onDoubleClick() {
             return self.props.handleRowDoubleClick(self.props.data_dict[rowIndex]);
           }
-        }, the_text)));
+        }, /*#__PURE__*/_react["default"].createElement(_table.TruncatedFormat, null, the_text))));
       };
     }
   }, {
@@ -458,7 +483,8 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
           return _this8.props.renderBodyContextMenu(mcontext);
         },
         enableColumnReordering: false,
-        enableColumnResizing: false,
+        enableColumnResizing: this.props.enableColumnResizing,
+        maxColumnWidth: this.props.maxColumnWidth,
         enableMultipleSelection: true,
         defaultRowHeight: 23,
         selectedRegions: this.props.selectedRegions,
@@ -479,6 +505,8 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
 exports.BpSelectorTable = BpSelectorTable;
 BpSelectorTable.propTypes = {
   columns: _propTypes["default"].object,
+  maxColumnWidth: _propTypes["default"].number,
+  enableColumnResizing: _propTypes["default"].bool,
   selectedRegions: _propTypes["default"].array,
   data_dict: _propTypes["default"].object,
   num_rows: _propTypes["default"].number,
@@ -510,6 +538,8 @@ BpSelectorTable.defaultProps = {
     }
   },
   identifier_field: "name",
+  enableColumnResigin: false,
+  maxColumnWidth: null,
   active_row: 0,
   show_animations: false,
   handleSpaceBarPress: null,
@@ -626,19 +656,19 @@ function compute_initial_column_widths(header_list, data_list) {
   var column_widths = {};
   var columns_remaining = [];
 
-  var _iterator = _createForOfIteratorHelper(header_list),
-      _step;
+  var _iterator2 = _createForOfIteratorHelper(header_list),
+      _step2;
 
   try {
-    for (_iterator.s(); !(_step = _iterator.n()).done;) {
-      var _c2 = _step.value;
+    for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+      var _c2 = _step2.value;
       column_widths[_c2] = 0;
       columns_remaining.push(_c2);
     }
   } catch (err) {
-    _iterator.e(err);
+    _iterator2.e(err);
   } finally {
-    _iterator.f();
+    _iterator2.f();
   }
 
   var the_row;
@@ -658,12 +688,12 @@ function compute_initial_column_widths(header_list, data_list) {
     the_row = data_list[r];
     var cols_to_remove = [];
 
-    var _iterator2 = _createForOfIteratorHelper(columns_remaining),
-        _step2;
+    var _iterator3 = _createForOfIteratorHelper(columns_remaining),
+        _step3;
 
     try {
-      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-        var _c = _step2.value;
+      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+        var _c = _step3.value;
         the_text = the_row[_c];
         the_width = ctx.measureText(the_text).width + added_body_width;
 
@@ -677,9 +707,9 @@ function compute_initial_column_widths(header_list, data_list) {
         }
       }
     } catch (err) {
-      _iterator2.e(err);
+      _iterator3.e(err);
     } finally {
-      _iterator2.f();
+      _iterator3.f();
     }
 
     for (var _i = 0, _cols_to_remove = cols_to_remove; _i < _cols_to_remove.length; _i++) {
@@ -694,18 +724,18 @@ function compute_initial_column_widths(header_list, data_list) {
 
   var result = [];
 
-  var _iterator3 = _createForOfIteratorHelper(header_list),
-      _step3;
+  var _iterator4 = _createForOfIteratorHelper(header_list),
+      _step4;
 
   try {
-    for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-      var _c3 = _step3.value;
+    for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+      var _c3 = _step4.value;
       result.push(column_widths[_c3]);
     }
   } catch (err) {
-    _iterator3.e(err);
+    _iterator4.e(err);
   } finally {
-    _iterator3.f();
+    _iterator4.f();
   }
 
   return result;

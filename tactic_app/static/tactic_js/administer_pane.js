@@ -78,6 +78,7 @@ var AdminPane = /*#__PURE__*/function (_React$Component) {
     _this = _super.call(this, props);
     _this.top_ref = /*#__PURE__*/_react["default"].createRef();
     _this.table_ref = /*#__PURE__*/_react["default"].createRef();
+    _this.console_text_ref = /*#__PURE__*/_react["default"].createRef();
     var aheight = (0, _sizing_tools.getUsableDimensions)().usable_height_no_bottom;
     var awidth = (0, _sizing_tools.getUsableDimensions)().usable_width - 170;
     _this.get_url = "grab_".concat(props.res_type, "_list_chunk");
@@ -471,8 +472,14 @@ var AdminPane = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_setConsoleText",
     value: function _setConsoleText(the_text) {
+      var self = this;
+
       this._updatePaneState({
         "console_text": the_text
+      }, function () {
+        if (self.console_text_ref && self.console_text_ref.current) {
+          self.console_text_ref.current.scrollTop = self.console_text_ref.current.scrollHeight;
+        }
       });
     }
   }, {
@@ -508,7 +515,7 @@ var AdminPane = /*#__PURE__*/function (_React$Component) {
     key: "_communicateColumnWidthSum",
     value: function _communicateColumnWidthSum(total_width) {
       this.setState({
-        total_width: total_width
+        total_width: total_width + 50
       });
     }
   }, {
@@ -531,6 +538,7 @@ var AdminPane = /*#__PURE__*/function (_React$Component) {
 
       var right_pane = /*#__PURE__*/_react["default"].createElement("div", {
         className: "d-flex d-inline",
+        ref: this.console_text_ref,
         style: {
           overflow: "auto",
           verticalAlign: "top",
@@ -611,6 +619,8 @@ var AdminPane = /*#__PURE__*/function (_React$Component) {
         data_dict: this.state.data_dict,
         num_rows: this.state.num_rows,
         awaiting_data: this.state.awaiting_data,
+        enableColumnResizing: false,
+        maxColumnWidth: 225,
         sortColumn: this._set_sort_state,
         selectedRegions: this.props.selectedRegions,
         communicateColumnWidthSum: this._communicateColumnWidthSum,

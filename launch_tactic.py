@@ -150,7 +150,7 @@ def create_host(port=5000, debug=False):
                                                        volume_dict=host_volume_dict,
                                                        port_bindings={5000: port},
                                                        env_vars=env_vars,
-                                                       special_unique_id="host",
+                                                       special_unique_id="host" + str(port),
                                                        restart_policy=restart_policy,
                                                        local_true_host_persist_dir=host_persist_dir,
                                                        local_true_host_resources_dir=host_resources_dir,
