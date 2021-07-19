@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import hash from "object-hash"
 
 import { InputGroup, Menu, MenuItem, Button, Switch, Card } from "@blueprintjs/core";
-import { Cell, Column, Table, ColumnHeaderCell, RegionCardinality, Regions} from "@blueprintjs/table";
+import { Cell, Column, Table, ColumnHeaderCell, RegionCardinality, TruncatedFormat } from "@blueprintjs/table";
 import {Omnibar} from "@blueprintjs/select"
 import _ from 'lodash';
 
@@ -204,7 +204,22 @@ class BpSelectorTable extends React.Component {
     computeColumnWidths() {
         if (Object.keys(this.props.data_dict).length == 0) return;
         let column_names = Object.keys(this.props.columns);
-        let cwidths = compute_initial_column_widths(column_names, Object.values(this.props.data_dict));
+        let bcwidths = compute_initial_column_widths(column_names, Object.values(this.props.data_dict));
+        let cwidths = [];
+        if (this.props.maxColumnWidth) {
+            for (let c of bcwidths) {
+                if (c > this.props.maxColumnWidth) {
+                    cwidths.push(this.props.maxColumnWidth)
+                }
+                else {
+                    cwidths.push(c)
+                }
+            }
+        }
+        else {
+            cwidths = bcwidths
+        }
+
         let self = this;
         this.setState({columnWidths: cwidths}, ()=>{
             let the_sum = this.state.columnWidths.reduce((a,b) => a + b, 0)
@@ -261,7 +276,11 @@ class BpSelectorTable extends React.Component {
                           onKeyDown={this.props.keyHandler}
                           wrapText={true}>
                     <React.Fragment>
-                        <div onDoubleClick={()=>self.props.handleRowDoubleClick(self.props.data_dict[rowIndex])}>{the_text}</div>
+                        <div onDoubleClick={()=>self.props.handleRowDoubleClick(self.props.data_dict[rowIndex])}>
+                            <TruncatedFormat>
+                                {the_text}
+                            </TruncatedFormat>
+                        </div>
                     </React.Fragment>
                 </Cell>
             )
@@ -302,7 +321,8 @@ class BpSelectorTable extends React.Component {
                    ref={this.table_ref}
                    bodyContextMenuRenderer={(mcontext)=>this.props.renderBodyContextMenu(mcontext)}
                    enableColumnReordering={false}
-                   enableColumnResizing={false}
+                   enableColumnResizing={this.props.enableColumnResizing}
+                   maxColumnWidth={this.props.maxColumnWidth}
                    enableMultipleSelection={true}
                    defaultRowHeight={23}
                    selectedRegions={this.props.selectedRegions}
@@ -320,6 +340,8 @@ class BpSelectorTable extends React.Component {
 
 BpSelectorTable.propTypes = {
     columns: PropTypes.object,
+    maxColumnWidth: PropTypes.number,
+    enableColumnResizing: PropTypes.bool,
     selectedRegions: PropTypes.array,
     data_dict: PropTypes.object,
     num_rows: PropTypes.number,
@@ -338,6 +360,8 @@ BpSelectorTable.defaultProps = {
             "updated": {"sort_field": "updated_for_sort", "first_sort": "ascending"},
             "tags": {"sort_field": "tags", "first_sort": "ascending"}},
     identifier_field: "name",
+    enableColumnResigin: false,
+    maxColumnWidth: null,
     active_row: 0,
     show_animations: false,
     handleSpaceBarPress: null,

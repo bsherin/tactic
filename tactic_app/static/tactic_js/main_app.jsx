@@ -9,7 +9,7 @@ import React from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
-import { NavbarDivider, Spinner } from "@blueprintjs/core";
+import { NavbarDivider, Spinner, Text} from "@blueprintjs/core";
 import _ from 'lodash';
 
 import {TacticNavbar} from "./blueprint_navbar.js";
@@ -46,11 +46,23 @@ window.addEventListener("unload", function sendRemove(event) {
     navigator.sendBeacon("/remove_mainwindow", JSON.stringify({"main_id": window.main_id}));
 });
 
+function renderSpinnerMessage(msg) {
+    let domContainer = document.querySelector('#main-root');
+    ReactDOM.render(
+        (<div className="screen-center" style={{textAlign: "center"}}>
+            <Spinner size={100}/>
+            <Text className="pt-2">
+                {msg}
+            </Text>
+        </div>), domContainer
+    )
+}
+
 function _main_main() {
     //render_navbar();
     console.log("entering start_post_load");
     let domContainer = document.querySelector('#main-root');
-    ReactDOM.render(<Spinner size={100} className="screen-center"/>, domContainer)
+    renderSpinnerMessage("Starting up...")
     ppi = get_ppi();
     tsocket = new MainTacticSocket("main", 5000);
     tsocket.socket.on('finish-post-load', _finish_post_load);
@@ -68,6 +80,7 @@ function _main_main() {
 }
 
 function _everyone_ready() {
+    renderSpinnerMessage("Everyone is ready, initializing...")
     if (window.is_project) {
         let data_dict = {
             "project_name": window._project_name,
@@ -92,6 +105,7 @@ function _everyone_ready() {
 }
 
 function _finish_post_load(data) {
+    renderSpinnerMessage("Creating the page...")
     let MainAppPlus = withErrorDrawer(withStatus(MainApp, tsocket, true), tsocket);
     var interface_state;
     if (window.is_project) {

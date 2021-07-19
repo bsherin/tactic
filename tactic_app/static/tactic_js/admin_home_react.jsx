@@ -59,7 +59,7 @@ class LibraryTacticSocket extends TacticSocket {
 var res_types = ["container", "user"];
 
 var col_names = {
-    container: ["Id", "Other_name", "Name", "Image", "Owner", "Status", "Created"],
+    container: ["Id", "Other_name", "Name", "Image", "Owner", "Status", "Uptime"],
     user: ["_id", "username", "full_name", "last_login", "email"]
 };
 
