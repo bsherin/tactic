@@ -48,6 +48,7 @@ Tactic Text
    Create-Simple-Tile
    WordFreqDist-Explained
    Classifying-With-NLTK
+   Getting-Data-From-APIs
 
 .. toctree::
    :hidden:
