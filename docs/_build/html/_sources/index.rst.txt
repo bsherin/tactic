@@ -91,6 +91,6 @@ on `Tile Structure <Tile-Structure.html>`__.
 
 You can read about some examples of how Tactic can be used here: https://repository.isls.org/handle/1/890.
 
-Tactic makes use of a large number of excellent `open-source resources <Docs/open-source-resources.html>`__.
+Tactic makes use of a large number of excellent `open-source resources <open-source-resources.html>`__.
 
 * `Index <genindex.html>`__
