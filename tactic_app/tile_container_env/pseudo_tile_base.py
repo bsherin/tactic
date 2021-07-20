@@ -9,9 +9,17 @@ import pickle
 from pickle import UnpicklingError
 from tile_base import TileBase, _task_worthy, _jsonizable_types
 from communication_utils import is_jsonizable, make_python_object_jsonizable, debinarize_python_object
-from communication_utils import emit_direct
+from communication_utils import emit_direct, socketio
 import document_object
 from document_object import ROWS_TO_PRINT, DetachedTacticCollection
+from qworker import debug_log
+
+from threading import Lock
+import gevent
+
+ethread = None
+executing_console_id = None
+exec_queue = []
 
 # noinspection PyUnresolvedReferences
 from qworker import task_worthy_methods
@@ -65,6 +73,7 @@ class PseudoTileClass(TileBase, MplFigure):
         self._saved_globals = copy.copy(globals())
         self._last_globals = []
         self.execution_counter = 0
+        self._base_stdout = sys.stdout
         return
 
     # Note that task_data must contain console_id
@@ -73,6 +82,11 @@ class PseudoTileClass(TileBase, MplFigure):
         ldata["console_message"] = console_message
         ldata["force_open"] = force_open
         emit_direct("console-message", ldata, namespace="/main", room=self._main_id)
+
+    def emit_export_viewer_message(self, export_viewer_message, task_data):
+        ldata = copy.copy(task_data)
+        ldata["export_viewer_message"] = export_viewer_message
+        emit_direct("export-viewer-message", ldata, namespace="/main", room=self._main_id)
 
     @_task_worthy
     def compile_save_dict(self, data):
@@ -100,7 +114,7 @@ class PseudoTileClass(TileBase, MplFigure):
                             result[attr] = attr_val
                             continue
                     try:
-                        self._tworker.debug_log("Found non jsonizable attribute " + attr)
+                        debug_log("Found non jsonizable attribute " + attr)
                         result["binary_attrs"].append(attr)
                         bser_attr_val = make_python_object_jsonizable(attr_val)
                         result[attr] = bser_attr_val
@@ -221,8 +235,9 @@ class PseudoTileClass(TileBase, MplFigure):
     def _eval_name(self, name):
         return eval(name, globals(), globals())
 
-    @_task_worthy
-    def _get_export_info(self, data):
+    def _get_export_info_thread(self, data):
+        global executing_console_id
+        self.emit_export_viewer_message("startMySpinner", data)
         try:
             ename = data["export_name"]
             self._pipe_dict = data["pipe_dict"]
@@ -232,10 +247,27 @@ class PseudoTileClass(TileBase, MplFigure):
         except Exception as Ex:
             result = {"success": False,
                       "info_string": self._handle_exception(Ex, "", print_to_console=False)}
-        return result
+        data.update(result)
+        self.emit_export_viewer_message("got_export_info", data)
+        executing_console_id = None
+        self.post_event("check_exec_queue", {})
+        return
 
     @_task_worthy
-    def _evaluate_export(self, data):
+    def _get_export_info(self, data):
+        global ethread
+        global exec_queue
+        global executing_console_id
+        if ethread and not ethread.dead:
+            exec_queue.append([self._get_export_info_thread, copy.deepcopy(data)])
+        else:
+            executing_console_id = "export_viewer"
+            ethread = socketio.start_background_task(self._get_export_info_thread, data)
+        return
+
+    def _eval_thread(self, data):
+        global executing_console_id
+        self.emit_export_viewer_message("startMySpinner", data)
         self._pipe_dict = data["pipe_dict"]
         pipe_val = self.get_pipe_value(data["export_name"])
         success = True
@@ -267,7 +299,31 @@ class PseudoTileClass(TileBase, MplFigure):
                 succcess = False
                 print("error in _evaluate_export in tile_base")
                 the_html = self.get_traceback_message(ex)
-        return {"success": success, "the_html": the_html}
+
+        data.update({"success": success, "the_html": the_html})
+        self.emit_export_viewer_message("display_result", data)
+        executing_console_id = None
+        self.post_event("check_exec_queue", {})
+        return
+
+    @_task_worthy
+    def _evaluate_export(self, data):
+        global ethread
+        global exec_queue
+        global executing_console_id
+        if ethread and not ethread.dead:
+            exec_queue.append([self._eval_thread, copy.deepcopy(data)])
+        else:
+            executing_console_id = "export_viewer"
+            ethread = socketio.start_background_task(self._eval_thread, data)
+        return
+
+    # @_task_worthy
+    # def _stop_evaluate_export(self, data):
+    #     global eval_thread
+    #     if executing_console_id:
+    #         eval_thread.kill()
+    #     self.emit_export_viewer_message("stop_eval", data)
 
     def _get_type_info(self, avar):
         result = {}
@@ -319,17 +375,19 @@ class PseudoTileClass(TileBase, MplFigure):
                 return True
         return False
 
-    @_task_worthy
-    def exec_console_code(self, data):
-        print("in exec_console_code")
-        old_stdout = sys.stdout
+    def _restore_base_stdout(self):
+        sys.stdout = self._base_stdout
+        self._std_out_nesting = 0
+        return
+
+    def exec_thread(self, data):
+        global executing_console_id
+        self.emit_console_message("consoleCodeRun", data)
         try:
             if not Collection:
                 self._tworker.create_pseudo_tile_collection_object(data)
-            print("back in exec_console_code")
             self._pipe_dict = data["pipe_dict"]
-            print("creating redirected_output")
-            redirected_output = ConsoleStringIO(self, data, old_stdout)
+            redirected_output = ConsoleStringIO(self, data, self._base_stdout)
             sys.stdout = redirected_output
             the_code = data["the_code"]
             as_tree = ast.parse(the_code)
@@ -339,22 +397,99 @@ class PseudoTileClass(TileBase, MplFigure):
                 code_to_eval = code_lines[lnumber]
                 code_to_exec = "\n".join(code_lines[:lnumber])
                 exec(code_to_exec, globals(), globals())
-                print(eval(code_to_eval, globals(), globals()))
+                eval_res = eval(code_to_eval, globals(), globals())
+                if eval_res is not None:
+                    print(eval_res)
             else:
                 exec(data["the_code"], globals(), globals())
-            sys.stdout = old_stdout
+
             self.execution_counter += 1
             data["execution_count"] = self.execution_counter
             data["message"] = "success"
         except Exception as ex:
             data["execution_count"] = "*"
-            data["message"] = self._handle_exception(ex, "Error executing console code", print_to_console=False)
-            sys.stdout = old_stdout
-        print("about to return from exec_console_code")
+            data["message"] = self._handle_exception(ex, None, print_to_console=False)
+            print(data["message"])
+        self._restore_base_stdout()
         self.emit_console_message("stopConsoleSpinner", data)
+        current_globals = self.get_user_globals()
+        self.check_globals()
+        executing_console_id = None
+        self.post_event("check_exec_queue", {})
+        return
+
+    @_task_worthy
+    def check_exec_queue(self, data):
+        global ethread
+        global exec_queue
+        global executing_console_id
+        if len(exec_queue) > 0:
+            thr, ndata = exec_queue.pop(0)
+            executing_console_id = ndata["console_id"]
+            ethread = socketio.start_background_task(thr, ndata)
+        return
+
+    def remove_from_queue(self, console_id):
+        global exec_queue
+        exec_queue = [entry for entry in exec_queue if not entry[1]["console_id"] == console_id]
+        return
+
+    def check_globals(self):
         current_globals = self.get_user_globals()
         if self.globals_have_changed(current_globals):
             self._last_globals = current_globals
-            return {"globals_changed": True, "current_globals": current_globals}
+            data = {"current_globals": current_globals, "globals_changed": True}
+            self._tworker.post_task(self._main_id, "updated_globals", data)
+        return
+
+    @_task_worthy
+    def stop_console_code(self, data):
+        console_id = data["console_id"]
+        global ethread
+        global executing_console_id
+        self.remove_from_queue(console_id)
+        if console_id == "export_viewer":
+            self.emit_export_viewer_message("stopMySpinner", data)
+        if executing_console_id == console_id:
+            executing_console_id = None
+            self._restore_base_stdout()
+            ethread.kill()
+            self.post_event("check_exec_queue", {})
+            self.check_globals()
+        return
+
+    @_task_worthy
+    def stop_all_console_code(self, data):
+        global ethread
+        global executing_console_id
+        global exec_queue
+        self._restore_base_stdout()
+        if ethread and not ethread.dead:
+            ethread.kill()
+        if executing_console_id is not None:
+            data["console_id"] = executing_console_id
+            executing_console_id = None
+            if data["console_id"] == "export_viewer":
+                self.emit_export_viewer_message("stopMySpinner", data)
+            else:
+                self.emit_console_message("stopConsoleSpinner", data)
+        for thr, ndata in exec_queue:
+            if ndata["console_id"] == "export_viewer":
+                self.emit_export_viewer_message("stopMySpinner", data)
+            else:
+                self.emit_console_message("stopConsoleSpinner", ndata)
+        exec_queue = []
+        self.check_globals()
+        return
+
+    @_task_worthy
+    def exec_console_code(self, data):
+        global ethread
+        global exec_queue
+        global executing_console_id
+        if ethread and not ethread.dead:
+            exec_queue.append([self.exec_thread, copy.deepcopy(data)])
         else:
-            return {"globals_changed": False}
+            executing_console_id = data["console_id"]
+            ethread = socketio.start_background_task(self.exec_thread, data)
+        return

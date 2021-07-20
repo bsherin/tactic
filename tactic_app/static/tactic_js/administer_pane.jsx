@@ -21,6 +21,7 @@ class AdminPane extends React.Component {
         super(props);
         this.top_ref = React.createRef();
         this.table_ref = React.createRef();
+        this.console_text_ref = React.createRef();
         let aheight = getUsableDimensions().usable_height_no_bottom;
         let awidth = getUsableDimensions().usable_width - 170;
         this.get_url = `grab_${props.res_type}_list_chunk`
@@ -308,7 +309,12 @@ class AdminPane extends React.Component {
     }
 
     _setConsoleText(the_text) {
-        this._updatePaneState({"console_text": the_text})
+        let self = this;
+        this._updatePaneState({"console_text": the_text}, ()=>{
+            if (self.console_text_ref && self.console_text_ref.current) {
+                self.console_text_ref.current.scrollTop = self.console_text_ref.current.scrollHeight;
+            }
+        })
     }
 
      _handleResize(entries) {
@@ -320,7 +326,6 @@ class AdminPane extends React.Component {
                 return
             }
         }
-
     }
 
     _sendToolbarRef(the_ref) {
@@ -328,7 +333,7 @@ class AdminPane extends React.Component {
     }
 
     _communicateColumnWidthSum(total_width) {
-        this.setState({total_width: total_width})
+        this.setState({total_width: total_width + 50})
     }
 
     render() {
@@ -346,7 +351,7 @@ class AdminPane extends React.Component {
         }
 
         let right_pane = (
-                <div className="d-flex d-inline"
+                <div className="d-flex d-inline" ref={this.console_text_ref}
                      style={{overflow: "auto", verticalAlign: "top", marginTop: 120, marginLeft: 10, width: "100%", height: 412}}>
                     <pre><small>{this.props.console_text}</small></pre>
                 </div>
@@ -399,6 +404,8 @@ class AdminPane extends React.Component {
                         <BpSelectorTable data_dict={this.state.data_dict}
                                          num_rows={this.state.num_rows}
                                          awaiting_data={this.state.awaiting_data}
+                                         enableColumnResizing={false}
+                                         maxColumnWidth={225}
                                          sortColumn={this._set_sort_state}
                                          selectedRegions={this.props.selectedRegions}
                                          communicateColumnWidthSum={this._communicateColumnWidthSum}

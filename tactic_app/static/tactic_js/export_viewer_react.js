@@ -339,6 +339,7 @@ var ExportsViewer = /*#__PURE__*/function (_React$Component4) {
       exports_info_value: null,
       selected_export_short_name: null,
       show_spinner: false,
+      running: false,
       exports_body_value: "",
       type: null,
       pipe_dict: {}
@@ -376,7 +377,12 @@ var ExportsViewer = /*#__PURE__*/function (_React$Component4) {
       var handlerDict = {
         update_exports_popup: function update_exports_popup() {
           return self._updateExportsList();
-        }
+        },
+        display_result: self._displayResult,
+        showMySpinner: self._showMySpinner,
+        stopMySpinner: self._stopMySpinner,
+        startMySpinner: self._startMySpinner,
+        got_export_info: self._gotExportInfo
       };
       handlerDict[data.export_viewer_message](data);
     }
@@ -404,11 +410,20 @@ var ExportsViewer = /*#__PURE__*/function (_React$Component4) {
       this._handleExportListChange(this.state.selected_export, this.state.selected_export_short_name, true);
     }
   }, {
+    key: "_displayResult",
+    value: function _displayResult(data) {
+      this.setState({
+        exports_body_value: data.the_html,
+        show_spinner: false,
+        running: false
+      });
+    }
+  }, {
     key: "_eval",
     value: function _eval() {
       var e = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
-      this._startSpinner();
+      this._showMySpinner();
 
       var send_data = {
         "export_name": this.state.selected_export,
@@ -420,21 +435,66 @@ var ExportsViewer = /*#__PURE__*/function (_React$Component4) {
         send_data.key = this.state.key_list_value;
       }
 
-      var self = this;
-      (0, _communication_react.postWithCallback)(main_id, "evaluate_export", send_data, function (data) {
-        self.setState({
-          exports_body_value: data.the_html,
-          show_spinner: false
-        });
-      });
+      (0, _communication_react.postWithCallback)(main_id, "evaluate_export", send_data);
       if (e) e.preventDefault();
     }
   }, {
-    key: "_startSpinner",
-    value: function _startSpinner() {
+    key: "_stopMe",
+    value: function _stopMe() {
+      this._stopMySpinner();
+
+      (0, _communication_react.postWithCallback)(main_id, "stop_evaluate_export", {});
+    }
+  }, {
+    key: "_showMySpinner",
+    value: function _showMySpinner() {
       this.setState({
         show_spinner: true
       });
+    }
+  }, {
+    key: "_startMySpinner",
+    value: function _startMySpinner() {
+      this.setState({
+        show_spinner: true,
+        running: true
+      });
+    }
+  }, {
+    key: "_stopMySpinner",
+    value: function _stopMySpinner() {
+      this.setState({
+        show_spinner: false,
+        running: false
+      });
+    }
+  }, {
+    key: "_gotExportInfo",
+    value: function _gotExportInfo(data) {
+      var new_state = {
+        type: data.type,
+        exports_info_value: data.info_string,
+        tail_value: "",
+        show_spinner: false,
+        running: false
+      };
+
+      if (data.hasOwnProperty("key_list")) {
+        new_state.key_list = data.key_list;
+
+        if (data.hasOwnProperty("key_list_value")) {
+          new_state.key_list_value = data.key_list_value;
+        } else {
+          if (new_state.key_list.length > 0) {
+            new_state.key_list_value = data.key_list[0];
+          }
+        }
+      } else {
+        new_state.key_list = null;
+        new_state.key_list_value = null;
+      }
+
+      this.setState(new_state, this._eval);
     }
   }, {
     key: "_handleExportListChange",
@@ -450,30 +510,6 @@ var ExportsViewer = /*#__PURE__*/function (_React$Component4) {
       });
       (0, _communication_react.postWithCallback)(window.main_id, "get_export_info", {
         "export_name": fullname
-      }, function (data) {
-        var new_state = {
-          type: data.type,
-          exports_info_value: data.info_string,
-          tail_value: "",
-          show_spinner: false
-        };
-
-        if (data.hasOwnProperty("key_list")) {
-          new_state.key_list = data.key_list;
-
-          if (data.hasOwnProperty("key_list_value")) {
-            new_state.key_list_value = data.key_list_value;
-          } else {
-            if (new_state.key_list.length > 0) {
-              new_state.key_list_value = data.key_list[0];
-            }
-          }
-        } else {
-          new_state.key_list = null;
-          new_state.key_list_value = null;
-        }
-
-        self.setState(new_state, self._eval);
       });
     }
   }, {
@@ -538,6 +574,7 @@ var ExportsViewer = /*#__PURE__*/function (_React$Component4) {
       };
       var butclass = "notclose bottom-heading-element bottom-heading-element-button";
       var exports_class = this.props.console_is_shrunk ? "am-shrunk" : "not-shrunk";
+      var spinner_val = this.state.running ? null : 0;
 
       if (this.props.console_is_zoomed) {
         exports_class = "am-zoomed";
@@ -554,7 +591,25 @@ var ExportsViewer = /*#__PURE__*/function (_React$Component4) {
         id: "exports-heading",
         ref: this.header_ref,
         className: "d-flex flex-row justify-content-start"
-      }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+      }, !this.state.show_spinner && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+        handleClick: this._eval,
+        intent: "primary",
+        tooltip: "Send code to the console",
+        style: {
+          marginLeft: 6,
+          marginTop: 2
+        },
+        icon: "play"
+      }), this.state.show_spinner && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+        handleClick: this._stopMe,
+        intent: "danger",
+        tooltip: "Send code to the console",
+        style: {
+          marginLeft: 6,
+          marginTop: 2
+        },
+        icon: "stop"
+      }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
         handleClick: this._sendToConsole,
         intent: "primary",
         tooltip: "Send code to the console",
@@ -582,9 +637,16 @@ var ExportsViewer = /*#__PURE__*/function (_React$Component4) {
         onSubmit: this._eval,
         value: this.state.tail_value,
         className: "export-tail"
-      })), this.state.show_spinner && /*#__PURE__*/_react["default"].createElement(_core.Spinner, {
-        size: 13
-      })), !this.props.console_is_shrunk && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
+      })), this.state.show_spinner && /*#__PURE__*/_react["default"].createElement("div", {
+        style: {
+          marginTop: 7,
+          marginRight: 10,
+          marginLeft: 10
+        }
+      }, /*#__PURE__*/_react["default"].createElement(_core.Spinner, {
+        size: 13,
+        value: spinner_val
+      }))), !this.props.console_is_shrunk && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
         className: "d-flex flex_row"
       }, /*#__PURE__*/_react["default"].createElement(ExportButtonList, {
         pipe_dict: this.state.pipe_dict,

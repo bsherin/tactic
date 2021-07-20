@@ -611,6 +611,7 @@ class HostWorker(QWorker):
                            "type": "code",
                            "am_shrunk": False,
                            "show_spinner": False,
+                           "running": False,
                            "summary_text": summary_text,
                            "console_text": data["console_text"],
                            "output_text": "",
