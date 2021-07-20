@@ -42,8 +42,10 @@ class ObjectAPIMixin:
     def create_collection_object(self, doc_type, doc_list=None):
         if isinstance(doc_list, dict):  # legacy
             doc_dict = doc_list
-        else:
+        elif doc_list is not None:
             doc_dict = {d.name: d for d in doc_list}
+        else:
+            doc_dict = None
         return DetachedTacticCollection(doc_type, doc_dict)
 
     @property

@@ -7,6 +7,7 @@ import time
 import datetime
 import json
 import os
+import sys
 import copy
 from communication_utils import emit_direct, socketio
 import communication_utils
@@ -61,9 +62,19 @@ def current_timestamp():
 
 
 max_pika_retries = 10
+base_stdout = sys.stdout
 
 
-# noinspection PyTypeChecker
+def debug_log(msg):
+    timestring = datetime.datetime.utcnow().strftime("%b %d, %Y, %H:%M:%S")
+    save_stdout = sys.stdout
+    sys.stdout = base_stdout
+    print(timestring + ": " + msg)
+    sys.stdout = save_stdout
+    return
+
+
+# noinspection PyTypeChecker,PyUnusedLocal
 class QWorker(ExceptionMixin):
     def __init__(self):
         # gevent.Greenlet.__init__(self)
@@ -90,15 +101,15 @@ class QWorker(ExceptionMixin):
             self.channel = self.connection.channel()
             self.channel.queue_declare(queue=self.my_id, durable=False, exclusive=False)
             self.channel.basic_consume(queue=self.my_id, auto_ack=True, on_message_callback=self.handle_delivery)
-            print(' [*] Waiting for messages:')
+            debug_log(' [*] Waiting for messages:')
             self.ready()
             self.channel.start_consuming()
         except Exception as ex:
-            print(self.handle_exception(ex, "Got a pika error"))
+            debug_log(self.handle_exception(ex, "Got a pika error"))
             if retries > max_pika_retries:
-                print("giving up. No more processing of tasks by this qworker")
+                debug_log("giving up. No more processing of tasks by this qworker")
             else:
-                print("sleeping ...")
+                debug_log("sleeping ...")
                 gevent.sleep(3)
                 new_retries = retries + 1
                 self.start_background_thread(retries=new_retries)
@@ -108,14 +119,10 @@ class QWorker(ExceptionMixin):
         with thread_lock:
             if thread is None:
                 thread = socketio.start_background_task(target=self.start_background_thread)
-        print('Background thread started')
+        debug_log('Background thread started')
 
     def ready(self):
         return
-
-    def debug_log(self, msg):
-        timestring = datetime.datetime.utcnow().strftime("%b %d, %Y, %H:%M:%S")
-        print(timestring + ": " + msg)
 
     def do_heartbeat(self):
         if self.generate_heartbeats:
@@ -128,15 +135,15 @@ class QWorker(ExceptionMixin):
     def handle_delivery(self, channel, method, props, body):
         try:
             task_packet = json.loads(body)
-            print("in handle_delivery with task_type {}".format(task_packet["task_type"]))
+            debug_log("in handle_delivery with task_type {}".format(task_packet["task_type"]))
             if task_packet["status"] in response_statuses:
                 self.handle_response(task_packet)
             else:
                 self.handle_event(task_packet)
         except Exception as ex:
             special_string = "Got error in handle delivery"
-            print(special_string)
-            print(self.handle_exception(ex, special_string))
+            debug_log(special_string)
+            debug_log(self.handle_exception(ex, special_string))
         return
 
     def post_packet(self, dest_id, task_packet, reply_to=None, callback_id=None):
@@ -191,7 +198,7 @@ class QWorker(ExceptionMixin):
         except Exception as ex:
             special_string = "Error handling callback for task type {} for my_id {}".format(task_type, self.my_id)
             error_string = self.handle_exception(ex, special_string)
-            print(error_string)
+            debug_log(error_string)
             result = {"success": False, "message": error_string}
         return result
 
@@ -218,12 +225,12 @@ class QWorker(ExceptionMixin):
             error_string = "Got post_blocking_wait error with msg_type {}, destination {}, and source {}".format(task_type,
                                                                                                                  dest_id,
                                                                                                                  self.my_id)
-            self.debug_log(error_string)
+            debug_log(error_string)
             raise MessagePostException(error_string)
         else:
             return resp
 
-    def submit_response(self, task_packet, response_data=None, alt_address=None):
+    def submit_response(self, task_packet, response_data=None):
         if response_data is not None:
             task_packet["response_data"] = response_data
         task_packet["status"] = "submitted_response"
@@ -238,7 +245,7 @@ class QWorker(ExceptionMixin):
                 namespace = task_packet["namespace"]
             else:
                 namespace = "/main"
-            print("about to emit_direct handle-callback")
+            debug_log("about to emit_direct handle-callback")
             emit_direct("handle-callback", task_packet, namespace=namespace, room=room)
         else:
             reply_to = task_packet["reply_to"]
@@ -279,7 +286,8 @@ class QWorker(ExceptionMixin):
         task_type = task_packet["task_type"]
         if task_type in task_worthy_methods:
             if task_worthy_methods[task_type] == "tilebase" and "tilebase" not in self.handler_instances:
-                print("it seems like tilebase is not ready yet. skipping event {}".format(task_type))
+                debug_log("it seems like tilebase is not ready yet. skipping event {}".format(task_type))
+                response_data = None
             else:
                 try:
                     response_data = getattr(self.handler_instances[task_worthy_methods[task_type]], task_type)(task_packet["task_data"])
@@ -295,7 +303,7 @@ class QWorker(ExceptionMixin):
                 except Exception as ex:
                     special_string = "Error submitting response for task type {} for my_id {}".format(task_type,
                                                                                                       self.my_id)
-                    print(self.extract_short_error_message(ex, special_string))
+                    debug_log(self.extract_short_error_message(ex, special_string))
 
         elif task_type in task_worthy_manual_submit_methods:
             try:
@@ -307,16 +315,18 @@ class QWorker(ExceptionMixin):
                 task_packet["response_data"] = response_data
                 self.submit_response(task_packet)
         else:
-            self.debug_log("Ignoring task type {} for my_id {}".format(task_type, self.my_id))
+            debug_log("Ignoring task type {} for my_id {}".format(task_type, self.my_id))
         return
 
     def handle_exception(self, ex, special_string=None):
         return self.extract_short_error_message(ex, special_string)
 
 
+# noinspection PyUnusedLocal
 class BlockingWaitWorker(ExceptionMixin):
     def __init__(self, queue_name):
         self.queue_name = queue_name
+        self.current_callback_id = None
         self.initialize_me()
 
     def initialize_me(self):
@@ -340,6 +350,10 @@ class BlockingWaitWorker(ExceptionMixin):
             on_message_callback=self.on_response,
             auto_ack=True)
 
+    def reset_me(self):
+        self.connection.close()
+        self.initialize_me()
+
     def post_blocking_wait(self, dest_id, task_packet, retries=0):
         max_retries = 3
         try:
@@ -348,6 +362,7 @@ class BlockingWaitWorker(ExceptionMixin):
                 self.initialize_me()
                 time.sleep(1)
             self.response = None
+            self.current_callback_id = task_packet["callback_id"]
             self.corr_id = str(uuid.uuid4())
             self.channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
             self.channel.basic_publish(
@@ -361,9 +376,10 @@ class BlockingWaitWorker(ExceptionMixin):
                 body=json.dumps(task_packet))
             while self.response is None:
                 self.connection.process_data_events()
+            self.current_callback_id = None
             return self.response
         except Exception as ex:
-            print(self.handle_exception(ex, "Got an exception in post_blocking wait"))
+            debug_log(self.handle_exception(ex, "Got an exception in post_blocking wait"))
             if retries > max_retries:
                 return "__ERROR__"
             else:
@@ -375,4 +391,10 @@ class BlockingWaitWorker(ExceptionMixin):
         return self.extract_short_error_message(ex, special_string)
 
     def on_response(self, ch, method, props, body):
-        self.response = json.loads(body)["response_data"]
+        the_body = json.loads(body)
+        # It's possible there's an old response if the user killed a thread earlier
+        # If so, we'll ignore it
+        if the_body["callback_id"] == self.current_callback_id:
+            self.response = the_body["response_data"]
+        else:
+            self.response = None

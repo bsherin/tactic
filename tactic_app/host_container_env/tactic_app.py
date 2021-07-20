@@ -42,7 +42,6 @@ socketio = None
 host_worker = None
 health_tracker = None
 
-
 # The purpose of this function is that db.collection_names doesn't work in on Azure
 def list_collections(self):
     dictlist = self.command("listCollections")["cursor"]["firstBatch"]
@@ -126,3 +125,4 @@ try:
 except pymongo.errors.PyMongoError as err:
     print("There's a problem with the PyMongo database. ", err)
     sys.exit()
+d

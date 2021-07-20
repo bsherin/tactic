@@ -23,6 +23,7 @@ from other_api_mixin import OtherAPIMIxin
 from refreshing_mixin import RefreshingMixin
 from exception_mixin import ExceptionMixin, generic_exception_handler
 from document_object import ROWS_TO_PRINT, DetachedTacticCollection
+from qworker import debug_log
 import copy
 
 RETRIES = 60
@@ -429,7 +430,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         except Exception as ex:
             special_string = ("error creating form for  " + self.__class__.__name__ + " tile: " + self._tworker.my_id)
             error_string = self.get_traceback_message(ex, special_string)
-            self._tworker.debug_log(error_string)
+            debug_log(error_string)
             # self.display_message(error_string, True)
             return error_string
 
@@ -461,7 +462,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                         result[attr] = attr_val
                         continue
                 try:
-                    self._tworker.debug_log("Found non jsonizable attribute " + attr)
+                    debug_log("Found non jsonizable attribute " + attr)
                     result["binary_attrs"].append(attr)
                     bser_attr_val = make_python_object_jsonizable(attr_val)
                     result[attr] = bser_attr_val
@@ -708,7 +709,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
 
     def _handle_exception(self, ex, special_string=None, print_to_console=True):
         error_string = self.get_traceback_message(ex, special_string)
-        self._tworker.debug_log(error_string)
+        debug_log(error_string)
         summary = "Exception of type {}".format(type(ex).__name__)
         tb = ex.__traceback__
         line_number = traceback.extract_tb(tb)[-1].lineno
@@ -809,7 +810,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         return
 
     def render_content(self):
-        self._tworker.debug_log("render_content not implemented")
+        debug_log("render_content not implemented")
         return " "
 
     # </editor-fold>

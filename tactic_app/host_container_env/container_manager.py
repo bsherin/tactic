@@ -1,7 +1,7 @@
 
 import re
 import os
-
+from datetime import datetime
 from flask import jsonify, request
 from flask_login import login_required, current_user
 from tactic_app import app  # create_megaplex
@@ -143,9 +143,30 @@ class ContainerManager(ResourceManager):
                    "Image": image_name,
                    "Owner": owner_name,
                    "Status": cont.status,
-                   "Created": cont.attrs["Created"]
+                   "Uptime": self.get_uptime_string(cont.attrs["Created"])
                    }
         return new_row
+
+    def get_uptime_string(self, created_string):
+        cstring = re.sub(r"\..*$", "", created_string)  # get rid of microseconds and extra chars
+        dt = datetime.strptime(cstring, "%Y-%m-%dT%H:%M:%S")
+        n = datetime.now()
+        td = n - dt
+        if td.days >= 1:
+            daypart = td.seconds / 86400
+            return f"{td.days + daypart:.1f} days"
+        hours = int(td.seconds / 3600)
+        if hours >= 1:
+            secs = td.seconds - hours * 3600
+            hourpart = secs / 3600
+            return f"{hours + hourpart:.1f} hours"
+        minutes = int(td.seconds / 60)
+        if minutes >= 1:
+            secs = td.seconds - minutes * 60
+            minpart = secs / 60
+            return f"{minutes + minpart:.1f} minutes"
+        return f"{int(td.seconds)} seconds"
+
 
     def grab_container_list_chunk(self):
         if not current_user.get_id() == admin_user.get_id():

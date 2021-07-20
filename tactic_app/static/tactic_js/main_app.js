@@ -114,9 +114,25 @@ window.addEventListener("unload", function sendRemove(event) {
   }));
 });
 
+function renderSpinnerMessage(msg) {
+  var domContainer = document.querySelector('#main-root');
+  ReactDOM.render( /*#__PURE__*/_react["default"].createElement("div", {
+    className: "screen-center",
+    style: {
+      textAlign: "center"
+    }
+  }, /*#__PURE__*/_react["default"].createElement(_core.Spinner, {
+    size: 100
+  }), /*#__PURE__*/_react["default"].createElement(_core.Text, {
+    className: "pt-2"
+  }, msg)), domContainer);
+}
+
 function _main_main() {
   //render_navbar();
   console.log("entering start_post_load");
+  var domContainer = document.querySelector('#main-root');
+  renderSpinnerMessage("Starting up...");
   ppi = (0, _utilities_react.get_ppi)();
   tsocket = new MainTacticSocket("main", 5000);
   tsocket.socket.on('finish-post-load', _finish_post_load);
@@ -140,6 +156,8 @@ function _main_main() {
 }
 
 function _everyone_ready() {
+  renderSpinnerMessage("Everyone is ready, initializing...");
+
   if (window.is_project) {
     var data_dict = {
       "project_name": window._project_name,
@@ -163,6 +181,7 @@ function _everyone_ready() {
 }
 
 function _finish_post_load(data) {
+  renderSpinnerMessage("Creating the page...");
   var MainAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(MainApp, tsocket, true), tsocket);
   var interface_state;
 

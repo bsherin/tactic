@@ -178,6 +178,11 @@ const BUTTON_CONSUMED_SPACE = 203;
         postWithCallback(window.main_id, "clear_console_namespace", {})
     }
 
+    _stopAll() {
+        postWithCallback(window.main_id, "stop_all_console_code", {})
+    }
+
+
     _clearConsole() {
         const confirm_text = "Are you sure that you want to erase everything in this log?";
         let self = this;
@@ -347,10 +352,16 @@ const BUTTON_CONSUMED_SPACE = 203;
         }
     }
 
+    _startSpinner(data) {
+        let new_entry = this.get_console_item_entry(data.console_id);
+        new_entry.running = true;
+        this.replace_console_item_entry(data.console_id, new_entry)
+    }
+
     _stopConsoleSpinner(data) {
         let new_entry = this.get_console_item_entry(data.console_id);
         new_entry.show_spinner = false;
-        new_entry.execution_count = data.execution_count;
+        new_entry.running = false;
         this.replace_console_item_entry(data.console_id, new_entry)
     }
 
@@ -366,8 +377,9 @@ const BUTTON_CONSUMED_SPACE = 203;
         let self = this;
         let handlerDict = {
             consoleLog: (data)=>self._addConsoleEntry(data.message, data.force_open),
-            stopConsoleSpinner: this._stopConsoleSpinner,
-            consoleCodePrint: this._appendConsoleItemOutput
+            stopConsoleSpinner: self._stopConsoleSpinner,
+            consoleCodePrint: this._appendConsoleItemOutput,
+            consoleCodeRun: this._startSpinner
         };
         handlerDict[data.console_message](data)
     }
@@ -495,6 +507,12 @@ const BUTTON_CONSUMED_SPACE = 203;
                                          intent="warning"
                                          extra_glyph_text={this._glif_text(show_glif_text, "reset")}
                                          icon="reset"/>
+                            <GlyphButton handleClick={this._stopAll}
+                                         style={gbstyle}
+                                         tooltip="Stop all"
+                                         intent="warning"
+                                         extra_glyph_text={this._glif_text(show_glif_text, "stop")}
+                                         icon="stop"/>
                             <GlyphButton extra_glyph_text={this._glif_text(show_glif_text, "clear")}
                                          style={gbstyle}
                                          tooltip="Totally erase everything"
@@ -851,21 +869,30 @@ class RawConsoleCodeItem extends React.Component {
         }
     }
     _runMe(go_to_next = false) {
-        this._startMySpinner();
-        let self = this;
-        this._clearOutput();
-        postWithCallback(main_id, "exec_console_code", {"the_code": this.props.console_text, "console_id": this.props.unique_id}, function () {
-            if (go_to_next) {
-                self.props.goToNextCell(self.props.unique_id)
-            }
+        this._clearOutput(()=> {
+            this._showMySpinner();
+            let self = this;
+            postWithCallback(main_id, "exec_console_code", {
+                "the_code": this.props.console_text,
+                "console_id": this.props.unique_id
+            }, function () {
+                if (go_to_next) {
+                    self.props.goToNextCell(self.props.unique_id)
+                }
+            })
         })
     }
 
-    _startMySpinner(callback=null) {
+    _stopMe() {
+        this._stopMySpinner();
+        postWithCallback(main_id, "stop_console_code", {"console_id": this.props.unique_id})
+    }
+
+    _showMySpinner(callback=null) {
         this.props.setConsoleItemValue(this.props.unique_id, "show_spinner", true, callback)
     }
 
-    _stoptMySpinner() {
+    _stopMySpinner() {
         this.props.setConsoleItemValue(this.props.unique_id, "show_spinner", false)
     }
 
@@ -882,11 +909,14 @@ class RawConsoleCodeItem extends React.Component {
     }
 
     _deleteMe() {
+        if (this.props.show_spinner) {
+            this._stopMe()
+        }
         this.props.handleDelete(this.props.unique_id)
     }
 
-    _clearOutput() {
-        this.props.setConsoleItemValue(this.props.unique_id, "output_text","")
+    _clearOutput(callback=null) {
+        this.props.setConsoleItemValue(this.props.unique_id, "output_text","", callback)
     }
 
     _extraKeys() {
@@ -926,10 +956,18 @@ class RawConsoleCodeItem extends React.Component {
         // return a single element, or nothing to use default browser behavior
         return (
             <Menu>
-                <MenuItem icon="play"
-                          intent="success"
-                          onClick={this._runMe}
-                          text="Run Cell" />
+                {!this.props.show_spinner &&
+                    <MenuItem icon="play"
+                              intent="success"
+                              onClick={this._runMe}
+                              text="Run Cell" />
+                }
+                {this.props.show_spinner &&
+                    <MenuItem icon="stop"
+                              intent="danger"
+                              onClick={this._stopMe}
+                              text="Stop Cell" />
+                }
                 <Menu.Divider/>
                 <MenuItem icon="duplicate"
                           onClick={this._copyMe}
@@ -944,7 +982,7 @@ class RawConsoleCodeItem extends React.Component {
                           text="Delete Cell" />
                 <MenuItem icon="clean"
                           intent={"warning"}
-                          onClick={this._clearOutput}
+                          onClick={()=>{this._clearOutput()}}
                           text="Clear Output" />
             </Menu>
         );
@@ -953,6 +991,7 @@ class RawConsoleCodeItem extends React.Component {
     render () {
         let panel_style = this.props.am_shrunk ? "log-panel log-panel-invisible" : "log-panel log-panel-visible";
         let output_dict = {__html: this.props.output_text};
+        let spinner_val = this.props.running ? null : 0;
 
         return (
              <div className={panel_style + " d-flex flex-row"} id={this.props.unique_id}>
@@ -977,10 +1016,18 @@ class RawConsoleCodeItem extends React.Component {
                                 <div className="d-flex flex-row">
                                     <div className="log-panel-body d-flex flex-row console-code">
                                         <div className="button-div d-flex pr-1">
-                                             <GlyphButton handleClick={this._runMe}
-                                                          intent="success"
-                                                          tooltip="Execute this item"
-                                                          icon="play"/>
+                                            {!this.props.show_spinner &&
+                                                <GlyphButton handleClick={this._runMe}
+                                                             intent="success"
+                                                             tooltip="Execute this item"
+                                                             icon="play"/>
+                                            }
+                                            {this.props.show_spinner &&
+                                                <GlyphButton handleClick={this._stopMe}
+                                                             intent="danger"
+                                                             tooltip="Stop this item"
+                                                             icon="stop"/>
+                                            }
                                         </div>
                                         <ReactCodemirror handleChange={this._handleChange}
                                                          code_content={this.props.console_text}
@@ -995,7 +1042,7 @@ class RawConsoleCodeItem extends React.Component {
                                                           tooltip="Delete this item"
                                                           style={{marginLeft: 10, marginRight: 0}}
                                                           icon="trash"/>
-                                            <GlyphButton handleClick={this._clearOutput}
+                                            <GlyphButton handleClick={()=>{this._clearOutput()}}
                                                          intent="warning"
                                                          tooltip="Clear this item's output"
                                                          style={{marginLeft: 10, marginRight: 0}}
@@ -1007,7 +1054,7 @@ class RawConsoleCodeItem extends React.Component {
                                     }
                                     {this.props.show_spinner &&
                                         <div style={{marginTop: 10, marginRight: 22}}>
-                                            <Spinner size={13} />
+                                            <Spinner size={13} value={spinner_val}/>
                                         </div>
                                     }
                                 </div>
@@ -1027,6 +1074,7 @@ RawConsoleCodeItem.propTypes = {
     am_shrunk: PropTypes.bool,
     set_focus: PropTypes.bool,
     show_spinner: PropTypes.bool,
+    running: PropTypes.bool,
     summary_text: PropTypes.string,
     console_text: PropTypes.string,
     output_text: PropTypes.string,

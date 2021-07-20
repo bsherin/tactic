@@ -1120,6 +1120,12 @@ table caption {
   .html-table.html-table-bordered {
     border: 1px solid rgba(16, 22, 26, 0.15); }
 
+.screen-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); }
+
 .bp3-icon path {
   fill: inherit; }
 

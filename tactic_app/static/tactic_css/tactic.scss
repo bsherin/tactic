@@ -144,6 +144,13 @@ table {
     }
 }
 
+.screen-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
 
 // This below is necessary to intercept a problem
 // with pyLDAvis where it would make buttons disappear
