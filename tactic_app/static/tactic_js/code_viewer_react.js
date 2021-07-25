@@ -142,12 +142,18 @@ var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
       tags: props.tags,
       usable_width: awidth,
       usable_height: aheight,
+      search_string: "",
       dark_theme: _this.props.initial_theme == "dark"
     };
     return _this;
   }
 
   _createClass(CodeViewerApp, [{
+    key: "_update_search_state",
+    value: function _update_search_state(nstate) {
+      this.setState(nstate);
+    }
+  }, {
     key: "componentDidMount",
     value: function componentDidMount() {
       window.addEventListener("resize", this._update_window_dimensions);
@@ -326,6 +332,8 @@ var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
         notes: this.state.notes,
         tags: this.state.tags,
         saveMe: this._saveMe,
+        show_search: true,
+        update_search_state: this._update_search_state,
         dark_theme: this.state.dark_theme,
         meta_outer: this.props.meta_outer
       }), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
@@ -333,6 +341,7 @@ var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
         handleChange: this._handleCodeChange,
         saveMe: this._saveMe,
         readOnly: this.props.readOnly,
+        search_term: this.state.search_string,
         dark_theme: this.state.dark_theme,
         code_container_ref: this.cc_ref,
         code_container_height: cc_height

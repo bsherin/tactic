@@ -18,10 +18,6 @@ export {BpSelectorTable}
 export {LoadedTileList}
 export {LibraryOmnibar}
 
-function renderOmnibar (item, { modifiers, handleClick}) {
-    return <SuggestionItem item={item} handleClick={handleClick}/>
-}
-
 class OmnibarItem extends React.Component{
     constructor(props) {
         super(props);
@@ -185,6 +181,13 @@ SearchForm.propTypes = {
     search_inside: PropTypes.bool,
     search_metadata: PropTypes.bool
 };
+
+SearchForm.defaultProps = {
+    allow_search_inside: false,
+    allow_search_metadata: false,
+    search_inside: false,
+    search_metadata: false
+}
 
 class BpSelectorTable extends React.Component {
     constructor(props) {

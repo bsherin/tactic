@@ -30,6 +30,7 @@ class GlyphButton extends React.Component {
 
     constructor(props) {
         super(props);
+        doBinding(this);
         this.update_props = ["icon", "minimal", "extra_glyph_text", "style"]
     }
 
@@ -42,6 +43,11 @@ class GlyphButton extends React.Component {
         return false
     }
 
+    _handleClick(e) {
+        this.props.handleClick(e);
+        e.stopPropagation()
+    }
+
     render () {
         let style = this.props.style == null ? {paddingLeft: 2, paddingRight:2} : this.props.style;
         return (
@@ -51,7 +57,7 @@ class GlyphButton extends React.Component {
                       style={style}
                       className={this.props.className}
                       onMouseDown={(e)=>{e.preventDefault()}}
-                      onClick={this.props.handleClick}
+                      onClick={this._handleClick}
                       intent={this.props.intent}
                       icon={this.props.icon}>
                {this.props.extra_glyph_text &&

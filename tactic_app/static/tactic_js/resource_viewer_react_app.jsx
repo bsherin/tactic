@@ -83,7 +83,7 @@ class ResourceViewerApp extends React.Component {
         let awidth = getUsableDimensions().usable_width - 170;
         this.state = {
             available_height: aheight,
-            available_width: awidth
+            available_width: awidth,
         };
         this.state.mounted = false;
     }
@@ -116,6 +116,9 @@ class ResourceViewerApp extends React.Component {
                 <ResourceviewerToolbar button_groups={this.props.button_groups}
                                        setResourceNameState={this.props.setResourceNameState}
                                        resource_name={this.props.resource_name}
+                                       show_search={this.props.show_search}
+                                       search_string={this.props.search_string}
+                                       update_search_state={this.props.update_search_state}
                                        res_type={this.props.res_type}/>
                 {this.props.children}
             </React.Fragment>

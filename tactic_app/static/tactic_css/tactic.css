@@ -897,6 +897,10 @@ pre code {
  */
 .light-theme.resource-viewer-holder, .light-theme.merge-viewer-outer .light-theme.login-body {
   background-color: white; }
+.light-theme .cm-matchhighlight {
+  background-color: lightgreen; }
+.light-theme .cm-searchhighlight {
+  background-color: yellow; }
 .light-theme.account-settings {
   background-color: white; }
 .light-theme.pane-holder {
@@ -963,6 +967,12 @@ pre code {
 
 .bp3-dark.resource-viewer-holder, .bp3-dark.merge-viewer-outer, .bp3-dark.login-body {
   background-color: #30404d; }
+.bp3-dark .cm-matchhighlight {
+  background-color: lightgreen;
+  color: black !important; }
+.bp3-dark .cm-searchhighlight {
+  background-color: #6aaed8;
+  color: black !important; }
 .bp3-dark.account-settings {
   background-color: #30404d; }
 .bp3-dark.pane-holder {
@@ -1029,9 +1039,6 @@ pre code {
   background-color: #ced9e0; }
 
 /* main navbar */
-.cm-matchhighlight {
-  background-color: lightgreen; }
-
 html, body {
   height: 100%; }
 
