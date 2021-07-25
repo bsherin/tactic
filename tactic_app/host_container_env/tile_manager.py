@@ -183,7 +183,6 @@ class TileManager(LibraryResourceManager):
                                develop=str(_develop),
                                css_source=css_source("module_viewer_react"),
                                javascript_source=javascript_source,
-                               uses_codemirror="True",
                                dark_theme_name=user_obj.get_preferred_dark_theme(),
                                version_string=tstring)
 
@@ -234,7 +233,6 @@ class TileManager(LibraryResourceManager):
         return render_template("library/tile_creator_react.html",
                                module_name=module_name,
                                develop=str(_develop),
-                               uses_codemirror="True",
                                theme=user_obj.get_theme(),
                                ready_block_id=the_content["rb_id"],
                                dark_theme_name=user_obj.get_preferred_dark_theme(),
@@ -367,7 +365,6 @@ class RepositoryTileManager(TileManager):
                                develop=str(_develop),
                                css_source=css_source("module_viewer_react"),
                                javascript_source=javascript_source,
-                               uses_codemirror="True",
                                dark_theme_name=user_obj.get_preferred_dark_theme(),
                                version_string=tstring)
 
