@@ -21,7 +21,7 @@ on the tile is wrapped in ``<b>`` tags, which will cause the text to be displaye
 
 At this point, you can click on the :guilabel:`load` button (see the above image). The tile should then be available for
 use within a project. So, go to the collections pane in your library. and load a data collection of your choice.
-(I'm going to load the genesis collection.) The tile that just created so appear in a menu called "basic".
+(I'm going to load the genesis collection.) The tile that you just created should appear in a menu called "basic".
 Use that menu to create an instance of your tile. Finally, click on the gear icon to display the tile's options,
 and then click :guilabel:`submit` to run the tile.
 
@@ -34,7 +34,7 @@ Using Options
 
 You might have noticed that your tile has a text option called "some_text". As things stand, this option does nothing.
 So let's modify our tile so that it displays the contents of this option after the hello message. Note that we access
-the content of the option by typing ``self.some_text``. This is because takes all of the options and makes them
+the content of the option by typing ``self.some_text``. This is because it takes all of the options and makes them
 attributes of the tile instance.
 
 .. image:: images/first_option.png
