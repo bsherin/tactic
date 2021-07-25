@@ -911,7 +911,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
         current_index = this._consoleItemIndex(this.state.currently_selected_item) - 1;
       }
 
-      while (current_index > 0) {
+      while (current_index >= 0) {
         var entry = this.props.console_items[current_index];
 
         if (entry.type == "code" || entry.type == "text") {
