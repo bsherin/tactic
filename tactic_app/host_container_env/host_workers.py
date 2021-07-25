@@ -592,6 +592,7 @@ class HostWorker(QWorker):
         data["message"] = {"unique_id": unique_id,
                            "type": "text",
                            "am_shrunk": False,
+                           "search_string": None,
                            "summary_text": summary_text,
                            "console_text": data["console_text"],
                            "show_markdown": False}
@@ -613,6 +614,7 @@ class HostWorker(QWorker):
                            "show_spinner": False,
                            "running": False,
                            "summary_text": summary_text,
+                           "search_string": None,
                            "console_text": data["console_text"],
                            "output_text": "",
                            "execution_count": 0}
