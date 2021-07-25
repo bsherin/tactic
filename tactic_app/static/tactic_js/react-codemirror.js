@@ -13,6 +13,32 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 
 var _communication_react = require("./communication_react.js");
 
+var _codemirror = _interopRequireDefault(require("codemirror/lib/codemirror.js"));
+
+require("codemirror/mode/python/python.js");
+
+require("codemirror/lib/codemirror.css");
+
+require("codemirror/addon/merge/merge.js");
+
+require("codemirror/addon/merge/merge.css");
+
+require("codemirror/addon/hint/show-hint.js");
+
+require("codemirror/addon/hint/show-hint.css");
+
+require("codemirror/addon/dialog/dialog.js");
+
+require("codemirror/addon/dialog/dialog.css");
+
+require("codemirror/theme/material.css");
+
+require("codemirror/theme/nord.css");
+
+require("codemirror/theme/oceanic-next.css");
+
+require("codemirror/theme/pastel-on-dark.css");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
@@ -41,7 +67,6 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
-// const DARK_THEME = "pastel-on-dark"
 var DARK_THEME = window.dark_theme_name;
 
 var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
@@ -69,6 +94,7 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
     _this.create_api();
 
     _this.saved_theme = null;
+    _this.overlay = null;
     return _this;
   }
 
@@ -76,8 +102,9 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
     key: "createCMArea",
     value: function createCMArea(codearea) {
       var first_line_number = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
-      var cmobject = CodeMirror(codearea, {
-        lineNumbers: true,
+      var cmobject = (0, _codemirror["default"])(codearea, {
+        lineNumbers: this.props.show_line_numbers,
+        lineWrapping: this.props.soft_wrap,
         matchBrackets: true,
         highlightSelectionMatches: true,
         autoCloseBrackets: true,
@@ -130,6 +157,8 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
       }
 
       this.saved_theme = this.props.dark_theme;
+
+      this._doHighlight(this.props.search_term);
     }
   }, {
     key: "componentDidUpdate",
@@ -153,17 +182,71 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
       }
 
       this.cmobject.refresh();
+
+      this._doHighlight(this.props.search_term);
+    }
+  }, {
+    key: "_doHighlight",
+    value: function _doHighlight() {
+      var self = this;
+
+      if (this.props.search_term == null || this.props.search_term == "") {
+        this.cmobject.operation(function () {
+          self._removeOverlay();
+        });
+      } else {
+        this.cmobject.operation(function () {
+          self._removeOverlay();
+
+          self._addOverlay(self.props.search_term);
+        });
+      }
+    }
+  }, {
+    key: "_addOverlay",
+    value: function _addOverlay(query) {
+      var hasBoundary = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+      var style = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "searchhighlight";
+      // var state = cm.state.matchHighlighter;
+      this.overlay = this._makeOverlay(query, hasBoundary, style);
+      this.cmobject.addOverlay(this.overlay);
+    }
+  }, {
+    key: "_makeOverlay",
+    value: function _makeOverlay(query, hasBoundary, style) {
+      var self = this;
+      return {
+        token: function token(stream) {
+          if (stream.match(query) && (!hasBoundary || self._boundariesAround(stream, hasBoundary))) return style;
+          stream.next();
+          stream.skipTo(query.charAt(0)) || stream.skipToEnd();
+        }
+      };
+    }
+  }, {
+    key: "_boundariesAround",
+    value: function _boundariesAround(stream, re) {
+      return (!stream.start || !re.test(stream.string.charAt(stream.start - 1))) && (stream.pos == stream.string.length || !re.test(stream.string.charAt(stream.pos)));
+    }
+  }, {
+    key: "_removeOverlay",
+    value: function _removeOverlay() {
+      if (this.overlay) {
+        this.cmobject.removeOverlay(this.overlay);
+        this.overlay = null;
+      }
     }
   }, {
     key: "searchCM",
     value: function searchCM() {
-      CodeMirror.commands.find(this.cmobject);
+      _codemirror["default"].commands.find(this.cmobject);
     }
   }, {
     key: "clearSelections",
     value: function clearSelections() {
-      CodeMirror.commands.clearSearch(this.cmobject);
-      CodeMirror.commands.singleSelection(this.cmobject);
+      _codemirror["default"].commands.clearSearch(this.cmobject);
+
+      _codemirror["default"].commands.singleSelection(this.cmobject);
     }
   }, {
     key: "create_api",
@@ -203,10 +286,10 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
           _iterator.f();
         }
 
-        CodeMirror.commands.autocomplete = function (cm) {
+        _codemirror["default"].commands.autocomplete = function (cm) {
           //noinspection JSUnresolvedFunction
           cm.showHint({
-            hint: CodeMirror.hint.anyword,
+            hint: _codemirror["default"].hint.anyword,
             api_list: self.api_list,
             extra_autocomplete_list: self.extra_autocomplete_list
           });
@@ -218,18 +301,19 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
     value: function create_keymap() {
       var self = this;
 
-      CodeMirror.keyMap["default"]["Esc"] = function () {
+      _codemirror["default"].keyMap["default"]["Esc"] = function () {
         self.clearSelections();
       };
 
-      var is_mac = CodeMirror.keyMap["default"].hasOwnProperty("Cmd-S");
+      var is_mac = _codemirror["default"].keyMap["default"].hasOwnProperty("Cmd-S");
+
       this.mousetrap.bind(['escape'], function (e) {
         self.clearSelections();
         e.preventDefault();
       });
 
       if (is_mac) {
-        CodeMirror.keyMap["default"]["Cmd-S"] = function () {
+        _codemirror["default"].keyMap["default"]["Cmd-S"] = function () {
           self.props.saveMe();
         };
 
@@ -242,7 +326,7 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
           e.preventDefault();
         });
       } else {
-        CodeMirror.keyMap["default"]["Ctrl-S"] = function () {
+        _codemirror["default"].keyMap["default"]["Ctrl-S"] = function () {
           self.props.saveMe();
         };
 
@@ -278,6 +362,8 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
 exports.ReactCodemirror = ReactCodemirror;
 ReactCodemirror.propTypes = {
   handleChange: _propTypes["default"].func,
+  show_line_numbers: _propTypes["default"].bool,
+  soft_wrap: _propTypes["default"].bool,
   handleBlur: _propTypes["default"].func,
   code_content: _propTypes["default"].string,
   sync_to_prop: _propTypes["default"].bool,
@@ -288,13 +374,17 @@ ReactCodemirror.propTypes = {
   first_line_number: _propTypes["default"].number,
   extraKeys: _propTypes["default"].object,
   setCMObject: _propTypes["default"].func,
+  searchTerm: _propTypes["default"].string,
   code_container_ref: _propTypes["default"].object,
   code_container_width: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
   code_container_height: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number])
 };
 ReactCodemirror.defaultProps = {
   first_line_number: 1,
+  show_line_numbers: true,
+  soft_wrap: false,
   code_container_height: "100%",
+  searchTerm: null,
   handleChange: null,
   handleBlur: null,
   sync_to_prop: false,

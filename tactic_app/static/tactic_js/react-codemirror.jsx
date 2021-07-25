@@ -3,10 +3,30 @@ import React from "react";
 import PropTypes from 'prop-types';
 
 import {postAjax} from "./communication_react.js"
+// import { CodeMirror } from "./codemirror/src/edit/main.js"
+// import "./codemirror/mode/python/python.js"
+
+import CodeMirror from 'codemirror/lib/codemirror.js'
+import 'codemirror/mode/python/python.js'
+
+import 'codemirror/lib/codemirror.css'
+
+import 'codemirror/addon/merge/merge.js'
+import 'codemirror/addon/merge/merge.css'
+import 'codemirror/addon/hint/show-hint.js'
+import 'codemirror/addon/hint/show-hint.css'
+
+import 'codemirror/addon/dialog/dialog.js'
+import 'codemirror/addon/dialog/dialog.css'
+
+import 'codemirror/theme/material.css'
+import 'codemirror/theme/nord.css'
+import 'codemirror/theme/oceanic-next.css'
+import 'codemirror/theme/pastel-on-dark.css'
+
 
 export {ReactCodemirror}
 
-// const DARK_THEME = "pastel-on-dark"
 const DARK_THEME = window.dark_theme_name;
 
 class ReactCodemirror extends React.Component {
@@ -25,11 +45,13 @@ class ReactCodemirror extends React.Component {
         this.mousetrap = new Mousetrap();
         this.create_api();
         this.saved_theme = null;
+        this.overlay = null
     }
 
     createCMArea(codearea, first_line_number = 1) {
         let cmobject = CodeMirror(codearea, {
-            lineNumbers: true,
+            lineNumbers: this.props.show_line_numbers,
+            lineWrapping: this.props.soft_wrap,
             matchBrackets: true,
             highlightSelectionMatches: true,
             autoCloseBrackets: true,
@@ -78,7 +100,8 @@ class ReactCodemirror extends React.Component {
         if (this.props.setCMObject != null) {
             this.props.setCMObject(this.cmobject)
         }
-        this.saved_theme = this.props.dark_theme
+        this.saved_theme = this.props.dark_theme;
+        this._doHighlight(this.props.search_term)
     }
 
     componentDidUpdate() {
@@ -97,7 +120,52 @@ class ReactCodemirror extends React.Component {
         if (this.props.first_line_number != 1) {
             this.cmobject.setOption("firstLineNumber", this.props.first_line_number);
         }
-        this.cmobject.refresh()
+        this.cmobject.refresh();
+        this._doHighlight(this.props.search_term)
+    }
+
+    _doHighlight() {
+        let self = this;
+        if (this.props.search_term == null || this.props.search_term == "") {
+            this.cmobject.operation(function() {
+                self._removeOverlay()
+            })
+        }
+        else{
+            this.cmobject.operation(function() {
+                self._removeOverlay()
+                self._addOverlay(self.props.search_term)
+            })
+        }
+    }
+
+    _addOverlay(query, hasBoundary=false, style="searchhighlight") {
+        // var state = cm.state.matchHighlighter;
+        this.overlay = this._makeOverlay(query, hasBoundary, style)
+        this.cmobject.addOverlay(this.overlay);
+      }
+
+    _makeOverlay(query, hasBoundary, style) {
+        let self = this;
+        return {token: function(stream) {
+          if (stream.match(query) &&
+              (!hasBoundary || self._boundariesAround(stream, hasBoundary)))
+            return style;
+          stream.next();
+          stream.skipTo(query.charAt(0)) || stream.skipToEnd();
+        }};
+    }
+
+    _boundariesAround(stream, re) {
+        return (!stream.start || !re.test(stream.string.charAt(stream.start - 1))) &&
+          (stream.pos == stream.string.length || !re.test(stream.string.charAt(stream.pos)));
+    }
+
+    _removeOverlay() {
+        if (this.overlay) {
+          this.cmobject.removeOverlay(this.overlay);
+          this.overlay = null;
+        }
     }
 
 
@@ -188,6 +256,8 @@ class ReactCodemirror extends React.Component {
 
 ReactCodemirror.propTypes = {
     handleChange: PropTypes.func,
+    show_line_numbers: PropTypes.bool,
+    soft_wrap: PropTypes.bool,
     handleBlur: PropTypes.func,
     code_content: PropTypes.string,
     sync_to_prop: PropTypes.bool,
@@ -198,6 +268,7 @@ ReactCodemirror.propTypes = {
     first_line_number: PropTypes.number,
     extraKeys: PropTypes.object,
     setCMObject: PropTypes.func,
+    searchTerm: PropTypes.string,
     code_container_ref: PropTypes.object,
     code_container_width: PropTypes.oneOfType([
         PropTypes.string,
@@ -209,7 +280,10 @@ ReactCodemirror.propTypes = {
 
 ReactCodemirror.defaultProps = {
     first_line_number: 1,
+    show_line_numbers: true,
+    soft_wrap: false,
     code_container_height: "100%",
+    searchTerm: null,
     handleChange: null,
     handleBlur: null,
     sync_to_prop: false,
