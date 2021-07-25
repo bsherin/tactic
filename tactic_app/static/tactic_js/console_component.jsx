@@ -575,7 +575,7 @@ const BUTTON_CONSUMED_SPACE = 208;
          else {
              current_index = this._consoleItemIndex(this.state.currently_selected_item) - 1
          }
-         while (current_index > 0) {
+         while (current_index >= 0) {
              let entry = this.props.console_items[current_index];
              if (entry.type == "code" || entry.type == "text") {
                  if (this._selectIfMatching(entry, "console_text")) {
