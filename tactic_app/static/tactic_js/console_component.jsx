@@ -302,7 +302,7 @@ const BUTTON_CONSUMED_SPACE = 208;
          return Object.assign({}, this.props.console_items[this._consoleItemIndex(unique_id)])
      }
 
-     _selectConsoleItem(unique_id) {
+     _selectConsoleItem(unique_id, callback=null) {
          let self = this;
          let replace_dicts = [];
          if (this.state.currently_selected_item) {
@@ -312,7 +312,7 @@ const BUTTON_CONSUMED_SPACE = 208;
          replace_dicts.push({unique_id: unique_id, field: "am_selected", value: true})
          replace_dicts.push({unique_id: unique_id, field: "search_string", value: this.state.search_string})
          this._multiple_console_item_updates(replace_dicts, () => {
-             self.setState({currently_selected_item: unique_id})
+             self.setState({currently_selected_item: unique_id}, callback)
          })
      }
 
@@ -532,6 +532,7 @@ const BUTTON_CONSUMED_SPACE = 208;
      
      _searchNext() {
          let current_index;
+         let self = this;
          if (!this.state.currently_selected_item) {
              current_index = 0
          } else {
@@ -541,7 +542,11 @@ const BUTTON_CONSUMED_SPACE = 208;
          while (current_index < this.props.console_items.length) {
              let entry = this.props.console_items[current_index];
              if (entry.type == "code" || entry.type == "text") {
-                 if (this._selectIfMatching(entry, "console_text")) {
+                 if (this._selectIfMatching(entry, "console_text", ()=>{
+                     if (entry.type == "text") {
+                             self._setConsoleItemValue(entry.unique_id, "show_markdown", false)
+                     }
+                 })) {
                      this.setState({"search_helper_text": null})
                      return
                  }
@@ -551,16 +556,16 @@ const BUTTON_CONSUMED_SPACE = 208;
          this.setState({"search_helper_text": "No more results"})
      }
 
-     _selectIfMatching(entry, text_field) {
+     _selectIfMatching(entry, text_field, callback=null) {
+         let self = this;
         if (entry[text_field].toLowerCase().includes(this.state.search_string.toLowerCase())) {
              if (entry.am_shrunk) {
-                 let self = this;
                  this._setConsoleItemValue(entry.unique_id, "am_shrunk", false, ()=>{
-                     self._selectConsoleItem(entry.unique_id)
+                     self._selectConsoleItem(entry.unique_id, callback)
                  })
              }
              else {
-                 this._selectConsoleItem(entry.unique_id)
+                 this._selectConsoleItem(entry.unique_id, callback)
              }
              return true
          }
@@ -569,6 +574,7 @@ const BUTTON_CONSUMED_SPACE = 208;
      
      _searchPrevious() {
          let current_index;
+         let self = this;
          if (!this.state.currently_selected_item) {
              current_index = this.props.console_items.length - 1
          }
@@ -578,7 +584,11 @@ const BUTTON_CONSUMED_SPACE = 208;
          while (current_index >= 0) {
              let entry = this.props.console_items[current_index];
              if (entry.type == "code" || entry.type == "text") {
-                 if (this._selectIfMatching(entry, "console_text")) {
+                 if (this._selectIfMatching(entry, "console_text", ()=>{
+                     if (entry.type == "text") {
+                             self._setConsoleItemValue(entry.unique_id, "show_markdown", false)
+                     }
+                 })) {
                      this.setState({"search_helper_text": null})
                      return
                  }
@@ -1428,6 +1438,9 @@ class RawConsoleTextItem extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState, snapShot) {
+        if (this.props.am_selected && !prevProps.am_selected && this.elRef && this.elRef.current){
+            this._scrollMeIntoView()
+        }
         if (this.props.set_focus) {
             if (this.props.show_markdown) {
                 this._hideMarkdown()
@@ -1580,7 +1593,7 @@ class RawConsoleTextItem extends React.Component {
         let body_width = this.props.console_available_width - BUTTON_CONSUMED_SPACE;
         return (
             <div className={panel_class + " d-flex flex-row"} onClick={this._consoleItemClick}
-                 id={this.props.unique_id} style={{marginBottom: 10}}>
+                 ref={this.elRef} id={this.props.unique_id} style={{marginBottom: 10}}>
                 <div className="button-div shrink-expand-div d-flex flex-row">
                         <Shandle/>
                         {!this.props.am_shrunk &&
