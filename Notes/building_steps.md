@@ -45,4 +45,7 @@ Finally:
 # alternatively, if I want to also update the nginx config:
 # see discussion in readme.md in the tactic-azure-development project
 > ansible-playbook -i staging deploy_with_nginxupdate.yml
+
+# also if I just want to pull over the source code from git, can do
+> ansible-playbook -i staging deploy_pull_github_only.yml
 ```

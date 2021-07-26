@@ -486,6 +486,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_selectConsoleItem",
     value: function _selectConsoleItem(unique_id) {
+      var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
       var self = this;
       var replace_dicts = [];
 
@@ -516,7 +517,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
       this._multiple_console_item_updates(replace_dicts, function () {
         self.setState({
           currently_selected_item: unique_id
-        });
+        }, callback);
       });
     }
   }, {
@@ -854,7 +855,10 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_searchNext",
     value: function _searchNext() {
+      var _this12 = this;
+
       var current_index;
+      var self = this;
 
       if (!this.state.currently_selected_item) {
         current_index = 0;
@@ -862,19 +866,32 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
         current_index = this._consoleItemIndex(this.state.currently_selected_item) + 1;
       }
 
-      while (current_index < this.props.console_items.length) {
-        var entry = this.props.console_items[current_index];
+      var _loop2 = function _loop2() {
+        var entry = _this12.props.console_items[current_index];
 
         if (entry.type == "code" || entry.type == "text") {
-          if (this._selectIfMatching(entry, "console_text")) {
-            this.setState({
+          if (_this12._selectIfMatching(entry, "console_text", function () {
+            if (entry.type == "text") {
+              self._setConsoleItemValue(entry.unique_id, "show_markdown", false);
+            }
+          })) {
+            _this12.setState({
               "search_helper_text": null
             });
-            return;
+
+            return {
+              v: void 0
+            };
           }
         }
 
         current_index += 1;
+      };
+
+      while (current_index < this.props.console_items.length) {
+        var _ret2 = _loop2();
+
+        if (_typeof(_ret2) === "object") return _ret2.v;
       }
 
       this.setState({
@@ -884,15 +901,16 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_selectIfMatching",
     value: function _selectIfMatching(entry, text_field) {
+      var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+      var self = this;
+
       if (entry[text_field].toLowerCase().includes(this.state.search_string.toLowerCase())) {
         if (entry.am_shrunk) {
-          var self = this;
-
           this._setConsoleItemValue(entry.unique_id, "am_shrunk", false, function () {
-            self._selectConsoleItem(entry.unique_id);
+            self._selectConsoleItem(entry.unique_id, callback);
           });
         } else {
-          this._selectConsoleItem(entry.unique_id);
+          this._selectConsoleItem(entry.unique_id, callback);
         }
 
         return true;
@@ -903,7 +921,10 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_searchPrevious",
     value: function _searchPrevious() {
+      var _this13 = this;
+
       var current_index;
+      var self = this;
 
       if (!this.state.currently_selected_item) {
         current_index = this.props.console_items.length - 1;
@@ -911,19 +932,32 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
         current_index = this._consoleItemIndex(this.state.currently_selected_item) - 1;
       }
 
-      while (current_index >= 0) {
-        var entry = this.props.console_items[current_index];
+      var _loop3 = function _loop3() {
+        var entry = _this13.props.console_items[current_index];
 
         if (entry.type == "code" || entry.type == "text") {
-          if (this._selectIfMatching(entry, "console_text")) {
-            this.setState({
+          if (_this13._selectIfMatching(entry, "console_text", function () {
+            if (entry.type == "text") {
+              self._setConsoleItemValue(entry.unique_id, "show_markdown", false);
+            }
+          })) {
+            _this13.setState({
               "search_helper_text": null
             });
-            return;
+
+            return {
+              v: void 0
+            };
           }
         }
 
         current_index -= 1;
+      };
+
+      while (current_index >= 0) {
+        var _ret3 = _loop3();
+
+        if (_typeof(_ret3) === "object") return _ret3.v;
       }
 
       this.setState({
@@ -945,7 +979,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
-      var _this12 = this;
+      var _this14 = this;
 
       var gbstyle = {
         marginLeft: 1,
@@ -1043,7 +1077,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
       }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
         extra_glyph_text: this._glif_text(show_glif_text, "copy"),
         handleClick: function handleClick() {
-          _this12._copyCell();
+          _this14._copyCell();
         },
         tooltip: "Copy cell",
         intent: "primary",
@@ -1052,7 +1086,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
       }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
         extra_glyph_text: this._glif_text(show_glif_text, "paste"),
         handleClick: function handleClick() {
-          _this12._pasteCell();
+          _this14._pasteCell();
         },
         tooltip: "Paste cell",
         intent: "primary",
@@ -1302,20 +1336,20 @@ var RawLogItem = /*#__PURE__*/function (_React$Component4) {
   var _super4 = _createSuper(RawLogItem);
 
   function RawLogItem(props) {
-    var _this13;
+    var _this15;
 
     _classCallCheck(this, RawLogItem);
 
-    _this13 = _super4.call(this, props);
-    _this13.ce_summary0ref = /*#__PURE__*/_react["default"].createRef();
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this13), "_", RawLogItem.prototype);
-    _this13.update_props = ["is_error", "am_shrunk", "am_selected", "summary_text", "console_text", "console_available_width"];
-    _this13.update_state_vars = [];
-    _this13.state = {
+    _this15 = _super4.call(this, props);
+    _this15.ce_summary0ref = /*#__PURE__*/_react["default"].createRef();
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this15), "_", RawLogItem.prototype);
+    _this15.update_props = ["is_error", "am_shrunk", "am_selected", "summary_text", "console_text", "console_available_width"];
+    _this15.update_state_vars = [];
+    _this15.state = {
       selected: false
     };
-    _this13.last_output_text = "";
-    return _this13;
+    _this15.last_output_text = "";
+    return _this15;
   }
 
   _createClass(RawLogItem, [{
@@ -1543,19 +1577,19 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component5) {
   var _super5 = _createSuper(RawConsoleCodeItem);
 
   function RawConsoleCodeItem(props) {
-    var _this14;
+    var _this16;
 
     _classCallCheck(this, RawConsoleCodeItem);
 
-    _this14 = _super5.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this14), "_", RawConsoleCodeItem.prototype);
-    _this14.cmobject = null;
-    _this14.elRef = /*#__PURE__*/_react["default"].createRef();
-    _this14.update_props = ["am_shrunk", "set_focus", "am_selected", "search_string", "summary_text", "console_text", "show_spinner", "execution_count", "output_text", "console_available_width", "dark_theme"];
-    _this14.update_state_vars = [];
-    _this14.state = {};
-    _this14.last_output_text = "";
-    return _this14;
+    _this16 = _super5.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this16), "_", RawConsoleCodeItem.prototype);
+    _this16.cmobject = null;
+    _this16.elRef = /*#__PURE__*/_react["default"].createRef();
+    _this16.update_props = ["am_shrunk", "set_focus", "am_selected", "search_string", "summary_text", "console_text", "show_spinner", "execution_count", "output_text", "console_available_width", "dark_theme"];
+    _this16.update_state_vars = [];
+    _this16.state = {};
+    _this16.last_output_text = "";
+    return _this16;
   }
 
   _createClass(RawConsoleCodeItem, [{
@@ -1583,7 +1617,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component5) {
   }, {
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this15 = this;
+      var _this17 = this;
 
       if (this.props.set_focus) {
         if (this.cmobject != null) {
@@ -1601,7 +1635,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component5) {
 
       if (this.cmobject != null) {
         this.cmobject.on("focus", function () {
-          self.props.setFocus(_this15.props.unique_id, self._selectMe);
+          self.props.setFocus(_this17.props.unique_id, self._selectMe);
         });
         this.cmobject.on("blur", function () {
           self.props.setFocus(null);
@@ -1700,17 +1734,17 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component5) {
   }, {
     key: "_runMe",
     value: function _runMe() {
-      var _this16 = this;
+      var _this18 = this;
 
       var go_to_next = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
 
       this._clearOutput(function () {
-        _this16._showMySpinner();
+        _this18._showMySpinner();
 
-        var self = _this16;
+        var self = _this18;
         (0, _communication_react.postWithCallback)(main_id, "exec_console_code", {
-          "the_code": _this16.props.console_text,
-          "console_id": _this16.props.unique_id
+          "the_code": _this18.props.console_text,
+          "console_id": _this18.props.unique_id
         }, function () {
           if (go_to_next) {
             self.props.goToNextCell(self.props.unique_id);
@@ -1817,7 +1851,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component5) {
   }, {
     key: "renderContextMenu",
     value: function renderContextMenu() {
-      var _this17 = this;
+      var _this19 = this;
 
       // return a single element, or nothing to use default browser behavior
       return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, !this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
@@ -1847,7 +1881,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component5) {
         icon: "clean",
         intent: "warning",
         onClick: function onClick() {
-          _this17._clearOutput();
+          _this19._clearOutput();
         },
         text: "Clear Output"
       }));
@@ -1862,7 +1896,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component5) {
   }, {
     key: "render",
     value: function render() {
-      var _this18 = this;
+      var _this20 = this;
 
       var panel_style = this.props.am_shrunk ? "log-panel log-panel-invisible" : "log-panel log-panel-visible";
 
@@ -1936,7 +1970,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component5) {
         icon: "trash"
       }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
         handleClick: function handleClick() {
-          _this18._clearOutput();
+          _this20._clearOutput();
         },
         intent: "warning",
         tooltip: "Clear this item's output",
@@ -1995,21 +2029,21 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component6) {
   var _super6 = _createSuper(RawConsoleTextItem);
 
   function RawConsoleTextItem(props) {
-    var _this19;
+    var _this21;
 
     _classCallCheck(this, RawConsoleTextItem);
 
-    _this19 = _super6.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this19), "_", RawConsoleTextItem.prototype);
-    _this19.cmobject = null;
-    _this19.elRef = /*#__PURE__*/_react["default"].createRef();
-    _this19.ce_summary_ref = /*#__PURE__*/_react["default"].createRef();
-    _this19.update_props = ["am_shrunk", "set_focus", "serach_string", "am_selected", "show_markdown", "summary_text", "dark_theme", "console_text", "console_available_width"];
-    _this19.update_state_vars = ["ce_ref"];
-    _this19.state = {
+    _this21 = _super6.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this21), "_", RawConsoleTextItem.prototype);
+    _this21.cmobject = null;
+    _this21.elRef = /*#__PURE__*/_react["default"].createRef();
+    _this21.ce_summary_ref = /*#__PURE__*/_react["default"].createRef();
+    _this21.update_props = ["am_shrunk", "set_focus", "serach_string", "am_selected", "show_markdown", "summary_text", "dark_theme", "console_text", "console_available_width"];
+    _this21.update_state_vars = ["ce_ref"];
+    _this21.state = {
       ce_ref: null
     };
-    return _this19;
+    return _this21;
   }
 
   _createClass(RawConsoleTextItem, [{
@@ -2054,7 +2088,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component6) {
   }, {
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this20 = this;
+      var _this22 = this;
 
       if (this.props.set_focus) {
         if (this.props.show_markdown) {
@@ -2073,7 +2107,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component6) {
 
       if (this.cmobject != null) {
         this.cmobject.on("focus", function () {
-          self.props.setFocus(_this20.props.unique_id, self._selectMe);
+          self.props.setFocus(_this22.props.unique_id, self._selectMe);
         });
         this.cmobject.on("blur", function () {
           self.props.setFocus(null);
@@ -2101,6 +2135,10 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component6) {
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate(prevProps, prevState, snapShot) {
+      if (this.props.am_selected && !prevProps.am_selected && this.elRef && this.elRef.current) {
+        this._scrollMeIntoView();
+      }
+
       if (this.props.set_focus) {
         if (this.props.show_markdown) {
           this._hideMarkdown();
@@ -2287,6 +2325,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component6) {
       return /*#__PURE__*/_react["default"].createElement("div", {
         className: panel_class + " d-flex flex-row",
         onClick: this._consoleItemClick,
+        ref: this.elRef,
         id: this.props.unique_id,
         style: {
           marginBottom: 10
