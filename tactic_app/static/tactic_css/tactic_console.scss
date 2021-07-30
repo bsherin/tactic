@@ -27,7 +27,7 @@ body {
 #console {
     text-align: left;
     font-size: 14px;
-    padding: 20px 5px;
+    padding: 0 10px 5px 0;
 }
 
 #console-panel {
@@ -79,7 +79,6 @@ body {
     padding-right: 10px !important;
 }
 
-
 .text-panel-output {
     h1 {
         font-size: 2.0rem;
@@ -118,7 +117,7 @@ body {
 
 .log-panel {
     border: none;
-    margin: 1px;
+    margin: 1px 4px 1px 8px;
     box-shadow: none;
     position: relative;
     overflow: hidden;
@@ -159,7 +158,7 @@ body {
     }
 
 
-    &:focus-within, &:hover {
+    &:focus-within, &:hover, &.selected {
         .button-div {
             opacity: 100;
             transition-delay: .1s;
@@ -168,6 +167,13 @@ body {
             border-right: $log-panel-border-style;
 
         }
+    }
+
+    &.selected {
+        border-right: 3px solid $gray2;
+        border-left: 3px solid $gray2;
+        margin-left: 5px;
+        margin-right: 1px;
     }
 
     &.log-panel-visible {
@@ -199,7 +205,7 @@ body {
         .console-spin-outer {
             display: none;
         }
-        :not(:focus-within){
+        :not(:focus-within), :not(.selected){
             min-height: 0;
         }
         .convert-markdown-button, .close-log-button, .run-log-button, .clear-code-button, .console-spin-outer, .shrink-log-button, .expand-log-button {
@@ -213,13 +219,13 @@ body {
             .console-spin-outer {
                 display: inline-block;
             }
-            &:focus-within {
+            &:focus-within, &.selected{
                 .clear-code-button {
                     display:none;
                 }
             }
         }
-        &:focus-within{
+        &:focus-within, &.selected{
             //min-height: 110px;
             .convert-markdown-button, .close-log-button, .run-log-button, .clear-code-button, .shrink-log-button {
                 display: inline-block;
@@ -234,7 +240,14 @@ body {
         &:not(:focus-within):hover .button-div.shrink-expand-div {
             opacity: 100;
         }
+        &:not(.selected):hover .button-div.shrink-expand-div {
+            opacity: 100;
+        }
+
         &:not(:focus-within):hover .shrink-log-button {
+            display: inline-block
+        }
+        &:not(.selected):hover .shrink-log-button {
             display: inline-block
         }
     }
@@ -275,6 +288,7 @@ body {
         .convert-markdown-button, .close-log-button, .run-log-button, .clear-code-button {
             display: none
         }
+
     }
 }
 

@@ -26,7 +26,11 @@ var _blueprint_react_widgets = require("./blueprint_react_widgets.js");
 
 var _utilities_react = require("./utilities_react.js");
 
+var _library_widgets = require("./library_widgets");
+
 var _modal_react = require("./modal_react.js");
+
+var _import_dialog = require("./import_dialog.js");
 
 var _communication_react = require("./communication_react.js");
 
@@ -58,6 +62,8 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 var default_button_class = "btn-outline-secondary";
 var intent_colors = {
   danger: "#c23030",
@@ -69,16 +75,37 @@ var intent_colors = {
 
 function ResourceviewerToolbar(props) {
   var tstyle = {
-    "marginTop": 20
+    "marginTop": 20,
+    "paddingRight": 20,
+    "width": "100%"
   };
+
+  var toolbar_outer_style = _defineProperty({
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: 0,
+    marginTop: 7
+  }, "marginBottom", 8);
+
   return /*#__PURE__*/_react["default"].createElement("div", {
-    style: tstyle
-  }, /*#__PURE__*/_react["default"].createElement(Toolbar, {
-    button_groups: props.button_groups
-  }), /*#__PURE__*/_react["default"].createElement(Namebutton, {
+    style: tstyle,
+    className: "d-flex flex-row justify-content-between"
+  }, /*#__PURE__*/_react["default"].createElement(Namebutton, {
     resource_name: props.resource_name,
     setResourceNameState: props.setResourceNameState,
-    res_type: props.res_type
+    res_type: props.res_type,
+    large: false
+  }), /*#__PURE__*/_react["default"].createElement("div", null, /*#__PURE__*/_react["default"].createElement(Toolbar, {
+    button_groups: props.button_groups,
+    alternate_outer_style: toolbar_outer_style
+  })), props.show_search && /*#__PURE__*/_react["default"].createElement(_library_widgets.SearchForm, {
+    update_search_state: props.update_search_state,
+    search_string: props.search_string
+  }), !props.show_search && /*#__PURE__*/_react["default"].createElement("div", {
+    style: {
+      width: 100
+    }
   }));
 }
 
@@ -215,7 +242,7 @@ var FileAdderButton = /*#__PURE__*/function (_React$Component3) {
   _createClass(FileAdderButton, [{
     key: "_showDialog",
     value: function _showDialog() {
-      (0, _modal_react.showFileImportDialog)(this.props.resource_type, this.props.allowed_file_types, this.props.checkboxes, this.props.process_handler, this.props.combine);
+      (0, _import_dialog.showFileImportDialog)(this.props.resource_type, this.props.allowed_file_types, this.props.checkboxes, this.props.process_handler, this.props.combine, this.props.show_csv_options);
     }
   }, {
     key: "render",
@@ -241,7 +268,8 @@ FileAdderButton.propTypes = {
   icon_name: _propTypes["default"].string,
   checkboxes: _propTypes["default"].array,
   combine: _propTypes["default"].bool,
-  tooltip: _propTypes["default"].string
+  tooltip: _propTypes["default"].string,
+  show_csv_options: _propTypes["default"].bool
 };
 FileAdderButton.defaultProps = {
   multiple: false
@@ -402,6 +430,7 @@ var Toolbar = /*#__PURE__*/function (_React$Component4) {
             combine: button.combine,
             tooltip: _this5.getTooltip(button),
             tooltipDelay: _this5.getTooltipDelay(button),
+            show_csv_options: button.show_csv_options,
             key: index
           });
         });
@@ -523,7 +552,8 @@ var Namebutton = /*#__PURE__*/function (_React$Component5) {
       };
       return /*#__PURE__*/_react["default"].createElement(_core.Button, {
         id: "rename-button",
-        large: true,
+        large: this.props.large,
+        small: !this.props.large,
         minimal: true,
         style: style,
         tabIndex: -1,
@@ -539,8 +569,10 @@ exports.Namebutton = Namebutton;
 Namebutton.propTypes = {
   resource_name: _propTypes["default"].string,
   setResourceNameState: _propTypes["default"].func,
-  res_type: _propTypes["default"].string
+  res_type: _propTypes["default"].string,
+  large: _propTypes["default"].bool
 };
 Namebutton.defaultProps = {
-  handleRename: null
+  handleRename: null,
+  large: true
 };

@@ -16,7 +16,7 @@ from openpyxl.utils import get_column_letter
 import io
 # import cStringIO
 import tactic_app
-from file_handling import read_csv_file_to_list, read_tsv_file_to_list, read_txt_file_to_list
+from file_handling import read_csv_file_to_list, read_txt_file_to_list
 from file_handling import read_freeform_file, read_excel_file
 from users import load_user
 from redis_tools import create_ready_block
@@ -371,6 +371,8 @@ class CollectionManager(LibraryResourceManager):
         user_obj = current_user
 
         collection_mdata = loaded_tile_management.create_initial_metadata()
+        if "csv_options" in request.json and request.json["csv_options"]:
+            collection_mdata["csv_options"] = request.json["csv_options"]
         try:
             result = user_obj.create_empty_collection(collection_name, doc_type, collection_mdata)
             result["title"] = "Collection {} created".format(collection_name)
@@ -445,6 +447,11 @@ class CollectionManager(LibraryResourceManager):
         successful_reads = []
         failed_reads = OrderedDict()
         known_extensions = [".xlsx", ".csv", ".tsv", ".txt"]
+        collection_mdata = user_obj.get_collection_metadata(collection_name)
+        if "csv_options" in collection_mdata:
+            csv_options = collection_mdata["csv_options"]
+        else:
+            csv_options = None
         for the_file in file_list:
             filename, file_extension = os.path.splitext(the_file.filename)
             filename = filename.encode("ascii", "ignore").decode()
@@ -462,10 +469,11 @@ class CollectionManager(LibraryResourceManager):
                 new_doc_dict.update(doc_dict)
                 header_list_dict.update(header_dict)
             else:
-                if file_extension == ".csv":
-                    (success, row_list, header_list, encoding, decoding_problems) = read_csv_file_to_list(the_file)
-                elif file_extension == ".tsv":
-                    (success, row_list, header_list, encoding, decoding_problems) = read_tsv_file_to_list(the_file)
+                if file_extension in [".csv", ".tsv"] :
+                    (success, row_list, header_list, encoding, decoding_problems) = \
+                        read_csv_file_to_list(the_file, csv_options)
+                # elif file_extension == ".tsv":
+                #     (success, row_list, header_list, encoding, decoding_problems) = read_tsv_file_to_list(the_file)
                 elif file_extension == ".txt":
                     (success, row_list, header_list, encoding, decoding_problems) = read_txt_file_to_list(the_file)
                 else:

@@ -125,4 +125,3 @@ try:
 except pymongo.errors.PyMongoError as err:
     print("There's a problem with the PyMongo database. ", err)
     sys.exit()
-d

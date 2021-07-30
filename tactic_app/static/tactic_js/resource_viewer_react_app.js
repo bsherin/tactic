@@ -213,6 +213,9 @@ var ResourceViewerApp = /*#__PURE__*/function (_React$Component) {
         button_groups: this.props.button_groups,
         setResourceNameState: this.props.setResourceNameState,
         resource_name: this.props.resource_name,
+        show_search: this.props.show_search,
+        search_string: this.props.search_string,
+        update_search_state: this.props.update_search_state,
         res_type: this.props.res_type
       }), this.props.children); //let available_height = this.get_new_hp_height(this.hp_ref);
 

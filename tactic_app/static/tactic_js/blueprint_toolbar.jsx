@@ -12,11 +12,14 @@ import { Button, MenuItem, Menu, ButtonGroup, Popover} from "@blueprintjs/core";
 import {KeyTrap} from "./key_trap.js";
 import {withTooltip} from "./blueprint_react_widgets.js";
 import {doBinding} from "./utilities_react.js";
+import {SearchForm} from "./library_widgets";
 
-export {Toolbar, ToolbarButton, Namebutton, ResourceviewerToolbar}
-import {showModalReact, showFileImportDialog} from "./modal_react.js";
+import {showModalReact} from "./modal_react.js";
+import {showFileImportDialog} from "./import_dialog.js"
 
 import {postAjax} from "./communication_react.js"
+
+export {Toolbar, ToolbarButton, Namebutton, ResourceviewerToolbar}
 
 const default_button_class = "btn-outline-secondary";
 
@@ -29,16 +32,40 @@ const intent_colors = {
 };
 
 function ResourceviewerToolbar(props) {
-    let tstyle = {"marginTop": 20};
+    let tstyle = {"marginTop": 20, "paddingRight": 20, "width": "100%"};
+    let toolbar_outer_style = {
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "space-around",
+                marginBottom: 0,
+                marginTop: 7,
+                marginBottom: 8
+    }
+
     return (
-        <div style={tstyle}>
-            <Toolbar button_groups={props.button_groups}/>
+        <div style={tstyle} className="d-flex flex-row justify-content-between">
             <Namebutton resource_name={props.resource_name}
                         setResourceNameState={props.setResourceNameState}
-                        res_type={props.res_type}/>
+                        res_type={props.res_type}
+                        large={false}
+            />
+            <div>
+                <Toolbar button_groups={props.button_groups}
+                         alternate_outer_style={toolbar_outer_style}
+                />
+            </div>
+            {props.show_search &&
+                <SearchForm update_search_state={props.update_search_state}
+                            search_string={props.search_string}/>
+            }
+            {!props.show_search &&
+                <div style={{width: 100}}/>
+            }
+
         </div>
     )
 }
+
 
 class ToolbarButton extends React.Component {
 
@@ -135,7 +162,7 @@ class FileAdderButton extends React.Component {
 
     _showDialog () {
         showFileImportDialog(this.props.resource_type, this.props.allowed_file_types,
-            this.props.checkboxes, this.props.process_handler, this.props.combine)
+            this.props.checkboxes, this.props.process_handler, this.props.combine, this.props.show_csv_options)
     }
 
      render() {
@@ -161,6 +188,7 @@ FileAdderButton.propTypes = {
     checkboxes: PropTypes.array,
     combine: PropTypes.bool,
     tooltip: PropTypes.string,
+    show_csv_options: PropTypes.bool
 };
 
 FileAdderButton.defaultProps = {
@@ -254,6 +282,7 @@ class Toolbar extends React.Component {
                                  combine={button.combine}
                                  tooltip={this.getTooltip(button)}
                                  tooltipDelay={this.getTooltipDelay(button)}
+                                 show_csv_options={button.show_csv_options}
                                  key={index}
                 />
             );
@@ -350,7 +379,8 @@ class Namebutton extends React.Component {
         let style = {fontSize: 20};
         return (
             <Button id="rename-button"
-                           large={true}
+                           large={this.props.large}
+                           small={!this.props.large}
                            minimal={true}
                            style={style}
                            tabIndex={-1}
@@ -365,8 +395,10 @@ Namebutton.propTypes = {
     resource_name: PropTypes.string,
     setResourceNameState: PropTypes.func,
     res_type: PropTypes.string,
+    large: PropTypes.bool,
 };
 
 Namebutton.defaultProps = {
-    handleRename: null
+    handleRename: null,
+    large: true
 };

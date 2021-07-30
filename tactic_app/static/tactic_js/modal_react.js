@@ -8,7 +8,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.showModalReact = showModalReact;
 exports.showConfirmDialogReact = showConfirmDialogReact;
 exports.showSelectDialog = showSelectDialog;
-exports.showFileImportDialog = showFileImportDialog;
 exports.showSelectResourceDialog = showSelectResourceDialog;
 exports.showInformDialogReact = showInformDialogReact;
 
@@ -18,10 +17,6 @@ var ReactDOM = _interopRequireWildcard(require("react-dom"));
 
 var _propTypes = _interopRequireDefault(require("prop-types"));
 
-var _reactDropzoneComponent = _interopRequireDefault(require("react-dropzone-component"));
-
-var _server = require("react-dom/server");
-
 var _core = require("@blueprintjs/core");
 
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields.js");
@@ -30,21 +25,11 @@ var _utilities_react = require("./utilities_react.js");
 
 var _communication_react = require("./communication_react.js");
 
-var _error_drawer = require("./error_drawer");
-
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
-
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
-
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
 
 function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
@@ -557,479 +542,22 @@ function showSelectResourceDialog(cancel_text, submit_text, submit_function) {
   }), domContainer);
 }
 
-var defaultImportDialogWidth = 700;
+var ConfirmDialog = /*#__PURE__*/function (_React$Component4) {
+  _inherits(ConfirmDialog, _React$Component4);
 
-var FileImportDialog = /*#__PURE__*/function (_React$Component4) {
-  _inherits(FileImportDialog, _React$Component4);
-
-  var _super4 = _createSuper(FileImportDialog);
-
-  function FileImportDialog(props) {
-    var _this6;
-
-    _classCallCheck(this, FileImportDialog);
-
-    _this6 = _super4.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this6));
-    var initial_default_name = "new" + props.res_type;
-    var name_counter = 1;
-    var default_name = initial_default_name;
-    _this6.picker_ref = /*#__PURE__*/_react["default"].createRef();
-    _this6.existing_names = props.existing_names;
-    _this6.current_url = "dummy";
-
-    while (_this6._name_exists(default_name)) {
-      name_counter += 1;
-      default_name = initial_default_name + String(name_counter);
-    }
-
-    _this6.state = {
-      show: false,
-      current_value: default_name,
-      checkbox_states: {},
-      warning_text: "  ",
-      log_open: false,
-      log_contents: [],
-      current_picker_width: defaultImportDialogWidth - 100
-    };
-    _this6.myDropzone = null;
-    _this6.socket_counter = null;
-    return _this6;
-  }
-
-  _createClass(FileImportDialog, [{
-    key: "_handleResponse",
-    value: function _handleResponse(entry) {
-      if (entry.resource_name && entry["success"] in ["success", "partial"]) {
-        this.existing_names.push(entry.resource_name);
-      }
-
-      this.setState({
-        log_contents: [].concat(_toConsumableArray(this.state.log_contents), [entry]),
-        log_open: true
-      });
-    }
-  }, {
-    key: "_handleError",
-    value: function _handleError(file, message) {
-      var xhr = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-
-      this._handleResponse({
-        title: "Error for ".concat(file.name),
-        "content": message
-      });
-    }
-  }, {
-    key: "_updatePickerSize",
-    value: function _updatePickerSize() {
-      if (this.picker_ref && this.picker_ref.current) {
-        var new_width = this.picker_ref.current.offsetWidth;
-
-        if (new_width != this.state.current_picker_width) {
-          this.setState({
-            current_picker_width: this.picker_ref.current.offsetWidth
-          });
-        }
-      }
-    }
-  }, {
-    key: "initSocket",
-    value: function initSocket() {
-      window.tsocket.socket.off("upload-response");
-      window.tsocket.socket.on("upload-response", this._handleResponse);
-      this.socket_counter = window.tsocket.counter;
-    }
-  }, {
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      this.setState({
-        "show": true
-      });
-
-      if (this.props.checkboxes != null && this.props.checkboxes.length != 0) {
-        var checkbox_states = {};
-
-        var _iterator3 = _createForOfIteratorHelper(this.props.checkboxes),
-            _step3;
-
-        try {
-          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-            var checkbox = _step3.value;
-            checkbox_states[checkbox.id] = false;
-          }
-        } catch (err) {
-          _iterator3.e(err);
-        } finally {
-          _iterator3.f();
-        }
-
-        this.setState({
-          checkbox_states: checkbox_states
-        });
-      }
-
-      this._updatePickerSize();
-
-      this.initSocket();
-    }
-  }, {
-    key: "componentDidUpdate",
-    value: function componentDidUpdate() {
-      this._updatePickerSize();
-
-      if (window.tsocket.counter != this.socket_counter) {
-        this.initSocket();
-      }
-    }
-  }, {
-    key: "_checkbox_change_handler",
-    value: function _checkbox_change_handler(event) {
-      var val = event.target.checked;
-      var new_checkbox_states = Object.assign({}, this.state.checkbox_states);
-      new_checkbox_states[event.target.id] = event.target.checked;
-      this.setState({
-        checkbox_states: new_checkbox_states
-      });
-    }
-  }, {
-    key: "_closeHandler",
-    value: function _closeHandler() {
-      this.setState({
-        "show": false
-      });
-      this.props.handleClose();
-    }
-  }, {
-    key: "_do_submit",
-    value: function _do_submit() {
-      var msg;
-
-      if (this.state.current_value == "") {
-        msg = "An empty name is not allowed here.";
-        this.setState({
-          "warning_text": msg
-        });
-      } else if (this._name_exists(this.state.current_value)) {
-        msg = "That name already exists";
-        this.setState({
-          "warning_text": msg
-        });
-      } else {
-        this.props.process_handler(this.myDropzone, this._setCurrentUrl, this.state.current_value, this.state.checkbox_states);
-      }
-    }
-  }, {
-    key: "_do_clear",
-    value: function _do_clear() {
-      this.myDropzone.removeAllFiles();
-    }
-  }, {
-    key: "_initCallback",
-    value: function _initCallback(dropzone) {
-      this.myDropzone = dropzone;
-    }
-  }, {
-    key: "_setCurrentUrl",
-    value: function _setCurrentUrl(new_url) {
-      this.myDropzone.options.url = new_url;
-      this.current_url = new_url;
-    } // There's trickiness with setting the current url in the dropzone object.
-    // If I don't set it below in uploadComplete, then the second file processed
-    // gets the dummy url in some cases. It's related to the component re-rendering
-    // I think, perhaps when messages are shown in the dialog.
-
-  }, {
-    key: "_uploadComplete",
-    value: function _uploadComplete(f) {
-      if (this.myDropzone.getQueuedFiles().length > 0) {
-        this.myDropzone.options.url = this.current_url;
-        this.myDropzone.processQueue();
-      }
-    }
-  }, {
-    key: "_onSending",
-    value: function _onSending(f) {
-      f.previewElement.scrollIntoView(false);
-    }
-  }, {
-    key: "_name_exists",
-    value: function _name_exists(name) {
-      return this.existing_names.indexOf(name) > -1;
-    }
-  }, {
-    key: "_toggleLog",
-    value: function _toggleLog() {
-      this.setState({
-        log_open: !this.state.log_open
-      });
-    }
-  }, {
-    key: "_clearLog",
-    value: function _clearLog() {
-      this.setState({
-        log_contents: []
-      });
-    }
-  }, {
-    key: "_handleDrop",
-    value: function _handleDrop() {
-      if (this.myDropzone.getQueuedFiles().length == 0) {
-        this._do_clear();
-      }
-    }
-  }, {
-    key: "_nameChangeHandler",
-    value: function _nameChangeHandler(event) {
-      this.setState({
-        "current_value": event.target.value,
-        warning_text: "  "
-      });
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      // let preview_style = {width: "unset", minHeight: "fit-content"};
-      console.log("entering render with this.current_url " + this.current_url);
-      var half_width = .5 * this.state.current_picker_width - 10;
-      var name_style = {
-        display: "inline-block",
-        maxWidth: half_width
-      };
-      var progress_style = {
-        position: "relative",
-        width: half_width - 100,
-        marginRight: 5,
-        marginLeft: "unset",
-        left: "unset",
-        right: "unset"
-      };
-      var size_style = {
-        marginLeft: 5,
-        width: 75
-      };
-      var componentConfig = {
-        postUrl: this.current_url // Must have this even though will never be used
-        // iconFiletypes: this.props.allowed_file_types,
-        // showFiletypeIcon: true
-
-      };
-      var djsConfig = {
-        uploadMultiple: false,
-        parallelUploads: 1,
-        autoProcessQueue: false,
-        dictDefaultMessage: "Click or drop files here to upload",
-        acceptedFiles: this.props.allowed_file_types,
-        // addRemoveLinks: true,
-        // dictRemoveFile: "x",
-        previewTemplate: (0, _server.renderToStaticMarkup)( /*#__PURE__*/_react["default"].createElement("div", {
-          className: "dz-preview dz-file-preview"
-        }, /*#__PURE__*/_react["default"].createElement("div", {
-          style: name_style,
-          "data-dz-name": "true"
-        }), /*#__PURE__*/_react["default"].createElement("div", {
-          style: {
-            display: "flex",
-            width: half_width,
-            flexDirection: "row",
-            justifyContent: "space-bewteen"
-          }
-        }, /*#__PURE__*/_react["default"].createElement("div", {
-          className: "dz-progress",
-          style: progress_style
-        }, /*#__PURE__*/_react["default"].createElement("div", {
-          className: "dz-upload",
-          "data-dz-uploadprogress": "true"
-        })), /*#__PURE__*/_react["default"].createElement("div", {
-          className: "dz-success-mark",
-          style: progress_style
-        }, /*#__PURE__*/_react["default"].createElement("span", null, "\u2714")), /*#__PURE__*/_react["default"].createElement("div", {
-          className: "dz-error-mark",
-          style: progress_style
-        }, /*#__PURE__*/_react["default"].createElement("span", null, "\u2718")), /*#__PURE__*/_react["default"].createElement("div", {
-          style: size_style,
-          "data-dz-size": "true"
-        })))),
-        headers: {
-          'X-CSRF-TOKEN': window.csrftoken
-        }
-      };
-      var eventHandlers;
-      eventHandlers = {
-        init: this._initCallback,
-        complete: this._uploadComplete,
-        sending: this._onSending,
-        drop: this._handleDrop,
-        error: this._handleError
-      };
-      var checkbox_items = [];
-
-      if (this.props.checkboxes != null && this.props.checkboxes.length != 0) {
-        var _iterator4 = _createForOfIteratorHelper(this.props.checkboxes),
-            _step4;
-
-        try {
-          for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-            var checkbox = _step4.value;
-
-            var new_item = /*#__PURE__*/_react["default"].createElement(_core.Checkbox, {
-              checked: this.state.checkbox_states[checkbox.checkname],
-              label: checkbox.checktext,
-              id: checkbox.checkname,
-              key: checkbox.checkname,
-              onChange: this._checkbox_change_handler
-            });
-
-            checkbox_items.push(new_item);
-          }
-        } catch (err) {
-          _iterator4.e(err);
-        } finally {
-          _iterator4.f();
-        }
-      }
-
-      var log_items;
-
-      if (this.state.log_open) {
-        if (this.state.log_contents.length > 0) {
-          log_items = this.state.log_contents.map(function (entry, index) {
-            var content_dict = {
-              __html: entry.content
-            };
-            var has_link = false;
-            return /*#__PURE__*/_react["default"].createElement(_error_drawer.ErrorItem, {
-              key: index,
-              title: entry.title,
-              content: entry.content,
-              has_link: has_link
-            });
-          });
-        } else {
-          log_items = /*#__PURE__*/_react["default"].createElement("div", null, "Log is empty");
-        }
-      }
-
-      var body_style = {
-        marginTop: 25,
-        display: "flex",
-        flexDirection: "row",
-        justifyContent: "space-around",
-        minHeight: 101
-      };
-      return /*#__PURE__*/_react["default"].createElement(_core.Dialog, {
-        isOpen: this.state.show,
-        className: window.dark_theme ? "import-dialog bp3-dark" : "import-dialog light-theme",
-        title: this.props.title,
-        onClose: this._closeHandler,
-        canOutsideClickClose: false,
-        canEscapeKeyClose: false
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: _core.Classes.DIALOG_BODY
-      }, /*#__PURE__*/_react["default"].createElement(_reactDropzoneComponent["default"], {
-        config: componentConfig,
-        eventHandlers: eventHandlers,
-        djsConfig: djsConfig
-      }), /*#__PURE__*/_react["default"].createElement("div", {
-        style: body_style
-      }, this.props.combine && /*#__PURE__*/_react["default"].createElement("div", {
-        style: {
-          display: "flex",
-          flexDirection: "column"
-        }
-      }, /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
-        label: "New ".concat(this.props.res_type, " name"),
-        labelFor: "name-input",
-        inline: false,
-        helperText: this.state.warning_text
-      }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
-        onChange: this._nameChangeHandler,
-        fill: false,
-        id: "name-input",
-        value: this.state.current_value
-      })), checkbox_items.length != 0 && checkbox_items), /*#__PURE__*/_react["default"].createElement("div", {
-        style: {
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-evenly"
-        }
-      }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
-        intent: _core.Intent.PRIMARY,
-        onClick: this._do_submit
-      }, "Upload"), /*#__PURE__*/_react["default"].createElement(_core.Button, {
-        onClick: this._do_clear
-      }, "Clear Files")))), /*#__PURE__*/_react["default"].createElement(_core.Divider, null), /*#__PURE__*/_react["default"].createElement("div", {
-        className: _core.Classes.DIALOG_FOOTER,
-        style: {
-          marginTop: 10
-        }
-      }, /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, null, /*#__PURE__*/_react["default"].createElement(_core.Button, {
-        onClick: this._toggleLog
-      }, this.state.log_open ? "Hide" : "Show", " log"), /*#__PURE__*/_react["default"].createElement(_core.Button, {
-        onClick: this._clearLog
-      }, "Clear log")), /*#__PURE__*/_react["default"].createElement(_core.Collapse, {
-        isOpen: this.state.log_open
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: "bp3-dialog-body"
-      }, log_items))));
-    }
-  }]);
-
-  return FileImportDialog;
-}(_react["default"].Component);
-
-FileImportDialog.propTypes = {
-  res_type: _propTypes["default"].string,
-  title: _propTypes["default"].string,
-  existing_names: _propTypes["default"].array,
-  process_handler: _propTypes["default"].func,
-  allowed_file_types: _propTypes["default"].string,
-  combine: _propTypes["default"].bool,
-  checkboxes: _propTypes["default"].array,
-  handleClose: _propTypes["default"].func
-};
-
-function showFileImportDialog(res_type, allowed_file_types, checkboxes, process_handler) {
-  var combine = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
-  $.getJSON("".concat($SCRIPT_ROOT, "get_resource_names/").concat(res_type), function (data) {
-    showTheDialog(data["resource_names"]);
-  });
-
-  function showTheDialog(existing_names) {
-    var domContainer = document.querySelector('#modal-area');
-
-    function handle_close() {
-      ReactDOM.unmountComponentAtNode(domContainer);
-    }
-
-    ReactDOM.render( /*#__PURE__*/_react["default"].createElement(FileImportDialog, {
-      title: "Import ".concat(res_type),
-      res_type: res_type,
-      allowed_file_types: allowed_file_types,
-      existing_names: existing_names,
-      checkboxes: checkboxes,
-      process_handler: process_handler,
-      combine: combine,
-      handleClose: handle_close
-    }), domContainer);
-  }
-}
-
-var ConfirmDialog = /*#__PURE__*/function (_React$Component5) {
-  _inherits(ConfirmDialog, _React$Component5);
-
-  var _super5 = _createSuper(ConfirmDialog);
+  var _super4 = _createSuper(ConfirmDialog);
 
   function ConfirmDialog(props) {
-    var _this7;
+    var _this6;
 
     _classCallCheck(this, ConfirmDialog);
 
-    _this7 = _super5.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this7));
-    _this7.state = {
+    _this6 = _super4.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this6));
+    _this6.state = {
       show: false
     };
-    return _this7;
+    return _this6;
   }
 
   _createClass(ConfirmDialog, [{
@@ -1113,22 +641,22 @@ function showConfirmDialogReact(title, text_body, cancel_text, submit_text, subm
   }), domContainer);
 }
 
-var InformDialog = /*#__PURE__*/function (_React$Component6) {
-  _inherits(InformDialog, _React$Component6);
+var InformDialog = /*#__PURE__*/function (_React$Component5) {
+  _inherits(InformDialog, _React$Component5);
 
-  var _super6 = _createSuper(InformDialog);
+  var _super5 = _createSuper(InformDialog);
 
   function InformDialog(props) {
-    var _this8;
+    var _this7;
 
     _classCallCheck(this, InformDialog);
 
-    _this8 = _super6.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this8));
-    _this8.state = {
+    _this7 = _super5.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this7));
+    _this7.state = {
       show: false
     };
-    return _this8;
+    return _this7;
   }
 
   _createClass(InformDialog, [{

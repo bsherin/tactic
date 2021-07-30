@@ -81,7 +81,6 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 window.library_id = (0, _utilities_react.guid)();
 window.page_id = window.library_id;
 window.main_id = window.library_id;
-var MARGIN_SIZE = 17;
 var tsocket;
 
 function _library_home_main() {
@@ -118,7 +117,7 @@ var LibraryTacticSocket = /*#__PURE__*/function (_TacticSocket) {
       });
       this.socket.on('handle-callback', _communication_react.handleCallback);
       this.socket.on('close-user-windows', function (data) {
-        if (!(data["originator"] == window.library_id)) {
+        if (!(data["originator"] === window.library_id)) {
           window.close();
         }
       });
@@ -130,7 +129,7 @@ var LibraryTacticSocket = /*#__PURE__*/function (_TacticSocket) {
 }(_tactic_socket.TacticSocket);
 
 var res_types = ["collection", "project", "tile", "list", "code"];
-var tab_panes = ["collections-pane", "projects-pane", "tiles-pane", "lists-pane", "code-pane"];
+var tab_panes = ["collections-pane", "projects-pane", "tiles-pane", "lists-pane", "code-pane"]; // noinspection JSUnusedLocalSymbols,JSRemoveUnnecessaryParentheses
 
 var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
   _inherits(LibraryHomeApp, _React$Component);
@@ -149,7 +148,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
       selected_tab_id: "collections-pane",
       usable_width: awidth,
       usable_height: aheight,
-      dark_theme: props.initial_theme == "dark",
+      dark_theme: props.initial_theme === "dark",
       pane_states: {}
     };
 
@@ -264,7 +263,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
     value: function _goToNextPane() {
       var tabIndex = tab_panes.indexOf(this.state.selected_tab_id) + 1;
 
-      if (tabIndex == tab_panes.length) {
+      if (tabIndex === tab_panes.length) {
         tabIndex = 0;
       }
 
@@ -277,7 +276,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
     value: function _goToPreviousPane() {
       var tabIndex = tab_panes.indexOf(this.state.selected_tab_id) - 1;
 
-      if (tabIndex == -1) {
+      if (tabIndex === -1) {
         tabIndex = tab_panes.length - 1;
       }
 
@@ -288,7 +287,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "getIconColor",
     value: function getIconColor(paneId) {
-      return paneId == this.state.selected_tab_id ? "white" : "#CED9E0";
+      return paneId === this.state.selected_tab_id ? "white" : "#CED9E0";
     }
   }, {
     key: "render",
@@ -365,9 +364,9 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
       var outer_class = "pane-holder  ";
 
       if (this.state.dark_theme) {
-        outer_class = outer_class + " bp3-dark";
+        outer_class = "".concat(outer_class, " bp3-dark");
       } else {
-        outer_class = outer_class + " light-theme";
+        outer_class = "".concat(outer_class, " light-theme");
       }
 
       var key_bindings = [[["tab"], this._goToNextPane], [["shift+tab"], this._goToPreviousPane]];
@@ -578,7 +577,8 @@ var LibraryToolbar = /*#__PURE__*/function (_React$Component2) {
             icon_name: button[4],
             checkboxes: button[5],
             combine: button[6],
-            tooltip: button[7]
+            tooltip: button[7],
+            show_csv_options: button[8]
           };
           file_adders.push(new_button);
         }
@@ -803,6 +803,7 @@ var CollectionToolbar = /*#__PURE__*/function (_React$Component3) {
     value: function _import_collection(myDropZone, setCurrentUrl, new_name, check_results) {
       var _this4 = this;
 
+      var csv_options = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : null;
       var doc_type;
 
       if (check_results["import_as_freeform"]) {
@@ -814,7 +815,8 @@ var CollectionToolbar = /*#__PURE__*/function (_React$Component3) {
       (0, _communication_react.postAjaxPromise)("create_empty_collection", {
         "collection_name": new_name,
         "doc_type": doc_type,
-        "library_id": window.library_id
+        "library_id": window.library_id,
+        "csv_options": csv_options
       }).then(function (data) {
         var new_url = "append_documents_to_collection/".concat(new_name, "/").concat(doc_type, "/").concat(window.library_id);
         myDropZone.options.url = new_url;
@@ -866,7 +868,7 @@ var CollectionToolbar = /*#__PURE__*/function (_React$Component3) {
       return [["Upload", "collection", this._import_collection, ".csv,.tsv,.txt,.xls,.xlsx,.html", "cloud-upload", [{
         "checkname": "import_as_freeform",
         "checktext": "Import as freeform"
-      }], true, "Import collection"]];
+      }], true, "Import collection", true]];
     }
   }, {
     key: "render",
@@ -970,7 +972,7 @@ var ProjectToolbar = /*#__PURE__*/function (_React$Component4) {
   }, {
     key: "file_adders",
     get: function get() {
-      return [["Upload", "project", this._import_jupyter, ".ipynb", "cloud-upload", [], false, "Import Jupyter notebook"]];
+      return [["Upload", "project", this._import_jupyter, ".ipynb", "cloud-upload", [], false, "Import Jupyter notebook", false]];
     }
   }, {
     key: "render",
@@ -1274,7 +1276,7 @@ var ListToolbar = /*#__PURE__*/function (_React$Component6) {
   }, {
     key: "file_adders",
     get: function get() {
-      return [["Upload", "list", this._add_list, "text/*", "cloud-upload", [], false, "Import list"]];
+      return [["Upload", "list", this._add_list, "text/*", "cloud-upload", [], false, "Import list", false]];
     }
   }, {
     key: "render",

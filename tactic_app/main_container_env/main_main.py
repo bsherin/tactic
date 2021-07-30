@@ -111,6 +111,7 @@ class MainWorker(QWorker, ExceptionMixin):
 
     def print_text_area_to_console(self, uid, the_text, force_open=False):
         self.ask_host("print_text_area_to_console", {"unique_id": uid, "force_open": force_open,
+                                                     "search_string": null,
                                                      "console_text": the_text,
                                                      "user_id": self.mwindow.user_id})
         return {"success": True, "unique_id": uid}

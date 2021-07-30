@@ -4,6 +4,8 @@ import "../tactic_css/tactic.scss";
 import "../tactic_css/tactic_table.scss";
 import "../tactic_css/tile_creator.scss";
 
+import 'codemirror/mode/javascript/javascript.js'
+
 import React from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
@@ -23,6 +25,7 @@ import {getUsableDimensions, SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT} from "./sizing_t
 import {withErrorDrawer} from "./error_drawer.js";
 import {doBinding} from "./utilities_react.js"
 import {TacticNavbar} from "./blueprint_navbar";
+import {SearchForm} from "./library_widgets";
 
 const BOTTOM_MARGIN = 50;
 const MARGIN_SIZE = 17;
@@ -116,15 +119,27 @@ function got_parsed_data (data_object) {
 
 function TileCreatorToolbar(props) {
     let tstyle = {"marginTop": 20, "paddingRight": 20, "width": "100%"};
+    let toolbar_outer_style = {
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "space-around",
+                marginBottom: 0,
+                marginTop: 7
+    }
     return (
         <div style={tstyle} className="d-flex flex-row justify-content-between">
             <Namebutton resource_name={props.tile_name}
                         setResourceNameState={props.setResourceNameState}
                         res_type={props.res_type}
+                        large={false}
             />
             <div>
-                <Toolbar button_groups={props.button_groups}/>
+                <Toolbar button_groups={props.button_groups}
+                         alternate_outer_style={toolbar_outer_style}
+                />
             </div>
+            <SearchForm update_search_state={props.update_search_state}
+                        search_string={props.search_string}/>
         </div>
     )
 }
@@ -160,6 +175,7 @@ class CreatorApp extends React.Component {
                 "exports": false,
                 "methods": false
             },
+            search_string: "",
             render_content_code: this.props.render_content_code,
             draw_plot_code: this.props.draw_plot_code,
             jscript_code: this.props.jscript_code,
@@ -222,6 +238,10 @@ class CreatorApp extends React.Component {
             }
         }
         return bgs
+    }
+
+    _updateSearchState(new_state) {
+        this.setState(new_state)
     }
 
     _setTheme(dark_theme) {
@@ -630,6 +650,7 @@ class CreatorApp extends React.Component {
                                      saveMe={this._saveAndCheckpoint}
                                      readOnly={false}
                                      setCMObject={this._setDpObject}
+                                     search_term={this.state.search_string}
                                      dark_theme={this.state.dark_theme}
                                      first_line_number={first_line_number}
                                      code_container_height={tc_height}
@@ -653,6 +674,7 @@ class CreatorApp extends React.Component {
                                  saveMe={this._saveAndCheckpoint}
                                  readOnly={false}
                                  setCMObject={this._setRcObject}
+                                 search_term={this.state.search_string}
                                  dark_theme={this.state.dark_theme}
                                  first_line_number={this.state.render_content_line_number + 1}
                                  code_container_height={rc_height}
@@ -667,6 +689,8 @@ class CreatorApp extends React.Component {
                                         setResourceNameState={this._setResourceNameState}
                                         res_type="tile"
                                         button_groups={this.button_groups}
+                                        update_search_state={this._updateSearchState}
+                                        search_string={this.state.search_string}
                                         key="toolbar"
                                         />
                     <div ref={this.vp_ref}/>
@@ -688,6 +712,8 @@ class CreatorApp extends React.Component {
                                         setResourceNameState={this._setResourceNameState}
                                         res_type="tile"
                                         button_groups={this.button_groups}
+                                        update_search_state={this._updateSearchState}
+                                        search_string={this.state.search_string}
                                         key="toolbar"
                                         />
                     <div ref={this.vp_ref}>
@@ -730,6 +756,7 @@ class CreatorApp extends React.Component {
                                  readOnly={false}
                                  code_container_ref={this.methods_ref}
                                  code_container_height={methods_height}
+                                 search_term={this.state.search_string}
                                  dark_theme={this.state.dark_theme}
                                  first_line_number={this.state.extra_methods_line_number}
                                  refresh_required={this.state.methodsTabRefreshRequired}/>

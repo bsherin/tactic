@@ -2,7 +2,30 @@
 
 import PropTypes from 'prop-types';
 import React from "react";
-import {ReactCodemirror} from "./react-codemirror";
+
+// import "../js/diff_match_patch";
+import CodeMirror from 'codemirror/lib/codemirror.js'
+import 'codemirror/mode/python/python.js'
+
+import 'codemirror/lib/codemirror.css'
+
+import 'codemirror/addon/merge/merge.js'
+import 'codemirror/addon/merge/merge.css'
+import 'codemirror/addon/hint/show-hint.js'
+import 'codemirror/addon/hint/show-hint.css'
+
+import 'codemirror/addon/dialog/dialog.js'
+import 'codemirror/addon/dialog/dialog.css'
+
+import 'codemirror/addon/edit/matchbrackets.js'
+import 'codemirror/addon/edit/closebrackets.js'
+import 'codemirror/addon/search/match-highlighter.js'
+
+import 'codemirror/theme/material.css'
+import 'codemirror/theme/nord.css'
+import 'codemirror/theme/oceanic-next.css'
+import 'codemirror/theme/pastel-on-dark.css'
+
 
 export {ReactCodemirrorMergeView}
 
@@ -179,6 +202,6 @@ ReactCodemirrorMergeView.propTypes = {
     max_height: PropTypes.number
 };
 
-ReactCodemirror.defaultProps = {
+ReactCodemirrorMergeView.defaultProps = {
     dark_theme: false,
 };

@@ -3,16 +3,20 @@
   "version": "1.0.0",
   "scripts": {
     "build": "webpack --mode=development",
-    "build-production": "webpack --mode=production"
+    "build-production": "webpack --mode=production",
+    "convertjsx": "/usr/local/bin/npx babel --presets=@babel/preset-env,@babel/preset-react --plugins=@babel/plugin-proposal-class-properties"
   },
   "dependencies": {
     "@blueprintjs/core": "^3.43.0",
     "@blueprintjs/icons": "^3.26.0",
     "@blueprintjs/select": "^3.15.10",
     "@blueprintjs/table": "^3.8.28",
+    "@codemirror/lang-markdown": "^0.18.4",
     "amqplib": "latest",
-    "codemirror": "latest",
+    "codemirror": "^5.62.2",
     "depcheck": "latest",
+    "diff-match-patch": "^1.0.5",
+    "diff-match-patch-js-browser-and-nodejs": "^1.0.2",
     "dropzone": "^5.9.2",
     "lodash": "latest",
     "markdown-it": "^12.0.6",
