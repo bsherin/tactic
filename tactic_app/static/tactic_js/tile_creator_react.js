@@ -8,6 +8,8 @@ require("../tactic_css/tactic_table.scss");
 
 require("../tactic_css/tile_creator.scss");
 
+require("codemirror/mode/javascript/javascript.js");
+
 var _react = _interopRequireDefault(require("react"));
 
 var ReactDOM = _interopRequireWildcard(require("react-dom"));
@@ -41,6 +43,8 @@ var _error_drawer = require("./error_drawer.js");
 var _utilities_react = require("./utilities_react.js");
 
 var _blueprint_navbar = require("./blueprint_navbar");
+
+var _library_widgets = require("./library_widgets");
 
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
@@ -199,16 +203,28 @@ function TileCreatorToolbar(props) {
     "paddingRight": 20,
     "width": "100%"
   };
+  var toolbar_outer_style = {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: 0,
+    marginTop: 7
+  };
   return /*#__PURE__*/_react["default"].createElement("div", {
     style: tstyle,
     className: "d-flex flex-row justify-content-between"
   }, /*#__PURE__*/_react["default"].createElement(_blueprint_toolbar.Namebutton, {
     resource_name: props.tile_name,
     setResourceNameState: props.setResourceNameState,
-    res_type: props.res_type
+    res_type: props.res_type,
+    large: false
   }), /*#__PURE__*/_react["default"].createElement("div", null, /*#__PURE__*/_react["default"].createElement(_blueprint_toolbar.Toolbar, {
-    button_groups: props.button_groups
-  })));
+    button_groups: props.button_groups,
+    alternate_outer_style: toolbar_outer_style
+  })), /*#__PURE__*/_react["default"].createElement(_library_widgets.SearchForm, {
+    update_search_state: props.update_search_state,
+    search_string: props.search_string
+  }));
 }
 
 var CreatorApp = /*#__PURE__*/function (_React$Component) {
@@ -250,6 +266,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         "exports": false,
         "methods": false
       },
+      search_string: "",
       render_content_code: _this.props.render_content_code,
       draw_plot_code: _this.props.draw_plot_code,
       jscript_code: _this.props.jscript_code,
@@ -368,6 +385,11 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       }
 
       return bgs;
+    }
+  }, {
+    key: "_updateSearchState",
+    value: function _updateSearchState(new_state) {
+      this.setState(new_state);
     }
   }, {
     key: "_setTheme",
@@ -921,6 +943,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           saveMe: this._saveAndCheckpoint,
           readOnly: false,
           setCMObject: this._setDpObject,
+          search_term: this.state.search_string,
           dark_theme: this.state.dark_theme,
           first_line_number: first_line_number,
           code_container_height: tc_height
@@ -949,6 +972,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         saveMe: this._saveAndCheckpoint,
         readOnly: false,
         setCMObject: this._setRcObject,
+        search_term: this.state.search_string,
         dark_theme: this.state.dark_theme,
         first_line_number: this.state.render_content_line_number + 1,
         code_container_height: rc_height
@@ -962,6 +986,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           setResourceNameState: this._setResourceNameState,
           res_type: "tile",
           button_groups: this.button_groups,
+          update_search_state: this._updateSearchState,
+          search_string: this.state.search_string,
           key: "toolbar"
         }), /*#__PURE__*/_react["default"].createElement("div", {
           ref: this.vp_ref
@@ -980,6 +1006,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           setResourceNameState: this._setResourceNameState,
           res_type: "tile",
           button_groups: this.button_groups,
+          update_search_state: this._updateSearchState,
+          search_string: this.state.search_string,
           key: "toolbar"
         }), /*#__PURE__*/_react["default"].createElement("div", {
           ref: this.vp_ref
@@ -1024,6 +1052,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         readOnly: false,
         code_container_ref: this.methods_ref,
         code_container_height: methods_height,
+        search_term: this.state.search_string,
         dark_theme: this.state.dark_theme,
         first_line_number: this.state.extra_methods_line_number,
         refresh_required: this.state.methodsTabRefreshRequired

@@ -14,7 +14,7 @@
 {%  endblock %}
 
 {% block scripts %}
-
+    <script src="{{url_for('static', filename='js/diff_match_patch.js')}}"></script>
     <script type="module" src="{{javascript_source}}"></script>
     <script>
         window.user_id = "{{current_user.get_id()}}";

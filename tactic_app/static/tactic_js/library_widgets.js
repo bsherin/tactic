@@ -55,15 +55,6 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
-function renderOmnibar(item, _ref) {
-  var modifiers = _ref.modifiers,
-      handleClick = _ref.handleClick;
-  return /*#__PURE__*/_react["default"].createElement(SuggestionItem, {
-    item: item,
-    handleClick: handleClick
-  });
-}
-
 var OmnibarItem = /*#__PURE__*/function (_React$Component) {
   _inherits(OmnibarItem, _React$Component);
 
@@ -138,9 +129,9 @@ var LibraryOmnibar = /*#__PURE__*/function (_React$Component2) {
     }
   }, {
     key: "_itemRenderer",
-    value: function _itemRenderer(item, _ref2) {
-      var modifiers = _ref2.modifiers,
-          handleClick = _ref2.handleClick;
+    value: function _itemRenderer(item, _ref) {
+      var modifiers = _ref.modifiers,
+          handleClick = _ref.handleClick;
       return /*#__PURE__*/_react["default"].createElement(OmnibarItem, {
         modifiers: modifiers,
         item: item,
@@ -283,6 +274,12 @@ SearchForm.propTypes = {
   search_string: _propTypes["default"].string,
   search_inside: _propTypes["default"].bool,
   search_metadata: _propTypes["default"].bool
+};
+SearchForm.defaultProps = {
+  allow_search_inside: false,
+  allow_search_metadata: false,
+  search_inside: false,
+  search_metadata: false
 };
 
 var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {

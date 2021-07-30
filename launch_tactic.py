@@ -1,11 +1,12 @@
-
 # WORKERS determines how many instances of the tactic_host container are created
 # Note that this requires a simultaneous change to the nginx config
 
 from __future__ import print_function
 WORKERS = 2
 
-import os, sys
+import os
+print("cwd is " + os.getcwd())
+
 import redis
 
 if "RESTART_RABBIT" in os.environ:

@@ -22,7 +22,6 @@ RETRIES = 60
 
 megaplex = None
 
-
 socketio = SocketIO(message_queue="megaplex")
 
 

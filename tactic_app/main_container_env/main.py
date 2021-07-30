@@ -134,7 +134,6 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
 
     def show_error_window(self, error_string):
         data_dict = {"error_string": str(error_string),
-                     "uses_codemirror": "False",
                      "template_name": "error_window_template.html"}
         unique_id = store_temp_data(self.db, data_dict)
         self.mworker.emit_to_main_client("window-open", {"the_id": unique_id})
