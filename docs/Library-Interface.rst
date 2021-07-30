@@ -19,7 +19,7 @@ They are, from top to bottom:
 2. Projects. This is where you access your in-progress projects. You can also create new notebooks here.
 3. Tiles. Your tile modules.
 4. Lists. Your lists, obviously.
-5. Code reources. These are explained a bit `here. <Working-With-Code-Resources.html>`__
+5. Code resources. These are explained a bit `here. <Working-With-Code-Resources.html>`__
 
 If you forget which tab is which, hover over the tab with your mouse, and a tooltip will appear.
 

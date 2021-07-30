@@ -297,7 +297,7 @@ Object API
 
     The commands ``Library``, ``Collection``, ``Tiles``, and ``Pipes`` return objects that provide direct access
     to elements of the object-oriented API. Note that you do not type ``self`` before these commands. This is documented
-    in the `object-oriented interface <Object-Oriented-Interface.html# Accessing and manipulating the collection>`__
+    in the `object-oriented interface <Object-Oriented-API.html#accessing-and-manipulating-the-collection>`__
 
     In addition, there are a few tile methods (which are preceded by ``self.``) that pertain to the object API.
 
