@@ -30,6 +30,8 @@ var _library_widgets = require("./library_widgets");
 
 var _modal_react = require("./modal_react.js");
 
+var _import_dialog = require("./import_dialog.js");
+
 var _communication_react = require("./communication_react.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
@@ -240,7 +242,7 @@ var FileAdderButton = /*#__PURE__*/function (_React$Component3) {
   _createClass(FileAdderButton, [{
     key: "_showDialog",
     value: function _showDialog() {
-      (0, _modal_react.showFileImportDialog)(this.props.resource_type, this.props.allowed_file_types, this.props.checkboxes, this.props.process_handler, this.props.combine);
+      (0, _import_dialog.showFileImportDialog)(this.props.resource_type, this.props.allowed_file_types, this.props.checkboxes, this.props.process_handler, this.props.combine, this.props.show_csv_options);
     }
   }, {
     key: "render",
@@ -266,7 +268,8 @@ FileAdderButton.propTypes = {
   icon_name: _propTypes["default"].string,
   checkboxes: _propTypes["default"].array,
   combine: _propTypes["default"].bool,
-  tooltip: _propTypes["default"].string
+  tooltip: _propTypes["default"].string,
+  show_csv_options: _propTypes["default"].bool
 };
 FileAdderButton.defaultProps = {
   multiple: false
@@ -427,6 +430,7 @@ var Toolbar = /*#__PURE__*/function (_React$Component4) {
             combine: button.combine,
             tooltip: _this5.getTooltip(button),
             tooltipDelay: _this5.getTooltipDelay(button),
+            show_csv_options: button.show_csv_options,
             key: index
           });
         });

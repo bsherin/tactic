@@ -13,10 +13,13 @@ import {KeyTrap} from "./key_trap.js";
 import {withTooltip} from "./blueprint_react_widgets.js";
 import {doBinding} from "./utilities_react.js";
 import {SearchForm} from "./library_widgets";
-export {Toolbar, ToolbarButton, Namebutton, ResourceviewerToolbar}
-import {showModalReact, showFileImportDialog} from "./modal_react.js";
+
+import {showModalReact} from "./modal_react.js";
+import {showFileImportDialog} from "./import_dialog.js"
 
 import {postAjax} from "./communication_react.js"
+
+export {Toolbar, ToolbarButton, Namebutton, ResourceviewerToolbar}
 
 const default_button_class = "btn-outline-secondary";
 
@@ -159,7 +162,7 @@ class FileAdderButton extends React.Component {
 
     _showDialog () {
         showFileImportDialog(this.props.resource_type, this.props.allowed_file_types,
-            this.props.checkboxes, this.props.process_handler, this.props.combine)
+            this.props.checkboxes, this.props.process_handler, this.props.combine, this.props.show_csv_options)
     }
 
      render() {
@@ -185,6 +188,7 @@ FileAdderButton.propTypes = {
     checkboxes: PropTypes.array,
     combine: PropTypes.bool,
     tooltip: PropTypes.string,
+    show_csv_options: PropTypes.bool
 };
 
 FileAdderButton.defaultProps = {
@@ -278,6 +282,7 @@ class Toolbar extends React.Component {
                                  combine={button.combine}
                                  tooltip={this.getTooltip(button)}
                                  tooltipDelay={this.getTooltipDelay(button)}
+                                 show_csv_options={button.show_csv_options}
                                  key={index}
                 />
             );

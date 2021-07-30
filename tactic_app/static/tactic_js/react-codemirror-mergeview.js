@@ -11,7 +11,37 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 
 var _react = _interopRequireDefault(require("react"));
 
-var _reactCodemirror = require("./react-codemirror");
+var _codemirror = _interopRequireDefault(require("codemirror/lib/codemirror.js"));
+
+require("codemirror/mode/python/python.js");
+
+require("codemirror/lib/codemirror.css");
+
+require("codemirror/addon/merge/merge.js");
+
+require("codemirror/addon/merge/merge.css");
+
+require("codemirror/addon/hint/show-hint.js");
+
+require("codemirror/addon/hint/show-hint.css");
+
+require("codemirror/addon/dialog/dialog.js");
+
+require("codemirror/addon/dialog/dialog.css");
+
+require("codemirror/addon/edit/matchbrackets.js");
+
+require("codemirror/addon/edit/closebrackets.js");
+
+require("codemirror/addon/search/match-highlighter.js");
+
+require("codemirror/theme/material.css");
+
+require("codemirror/theme/nord.css");
+
+require("codemirror/theme/oceanic-next.css");
+
+require("codemirror/theme/pastel-on-dark.css");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -64,7 +94,7 @@ var ReactCodemirrorMergeView = /*#__PURE__*/function (_React$Component) {
   _createClass(ReactCodemirrorMergeView, [{
     key: "createMergeArea",
     value: function createMergeArea(codearea) {
-      var cmobject = CodeMirror.MergeView(codearea, {
+      var cmobject = _codemirror["default"].MergeView(codearea, {
         value: this.props.editor_content,
         lineNumbers: true,
         matchBrackets: true,
@@ -74,6 +104,7 @@ var ReactCodemirrorMergeView = /*#__PURE__*/function (_React$Component) {
         theme: this.props.dark_theme ? DARK_THEME : "default",
         origRight: this.props.right_content
       });
+
       cmobject.editor().setOption("extraKeys", {
         Tab: function Tab(cm) {
           var spaces = new Array(5).join(" ");
@@ -186,10 +217,10 @@ var ReactCodemirrorMergeView = /*#__PURE__*/function (_React$Component) {
           _iterator.f();
         }
 
-        CodeMirror.commands.autocomplete = function (cm) {
+        _codemirror["default"].commands.autocomplete = function (cm) {
           //noinspection JSUnresolvedFunction
           cm.showHint({
-            hint: CodeMirror.hint.anyword,
+            hint: _codemirror["default"].hint.anyword,
             api_list: self.api_list,
             extra_autocomplete_list: self.extra_autocomplete_list
           });
@@ -199,31 +230,33 @@ var ReactCodemirrorMergeView = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "searchCM",
     value: function searchCM() {
-      CodeMirror.commands.find(this.cmobject);
+      _codemirror["default"].commands.find(this.cmobject);
     }
   }, {
     key: "clearSelections",
     value: function clearSelections() {
-      CodeMirror.commands.clearSearch(this.cmobject.editor());
-      CodeMirror.commands.singleSelection(this.cmobject.editor());
+      _codemirror["default"].commands.clearSearch(this.cmobject.editor());
+
+      _codemirror["default"].commands.singleSelection(this.cmobject.editor());
     }
   }, {
     key: "create_keymap",
     value: function create_keymap() {
       var self = this;
 
-      CodeMirror.keyMap["default"]["Esc"] = function () {
+      _codemirror["default"].keyMap["default"]["Esc"] = function () {
         self.clearSelections();
       };
 
-      var is_mac = CodeMirror.keyMap["default"].hasOwnProperty("Cmd-S");
+      var is_mac = _codemirror["default"].keyMap["default"].hasOwnProperty("Cmd-S");
+
       this.mousetrap.bind(['escape'], function (e) {
         self.clearSelections();
         e.preventDefault();
       });
 
       if (is_mac) {
-        CodeMirror.keyMap["default"]["Cmd-S"] = function () {
+        _codemirror["default"].keyMap["default"]["Cmd-S"] = function () {
           self.props.saveMe();
         };
 
@@ -232,7 +265,7 @@ var ReactCodemirrorMergeView = /*#__PURE__*/function (_React$Component) {
           e.preventDefault();
         });
       } else {
-        CodeMirror.keyMap["default"]["Ctrl-S"] = function () {
+        _codemirror["default"].keyMap["default"]["Ctrl-S"] = function () {
           self.props.saveMe();
         };
 
@@ -268,6 +301,6 @@ ReactCodemirrorMergeView.propTypes = {
   saveMe: _propTypes["default"].func,
   max_height: _propTypes["default"].number
 };
-_reactCodemirror.ReactCodemirror.defaultProps = {
+ReactCodemirrorMergeView.defaultProps = {
   dark_theme: false
 };
