@@ -44,7 +44,7 @@ class BpSelectAdvanced extends React.Component {
     }
 
     _filterSuggestion(query, item) {
-        if ((query.length == 0) || (item["isgroup"])) {
+        if ((query.length === 0) || (item["isgroup"])) {
             return true
         }
         let re = new RegExp(query.toLowerCase());
@@ -149,7 +149,7 @@ class BpSelect extends React.Component {
     }
 
     _filterSuggestion(query, item) {
-        if (query.length == 0) {
+        if (query.length === 0) {
             return true
         }
         let re = new RegExp(query.toLowerCase());
@@ -166,6 +166,7 @@ class BpSelect extends React.Component {
             <Select
                 className="tile-form-menu-item"
                 activeItem={this.state.activeItem}
+                filterable={this.props.filterable}
                 onActiveItemChange={this._handleActiveItemChange}
                 itemRenderer={renderSuggestion}
                 itemPredicate={this._filterSuggestion}
@@ -177,6 +178,7 @@ class BpSelect extends React.Component {
                     position: PopoverPosition.BOTTOM_LEFT}}>
                 <Button className="button-in-select"
                            style={this.props.buttonStyle}
+                           small={this.props.small}
                            text={this.props.buttonTextObject ? this.props.buttonTextObject : this.props.value}
                            icon={this.props.buttonIcon} />
             </Select>
@@ -187,6 +189,8 @@ class BpSelect extends React.Component {
 BpSelect.propTypes = {
     options: PropTypes.array,
     onChange: PropTypes.func,
+    filterable: PropTypes.bool,
+    small: PropTypes.bool,
     value: PropTypes.string,
     buttonTextObject: PropTypes.object,
     buttonIcon: PropTypes.string,
@@ -197,6 +201,8 @@ BpSelect.defaultProps = {
     buttonIcon: null,
     buttonStyle: {},
     buttonTextObject: null,
+    filterable: true,
+    small: undefined
 };
 
 
@@ -264,7 +270,7 @@ class NativeTags extends React.Component {
         let self = this;
         let data_dict = {"res_type": this.props.res_type, "is_repository": false};
         postAjaxPromise("get_tag_list", data_dict)
-            .then(function(data) {
+            .then(data => {
                 let all_tags = data.tag_list;
                 self.setState({"suggestions": all_tags})
             })
@@ -287,10 +293,10 @@ class NativeTags extends React.Component {
     }
 
     _filterSuggestion(query, item) {
-        if (query.length == 0) {
+        if (query.length === 0) {
             return false
         }
-        let re = new RegExp("^" + query);
+        let re = new RegExp(`^${query}`);
 
         return re.test(item)
     }
@@ -365,7 +371,7 @@ class NotesField extends React.Component {
             this.focusNotes();
             this.awaiting_focus = false
         }
-        else if (!this.state.show_markdown && (this.notes_ref != document.activeElement)) {
+        else if (!this.state.show_markdown && (this.notes_ref !== document.activeElement)) {
             // If we are here it means the change was initiated externally
             this._showMarkdown()
         }

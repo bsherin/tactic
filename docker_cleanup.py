@@ -2,6 +2,7 @@ import docker
 import os
 
 
+
 if "RESTART_RABBIT" in os.environ:
     restart_rabbit = os.environ.get("RESTART_RABBIT") == "True"
 else:
@@ -27,3 +28,5 @@ def do_docker_cleanup():
     dangling_images = cli.images.list(filters={"dangling": True})
     for img in dangling_images:
         cli.images.remove(img.id, force=True)
+
+

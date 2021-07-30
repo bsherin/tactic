@@ -27,15 +27,14 @@ import {TacticNavbar} from "./blueprint_navbar";
 window.library_id = guid();
 window.page_id = window.library_id;
 window.main_id = window.library_id;
-const MARGIN_SIZE = 17;
 
 let tsocket;
 
 function _library_home_main () {
     tsocket = new LibraryTacticSocket("library", 5000);
     window.tsocket = tsocket;
-    let LibraryHomeAppPlus = withErrorDrawer(withStatus(LibraryHomeApp, tsocket), tsocket);
-    let domContainer = document.querySelector('#library-home-root');
+    const LibraryHomeAppPlus = withErrorDrawer(withStatus(LibraryHomeApp, tsocket), tsocket);
+    const domContainer = document.querySelector('#library-home-root');
     ReactDOM.render(<LibraryHomeAppPlus initial_theme={window.theme}/>, domContainer)
 }
 
@@ -45,10 +44,10 @@ class LibraryTacticSocket extends TacticSocket {
 
         this.socket.emit('join', {"user_id":  window.user_id, "library_id":  window.library_id});
 
-        this.socket.on("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
+        this.socket.on("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
         this.socket.on('handle-callback', handleCallback);
-        this.socket.on('close-user-windows', (data) => {
-            if (!(data["originator"] == window.library_id)) {
+        this.socket.on('close-user-windows', data => {
+            if (!(data["originator"] === window.library_id)) {
                 window.close()
             }
         });
@@ -56,20 +55,21 @@ class LibraryTacticSocket extends TacticSocket {
     }
 }
 
-var res_types = ["collection", "project", "tile", "list", "code"];
+const res_types = ["collection", "project", "tile", "list", "code"];
 const tab_panes = ["collections-pane", "projects-pane", "tiles-pane", "lists-pane", "code-pane"];
 
+// noinspection JSUnusedLocalSymbols,JSRemoveUnnecessaryParentheses
 class LibraryHomeApp extends React.Component {
 
     constructor(props) {
         super(props);
-        let aheight = getUsableDimensions(true).usable_height_no_bottom;
-        let awidth = getUsableDimensions(true).usable_width - 170;
+        const aheight = getUsableDimensions(true).usable_height_no_bottom;
+        const awidth = getUsableDimensions(true).usable_width - 170;
         this.state = {
             selected_tab_id: "collections-pane",
             usable_width: awidth,
             usable_height: aheight,
-            dark_theme: props.initial_theme == "dark",
+            dark_theme: props.initial_theme === "dark",
             pane_states: {},
         };
         for (let res_type of res_types) {
@@ -124,7 +124,7 @@ class LibraryHomeApp extends React.Component {
     }
 
     _setTheme(dark_theme) {
-        this.setState({dark_theme: dark_theme}, ()=> {
+        this.setState({dark_theme}, ()=> {
             this.props.setStatusTheme(dark_theme)
             window.dark_theme = dark_theme
         })
@@ -139,7 +139,7 @@ class LibraryHomeApp extends React.Component {
 
     _goToNextPane() {
         let tabIndex = tab_panes.indexOf(this.state.selected_tab_id) + 1;
-        if (tabIndex == tab_panes.length) {
+        if (tabIndex === tab_panes.length) {
             tabIndex = 0
         }
         this.setState({selected_tab_id: tab_panes[tabIndex]})
@@ -147,14 +147,14 @@ class LibraryHomeApp extends React.Component {
 
     _goToPreviousPane() {
         let tabIndex = tab_panes.indexOf(this.state.selected_tab_id) - 1;
-        if (tabIndex == -1) {
+        if (tabIndex === -1) {
             tabIndex = tab_panes.length - 1
         }
         this.setState({selected_tab_id: tab_panes[tabIndex]})
     }
 
     getIconColor(paneId) {
-        return paneId == this.state.selected_tab_id ? "white" : "#CED9E0"
+        return paneId === this.state.selected_tab_id ? "white" : "#CED9E0"
     }
 
     render () {
@@ -224,10 +224,10 @@ class LibraryHomeApp extends React.Component {
         };
         let outer_class = "pane-holder  "
         if (this.state.dark_theme) {
-            outer_class = outer_class + " bp3-dark";
+            outer_class = `${outer_class} bp3-dark`;
         }
         else {
-            outer_class = outer_class + " light-theme";
+            outer_class = `${outer_class} light-theme`;
         }
         let key_bindings = [[["tab"], this._goToNextPane], [["shift+tab"], this._goToPreviousPane]];
         return (
@@ -335,7 +335,8 @@ class LibraryToolbar extends React.Component {
                 icon_name: button[4],
                 checkboxes: button[5],
                 combine: button[6],
-                tooltip: button[7]
+                tooltip: button[7],
+                show_csv_options: button[8]
             };
 
             file_adders.push(new_button)
@@ -487,7 +488,7 @@ class CollectionToolbar extends React.Component {
         }
     }
 
-    _import_collection(myDropZone, setCurrentUrl, new_name, check_results) {
+    _import_collection(myDropZone, setCurrentUrl, new_name, check_results, csv_options=null) {
         let doc_type
         if (check_results["import_as_freeform"]) {
             doc_type = "freeform"
@@ -495,7 +496,11 @@ class CollectionToolbar extends React.Component {
             doc_type = "table"
         }
         postAjaxPromise("create_empty_collection",
-            {"collection_name": new_name, "doc_type": doc_type, "library_id": window.library_id})
+            {"collection_name": new_name,
+                "doc_type": doc_type,
+                "library_id": window.library_id,
+                "csv_options": csv_options
+            })
             .then((data)=> {
                 let new_url = `append_documents_to_collection/${new_name}/${doc_type}/${window.library_id}`;
                 myDropZone.options.url = new_url;
@@ -537,7 +542,7 @@ class CollectionToolbar extends React.Component {
          return[["Upload", "collection", this._import_collection, ".csv,.tsv,.txt,.xls,.xlsx,.html",
                  "cloud-upload",
                  [{"checkname": "import_as_freeform", "checktext": "Import as freeform"}],
-                 true, "Import collection"]
+                 true, "Import collection", true]
          ]
      }
 
@@ -613,7 +618,7 @@ class ProjectToolbar extends React.Component {
     get file_adders() {
          return[
              ["Upload", "project", this._import_jupyter, ".ipynb",
-                 "cloud-upload", [], false, "Import Jupyter notebook"]
+                 "cloud-upload", [], false, "Import Jupyter notebook", false]
          ]
      }
 
@@ -834,7 +839,7 @@ class ListToolbar extends React.Component {
      get file_adders() {
          return[
              ["Upload", "list", this._add_list, "text/*",
-                 "cloud-upload", [], false, "Import list"]
+                 "cloud-upload", [], false, "Import list", false]
          ]
      }
 

@@ -32,11 +32,12 @@ def checkpoint_module():
                         "tile_module": tile_dict["tile_module"]})
         db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
                                                          {'$set': {"history": history}})
-        return jsonify({"success": True, "message": "Module successfully saved and checkpointed",
+        result = jsonify({"success": True, "message": "Module successfully saved and checkpointed",
                         "alert_type": "alert-success"})
-
     except Exception as ex:
-        return generic_exception_handler.get_exception_for_ajax(ex, "Error checkpointing module")
+        result = generic_exception_handler.get_exception_for_ajax(ex, "Error checkpointing module")
+
+    return result
 
 
 def create_recent_checkpoint(module_name):

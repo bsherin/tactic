@@ -19,6 +19,10 @@ import 'codemirror/addon/hint/show-hint.css'
 import 'codemirror/addon/dialog/dialog.js'
 import 'codemirror/addon/dialog/dialog.css'
 
+import 'codemirror/addon/edit/matchbrackets.js'
+import 'codemirror/addon/edit/closebrackets.js'
+import 'codemirror/addon/search/match-highlighter.js'
+
 import 'codemirror/theme/material.css'
 import 'codemirror/theme/nord.css'
 import 'codemirror/theme/oceanic-next.css'
@@ -114,8 +118,11 @@ class ReactCodemirror extends React.Component {
             }
             this.saved_theme = this.props.dark_theme
         }
-        if (this.props.sync_to_prop) {
+        if (this.props.sync_to_prop || this.props.force_sync_to_prop) {
             this.cmobject.setValue(this.props.code_content)
+            if (this.props.force_sync_to_prop) {
+                this.props.clear_force_sync()
+            }
         }
         if (this.props.first_line_number != 1) {
             this.cmobject.setOption("firstLineNumber", this.props.first_line_number);
@@ -261,6 +268,8 @@ ReactCodemirror.propTypes = {
     handleBlur: PropTypes.func,
     code_content: PropTypes.string,
     sync_to_prop: PropTypes.bool,
+    force_sync_to_prop: PropTypes.bool,
+    clear_force_sync: PropTypes.func,
     mode: PropTypes.string,
     dark_theme: PropTypes.bool,
     saveMe: PropTypes.func,
@@ -287,6 +296,8 @@ ReactCodemirror.defaultProps = {
     handleChange: null,
     handleBlur: null,
     sync_to_prop: false,
+    force_sync_to_prop: false,
+    clear_force_sync: null,
     dark_theme: false,
     mode: "python",
     readOnly: false,

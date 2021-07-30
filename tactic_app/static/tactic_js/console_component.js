@@ -177,10 +177,21 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_insertTextInCell",
     value: function _insertTextInCell(the_text) {
-      var unique_id = this.state.console_item_saved_focus;
+      var unique_id = this.state.currently_selected_item;
       var entry = this.get_console_item_entry(unique_id);
+      var replace_dicts = [];
+      replace_dicts.push({
+        unique_id: unique_id,
+        field: "console_text",
+        value: entry.console_text + the_text
+      });
+      replace_dicts.push({
+        unique_id: unique_id,
+        field: "force_sync_to_prop",
+        value: true
+      });
 
-      this._setConsoleItemValue(unique_id, "console_text", entry.console_text + the_text);
+      this._multiple_console_item_updates(replace_dicts);
     }
   }, {
     key: "_copyCell",
@@ -221,8 +232,8 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
     value: function _insertResourceLink() {
       var _this3 = this;
 
-      if (!this.state.console_item_saved_focus) return;
-      var entry = this.get_console_item_entry(this.state.console_item_saved_focus);
+      if (!this.state.currently_selected_item) return;
+      var entry = this.get_console_item_entry(this.state.currently_selected_item);
       if (!entry || entry.type != "text") return;
       var type_paths = {
         collection: "main_collection",
@@ -2185,6 +2196,11 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component6) {
       this.props.setConsoleItemValue(this.props.unique_id, "console_text", new_text);
     }
   }, {
+    key: "_clearForceSync",
+    value: function _clearForceSync() {
+      this.props.setConsoleItemValue(this.props.unique_id, "force_sync_to_prop", false);
+    }
+  }, {
     key: "_handleSummaryTextChange",
     value: function _handleSummaryTextChange(value) {
       this.props.setConsoleItemValue(this.props.unique_id, "summary_text", value);
@@ -2361,6 +2377,9 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component6) {
         handleChange: this._handleChange,
         show_line_numbers: false,
         soft_wrap: true,
+        sync_to_prop: false,
+        force_sync_to_prop: this.props.force_sync_to_prop,
+        clear_force_sync: this._clearForceSync,
         mode: "markdown",
         code_content: this.props.console_text,
         setCMObject: this._setCMObject,
@@ -2400,6 +2419,7 @@ RawConsoleTextItem.propTypes = {
   am_shrunk: _propTypes["default"].bool,
   set_focus: _propTypes["default"].bool,
   show_markdown: _propTypes["default"].bool,
+  force_sync_to_prop: _propTypes["default"].bool,
   summary_text: _propTypes["default"].string,
   console_text: _propTypes["default"].string,
   console_available_width: _propTypes["default"].number,
@@ -2410,5 +2430,8 @@ RawConsoleTextItem.propTypes = {
   goToNextCell: _propTypes["default"].func,
   tsocket: _propTypes["default"].object,
   setFocus: _propTypes["default"].func
+};
+RawConsoleTextItem.proptypes = {
+  force_sync_to_prop: false
 };
 var ConsoleTextItem = (0, _contextMenuTarget.ContextMenuTarget)(RawConsoleTextItem);

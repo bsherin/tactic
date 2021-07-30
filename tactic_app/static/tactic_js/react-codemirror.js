@@ -31,6 +31,12 @@ require("codemirror/addon/dialog/dialog.js");
 
 require("codemirror/addon/dialog/dialog.css");
 
+require("codemirror/addon/edit/matchbrackets.js");
+
+require("codemirror/addon/edit/closebrackets.js");
+
+require("codemirror/addon/search/match-highlighter.js");
+
 require("codemirror/theme/material.css");
 
 require("codemirror/theme/nord.css");
@@ -173,8 +179,12 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
         this.saved_theme = this.props.dark_theme;
       }
 
-      if (this.props.sync_to_prop) {
+      if (this.props.sync_to_prop || this.props.force_sync_to_prop) {
         this.cmobject.setValue(this.props.code_content);
+
+        if (this.props.force_sync_to_prop) {
+          this.props.clear_force_sync();
+        }
       }
 
       if (this.props.first_line_number != 1) {
@@ -367,6 +377,8 @@ ReactCodemirror.propTypes = {
   handleBlur: _propTypes["default"].func,
   code_content: _propTypes["default"].string,
   sync_to_prop: _propTypes["default"].bool,
+  force_sync_to_prop: _propTypes["default"].bool,
+  clear_force_sync: _propTypes["default"].func,
   mode: _propTypes["default"].string,
   dark_theme: _propTypes["default"].bool,
   saveMe: _propTypes["default"].func,
@@ -388,6 +400,8 @@ ReactCodemirror.defaultProps = {
   handleChange: null,
   handleBlur: null,
   sync_to_prop: false,
+  force_sync_to_prop: false,
+  clear_force_sync: null,
   dark_theme: false,
   mode: "python",
   readOnly: false,

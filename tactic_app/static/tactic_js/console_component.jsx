@@ -103,9 +103,12 @@ const BUTTON_CONSUMED_SPACE = 208;
      }
 
      _insertTextInCell(the_text) {
-         let unique_id = this.state.console_item_saved_focus
+         let unique_id = this.state.currently_selected_item
          let entry = this.get_console_item_entry(unique_id);
-         this._setConsoleItemValue(unique_id, "console_text", entry.console_text + the_text)
+         let replace_dicts = [];
+         replace_dicts.push({unique_id: unique_id, field:"console_text", value: entry.console_text + the_text});
+         replace_dicts.push({unique_id: unique_id, field: "force_sync_to_prop", value: true});
+         this._multiple_console_item_updates(replace_dicts)
      }
 
      _copyCell(unique_id = null) {
@@ -133,8 +136,8 @@ const BUTTON_CONSUMED_SPACE = 208;
      }
 
      _insertResourceLink() {
-         if (!this.state.console_item_saved_focus) return;
-         let entry = this.get_console_item_entry(this.state.console_item_saved_focus);
+         if (!this.state.currently_selected_item) return;
+         let entry = this.get_console_item_entry(this.state.currently_selected_item);
          if (!entry || entry.type != "text") return;
          const type_paths = {
              collection: "main_collection",
@@ -1481,6 +1484,10 @@ class RawConsoleTextItem extends React.Component {
         this.props.setConsoleItemValue(this.props.unique_id, "console_text", new_text)
     }
 
+    _clearForceSync() {
+        this.props.setConsoleItemValue(this.props.unique_id, "force_sync_to_prop", false)
+    }
+
     _handleSummaryTextChange(value) {
         this.props.setConsoleItemValue(this.props.unique_id, "summary_text", value)
     }
@@ -1623,6 +1630,9 @@ class RawConsoleTextItem extends React.Component {
                                 <ReactCodemirror handleChange={this._handleChange}
                                                  show_line_numbers={false}
                                                  soft_wrap={true}
+                                                 sync_to_prop={false}
+                                                 force_sync_to_prop={this.props.force_sync_to_prop}
+                                                 clear_force_sync={this._clearForceSync}
                                                  mode="markdown"
                                                  code_content={this.props.console_text}
                                                  setCMObject={this._setCMObject}
@@ -1662,6 +1672,7 @@ RawConsoleTextItem.propTypes = {
     am_shrunk: PropTypes.bool,
     set_focus: PropTypes.bool,
     show_markdown: PropTypes.bool,
+    force_sync_to_prop: PropTypes.bool,
     summary_text: PropTypes.string,
     console_text: PropTypes.string,
     console_available_width: PropTypes.number,
@@ -1673,6 +1684,10 @@ RawConsoleTextItem.propTypes = {
     tsocket: PropTypes.object,
     setFocus: PropTypes.func,
 };
+
+RawConsoleTextItem.proptypes = {
+    force_sync_to_prop: false,
+}
 
 const ConsoleTextItem = ContextMenuTarget(RawConsoleTextItem);
 

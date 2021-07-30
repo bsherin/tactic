@@ -54,6 +54,8 @@ def make_fieldnames_unique(flist):
     new_list = []
     standard_fields = ["__id__", "__filename__"]
     for fname in flist:
+        if len(fname) == 0:
+            fname = "column"
         counter = 1
         if fname in new_list and fname not in standard_fields:
             while fname + str(counter) in new_list:
@@ -73,40 +75,63 @@ def add_standard_fields(header_list):
     return new_list
 
 
-def read_table_file_to_list(tsvfile, separator):
+def read_table_file_to_list(tsvfile, csv_options=None):
     tsvfile.seek(0)
     standard_fields = ["__id__", "__filename__"]
-    i = 0
+
     try:
         raw_text = tsvfile.read()
         encoding = chardet.detect(raw_text[:100000])["encoding"]
         raw_lines = raw_text.splitlines()
-        header_list = raw_lines[0].decode(encoding, "ignore").rstrip().split(separator)
-        header_list = [header for header in header_list]
-        header_list = make_fieldnames_unique(header_list)
-        filename, file_extension = os.path.splitext(tsvfile.filename)
-        result_list = []
+        decoded_lines = []
         decoding_problems = []
         for k, raw_line in enumerate(raw_lines[1:]):
             try:
                 decoded_line = raw_line.decode(encoding)
+                decoded_lines.append(decoded_line)
             except UnicodeDecodeError as ex:
                 decoding_problems.append(generic_exception_handler.extract_short_error_message(ex))
+
+        if csv_options is not None:
+            defaults = {"delimiter": ",",
+                        "quoting": csv.QUOTE_MINIMAL,
+                        "skipinitialspace": True}
+            full_csv_options = copy.deepcopy(defaults)
+            full_csv_options["delimiter"] = bytes(csv_options["delimiter"], "utf-8").decode("unicode_escape")
+            full_csv_options["quoting"] = getattr(csv, csv_options["quoting"])
+            delimiter = full_csv_options["delimiter"]
+            dialect = None
+        else:
+            dialect = csv.Sniffer().sniff(raw_text[:1024].decode(encoding, "ignore"))
+            tsvfile.seek(0)
+            delimiter = dialect.delimiter
+            full_csv_options = None
+
+        header_list = raw_lines[0].decode(encoding, "ignore").rstrip().split(delimiter)
+        header_list = [header for header in header_list]
+        header_list = make_fieldnames_unique(header_list)
+        filename, file_extension = os.path.splitext(tsvfile.filename)
+        result_list = []
+
+        if dialect is not None:
+            creader = csv.reader(decoded_lines, dialect)
+        else:
+            creader = csv.reader(decoded_lines, **full_csv_options)
+        i = 0
+        for rlist in creader:
+            try:
+                row = {}
+                for col, val in enumerate(rlist):
+                    if header_list[col] in standard_fields:
+                        continue
+                    row[header_list[col]] = val
+                row["__filename__"] = filename
+                row["__id__"] = i
+            except Exception as ex:
+                decoding_problems.append(generic_exception_handler.extract_short_error_message(ex))
             else:
-                try:
-                    line = decoded_line.split(separator)
-                    row = {}
-                    for col, val in enumerate(line):
-                        if header_list[col] in standard_fields:
-                            continue
-                        row[header_list[col]] = val
-                    row["__filename__"] = filename
-                    row["__id__"] = i
-                except Exception as ex:
-                    decoding_problems.append(generic_exception_handler.extract_short_error_message(ex))
-                else:
-                    result_list.append(row)
-                    i += 1
+                result_list.append(row)
+                i += 1
 
         tsvfile.seek(0)
         header_list = add_standard_fields(header_list)
@@ -185,12 +210,12 @@ def read_excel_file(xlfile):
     return filename, doc_dict, header_dict
 
 
-def read_csv_file_to_list(csvfile):
-    return read_table_file_to_list(csvfile, ",")
+def read_csv_file_to_list(csvfile, csv_options=None):
+    return read_table_file_to_list(csvfile, csv_options)
 
 
-def read_tsv_file_to_list(tsvfile):
-    return read_table_file_to_list(tsvfile, "\t")
+# def read_tsv_file_to_list(tsvfile):
+#     return read_table_file_to_list(tsvfile, "\t")
 
 
 def read_txt_file_to_list(txtfile):
