@@ -170,6 +170,52 @@ function got_parsed_data(data_object) {
     "res_name": window.module_name,
     "is_repository": false
   };
+  var odict = parsed_data.option_dict;
+
+  var _iterator = _createForOfIteratorHelper(odict),
+      _step;
+
+  try {
+    for (_iterator.s(); !(_step = _iterator.n()).done;) {
+      var option = _step.value;
+
+      for (var param in option) {
+        if (Array.isArray(option[param])) {
+          var nstring = "[";
+          var isfirst = true;
+
+          var _iterator2 = _createForOfIteratorHelper(option[param]),
+              _step2;
+
+          try {
+            for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+              var item = _step2.value;
+
+              if (!isfirst) {
+                nstring += ", ";
+              } else {
+                isfirst = false;
+              }
+
+              nstring += "'" + String(item) + "'";
+            }
+          } catch (err) {
+            _iterator2.e(err);
+          } finally {
+            _iterator2.f();
+          }
+
+          nstring += "]";
+          option[param] = nstring;
+        }
+      }
+    }
+  } catch (err) {
+    _iterator.e(err);
+  } finally {
+    _iterator.f();
+  }
+
   (0, _communication_react.postAjaxPromise)("grab_metadata", result_dict).then(function (data) {
     var split_tags = data.tags == "" ? [] : data.tags.split(" ");
     var category = parsed_data.category ? parsed_data.category : "basic";
@@ -369,18 +415,18 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       for (var _i = 0, _bgs = bgs; _i < _bgs.length; _i++) {
         var bg = _bgs[_i];
 
-        var _iterator = _createForOfIteratorHelper(bg),
-            _step;
+        var _iterator3 = _createForOfIteratorHelper(bg),
+            _step3;
 
         try {
-          for (_iterator.s(); !(_step = _iterator.n()).done;) {
-            var but = _step.value;
+          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+            var but = _step3.value;
             but.click_handler = but.click_handler.bind(this);
           }
         } catch (err) {
-          _iterator.e(err);
+          _iterator3.e(err);
         } finally {
-          _iterator.f();
+          _iterator3.f();
         }
       }
 
@@ -522,18 +568,18 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       var taglist = this.state.tags;
       var tags = "";
 
-      var _iterator2 = _createForOfIteratorHelper(taglist),
-          _step2;
+      var _iterator4 = _createForOfIteratorHelper(taglist),
+          _step4;
 
       try {
-        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-          var tag = _step2.value;
+        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+          var tag = _step4.value;
           tags = tags + tag + " ";
         }
       } catch (err) {
-        _iterator2.e(err);
+        _iterator4.e(err);
       } finally {
-        _iterator2.f();
+        _iterator4.f();
       }
 
       return tags.trim();
@@ -875,12 +921,12 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_handleResize",
     value: function _handleResize(entries) {
-      var _iterator3 = _createForOfIteratorHelper(entries),
-          _step3;
+      var _iterator5 = _createForOfIteratorHelper(entries),
+          _step5;
 
       try {
-        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-          var entry = _step3.value;
+        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+          var entry = _step5.value;
 
           if (entry.target.id == "creator-root") {
             // Must used window.innerWidth here otherwise we get the wrong value during initial mounting
@@ -893,9 +939,9 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           }
         }
       } catch (err) {
-        _iterator3.e(err);
+        _iterator5.e(err);
       } finally {
-        _iterator3.f();
+        _iterator5.f();
       }
     }
   }, {

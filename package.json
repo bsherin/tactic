@@ -4,7 +4,9 @@
   "scripts": {
     "build": "webpack --mode=development",
     "build-production": "webpack --mode=production",
-    "convertjsx": "/usr/local/bin/npx babel --presets=@babel/preset-env,@babel/preset-react --plugins=@babel/plugin-proposal-class-properties"
+    "convertjsx": "/usr/local/bin/npx babel --presets=@babel/preset-env,@babel/preset-react --plugins=@babel/plugin-proposal-class-properties",
+    "push-images": "docker push bsherin/tactic -a",
+    "dc": "docker-compose -f ./tactic_app/docker-compose.yml build"
   },
   "dependencies": {
     "@blueprintjs/core": "^3.43.0",
