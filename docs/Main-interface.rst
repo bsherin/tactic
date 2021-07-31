@@ -20,7 +20,7 @@ it as a data collection back to your library, (2) you can export the
 visible document as a CSV file on your local machine, and (3) you can
 export all of the documents to an excel file.
 
-The :guilabel:`Project` menu also has a an option :guilabel:`change_collection` which lets
+The :guilabel:`Project` menu also has an option :guilabel:`change_collection` which lets
 you swap out the data collection in the main data table.
 
 .. figure:: images/maininterfacetop.png
