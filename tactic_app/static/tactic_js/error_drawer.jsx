@@ -184,6 +184,7 @@ class ErrorDrawer extends React.Component {
         return (
             <Drawer
                     icon="console"
+                    className={window.dark_theme ? "bp3-dark" : "light-theme"}
                     title={this.props.title}
                     isOpen={this.props.show_drawer}
                     position={this.props.position}
@@ -206,6 +207,7 @@ class ErrorDrawer extends React.Component {
 
 Status.propTypes = {
     show_drawer: PropTypes.bool,
+    dark_theme: PropTypes.bool,
     contents: PropTypes.array,
     title: PropTypes.string,
     onClose: PropTypes.func,

@@ -192,6 +192,7 @@ class TileContainer extends React.Component {
         return (
             <SortableComponent id="tile-div"
                                style={outer_style}
+                               helperClass={this.props.dark_theme ? "bp3-dark" : "light-theme"}
                                container_ref={this.props.tile_div_ref}
                                ElementComponent={STileComponent}
                                key_field_name="tile_name"
@@ -216,6 +217,7 @@ class TileContainer extends React.Component {
 
 TileContainer.propTypes = {
     setMainStateValue: PropTypes.func,
+    dark_theme: PropTypes.bool,
     table_is_shrunk: PropTypes.bool,
     tile_list: PropTypes.array,
     tile_div_ref: PropTypes.object,

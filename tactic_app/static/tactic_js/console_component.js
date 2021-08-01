@@ -1221,6 +1221,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
         key_field_name: "unique_id",
         item_list: filtered_items,
         dark_theme: this.props.dark_theme,
+        helperClass: this.props.dark_theme ? "bp3-dark" : "light-theme",
         handle: ".console-sorter",
         onSortStart: function onSortStart(_, event) {
           return event.preventDefault();

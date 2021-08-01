@@ -324,6 +324,7 @@ var ErrorDrawer = /*#__PURE__*/function (_React$Component3) {
       });
       return /*#__PURE__*/_react["default"].createElement(_core.Drawer, {
         icon: "console",
+        className: window.dark_theme ? "bp3-dark" : "light-theme",
         title: this.props.title,
         isOpen: this.props.show_drawer,
         position: this.props.position,
@@ -348,6 +349,7 @@ var ErrorDrawer = /*#__PURE__*/function (_React$Component3) {
 
 _toaster.Status.propTypes = {
   show_drawer: _propTypes["default"].bool,
+  dark_theme: _propTypes["default"].bool,
   contents: _propTypes["default"].array,
   title: _propTypes["default"].string,
   onClose: _propTypes["default"].func,
