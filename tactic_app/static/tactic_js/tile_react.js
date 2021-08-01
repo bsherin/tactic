@@ -339,6 +339,7 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
       return /*#__PURE__*/_react["default"].createElement(_sortable_container.SortableComponent, {
         id: "tile-div",
         style: outer_style,
+        helperClass: this.props.dark_theme ? "bp3-dark" : "light-theme",
         container_ref: this.props.tile_div_ref,
         ElementComponent: STileComponent,
         key_field_name: "tile_name",
@@ -368,6 +369,7 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
 exports.TileContainer = TileContainer;
 TileContainer.propTypes = {
   setMainStateValue: _propTypes["default"].func,
+  dark_theme: _propTypes["default"].bool,
   table_is_shrunk: _propTypes["default"].bool,
   tile_list: _propTypes["default"].array,
   tile_div_ref: _propTypes["default"].object,
