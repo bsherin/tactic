@@ -3,13 +3,16 @@
 import React from "react";
 import PropTypes from 'prop-types';
 
-import { Button, Card} from "@blueprintjs/core";
+import { Button, Card, Collapse, Divider } from "@blueprintjs/core";
 
 import {Toolbar} from "./blueprint_toolbar.js";
-import {LabeledSelectList, LabeledFormField, BpOrderableTable} from "./blueprint_react_widgets.js";
+import {postAjax} from "./communication_react.js"
+import {LabeledSelectList, LabeledFormField, BpOrderableTable, GlyphButton} from "./blueprint_react_widgets.js";
+import {doFlash} from "./toaster.js";
 import _ from 'lodash';
+import {doBinding} from "./utilities_react";
 
-export {OptionModule, ExportModule}
+export {OptionModule, ExportModule, CommandsModule}
 
 class OptionModuleForm extends React.Component {
 
@@ -309,3 +312,200 @@ ExportModule.propTypes = {
     handleNotesAppend: PropTypes.func
 
 };
+
+class CommandsModule extends React.Component {
+
+    constructor(props) {
+        super(props);
+        doBinding(this);
+        this.state = {
+            api_dict: {},
+            ordered_categories: [],
+            object_api_dict: {},
+            ordered_object_categories: []
+        };
+    }
+
+    componentDidMount() {
+        let self = this;
+        postAjax("get_api_dict", {}, function (data) {
+            self.setState({api_dict: data.api_dict_by_category,
+                object_api_dict: data.object_api_dict_by_category,
+                ordered_object_categories: data.ordered_object_categories,
+                ordered_categories: data.ordered_api_categories})
+        })
+    }
+
+
+    render () {
+        let commands_pane_style = {
+            "marginTop": 10,
+            "marginLeft": 10,
+            "marginRight": 10
+        };
+
+        let object_items = [];
+        for (let category of this.state.ordered_object_categories) {
+            object_items.push(<ObjectCategoryEntry category_name={category}
+                                                     class_list={this.state.object_api_dict[category]}/>)
+        }
+        let command_items = [];
+        for (let category of this.state.ordered_categories) {
+            command_items.push(<CategoryEntry category_name={category}
+                                               command_list={this.state.api_dict[category]}/>)
+
+        }
+        return (
+
+            <Card elevation={1} id="commands-pane" className="d-flex flex-column" style={commands_pane_style}>
+                <div ref={this.props.commands_ref} style={{fontSize: 13, overflow: "auto", height: this.props.available_height}}>
+                    <h4>Object api</h4>
+                    {object_items}
+                    <h4>TileBase commands (accessed with self.)</h4>
+                    {command_items}
+                </div>
+            </Card>
+        )
+    }
+
+}
+
+CommandsModule.propTypes = {
+    commands_ref: PropTypes.object,
+    available_height: PropTypes.number
+};
+
+class ObjectCategoryEntry extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this);
+    }
+
+    render() {
+        let classes = [];
+        for (let class_entry of this.props.class_list) {
+            let entries = [];
+            if (class_entry[2] == "class") {
+                for (let entry of class_entry[1]) {
+                    entry["kind"] = "class_" + entry["kind"]
+                    entries.push(<CommandEntry {...entry}/>)
+                }
+                classes.push(
+                    <React.Fragment>
+                        <h6 style={{marginTop: 20}}>{"class " + class_entry[0]}</h6>
+                        {entries}
+                    </React.Fragment>
+                )
+            }
+            else {
+                let entry = class_entry[1];
+                classes.push(<CommandEntry {...entry}/>)
+            }
+
+
+        }
+
+        return (
+            <React.Fragment>
+                <h5 style={{marginTop: 20}}>
+                    {this.props.category_name}
+                </h5>
+                {classes}
+                <Divider/>
+            </React.Fragment>
+        )
+    }
+}
+
+ObjectCategoryEntry.propTypes = {
+    category_name: PropTypes.string,
+    class_list: PropTypes.array,
+}
+
+class CategoryEntry extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this);
+    }
+
+    render() {
+        let entries = [];
+        for (let entry of this.props.command_list) {
+            entries.push(<CommandEntry {...entry}/>)
+        }
+        return (
+            <React.Fragment>
+                <h5 style={{marginTop: 20}}>
+                    {this.props.category_name}
+                </h5>
+                {entries}
+                <Divider/>
+            </React.Fragment>
+        )
+    }
+}
+
+CategoryEntry.propTypes = {
+    category_name: PropTypes.string,
+    command_list: PropTypes.array,
+}
+
+class CommandEntry extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this);
+        this.state = {
+            isOpen: false
+        }
+    }
+    _handleClick() {
+        this.setState({ isOpen: !this.state.isOpen });
+    }
+    _doCopy() {
+        if (navigator.clipboard && window.isSecureContext) {
+            if (this.props.kind == "method" || this.props.kind == "attribute") {
+                navigator.clipboard.writeText("self." + this.props.signature)
+            }
+            else {
+                navigator.clipboard.writeText(this.props.signature)
+            }
+
+            doFlash({message: "command copied", "timeout": 2000, "alert_type": "alert-success"});
+        }
+    }
+    render() {
+        let md_style = {
+            "display": "block",
+            // "maxHeight": this.state.md_height,
+            "fontSize": 13
+        };
+        return (
+            <React.Fragment>
+                <Button minimal={true} outlined={this.state.isOpen} className="bp3-monospace-text"
+                        onClick={this._handleClick}>
+                        {this.props.signature}
+                </Button>
+                <Collapse isOpen={this.state.isOpen}>
+                    <div style={{maxWidth: 700, position: "relative"}}>
+                        <GlyphButton style={{position: "absolute", right: 5, top: 5, marginTop: 0}}
+                                     icon="duplicate"
+                                     small={true}
+                                     handleClick={this._doCopy}
+                        />
+                        <div style={md_style}
+                             className="notes-field-markdown-output bp3-button bp3-outlined"
+                             dangerouslySetInnerHTML={{__html: this.props.body}}/>
+                    </div>
+                </Collapse>
+            </React.Fragment>
+        )
+    }
+}
+
+CommandEntry.propTypes = {
+    name: PropTypes.string,
+    signature: PropTypes.string,
+    body: PropTypes.string,
+    kind: PropTypes.string
+
+}

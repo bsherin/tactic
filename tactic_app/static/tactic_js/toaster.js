@@ -45,7 +45,8 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 var AppToaster = _core.Toaster.create({
   className: "recipe-toaster",
   position: _core.Position.TOP,
-  autoFocus: true
+  autoFocus: false,
+  timeout: 2000
 });
 
 var intent_dict = {
@@ -63,8 +64,13 @@ function doFlash(data) {
     intent = intent_dict[data.alert_type];
   }
 
+  if (!data.hasOwnProperty("timeout")) {
+    data.timeout = null;
+  }
+
   AppToaster.show({
     message: data.message,
+    timeout: data.timeout,
     intent: intent
   });
 }

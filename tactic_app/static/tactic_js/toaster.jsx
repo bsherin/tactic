@@ -12,7 +12,8 @@ export {doFlash, doFlashAlways, withStatus, Status}
 const AppToaster = Toaster.create({
     className: "recipe-toaster",
     position: Position.TOP,
-    autoFocus: true
+    autoFocus: false,
+    timeout: 2000
 });
 
 const intent_dict = {
@@ -29,9 +30,13 @@ function doFlash(data) {
     else {
         intent = intent_dict[data.alert_type];
     }
+    if (!data.hasOwnProperty("timeout")) {
+        data.timeout = null
+    }
 
     AppToaster.show({
         message: data.message,
+        timeout: data.timeout,
         intent: intent});
 }
 

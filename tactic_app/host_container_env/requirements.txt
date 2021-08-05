@@ -1,6 +1,7 @@
 chardet
 cloudpickle
 docker
+docutils
 Flask
 Flask-Login
 Flask-SocketIO

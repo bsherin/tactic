@@ -1,303 +1,873 @@
+"use strict";
 
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-import React from "react";
-import PropTypes from 'prop-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.CommandsModule = exports.ExportModule = exports.OptionModule = void 0;
 
-import { Button, Card } from "@blueprintjs/core";
+var _react = _interopRequireDefault(require("react"));
 
-import { Toolbar } from "./blueprint_toolbar.js";
-import { LabeledSelectList, LabeledFormField, BpOrderableTable } from "./blueprint_react_widgets.js";
-import _ from 'lodash';
+var _propTypes = _interopRequireDefault(require("prop-types"));
 
-export { OptionModule, ExportModule };
+var _core = require("@blueprintjs/core");
 
-class OptionModuleForm extends React.Component {
+var _blueprint_toolbar = require("./blueprint_toolbar.js");
 
-    constructor(props) {
-        super(props);
-        this.option_types = ['text', 'int', 'float', 'boolean', 'textarea', 'codearea', 'column_select', 'document_select', 'list_select', 'collection_select', 'palette_select', 'pipe_select', 'custom_list', 'function_select', 'class_select', 'tile_select'];
-        this.taggable_types = ["class_select", "function_select", "pipe_select", "list_select", "collection_select"];
-        this.state = {
-            "name": "",
-            "type": "text",
-            "default": "",
-            "special_list": "",
-            "tags": ""
-        };
-        this.handleNameChange = this.handleNameChange.bind(this);
-        this.handleDefaultChange = this.handleDefaultChange.bind(this);
-        this.handleTagChange = this.handleTagChange.bind(this);
-        this.handleSubmit = this.handleSubmit.bind(this);
-        this.handleTypeChange = this.handleTypeChange.bind(this);
-        this.handleSpecialListChange = this.handleSpecialListChange.bind(this);
+var _communication_react = require("./communication_react.js");
+
+var _blueprint_react_widgets = require("./blueprint_react_widgets.js");
+
+var _toaster = require("./toaster.js");
+
+var _lodash = _interopRequireDefault(require("lodash"));
+
+var _utilities_react = require("./utilities_react");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+var OptionModuleForm = /*#__PURE__*/function (_React$Component) {
+  _inherits(OptionModuleForm, _React$Component);
+
+  var _super = _createSuper(OptionModuleForm);
+
+  function OptionModuleForm(props) {
+    var _this;
+
+    _classCallCheck(this, OptionModuleForm);
+
+    _this = _super.call(this, props);
+    _this.option_types = ['text', 'int', 'float', 'boolean', 'textarea', 'codearea', 'column_select', 'document_select', 'list_select', 'collection_select', 'palette_select', 'pipe_select', 'custom_list', 'function_select', 'class_select', 'tile_select'];
+    _this.taggable_types = ["class_select", "function_select", "pipe_select", "list_select", "collection_select"];
+    _this.state = {
+      "name": "",
+      "type": "text",
+      "default": "",
+      "special_list": "",
+      "tags": ""
+    };
+    _this.handleNameChange = _this.handleNameChange.bind(_assertThisInitialized(_this));
+    _this.handleDefaultChange = _this.handleDefaultChange.bind(_assertThisInitialized(_this));
+    _this.handleTagChange = _this.handleTagChange.bind(_assertThisInitialized(_this));
+    _this.handleSubmit = _this.handleSubmit.bind(_assertThisInitialized(_this));
+    _this.handleTypeChange = _this.handleTypeChange.bind(_assertThisInitialized(_this));
+    _this.handleSpecialListChange = _this.handleSpecialListChange.bind(_assertThisInitialized(_this));
+    return _this;
+  }
+
+  _createClass(OptionModuleForm, [{
+    key: "handleNameChange",
+    value: function handleNameChange(event) {
+      this.setState({
+        "name": event.target.value
+      });
     }
-
-    handleNameChange(event) {
-        this.setState({ "name": event.target.value });
+  }, {
+    key: "handleDefaultChange",
+    value: function handleDefaultChange(event) {
+      this.setState({
+        "default": event.target.value
+      });
     }
-
-    handleDefaultChange(event) {
-        this.setState({ "default": event.target.value });
+  }, {
+    key: "handleTagChange",
+    value: function handleTagChange(event) {
+      this.setState({
+        "tags": event.target.value
+      });
     }
-    handleTagChange(event) {
-        this.setState({ "tags": event.target.value });
+  }, {
+    key: "handleSpecialListChange",
+    value: function handleSpecialListChange(event) {
+      this.setState({
+        "special_list": event.currentTarget.value
+      });
     }
+  }, {
+    key: "handleTypeChange",
+    value: function handleTypeChange(event) {
+      var new_type = event.currentTarget.value;
+      var updater = {
+        "type": new_type
+      };
 
-    handleSpecialListChange(event) {
-        this.setState({ "special_list": event.currentTarget.value });
+      if (new_type != "custom_list") {
+        updater["special_list"] = "";
+      }
+
+      if (!this.taggable_types.includes(new_type)) {
+        updater["tags"] = "";
+      }
+
+      this.setState(updater);
     }
+  }, {
+    key: "handleSubmit",
+    value: function handleSubmit() {
+      this.props.handleCreate(this.state);
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var _this2 = this;
 
-    handleTypeChange(event) {
-        let new_type = event.currentTarget.value;
-        let updater = { "type": new_type };
-        if (new_type != "custom_list") {
-            updater["special_list"] = "";
+      return /*#__PURE__*/_react["default"].createElement("form", null, /*#__PURE__*/_react["default"].createElement("div", {
+        style: {
+          display: "flex",
+          flexDirection: "row",
+          padding: 25
         }
-        if (!this.taggable_types.includes(new_type)) {
-            updater["tags"] = "";
+      }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.LabeledFormField, {
+        label: "Name",
+        onChange: this.handleNameChange,
+        the_value: this.state.name
+      }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.LabeledSelectList, {
+        label: "Type",
+        option_list: this.option_types,
+        onChange: this.handleTypeChange,
+        the_value: this.state.type
+      }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.LabeledFormField, {
+        label: "Default",
+        onChange: this.handleDefaultChange,
+        the_value: this.state.default_value
+      }), this.state.type == "custom_list" && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.LabeledFormField, {
+        label: "Special List",
+        onChange: this.handleSpecialListChange,
+        the_value: this.state.special_list
+      }), this.taggable_types.includes(this.state.type) && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.LabeledFormField, {
+        label: "Tag",
+        onChange: this.handleTagChange,
+        the_value: this.state.tag
+      })), /*#__PURE__*/_react["default"].createElement(_core.Button, {
+        type: "submit",
+        text: "Create",
+        onClick: function onClick(e) {
+          e.preventDefault();
+
+          _this2.handleSubmit();
         }
-
-        this.setState(updater);
+      }));
     }
+  }]);
 
-    handleSubmit() {
-        this.props.handleCreate(this.state);
-    }
-
-    render() {
-        return React.createElement(
-            "form",
-            null,
-            React.createElement(
-                "div",
-                { style: { display: "flex", flexDirection: "row", padding: 25 } },
-                React.createElement(LabeledFormField, { label: "Name", onChange: this.handleNameChange, the_value: this.state.name }),
-                React.createElement(LabeledSelectList, { label: "Type", option_list: this.option_types, onChange: this.handleTypeChange, the_value: this.state.type }),
-                React.createElement(LabeledFormField, { label: "Default", onChange: this.handleDefaultChange, the_value: this.state.default_value }),
-                this.state.type == "custom_list" && React.createElement(LabeledFormField, { label: "Special List", onChange: this.handleSpecialListChange, the_value: this.state.special_list }),
-                this.taggable_types.includes(this.state.type) && React.createElement(LabeledFormField, { label: "Tag", onChange: this.handleTagChange, the_value: this.state.tag })
-            ),
-            React.createElement(Button, { type: "submit", text: "Create", onClick: e => {
-                    e.preventDefault();
-                    this.handleSubmit();
-                } })
-        );
-    }
-}
+  return OptionModuleForm;
+}(_react["default"].Component);
 
 OptionModuleForm.propTypes = {
-    handleCreate: PropTypes.func
+  handleCreate: _propTypes["default"].func
 };
 
-class OptionModule extends React.Component {
+var OptionModule = /*#__PURE__*/function (_React$Component2) {
+  _inherits(OptionModule, _React$Component2);
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            "active_row": 0
-        };
-        this.handleActiveRowChange = this.handleActiveRowChange.bind(this);
-        this.handleCreate = this.handleCreate.bind(this);
+  var _super2 = _createSuper(OptionModule);
+
+  function OptionModule(props) {
+    var _this3;
+
+    _classCallCheck(this, OptionModule);
+
+    _this3 = _super2.call(this, props);
+    _this3.state = {
+      "active_row": 0
+    };
+    _this3.handleActiveRowChange = _this3.handleActiveRowChange.bind(_assertThisInitialized(_this3));
+    _this3.handleCreate = _this3.handleCreate.bind(_assertThisInitialized(_this3));
+    return _this3;
+  }
+
+  _createClass(OptionModule, [{
+    key: "delete_option",
+    value: function delete_option() {
+      var new_data_list = _lodash["default"].cloneDeep(this.props.data_list);
+
+      new_data_list.splice(this.state.active_row, 1);
+      this.props.handleChange(new_data_list);
     }
+  }, {
+    key: "send_doc_text",
+    value: function send_doc_text() {
+      var res_string = "\n\noptions: \n\n";
 
-    delete_option() {
-        let new_data_list = _.cloneDeep(this.props.data_list);
-        new_data_list.splice(this.state.active_row, 1);
-        this.props.handleChange(new_data_list);
-    }
+      var _iterator = _createForOfIteratorHelper(this.props.data_list),
+          _step;
 
-    send_doc_text() {
-        let res_string = "\n\noptions: \n\n";
-        for (let opt of this.props.data_list) {
-            res_string += ` * \`${opt.name}\` (${opt.type}): \n`;
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var opt = _step.value;
+          res_string += " * `".concat(opt.name, "` (").concat(opt.type, "): \n");
         }
-        this.props.handleNotesAppend(res_string);
-    }
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
+      }
 
-    handleCreate(new_row) {
-        let new_data_list = this.props.data_list;
-        new_data_list.push(new_row);
-        this.props.handleChange(new_data_list);
+      this.props.handleNotesAppend(res_string);
     }
-
-    handleActiveRowChange(row_index) {
-        this.setState({ "active_row": row_index });
+  }, {
+    key: "handleCreate",
+    value: function handleCreate(new_row) {
+      var new_data_list = this.props.data_list;
+      new_data_list.push(new_row);
+      this.props.handleChange(new_data_list);
     }
+  }, {
+    key: "handleActiveRowChange",
+    value: function handleActiveRowChange(row_index) {
+      this.setState({
+        "active_row": row_index
+      });
+    }
+  }, {
+    key: "button_groups",
+    get: function get() {
+      var bgs = [[{
+        "name_text": "delete",
+        "icon_name": "trash",
+        "click_handler": this.delete_option,
+        tooltip: "Delete option"
+      }, {
+        "name_text": "toMeta",
+        "icon_name": "properties",
+        "click_handler": this.send_doc_text,
+        tooltip: "Append info to notes field"
+      }]];
 
-    get button_groups() {
-        let bgs = [[{ "name_text": "delete", "icon_name": "trash", "click_handler": this.delete_option, tooltip: "Delete option" }, { "name_text": "toMeta", "icon_name": "properties", "click_handler": this.send_doc_text, tooltip: "Append info to notes field" }]];
-        for (let bg of bgs) {
-            for (let but of bg) {
-                but.click_handler = but.click_handler.bind(this);
-            }
+      for (var _i = 0, _bgs = bgs; _i < _bgs.length; _i++) {
+        var bg = _bgs[_i];
+
+        var _iterator2 = _createForOfIteratorHelper(bg),
+            _step2;
+
+        try {
+          for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+            var but = _step2.value;
+            but.click_handler = but.click_handler.bind(this);
+          }
+        } catch (err) {
+          _iterator2.e(err);
+        } finally {
+          _iterator2.f();
         }
-        return bgs;
+      }
+
+      return bgs;
     }
+  }, {
+    key: "render",
+    value: function render() {
+      var cols = ["name", "type", "default", "special_list", "tags"];
+      var options_pane_style = {
+        "marginTop": 10,
+        "marginLeft": 10,
+        "marginRight": 10
+      };
 
-    render() {
-        var cols = ["name", "type", "default", "special_list", "tags"];
-        let options_pane_style = {
-            "marginTop": 10,
-            "marginLeft": 10,
-            "marginRight": 10
-        };
-        if (this.state.active_row >= this.props.data_list.length) {
-            this.state.active_row = this.props.data_list.length - 1;
-        }
-        return React.createElement(
-            Card,
-            { elevation: 1, id: "options-pane", className: "d-flex flex-column", style: options_pane_style },
-            React.createElement(
-                "div",
-                { className: "d-flex flex-row mb-2" },
-                React.createElement(Toolbar, { button_groups: this.button_groups })
-            ),
-            this.props.foregrounded && React.createElement(BpOrderableTable, { columns: cols,
-                data_array: this.props.data_list,
-                active_row: this.state.active_row,
-                handleActiveRowChange: this.handleActiveRowChange,
-                handleChange: this.props.handleChange,
-                content_editable: true
-            }),
-            React.createElement(OptionModuleForm, { handleCreate: this.handleCreate })
-        );
+      if (this.state.active_row >= this.props.data_list.length) {
+        this.state.active_row = this.props.data_list.length - 1;
+      }
+
+      return /*#__PURE__*/_react["default"].createElement(_core.Card, {
+        elevation: 1,
+        id: "options-pane",
+        className: "d-flex flex-column",
+        style: options_pane_style
+      }, /*#__PURE__*/_react["default"].createElement("div", {
+        className: "d-flex flex-row mb-2"
+      }, /*#__PURE__*/_react["default"].createElement(_blueprint_toolbar.Toolbar, {
+        button_groups: this.button_groups
+      })), this.props.foregrounded && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.BpOrderableTable, {
+        columns: cols,
+        data_array: this.props.data_list,
+        active_row: this.state.active_row,
+        handleActiveRowChange: this.handleActiveRowChange,
+        handleChange: this.props.handleChange,
+        content_editable: true
+      }), /*#__PURE__*/_react["default"].createElement(OptionModuleForm, {
+        handleCreate: this.handleCreate
+      }));
     }
+  }]);
 
-}
+  return OptionModule;
+}(_react["default"].Component);
 
+exports.OptionModule = OptionModule;
 OptionModule.propTypes = {
-    data_list: PropTypes.array,
-    foregrounded: PropTypes.bool,
-    handleChange: PropTypes.func,
-    handleNotesAppend: PropTypes.func
+  data_list: _propTypes["default"].array,
+  foregrounded: _propTypes["default"].bool,
+  handleChange: _propTypes["default"].func,
+  handleNotesAppend: _propTypes["default"].func
 };
 
-class ExportModuleForm extends React.Component {
+var ExportModuleForm = /*#__PURE__*/function (_React$Component3) {
+  _inherits(ExportModuleForm, _React$Component3);
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            "name": "",
-            "tags": ""
-        };
-        this.handleNameChange = this.handleNameChange.bind(this);
-        this.handleTagChange = this.handleTagChange.bind(this);
-        this.handleSubmit = this.handleSubmit.bind(this);
-    }
+  var _super3 = _createSuper(ExportModuleForm);
 
-    handleNameChange(event) {
-        this.setState({ "name": event.target.value });
-    }
+  function ExportModuleForm(props) {
+    var _this4;
 
-    handleTagChange(event) {
-        this.setState({ "tags": event.target.value });
-    }
+    _classCallCheck(this, ExportModuleForm);
 
-    handleSubmit() {
-        this.props.handleCreate(this.state);
-    }
+    _this4 = _super3.call(this, props);
+    _this4.state = {
+      "name": "",
+      "tags": ""
+    };
+    _this4.handleNameChange = _this4.handleNameChange.bind(_assertThisInitialized(_this4));
+    _this4.handleTagChange = _this4.handleTagChange.bind(_assertThisInitialized(_this4));
+    _this4.handleSubmit = _this4.handleSubmit.bind(_assertThisInitialized(_this4));
+    return _this4;
+  }
 
-    render() {
-        return React.createElement(
-            "form",
-            null,
-            React.createElement(
-                "div",
-                { style: { display: "flex", flexDirection: "row", padding: 25 } },
-                React.createElement(LabeledFormField, { label: "Name", onChange: this.handleNameChange, the_value: this.state.name }),
-                React.createElement(LabeledFormField, { label: "Tag", onChange: this.handleTagChange, the_value: this.state.tag })
-            ),
-            React.createElement(Button, { text: "Create", type: "submit", onClick: e => {
-                    e.preventDefault();
-                    this.handleSubmit();
-                } })
-        );
+  _createClass(ExportModuleForm, [{
+    key: "handleNameChange",
+    value: function handleNameChange(event) {
+      this.setState({
+        "name": event.target.value
+      });
     }
-}
+  }, {
+    key: "handleTagChange",
+    value: function handleTagChange(event) {
+      this.setState({
+        "tags": event.target.value
+      });
+    }
+  }, {
+    key: "handleSubmit",
+    value: function handleSubmit() {
+      this.props.handleCreate(this.state);
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var _this5 = this;
+
+      return /*#__PURE__*/_react["default"].createElement("form", null, /*#__PURE__*/_react["default"].createElement("div", {
+        style: {
+          display: "flex",
+          flexDirection: "row",
+          padding: 25
+        }
+      }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.LabeledFormField, {
+        label: "Name",
+        onChange: this.handleNameChange,
+        the_value: this.state.name
+      }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.LabeledFormField, {
+        label: "Tag",
+        onChange: this.handleTagChange,
+        the_value: this.state.tag
+      })), /*#__PURE__*/_react["default"].createElement(_core.Button, {
+        text: "Create",
+        type: "submit",
+        onClick: function onClick(e) {
+          e.preventDefault();
+
+          _this5.handleSubmit();
+        }
+      }));
+    }
+  }]);
+
+  return ExportModuleForm;
+}(_react["default"].Component);
 
 ExportModuleForm.propTypes = {
-    handleCreate: PropTypes.func
+  handleCreate: _propTypes["default"].func
 };
 
-class ExportModule extends React.Component {
+var ExportModule = /*#__PURE__*/function (_React$Component4) {
+  _inherits(ExportModule, _React$Component4);
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            "active_row": 0
-        };
-        this.handleActiveRowChange = this.handleActiveRowChange.bind(this);
-        this.handleCreate = this.handleCreate.bind(this);
+  var _super4 = _createSuper(ExportModule);
+
+  function ExportModule(props) {
+    var _this6;
+
+    _classCallCheck(this, ExportModule);
+
+    _this6 = _super4.call(this, props);
+    _this6.state = {
+      "active_row": 0
+    };
+    _this6.handleActiveRowChange = _this6.handleActiveRowChange.bind(_assertThisInitialized(_this6));
+    _this6.handleCreate = _this6.handleCreate.bind(_assertThisInitialized(_this6));
+    return _this6;
+  }
+
+  _createClass(ExportModule, [{
+    key: "delete_export",
+    value: function delete_export() {
+      var new_data_list = this.props.data_list;
+      new_data_list.splice(this.state.active_row, 1);
+      this.props.handleChange(new_data_list);
     }
+  }, {
+    key: "send_doc_text",
+    value: function send_doc_text() {
+      var res_string = "\n\nexports: \n\n";
 
-    delete_export() {
-        let new_data_list = this.props.data_list;
-        new_data_list.splice(this.state.active_row, 1);
-        this.props.handleChange(new_data_list);
-    }
+      var _iterator3 = _createForOfIteratorHelper(this.props.data_list),
+          _step3;
 
-    send_doc_text() {
-        let res_string = "\n\nexports: \n\n";
-        for (let exp of this.props.data_list) {
-            res_string += ` * \`${exp.name}\` : \n`;
+      try {
+        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+          var exp = _step3.value;
+          res_string += " * `".concat(exp.name, "` : \n");
         }
-        this.props.handleNotesAppend(res_string);
-    }
+      } catch (err) {
+        _iterator3.e(err);
+      } finally {
+        _iterator3.f();
+      }
 
-    handleCreate(new_row) {
-        let new_data_list = this.props.data_list;
-        new_data_list.push(new_row);
-        this.props.handleChange(new_data_list);
+      this.props.handleNotesAppend(res_string);
     }
-
-    handleActiveRowChange(row_index) {
-        this.setState({ "active_row": row_index });
+  }, {
+    key: "handleCreate",
+    value: function handleCreate(new_row) {
+      var new_data_list = this.props.data_list;
+      new_data_list.push(new_row);
+      this.props.handleChange(new_data_list);
     }
+  }, {
+    key: "handleActiveRowChange",
+    value: function handleActiveRowChange(row_index) {
+      this.setState({
+        "active_row": row_index
+      });
+    }
+  }, {
+    key: "button_groups",
+    get: function get() {
+      var bgs = [[{
+        "name_text": "delete",
+        "icon_name": "trash",
+        "click_handler": this.delete_export,
+        tooltip: "Delete export"
+      }, {
+        "name_text": "toMeta",
+        "icon_name": "properties",
+        "click_handler": this.send_doc_text,
+        tooltip: "Append info to notes field"
+      }]];
 
-    get button_groups() {
-        let bgs = [[{ "name_text": "delete", "icon_name": "trash", "click_handler": this.delete_export, tooltip: "Delete export" }, { "name_text": "toMeta", "icon_name": "properties", "click_handler": this.send_doc_text, tooltip: "Append info to notes field" }]];
-        for (let bg of bgs) {
-            for (let but of bg) {
-                but.click_handler = but.click_handler.bind(this);
-            }
+      for (var _i2 = 0, _bgs2 = bgs; _i2 < _bgs2.length; _i2++) {
+        var bg = _bgs2[_i2];
+
+        var _iterator4 = _createForOfIteratorHelper(bg),
+            _step4;
+
+        try {
+          for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+            var but = _step4.value;
+            but.click_handler = but.click_handler.bind(this);
+          }
+        } catch (err) {
+          _iterator4.e(err);
+        } finally {
+          _iterator4.f();
         }
-        return bgs;
+      }
+
+      return bgs;
     }
+  }, {
+    key: "render",
+    value: function render() {
+      var cols = ["name", "tags"];
+      var exports_pane_style = {
+        "marginTop": 10,
+        "marginLeft": 10,
+        "marginRight": 10
+      };
 
-    render() {
-        var cols = ["name", "tags"];
-        let exports_pane_style = {
-            "marginTop": 10,
-            "marginLeft": 10,
-            "marginRight": 10
-        };
-        if (this.state.active_row >= this.props.data_list.length) {
-            this.state.active_row = this.props.data_list.length - 1;
-        }
-        return React.createElement(
-            Card,
-            { elevation: 1, id: "exports-pane", className: "d-flex flex-column", style: exports_pane_style },
-            React.createElement(
-                "div",
-                { className: "d-flex flex-row mb-2" },
-                React.createElement(Toolbar, { button_groups: this.button_groups })
-            ),
-            this.props.foregrounded && React.createElement(BpOrderableTable, { columns: cols,
-                data_array: this.props.data_list,
-                active_row: this.state.active_row,
-                handleActiveRowChange: this.handleActiveRowChange,
-                handleChange: this.props.handleChange,
-                content_editable: true }),
-            React.createElement(ExportModuleForm, { handleCreate: this.handleCreate })
-        );
+      if (this.state.active_row >= this.props.data_list.length) {
+        this.state.active_row = this.props.data_list.length - 1;
+      }
+
+      return /*#__PURE__*/_react["default"].createElement(_core.Card, {
+        elevation: 1,
+        id: "exports-pane",
+        className: "d-flex flex-column",
+        style: exports_pane_style
+      }, /*#__PURE__*/_react["default"].createElement("div", {
+        className: "d-flex flex-row mb-2"
+      }, /*#__PURE__*/_react["default"].createElement(_blueprint_toolbar.Toolbar, {
+        button_groups: this.button_groups
+      })), this.props.foregrounded && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.BpOrderableTable, {
+        columns: cols,
+        data_array: this.props.data_list,
+        active_row: this.state.active_row,
+        handleActiveRowChange: this.handleActiveRowChange,
+        handleChange: this.props.handleChange,
+        content_editable: true
+      }), /*#__PURE__*/_react["default"].createElement(ExportModuleForm, {
+        handleCreate: this.handleCreate
+      }));
     }
+  }]);
 
-}
+  return ExportModule;
+}(_react["default"].Component);
 
+exports.ExportModule = ExportModule;
 ExportModule.propTypes = {
-    data_list: PropTypes.array,
-    foregrounded: PropTypes.bool,
-    handleChange: PropTypes.func,
-    handleNotesAppend: PropTypes.func
+  data_list: _propTypes["default"].array,
+  foregrounded: _propTypes["default"].bool,
+  handleChange: _propTypes["default"].func,
+  handleNotesAppend: _propTypes["default"].func
+};
 
+var CommandsModule = /*#__PURE__*/function (_React$Component5) {
+  _inherits(CommandsModule, _React$Component5);
+
+  var _super5 = _createSuper(CommandsModule);
+
+  function CommandsModule(props) {
+    var _this7;
+
+    _classCallCheck(this, CommandsModule);
+
+    _this7 = _super5.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this7));
+    _this7.state = {
+      api_dict: {},
+      ordered_categories: [],
+      object_api_dict: {},
+      ordered_object_categories: []
+    };
+    return _this7;
+  }
+
+  _createClass(CommandsModule, [{
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      var self = this;
+      (0, _communication_react.postAjax)("get_api_dict", {}, function (data) {
+        self.setState({
+          api_dict: data.api_dict_by_category,
+          object_api_dict: data.object_api_dict_by_category,
+          ordered_object_categories: data.ordered_object_categories,
+          ordered_categories: data.ordered_api_categories
+        });
+      });
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var commands_pane_style = {
+        "marginTop": 10,
+        "marginLeft": 10,
+        "marginRight": 10
+      };
+      var object_items = [];
+
+      var _iterator5 = _createForOfIteratorHelper(this.state.ordered_object_categories),
+          _step5;
+
+      try {
+        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+          var category = _step5.value;
+          object_items.push( /*#__PURE__*/_react["default"].createElement(ObjectCategoryEntry, {
+            category_name: category,
+            class_list: this.state.object_api_dict[category]
+          }));
+        }
+      } catch (err) {
+        _iterator5.e(err);
+      } finally {
+        _iterator5.f();
+      }
+
+      var command_items = [];
+
+      var _iterator6 = _createForOfIteratorHelper(this.state.ordered_categories),
+          _step6;
+
+      try {
+        for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+          var _category = _step6.value;
+          command_items.push( /*#__PURE__*/_react["default"].createElement(CategoryEntry, {
+            category_name: _category,
+            command_list: this.state.api_dict[_category]
+          }));
+        }
+      } catch (err) {
+        _iterator6.e(err);
+      } finally {
+        _iterator6.f();
+      }
+
+      return /*#__PURE__*/_react["default"].createElement(_core.Card, {
+        elevation: 1,
+        id: "commands-pane",
+        className: "d-flex flex-column",
+        style: commands_pane_style
+      }, /*#__PURE__*/_react["default"].createElement("div", {
+        ref: this.props.commands_ref,
+        style: {
+          fontSize: 13,
+          overflow: "auto",
+          height: this.props.available_height
+        }
+      }, /*#__PURE__*/_react["default"].createElement("h4", null, "Object api"), object_items, /*#__PURE__*/_react["default"].createElement("h4", null, "TileBase commands (accessed with self.)"), command_items));
+    }
+  }]);
+
+  return CommandsModule;
+}(_react["default"].Component);
+
+exports.CommandsModule = CommandsModule;
+CommandsModule.propTypes = {
+  commands_ref: _propTypes["default"].object,
+  available_height: _propTypes["default"].number
+};
+
+var ObjectCategoryEntry = /*#__PURE__*/function (_React$Component6) {
+  _inherits(ObjectCategoryEntry, _React$Component6);
+
+  var _super6 = _createSuper(ObjectCategoryEntry);
+
+  function ObjectCategoryEntry(props) {
+    var _this8;
+
+    _classCallCheck(this, ObjectCategoryEntry);
+
+    _this8 = _super6.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this8));
+    return _this8;
+  }
+
+  _createClass(ObjectCategoryEntry, [{
+    key: "render",
+    value: function render() {
+      var classes = [];
+
+      var _iterator7 = _createForOfIteratorHelper(this.props.class_list),
+          _step7;
+
+      try {
+        for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
+          var class_entry = _step7.value;
+          var entries = [];
+
+          if (class_entry[2] == "class") {
+            var _iterator8 = _createForOfIteratorHelper(class_entry[1]),
+                _step8;
+
+            try {
+              for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
+                var entry = _step8.value;
+                entry["kind"] = "class_" + entry["kind"];
+                entries.push( /*#__PURE__*/_react["default"].createElement(CommandEntry, entry));
+              }
+            } catch (err) {
+              _iterator8.e(err);
+            } finally {
+              _iterator8.f();
+            }
+
+            classes.push( /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("h6", {
+              style: {
+                marginTop: 20
+              }
+            }, "class " + class_entry[0]), entries));
+          } else {
+            var _entry = class_entry[1];
+            classes.push( /*#__PURE__*/_react["default"].createElement(CommandEntry, _entry));
+          }
+        }
+      } catch (err) {
+        _iterator7.e(err);
+      } finally {
+        _iterator7.f();
+      }
+
+      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("h5", {
+        style: {
+          marginTop: 20
+        }
+      }, this.props.category_name), classes, /*#__PURE__*/_react["default"].createElement(_core.Divider, null));
+    }
+  }]);
+
+  return ObjectCategoryEntry;
+}(_react["default"].Component);
+
+ObjectCategoryEntry.propTypes = {
+  category_name: _propTypes["default"].string,
+  class_list: _propTypes["default"].array
+};
+
+var CategoryEntry = /*#__PURE__*/function (_React$Component7) {
+  _inherits(CategoryEntry, _React$Component7);
+
+  var _super7 = _createSuper(CategoryEntry);
+
+  function CategoryEntry(props) {
+    var _this9;
+
+    _classCallCheck(this, CategoryEntry);
+
+    _this9 = _super7.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this9));
+    return _this9;
+  }
+
+  _createClass(CategoryEntry, [{
+    key: "render",
+    value: function render() {
+      var entries = [];
+
+      var _iterator9 = _createForOfIteratorHelper(this.props.command_list),
+          _step9;
+
+      try {
+        for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
+          var entry = _step9.value;
+          entries.push( /*#__PURE__*/_react["default"].createElement(CommandEntry, entry));
+        }
+      } catch (err) {
+        _iterator9.e(err);
+      } finally {
+        _iterator9.f();
+      }
+
+      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("h5", {
+        style: {
+          marginTop: 20
+        }
+      }, this.props.category_name), entries, /*#__PURE__*/_react["default"].createElement(_core.Divider, null));
+    }
+  }]);
+
+  return CategoryEntry;
+}(_react["default"].Component);
+
+CategoryEntry.propTypes = {
+  category_name: _propTypes["default"].string,
+  command_list: _propTypes["default"].array
+};
+
+var CommandEntry = /*#__PURE__*/function (_React$Component8) {
+  _inherits(CommandEntry, _React$Component8);
+
+  var _super8 = _createSuper(CommandEntry);
+
+  function CommandEntry(props) {
+    var _this10;
+
+    _classCallCheck(this, CommandEntry);
+
+    _this10 = _super8.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this10));
+    _this10.state = {
+      isOpen: false
+    };
+    return _this10;
+  }
+
+  _createClass(CommandEntry, [{
+    key: "_handleClick",
+    value: function _handleClick() {
+      this.setState({
+        isOpen: !this.state.isOpen
+      });
+    }
+  }, {
+    key: "_doCopy",
+    value: function _doCopy() {
+      if (navigator.clipboard && window.isSecureContext) {
+        if (this.props.kind == "method" || this.props.kind == "attribute") {
+          navigator.clipboard.writeText("self." + this.props.signature);
+        } else {
+          navigator.clipboard.writeText(this.props.signature);
+        }
+
+        (0, _toaster.doFlash)({
+          message: "command copied",
+          "timeout": 2000,
+          "alert_type": "alert-success"
+        });
+      }
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var md_style = {
+        "display": "block",
+        // "maxHeight": this.state.md_height,
+        "fontSize": 13
+      };
+      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.Button, {
+        minimal: true,
+        outlined: this.state.isOpen,
+        className: "bp3-monospace-text",
+        onClick: this._handleClick
+      }, this.props.signature), /*#__PURE__*/_react["default"].createElement(_core.Collapse, {
+        isOpen: this.state.isOpen
+      }, /*#__PURE__*/_react["default"].createElement("div", {
+        style: {
+          maxWidth: 700,
+          position: "relative"
+        }
+      }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+        style: {
+          position: "absolute",
+          right: 5,
+          top: 5,
+          marginTop: 0
+        },
+        icon: "duplicate",
+        small: true,
+        handleClick: this._doCopy
+      }), /*#__PURE__*/_react["default"].createElement("div", {
+        style: md_style,
+        className: "notes-field-markdown-output bp3-button bp3-outlined",
+        dangerouslySetInnerHTML: {
+          __html: this.props.body
+        }
+      }))));
+    }
+  }]);
+
+  return CommandEntry;
+}(_react["default"].Component);
+
+CommandEntry.propTypes = {
+  name: _propTypes["default"].string,
+  signature: _propTypes["default"].string,
+  body: _propTypes["default"].string,
+  kind: _propTypes["default"].string
 };
