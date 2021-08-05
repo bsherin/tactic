@@ -8,7 +8,6 @@ import uuid
 import pymongo
 from flask import render_template, request, jsonify, url_for
 from flask_login import login_required, current_user
-from integrated_docs import api_dict_by_category, ordered_api_categories
 import tactic_app
 from tactic_app import app, db, socketio
 from resource_manager import ResourceManager, LibraryResourceManager
@@ -218,15 +217,7 @@ class TileManager(LibraryResourceManager):
 
     def view_in_creator(self, module_name, line_number=0):
         self.clear_old_recent_history(module_name)
-        revised_api_dlist = []
         user_obj = current_user
-        for cat in ordered_api_categories:
-            the_list = api_dict_by_category[cat]
-            new_list = []
-            for api_item in the_list:
-                new_list.append({"name": api_item["name"]})
-            if len(new_list) > 0:
-                revised_api_dlist.append({"cat_name": cat, "cat_list": new_list})
         the_content = self.initialize_module_viewer_container(module_name)
         create_ready_block(the_content["rb_id"], user_obj.username, [the_content["module_viewer_id"], "client"],
                            the_content["module_viewer_id"],)

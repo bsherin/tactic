@@ -25,3 +25,4 @@ Flask-SocketIO
 kombu
 textblob
 wikipedia-api
+docutils

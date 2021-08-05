@@ -30,10 +30,6 @@ Refreshing
 
         Start the spinning animation on the tile
 
-    .. py:method:: start_spinner()
-
-        Start the spinning animation on the tile
-
     .. py:method:: stop_spinner()
 
         Stop the spinning animation on the tile.
@@ -44,6 +40,7 @@ Refreshing
         then ``render_content`` is called to generate the html to be displayed.
 
         :param str new_html: The html to display on the front of the tile.
+
 
     .. py:method:: spin_and_refresh()
 
@@ -92,7 +89,7 @@ Data Access
 
         Synonym: ``gddl``
 
-    .. py:method:: get_column_names (document_name)
+    .. py:method:: get_column_names(document_name)
 
         Returns a list containing the column names of the specified document. (Table documents only.)
 
@@ -108,7 +105,7 @@ Data Access
     .. py:method:: get_row(document_name, row_id)
 
         For table documents, the specified row is returned. For freeform
-        documents, the specified line is returned. **self.get_line** is a
+        documents, the specified line is returned. ``self.get_line`` is a
         synonym.
 
         Synonym: ``gr``
@@ -116,8 +113,8 @@ Data Access
     .. py:method:: get_cell(document_name, row_id, column_name)
 
         Returns the text in the specified cell.
-        **row_id** should be the same as the value in \_\_id\_\_.
-        Right now we are also assuming that is the same as the row number in the table. (Table documents only.)
+
+        :param int row_id: should be the same as the value in \_\_id\_\_. Right now we are also assuming that is the same as the row number in the table. (Table documents only.)
 
         Synonym: ``gc``
 
@@ -153,82 +150,101 @@ Data Setting
     `object-oriented API <Object-Oriented-API.html# Accessing and manipulating the collection>`__.
     The object-oriented interface is a bit more intuitive. However, the commands listed here will often produce tiles that run more quickly.
 
-    .. py:function:: set_cell(document_name, row_id, column_name, text, cellchange=True)
+    .. py:method:: set_cell(document_name, row_id, column_name, text, cellchange=True)
 
         Sets the text in the specified cell. By default generates a CellChange
-        event. (Table documents only.) **row_id** should be the same as the value in \__id__.
+        event.
+
+        :param int row_id: Should be the same as the value in \_\_id\_\_.
+
+        (Table documents only.)
 
         Synonym: ``sc``
 
-    .. py:function:: add_document(document_name, column_names, list_of_dicts)
+    .. py:method:: add_document(document_name, column_names, list_of_dicts)
 
-        Adds a new table document to the collection. **list_of_dicts** is a list of dictionaries
-        corresponding to the rows in the new document. Note that if the name of an existing
+        Adds a new table document to the collection. Note that if the name of an existing
         document is given that document is overwritten.
 
-    .. py:function:: remove_document(document_name)
+        :param list list_of_dicts: A list of dictionaries corresponding to the rows in the new document.
+
+    .. py:method:: remove_document(document_name)
 
         Removes a document from the collection.
 
-    .. py:function:: add_freeform_document(document_name, doc_text)
+    .. py:method:: add_freeform_document(document_name, doc_text)
 
         Adds a new freeform document to the collection. Note that if the name of an existing
         document is given that document is overwritten.
 
-    .. py:function:: insert_row(document_name, index, row_as_dict)
+    .. py:method:: insert_row(document_name, index, row_as_dict)
 
         Insert a new row in a document at the specified index.
 
-    .. py:function:: delete_row(document_name, index)
+    .. py:method:: delete_row(document_name, index)
 
         Delete a row from a document.
 
-    .. py:function:: rename_document(old name, newname)
+    .. py:method:: rename_document(old name, newname)
 
         Rename a document in the collection.
 
     .. py:method:: set_document(document_name, new_data, cellchange=False)
 
-        This is a general utility for setting document data. For table documents, **new_data**
-        should be a dictionary where the keys are row ids and the values are row dictionaries.
-        These row dictionaries should have keys that correspond to columns in the data table.
-        If only some data is specified in **new_data_dict** then only those values will be changed.
-        For freeform documents, **new_data** should be a string.
+        This is a general utility for setting document data.
+
+        :param dictorstring new_data: For table documents this should be a dictionary where the keys are row ids and the values are row dictionaries.
+            These row dictionaries should have keys that correspond to columns in the data table.
+            If only some data is specified then only those values will be changed.
+            For freeform documents, this should be a string.
+
+
 
         Synonym: ``sd``
 
     .. py:method:: set_column_data(document_name, column_name, column_data, cellchange=False)
 
-        Sets the column in a document using column_data. column_data can be
-        either a dict or a list. If it’s a dict, then the keys are interpreted
-        as the row_id. If it’s a list, then the ordinal position in the list is
-        interpreted as the row_id. (Table documents only.)
+        Sets the column in a document.
+
+        :param dictorlist column_data: This can be either a dict or a list. If it’s a dict, then the keys are interpreted
+            as the row_id. If it’s a list, then the ordinal position in the list is
+            interpreted as the row_id.
+
+        (Table documents only.)
 
         Synonym: ``scd``
 
     .. py:method:: set_document_metadata(document_name, metadata_dict)
 
-        Sets the document_level metadata for the given document. **metadata_dict** should be a dictionary.
-        Note that certain keys are reserved and cannot appear as keys in the metadata dict: "_id", "file_id", "name",
-        "my_class_for_recreate", "table_spec", "data_text", "length", "data_rows","header_list", "number_of_rows".
+        Sets the document_level metadata for the given document.
+
+        :param dict metadata_dict: Should be a dictionary. Note that certain keys are reserved and cannot appear as keys in
+            the metadata dict: "_id", "file_id", "name",
+            "my_class_for_recreate", "table_spec", "data_text", "length", "data_rows","header_list", "number_of_rows".
 
         Synonym: ``sdm``
 
     .. py:method:: set_cell_background(document_name, row_id, column_name, color)
 
         Sets the the background color of the specified cell to the given color.
-        The color is used in an expression of the form: $(el).css("background-color", color).
+        The color is used in an expression of the form: ``$(el).css("background-color", color)``.
         So color has to be something that can appear in that expression.
-        ColorMapper.color_from_val() generates the right sort of thing.
-        **row_id** should be the same as the value in \_\_id\_\_.
-        Right now we are also assuming that is the same as the row number in the table. (Table documents only.)
+        ``ColorMapper.color_from_val()`` generates the right sort of thing.
+
+        :param int row_id: Should be the same as the value in \_\_id\_\_.
+            Right now we are also assuming that is the same as the row number in the table.
+
+        (Table documents only.)
 
         Synonym: ``scb``
 
     .. py:method:: color_cell_text(document_name, row_id, column_name, tokenized_text, color_dict)
 
-        Highlights the words in the target cell. Color dict has a dictionary
-        that maps words to colors. (Table documents only.)
+        Highlights the words in the target cell.
+
+        :param dict color_dict: A dictionary that maps words to colors.
+
+        (Table documents only.)
 
         Synonym: ``cct``
 
@@ -241,24 +257,29 @@ Filter-And-Iterate
 
     .. py:method:: get_matching_documents(filter_function)
 
-        **filter\_function** should take a dict, corresponding to a document's metadata, as an argument,
-        and should output a boolean.  Returns a list of the matching documents.
+        :param func filter_function: Should take a dict, corresponding to a document's metadata, as an argument,
+            and should output a boolean.  Returns a list of the matching documents.
 
     .. py:method:: get_matching_rows(filter_function, document_name)
 
-        For table docs, **filter\_function** should take a dict (corresponding to a row) as an argument,
-        and should output a boolean. If document_name is missing or None then this will
-        look across all documents in the collection. Returns a list of the matching rows.
-        For freeform docs, **filter\_function** should take a string (corresponding to a line)
-        as an argument, and should return a boolean. It returns a list of the matching lines.
+        :param func filter\_function: For table docs, this should take a dict (corresponding to a row) as an argument,
+            and should output a boolean. For freeform docs, this functin should take a string (corresponding to a line)
+            as an argument, and should return a boolean.
+
+        :param str document_name: If this is missing or ``None`` then this will look across all documents
+            in the collection.
+
+        Returns a list of the matching rows or lines.
 
         Synonym: ``gmr``
 
     .. py:method:: display_matching_rows(filter_function, document_name)
 
         Will cause the table to only display rows matching the filter_function.
-        If document_name is missing or None then this will apply to all
-        documents in the collection. (Table documents only.)
+
+        :param str document_name: If this is missing or ``None`` then this will apply to all documents in the collection.
+
+        (Table documents only.)
 
         Synonym: ``dmr``
 
@@ -282,7 +303,11 @@ Filter-And-Iterate
 
     .. py:method:: apply_to_rows(func, document_name=None, cellchange=False)
 
-        Applies the specified func to each row. func should expect a dict corresponding to the row as an input and it should return a dict corresponding to the modified row as output. If document_name is missing or None then this will apply to all documents in the collection.
+        Applies the specified func to each row.
+
+        :param func func: This should expect a dict corresponding to the row as an input and
+            it should return a dict corresponding to the modified row as output.
+        :param str document_name: If this is missing or ``None`` then this will apply to all documents in the collection.
 
         (Table documents only.)
 
@@ -292,8 +317,8 @@ Filter-And-Iterate
 
 .. category_start
 
-Object API
-----------
+Object API-related
+-----------------
 
     The commands ``Library``, ``Collection``, ``Tiles``, and ``Pipes`` return objects that provide direct access
     to elements of the object-oriented API. Note that you do not type ``self`` before these commands. This is documented
@@ -308,14 +333,15 @@ Object API
 
     .. py:method:: create_collection_object(doc_type, doc_list=None)
 
-        Creates a new :py:class:`DetachedTacticCollection` object. *doc_list*, if provided
-        must be a list of :py:class:`DetachedTacticDocument` objects.
+        Creates a new :py:class:`DetachedTacticCollection` object.
+
+        :param list doc_list: If provided, this must be a list of :py:class:`DetachedTacticDocument` objects.
 
     .. py:method:: create_document(doc_data=None, docname="document1", metadata=None)
 
         Creates a new :py:class:`DetachedTacticDocument` object.
 
-        *doc_data* can be either pandas DataFrame, a list of :py:class:`TacticRow` objects, or a list of dicts.
+        :param dforlist doc_data: This can be either pandas DataFrame, a list of :py:class:`TacticRow` objects, or a list of dicts.
 
     .. py:method:: create_freeform_document(docname="document1", lines=None, metadata=None)
 
@@ -324,7 +350,9 @@ Object API
 
     .. py:method:: create_row(row_dict=None)
 
-        Creates a new :py:class:`DetachedTacticRow` object. *row_dict* and be a dict or a pandas Series.
+        Creates a new :py:class:`DetachedTacticRow` object.
+
+        :param dfordict row_dict: This be a dict or a pandas Series.
 
     .. py:method:: create_line(txt=None)
 
@@ -345,22 +373,25 @@ Other TileBase
 
     .. py:method:: create_collection(name, doc_dict, doc_type="table", doc_metadata=None, header_list_dict=None, collection_metadata=None)
 
-        Creates a new collection in the user’s resource library. **name** is the
-        name for the new collection. **doc_type** specifies whether the type of
-        the document is table or freeform. **doc_dict** is a dictionary in which
-        the keys are names for the individual documents that will comprise the
-        new collection. For freeform documents, the values of this dictionary
-        are strings. For tables, the values are a list of rows, with each row
-        being a dict.
+        Creates a new collection in the user’s resource library.
 
-        **doc_metadata** is a dictionary that holds any document-level metadata
-        you’d like to add. The keys are document names and the values are
-        dictionaries of keys and values.
+        :param str name: Name for the new collection.
 
-        **header_list_dict** is a dictionary of lists. The keys are document names and each value is a list
-        of column names. This allows you to specify the order in which columns will appear in a table.
+        :param str doc_type: Specifies whether the type of the document is table or freeform.
 
-        **collection_metadata** is a dictionary of metadata to be associated with the collection as a whole.
+        :param dict doc_dict: A dictionary in which the keys are names for the individual documents that will comprise the
+            new collection. For freeform documents, the values of this dictionary
+            are strings. For tables, the values are a list of rows, with each row
+            being a dict.
+
+        :param dict doc_metadata: is a dictionary that holds any document-level metadata
+            you’d like to add. The keys are document names and the values are
+            dictionaries of keys and values.
+
+        :param dict header_list_dict: is a dictionary of lists. The keys are document names and each value is a list
+            of column names. This allows you to specify the order in which columns will appear in a table.
+
+        :param dict collection_metadata: is a dictionary of metadata to be associated with the collection as a whole.
 
         Synonym: ``cc``
 
@@ -388,12 +419,13 @@ Other TileBase
 
         Adds the given html to the log (formerly called the console).
 
-        If ``force_open`` is True then the Log will be opened if it was closed.
-        If ``is_error`` is True then the new panel that is created in the Log
-        will be an error panel. This means it will have a red header. It also
-        means that, if the user resets the log, then the panel will be deleted.
+        :param bool force_open: If True then the Log will be opened if it was closed.
 
-        The optional ``summary`` parameter is a line of text to be displayed when the log item is shrunk.
+        :param bool is_error: If True then the new panel that is created in the Log
+            will be an error panel. This means it will have a red header. It also
+            means that, if the user resets the log, then the panel will be deleted.
+
+        :param str summary: If provided a line of text to be displayed when the log item is shrunk.
 
         Synonyms: ``dm``, ``display_message``
 
@@ -434,52 +466,52 @@ Other TileBase
         advance, the name of one of your resources.
 
         Finally, there are alternatives to all of these command in the object-oriented interface. For example
-        `Library.lists[list_name]` returns the corresponding list from the users library.
+        ``Library.lists[list_name]`` returns the corresponding list from the users library.
 
-        Synonyms: ``gulist``, ``gufunc``, ``guclass``, ``gucol`` for get_user_list, get_user_function,
-        get_user_class, and get_user_collection respectively.
+        Synonyms: ``gulist``, ``gufunc``, ``guclass``, ``gucol`` for ``get_user_list``, ``get_user_function``,
+        ``get_user_class``, and ``get_user_collection`` respectively.
 
     .. py:method:: html_table(data, title=None, click_type="word-clickable", sortable=True, sidebyside=False, has_header=True, max_rows=None, header_style=None, body_style=None, column_order=None, include_row_labels=True)
 
-        Returns html for a table. ``data`` can be given in a number of forms. It can be a a pandas DataFrame, a list of
-        dicts, an nltk FreqDist, a list of lists, a dict, or a pandas Series.
+        Returns html for a table.
 
-        If the data is a dict or a Series, the table produced has two columns, one corresponding to the keys, the other
-        to the values.
+        :param many data: Can be given in a number of forms. It can be a a pandas DataFrame, a list of
+            dicts, an nltk FreqDist, a list of lists, a dict, or a pandas Series.
+            If the data is a dict or a Series, the table produced has two columns, one corresponding to the keys, the other
+            to the values.
 
-        *title* is an optional title.
+        :param str title: An optional title.
 
-        *click_type* can be can be ``"word-clickable"``,
-        ``"element-clickable"``, or ``"row-clickable"``. If it’s word-clickable
-        or element-clickable, then every cell in the table is assigned the
-        corresponding class, and hence will lead to generating a TileWordClick
-        or TileElementClick event when clicked. If the click_type is
-        row-clickable, then the row is assigned a row-clickable class (and will
-        lead to the generation of TileRowClick events.) These various events can
-        then be handled by the appropriate handlers in a tile:
-        ``handled_tile_word_click``, ``handle_tile_element_click``, or
-        ``handle_tile_row_click``.
+        :param str click_type: Can be ``"word-clickable"``,
+            ``"element-clickable"``, or ``"row-clickable"``. If it’s word-clickable
+            or element-clickable, then every cell in the table is assigned the
+            corresponding class, and hence will lead to generating a TileWordClick
+            or TileElementClick event when clicked. If the click_type is
+            row-clickable, then the row is assigned a row-clickable class (and will
+            lead to the generation of TileRowClick events.) These various events can
+            then be handled by the appropriate handlers in a tile:
+            ``handled_tile_word_click``, ``handle_tile_element_click``, or
+            ``handle_tile_row_click``.
 
-        If *sortable* is True, then the header can be clicked to sort by a column.
+        :param bool sortable: If True, then the header can be clicked to sort by a column.
 
-        If *sidebyside* is False, then the table will expand to take up the entire width available.
+        :param bool sidebyside: If False, then the table will expand to take up the entire width available.
 
-        *has_header* only matters if data is in the form of a list of lists. If it is True, and the data is in the
-        form of a list of lists, then the first list is treates as headers.
+        :param bool has_header: This only matters if data is in the form of a list of lists. If it is True, and the data is in the
+            form of a list of lists, then the first list is treates as headers.
 
-        *max_rows* specifies the max number of rows to be included in the table. It only matters if the data is
-        a dataframe, a list of dicts or a FreqDist.
+        :param bool max_rows: Specifies the max number of rows to be included in the table. It only matters if the data is
+            a dataframe, a list of dicts or a FreqDist.
 
+        :param str header_style:
+        :param str body_style: Optional styles that will be applied to header cells and body cells respectively.
 
-        ``header_style`` and ``body_style`` are optional styles that will be applied to header cells and body cells
-        respectively.
+        :param list column_order: If not None, then it specifies an order for the columns. It only matters if *data* is
+            a DataFrame or a list of dicts.
 
-        If *column_order* is not None, then it specifies an order for the columns. It only matters if *data* is
-        a DataFrame or a list of dicts.
-
-        *include_row_labels* only matters if *data* is a DataFrame or a list of dicts. If *data* is a DataFrame, then
-        the row labels will be included as the first column in the table. If it is a list of dicts, then the rows will
-        be numbered.
+        :param bool include_row_labels: Only matters if *data* is a DataFrame or a list of dicts. If *data* is a DataFrame, then
+            the row labels will be included as the first column in the table. If it is a list of dicts, then the rows will
+            be numbered.
 
 
     .. py:method:: build_html_table_from_data_list(data_list, title=None, click_type="word-clickable", sortable=True, sidebyside=False, has_header=True header_style=None, body_style=None)
@@ -488,23 +520,24 @@ Other TileBase
         first row is treated as the heading row. A title can optionally be
         given. If *has_header* is True, then the first list is treated as headers.
 
-        ``click_type`` can be ``"word-clickable"``,
-        ``"element-clickable"``, or ``"row-clickable"``. If it’s word-clickable
-        or element-clickable, then every cell in the table is assigned the
-        corresponding class, and hence will lead to generating a TileWordClick
-        or TileElementClick event when clicked. If the click_type is
-        row-clickable, then the row is assigned a row-clickable class (and will
-        lead to the generation of TileRowClick events.) These various events can
-        then be handled by the appropriate handlers in a tile:
-        ``handled_tile_word_click``, ``handle_tile_element_click``, or
-        ``handle_tile_row_click``.
+        :param str click_type: Can be ``"word-clickable"``,
+            ``"element-clickable"``, or ``"row-clickable"``. If it’s word-clickable
+            or element-clickable, then every cell in the table is assigned the
+            corresponding class, and hence will lead to generating a TileWordClick
+            or TileElementClick event when clicked. If the click_type is
+            row-clickable, then the row is assigned a row-clickable class (and will
+            lead to the generation of TileRowClick events.) These various events can
+            then be handled by the appropriate handlers in a tile:
+            ``handled_tile_word_click``, ``handle_tile_element_click``, or
+            ``handle_tile_row_click``.
 
-        If *sortable* is True, then the header can be clicked to sort by a column.
+        :param bool sortable: If true, then the header can be clicked to sort by a column.
 
-        If *sidebyside* is False, then the table will expand to take up the entire width available.
+        :param bool sidebyside: If False, then the table will expand to take up the entire width available.
 
-        ``header_style`` and ``body_style`` are optional styles that will be applied to header cells and body cells
-        respectively.
+        :param str header_style:
+
+        :param str body_style: Optional styles that will be applied to header cells and body cells respectively.
 
         Synonym: ``bht``
 
@@ -540,15 +573,17 @@ Plots
     .. py:method:: create_figure_html(use_svg=True)
 
         Given a MplFigure instance this generates html that can be included in a
-        tile to display the figure. If ``use_svg`` is True, then this produces an svg element that is embedded directly
-        in the page. If it's false, then the html produced contains a link that references a png file hosted on the server.
+        tile to display the figure.
+
+        :param bool use_svg: If  True, then this produces an svg element that is embedded directly.
+            in the page. If it's false, then the html produced contains a link that references a png file hosted on the server.
 
     .. py:method:: create_pyplot_html(use_svg=True)
 
         When using matplotlib.pyplot to work in interactive mode, use this alternative
-        command to generate html to display the figure. If ``use_svg`` is True, then this produces an svg
-        element that is embedded directly
-        in the page. If it's false, then the html produced contains a link that references a png file hosted on the server.
+        command to generate html to display the figure.
+        :param bool use_svg: If  True, then this produces an svg element that is embedded directly.
+            in the page. If it's false, then the html produced contains a link that references a png file hosted on the server.
 
         The following code will work in the log or a notebook:
 
@@ -601,10 +636,15 @@ Global
 .. py:method:: ColorMapper.color_from_val(val)
 
     ColorMapper is a class for creating mappings between values and colors.
-    ColorMapper() creates the class instance. bottom_val and top_val specify
-    the value range. color_palette_name is the name of the matplotlib
-    color_palette. These can be selected by the user using the
-    palette_select option type.
+    ColorMapper() creates the class instance.
+
+    :param float bottom_val:
+
+    :param float top_val: Specify the value range.
+
+    :param str color_palette_name: iT name of the matplotlib
+        color_palette. These can be selected by the user using the
+        palette_select option type.
 
 .. py:method:: global_import(module_name)
 

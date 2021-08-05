@@ -297,6 +297,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     _this.vp_ref = /*#__PURE__*/_react["default"].createRef();
     _this.hp_ref = /*#__PURE__*/_react["default"].createRef();
     _this.methods_ref = /*#__PURE__*/_react["default"].createRef();
+    _this.commands_ref = /*#__PURE__*/_react["default"].createRef();
     _this.draw_plot_bounding_ref = /*#__PURE__*/_react["default"].createRef();
     _this.last_save = {};
     _this.dpObject = null;
@@ -310,7 +311,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         "metadata": true,
         "options": false,
         "exports": false,
-        "methods": false
+        "methods": false,
+        "commands": false
       },
       search_string: "",
       render_content_code: _this.props.render_content_code,
@@ -1104,6 +1106,14 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         refresh_required: this.state.methodsTabRefreshRequired
       }));
 
+      var commands_height = this.get_height_minus_top_offset(this.commands_ref, 128, 128);
+
+      var commands_panel = /*#__PURE__*/_react["default"].createElement(_creator_modules_react.CommandsModule, {
+        foregrounded: this.state.foregrounded_panes["commands"],
+        available_height: commands_height,
+        commands_ref: this.commands_ref
+      });
+
       var right_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
         id: "creator-resources",
         className: "d-block mt-2"
@@ -1128,6 +1138,10 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         id: "methods",
         title: "methods",
         panel: methods_panel
+      }), /*#__PURE__*/_react["default"].createElement(_core.Tab, {
+        id: "commands",
+        title: "tactic api",
+        panel: commands_panel
       }))));
 
       var outer_style = {

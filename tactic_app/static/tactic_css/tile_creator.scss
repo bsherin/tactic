@@ -29,44 +29,72 @@
 
 
 #creator-resources {
-        height: 100%;
+  height: 100%;
 
-        .tab-pane {
-            padding: 10px;
-            border-style: solid;
-            border-color: rgb(221, 221, 221);
-            border-width: 1px;
-            margin-right: 10px;
-            height: 100%
-        }
+  .tab-pane {
+    padding: 10px;
+    border-style: solid;
+    border-color: rgb(221, 221, 221);
+    border-width: 1px;
+    margin-right: 10px;
+    height: 100%
+  }
 
-        .tab-content {
-            height: 100%;
-            padding-bottom: 25px
-        }
+  .tab-content {
+      height: 100%;
+      padding-bottom: 25px
+  }
 
-        .nav-tabs {
-            border-bottom: none;
-        }
+  .nav-tabs {
+      border-bottom: none;
+  }
 
-        .form-inline label {
-            margin-bottom: 0;
-            margin-left: 4px
-        }
-        .indent-row {
-            margin-bottom: 10px
-        }
-        .resource-module {
-            margin: 0;
-        }
-        input {
-            width: 150px;
-        }
+  .form-inline label {
+      margin-bottom: 0;
+      margin-left: 4px
+  }
 
-        .form-row {
-            button {
-                align-self: flex-end;
-                margin: 7px;
-            }
-        }
+  .indent-row {
+      margin-bottom: 10px
+  }
+
+  .resource-module {
+      margin: 0;
+  }
+
+  input {
+      width: 150px;
+  }
+
+  .form-row {
+      button {
+          align-self: flex-end;
+          margin: 7px;
+      }
+  }
+
+  #commands-pane {
+    blockquote, dd {
+      margin-inline-start: 0
     }
+    .notes-field-markdown-output {
+      padding: 15px 25px 5px 15px;
+      border-top-left-radius: 0
+    }
+    button {
+      margin-top: 10px;
+      border-bottom: 0;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      max-width: 700px;
+    }
+
+    .docutils.literal {
+      color: #e83e8c;
+	  word-break: break-word;
+      font-family: monospace
+    }
+
+  }
+
+}

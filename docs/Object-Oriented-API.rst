@@ -9,13 +9,16 @@ special-purpose commands. However, in some cases, the code will run more slowly.
 .. category_start
 
 Accessing and manipulating the collection
------------------------------------------
+-----------------------------------------'
+
+.. py:data:: Collection
+
+    ``Collection`` is a global containing a TacticCollection object corresponding to
+     the collection in the current project. ``self.collection`` can also be used.
 
 .. py:class:: TacticCollection()
 
-    ``Collection`` and ``self.collection`` both return a TacticCollection object corresponding to the collection in the current project.
-
-    Iterating over this object iterates over the documents in the collection, giving TacticDocument objects.
+    Iterating over the TacticCollection object iterates over the documents in the collection, giving TacticDocument objects.
     These can also be accessed by name.
 
     .. code-block:: python
@@ -396,11 +399,13 @@ Communicating with other tiles
 
     These classes provide a means of communicating with tiles other than the one within which code is executing.
 
+.. py:data:: Tiles
+
+    ``Tiles`` is a global containing a RemoteTiles object corresponding to
+     the tiles in the current project. ``self.tiles`` can also be used.
+
 
 .. py:class:: RemoteTiles()
-
-    ``Tiles`` and ``self.tiles`` both return a :py:class:`RemoteTiles` object corresponding to the
-    collection in the current project.
 
     Iterating over this object iterates over the tiles in the project, giving RemoteTile objects.
     These can also be accessed by name.
@@ -460,12 +465,14 @@ Communicating with other tiles
 The Pipes Object
 ------------------------------
 
-    This class provides easy access to pipe values.
+.. py:data:: Pipes
 
+    ``Pipes`` is a global containing a RemotePipes object corresponding to
+     the pipes in the current project.
 
 .. py:class:: RemotePipes()
 
-    ``Pipes`` returns a :py:class:`RemotePipes` object
+    This class provides easy access to pipe values.
 
     .. code-block:: python
 
@@ -485,16 +492,36 @@ The Library Object
 
     These classes provide access to the resources in a user's library.
 
-.. py:class:: Library()
+.. py:data:: Library
+
+    ``Library`` is a global containing a TacticLibrary object corresponding to
+     the user's library.
+
+
+.. py:class:: TacticLibrary()
 
     ``Library`` returns a :py:class:`TacticLibrary` object corresponding to the user's library.
+
+    .. py:attribute:: collections
+
+        Returns a TacticCollectionSet object corresponding to a user's collection resources
+
+    .. py:attribute:: lists
+
+        Returns a TacticListSet object corresponding to a user's list resources
+
+    .. py:attribute:: functions
+
+        Returns a TacticFunctionSet object corresponding to a user's function resources
+
+    .. py:attribute:: classes
+
+        Returns a TacticClassnSet object corresponding to a user's class resources
 
     .. code-block:: python
 
         Library.lists  # Returns a TacticListSet object corresponding to a user's list resources
         Library.lists.names()  # Returns a list of the names of all list resources.
-        Library.collections  # Returns a TacticCollectionSet
-        Library.functions  # Returns a TacticFunctionSet
 
 
 .. py:class:: TacticListSet()
@@ -584,12 +611,15 @@ The Library Object
 The Settings Object
 -------------------
 
-    This class provides easy access to user's account-level settings.
+    This object provides easy access to user's account-level settings.
+
+.. py:data:: Settings
+
+    ``Settings`` is a global containing a TacticSettings object corresponding to
+     the user's settings.
 
 
-.. py:class:: Settings()
-
-    ``Pipes`` returns a :py:class:`TacticSettings` object
+.. py:class:: TacticSettings()
 
     .. code-block:: python
 

@@ -6,7 +6,6 @@ import copy
 from flask import render_template, request, jsonify, url_for
 from flask_login import login_required, current_user
 from tactic_app import app, db
-from integrated_docs import api_dict_by_category, api_dict_by_name, ordered_api_categories
 from exception_mixin import generic_exception_handler
 
 from library_views import tile_manager
@@ -83,10 +82,15 @@ def show_history_viewer(module_name):
 @app.route('/get_api_dict', methods=['GET', 'POST'])
 @login_required
 def get_api_dict():
+    print("*** in get_api_dict ***")
+    from integrated_docs import api_dict_by_category, api_dict_by_name, ordered_api_categories
+    from integrated_docs import object_api_dict_by_category, ordered_object_categories
+    print("*** back from import ***")
     return jsonify({"success": True, "api_dict_by_name": api_dict_by_name,
                     "api_dict_by_category": api_dict_by_category,
-                    "ordered_api_categories": ordered_api_categories})
-
+                    "ordered_api_categories": ordered_api_categories,
+                    "object_api_dict_by_category": object_api_dict_by_category,
+                    "ordered_object_categories": ordered_object_categories})
 
 @app.route('/show_tile_differ/<module_name>', defaults={'second_module_name': "none"})
 @app.route('/show_tile_differ/both_names/<module_name>/<second_module_name>')
