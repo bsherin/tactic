@@ -17,6 +17,8 @@ var _blueprint_toolbar = require("./blueprint_toolbar.js");
 
 var _communication_react = require("./communication_react.js");
 
+var _library_widgets = require("./library_widgets.js");
+
 var _blueprint_react_widgets = require("./blueprint_react_widgets.js");
 
 var _toaster = require("./toaster.js");
@@ -24,6 +26,8 @@ var _toaster = require("./toaster.js");
 var _lodash = _interopRequireDefault(require("lodash"));
 
 var _utilities_react = require("./utilities_react");
+
+var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -562,6 +566,7 @@ var CommandsModule = /*#__PURE__*/function (_React$Component5) {
     _this7 = _super5.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this7));
     _this7.state = {
+      search_string: "",
       api_dict: {},
       ordered_categories: [],
       object_api_dict: {},
@@ -584,13 +589,20 @@ var CommandsModule = /*#__PURE__*/function (_React$Component5) {
       });
     }
   }, {
+    key: "_updateSearchState",
+    value: function _updateSearchState(new_state) {
+      this.setState(new_state);
+    }
+  }, {
     key: "render",
     value: function render() {
       var commands_pane_style = {
         "marginTop": 10,
         "marginLeft": 10,
-        "marginRight": 10
+        "marginRight": 10,
+        "paddingTop": 10
       };
+      var menu_items = [];
       var object_items = [];
 
       var _iterator5 = _createForOfIteratorHelper(this.state.ordered_object_categories),
@@ -599,10 +611,14 @@ var CommandsModule = /*#__PURE__*/function (_React$Component5) {
       try {
         for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
           var category = _step5.value;
-          object_items.push( /*#__PURE__*/_react["default"].createElement(ObjectCategoryEntry, {
+
+          var res = /*#__PURE__*/_react["default"].createElement(ObjectCategoryEntry, {
             category_name: category,
+            search_string: this.state.search_string,
             class_list: this.state.object_api_dict[category]
-          }));
+          });
+
+          object_items.push(res);
         }
       } catch (err) {
         _iterator5.e(err);
@@ -618,10 +634,14 @@ var CommandsModule = /*#__PURE__*/function (_React$Component5) {
       try {
         for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
           var _category = _step6.value;
-          command_items.push( /*#__PURE__*/_react["default"].createElement(CategoryEntry, {
+
+          var _res = /*#__PURE__*/_react["default"].createElement(CategoryEntry, {
             category_name: _category,
+            search_string: this.state.search_string,
             command_list: this.state.api_dict[_category]
-          }));
+          });
+
+          command_items.push(_res);
         }
       } catch (err) {
         _iterator6.e(err);
@@ -635,13 +655,26 @@ var CommandsModule = /*#__PURE__*/function (_React$Component5) {
         className: "d-flex flex-column",
         style: commands_pane_style
       }, /*#__PURE__*/_react["default"].createElement("div", {
+        style: {
+          display: "flex",
+          justifyContent: "flex-end",
+          marginRight: 25
+        }
+      }, /*#__PURE__*/_react["default"].createElement(_library_widgets.SearchForm, {
+        update_search_state: this._updateSearchState,
+        search_string: this.state.search_string
+      })), /*#__PURE__*/_react["default"].createElement("div", {
         ref: this.props.commands_ref,
         style: {
           fontSize: 13,
           overflow: "auto",
           height: this.props.available_height
         }
-      }, /*#__PURE__*/_react["default"].createElement("h4", null, "Object api"), object_items, /*#__PURE__*/_react["default"].createElement("h4", null, "TileBase commands (accessed with self.)"), command_items));
+      }, /*#__PURE__*/_react["default"].createElement("h4", null, "Object api"), object_items, /*#__PURE__*/_react["default"].createElement("h4", {
+        style: {
+          marginTop: 20
+        }
+      }, "TileBase methods (accessed with self)"), command_items));
     }
   }]);
 
@@ -653,6 +686,10 @@ CommandsModule.propTypes = {
   commands_ref: _propTypes["default"].object,
   available_height: _propTypes["default"].number
 };
+
+function stringIncludes(str1, str2) {
+  return str1.toLowerCase().includes(str2.toLowerCase());
+}
 
 var ObjectCategoryEntry = /*#__PURE__*/function (_React$Component6) {
   _inherits(ObjectCategoryEntry, _React$Component6);
@@ -673,6 +710,13 @@ var ObjectCategoryEntry = /*#__PURE__*/function (_React$Component6) {
     key: "render",
     value: function render() {
       var classes = [];
+      var show_whole_category = false;
+      var show_category = false;
+
+      if (this.props.search_string == "" || stringIncludes(this.props.category_name, this.props.search_string)) {
+        show_whole_category = true;
+        show_category = true;
+      }
 
       var _iterator7 = _createForOfIteratorHelper(this.props.class_list),
           _step7;
@@ -681,8 +725,17 @@ var ObjectCategoryEntry = /*#__PURE__*/function (_React$Component6) {
         for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
           var class_entry = _step7.value;
           var entries = [];
+          var show_class = false;
 
           if (class_entry[2] == "class") {
+            var show_whole_class = false;
+
+            if (show_whole_category || stringIncludes(class_entry[0], this.props.search_string)) {
+              show_whole_class = true;
+              show_category = true;
+              show_class = true;
+            }
+
             var _iterator8 = _createForOfIteratorHelper(class_entry[1]),
                 _step8;
 
@@ -690,7 +743,13 @@ var ObjectCategoryEntry = /*#__PURE__*/function (_React$Component6) {
               for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
                 var entry = _step8.value;
                 entry["kind"] = "class_" + entry["kind"];
-                entries.push( /*#__PURE__*/_react["default"].createElement(CommandEntry, entry));
+                var show_entry = false;
+
+                if (show_whole_class || stringIncludes(entry.signature, this.props.search_string)) {
+                  entries.push( /*#__PURE__*/_react["default"].createElement(CommandEntry, entry));
+                  show_class = true;
+                  show_category = true;
+                }
               }
             } catch (err) {
               _iterator8.e(err);
@@ -698,14 +757,21 @@ var ObjectCategoryEntry = /*#__PURE__*/function (_React$Component6) {
               _iterator8.f();
             }
 
-            classes.push( /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("h6", {
-              style: {
-                marginTop: 20
-              }
-            }, "class " + class_entry[0]), entries));
+            if (show_class) {
+              classes.push( /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("h6", {
+                style: {
+                  marginTop: 20,
+                  fontFamily: "monospace"
+                }
+              }, "class " + class_entry[0]), entries));
+            }
           } else {
             var _entry = class_entry[1];
-            classes.push( /*#__PURE__*/_react["default"].createElement(CommandEntry, _entry));
+
+            if (show_whole_category || stringIncludes(_entry.signature, this.props.search_string)) {
+              entries.push( /*#__PURE__*/_react["default"].createElement(CommandEntry, _entry));
+              show_category = true;
+            }
           }
         }
       } catch (err) {
@@ -714,11 +780,15 @@ var ObjectCategoryEntry = /*#__PURE__*/function (_React$Component6) {
         _iterator7.f();
       }
 
-      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("h5", {
-        style: {
-          marginTop: 20
-        }
-      }, this.props.category_name), classes, /*#__PURE__*/_react["default"].createElement(_core.Divider, null));
+      if (show_category) {
+        return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("h5", {
+          style: {
+            marginTop: 20
+          }
+        }, this.props.category_name), classes, /*#__PURE__*/_react["default"].createElement(_core.Divider, null));
+      } else {
+        return null;
+      }
     }
   }]);
 
@@ -727,7 +797,8 @@ var ObjectCategoryEntry = /*#__PURE__*/function (_React$Component6) {
 
 ObjectCategoryEntry.propTypes = {
   category_name: _propTypes["default"].string,
-  class_list: _propTypes["default"].array
+  class_list: _propTypes["default"].array,
+  search_string: _propTypes["default"].string
 };
 
 var CategoryEntry = /*#__PURE__*/function (_React$Component7) {
@@ -748,6 +819,14 @@ var CategoryEntry = /*#__PURE__*/function (_React$Component7) {
   _createClass(CategoryEntry, [{
     key: "render",
     value: function render() {
+      var show_whole_category = false;
+      var show_category = false;
+
+      if (this.props.search_string == "" || stringIncludes(this.props.category_name, this.props.search_string)) {
+        show_whole_category = true;
+        show_category = true;
+      }
+
       var entries = [];
 
       var _iterator9 = _createForOfIteratorHelper(this.props.command_list),
@@ -756,7 +835,11 @@ var CategoryEntry = /*#__PURE__*/function (_React$Component7) {
       try {
         for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
           var entry = _step9.value;
-          entries.push( /*#__PURE__*/_react["default"].createElement(CommandEntry, entry));
+
+          if (show_whole_category || stringIncludes(entry.signature, this.props.search_string)) {
+            show_category = true;
+            entries.push( /*#__PURE__*/_react["default"].createElement(CommandEntry, entry));
+          }
         }
       } catch (err) {
         _iterator9.e(err);
@@ -764,11 +847,15 @@ var CategoryEntry = /*#__PURE__*/function (_React$Component7) {
         _iterator9.f();
       }
 
-      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("h5", {
-        style: {
-          marginTop: 20
-        }
-      }, this.props.category_name), entries, /*#__PURE__*/_react["default"].createElement(_core.Divider, null));
+      if (show_category) {
+        return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("h5", {
+          style: {
+            marginTop: 20
+          }
+        }, this.props.category_name), entries, /*#__PURE__*/_react["default"].createElement(_core.Divider, null));
+      } else {
+        return null;
+      }
     }
   }]);
 
@@ -777,7 +864,8 @@ var CategoryEntry = /*#__PURE__*/function (_React$Component7) {
 
 CategoryEntry.propTypes = {
   category_name: _propTypes["default"].string,
-  command_list: _propTypes["default"].array
+  command_list: _propTypes["default"].array,
+  search_string: _propTypes["default"].string
 };
 
 var CommandEntry = /*#__PURE__*/function (_React$Component8) {
@@ -849,7 +937,7 @@ var CommandEntry = /*#__PURE__*/function (_React$Component8) {
           top: 5,
           marginTop: 0
         },
-        icon: "duplicate",
+        icon: "clipboard",
         small: true,
         handleClick: this._doCopy
       }), /*#__PURE__*/_react["default"].createElement("div", {
@@ -870,4 +958,121 @@ CommandEntry.propTypes = {
   signature: _propTypes["default"].string,
   body: _propTypes["default"].string,
   kind: _propTypes["default"].string
+};
+
+var ApiMenu = /*#__PURE__*/function (_React$Component9) {
+  _inherits(ApiMenu, _React$Component9);
+
+  var _super9 = _createSuper(ApiMenu);
+
+  function ApiMenu(props) {
+    var _this11;
+
+    _classCallCheck(this, ApiMenu);
+
+    _this11 = _super9.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this11));
+    _this11.state = {
+      currently_selected: null,
+      menu_created: false
+    };
+    return _this11;
+  }
+
+  _createClass(ApiMenu, [{
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      if (!this.state.menu_created && this.props.item_list.length > 0) {
+        this.setState({
+          current_selected: this.props.item_list[0].name,
+          menu_created: true
+        });
+      }
+    }
+  }, {
+    key: "componentDidUpdate",
+    value: function componentDidUpdate() {
+      if (!this.state.menu_created && this.props.item_list.length > 0) {
+        this.setState({
+          current_selected: this.props.item_list[0].name,
+          menu_created: true
+        });
+      }
+    }
+  }, {
+    key: "_buildMenu",
+    value: function _buildMenu() {
+      var choices = [];
+
+      var _iterator10 = _createForOfIteratorHelper(this.props.item_list),
+          _step10;
+
+      try {
+        for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
+          var item = _step10.value;
+
+          if (item.kind == "header") {
+            choices.push( /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, {
+              title: item.name
+            }));
+          } else {
+            choices.push( /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+              text: item.name
+            }));
+          }
+        }
+      } catch (err) {
+        _iterator10.e(err);
+      } finally {
+        _iterator10.f();
+      }
+
+      return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, choices);
+    }
+  }, {
+    key: "_handleChange",
+    value: function _handleChange(value) {
+      this.setState({
+        currently_selected: value
+      });
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var option_list = [];
+
+      var _iterator11 = _createForOfIteratorHelper(this.props.item_list),
+          _step11;
+
+      try {
+        for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
+          var item = _step11.value;
+          option_list.push(item.name);
+        }
+      } catch (err) {
+        _iterator11.e(err);
+      } finally {
+        _iterator11.f();
+      }
+
+      return (
+        /*#__PURE__*/
+        // <Popover minimal={true} content={this.state.the_menu} position={PopoverPosition.BOTTOM_LEFT}>
+        //     <Button text="jump to..." small={true} minimal={true}/>
+        // </Popover>
+        _react["default"].createElement(_blueprint_mdata_fields.BpSelect, {
+          options: option_list,
+          onChange: this._handleChange,
+          buttonIcon: "application",
+          value: this.state.currently_selected
+        })
+      );
+    }
+  }]);
+
+  return ApiMenu;
+}(_react["default"].Component);
+
+ApiMenu.propTypes = {
+  item_list: _propTypes["default"].array
 };

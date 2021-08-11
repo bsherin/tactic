@@ -244,10 +244,7 @@ var SearchForm = /*#__PURE__*/function (_React$Component3) {
         },
         autoCapitalize: "none",
         autoCorrect: "off"
-      }), /*#__PURE__*/_react["default"].createElement(_core.Button, {
-        onClick: this._handleClearSearch,
-        className: "ml-2"
-      }, "clear"), this.props.allow_search_metadata && /*#__PURE__*/_react["default"].createElement(_core.Switch, {
+      }), this.props.allow_search_metadata && /*#__PURE__*/_react["default"].createElement(_core.Switch, {
         label: "metadata",
         className: "ml-2",
         large: false,

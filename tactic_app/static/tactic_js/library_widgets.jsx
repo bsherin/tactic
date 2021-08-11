@@ -147,9 +147,6 @@ class SearchForm extends React.Component {
                                     autoCapitalize="none"
                                        autoCorrect="off"
                     />
-                    <Button onClick={this._handleClearSearch} className="ml-2">
-                            clear
-                    </Button>
 
                 {this.props.allow_search_metadata &&
                     <Switch label="metadata"
