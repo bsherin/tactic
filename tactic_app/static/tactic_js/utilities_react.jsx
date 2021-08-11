@@ -104,6 +104,21 @@ function scrollIntoView(element, container) {
   }
 }
 
+function scrollMeIntoView(element) {
+    let outer_element = element.parentNode.parentNode;
+    let scrolled_element = element.parentNode
+    let outer_height = outer_element.offsetHeight
+    let distance_from_top = element.offsetTop - outer_element.scrollTop - scrolled_element.offsetTop;
+    if (distance_from_top > (outer_height - 35)) {
+        let distance_to_move = distance_from_top - .5 * outer_height
+        outer_element.scrollTop += distance_to_move
+    }
+    else if (distance_from_top < 0) {
+        let distance_to_move = .25 * outer_height - distance_from_top
+        outer_element.scrollTop -= distance_to_move
+    }
+}
+
 function altScrollIntoView(element, container) {
     const containerTop = $(container).scrollTop();
     const containerBottom = containerTop + $(container).height();

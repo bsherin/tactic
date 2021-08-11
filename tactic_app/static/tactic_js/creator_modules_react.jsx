@@ -3,14 +3,16 @@
 import React from "react";
 import PropTypes from 'prop-types';
 
-import { Button, Card, Collapse, Divider } from "@blueprintjs/core";
+import { Button, Card, Collapse, Divider, Popover, PopoverPosition, Menu, MenuItem, MenuDivider } from "@blueprintjs/core";
 
 import {Toolbar} from "./blueprint_toolbar.js";
-import {postAjax} from "./communication_react.js"
+import {postAjax} from "./communication_react.js";
+import {SearchForm} from "./library_widgets.js";
 import {LabeledSelectList, LabeledFormField, BpOrderableTable, GlyphButton} from "./blueprint_react_widgets.js";
 import {doFlash} from "./toaster.js";
 import _ from 'lodash';
 import {doBinding} from "./utilities_react";
+import {BpSelect} from "./blueprint_mdata_fields";
 
 export {OptionModule, ExportModule, CommandsModule}
 
@@ -319,6 +321,7 @@ class CommandsModule extends React.Component {
         super(props);
         doBinding(this);
         this.state = {
+            search_string: "",
             api_dict: {},
             ordered_categories: [],
             object_api_dict: {},
@@ -336,32 +339,43 @@ class CommandsModule extends React.Component {
         })
     }
 
+    _updateSearchState(new_state) {
+        this.setState(new_state)
+    }
 
     render () {
         let commands_pane_style = {
             "marginTop": 10,
             "marginLeft": 10,
-            "marginRight": 10
+            "marginRight": 10,
+            "paddingTop": 10,
         };
-
+        let menu_items = [];
         let object_items = [];
         for (let category of this.state.ordered_object_categories) {
-            object_items.push(<ObjectCategoryEntry category_name={category}
-                                                     class_list={this.state.object_api_dict[category]}/>)
+            let res = <ObjectCategoryEntry category_name={category}
+                                           search_string={this.state.search_string}
+                                           class_list={this.state.object_api_dict[category]}/>
+            object_items.push(res)
         }
         let command_items = [];
         for (let category of this.state.ordered_categories) {
-            command_items.push(<CategoryEntry category_name={category}
-                                               command_list={this.state.api_dict[category]}/>)
-
+            let res = <CategoryEntry category_name={category}
+                                      search_string={this.state.search_string}
+                                      command_list={this.state.api_dict[category]}/>
+            command_items.push(res)
         }
         return (
 
             <Card elevation={1} id="commands-pane" className="d-flex flex-column" style={commands_pane_style}>
+                <div style={{display: "flex", justifyContent: "flex-end", marginRight: 25}}>
+                <SearchForm update_search_state={this._updateSearchState}
+                            search_string={this.state.search_string}/>
+                </div>
                 <div ref={this.props.commands_ref} style={{fontSize: 13, overflow: "auto", height: this.props.available_height}}>
                     <h4>Object api</h4>
                     {object_items}
-                    <h4>TileBase commands (accessed with self.)</h4>
+                    <h4 style={{marginTop: 20}}>TileBase methods (accessed with self)</h4>
                     {command_items}
                 </div>
             </Card>
@@ -375,6 +389,10 @@ CommandsModule.propTypes = {
     available_height: PropTypes.number
 };
 
+function stringIncludes(str1, str2) {
+    return str1.toLowerCase().includes(str2.toLowerCase())
+}
+
 class ObjectCategoryEntry extends React.Component {
     constructor(props) {
         super(props);
@@ -383,43 +401,71 @@ class ObjectCategoryEntry extends React.Component {
 
     render() {
         let classes = [];
+        let show_whole_category = false;
+        let show_category = false;
+        if (this.props.search_string == "" || stringIncludes(this.props.category_name, this.props.search_string)) {
+            show_whole_category = true;
+            show_category = true
+        }
         for (let class_entry of this.props.class_list) {
             let entries = [];
+            let show_class = false;
             if (class_entry[2] == "class") {
+                let show_whole_class = false;
+                if (show_whole_category || stringIncludes(class_entry[0], this.props.search_string)) {
+                    show_whole_class = true;
+                    show_category = true;
+                    show_class = true
+                }
                 for (let entry of class_entry[1]) {
                     entry["kind"] = "class_" + entry["kind"]
-                    entries.push(<CommandEntry {...entry}/>)
+                    let show_entry = false;
+                    if (show_whole_class || stringIncludes(entry.signature, this.props.search_string)) {
+                        entries.push(<CommandEntry {...entry}/>)
+                        show_class = true;
+                        show_category = true
+                    }
                 }
-                classes.push(
-                    <React.Fragment>
-                        <h6 style={{marginTop: 20}}>{"class " + class_entry[0]}</h6>
-                        {entries}
-                    </React.Fragment>
-                )
+                if (show_class) {
+                    classes.push(
+                        <React.Fragment>
+                            <h6 style={{marginTop: 20, fontFamily: "monospace"}}>{"class " + class_entry[0]}</h6>
+                            {entries}
+                        </React.Fragment>
+                    )
+                }
+
             }
             else {
                 let entry = class_entry[1];
-                classes.push(<CommandEntry {...entry}/>)
+                if (show_whole_category || stringIncludes(entry.signature, this.props.search_string)) {
+                    entries.push(<CommandEntry {...entry}/>)
+                    show_category = true
+                }
             }
-
-
         }
 
-        return (
-            <React.Fragment>
-                <h5 style={{marginTop: 20}}>
-                    {this.props.category_name}
-                </h5>
-                {classes}
-                <Divider/>
-            </React.Fragment>
-        )
+        if (show_category) {
+            return (
+                <React.Fragment>
+                    <h5 style={{marginTop: 20}}>
+                        {this.props.category_name}
+                    </h5>
+                    {classes}
+                    <Divider/>
+                </React.Fragment>
+            )
+        }
+        else {
+            return null
+        }
     }
 }
 
 ObjectCategoryEntry.propTypes = {
     category_name: PropTypes.string,
     class_list: PropTypes.array,
+    search_string: PropTypes.string,
 }
 
 class CategoryEntry extends React.Component {
@@ -429,25 +475,42 @@ class CategoryEntry extends React.Component {
     }
 
     render() {
+        let show_whole_category = false;
+        let show_category = false;
+        if (this.props.search_string == "" || stringIncludes(this.props.category_name, this.props.search_string)) {
+            show_whole_category = true;
+            show_category = true
+        }
         let entries = [];
         for (let entry of this.props.command_list) {
-            entries.push(<CommandEntry {...entry}/>)
+            if (show_whole_category || stringIncludes(entry.signature, this.props.search_string)) {
+                show_category = true
+                entries.push(<CommandEntry {...entry}/>)
+            }
+
         }
-        return (
-            <React.Fragment>
-                <h5 style={{marginTop: 20}}>
-                    {this.props.category_name}
-                </h5>
-                {entries}
-                <Divider/>
-            </React.Fragment>
-        )
+        if (show_category) {
+            return (
+                <React.Fragment>
+                    <h5 style={{marginTop: 20}}>
+                        {this.props.category_name}
+                    </h5>
+                    {entries}
+                    <Divider/>
+                </React.Fragment>
+            )
+        }
+        else {
+            return null
+        }
+
     }
 }
 
 CategoryEntry.propTypes = {
     category_name: PropTypes.string,
     command_list: PropTypes.array,
+    search_string: PropTypes.string
 }
 
 class CommandEntry extends React.Component {
@@ -488,7 +551,7 @@ class CommandEntry extends React.Component {
                 <Collapse isOpen={this.state.isOpen}>
                     <div style={{maxWidth: 700, position: "relative"}}>
                         <GlyphButton style={{position: "absolute", right: 5, top: 5, marginTop: 0}}
-                                     icon="duplicate"
+                                     icon="clipboard"
                                      small={true}
                                      handleClick={this._doCopy}
                         />
@@ -508,4 +571,70 @@ CommandEntry.propTypes = {
     body: PropTypes.string,
     kind: PropTypes.string
 
+}
+
+class ApiMenu extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this);
+        this.state = {
+            currently_selected: null,
+            menu_created: false
+        }
+    }
+
+    componentDidMount() {
+        if (!this.state.menu_created && this.props.item_list.length > 0) {
+            this.setState({current_selected: this.props.item_list[0].name, menu_created: true})
+        }
+    }
+
+    componentDidUpdate() {
+        if (!this.state.menu_created && this.props.item_list.length > 0) {
+            this.setState({current_selected: this.props.item_list[0].name, menu_created: true})
+        }
+    }
+
+    _buildMenu() {
+        let choices = [];
+        for (let item of this.props.item_list) {
+            if (item.kind == "header") {
+                choices.push(<MenuDivider title={item.name}/>)
+            }
+            else {
+                choices.push(<MenuItem text={item.name}/>)
+            }
+        }
+
+        return (
+            <Menu>
+                {choices}
+            </Menu>
+        )
+    }
+
+    _handleChange(value) {
+        this.setState({currently_selected: value})
+    }
+
+
+    render () {
+        let option_list = [];
+        for (let item of this.props.item_list) {
+            option_list.push(item.name)
+        }
+        return (
+            // <Popover minimal={true} content={this.state.the_menu} position={PopoverPosition.BOTTOM_LEFT}>
+            //     <Button text="jump to..." small={true} minimal={true}/>
+            // </Popover>
+            <BpSelect options={option_list}
+                      onChange={this._handleChange}
+                      buttonIcon="application"
+                      value={this.state.currently_selected}/>
+        )
+    }
+}
+
+ApiMenu.propTypes = {
+    item_list: PropTypes.array
 }
