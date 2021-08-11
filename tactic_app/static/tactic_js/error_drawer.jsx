@@ -59,7 +59,7 @@ function withErrorDrawer(WrappedComponent, tsocket=null, title=null, position="r
         }
 
         _addEntry(entry, open=true) {
-            this.setState({contents: [...this.state.contents, entry], show_drawer: open})
+            this.setState({contents: [entry, ...this.state.contents], show_drawer: open})
         }
 
         _postAjaxFailure(qXHR, textStatus, errorThrown) {

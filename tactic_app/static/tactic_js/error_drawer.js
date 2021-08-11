@@ -134,7 +134,7 @@ function withErrorDrawer(WrappedComponent) {
       value: function _addEntry(entry) {
         var open = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
         this.setState({
-          contents: [].concat(_toConsumableArray(this.state.contents), [entry]),
+          contents: [entry].concat(_toConsumableArray(this.state.contents)),
           show_drawer: open
         });
       }
