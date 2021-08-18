@@ -11,6 +11,7 @@ exports.get_ppi = get_ppi;
 exports.remove_duplicates = remove_duplicates;
 exports.doSignOut = doSignOut;
 exports.guid = guid;
+exports.scrollMeIntoView = scrollMeIntoView;
 
 var _lodash = _interopRequireDefault(require("lodash"));
 
@@ -24,7 +25,8 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 
 function doBinding(obj) {
   var seq = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "_";
-  var proto = Object.getPrototypeOf(obj);
+  var proto = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+  if (!proto) proto = Object.getPrototypeOf(obj);
 
   var _iterator = _createForOfIteratorHelper(Object.getOwnPropertyNames(proto)),
       _step;

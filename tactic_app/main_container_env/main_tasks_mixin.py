@@ -7,7 +7,7 @@ import copy
 import json
 from qworker import task_worthy_methods, task_worthy_manual_submit_methods
 from communication_utils import make_python_object_jsonizable, debinarize_python_object, store_temp_data
-from communication_utils import make_jsonizable_and_compress, read_project_dict
+from communication_utils import make_jsonizable_and_compress, read_project_dict, socketio
 import docker_functions
 from mongo_accesser import bytes_to_string, NameExistsError
 from doc_info import docInfo, FreeformDocInfo
@@ -26,6 +26,10 @@ def task_worthy_manual_submit(m):
     task_worthy_manual_submit_methods[m.__name__] = "mainwindow"
     return m
 
+
+streaming_workers = {}
+
+console_log_thread = None
 
 class StateTasksMixin:
     @task_worthy
@@ -47,6 +51,30 @@ class StateTasksMixin:
     @task_worthy
     def TextSelect(self, data):
         self.selected_text = data["selected_text"]
+        return None
+
+    @task_worthy
+    def StartLogStreaming(self, data):
+        global streaming_workers
+        tile_id = data["tile_id"]
+        if tile_id not in streaming_workers:
+            worker = docker_functions.LogStreamer(socketio)
+
+            thread = socketio.start_background_task(worker.background_log_lines,
+                                                    tile_id,
+                                                    self.user_id,
+                                                    {"tile_message": "updateLog", "tile_id": tile_id},
+                                                    "tile-message")
+            streaming_workers[tile_id] = thread
+        return None
+
+    @task_worthy
+    def StopLogStreaming(self, data):
+        global streaming_workers
+        tile_id = data["tile_id"]
+        thread = streaming_workers[tile_id]
+        thread.kill()
+        del streaming_workers[tile_id]
         return None
 
 
@@ -763,7 +791,11 @@ class TileCreationTasksMixin:
 
     @task_worthy
     def RemoveTile(self, data):
-        self._delete_tile_instance(data["tile_id"])
+        global streaming_workers
+        tile_id = data["tile_id"]
+        if tile_id in streaming_workers:
+            del streaming_workers[tile_id]
+        self._delete_tile_instance(tile_id)
         return None
 
     @task_worthy
@@ -1483,6 +1515,49 @@ class ConsoleTasksMixin:
 
         self.show_main_message("Notebook reset", 7)
         return {"success": True}
+
+    @task_worthy
+    def StartMainLogStreaming(self, data):
+        print("in start main log streaming")
+        global console_log_thread
+        self.StopMainPseudoLogStreaming()
+        print("did the stop")
+        worker = docker_functions.LogStreamer(socketio)
+        print("created a worker")
+        thread = socketio.start_background_task(worker.background_log_lines,
+                                                self.mworker.my_id,
+                                                self.user_id,
+                                                {"console_message": "updateLog"},
+                                                "console-message")
+        console_log_thread = thread
+        print("leaving StartMainLogStreaming")
+        return None
+
+    @task_worthy
+    def StartPseudoLogStreaming(self, data):
+        global console_log_thread
+        self.StopMainPseudoLogStreaming()
+
+        if self.pseudo_tile_id is not None:
+            worker = docker_functions.LogStreamer(socketio)
+
+            thread = socketio.start_background_task(worker.background_log_lines,
+                                                    self.pseudo_tile_id,
+                                                    self.user_id,
+                                                    {"console_message": "updateLog"},
+                                                    "console-message")
+            console_log_thread = thread
+        return None
+
+    @task_worthy
+    def StopMainPseudoLogStreaming(self):
+        print("entering StopMainPseudoLogStreaming")
+        global console_log_thread
+        if console_log_thread is not None:
+            print("got console_log_thread not none")
+            console_log_thread.kill()
+            console_log_thread = None
+        return None
 
 
 class DataSupportTasksMixin:

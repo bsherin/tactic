@@ -113,6 +113,22 @@ class ContainerCreateError(Exception):
     pass
 
 
+class LogStreamer(object):
+
+    def __init__(self, socketio):
+        self.socketio = socketio
+
+    def background_log_lines(self, cont_id, user_id, base_data, event_name):
+        print("getting container")
+        cont = get_container(cont_id)
+        print("about to enter loop in background_log_lines")
+        for line in cont.logs(stream=True, tail=0):
+            base_data["new_line"] = line.decode()
+            self.socketio.emit(event_name, base_data, namespace="/main", room=user_id)
+            self.socketio.sleep(0.05)
+        return
+
+
 cont_type_dict = {"megaplex_main:app": "megaplex",
                   "main_main:app": "main",
                   "tile_main:app": "tile",

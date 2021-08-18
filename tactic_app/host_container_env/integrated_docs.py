@@ -69,6 +69,7 @@ def process_body(rbody):
     raw_body = re.sub("\n", " ", raw_body)
     raw_body = re.sub("XXX", "\n\n", raw_body)
     raw_body = re.sub("(\:param [a-z]* )", ":", raw_body)
+    raw_body = re.sub("\:py\:meth\:", "", raw_body)
     return publish_string(raw_body, writer_name='html').decode("utf-8")
 
 def create_api_dict_by_category(_api_array):

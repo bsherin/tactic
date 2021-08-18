@@ -89,10 +89,11 @@
       max-width: 700px;
     }
 
-    .docutils.literal {
+    .docutils.literal, cite {
       color: #e83e8c;
 	  word-break: break-word;
-      font-family: monospace
+      font-family: monospace;
+      font-style: normal
     }
 
   }

@@ -144,6 +144,13 @@ class TileContainer extends React.Component {
         postWithCallback(window.main_id, "RemoveTile", data_dict);
     }
 
+    _addToLog(tile_id, new_line) {
+        let entry = this.get_tile_entry(tile_id);
+        let new_log = entry["log_content"] + new_line;
+        let self = this;
+        this._setTileValue(tile_id, "log_content", new_log)
+    }
+
     _setTileValue(tile_id, field, value, callback=null) {
         let entry = this.get_tile_entry(tile_id);
         entry[field] = value;
@@ -178,7 +185,8 @@ class TileContainer extends React.Component {
             stopSpinner: (tile_id, data)=>self._setTileValue(tile_id, "show_spinner", false),
             displayTileContent: self._displayTileContent,
             displayFormContent: (tile_id, data)=>self._setTileValue(tile_id, "form_data", data.form_data),
-            displayTileContentWithJavascript: self._displayTileContentWithJavascript
+            displayTileContentWithJavascript: self._displayTileContentWithJavascript,
+            updateLog: (tile_id, data)=>self._addToLog(tile_id, data.new_line)
         };
         let tile_id = data.tile_id;
         handlerDict[data.tile_message](tile_id, data)
@@ -254,6 +262,7 @@ class TileComponent extends React.Component {
         this.my_ref = React.createRef();
         this.body_ref = React.createRef();
         this.tda_ref = React.createRef();
+        this.log_ref = React.createRef();
         this.left_glyphs_ref = React.createRef();
         this.right_glyphs_ref = React.createRef();
         this.state = {
@@ -262,7 +271,8 @@ class TileComponent extends React.Component {
             mounted: false,
             resizing: false,
             dwidth: 0,
-            dheight: 0
+            dheight: 0,
+            log_content: null
         };
         this.last_front_content = "";
         doBinding(this);
@@ -362,19 +372,34 @@ class TileComponent extends React.Component {
             this._executeJavascript()
         }
         this.listen_for_clicks();
+        if (this.props.show_log) {
+            if (this.log_ref && this.log_ref.current) {
+                this.log_ref.current.scrollTo(0, this.log_ref.current.scrollHeight)
+            }
+        }
     }
 
     _toggleTileLog() {
+        const self = this;
         if (this.props.show_log) {
             this.props.setTileState(this.props.tile_id, {show_log: false, show_form: false});
+            this._stopLogStreaming();
             return
         }
 
-        const self = this;
         postWithCallback("host", "get_container_log", {"container_id": this.props.tile_id}, function (res) {
             self.props.setTileState(self.props.tile_id, {show_log: true, show_form: false, log_content: res.log_text});
+            self._startLogStreaming();
             self._setTileBack(false);
         })
+    }
+
+    _startLogStreaming() {
+        postWithCallback(window.main_id, "StartLogStreaming", {tile_id: this.props.tile_id});
+    }
+
+    _stopLogStreaming() {
+        postWithCallback(window.main_id, "StopLogStreaming", {tile_id: this.props.tile_id});
     }
 
     _toggleShrunk() {
@@ -406,6 +431,9 @@ class TileComponent extends React.Component {
     }
 
     _toggleBack() {
+        if (this.props.show_log) {
+            this._stopLogStreaming()
+        }
         this.props.setTileState(this.props.tile_id, {show_log: false, show_form: !this.props.show_form});
     }
 
@@ -437,7 +465,7 @@ class TileComponent extends React.Component {
         this.props.setTileValue(this.props.tile_id, "form_data", data.form_data)
     }
 
-    spin_and_refresh  () {
+    spin_and_refresh() {
         this._startSpinner();
         const self = this;
         postWithCallback(this.props.tile_id, "RefreshTile", {}, function() {
@@ -691,7 +719,8 @@ class TileComponent extends React.Component {
                         </Transition>
                         <Transition in={this.props.show_log} timeout={ANI_DURATION}>
                             {state => (
-                                <div className="tile-log" style={composeObjs(this.tile_log_style, this.transitionFadeStyles[state])}>
+                                <div className="tile-log" ref={this.log_ref} 
+                                     style={composeObjs(this.tile_log_style, this.transitionFadeStyles[state])}>
                                     <div className="tile-log-area">
                                         <pre style={{fontSize: 12}}>{this.props.log_content}</pre>
                                     </div>
