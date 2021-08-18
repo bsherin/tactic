@@ -24,7 +24,7 @@ import {SortableComponent} from "./sortable_container.js";
 import {KeyTrap} from "./key_trap.js";
 import {postWithCallback} from "./communication_react.js"
 import {doFlash} from "./toaster.js"
-import {doBinding, arrayMove} from "./utilities_react.js";
+import {doBinding, arrayMove, scrollMeIntoView} from "./utilities_react.js";
 import {showConfirmDialogReact, showSelectResourceDialog} from "./modal_react.js";
 
 export {ConsoleComponent}
@@ -65,6 +65,13 @@ const BUTTON_CONSUMED_SPACE = 208;
          if (this.props.tsocket.counter != this.socket_counter) {
              this.initSocket();
          }
+         if (this.state.show_console_error_log) {
+            if (this.body_ref && this.body_ref.current) {
+                let el = this.body_ref.current;
+                // In the computation below, note that the 500 comes from the height of the padding-div
+                this.body_ref.current.scrollTop = el.scrollHeight - 500 - el.offsetHeight + 45
+            }
+        }
      }
 
      initSocket() {
@@ -88,7 +95,7 @@ const BUTTON_CONSUMED_SPACE = 208;
          }
      }
 
-     addConsoleText(the_text) {
+     _addConsoleText(the_text) {
          let self = this;
          postWithCallback("host", "print_text_area_to_console",
              {"console_text": the_text, "user_id": window.user_id, "main_id": window.main_id}, function (data) {
@@ -203,14 +210,15 @@ const BUTTON_CONSUMED_SPACE = 208;
      _toggleConsoleLog() {
          let self = this;
          if (this.state.show_console_error_log) {
-             this.setState({"show_console_error_log": false})
+             this.setState({"show_console_error_log": false});
+             this._stopMainPseudoLogStreaming()
          } else {
              if (self.pseudo_tile_id == null) {
                  postWithCallback(window.main_id, "get_pseudo_tile_id", {}, function (res) {
                      self.pseudo_tile_id = res.pseudo_tile_id;
                      if (self.pseudo_tile_id == null) {
                          self.setState({"console_error_log_text": "pseudo-tile is initializing..."}, () => {
-                             this.setState({"show_console_error_log": true})
+                             self.setState({"show_console_error_log": true});
                          });
                      } else {
                          postWithCallback("host", "get_container_log", {"container_id": self.pseudo_tile_id}, function (res) {
@@ -219,7 +227,8 @@ const BUTTON_CONSUMED_SPACE = 208;
                                  log_text = "Got empty result. The pseudo-tile is probably starting up."
                              }
                              self.setState({"console_error_log_text": log_text}, () => {
-                                 self.setState({"show_console_error_log": true})
+                                 self.setState({"show_console_error_log": true});
+                                 self._startPseudoLogStreaming()
                              });
                          })
                      }
@@ -227,7 +236,8 @@ const BUTTON_CONSUMED_SPACE = 208;
              } else {
                  postWithCallback("host", "get_container_log", {"container_id": self.pseudo_tile_id}, function (res) {
                      self.setState({"console_error_log_text": res.log_text}, () => {
-                             self.setState({"show_console_error_log": true})
+                             self.setState({"show_console_error_log": true});
+                            self._startPseudoLogStreaming()
                          }
                      );
                  })
@@ -235,18 +245,32 @@ const BUTTON_CONSUMED_SPACE = 208;
          }
      }
 
+     _startPseudoLogStreaming() {
+        postWithCallback(window.main_id, "StartPseudoLogStreaming", {});
+    }
+
      _toggleMainLog() {
          let self = this;
          if (this.state.show_console_error_log) {
-             this.setState({"show_console_error_log": false})
+             this.setState({"show_console_error_log": false});
+             this._stopMainPseudoLogStreaming()
          } else {
              postWithCallback("host", "get_container_log", {"container_id": window.main_id}, function (res) {
                  self.setState({"console_error_log_text": res.log_text}, () => {
+                     self._startMainLogStreaming();
                      self.setState({"show_console_error_log": true})
                  });
              })
          }
      }
+
+     _startMainLogStreaming() {
+        postWithCallback(window.main_id, "StartMainLogStreaming", {});
+    }
+
+    _stopMainPseudoLogStreaming() {
+        postWithCallback(window.main_id, "StopMainPseudoLogStreaming", {});
+    }
 
      _setFocusedItem(unique_id, callback = null) {
          if (unique_id == null) {
@@ -434,11 +458,15 @@ const BUTTON_CONSUMED_SPACE = 208;
              consoleLog: (data) => self._addConsoleEntry(data.message, data.force_open),
              stopConsoleSpinner: self._stopConsoleSpinner,
              consoleCodePrint: this._appendConsoleItemOutput,
-             consoleCodeRun: this._startSpinner
+             consoleCodeRun: this._startSpinner,
+             updateLog: (data)=>self._addToLog(data.new_line)
          };
          handlerDict[data.console_message](data)
      }
 
+     _addToLog(new_line) {
+         this.setState({"console_error_log_text": this.state.console_error_log_text + new_line})
+     }
 
      _bodyHeight() {
          if (this.state.mounted) {
@@ -708,16 +736,28 @@ const BUTTON_CONSUMED_SPACE = 208;
                                           handleClick={this._clearConsole}
                                           intent="danger"
                                           icon="trash"/>
-                             <GlyphButton extra_glyph_text={this._glif_text(show_glif_text, "log")}
-                                          style={gbstyle}
-                                          tooltip="Show container log for the log"
-                                          handleClick={this._toggleConsoleLog}
-                                          icon="console"/>
-                             <GlyphButton extra_glyph_text={this._glif_text(show_glif_text, "main")}
-                                          tooltip="Show container log for the main project container"
-                                          style={gbstyle}
-                                          handleClick={this._toggleMainLog}
-                                          icon="console"/>
+                             {!this.state.show_console_error_log &&
+                                 <React.Fragment>
+                                      <GlyphButton extra_glyph_text={this._glif_text(show_glif_text, "log")}
+                                                  style={gbstyle}
+                                                  tooltip="Show container log for the log"
+                                                  handleClick={this._toggleConsoleLog}
+                                                  icon="console"/>
+                                     <GlyphButton extra_glyph_text={this._glif_text(show_glif_text, "main")}
+                                                  tooltip="Show container log for the main project container"
+                                                  style={gbstyle}
+                                                  handleClick={this._toggleMainLog}
+                                                  icon="console"/>
+                                 </React.Fragment>
+                             }
+                             {this.state.show_console_error_log &&
+                                 <GlyphButton extra_glyph_text={this._glif_text(show_glif_text, "hide")}
+                                              tooltip="Show container log for the main project container"
+                                              style={gbstyle}
+                                              handleClick={this._toggleMainLog}
+                                              icon="console"/>
+                             }
+
                          </div>
 
                          <div id="console-header-right"
@@ -785,31 +825,33 @@ const BUTTON_CONSUMED_SPACE = 208;
                             </pre>
                          }
                          {!this.state.show_console_error_log &&
-                         <SortableComponent id="console-items-div"
-                                            ElementComponent={SSuperItem}
-                                            key_field_name="unique_id"
-                                            item_list={filtered_items}
-                                            dark_theme={this.props.dark_theme}
-                                            helperClass={this.props.dark_theme ? "bp3-dark" : "light-theme"}
-                                            handle=".console-sorter"
-                                            onSortStart={(_, event) => event.preventDefault()} // This prevents Safari weirdness
-                                            onSortEnd={this._resortConsoleItems}
-                                            shouldCancelStart={this._shouldCancelSortStart}
-                                            setConsoleItemValue={this._setConsoleItemValue}
-                                            selectConsoleItem={this._selectConsoleItem}
-                                            console_available_width={this._bodyWidth()}
-                                            execution_count={0}
-                                            handleDelete={this._closeConsoleItem}
-                                            goToNextCell={this._goToNextCell}
-                                            setFocus={this._setFocusedItem}
-                                            addNewTextItem={this._addBlankText}
-                                            addNewCodeItem={this._addBlankCode}
-                                            copyCell={this._copyCell}
-                                            pasteCell={this._pasteCell}
-                                            insertResourceLink={this._insertResourceLink}
-                                            useDragHandle={true}
-                                            axis="y"
-                         />
+                             <React.Fragment>
+                             <SortableComponent id="console-items-div"
+                                                ElementComponent={SSuperItem}
+                                                key_field_name="unique_id"
+                                                item_list={filtered_items}
+                                                dark_theme={this.props.dark_theme}
+                                                helperClass={this.props.dark_theme ? "bp3-dark" : "light-theme"}
+                                                handle=".console-sorter"
+                                                onSortStart={(_, event) => event.preventDefault()} // This prevents Safari weirdness
+                                                onSortEnd={this._resortConsoleItems}
+                                                shouldCancelStart={this._shouldCancelSortStart}
+                                                setConsoleItemValue={this._setConsoleItemValue}
+                                                selectConsoleItem={this._selectConsoleItem}
+                                                console_available_width={this._bodyWidth()}
+                                                execution_count={0}
+                                                handleDelete={this._closeConsoleItem}
+                                                goToNextCell={this._goToNextCell}
+                                                setFocus={this._setFocusedItem}
+                                                addNewTextItem={this._addBlankText}
+                                                addNewCodeItem={this._addBlankCode}
+                                                copyCell={this._copyCell}
+                                                pasteCell={this._pasteCell}
+                                                insertResourceLink={this._insertResourceLink}
+                                                useDragHandle={true}
+                                                axis="y"
+                             />
+                         </React.Fragment>
                          }
                          <div id="padding-div" style={{height: 500}}></div>
                      </div>

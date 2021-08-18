@@ -265,6 +265,15 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
       (0, _communication_react.postWithCallback)(window.main_id, "RemoveTile", data_dict);
     }
   }, {
+    key: "_addToLog",
+    value: function _addToLog(tile_id, new_line) {
+      var entry = this.get_tile_entry(tile_id);
+      var new_log = entry["log_content"] + new_line;
+      var self = this;
+
+      this._setTileValue(tile_id, "log_content", new_log);
+    }
+  }, {
     key: "_setTileValue",
     value: function _setTileValue(tile_id, field, value) {
       var callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
@@ -320,7 +329,10 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
         displayFormContent: function displayFormContent(tile_id, data) {
           return self._setTileValue(tile_id, "form_data", data.form_data);
         },
-        displayTileContentWithJavascript: self._displayTileContentWithJavascript
+        displayTileContentWithJavascript: self._displayTileContentWithJavascript,
+        updateLog: function updateLog(tile_id, data) {
+          return self._addToLog(tile_id, data.new_line);
+        }
       };
       var tile_id = data.tile_id;
       handlerDict[data.tile_message](tile_id, data);
@@ -430,6 +442,7 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
     _this2.my_ref = /*#__PURE__*/_react["default"].createRef();
     _this2.body_ref = /*#__PURE__*/_react["default"].createRef();
     _this2.tda_ref = /*#__PURE__*/_react["default"].createRef();
+    _this2.log_ref = /*#__PURE__*/_react["default"].createRef();
     _this2.left_glyphs_ref = /*#__PURE__*/_react["default"].createRef();
     _this2.right_glyphs_ref = /*#__PURE__*/_react["default"].createRef();
     _this2.state = {
@@ -438,7 +451,8 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
       mounted: false,
       resizing: false,
       dwidth: 0,
-      dheight: 0
+      dheight: 0,
+      log_content: null
     };
     _this2.last_front_content = "";
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this2));
@@ -585,19 +599,29 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
       }
 
       this.listen_for_clicks();
+
+      if (this.props.show_log) {
+        if (this.log_ref && this.log_ref.current) {
+          this.log_ref.current.scrollTo(0, this.log_ref.current.scrollHeight);
+        }
+      }
     }
   }, {
     key: "_toggleTileLog",
     value: function _toggleTileLog() {
+      var self = this;
+
       if (this.props.show_log) {
         this.props.setTileState(this.props.tile_id, {
           show_log: false,
           show_form: false
         });
+
+        this._stopLogStreaming();
+
         return;
       }
 
-      var self = this;
       (0, _communication_react.postWithCallback)("host", "get_container_log", {
         "container_id": this.props.tile_id
       }, function (res) {
@@ -607,7 +631,23 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
           log_content: res.log_text
         });
 
+        self._startLogStreaming();
+
         self._setTileBack(false);
+      });
+    }
+  }, {
+    key: "_startLogStreaming",
+    value: function _startLogStreaming() {
+      (0, _communication_react.postWithCallback)(window.main_id, "StartLogStreaming", {
+        tile_id: this.props.tile_id
+      });
+    }
+  }, {
+    key: "_stopLogStreaming",
+    value: function _stopLogStreaming() {
+      (0, _communication_react.postWithCallback)(window.main_id, "StopLogStreaming", {
+        tile_id: this.props.tile_id
       });
     }
   }, {
@@ -658,6 +698,10 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "_toggleBack",
     value: function _toggleBack() {
+      if (this.props.show_log) {
+        this._stopLogStreaming();
+      }
+
       this.props.setTileState(this.props.tile_id, {
         show_log: false,
         show_form: !this.props.show_form
@@ -1078,6 +1122,7 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
       }, function (state) {
         return /*#__PURE__*/_react["default"].createElement("div", {
           className: "tile-log",
+          ref: _this4.log_ref,
           style: composeObjs(_this4.tile_log_style, _this4.transitionFadeStyles[state])
         }, /*#__PURE__*/_react["default"].createElement("div", {
           className: "tile-log-area"
