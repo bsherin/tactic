@@ -210,7 +210,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "_renderBodyContextMenu",
     value: function _renderBodyContextMenu(menu_context) {
       var regions = menu_context.regions;
-      if (regions.length == 0) return; // Without this get an error when clicking on a body cell
+      if (regions.length == 0) return null; // Without this get an error when clicking on a body cell
 
       var selected_rows = [];
 
@@ -1027,6 +1027,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
             }, function () {
               self._selectRow(ind);
             });
+            return true;
           }
         }
       }

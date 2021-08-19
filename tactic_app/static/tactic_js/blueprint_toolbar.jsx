@@ -37,10 +37,9 @@ function ResourceviewerToolbar(props) {
                 display: "flex",
                 flexDirection: "row",
                 justifyContent: "space-around",
-                marginBottom: 0,
                 marginTop: 7,
                 marginBottom: 8
-    }
+    };
 
     return (
         <div style={tstyle} className="d-flex flex-row justify-content-between">
@@ -193,7 +192,7 @@ FileAdderButton.propTypes = {
 
 FileAdderButton.defaultProps = {
     multiple: false
-}
+};
 
 class Toolbar extends React.Component {
     constructor(props) {
@@ -363,7 +362,7 @@ class Namebutton extends React.Component {
         function renameSuccess(data) {
             if (data.success) {
                 // self.setState({"current_name": new_name});
-                self.props.setResourceNameState(new_name)
+                self.props.setResourceNameState(new_name);
                 doFlash(data)
             } else {
                 doFlash(data);

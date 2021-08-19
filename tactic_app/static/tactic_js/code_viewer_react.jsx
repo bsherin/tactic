@@ -101,7 +101,7 @@ class CodeViewerApp extends React.Component {
     componentDidMount() {
         window.addEventListener("resize", this._update_window_dimensions);
         this._update_window_dimensions();
-        this.props.stopSpinner()
+        this.props.stopSpinner();
         this.props.setStatusTheme(this.state.dark_theme);
         window.dark_theme = this.state.dark_theme
     }

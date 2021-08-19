@@ -167,7 +167,6 @@ class ContainerManager(ResourceManager):
             return f"{minutes + minpart:.1f} minutes"
         return f"{int(td.seconds)} seconds"
 
-
     def grab_container_list_chunk(self):
         if not current_user.get_id() == admin_user.get_id():
             return
@@ -209,5 +208,4 @@ class ContainerManager(ResourceManager):
             chunk_dict[n + chunk_start] = r
         return jsonify(
             {"success": True, "chunk_dict": chunk_dict, "num_rows": len(sorted_results)})
-
 

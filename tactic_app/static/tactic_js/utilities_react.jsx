@@ -1,13 +1,17 @@
+// noinspection ProblematicWhitespace,ConstantOnRightSideOfComparisonJS,JSUnusedLocalSymbols
+
 /**
  * Created by bls910 much later
  */
+/*jshint esversion: 6 */
 
 import _ from 'lodash';
 
-export {doBinding, propsAreEqual, arrayMove, arraysMatch, get_ppi, remove_duplicates, doSignOut, guid, scrollMeIntoView}
+export {doBinding, propsAreEqual, arrayMove, arraysMatch, get_ppi};
+export {remove_duplicates, doSignOut, guid, scrollMeIntoView};
 
 function doBinding(obj, seq="_", proto=null) {
-    if (!proto) proto = Object.getPrototypeOf(obj);
+    if (!proto) { proto = Object.getPrototypeOf(obj); }
     for (const key of Object.getOwnPropertyNames(proto)) {
         if (key.startsWith(seq)) {
             obj[key] = obj[key].bind(obj);
@@ -16,15 +20,14 @@ function doBinding(obj, seq="_", proto=null) {
 }
 
 function propsAreEqual(p1, p2, skipProps=[]) {
-
     if (!_.isEqual(Object.keys(p1), Object.keys(p2))) {
         return false
     }
 
-    for (let option in p1) {
-        if (skipProps.includes(option)) continue;
-        if (typeof(p1[option]) == "function") {
-            if (!(typeof(p2[option]) == "function")) {
+    for (const option in p1) {
+        if (skipProps.includes(option)) {continue;}
+        if (typeof p1[option] == "function") {
+            if (!(typeof p2[option] == "function")) {
                 return false
             }
             continue
@@ -48,11 +51,11 @@ function arrayMove (array, from, to) {
 
 function arraysMatch (arr1, arr2) {
 	// Check if the arrays are the same length
-	if (arr1.length !== arr2.length) return false;
+	if (arr1.length !== arr2.length) { return false; }
 
 	// Check if all items exist and are in the same order
-	for (var i = 0; i < arr1.length; i++) {
-		if (arr1[i] !== arr2[i]) return false;
+	for (let i = 0; i < arr1.length; i++) {
+		if (arr1[i] !== arr2[i]) { return false; }
 	}
 
 	// Otherwise, return true
@@ -71,16 +74,20 @@ String.prototype.format = function() {
 };
 
 function get_ppi() {
-  var d = $("<div/>").css({ position: 'absolute', top : '-1000in', left : '-1000in', height : '1000in', width : '1000in' }).appendTo('body');
-  var px_per_in = d.height() / 1000;
-  d.remove();
+    const d = $("<div/>").css({
+        position: 'absolute',
+        top: '-1000in',
+        left: '-1000in',
+        height: '1000in',
+        width: '1000in'
+    }).appendTo('body');
+    const px_per_in = d.height() / 1000;
+    d.remove();
   return px_per_in;
 }
 
 function remove_duplicates (arrArg) {
-  return arrArg.filter((elem, pos, arr) => {
-    return arr.indexOf(elem) == pos;
-  });
+  return arrArg.filter((elem, pos, arr) => arr.indexOf(elem) == pos);
 }
 
 Array.prototype.empty = function () {
@@ -105,16 +112,16 @@ function scrollIntoView(element, container) {
 }
 
 function scrollMeIntoView(element) {
-    let outer_element = element.parentNode.parentNode;
-    let scrolled_element = element.parentNode
-    let outer_height = outer_element.offsetHeight
-    let distance_from_top = element.offsetTop - outer_element.scrollTop - scrolled_element.offsetTop;
-    if (distance_from_top > (outer_height - 35)) {
-        let distance_to_move = distance_from_top - .5 * outer_height
+    const outer_element = element.parentNode.parentNode;
+    const scrolled_element = element.parentNode;
+    const outer_height = outer_element.offsetHeight;
+    const distance_from_top = element.offsetTop - outer_element.scrollTop - scrolled_element.offsetTop;
+    if (distance_from_top > outer_height - 35) {
+        const distance_to_move = distance_from_top - 0.5 * outer_height;
         outer_element.scrollTop += distance_to_move
     }
     else if (distance_from_top < 0) {
-        let distance_to_move = .25 * outer_height - distance_from_top
+        const distance_to_move = 0.25 * outer_height - distance_from_top;
         outer_element.scrollTop -= distance_to_move
     }
 }

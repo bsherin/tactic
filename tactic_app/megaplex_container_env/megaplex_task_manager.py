@@ -34,7 +34,7 @@ class TaskManager(object):
 
     def get_data_string(self):
         return self.data_template.format(self.my_id, self.tasks.qsize(), self.responses.qsize(),
-                                    len(self.wait_dict), len(self.expiration_dict), len(self.expired_tasks))
+                                         len(self.wait_dict), len(self.expiration_dict), len(self.expired_tasks))
 
     def record_expiration_task(self, task_packet):
         task_packet = copy.copy(task_packet)

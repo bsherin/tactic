@@ -103,7 +103,6 @@ class AdministerHomeApp extends React.Component {
                 selectedRegions: [Regions.row(0)]
             }
         }
-        this.state.pane_states.container.selected_resource =
         this.top_ref = React.createRef();
         doBinding(this);
     }

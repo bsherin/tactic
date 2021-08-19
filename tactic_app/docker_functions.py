@@ -119,9 +119,7 @@ class LogStreamer(object):
         self.socketio = socketio
 
     def background_log_lines(self, cont_id, user_id, base_data, event_name):
-        print("getting container")
         cont = get_container(cont_id)
-        print("about to enter loop in background_log_lines")
         for line in cont.logs(stream=True, tail=0):
             base_data["new_line"] = line.decode()
             self.socketio.emit(event_name, base_data, namespace="/main", room=user_id)
@@ -407,7 +405,8 @@ def destroy_user_containers(owner_id):
 def get_matching_user_containers(owner_id, image_name, other_name):
     matches = []
     for cont in cli.containers.list():
-        if container_owner(cont) == owner_id and container_image(cont) == image_name and container_other_name(cont) == other_name:
+        if container_owner(cont) == owner_id and container_image(cont) == image_name and \
+                container_other_name(cont) == other_name:
             matches.append(container_id(cont))
     return matches
 
@@ -449,6 +448,7 @@ def delete_list_of_queues(qlist, use_localhost=False):
     connection.close()
 
 
+# noinspection PyArgumentEqualDefault
 def post_task_noqworker(source_id, dest_id, task_type, task_data=None):
     new_packet = {"source": source_id,
                   "callback_type": "no_callback",
@@ -472,6 +472,7 @@ def post_task_noqworker(source_id, dest_id, task_type, task_data=None):
         connection = pika.BlockingConnection(params)
         channel = connection.channel()
         channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
+        # noinspection PyTypeChecker
         channel.basic_publish(exchange='',
                               routing_key=dest_id,
                               properties=pika.BasicProperties(
@@ -482,5 +483,6 @@ def post_task_noqworker(source_id, dest_id, task_type, task_data=None):
                               body=json.dumps(new_packet))
     except:
         print("got an exception in post_task_noqworker trying to publish")
+    # noinspection PyUnboundLocalVariable
     connection.close()
     return

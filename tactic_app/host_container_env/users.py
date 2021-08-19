@@ -212,7 +212,7 @@ def load_remote_user(userid, the_db):
         return User(result)
 
 
-# noinspection PyMethodOverriding
+# noinspection PyMethodOverriding,PyMissingConstructor
 class RemoteUser(User):
     def __init__(self, user_dict, remote_db):
         self.username = ""  # This is just to be make introspection happy

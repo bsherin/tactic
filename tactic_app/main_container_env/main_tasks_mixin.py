@@ -28,8 +28,8 @@ def task_worthy_manual_submit(m):
 
 
 streaming_workers = {}
-
 console_log_thread = None
+
 
 class StateTasksMixin:
     @task_worthy
@@ -108,8 +108,7 @@ class LoadSaveTasksMixin:
                 self.mworker.submit_response(task_packet, result)
                 return
 
-        result = {}
-        result["used_modules"] = []
+        result = {"used_modules": []}
 
         if self.doc_type == "notebook":
             save_attrs = self.notebook_save_attrs
@@ -155,7 +154,8 @@ class LoadSaveTasksMixin:
                 self.mworker.submit_response(task_packet, result)
         return
 
-    def convert_jupyter_cells(self, jupyter_cell_list):
+    @staticmethod
+    def convert_jupyter_cells(jupyter_cell_list):
         message = ""
         converted_cells = []
         for cell_dict in jupyter_cell_list:
@@ -490,8 +490,7 @@ class LoadSaveTasksMixin:
                 cell["metadata"] = {}
                 if cell["cell_type"] == "code":
                     cell["execution_count"] = 0
-            metadata = {}
-            metadata["kernelspec"] = {"display_name": "Python 3", "language": "python", "name": "python3"}
+            metadata = {"kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"}}
             full_dict = {"metadata": metadata,
                          "nbformat": 4,
                          "nbformat_minor": 2,
@@ -525,9 +524,7 @@ class LoadSaveTasksMixin:
             console_dict["doc_type"] = "notebook"
             console_dict["interface_state"] = {"console_items": data_dict["console_items"]}
             cdict = make_jsonizable_and_compress(console_dict)
-            save_dict = {}
-            save_dict["file_id"] = self.fs.put(cdict)
-            save_dict["user_id"] = self.user_id
+            save_dict = {"file_id": self.fs.put(cdict), "user_id": self.user_id}
             unique_id = store_temp_data(self.db, save_dict)
             self.mworker.emit_to_main_client("notebook-open", {"message": "notebook-open", "the_id": unique_id})
             return
@@ -1367,9 +1364,7 @@ class ExportsTasksMixin:
     def evaluate_export(self, data):
         if self.pseudo_tile_id is None:
             self.create_pseudo_tile()
-        ndata = {}
-        ndata["export_name"] = data["export_name"]
-        ndata["pipe_dict"] = self._pipe_dict
+        ndata = {"export_name": data["export_name"], "pipe_dict": self._pipe_dict}
         if "key" in data:
             ndata["key"] = data["key"]
         ndata["tail"] = data["tail"]
@@ -1395,10 +1390,7 @@ class ExportsTasksMixin:
     def get_export_info(self, data):
         if self.pseudo_tile_id is None:
             self.create_pseudo_tile()
-        ndata = {}
-        ndata["export_name"] = data["export_name"]
-        ndata["pipe_dict"] = self._pipe_dict
-        ndata["console_id"] = "export_viewer"
+        ndata = {"export_name": data["export_name"], "pipe_dict": self._pipe_dict, "console_id": "export_viewer"}
         self.mworker.post_task(self.pseudo_tile_id, "_get_export_info", ndata)
         return
 
@@ -1847,7 +1839,8 @@ class DataSupportTasksMixin:
         self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
         return None
 
-    def DeleteColumnOneDoc(self, doc, data):
+    @staticmethod
+    def DeleteColumnOneDoc(doc, data):
         print("in DeleteColumnOneDoc with " + doc.table_spec.doc_name)
         column_name = data["column_name"]
         if column_name in doc.table_spec.header_list:

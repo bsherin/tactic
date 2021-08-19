@@ -10,10 +10,10 @@ from exception_mixin import generic_exception_handler
 
 from library_views import tile_manager
 import datetime
+from js_source_management import _develop, js_source_dict, css_source
+
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 indent_unit = "    "
-
-from js_source_management import _develop, js_source_dict, css_source
 
 
 @app.route('/checkpoint_module', methods=['post'])
@@ -32,7 +32,7 @@ def checkpoint_module():
         db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
                                                          {'$set': {"history": history}})
         result = jsonify({"success": True, "message": "Module successfully saved and checkpointed",
-                        "alert_type": "alert-success"})
+                          "alert_type": "alert-success"})
     except Exception as ex:
         result = generic_exception_handler.get_exception_for_ajax(ex, "Error checkpointing module")
 
@@ -82,15 +82,14 @@ def show_history_viewer(module_name):
 @app.route('/get_api_dict', methods=['GET', 'POST'])
 @login_required
 def get_api_dict():
-    print("*** in get_api_dict ***")
     from integrated_docs import api_dict_by_category, api_dict_by_name, ordered_api_categories
     from integrated_docs import object_api_dict_by_category, ordered_object_categories
-    print("*** back from import ***")
     return jsonify({"success": True, "api_dict_by_name": api_dict_by_name,
                     "api_dict_by_category": api_dict_by_category,
                     "ordered_api_categories": ordered_api_categories,
                     "object_api_dict_by_category": object_api_dict_by_category,
                     "ordered_object_categories": ordered_object_categories})
+
 
 @app.route('/show_tile_differ/<module_name>', defaults={'second_module_name': "none"})
 @app.route('/show_tile_differ/both_names/<module_name>/<second_module_name>')

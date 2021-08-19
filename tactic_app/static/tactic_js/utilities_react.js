@@ -26,7 +26,10 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 function doBinding(obj) {
   var seq = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "_";
   var proto = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-  if (!proto) proto = Object.getPrototypeOf(obj);
+
+  if (!proto) {
+    proto = Object.getPrototypeOf(obj);
+  }
 
   var _iterator = _createForOfIteratorHelper(Object.getOwnPropertyNames(proto)),
       _step;
@@ -54,7 +57,9 @@ function propsAreEqual(p1, p2) {
   }
 
   for (var option in p1) {
-    if (skipProps.includes(option)) continue;
+    if (skipProps.includes(option)) {
+      continue;
+    }
 
     if (typeof p1[option] == "function") {
       if (!(typeof p2[option] == "function")) {
@@ -84,10 +89,15 @@ function arrayMove(array, from, to) {
 
 function arraysMatch(arr1, arr2) {
   // Check if the arrays are the same length
-  if (arr1.length !== arr2.length) return false; // Check if all items exist and are in the same order
+  if (arr1.length !== arr2.length) {
+    return false;
+  } // Check if all items exist and are in the same order
+
 
   for (var i = 0; i < arr1.length; i++) {
-    if (arr1[i] !== arr2[i]) return false;
+    if (arr1[i] !== arr2[i]) {
+      return false;
+    }
   } // Otherwise, return true
 
 
@@ -153,10 +163,10 @@ function scrollMeIntoView(element) {
   var distance_from_top = element.offsetTop - outer_element.scrollTop - scrolled_element.offsetTop;
 
   if (distance_from_top > outer_height - 35) {
-    var distance_to_move = distance_from_top - .5 * outer_height;
+    var distance_to_move = distance_from_top - 0.5 * outer_height;
     outer_element.scrollTop += distance_to_move;
   } else if (distance_from_top < 0) {
-    var _distance_to_move = .25 * outer_height - distance_from_top;
+    var _distance_to_move = 0.25 * outer_height - distance_from_top;
 
     outer_element.scrollTop -= _distance_to_move;
   }

@@ -96,7 +96,7 @@ class AccountApp extends React.Component {
                 //     new_field = Object.assign({}, fdict);
                 // }
                 let new_state = {fields: data.field_list};
-                self.setState(new_state)
+                self.setState(new_state);
                 window.dark_theme = self.state.dark_theme
             }
         )
@@ -244,7 +244,7 @@ class AccountApp extends React.Component {
 
     render () {
         let field_items = this._getFieldItems();
-        let outer_class = "account-settings"
+        let outer_class = "account-settings";
         if (this.state.dark_theme) {
             outer_class = outer_class + " bp3-dark";
         }

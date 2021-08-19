@@ -62,8 +62,6 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 var default_button_class = "btn-outline-secondary";
 var intent_colors = {
   danger: "#c23030",
@@ -79,15 +77,13 @@ function ResourceviewerToolbar(props) {
     "paddingRight": 20,
     "width": "100%"
   };
-
-  var toolbar_outer_style = _defineProperty({
+  var toolbar_outer_style = {
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-around",
-    marginBottom: 0,
-    marginTop: 7
-  }, "marginBottom", 8);
-
+    marginTop: 7,
+    marginBottom: 8
+  };
   return /*#__PURE__*/_react["default"].createElement("div", {
     style: tstyle,
     className: "d-flex flex-row justify-content-between"

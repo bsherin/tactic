@@ -24,7 +24,7 @@ class AdminPane extends React.Component {
         this.console_text_ref = React.createRef();
         let aheight = getUsableDimensions().usable_height_no_bottom;
         let awidth = getUsableDimensions().usable_width - 170;
-        this.get_url = `grab_${props.res_type}_list_chunk`
+        this.get_url = `grab_${props.res_type}_list_chunk`;
         this.state = {
             data_dict: {},
             num_rows: 0,
@@ -111,19 +111,19 @@ class AdminPane extends React.Component {
     }
 
     _grabNewChunkWithRow(row_index, flush=false, spec_update=null, select=false, select_by_name=null, callback=null) {
-        let search_spec = this._getSearchSpec()
+        let search_spec = this._getSearchSpec();
         if (spec_update) {
             search_spec = Object.assign(search_spec, spec_update)
         }
         let data = {search_spec: search_spec, row_number: row_index};
         let self = this;
         postAjax(this.get_url, data, function(data) {
-            let new_data_dict
+            let new_data_dict;
             if (flush) {
                 new_data_dict = data.chunk_dict
             }
             else {
-                new_data_dict = _.cloneDeep(self.state.data_dict)
+                new_data_dict = _.cloneDeep(self.state.data_dict);
                 new_data_dict = Object.assign(new_data_dict, data.chunk_dict)
             }
             self.previous_search_spec = search_spec;
@@ -135,7 +135,7 @@ class AdminPane extends React.Component {
                     self._selectRow(row_index)
                 }
                 else if (select_by_name) {
-                    let ind = self.get_data_dict_index(select_by_name)
+                    let ind = self.get_data_dict_index(select_by_name);
                     if (!ind) {
                         ind = 0
                     }
@@ -266,7 +266,7 @@ class AdminPane extends React.Component {
     }
 
     _set_sort_state(column_name, sort_field, direction) {
-        let spec_update = {sort_field: column_name, sort_direction: direction}
+        let spec_update = {sort_field: column_name, sort_direction: direction};
         this._updatePaneState(spec_update, ()=>{
             if (this.search_spec_changed(spec_update)) {
                 this._grabNewChunkWithRow(0, true, spec_update, true)

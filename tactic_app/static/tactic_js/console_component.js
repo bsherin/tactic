@@ -166,7 +166,6 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_addConsoleText",
     value: function _addConsoleText(the_text) {
-      var self = this;
       (0, _communication_react.postWithCallback)("host", "print_text_area_to_console", {
         "console_text": the_text,
         "user_id": window.user_id,
@@ -180,7 +179,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_addBlankText",
     value: function _addBlankText() {
-      this.addConsoleText("");
+      this._addConsoleText("");
     }
   }, {
     key: "_insertTextInCell",
@@ -208,7 +207,10 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
 
       if (!unique_id) {
         unique_id = this.state.currently_selected_item;
-        if (!unique_id) return;
+
+        if (!unique_id) {
+          return;
+        }
       }
 
       var entry = this.get_console_item_entry(unique_id);
@@ -1760,6 +1762,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component5) {
           for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
             var script = _step10.value;
 
+            // noinspection EmptyCatchBlockJS,UnusedCatchParameterJS
             try {
               window.eval(script.text);
             } catch (e) {}

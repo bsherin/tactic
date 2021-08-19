@@ -187,7 +187,7 @@ var AdministerHomeApp = /*#__PURE__*/function (_React$Component) {
       _iterator.f();
     }
 
-    _this.state.pane_states.container.selected_resource = _this.top_ref = /*#__PURE__*/_react["default"].createRef();
+    _this.top_ref = /*#__PURE__*/_react["default"].createRef();
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
     return _this;
   }

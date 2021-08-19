@@ -251,7 +251,7 @@ def grab_metadata():
             if "updated" in additional_mdata:
                 additional_mdata["updated"] = current_user.get_timestrings(additional_mdata["updated"])[0]
             if "collection_name" in additional_mdata:
-                additional_mdata["collection_name"] = current_user.short_collection_name(additional_mdata["collection_name"])
+                additional_mdata["collection_name"] = current_user.get_short_collection_name(additional_mdata["collection_name"])
             return jsonify({"success": True, "res_name": res_name, "datestring": datestring, "tags": mdata["tags"],
                             "notes": mdata["notes"], "additional_mdata": additional_mdata})
     except Exception as ex:
@@ -331,7 +331,7 @@ def grab_m_mdata(res_type, res_name_list, is_repository=False):
             if "updated" in additional_mdata:
                 additional_mdata["updated"] = current_user.get_timestrings(additional_mdata["updated"])[0]
             if "collection_name" in additional_mdata:
-                additional_mdata["collection_name"] = current_user.short_collection_name(additional_mdata["collection_name"])
+                additional_mdata["collection_name"] = current_user.get_short_collection_name(additional_mdata["collection_name"])
             one_result = {"res_name": res_name, "datestring": datestring, "tags": mdata["tags"],
                           "notes": mdata["notes"], "additional_mdata": additional_mdata}
             mdata_list.append(one_result)
