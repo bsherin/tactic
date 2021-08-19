@@ -182,7 +182,7 @@ class BlueprintTable extends React.Component {
                         </Cell>
                     )
                 }
-                cell_bg_color = self._cell_background_color(rowIndex, column_name)
+                cell_bg_color = self._cell_background_color(rowIndex, column_name);
                 the_text = self.props.data_row_dict[rowIndex][column_name];
                 if ((this.props.alt_search_text != null) && (this.props.alt_search_text != "")) {
                     const regex = new RegExp(this.props.alt_search_text, "gi");
@@ -464,11 +464,11 @@ function compute_initial_column_widths(header_list, data_row_dict) {
     // Once a column has the max value can ignore that column in the future.
     ctx.font = body_font;
     let dkeys = Object.keys(data_row_dict);
-    for (let r = 0; r < dkeys.length; ++r) {
+    for (const item of dkeys) {
         if (columns_remaining.length == 0) {
             break;
         }
-        the_row = data_row_dict[dkeys[r]];
+        the_row = data_row_dict[item];
         let cols_to_remove = [];
         for (let c of columns_remaining) {
             the_text = the_row[c];

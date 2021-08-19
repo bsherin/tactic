@@ -42,7 +42,7 @@ function composeObjs(base_style, new_style) {
 class TileContainer extends React.Component {
     constructor(props) {
         super(props);
-        doBinding(this)
+        doBinding(this);
         this.socket_counter = null;
     }
 

@@ -2,6 +2,7 @@ import requests, markdown
 import re, os
 from docutils.core import publish_string
 
+
 def get_api_from_rst():
     f = open("./docs/Tile-Commands.rst")
     txt = f.read()
@@ -36,7 +37,7 @@ def get_object_api_from_rst():
             const_name = re.findall(r"^([a-zA-Z()]*)", const)[0]
             const_body = process_body(re.findall(r"\n\n([\s\S]*)", const)[0])
             newres[catname].append([const_name,
-                                     {"signature": const_name, "body": const_body, "kind": "global"}, "global"])
+                                    {"signature": const_name, "body": const_body, "kind": "global"}, "global"])
         for cla in classes:
             cname = re.findall(r"^([a-zA-Z()]*)", cla)[0]
             methods = re.findall(r"py:(method|attribute):: ([\s\S]*?)(?=\n *?\.\.|$)", cla)
@@ -49,6 +50,7 @@ def get_object_api_from_rst():
             newres[catname].append([cname, mlist, "class"])
     return ordered_catnames, newres
 
+
 def get_api_html(ar):
     result = ""
     for section in ar:
@@ -57,10 +59,12 @@ def get_api_html(ar):
             result += "<button class='accordion btn btn-info'>{}</button>\n<div class='accordion-panel'><p>{}</p></div>\n".format(entry[0], entry[1])
     return result
 
+
 def get_tile_command_html():
     f = open("./docs/_build/html/Tile-Commands.html")
     txt = f.read()
     return txt
+
 
 def process_body(rbody):
     raw_body = rbody.strip()
@@ -72,29 +76,22 @@ def process_body(rbody):
     raw_body = re.sub("\:py\:meth\:", "", raw_body)
     return publish_string(raw_body, writer_name='html').decode("utf-8")
 
+
 def create_api_dict_by_category(_api_array):
     result = {}
     ordered_categories = []
-    print("entering create_api_dict_by_category")
     for cat_array in _api_array:
         # cat_list = [entry[0] for entry in cat_array[1]]
         revised_cat_list = []
-        print("looping over cat_array")
         for entry in cat_array[1]:
-            print("got an entry")
             signature = entry[0]
-            print("got signature " + signature)
             kind = entry[2]
-            print("got kind " + kind)
             if kind == "attribute":
                 short_name = signature
             else:
                 short_name = re.findall("(^.*?)\(", signature)[0]
-            print("about to process_body")
             body = process_body(entry[1])
-            print("back from process_body")
             revised_cat_list.append({"name": short_name, "signature": signature, "body": body, "kind": kind})
-        print("done with loop")
         result[cat_array[0]] = revised_cat_list
         ordered_categories.append(cat_array[0])
     return result, ordered_categories
@@ -109,22 +106,17 @@ def create_api_dict_by_name(_api_dict_by_category):
 
 
 try:
-    print("getting api from directory new " + os.getcwd())
     api_array = get_api_from_rst()
-    print("got api_array")
     api_dict_by_category, ordered_api_categories = create_api_dict_by_category(api_array)
-    print("got by category")
     api_dict_by_name = create_api_dict_by_name(api_dict_by_category)
-    print("about to get object api")
     ordered_object_categories, object_api_dict_by_category = get_object_api_from_rst()
-    print("got through")
 
 except Exception as ex:
     print("unable to get api")
-    result = type(ex).__name__
+    eresult = type(ex).__name__
     if len(ex.args) > 0:
-        result += " " + str(ex.args[0])
-    print(result)
+        eresult += " " + str(ex.args[0])
+    print(eresult)
     api_array = []
     api_dict_by_category = {}
     api_dict_by_name = {}

@@ -317,7 +317,7 @@ class MongoAccess(object):
     def build_data_collection_name(self, collection_name):
         return '{}.data_collection.{}'.format(self.username, collection_name)
 
-    def short_collection_name(self, full_collection_name):
+    def get_short_collection_name(self, full_collection_name):
         return re.sub(r"^.*?\.data_collection\.", "", full_collection_name)
 
     def remove_collection(self, collection_name):
@@ -473,7 +473,7 @@ class MongoAccess(object):
         tile_names_with_metadata = [d + ["tile"] for d in self.tile_module_names_with_metadata]
         code_names_with_metadata = [d + ["code"] for d in self.code_names_with_metadata]
         names_with_metadata = col_names_with_metadata + proj_names_with_metadata + list_names_with_metadata + \
-                              tile_names_with_metadata + code_names_with_metadata
+            tile_names_with_metadata + code_names_with_metadata
         return sorted(names_with_metadata, key=self.sort_data_list_key)
 
     @property

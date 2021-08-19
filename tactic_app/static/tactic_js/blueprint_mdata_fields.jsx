@@ -11,8 +11,8 @@ import {Select, MultiSelect} from "@blueprintjs/select";
 import markdownIt from 'markdown-it'
 import 'markdown-it-latex/dist/index.css'
 import markdownItLatex from 'markdown-it-latex'
-const mdi = markdownIt({html: true})
-mdi.use(markdownItLatex)
+const mdi = markdownIt({html: true});
+mdi.use(markdownItLatex);
 import _ from 'lodash';
 
 import {ViewerContext} from "./resource_viewer_context.js";

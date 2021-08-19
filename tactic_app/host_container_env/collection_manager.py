@@ -113,7 +113,7 @@ class CollectionManager(LibraryResourceManager):
         cname = user_obj.build_data_collection_name(collection_name)
         main_id, rb_id = main_container_info.create_main_container(collection_name, user_obj.get_id(), user_obj.username)
         create_ready_block(rb_id, user_obj.username, [main_id, "client"], main_id)
-        short_collection_name = user_obj.short_collection_name(collection_name)
+        short_collection_name = user_obj.get_short_collection_name(collection_name)
         mdata = user_obj.get_collection_metadata(short_collection_name)
         if "type" in mdata and mdata["type"] == "freeform":
             doc_type = "freeform"

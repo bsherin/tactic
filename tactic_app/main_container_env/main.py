@@ -39,7 +39,7 @@ true_host_persist_dir = os.environ.get("TRUE_HOST_PERSIST_DIR")
 true_host_resources_dir = os.environ.get("TRUE_HOST_RESOURCES_DIR")
 
 
-# noinspection PyPep8Naming,PyUnusedLocal,PyTypeChecker
+# noinspection PyPep8Naming,PyUnusedLocal,PyTypeChecker,PyMissingConstructor
 class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationTasksMixin, APISupportTasksMixin,
                  ExportsTasksMixin, ConsoleTasksMixin, DataSupportTasksMixin, ExceptionMixin):
     save_attrs = ["short_collection_name", "collection_name",
@@ -109,7 +109,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                 self.visible_doc_name = ""
             else:
                 self.collection_name = data_dict["collection_name"]
-                self.short_collection_name = self.short_collection_name(self.collection_name)
+                self.short_collection_name = self.get_short_collection_name(self.collection_name)
                 self.doc_dict = self._build_doc_dict()
                 self.visible_doc_name = list(self.doc_dict)[0]
 
@@ -535,7 +535,8 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         else:
             self._pipe_dict[tile_id] = {}
             if not isinstance(exports[0], dict):
-                exports = [{"name": exp["name"], "tags": "", "type": "unknown"} for exp in exports]  # legacy old form of exports list of strings
+                # legacy old form of exports list of strings
+                exports = [{"name": exp["name"], "tags": "", "type": "unknown"} for exp in exports]
             for export in exports:
                 print("got export " + str(export))
                 self._pipe_dict[tile_id][tile_name + "_" + export["name"]] = {

@@ -10,7 +10,7 @@ import { FormGroup, InputGroup, Button } from "@blueprintjs/core";
 import {doFlash, withStatus} from "./toaster.js"
 import {postAjax} from "./communication_react.js";
 import {doBinding, guid} from "./utilities_react.js";
-import {TacticNavbar, get_theme_cookie, set_theme_cookie} from "./blueprint_navbar";
+import {TacticNavbar, get_theme_cookie} from "./blueprint_navbar";
 
 window.page_id = guid();
 
@@ -36,7 +36,7 @@ class LoginApp extends React.Component {
     }
 
     componentDidMount() {
-        $(this.input_ref).focus()
+        $(this.input_ref).focus();
         this.props.setStatusTheme(this.state.dark_theme);
         window.dark_theme = this.state.dark_theme
     }
@@ -90,7 +90,7 @@ class LoginApp extends React.Component {
     }
 
     render () {
-        let outer_class = "login-body d-flex flex-column justify-content-center"
+        let outer_class = "login-body d-flex flex-column justify-content-center";
         if (this.state.dark_theme) {
             outer_class = outer_class + " bp3-dark";
         }

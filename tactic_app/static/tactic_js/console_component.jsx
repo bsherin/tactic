@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 
 import 'codemirror/mode/markdown/markdown.js'
 
-import { Icon, Card, EditableText, Spinner, FormGroup} from "@blueprintjs/core";
+import { Icon, Card, EditableText, Spinner} from "@blueprintjs/core";
 import { Menu, MenuItem, InputGroup, ButtonGroup, Button} from "@blueprintjs/core";
 
 // The next line is an ugly workaround
@@ -14,8 +14,8 @@ import { SortableHandle, SortableElement } from 'react-sortable-hoc';
 import markdownIt from 'markdown-it'
 import 'markdown-it-latex/dist/index.css'
 import markdownItLatex from 'markdown-it-latex'
-const mdi = markdownIt({html: true})
-mdi.use(markdownItLatex)
+const mdi = markdownIt({html: true});
+mdi.use(markdownItLatex);
 
 
 import {GlyphButton} from "./blueprint_react_widgets.js";
@@ -24,7 +24,7 @@ import {SortableComponent} from "./sortable_container.js";
 import {KeyTrap} from "./key_trap.js";
 import {postWithCallback} from "./communication_react.js"
 import {doFlash} from "./toaster.js"
-import {doBinding, arrayMove, scrollMeIntoView} from "./utilities_react.js";
+import {doBinding, arrayMove} from "./utilities_react.js";
 import {showConfirmDialogReact, showSelectResourceDialog} from "./modal_react.js";
 
 export {ConsoleComponent}
@@ -54,8 +54,9 @@ const BUTTON_CONSUMED_SPACE = 208;
      }
 
      componentDidMount() {
+
          this.setState({"mounted": true});
-         this.initSocket()
+         this.initSocket();
          if (this.props.console_items.length == 0) {
              this._addCodeArea("", false)
          }
@@ -67,7 +68,7 @@ const BUTTON_CONSUMED_SPACE = 208;
          }
          if (this.state.show_console_error_log) {
             if (this.body_ref && this.body_ref.current) {
-                let el = this.body_ref.current;
+                const el = this.body_ref.current;
                 // In the computation below, note that the 500 comes from the height of the padding-div
                 this.body_ref.current.scrollTop = el.scrollHeight - 500 - el.offsetHeight + 45
             }
@@ -96,7 +97,6 @@ const BUTTON_CONSUMED_SPACE = 208;
      }
 
      _addConsoleText(the_text) {
-         let self = this;
          postWithCallback("host", "print_text_area_to_console",
              {"console_text": the_text, "user_id": window.user_id, "main_id": window.main_id}, function (data) {
                  if (!data.success) {
@@ -106,11 +106,11 @@ const BUTTON_CONSUMED_SPACE = 208;
      }
 
      _addBlankText() {
-         this.addConsoleText("")
+         this._addConsoleText("")
      }
 
      _insertTextInCell(the_text) {
-         let unique_id = this.state.currently_selected_item
+         let unique_id = this.state.currently_selected_item;
          let entry = this.get_console_item_entry(unique_id);
          let replace_dicts = [];
          replace_dicts.push({unique_id: unique_id, field:"console_text", value: entry.console_text + the_text});
@@ -120,15 +120,17 @@ const BUTTON_CONSUMED_SPACE = 208;
 
      _copyCell(unique_id = null) {
          if (!unique_id) {
-             unique_id = this.state.currently_selected_item
-             if (!unique_id) return;
+             unique_id = this.state.currently_selected_item;
+             if (!unique_id) {
+                 return;
+             }
          }
          let entry = this.get_console_item_entry(unique_id);
          const result_dict = {
              "main_id": window.main_id,
              "console_item": entry,
              "user_id": window.user_id,
-         }
+         };
          postWithCallback("host", "copy_console_cell", result_dict)
      }
 
@@ -152,7 +154,7 @@ const BUTTON_CONSUMED_SPACE = 208;
              tile: "last_saved_view",
              list: "view_list",
              code: "view_code"
-         }
+         };
 
          function build_link(type, selected_resource) {
              return `[\`${selected_resource}\`](${type_paths[type]}/${selected_resource})`
@@ -336,8 +338,8 @@ const BUTTON_CONSUMED_SPACE = 208;
              replace_dicts.push({unique_id: this.state.currently_selected_item, field: "am_selected", value: false});
              replace_dicts.push({unique_id: this.state.currently_selected_item, field: "search_string", value: null})
          }
-         replace_dicts.push({unique_id: unique_id, field: "am_selected", value: true})
-         replace_dicts.push({unique_id: unique_id, field: "search_string", value: this.state.search_string})
+         replace_dicts.push({unique_id: unique_id, field: "am_selected", value: true});
+         replace_dicts.push({unique_id: unique_id, field: "search_string", value: this.state.search_string});
          this._multiple_console_item_updates(replace_dicts, () => {
              self.setState({currently_selected_item: unique_id}, callback)
          })
@@ -348,7 +350,7 @@ const BUTTON_CONSUMED_SPACE = 208;
          let replace_dicts = [];
          if (this.state.currently_selected_item) {
              replace_dicts.push({unique_id: this.state.currently_selected_item, field: "am_selected", value: false});
-             replace_dicts.push({unique_id: this.state.currently_selected_item, field: "search_string", value: null})
+             replace_dicts.push({unique_id: this.state.currently_selected_item, field: "search_string", value: null});
              this._multiple_console_item_updates(replace_dicts, () => {
                  self.setState({currently_selected_item: null, console_item_with_focus: null})
              })
@@ -377,7 +379,7 @@ const BUTTON_CONSUMED_SPACE = 208;
          let next_index = this._consoleItemIndex(unique_id) + 1;
          while (next_index < this.props.console_items.length) {
              let next_id = this.props.console_items[next_index].unique_id;
-             let next_item = this.props.console_items[next_index]
+             let next_item = this.props.console_items[next_index];
              if (!next_item.am_shrunk &&
                  ((next_item.type == "code") || ((next_item.type == "text") && (!next_item.show_markdown)))) {
                  if (!next_item.show_on_filtered) {
@@ -520,7 +522,7 @@ const BUTTON_CONSUMED_SPACE = 208;
      }
 
      _clickConsoleBody(e) {
-         this._clearSelectedItem()
+         this._clearSelectedItem();
          e.stopPropagation()
      }
 
@@ -536,7 +538,7 @@ const BUTTON_CONSUMED_SPACE = 208;
      }
      
      _setSearchString(val) {
-         let nval = val == "" ? null : val
+         let nval = val == "" ? null : val;
          this.setState({search_string: nval}, ()=>{
              if (this.state.currently_selected_item) {
                  this._setConsoleItemValue(this.state.currently_selected_item, "search_string", nval)
@@ -578,7 +580,7 @@ const BUTTON_CONSUMED_SPACE = 208;
                              self._setConsoleItemValue(entry.unique_id, "show_markdown", false)
                      }
                  })) {
-                     this.setState({"search_helper_text": null})
+                     this.setState({"search_helper_text": null});
                      return
                  }
              }
@@ -620,7 +622,7 @@ const BUTTON_CONSUMED_SPACE = 208;
                              self._setConsoleItemValue(entry.unique_id, "show_markdown", false)
                      }
                  })) {
-                     this.setState({"search_helper_text": null})
+                     this.setState({"search_helper_text": null});
                      return
                  }
              }
@@ -651,10 +653,10 @@ const BUTTON_CONSUMED_SPACE = 208;
          if (!this.props.shrinkable) {
              header_style["paddingLeft"] = 10
          }
-         let key_bindings = [[["escape"], this._clearSelectedItem]]
+         let key_bindings = [[["escape"], this._clearSelectedItem]];
          let filtered_items;
          if (this.state.filter_console_items) {
-             filtered_items = []
+             filtered_items = [];
              for (let entry of this.props.console_items) {
                  if (entry.show_on_filtered) {
                      filtered_items.push(entry)
@@ -884,7 +886,7 @@ RawConsoleComponent.propTypes = {
      dark_theme: false
  };
 
-const ConsoleComponent = ContextMenuTarget(RawConsoleComponent)
+const ConsoleComponent = ContextMenuTarget(RawConsoleComponent);
 
  class RawSortHandle extends React.Component {
 
@@ -1012,7 +1014,7 @@ class RawLogItem extends React.Component {
     }
 
     _consoleItemClick(e) {
-        this._selectMe()
+        this._selectMe();
         e.stopPropagation()
     }
 
@@ -1123,17 +1125,17 @@ class RawConsoleCodeItem extends React.Component {
     }
 
     _scrollMeIntoView() {
-        let my_element = this.elRef.current
+        let my_element = this.elRef.current;
         let outer_element = my_element.parentNode.parentNode;
-        let scrolled_element = my_element.parentNode
-        let outer_height = outer_element.offsetHeight
+        let scrolled_element = my_element.parentNode;
+        let outer_height = outer_element.offsetHeight;
         let distance_from_top = my_element.offsetTop - outer_element.scrollTop - scrolled_element.offsetTop;
-        if (distance_from_top > (outer_height - 35)) {
-            let distance_to_move = distance_from_top - .5 * outer_height
+        if (distance_from_top > outer_height - 35) {
+            let distance_to_move = distance_from_top - .5 * outer_height;
             outer_element.scrollTop += distance_to_move
         }
         else if (distance_from_top < 0) {
-            let distance_to_move = .25 * outer_height - distance_from_top
+            let distance_to_move = .25 * outer_height - distance_from_top;
             outer_element.scrollTop -= distance_to_move
         }
     }
@@ -1160,6 +1162,7 @@ class RawConsoleCodeItem extends React.Component {
             let scripts = $("#" + this.props.unique_id + " .log-code-output script").toArray();
             // $("#" + this.props.unique_id + " .bk-root").html(""); // This is a kluge to deal with bokeh double images
             for (let script of scripts) {
+                // noinspection EmptyCatchBlockJS,UnusedCatchParameterJS
                 try {
                     window.eval(script.text)
                 }
@@ -1454,7 +1457,7 @@ class RawConsoleTextItem extends React.Component {
             }
             else if (this.cmobject != null) {
                 this.cmobject.focus();
-                this.cm_object.setCursor({line: 0, ch: 0})
+                this.cm_object.setCursor({line: 0, ch: 0});
                 this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe)
             }
         }
@@ -1468,17 +1471,17 @@ class RawConsoleTextItem extends React.Component {
     }
 
     _scrollMeIntoView() {
-        let my_element = this.elRef.current
+        let my_element = this.elRef.current;
         let outer_element = my_element.parentNode.parentNode;
-        let scrolled_element = my_element.parentNode
-        let outer_height = outer_element.offsetHeight
+        let scrolled_element = my_element.parentNode;
+        let outer_height = outer_element.offsetHeight;
         let distance_from_top = my_element.offsetTop - outer_element.scrollTop - scrolled_element.offsetTop;
         if (distance_from_top > (outer_height - 35)) {
-            let distance_to_move = distance_from_top - .5 * outer_height
+            let distance_to_move = distance_from_top - .5 * outer_height;
             outer_element.scrollTop += distance_to_move
         }
         else if (distance_from_top < 0) {
-            let distance_to_move = .25 * outer_height - distance_from_top
+            let distance_to_move = .25 * outer_height - distance_from_top;
             outer_element.scrollTop -= distance_to_move
         }
     }
@@ -1730,7 +1733,7 @@ RawConsoleTextItem.propTypes = {
 
 RawConsoleTextItem.proptypes = {
     force_sync_to_prop: false,
-}
+};
 
 const ConsoleTextItem = ContextMenuTarget(RawConsoleTextItem);
 

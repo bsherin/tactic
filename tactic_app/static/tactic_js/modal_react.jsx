@@ -402,7 +402,7 @@ ConfirmDialog.propTypes = {
 ConfirmDialog.defaultProps = {
     submit_text: "Submit",
     cancel_text: "Cancel"
-}
+};
 
 function showConfirmDialogReact(title, text_body, cancel_text, submit_text, submit_function) {
 

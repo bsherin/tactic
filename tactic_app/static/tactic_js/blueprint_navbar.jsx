@@ -21,9 +21,9 @@ const padding = 10;
 
 
 function get_theme_cookie() {
-    let cookie_str = document.cookie.split('; ').find(row => row.startsWith('tactic_theme'))
+    let cookie_str = document.cookie.split('; ').find(row => row.startsWith('tactic_theme'));
     if (cookie_str == undefined) {
-        set_theme_cookie("light")
+        set_theme_cookie("light");
         return "light"
     }
     return cookie_str.split('=')[1];
