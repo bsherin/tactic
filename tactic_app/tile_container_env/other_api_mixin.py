@@ -78,6 +78,7 @@ class OtherAPIMIxin:
                 self._restore_stdout()
                 return None
         else:  # otherwise assume first argument is the tile name
+            # noinspection PyProtectedMember
             tile_id = self.tiles[key_or_tile_name]._tile_id
         if tile_id == self._tworker.my_id:  # then this is a global from the pseudo_tile
             val = self._eval_name(export_name)
