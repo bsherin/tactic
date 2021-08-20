@@ -99,7 +99,7 @@ class LibraryHomeApp extends React.Component {
         window.addEventListener("resize", this._update_window_dimensions);
         this.setState({"mounted": true});
         this._update_window_dimensions();
-        this.props.stopSpinner()
+        this.props.stopSpinner();
         this.props.setStatusTheme(this.state.dark_theme);
         window.dark_theme = this.state.dark_theme
     }
@@ -125,7 +125,7 @@ class LibraryHomeApp extends React.Component {
 
     _setTheme(dark_theme) {
         this.setState({dark_theme}, ()=> {
-            this.props.setStatusTheme(dark_theme)
+            this.props.setStatusTheme(dark_theme);
             window.dark_theme = dark_theme
         })
     }
@@ -222,7 +222,7 @@ class LibraryHomeApp extends React.Component {
             height: this.state.usable_height,
             paddingLeft: 0
         };
-        let outer_class = "pane-holder  "
+        let outer_class = "pane-holder  ";
         if (this.state.dark_theme) {
             outer_class = `${outer_class} bp3-dark`;
         }
@@ -456,7 +456,7 @@ class CollectionToolbar extends React.Component {
             postAjaxPromise("combine_to_new_collection",
                 {"original_collections": self.props.list_of_selected, "new_name": new_name})
                 .then((data) => {
-                    self.props.refresh_func()
+                    self.props.refresh_func();
                     data.new_row })
                 .catch((data)=>{self.props.addErrorDrawerEntry({title: "Error combining collections", content: data.message})})
         }
@@ -489,7 +489,7 @@ class CollectionToolbar extends React.Component {
     }
 
     _import_collection(myDropZone, setCurrentUrl, new_name, check_results, csv_options=null) {
-        let doc_type
+        let doc_type;
         if (check_results["import_as_freeform"]) {
             doc_type = "freeform"
         } else {
@@ -504,7 +504,7 @@ class CollectionToolbar extends React.Component {
             .then((data)=> {
                 let new_url = `append_documents_to_collection/${new_name}/${doc_type}/${window.library_id}`;
                 myDropZone.options.url = new_url;
-                setCurrentUrl(new_url)
+                setCurrentUrl(new_url);
                 this.upload_name = new_name;
                 myDropZone.processQueue();
             })
@@ -584,7 +584,7 @@ class ProjectToolbar extends React.Component {
    _import_jupyter (myDropZone, setCurrentUrl) {
         let new_url = `import_jupyter/${window.library_id}`;
         myDropZone.options.url = new_url;
-        setCurrentUrl(new_url)
+        setCurrentUrl(new_url);
         myDropZone.processQueue();
     };
 
@@ -811,7 +811,7 @@ class ListToolbar extends React.Component {
     _add_list (myDropZone, setCurrentUrl) {
         let new_url = `import_list/${window.library_id}`;
         myDropZone.options.url = new_url;
-        setCurrentUrl(new_url)
+        setCurrentUrl(new_url);
         myDropZone.processQueue();
     }
 

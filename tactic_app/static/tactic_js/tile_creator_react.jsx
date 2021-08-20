@@ -86,7 +86,7 @@ function got_parsed_data (data_object) {
     let domContainer = document.querySelector('#creator-root');
     let parsed_data = data_object.the_content;
     let result_dict = {"res_type": "tile", "res_name": window.module_name, "is_repository": false};
-    let odict = parsed_data.option_dict
+    let odict = parsed_data.option_dict;
     for (let option of odict) {
         for (let param in option) {
             if (Array.isArray(option[param])) {
@@ -101,7 +101,7 @@ function got_parsed_data (data_object) {
                     }
                     nstring += "'" + String(item) + "'"
                 }
-                nstring += "]"
+                nstring += "]";
                 option[param] = nstring
             }
 
@@ -146,7 +146,7 @@ function TileCreatorToolbar(props) {
                 justifyContent: "space-around",
                 marginBottom: 0,
                 marginTop: 7
-    }
+    };
     return (
         <div style={tstyle} className="d-flex flex-row justify-content-between">
             <Namebutton resource_name={props.tile_name}
@@ -181,7 +181,7 @@ class CreatorApp extends React.Component {
         this.vp_ref = React.createRef();
         this.hp_ref = React.createRef();
         this.methods_ref = React.createRef();
-        this.commands_ref = React.createRef()
+        this.commands_ref = React.createRef();
         this.draw_plot_bounding_ref = React.createRef();
         this.last_save = {};
         this.dpObject = null;
@@ -461,7 +461,7 @@ class CreatorApp extends React.Component {
             if (this.props.is_mpl || this.props.is_d3) {
                 if (this.line_number < this.state.draw_plot_line_number) {
                     if (this.emObject) {
-                        this._handleTabSelect("methods")
+                        this._handleTabSelect("methods");
                         this._selectLine(this.emObject, this.line_number - this.state.extra_methods_line_number);
                         this.line_number = null
 
@@ -471,28 +471,28 @@ class CreatorApp extends React.Component {
                 }
                 else if (this.line_number < this.state.render_content_line_number) {
                     if (this.dpObject) {
-                        this._selectLine(this.dpObject, this.line_number - this.state.draw_plot_line_number - 1)
+                        this._selectLine(this.dpObject, this.line_number - this.state.draw_plot_line_number - 1);
                         this.line_number = null
                     } else {
                         return
                     }
                 } else if (this.rcObject) {
-                    this._selectLine(this.rcObject, this.line_number - this.state.render_content_line_number - 1)
+                    this._selectLine(this.rcObject, this.line_number - this.state.render_content_line_number - 1);
                     this.line_number = null
                 }
             }
             else {
                 if (this.line_number < this.props.render_content_line_number) {
                     if (this.emObject) {
-                        this._handleTabSelect("methods")
-                        this._selectLine(this.emObject, this.line_number - this.state.extra_methods_line_number)
+                        this._handleTabSelect("methods");
+                        this._selectLine(this.emObject, this.line_number - this.state.extra_methods_line_number);
                         this.line_number = null
                     } else {
                         return
                     }
                 } else {
                     if (this.rcObject) {
-                        this._selectLine(this.rcObject, this.line_number - this.state.render_content_line_number - 1)
+                        this._selectLine(this.rcObject, this.line_number - this.state.render_content_line_number - 1);
                         this.line_number = null
                     }
                 }
@@ -504,12 +504,12 @@ class CreatorApp extends React.Component {
         this.setState({"mounted": true});
         document.title = this.state.tile_name;
         this._goToLineNumber();
-        this.props.setGoToLineNumber(this._selectLineNumber)
+        this.props.setGoToLineNumber(this._selectLineNumber);
         window.addEventListener("resize", this.update_window_dimensions);
         this.update_window_dimensions();
         this._update_saved_state();
         this.props.stopSpinner();
-        this.props.setStatusTheme(this.state.dark_theme)
+        this.props.setStatusTheme(this.state.dark_theme);
         this.initSocket();
         window.dark_theme = this.state.dark_theme
     }
@@ -812,7 +812,7 @@ class CreatorApp extends React.Component {
             height: this.state.usable_height,
             paddingLeft: SIDE_MARGIN
         };
-        let outer_class = "resource-viewer-holder"
+        let outer_class = "resource-viewer-holder";
         if (this.state.dark_theme) {
             outer_class = outer_class + " bp3-dark";
         }
