@@ -5,7 +5,8 @@ import "../tactic_css/library_home.scss";
 import "../tactic_css/tile_creator.scss";
 
 import React from "react";
-import * as ReactDOM from 'react-dom'
+import * as ReactDOM from 'react-dom';
+// import PropTypes from 'prop-types';
 
 import { Tab, Tabs, Button, Icon } from "@blueprintjs/core";
 
@@ -15,7 +16,7 @@ FocusStyleManager.onlyShowFocusOnTabs();
 
 import {TacticSocket} from "./tactic_socket";
 import {handleCallback} from "./communication_react.js";
-import {doFlash} from "./toaster.js";
+import {doFlash, withStatus} from "./toaster.js";
 import {TacticNavbar} from "./blueprint_navbar";
 import {library_in_context} from "./library_home_react.js";
 
@@ -26,9 +27,7 @@ import {main_main_in_context} from "./main_app.js"
 import {main_notebook_in_context} from "./notebook_app.js";
 import {code_viewer_in_context} from "./code_viewer_react.js";
 import {list_viewer_in_context} from "./list_viewer_react.js";
-import PropTypes from "../js/prop-types";
-
-
+import {withErrorDrawer} from "./error_drawer";
 
 class ContextTacticSocket extends TacticSocket {
 
@@ -54,8 +53,9 @@ function _context_main() {
     let tsocket = new ContextTacticSocket("main",
         5000);
     // window.tsocket = tsocket;
+    const ContextAppPlus = withErrorDrawer(withStatus(ContextApp, tsocket), tsocket);
     const domContainer = document.querySelector('#context-root');
-    ReactDOM.render(<ContextApp initial_theme={window.theme} tsocket={tsocket}/>, domContainer);
+    ReactDOM.render(<ContextAppPlus initial_theme={window.theme} tsocket={tsocket}/>, domContainer);
 }
 
 class ContextApp extends React.Component {
@@ -65,8 +65,9 @@ class ContextApp extends React.Component {
         doBinding(this);
         this.socket_counter = null;
         this.state = {
-            tab_list: [],
             tab_ids: [],
+            library_panel: [],
+            tab_panel_dict: {},
             dark_theme: props.initial_theme === "dark",
             selectedTabId: null,
             theme_setters: [],
@@ -104,26 +105,8 @@ class ContextApp extends React.Component {
     }
 
     componentDidMount() {
-        let lpanel = library_in_context(this._handleCreateViewer, this._registerLibraryTabChanger);
-        let bstyle = {paddingTop: 0, paddingBotton: 0};
-        let lib_buttons = [];
-        for (let rt of this.resTypes) {
-            lib_buttons.push(
-                <Button className="lib-button" data-res-type={rt} alignText="left" minimal={true} onClick={() => {
-                    this._changeLibTab(rt)
-                }}>
-                    {rt}
-                </Button>
-            )
-        }
-        let ltab = (
-            <Tab id="library" className="context-tab" title="Library" panel={lpanel}>
-                <div style={{display: "flex", flexDirection: "column"}}>
-                    {lib_buttons}
-                </div>
-            </Tab>
-        );
-        this.setState({tab_list: [ltab], selectedTabId: "library",  tab_ids:["libary"]})
+        let library_panel = library_in_context(this._handleCreateViewer, this._registerLibraryTabChanger);
+        this.setState({library_panel: library_panel, selectedTabId: "library"})
     }
 
     componentDidUpdate() {
@@ -144,13 +127,13 @@ class ContextApp extends React.Component {
 
      _closeTab(the_id) {
         let idx =this.state.tab_ids.indexOf(the_id);
-        let copied_tab_list = [...this.state.tab_list];
+        let copied_tab_panel_dict = {...this.state.tab_panel_dict};
         let copied_tab_ids = [...this.state.tab_ids];
         if (idx > -1) {
-          copied_tab_list.splice(idx, 1);
           copied_tab_ids.splice(idx, 1);
+          delete copied_tab_panel_dict[the_id]
         }
-        let new_state = {tab_list: copied_tab_list, tab_ids: copied_tab_ids};
+        let new_state = {tab_panel_dict: copied_tab_panel_dict, tab_ids: copied_tab_ids};
         let currentlySelected = this.state.selectedTabId;
         let stateUpdate;
         if (the_id == this.state.selectedTabId) {
@@ -223,18 +206,10 @@ class ContextApp extends React.Component {
                      {new_panel}
                  </div>
              );
-             const new_tab = (
-                     <Tab id={new_id} className="context-tab" title="" panel={wrapped_panel}>
-                         <Icon icon={this.iconDict[data.kind]}
-                               style={{verticalAlign: "middle", marginRight: 5}}
-                               iconSize={14} tabIndex={-1}/>
-                         {data.resource_name}
-                         <Button icon="cross" minimal={true} tabIndex={-1} onClick={()=>{this._closeTab(new_id)}}/>
-                     </Tab>
-             );
-
+             let new_tab_panels = {...this.state.tab_panels};
+             new_tab_panels[new_id] = {kind: data.kind, title: data.resource_name, panel: wrapped_panel};
              this.setState({
-                 tab_list: [...this.state.tab_list, new_tab],
+                 tab_panels: new_tab_panels,
                  tab_ids: [...this.state.tab_ids, new_id],
                  lastSelectedTabId: this.state.selectedTabId,
                  selectedTabId: new_id})
@@ -245,8 +220,42 @@ class ContextApp extends React.Component {
         this.setState({selectedTabId: newTabId, lastSelectedTabId: prevTabId})
     }
 
-
     render() {
+      let bstyle = {paddingTop: 0, paddingBotton: 0};
+        let lib_buttons = [];
+        for (let rt of this.resTypes) {
+            lib_buttons.push(
+                <Button className="lib-button" data-res-type={rt} alignText="left" minimal={true} onClick={() => {
+                    this._changeLibTab(rt)
+                }}>
+                    {rt}
+                </Button>
+            )
+        }
+        let ltab = (
+            <Tab id="library" className="context-tab" title="Library" panel={this.state.library_panel}>
+                <div style={{display: "flex", flexDirection: "column"}}>
+                    {lib_buttons}
+                </div>
+            </Tab>
+        );
+        let all_tabs = [ltab];
+        for (let tab_id of this.state.tab_ids) {
+            let tab_entry = this.state.tab_panels[tab_id];
+            let new_tab = (
+                <Tab id={tab_id} className="context-tab" title="" panel={tab_entry.panel}>
+                    <Icon icon={this.iconDict[tab_entry.kind]}
+                          style={{verticalAlign: "middle", marginRight: 5}}
+                          iconSize={14} tabIndex={-1}/>
+                    {tab_entry.title}
+                    <Button icon="cross" minimal={true} tabIndex={-1} onClick={() => {
+                        this._closeTab(tab_id)
+                    }}/>
+                </Tab>
+            );
+            all_tabs.push(new_tab)
+        }
+
         let outer_class = "pane-holder ";
         if (this.state.dark_theme) {
             outer_class = `${outer_class} bp3-dark`;
@@ -264,7 +273,7 @@ class ContextApp extends React.Component {
                             <Tabs id="context-tabs" selectedTabId={this.state.selectedTabId}
                                   className={"context-tab-list " + this.state.selectedLibraryTab + "-selected"}
                                      vertical={true} onChange={this._handleTabSelect}>
-                                {this.state.tab_list}
+                                {all_tabs}
                             </Tabs>
                         </div>
                     </div>
