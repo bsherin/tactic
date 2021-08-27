@@ -6,7 +6,6 @@
 {% endblock %}
 
 {% block styles %}
-{#    <link rel="stylesheet" href="{{url_for('static', filename='tactic_css/table.css', v=version_string)}}">#}
 {% endblock %}
 
 {% block page_content %}
@@ -20,35 +19,13 @@
 {% block scripts %}
     <script src="{{url_for('static', filename='js/sorttable.js')}}"></script>
     <script src="{{url_for('static', filename='js/d3.min.js')}}"></script>
-
-    {% if is_freeform %}
-        <script src="{{url_for('static', filename='js/codemirror/simple.js')}}"></script>
-    {% endif %}
     <script type="module" src="{{url_for('static', filename=module_source, v=version_string)}}"></script>
     <script>
         window.user_id = "{{current_user.get_id()}}";
-        window.short_collection_name = "{{short_collection_name}}";
-        window.theme="{{theme}}"
-        window._collection_name = "{{collection_name}}";
-        window._project_name = "{{project_name}}";
-        window.base_figure_url = "{{base_figure_url}}";
-        window.main_id = "{{main_id}}";
-        {#window.main_port = "{{main_port}}";#}
-        window.temp_data_id = "{{temp_data_id}}";
-        window.page_id = main_id;
-        window.user_id = "{{current_user.get_id()}}";
-        window.doc_names = {{ doc_names | safe }};
-        window.is_notebook = false;
-        window.is_project = window._project_name != "";
-        window.is_freeform = "{{is_freeform}}"=="True";
-        window.ready_block_id = "{{ready_block_id}}"
-        if (window.is_freeform) {
-            window.doc_type = "freeform"
-        }
-        else {
-            window.doc_type = "table"
-        }
-        window.new_tile_info = "{{new_tile_info | safe}}";
-
+        window.theme="{{theme}}";
+        window.version_string = "{{tstring}}";
+        window.collection_name = "{{collection_name}}";
+        window.project_name = "{{project_name}}";
+        window.is_new_notebook ="{{is_new_notebook}}"=="True";
     </script>
 {% endblock %}

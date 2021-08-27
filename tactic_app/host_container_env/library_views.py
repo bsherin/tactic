@@ -143,6 +143,18 @@ def library():
                                module_source=js_source_dict["library_home_react"])
 
 
+@app.route('/context')
+@login_required
+def context():
+    return render_template('context_react.html',
+                           develop=str(_develop),
+                           version_string=tstring,
+                           theme=current_user.get_theme(),
+                           page_title="context",
+                           css_source=css_source("context_react"),
+                           module_source=js_source_dict["context_react"],
+                           dark_theme_name=current_user.get_preferred_dark_theme())
+
 @app.route('/repository')
 @login_required
 def repository():
@@ -161,6 +173,16 @@ def repository():
 def connected_msg():
     print("client connected for user {}".format(current_user.username))
 
+
+@socketio.on('join', namespace='/library')
+@login_required
+def on_join(data):
+    room = data["user_id"]
+    join_room(room)
+    print("user joined room " + room)
+    room = data["library_id"]
+    join_room(room)
+    print("user joined room " + room)
 
 @socketio.on('join', namespace='/library')
 @login_required
@@ -239,21 +261,9 @@ def grab_metadata():
         if mdata is None:
             return jsonify({"success": False, "message": "No metadata found", "alert_type": "alert-warning"})
         else:
-            if "datetime" in mdata:
-                datestring = current_user.get_timestrings(mdata["datetime"])[0]
-            else:
-                datestring = ""
-            additional_mdata = copy.copy(mdata)
-            standard_mdata = ["datetime", "tags", "notes", "_id", "name"]
-            for field in standard_mdata:
-                if field in additional_mdata:
-                    del additional_mdata[field]
-            if "updated" in additional_mdata:
-                additional_mdata["updated"] = current_user.get_timestrings(additional_mdata["updated"])[0]
-            if "collection_name" in additional_mdata:
-                additional_mdata["collection_name"] = current_user.get_short_collection_name(additional_mdata["collection_name"])
-            return jsonify({"success": True, "res_name": res_name, "datestring": datestring, "tags": mdata["tags"],
-                            "notes": mdata["notes"], "additional_mdata": additional_mdata})
+            result = current_user.process_metadata(mdata)
+            result.update({"success": True, "res_name": res_name})
+            return jsonify(result)
     except Exception as ex:
         return generic_exception_handler.get_exception_for_ajax(ex, "Error getting metadata")
 

@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.main_main_in_context = main_main_in_context;
 exports.MainTacticSocket = void 0;
 
 require("../tactic_css/tactic.scss");
@@ -104,15 +105,7 @@ var MARGIN_ADJUSTMENT = 8; // This is the amount at the top of both the table an
 
 var CONSOLE_HEADER_HEIGHT = 35;
 var EXTRA_TABLE_AREA_SPACE = 500;
-var tsocket;
-var ppi; // Note: it seems like the sendbeacon doesn't work if this callback has a line
-// before the sendbeacon
-
-window.addEventListener("unload", function sendRemove(event) {
-  navigator.sendBeacon("/remove_mainwindow", JSON.stringify({
-    "main_id": window.main_id
-  }));
-});
+var ppi;
 
 function renderSpinnerMessage(msg) {
   var domContainer = document.querySelector('#main-root');
@@ -128,134 +121,187 @@ function renderSpinnerMessage(msg) {
   }, msg)), domContainer);
 }
 
-function _main_main() {
-  //render_navbar();
-  console.log("entering start_post_load");
-  var domContainer = document.querySelector('#main-root');
-  renderSpinnerMessage("Starting up...");
+var MainTacticSocket = /*#__PURE__*/function (_TacticSocket) {
+  _inherits(MainTacticSocket, _TacticSocket);
+
+  var _super = _createSuper(MainTacticSocket);
+
+  function MainTacticSocket() {
+    _classCallCheck(this, MainTacticSocket);
+
+    return _super.apply(this, arguments);
+  }
+
+  _createClass(MainTacticSocket, [{
+    key: "initialize_socket_stuff",
+    value: function initialize_socket_stuff() {
+      var reconnect = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+      this.socket.emit('join', {
+        "room": window.user_id
+      });
+
+      if (reconnect) {
+        this.socket.emit('join-main', {
+          "room": this.extra_args.main_id,
+          "user_id": window.user_id
+        }, function (response) {});
+      }
+
+      this.socket.on('handle-callback', _communication_react.handleCallback);
+      this.socket.on('close-user-windows', function (data) {
+        (0, _communication_react.postAsyncFalse)("host", "remove_mainwindow_task", {
+          "main_id": this.extra_args.main_id
+        });
+
+        if (!(data["originator"] == this.extra_args.main_id)) {
+          window.close();
+        }
+      });
+      this.socket.on("window-open", function (data) {
+        window.open($SCRIPT_ROOT + "/load_temp_page/" + data["the_id"]);
+      });
+      this.socket.on("notebook-open", function (data) {
+        window.open($SCRIPT_ROOT + "/open_notebook/" + data["the_id"]);
+      });
+      this.socket.on("doFlash", function (data) {
+        (0, _toaster.doFlash)(data);
+      });
+    }
+  }]);
+
+  return MainTacticSocket;
+}(_tactic_socket.TacticSocket);
+
+exports.MainTacticSocket = MainTacticSocket;
+
+function main_main() {
+  function gotElement(the_element) {
+    var domContainer = document.querySelector('#main-root');
+    ReactDOM.render(the_element, domContainer);
+  }
+
+  var target = window.project_name == "" ? "main_collection_in_context" : "main_project_in_context";
+  var resource_name = window.project_name == "" ? window.collection_name : window.project_name;
+  (0, _communication_react.postAjaxPromise)(target, {
+    "resource_name": resource_name
+  }).then(function (data) {
+    main_main_in_context(data, null, gotElement);
+  });
+}
+
+function main_main_in_context(data, registerThemeSetter, finalCallback) {
+  var tsocket = new MainTacticSocket("main", 5000, {
+    main_id: data.main_id
+  });
   ppi = (0, _utilities_react.get_ppi)();
-  tsocket = new MainTacticSocket("main", 5000);
-  tsocket.socket.on('finish-post-load', _finish_post_load);
-  tsocket.socket.on("remove-ready-block", _everyone_ready);
+  var main_id = data.main_id;
+
+  if (!window.in_context) {
+    window.main_id = data.main_id; // needed for postWithCallback
+  }
+
+  var initial_tile_types;
+  tsocket.socket.on('finish-post-load', _finish_post_load_in_context);
+  tsocket.socket.on("remove-ready-block", function () {
+    _everyone_ready_in_context();
+  });
   tsocket.socket.emit('join-main', {
     "room": main_id,
     "user_id": window.user_id
   }, function (response) {
-    window.initial_tile_types = response.tile_types;
+    initial_tile_types = response.tile_types;
     tsocket.socket.emit('client-ready', {
       "room": main_id,
       "user_id": window.user_id,
       "participant": "client",
-      "rb_id": window.ready_block_id,
+      "rb_id": data.ready_block_id,
       "main_id": main_id
     });
   });
-  tsocket.socket.on('myevent', function () {
-    console.log("got the event");
+  window.addEventListener("unload", function sendRemove(event) {
+    navigator.sendBeacon("/remove_mainwindow", JSON.stringify({
+      "main_id": main_id
+    }));
   });
-}
 
-function _everyone_ready() {
-  renderSpinnerMessage("Everyone is ready, initializing...");
-
-  if (window.is_project) {
-    var data_dict = {
-      "project_name": window._project_name,
-      "doc_type": window.doc_type,
-      "library_id": window.main_id,
-      "base_figure_url": window.base_figure_url,
-      "user_id": window.user_id,
-      "ppi": ppi
-    };
-    (0, _communication_react.postWithCallback)(main_id, "initialize_project_mainwindow", data_dict);
-  } else {
-    var _data_dict = {
-      "collection_name": window._collection_name,
-      "doc_type": window.doc_type,
-      "base_figure_url": window.base_figure_url,
-      "user_id": window.user_id,
-      "ppi": ppi
-    };
-    (0, _communication_react.postWithCallback)(main_id, "initialize_mainwindow", _data_dict, _finish_post_load);
-  }
-}
-
-function _finish_post_load(data) {
-  renderSpinnerMessage("Creating the page...");
-  var MainAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(MainApp, tsocket, true), tsocket);
-  var interface_state;
-
-  if (window.is_project) {
-    window._collection_name = data.collection_name;
-    window.doc_names = data.doc_names;
-    window.short_collection_name = data.short_collection_name;
-    interface_state = data.interface_state; // legacy below lines needed for older saves
-
-    if (!("show_exports_pane" in interface_state)) {
-      interface_state["show_exports_pane"] = true;
-    }
-
-    if (!("show_console_pane" in interface_state)) {
-      interface_state["show_console_pane"] = true;
-    }
-  }
-
-  if (window.is_freeform) {
-    var domContainer = document.querySelector('#main-root');
-
-    if (window.is_project) {
-      // postWithCallback(window.main_id, "grab_freeform_data", {"doc_name":window.doc_names[0], "set_visible_doc": true}, function (data) {
-      ReactDOM.render( /*#__PURE__*/_react["default"].createElement(MainAppPlus, {
-        is_project: true,
-        interface_state: interface_state,
-        initial_data_text: data.data_text,
-        initial_theme: window.theme,
-        initial_doc_names: window.doc_names
-      }), domContainer);
-    } // )
-    // }
-    else {
-        ReactDOM.render( /*#__PURE__*/_react["default"].createElement(MainAppPlus, {
-          is_project: false,
-          interface_state: null,
-          initial_data_text: data.data_text,
-          initial_theme: window.theme,
-          initial_doc_names: window.doc_names
-        }), domContainer);
-      } // });
-
-  } else {
-    var _domContainer = document.querySelector('#main-root');
-
-    if (window.is_project) {
-      // postWithCallback(window.main_id, "grab_chunk_by_row_index", {"doc_name":window.doc_names[0], "row_index": 0, "set_visible_doc": true}, function (data) {
-      ReactDOM.render( /*#__PURE__*/_react["default"].createElement(MainAppPlus, {
-        is_project: true,
-        interface_state: interface_state,
-        total_rows: data.total_rows,
-        initial_theme: window.theme,
-        initial_column_names: data.table_spec.header_list,
-        initial_data_row_dict: data.data_row_dict,
-        initial_column_widths: data.table_spec.column_widths,
-        initial_hidden_columns_list: data.table_spec.hidden_columns_list,
-        initial_cell_backgrounds: data.table_spec.cell_backgrounds,
-        initial_doc_names: window.doc_names
-      }), _domContainer);
+  function _everyone_ready_in_context() {
+    // renderSpinnerMessage("Everyone is ready, initializing...");
+    if (data.is_project) {
+      var data_dict = {
+        "project_name": data.project_name,
+        "doc_type": data.doc_type,
+        "base_figure_url": data.base_figure_url,
+        "user_id": window.user_id,
+        "ppi": ppi
+      };
+      (0, _communication_react.postWithCallback)(main_id, "initialize_project_mainwindow", data_dict);
     } else {
-      ReactDOM.render( /*#__PURE__*/_react["default"].createElement(MainAppPlus, {
-        is_project: false,
-        interface_state: null,
-        total_rows: data.total_rows,
-        initial_theme: window.theme,
-        initial_column_names: data.table_spec.header_list,
-        initial_data_row_dict: data.data_row_dict,
-        initial_column_widths: data.table_spec.column_widths,
-        initial_hidden_columns_list: data.table_spec.hidden_columns_list,
-        initial_cell_backgrounds: data.table_spec.cell_backgrounds,
-        initial_doc_names: window.doc_names
-      }), _domContainer);
-    } // });
+      var _data_dict = {
+        "collection_name": data.collection_name,
+        "doc_type": data.doc_type,
+        "base_figure_url": data.base_figure_url,
+        "user_id": window.user_id,
+        "ppi": ppi
+      };
+      (0, _communication_react.postWithCallback)(main_id, "initialize_mainwindow", _data_dict, _finish_post_load_in_context);
+    }
+  }
 
+  function _finish_post_load_in_context(fdata) {
+    // renderSpinnerMessage("Creating the page...");
+    var MainAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(MainApp, tsocket, true), tsocket);
+    var interface_state;
+
+    if (data.is_project) {
+      interface_state = fdata.interface_state; // legacy below lines needed for older saves
+
+      if (!("show_exports_pane" in interface_state)) {
+        interface_state["show_exports_pane"] = true;
+      }
+
+      if (!("show_console_pane" in interface_state)) {
+        interface_state["show_console_pane"] = true;
+      }
+    }
+
+    if (data.is_freeform) {
+      finalCallback( /*#__PURE__*/_react["default"].createElement(MainAppPlus, {
+        initial_is_project: data.is_project,
+        main_id: main_id,
+        is_freeform: true,
+        initial_project_name: data.project_name,
+        is_notebook: false,
+        is_jupyter: false,
+        tsocket: tsocket,
+        short_collection_name: data.short_collection_name,
+        initial_tile_types: initial_tile_types,
+        interface_state: interface_state,
+        initial_data_text: fdata.data_text,
+        initial_theme: window.theme,
+        initial_doc_names: fdata.doc_names
+      }));
+    } else {
+      finalCallback( /*#__PURE__*/_react["default"].createElement(MainAppPlus, {
+        initial_is_project: data.is_project,
+        main_id: main_id,
+        is_freeform: false,
+        initial_project_name: data.project_name,
+        is_notebook: false,
+        is_jupyter: false,
+        tsocket: tsocket,
+        short_collection_name: data.short_collection_name,
+        initial_tile_types: initial_tile_types,
+        interface_state: interface_state,
+        total_rows: fdata.total_rows,
+        initial_theme: window.theme,
+        initial_column_names: fdata.table_spec.header_list,
+        initial_data_row_dict: fdata.data_row_dict,
+        initial_column_widths: fdata.table_spec.column_widths,
+        initial_hidden_columns_list: fdata.table_spec.hidden_columns_list,
+        initial_cell_backgrounds: fdata.table_spec.cell_backgrounds,
+        initial_doc_names: fdata.doc_names
+      }));
+    }
   }
 }
 
@@ -264,14 +310,14 @@ var save_attrs = ["tile_list", "table_is_shrunk", "console_width_fraction", "hor
 var MainApp = /*#__PURE__*/function (_React$Component) {
   _inherits(MainApp, _React$Component);
 
-  var _super = _createSuper(MainApp);
+  var _super2 = _createSuper(MainApp);
 
   function MainApp(props) {
     var _this;
 
     _classCallCheck(this, MainApp);
 
-    _this = _super.call(this, props);
+    _this = _super2.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
     _this.table_container_ref = /*#__PURE__*/_react["default"].createRef();
     _this.tile_div_ref = /*#__PURE__*/_react["default"].createRef();
@@ -283,13 +329,15 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
     var base_state = {
       mounted: false,
       doc_names: props.initial_doc_names,
-      short_collection_name: window.short_collection_name,
+      short_collection_name: _this.props.short_collection_name,
+      is_project: _this.props.initial_is_project,
+      project_name: _this.props.initial_project_name,
       console_items: [],
       console_is_shrunk: true,
       show_exports_pane: true,
       show_console_pane: true,
       console_is_zoomed: false,
-      tile_types: window.initial_tile_types,
+      tile_types: _this.props.initial_tile_types,
       tile_list: [],
       search_text: "",
       usable_width: window.innerWidth - 2 * MARGIN_SIZE,
@@ -303,7 +351,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
     };
     var additions;
 
-    if (window.is_freeform) {
+    if (_this.props.is_freeform) {
       additions = {
         data_text: props.initial_data_text,
         table_spec: {
@@ -332,13 +380,9 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
       };
     }
 
-    if (window.is_notebook) {
-      _this.state.console_is_shrunk = false;
-    }
-
     _this.state = Object.assign(base_state, additions);
 
-    if (_this.props.is_project) {
+    if (_this.props.initial_is_project) {
       var _iterator = _createForOfIteratorHelper(save_attrs),
           _step;
 
@@ -414,18 +458,25 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         "mounted": true
       });
       window.addEventListener("resize", this._update_window_dimensions);
-      document.title = window.is_project ? window._project_name : this.state.short_collection_name;
+
+      if (!window.is_contest) {
+        document.title = this.state.is_project ? this.state.project_name : this.state.short_collection_name;
+      }
+
       this.initSocket();
 
       this._updateLastSave();
 
       this.props.setStatusTheme(this.state.dark_theme);
-      window.dark_theme = this.state.dark_theme;
+
+      if (!window.is_context) {
+        window.dark_theme = this.state.dark_theme;
+      }
     }
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate() {
-      if (tsocket.counter != this.socket_counter) {
+      if (this.props.tsocket.counter != this.socket_counter) {
         this.initSocket();
       }
     }
@@ -433,16 +484,16 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
     key: "initSocket",
     value: function initSocket() {
       var self = this;
-      tsocket.socket.off('forcedisconnect');
-      tsocket.socket.on('forcedisconnect', function () {
-        tsocket.socket.disconnect();
+      this.props.tsocket.socket.off('forcedisconnect');
+      this.props.tsocket.socket.on('forcedisconnect', function () {
+        this.props.tsocket.socket.disconnect();
       });
-      tsocket.socket.off('table-message');
-      tsocket.socket.on('table-message', function (data) {
+      this.props.tsocket.socket.off('table-message');
+      this.props.tsocket.socket.on('table-message', function (data) {
         self._handleTableMessage(data);
       });
-      tsocket.socket.off('update-menus');
-      tsocket.socket.on("update-menus", function () {
+      this.props.tsocket.socket.off('update-menus');
+      this.props.tsocket.socket.on("update-menus", function () {
         (0, _communication_react.postWithCallback)("host", "get_tile_types", {
           "user_id": window.user_id
         }, function (data) {
@@ -451,8 +502,8 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
           });
         });
       });
-      tsocket.socket.off('change-doc');
-      tsocket.socket.on('change-doc', function (data) {
+      this.props.tsocket.socket.off('change-doc');
+      this.props.tsocket.socket.on('change-doc', function (data) {
         var row_id = data.hasOwnProperty("row_id") ? data.row_id : null;
 
         if (self.state.table_is_shrunk) {
@@ -463,7 +514,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
 
         self._handleChangeDoc(data.doc_name, row_id);
       });
-      this.socket_counter = tsocket.counter;
+      this.socket_counter = this.props.tsocket.counter;
     }
   }, {
     key: "_setTheme",
@@ -523,7 +574,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         alt_search_text: null
       });
 
-      if (search_text == null && !window.is_freeform) {
+      if (search_text == null && !this.props.is_freeform) {
         this.setState({
           cells_to_color_text: {}
         });
@@ -551,9 +602,9 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
       };
 
       if (func === null) {
-        (0, _communication_react.postWithCallback)(window.main_id, "set_visible_doc", data_dict);
+        (0, _communication_react.postWithCallback)(this.props.main_id, "set_visible_doc", data_dict);
       } else {
-        (0, _communication_react.postWithCallback)(window.main_id, "set_visible_doc", data_dict, func);
+        (0, _communication_react.postWithCallback)(this.props.main_id, "set_visible_doc", data_dict, func);
       }
     }
   }, {
@@ -565,8 +616,8 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         show_table_spinner: true
       });
 
-      if (window.is_freeform) {
-        (0, _communication_react.postWithCallback)(window.main_id, "grab_freeform_data", {
+      if (this.props.is_freeform) {
+        (0, _communication_react.postWithCallback)(this.props.main_id, "grab_freeform_data", {
           "doc_name": new_doc_name,
           "set_visible_doc": true
         }, function (data) {
@@ -591,7 +642,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
           "row_index": row_index,
           "set_visible_doc": true
         };
-        (0, _communication_react.postWithCallback)(main_id, "grab_chunk_by_row_index", data_dict, function (data) {
+        (0, _communication_react.postWithCallback)(this.props.main_id, "grab_chunk_by_row_index", data_dict, function (data) {
           self._setStateFromDataObject(data, new_doc_name, function () {
             self.setState({
               show_table_spinner: false
@@ -623,16 +674,16 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
 
       if (broadcast) {
         spec_update["doc_name"] = this.state.table_spec.current_doc_name;
-        (0, _communication_react.postWithCallback)(window.main_id, "UpdateTableSpec", spec_update); // this._broadcast_event_to_server("UpdateTableSpec", spec_update)
+        (0, _communication_react.postWithCallback)(this.props.main_id, "UpdateTableSpec", spec_update); // this._broadcast_event_to_server("UpdateTableSpec", spec_update)
       }
     }
   }, {
     key: "_broadcast_event_to_server",
     value: function _broadcast_event_to_server(event_name, data_dict, callback) {
-      data_dict.main_id = window.main_id;
+      data_dict.main_id = this.props.main_id;
       data_dict.event_name = event_name;
       data_dict.doc_name = this.state.table_spec.current_doc_name;
-      (0, _communication_react.postWithCallback)(main_id, "distribute_events_stub", data_dict, callback);
+      (0, _communication_react.postWithCallback)(this.props.main_id, "distribute_events_stub", data_dict, callback);
     }
   }, {
     key: "_tile_command",
@@ -664,8 +715,8 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         data_dict["tile_name"] = tile_name;
         data_dict["tile_type"] = tile_type;
         data_dict["user_id"] = window.user_id;
-        data_dict["parent"] = window.main_id;
-        (0, _communication_react.postWithCallback)(window.main_id, "create_tile", data_dict, function (create_data) {
+        data_dict["parent"] = self.props.main_id;
+        (0, _communication_react.postWithCallback)(self.props.main_id, "create_tile", data_dict, function (create_data) {
           if (create_data.success) {
             var new_tile_entry = self._createTileEntry(tile_name, menu_id, create_data.tile_id, create_data.form_data);
 
@@ -987,7 +1038,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_deleteRow",
     value: function _deleteRow() {
-      (0, _communication_react.postWithCallback)(window.main_id, "delete_row", {
+      (0, _communication_react.postWithCallback)(this.props.main_id, "delete_row", {
         "document_name": this.state.table_spec.current_doc_name,
         "index": this.state.selected_row
       });
@@ -995,7 +1046,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_insertRow",
     value: function _insertRow(index) {
-      (0, _communication_react.postWithCallback)(window.main_id, "insert_row", {
+      (0, _communication_react.postWithCallback)(this.props.main_id, "insert_row", {
         "document_name": this.state.table_spec.current_doc_name,
         "index": index,
         "row_dict": {}
@@ -1004,7 +1055,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_duplicateRow",
     value: function _duplicateRow() {
-      (0, _communication_react.postWithCallback)(window.main_id, "insert_row", {
+      (0, _communication_react.postWithCallback)(this.props.main_id, "insert_row", {
         "document_name": this.state.table_spec.current_doc_name,
         "index": this.state.selected_row,
         "row_dict": this.state.data_row_dict[this.state.selected_row]
@@ -1039,7 +1090,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         "doc_name": this.state.table_spec.current_doc_name,
         "all_docs": delete_in_all
       };
-      (0, _communication_react.postWithCallback)(window.main_id, "DeleteColumn", data_dict);
+      (0, _communication_react.postWithCallback)(this.props.main_id, "DeleteColumn", data_dict);
     }
   }, {
     key: "_addColumn",
@@ -1090,7 +1141,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
     key: "_grabNewChunkWithRow",
     value: function _grabNewChunkWithRow(row_index) {
       var self = this;
-      (0, _communication_react.postWithCallback)(window.main_id, "grab_chunk_by_row_index", {
+      (0, _communication_react.postWithCallback)(this.props.main_id, "grab_chunk_by_row_index", {
         doc_name: this.state.table_spec.current_doc_name,
         row_index: row_index
       }, function (data) {
@@ -1115,13 +1166,13 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
       function changeTheCollection(new_collection_name) {
         var result_dict = {
           "new_collection_name": new_collection_name,
-          "main_id": window.main_id
+          "main_id": this.props.main_id
         };
-        (0, _communication_react.postWithCallback)(window.main_id, "change_collection", result_dict, changeCollectionResult);
+        (0, _communication_react.postWithCallback)(self.props.main_id, "change_collection", result_dict, changeCollectionResult);
 
         function changeCollectionResult(data_object) {
           if (data_object.success) {
-            if (!window.is_project) document.title = new_collection_name;
+            if (!this.state.is_project) document.title = new_collection_name;
             window._collection_name = data_object.collection_name;
             self.setState({
               doc_names: data_object.doc_names,
@@ -1211,7 +1262,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
       var hp_height;
       var console_available_height;
 
-      if (this.state.console_is_zoomed || window.is_notebook) {
+      if (this.state.console_is_zoomed) {
         console_available_height = this.state.usable_height - 50;
       } else {
         vp_height = this.get_vp_height();
@@ -1237,17 +1288,26 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
       }
 
       var menus = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_main_menus_react.ProjectMenu, _extends({}, this.props.statusFuncs, {
+        main_id: this.props.main_id,
+        project_name: this.state.project_name,
+        is_notebook: this.props.is_notebook,
+        is_juptyer: this.props.is_jupyter,
+        setMainStateValue: this._setMainStateValue,
         postAjaxFailure: this.props.postAjaxFailure,
         console_items: this.state.console_items,
         interface_state: this.interface_state,
         changeCollection: this._changeCollection,
         updateLastSave: this._updateLastSave,
-        disabled_items: window.is_project ? [] : ["Save"],
+        disabled_items: this.state.is_project ? [] : ["Save"],
         hidden_items: ["Export as Jupyter Notebook"]
       })), /*#__PURE__*/_react["default"].createElement(_main_menus_react.DocumentMenu, _extends({}, this.props.statusFuncs, {
         documentNames: this.state.doc_names,
         currentDoc: this.state.table_spec.current_doc_name
-      })), !window.is_freeform && /*#__PURE__*/_react["default"].createElement(_main_menus_react.ColumnMenu, _extends({}, this.props.statusFuncs, {
+      })), !this.props.is_freeform && /*#__PURE__*/_react["default"].createElement(_main_menus_react.ColumnMenu, _extends({}, this.props.statusFuncs, {
+        main_id: this.props.main_id,
+        project_name: this.state.project_name,
+        is_notebook: this.props.is_notebook,
+        is_juptyer: this.props.is_jupyter,
         moveColumn: this._moveColumn,
         table_spec: this.state.table_spec,
         filtered_column_names: this._filteredColumnNames(),
@@ -1258,7 +1318,11 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         unhideAllColumns: this._unhideAllColumns,
         addColumn: this._addColumn,
         deleteColumn: this._deleteColumn
-      })), !window.is_freeform && /*#__PURE__*/_react["default"].createElement(_main_menus_react.RowMenu, _extends({}, this.props.statusFuncs, {
+      })), !this.props.is_freeform && /*#__PURE__*/_react["default"].createElement(_main_menus_react.RowMenu, _extends({}, this.props.statusFuncs, {
+        main_id: this.props.main_id,
+        project_name: this.state.project_name,
+        is_notebook: this.props.is_notebook,
+        is_juptyer: this.props.is_jupyter,
         deleteRow: this._deleteRow,
         insertRowBefore: function insertRowBefore() {
           _this4._insertRow(_this4.state.selected_row);
@@ -1270,6 +1334,10 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         selected_row: this.state.selected_row,
         disabled_items: disabled_row_items
       })), /*#__PURE__*/_react["default"].createElement(_main_menus_react.ViewMenu, _extends({}, this.props.statusFuncs, {
+        main_id: this.props.main_id,
+        project_name: this.state.project_name,
+        is_notebook: this.props.is_notebook,
+        is_juptyer: this.props.is_jupyter,
         table_is_shrunk: this.state.table_is_shrunk,
         toggleTableShrink: this._toggleTableShrink,
         openErrorDrawer: this.props.openErrorDrawer,
@@ -1281,6 +1349,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
       var table_available_height = hp_height;
 
       var card_header = /*#__PURE__*/_react["default"].createElement(_table_react.MainTableCardHeader, {
+        main_id: this.props.main_id,
         toggleShrink: this._toggleTableShrink,
         short_collection_name: this.state.short_collection_name,
         handleChangeDoc: this._handleChangeDoc,
@@ -1292,7 +1361,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         search_text: this.state.search_text,
         setMainStateValue: this._setMainStateValue,
         table_is_filtered: this.state.table_is_filtered,
-        show_filter_button: !window.is_freeform,
+        show_filter_button: !this.props.is_freeform,
         spreadsheet_mode: this.state.spreadsheet_mode,
         handleSpreadsheetModeChange: this._handleSpreadsheetModeChange,
         broadcast_event_to_server: this._broadcast_event_to_server
@@ -1300,8 +1369,9 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
 
       var card_body;
 
-      if (window.is_freeform) {
+      if (this.props.is_freeform) {
         card_body = /*#__PURE__*/_react["default"].createElement(_table_react.FreeformBody, {
+          main_id: this.props.main_id,
           my_ref: this.tbody_ref,
           document_name: this.state.table_spec.current_doc_name,
           data_text: this.state.data_text,
@@ -1312,6 +1382,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         });
       } else {
         card_body = /*#__PURE__*/_react["default"].createElement(_blueprint_table.BlueprintTable, {
+          main_id: this.props.main_id,
           my_ref: this.tbody_ref,
           ref: this.table_ref,
           initiateDataGrab: this._initiateDataGrab,
@@ -1341,6 +1412,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
       var tile_container_height = this.state.console_is_shrunk ? table_available_height - MARGIN_ADJUSTMENT : table_available_height;
 
       var tile_pane = /*#__PURE__*/_react["default"].createElement(_tile_react.TileContainer, {
+        main_id: this.props.main_id,
         height: tile_container_height,
         tile_div_ref: this.tile_div_ref,
         dark_theme: this.state.dark_theme,
@@ -1350,20 +1422,21 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         selected_row: this.state.selected_row,
         broadcast_event: this._broadcast_event_to_server,
         setMainStateValue: this._setMainStateValue,
-        tsocket: tsocket
+        tsocket: this.props.tsocket
       });
 
       var exports_pane;
 
       if (this.state.show_exports_pane) {
         exports_pane = /*#__PURE__*/_react["default"].createElement(_export_viewer_react.ExportsViewer, {
+          main_id: this.props.main_id,
           setUpdate: function setUpdate(ufunc) {
-            return _this4.updateExportsList = ufunc;
+            _this4.updateExportsList = ufunc;
           },
           available_height: console_available_height,
           console_is_shrunk: this.state.console_is_shrunk,
           console_is_zoomed: this.state.console_is_zoomed,
-          tsocket: tsocket
+          tsocket: this.props.tsocket
         });
       } else {
         exports_pane = /*#__PURE__*/_react["default"].createElement("div", null);
@@ -1373,6 +1446,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
 
       if (this.state.show_console_pane) {
         console_pane = /*#__PURE__*/_react["default"].createElement(_console_component.ConsoleComponent, {
+          main_id: this.props.main_id,
           console_items: this.state.console_items,
           console_is_shrunk: this.state.console_is_shrunk,
           console_is_zoomed: this.state.console_is_zoomed,
@@ -1381,7 +1455,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
           console_available_height: console_available_height,
           dark_theme: this.state.dark_theme,
           console_available_width: this.state.usable_width * this.state.console_width_fraction - 16,
-          tsocket: tsocket
+          tsocket: this.props.tsocket
         });
       } else {
         var console_available_width = this.state.usable_width * this.state.console_width_fraction - 16;
@@ -1407,6 +1481,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
       var table_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
         ref: this.table_container_ref
       }, /*#__PURE__*/_react["default"].createElement(_table_react.MainTableCard, {
+        main_id: this.props.main_id,
         card_body: card_body,
         card_header: card_header,
         table_spec: this.state.table_spec,
@@ -1448,7 +1523,8 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         user_name: window.username,
         dark_theme: this.state.dark_theme,
         set_parent_theme: this._setTheme,
-        menus: menus
+        menus: menus,
+        min_navbar: window.in_context
       }), /*#__PURE__*/_react["default"].createElement("div", {
         className: outer_class
       }, this.state.console_is_zoomed && bottom_pane, !this.state.console_is_zoomed && this.state.console_is_shrunk && top_pane, !this.state.console_is_zoomed && !this.state.console_is_shrunk && /*#__PURE__*/_react["default"].createElement(_resizing_layouts.VerticalPanes, {
@@ -1481,57 +1557,6 @@ MainApp.propTypes = {
   doc_names: _propTypes["default"].array
 };
 
-var MainTacticSocket = /*#__PURE__*/function (_TacticSocket) {
-  _inherits(MainTacticSocket, _TacticSocket);
-
-  var _super2 = _createSuper(MainTacticSocket);
-
-  function MainTacticSocket() {
-    _classCallCheck(this, MainTacticSocket);
-
-    return _super2.apply(this, arguments);
-  }
-
-  _createClass(MainTacticSocket, [{
-    key: "initialize_socket_stuff",
-    value: function initialize_socket_stuff() {
-      var reconnect = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-      this.socket.emit('join', {
-        "room": user_id
-      });
-
-      if (reconnect) {
-        this.socket.emit('join-main', {
-          "room": main_id,
-          "user_id": window.user_id
-        }, function (response) {});
-      }
-
-      this.socket.on('handle-callback', _communication_react.handleCallback);
-      this.socket.on('close-user-windows', function (data) {
-        (0, _communication_react.postAsyncFalse)("host", "remove_mainwindow_task", {
-          "main_id": main_id
-        });
-
-        if (!(data["originator"] == main_id)) {
-          window.close();
-        }
-      });
-      this.socket.on("window-open", function (data) {
-        window.open($SCRIPT_ROOT + "/load_temp_page/" + data["the_id"]);
-      });
-      this.socket.on("notebook-open", function (data) {
-        window.open($SCRIPT_ROOT + "/open_notebook/" + data["the_id"]);
-      });
-      this.socket.on("doFlash", function (data) {
-        (0, _toaster.doFlash)(data);
-      });
-    }
-  }]);
-
-  return MainTacticSocket;
-}(_tactic_socket.TacticSocket);
-
-exports.MainTacticSocket = MainTacticSocket;
-
-_main_main();
+if (!window.in_context) {
+  main_main();
+}

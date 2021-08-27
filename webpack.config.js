@@ -35,7 +35,8 @@ module.exports = (env, argv) => {
             account_react: './tactic_app/static/tactic_js/account_react.js',
             auth_react: './tactic_app/static/tactic_js/auth_react.js',
             history_viewer_react: './tactic_app/static/tactic_js/history_viewer_react.js',
-            tile_differ_react: './tactic_app/static/tactic_js/tile_differ_react.js'
+            tile_differ_react: './tactic_app/static/tactic_js/tile_differ_react.js',
+            context_react: './tactic_app/static/tactic_js/context_react.js',
         },
         plugins: [
             new MiniCssExtractPlugin({

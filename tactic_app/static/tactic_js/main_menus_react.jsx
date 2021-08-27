@@ -100,28 +100,26 @@ class ProjectMenu extends React.Component {
             //let console_node = cleanse_bokeh(document.getElementById("console"));
             const result_dict = {
                 "project_name": new_name,
-                "main_id": window.main_id,
+                "main_id": self.props.main_id,
                 "doc_type": "table",
                 "purgetiles": true
             };
 
             result_dict.interface_state = self.props.interface_state;
-            if (window.is_notebook) {
-                postWithCallback(window.main_id, "save_new_notebook_project", result_dict,
+            if (self.props.is_notebook) {
+                postWithCallback(self.props.main_id, "save_new_notebook_project", result_dict,
                     save_as_success, self.props.postAjaxFailure);
             }
             else {
                 result_dict["purgetiles"] = true;
-                postWithCallback(window.main_id, "save_new_project", result_dict,
+                postWithCallback(self.props.main_id, "save_new_project", result_dict,
                     save_as_success, self.props.postAjaxFailure);
             }
 
 
             function save_as_success(data_object) {
                 if (data_object["success"]) {
-                    window.is_project = true;
-                    window._project_name = new_name;
-                    window.is_jupyter = false;
+                    self.props.setMainStateValue({"is_project": true, "project_name": new_name, "is_jupyter": false});
                     document.title = new_name;
                     self.props.clearStatusMessage();
                     data_object.alert_type = "alert-success";
@@ -146,15 +144,15 @@ class ProjectMenu extends React.Component {
         // let console_node = cleanse_bokeh(document.getElementById("console"));
         let self = this;
         const result_dict = {
-            main_id: window.main_id,
-            project_name: window._project_name
+            main_id: this.props.main_id,
+            project_name: this.props.project_name
         };
 
         result_dict.interface_state = this.props.interface_state;
 
         //tableObject.startTableSpinner();
         this.props.startSpinner();
-        postWithCallback(window.main_id, "update_project", result_dict, updateSuccess, self.props.postAjaxFailure);
+        postWithCallback(this.props.main_id, "update_project", result_dict, updateSuccess, self.props.postAjaxFailure);
         function updateSuccess(data) {
             self.props.startSpinner();
             if (data.success) {
@@ -193,10 +191,10 @@ class ProjectMenu extends React.Component {
             }
             const result_dict = {
                 "project_name": new_name,
-                "main_id": window.main_id,
+                "main_id": self.props.main_id,
                 "cell_list": cell_list
             };
-            postWithCallback(window.main_id, "export_to_jupyter_notebook",
+            postWithCallback(self.props.main_id, "export_to_jupyter_notebook",
                 result_dict, save_as_success, self.props.postAjaxFailure);
 
             function save_as_success(data_object) {
@@ -218,7 +216,7 @@ class ProjectMenu extends React.Component {
         showModalReact("Export Data", "New Collection Name", function (new_name) {
             const result_dict = {
                 "export_name": new_name,
-                "main_id": window.main_id,
+                "main_id": this.props.main_id,
                 "user_id": window.user_id
             };
             $.ajax({
@@ -234,11 +232,11 @@ class ProjectMenu extends React.Component {
 
     _consoleToNotebook() {
         const result_dict = {
-            "main_id": window.main_id,
+            "main_id": this.props.main_id,
             "console_items": this.props.console_items,
             "user_id": window.user_id,
         };
-        postWithCallback(window.main_id, "console_to_notebook", result_dict)
+        postWithCallback(this.props.main_id, "console_to_notebook", result_dict)
     }
 
     get option_dict () {
@@ -305,7 +303,7 @@ class DocumentMenu extends React.Component {
         }
 
         function doNew(new_name) {
-            postWithCallback(window.main_id, "new_blank_document",
+            postWithCallback(self.props.main_id, "new_blank_document",
                 {model_document_name: self.props.currentDoc,
                 new_document_name: new_name}, (result)=>{
                 self.props.stopSpinner()
@@ -326,7 +324,7 @@ class DocumentMenu extends React.Component {
         }
 
         function doDuplicate(new_name) {
-            postWithCallback(window.main_id, "duplicate_document",
+            postWithCallback(self.props.main_id, "duplicate_document",
                 {original_document_name: self.props.currentDoc,
                 new_document_name: new_name}, (result)=>{
                 self.props.stopSpinner()
@@ -347,7 +345,7 @@ class DocumentMenu extends React.Component {
         }
 
         function doRename(new_name) {
-            postWithCallback(window.main_id, "rename_document",
+            postWithCallback(self.props.main_id, "rename_document",
                 {old_document_name: self.props.currentDoc,
                 new_document_name: new_name}, (result)=>{
                 self.props.stopSpinner()

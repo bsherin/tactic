@@ -31,7 +31,8 @@ class ListManager(LibraryResourceManager):
 
     def add_rules(self):
         app.add_url_rule('/view_list/<list_name>', "view_list", login_required(self.view_list), methods=['get'])
-
+        app.add_url_rule('/view_list_in_context', "view_list_in_context",
+                         login_required(self.view_list_in_context), methods=['get', "post"])
         app.add_url_rule('/get_list/<list_name>', "get_list", login_required(self.get_list), methods=['get', 'post'])
         app.add_url_rule('/import_list/<library_id>', "import_list",
                          login_required(self.import_list), methods=['get', "post"])
@@ -48,16 +49,31 @@ class ListManager(LibraryResourceManager):
         javascript_source = url_for('static', filename=js_source_dict["list_viewer_react"])
         return render_template("library/resource_viewer_react.html",
                                resource_name=list_name,
-                               include_metadata=True,
-                               include_above_main_area=False,
                                theme=user_obj.get_theme(),
-                               include_right=True,
-                               read_only=False,
                                develop=str(_develop),
-                               is_repository=False,
-                               css_source=css_source("list_viewer_react"),
                                javascript_source=javascript_source,
+                               dark_theme_name=user_obj.get_preferred_dark_theme(),
+                               css_source=css_source("list_viewer_react"),
                                version_string=tstring)
+
+    def view_list_in_context(self):
+        list_name = request.json["resource_name"]
+        the_list = current_user.get_list(list_name)
+        lstring = ""
+        for w in the_list:
+            lstring += w + "\n"
+        mdata = current_user.process_metadata(self.grab_metadata(list_name))
+        data = {
+            "success": True,
+            "kind": "list-viewer",
+            "the_content": lstring,
+            "mdata": mdata,
+            "resource_name": list_name,
+            "read_only": False,
+            "is_repository": False,
+
+        }
+        return jsonify(data)
 
     def update_list(self):  # This is called from the list viewer
         try:

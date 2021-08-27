@@ -20,49 +20,44 @@ import {withStatus} from "./toaster.js";
 import {doBinding} from "./utilities_react.js";
 
 import {SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, BOTTOM_MARGIN, getUsableDimensions} from "./sizing_tools.js";
-import {guid} from "./utilities_react";
-import {TacticNavbar} from "./blueprint_navbar";
+import {guid} from "./utilities_react.js";
+import {TacticNavbar} from "./blueprint_navbar.js";
 
-window.resource_viewer_id = guid();
-window.main_id = resource_viewer_id;
+export {module_viewer_in_context}
 
-function module_viewer_main ()  {
-    let get_url = window.is_repository ? "repository_get_module_code" : "get_module_code";
-    let get_mdata_url = window.is_repository ? "grab_repository_metadata" : "grab_metadata";
 
-    var tsocket = new ResourceViewerSocket("main", 5000);
-    postAjaxPromise(`${get_url}/${window.resource_name}`, {})
-        .then(function (data) {
-            var the_content = data.the_content;
-            let result_dict = {"res_type": "tile", "res_name": window.resource_name, "is_repository": false};
-            let ModuleViewerAppPlus = withErrorDrawer(withStatus(ModuleViewerApp, tsocket), tsocket);
-            let domContainer = document.querySelector('#root');
-            postAjaxPromise(get_mdata_url, result_dict)
-			        .then(function (data) {
-			            let split_tags = data.tags == "" ? [] : data.tags.split(" ");
-                        ReactDOM.render(<ModuleViewerAppPlus
-                                                       the_content={the_content}
-                                                       created={data.datestring}
-                                                       tags={split_tags}
-                                                       notes={data.notes}
-                                                       readOnly={window.read_only}
-                                                       initial_theme={window.theme}
-                                                       is_repository={window.is_repository}
-                                                       meta_outer="#right-div"/>, domContainer);
-			        })
-			        .catch(function () {
-			            ReactDOM.render(<ModuleViewerAppPlus
-                                                       the_content={the_content}
-                                                       created=""
-                                                       tags={[]}
-                                                       notes=""
-                                                       initial_theme={window.theme}
-                                                       readOnly={window.read_only}
-                                                       is_repository={window.is_repository}
-                                                       meta_outer="#right-div"/>, domContainer);
-			        })
+function module_viewer_main () {
+    function gotElement(the_element) {
+        let domContainer = document.querySelector('#root');
+        ReactDOM.render(the_element, domContainer)
+    }
+    
+    postAjaxPromise("view_module_in_context", {"resource_name": window.resource_name})
+        .then((data)=>{
+            module_viewer_in_context(data, null, gotElement)
         })
-        .catch(doFlash);
+
+}
+
+function module_viewer_in_context(data, registerThemeSetter, finalCallback) {
+    let resource_viewer_id = guid();
+    if (!window.in_context) {
+        window.page_id = resource_viewer_id;
+        window.main_id = resource_viewer_id;  // needed for postWithCallback
+    }
+    var tsocket = new ResourceViewerSocket("main", 5000, {resource_viewer_id: resource_viewer_id});
+    let ModuleViewerAppPlus = withErrorDrawer(withStatus(ModuleViewerApp, tsocket));
+    let split_tags = data.mdata.tags == "" ? [] : data.mdata.tags.split(" ");
+    finalCallback(<ModuleViewerAppPlus resource_name={data.resource_name}
+                                       the_content={data.the_content}
+                                       registerThemeSetter={registerThemeSetter}
+                                       created={data.mdata.datestring}
+                                       initial_theme={window.theme}
+                                       tags={split_tags}
+                                       notes={data.mdata.notes}
+                                       readOnly={data.read_only}
+                                       is_repository={false}
+                                       meta_outer="#right-div"/>)
 }
 
 class ModuleViewerApp extends React.Component {
@@ -86,7 +81,7 @@ class ModuleViewerApp extends React.Component {
         let aheight = window.innerHeight - BOTTOM_MARGIN - USUAL_TOOLBAR_HEIGHT;
         let awidth = getUsableDimensions().usable_width;
         this.state = {
-            resource_name: window.resource_name,
+            resource_name: props.resource_name,
             code_content: props.the_content,
             notes: props.notes,
             tags: props.tags,
@@ -105,9 +100,12 @@ class ModuleViewerApp extends React.Component {
     componentDidMount() {
         window.addEventListener("resize", this._update_window_dimensions);
         this._update_window_dimensions();
-        this.props.stopSpinner()
+        this.props.stopSpinner();
         this.props.setStatusTheme(this.state.dark_theme);
-        window.dark_theme = this.state.dark_theme
+        if (window.in_context) {
+            this.props.registerThemeSetter(this._setTheme);
+        }
+        // window.dark_theme = this.state.dark_theme
     }
 
     _update_window_dimensions() {
@@ -119,7 +117,9 @@ class ModuleViewerApp extends React.Component {
     _setTheme(dark_theme) {
         this.setState({dark_theme: dark_theme}, ()=> {
             this.props.setStatusTheme(dark_theme);
-            window.dark_theme = this.state.dark_theme
+            if (!window.in_context) {
+                window.dark_theme = this.state.dark_theme
+            }
         })
     }
     get button_groups() {
@@ -161,7 +161,7 @@ class ModuleViewerApp extends React.Component {
 
      _handleResize(entries) {
         for (let entry of entries) {
-            if (entry.target.id == "root") {
+            if (entry.target.id == "root" || entry.target.id == "context-root") {
                 this.setState({usable_width: entry.contentRect.width,
                     // usable_height: entry.contentRect.height - BOTTOM_MARGIN - entry.target.getBoundingClientRect().top
                     usable_height: window.innerHeight - BOTTOM_MARGIN - USUAL_TOOLBAR_HEIGHT
@@ -173,7 +173,7 @@ class ModuleViewerApp extends React.Component {
 
     _doFlashStopSpinner(data) {
         this.props.stopSpinner();
-        this.props.clearStatusMessage()
+        this.props.clearStatusMessage();
         doFlash(data)
     }
 
@@ -198,21 +198,25 @@ class ModuleViewerApp extends React.Component {
             paddingLeft: SIDE_MARGIN,
         };
         let cc_height = this.get_new_cc_height();
-        let outer_class = "resource-viewer-holder"
-        if (this.state.dark_theme) {
-            outer_class = outer_class + " bp3-dark";
-        }
-        else {
-            outer_class = outer_class + " light-theme"
+        let outer_class = "resource-viewer-holder";
+        if (!window.in_context) {
+            // outer_class = "resource-viewer-holder";
+            if (this.state.dark_theme) {
+                outer_class = outer_class + " bp3-dark";
+            } else {
+                outer_class = outer_class + " light-theme"
+            }
         }
         return (
             <ViewerContext.Provider value={the_context}>
-                <TacticNavbar is_authenticated={window.is_authenticated}
-                              selected={null}
-                              show_api_links={true}
-                              dark_theme={this.state.dark_theme}
-                              set_parent_theme={this._setTheme}
-                              user_name={window.username}/>
+                {!window.in_context &&
+                    <TacticNavbar is_authenticated={window.is_authenticated}
+                                  selected={null}
+                                  show_api_links={true}
+                                  dark_theme={this.state.dark_theme}
+                                  set_parent_theme={this._setTheme}
+                                  user_name={window.username}/>
+                }
                 <ResizeSensor onResize={this._handleResize} observeParents={true}>
                     <div className={outer_class} ref={this.top_ref} style={outer_style}>
                             <ResourceViewerApp {...this.props.statusFuncs}
@@ -369,5 +373,6 @@ ModuleViewerApp.propTypes = {
     meta_outer: PropTypes.string
 };
 
-
-module_viewer_main();
+if (!window.in_context) {
+    module_viewer_main();
+}

@@ -173,7 +173,7 @@ class Status extends React.Component {
             outer_cname = "status-holder light-theme"
         }
         return (
-            <div style={{height: "100%", width: "100%"}} className={outer_cname}>
+            <div style={{height: "100%", width: "100%", position: "absolute", "left": 0}} className={outer_cname}>
                 <div className={cname} style={{position: "absolute", bottom: 10, marginLeft: 15}}>
                     {this.props.show_spinner &&
                         <Spinner size={20} />}

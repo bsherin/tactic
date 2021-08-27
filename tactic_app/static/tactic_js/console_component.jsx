@@ -98,7 +98,7 @@ const BUTTON_CONSUMED_SPACE = 208;
 
      _addConsoleText(the_text) {
          postWithCallback("host", "print_text_area_to_console",
-             {"console_text": the_text, "user_id": window.user_id, "main_id": window.main_id}, function (data) {
+             {"console_text": the_text, "user_id": window.user_id, "main_id": this.props.main_id}, function (data) {
                  if (!data.success) {
                      doFlash(data)
                  }
@@ -127,7 +127,7 @@ const BUTTON_CONSUMED_SPACE = 208;
          }
          let entry = this.get_console_item_entry(unique_id);
          const result_dict = {
-             "main_id": window.main_id,
+             "main_id": this.props.main_id,
              "console_item": entry,
              "user_id": window.user_id,
          };
@@ -172,7 +172,7 @@ const BUTTON_CONSUMED_SPACE = 208;
      _addCodeArea(the_text, force_open = true) {
          let self = this;
          postWithCallback("host", "print_code_area_to_console",
-             {console_text: the_text, user_id: window.user_id, main_id: window.main_id, force_open: force_open},
+             {console_text: the_text, user_id: window.user_id, main_id: this.props.main_id, force_open: force_open},
              function (data) {
                  if (!data.success) {
                      doFlash(data)
@@ -193,11 +193,11 @@ const BUTTON_CONSUMED_SPACE = 208;
              }
          }
          this.props.setMainStateValue("console_items", new_console_items);
-         postWithCallback(window.main_id, "clear_console_namespace", {})
+         postWithCallback(this.props.main_id, "clear_console_namespace", {})
      }
 
      _stopAll() {
-         postWithCallback(window.main_id, "stop_all_console_code", {})
+         postWithCallback(this.props.main_id, "stop_all_console_code", {})
      }
 
 
@@ -216,7 +216,7 @@ const BUTTON_CONSUMED_SPACE = 208;
              this._stopMainPseudoLogStreaming()
          } else {
              if (self.pseudo_tile_id == null) {
-                 postWithCallback(window.main_id, "get_pseudo_tile_id", {}, function (res) {
+                 postWithCallback(this.props.main_id, "get_pseudo_tile_id", {}, function (res) {
                      self.pseudo_tile_id = res.pseudo_tile_id;
                      if (self.pseudo_tile_id == null) {
                          self.setState({"console_error_log_text": "pseudo-tile is initializing..."}, () => {
@@ -248,7 +248,7 @@ const BUTTON_CONSUMED_SPACE = 208;
      }
 
      _startPseudoLogStreaming() {
-        postWithCallback(window.main_id, "StartPseudoLogStreaming", {});
+        postWithCallback(this.props.main_id, "StartPseudoLogStreaming", {});
     }
 
      _toggleMainLog() {
@@ -257,7 +257,7 @@ const BUTTON_CONSUMED_SPACE = 208;
              this.setState({"show_console_error_log": false});
              this._stopMainPseudoLogStreaming()
          } else {
-             postWithCallback("host", "get_container_log", {"container_id": window.main_id}, function (res) {
+             postWithCallback("host", "get_container_log", {"container_id": this.props.main_id}, function (res) {
                  self.setState({"console_error_log_text": res.log_text}, () => {
                      self._startMainLogStreaming();
                      self.setState({"show_console_error_log": true})
@@ -267,11 +267,11 @@ const BUTTON_CONSUMED_SPACE = 208;
      }
 
      _startMainLogStreaming() {
-        postWithCallback(window.main_id, "StartMainLogStreaming", {});
+        postWithCallback(this.props.main_id, "StartMainLogStreaming", {});
     }
 
     _stopMainPseudoLogStreaming() {
-        postWithCallback(window.main_id, "StopMainPseudoLogStreaming", {});
+        postWithCallback(this.props.main_id, "StopMainPseudoLogStreaming", {});
     }
 
      _setFocusedItem(unique_id, callback = null) {
@@ -829,6 +829,7 @@ const BUTTON_CONSUMED_SPACE = 208;
                          {!this.state.show_console_error_log &&
                              <React.Fragment>
                              <SortableComponent id="console-items-div"
+                                                main_id={this.props.main_id}
                                                 ElementComponent={SSuperItem}
                                                 key_field_name="unique_id"
                                                 item_list={filtered_items}
@@ -1180,12 +1181,12 @@ class RawConsoleCodeItem extends React.Component {
         }
     }
     _runMe(go_to_next = false) {
+        let self = this;
         this._clearOutput(()=> {
-            this._showMySpinner();
-            let self = this;
-            postWithCallback(main_id, "exec_console_code", {
-                "the_code": this.props.console_text,
-                "console_id": this.props.unique_id
+            self._showMySpinner();
+            postWithCallback(self.props.main_id, "exec_console_code", {
+                "the_code": self.props.console_text,
+                "console_id": self.props.unique_id
             }, function () {
                 if (go_to_next) {
                     self.props.goToNextCell(self.props.unique_id)
@@ -1196,7 +1197,7 @@ class RawConsoleCodeItem extends React.Component {
 
     _stopMe() {
         this._stopMySpinner();
-        postWithCallback(main_id, "stop_console_code", {"console_id": this.props.unique_id})
+        postWithCallback(this.props.main_id, "stop_console_code", {"console_id": this.props.unique_id})
     }
 
     _showMySpinner(callback=null) {

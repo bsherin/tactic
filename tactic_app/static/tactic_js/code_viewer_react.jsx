@@ -20,46 +20,40 @@ import {doBinding} from "./utilities_react.js";
 import {guid} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 
-window.resource_viewer_id = guid();
-window.main_id = resource_viewer_id;
+export {code_viewer_in_context}
 
-function code_viewer_main ()  {
-    let get_url = window.is_repository ? "repository_get_code_code" : "get_code_code";
-    let get_mdata_url = window.is_repository ? "grab_repository_metadata" : "grab_metadata";
+function code_viewer_main () {
+    function gotElement(the_element) {
+        let domContainer = document.querySelector('#root');
+        ReactDOM.render(the_element, domContainer)
+    }
 
-    var tsocket = new ResourceViewerSocket("main", 5000);
-    postAjaxPromise(`${get_url}/${window.resource_name}`, {})
-        .then(function (data) {
-            var the_content = data.the_content;
-            let result_dict = {"res_type": "code", "res_name": window.resource_name, "is_repository": false};
-            let CodeViewerAppPlus = withErrorDrawer(withStatus(CodeViewerApp, tsocket), tsocket);
-            let domContainer = document.querySelector('#root');
-            postAjaxPromise(get_mdata_url, result_dict)
-			        .then(function (data) {
-			            let split_tags = data.tags == "" ? [] : data.tags.split(" ");
-                        ReactDOM.render(<CodeViewerAppPlus
-                                                       the_content={the_content}
-                                                       created={data.datestring}
-                                                       tags={split_tags}
-                                                       notes={data.notes}
-                                                       readOnly={window.read_only}
-                                                       initial_theme={window.theme}
-                                                       is_repository={window.is_repository}
-                                                       meta_outer="#right-div"/>, domContainer);
-			        })
-			        .catch(function () {
-			            ReactDOM.render(<CodeViewerAppPlus
-                                                       the_content={the_content}
-                                                       created=""
-                                                       tags={[]}
-                                                       notes=""
-                                                       readOnly={window.read_only}
-                                                       initial_theme={window.theme}
-                                                       is_repository={window.is_repository}
-                                                       meta_outer="#right-div"/>, domContainer);
-			        })
+    postAjaxPromise("view_code_in_context", {"resource_name": window.resource_name})
+        .then((data)=>{
+            code_viewer_in_context(data, null, gotElement)
         })
-        .catch(doFlash);
+
+}
+
+function code_viewer_in_context(data, registerThemeSetter, finalCallback) {
+    let resource_viewer_id = guid();
+    if (!window.in_context) {
+        window.resource_viewer_id = guid();
+        window.main_id = resource_viewer_id;  // needed for postWithCallback
+    }
+    var tsocket = new ResourceViewerSocket("main", 5000, {resource_viewer_id: resource_viewer_id});
+    let CodeViewerAppPlus = withErrorDrawer(withStatus(CodeViewerApp, tsocket));
+    let split_tags = data.mdata.tags == "" ? [] : data.mdata.tags.split(" ");
+    finalCallback(<CodeViewerAppPlus   resource_name={data.resource_name}
+                                       the_content={data.the_content}
+                                       registerThemeSetter={registerThemeSetter}
+                                       created={data.mdata.datestring}
+                                       initial_theme={window.theme}
+                                       tags={split_tags}
+                                       notes={data.mdata.notes}
+                                       readOnly={data.read_only}
+                                       is_repository={false}
+                                       meta_outer="#right-div"/>)
 }
 
 class CodeViewerApp extends React.Component {
@@ -83,7 +77,7 @@ class CodeViewerApp extends React.Component {
         let aheight = getUsableDimensions().usable_height;
         let awidth = getUsableDimensions().usable_width;
         this.state = {
-            resource_name: window.resource_name,
+            resource_name: props.resource_name,
             code_content: props.the_content,
             notes: props.notes,
             tags: props.tags,
@@ -103,7 +97,10 @@ class CodeViewerApp extends React.Component {
         this._update_window_dimensions();
         this.props.stopSpinner();
         this.props.setStatusTheme(this.state.dark_theme);
-        window.dark_theme = this.state.dark_theme
+        if (window.in_context) {
+            this.props.registerThemeSetter(this._setTheme);
+        }
+        // window.dark_theme = this.state.dark_theme
     }
 
     _update_window_dimensions() {
@@ -121,7 +118,9 @@ class CodeViewerApp extends React.Component {
     _setTheme(dark_theme) {
         this.setState({dark_theme: dark_theme}, ()=> {
             this.props.setStatusTheme(dark_theme);
-            window.dark_theme = this.state.dark_theme
+            if (!window.in_context) {
+                window.dark_theme = this.state.dark_theme
+            }
         })
     }
 
@@ -178,20 +177,24 @@ class CodeViewerApp extends React.Component {
         };
         let cc_height = this.get_new_cc_height();
         let outer_class = "resource-viewer-holder";
-        if (this.state.dark_theme) {
-            outer_class = outer_class + " bp3-dark";
-        }
-        else {
-            outer_class = outer_class + " light-theme"
+        if (!window.in_context) {
+            if (this.state.dark_theme) {
+                outer_class = outer_class + " bp3-dark";
+            } else {
+                outer_class = outer_class + " light-theme"
+            }
         }
         return (
             <ViewerContext.Provider value={the_context}>
-            <TacticNavbar is_authenticated={window.is_authenticated}
+                {!window.in_context &&
+                    <TacticNavbar is_authenticated={window.is_authenticated}
                           selected={null}
                           show_api_links={true}
                           dark_theme={this.state.dark_theme}
                           set_parent_theme={this._setTheme}
                           user_name={window.username}/>
+                }
+
                 <div className={outer_class} ref={this.top_ref} style={outer_style}>
                     <ResourceViewerApp {...this.props.statusFuncs}
                                        setResourceNameState={this._setResourceNameState}
@@ -273,5 +276,6 @@ CodeViewerApp.propTypes = {
     meta_outer: PropTypes.string
 };
 
-
-code_viewer_main();
+if (!window.in_context) {
+    code_viewer_main();
+}

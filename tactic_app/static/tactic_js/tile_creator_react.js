@@ -2,6 +2,11 @@
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.tile_creator_main_in_context = tile_creator_main_in_context;
+
 require("../tactic_css/tactic.scss");
 
 require("../tactic_css/tactic_table.scss");
@@ -79,11 +84,7 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
 var BOTTOM_MARGIN = 50;
-var MARGIN_SIZE = 17;
-window.main_id = window.module_viewer_id; // This matters for communication_react
-
-window.name = window.module_viewer_id;
-var tsocket; // Note: it seems like the sendbeacon doesn't work if this callback has a line
+var MARGIN_SIZE = 17; // Note: it seems like the sendbeacon doesn't work if this callback has a line
 // before the sendbeacon
 
 window.addEventListener("unload", function sendRemove() {
@@ -114,9 +115,9 @@ var CreatorViewerSocket = /*#__PURE__*/function (_TacticSocket) {
 
       if (reconnect) {
         this.socket.emit('join-main', {
-          "room": window.module_viewer_id,
+          "room": this.extra_args.module_viewer_id,
           "user_id": window.user_id
-        }, function (response) {});
+        });
       }
 
       this.socket.on('handle-callback', _communication_react.handleCallback);
@@ -135,112 +136,140 @@ var CreatorViewerSocket = /*#__PURE__*/function (_TacticSocket) {
 }(_tactic_socket.TacticSocket);
 
 function tile_creator_main() {
-  tsocket = new CreatorViewerSocket("main", 5000);
-  tsocket.socket.on("remove-ready-block", _everyone_ready);
+  function gotElement(the_element) {
+    var domContainer = document.querySelector('#creator-root');
+    ReactDOM.render(the_element, domContainer);
+  }
+
+  (0, _communication_react.postAjaxPromise)("view_in_creator_in_context", {
+    "resource_name": window.module_name
+  }).then(function (data) {
+    tile_creator_main_in_context(data, null, gotElement);
+  });
+}
+
+function tile_creator_main_in_context(data, registerThemeSetter, finalCallback) {
+  var tsocket = new CreatorViewerSocket("main", 5000, {
+    module_viewer_id: data.module_viewer_id
+  });
+
+  if (!window.in_context) {
+    window.main_id = data.module_viewer_id; // needed for postWithCallback
+  }
+
+  var mdata = data.mdata;
+  var split_tags = mdata.tags == "" ? [] : mdata.tags.split(" ");
+  var module_name = data.resource_name;
+  var module_viewer_id = data.module_viewer_id;
+  var tile_collection_name = data.tile_collection_name;
+  tsocket.socket.on("remove-ready-block", function () {
+    return _everyone_ready_in_context();
+  });
   tsocket.socket.emit('join-main', {
-    "room": window.module_viewer_id,
+    "room": data.module_viewer_id,
     "user_id": window.user_id
   }, function (response) {
     tsocket.socket.emit('client-ready', {
-      "room": window.module_viewer_id,
+      "room": data.module_viewer_id,
       "user_id": window.user_id,
       "participant": "client",
-      "rb_id": window.ready_block_id,
-      "main_id": window.module_viewer_id
+      "rb_id": data.ready_block_id,
+      "main_id": data.module_viewer_id
     });
   });
-}
 
-function _everyone_ready() {
-  var the_content = {
-    "module_name": window.module_name,
-    "module_viewer_id": window.module_viewer_id,
-    "tile_collection_name": window.tile_collection_name,
-    "user_id": window.user_id,
-    "version_string": window.version_string
-  };
-  (0, _communication_react.postWithCallback)(window.module_viewer_id, "initialize_parser", the_content, got_parsed_data);
-}
+  function _everyone_ready_in_context() {
+    var the_content = {
+      "module_name": module_name,
+      "module_viewer_id": module_viewer_id,
+      "tile_collection_name": tile_collection_name,
+      "user_id": window.user_id,
+      "version_string": window.version_string
+    };
+    (0, _communication_react.postWithCallback)(module_viewer_id, "initialize_parser", the_content, function (pdata) {
+      return got_parsed_data_in_context(pdata);
+    });
 
-function got_parsed_data(data_object) {
-  var domContainer = document.querySelector('#creator-root');
-  var parsed_data = data_object.the_content;
-  var result_dict = {
-    "res_type": "tile",
-    "res_name": window.module_name,
-    "is_repository": false
-  };
-  var odict = parsed_data.option_dict;
+    function got_parsed_data_in_context(data_object) {
+      var CreatorAppPlus = (0, _toaster.withStatus)((0, _error_drawer.withErrorDrawer)(CreatorApp, tsocket));
+      var parsed_data = data_object.the_content;
+      var category = parsed_data.category ? parsed_data.category : "basic";
+      var result_dict = {
+        "res_type": "tile",
+        "res_name": module_name,
+        "is_repository": false
+      };
+      var odict = parsed_data.option_dict;
 
-  var _iterator = _createForOfIteratorHelper(odict),
-      _step;
+      var _iterator = _createForOfIteratorHelper(odict),
+          _step;
 
-  try {
-    for (_iterator.s(); !(_step = _iterator.n()).done;) {
-      var option = _step.value;
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var option = _step.value;
 
-      for (var param in option) {
-        if (Array.isArray(option[param])) {
-          var nstring = "[";
-          var isfirst = true;
+          for (var param in option) {
+            if (Array.isArray(option[param])) {
+              var nstring = "[";
+              var isfirst = true;
 
-          var _iterator2 = _createForOfIteratorHelper(option[param]),
-              _step2;
+              var _iterator2 = _createForOfIteratorHelper(option[param]),
+                  _step2;
 
-          try {
-            for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-              var item = _step2.value;
+              try {
+                for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+                  var item = _step2.value;
 
-              if (!isfirst) {
-                nstring += ", ";
-              } else {
-                isfirst = false;
+                  if (!isfirst) {
+                    nstring += ", ";
+                  } else {
+                    isfirst = false;
+                  }
+
+                  nstring += "'" + String(item) + "'";
+                }
+              } catch (err) {
+                _iterator2.e(err);
+              } finally {
+                _iterator2.f();
               }
 
-              nstring += "'" + String(item) + "'";
+              nstring += "]";
+              option[param] = nstring;
             }
-          } catch (err) {
-            _iterator2.e(err);
-          } finally {
-            _iterator2.f();
           }
-
-          nstring += "]";
-          option[param] = nstring;
         }
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
       }
-    }
-  } catch (err) {
-    _iterator.e(err);
-  } finally {
-    _iterator.f();
-  }
 
-  (0, _communication_react.postAjaxPromise)("grab_metadata", result_dict).then(function (data) {
-    var split_tags = data.tags == "" ? [] : data.tags.split(" ");
-    var category = parsed_data.category ? parsed_data.category : "basic";
-    ReactDOM.render( /*#__PURE__*/_react["default"].createElement(CreatorAppPlus, {
-      is_mpl: parsed_data.is_mpl,
-      is_d3: parsed_data.is_d3,
-      render_content_code: parsed_data.render_content_code,
-      render_content_line_number: parsed_data.render_content_line_number,
-      extra_methods_line_number: parsed_data.extra_methods_line_number,
-      draw_plot_line_number: parsed_data.draw_plot_line_number,
-      initial_line_number: window.line_number,
-      category: category,
-      extra_functions: parsed_data.extra_functions,
-      draw_plot_code: parsed_data.draw_plot_code,
-      jscript_code: parsed_data.jscript_code,
-      tags: split_tags,
-      notes: data.notes,
-      initial_theme: window.theme,
-      option_list: parsed_data.option_dict,
-      export_list: parsed_data.export_list,
-      created: data.datestring
-    }), domContainer);
-  })["catch"](function (data) {
-    (0, _toaster.doFlash)(data);
-  });
+      finalCallback( /*#__PURE__*/_react["default"].createElement(CreatorAppPlus, {
+        tsocket: tsocket,
+        module_name: module_name,
+        module_viewer_id: module_viewer_id,
+        registerThemeSetter: registerThemeSetter,
+        is_mpl: parsed_data.is_mpl,
+        is_d3: parsed_data.is_d3,
+        render_content_code: parsed_data.render_content_code,
+        render_content_line_number: parsed_data.render_content_line_number,
+        extra_methods_line_number: parsed_data.extra_methods_line_number,
+        draw_plot_line_number: parsed_data.draw_plot_line_number,
+        initial_line_number: null,
+        category: category,
+        extra_functions: parsed_data.extra_functions,
+        draw_plot_code: parsed_data.draw_plot_code,
+        jscript_code: parsed_data.jscript_code,
+        tags: split_tags,
+        notes: mdata.notes,
+        initial_theme: window.theme,
+        option_list: parsed_data.option_dict,
+        export_list: parsed_data.export_list,
+        created: mdata.datestring
+      }));
+    }
+  }
 }
 
 function TileCreatorToolbar(props) {
@@ -306,7 +335,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     _this.line_number = _this.props.initial_line_number;
     _this.socket_counter = null;
     _this.state = {
-      tile_name: window.module_name,
+      tile_name: props.module_name,
       foregrounded_panes: {
         "metadata": true,
         "options": false,
@@ -449,7 +478,9 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       }, function () {
         _this3.props.setStatusTheme(dark_theme);
 
-        window.dark_theme = _this3.state.dark_theme;
+        if (!window.in_context) {
+          window.dark_theme = _this3.state.dark_theme;
+        }
       });
     }
   }, {
@@ -612,7 +643,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       return new Promise(function (resolve, reject) {
         var result_dict = self._getSaveDict();
 
-        (0, _communication_react.postWithCallback)(module_viewer_id, "update_module", result_dict, function (data) {
+        (0, _communication_react.postWithCallback)(self.props.module_viewer_id, "update_module", result_dict, function (data) {
           if (data.success) {
             self.save_success(data);
             resolve(data);
@@ -744,7 +775,10 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       this.setState({
         "mounted": true
       });
-      document.title = this.state.tile_name;
+
+      if (!window.in_context) {
+        document.title = this.state.tile_name;
+      }
 
       this._goToLineNumber();
 
@@ -756,15 +790,18 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
 
       this.props.stopSpinner();
       this.props.setStatusTheme(this.state.dark_theme);
-      this.initSocket();
-      window.dark_theme = this.state.dark_theme;
+      this.initSocket(); // window.dark_theme = this.state.dark_theme;
+
+      if (window.in_context) {
+        this.props.registerThemeSetter(this._setTheme);
+      }
     }
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate() {
       this._goToLineNumber();
 
-      if (tsocket.counter != this.socket_counter) {
+      if (this.props.tsocket.counter != this.socket_counter) {
         this.initSocket();
       }
     }
@@ -773,12 +810,12 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     value: function initSocket() {
       var _this4 = this;
 
-      tsocket.socket.on('focus-me', function (data) {
+      this.props.tsocket.socket.on('focus-me', function (data) {
         window.focus();
 
         _this4._selectLineNumber(data.line_number);
       });
-      this.socket_counter = tsocket.counter;
+      this.socket_counter = this.props.tsocket.counter;
     } // This toggles methodsTabRefreshRequired back and forth to force a refresh
 
   }, {
@@ -1151,13 +1188,15 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       };
       var outer_class = "resource-viewer-holder";
 
-      if (this.state.dark_theme) {
-        outer_class = outer_class + " bp3-dark";
-      } else {
-        outer_class = outer_class + " light-theme";
+      if (!window.in_context) {
+        if (this.state.dark_theme) {
+          outer_class = outer_class + " bp3-dark";
+        } else {
+          outer_class = outer_class + " light-theme";
+        }
       }
 
-      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, !window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
         is_authenticated: window.is_authenticated,
         selected: null,
         show_api_links: true,
@@ -1200,5 +1239,7 @@ CreatorApp.propTypes = {
   export_list: _propTypes["default"].array,
   created: _propTypes["default"].string
 };
-var CreatorAppPlus = (0, _toaster.withStatus)((0, _error_drawer.withErrorDrawer)(CreatorApp, tsocket));
-tile_creator_main();
+
+if (!window.in_context) {
+  tile_creator_main();
+}

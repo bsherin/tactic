@@ -46,13 +46,19 @@ class CollectionManager(LibraryResourceManager):
     name_field = ""
 
     def add_rules(self):
-        app.add_url_rule('/new_notebook', "new_notebook", login_required(self.new_notebook), methods=['get'])
+        app.add_url_rule('/new_notebook', "new_notebook", login_required(self.new_notebook), methods=['get', 'post'])
+        app.add_url_rule('/new_notebook_in_context', "new_notebook_in_context",
+                         login_required(self.new_notebook_in_context), methods=['get', 'post'])
         app.add_url_rule('/open_notebook/<unique_id>', "open_notebook",
                          login_required(self.open_notebook), methods=['get'])
-        app.add_url_rule('/main_collection/<collection_name>', "main", login_required(self.main_collection), methods=['get'])
+        app.add_url_rule('/main_collection/<collection_name>', "main",
+                         login_required(self.main_collection), methods=['get'])
+        app.add_url_rule('/main_collection_in_context', "main_in_context",
+                         login_required(self.main_collection_in_context), methods=['get', 'post'])
         app.add_url_rule('/create_empty_collection', "create_empty_collection",
                          login_required(self.create_empty_collection), methods=['get', "post"])
-        app.add_url_rule('/append_documents_to_collection/<collection_name>/<doc_type>/<library_id>', "append_documents_to_collection",
+        app.add_url_rule('/append_documents_to_collection/<collection_name>/<doc_type>/<library_id>',
+                         "append_documents_to_collection",
                          login_required(self.append_documents_to_collection), methods=['get', "post"])
         app.add_url_rule('/delete_collection', "delete_collection",
                          login_required(self.delete_collection), methods=['post'])
@@ -67,11 +73,35 @@ class CollectionManager(LibraryResourceManager):
         app.add_url_rule('/grab_collection_list_chunk', "grab_collection_list_chunk",
                          login_required(self.grab_collection_list_chunk), methods=['get', 'post'])
 
-    def new_notebook(self):
+    def new_notebook_in_context(self):
         user_obj = current_user
         main_id, rb_id = main_container_info.create_main_container("new_notebook", user_obj.get_id(), user_obj.username)
         create_ready_block(rb_id, user_obj.username, [main_id, "client"], main_id)
-        return render_template("main_notebook_react.html",
+        data_dict = {"success": True,
+                     "kind": "notebook-viewer",
+                     "project_name": "",
+                     "resource_name": "new notebook",
+                     "ready_block_id": rb_id,
+                     "main_id": main_id,
+                     "temp_data_id": "",
+                     "collection_name": "",
+                     "doc_names": [],
+                     "short_collection_name": "",
+                     "doc_type": "notebook",
+                     "is_table": False,
+                     "is_notebook": True,
+                     "is_freeform": False,
+                     "is_jupyter": False,
+                     "is_project": False,
+                     "dark_theme_name": user_obj.get_preferred_dark_theme(),
+                     "base_figure_url": url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1]}
+        return jsonify(data_dict)
+
+    def new_notebook_old(self):
+        user_obj = current_user
+        main_id, rb_id = main_container_info.create_main_container("new_notebook", user_obj.get_id(), user_obj.username)
+        create_ready_block(rb_id, user_obj.username, [main_id, "client"], main_id)
+        return render_template("main_react.html",
                                window_title="new notebook",
                                project_name='',
                                base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
@@ -87,12 +117,27 @@ class CollectionManager(LibraryResourceManager):
                                css_source=css_source("notebook_app"),
                                module_source=js_source_dict["notebook_app"])
 
+    def new_notebook(self):
+
+        return render_template("main_react.html",
+                               project_name='',
+                               is_new_notebook="True",
+                               base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
+                               temp_data_id="",
+                               develop=str(_develop),
+                               theme=current_user.get_theme(),
+                               dark_theme_name=current_user.get_preferred_dark_theme(),
+                               is_jupyter="False",
+                               version_string=tstring,
+                               css_source=css_source("notebook_app"),
+                               module_source=js_source_dict["notebook_app"])
+
     def open_notebook(self, unique_id):
         the_data = read_temp_data(db, unique_id)
         user_obj = load_user(the_data["user_id"])
         main_id, rb_id = main_container_info.create_main_container("new_notebook", the_data["user_id"], user_obj.username)
         create_ready_block(rb_id, user_obj.username, [main_id, "client"], main_id)
-        return render_template("main_notebook_react.html",
+        return render_template("main_notebook.html",
                                window_title="new notebook",
                                project_name='',
                                base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
@@ -108,37 +153,51 @@ class CollectionManager(LibraryResourceManager):
                                css_source=css_source("notebook_app"),
                                module_source=js_source_dict["notebook_app"])
 
-    def main_collection(self, collection_name):
+    def main_collection_in_context(self):
         user_obj = current_user
-        cname = user_obj.build_data_collection_name(collection_name)
-        main_id, rb_id = main_container_info.create_main_container(collection_name, user_obj.get_id(), user_obj.username)
+        # context_id = request.json["context_id"]
+        short_collection_name = request.json["resource_name"]
+        cname = user_obj.build_data_collection_name(short_collection_name)
+        main_id, rb_id = main_container_info.create_main_container(short_collection_name, user_obj.get_id(),
+                                                                   user_obj.username)
         create_ready_block(rb_id, user_obj.username, [main_id, "client"], main_id)
-        short_collection_name = user_obj.get_short_collection_name(collection_name)
         mdata = user_obj.get_collection_metadata(short_collection_name)
+        del(mdata["_id"])
         if "type" in mdata and mdata["type"] == "freeform":
             doc_type = "freeform"
         else:
             doc_type = "table"
-
         doc_names = user_obj.get_collection_docnames(short_collection_name)
+        data = {
+            "success": True,
+            "kind": "main-viewer",
+            "short_collection_name": short_collection_name,
+            "resource_name": short_collection_name,
+            "collection_name": cname,
+            "main_id": str(main_id),
+            "ready_block_id": str(rb_id),
+            "mdata": mdata,
+            "is_project": False,
+            "project_name": "",
+            "doc_names": doc_names,
+            "base_figure_url": url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
+            "temp_data_id": "",
+            "console_html": "",
+            "doc_type": doc_type,
+            "is_table": doc_type == "table",
+            "is_freeform": doc_type == "freeform"
+        }
+        return jsonify(data)
+
+    def main_collection(self, collection_name):
 
         return render_template("main_react.html",
-                               collection_name=cname,
-                               window_title=short_collection_name,
-                               project_name='',
-                               base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
-                               main_id=main_id,
-                               ready_block_id=rb_id,
-                               temp_data_id="",
-                               doc_names=doc_names,
-                               console_html="",
-                               is_table=(doc_type == "table"),
-                               is_notebook=False,
-                               is_freeform=(doc_type == 'freeform'),
-                               short_collection_name=short_collection_name,
-                               theme=user_obj.get_theme(),
-                               uses_codemirror="True",
-                               dark_theme_name=user_obj.get_preferred_dark_theme(),
+                               collection_name=collection_name,
+                               window_title=collection_name,
+                               project_name="",
+                               is_new_notebook="False",
+                               theme=current_user.get_theme(),
+                               dark_theme_name=current_user.get_preferred_dark_theme(),
                                develop=str(_develop),
                                version_string=tstring,
                                css_source=css_source("main_app"),
@@ -469,7 +528,7 @@ class CollectionManager(LibraryResourceManager):
                 new_doc_dict.update(doc_dict)
                 header_list_dict.update(header_dict)
             else:
-                if file_extension in [".csv", ".tsv"] :
+                if file_extension in [".csv", ".tsv"]:
                     (success, row_list, header_list, encoding, decoding_problems) = \
                         read_csv_file_to_list(the_file, csv_options)
                 # elif file_extension == ".tsv":

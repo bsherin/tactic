@@ -30,6 +30,8 @@ class CodeManager(LibraryResourceManager):
     def add_rules(self):
         app.add_url_rule('/view_code/<code_name>', "view_code",
                          login_required(self.view_code), methods=['get', "post"])
+        app.add_url_rule('/view_code_in_context', "view_code_in_context",
+                         login_required(self.view_code_in_context), methods=['get', "post"])
 
         app.add_url_rule('/get_code_code/<code_name>', "get_code_code",
                          login_required(self.get_code_code), methods=['get', "post"])
@@ -122,18 +124,29 @@ class CodeManager(LibraryResourceManager):
         javascript_source = url_for('static', filename=js_source_dict["code_viewer_react"])
         return render_template("library/resource_viewer_react.html",
                                resource_name=code_name,
-                               include_metadata=True,
-                               include_right=True,
-                               include_above_main_area=False,
                                theme=user_obj.get_theme(),
-                               read_only=False,
-                               is_repository=False,
                                develop=str(_develop),
                                javascript_source=javascript_source,
-                               uses_codemirror="True",
                                dark_theme_name=user_obj.get_preferred_dark_theme(),
                                css_source=css_source("code_viewer_react"),
                                version_string=tstring)
+
+    def view_code_in_context(self):
+        user_obj = current_user
+        code_name = request.json["resource_name"]
+        code_code = user_obj.get_code(code_name)
+        mdata = user_obj.process_metadata(self.grab_metadata(code_name))
+        data = {
+            "success": True,
+            "kind": "code-viewer",
+            "the_content": code_code,
+            "mdata": mdata,
+            "resource_name": code_name,
+            "read_only": False,
+            "is_repository": False,
+
+        }
+        return jsonify(data)
 
     def get_code_code(self, code_name):
         user_obj = current_user

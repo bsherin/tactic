@@ -24,7 +24,7 @@ class TextIcon extends React.Component {
 
 TextIcon.propTypes = {
     the_text: PropTypes.strin
-}
+};
 
 const export_icon_dict = {
     str: "font",
@@ -50,7 +50,7 @@ const export_icon_dict = {
     DataFrame: <TextIcon the_text="df"/>,
     other: "cube",
     unknown: <TextIcon the_text="?"/>
-}
+};
 
 
 
@@ -82,7 +82,7 @@ ExportButtonListButton.propTypes = {
     buttonPress: PropTypes.func,
     active: PropTypes.bool
 
-}
+};
 
 class ExportButtonList extends React.Component {
     constructor(props) {
@@ -108,19 +108,19 @@ class ExportButtonList extends React.Component {
     }
 
     _compareEntries(a, b) {
-        if (a[1].toLowerCase() == b[1].toLowerCase()) return 0
-        if (b[1].toLowerCase() > a[1].toLowerCase()) return -1
+        if (a[1].toLowerCase() == b[1].toLowerCase()) return 0;
+        if (b[1].toLowerCase() > a[1].toLowerCase()) return -1;
         return 1
     }
 
     create_groups() {
         let groups = [];
         let group_names = Object.keys(this.props.pipe_dict);
-        group_names.sort()
+        group_names.sort();
         for (let group of group_names) {
             let group_items = [];
-            let entries = this.props.pipe_dict[group]
-            entries.sort(this._compareEntries)
+            let entries = this.props.pipe_dict[group];
+            entries.sort(this._compareEntries);
             for (let entry of entries) {
                 let fullname = entry[0];
                 let shortname = entry[1];
@@ -203,7 +203,7 @@ class ExportsViewer extends React.Component {
             exports_body_value: "",
             type: null,
             pipe_dict: {},
-        }
+        };
         this.socket_counter = null;
     }
 
@@ -245,7 +245,7 @@ class ExportsViewer extends React.Component {
 
     _updateExportsList() {
         let self = this;
-        postWithCallback(window.main_id, "get_full_pipe_dict", {}, function (data) {
+        postWithCallback(this.props.main_id, "get_full_pipe_dict", {}, function (data) {
             self.setState({pipe_dict: data.pipe_dict, pipe_dict_updated: true})
         })
     }
@@ -268,13 +268,13 @@ class ExportsViewer extends React.Component {
         if (this.state.key_list) {
             send_data.key = this.state.key_list_value
         }
-        postWithCallback(main_id, "evaluate_export", send_data)
+        postWithCallback(this.props.main_id, "evaluate_export", send_data);
         if (e) e.preventDefault();
     }
 
     _stopMe() {
-        this._stopMySpinner()
-        postWithCallback(main_id, "stop_evaluate_export", {})
+        this._stopMySpinner();
+        postWithCallback(this.props.main_id, "stop_evaluate_export", {})
     }
 
     _showMySpinner() {
@@ -298,7 +298,7 @@ class ExportsViewer extends React.Component {
             running: false
         };
         if (data.hasOwnProperty("key_list")) {
-            new_state.key_list = data.key_list
+            new_state.key_list = data.key_list;
             if (data.hasOwnProperty("key_list_value")) {
                 new_state.key_list_value = data.key_list_value
             }
@@ -308,7 +308,7 @@ class ExportsViewer extends React.Component {
                 }
             }
         } else {
-            new_state.key_list = null
+            new_state.key_list = null;
             new_state.key_list_value = null
         }
         this.setState(new_state, this._eval)
@@ -321,7 +321,7 @@ class ExportsViewer extends React.Component {
             selected_export: fullname,
             selected_export_tilename: tilename,
             selected_export_short_name: shortname});
-        postWithCallback(window.main_id, "get_export_info", {"export_name": fullname})
+        postWithCallback(this.props.main_id, "get_export_info", {"export_name": fullname})
     }
 
     _handleKeyListChange(new_value) {
@@ -343,8 +343,8 @@ class ExportsViewer extends React.Component {
 
     _sendToConsole() {
         const tail = this.state.tail_value;
-        let tilename = this.state.selected_export_tilename
-        let shortname = this.state.selected_export_short_name
+        let tilename = this.state.selected_export_tilename;
+        let shortname = this.state.selected_export_short_name;
 
         let key_string = "";
         if (!(this.state.key_list == null)) {
@@ -361,7 +361,7 @@ class ExportsViewer extends React.Component {
 
         let self = this;
         postWithCallback("host", "print_code_area_to_console",
-            {"console_text": the_text, "user_id": window.user_id, "main_id": window.main_id}, function (data) {
+            {"console_text": the_text, "user_id": window.user_id, "main_id": this.props.main_id}, function (data) {
             if (!data.success) {
                 doFlash(data)
             }
@@ -477,6 +477,6 @@ ExportsViewer.propTypes = {
 
 ExportsViewer.defaultProps = {
     style: {}
-}
+};
 
 

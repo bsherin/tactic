@@ -2,6 +2,11 @@
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.library_in_context = library_in_context;
+
 require("../tactic_css/tactic.scss");
 
 require("../tactic_css/tactic_table.scss");
@@ -78,19 +83,44 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
-window.library_id = (0, _utilities_react.guid)();
-window.page_id = window.library_id;
-window.main_id = window.library_id;
-var tsocket;
-
 function _library_home_main() {
-  tsocket = new LibraryTacticSocket("library", 5000);
-  window.tsocket = tsocket;
+  var library_id = (0, _utilities_react.guid)();
+  window.page_id = library_id; // window.main_id = library_id;
+
+  var tsocket = new LibraryTacticSocket("library", 5000, {
+    library_id: library_id
+  }); // window.tsocket = tsocket;
+
   var LibraryHomeAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(LibraryHomeApp, tsocket), tsocket);
   var domContainer = document.querySelector('#library-home-root');
   ReactDOM.render( /*#__PURE__*/_react["default"].createElement(LibraryHomeAppPlus, {
-    initial_theme: window.theme
+    initial_theme: window.theme,
+    tsocket: tsocket,
+    registerLibraryTabChanger: null,
+    library_id: library_id
   }), domContainer);
+}
+
+function library_in_context(handleCreateViewer, registerLibraryTabChanger) {
+  var library_id = (0, _utilities_react.guid)();
+  window.page_id = library_id; // window.page_id = library_id;
+  // window.main_id = library_id;
+
+  var tsocket = new LibraryTacticSocket("library", 5000, {
+    library_id: library_id
+  }); // window.tsocket = tsocket;
+
+  var LibraryHomeAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(LibraryHomeApp, tsocket), tsocket);
+  var domContainer = document.querySelector('#library-home-root');
+  return /*#__PURE__*/_react["default"].createElement("div", {
+    id: "library-home-root"
+  }, /*#__PURE__*/_react["default"].createElement(LibraryHomeAppPlus, {
+    initial_theme: window.theme,
+    handleCreateViewer: handleCreateViewer,
+    tsocket: tsocket,
+    registerLibraryTabChanger: registerLibraryTabChanger,
+    library_id: library_id
+  }));
 }
 
 var LibraryTacticSocket = /*#__PURE__*/function (_TacticSocket) {
@@ -108,16 +138,17 @@ var LibraryTacticSocket = /*#__PURE__*/function (_TacticSocket) {
     key: "initialize_socket_stuff",
     value: function initialize_socket_stuff() {
       var reconnect = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+      var self = this;
       this.socket.emit('join', {
         "user_id": window.user_id,
-        "library_id": window.library_id
+        "library_id": this.extra_args.library_id
       });
       this.socket.on("window-open", function (data) {
         return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
       });
       this.socket.on('handle-callback', _communication_react.handleCallback);
       this.socket.on('close-user-windows', function (data) {
-        if (!(data["originator"] === window.library_id)) {
+        if (!(data["originator"] === self.extra_args.library_id)) {
           window.close();
         }
       });
@@ -190,6 +221,11 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
 
     _this.top_ref = /*#__PURE__*/_react["default"].createRef();
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
+
+    if (props.registerLibraryTabChanger) {
+      props.registerLibraryTabChanger(_this._handleTabChange);
+    }
+
     return _this;
   }
 
@@ -205,7 +241,10 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
 
       this.props.stopSpinner();
       this.props.setStatusTheme(this.state.dark_theme);
-      window.dark_theme = this.state.dark_theme;
+
+      if (!this.in_context) {
+        window.dark_theme = this.state.dark_theme;
+      }
     }
   }, {
     key: "_updatePaneState",
@@ -293,7 +332,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
     key: "render",
     value: function render() {
       var tile_widget = /*#__PURE__*/_react["default"].createElement(_library_widgets.LoadedTileList, {
-        tsocket: tsocket
+        tsocket: this.props.tsocket
       });
 
       var collection_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, this.props, {
@@ -305,7 +344,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
       }, this.state.pane_states["collection"], this.props.errorDrawerFuncs, {
         errorDrawerFuncs: this.props.errorDrawerFuncs,
         dark_theme: this.state.dark_theme,
-        tsocket: tsocket
+        tsocket: this.props.tsocket
       }));
 
       var projects_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, this.props, {
@@ -316,7 +355,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
         updatePaneState: this._updatePaneState
       }, this.props.errorDrawerFuncs, this.state.pane_states["project"], {
         dark_theme: this.state.dark_theme,
-        tsocket: tsocket
+        tsocket: this.props.tsocket
       }));
 
       var tiles_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, this.props, {
@@ -326,7 +365,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
         ToolbarClass: TileToolbar,
         updatePaneState: this._updatePaneState
       }, this.props.errorDrawerFuncs, this.state.pane_states["tile"], {
-        tsocket: tsocket,
+        tsocket: this.props.tsocket,
         aux_pane_title: "loaded tile list",
         dark_theme: this.state.dark_theme,
         aux_pane: tile_widget
@@ -341,7 +380,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
         updatePaneState: this._updatePaneState
       }, this.state.pane_states["list"], {
         dark_theme: this.state.dark_theme,
-        tsocket: tsocket
+        tsocket: this.props.tsocket
       }));
 
       var code_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, this.props, {
@@ -353,7 +392,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
         updatePaneState: this._updatePaneState
       }, this.state.pane_states["code"], {
         dark_theme: this.state.dark_theme,
-        tsocket: tsocket
+        tsocket: this.props.tsocket
       }));
 
       var outer_style = {
@@ -361,12 +400,16 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
         height: this.state.usable_height,
         paddingLeft: 0
       };
-      var outer_class = "pane-holder  ";
+      var outer_class = "";
 
-      if (this.state.dark_theme) {
-        outer_class = "".concat(outer_class, " bp3-dark");
-      } else {
-        outer_class = "".concat(outer_class, " light-theme");
+      if (!window.in_context) {
+        outer_class = "pane-holder  ";
+
+        if (this.state.dark_theme) {
+          outer_class = "".concat(outer_class, " bp3-dark");
+        } else {
+          outer_class = "".concat(outer_class, " light-theme");
+        }
       }
 
       var key_bindings = [[["tab"], this._goToNextPane], [["shift+tab"], this._goToPreviousPane]];
@@ -374,7 +417,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
         value: {
           readOnly: false
         }
-      }, /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+      }, !window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
         is_authenticated: window.is_authenticated,
         selected: null,
         show_api_links: false,
@@ -736,9 +779,7 @@ var CollectionToolbar = /*#__PURE__*/function (_React$Component3) {
                 title: "Error combining collections",
                 content: data.message
               });
-            }
-
-            {
+            } else {
               (0, _toaster.doFlash)(data);
             }
           });
@@ -815,10 +856,10 @@ var CollectionToolbar = /*#__PURE__*/function (_React$Component3) {
       (0, _communication_react.postAjaxPromise)("create_empty_collection", {
         "collection_name": new_name,
         "doc_type": doc_type,
-        "library_id": window.library_id,
+        "library_id": this.props.library_id,
         "csv_options": csv_options
       }).then(function (data) {
-        var new_url = "append_documents_to_collection/".concat(new_name, "/").concat(doc_type, "/").concat(window.library_id);
+        var new_url = "append_documents_to_collection/".concat(new_name, "/").concat(doc_type, "/").concat(_this4.props.library_id);
         myDropZone.options.url = new_url;
         setCurrentUrl(new_url);
         _this4.upload_name = new_name;
@@ -912,9 +953,19 @@ var ProjectToolbar = /*#__PURE__*/function (_React$Component4) {
       this.props.duplicate_func('/duplicate_project', resource_name);
     }
   }, {
-    key: "new_notebook",
-    value: function new_notebook() {
-      window.open("".concat($SCRIPT_ROOT, "/new_notebook"));
+    key: "_new_notebook",
+    value: function _new_notebook() {
+      var self = this;
+
+      if (window.in_context) {
+        var the_view = "".concat($SCRIPT_ROOT, "/new_notebook_in_context");
+        (0, _communication_react.postAjaxPromise)(the_view, {
+          context_id: context_id,
+          resource_name: ""
+        }).then(self.props.handleCreateViewer)["catch"](_toaster.doFlash);
+      } else {
+        window.open("".concat($SCRIPT_ROOT, "/new_notebook"));
+      }
     }
   }, {
     key: "_downloadJupyter",
@@ -927,7 +978,7 @@ var ProjectToolbar = /*#__PURE__*/function (_React$Component4) {
   }, {
     key: "_import_jupyter",
     value: function _import_jupyter(myDropZone, setCurrentUrl) {
-      var new_url = "import_jupyter/".concat(window.library_id);
+      var new_url = "import_jupyter/".concat(this.props.library_id);
       myDropZone.options.url = new_url;
       setCurrentUrl(new_url);
       myDropZone.processQueue();
@@ -967,7 +1018,7 @@ var ProjectToolbar = /*#__PURE__*/function (_React$Component4) {
   }, {
     key: "button_groups",
     get: function get() {
-      return [[["notebook", this.new_notebook, "new-text-box", false, "regular", ["ctrl+n"], "New notebook", "Notebook"]], [["open", this.props.view_func, "document-open", false, "regular", ["space", "return", "ctrl+o"], "View"]], [["duplicate", this._project_duplicate, "duplicate", false, "regular", [], "Duplicate"], ["rename", this.props.rename_func, "edit", false, "regular", [], "Rename"]], [["toJupyter", this._downloadJupyter, "cloud-download", false, "regular", [], "Download as Jupyter Notebook"], ["share", this.props.send_repository_func, "share", false, "regular", [], "Share to repository"]], [["delete", this._project_delete, "trash", true, "regular", [], "Delete"]], [["refresh", this.props.refresh_func, "refresh", false, "regular", [], "Refresh list"]]];
+      return [[["notebook", this._new_notebook, "new-text-box", false, "regular", ["ctrl+n"], "New notebook", "Notebook"]], [["open", this.props.view_func, "document-open", false, "regular", ["space", "return", "ctrl+o"], "View"]], [["duplicate", this._project_duplicate, "duplicate", false, "regular", [], "Duplicate"], ["rename", this.props.rename_func, "edit", false, "regular", [], "Rename"]], [["toJupyter", this._downloadJupyter, "cloud-download", false, "regular", [], "Download as Jupyter Notebook"], ["share", this.props.send_repository_func, "share", false, "regular", [], "Share to repository"]], [["delete", this._project_delete, "trash", true, "regular", [], "Delete"]], [["refresh", this.props.refresh_func, "refresh", false, "regular", [], "Refresh list"]]];
     }
   }, {
     key: "file_adders",
@@ -1099,7 +1150,7 @@ var TileToolbar = /*#__PURE__*/function (_React$Component5) {
         };
         (0, _communication_react.postAjaxPromise)("/create_tile_module", result_dict).then(function (data) {
           self.props.refresh_func();
-          window.open($SCRIPT_ROOT + "/view_module/" + String(new_name));
+          self.props.view_resource(String(new_name), "/view_module/");
         })["catch"](function (data) {
           self.props.addErrorDrawerEntry({
             title: "Error creating new tile",
@@ -1124,7 +1175,7 @@ var TileToolbar = /*#__PURE__*/function (_React$Component5) {
         };
         (0, _communication_react.postAjaxPromise)("/create_tile_module", result_dict).then(function (data) {
           self.props.refresh_func();
-          window.open($SCRIPT_ROOT + "/view_in_creator/" + String(new_name));
+          self.props.view_resource(String(new_name), "/view_in_creator/");
         })["catch"](function (data) {
           self.props.addErrorDrawerEntry({
             title: "Error creating new tile",
@@ -1237,7 +1288,7 @@ var ListToolbar = /*#__PURE__*/function (_React$Component6) {
   }, {
     key: "_add_list",
     value: function _add_list(myDropZone, setCurrentUrl) {
-      var new_url = "import_list/".concat(window.library_id);
+      var new_url = "import_list/".concat(this.props.library_id);
       myDropZone.options.url = new_url;
       setCurrentUrl(new_url);
       myDropZone.processQueue();
@@ -1329,7 +1380,7 @@ var CodeToolbar = /*#__PURE__*/function (_React$Component7) {
         };
         (0, _communication_react.postAjaxPromise)("/create_code", result_dict).then(function (data) {
           self.props.refresh_func();
-          window.open($SCRIPT_ROOT + "/view_code/" + String(new_name));
+          self.props.view_resource(String(new_name), "/view_code/");
         })["catch"](function (data) {
           self.props.addErrorDrawerEntry({
             title: "Error creating new code resource",
@@ -1410,4 +1461,6 @@ var CodeToolbar = /*#__PURE__*/function (_React$Component7) {
 
 CodeToolbar.propTypes = specializedToolbarPropTypes;
 
-_library_home_main();
+if (!window.in_context) {
+  _library_home_main();
+}

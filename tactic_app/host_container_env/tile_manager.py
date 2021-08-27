@@ -34,14 +34,20 @@ class TileManager(LibraryResourceManager):
     def add_rules(self):
         app.add_url_rule('/view_module/<module_name>', "view_module",
                          login_required(self.view_module), methods=['get'])
+        app.add_url_rule('/view_module_in_context', "view_module_in_context",
+                         login_required(self.view_module_in_context), methods=['get', 'post'])
         app.add_url_rule('/get_module_code/<module_name>', "get_module_code",
                          login_required(self.get_module_code), methods=['get', 'post'])
         app.add_url_rule('/view_in_creator/<module_name>', "view_in_creator",
                          login_required(self.view_in_creator), methods=['get'])
+        app.add_url_rule('/view_in_creator_in_context', "view_in_creator_in_context",
+                         login_required(self.view_in_creator_in_context), methods=['get', 'post'])
         app.add_url_rule('/view_location_in_creator/<module_name>/<line_number>', "view_location_in_creator",
                          login_required(self.view_in_creator), methods=['get'])
         app.add_url_rule('/last_saved_view/<module_name>', "last_saved_view",
                          login_required(self.last_saved_view), methods=['get'])
+        app.add_url_rule('/last_saved_view_in_context', "last_saved_view_in_context",
+                         login_required(self.last_saved_view_in_context), methods=['get', 'post'])
         app.add_url_rule('/get_api_html', "get_api_html",
                          login_required(self.get_api_html), methods=['get', 'post'])
         app.add_url_rule('/unload_all_tiles', "unload_all_tiles",
@@ -173,22 +179,44 @@ class TileManager(LibraryResourceManager):
         javascript_source = url_for('static', filename=js_source_dict["module_viewer_react"])
         return render_template("library/resource_viewer_react.html",
                                resource_name=module_name,
-                               include_metadata=True,
-                               include_right=True,
-                               include_above_main_area=False,
                                theme=user_obj.get_theme(),
-                               read_only=False,
-                               is_repository=False,
                                develop=str(_develop),
                                css_source=css_source("module_viewer_react"),
                                javascript_source=javascript_source,
                                dark_theme_name=user_obj.get_preferred_dark_theme(),
                                version_string=tstring)
 
+    def view_module_in_context(self):
+        user_obj = current_user
+        module_name = request.json["resource_name"]
+        self.clear_old_recent_history(module_name)
+        module_code = user_obj.get_tile_module(module_name)
+        mdata = user_obj.process_metadata(self.grab_metadata(module_name))
+        data = {
+            "success": True,
+            "kind": "module-viewer",
+            "the_content": module_code,
+            "mdata": mdata,
+            "resource_name": module_name,
+            "read_only": False,
+            "is_repository": False,
+
+        }
+        return jsonify(data)
+
     def get_module_code(self, module_name):
         user_obj = current_user
         module_code = user_obj.get_tile_module(module_name)
         return jsonify({"success": True, "the_content": module_code})
+
+    def last_saved_view_in_context(self):
+        module_name = request.json["resource_name"]
+        tile_dict = current_user.get_tile_dict(module_name)
+        if "last_saved" in tile_dict and tile_dict["last_saved"] == "creator":
+            result = self.view_in_creator_in_context()
+        else:
+            result = self.view_module_in_context()
+        return result
 
     def last_saved_view(self, module_name):
         tile_dict = current_user.get_tile_dict(module_name)
@@ -216,23 +244,37 @@ class TileManager(LibraryResourceManager):
         return the_content
 
     def view_in_creator(self, module_name, line_number=0):
-        self.clear_old_recent_history(module_name)
-        user_obj = current_user
-        the_content = self.initialize_module_viewer_container(module_name)
-        create_ready_block(the_content["rb_id"], user_obj.username, [the_content["module_viewer_id"], "client"],
-                           the_content["module_viewer_id"],)
+
         return render_template("library/tile_creator_react.html",
                                module_name=module_name,
-                               develop=str(_develop),
-                               theme=user_obj.get_theme(),
-                               ready_block_id=the_content["rb_id"],
-                               dark_theme_name=user_obj.get_preferred_dark_theme(),
-                               version_string=tstring,
                                line_number=line_number,
-                               module_viewer_id=the_content["module_viewer_id"],
                                css_source=css_source("tile_creator_react"),
                                module_source=js_source_dict["tile_creator_react"],
-                               tile_collection_name=the_content["tile_collection_name"])
+                               develop=str(_develop),
+                               theme=current_user.get_theme(),
+                               dark_theme_name=current_user.get_preferred_dark_theme(),
+                               version_string=tstring,)
+
+    def view_in_creator_in_context(self):
+        user_obj = current_user
+        # context_id = request.json["context_id"]
+        module_name = request.json["resource_name"]
+        self.clear_old_recent_history(module_name)
+        id_info = self.initialize_module_viewer_container(module_name)
+        create_ready_block(id_info["rb_id"], user_obj.username, [id_info["module_viewer_id"], "client"],
+                           id_info["module_viewer_id"])
+        mdata = user_obj.process_metadata(self.grab_metadata(module_name))
+        data = {
+            "success": True,
+            "kind": "creator-viewer",
+            "resource_name": module_name,
+            "module_viewer_id": id_info["module_viewer_id"],
+            "ready_block_id": id_info["rb_id"],
+            "tile_collection_name": id_info["tile_collection_name"],
+            "mdata": mdata
+        }
+
+        return jsonify(data)
 
     def unload_all_tiles(self):
         try:

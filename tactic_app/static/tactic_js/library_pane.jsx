@@ -431,6 +431,7 @@ class LibraryPane extends React.Component {
     }
 
     get view_views() {
+
         if (this.props.is_repository) {
             return {
                 collection: null,
@@ -462,6 +463,7 @@ class LibraryPane extends React.Component {
     }
 
     _handleRowDoubleClick(row_dict) {
+        let self = this;
         let view_view = this.view_views[this.props.res_type];
         if (view_view == null) return;
         this._updatePaneState({
@@ -469,7 +471,18 @@ class LibraryPane extends React.Component {
                 multi_select: false,
                 list_of_selected: [row_dict.name]
         });
-        window.open($SCRIPT_ROOT + view_view + row_dict.name)
+        if (window.in_context) {
+            const re = new RegExp("/$");
+            view_view = view_view.replace(re, "_in_context");
+            postAjaxPromise($SCRIPT_ROOT + view_view, {context_id: context_id,
+                resource_name: row_dict.name})
+                .then(self.props.handleCreateViewer)
+                .catch(doFlash);
+        }
+        else {
+            window.open($SCRIPT_ROOT + view_view + row_dict.name)
+        }
+
     }
 
     _handleRowSelection(selected_rows) {
@@ -601,19 +614,40 @@ class LibraryPane extends React.Component {
     }
 
     _view_func(the_view=null) {
+        let self = this;
         if (the_view == null) {
             the_view = this.view_views[this.props.res_type]
         }
-        if (!this.state.multi_select) {
+        if (window.in_context) {
+            const re = new RegExp("/$");
+            the_view = the_view.replace(re, "_in_context");
+            postAjaxPromise($SCRIPT_ROOT + the_view, {context_id: context_id, resource_name: this.props.selected_resource.name})
+                .then(self.props.handleCreateViewer)
+                .catch(doFlash);
+        }
+        else if (!this.state.multi_select) {
             window.open($SCRIPT_ROOT + the_view + this.props.selected_resource.name)
         }
     }
 
     _view_resource(resource_name, the_view=null) {
+        const self = this;
         if (the_view == null) {
             the_view = this.view_views[this.props.res_type]
         }
-        window.open($SCRIPT_ROOT + the_view + resource_name)
+        if (window.in_context) {
+            const re = new RegExp("/$");
+            the_view = the_view.replace(re, "_in_context");
+            postAjaxPromise($SCRIPT_ROOT + the_view, {context_id: context_id, resource_name: resource_name})
+                .then(self.props.handleCreateViewer)
+                .catch(doFlash);
+
+
+        }
+        else {
+            window.open($SCRIPT_ROOT + the_view + resource_name)
+        }
+
     }
 
     _duplicate_func (duplicate_view, resource_name=null) {
@@ -946,6 +980,7 @@ class LibraryPane extends React.Component {
                                   sendContextMenuItems={this._sendContextMenuItems}
                                   view_resource={this._view_resource}
                                   {...this.props.errorDrawerFuncs}
+                                  handleCreateViewer={this.props.handleCreateViewer}
                                   />
                       <div style={{width: this.state.available_width, height: this.state.available_height}}>
                           <HorizontalPanes

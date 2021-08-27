@@ -918,7 +918,7 @@ pre code {
   background-color: white;
   color: #137cbd !important;
   font-weight: 900; }
-.light-theme #creator-root .light-theme .CodeMirror-gutters {
+.light-theme #creator-root .light-theme .CodeMirror-gutters, .light-theme creator-root .light-theme .CodeMirror-gutters {
   background-color: #f5f8fa; }
 .light-theme.main-outer {
   background-color: #ced9e0; }

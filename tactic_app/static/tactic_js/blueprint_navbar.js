@@ -373,6 +373,19 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
       };
       right_style.justifyContent = "flex-end";
       var theme_class = this.props.dark_theme ? "bp3-dark" : "light-theme";
+
+      if (this.props.min_navbar) {
+        return /*#__PURE__*/_react["default"].createElement(_core.Navbar, {
+          style: {
+            paddingLeft: 10
+          },
+          className: theme_class
+        }, /*#__PURE__*/_react["default"].createElement("div", {
+          className: "bp3-navbar-group bp3-align-left",
+          ref: this.lg_ref
+        }, this.props.menus != null && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, this.props.menus)));
+      }
+
       return /*#__PURE__*/_react["default"].createElement(_core.Navbar, {
         style: {
           paddingLeft: 10
@@ -416,6 +429,7 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
 
 exports.TacticNavbar = TacticNavbar;
 TacticNavbar.propTypes = {
+  min_navbar: _propTypes["default"].bool,
   is_authenticated: _propTypes["default"].bool,
   user_name: _propTypes["default"].string,
   menus: _propTypes["default"].object,
@@ -424,6 +438,7 @@ TacticNavbar.propTypes = {
   set_parent_theme: _propTypes["default"].func
 };
 TacticNavbar.defaultProps = {
+  min_navbar: false,
   menus: null,
   selected: null,
   show_api_links: false,

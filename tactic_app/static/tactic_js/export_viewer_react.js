@@ -397,7 +397,7 @@ var ExportsViewer = /*#__PURE__*/function (_React$Component4) {
     key: "_updateExportsList",
     value: function _updateExportsList() {
       var self = this;
-      (0, _communication_react.postWithCallback)(window.main_id, "get_full_pipe_dict", {}, function (data) {
+      (0, _communication_react.postWithCallback)(this.props.main_id, "get_full_pipe_dict", {}, function (data) {
         self.setState({
           pipe_dict: data.pipe_dict,
           pipe_dict_updated: true
@@ -435,7 +435,7 @@ var ExportsViewer = /*#__PURE__*/function (_React$Component4) {
         send_data.key = this.state.key_list_value;
       }
 
-      (0, _communication_react.postWithCallback)(main_id, "evaluate_export", send_data);
+      (0, _communication_react.postWithCallback)(this.props.main_id, "evaluate_export", send_data);
       if (e) e.preventDefault();
     }
   }, {
@@ -443,7 +443,7 @@ var ExportsViewer = /*#__PURE__*/function (_React$Component4) {
     value: function _stopMe() {
       this._stopMySpinner();
 
-      (0, _communication_react.postWithCallback)(main_id, "stop_evaluate_export", {});
+      (0, _communication_react.postWithCallback)(this.props.main_id, "stop_evaluate_export", {});
     }
   }, {
     key: "_showMySpinner",
@@ -508,7 +508,7 @@ var ExportsViewer = /*#__PURE__*/function (_React$Component4) {
         selected_export_tilename: tilename,
         selected_export_short_name: shortname
       });
-      (0, _communication_react.postWithCallback)(window.main_id, "get_export_info", {
+      (0, _communication_react.postWithCallback)(this.props.main_id, "get_export_info", {
         "export_name": fullname
       });
     }
@@ -559,7 +559,7 @@ var ExportsViewer = /*#__PURE__*/function (_React$Component4) {
       (0, _communication_react.postWithCallback)("host", "print_code_area_to_console", {
         "console_text": the_text,
         "user_id": window.user_id,
-        "main_id": window.main_id
+        "main_id": this.props.main_id
       }, function (data) {
         if (!data.success) {
           (0, _toaster.doFlash)(data);

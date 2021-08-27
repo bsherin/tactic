@@ -35,6 +35,10 @@ class ProjectManager(LibraryResourceManager):
                          "main_project",
                          login_required(self.main_project),
                          methods=['get'])
+        app.add_url_rule('/main_project_in_context',
+                         "main_project_in_context",
+                         login_required(self.main_project_in_context),
+                         methods=['get', 'post'])
         app.add_url_rule('/delete_project', "delete_project", login_required(self.delete_project),
                          methods=['post'])
         app.add_url_rule('/duplicate_project', "duplicate_project",
@@ -130,12 +134,13 @@ class ProjectManager(LibraryResourceManager):
                 "successful_reads": successful_reads,
                 "failed_reads": failed_reads}
 
-    def main_project(self, project_name):
+    def main_project_in_context(self):
         user_obj = current_user
         user_id = user_obj.get_id()
+        # context_id = request.json["context_id"]
+        project_name = request.json["resource_name"]
 
         # noinspection PyTypeChecker
-
         main_id, rb_id = main_container_info.create_main_container(project_name, user_id, user_obj.username)
 
         save_dict = db[user_obj.project_collection_name].find_one({"project_name": project_name})
@@ -146,37 +151,58 @@ class ProjectManager(LibraryResourceManager):
             doc_type = "table"
 
         create_ready_block(rb_id, user_obj.username, [main_id, "client"], main_id)
-
-        data_dict = {"project_name": project_name,
-                     "window_title": project_name,
-                     "host_id": "host" + os.environ.get("MYPORT"),
+        is_notebook = doc_type == 'notebook' or doc_type == 'jupyter'
+        if is_notebook:
+            viewer = "notebook-viewer"
+        else:
+            viewer = "main-viewer"
+        full_collection_name = mdata["collection_name"]
+        short_collection_name = re.sub(r"^.*?\.data_collection\.", "", full_collection_name)
+        data_dict = {"success": True,
+                     "kind": viewer,
+                     "project_name": project_name,
+                     "resource_name": project_name,
                      "ready_block_id": rb_id,
-                     "user_id": user_id,
-                     "develop": str(_develop),
                      "main_id": main_id,
                      "temp_data_id": "",
                      "collection_name": "",
                      "doc_names": [],
-                     "theme": user_obj.get_theme(),
-                     "short_collection_name": "",
+                     "short_collection_name": short_collection_name,
+                     "doc_type": doc_type,
                      "is_table": (doc_type == "table"),
-                     "is_notebook": (doc_type == 'notebook' or doc_type == 'jupyter'),
+                     "is_notebook": is_notebook,
                      "is_freeform": (doc_type == 'freeform'),
                      "is_jupyter":  (doc_type == 'jupyter'),
-                     "dark_theme_name": user_obj.get_preferred_dark_theme(),
-                     "base_figure_url": url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
-                     "uses_codemirror": "True",
+                     "is_project": True,
+                     "base_figure_url": url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1]}
+
+        return jsonify(data_dict)
+
+    def main_project(self, project_name):
+
+        data_dict = {"project_name": project_name,
+                     "is_new_notebook": "False",
+                     "develop": str(_develop),
+                     "collection_name": "",
+                     "theme": current_user.get_theme(),
+                     "dark_theme_name": current_user.get_preferred_dark_theme(),
                      "version_string": tstring}
+
+        save_dict = db[current_user.project_collection_name].find_one({"project_name": project_name})
+        mdata = save_dict["metadata"]
+        if "type" in mdata:
+            doc_type = mdata["type"]
+        else:
+            doc_type = "table"
+
         if doc_type in ['notebook', 'jupyter']:
-            template_name = "main_notebook_react.html"
             data_dict["module_source"] = js_source_dict["notebook_app"]
             data_dict["css_source"] = css_source("notebook_app")
         else:
-            template_name = "main_react.html"
             data_dict["module_source"] = js_source_dict["main_app"]
             data_dict["css_source"] = css_source("main_app")
 
-        return render_template(template_name, **data_dict)
+        return render_template("main_react.html", **data_dict)
 
     def duplicate_project(self):
         user_obj = current_user

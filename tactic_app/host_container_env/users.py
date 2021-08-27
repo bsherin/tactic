@@ -3,6 +3,7 @@
 
 import re
 import sys
+import copy
 import datetime
 from collections import OrderedDict
 from flask import jsonify, request
@@ -92,6 +93,24 @@ class User(UserMixin, MongoAccess):
 
     def dt_to_sortstring(self, dt):
         return dt.strftime("%Y%m%d%H%M%S")
+
+    def process_metadata(self, mdata):
+        if "datetime" in mdata:
+            datestring = self.get_timestrings(mdata["datetime"])[0]
+        else:
+            datestring = ""
+        additional_mdata = copy.copy(mdata)
+        standard_mdata = ["datetime", "tags", "notes", "_id", "name"]
+        for field in standard_mdata:
+            if field in additional_mdata:
+                del additional_mdata[field]
+        if "updated" in additional_mdata:
+            additional_mdata["updated"] = self.get_timestrings(additional_mdata["updated"])[0]
+        if "collection_name" in additional_mdata:
+            additional_mdata["collection_name"] = self.get_short_collection_name(
+                additional_mdata["collection_name"])
+        return {"datestring": datestring, "tags": mdata["tags"], "notes": mdata["notes"],
+                "additional_mdata": additional_mdata}
 
     def get_timestrings(self, dt):
         localtime = self.localize_time(dt)

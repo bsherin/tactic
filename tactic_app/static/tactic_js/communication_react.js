@@ -89,16 +89,17 @@ function postAjaxUploadPromise(target, form_data) {
     })
 }
 
-function postWithCallback(dest_id, task_type, task_data, callback_func, error_callback=null){
+function postWithCallback(dest_id, task_type, task_data, callback_func, error_callback=null, special_main_id=null){
     const task_packet =  {
         "source": "client",
         "dest": dest_id,
         "task_type": task_type,
         "task_data": task_data,
         "response_data": null,
-        "main_id": main_id,
+        "main_id": window.main_id,
         "expiration": null
     };
+
     if ((typeof callback_func != "undefined") && (callback_func != null)) {
         const unique_id = guid();
         callbacks[unique_id] = callback_func;

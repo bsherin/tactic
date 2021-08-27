@@ -24,30 +24,55 @@ import {KeyTrap} from "./key_trap.js";
 import {doBinding, guid} from "./utilities_react.js";
 import {TacticNavbar} from "./blueprint_navbar";
 
-window.library_id = guid();
-window.page_id = window.library_id;
-window.main_id = window.library_id;
-
-let tsocket;
+export {library_in_context}
 
 function _library_home_main () {
-    tsocket = new LibraryTacticSocket("library", 5000);
-    window.tsocket = tsocket;
+    let library_id = guid();
+    window.page_id = library_id;
+    // window.main_id = library_id;
+    let tsocket = new LibraryTacticSocket("library",
+        5000,
+        {library_id: library_id});
+    // window.tsocket = tsocket;
     const LibraryHomeAppPlus = withErrorDrawer(withStatus(LibraryHomeApp, tsocket), tsocket);
     const domContainer = document.querySelector('#library-home-root');
-    ReactDOM.render(<LibraryHomeAppPlus initial_theme={window.theme}/>, domContainer)
+    ReactDOM.render(<LibraryHomeAppPlus initial_theme={window.theme} tsocket={tsocket}
+                                        registerLibraryTabChanger={null}
+                                        library_id={library_id}/>, domContainer)
+}
+
+function library_in_context(handleCreateViewer, registerLibraryTabChanger) {
+    let library_id = guid();
+    window.page_id = library_id;
+    // window.page_id = library_id;
+    // window.main_id = library_id;
+    let tsocket = new LibraryTacticSocket("library",
+        5000,
+        {library_id: library_id});
+    // window.tsocket = tsocket;
+    const LibraryHomeAppPlus = withErrorDrawer(withStatus(LibraryHomeApp, tsocket), tsocket);
+    const domContainer = document.querySelector('#library-home-root');
+    return (
+        <div id="library-home-root">
+            <LibraryHomeAppPlus initial_theme={window.theme}
+                                handleCreateViewer={handleCreateViewer}
+                                tsocket={tsocket}
+                                registerLibraryTabChanger={registerLibraryTabChanger}
+                                library_id={library_id}/>
+        </div>
+    )
 }
 
 class LibraryTacticSocket extends TacticSocket {
 
     initialize_socket_stuff(reconnect=false) {
-
-        this.socket.emit('join', {"user_id":  window.user_id, "library_id":  window.library_id});
+        let self = this;
+        this.socket.emit('join', {"user_id":  window.user_id, "library_id":  this.extra_args.library_id});
 
         this.socket.on("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
         this.socket.on('handle-callback', handleCallback);
         this.socket.on('close-user-windows', data => {
-            if (!(data["originator"] === window.library_id)) {
+            if (!(data["originator"] === self.extra_args.library_id)) {
                 window.close()
             }
         });
@@ -93,6 +118,9 @@ class LibraryHomeApp extends React.Component {
         }
         this.top_ref = React.createRef();
         doBinding(this);
+        if (props.registerLibraryTabChanger) {
+            props.registerLibraryTabChanger(this._handleTabChange)
+        }
     }
 
     componentDidMount() {
@@ -101,7 +129,9 @@ class LibraryHomeApp extends React.Component {
         this._update_window_dimensions();
         this.props.stopSpinner();
         this.props.setStatusTheme(this.state.dark_theme);
-        window.dark_theme = this.state.dark_theme
+        if (!this.in_context) {
+            window.dark_theme = this.state.dark_theme
+        }
     }
 
     _updatePaneState (res_type, state_update, callback=null) {
@@ -158,7 +188,7 @@ class LibraryHomeApp extends React.Component {
     }
 
     render () {
-        let tile_widget = <LoadedTileList tsocket={tsocket}/>;
+        let tile_widget = <LoadedTileList tsocket={this.props.tsocket}/>;
         let collection_pane = (
                         <LibraryPane {...this.props}
                                      res_type="collection"
@@ -170,7 +200,7 @@ class LibraryHomeApp extends React.Component {
                                      {...this.props.errorDrawerFuncs}
                                      errorDrawerFuncs={this.props.errorDrawerFuncs}
                                      dark_theme={this.state.dark_theme}
-                                     tsocket={tsocket}/>
+                                     tsocket={this.props.tsocket}/>
         );
         let projects_pane = (<LibraryPane {...this.props}
                                           res_type="project"
@@ -181,7 +211,7 @@ class LibraryHomeApp extends React.Component {
                                           {...this.props.errorDrawerFuncs}
                                           {...this.state.pane_states["project"]}
                                           dark_theme={this.state.dark_theme}
-                                          tsocket={tsocket}/>
+                                          tsocket={this.props.tsocket}/>
         );
         let tiles_pane = (<LibraryPane {...this.props}
                                        res_type="tile"
@@ -191,7 +221,7 @@ class LibraryHomeApp extends React.Component {
                                        updatePaneState={this._updatePaneState}
                                        {...this.props.errorDrawerFuncs}
                                        {...this.state.pane_states["tile"]}
-                                       tsocket={tsocket}
+                                       tsocket={this.props.tsocket}
                                        aux_pane_title="loaded tile list"
                                        dark_theme={this.state.dark_theme}
                                        aux_pane={tile_widget}/>
@@ -205,7 +235,7 @@ class LibraryHomeApp extends React.Component {
                                        updatePaneState={this._updatePaneState}
                                        {...this.state.pane_states["list"]}
                                         dark_theme={this.state.dark_theme}
-                                       tsocket={tsocket}/>
+                                       tsocket={this.props.tsocket}/>
         );
         let code_pane = (<LibraryPane {...this.props}
                                       res_type="code"
@@ -216,28 +246,35 @@ class LibraryHomeApp extends React.Component {
                                       updatePaneState={this._updatePaneState}
                                       {...this.state.pane_states["code"]}
                                       dark_theme={this.state.dark_theme}
-                                      tsocket={tsocket}/>
+                                      tsocket={this.props.tsocket}/>
         );
         let outer_style = {width: "100%",
             height: this.state.usable_height,
             paddingLeft: 0
         };
-        let outer_class = "pane-holder  ";
-        if (this.state.dark_theme) {
-            outer_class = `${outer_class} bp3-dark`;
+        let outer_class = "";
+        if (!window.in_context) {
+            outer_class = "pane-holder  ";
+            if (this.state.dark_theme) {
+                outer_class = `${outer_class} bp3-dark`;
+            }
+            else {
+                outer_class = `${outer_class} light-theme`;
+            }
         }
-        else {
-            outer_class = `${outer_class} light-theme`;
-        }
+
         let key_bindings = [[["tab"], this._goToNextPane], [["shift+tab"], this._goToPreviousPane]];
         return (
             <ViewerContext.Provider value={{readOnly: false}}>
-                <TacticNavbar is_authenticated={window.is_authenticated}
+                {!window.in_context &&
+                    <TacticNavbar is_authenticated={window.is_authenticated}
                           selected={null}
                           show_api_links={false}
                           dark_theme={this.state.dark_theme}
                           set_parent_theme={this._setTheme}
-                          user_name={window.username}/>
+                        user_name={window.username}/>
+                }
+
                 <div className={outer_class} ref={this.top_ref} style={outer_style}>
                     <div style={{width: this.state.usable_width}}>
                         <Tabs id="the_container" style={{marginTop: 100, height: "100%"}}
@@ -439,7 +476,7 @@ class CollectionToolbar extends React.Component {
                     if (!data.success) {
                         self.props.addErrorDrawerEntry({title: "Error combining collections", content: data.message})
                     }
-                    {
+                    else {
                         doFlash(data);
                     }
                 });
@@ -498,11 +535,11 @@ class CollectionToolbar extends React.Component {
         postAjaxPromise("create_empty_collection",
             {"collection_name": new_name,
                 "doc_type": doc_type,
-                "library_id": window.library_id,
+                "library_id": this.props.library_id,
                 "csv_options": csv_options
             })
             .then((data)=> {
-                let new_url = `append_documents_to_collection/${new_name}/${doc_type}/${window.library_id}`;
+                let new_url = `append_documents_to_collection/${new_name}/${doc_type}/${this.props.library_id}`;
                 myDropZone.options.url = new_url;
                 setCurrentUrl(new_url);
                 this.upload_name = new_name;
@@ -570,8 +607,18 @@ class ProjectToolbar extends React.Component {
         this.props.duplicate_func('/duplicate_project', resource_name)
     }
 
-    new_notebook () {
-        window.open(`${$SCRIPT_ROOT}/new_notebook`)
+    _new_notebook () {
+        let self = this;
+        if (window.in_context) {
+            const the_view = `${$SCRIPT_ROOT}/new_notebook_in_context`;
+            postAjaxPromise(the_view, {context_id: context_id, resource_name: ""})
+                .then(self.props.handleCreateViewer)
+                .catch(doFlash);
+        }
+        else {
+            window.open(`${$SCRIPT_ROOT}/new_notebook`)
+        }
+
     }
 
     _downloadJupyter () {
@@ -582,7 +629,7 @@ class ProjectToolbar extends React.Component {
     };
 
    _import_jupyter (myDropZone, setCurrentUrl) {
-        let new_url = `import_jupyter/${window.library_id}`;
+        let new_url = `import_jupyter/${this.props.library_id}`;
         myDropZone.options.url = new_url;
         setCurrentUrl(new_url);
         myDropZone.processQueue();
@@ -604,7 +651,7 @@ class ProjectToolbar extends React.Component {
 
     get button_groups() {
         return [
-            [["notebook", this.new_notebook,"new-text-box", false, "regular", ["ctrl+n"], "New notebook", "Notebook"]],
+            [["notebook", this._new_notebook,"new-text-box", false, "regular", ["ctrl+n"], "New notebook", "Notebook"]],
             [["open", this.props.view_func, "document-open", false, "regular", ["space", "return", "ctrl+o"], "View"]],
             [["duplicate", this._project_duplicate, "duplicate", false, "regular", [], "Duplicate"],
              ["rename", this.props.rename_func, "edit", false, "regular", [], "Rename"]],
@@ -715,7 +762,7 @@ class TileToolbar extends React.Component {
             postAjaxPromise("/create_tile_module", result_dict)
                 .then((data) => {
                     self.props.refresh_func();
-                    window.open($SCRIPT_ROOT + "/view_module/" + String(new_name))
+                    self.props.view_resource(String(new_name), "/view_module/");
                 })
                 .catch((data)=>{self.props.addErrorDrawerEntry({title: "Error creating new tile", content: data.message})})
             }
@@ -736,7 +783,7 @@ class TileToolbar extends React.Component {
             postAjaxPromise("/create_tile_module", result_dict)
                 .then((data) => {
                     self.props.refresh_func();
-                    window.open($SCRIPT_ROOT + "/view_in_creator/" + String(new_name))
+                    self.props.view_resource(String(new_name), "/view_in_creator/");
                 })
                 .catch((data)=>{self.props.addErrorDrawerEntry({title: "Error creating new tile", content: data.message})})
             }
@@ -809,7 +856,7 @@ class ListToolbar extends React.Component {
     }
 
     _add_list (myDropZone, setCurrentUrl) {
-        let new_url = `import_list/${window.library_id}`;
+        let new_url = `import_list/${this.props.library_id}`;
         myDropZone.options.url = new_url;
         setCurrentUrl(new_url);
         myDropZone.processQueue();
@@ -880,7 +927,7 @@ class CodeToolbar extends React.Component {
             postAjaxPromise("/create_code", result_dict)
                 .then((data) => {
                     self.props.refresh_func();
-                    window.open($SCRIPT_ROOT + "/view_code/" + String(new_name))
+                    self.props.view_resource(String(new_name), "/view_code/")
                 })
                 .catch((data)=>{self.props.addErrorDrawerEntry({title: "Error creating new code resource", content: data.message})})
         }
@@ -938,5 +985,7 @@ class CodeToolbar extends React.Component {
 
 CodeToolbar.propTypes = specializedToolbarPropTypes;
 
+if (!window.in_context) {
+    _library_home_main();
+}
 
-_library_home_main();

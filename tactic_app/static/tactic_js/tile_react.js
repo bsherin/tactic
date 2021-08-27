@@ -259,10 +259,10 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
       new_tile_list.splice(tindex, 1);
       this.props.setMainStateValue("tile_list", new_tile_list);
       var data_dict = {
-        main_id: window.main_id,
+        main_id: this.props.main_id,
         tile_id: tile_id
       };
-      (0, _communication_react.postWithCallback)(window.main_id, "RemoveTile", data_dict);
+      (0, _communication_react.postWithCallback)(this.props.main_id, "RemoveTile", data_dict);
     }
   }, {
     key: "_addToLog",
@@ -350,6 +350,7 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
 
       return /*#__PURE__*/_react["default"].createElement(_sortable_container.SortableComponent, {
         id: "tile-div",
+        main_id: this.props.main_id,
         style: outer_style,
         helperClass: this.props.dark_theme ? "bp3-dark" : "light-theme",
         container_ref: this.props.tile_div_ref,
@@ -639,14 +640,14 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "_startLogStreaming",
     value: function _startLogStreaming() {
-      (0, _communication_react.postWithCallback)(window.main_id, "StartLogStreaming", {
+      (0, _communication_react.postWithCallback)(this.props.main_id, "StartLogStreaming", {
         tile_id: this.props.tile_id
       });
     }
   }, {
     key: "_stopLogStreaming",
     value: function _stopLogStreaming() {
-      (0, _communication_react.postWithCallback)(window.main_id, "StopLogStreaming", {
+      (0, _communication_react.postWithCallback)(this.props.main_id, "StopLogStreaming", {
         tile_id: this.props.tile_id
       });
     }
@@ -665,7 +666,7 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
     value: function _standard_click_data() {
       return {
         tile_id: this.props.tile_id,
-        main_id: window.main_id,
+        main_id: this.props.main_id,
         doc_name: this.props.current_doc_name,
         active_row_id: this.props.selected_row
       };
@@ -996,7 +997,7 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
     key: "_logParams",
     value: function _logParams() {
       var data_dict = {};
-      data_dict["main_id"] = window.main_id;
+      data_dict["main_id"] = this.props.main_id;
       data_dict["tile_id"] = this.props.tile_id;
       data_dict["tile_name"] = this.props.tile_name;
       (0, _communication_react.postWithCallback)(this.props.tile_id, "LogParams", data_dict);

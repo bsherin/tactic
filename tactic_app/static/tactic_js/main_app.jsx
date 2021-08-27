@@ -22,13 +22,14 @@ import {TileContainer} from "./tile_react.js";
 import {ExportsViewer} from "./export_viewer_react.js";
 import {showModalReact, showSelectDialog} from "./modal_react.js";
 import {ConsoleComponent} from "./console_component.js";
-import {handleCallback, postWithCallback, postAsyncFalse} from "./communication_react.js"
+import {handleCallback, postWithCallback, postAsyncFalse, postAjaxPromise} from "./communication_react.js"
 import {doFlash} from "./toaster.js"
 import {withStatus} from "./toaster.js";
 import {withErrorDrawer} from "./error_drawer.js";
 import {doBinding, get_ppi} from "./utilities_react.js";
 
 export {MainTacticSocket}
+export {main_main_in_context}
 
 const MARGIN_SIZE = 0;
 const BOTTOM_MARGIN = 35;  // includes space for status messages at bottom
@@ -36,15 +37,7 @@ const MARGIN_ADJUSTMENT = 8; // This is the amount at the top of both the table 
 const CONSOLE_HEADER_HEIGHT = 35;
 const EXTRA_TABLE_AREA_SPACE = 500;
 
-
-let tsocket;
 let ppi;
-
-// Note: it seems like the sendbeacon doesn't work if this callback has a line
-// before the sendbeacon
-window.addEventListener("unload", function sendRemove(event) {
-    navigator.sendBeacon("/remove_mainwindow", JSON.stringify({"main_id": window.main_id}));
-});
 
 function renderSpinnerMessage(msg) {
     let domContainer = document.querySelector('#main-root');
@@ -58,126 +51,147 @@ function renderSpinnerMessage(msg) {
     )
 }
 
-function _main_main() {
-    //render_navbar();
-    console.log("entering start_post_load");
-    let domContainer = document.querySelector('#main-root');
-    renderSpinnerMessage("Starting up...")
-    ppi = get_ppi();
-    tsocket = new MainTacticSocket("main", 5000);
-    tsocket.socket.on('finish-post-load', _finish_post_load);
-    tsocket.socket.on("remove-ready-block", _everyone_ready);
-    tsocket.socket.emit('join-main', {"room": main_id, "user_id": window.user_id}, function(response) {
-            window.initial_tile_types = response.tile_types;
-            tsocket.socket.emit('client-ready', {"room": main_id, "user_id": window.user_id,
-                "participant": "client", "rb_id": window.ready_block_id, "main_id": main_id})
+class MainTacticSocket extends TacticSocket {
+
+    initialize_socket_stuff(reconnect=false) {
+        this.socket.emit('join', {"room": window.user_id});
+        if (reconnect) {
+            this.socket.emit('join-main', {"room": this.extra_args.main_id, "user_id": window.user_id}, function (response) {
+            })
+        }
+        this.socket.on('handle-callback', handleCallback);
+        this.socket.on('close-user-windows', function(data){
+                postAsyncFalse("host", "remove_mainwindow_task", {"main_id": this.extra_args.main_id});
+                if (!(data["originator"] == this.extra_args.main_id)) {
+                    window.close()
+                }
+            });
+
+        this.socket.on("window-open", function(data) {
+            window.open($SCRIPT_ROOT + "/load_temp_page/" + data["the_id"])
         });
 
-    tsocket.socket.on('myevent', function() {
-        console.log("got the event")
-    })
-
-}
-
-function _everyone_ready() {
-    renderSpinnerMessage("Everyone is ready, initializing...")
-    if (window.is_project) {
-        let data_dict = {
-            "project_name": window._project_name,
-            "doc_type": window.doc_type,
-            "library_id": window.main_id,
-            "base_figure_url": window.base_figure_url,
-            "user_id": window.user_id,
-            "ppi": ppi
-        };
-        postWithCallback(main_id, "initialize_project_mainwindow", data_dict)
-    }
-    else {
-        let data_dict = {
-            "collection_name": window._collection_name,
-            "doc_type": window.doc_type,
-            "base_figure_url": window.base_figure_url,
-            "user_id": window.user_id,
-            "ppi": ppi
-        };
-        postWithCallback(main_id, "initialize_mainwindow", data_dict, _finish_post_load)
+        this.socket.on("notebook-open", function(data) {
+            window.open($SCRIPT_ROOT + "/open_notebook/" + data["the_id"])
+        });
+        this.socket.on("doFlash", function(data) {
+            doFlash(data)
+        });
     }
 }
 
-function _finish_post_load(data) {
-    renderSpinnerMessage("Creating the page...")
-    let MainAppPlus = withErrorDrawer(withStatus(MainApp, tsocket, true), tsocket);
-    var interface_state;
-    if (window.is_project) {
-        window._collection_name = data.collection_name;
-        window.doc_names = data.doc_names;
-        window.short_collection_name = data.short_collection_name;
-        interface_state = data.interface_state
-        // legacy below lines needed for older saves
-        if (!("show_exports_pane" in interface_state)) {
-            interface_state["show_exports_pane"] = true
+function main_main() {
+    function gotElement(the_element) {
+        const domContainer = document.querySelector('#main-root');
+        ReactDOM.render(the_element, domContainer)
+    }
+    const target = window.project_name == "" ? "main_collection_in_context" : "main_project_in_context";
+    const resource_name = window.project_name == "" ? window.collection_name : window.project_name;
+
+    postAjaxPromise(target, {"resource_name": resource_name})
+        .then((data)=>{
+            main_main_in_context(data, null, gotElement)
+        })
+}
+
+function main_main_in_context(data, registerThemeSetter, finalCallback) {
+    var tsocket = new MainTacticSocket("main",
+        5000,
+        {main_id: data.main_id}
+    );
+    ppi = get_ppi();
+    let main_id = data.main_id;
+    if (!window.in_context) {
+        window.main_id = data.main_id;  // needed for postWithCallback
+    }
+
+    let initial_tile_types;
+
+    tsocket.socket.on('finish-post-load', _finish_post_load_in_context);
+    tsocket.socket.on("remove-ready-block", ()=>{_everyone_ready_in_context()});
+    tsocket.socket.emit('join-main', {"room": main_id, "user_id": window.user_id}, function(response) {
+            initial_tile_types = response.tile_types;
+            tsocket.socket.emit('client-ready', {"room": main_id, "user_id": window.user_id,
+                "participant": "client", "rb_id": data.ready_block_id, "main_id": main_id})
+    });
+    window.addEventListener("unload", function sendRemove(event) {
+        navigator.sendBeacon("/remove_mainwindow", JSON.stringify({"main_id": main_id}));
+    });
+
+    function _everyone_ready_in_context() {
+        // renderSpinnerMessage("Everyone is ready, initializing...");
+        if (data.is_project) {
+            let data_dict = {
+                "project_name": data.project_name,
+                "doc_type": data.doc_type,
+                "base_figure_url": data.base_figure_url,
+                "user_id": window.user_id,
+                "ppi": ppi
+            };
+            postWithCallback(main_id, "initialize_project_mainwindow", data_dict)
         }
-        if (!("show_console_pane" in interface_state)) {
-            interface_state["show_console_pane"] = true
+        else {
+            let data_dict = {
+                "collection_name": data.collection_name,
+                "doc_type": data.doc_type,
+                "base_figure_url": data.base_figure_url,
+                "user_id": window.user_id,
+                "ppi": ppi
+            };
+            postWithCallback(main_id, "initialize_mainwindow", data_dict, _finish_post_load_in_context)
         }
     }
-    if (window.is_freeform) {
-
-        let domContainer = document.querySelector('#main-root');
-        if (window.is_project) {
-            // postWithCallback(window.main_id, "grab_freeform_data", {"doc_name":window.doc_names[0], "set_visible_doc": true}, function (data) {
-                ReactDOM.render(<MainAppPlus is_project={true}
-                                             interface_state={interface_state}
-                                             initial_data_text={data.data_text}
-                                             initial_theme={window.theme}
-                                             initial_doc_names={window.doc_names}/>,
-                    domContainer)
+    function _finish_post_load_in_context(fdata) {
+        // renderSpinnerMessage("Creating the page...");
+        let MainAppPlus = withErrorDrawer(withStatus(MainApp, tsocket, true), tsocket);
+        var interface_state;
+        if (data.is_project) {
+            interface_state = fdata.interface_state;
+            // legacy below lines needed for older saves
+            if (!("show_exports_pane" in interface_state)) {
+                interface_state["show_exports_pane"] = true
             }
-            // )
-        // }
-        else {
-            ReactDOM.render(<MainAppPlus is_project={false}
-                                     interface_state={null}
-                                     initial_data_text={data.data_text}
-                                     initial_theme={window.theme}
-                                     initial_doc_names={window.doc_names}/>,
-            domContainer)
-        }
-        // });
-    }
-    else {
-
-        let domContainer = document.querySelector('#main-root');
-        if (window.is_project) {
-            // postWithCallback(window.main_id, "grab_chunk_by_row_index", {"doc_name":window.doc_names[0], "row_index": 0, "set_visible_doc": true}, function (data) {
-                    ReactDOM.render(<MainAppPlus is_project={true}
-                                                 interface_state={interface_state}
-                                                 total_rows={data.total_rows}
-                                                 initial_theme={window.theme}
-                                                 initial_column_names={data.table_spec.header_list}
-                                                 initial_data_row_dict={data.data_row_dict}
-                                                 initial_column_widths={data.table_spec.column_widths}
-                                                 initial_hidden_columns_list={data.table_spec.hidden_columns_list}
-                                                 initial_cell_backgrounds={data.table_spec.cell_backgrounds}
-                                                 initial_doc_names={window.doc_names}/>,
-                        domContainer)
+            if (!("show_console_pane" in interface_state)) {
+                interface_state["show_console_pane"] = true
             }
-
-        else {
-
-            ReactDOM.render(<MainAppPlus is_project={false}
-                                         interface_state={null}
-                                         total_rows={data.total_rows}
-                                         initial_theme={window.theme}
-                                         initial_column_names={data.table_spec.header_list}
-                                         initial_data_row_dict={data.data_row_dict}
-                                         initial_column_widths={data.table_spec.column_widths}
-                                         initial_hidden_columns_list={data.table_spec.hidden_columns_list}
-                                         initial_cell_backgrounds={data.table_spec.cell_backgrounds}
-                                         initial_doc_names={window.doc_names}/>,
-                domContainer)
         }
-        // });
+        if (data.is_freeform) {
+            finalCallback(<MainAppPlus initial_is_project={data.is_project}
+                                       main_id={main_id}
+                                       is_freeform={true}
+                                       initial_project_name={data.project_name}
+                                       is_notebook={false}
+                                       is_jupyter={false}
+                                       tsocket={tsocket}
+                                       short_collection_name={data.short_collection_name}
+                                       initial_tile_types={initial_tile_types}
+                                       interface_state={interface_state}
+                                       initial_data_text={fdata.data_text}
+                                       initial_theme={window.theme}
+                                       initial_doc_names={fdata.doc_names}/>)
+
+        }
+        else {
+            finalCallback(<MainAppPlus initial_is_project={data.is_project}
+                           main_id={main_id}
+                           is_freeform={false}
+                           initial_project_name={data.project_name}
+                           is_notebook={false}
+                           is_jupyter={false}
+                           tsocket={tsocket}
+                           short_collection_name={data.short_collection_name}
+                           initial_tile_types={initial_tile_types}
+                           interface_state={interface_state}
+                           total_rows={fdata.total_rows}
+                           initial_theme={window.theme}
+                           initial_column_names={fdata.table_spec.header_list}
+                           initial_data_row_dict={fdata.data_row_dict}
+                           initial_column_widths={fdata.table_spec.column_widths}
+                           initial_hidden_columns_list={fdata.table_spec.hidden_columns_list}
+                           initial_cell_backgrounds={fdata.table_spec.cell_backgrounds}
+                           initial_doc_names={fdata.doc_names}/>);
+        }
+
     }
 
 }
@@ -199,13 +213,15 @@ class MainApp extends React.Component {
         let base_state = {
                 mounted: false,
                 doc_names: props.initial_doc_names,
-                short_collection_name: window.short_collection_name,
+                short_collection_name: this.props.short_collection_name,
+                is_project: this.props.initial_is_project,
+                project_name: this.props.initial_project_name,
                 console_items: [],
                 console_is_shrunk: true,
                 show_exports_pane: true,
                 show_console_pane: true,
                 console_is_zoomed: false,
-                tile_types: window.initial_tile_types,
+                tile_types: this.props.initial_tile_types,
                 tile_list: [],
                 search_text: "",
                 usable_width: window.innerWidth - 2 * MARGIN_SIZE,
@@ -218,7 +234,7 @@ class MainApp extends React.Component {
                 dark_theme: this.props.initial_theme == "dark"
         };
         let additions;
-        if (window.is_freeform) {
+        if (this.props.is_freeform) {
             additions = {
                 data_text: props.initial_data_text,
                 table_spec: {
@@ -246,12 +262,10 @@ class MainApp extends React.Component {
                 },
             };
         }
-        if (window.is_notebook) {
-            this.state.console_is_shrunk = false
-        }
+
         this.state= Object.assign(base_state, additions);
 
-        if (this.props.is_project) {
+        if (this.props.initial_is_project) {
             for (let attr of save_attrs) {
                 this.state[attr] = this.props.interface_state[attr]
             }
@@ -293,44 +307,48 @@ class MainApp extends React.Component {
     componentDidMount() {
         this.setState({"mounted": true});
         window.addEventListener("resize", this._update_window_dimensions);
-        document.title = window.is_project ? window._project_name : this.state.short_collection_name;
+        if (!window.is_contest) {
+            document.title = this.state.is_project ? this.state.project_name : this.state.short_collection_name;
+        }
         this.initSocket();
-        this._updateLastSave()
+        this._updateLastSave();
         this.props.setStatusTheme(this.state.dark_theme);
-        window.dark_theme = this.state.dark_theme
+        if (!window.is_context) {
+            window.dark_theme = this.state.dark_theme
+        }
     }
 
     componentDidUpdate () {
-        if (tsocket.counter != this.socket_counter) {
+        if (this.props.tsocket.counter != this.socket_counter) {
             this.initSocket();
         }
     }
 
     initSocket() {
         let self = this;
-        tsocket.socket.off('forcedisconnect');
-        tsocket.socket.on('forcedisconnect', function() {
-            tsocket.socket.disconnect()
-        })
-        tsocket.socket.off('table-message');
-        tsocket.socket.on('table-message', function (data) {
+        this.props.tsocket.socket.off('forcedisconnect');
+        this.props.tsocket.socket.on('forcedisconnect', function() {
+            this.props.tsocket.socket.disconnect()
+        });
+        this.props.tsocket.socket.off('table-message');
+        this.props.tsocket.socket.on('table-message', function (data) {
             self._handleTableMessage(data)
         });
-        tsocket.socket.off('update-menus');
-        tsocket.socket.on("update-menus", function () {
+        this.props.tsocket.socket.off('update-menus');
+        this.props.tsocket.socket.on("update-menus", function () {
             postWithCallback("host", "get_tile_types", {"user_id": window.user_id}, function (data) {
                 self.setState({tile_types: data.tile_types});
             });
         });
-        tsocket.socket.off('change-doc');
-        tsocket.socket.on('change-doc', function(data){
+        this.props.tsocket.socket.off('change-doc');
+        this.props.tsocket.socket.on('change-doc', function(data){
             let row_id = data.hasOwnProperty("row_id") ? data.row_id : null;
             if (self.state.table_is_shrunk) {
                 self.setState({table_is_shrunk: false})
             }
             self._handleChangeDoc(data.doc_name, row_id)
         });
-        this.socket_counter = tsocket.counter
+        this.socket_counter = this.props.tsocket.counter
     }
 
 
@@ -377,7 +395,7 @@ class MainApp extends React.Component {
 
     _handleSearchFieldChange(search_text) {
         this.setState({search_text: search_text, alt_search_text: null});
-        if ((search_text == null) && (!window.is_freeform)) {
+        if ((search_text == null) && (!this.props.is_freeform)) {
             this.setState({cells_to_color_text: {}})
         }
     }
@@ -393,18 +411,18 @@ class MainApp extends React.Component {
     set_visible_doc(doc_name, func) {
         const data_dict = {"doc_name": doc_name};
         if (func === null) {
-            postWithCallback(window.main_id, "set_visible_doc", data_dict)
+            postWithCallback(this.props.main_id, "set_visible_doc", data_dict)
         }
         else {
-            postWithCallback(window.main_id, "set_visible_doc", data_dict, func)
+            postWithCallback(this.props.main_id, "set_visible_doc", data_dict, func)
         }
     }
 
     _handleChangeDoc(new_doc_name, row_index=0) {
         let self = this;
         this.setState({show_table_spinner: true});
-        if (window.is_freeform) {
-            postWithCallback(window.main_id, "grab_freeform_data", {"doc_name": new_doc_name, "set_visible_doc": true}, function (data) {
+        if (this.props.is_freeform) {
+            postWithCallback(this.props.main_id, "grab_freeform_data", {"doc_name": new_doc_name, "set_visible_doc": true}, function (data) {
                 self.props.stopSpinner();
                 self.props.clearStatusMessage();
                 let new_table_spec = {"current_doc_name": new_doc_name};
@@ -416,7 +434,7 @@ class MainApp extends React.Component {
         }
         else {
             const data_dict = {"doc_name": new_doc_name, "row_index": row_index, "set_visible_doc": true};
-            postWithCallback(main_id, "grab_chunk_by_row_index", data_dict, function (data) {
+            postWithCallback(this.props.main_id, "grab_chunk_by_row_index", data_dict, function (data) {
                 self._setStateFromDataObject(data, new_doc_name, ()=>{
                     self.setState({ show_table_spinner: false});
                     self.table_ref.current._scrollToRow(row_index);
@@ -435,16 +453,16 @@ class MainApp extends React.Component {
         this.setState({table_spec: new_tspec});
         if (broadcast) {
             spec_update["doc_name"] = this.state.table_spec.current_doc_name;
-            postWithCallback(window.main_id, "UpdateTableSpec", spec_update);
+            postWithCallback(this.props.main_id, "UpdateTableSpec", spec_update);
             // this._broadcast_event_to_server("UpdateTableSpec", spec_update)
         }
     }
 
     _broadcast_event_to_server(event_name, data_dict, callback) {
-        data_dict.main_id = window.main_id;
+        data_dict.main_id = this.props.main_id;
         data_dict.event_name = event_name;
         data_dict.doc_name = this.state.table_spec.current_doc_name;
-        postWithCallback(main_id, "distribute_events_stub", data_dict, callback)
+        postWithCallback(this.props.main_id, "distribute_events_stub", data_dict, callback)
     }
 
     _tile_command(menu_id) {
@@ -463,8 +481,8 @@ class MainApp extends React.Component {
             data_dict["tile_name"] = tile_name;
             data_dict["tile_type"] = tile_type;
             data_dict["user_id"] = window.user_id;
-            data_dict["parent"] = window.main_id;
-            postWithCallback(window.main_id, "create_tile", data_dict, function (create_data) {
+            data_dict["parent"] = self.props.main_id;
+            postWithCallback(self.props.main_id, "create_tile", data_dict, function (create_data) {
                 if (create_data.success) {
                     let new_tile_entry = self._createTileEntry(tile_name,
                         menu_id,
@@ -662,14 +680,14 @@ class MainApp extends React.Component {
     }
 
     _deleteRow() {
-        postWithCallback(window.main_id, "delete_row",
+        postWithCallback(this.props.main_id, "delete_row",
             {"document_name": this.state.table_spec.current_doc_name,
                 "index": this.state.selected_row
             })
     }
 
     _insertRow(index) {
-        postWithCallback(window.main_id, "insert_row",
+        postWithCallback(this.props.main_id, "insert_row",
             {"document_name": this.state.table_spec.current_doc_name,
                 "index": index,
                 "row_dict": {}
@@ -677,7 +695,7 @@ class MainApp extends React.Component {
     }
 
     _duplicateRow() {
-         postWithCallback(window.main_id, "insert_row",
+         postWithCallback(this.props.main_id, "insert_row",
             {"document_name": this.state.table_spec.current_doc_name,
                 "index": this.state.selected_row,
                 "row_dict": this.state.data_row_dict[this.state.selected_row]
@@ -700,7 +718,7 @@ class MainApp extends React.Component {
         const data_dict = {"column_name": cname,
                             "doc_name": this.state.table_spec.current_doc_name,
                             "all_docs": delete_in_all};
-        postWithCallback(window.main_id, "DeleteColumn", data_dict);
+        postWithCallback(this.props.main_id, "DeleteColumn", data_dict);
     }
 
     _addColumn(add_in_all=false) {
@@ -737,7 +755,7 @@ class MainApp extends React.Component {
 
     _grabNewChunkWithRow(row_index) {
         let self = this;
-        postWithCallback(window.main_id, "grab_chunk_by_row_index",
+        postWithCallback(this.props.main_id, "grab_chunk_by_row_index",
             {doc_name: this.state.table_spec.current_doc_name, row_index: row_index}, function (data) {
             let new_data_row_dict = Object.assign(self.state.data_row_dict, data.data_row_dict);
             self.setState({data_row_dict: new_data_row_dict})
@@ -755,13 +773,13 @@ class MainApp extends React.Component {
         function changeTheCollection(new_collection_name) {
             const result_dict = {
                     "new_collection_name": new_collection_name,
-                    "main_id": window.main_id
+                    "main_id": this.props.main_id
                 };
 
-            postWithCallback(window.main_id, "change_collection", result_dict, changeCollectionResult);
+            postWithCallback(self.props.main_id, "change_collection", result_dict, changeCollectionResult);
             function changeCollectionResult(data_object) {
                 if (data_object.success) {
-                    if (!window.is_project) document.title = new_collection_name;
+                    if (!this.state.is_project) document.title = new_collection_name;
                     window._collection_name = data_object.collection_name;
                     self.setState({doc_names: data_object.doc_names, short_collection_name: data_object.short_collection_name},
                         ()=>{self._handleChangeDoc(data_object.doc_names[0])});
@@ -824,7 +842,7 @@ class MainApp extends React.Component {
         let vp_height;
         let hp_height;
         let console_available_height;
-        if (this.state.console_is_zoomed || window.is_notebook) {
+        if (this.state.console_is_zoomed) {
             console_available_height = this.state.usable_height - 50
         } else {
             vp_height = this.get_vp_height();
@@ -849,12 +867,17 @@ class MainApp extends React.Component {
         let menus = (
             <React.Fragment>
                 <ProjectMenu {...this.props.statusFuncs}
+                             main_id={this.props.main_id}
+                             project_name={this.state.project_name}
+                             is_notebook={this.props.is_notebook}
+                             is_juptyer={this.props.is_jupyter}
+                             setMainStateValue={this._setMainStateValue}
                              postAjaxFailure={this.props.postAjaxFailure}
                              console_items={this.state.console_items}
                              interface_state={this.interface_state}
                              changeCollection={this._changeCollection}
                              updateLastSave={this._updateLastSave}
-                             disabled_items={window.is_project ? [] : ["Save"]}
+                             disabled_items={this.state.is_project ? [] : ["Save"]}
                              hidden_items={["Export as Jupyter Notebook"]}
                 />
                 <DocumentMenu {...this.props.statusFuncs}
@@ -862,8 +885,12 @@ class MainApp extends React.Component {
                               currentDoc={this.state.table_spec.current_doc_name}
 
                 />
-                {!window.is_freeform &&
+                {!this.props.is_freeform &&
                     <ColumnMenu {...this.props.statusFuncs}
+                                main_id={this.props.main_id}
+                                project_name={this.state.project_name}
+                                is_notebook={this.props.is_notebook}
+                                is_juptyer={this.props.is_jupyter}
                                 moveColumn={this._moveColumn}
                                 table_spec={this.state.table_spec}
                                 filtered_column_names={this._filteredColumnNames()}
@@ -876,8 +903,12 @@ class MainApp extends React.Component {
                                 deleteColumn={this._deleteColumn}
                     />
                 }
-                {!window.is_freeform &&
+                {!this.props.is_freeform &&
                     <RowMenu {...this.props.statusFuncs}
+                             main_id={this.props.main_id}
+                             project_name={this.state.project_name}
+                             is_notebook={this.props.is_notebook}
+                             is_juptyer={this.props.is_jupyter}
                              deleteRow={this._deleteRow}
                              insertRowBefore={()=>{this._insertRow(this.state.selected_row)}}
                              insertRowAfter={()=>{this._insertRow(this.state.selected_row +1)}}
@@ -887,6 +918,10 @@ class MainApp extends React.Component {
                     />
                 }
                 <ViewMenu {...this.props.statusFuncs}
+                            main_id={this.props.main_id}
+                             project_name={this.state.project_name}
+                             is_notebook={this.props.is_notebook}
+                             is_juptyer={this.props.is_jupyter}
                           table_is_shrunk={this.state.table_is_shrunk}
                           toggleTableShrink={this._toggleTableShrink}
                           openErrorDrawer={this.props.openErrorDrawer}
@@ -900,7 +935,8 @@ class MainApp extends React.Component {
         );
         let table_available_height = hp_height;
         let card_header = (
-            <MainTableCardHeader toggleShrink={this._toggleTableShrink}
+            <MainTableCardHeader main_id={this.props.main_id}
+                                 toggleShrink={this._toggleTableShrink}
                                  short_collection_name={this.state.short_collection_name}
                                  handleChangeDoc={this._handleChangeDoc}
                                  doc_names={this.state.doc_names}
@@ -911,15 +947,16 @@ class MainApp extends React.Component {
                                  search_text={this.state.search_text}
                                  setMainStateValue={this._setMainStateValue}
                                  table_is_filtered={this.state.table_is_filtered}
-                                 show_filter_button={!window.is_freeform}
+                                 show_filter_button={!this.props.is_freeform}
                                  spreadsheet_mode={this.state.spreadsheet_mode}
                                  handleSpreadsheetModeChange={this._handleSpreadsheetModeChange}
                                  broadcast_event_to_server={this._broadcast_event_to_server}
             />
         );
         let card_body;
-        if (window.is_freeform) {
-            card_body = <FreeformBody my_ref={this.tbody_ref}
+        if (this.props.is_freeform) {
+            card_body = <FreeformBody main_id={this.props.main_id}
+                                      my_ref={this.tbody_ref}
                                       document_name={this.state.table_spec.current_doc_name}
                                       data_text={this.state.data_text}
                                       code_container_height={this._getTableBodyHeight(table_available_height)}
@@ -929,7 +966,8 @@ class MainApp extends React.Component {
             />
         } else {
             card_body = (
-                <BlueprintTable my_ref={this.tbody_ref}
+                <BlueprintTable main_id={this.props.main_id}
+                                my_ref={this.tbody_ref}
                                 ref={this.table_ref}
                                 initiateDataGrab={this._initiateDataGrab}
                                 height={this._getTableBodyHeight(table_available_height)}
@@ -958,7 +996,8 @@ class MainApp extends React.Component {
 
         let tile_container_height = this.state.console_is_shrunk ? table_available_height - MARGIN_ADJUSTMENT : table_available_height;
         let tile_pane = (
-            <TileContainer height={tile_container_height}
+            <TileContainer  main_id={this.props.main_id}
+                            height={tile_container_height}
                            tile_div_ref={this.tile_div_ref}
                            dark_theme={this.state.dark_theme}
                            tile_list={_.cloneDeep(this.state.tile_list)}
@@ -967,17 +1006,18 @@ class MainApp extends React.Component {
                            selected_row={this.state.selected_row}
                            broadcast_event={this._broadcast_event_to_server}
                            setMainStateValue={this._setMainStateValue}
-                           tsocket={tsocket}
+                           tsocket={this.props.tsocket}
             />
         );
 
         let exports_pane;
         if (this.state.show_exports_pane) {
-            exports_pane = <ExportsViewer setUpdate={(ufunc)=>this.updateExportsList = ufunc}
+            exports_pane = <ExportsViewer main_id={this.props.main_id}
+                                          setUpdate={(ufunc)=>{this.updateExportsList = ufunc}}
                                           available_height={console_available_height}
                                           console_is_shrunk={this.state.console_is_shrunk}
                                           console_is_zoomed={this.state.console_is_zoomed}
-                                          tsocket={tsocket}
+                                          tsocket={this.props.tsocket}
             />
         }
         else {
@@ -986,7 +1026,8 @@ class MainApp extends React.Component {
         let console_pane;
         if (this.state.show_console_pane) {
             console_pane = (
-                <ConsoleComponent console_items={this.state.console_items}
+                <ConsoleComponent main_id={this.props.main_id}
+                                  console_items={this.state.console_items}
                                   console_is_shrunk={this.state.console_is_shrunk}
                                   console_is_zoomed={this.state.console_is_zoomed}
                                   show_exports_pane={this.state.show_exports_pane}
@@ -994,12 +1035,12 @@ class MainApp extends React.Component {
                                   console_available_height={console_available_height}
                                   dark_theme={this.state.dark_theme}
                                   console_available_width={this.state.usable_width * this.state.console_width_fraction - 16}
-                                  tsocket={tsocket}
+                                  tsocket={this.props.tsocket}
                                   />
                 );
         }
         else {
-            let console_available_width = this.state.usable_width * this.state.console_width_fraction - 16
+            let console_available_width = this.state.usable_width * this.state.console_width_fraction - 16;
             console_pane = <div style={{width: console_available_width}}></div>
         }
 
@@ -1020,6 +1061,7 @@ class MainApp extends React.Component {
             <React.Fragment>
                 <div ref={this.table_container_ref}>
                     <MainTableCard
+                        main_id={this.props.main_id}
                         card_body={card_body}
                         card_header={card_header}
                         table_spec={this.state.table_spec}
@@ -1062,7 +1104,7 @@ class MainApp extends React.Component {
                 </React.Fragment>
             );
         }
-        let outer_class = "main-outer"
+        let outer_class = "main-outer";
         if (this.state.dark_theme) {
             outer_class = outer_class + " bp3-dark";
         }
@@ -1076,6 +1118,7 @@ class MainApp extends React.Component {
                               dark_theme={this.state.dark_theme}
                               set_parent_theme={this._setTheme}
                               menus={menus}
+                              min_navbar={window.in_context}
                 />
                 <div className={outer_class}>
                     {this.state.console_is_zoomed &&
@@ -1116,33 +1159,6 @@ MainApp.propTypes = {
     doc_names: PropTypes.array,
 };
 
-class MainTacticSocket extends TacticSocket {
-
-    initialize_socket_stuff(reconnect=false) {
-        this.socket.emit('join', {"room": user_id});
-        if (reconnect) {
-            this.socket.emit('join-main', {"room": main_id, "user_id": window.user_id}, function (response) {
-            })
-        }
-        this.socket.on('handle-callback', handleCallback);
-        this.socket.on('close-user-windows', function(data){
-                    postAsyncFalse("host", "remove_mainwindow_task", {"main_id": main_id});
-                    if (!(data["originator"] == main_id)) {
-                        window.close()
-                    }
-                });
-
-        this.socket.on("window-open", function(data) {
-            window.open($SCRIPT_ROOT + "/load_temp_page/" + data["the_id"])
-        });
-
-        this.socket.on("notebook-open", function(data) {
-            window.open($SCRIPT_ROOT + "/open_notebook/" + data["the_id"])
-        });
-        this.socket.on("doFlash", function(data) {
-            doFlash(data)
-        });
-    }
+if (!window.in_context) {
+    main_main();
 }
-
-_main_main();

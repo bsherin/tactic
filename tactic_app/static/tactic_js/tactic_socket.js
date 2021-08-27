@@ -6,11 +6,12 @@ export {TacticSocket}
 
 class TacticSocket {
 
-    constructor (name_space, retry_interval) {
+    constructor (name_space, retry_interval, extra_args=null) {
 
         this.name_space = name_space;
         this.recInterval = null;
         this.retry_interval = retry_interval;
+        this.extra_args = extra_args;
         this.connectme();
         this.initialize_socket_stuff();
         this.watchForDisconnect();
