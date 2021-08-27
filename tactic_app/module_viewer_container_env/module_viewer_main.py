@@ -49,6 +49,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
 
     @task_worthy
     def initialize_parser(self, data_dict):
+        print("in initialize_parser with data_dict " + str(data_dict))
         self.tstring = data_dict["version_string"]
         self.module_name = data_dict["module_name"]
         self.user_id = data_dict["user_id"]
@@ -63,11 +64,14 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
             self.mworker.debug_log(error_string)
             sys.exit()
         self.tile_collection_name = data_dict["tile_collection_name"]
+        print("getting the tile_dict")
         tile_dict = self.db[self.tile_collection_name].find_one({"tile_module_name": self.module_name})
         module_code = tile_dict["tile_module"]
+        print("got the tile_dict")
         self.user_id = os.environ.get("OWNER")
         self.tp = TileParser(module_code)
         self.tp.reparse(self.tp.rebuild_in_canonical_form())
+        print("about to return")
         return {"success": True, "the_content": self.assemble_parse_information()}
 
     @task_worthy

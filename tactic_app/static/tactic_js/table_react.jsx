@@ -67,7 +67,7 @@ class FreeformBody extends React.Component{
       }
 
     _handleBlur(new_data_text) {
-        postWithCallback(window.main_id, "add_freeform_document",
+        postWithCallback(this.props.main_id, "add_freeform_document",
             {document_name: this.props.document_name,
                 doc_text: new_data_text})
     }
@@ -95,6 +95,7 @@ class FreeformBody extends React.Component{
 }
 
 FreeformBody.propTypes = {
+    main_id: PropTypes.string,
     document_name: PropTypes.string,
     my_ref: PropTypes.object,
     data_text: PropTypes.string,
@@ -147,9 +148,9 @@ class MainTableCardHeader extends React.Component {
         // this.props.handleFilter(this.state.search_field_value);
         let self = this;
         const data_dict = {"text_to_find": this.props.search_text};
-        postWithCallback(window.main_id, "UnfilterTable", data_dict, function () {
+        postWithCallback(this.props.main_id, "UnfilterTable", data_dict, function () {
             if (self.props.search_text !== "") {
-                postWithCallback(window.main_id, "FilterTable", data_dict);
+                postWithCallback(self.props.main_id, "FilterTable", data_dict);
                 self.props.setMainStateValue({"table_is_filtered": true,
                     "selected_regions": null,
                     "selected_row": null})
@@ -160,7 +161,7 @@ class MainTableCardHeader extends React.Component {
     _handleUnFilter() {
         this.props.handleSearchFieldChange(null);
         if (this.props.table_is_filtered) {
-            postWithCallback(window.main_id, "UnfilterTable", {selected_row: this.props.selected_row});
+            postWithCallback(this.props.main_id, "UnfilterTable", {selected_row: this.props.selected_row});
             this.props.setMainStateValue({"table_is_filtered": false,
                 "selected_regions": null,
                 "selected_row": null})

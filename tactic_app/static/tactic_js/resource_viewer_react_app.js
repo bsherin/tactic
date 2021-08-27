@@ -75,17 +75,19 @@ var ResourceViewerSocket = /*#__PURE__*/function (_TacticSocket) {
   _createClass(ResourceViewerSocket, [{
     key: "initialize_socket_stuff",
     value: function initialize_socket_stuff() {
+      var _this = this;
+
       var reconnect = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
       this.socket.emit('join', {
         "room": window.user_id
       });
       this.socket.emit('join-main', {
-        "room": window.resource_viewer_id,
+        "room": this.extra_args.resource_viewer_id,
         "user_id": window.user_id
       });
       this.socket.on('handle-callback', _communication_react.handleCallback);
       this.socket.on('close-user-windows', function (data) {
-        if (!(data["originator"] == window.resource_viewer_id)) {
+        if (!(data["originator"] == _this.extra_args.resource_viewer_id)) {
           window.close();
         }
       });
@@ -136,33 +138,33 @@ var ResourceViewerApp = /*#__PURE__*/function (_React$Component) {
   var _super2 = _createSuper(ResourceViewerApp);
 
   function ResourceViewerApp(props) {
-    var _this;
+    var _this2;
 
     _classCallCheck(this, ResourceViewerApp);
 
-    _this = _super2.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
-    _this.savedContent = props.the_content;
-    _this.savedTags = props.tags;
-    _this.savedNotes = props.notes;
+    _this2 = _super2.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this2));
+    _this2.savedContent = props.the_content;
+    _this2.savedTags = props.tags;
+    _this2.savedNotes = props.notes;
 
-    var self = _assertThisInitialized(_this);
+    var self = _assertThisInitialized(_this2);
 
-    _this.mousetrap = new Mousetrap();
+    _this2.mousetrap = new Mousetrap();
 
-    _this.mousetrap.bind(['command+s', 'ctrl+s'], function (e) {
+    _this2.mousetrap.bind(['command+s', 'ctrl+s'], function (e) {
       self.props.saveMe();
       e.preventDefault();
     });
 
     var aheight = (0, _sizing_tools.getUsableDimensions)().usable_height;
     var awidth = (0, _sizing_tools.getUsableDimensions)().usable_width - 170;
-    _this.state = {
+    _this2.state = {
       available_height: aheight,
       available_width: awidth
     };
-    _this.state.mounted = false;
-    return _this;
+    _this2.state.mounted = false;
+    return _this2;
   }
 
   _createClass(ResourceViewerApp, [{

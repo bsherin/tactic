@@ -263,7 +263,9 @@ var Status = /*#__PURE__*/function (_React$Component2) {
       return /*#__PURE__*/_react["default"].createElement("div", {
         style: {
           height: "100%",
-          width: "100%"
+          width: "100%",
+          position: "absolute",
+          "left": 0
         },
         className: outer_cname
       }, /*#__PURE__*/_react["default"].createElement("div", {

@@ -7,8 +7,6 @@ import React from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
-import { Spinner } from "@blueprintjs/core";
-
 import {TacticNavbar} from "./blueprint_navbar.js";
 import {ProjectMenu} from "./main_menus_react.js";
 import {TacticSocket} from "./tactic_socket.js";
@@ -17,7 +15,7 @@ import {doFlash} from "./toaster.js"
 import {withStatus} from "./toaster.js";
 import {doBinding, get_ppi} from "./utilities_react.js";
 
-import {handleCallback, postWithCallback, postAsyncFalse} from "./communication_react.js"
+import {handleCallback, postWithCallback, postAsyncFalse, postAjaxPromise} from "./communication_react.js"
 import {ExportsViewer} from "./export_viewer_react";
 import {HorizontalPanes} from "./resizing_layouts";
 
@@ -25,86 +23,145 @@ const MARGIN_SIZE = 17;
 const BOTTOM_MARGIN = 20;
 const USUAL_TOOLBAR_HEIGHT = 50;
 
-
 var tsocket;
 var ppi;
 
+export {main_notebook_in_context}
 
-// Note: it seems like the sendbeacon doesn't work if this callback has a line
-// before the sendbeacon
-window.addEventListener("unload", function sendRemove() {
-    navigator.sendBeacon("/remove_mainwindow", JSON.stringify({"main_id": window.main_id}));
-});
+class MainTacticSocket extends TacticSocket {
 
+    initialize_socket_stuff(reconnect=false) {
+        this.socket.emit('join', {"room": window.user_id});
+        if (reconnect) {
+            this.socket.emit('join-main', {"room": this.extra_args.main_id, "user_id": window.user_id}, function (response) {
+            })
+        }
 
-function _main_main() {
-    //render_navbar();
-    let domContainer = document.querySelector('#main-root');
-    ReactDOM.render(<Spinner size={100} className="screen-center"/>, domContainer)
-    ppi = get_ppi();
-    tsocket = new MainTacticSocket("main", 5000);
-    tsocket.socket.on('finish-post-load', _finish_post_load)
-    tsocket.socket.on("remove-ready-block", _everyone_ready);
-    tsocket.socket.emit('join-main', {"room": main_id, "user_id": window.user_id}, function(response) {
-        console.log("emitting client-read")
-            tsocket.socket.emit('client-ready', {"room": main_id, "user_id": window.user_id, "participant": "client",
-            "rb_id": window.ready_block_id})
-    });
+        this.socket.on('handle-callback', handleCallback);
+        let self = this;
+        this.socket.on('forcedisconnect', function() {
+            self.socket.disconnect()
+        });
+        this.socket.on('close-user-windows', function(data){
+                    postAsyncFalse("host", "remove_mainwindow_task", {"main_id": this.extra_args.main_id});
+                    if (!(data["originator"] == this.extra_args.main_id)) {
+                        window.close()
+                    }
+                });
+        this.socket.on("window-open", function(data) {
+            window.open($SCRIPT_ROOT + "/load_temp_page/" + data["the_id"])
+        });
 
-    console.log("finishe main main")
+        this.socket.on("notebook-open", function(data) {
+            window.open($SCRIPT_ROOT + "/open_notebook/" + data["the_id"])
+        });
+        this.socket.on("doFlash", function(data) {
+            doFlash(data)
+        });
+    }
 }
 
-function _everyone_ready() {
-    console.log("entering everyone ready")
-    let data_dict = {
-            "doc_type": "notebook",
-            "base_figure_url": window.base_figure_url,
-            "user_id": window.user_id,
-            "library_id": window.main_id,
-            "ppi": ppi
-    };
-    if (window.is_totally_new) {
-        console.log("about to intialize");
-        postWithCallback(window.main_id, "initialize_mainwindow", data_dict, _finish_post_load)
+function main_main() {
+    function gotElement(the_element) {
+        const domContainer = document.querySelector('#main-root');
+        ReactDOM.render(the_element, domContainer)
+    }
+    var resource_name;
+    var target;
+
+    if (window.is_new_notebook) {
+        target = "new_notebook_in_context";
+        resource_name = ""
     }
     else {
-        if (window.is_jupyter) {
-            data_dict["doc_type"] = "jupyter";
-            data_dict["project_name"] = window._project_name;
-        }
-        else if (is_project) {
-            data_dict["project_name"] = window._project_name;
-        }
-        else  {
-            data_dict["unique_id"] = window.temp_data_id;
-        }
-        postWithCallback(main_id, "initialize_project_mainwindow", data_dict)
+        target = "main_project_in_context";
+        resource_name = window.project_name
     }
+
+    postAjaxPromise(target, {"resource_name": resource_name})
+        .then((data)=>{
+            main_notebook_in_context(data, null, gotElement)
+        })
 }
 
-function _finish_post_load(data) {
-    console.log("entering _finish_post_load")
-    let NotebookAppPlus = withStatus(NotebookApp, tsocket, true);
-    var interface_state;
-    if (window.is_project || window.opening_from_temp_id) {
-        interface_state = data.interface_state
+function main_notebook_in_context(data, registerThemeSetter, finalCallback) {
+
+    var tsocket = new MainTacticSocket("main",
+        5000,
+        {main_id: data.main_id});
+    ppi = get_ppi();
+    let main_id = data.main_id;
+    if (!window.in_context) {
+        window.main_id = data.main_id;  // needed for postWithCallback
     }
-    let domContainer = document.querySelector('#main-root');
-    if (window.is_project || window.opening_from_temp_id) {
-        console.log("about to render")
-        ReactDOM.render(<NotebookAppPlus is_project={true}
-                                          interface_state={interface_state}
-                                         initial_theme={window.theme}
-                                 />,
-            domContainer)
+    let is_totally_new = !data.is_jupyter && !data.is_project && (data.temp_data_id == "");
+    let opening_from_temp_id = data.temp_data_id != "";
+    tsocket.socket.on('finish-post-load', _finish_post_load_in_context);
+    tsocket.socket.on("remove-ready-block", _everyone_ready_in_context);
+    tsocket.socket.emit('join-main', {"room": main_id, "user_id": window.user_id}, function(response) {
+        console.log("emitting client-read");
+            tsocket.socket.emit('client-ready', {"room": main_id, "user_id": window.user_id, "participant": "client",
+            "rb_id": data.ready_block_id})
+    });
+
+    window.addEventListener("unload", function sendRemove() {
+        navigator.sendBeacon("/remove_mainwindow", JSON.stringify({"main_id": main_id}));
+    });
+
+    function _everyone_ready_in_context() {
+        console.log("entering everyone ready");
+        let data_dict = {
+                "doc_type": "notebook",
+                "base_figure_url": data.base_figure_url,
+                "user_id": window.user_id,
+                "ppi": ppi
+        };
+        if (is_totally_new) {
+            console.log("about to intialize");
+            postWithCallback(main_id, "initialize_mainwindow", data_dict, _finish_post_load_in_context)
         }
         else {
-            ReactDOM.render(<NotebookAppPlus is_project={false}
-                                             interface_state={null}
-                                             initial_theme={window.theme}
-                                     />,
-            domContainer)
+            if (data.is_jupyter) {
+                data_dict["doc_type"] = "jupyter";
+                data_dict["project_name"] = data.project_name;
+            }
+            else if (data.is_project) {
+                data_dict["project_name"] = data.project_name;
+            }
+            else  {
+                data_dict["unique_id"] = data.temp_data_id;
+            }
+            console.log("about to intialize project");
+            postWithCallback(main_id, "initialize_project_mainwindow", data_dict)
         }
+    }
+
+    function _finish_post_load_in_context(fdata) {
+        let NotebookAppPlus = withStatus(NotebookApp, tsocket, true);
+        var interface_state;
+        if (data.is_project || opening_from_temp_id) {
+            interface_state = fdata.interface_state
+        }
+        let domContainer = document.querySelector('#main-root');
+        if (data.is_project || opening_from_temp_id) {
+            finalCallback(<NotebookAppPlus initial_is_project={true}
+                                           main_id={main_id}
+                                           initial_project_name={data.project_name}
+                                           tsocket={tsocket}
+                                           interface_state={interface_state}
+                                           is_juptyer={data.is_jupyter}
+                                           initial_theme={window.theme}/>)
+            }
+            else {
+                finalCallback(<NotebookAppPlus initial_is_project={false}
+                                               main_id={main_id}
+                                               initial_project_name={data.project_name}
+                                               tsocket={tsocket}
+                                               interface_state={null}
+                                               is_juptyer={data.is_jupyter}
+                                               initial_theme={window.theme}/>)
+            }
+    }
 }
 
 const save_attrs = ["console_items", "show_exports_pane", "console_width_fraction"];
@@ -117,13 +174,15 @@ class NotebookApp extends React.Component {
         this.state = {
             mounted: false,
             console_items: [],
+            project_name: this.props.initial_project_name,
+            is_project: this.props.initial_is_project,
             usable_width: window.innerWidth - 2 * MARGIN_SIZE,
             usable_height: window.innerHeight - BOTTOM_MARGIN,
             console_width_fraction: .5,
             show_exports_pane: true,
             dark_theme: this.props.initial_theme == "dark"
         };
-        if (this.props.is_project) {
+        if (this.state.is_project) {
             for (let attr of save_attrs) {
                 this.state[attr] = this.props.interface_state[attr]
             }
@@ -140,11 +199,15 @@ class NotebookApp extends React.Component {
     componentDidMount() {
         this.setState({"mounted": true});
         window.addEventListener("resize", this._update_window_dimensions);
-        document.title = window.is_project ? window._project_name : "New Notebook";
+        if (!window.is_context) {
+            document.title = this.state.is_project ? this.state.project_name : "New Notebook";
+        }
         this._updateLastSave();
         this.props.stopSpinner();
         this.props.setStatusTheme(this.state.dark_theme);
-        window.dark_theme = this.state.dark_theme
+        if (!window.is_context) {
+            window.dark_theme = this.state.dark_theme
+        }
     }
 
     _setTheme(dark_theme) {
@@ -172,9 +235,9 @@ class NotebookApp extends React.Component {
     }
 
     _broadcast_event_to_server(event_name, data_dict, callback) {
-        data_dict.main_id = window.main_id;
+        data_dict.main_id = this.props.main_id;
         data_dict.event_name = event_name;
-        postWithCallback(main_id, "distribute_events_stub", data_dict, callback)
+        postWithCallback(this.props.main_id, "distribute_events_stub", data_dict, callback)
     }
 
     get interface_state() {
@@ -200,16 +263,19 @@ class NotebookApp extends React.Component {
     }
 
     render () {
-        console.log("entering render in notebook_app")
         let disabled_items = [];
-        if (!window.is_project || window.is_jupyter) {
+        if (!this.state.is_project || this.props.is_jupyter) {
             disabled_items.push("Save")
         }
         let console_available_height = this.state.usable_height - USUAL_TOOLBAR_HEIGHT;
-        console.log("creating menu");
         let menus = (
             <React.Fragment>
                 <ProjectMenu {...this.props.statusFuncs}
+                             main_id={this.props.main_id}
+                             project_name={this.state.project_name}
+                             is_notebook={this.props.is_notebook}
+                             is_juptyer={this.props.is_jupyter}
+                             setMainStateValue={this._setMainStateValue}
                              postAjaxFailure={this.props.postAjaxFailure}
                              console_items={this.state.console_items}
                              interface_state={this.interface_state}
@@ -220,9 +286,9 @@ class NotebookApp extends React.Component {
                 />
             </React.Fragment>
         );
-        console.log("creating console component");
         let console_pane = (
             <ConsoleComponent {...this.props.statusFuncs}
+                  main_id={this.props.main_id}
                   console_items={this.state.console_items}
                   console_is_shrunk={false}
                   console_is_zoomed={true}
@@ -232,26 +298,26 @@ class NotebookApp extends React.Component {
                   console_available_width={this.state.usable_width * this.state.console_width_fraction - 16}
                   zoomable={false}
                   shrinkable={false}
-                  tsocket={tsocket}
                   dark_theme={this.state.dark_theme}
                   style={{marginTop: MARGIN_SIZE}}
+                  tsocket={this.props.tsocket}
                   />
-        )
+        );
         let exports_pane;
         if (this.state.show_exports_pane) {
-            console.log("creating exports component");
-            exports_pane = <ExportsViewer setUpdate={(ufunc)=>this.updateExportsList = ufunc}
+            exports_pane = <ExportsViewer main_id={this.props.main_id}
+                                          setUpdate={(ufunc)=>{this.updateExportsList = ufunc}}
                                           available_height={console_available_height - MARGIN_SIZE}
                                           console_is_shrunk={false}
                                           console_is_zoomed={this.state.console_is_zoomed}
-                                          tsocket={tsocket}
                                           style={{marginTop: MARGIN_SIZE}}
+                                          tsocket={this.props.tsocket}
             />
         }
         else {
             exports_pane = <div></div>
         }
-        let outer_class = "main-outer"
+        let outer_class = "main-outer";
         if (this.state.dark_theme) {
             outer_class = outer_class + " bp3-dark";
         }
@@ -268,6 +334,7 @@ class NotebookApp extends React.Component {
                                   dark_theme={this.state.dark_theme}
                                     set_parent_theme={this._setTheme}
                                   show_api_links={true}
+                                  min_navbar={window.in_context}
                     />
                     <HorizontalPanes left_pane={console_pane}
                                      right_pane={exports_pane}
@@ -293,36 +360,9 @@ NotebookApp.propTypes = {
     interface_state: PropTypes.object,
 };
 
-class MainTacticSocket extends TacticSocket {
 
-    initialize_socket_stuff(reconnect=false) {
-        this.socket.emit('join', {"room": user_id});
-        if (reconnect) {
-            this.socket.emit('join-main', {"room": main_id, "user_id": window.user_id}, function (response) {
-            })
-        }
 
-        this.socket.on('handle-callback', handleCallback);
-        let self = this;
-        this.socket.on('forcedisconnect', function() {
-            self.socket.disconnect()
-        })
-        this.socket.on('close-user-windows', function(data){
-                    postAsyncFalse("host", "remove_mainwindow_task", {"main_id": main_id});
-                    if (!(data["originator"] == main_id)) {
-                        window.close()
-                    }
-                });
-        this.socket.on("window-open", function(data) {
-            window.open($SCRIPT_ROOT + "/load_temp_page/" + data["the_id"])
-        });
-
-        this.socket.on("notebook-open", function(data) {
-            window.open($SCRIPT_ROOT + "/open_notebook/" + data["the_id"])
-        });
-        this.socket.on("doFlash", function(data) {
-            doFlash(data)
-        });
-    }
+if (!window.in_context) {
+    main_main();
 }
-_main_main();
+

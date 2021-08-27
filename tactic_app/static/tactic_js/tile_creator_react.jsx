@@ -27,14 +27,11 @@ import {doBinding} from "./utilities_react.js"
 import {TacticNavbar} from "./blueprint_navbar";
 import {SearchForm} from "./library_widgets";
 
+export {tile_creator_main_in_context}
+
 const BOTTOM_MARGIN = 50;
 const MARGIN_SIZE = 17;
 
-window.main_id = window.module_viewer_id; // This matters for communication_react
-window.name = window.module_viewer_id;
-
-
-let tsocket;
 
 // Note: it seems like the sendbeacon doesn't work if this callback has a line
 // before the sendbeacon
@@ -49,9 +46,9 @@ class CreatorViewerSocket extends TacticSocket {
     initialize_socket_stuff (reconnect=false) {
         this.socket.emit('join', {"room": window.user_id});
         if (reconnect) {
-            this.socket.emit('join-main', {"room": window.module_viewer_id, "user_id": window.user_id}, function (response) {
-            })
+            this.socket.emit('join-main', {"room": this.extra_args.module_viewer_id, "user_id": window.user_id});
         }
+
         this.socket.on('handle-callback', handleCallback);
         this.socket.on('close-user-windows', (data) => {
             if (!(data["originator"] == window.module_viewer_id)) {
@@ -65,78 +62,108 @@ class CreatorViewerSocket extends TacticSocket {
 }
 
 function tile_creator_main() {
-    tsocket = new CreatorViewerSocket("main", 5000);
-    tsocket.socket.on("remove-ready-block", _everyone_ready);
-    tsocket.socket.emit('join-main', {"room": window.module_viewer_id, "user_id": window.user_id}, function(response) {
-        tsocket.socket.emit('client-ready', {"room": window.module_viewer_id, "user_id": window.user_id, "participant": "client",
-                "rb_id": window.ready_block_id, "main_id": window.module_viewer_id})
-    });
-}
-
-function _everyone_ready() {
-    let the_content = {"module_name": window.module_name,
-                    "module_viewer_id": window.module_viewer_id,
-                    "tile_collection_name": window.tile_collection_name,
-                    "user_id": window.user_id,
-                    "version_string": window.version_string};
-    postWithCallback(window.module_viewer_id, "initialize_parser", the_content, got_parsed_data);
-}
-
-function got_parsed_data (data_object) {
-    let domContainer = document.querySelector('#creator-root');
-    let parsed_data = data_object.the_content;
-    let result_dict = {"res_type": "tile", "res_name": window.module_name, "is_repository": false};
-    let odict = parsed_data.option_dict;
-    for (let option of odict) {
-        for (let param in option) {
-            if (Array.isArray(option[param])) {
-                let nstring = "[";
-                let isfirst = true;
-                for (let item of option[param]) {
-                    if (!isfirst) {
-                        nstring += ", ";
-                    }
-                    else {
-                        isfirst = false
-                    }
-                    nstring += "'" + String(item) + "'"
-                }
-                nstring += "]";
-                option[param] = nstring
-            }
-
-        }
+    function gotElement(the_element) {
+        const domContainer = document.querySelector('#creator-root');
+        ReactDOM.render(the_element, domContainer)
     }
 
-    postAjaxPromise("grab_metadata", result_dict)
-        .then(function (data) {
-            let split_tags = data.tags == "" ? [] : data.tags.split(" ");
+    postAjaxPromise("view_in_creator_in_context", {"resource_name": window.module_name})
+        .then((data)=>{
+            tile_creator_main_in_context(data, null, gotElement)
+        })
+}
+
+function tile_creator_main_in_context(data, registerThemeSetter, finalCallback) {
+    var tsocket = new CreatorViewerSocket("main",
+        5000,
+        {module_viewer_id: data.module_viewer_id});
+
+    if (!window.in_context) {
+        window.main_id = data.module_viewer_id;  // needed for postWithCallback
+    }
+
+    let mdata = data.mdata;
+    let split_tags = mdata.tags == "" ? [] : mdata.tags.split(" ");
+    let module_name = data.resource_name;
+    let module_viewer_id = data.module_viewer_id;
+    let tile_collection_name = data.tile_collection_name;
+
+    tsocket.socket.on("remove-ready-block", ()=>_everyone_ready_in_context());
+    tsocket.socket.emit('join-main', {"room": data.module_viewer_id, "user_id": window.user_id}, function(response) {
+        tsocket.socket.emit('client-ready', {
+            "room": data.module_viewer_id, "user_id": window.user_id, "participant": "client",
+            "rb_id": data.ready_block_id, "main_id": data.module_viewer_id
+        })
+    });
+
+    function _everyone_ready_in_context() {
+        let the_content = {
+            "module_name": module_name,
+            "module_viewer_id": module_viewer_id,
+            "tile_collection_name": tile_collection_name,
+            "user_id": window.user_id,
+            "version_string": window.version_string
+        };
+        postWithCallback(module_viewer_id, "initialize_parser",
+            the_content, (pdata) => got_parsed_data_in_context(pdata));
+
+        function got_parsed_data_in_context(data_object) {
+            var CreatorAppPlus = withStatus(withErrorDrawer(CreatorApp, tsocket));
+            let parsed_data = data_object.the_content;
             let category = parsed_data.category ? parsed_data.category : "basic";
-            ReactDOM.render(<CreatorAppPlus
+            let result_dict = {"res_type": "tile", "res_name": module_name, "is_repository": false};
+            let odict = parsed_data.option_dict;
+            for (let option of odict) {
+                for (let param in option) {
+                    if (Array.isArray(option[param])) {
+                        let nstring = "[";
+                        let isfirst = true;
+                        for (let item of option[param]) {
+                            if (!isfirst) {
+                                nstring += ", ";
+                            }
+                            else {
+                                isfirst = false
+                            }
+                            nstring += "'" + String(item) + "'"
+                        }
+                        nstring += "]";
+                        option[param] = nstring
+                    }
+
+                }
+            }
+
+            finalCallback(<CreatorAppPlus tsocket={tsocket}
+                                          module_name={module_name}
+                                          module_viewer_id={module_viewer_id}
+                                            registerThemeSetter={registerThemeSetter}
                                             is_mpl={parsed_data.is_mpl}
                                             is_d3={parsed_data.is_d3}
                                             render_content_code={parsed_data.render_content_code}
                                             render_content_line_number={parsed_data.render_content_line_number}
                                             extra_methods_line_number={parsed_data.extra_methods_line_number}
                                             draw_plot_line_number={parsed_data.draw_plot_line_number}
-                                            initial_line_number={window.line_number}
+                                            initial_line_number={null}
                                             category={category}
                                             extra_functions={parsed_data.extra_functions}
                                             draw_plot_code={parsed_data.draw_plot_code}
                                             jscript_code={parsed_data.jscript_code}
                                             tags={split_tags}
-                                            notes={data.notes}
+                                            notes={mdata.notes}
                                             initial_theme={window.theme}
                                             option_list={parsed_data.option_dict}
                                             export_list={parsed_data.export_list}
-                                            created={data.datestring}
+                                            created={mdata.datestring}
+                />)
+        }
+    }
 
-            />, domContainer);
-        })
-        .catch(function (data) {
-            doFlash(data);
-        })
+
+
 }
+
+
 
 function TileCreatorToolbar(props) {
     let tstyle = {"marginTop": 20, "paddingRight": 20, "width": "100%"};
@@ -190,7 +217,7 @@ class CreatorApp extends React.Component {
         this.line_number = this.props.initial_line_number;
         this.socket_counter = null;
         this.state = {
-            tile_name: window.module_name,
+            tile_name: props.module_name,
             foregrounded_panes: {
                 "metadata": true,
                 "options": false,
@@ -270,7 +297,9 @@ class CreatorApp extends React.Component {
     _setTheme(dark_theme) {
         this.setState({dark_theme: dark_theme}, ()=> {
             this.props.setStatusTheme(dark_theme);
-            window.dark_theme = this.state.dark_theme
+            if (!window.in_context) {
+                window.dark_theme = this.state.dark_theme
+            }
         })
     }
 
@@ -300,7 +329,7 @@ class CreatorApp extends React.Component {
         }
     }
 
-  dirty() {
+    dirty() {
         let current_state = this._getSaveDict();
         for (let k in current_state) {
             if (current_state[k] != this.last_save[k]) {
@@ -309,7 +338,6 @@ class CreatorApp extends React.Component {
         }
         return false
     }
-
 
     _loadModule() {
         let self = this;
@@ -393,7 +421,7 @@ class CreatorApp extends React.Component {
         return new Promise (function (resolve, reject) {
             let result_dict = self._getSaveDict();
 
-            postWithCallback(module_viewer_id, "update_module", result_dict, function (data) {
+            postWithCallback(self.props.module_viewer_id, "update_module", result_dict, function (data) {
                 if (data.success) {
                     self.save_success(data);
                     resolve(data)
@@ -502,7 +530,9 @@ class CreatorApp extends React.Component {
 
     componentDidMount() {
         this.setState({"mounted": true});
-        document.title = this.state.tile_name;
+        if (!window.in_context) {
+            document.title = this.state.tile_name;
+        }
         this._goToLineNumber();
         this.props.setGoToLineNumber(this._selectLineNumber);
         window.addEventListener("resize", this.update_window_dimensions);
@@ -511,22 +541,25 @@ class CreatorApp extends React.Component {
         this.props.stopSpinner();
         this.props.setStatusTheme(this.state.dark_theme);
         this.initSocket();
-        window.dark_theme = this.state.dark_theme
+        // window.dark_theme = this.state.dark_theme;
+        if (window.in_context) {
+            this.props.registerThemeSetter(this._setTheme);
+        }
     }
 
     componentDidUpdate() {
         this._goToLineNumber();
-        if (tsocket.counter != this.socket_counter) {
+        if (this.props.tsocket.counter != this.socket_counter) {
             this.initSocket();
         }
     }
     
     initSocket() {
-        tsocket.socket.on('focus-me', (data)=>{
+        this.props.tsocket.socket.on('focus-me', (data)=>{
             window.focus();
             this._selectLineNumber(data.line_number)
         });
-        this.socket_counter = tsocket.counter
+        this.socket_counter = this.props.tsocket.counter
     }
 
     // This toggles methodsTabRefreshRequired back and forth to force a refresh
@@ -813,20 +846,24 @@ class CreatorApp extends React.Component {
             paddingLeft: SIDE_MARGIN
         };
         let outer_class = "resource-viewer-holder";
-        if (this.state.dark_theme) {
-            outer_class = outer_class + " bp3-dark";
-        }
-        else {
-            outer_class = outer_class + " light-theme"
+        if (!window.in_context) {
+            if (this.state.dark_theme) {
+                outer_class = outer_class + " bp3-dark";
+            } else {
+                outer_class = outer_class + " light-theme"
+            }
         }
         return (
             <React.Fragment>
-                <TacticNavbar is_authenticated={window.is_authenticated}
-                              selected={null}
-                              show_api_links={true}
-                              dark_theme={this.state.dark_theme}
-                              set_parent_theme={this._setTheme}
-                              user_name={window.username}/>
+                {!window.in_context &&
+                    <TacticNavbar is_authenticated={window.is_authenticated}
+                                  selected={null}
+                                  show_api_links={true}
+                                  dark_theme={this.state.dark_theme}
+                                  set_parent_theme={this._setTheme}
+                                  user_name={window.username}/>
+                }
+
                 <ResizeSensor onResize={this._handleResize} observeParents={true}>
                     <div className={outer_class} ref={this.top_ref} style={outer_style}>
                         <HorizontalPanes left_pane={left_pane}
@@ -860,6 +897,7 @@ CreatorApp.propTypes = {
     created: PropTypes.string
 };
 
-var CreatorAppPlus = withStatus(withErrorDrawer(CreatorApp, tsocket));
 
-tile_creator_main();
+if (!window.in_context) {
+    tile_creator_main();
+}

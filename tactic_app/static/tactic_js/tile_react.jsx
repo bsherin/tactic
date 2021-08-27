@@ -138,10 +138,10 @@ class TileContainer extends React.Component {
         new_tile_list.splice(tindex, 1);
         this.props.setMainStateValue("tile_list", new_tile_list);
         const data_dict = {
-            main_id: window.main_id,
+            main_id: this.props.main_id,
             tile_id: tile_id
         };
-        postWithCallback(window.main_id, "RemoveTile", data_dict);
+        postWithCallback(this.props.main_id, "RemoveTile", data_dict);
     }
 
     _addToLog(tile_id, new_line) {
@@ -199,6 +199,7 @@ class TileContainer extends React.Component {
         }
         return (
             <SortableComponent id="tile-div"
+                               main_id={this.props.main_id}
                                style={outer_style}
                                helperClass={this.props.dark_theme ? "bp3-dark" : "light-theme"}
                                container_ref={this.props.tile_div_ref}
@@ -395,11 +396,11 @@ class TileComponent extends React.Component {
     }
 
     _startLogStreaming() {
-        postWithCallback(window.main_id, "StartLogStreaming", {tile_id: this.props.tile_id});
+        postWithCallback(this.props.main_id, "StartLogStreaming", {tile_id: this.props.tile_id});
     }
 
     _stopLogStreaming() {
-        postWithCallback(window.main_id, "StopLogStreaming", {tile_id: this.props.tile_id});
+        postWithCallback(this.props.main_id, "StopLogStreaming", {tile_id: this.props.tile_id});
     }
 
     _toggleShrunk() {
@@ -413,7 +414,7 @@ class TileComponent extends React.Component {
     _standard_click_data() {
         return{
             tile_id: this.props.tile_id,
-            main_id: window.main_id,
+            main_id: this.props.main_id,
             doc_name: this.props.current_doc_name,
             active_row_id: this.props.selected_row
         }
@@ -635,7 +636,7 @@ class TileComponent extends React.Component {
 
     _logParams () {
         const data_dict = {};
-        data_dict["main_id"] = window.main_id;
+        data_dict["main_id"] = this.props.main_id;
         data_dict["tile_id"] = this.props.tile_id;
         data_dict["tile_name"] = this.props.tile_name;
         postWithCallback(this.props.tile_id, "LogParams", data_dict)

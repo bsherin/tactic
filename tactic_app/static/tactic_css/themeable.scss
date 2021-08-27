@@ -54,7 +54,7 @@ $dark-table-border-style: $table-border-thickness solid;
         }
     }
 
-    #creator-root {
+    #creator-root, creator-root {
         .light-theme {
           .CodeMirror-gutters {
               background-color: $light-gray5;

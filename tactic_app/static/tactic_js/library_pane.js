@@ -706,6 +706,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_handleRowDoubleClick",
     value: function _handleRowDoubleClick(row_dict) {
+      var self = this;
       var view_view = this.view_views[this.props.res_type];
       if (view_view == null) return;
 
@@ -715,7 +716,16 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         list_of_selected: [row_dict.name]
       });
 
-      window.open($SCRIPT_ROOT + view_view + row_dict.name);
+      if (window.in_context) {
+        var re = new RegExp("/$");
+        view_view = view_view.replace(re, "_in_context");
+        (0, _communication_react.postAjaxPromise)($SCRIPT_ROOT + view_view, {
+          context_id: context_id,
+          resource_name: row_dict.name
+        }).then(self.props.handleCreateViewer)["catch"](_toaster.doFlash);
+      } else {
+        window.open($SCRIPT_ROOT + view_view + row_dict.name);
+      }
     }
   }, {
     key: "_handleRowSelection",
@@ -897,12 +907,20 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "_view_func",
     value: function _view_func() {
       var the_view = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      var self = this;
 
       if (the_view == null) {
         the_view = this.view_views[this.props.res_type];
       }
 
-      if (!this.state.multi_select) {
+      if (window.in_context) {
+        var re = new RegExp("/$");
+        the_view = the_view.replace(re, "_in_context");
+        (0, _communication_react.postAjaxPromise)($SCRIPT_ROOT + the_view, {
+          context_id: context_id,
+          resource_name: this.props.selected_resource.name
+        }).then(self.props.handleCreateViewer)["catch"](_toaster.doFlash);
+      } else if (!this.state.multi_select) {
         window.open($SCRIPT_ROOT + the_view + this.props.selected_resource.name);
       }
     }
@@ -910,12 +928,22 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "_view_resource",
     value: function _view_resource(resource_name) {
       var the_view = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      var self = this;
 
       if (the_view == null) {
         the_view = this.view_views[this.props.res_type];
       }
 
-      window.open($SCRIPT_ROOT + the_view + resource_name);
+      if (window.in_context) {
+        var re = new RegExp("/$");
+        the_view = the_view.replace(re, "_in_context");
+        (0, _communication_react.postAjaxPromise)($SCRIPT_ROOT + the_view, {
+          context_id: context_id,
+          resource_name: resource_name
+        }).then(self.props.handleCreateViewer)["catch"](_toaster.doFlash);
+      } else {
+        window.open($SCRIPT_ROOT + the_view + resource_name);
+      }
     }
   }, {
     key: "_duplicate_func",
@@ -1325,7 +1353,9 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         sendRef: this._sendToolbarRef,
         sendContextMenuItems: this._sendContextMenuItems,
         view_resource: this._view_resource
-      }, this.props.errorDrawerFuncs)), /*#__PURE__*/_react["default"].createElement("div", {
+      }, this.props.errorDrawerFuncs, {
+        handleCreateViewer: this.props.handleCreateViewer
+      })), /*#__PURE__*/_react["default"].createElement("div", {
         style: {
           width: this.state.available_width,
           height: this.state.available_height

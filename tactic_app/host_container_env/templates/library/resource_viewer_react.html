@@ -18,12 +18,7 @@
     <script type="module" src="{{javascript_source}}"></script>
     <script>
         window.user_id = "{{current_user.get_id()}}";
-        window.theme="{{theme}}"
+        window.theme="{{theme}}";
         window.resource_name = "{{resource_name}}";
-        window.second_resource_name = "{{second_resource_name}}";
-        window.is_repository = "{{is_repository}}" == "True";
-        window.include_right = "{{include_right}}" == "True";
-        window.read_only = "{{read_only}}" == "True";
-
     </script>
 {% endblock %}

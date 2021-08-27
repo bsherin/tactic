@@ -2,6 +2,11 @@
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.list_viewer_in_context = list_viewer_in_context;
+
 require("../tactic_css/tactic.scss");
 
 var _react = _interopRequireDefault(require("react"));
@@ -64,47 +69,44 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
-window.resource_viewer_id = (0, _utilities_react2.guid)();
-window.main_id = resource_viewer_id;
-
 function list_viewer_main() {
-  var get_url = window.is_repository ? "repository_get_list" : "get_list";
-  var get_mdata_url = window.is_repository ? "grab_repository_metadata" : "grab_metadata";
-  var tsocket = new _resource_viewer_react_app.ResourceViewerSocket("main", 5000);
-  (0, _communication_react.postAjaxPromise)("".concat(get_url, "/").concat(window.resource_name), {}).then(function (data) {
-    var the_content = data.the_content;
-    var result_dict = {
-      "res_type": "list",
-      "res_name": window.resource_name,
-      "is_repository": false
-    };
-    var ListViewerAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(ListViewerApp, tsocket), tsocket);
+  function gotElement(the_element) {
     var domContainer = document.querySelector('#root');
-    (0, _communication_react.postAjaxPromise)(get_mdata_url, result_dict).then(function (data) {
-      var split_tags = data.tags == "" ? [] : data.tags.split(" ");
-      ReactDOM.render( /*#__PURE__*/_react["default"].createElement(ListViewerAppPlus, {
-        the_content: the_content,
-        created: data.datestring,
-        tags: split_tags,
-        notes: data.notes,
-        readOnly: window.read_only,
-        initial_theme: window.theme,
-        is_repository: window.is_repository,
-        meta_outer: "#right-div"
-      }), domContainer);
-    })["catch"](function () {
-      ReactDOM.render( /*#__PURE__*/_react["default"].createElement(ListViewerAppPlus, {
-        the_content: the_content,
-        created: "",
-        tags: [],
-        notes: "",
-        readOnly: window.read_only,
-        initial_theme: window.theme,
-        is_repository: window.is_repository,
-        meta_outer: "#right-div"
-      }), domContainer);
-    });
-  })["catch"](_toaster.doFlash);
+    ReactDOM.render(the_element, domContainer);
+  }
+
+  (0, _communication_react.postAjaxPromise)("view_list_in_context", {
+    "resource_name": window.resource_name
+  }).then(function (data) {
+    list_viewer_in_context(data, null, gotElement);
+  });
+}
+
+function list_viewer_in_context(data, registerThemeSetter, finalCallback) {
+  var resource_viewer_id = (0, _utilities_react2.guid)();
+
+  if (!window.in_context) {
+    window.resource_viewer_id = (0, _utilities_react2.guid)();
+    window.main_id = resource_viewer_id; // needed for postWithCallback
+  }
+
+  var tsocket = new _resource_viewer_react_app.ResourceViewerSocket("main", 5000, {
+    resource_viewer_id: resource_viewer_id
+  });
+  var ListViewerAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(ListViewerApp, tsocket));
+  var split_tags = data.mdata.tags == "" ? [] : data.mdata.tags.split(" ");
+  finalCallback( /*#__PURE__*/_react["default"].createElement(ListViewerAppPlus, {
+    resource_name: data.resource_name,
+    the_content: data.the_content,
+    registerThemeSetter: registerThemeSetter,
+    created: data.mdata.datestring,
+    initial_theme: window.theme,
+    tags: split_tags,
+    notes: data.mdata.notes,
+    readOnly: data.read_only,
+    is_repository: false,
+    meta_outer: "#right-div"
+  }));
 }
 
 var ListEditor = /*#__PURE__*/function (_React$Component) {
@@ -180,7 +182,7 @@ var ListViewerApp = /*#__PURE__*/function (_React$Component2) {
     var aheight = (0, _sizing_tools.getUsableDimensions)().usable_height;
     var awidth = (0, _sizing_tools.getUsableDimensions)().usable_width;
     _this.state = {
-      resource_name: window.resource_name,
+      resource_name: props.resource_name,
       list_content: props.the_content,
       notes: props.notes,
       tags: props.tags,
@@ -195,7 +197,11 @@ var ListViewerApp = /*#__PURE__*/function (_React$Component2) {
     key: "componentDidMount",
     value: function componentDidMount() {
       this.props.stopSpinner();
-      window.dark_theme = this.state.dark_theme;
+
+      if (window.in_context) {
+        this.props.registerThemeSetter(this._setTheme);
+      } // window.dark_theme = this.state.dark_theme
+
     }
   }, {
     key: "_setTheme",
@@ -207,7 +213,9 @@ var ListViewerApp = /*#__PURE__*/function (_React$Component2) {
       }, function () {
         _this2.props.setStatusTheme(dark_theme);
 
-        window.dark_theme = _this2.state.dark_theme;
+        if (!window.in_context) {
+          window.dark_theme = _this2.state.dark_theme;
+        }
       });
     }
   }, {
@@ -342,18 +350,20 @@ var ListViewerApp = /*#__PURE__*/function (_React$Component2) {
       };
       var outer_class = "resource-viewer-holder";
 
-      if (this.state.dark_theme) {
-        outer_class = outer_class + " bp3-dark";
-      } else {
-        outer_class = outer_class + " light-theme";
+      if (!window.in_context) {
+        if (this.state.dark_theme) {
+          outer_class = outer_class + " bp3-dark";
+        } else {
+          outer_class = outer_class + " light-theme";
+        }
       }
 
       return /*#__PURE__*/_react["default"].createElement(_resource_viewer_context.ViewerContext.Provider, {
         value: the_context
-      }, /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+      }, !window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
         is_authenticated: window.is_authenticated,
         selected: null,
-        show_api_links: false,
+        show_api_links: true,
         dark_theme: this.state.dark_theme,
         set_parent_theme: this._setTheme,
         user_name: window.username
@@ -444,4 +454,7 @@ ListViewerApp.propTypes = {
   is_repository: _propTypes["default"].bool,
   meta_outer: _propTypes["default"].string
 };
-list_viewer_main();
+
+if (!window.in_context) {
+  list_viewer_main();
+}

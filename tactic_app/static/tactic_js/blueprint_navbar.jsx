@@ -213,6 +213,18 @@ class TacticNavbar extends React.Component {
         let right_style = {width: right_width};
         right_style.justifyContent = "flex-end";
         let theme_class = this.props.dark_theme ? "bp3-dark" : "light-theme";
+        if (this.props.min_navbar) {
+            return (
+                <Navbar style={{paddingLeft: 10}} className={theme_class}>
+                    <div className="bp3-navbar-group bp3-align-left" ref={this.lg_ref}>
+                            {this.props.menus != null && (
+                                <React.Fragment>
+                                    {this.props.menus}
+                                </React.Fragment>)}
+                    </div>
+                </Navbar>
+            )
+        }
         return (
             <Navbar style={{paddingLeft: 10}} className={theme_class}>
                 <div className="bp3-navbar-group bp3-align-left" ref={this.lg_ref}>
@@ -252,6 +264,7 @@ class TacticNavbar extends React.Component {
 }
 
 TacticNavbar.propTypes = {
+    min_navbar: PropTypes.bool,
     is_authenticated: PropTypes.bool,
     user_name: PropTypes.string,
     menus: PropTypes.object,
@@ -261,6 +274,7 @@ TacticNavbar.propTypes = {
 };
 
 TacticNavbar.defaultProps = {
+    min_navbar: false,
     menus: null,
     selected: null,
     show_api_links: false,
