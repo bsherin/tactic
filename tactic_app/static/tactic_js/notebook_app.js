@@ -155,6 +155,7 @@ function main_main() {
 }
 
 function main_notebook_in_context(data, registerThemeSetter, finalCallback) {
+  var ref = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
   var tsocket = new MainTacticSocket("main", 5000, {
     main_id: data.main_id
   });
@@ -215,7 +216,7 @@ function main_notebook_in_context(data, registerThemeSetter, finalCallback) {
   }
 
   function _finish_post_load_in_context(fdata) {
-    var NotebookAppPlus = (0, _toaster.withStatus)(NotebookApp, tsocket, true);
+    var NotebookAppPlus = (0, _toaster.withStatus)(NotebookApp, tsocket, true, ref);
     var interface_state;
 
     if (data.is_project || opening_from_temp_id) {
@@ -228,6 +229,7 @@ function main_notebook_in_context(data, registerThemeSetter, finalCallback) {
       finalCallback( /*#__PURE__*/_react["default"].createElement(NotebookAppPlus, {
         initial_is_project: true,
         main_id: main_id,
+        registerThemeSetter: registerThemeSetter,
         initial_project_name: data.project_name,
         tsocket: tsocket,
         interface_state: interface_state,
@@ -238,6 +240,7 @@ function main_notebook_in_context(data, registerThemeSetter, finalCallback) {
       finalCallback( /*#__PURE__*/_react["default"].createElement(NotebookAppPlus, {
         initial_is_project: false,
         main_id: main_id,
+        registerThemeSetter: registerThemeSetter,
         initial_project_name: data.project_name,
         tsocket: tsocket,
         interface_state: null,
@@ -263,6 +266,7 @@ var NotebookApp = /*#__PURE__*/function (_React$Component) {
     _this = _super2.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
     _this.last_save = {};
+    _this.main_outer_ref = /*#__PURE__*/_react["default"].createRef();
     _this.state = {
       mounted: false,
       console_items: [],
@@ -322,6 +326,12 @@ var NotebookApp = /*#__PURE__*/function (_React$Component) {
       if (!window.is_context) {
         window.dark_theme = this.state.dark_theme;
       }
+
+      if (window.in_context) {
+        this.props.registerThemeSetter(this._setTheme);
+      }
+
+      this._update_window_dimensions();
     }
   }, {
     key: "_setTheme",
@@ -339,8 +349,16 @@ var NotebookApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_update_window_dimensions",
     value: function _update_window_dimensions() {
+      var uwidth;
+
+      if (this.main_outer_ref && this.main_outer_ref.current) {
+        uwidth = window.innerWidth - MARGIN_SIZE - this.main_outer_ref.current.offsetLeft;
+      } else {
+        uwidth = window.innerWidth - 2 * MARGIN_SIZE;
+      }
+
       this.setState({
-        "usable_width": window.innerWidth - 2 * MARGIN_SIZE,
+        "usable_width": uwidth,
         "usable_height": window.innerHeight - BOTTOM_MARGIN - USUAL_TOOLBAR_HEIGHT
       });
     }
@@ -480,9 +498,7 @@ var NotebookApp = /*#__PURE__*/function (_React$Component) {
       }
 
       console.log("returning");
-      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
-        className: outer_class
-      }, /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
         is_authenticated: window.is_authenticated,
         user_name: window.username,
         menus: menus,
@@ -490,7 +506,10 @@ var NotebookApp = /*#__PURE__*/function (_React$Component) {
         set_parent_theme: this._setTheme,
         show_api_links: true,
         min_navbar: window.in_context
-      }), /*#__PURE__*/_react["default"].createElement(_resizing_layouts.HorizontalPanes, {
+      }), /*#__PURE__*/_react["default"].createElement("div", {
+        className: outer_class,
+        ref: this.main_outer_ref
+      }, /*#__PURE__*/_react["default"].createElement(_resizing_layouts.HorizontalPanes, {
         left_pane: console_pane,
         right_pane: exports_pane,
         show_handle: true,

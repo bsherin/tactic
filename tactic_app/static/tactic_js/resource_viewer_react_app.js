@@ -144,6 +144,7 @@ var ResourceViewerApp = /*#__PURE__*/function (_React$Component) {
 
     _this2 = _super2.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this2));
+    _this2.top_ref = /*#__PURE__*/_react["default"].createRef();
     _this2.savedContent = props.the_content;
     _this2.savedTags = props.tags;
     _this2.savedNotes = props.notes;
@@ -170,23 +171,25 @@ var ResourceViewerApp = /*#__PURE__*/function (_React$Component) {
   _createClass(ResourceViewerApp, [{
     key: "componentDidMount",
     value: function componentDidMount() {
-      window.addEventListener("resize", this._update_window_dimensions);
+      // window.addEventListener("resize", this._update_window_dimensions);
       this.setState({
         "mounted": true
-      });
-
-      this._update_window_dimensions();
+      }); // this._update_window_dimensions();
 
       this.props.stopSpinner();
     }
   }, {
-    key: "_update_window_dimensions",
-    value: function _update_window_dimensions() {
-      this.setState((0, _sizing_tools.getUsableDimensions)());
-    }
-  }, {
     key: "_handleResize",
     value: function _handleResize(entries) {
+      if (this.resizing) return;
+      var target;
+
+      if (window.in_context) {
+        target = "pane-holder";
+      } else {
+        target = "resource-viewer-holder";
+      }
+
       var _iterator = _createForOfIteratorHelper(entries),
           _step;
 
@@ -194,10 +197,10 @@ var ResourceViewerApp = /*#__PURE__*/function (_React$Component) {
         for (_iterator.s(); !(_step = _iterator.n()).done;) {
           var entry = _step.value;
 
-          if (entry.target.className == "resource-viewer-holder") {
+          if (entry.target.className.includes(target)) {
             this.setState({
-              available_width: entry.contentRect.width,
-              available_height: entry.contentRect.height
+              available_width: entry.contentRect.width - this.top_ref.current.offsetLeft - 30,
+              available_height: entry.contentRect.height - this.top_ref.current.offsetTop
             });
             return;
           }
@@ -240,6 +243,12 @@ var ResourceViewerApp = /*#__PURE__*/function (_React$Component) {
       return /*#__PURE__*/_react["default"].createElement(_core.ResizeSensor, {
         onResize: this._handleResize,
         observeParents: true
+      }, /*#__PURE__*/_react["default"].createElement("div", {
+        ref: this.top_ref,
+        style: {
+          width: this.state.available_width,
+          height: this.state.available_height
+        }
       }, /*#__PURE__*/_react["default"].createElement(_resizing_layouts.HorizontalPanes, {
         available_width: this.state.available_width,
         available_height: this.state.available_height,
@@ -247,7 +256,7 @@ var ResourceViewerApp = /*#__PURE__*/function (_React$Component) {
         show_handle: true,
         right_pane: right_pane,
         am_outer: true
-      }));
+      })));
     }
   }]);
 

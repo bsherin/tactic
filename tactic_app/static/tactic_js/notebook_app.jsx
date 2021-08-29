@@ -84,7 +84,7 @@ function main_main() {
         })
 }
 
-function main_notebook_in_context(data, registerThemeSetter, finalCallback) {
+function main_notebook_in_context(data, registerThemeSetter, finalCallback, ref=null) {
 
     var tsocket = new MainTacticSocket("main",
         5000,
@@ -137,7 +137,7 @@ function main_notebook_in_context(data, registerThemeSetter, finalCallback) {
     }
 
     function _finish_post_load_in_context(fdata) {
-        let NotebookAppPlus = withStatus(NotebookApp, tsocket, true);
+        let NotebookAppPlus = withStatus(NotebookApp, tsocket, true, ref);
         var interface_state;
         if (data.is_project || opening_from_temp_id) {
             interface_state = fdata.interface_state
@@ -146,6 +146,7 @@ function main_notebook_in_context(data, registerThemeSetter, finalCallback) {
         if (data.is_project || opening_from_temp_id) {
             finalCallback(<NotebookAppPlus initial_is_project={true}
                                            main_id={main_id}
+                                           registerThemeSetter={registerThemeSetter}
                                            initial_project_name={data.project_name}
                                            tsocket={tsocket}
                                            interface_state={interface_state}
@@ -155,6 +156,7 @@ function main_notebook_in_context(data, registerThemeSetter, finalCallback) {
             else {
                 finalCallback(<NotebookAppPlus initial_is_project={false}
                                                main_id={main_id}
+                                               registerThemeSetter={registerThemeSetter}
                                                initial_project_name={data.project_name}
                                                tsocket={tsocket}
                                                interface_state={null}
@@ -171,6 +173,7 @@ class NotebookApp extends React.Component {
         super(props);
         doBinding(this);
         this.last_save = {};
+        this.main_outer_ref = React.createRef();
         this.state = {
             mounted: false,
             console_items: [],
@@ -208,6 +211,10 @@ class NotebookApp extends React.Component {
         if (!window.is_context) {
             window.dark_theme = this.state.dark_theme
         }
+        if (window.in_context) {
+            this.props.registerThemeSetter(this._setTheme);
+        }
+        this._update_window_dimensions()
     }
 
     _setTheme(dark_theme) {
@@ -218,8 +225,15 @@ class NotebookApp extends React.Component {
     }
 
     _update_window_dimensions() {
+        let uwidth;
+        if (this.main_outer_ref && this.main_outer_ref.current) {
+            uwidth = window.innerWidth - MARGIN_SIZE - this.main_outer_ref.current.offsetLeft
+        }
+        else {
+            uwidth = window.innerWidth - 2 * MARGIN_SIZE
+        }
         this.setState({
-            "usable_width": window.innerWidth - 2 * MARGIN_SIZE,
+            "usable_width": uwidth,
             "usable_height": window.innerHeight - BOTTOM_MARGIN - USUAL_TOOLBAR_HEIGHT
         });
     }
@@ -327,15 +341,16 @@ class NotebookApp extends React.Component {
         console.log("returning");
         return (
             <React.Fragment>
-                <div className={outer_class}>
-                    <TacticNavbar is_authenticated={window.is_authenticated}
-                                  user_name={window.username}
-                                  menus={menus}
-                                  dark_theme={this.state.dark_theme}
-                                    set_parent_theme={this._setTheme}
-                                  show_api_links={true}
-                                  min_navbar={window.in_context}
-                    />
+                <TacticNavbar is_authenticated={window.is_authenticated}
+                    user_name={window.username}
+                    menus={menus}
+                    dark_theme={this.state.dark_theme}
+                    set_parent_theme={this._setTheme}
+                    show_api_links={true}
+                    min_navbar={window.in_context}
+                />
+                <div className={outer_class} ref={this.main_outer_ref}>
+
                     <HorizontalPanes left_pane={console_pane}
                                      right_pane={exports_pane}
                                      show_handle={true}

@@ -83,6 +83,7 @@ function code_viewer_main() {
 }
 
 function code_viewer_in_context(data, registerThemeSetter, finalCallback) {
+  var ref = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
   var resource_viewer_id = (0, _utilities_react2.guid)();
 
   if (!window.in_context) {
@@ -93,7 +94,7 @@ function code_viewer_in_context(data, registerThemeSetter, finalCallback) {
   var tsocket = new _resource_viewer_react_app.ResourceViewerSocket("main", 5000, {
     resource_viewer_id: resource_viewer_id
   });
-  var CodeViewerAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(CodeViewerApp, tsocket));
+  var CodeViewerAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(CodeViewerApp, tsocket, false, ref));
   var split_tags = data.mdata.tags == "" ? [] : data.mdata.tags.split(" ");
   finalCallback( /*#__PURE__*/_react["default"].createElement(CodeViewerAppPlus, {
     resource_name: data.resource_name,
@@ -174,7 +175,7 @@ var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
     key: "_update_window_dimensions",
     value: function _update_window_dimensions() {
       var uwidth = window.innerWidth - 2 * _sizing_tools.SIDE_MARGIN;
-      var uheight = window.innerHeight - _sizing_tools.BOTTOM_MARGIN;
+      var uheight = window.innerHeight;
 
       if (this.top_ref && this.top_ref.current) {
         uheight = uheight - this.top_ref.current.offsetTop;

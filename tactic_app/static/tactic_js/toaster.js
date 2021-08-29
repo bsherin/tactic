@@ -82,6 +82,7 @@ function doFlashAlways(data) {
 function withStatus(WrappedComponent) {
   var tsocket = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
   var light_dark = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+  var ref = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
   return /*#__PURE__*/function (_React$Component) {
     _inherits(_class, _React$Component);
 
@@ -217,6 +218,7 @@ function withStatus(WrappedComponent) {
       key: "render",
       value: function render() {
         return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(WrappedComponent, _extends({}, this.props, {
+          ref: ref,
           statusFuncs: this._statusFuncs(),
           startSpinner: this._startSpinner,
           stopSpinner: this._stopSpinner,

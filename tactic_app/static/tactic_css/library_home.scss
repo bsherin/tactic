@@ -12,43 +12,64 @@ $regular: #5c7080;
     margin-bottom: 9px
 }
 
+#context-root {
+    height: 100%;
+
+    .pane-holder {
+        height: 100%
+    }
+}
+
 #context-container {
+    height: 100%;
+
     #library-home-root {
         .bp3-tab-list {
             display: none
         }
     }
-    .lib-button {
-        padding: 0;
-        margin-left: 10px;
-    }
 
     .context-tab-list {
+        height: 100%;
+
         .bp3-tab-indicator-wrapper {
             display: none
         }
-        &.collections-selected {
-            [data-res-type="collections"] {
+
+        .lib-tab-button {
+            padding: 0;
+            margin-left: 10px;
+            color: white;
+
+            &.selected-lib-tab-button {
                 color: yellow;
+            }
+
+        }
+
+        > .bp3-tab-list {
+            margin-top: unset;
+            padding-top: 100px;
+            padding-left: 2px;
+            padding-right: 2px;
+            background-color: $dark-gray5;
+            color: white;
+
+            .bp3-tab-indicator {
+                background-color: #48aff09e;
+                border-radius: 0;
+                width: 46px
             }
         }
-        &.projects-selected {
-            [data-res-type="projects"] {
-                color: yellow;
-            }
-        }
-        &.tiles-selected {
-            [data-res-type="tiles"] {
-                color: yellow;
-            }
-        }
-        &.lists-selected {
-            [data-res-type="lists"] {
-                color: yellow;
-            }
-        }&.code-selected {
-            [data-res-type="code"] {
-                color: yellow;
+
+        .context-tab-button-content {
+            color: white;
+            padding-left: 5px;
+
+            &.selected-tab-button {
+                color: white;
+                border-top: .5px solid white;
+                border-bottom: .5px solid white;
             }
         }
     }
@@ -308,9 +329,6 @@ $regular: #5c7080;
 
 }
 
-.context-tab-list .bp3-tab-list {
-    margin-top: 100px
-}
 
 .context-tab.bp3-tab-panel {
     width: 100%

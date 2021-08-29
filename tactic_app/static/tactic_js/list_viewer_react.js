@@ -83,6 +83,7 @@ function list_viewer_main() {
 }
 
 function list_viewer_in_context(data, registerThemeSetter, finalCallback) {
+  var ref = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
   var resource_viewer_id = (0, _utilities_react2.guid)();
 
   if (!window.in_context) {
@@ -93,9 +94,11 @@ function list_viewer_in_context(data, registerThemeSetter, finalCallback) {
   var tsocket = new _resource_viewer_react_app.ResourceViewerSocket("main", 5000, {
     resource_viewer_id: resource_viewer_id
   });
-  var ListViewerAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(ListViewerApp, tsocket));
+  var ListViewerAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(ListViewerApp, tsocket, false, ref));
   var split_tags = data.mdata.tags == "" ? [] : data.mdata.tags.split(" ");
-  finalCallback( /*#__PURE__*/_react["default"].createElement(ListViewerAppPlus, {
+  finalCallback( /*#__PURE__*/_react["default"].createElement("div", {
+    id: "resource-viewer-root"
+  }, /*#__PURE__*/_react["default"].createElement(ListViewerAppPlus, {
     resource_name: data.resource_name,
     the_content: data.the_content,
     registerThemeSetter: registerThemeSetter,
@@ -106,7 +109,7 @@ function list_viewer_in_context(data, registerThemeSetter, finalCallback) {
     readOnly: data.read_only,
     is_repository: false,
     meta_outer: "#right-div"
-  }));
+  }), ")"));
 }
 
 var ListEditor = /*#__PURE__*/function (_React$Component) {
@@ -179,8 +182,8 @@ var ListViewerApp = /*#__PURE__*/function (_React$Component2) {
         e.returnValue = '';
       }
     });
-    var aheight = (0, _sizing_tools.getUsableDimensions)().usable_height;
-    var awidth = (0, _sizing_tools.getUsableDimensions)().usable_width;
+    var aheight = (0, _sizing_tools.getUsableDimensions)().usable_height_no_bottom;
+    var awidth = (0, _sizing_tools.getUsableDimensions)().usable_width - 170;
     _this.state = {
       resource_name: props.resource_name,
       list_content: props.the_content,
@@ -196,6 +199,10 @@ var ListViewerApp = /*#__PURE__*/function (_React$Component2) {
   _createClass(ListViewerApp, [{
     key: "componentDidMount",
     value: function componentDidMount() {
+      window.addEventListener("resize", this._update_window_dimensions);
+
+      this._update_window_dimensions();
+
       this.props.stopSpinner();
 
       if (window.in_context) {
@@ -297,28 +304,21 @@ var ListViewerApp = /*#__PURE__*/function (_React$Component2) {
       });
     }
   }, {
-    key: "_handleResize",
-    value: function _handleResize(entries) {
-      var _iterator3 = _createForOfIteratorHelper(entries),
-          _step3;
+    key: "_update_window_dimensions",
+    value: function _update_window_dimensions() {
+      var uwidth = window.innerWidth - 2 * _sizing_tools.SIDE_MARGIN;
+      var uheight = window.innerHeight;
 
-      try {
-        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-          var entry = _step3.value;
-
-          if (entry.target.id == "root") {
-            this.setState({
-              usable_width: entry.contentRect.width,
-              usable_height: entry.contentRect.height - _sizing_tools.BOTTOM_MARGIN - entry.target.getBoundingClientRect().top
-            });
-            return;
-          }
-        }
-      } catch (err) {
-        _iterator3.e(err);
-      } finally {
-        _iterator3.f();
+      if (this.top_ref && this.top_ref.current) {
+        uheight = uheight - this.top_ref.current.offsetTop;
+      } else {
+        uheight = uheight - _sizing_tools.USUAL_TOOLBAR_HEIGHT;
       }
+
+      this.setState({
+        usable_height: uheight,
+        usable_width: uwidth
+      });
     }
   }, {
     key: "get_new_le_height",
@@ -346,7 +346,7 @@ var ListViewerApp = /*#__PURE__*/function (_React$Component2) {
       var outer_style = {
         width: "100%",
         height: this.state.usable_height,
-        paddingLeft: _sizing_tools.SIDE_MARGIN
+        paddingLeft: window.in_context ? 0 : _sizing_tools.SIDE_MARGIN
       };
       var outer_class = "resource-viewer-holder";
 
@@ -367,10 +367,7 @@ var ListViewerApp = /*#__PURE__*/function (_React$Component2) {
         dark_theme: this.state.dark_theme,
         set_parent_theme: this._setTheme,
         user_name: window.username
-      }), /*#__PURE__*/_react["default"].createElement(_core.ResizeSensor, {
-        onResize: this._handleResize,
-        observeParents: true
-      }, /*#__PURE__*/_react["default"].createElement("div", {
+      }), /*#__PURE__*/_react["default"].createElement("div", {
         className: outer_class,
         ref: this.top_ref,
         style: outer_style
@@ -392,7 +389,7 @@ var ListViewerApp = /*#__PURE__*/function (_React$Component2) {
         outer_ref: this.le_ref,
         height: this.get_new_le_height(),
         handleChange: this._handleListChange
-      })))));
+      }))));
     }
   }, {
     key: "_saveMe",

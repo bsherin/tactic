@@ -39,14 +39,14 @@ function module_viewer_main () {
 
 }
 
-function module_viewer_in_context(data, registerThemeSetter, finalCallback) {
+function module_viewer_in_context(data, registerThemeSetter, finalCallback, ref=null) {
     let resource_viewer_id = guid();
     if (!window.in_context) {
         window.page_id = resource_viewer_id;
         window.main_id = resource_viewer_id;  // needed for postWithCallback
     }
     var tsocket = new ResourceViewerSocket("main", 5000, {resource_viewer_id: resource_viewer_id});
-    let ModuleViewerAppPlus = withErrorDrawer(withStatus(ModuleViewerApp, tsocket));
+    let ModuleViewerAppPlus = withErrorDrawer(withStatus(ModuleViewerApp, tsocket, false, ref));
     let split_tags = data.mdata.tags == "" ? [] : data.mdata.tags.split(" ");
     finalCallback(<ModuleViewerAppPlus resource_name={data.resource_name}
                                        the_content={data.the_content}
@@ -78,7 +78,7 @@ class ModuleViewerApp extends React.Component {
             }
         });
 
-        let aheight = window.innerHeight - BOTTOM_MARGIN - USUAL_TOOLBAR_HEIGHT;
+        let aheight = getUsableDimensions().usable_height;
         let awidth = getUsableDimensions().usable_width;
         this.state = {
             resource_name: props.resource_name,
@@ -105,12 +105,17 @@ class ModuleViewerApp extends React.Component {
         if (window.in_context) {
             this.props.registerThemeSetter(this._setTheme);
         }
-        // window.dark_theme = this.state.dark_theme
     }
 
     _update_window_dimensions() {
         let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
-        let uheight = window.innerHeight - BOTTOM_MARGIN - USUAL_TOOLBAR_HEIGHT;
+        let uheight = window.innerHeight;
+        if (this.top_ref && this.top_ref.current) {
+            uheight = uheight - this.top_ref.current.offsetTop;
+        }
+        else {
+            uheight = uheight - USUAL_TOOLBAR_HEIGHT
+        }
         this.setState({usable_height: uheight, usable_width: uwidth})
     }
 
@@ -159,18 +164,6 @@ class ModuleViewerApp extends React.Component {
         this.setState(state_stuff)
     }
 
-     _handleResize(entries) {
-        for (let entry of entries) {
-            if (entry.target.id == "root" || entry.target.id == "context-root") {
-                this.setState({usable_width: entry.contentRect.width,
-                    // usable_height: entry.contentRect.height - BOTTOM_MARGIN - entry.target.getBoundingClientRect().top
-                    usable_height: window.innerHeight - BOTTOM_MARGIN - USUAL_TOOLBAR_HEIGHT
-                });
-                return
-            }
-        }
-    }
-
     _doFlashStopSpinner(data) {
         this.props.stopSpinner();
         this.props.clearStatusMessage();
@@ -180,7 +173,7 @@ class ModuleViewerApp extends React.Component {
 
     get_new_cc_height () {
         if (this.cc_ref && this.cc_ref.current) {  // This will be true after the initial render
-            return window.innerHeight - BOTTOM_MARGIN - this.cc_ref.current.offsetTop
+            return this.state.usable_height - this.cc_ref.current.offsetTop
         }
         else {
             return this.state.usable_height - 100
@@ -217,34 +210,32 @@ class ModuleViewerApp extends React.Component {
                                   set_parent_theme={this._setTheme}
                                   user_name={window.username}/>
                 }
-                <ResizeSensor onResize={this._handleResize} observeParents={true}>
-                    <div className={outer_class} ref={this.top_ref} style={outer_style}>
-                            <ResourceViewerApp {...this.props.statusFuncs}
-                                               setResourceNameState={this._setResourceNameState}
-                                               res_type="tile"
-                                               resource_name={this.state.resource_name}
-                                               button_groups={this.button_groups}
-                                               handleStateChange={this._handleStateChange}
-                                               created={this.props.created}
-                                               notes={this.state.notes}
-                                               tags={this.state.tags}
-                                               saveMe={this._saveMe}
-                                               show_search={true}
-                                               update_search_state={this._update_search_state}
-                                               dark_theme={this.state.dark_theme}
-                                               meta_outer={this.props.meta_outer}>
-                                <ReactCodemirror code_content={this.state.code_content}
-                                                 handleChange={this._handleCodeChange}
-                                                 saveMe={this._saveMe}
-                                                 readOnly={this.props.readOnly}
-                                                 search_term={this.state.search_string}
-                                                 dark_theme={this.state.dark_theme}
-                                                 code_container_ref={this.cc_ref}
-                                                 code_container_height={cc_height}
-                                  />
-                            </ResourceViewerApp>
-                        </div>
-                    </ResizeSensor>
+                <div className={outer_class} ref={this.top_ref} style={outer_style}>
+                        <ResourceViewerApp {...this.props.statusFuncs}
+                                           setResourceNameState={this._setResourceNameState}
+                                           res_type="tile"
+                                           resource_name={this.state.resource_name}
+                                           button_groups={this.button_groups}
+                                           handleStateChange={this._handleStateChange}
+                                           created={this.props.created}
+                                           notes={this.state.notes}
+                                           tags={this.state.tags}
+                                           saveMe={this._saveMe}
+                                           show_search={true}
+                                           update_search_state={this._update_search_state}
+                                           dark_theme={this.state.dark_theme}
+                                           meta_outer={this.props.meta_outer}>
+                            <ReactCodemirror code_content={this.state.code_content}
+                                             handleChange={this._handleCodeChange}
+                                             saveMe={this._saveMe}
+                                             readOnly={this.props.readOnly}
+                                             search_term={this.state.search_string}
+                                             dark_theme={this.state.dark_theme}
+                                             code_container_ref={this.cc_ref}
+                                             code_container_height={cc_height}
+                              />
+                        </ResourceViewerApp>
+                    </div>
             </ViewerContext.Provider>
         )
     }

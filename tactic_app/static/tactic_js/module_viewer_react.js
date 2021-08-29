@@ -83,6 +83,7 @@ function module_viewer_main() {
 }
 
 function module_viewer_in_context(data, registerThemeSetter, finalCallback) {
+  var ref = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
   var resource_viewer_id = (0, _utilities_react.guid)();
 
   if (!window.in_context) {
@@ -93,7 +94,7 @@ function module_viewer_in_context(data, registerThemeSetter, finalCallback) {
   var tsocket = new _resource_viewer_react_app.ResourceViewerSocket("main", 5000, {
     resource_viewer_id: resource_viewer_id
   });
-  var ModuleViewerAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(ModuleViewerApp, tsocket));
+  var ModuleViewerAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(ModuleViewerApp, tsocket, false, ref));
   var split_tags = data.mdata.tags == "" ? [] : data.mdata.tags.split(" ");
   finalCallback( /*#__PURE__*/_react["default"].createElement(ModuleViewerAppPlus, {
     resource_name: data.resource_name,
@@ -135,7 +136,7 @@ var ModuleViewerApp = /*#__PURE__*/function (_React$Component) {
         e.returnValue = '';
       }
     });
-    var aheight = window.innerHeight - _sizing_tools.BOTTOM_MARGIN - _sizing_tools.USUAL_TOOLBAR_HEIGHT;
+    var aheight = (0, _sizing_tools.getUsableDimensions)().usable_height;
     var awidth = (0, _sizing_tools.getUsableDimensions)().usable_width;
     _this.state = {
       resource_name: props.resource_name,
@@ -167,14 +168,20 @@ var ModuleViewerApp = /*#__PURE__*/function (_React$Component) {
 
       if (window.in_context) {
         this.props.registerThemeSetter(this._setTheme);
-      } // window.dark_theme = this.state.dark_theme
-
+      }
     }
   }, {
     key: "_update_window_dimensions",
     value: function _update_window_dimensions() {
       var uwidth = window.innerWidth - 2 * _sizing_tools.SIDE_MARGIN;
-      var uheight = window.innerHeight - _sizing_tools.BOTTOM_MARGIN - _sizing_tools.USUAL_TOOLBAR_HEIGHT;
+      var uheight = window.innerHeight;
+
+      if (this.top_ref && this.top_ref.current) {
+        uheight = uheight - this.top_ref.current.offsetTop;
+      } else {
+        uheight = uheight - _sizing_tools.USUAL_TOOLBAR_HEIGHT;
+      }
+
       this.setState({
         usable_height: uheight,
         usable_width: uwidth
@@ -294,31 +301,6 @@ var ModuleViewerApp = /*#__PURE__*/function (_React$Component) {
       this.setState(state_stuff);
     }
   }, {
-    key: "_handleResize",
-    value: function _handleResize(entries) {
-      var _iterator3 = _createForOfIteratorHelper(entries),
-          _step3;
-
-      try {
-        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-          var entry = _step3.value;
-
-          if (entry.target.id == "root" || entry.target.id == "context-root") {
-            this.setState({
-              usable_width: entry.contentRect.width,
-              // usable_height: entry.contentRect.height - BOTTOM_MARGIN - entry.target.getBoundingClientRect().top
-              usable_height: window.innerHeight - _sizing_tools.BOTTOM_MARGIN - _sizing_tools.USUAL_TOOLBAR_HEIGHT
-            });
-            return;
-          }
-        }
-      } catch (err) {
-        _iterator3.e(err);
-      } finally {
-        _iterator3.f();
-      }
-    }
-  }, {
     key: "_doFlashStopSpinner",
     value: function _doFlashStopSpinner(data) {
       this.props.stopSpinner();
@@ -330,7 +312,7 @@ var ModuleViewerApp = /*#__PURE__*/function (_React$Component) {
     value: function get_new_cc_height() {
       if (this.cc_ref && this.cc_ref.current) {
         // This will be true after the initial render
-        return window.innerHeight - _sizing_tools.BOTTOM_MARGIN - this.cc_ref.current.offsetTop;
+        return this.state.usable_height - this.cc_ref.current.offsetTop;
       } else {
         return this.state.usable_height - 100;
       }
@@ -374,10 +356,7 @@ var ModuleViewerApp = /*#__PURE__*/function (_React$Component) {
         dark_theme: this.state.dark_theme,
         set_parent_theme: this._setTheme,
         user_name: window.username
-      }), /*#__PURE__*/_react["default"].createElement(_core.ResizeSensor, {
-        onResize: this._handleResize,
-        observeParents: true
-      }, /*#__PURE__*/_react["default"].createElement("div", {
+      }), /*#__PURE__*/_react["default"].createElement("div", {
         className: outer_class,
         ref: this.top_ref,
         style: outer_style
@@ -404,7 +383,7 @@ var ModuleViewerApp = /*#__PURE__*/function (_React$Component) {
         dark_theme: this.state.dark_theme,
         code_container_ref: this.cc_ref,
         code_container_height: cc_height
-      })))));
+      }))));
     }
   }, {
     key: "_saveMe",

@@ -24,7 +24,7 @@ $dark-table-border-style: $table-border-thickness solid;
       background-color: white
     }
 
-    &.pane-holder {
+    &.pane-holder, &.library-pane-holder {
       background-color: white
     }
 
@@ -171,7 +171,7 @@ $dark-table-border-style: $table-border-thickness solid;
         background-color: $dark-gray4
     }
 
-    &.pane-holder {
+    &.pane-holder, &.library-pane-holder {
       background-color: $dark-gray4
     }
 

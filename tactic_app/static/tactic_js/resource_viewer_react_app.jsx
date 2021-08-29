@@ -70,6 +70,7 @@ class ResourceViewerApp extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this);
+        this.top_ref = React.createRef();
         this.savedContent = props.the_content;
         this.savedTags = props.tags;
         this.savedNotes = props.notes;
@@ -89,21 +90,25 @@ class ResourceViewerApp extends React.Component {
     }
 
     componentDidMount() {
-        window.addEventListener("resize", this._update_window_dimensions);
+        // window.addEventListener("resize", this._update_window_dimensions);
         this.setState({"mounted": true});
-        this._update_window_dimensions();
+        // this._update_window_dimensions();
         this.props.stopSpinner()
     }
 
-    _update_window_dimensions() {
-        this.setState(getUsableDimensions());
-    }
-
-     _handleResize(entries) {
+    _handleResize(entries) {
+        if (this.resizing) return;
+        let target;
+        if (window.in_context) {
+            target = "pane-holder"
+        }
+        else {
+            target = "resource-viewer-holder"
+        }
         for (let entry of entries) {
-            if (entry.target.className == "resource-viewer-holder") {
-                this.setState({available_width: entry.contentRect.width,
-                    available_height: entry.contentRect.height
+            if (entry.target.className.includes(target)) {
+                this.setState({available_width: entry.contentRect.width - this.top_ref.current.offsetLeft - 30,
+                    available_height: entry.contentRect.height - this.top_ref.current.offsetTop
                 });
                 return
             }
@@ -136,13 +141,15 @@ class ResourceViewerApp extends React.Component {
 
         return(
             <ResizeSensor onResize={this._handleResize} observeParents={true}>
-               <HorizontalPanes available_width={this.state.available_width}
-                                available_height={this.state.available_height}
-                                left_pane={left_pane}
-                                show_handle={true}
-                                right_pane={right_pane}
-                                am_outer={true}
-                />
+                <div ref={this.top_ref} style={{width: this.state.available_width, height: this.state.available_height}}>
+                   <HorizontalPanes available_width={this.state.available_width}
+                                    available_height={this.state.available_height}
+                                    left_pane={left_pane}
+                                    show_handle={true}
+                                    right_pane={right_pane}
+                                    am_outer={true}
+                    />
+                </div>
             </ResizeSensor>
         )
     }
@@ -162,6 +169,7 @@ ResourceViewerApp.propTypes = {
     saveMe: PropTypes.func,
     children: PropTypes.element
 };
+
 ResourceViewerApp.defaultProps ={
     dark_theme: false
-}
+};

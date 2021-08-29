@@ -254,7 +254,7 @@ class LibraryHomeApp extends React.Component {
         };
         let outer_class = "";
         if (!window.in_context) {
-            outer_class = "pane-holder  ";
+            outer_class = "library-pane-holder  ";
             if (this.state.dark_theme) {
                 outer_class = `${outer_class} bp3-dark`;
             }
