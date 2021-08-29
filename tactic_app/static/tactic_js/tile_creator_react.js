@@ -149,6 +149,7 @@ function tile_creator_main() {
 }
 
 function tile_creator_main_in_context(data, registerThemeSetter, finalCallback) {
+  var ref = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
   var tsocket = new CreatorViewerSocket("main", 5000, {
     module_viewer_id: data.module_viewer_id
   });
@@ -191,7 +192,7 @@ function tile_creator_main_in_context(data, registerThemeSetter, finalCallback) 
     });
 
     function got_parsed_data_in_context(data_object) {
-      var CreatorAppPlus = (0, _toaster.withStatus)((0, _error_drawer.withErrorDrawer)(CreatorApp, tsocket));
+      var CreatorAppPlus = (0, _toaster.withStatus)((0, _error_drawer.withErrorDrawer)(CreatorApp, tsocket, false, ref));
       var parsed_data = data_object.the_content;
       var category = parsed_data.category ? parsed_data.category : "basic";
       var result_dict = {
@@ -317,7 +318,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     _this.top_ref = /*#__PURE__*/_react["default"].createRef();
     var aheight = (0, _sizing_tools.getUsableDimensions)().usable_height;
     var awidth = (0, _sizing_tools.getUsableDimensions)().usable_width;
-    var bheight = (0, _sizing_tools.getUsableDimensions)().body_height;
+    var bheight = (0, _sizing_tools.getUsableDimensions)().usable_height;
     _this.options_ref = /*#__PURE__*/_react["default"].createRef();
     _this.left_div_ref = /*#__PURE__*/_react["default"].createRef();
     _this.right_div_ref = /*#__PURE__*/_react["default"].createRef();
@@ -373,7 +374,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     _this.handleStateChange = _this.handleStateChange.bind(_assertThisInitialized(_this));
     _this.handleRenderContentChange = _this.handleRenderContentChange.bind(_assertThisInitialized(_this));
     _this.handleTopCodeChange = _this.handleTopCodeChange.bind(_assertThisInitialized(_this));
-    _this.update_window_dimensions = _this.update_window_dimensions.bind(_assertThisInitialized(_this));
+    _this._update_window_dimensions = _this._update_window_dimensions.bind(_assertThisInitialized(_this));
     _this.handleOptionsChange = _this.handleOptionsChange.bind(_assertThisInitialized(_this));
     _this.handleExportsChange = _this.handleExportsChange.bind(_assertThisInitialized(_this));
     _this.handleMethodsChange = _this.handleMethodsChange.bind(_assertThisInitialized(_this));
@@ -682,21 +683,16 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       this._update_saved_state();
     }
   }, {
-    key: "update_window_dimensions",
-    value: function update_window_dimensions() {
-      var uwidth = window.innerWidth - 2 * _sizing_tools.SIDE_MARGIN;
-      var uheight = window.innerHeight - BOTTOM_MARGIN;
-
-      if (this.top_ref && this.top_ref.current) {
-        uheight = window.innerHeight - BOTTOM_MARGIN - this.top_ref.current.offsetTop;
-      } else {
-        uheight = uheight - _sizing_tools.USUAL_TOOLBAR_HEIGHT;
-      }
-
-      this.setState({
-        usable_height: uheight,
-        usable_width: uwidth
-      });
+    key: "_update_window_dimensions",
+    value: function _update_window_dimensions() {// let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
+      // let uheight = window.innerHeight;
+      // if (this.top_ref && this.top_ref.current) {
+      //     uheight = uheight - this.top_ref.current.offsetTop;
+      // }
+      // else {
+      //     uheight = uheight - USUAL_TOOLBAR_HEIGHT
+      // }
+      // this.setState({usable_height: uheight, usable_width: uwidth})
     }
   }, {
     key: "_update_saved_state",
@@ -783,14 +779,15 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       this._goToLineNumber();
 
       this.props.setGoToLineNumber(this._selectLineNumber);
-      window.addEventListener("resize", this.update_window_dimensions);
-      this.update_window_dimensions();
+      window.addEventListener("resize", this._update_window_dimensions);
+
+      this._update_window_dimensions();
 
       this._update_saved_state();
 
       this.props.stopSpinner();
       this.props.setStatusTheme(this.state.dark_theme);
-      this.initSocket(); // window.dark_theme = this.state.dark_theme;
+      this.initSocket();
 
       if (window.in_context) {
         this.props.registerThemeSetter(this._setTheme);
@@ -841,7 +838,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         selectedTabId: newTabId,
         foregrounded_panes: new_fg
       }, function () {
-        _this5.update_window_dimensions();
+        _this5._update_window_dimensions();
       });
     }
   }, {
@@ -960,27 +957,52 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_handleResize",
     value: function _handleResize(entries) {
-      var _iterator5 = _createForOfIteratorHelper(entries),
-          _step5;
+      if (window.in_context) {
+        var _iterator5 = _createForOfIteratorHelper(entries),
+            _step5;
 
-      try {
-        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-          var entry = _step5.value;
+        try {
+          for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+            var entry = _step5.value;
 
-          if (entry.target.id == "creator-root") {
-            // Must used window.innerWidth here otherwise we get the wrong value during initial mounting
-            this.setState({
-              usable_width: window.innerWidth - 2 * _sizing_tools.SIDE_MARGIN,
-              usable_height: entry.contentRect.height - BOTTOM_MARGIN - entry.target.getBoundingClientRect().top,
-              body_height: entry.contentRect.height - BOTTOM_MARGIN
-            });
-            return;
+            if (entry.target.className.includes("pane-holder")) {
+              // Must used window.innerWidth here otherwise we get the wrong value during initial mounting
+              this.setState({
+                usable_width: entry.contentRect.width - this.top_ref.current.offsetLeft - 30,
+                usable_height: entry.contentRect.height - this.top_ref.current.offsetTop,
+                body_height: entry.contentRect.height - this.top_ref.current.offsetTop
+              });
+              return;
+            }
           }
+        } catch (err) {
+          _iterator5.e(err);
+        } finally {
+          _iterator5.f();
         }
-      } catch (err) {
-        _iterator5.e(err);
-      } finally {
-        _iterator5.f();
+      } else {
+        var _iterator6 = _createForOfIteratorHelper(entries),
+            _step6;
+
+        try {
+          for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+            var _entry = _step6.value;
+
+            if (_entry.target.className.id == "creator-root") {
+              // Must used window.innerWidth here otherwise we get the wrong value during initial mounting
+              this.setState({
+                usable_width: _entry.contentRect.width - this.top_ref.current.offsetLeft - 30,
+                usable_height: _entry.contentRect.height - this.top_ref.current.offsetTop,
+                body_height: _entry.contentRect.height - this.top_ref.current.offsetTop
+              });
+              return;
+            }
+          }
+        } catch (err) {
+          _iterator6.e(err);
+        } finally {
+          _iterator6.f();
+        }
       }
     }
   }, {

@@ -73,7 +73,7 @@ function tile_creator_main() {
         })
 }
 
-function tile_creator_main_in_context(data, registerThemeSetter, finalCallback) {
+function tile_creator_main_in_context(data, registerThemeSetter, finalCallback, ref=null) {
     var tsocket = new CreatorViewerSocket("main",
         5000,
         {module_viewer_id: data.module_viewer_id});
@@ -108,7 +108,7 @@ function tile_creator_main_in_context(data, registerThemeSetter, finalCallback) 
             the_content, (pdata) => got_parsed_data_in_context(pdata));
 
         function got_parsed_data_in_context(data_object) {
-            var CreatorAppPlus = withStatus(withErrorDrawer(CreatorApp, tsocket));
+            var CreatorAppPlus = withStatus(withErrorDrawer(CreatorApp, tsocket, false, ref));
             let parsed_data = data_object.the_content;
             let category = parsed_data.category ? parsed_data.category : "basic";
             let result_dict = {"res_type": "tile", "res_name": module_name, "is_repository": false};
@@ -199,7 +199,7 @@ class CreatorApp extends React.Component {
         this.top_ref = React.createRef();
         let aheight = getUsableDimensions().usable_height;
         let awidth = getUsableDimensions().usable_width;
-        let bheight = getUsableDimensions().body_height;
+        let bheight = getUsableDimensions().usable_height;
         this.options_ref = React.createRef();
         this.left_div_ref = React.createRef();
         this.right_div_ref = React.createRef();
@@ -254,7 +254,7 @@ class CreatorApp extends React.Component {
         this.handleStateChange = this.handleStateChange.bind(this);
         this.handleRenderContentChange = this.handleRenderContentChange.bind(this);
         this.handleTopCodeChange = this.handleTopCodeChange.bind(this);
-        this.update_window_dimensions = this.update_window_dimensions.bind(this);
+        this._update_window_dimensions = this._update_window_dimensions.bind(this);
         this.handleOptionsChange = this.handleOptionsChange.bind(this);
         this.handleExportsChange = this.handleExportsChange.bind(this);
         this.handleMethodsChange = this.handleMethodsChange.bind(this);
@@ -457,16 +457,16 @@ class CreatorApp extends React.Component {
         this._update_saved_state();
     }
 
-    update_window_dimensions() {
-        let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
-        let uheight = window.innerHeight - BOTTOM_MARGIN;
-        if (this.top_ref && this.top_ref.current) {
-            uheight = window.innerHeight - BOTTOM_MARGIN - this.top_ref.current.offsetTop;
-        }
-        else {
-            uheight = uheight - USUAL_TOOLBAR_HEIGHT
-        }
-        this.setState({usable_height: uheight, usable_width: uwidth})
+    _update_window_dimensions() {
+        // let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
+        // let uheight = window.innerHeight;
+        // if (this.top_ref && this.top_ref.current) {
+        //     uheight = uheight - this.top_ref.current.offsetTop;
+        // }
+        // else {
+        //     uheight = uheight - USUAL_TOOLBAR_HEIGHT
+        // }
+        // this.setState({usable_height: uheight, usable_width: uwidth})
     }
 
     _update_saved_state() {
@@ -535,13 +535,12 @@ class CreatorApp extends React.Component {
         }
         this._goToLineNumber();
         this.props.setGoToLineNumber(this._selectLineNumber);
-        window.addEventListener("resize", this.update_window_dimensions);
-        this.update_window_dimensions();
+        window.addEventListener("resize", this._update_window_dimensions);
+        this._update_window_dimensions();
         this._update_saved_state();
         this.props.stopSpinner();
         this.props.setStatusTheme(this.state.dark_theme);
         this.initSocket();
-        // window.dark_theme = this.state.dark_theme;
         if (window.in_context) {
             this.props.registerThemeSetter(this._setTheme);
         }
@@ -575,7 +574,7 @@ class CreatorApp extends React.Component {
         let new_fg = Object.assign({}, this.state.foregrounded_panes);
         new_fg[newTabId] = true;
         this.setState({selectedTabId: newTabId, foregrounded_panes: new_fg}, ()=>{
-            this.update_window_dimensions();
+            this._update_window_dimensions();
         })
     }
 
@@ -659,16 +658,31 @@ class CreatorApp extends React.Component {
     }
 
     _handleResize(entries) {
-        for (let entry of entries) {
-            if (entry.target.id == "creator-root") {
-                // Must used window.innerWidth here otherwise we get the wrong value during initial mounting
-                this.setState({usable_width: window.innerWidth - 2 * SIDE_MARGIN,
-                    usable_height: entry.contentRect.height - BOTTOM_MARGIN - entry.target.getBoundingClientRect().top,
-                    body_height: entry.contentRect.height - BOTTOM_MARGIN
-                });
-                return
+        if (window.in_context) {
+            for (let entry of entries) {
+                if (entry.target.className.includes("pane-holder")) {
+                    // Must used window.innerWidth here otherwise we get the wrong value during initial mounting
+                    this.setState({usable_width: entry.contentRect.width - this.top_ref.current.offsetLeft - 30,
+                        usable_height: entry.contentRect.height - this.top_ref.current.offsetTop,
+                        body_height: entry.contentRect.height - this.top_ref.current.offsetTop
+                    });
+                    return
+                }
             }
         }
+        else {
+            for (let entry of entries) {
+                if (entry.target.className.id == "creator-root") {
+                    // Must used window.innerWidth here otherwise we get the wrong value during initial mounting
+                    this.setState({usable_width: entry.contentRect.width - this.top_ref.current.offsetLeft - 30,
+                        usable_height: entry.contentRect.height - this.top_ref.current.offsetTop,
+                        body_height: entry.contentRect.height - this.top_ref.current.offsetTop
+                    });
+                    return
+                }
+            }
+        }
+
     }
 
     _setDpObject(cmobject){

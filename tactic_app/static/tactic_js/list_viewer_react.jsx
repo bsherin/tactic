@@ -8,14 +8,14 @@ import React from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
-import { ResizeSensor, TextArea } from "@blueprintjs/core";
+import { TextArea } from "@blueprintjs/core";
 
 import {ResourceViewerSocket, ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app.js";
 import {ViewerContext} from "./resource_viewer_context.js";
 import {postAjax, postAjaxPromise} from "./communication_react.js"
 import {doFlash} from "./toaster.js"
 
-import {SIDE_MARGIN, BOTTOM_MARGIN, getUsableDimensions} from "./sizing_tools.js";
+import {SIDE_MARGIN, getUsableDimensions, USUAL_TOOLBAR_HEIGHT} from "./sizing_tools.js";
 import {withErrorDrawer} from "./error_drawer.js";
 import {withStatus} from "./toaster.js";
 import {doBinding} from "./utilities_react.js";
@@ -37,25 +37,28 @@ function list_viewer_main () {
 
 }
 
-function list_viewer_in_context(data, registerThemeSetter, finalCallback) {
+function list_viewer_in_context(data, registerThemeSetter, finalCallback, ref=null) {
     let resource_viewer_id = guid();
     if (!window.in_context) {
         window.resource_viewer_id = guid();
         window.main_id = resource_viewer_id;  // needed for postWithCallback
     }
     var tsocket = new ResourceViewerSocket("main", 5000, {resource_viewer_id: resource_viewer_id});
-    let ListViewerAppPlus = withErrorDrawer(withStatus(ListViewerApp, tsocket));
+    let ListViewerAppPlus = withErrorDrawer(withStatus(ListViewerApp, tsocket, false, ref));
     let split_tags = data.mdata.tags == "" ? [] : data.mdata.tags.split(" ");
-    finalCallback(<ListViewerAppPlus   resource_name={data.resource_name}
-                                       the_content={data.the_content}
-                                       registerThemeSetter={registerThemeSetter}
-                                       created={data.mdata.datestring}
-                                       initial_theme={window.theme}
-                                       tags={split_tags}
-                                       notes={data.mdata.notes}
-                                       readOnly={data.read_only}
-                                       is_repository={false}
-                                       meta_outer="#right-div"/>)
+    finalCallback(
+        <div id="resource-viewer-root">
+            <ListViewerAppPlus resource_name={data.resource_name}
+                               the_content={data.the_content}
+                               registerThemeSetter={registerThemeSetter}
+                               created={data.mdata.datestring}
+                               initial_theme={window.theme}
+                               tags={split_tags}
+                               notes={data.mdata.notes}
+                               readOnly={data.read_only}
+                               is_repository={false}
+                               meta_outer="#right-div"/>)
+        </div>)
 }
 
 class ListEditor extends React.Component {
@@ -104,8 +107,8 @@ class ListViewerApp extends React.Component {
                 e.returnValue = ''
             }
         });
-        let aheight = getUsableDimensions().usable_height;
-        let awidth = getUsableDimensions().usable_width;
+        let aheight = getUsableDimensions().usable_height_no_bottom;
+        let awidth = getUsableDimensions().usable_width - 170;
         this.state = {
             resource_name: props.resource_name,
             list_content: props.the_content,
@@ -118,6 +121,8 @@ class ListViewerApp extends React.Component {
     }
 
     componentDidMount() {
+        window.addEventListener("resize", this._update_window_dimensions);
+        this._update_window_dimensions();
         this.props.stopSpinner();
         if (window.in_context) {
             this.props.registerThemeSetter(this._setTheme);
@@ -164,15 +169,16 @@ class ListViewerApp extends React.Component {
         this.setState({"list_content": event.target.value});
     }
 
-    _handleResize(entries) {
-        for (let entry of entries) {
-            if (entry.target.id == "root") {
-                this.setState({usable_width: entry.contentRect.width,
-                    usable_height: entry.contentRect.height - BOTTOM_MARGIN - entry.target.getBoundingClientRect().top
-                });
-                return
-            }
+    _update_window_dimensions() {
+        let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
+        let uheight = window.innerHeight;
+        if (this.top_ref && this.top_ref.current) {
+            uheight = uheight - this.top_ref.current.offsetTop;
         }
+        else {
+            uheight = uheight - USUAL_TOOLBAR_HEIGHT
+        }
+        this.setState({usable_height: uheight, usable_width: uwidth})
     }
 
     get_new_le_height () {
@@ -193,7 +199,7 @@ class ListViewerApp extends React.Component {
         let the_context = {"readOnly": this.props.readOnly};
         let outer_style = {width: "100%",
             height: this.state.usable_height,
-            paddingLeft: SIDE_MARGIN
+            paddingLeft: window.in_context ? 0 : SIDE_MARGIN
         };
         let outer_class = "resource-viewer-holder";
         if (!window.in_context) {
@@ -213,30 +219,28 @@ class ListViewerApp extends React.Component {
                           set_parent_theme={this._setTheme}
                           user_name={window.username}/>
                 }
-                <ResizeSensor onResize={this._handleResize} observeParents={true}>
-                    <div className={outer_class} ref={this.top_ref} style={outer_style}>
-                        <ResourceViewerApp {...this.props.statusFuncs}
-                                           setResourceNameState={this._setResourceNameState}
-                                           resource_name={this.state.resource_name}
-                                           created={this.props.created}
-                                           meta_outer={this.props.meta_outer}
-                                           readOnly={window.read_only}
-                                           res_type="list"
-                                           button_groups={this.button_groups}
-                                           handleStateChange={this._handleStateChange}
-                                           notes={this.state.notes}
-                                           tags={this.state.tags}
-                                           dark_theme={this.state.dark_theme}
-                                           saveMe={this._saveMe}>
+                <div className={outer_class} ref={this.top_ref} style={outer_style}>
+                    <ResourceViewerApp {...this.props.statusFuncs}
+                                       setResourceNameState={this._setResourceNameState}
+                                       resource_name={this.state.resource_name}
+                                       created={this.props.created}
+                                       meta_outer={this.props.meta_outer}
+                                       readOnly={window.read_only}
+                                       res_type="list"
+                                       button_groups={this.button_groups}
+                                       handleStateChange={this._handleStateChange}
+                                       notes={this.state.notes}
+                                       tags={this.state.tags}
+                                       dark_theme={this.state.dark_theme}
+                                       saveMe={this._saveMe}>
 
-                                <ListEditor the_content={this.state.list_content}
-                                            outer_ref={this.le_ref}
-                                            height={this.get_new_le_height()}
-                                            handleChange={this._handleListChange}
-                                />
-                        </ResourceViewerApp>
-                    </div>
-                </ResizeSensor>
+                            <ListEditor the_content={this.state.list_content}
+                                        outer_ref={this.le_ref}
+                                        height={this.get_new_le_height()}
+                                        handleChange={this._handleListChange}
+                            />
+                    </ResourceViewerApp>
+                </div>
             </ViewerContext.Provider>
         )
     }

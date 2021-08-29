@@ -903,7 +903,7 @@ pre code {
   background-color: yellow; }
 .light-theme.account-settings {
   background-color: white; }
-.light-theme.pane-holder {
+.light-theme.pane-holder, .light-theme.library-pane-holder {
   background-color: white; }
 .light-theme .combined-metadata, .light-theme div.filepicker {
   background-color: #f5f8fa; }
@@ -975,7 +975,7 @@ pre code {
   color: black !important; }
 .bp3-dark.account-settings {
   background-color: #30404d; }
-.bp3-dark.pane-holder {
+.bp3-dark.pane-holder, .bp3-dark.library-pane-holder {
   background-color: #30404d; }
 .bp3-dark .combined-metadata, .bp3-dark div.filepicker {
   background-color: #293742; }

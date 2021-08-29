@@ -1362,7 +1362,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         }
       }, /*#__PURE__*/_react["default"].createElement(_resizing_layouts.HorizontalPanes, {
         available_width: this.state.available_width,
-        available_height: this.state.available_height - 40,
+        available_height: this.state.available_height - 100,
         show_handle: true,
         left_pane: left_pane,
         right_pane: right_pane,

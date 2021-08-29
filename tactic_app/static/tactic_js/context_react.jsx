@@ -8,7 +8,8 @@ import React from "react";
 import * as ReactDOM from 'react-dom';
 // import PropTypes from 'prop-types';
 
-import { Tab, Tabs, Button, Icon } from "@blueprintjs/core";
+import { Tab, Tabs, Button, Icon, Divider, Tooltip, Spinner } from "@blueprintjs/core";
+
 
 import { FocusStyleManager } from "@blueprintjs/core";
 
@@ -27,7 +28,8 @@ import {main_main_in_context} from "./main_app.js"
 import {main_notebook_in_context} from "./notebook_app.js";
 import {code_viewer_in_context} from "./code_viewer_react.js";
 import {list_viewer_in_context} from "./list_viewer_react.js";
-import {withErrorDrawer} from "./error_drawer";
+import {withErrorDrawer} from "./error_drawer.js";
+import {getUsableDimensions, SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT} from "./sizing_tools.js";
 
 class ContextTacticSocket extends TacticSocket {
 
@@ -64,6 +66,8 @@ class ContextApp extends React.Component {
         super(props);
         doBinding(this);
         this.socket_counter = null;
+        const aheight = getUsableDimensions(true).usable_height_no_bottom;
+        const awidth = getUsableDimensions(true).usable_width - 170;
         this.state = {
             tab_ids: [],
             library_panel: [],
@@ -74,13 +78,15 @@ class ContextApp extends React.Component {
             lastSelectedTabId: null,
             selectedLibraryTab: "collections"
         };
-        this.libraryTabChange = null
+        this.libraryTabChange = null;
+        this.top_ref = React.createRef();
+        this.ref_dict = {}
     }
 
     _setTheme(dark_theme) {
+        window.theme = dark_theme ? "dark" : "light";
         this.setState({dark_theme}, ()=> {
             // this.props.setStatusTheme(dark_theme);
-            window.dark_theme = dark_theme;
             for (let setter of this.state.theme_setters) {
                 setter(dark_theme)
             }
@@ -105,8 +111,10 @@ class ContextApp extends React.Component {
     }
 
     componentDidMount() {
+        window.dark_theme = this.state.dark_theme;
         let library_panel = library_in_context(this._handleCreateViewer, this._registerLibraryTabChanger);
-        this.setState({library_panel: library_panel, selectedTabId: "library"})
+        this.setState({library_panel: library_panel, selectedTabId: "library"}, ()=>{
+        })
     }
 
     componentDidUpdate() {
@@ -131,7 +139,8 @@ class ContextApp extends React.Component {
         let copied_tab_ids = [...this.state.tab_ids];
         if (idx > -1) {
           copied_tab_ids.splice(idx, 1);
-          delete copied_tab_panel_dict[the_id]
+          delete copied_tab_panel_dict[the_id];
+            delete this.ref_dict[the_id]
         }
         let new_state = {tab_panel_dict: copied_tab_panel_dict, tab_ids: copied_tab_ids};
         let currentlySelected = this.state.selectedTabId;
@@ -192,6 +201,32 @@ class ContextApp extends React.Component {
          }
      }
 
+     _addPanel(new_id, kind, title, new_panel, callback=null) {
+         let wrapped_panel = (
+             <div id={new_id + "-holder"} className={this.panelRootDict[kind]}>
+                 {new_panel}
+             </div>
+         );
+         let new_tab_panels = {...this.state.tab_panels};
+         new_tab_panels[new_id] = {kind: kind, title: title, panel: wrapped_panel};
+         this.setState({
+                 tab_panels: new_tab_panels,
+                 tab_ids: [...this.state.tab_ids, new_id],
+                 lastSelectedTabId: this.state.selectedTabId,
+                 selectedTabId: new_id}, callback)
+     }
+
+     _updatePanel(the_id, new_panel) {
+         let wrapped_panel = (
+             <div id={the_id + "-holder"} className={this.panelRootDict[this.state.tab_panels[the_id].kind]}>
+                 {new_panel}
+             </div>
+         );
+         let new_tab_panels = {...this.state.tab_panels};
+         new_tab_panels[the_id].panel = wrapped_panel;
+         this.setState({tab_panels: new_tab_panels})
+     }
+
      _handleCreateViewer(data) {
         let self = this;
 
@@ -200,57 +235,90 @@ class ContextApp extends React.Component {
             this.setState({selectedTabId: new_id});
              return
          }
-         this.handlerDict[data.kind](data, this._registerThemeSetter, (new_panel)=>{
-             let wrapped_panel = (
-                 <div className={this.panelRootDict[data.kind]}>
-                     {new_panel}
-                 </div>
-             );
-             let new_tab_panels = {...this.state.tab_panels};
-             new_tab_panels[new_id] = {kind: data.kind, title: data.resource_name, panel: wrapped_panel};
-             this.setState({
-                 tab_panels: new_tab_panels,
-                 tab_ids: [...this.state.tab_ids, new_id],
-                 lastSelectedTabId: this.state.selectedTabId,
-                 selectedTabId: new_id})
+         let spinner_panel = (
+             <div style={{height: "100%", position: "absolute", top: "50%", left: "50%"}}>
+                 <Spinner size={100}/>
+             </div>);
+         let new_ref = React.createRef();
+         this.ref_dict[new_id] = new_ref;
+         this._addPanel(new_id, data.kind, data.resource_name, spinner_panel, ()=>{
+                 this.handlerDict[data.kind](data, this._registerThemeSetter, (new_panel)=>{
+                 self._updatePanel(new_id, new_panel);
+             }, new_ref)
          })
+
      }
 
     _handleTabSelect(newTabId, prevTabId, event) {
-        this.setState({selectedTabId: newTabId, lastSelectedTabId: prevTabId})
+        this.setState({selectedTabId: newTabId, lastSelectedTabId: prevTabId}, ()=>{
+            if (this.ref_dict[newTabId] && this.ref_dict[newTabId].current) {
+                this.ref_dict[newTabId].current._update_window_dimensions()
+            }
+        })
     }
 
     render() {
       let bstyle = {paddingTop: 0, paddingBotton: 0};
         let lib_buttons = [];
         for (let rt of this.resTypes) {
+            let cname = "lib-tab-button";
+            if (rt == this.state.selectedLibraryTab) {
+                cname += " selected-lib-tab-button"
+            }
             lib_buttons.push(
-                <Button className="lib-button" data-res-type={rt} alignText="left" minimal={true} onClick={() => {
+                <Button className={cname} alignText="left" minimal={true} onClick={() => {
                     this._changeLibTab(rt)
                 }}>
                     {rt}
                 </Button>
             )
         }
+        let bclass = "context-tab-button-content";
+        if (this.state.selectedTabId == "library") {
+            bclass += " selected-tab-button"
+        }
         let ltab = (
-            <Tab id="library" className="context-tab" title="Library" panel={this.state.library_panel}>
-                <div style={{display: "flex", flexDirection: "column"}}>
-                    {lib_buttons}
+            <Tab id="library" className="context-tab" panel={this.state.library_panel}>
+                <div className={bclass}>
+                    Library
+                    <div style={{display: "flex", flexDirection: "column"}}>
+                        {lib_buttons}
+                        <Divider/>
+                    </div>
                 </div>
             </Tab>
         );
         let all_tabs = [ltab];
         for (let tab_id of this.state.tab_ids) {
             let tab_entry = this.state.tab_panels[tab_id];
+            let bclass = "context-tab-button-content";
+            if (this.state.selectedTabId == tab_id) {
+                bclass += " selected-tab-button"
+            }
+            let visible_title;
+            if (tab_entry.title.length > 15) {
+                visible_title = (
+                    <Tooltip content={tab_entry.title} hoverOpenDelay={1000}>
+                        {tab_entry.title.slice(0, 13) + "…"}
+                    </Tooltip>
+                )
+            }
+            else {
+                visible_title = tab_entry.title
+            }
             let new_tab = (
-                <Tab id={tab_id} className="context-tab" title="" panel={tab_entry.panel}>
-                    <Icon icon={this.iconDict[tab_entry.kind]}
-                          style={{verticalAlign: "middle", marginRight: 5}}
-                          iconSize={14} tabIndex={-1}/>
-                    {tab_entry.title}
-                    <Button icon="cross" minimal={true} tabIndex={-1} onClick={() => {
-                        this._closeTab(tab_id)
-                    }}/>
+                <Tab id={tab_id} panelClassname="context-tab" title="" panel={tab_entry.panel}>
+                    <div className={bclass} style={{display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
+                        <div style={{display: "table-cell", flexDirection: "row", justifyContent: "flex-start"}}>
+                            <Icon icon={this.iconDict[tab_entry.kind]}
+                                  style={{verticalAlign: "middle", marginRight: 5}}
+                                  iconSize={14} tabIndex={-1}/>
+                            {visible_title}
+                        </div>
+                        <Button icon="cross" minimal={true} tabIndex={-1} onClick={() => {
+                            this._closeTab(tab_id)
+                        }}/>
+                    </div>
                 </Tab>
             );
             all_tabs.push(new_tab)
@@ -260,6 +328,13 @@ class ContextApp extends React.Component {
         if (this.state.dark_theme) {
             outer_class = `${outer_class} bp3-dark`;
         }
+        else {
+            outer_class = `${outer_class} light-theme`;
+        }
+        let outer_style = {width: "100%",
+            height: this.state.usable_height,
+            paddingLeft: 0
+        };
         return (
             <React.Fragment>
                 <TacticNavbar is_authenticated={window.is_authenticated}
@@ -268,11 +343,12 @@ class ContextApp extends React.Component {
                               dark_theme={this.state.dark_theme}
                               set_parent_theme={this._setTheme}
                               user_name={window.username}/>
-                    <div className={outer_class}>
-                        <div id="context-container">
+                    <div className={outer_class} style={outer_style} ref={this.top_ref}>
+                        <div id="context-container" style={outer_style}>
                             <Tabs id="context-tabs" selectedTabId={this.state.selectedTabId}
-                                  className={"context-tab-list " + this.state.selectedLibraryTab + "-selected"}
-                                     vertical={true} onChange={this._handleTabSelect}>
+                                  className="context-tab-list"
+                                  vertical={true}
+                                  onChange={this._handleTabSelect}>
                                 {all_tabs}
                             </Tabs>
                         </div>

@@ -94,7 +94,7 @@ function main_main() {
         })
 }
 
-function main_main_in_context(data, registerThemeSetter, finalCallback) {
+function main_main_in_context(data, registerThemeSetter, finalCallback, ref=null) {
     var tsocket = new MainTacticSocket("main",
         5000,
         {main_id: data.main_id}
@@ -143,7 +143,7 @@ function main_main_in_context(data, registerThemeSetter, finalCallback) {
     }
     function _finish_post_load_in_context(fdata) {
         // renderSpinnerMessage("Creating the page...");
-        let MainAppPlus = withErrorDrawer(withStatus(MainApp, tsocket, true), tsocket);
+        let MainAppPlus = withErrorDrawer(withStatus(MainApp, tsocket, true, ref), tsocket);
         var interface_state;
         if (data.is_project) {
             interface_state = fdata.interface_state;
@@ -158,6 +158,7 @@ function main_main_in_context(data, registerThemeSetter, finalCallback) {
         if (data.is_freeform) {
             finalCallback(<MainAppPlus initial_is_project={data.is_project}
                                        main_id={main_id}
+                                       registerThemeSetter={registerThemeSetter}
                                        is_freeform={true}
                                        initial_project_name={data.project_name}
                                        is_notebook={false}
@@ -174,6 +175,7 @@ function main_main_in_context(data, registerThemeSetter, finalCallback) {
         else {
             finalCallback(<MainAppPlus initial_is_project={data.is_project}
                            main_id={main_id}
+                           registerThemeSetter={registerThemeSetter}
                            is_freeform={false}
                            initial_project_name={data.project_name}
                            is_notebook={false}
@@ -207,6 +209,7 @@ class MainApp extends React.Component {
         this.tile_div_ref = React.createRef();
         this.tbody_ref = React.createRef();
         this.table_ref = React.createRef();
+        this.main_outer_ref = React.createRef();
         this.last_save = {};
         this.resizing = false;
         this.socket_counter = null;
@@ -284,8 +287,16 @@ class MainApp extends React.Component {
     }
 
     _update_window_dimensions() {
+        let uwidth;
+        if (this.main_outer_ref && this.main_outer_ref.current) {
+            uwidth = window.innerWidth - MARGIN_SIZE - this.main_outer_ref.current.offsetLeft
+        }
+        else {
+            uwidth = window.innerWidth - 2 * MARGIN_SIZE
+        }
+
         this.setState({
-            "usable_width": window.innerWidth - 2 * MARGIN_SIZE,
+            "usable_width": uwidth,
             "usable_height": window.innerHeight - BOTTOM_MARGIN
         });
     }
@@ -316,6 +327,10 @@ class MainApp extends React.Component {
         if (!window.is_context) {
             window.dark_theme = this.state.dark_theme
         }
+        if (window.in_context) {
+            this.props.registerThemeSetter(this._setTheme);
+        }
+        this._update_window_dimensions()
     }
 
     componentDidUpdate () {
@@ -356,7 +371,9 @@ class MainApp extends React.Component {
     _setTheme(dark_theme) {
         this.setState({dark_theme: dark_theme}, ()=> {
             this.props.setStatusTheme(dark_theme);
-            window.dark_theme = this.state.dark_theme
+            if (!window.in_context) {
+                window.dark_theme = this.state.dark_theme
+            }
         })
     }
 
@@ -1120,7 +1137,7 @@ class MainApp extends React.Component {
                               menus={menus}
                               min_navbar={window.in_context}
                 />
-                <div className={outer_class}>
+                <div className={outer_class} ref={this.main_outer_ref}>
                     {this.state.console_is_zoomed &&
                         bottom_pane
                     }

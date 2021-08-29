@@ -35,14 +35,14 @@ function code_viewer_main () {
 
 }
 
-function code_viewer_in_context(data, registerThemeSetter, finalCallback) {
+function code_viewer_in_context(data, registerThemeSetter, finalCallback, ref=null) {
     let resource_viewer_id = guid();
     if (!window.in_context) {
         window.resource_viewer_id = guid();
         window.main_id = resource_viewer_id;  // needed for postWithCallback
     }
     var tsocket = new ResourceViewerSocket("main", 5000, {resource_viewer_id: resource_viewer_id});
-    let CodeViewerAppPlus = withErrorDrawer(withStatus(CodeViewerApp, tsocket));
+    let CodeViewerAppPlus = withErrorDrawer(withStatus(CodeViewerApp, tsocket, false, ref));
     let split_tags = data.mdata.tags == "" ? [] : data.mdata.tags.split(" ");
     finalCallback(<CodeViewerAppPlus   resource_name={data.resource_name}
                                        the_content={data.the_content}
@@ -105,7 +105,7 @@ class CodeViewerApp extends React.Component {
 
     _update_window_dimensions() {
         let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
-        let uheight = window.innerHeight - BOTTOM_MARGIN;
+        let uheight = window.innerHeight;
         if (this.top_ref && this.top_ref.current) {
             uheight = uheight - this.top_ref.current.offsetTop;
         }

@@ -44,7 +44,7 @@ function doFlashAlways(data) {
     doFlash(data)
 }
 
-function withStatus(WrappedComponent, tsocket=null, light_dark=false) {
+function withStatus(WrappedComponent, tsocket=null, light_dark=false, ref=null) {
     return class extends React.Component {
         constructor(props) {
             super(props);
@@ -56,7 +56,7 @@ function withStatus(WrappedComponent, tsocket=null, light_dark=false) {
                 dark_theme: false,
                 light_dark: light_dark,
                 spinner_size: this.props.spinner_size ? this.props.spinner_size : 25
-            }
+            };
             this.socket_counter = null;
         }
 
@@ -142,6 +142,7 @@ function withStatus(WrappedComponent, tsocket=null, light_dark=false) {
             return (
                 <React.Fragment>
                     <WrappedComponent {...this.props}
+                                      ref={ref}
                                       statusFuncs={this._statusFuncs()}
                                       startSpinner={this._startSpinner}
                                       stopSpinner={this._stopSpinner}
@@ -161,10 +162,10 @@ function withStatus(WrappedComponent, tsocket=null, light_dark=false) {
 class Status extends React.Component {
 
     render () {
-        let cname = "d-flex flex-row"
-        let outer_cname
+        let cname = "d-flex flex-row";
+        let outer_cname;
         if (this.props.dark_theme) {
-            outer_cname = "status-holder bp3-dark"
+            outer_cname = "status-holder bp3-dark";
             if (this.props.light_dark) {
                 outer_cname += " light-dark"
             }

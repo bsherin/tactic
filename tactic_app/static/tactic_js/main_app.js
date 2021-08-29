@@ -190,6 +190,7 @@ function main_main() {
 }
 
 function main_main_in_context(data, registerThemeSetter, finalCallback) {
+  var ref = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
   var tsocket = new MainTacticSocket("main", 5000, {
     main_id: data.main_id
   });
@@ -249,7 +250,7 @@ function main_main_in_context(data, registerThemeSetter, finalCallback) {
 
   function _finish_post_load_in_context(fdata) {
     // renderSpinnerMessage("Creating the page...");
-    var MainAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(MainApp, tsocket, true), tsocket);
+    var MainAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(MainApp, tsocket, true, ref), tsocket);
     var interface_state;
 
     if (data.is_project) {
@@ -268,6 +269,7 @@ function main_main_in_context(data, registerThemeSetter, finalCallback) {
       finalCallback( /*#__PURE__*/_react["default"].createElement(MainAppPlus, {
         initial_is_project: data.is_project,
         main_id: main_id,
+        registerThemeSetter: registerThemeSetter,
         is_freeform: true,
         initial_project_name: data.project_name,
         is_notebook: false,
@@ -284,6 +286,7 @@ function main_main_in_context(data, registerThemeSetter, finalCallback) {
       finalCallback( /*#__PURE__*/_react["default"].createElement(MainAppPlus, {
         initial_is_project: data.is_project,
         main_id: main_id,
+        registerThemeSetter: registerThemeSetter,
         is_freeform: false,
         initial_project_name: data.project_name,
         is_notebook: false,
@@ -323,6 +326,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
     _this.tile_div_ref = /*#__PURE__*/_react["default"].createRef();
     _this.tbody_ref = /*#__PURE__*/_react["default"].createRef();
     _this.table_ref = /*#__PURE__*/_react["default"].createRef();
+    _this.main_outer_ref = /*#__PURE__*/_react["default"].createRef();
     _this.last_save = {};
     _this.resizing = false;
     _this.socket_counter = null;
@@ -428,8 +432,16 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
   _createClass(MainApp, [{
     key: "_update_window_dimensions",
     value: function _update_window_dimensions() {
+      var uwidth;
+
+      if (this.main_outer_ref && this.main_outer_ref.current) {
+        uwidth = window.innerWidth - MARGIN_SIZE - this.main_outer_ref.current.offsetLeft;
+      } else {
+        uwidth = window.innerWidth - 2 * MARGIN_SIZE;
+      }
+
       this.setState({
-        "usable_width": window.innerWidth - 2 * MARGIN_SIZE,
+        "usable_width": uwidth,
         "usable_height": window.innerHeight - BOTTOM_MARGIN
       });
     }
@@ -472,6 +484,12 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
       if (!window.is_context) {
         window.dark_theme = this.state.dark_theme;
       }
+
+      if (window.in_context) {
+        this.props.registerThemeSetter(this._setTheme);
+      }
+
+      this._update_window_dimensions();
     }
   }, {
     key: "componentDidUpdate",
@@ -526,7 +544,9 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
       }, function () {
         _this2.props.setStatusTheme(dark_theme);
 
-        window.dark_theme = _this2.state.dark_theme;
+        if (!window.in_context) {
+          window.dark_theme = _this2.state.dark_theme;
+        }
       });
     } // Every item in tile_list is a list of this form
 
@@ -1526,7 +1546,8 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         menus: menus,
         min_navbar: window.in_context
       }), /*#__PURE__*/_react["default"].createElement("div", {
-        className: outer_class
+        className: outer_class,
+        ref: this.main_outer_ref
       }, this.state.console_is_zoomed && bottom_pane, !this.state.console_is_zoomed && this.state.console_is_shrunk && top_pane, !this.state.console_is_zoomed && !this.state.console_is_shrunk && /*#__PURE__*/_react["default"].createElement(_resizing_layouts.VerticalPanes, {
         top_pane: top_pane,
         bottom_pane: bottom_pane,
