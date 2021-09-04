@@ -21,6 +21,8 @@ var _toaster = require("./toaster.js");
 
 var _utilities_react = require("./utilities_react.js");
 
+var _tactic_context = require("./tactic_context.js");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
@@ -78,7 +80,7 @@ var TextIcon = /*#__PURE__*/function (_React$Component) {
 }(_react["default"].Component);
 
 TextIcon.propTypes = {
-  the_text: _propTypes["default"].strin
+  the_text: _propTypes["default"].string
 };
 var export_icon_dict = {
   str: "font",
@@ -359,32 +361,33 @@ var ExportsViewer = /*#__PURE__*/function (_React$Component4) {
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate() {
-      if (this.props.tsocket.counter != this.socket_counter) {
+      if (this.context.tsocket.counter != this.socket_counter) {
         this.initSocket();
       }
     }
   }, {
     key: "initSocket",
     value: function initSocket() {
-      this.props.tsocket.socket.off("export-viewer-message");
-      this.props.tsocket.socket.on("export-viewer-message", this._handleExportViewerMessage);
-      this.socket_counter = this.props.tsocket.counter;
+      this.context.tsocket.reAttachListener("export-viewer-message", this._handleExportViewerMessage);
+      this.socket_counter = this.context.tsocket.counter;
     }
   }, {
     key: "_handleExportViewerMessage",
     value: function _handleExportViewerMessage(data) {
-      var self = this;
-      var handlerDict = {
-        update_exports_popup: function update_exports_popup() {
-          return self._updateExportsList();
-        },
-        display_result: self._displayResult,
-        showMySpinner: self._showMySpinner,
-        stopMySpinner: self._stopMySpinner,
-        startMySpinner: self._startMySpinner,
-        got_export_info: self._gotExportInfo
-      };
-      handlerDict[data.export_viewer_message](data);
+      if (data.main_id == this.props.main_id) {
+        var self = this;
+        var handlerDict = {
+          update_exports_popup: function update_exports_popup() {
+            return self._updateExportsList();
+          },
+          display_result: self._displayResult,
+          showMySpinner: self._showMySpinner,
+          stopMySpinner: self._stopMySpinner,
+          startMySpinner: self._startMySpinner,
+          got_export_info: self._gotExportInfo
+        };
+        handlerDict[data.export_viewer_message](data);
+      }
     }
   }, {
     key: "_handleMaxRowsChange",
@@ -402,7 +405,7 @@ var ExportsViewer = /*#__PURE__*/function (_React$Component4) {
           pipe_dict: data.pipe_dict,
           pipe_dict_updated: true
         });
-      });
+      }, null, this.props.main_id);
     }
   }, {
     key: "_refresh",
@@ -435,7 +438,7 @@ var ExportsViewer = /*#__PURE__*/function (_React$Component4) {
         send_data.key = this.state.key_list_value;
       }
 
-      (0, _communication_react.postWithCallback)(this.props.main_id, "evaluate_export", send_data);
+      (0, _communication_react.postWithCallback)(this.props.main_id, "evaluate_export", send_data, null, null, this.props.main_id);
       if (e) e.preventDefault();
     }
   }, {
@@ -443,7 +446,7 @@ var ExportsViewer = /*#__PURE__*/function (_React$Component4) {
     value: function _stopMe() {
       this._stopMySpinner();
 
-      (0, _communication_react.postWithCallback)(this.props.main_id, "stop_evaluate_export", {});
+      (0, _communication_react.postWithCallback)(this.props.main_id, "stop_evaluate_export", {}, null, null, this.props.main_id);
     }
   }, {
     key: "_showMySpinner",
@@ -510,7 +513,7 @@ var ExportsViewer = /*#__PURE__*/function (_React$Component4) {
       });
       (0, _communication_react.postWithCallback)(this.props.main_id, "get_export_info", {
         "export_name": fullname
-      });
+      }, null, null, this.props.main_id);
     }
   }, {
     key: "_handleKeyListChange",
@@ -564,7 +567,7 @@ var ExportsViewer = /*#__PURE__*/function (_React$Component4) {
         if (!data.success) {
           (0, _toaster.doFlash)(data);
         }
-      });
+      }, null, this.props.main_id);
     }
   }, {
     key: "render",
@@ -692,9 +695,9 @@ ExportsViewer.propTypes = {
   console_is_shrunk: _propTypes["default"].bool,
   console_is_zoomed: _propTypes["default"].bool,
   setUpdate: _propTypes["default"].func,
-  tsocket: _propTypes["default"].object,
   style: _propTypes["default"].object
 };
 ExportsViewer.defaultProps = {
   style: {}
 };
+ExportsViewer.contextType = _tactic_context.TacticContext;

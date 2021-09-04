@@ -5,13 +5,14 @@ import React from "react";
 import PropTypes from 'prop-types';
 import hash from "object-hash"
 
-import { InputGroup, Menu, MenuItem, Button, Switch, Card } from "@blueprintjs/core";
-import { Cell, Column, Table, ColumnHeaderCell, RegionCardinality, TruncatedFormat } from "@blueprintjs/table";
+import { InputGroup, Menu, MenuItem, Switch, Card } from "@blueprintjs/core";
+import { Cell, Column, Table, ColumnHeaderCell, RegionCardinality, TruncatedFormat, Regions } from "@blueprintjs/table";
 import {Omnibar} from "@blueprintjs/select"
 import _ from 'lodash';
 
 import {postAjax} from "./communication_react.js"
 import {doBinding} from "./utilities_react.js";
+import {TacticContext} from "./tactic_context.js";
 
 export {SearchForm}
 export {BpSelectorTable}
@@ -101,9 +102,9 @@ LibraryOmnibar.propTypes = {
     dark_theme: PropTypes.bool,
 };
 
-LibraryOmnibar.propTypes = {
+LibraryOmnibar.defaultProps = {
     dark_theme: false
-}
+};
 
 
 class SearchForm extends React.Component {
@@ -143,7 +144,7 @@ class SearchForm extends React.Component {
                                    leftIcon="search"
                                       value={this.props.search_string}
                                       onChange={this._handleSearchFieldChange}
-                                      style={{"width": 265}}
+                                      style={{"width": this.props.field_width}}
                                     autoCapitalize="none"
                                        autoCorrect="off"
                     />
@@ -176,21 +177,23 @@ SearchForm.propTypes = {
     update_search_state: PropTypes.func,
     search_string: PropTypes.string,
     search_inside: PropTypes.bool,
-    search_metadata: PropTypes.bool
+    search_metadata: PropTypes.bool,
+    field_with: PropTypes.number
 };
 
 SearchForm.defaultProps = {
     allow_search_inside: false,
     allow_search_metadata: false,
     search_inside: false,
-    search_metadata: false
-}
+    search_metadata: false,
+    field_width: 265
+};
 
 class BpSelectorTable extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this);
-        this.state = {columnWidths: null}
+        this.state = {columnWidths: null};
         this.saved_data_dict = null;
         this.data_update_required = null;
         this.table_ref = React.createRef();
@@ -222,7 +225,7 @@ class BpSelectorTable extends React.Component {
 
         let self = this;
         this.setState({columnWidths: cwidths}, ()=>{
-            let the_sum = this.state.columnWidths.reduce((a,b) => a + b, 0)
+            let the_sum = this.state.columnWidths.reduce((a,b) => a + b, 0);
             self.props.communicateColumnWidthSum(the_sum)
         })
     }
@@ -240,8 +243,10 @@ class BpSelectorTable extends React.Component {
             this.props.initiateDataGrab(this.data_update_required);
             this.data_update_required = null
         }
-        // const lastColumnRegion = Regions.column(Object.keys(this.props.columns).length - 1) // Your table last column
-        // this.table_ref.current.scrollToRegion(lastColumnRegion)
+        const lastColumnRegion = Regions.column(Object.keys(this.props.columns).length - 1);
+        const firstColumnRegion = Regions.column(0);
+        this.table_ref.current.scrollToRegion(lastColumnRegion);
+        this.table_ref.current.scrollToRegion(firstColumnRegion)
     }
 
     haveRowData(rowIndex) {
@@ -377,7 +382,7 @@ class LoadedTileList extends React.Component {
                 failed_list: [],
                 other_list: []
 
-        }
+        };
         this.socket_counter = null;
     }
 
@@ -400,12 +405,12 @@ class LoadedTileList extends React.Component {
 
     initSocket() {
         let self = this;
-        this.props.tsocket.socket.on('update-loaded-tile-list', (data)=>self.set_state_from_dict(data.tile_load_dict));
-        this.socket_counter = this.props.tsocket.counter
+        this.context.tsocket.socket.on('update-loaded-tile-list', (data)=>self.set_state_from_dict(data.tile_load_dict));
+        this.socket_counter = this.context.tsocket.counter
     }
 
     componentDidUpdate () {
-        if (this.props.tsocket.counter != this.socket_counter) {
+        if (this.context.tsocket.counter != this.socket_counter) {
             this.initSocket();
         }
     }
@@ -449,8 +454,10 @@ class LoadedTileList extends React.Component {
 }
 
 LoadedTileList.propTypes = {
-    tsocket: PropTypes.object
+    // tsocket: PropTypes.object
 };
+
+LoadedTileList.contextType = TacticContext;
 
 const MAX_INITIAL_CELL_WIDTH = 300;
 

@@ -24,6 +24,8 @@ var _utilities_react = require("./utilities_react.js");
 
 var _communication_react = require("./communication_react");
 
+var _tactic_context = require("./tactic_context.js");
+
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -151,7 +153,7 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
       this.setState({
         old_left_width: this._getLeftWidth()
       });
-      this.last_theme = this.props.dark_theme;
+      this.last_theme = this.context.dark_theme;
     } // For some reason sizing things are a little flaky without old_left_width stuff
 
   }, {
@@ -182,12 +184,12 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
     value: function _toggleTheme() {
       var result_dict = {
         "user_id": window.user_id,
-        "theme": !this.props.dark_theme ? "dark" : "light"
+        "theme": !this.context.dark_theme ? "dark" : "light"
       };
       (0, _communication_react.postWithCallback)("host", "set_user_theme", result_dict, null, null);
 
-      if (this.props.set_parent_theme) {
-        this.props.set_parent_theme(!this.props.dark_theme);
+      if (this.context.setTheme) {
+        this.context.setTheme(!this.context.dark_theme);
       }
     }
   }, {
@@ -204,8 +206,8 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
         (0, _communication_react.postWithCallback)("host", "set_user_theme", result_dict, null, null);
       }
 
-      if (this.props.set_parent_theme) {
-        this.props.set_parent_theme(event.target.checked);
+      if (this.context.setTheme) {
+        this.context.setTheme(event.target.checked);
       }
     }
   }, {
@@ -372,15 +374,19 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
         width: right_width
       };
       right_style.justifyContent = "flex-end";
-      var theme_class = this.props.dark_theme ? "bp3-dark" : "light-theme";
+      var theme_class = this.context.dark_theme ? "bp3-dark" : "light-theme";
 
       if (this.props.min_navbar) {
         return /*#__PURE__*/_react["default"].createElement(_core.Navbar, {
           style: {
-            paddingLeft: 10
+            paddingLeft: 10,
+            height: 30
           },
           className: theme_class
         }, /*#__PURE__*/_react["default"].createElement("div", {
+          style: {
+            height: 30
+          },
           className: "bp3-navbar-group bp3-align-left",
           ref: this.lg_ref
         }, this.props.menus != null && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, this.props.menus)));
@@ -411,7 +417,7 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
         visibleItemRenderer: this.renderNav,
         onOverflow: this._onOverflow
       }), /*#__PURE__*/_react["default"].createElement(_core.NavbarDivider, null), /*#__PURE__*/_react["default"].createElement(_core.Switch, {
-        checked: this.props.dark_theme,
+        checked: this.context.dark_theme,
         onChange: this._setTheme,
         large: false,
         style: {
@@ -433,18 +439,19 @@ TacticNavbar.propTypes = {
   is_authenticated: _propTypes["default"].bool,
   user_name: _propTypes["default"].string,
   menus: _propTypes["default"].object,
-  selected: _propTypes["default"].string,
-  dark_theme: _propTypes["default"].bool,
-  set_parent_theme: _propTypes["default"].func
+  selected: _propTypes["default"].string // dark_theme: PropTypes.bool,
+  // set_parent_theme: PropTypes.func,
+
 };
 TacticNavbar.defaultProps = {
   min_navbar: false,
   menus: null,
   selected: null,
-  show_api_links: false,
-  dark_theme: false,
-  set_parent_theme: null
+  show_api_links: false // dark_theme: false,
+  // set_parent_theme: null
+
 };
+TacticNavbar.contextType = _tactic_context.TacticContext;
 
 function render_navbar() {
   var selected = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;

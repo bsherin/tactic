@@ -120,7 +120,9 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         return self.doc_type in ["notebook", "juptyer"]
 
     def show_main_message(self, message, timeout=None):
+        print("in show_main_message with message " + message)
         data = {"message": message, "timeout": timeout, "main_id": self.mworker.my_id}
+        print("about to emit with data " + str(data))
         self.mworker.emit_to_main_client("show-status-msg", data)
         # self.mworker.post_task("host", "show_main_status_message_task", data)
 

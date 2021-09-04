@@ -80,9 +80,6 @@ function doFlashAlways(data) {
 }
 
 function withStatus(WrappedComponent) {
-  var tsocket = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-  var light_dark = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
-  var ref = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
   return /*#__PURE__*/function (_React$Component) {
     _inherits(_class, _React$Component);
 
@@ -95,12 +92,9 @@ function withStatus(WrappedComponent) {
 
       _this = _super.call(this, props);
       (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
-      _this.tsocket = tsocket;
       _this.state = {
         show_spinner: false,
         status_message: null,
-        dark_theme: false,
-        light_dark: light_dark,
         spinner_size: _this.props.spinner_size ? _this.props.spinner_size : 25
       };
       _this.socket_counter = null;
@@ -110,60 +104,63 @@ function withStatus(WrappedComponent) {
     _createClass(_class, [{
       key: "componentDidMount",
       value: function componentDidMount() {
-        if (this.tsocket) {
+        if (this.props.tsocket) {
           this.initSocket();
         }
       }
     }, {
       key: "componentDidUpdate",
       value: function componentDidUpdate() {
-        if (this.tsocket && this.tsocket.counter != this.socket_counter) {
+        if (this.props.tsocket && this.props.tsocket.counter != this.props.tsocket.socket_counter) {
           this.initSocket();
         }
       }
     }, {
       key: "initSocket",
       value: function initSocket() {
-        this.tsocket.socket.off('stop-spinner');
-        this.tsocket.socket.off('start-spinner');
-        this.tsocket.socket.off('show-status-msg');
-        this.tsocket.socket.off("clear-status-msg");
-        this.tsocket.socket.on('stop-spinner', this._stopSpinner);
-        this.tsocket.socket.on('start-spinner', this._startSpinner);
-        this.tsocket.socket.on('show-status-msg', this._statusMessageFromData);
-        this.tsocket.socket.on("clear-status-msg", this._clearStatusMessage);
-        this.socket_counter = this.tsocket.counter;
+        this.props.tsocket.reAttachListener('stop-spinner', this._stopSpinner);
+        this.props.tsocket.reAttachListener('start-spinner', this._startSpinner);
+        this.props.tsocket.reAttachListener('show-status-msg', this._statusMessageFromData);
+        this.props.tsocket.reAttachListener("clear-status-msg", this._clearStatusMessage);
+        this.socket_counter = this.props.tsocket.counter;
       }
     }, {
       key: "_stopSpinner",
-      value: function _stopSpinner() {
-        this.setState({
-          show_spinner: false
-        });
+      value: function _stopSpinner(data) {
+        if (data == null || data.main_id == this.props.main_id) {
+          this.setState({
+            show_spinner: false
+          });
+        }
       }
     }, {
       key: "_startSpinner",
-      value: function _startSpinner() {
-        var dark_spinner = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-        this.setState({
-          show_spinner: true,
-          dark_spinner: dark_spinner
-        });
+      value: function _startSpinner(data) {
+        if (data == null || data.main_id == this.props.main_id) {
+          this.setState({
+            show_spinner: true,
+            dark_spinner: false
+          });
+        }
       }
     }, {
       key: "_clearStatusMessage",
-      value: function _clearStatusMessage() {
-        this.setState({
-          status_message: null
-        });
+      value: function _clearStatusMessage(data) {
+        if (data == null || data.main_id == this.props.main_id) {
+          this.setState({
+            status_message: null
+          });
+        }
       }
     }, {
       key: "_clearStatus",
-      value: function _clearStatus() {
-        this.setState({
-          show_spinner: false,
-          status_message: null
-        });
+      value: function _clearStatus(data) {
+        if (data == null || data.main_id == this.props.main_id) {
+          this.setState({
+            show_spinner: false,
+            status_message: null
+          });
+        }
       }
     }, {
       key: "_statusMessage",
@@ -180,26 +177,22 @@ function withStatus(WrappedComponent) {
     }, {
       key: "_statusMessageFromData",
       value: function _statusMessageFromData(data) {
-        var self = this;
-        this.setState({
-          status_message: data.message
-        }, function () {
-          if (data.hasOwnProperty("timeout") && data.timeout != null) {
-            setTimeout(self._clearStatusMessage, data.timeout * 1000);
-          }
-        });
+        if (data == null || data.main_id == this.props.main_id) {
+          var _self = this;
+
+          this.setState({
+            status_message: data.message
+          }, function () {
+            if (data.hasOwnProperty("timeout") && data.timeout != null) {
+              setTimeout(_self._clearStatusMessage, data.timeout * 1000);
+            }
+          });
+        }
       }
     }, {
       key: "_setStatus",
       value: function _setStatus(sstate) {
         this.setState(sstate);
-      }
-    }, {
-      key: "_setStatusTheme",
-      value: function _setStatusTheme(dark_theme) {
-        this.setState({
-          dark_theme: dark_theme
-        });
       }
     }, {
       key: "_statusFuncs",
@@ -210,24 +203,24 @@ function withStatus(WrappedComponent) {
           clearStatus: this._clearStatus,
           clearStatusMessage: this._clearStatusMessage,
           statusMessage: this._statusMessage,
-          setStatus: this._setStatus,
-          setStatusTheme: this._setStatusTheme
+          setStatus: this._setStatus
         };
       }
     }, {
       key: "render",
       value: function render() {
         return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(WrappedComponent, _extends({}, this.props, {
-          ref: ref,
+          statusSocket: this.props.tsocket,
           statusFuncs: this._statusFuncs(),
           startSpinner: this._startSpinner,
           stopSpinner: this._stopSpinner,
           clearStatus: this._clearStatus,
           clearStatusMessage: this._clearStatus,
           statusMessage: this._statusMessage,
-          setStatus: this._setStatus,
-          setStatusTheme: this._setStatusTheme
-        })), /*#__PURE__*/_react["default"].createElement(Status, this.state));
+          setStatus: this._setStatus
+        })), /*#__PURE__*/_react["default"].createElement(Status, _extends({}, this.state, {
+          dark_theme: this.props.controlled ? this.props.dark_theme : window.dark_theme
+        })));
       }
     }]);
 
@@ -240,10 +233,14 @@ var Status = /*#__PURE__*/function (_React$Component2) {
 
   var _super2 = _createSuper(Status);
 
-  function Status() {
+  function Status(props) {
+    var _this2;
+
     _classCallCheck(this, Status);
 
-    return _super2.apply(this, arguments);
+    _this2 = _super2.call(this, props);
+    _this2.elRef = /*#__PURE__*/_react["default"].createRef();
+    return _this2;
   }
 
   _createClass(Status, [{
@@ -254,27 +251,33 @@ var Status = /*#__PURE__*/function (_React$Component2) {
 
       if (this.props.dark_theme) {
         outer_cname = "status-holder bp3-dark";
-
-        if (this.props.light_dark) {
-          outer_cname += " light-dark";
-        }
       } else {
         outer_cname = "status-holder light-theme";
       }
 
+      var left;
+
+      if (this.elRef && this.elRef.current) {
+        left = this.elRef.current.parentNode.offsetLeft + 25;
+      } else {
+        left = 25;
+      }
+
       return /*#__PURE__*/_react["default"].createElement("div", {
+        ref: this.elRef,
         style: {
-          height: "100%",
+          height: 35,
           width: "100%",
           position: "absolute",
-          "left": 0
+          "left": left,
+          "bottom": 0
         },
         className: outer_cname
       }, /*#__PURE__*/_react["default"].createElement("div", {
         className: cname,
         style: {
           position: "absolute",
-          bottom: 10,
+          bottom: 7,
           marginLeft: 15
         }
       }, this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_core.Spinner, {
@@ -282,7 +285,6 @@ var Status = /*#__PURE__*/function (_React$Component2) {
       }), this.props.status_message && /*#__PURE__*/_react["default"].createElement("div", {
         className: "d-flex flex-column justify-content-around",
         style: {
-          positoin: "absolute",
           marginLeft: 50
         }
       }, /*#__PURE__*/_react["default"].createElement("div", {

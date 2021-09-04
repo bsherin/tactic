@@ -24,7 +24,7 @@ class FileImportDialog extends React.Component {
         var default_name = initial_default_name;
         this.picker_ref = React.createRef();
         this.existing_names = props.existing_names;
-        this.current_url = "dummy"
+        this.current_url = "dummy";
         while (this._name_exists(default_name)) {
             name_counter += 1;
             default_name = initial_default_name + String(name_counter)
@@ -42,7 +42,7 @@ class FileImportDialog extends React.Component {
         if (this.props.show_csv_options) {
             this.state.delimiter = ",";
             this.state.quoting = "QUOTE_MINIMAL";
-            this.state.skipinitialspace = true
+            this.state.skipinitialspace = true;
             this.state.csv_options_open = false
         }
 
@@ -72,9 +72,9 @@ class FileImportDialog extends React.Component {
     }
 
     initSocket() {
-        window.tsocket.socket.off("upload-response");
-        window.tsocket.socket.on("upload-response", this._handleResponse);
-        this.socket_counter = window.tsocket.counter
+        this.props.tsocket.socket.off("upload-response");
+        this.props.tsocket.socket.on("upload-response", this._handleResponse);
+        this.socket_counter = this.props.tsocket.counter
     }
 
 
@@ -94,7 +94,7 @@ class FileImportDialog extends React.Component {
 
     componentDidUpdate() {
         this._updatePickerSize();
-        if (window.tsocket.counter != this.socket_counter) {
+        if (this.props.tsocket.counter != this.socket_counter) {
             this.initSocket();
         }
     }
@@ -209,14 +209,14 @@ class FileImportDialog extends React.Component {
 
     render() {
         // let preview_style = {width: "unset", minHeight: "fit-content"};
-        console.log("entering render with this.current_url " + this.current_url)
-        let half_width = .5 * this.state.current_picker_width - 10
-        let name_style = {display: "inline-block", maxWidth: half_width}
+        console.log("entering render with this.current_url " + this.current_url);
+        let half_width = .5 * this.state.current_picker_width - 10;
+        let name_style = {display: "inline-block", maxWidth: half_width};
         let progress_style = {
             position: "relative", width: half_width - 100, marginRight: 5,
             marginLeft: "unset", left: "unset", right: "unset"
-        }
-        let size_style = {marginLeft: 5, width: 75}
+        };
+        let size_style = {marginLeft: 5, width: 75};
         var componentConfig = {
             postUrl: this.current_url,  // Must have this even though will never be used
             // iconFiletypes: this.props.allowed_file_types,
@@ -250,7 +250,7 @@ class FileImportDialog extends React.Component {
             headers: {
                 'X-CSRF-TOKEN': window.csrftoken
             }
-        }
+        };
         var eventHandlers;
         eventHandlers = {
             init: this._initCallback,
@@ -258,7 +258,7 @@ class FileImportDialog extends React.Component {
             sending: this._onSending,
             drop: this._handleDrop,
             error: this._handleError,
-        }
+        };
         let checkbox_items = [];
         if ((this.props.checkboxes != null) && (this.props.checkboxes.length != 0)) {
             for (let checkbox of this.props.checkboxes) {
@@ -295,11 +295,11 @@ class FileImportDialog extends React.Component {
             flexDirection: "row",
             justifyContent: "space-around",
             minHeight: 101
-        }
+        };
         let allowed_types_string = this.props.allowed_file_types.replaceAll(",", " ");
         return (
             <Dialog isOpen={this.state.show}
-                    className={window.dark_theme ? "import-dialog bp3-dark" : "import-dialog light-theme"}
+                    className={this.props.dark_theme ? "import-dialog bp3-dark" : "import-dialog light-theme"}
                     title={this.props.title}
                     onClose={this._closeHandler}
                     canOutsideClickClose={false}
@@ -391,17 +391,19 @@ FileImportDialog.propTypes = {
     checkboxes: PropTypes.array,
     textoptions: PropTypes.array,
     popupoptions: PropTypes.array,
-    handleClose: PropTypes.func
+    handleClose: PropTypes.func,
+    tsocket: PropTypes.func,
+    dark_theme: PropTypes.bool
 };
 
 FileImportDialog.cefaultProps = {
     checkboxes: null,
     textoptions: null,
     popupoptions: null
-}
+};
 
-function showFileImportDialog(res_type, allowed_file_types, checkboxes, process_handler,
-                              combine=false, show_csv_options=false) {
+function showFileImportDialog(res_type, allowed_file_types, checkboxes, process_handler, tsocket, dark_theme,
+                              combine=false, show_csv_options=false ) {
 
 
     $.getJSON(`${$SCRIPT_ROOT}get_resource_names/${res_type}`, function (data) {
@@ -417,6 +419,7 @@ function showFileImportDialog(res_type, allowed_file_types, checkboxes, process_
         }
 
         ReactDOM.render(<FileImportDialog title={`Import ${res_type}`}
+                                          tsocket={tsocket}
                                           res_type={res_type}
                                           allowed_file_types={allowed_file_types}
                                           existing_names={existing_names}
@@ -424,6 +427,7 @@ function showFileImportDialog(res_type, allowed_file_types, checkboxes, process_
                                           process_handler={process_handler}
                                           combine={combine}
                                           show_csv_options={show_csv_options}
+                                          dark_theme={dark_theme}
                                           handleClose={handle_close}/>, domContainer);
     }
 

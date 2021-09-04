@@ -59,7 +59,7 @@ class CodeManager(LibraryResourceManager):
                 res_dict = self.build_res_dict(old_name, mdata)
                 res_dict["new_name"] = new_name
                 self.update_selector_row(res_dict)
-            return jsonify({"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"})
+            return jsonify({"success": True, "message": "Code Successfully Saved", "alert_type": "alert-success"})
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error renaming module")
 
@@ -139,6 +139,7 @@ class CodeManager(LibraryResourceManager):
         data = {
             "success": True,
             "kind": "code-viewer",
+            "res_type": "code",
             "the_content": code_code,
             "mdata": mdata,
             "resource_name": code_name,

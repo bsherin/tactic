@@ -89,7 +89,7 @@ class MergeViewerApp extends React.Component {
             paddingRight: 25
 
         };
-        let outer_class = "merge-viewer-outer"
+        let outer_class = "merge-viewer-outer";
         if (this.props.dark_theme) {
             outer_class = outer_class + " bp3-dark";
         }

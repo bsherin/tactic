@@ -5,7 +5,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.library_in_context = library_in_context;
+exports.library_props = library_props;
+exports.LibraryHomeApp = void 0;
 
 require("../tactic_css/tactic.scss");
 
@@ -33,8 +34,6 @@ var _communication_react = require("./communication_react.js");
 
 var _toaster = require("./toaster.js");
 
-var _resource_viewer_context = require("./resource_viewer_context.js");
-
 var _library_pane = require("./library_pane.js");
 
 var _library_widgets = require("./library_widgets.js");
@@ -49,13 +48,19 @@ var _utilities_react = require("./utilities_react.js");
 
 var _blueprint_navbar = require("./blueprint_navbar");
 
+var _tactic_context = require("./tactic_context.js");
+
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
-function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
@@ -83,44 +88,29 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
+function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+
 function _library_home_main() {
   var library_id = (0, _utilities_react.guid)();
   window.page_id = library_id; // window.main_id = library_id;
 
   var tsocket = new LibraryTacticSocket("library", 5000, {
     library_id: library_id
-  }); // window.tsocket = tsocket;
-
-  var LibraryHomeAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(LibraryHomeApp, tsocket), tsocket);
+  });
+  var LibraryHomeAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(LibraryHomeApp));
   var domContainer = document.querySelector('#library-home-root');
-  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(LibraryHomeAppPlus, {
+  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(LibraryHomeAppPlus, _extends({}, library_props(), {
+    controlled: false,
     initial_theme: window.theme,
     tsocket: tsocket,
-    registerLibraryTabChanger: null,
-    library_id: library_id
-  }), domContainer);
+    registerLibraryTabChanger: null
+  })), domContainer);
 }
 
-function library_in_context(handleCreateViewer, registerLibraryTabChanger) {
-  var library_id = (0, _utilities_react.guid)();
-  window.page_id = library_id; // window.page_id = library_id;
-  // window.main_id = library_id;
-
-  var tsocket = new LibraryTacticSocket("library", 5000, {
-    library_id: library_id
-  }); // window.tsocket = tsocket;
-
-  var LibraryHomeAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(LibraryHomeApp, tsocket), tsocket);
-  var domContainer = document.querySelector('#library-home-root');
-  return /*#__PURE__*/_react["default"].createElement("div", {
-    id: "library-home-root"
-  }, /*#__PURE__*/_react["default"].createElement(LibraryHomeAppPlus, {
-    initial_theme: window.theme,
-    handleCreateViewer: handleCreateViewer,
-    tsocket: tsocket,
-    registerLibraryTabChanger: registerLibraryTabChanger,
-    library_id: library_id
-  }));
+function library_props() {
+  return {
+    library_id: (0, _utilities_react.guid)()
+  };
 }
 
 var LibraryTacticSocket = /*#__PURE__*/function (_TacticSocket) {
@@ -138,21 +128,28 @@ var LibraryTacticSocket = /*#__PURE__*/function (_TacticSocket) {
     key: "initialize_socket_stuff",
     value: function initialize_socket_stuff() {
       var reconnect = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-      var self = this;
-      this.socket.emit('join', {
-        "user_id": window.user_id,
-        "library_id": this.extra_args.library_id
-      });
-      this.socket.on("window-open", function (data) {
-        return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
-      });
-      this.socket.on('handle-callback', _communication_react.handleCallback);
+      var self = this; // this.socket.emit('join', {"user_id":  window.user_id, "library_id":  this.extra_args.library_id});
+
       this.socket.on('close-user-windows', function (data) {
         if (!(data["originator"] === self.extra_args.library_id)) {
           window.close();
         }
       });
-      this.socket.on('doflash', _toaster.doFlash);
+
+      if (!window.in_context) {
+        this.socket.on("window-open", function (data) {
+          return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
+        });
+        this.socket.emit('join', {
+          "room": window.user_id
+        });
+        this.socket.on('handle-callback', function (task_packet) {
+          (0, _communication_react.handleCallback)(task_packet, self.extra_args.library_id);
+        });
+        this.socket.on("doFlash", function (data) {
+          (0, _toaster.doFlash)(data);
+        });
+      }
     }
   }]);
 
@@ -160,26 +157,31 @@ var LibraryTacticSocket = /*#__PURE__*/function (_TacticSocket) {
 }(_tactic_socket.TacticSocket);
 
 var res_types = ["collection", "project", "tile", "list", "code"];
-var tab_panes = ["collections-pane", "projects-pane", "tiles-pane", "lists-pane", "code-pane"]; // noinspection JSUnusedLocalSymbols,JSRemoveUnnecessaryParentheses
+var tab_panes = ["collections-pane", "projects-pane", "tiles-pane", "lists-pane", "code-pane"];
+var controllable_props = ["usable_height", "usable_width"]; // noinspection JSUnusedLocalSymbols,JSRemoveUnnecessaryParentheses
 
 var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
   _inherits(LibraryHomeApp, _React$Component);
 
   var _super2 = _createSuper(LibraryHomeApp);
 
-  function LibraryHomeApp(props) {
+  function LibraryHomeApp(props, context) {
     var _this;
 
     _classCallCheck(this, LibraryHomeApp);
 
-    _this = _super2.call(this, props);
-    var aheight = (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
-    var awidth = (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
+    _this = _super2.call(this, props, context);
+    var tsocket = props.controlled ? context.tsocket : props.tsocket;
+    tsocket.socket.emit('join', {
+      "user_id": window.user_id,
+      "room": props.library_id
+    }); // const aheight = getUsableDimensions(true).usable_height_no_bottom;
+    // const awidth = getUsableDimensions(true).usable_width - 170;
+
     _this.state = {
       selected_tab_id: "collections-pane",
-      usable_width: awidth,
-      usable_height: aheight,
-      dark_theme: props.initial_theme === "dark",
+      // usable_width: awidth,
+      // usable_height: aheight,
       pane_states: {}
     };
 
@@ -226,24 +228,30 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
       props.registerLibraryTabChanger(_this._handleTabChange);
     }
 
+    if (!window.controlled) {
+      var aheight = (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
+      var awidth = (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
+      _this.state.usable_height = aheight;
+      _this.state.usable_width = awidth;
+      _this.state.dark_theme = props.initial_theme === "dark";
+    }
+
     return _this;
   }
 
   _createClass(LibraryHomeApp, [{
     key: "componentDidMount",
     value: function componentDidMount() {
-      window.addEventListener("resize", this._update_window_dimensions);
       this.setState({
         "mounted": true
       });
+      this.props.stopSpinner(null); // this.props.setStatusTheme(this.props.dark_theme);
 
-      this._update_window_dimensions();
-
-      this.props.stopSpinner();
-      this.props.setStatusTheme(this.state.dark_theme);
-
-      if (!this.in_context) {
+      if (!this.props.controlled) {
         window.dark_theme = this.state.dark_theme;
+        window.addEventListener("resize", this._update_window_dimensions);
+
+        this._update_window_dimensions();
       }
     }
   }, {
@@ -260,30 +268,29 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_update_window_dimensions",
     value: function _update_window_dimensions() {
-      var uwidth = window.innerWidth - 2 * _sizing_tools.SIDE_MARGIN;
-      var uheight = window.innerHeight;
+      if (!this.props.controlled) {
+        var uwidth = window.innerWidth - 2 * _sizing_tools.SIDE_MARGIN;
+        var uheight = window.innerHeight;
 
-      if (this.top_ref && this.top_ref.current) {
-        uheight = uheight - this.top_ref.current.offsetTop;
-      } else {
-        uheight = uheight - _sizing_tools.USUAL_TOOLBAR_HEIGHT;
+        if (this.top_ref && this.top_ref.current) {
+          uheight = uheight - this.top_ref.current.offsetTop;
+        } else {
+          uheight = uheight - _sizing_tools.USUAL_TOOLBAR_HEIGHT;
+        }
+
+        this.setState({
+          usable_height: uheight,
+          usable_width: uwidth
+        });
       }
-
-      this.setState({
-        usable_height: uheight,
-        usable_width: uwidth
-      });
     }
   }, {
     key: "_setTheme",
     value: function _setTheme(dark_theme) {
-      var _this2 = this;
-
       this.setState({
         dark_theme: dark_theme
       }, function () {
-        _this2.props.setStatusTheme(dark_theme);
-
+        // this.props.setStatusTheme(dark_theme);
         window.dark_theme = dark_theme;
       });
     } // This mechanism in _handleTabChange necessary in order to force the pane to change
@@ -331,11 +338,30 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
-      var tile_widget = /*#__PURE__*/_react["default"].createElement(_library_widgets.LoadedTileList, {
-        tsocket: this.props.tsocket
-      });
+      var tsocket = this.props.controlled ? this.context.tsocket : this.props.tsocket;
+      var dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
 
-      var collection_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, this.props, {
+      var tile_widget = /*#__PURE__*/_react["default"].createElement(_library_widgets.LoadedTileList, null);
+
+      var lib_props = _objectSpread({}, this.props);
+
+      if (!this.props.controlled) {
+        var _iterator2 = _createForOfIteratorHelper(controllable_props),
+            _step2;
+
+        try {
+          for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+            var prop_name = _step2.value;
+            lib_props[prop_name] = this.state[prop_name];
+          }
+        } catch (err) {
+          _iterator2.e(err);
+        } finally {
+          _iterator2.f();
+        }
+      }
+
+      var collection_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
         res_type: "collection",
         allow_search_inside: false,
         allow_search_metadata: false,
@@ -343,35 +369,35 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
         updatePaneState: this._updatePaneState
       }, this.state.pane_states["collection"], this.props.errorDrawerFuncs, {
         errorDrawerFuncs: this.props.errorDrawerFuncs,
-        dark_theme: this.state.dark_theme,
-        tsocket: this.props.tsocket
+        library_id: this.props.library_id // tsocket={this.props.tsocket}
+
       }));
 
-      var projects_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, this.props, {
+      var projects_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
         res_type: "project",
         allow_search_inside: false,
         allow_search_metadata: true,
         ToolbarClass: ProjectToolbar,
         updatePaneState: this._updatePaneState
       }, this.props.errorDrawerFuncs, this.state.pane_states["project"], {
-        dark_theme: this.state.dark_theme,
-        tsocket: this.props.tsocket
+        library_id: this.props.library_id // tsocket={this.props.tsocket}
+
       }));
 
-      var tiles_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, this.props, {
+      var tiles_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
         res_type: "tile",
         allow_search_inside: true,
         allow_search_metadata: true,
         ToolbarClass: TileToolbar,
         updatePaneState: this._updatePaneState
       }, this.props.errorDrawerFuncs, this.state.pane_states["tile"], {
+        library_id: this.props.library_id,
         tsocket: this.props.tsocket,
-        aux_pane_title: "loaded tile list",
-        dark_theme: this.state.dark_theme,
-        aux_pane: tile_widget
+        aux_pane_title: "loaded tile list" // aux_pane={tile_widget}
+
       }));
 
-      var lists_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, this.props, {
+      var lists_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
         res_type: "list",
         allow_search_inside: true,
         allow_search_metadata: true,
@@ -379,11 +405,11 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
       }, this.props.errorDrawerFuncs, {
         updatePaneState: this._updatePaneState
       }, this.state.pane_states["list"], {
-        dark_theme: this.state.dark_theme,
-        tsocket: this.props.tsocket
+        library_id: this.props.library_id // tsocket={this.props.tsocket}
+
       }));
 
-      var code_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, this.props, {
+      var code_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
         res_type: "code",
         allow_search_inside: true,
         allow_search_metadata: true,
@@ -391,21 +417,21 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
       }, this.props.errorDrawerFuncs, {
         updatePaneState: this._updatePaneState
       }, this.state.pane_states["code"], {
-        dark_theme: this.state.dark_theme,
-        tsocket: this.props.tsocket
+        library_id: this.props.library_id // tsocket={this.props.tsocket}
+
       }));
 
       var outer_style = {
         width: "100%",
-        height: this.state.usable_height,
+        height: lib_props.usable_height,
         paddingLeft: 0
       };
       var outer_class = "";
 
-      if (!window.in_context) {
+      if (!this.props.controlled) {
         outer_class = "library-pane-holder  ";
 
-        if (this.state.dark_theme) {
+        if (dark_theme) {
           outer_class = "".concat(outer_class, " bp3-dark");
         } else {
           outer_class = "".concat(outer_class, " light-theme");
@@ -413,16 +439,20 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
       }
 
       var key_bindings = [[["tab"], this._goToNextPane], [["shift+tab"], this._goToPreviousPane]];
-      return /*#__PURE__*/_react["default"].createElement(_resource_viewer_context.ViewerContext.Provider, {
+      return /*#__PURE__*/_react["default"].createElement(_tactic_context.TacticContext.Provider, {
         value: {
-          readOnly: false
+          readOnly: false,
+          tsocket: tsocket,
+          dark_theme: dark_theme,
+          setTheme: this.props.controlled ? this.context.setTheme : this._setTheme,
+          controlled: this.props.controlled
         }
-      }, !window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+      }, !this.props.controlled && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
         is_authenticated: window.is_authenticated,
         selected: null,
-        show_api_links: false,
-        dark_theme: this.state.dark_theme,
-        set_parent_theme: this._setTheme,
+        show_api_links: false // dark_theme={lib_props.dark_theme}
+        // set_parent_theme={this._setTheme}
+        ,
         user_name: window.username
       }), /*#__PURE__*/_react["default"].createElement("div", {
         className: outer_class,
@@ -430,7 +460,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
         style: outer_style
       }, /*#__PURE__*/_react["default"].createElement("div", {
         style: {
-          width: this.state.usable_width
+          width: lib_props.usable_width
         }
       }, /*#__PURE__*/_react["default"].createElement(_core.Tabs, {
         id: "the_container",
@@ -503,7 +533,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
         iconSize: 20,
         tabIndex: -1,
         color: this.getIconColor("code-pane")
-      })))))), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
+      })))))), !this.props.controlled && /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
         global: true,
         bindings: key_bindings
       }));
@@ -512,6 +542,9 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
 
   return LibraryHomeApp;
 }(_react["default"].Component);
+
+exports.LibraryHomeApp = LibraryHomeApp;
+LibraryHomeApp.contextType = _tactic_context.TacticContext;
 
 var LibraryToolbar = /*#__PURE__*/function (_React$Component2) {
   _inherits(LibraryToolbar, _React$Component2);
@@ -538,20 +571,20 @@ var LibraryToolbar = /*#__PURE__*/function (_React$Component2) {
       var new_group;
       var new_button;
 
-      var _iterator2 = _createForOfIteratorHelper(this.props.button_groups),
-          _step2;
+      var _iterator3 = _createForOfIteratorHelper(this.props.button_groups),
+          _step3;
 
       try {
-        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-          var group = _step2.value;
+        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+          var group = _step3.value;
           new_group = [];
 
-          var _iterator3 = _createForOfIteratorHelper(group),
-              _step3;
+          var _iterator4 = _createForOfIteratorHelper(group),
+              _step4;
 
           try {
-            for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-              var button = _step3.value;
+            for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+              var button = _step4.value;
 
               if (!this.props.multi_select || button[3]) {
                 new_button = {
@@ -583,9 +616,9 @@ var LibraryToolbar = /*#__PURE__*/function (_React$Component2) {
               }
             }
           } catch (err) {
-            _iterator3.e(err);
+            _iterator4.e(err);
           } finally {
-            _iterator3.f();
+            _iterator4.f();
           }
 
           if (new_group.length != 0) {
@@ -593,9 +626,9 @@ var LibraryToolbar = /*#__PURE__*/function (_React$Component2) {
           }
         }
       } catch (err) {
-        _iterator2.e(err);
+        _iterator3.e(err);
       } finally {
-        _iterator2.f();
+        _iterator3.f();
       }
 
       return new_bgs;
@@ -606,12 +639,12 @@ var LibraryToolbar = /*#__PURE__*/function (_React$Component2) {
       if (this.props.file_adders == null || this.props.file_adders.length == 0) return [];
       var file_adders = [];
 
-      var _iterator4 = _createForOfIteratorHelper(this.props.file_adders),
-          _step4;
+      var _iterator5 = _createForOfIteratorHelper(this.props.file_adders),
+          _step5;
 
       try {
-        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-          var button = _step4.value;
+        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+          var button = _step5.value;
           var new_button = {
             name_text: button[0],
             resource_type: button[1],
@@ -626,9 +659,9 @@ var LibraryToolbar = /*#__PURE__*/function (_React$Component2) {
           file_adders.push(new_button);
         }
       } catch (err) {
-        _iterator4.e(err);
+        _iterator5.e(err);
       } finally {
-        _iterator4.f();
+        _iterator5.f();
       }
 
       return file_adders;
@@ -639,24 +672,24 @@ var LibraryToolbar = /*#__PURE__*/function (_React$Component2) {
       if (this.props.popup_buttons == null || this.props.popup_buttons.length == 0) return [];
       var popup_buttons = [];
 
-      var _iterator5 = _createForOfIteratorHelper(this.props.popup_buttons),
-          _step5;
+      var _iterator6 = _createForOfIteratorHelper(this.props.popup_buttons),
+          _step6;
 
       try {
-        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-          var button = _step5.value;
+        for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+          var button = _step6.value;
           var new_button = {
             name: button[0],
             icon_name: button[1]
           };
           var opt_list = [];
 
-          var _iterator6 = _createForOfIteratorHelper(button[2]),
-              _step6;
+          var _iterator7 = _createForOfIteratorHelper(button[2]),
+              _step7;
 
           try {
-            for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-              var opt = _step6.value;
+            for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
+              var opt = _step7.value;
               opt_list.push({
                 opt_name: opt[0],
                 opt_func: opt[1],
@@ -664,18 +697,18 @@ var LibraryToolbar = /*#__PURE__*/function (_React$Component2) {
               });
             }
           } catch (err) {
-            _iterator6.e(err);
+            _iterator7.e(err);
           } finally {
-            _iterator6.f();
+            _iterator7.f();
           }
 
           new_button["option_list"] = opt_list;
           popup_buttons.push(new_button);
         }
       } catch (err) {
-        _iterator5.e(err);
+        _iterator6.e(err);
       } finally {
-        _iterator5.f();
+        _iterator6.f();
       }
 
       return popup_buttons;
@@ -696,7 +729,9 @@ var LibraryToolbar = /*#__PURE__*/function (_React$Component2) {
         file_adders: this.prepare_file_adders(),
         alternate_outer_style: outer_style,
         sendRef: this.props.sendRef,
-        popup_buttons: popup_buttons
+        popup_buttons: popup_buttons // tsocket={this.props.tsocket}
+        // dark_theme={this.props.dark_theme}
+
       });
     }
   }]);
@@ -711,7 +746,9 @@ LibraryToolbar.propTypes = {
   popup_buttons: _propTypes["default"].array,
   multi_select: _propTypes["default"].bool,
   left_position: _propTypes["default"].number,
-  sendRef: _propTypes["default"].func
+  sendRef: _propTypes["default"].func,
+  dark_theme: _propTypes["default"].bool,
+  tsocket: _propTypes["default"].object
 };
 LibraryToolbar.defaultProps = {
   file_adders: null,
@@ -739,14 +776,14 @@ var CollectionToolbar = /*#__PURE__*/function (_React$Component3) {
   var _super4 = _createSuper(CollectionToolbar);
 
   function CollectionToolbar(props) {
-    var _this3;
+    var _this2;
 
     _classCallCheck(this, CollectionToolbar);
 
-    _this3 = _super4.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this3));
-    _this3.upload_name = null;
-    return _this3;
+    _this2 = _super4.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this2));
+    _this2.upload_name = null;
+    return _this2;
   }
 
   _createClass(CollectionToolbar, [{
@@ -842,7 +879,7 @@ var CollectionToolbar = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "_import_collection",
     value: function _import_collection(myDropZone, setCurrentUrl, new_name, check_results) {
-      var _this4 = this;
+      var _this3 = this;
 
       var csv_options = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : null;
       var doc_type;
@@ -859,10 +896,10 @@ var CollectionToolbar = /*#__PURE__*/function (_React$Component3) {
         "library_id": this.props.library_id,
         "csv_options": csv_options
       }).then(function (data) {
-        var new_url = "append_documents_to_collection/".concat(new_name, "/").concat(doc_type, "/").concat(_this4.props.library_id);
+        var new_url = "append_documents_to_collection/".concat(new_name, "/").concat(doc_type, "/").concat(_this3.props.library_id);
         myDropZone.options.url = new_url;
         setCurrentUrl(new_url);
-        _this4.upload_name = new_name;
+        _this3.upload_name = new_name;
         myDropZone.processQueue();
       })["catch"](function (data) {});
     }
@@ -921,7 +958,9 @@ var CollectionToolbar = /*#__PURE__*/function (_React$Component3) {
         file_adders: this.file_adders,
         left_position: this.props.left_position,
         sendRef: this.props.sendRef,
-        multi_select: this.props.multi_select
+        multi_select: this.props.multi_select,
+        tsocket: this.props.tsocket,
+        dark_theme: this.props.dark_theme
       });
     }
   }]);
@@ -937,13 +976,13 @@ var ProjectToolbar = /*#__PURE__*/function (_React$Component4) {
   var _super5 = _createSuper(ProjectToolbar);
 
   function ProjectToolbar(props) {
-    var _this5;
+    var _this4;
 
     _classCallCheck(this, ProjectToolbar);
 
-    _this5 = _super5.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this5));
-    return _this5;
+    _this4 = _super5.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this4));
+    return _this4;
   }
 
   _createClass(ProjectToolbar, [{
@@ -1018,7 +1057,7 @@ var ProjectToolbar = /*#__PURE__*/function (_React$Component4) {
   }, {
     key: "button_groups",
     get: function get() {
-      return [[["notebook", this._new_notebook, "new-text-box", false, "regular", ["ctrl+n"], "New notebook", "Notebook"]], [["open", this.props.view_func, "document-open", false, "regular", ["space", "return", "ctrl+o"], "View"]], [["duplicate", this._project_duplicate, "duplicate", false, "regular", [], "Duplicate"], ["rename", this.props.rename_func, "edit", false, "regular", [], "Rename"]], [["toJupyter", this._downloadJupyter, "cloud-download", false, "regular", [], "Download as Jupyter Notebook"], ["share", this.props.send_repository_func, "share", false, "regular", [], "Share to repository"]], [["delete", this._project_delete, "trash", true, "regular", [], "Delete"]], [["refresh", this.props.refresh_func, "refresh", false, "regular", [], "Refresh list"]]];
+      return [[["notebook", this._new_notebook, "new-text-box", false, "regular", ["ctrl+n"], "New notebook", false]], [["open", this.props.view_func, "document-open", false, "regular", ["space", "return", "ctrl+o"], "View"]], [["duplicate", this._project_duplicate, "duplicate", false, "regular", [], "Duplicate"], ["rename", this.props.rename_func, "edit", false, "regular", [], "Rename"]], [["toJupyter", this._downloadJupyter, "cloud-download", false, "regular", [], "Download as Jupyter Notebook"], ["share", this.props.send_repository_func, "share", false, "regular", [], "Share to repository"]], [["delete", this._project_delete, "trash", true, "regular", [], "Delete"]], [["refresh", this.props.refresh_func, "refresh", false, "regular", [], "Refresh list"]]];
     }
   }, {
     key: "file_adders",
@@ -1035,7 +1074,9 @@ var ProjectToolbar = /*#__PURE__*/function (_React$Component4) {
         file_adders: this.file_adders,
         left_position: this.props.left_position,
         sendRef: this.props.sendRef,
-        multi_select: this.props.multi_select
+        multi_select: this.props.multi_select // tsocket={this.props.tsocket}
+        // dark_theme={this.props.dark_theme}
+
       });
     }
   }]);
@@ -1051,13 +1092,13 @@ var TileToolbar = /*#__PURE__*/function (_React$Component5) {
   var _super6 = _createSuper(TileToolbar);
 
   function TileToolbar(props) {
-    var _this6;
+    var _this5;
 
     _classCallCheck(this, TileToolbar);
 
-    _this6 = _super6.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this6));
-    return _this6;
+    _this5 = _super6.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this5));
+    return _this5;
   }
 
   _createClass(TileToolbar, [{
@@ -1187,14 +1228,14 @@ var TileToolbar = /*#__PURE__*/function (_React$Component5) {
   }, {
     key: "popup_buttons",
     get: function get() {
-      var _this7 = this;
+      var _this6 = this;
 
       return [["tile", "new-text-box", [["StandardTile", function () {
-        _this7._new_in_creator("BasicTileTemplate");
+        _this6._new_in_creator("BasicTileTemplate");
       }, "code"], ["MatplotlibTile", function () {
-        _this7._new_in_creator("MatplotlibTileTemplate");
+        _this6._new_in_creator("MatplotlibTileTemplate");
       }, "timeline-line-chart"], ["D3Tile", function () {
-        _this7._new_in_creator("D3TileTemplate");
+        _this6._new_in_creator("D3TileTemplate");
       }, "timeline-area-chart"]]]];
     }
   }, {
@@ -1248,7 +1289,9 @@ var TileToolbar = /*#__PURE__*/function (_React$Component5) {
         popup_buttons: this.popup_buttons,
         left_position: this.props.left_position,
         sendRef: this.props.sendRef,
-        multi_select: this.props.multi_select
+        multi_select: this.props.multi_select,
+        tsocket: this.props.tsocket,
+        dark_theme: this.props.dark_theme
       });
     }
   }]);
@@ -1264,13 +1307,13 @@ var ListToolbar = /*#__PURE__*/function (_React$Component6) {
   var _super7 = _createSuper(ListToolbar);
 
   function ListToolbar(props) {
-    var _this8;
+    var _this7;
 
     _classCallCheck(this, ListToolbar);
 
-    _this8 = _super7.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this8));
-    return _this8;
+    _this7 = _super7.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this7));
+    return _this7;
   }
 
   _createClass(ListToolbar, [{
@@ -1340,7 +1383,9 @@ var ListToolbar = /*#__PURE__*/function (_React$Component6) {
         popup_buttons: this.popup_buttons,
         left_position: this.props.left_position,
         sendRef: this.props.sendRef,
-        multi_select: this.props.multi_select
+        multi_select: this.props.multi_select,
+        tsocket: this.props.tsocket,
+        dark_theme: this.props.dark_theme
       });
     }
   }]);
@@ -1356,13 +1401,13 @@ var CodeToolbar = /*#__PURE__*/function (_React$Component7) {
   var _super8 = _createSuper(CodeToolbar);
 
   function CodeToolbar(props) {
-    var _this9;
+    var _this8;
 
     _classCallCheck(this, CodeToolbar);
 
-    _this9 = _super8.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this9));
-    return _this9;
+    _this8 = _super8.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this8));
+    return _this8;
   }
 
   _createClass(CodeToolbar, [{
@@ -1404,10 +1449,10 @@ var CodeToolbar = /*#__PURE__*/function (_React$Component7) {
   }, {
     key: "popup_buttons",
     get: function get() {
-      var _this10 = this;
+      var _this9 = this;
 
       return [["code", "new-text-box", [["BasicCodeTemplate", function () {
-        _this10._new_code("BasicCodeTemplate");
+        _this9._new_code("BasicCodeTemplate");
       }, "code"]]]];
     }
   }, {
@@ -1451,7 +1496,9 @@ var CodeToolbar = /*#__PURE__*/function (_React$Component7) {
         popup_buttons: this.popup_buttons,
         left_position: this.props.left_position,
         sendRef: this.props.sendRef,
-        multi_select: this.props.multi_select
+        multi_select: this.props.multi_select,
+        tsocket: this.props.tsocket,
+        dark_theme: this.props.dark_theme
       });
     }
   }]);

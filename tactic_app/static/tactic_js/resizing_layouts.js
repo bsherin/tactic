@@ -384,7 +384,8 @@ var HorizontalPanes = /*#__PURE__*/function (_React$Component2) {
         width: this.left_width,
         height: this.props.available_height - this.props.bottom_margin,
         flexDirection: "column",
-        overflow: "hidden"
+        overflow: "hidden",
+        paddingLeft: window.in_context ? 5 : 12
       }; // noinspection JSSuspiciousNameCombination
 
       var right_div_style = {
@@ -495,7 +496,7 @@ var VerticalPanes = /*#__PURE__*/function (_React$Component3) {
     _this4.old_bottom_height = 0;
     _this4.old_top_height = 0;
     _this4.unique_id = (0, _utilities_react.guid)();
-    _this4.state = _this4.state = {
+    _this4.state = {
       "current_height_fraction": _this4.props.initial_height_fraction,
       "mounted": false
     };

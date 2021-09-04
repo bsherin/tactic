@@ -62,7 +62,7 @@ var KeyTrap = /*#__PURE__*/function (_React$Component) {
   _createClass(KeyTrap, [{
     key: "componentDidMount",
     value: function componentDidMount() {
-      this.initializeMousetrap();
+      this._initializeMousetrap();
     }
   }, {
     key: "componentWillUnmount",
@@ -73,8 +73,12 @@ var KeyTrap = /*#__PURE__*/function (_React$Component) {
       }
     }
   }, {
-    key: "initializeMousetrap",
-    value: function initializeMousetrap() {
+    key: "_initializeMousetrap",
+    value: function _initializeMousetrap() {
+      var _this2 = this;
+
+      var self = this;
+
       if (this.mousetrap) {
         this.mousetrap.reset();
       }
@@ -92,9 +96,18 @@ var KeyTrap = /*#__PURE__*/function (_React$Component) {
             _step;
 
         try {
-          for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var _loop = function _loop() {
             var binding = _step.value;
-            this.mousetrap.bind(binding[0], binding[1]);
+
+            _this2.mousetrap.bind(binding[0], function (e) {
+              if (_this2.props.active) {
+                binding[1](e);
+              }
+            });
+          };
+
+          for (_iterator.s(); !(_step = _iterator.n()).done;) {
+            _loop();
           }
         } catch (err) {
           _iterator.e(err);
@@ -107,7 +120,7 @@ var KeyTrap = /*#__PURE__*/function (_React$Component) {
     key: "componentDidUpdate",
     value: function componentDidUpdate() {
       if (!this.mousetrap) {
-        this.initializeMousetrap();
+        this._initializeMousetrap();
       }
     }
   }, {
@@ -122,10 +135,12 @@ var KeyTrap = /*#__PURE__*/function (_React$Component) {
 
 exports.KeyTrap = KeyTrap;
 KeyTrap.propTypes = {
+  active: _propTypes["default"].bool,
   target_ref: _propTypes["default"].object,
   bindings: _propTypes["default"].array,
   global: _propTypes["default"].bool
 };
 KeyTrap.defaultProps = {
+  active: true,
   global: false
 };

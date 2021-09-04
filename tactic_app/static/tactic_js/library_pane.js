@@ -5,6 +5,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.view_views = view_views;
 exports.LibraryPane = void 0;
 
 var _react = _interopRequireDefault(require("react"));
@@ -29,7 +30,7 @@ var _modal_react = require("./modal_react.js");
 
 var _communication_react = require("./communication_react.js");
 
-var _sizing_tools = require("./sizing_tools.js");
+var _tactic_context = require("./tactic_context.js");
 
 var _toaster = require("./toaster.js");
 
@@ -74,6 +75,28 @@ function _assertThisInitialized(self) { if (self === void 0) { throw new Referen
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function view_views() {
+  var is_repository = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+
+  if (is_repository) {
+    return {
+      collection: null,
+      project: null,
+      tile: "/repository_view_module/",
+      list: "/repository_view_list/",
+      code: "/repository_view_code/"
+    };
+  } else {
+    return {
+      collection: "/main_collection/",
+      project: "/main_project/",
+      tile: "/last_saved_view/",
+      list: "/view_list/",
+      code: "/view_code/"
+    };
+  }
+}
 
 var BodyMenu = /*#__PURE__*/function (_React$Component) {
   _inherits(BodyMenu, _React$Component);
@@ -143,17 +166,17 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     _this2 = _super2.call(this, props);
     _this2.top_ref = /*#__PURE__*/_react["default"].createRef();
     _this2.table_ref = /*#__PURE__*/_react["default"].createRef();
-    _this2.resizing = false;
-    var aheight = (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
-    var awidth = (0, _sizing_tools.getUsableDimensions)(true).usable_width - 200;
+    _this2.resizing = false; // let aheight = getUsableDimensions(true).usable_height_no_bottom;
+    // let awidth = getUsableDimensions(true).usable_width - 200;
+
     _this2.get_url = "grab_".concat(props.res_type, "_list_chunk");
     _this2.state = {
       data_dict: {},
       num_rows: 0,
       mounted: false,
-      available_height: aheight,
-      available_width: awidth,
-      top_pane_height: aheight / 2 - 50,
+      // available_height: aheight,
+      // available_width: awidth,
+      // top_pane_height: aheight / 2 - 50,
       // match_list: [],
       tag_list: [],
       auxIsOpen: false,
@@ -171,19 +194,19 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   _createClass(LibraryPane, [{
     key: "initSocket",
     value: function initSocket() {
-      if (this.props.tsocket != null && !this.props.is_repository) {
-        this.props.tsocket.socket.off("update-".concat(this.props.res_type, "-selector-row"));
-        this.props.tsocket.socket.off("refresh-".concat(this.props.res_type, "-selector"));
-        this.props.tsocket.socket.on("update-".concat(this.props.res_type, "-selector-row"), this._handleRowUpdate);
-        this.props.tsocket.socket.on("refresh-".concat(this.props.res_type, "-selector"), this._refresh_func);
+      if (this.context.tsocket != null && !this.props.is_repository) {
+        this.context.tsocket.socket.off("update-".concat(this.props.res_type, "-selector-row"));
+        this.context.tsocket.socket.off("refresh-".concat(this.props.res_type, "-selector"));
+        this.context.tsocket.socket.on("update-".concat(this.props.res_type, "-selector-row"), this._handleRowUpdate);
+        this.context.tsocket.socket.on("refresh-".concat(this.props.res_type, "-selector"), this._refresh_func);
       }
 
-      this.socket_counter = this.props.tsocket.counter;
+      this.socket_counter = this.context.tsocket.counter;
     }
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate() {
-      if (this.props.tsocket.counter != this.socket_counter) {
+      if (this.context.tsocket.counter != this.socket_counter) {
         this.initSocket();
       }
     }
@@ -671,27 +694,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       })["catch"](_toaster.doFlash);
     }
   }, {
-    key: "view_views",
-    get: function get() {
-      if (this.props.is_repository) {
-        return {
-          collection: null,
-          project: null,
-          tile: "/repository_view_module/",
-          list: "/repository_view_list/",
-          code: "/repository_view_code/"
-        };
-      } else {
-        return {
-          collection: "/main_collection/",
-          project: "/main_project/",
-          tile: "/last_saved_view/",
-          list: "/view_list/",
-          code: "/view_code/"
-        };
-      }
-    }
-  }, {
     key: "_doTagRename",
     value: function _doTagRename(tag_changes) {
       var result_dict = {
@@ -707,7 +709,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "_handleRowDoubleClick",
     value: function _handleRowDoubleClick(row_dict) {
       var self = this;
-      var view_view = this.view_views[this.props.res_type];
+      var view_view = view_views(this.props.is_repostory)[this.props.res_type];
       if (view_view == null) return;
 
       this._updatePaneState({
@@ -910,7 +912,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       var self = this;
 
       if (the_view == null) {
-        the_view = this.view_views[this.props.res_type];
+        the_view = view_views(this.props.is_repository)[this.props.res_type];
       }
 
       if (window.in_context) {
@@ -931,7 +933,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       var self = this;
 
       if (the_view == null) {
-        the_view = this.view_views[this.props.res_type];
+        the_view = view_views(this.props.is_repository)[this.props.res_type];
       }
 
       if (window.in_context) {
@@ -1106,39 +1108,22 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
       this._grabNewChunkWithRow(0, true, null, true, callback);
-    }
-  }, {
-    key: "_handleTopRightPaneResize",
-    value: function _handleTopRightPaneResize(top_height, bottom_height, top_fraction) {
-      this.setState({
-        "top_pane_height": top_height
-      });
-    }
+    } // _handleTopRightPaneResize (top_height, bottom_height, top_fraction) {
+    //     this.setState({"top_pane_height": top_height
+    //     })
+    // }
+
   }, {
     key: "_handleResize",
-    value: function _handleResize(entries) {
-      if (this.resizing) return;
-
-      var _iterator8 = _createForOfIteratorHelper(entries),
-          _step8;
-
-      try {
-        for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
-          var entry = _step8.value;
-
-          if (entry.target.className.includes("pane-holder")) {
-            this.setState({
-              available_width: entry.contentRect.width - this.top_ref.current.offsetLeft - 30,
-              available_height: entry.contentRect.height - this.top_ref.current.offsetTop
-            });
-            return;
-          }
-        }
-      } catch (err) {
-        _iterator8.e(err);
-      } finally {
-        _iterator8.f();
-      }
+    value: function _handleResize(entries) {// if (this.resizing) return;
+      // for (let entry of entries) {
+      //     if (entry.target.className.includes("pane-holder")) {
+      //         this.setState({available_width: entry.contentRect.width - this.top_ref.current.offsetLeft - 30,
+      //             available_height: entry.contentRect.height - this.top_ref.current.offsetTop
+      //         });
+      //         return
+      //     }
+      // }
     }
   }, {
     key: "_toggleAuxVisibility",
@@ -1157,7 +1142,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_omnibarSelect",
     value: function _omnibarSelect(item) {
-      var the_view = this.view_views[this.props.res_type];
+      var the_view = view_views(this.props.is_repository)[this.props.res_type];
       window.open($SCRIPT_ROOT + the_view + item);
 
       this._closeOmnibar();
@@ -1189,7 +1174,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       var _this6 = this;
 
       var new_button_groups;
-      var left_width = (this.state.available_width - _resizing_layouts.HANDLE_WIDTH) * this.props.left_width_fraction;
+      var left_width = (this.props.usable_width - _resizing_layouts.HANDLE_WIDTH - 200) * this.props.left_width_fraction;
       var primary_mdata_fields = ["name", "created", "created_for_sort", "updated", "updated_for_sort", "tags", "notes"];
       var additional_metadata = {};
 
@@ -1354,15 +1339,18 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         sendContextMenuItems: this._sendContextMenuItems,
         view_resource: this._view_resource
       }, this.props.errorDrawerFuncs, {
-        handleCreateViewer: this.props.handleCreateViewer
+        handleCreateViewer: this.props.handleCreateViewer,
+        library_id: this.props.library_id // dark_theme={this.props.dark_theme}
+        // tsocket={this.props.tsocket}
+
       })), /*#__PURE__*/_react["default"].createElement("div", {
         style: {
-          width: this.state.available_width,
-          height: this.state.available_height
+          width: this.props.usable_width - 200,
+          height: this.props.usable_height
         }
       }, /*#__PURE__*/_react["default"].createElement(_resizing_layouts.HorizontalPanes, {
-        available_width: this.state.available_width,
-        available_height: this.state.available_height - 100,
+        available_width: this.props.usable_width - 200,
+        available_height: this.props.usable_height - 100,
         show_handle: true,
         left_pane: left_pane,
         right_pane: right_pane,
@@ -1410,7 +1398,8 @@ LibraryPane.propTypes = {
   search_tag: _propTypes["default"].string,
   tag_button_state: _propTypes["default"].object,
   contextItems: _propTypes["default"].array,
-  dark_theme: _propTypes["default"].bool
+  dark_theme: _propTypes["default"].bool,
+  library_id: _propTypes["default"].string
 };
 LibraryPane.defaultProps = {
   is_repository: false,
@@ -1418,3 +1407,4 @@ LibraryPane.defaultProps = {
   aux_pane: null,
   dark_theme: false
 };
+LibraryPane.contextType = _tactic_context.TacticContext;

@@ -3,7 +3,7 @@
 import React from "react";
 import PropTypes from 'prop-types';
 
-import { Button, Card, Collapse, Divider, Popover, PopoverPosition, Menu, MenuItem, MenuDivider } from "@blueprintjs/core";
+import { Button, Card, Collapse, Divider, Menu, MenuItem, MenuDivider } from "@blueprintjs/core";
 
 import {Toolbar} from "./blueprint_toolbar.js";
 import {postAjax} from "./communication_react.js";
@@ -354,15 +354,17 @@ class CommandsModule extends React.Component {
         let object_items = [];
         for (let category of this.state.ordered_object_categories) {
             let res = <ObjectCategoryEntry category_name={category}
+                                           key={category}
                                            search_string={this.state.search_string}
-                                           class_list={this.state.object_api_dict[category]}/>
+                                           class_list={this.state.object_api_dict[category]}/>;
             object_items.push(res)
         }
         let command_items = [];
         for (let category of this.state.ordered_categories) {
             let res = <CategoryEntry category_name={category}
+                                     key={category}
                                       search_string={this.state.search_string}
-                                      command_list={this.state.api_dict[category]}/>
+                                      command_list={this.state.api_dict[category]}/>;
             command_items.push(res)
         }
         return (
@@ -418,10 +420,10 @@ class ObjectCategoryEntry extends React.Component {
                     show_class = true
                 }
                 for (let entry of class_entry[1]) {
-                    entry["kind"] = "class_" + entry["kind"]
+                    entry["kind"] = "class_" + entry["kind"];
                     let show_entry = false;
                     if (show_whole_class || stringIncludes(entry.signature, this.props.search_string)) {
-                        entries.push(<CommandEntry {...entry}/>)
+                        entries.push(<CommandEntry {...entry}/>);
                         show_class = true;
                         show_category = true
                     }
@@ -439,7 +441,7 @@ class ObjectCategoryEntry extends React.Component {
             else {
                 let entry = class_entry[1];
                 if (show_whole_category || stringIncludes(entry.signature, this.props.search_string)) {
-                    entries.push(<CommandEntry {...entry}/>)
+                    entries.push(<CommandEntry {...entry}/>);
                     show_category = true
                 }
             }
@@ -466,7 +468,7 @@ ObjectCategoryEntry.propTypes = {
     category_name: PropTypes.string,
     class_list: PropTypes.array,
     search_string: PropTypes.string,
-}
+};
 
 class CategoryEntry extends React.Component {
     constructor(props) {
@@ -484,7 +486,7 @@ class CategoryEntry extends React.Component {
         let entries = [];
         for (let entry of this.props.command_list) {
             if (show_whole_category || stringIncludes(entry.signature, this.props.search_string)) {
-                show_category = true
+                show_category = true;
                 entries.push(<CommandEntry {...entry}/>)
             }
 
@@ -511,7 +513,7 @@ CategoryEntry.propTypes = {
     category_name: PropTypes.string,
     command_list: PropTypes.array,
     search_string: PropTypes.string
-}
+};
 
 class CommandEntry extends React.Component {
     constructor(props) {
@@ -571,7 +573,7 @@ CommandEntry.propTypes = {
     body: PropTypes.string,
     kind: PropTypes.string
 
-}
+};
 
 class ApiMenu extends React.Component {
     constructor(props) {
@@ -637,4 +639,4 @@ class ApiMenu extends React.Component {
 
 ApiMenu.propTypes = {
     item_list: PropTypes.array
-}
+};

@@ -36,7 +36,9 @@ import uuid
 import sys, os
 sys.stdout = sys.stderr
 import time
-# noinspection PyUnusedLocal
+
+
+# noinspection PyUnusedLocal,PyProtectedMember
 
 
 class TileWorker(QWorker):
@@ -73,7 +75,8 @@ class TileWorker(QWorker):
                 "title": title,
                 "content": content,
                 "line_number": line_number,
-                "tile_type": self.tile_instance.tile_type
+                "tile_type": self.tile_instance.tile_type,
+                "main_id": self.tile_instance._main_id
                 }
         self.emit_to_client("add-error-drawer-entry", data)
         return {"success": True}

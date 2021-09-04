@@ -5,7 +5,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.tile_creator_main_in_context = tile_creator_main_in_context;
+exports.creator_props = creator_props;
+exports.CreatorApp = void 0;
 
 require("../tactic_css/tactic.scss");
 
@@ -51,17 +52,27 @@ var _blueprint_navbar = require("./blueprint_navbar");
 
 var _library_widgets = require("./library_widgets");
 
+var _tactic_context = require("./tactic_context.js");
+
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -84,15 +95,7 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
 var BOTTOM_MARGIN = 50;
-var MARGIN_SIZE = 17; // Note: it seems like the sendbeacon doesn't work if this callback has a line
-// before the sendbeacon
-
-window.addEventListener("unload", function sendRemove() {
-  navigator.sendBeacon("/delete_container_on_unload", JSON.stringify({
-    "container_id": window.module_viewer_id,
-    "notify": false
-  }));
-});
+var MARGIN_SIZE = 17;
 
 var CreatorViewerSocket = /*#__PURE__*/function (_TacticSocket) {
   _inherits(CreatorViewerSocket, _TacticSocket);
@@ -109,26 +112,15 @@ var CreatorViewerSocket = /*#__PURE__*/function (_TacticSocket) {
     key: "initialize_socket_stuff",
     value: function initialize_socket_stuff() {
       var reconnect = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-      this.socket.emit('join', {
-        "room": window.user_id
-      });
 
-      if (reconnect) {
-        this.socket.emit('join-main', {
-          "room": this.extra_args.module_viewer_id,
-          "user_id": window.user_id
+      if (!window.in_context) {
+        this.socket.emit('join', {
+          "room": window.user_id
+        });
+        this.socket.on("doFlash", function (data) {
+          (0, _toaster.doFlash)(data);
         });
       }
-
-      this.socket.on('handle-callback', _communication_react.handleCallback);
-      this.socket.on('close-user-windows', function (data) {
-        if (!(data["originator"] == window.module_viewer_id)) {
-          window.close();
-        }
-      });
-      this.socket.on("doFlash", function (data) {
-        (0, _toaster.doFlash)(data);
-      });
     }
   }]);
 
@@ -136,36 +128,43 @@ var CreatorViewerSocket = /*#__PURE__*/function (_TacticSocket) {
 }(_tactic_socket.TacticSocket);
 
 function tile_creator_main() {
-  function gotElement(the_element) {
+  function gotProps(the_props) {
+    var CreatorAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(CreatorApp));
+
+    var the_element = /*#__PURE__*/_react["default"].createElement(CreatorAppPlus, _extends({}, the_props, {
+      controlled: false,
+      initial_theme: window.theme,
+      changeName: null
+    }));
+
     var domContainer = document.querySelector('#creator-root');
     ReactDOM.render(the_element, domContainer);
   }
 
+  (0, _utilities_react.renderSpinnerMessage)("Starting up ...", '#creator-root');
   (0, _communication_react.postAjaxPromise)("view_in_creator_in_context", {
     "resource_name": window.module_name
   }).then(function (data) {
-    tile_creator_main_in_context(data, null, gotElement);
+    creator_props(data, null, gotProps);
   });
 }
 
-function tile_creator_main_in_context(data, registerThemeSetter, finalCallback) {
-  var ref = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
-  var tsocket = new CreatorViewerSocket("main", 5000, {
-    module_viewer_id: data.module_viewer_id
-  });
-
-  if (!window.in_context) {
-    window.main_id = data.module_viewer_id; // needed for postWithCallback
-  }
-
+function creator_props(data, registerDirtyMethod, finalCallback) {
+  var tsocket = new CreatorViewerSocket("main", 5000);
   var mdata = data.mdata;
   var split_tags = mdata.tags == "" ? [] : mdata.tags.split(" ");
   var module_name = data.resource_name;
   var module_viewer_id = data.module_viewer_id;
   var tile_collection_name = data.tile_collection_name;
-  tsocket.socket.on("remove-ready-block", function () {
-    return _everyone_ready_in_context();
+  tsocket.socket.on('handle-callback', function (task_packet) {
+    (0, _communication_react.handleCallback)(task_packet, module_viewer_id);
   });
+
+  function readyListener() {
+    _everyone_ready_in_context(finalCallback);
+  }
+
+  tsocket.socket.on("remove-ready-block", readyListener);
   tsocket.socket.emit('join-main', {
     "room": data.module_viewer_id,
     "user_id": window.user_id
@@ -179,7 +178,11 @@ function tile_creator_main_in_context(data, registerThemeSetter, finalCallback) 
     });
   });
 
-  function _everyone_ready_in_context() {
+  function _everyone_ready_in_context(finalCallback) {
+    if (!window.in_context) {
+      (0, _utilities_react.renderSpinnerMessage)("Everyone is ready, initializing...", '#creator-root');
+    }
+
     var the_content = {
       "module_name": module_name,
       "module_viewer_id": module_viewer_id,
@@ -187,12 +190,22 @@ function tile_creator_main_in_context(data, registerThemeSetter, finalCallback) 
       "user_id": window.user_id,
       "version_string": window.version_string
     };
+    window.addEventListener("unload", function sendRemove() {
+      navigator.sendBeacon("/delete_container_on_unload", JSON.stringify({
+        "container_id": module_viewer_id,
+        "notify": false
+      }));
+    });
     (0, _communication_react.postWithCallback)(module_viewer_id, "initialize_parser", the_content, function (pdata) {
       return got_parsed_data_in_context(pdata);
-    });
+    }, null, module_viewer_id);
 
     function got_parsed_data_in_context(data_object) {
-      var CreatorAppPlus = (0, _toaster.withStatus)((0, _error_drawer.withErrorDrawer)(CreatorApp, tsocket, false, ref));
+      if (!window.in_context) {
+        (0, _utilities_react.renderSpinnerMessage)("Creating the page...", '#creator-root');
+      }
+
+      tsocket.socket.off("remove-ready-block", readyListener);
       var parsed_data = data_object.the_content;
       var category = parsed_data.category ? parsed_data.category : "basic";
       var result_dict = {
@@ -246,11 +259,10 @@ function tile_creator_main_in_context(data, registerThemeSetter, finalCallback) 
         _iterator.f();
       }
 
-      finalCallback( /*#__PURE__*/_react["default"].createElement(CreatorAppPlus, {
+      finalCallback({
+        resource_name: module_name,
         tsocket: tsocket,
-        module_name: module_name,
         module_viewer_id: module_viewer_id,
-        registerThemeSetter: registerThemeSetter,
         is_mpl: parsed_data.is_mpl,
         is_d3: parsed_data.is_d3,
         render_content_code: parsed_data.render_content_code,
@@ -267,8 +279,9 @@ function tile_creator_main_in_context(data, registerThemeSetter, finalCallback) 
         initial_theme: window.theme,
         option_list: parsed_data.option_dict,
         export_list: parsed_data.export_list,
-        created: mdata.datestring
-      }));
+        created: mdata.datestring,
+        registerDirtyMethod: registerDirtyMethod
+      });
     }
   }
 }
@@ -284,13 +297,14 @@ function TileCreatorToolbar(props) {
     flexDirection: "row",
     justifyContent: "space-around",
     marginBottom: 0,
-    marginTop: 7
+    marginTop: 7,
+    whiteSpace: "nowrap"
   };
   return /*#__PURE__*/_react["default"].createElement("div", {
     style: tstyle,
     className: "d-flex flex-row justify-content-between"
   }, /*#__PURE__*/_react["default"].createElement(_blueprint_toolbar.Namebutton, {
-    resource_name: props.tile_name,
+    resource_name: props.resource_name,
     setResourceNameState: props.setResourceNameState,
     res_type: props.res_type,
     large: false
@@ -299,9 +313,21 @@ function TileCreatorToolbar(props) {
     alternate_outer_style: toolbar_outer_style
   })), /*#__PURE__*/_react["default"].createElement(_library_widgets.SearchForm, {
     update_search_state: props.update_search_state,
-    search_string: props.search_string
+    search_string: props.search_string,
+    field_width: 200
   }));
 }
+
+TileCreatorToolbar.proptypes = {
+  button_groups: _propTypes["default"].array,
+  setResourceNameState: _propTypes["default"].func,
+  resource_name: _propTypes["default"].string,
+  search_string: _propTypes["default"].string,
+  update_search_state: _propTypes["default"].func,
+  res_type: _propTypes["default"].string
+};
+TileCreatorToolbar.defaultProps = {};
+var controllable_props = ["resource_name", "usable_height", "usable_width"];
 
 var CreatorApp = /*#__PURE__*/function (_React$Component) {
   _inherits(CreatorApp, _React$Component);
@@ -315,10 +341,16 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
 
     _this = _super2.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
+
+    if (!props.controlled) {
+      props.tsocket.socket.on('close-user-windows', function (data) {
+        if (!(data["originator"] == props.resource_viewer_id)) {
+          window.close();
+        }
+      });
+    }
+
     _this.top_ref = /*#__PURE__*/_react["default"].createRef();
-    var aheight = (0, _sizing_tools.getUsableDimensions)().usable_height;
-    var awidth = (0, _sizing_tools.getUsableDimensions)().usable_width;
-    var bheight = (0, _sizing_tools.getUsableDimensions)().usable_height;
     _this.options_ref = /*#__PURE__*/_react["default"].createRef();
     _this.left_div_ref = /*#__PURE__*/_react["default"].createRef();
     _this.right_div_ref = /*#__PURE__*/_react["default"].createRef();
@@ -336,7 +368,6 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     _this.line_number = _this.props.initial_line_number;
     _this.socket_counter = null;
     _this.state = {
-      tile_name: props.module_name,
       foregrounded_panes: {
         "metadata": true,
         "options": false,
@@ -359,17 +390,45 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       category: _this.props.category,
       total_height: window.innerHeight,
       selectedTabId: "metadata",
-      usable_width: awidth,
       old_usable_width: 0,
-      usable_height: aheight,
-      dark_theme: _this.props.initial_theme == "dark",
-      body_height: bheight,
-      top_pane_height: _this.props.is_mpl || _this.props.is_d3 ? aheight / 2 - 25 : null,
-      bottom_pane_height: _this.props.is_mpl || _this.props.is_d3 ? aheight / 2 - 25 : null,
-      left_pane_width: awidth / 2 - 25,
       methodsTabRefreshRequired: true // This is toggled back and forth to force refresh
 
     };
+
+    var self = _assertThisInitialized(_this);
+
+    if (props.controlled) {
+      props.registerDirtyMethod(_this._dirty);
+    } else {
+      var _aheight = (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
+
+      var _awidth = (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
+
+      _this.state.usable_height = _aheight;
+      _this.state.usable_width = _awidth;
+      _this.state.dark_theme = props.initial_theme === "dark";
+      window.dark_theme = _this.state.dark_theme;
+      _this.state.resource_name = props.resource_name;
+      window.addEventListener("beforeunload", function (e) {
+        if (self._dirty()) {
+          e.preventDefault();
+          e.returnValue = '';
+        }
+      });
+    }
+
+    var aheight;
+    var awidth;
+
+    if (!props.controlled) {
+      aheight = (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
+      awidth = (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
+    } else {
+      var _aheight2 = _this.props.usable_height;
+      var width = _this.props.usable_width;
+    }
+
+    _this.state.top_pane_height = _this.props.is_mpl || _this.props.is_d3 ? aheight / 2 - 25 : null, _this.state.bottom_pane_height = _this.props.is_mpl || _this.props.is_d3 ? aheight / 2 - 35 : null, _this.state.left_pane_width = awidth / 2 - 25, _this.state.bheight = aheight;
     _this._setResourceNameState = _this._setResourceNameState.bind(_assertThisInitialized(_this));
     _this.handleStateChange = _this.handleStateChange.bind(_assertThisInitialized(_this));
     _this.handleRenderContentChange = _this.handleRenderContentChange.bind(_assertThisInitialized(_this));
@@ -380,19 +439,15 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     _this.handleMethodsChange = _this.handleMethodsChange.bind(_assertThisInitialized(_this));
     _this.handleLeftPaneResize = _this.handleLeftPaneResize.bind(_assertThisInitialized(_this));
     _this.handleTopPaneResize = _this.handleTopPaneResize.bind(_assertThisInitialized(_this));
-
-    var self = _assertThisInitialized(_this);
-
-    window.addEventListener("beforeunload", function (e) {
-      if (self.dirty()) {
-        e.preventDefault();
-        e.returnValue = '';
-      }
-    });
     return _this;
   }
 
   _createClass(CreatorApp, [{
+    key: "_cProp",
+    value: function _cProp(pname) {
+      return this.props.controlled ? this.props[pname] : this.state[pname];
+    }
+  }, {
     key: "button_groups",
     get: function get() {
       var _this2 = this;
@@ -424,7 +479,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         "name_text": "Share",
         "icon_name": "share",
         "click_handler": function click_handler() {
-          (0, _resource_viewer_react_app.sendToRepository)("tile", _this2.state.tile_name);
+          (0, _resource_viewer_react_app.sendToRepository)("tile", _this2._cProp("resource_name"));
         },
         tooltip: "Send to repository"
       }], [{
@@ -472,27 +527,23 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_setTheme",
     value: function _setTheme(dark_theme) {
-      var _this3 = this;
-
       this.setState({
         dark_theme: dark_theme
       }, function () {
-        _this3.props.setStatusTheme(dark_theme);
-
         if (!window.in_context) {
-          window.dark_theme = _this3.state.dark_theme;
+          window.dark_theme = dark_theme;
         }
       });
     }
   }, {
     key: "_showHistoryViewer",
     value: function _showHistoryViewer() {
-      window.open("".concat($SCRIPT_ROOT, "/show_history_viewer/").concat(this.state.tile_name));
+      window.open("".concat($SCRIPT_ROOT, "/show_history_viewer/").concat(this.state.resource_name));
     }
   }, {
     key: "_showTileDiffer",
     value: function _showTileDiffer() {
-      window.open("".concat($SCRIPT_ROOT, "/show_tile_differ/").concat(this.state.tile_name));
+      window.open("".concat($SCRIPT_ROOT, "/show_tile_differ/").concat(this.state.resource_name));
     }
   }, {
     key: "_doFlashStopSpinner",
@@ -525,8 +576,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       }
     }
   }, {
-    key: "dirty",
-    value: function dirty() {
+    key: "_dirty",
+    value: function _dirty() {
       var current_state = this._getSaveDict();
 
       for (var k in current_state) {
@@ -545,9 +596,9 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       this.doSavePromise().then(function () {
         self.props.statusMessage("Loading Module");
         (0, _communication_react.postWithCallback)("host", "load_tile_module_task", {
-          "tile_module_name": self.state.tile_name,
+          "tile_module_name": self._cProp("resource_name"),
           "user_id": user_id
-        }, load_success);
+        }, load_success, null, self.props.module_viewer_id);
       })["catch"](function (data) {
         self._logErrorStopSpinner(data.message, "Error loading module", true, data.line_number);
       });
@@ -622,7 +673,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     key: "_getSaveDict",
     value: function _getSaveDict() {
       return {
-        "module_name": this.state.tile_name,
+        "module_name": this._cProp("resource_name"),
         "category": this.state.category.length == 0 ? "basic" : this.state.category,
         "tags": this.get_tags_string(),
         "notes": this.state.notes,
@@ -651,7 +702,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           } else {
             reject(data);
           }
-        });
+        }, null, self.props.module_viewer_id);
       });
     }
   }, {
@@ -660,7 +711,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       var self = this;
       return new Promise(function (resolve, reject) {
         (0, _communication_react.postAjax)("checkpoint_module", {
-          "module_name": self.state.tile_name
+          "module_name": self._cProp("resource_name")
         }, function (data) {
           if (data.success) {
             resolve(data);
@@ -684,15 +735,20 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     }
   }, {
     key: "_update_window_dimensions",
-    value: function _update_window_dimensions() {// let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
-      // let uheight = window.innerHeight;
-      // if (this.top_ref && this.top_ref.current) {
-      //     uheight = uheight - this.top_ref.current.offsetTop;
-      // }
-      // else {
-      //     uheight = uheight - USUAL_TOOLBAR_HEIGHT
-      // }
-      // this.setState({usable_height: uheight, usable_width: uwidth})
+    value: function _update_window_dimensions() {
+      var uwidth = window.innerWidth - 2 * _sizing_tools.SIDE_MARGIN;
+      var uheight = window.innerHeight;
+
+      if (this.top_ref && this.top_ref.current) {
+        uheight = uheight - this.top_ref.current.offsetTop;
+      } else {
+        uheight = uheight - _sizing_tools.USUAL_TOOLBAR_HEIGHT;
+      }
+
+      this.setState({
+        usable_height: uheight,
+        usable_width: uwidth
+      });
     }
   }, {
     key: "_update_saved_state",
@@ -772,25 +828,20 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         "mounted": true
       });
 
-      if (!window.in_context) {
-        document.title = this.state.tile_name;
-      }
-
       this._goToLineNumber();
 
       this.props.setGoToLineNumber(this._selectLineNumber);
-      window.addEventListener("resize", this._update_window_dimensions);
-
-      this._update_window_dimensions();
 
       this._update_saved_state();
 
       this.props.stopSpinner();
-      this.props.setStatusTheme(this.state.dark_theme);
       this.initSocket();
 
-      if (window.in_context) {
-        this.props.registerThemeSetter(this._setTheme);
+      if (!this.props.controlled) {
+        document.title = this.state.resource_name;
+        window.addEventListener("resize", this._update_window_dimensions);
+
+        this._update_window_dimensions();
       }
     }
   }, {
@@ -803,14 +854,31 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       }
     }
   }, {
+    key: "componentWillUnmount",
+    value: function componentWillUnmount() {
+      this.delete_my_container();
+    }
+  }, {
+    key: "delete_my_container",
+    value: function delete_my_container() {
+      (0, _communication_react.postAjax)("/delete_container_on_unload", {
+        "container_id": this.props.module_viewer_id,
+        "notify": false
+      });
+    }
+  }, {
     key: "initSocket",
     value: function initSocket() {
-      var _this4 = this;
+      var _this3 = this;
 
+      this.props.tsocket.socket.emit('join-main', {
+        "room": this.props.module_viewer_id,
+        "user_id": window.user_id
+      });
       this.props.tsocket.socket.on('focus-me', function (data) {
         window.focus();
 
-        _this4._selectLineNumber(data.line_number);
+        _this3._selectLineNumber(data.line_number);
       });
       this.socket_counter = this.props.tsocket.counter;
     } // This toggles methodsTabRefreshRequired back and forth to force a refresh
@@ -827,7 +895,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_handleTabSelect",
     value: function _handleTabSelect(newTabId, prevTabid, event) {
-      var _this5 = this;
+      var _this4 = this;
 
       this._refreshMethodsIfNecessary(newTabId); // if (this.state.foregrounded_panes[newTabId]) return;
 
@@ -838,7 +906,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         selectedTabId: newTabId,
         foregrounded_panes: new_fg
       }, function () {
-        _this5._update_window_dimensions();
+        _this4._update_window_dimensions();
       });
     }
   }, {
@@ -882,15 +950,15 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
 
       if (this.state.mounted) {
         // This will be true after the initial render
-        var offset = $(element_ref.current).offset().top;
+        var offset = element_ref.current.offsetTop;
 
         if (offset < min_offset) {
           offset = min_offset;
         }
 
-        return this.state.body_height - offset;
+        return this._cProp("usable_height") - offset;
       } else {
-        return this.state.body_height - default_offset;
+        return this._cProp("usable_height") - default_offset;
       }
     }
   }, {
@@ -917,7 +985,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     value: function handleTopPaneResize(top_height, bottom_height, top_fraction) {
       this.setState({
         "top_pane_height": top_height,
-        "bottom_pane_height": bottom_height
+        "bottom_pane_height": bottom_height - 10
       });
     }
   }, {
@@ -950,60 +1018,40 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_setResourceNameState",
     value: function _setResourceNameState(new_name) {
-      this.setState({
-        "tile_name": new_name
-      });
+      if (this.props.controlled) {
+        this.props.changeResourceName(new_name);
+      } else {
+        this.setState({
+          "resource_name": new_name
+        });
+      }
     }
   }, {
     key: "_handleResize",
-    value: function _handleResize(entries) {
-      if (window.in_context) {
-        var _iterator5 = _createForOfIteratorHelper(entries),
-            _step5;
-
-        try {
-          for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-            var entry = _step5.value;
-
-            if (entry.target.className.includes("pane-holder")) {
-              // Must used window.innerWidth here otherwise we get the wrong value during initial mounting
-              this.setState({
-                usable_width: entry.contentRect.width - this.top_ref.current.offsetLeft - 30,
-                usable_height: entry.contentRect.height - this.top_ref.current.offsetTop,
-                body_height: entry.contentRect.height - this.top_ref.current.offsetTop
-              });
-              return;
-            }
-          }
-        } catch (err) {
-          _iterator5.e(err);
-        } finally {
-          _iterator5.f();
-        }
-      } else {
-        var _iterator6 = _createForOfIteratorHelper(entries),
-            _step6;
-
-        try {
-          for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-            var _entry = _step6.value;
-
-            if (_entry.target.className.id == "creator-root") {
-              // Must used window.innerWidth here otherwise we get the wrong value during initial mounting
-              this.setState({
-                usable_width: _entry.contentRect.width - this.top_ref.current.offsetLeft - 30,
-                usable_height: _entry.contentRect.height - this.top_ref.current.offsetTop,
-                body_height: _entry.contentRect.height - this.top_ref.current.offsetTop
-              });
-              return;
-            }
-          }
-        } catch (err) {
-          _iterator6.e(err);
-        } finally {
-          _iterator6.f();
-        }
-      }
+    value: function _handleResize(entries) {// if (window.in_context) {
+      //     for (let entry of entries) {
+      //         if (entry.target.className.includes("pane-holder")) {
+      //             // Must used window.innerWidth here otherwise we get the wrong value during initial mounting
+      //             this.setState({usable_width: entry.contentRect.width - this.top_ref.current.offsetLeft - 30,
+      //                 usable_height: entry.contentRect.height - this.top_ref.current.offsetTop,
+      //                 body_height: entry.contentRect.height - this.top_ref.current.offsetTop
+      //             });
+      //             return
+      //         }
+      //     }
+      // }
+      // else {
+      //     for (let entry of entries) {
+      //         if (entry.target.className.id == "creator-root") {
+      //             // Must used window.innerWidth here otherwise we get the wrong value during initial mounting
+      //             this.setState({usable_width: entry.contentRect.width - this.top_ref.current.offsetLeft - 30,
+      //                 usable_height: entry.contentRect.height - this.top_ref.current.offsetTop,
+      //                 body_height: entry.contentRect.height - this.top_ref.current.offsetTop
+      //             });
+      //             return
+      //         }
+      //     }
+      // }
     }
   }, {
     key: "_setDpObject",
@@ -1023,20 +1071,39 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
-      //let hp_height = this.get_height_minus_top_offset(this.hp_ref);
+      var dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme; //let hp_height = this.get_height_minus_top_offset(this.hp_ref);
+
+      var my_props = _objectSpread({}, this.props);
+
+      if (!this.props.controlled) {
+        var _iterator5 = _createForOfIteratorHelper(controllable_props),
+            _step5;
+
+        try {
+          for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+            var prop_name = _step5.value;
+            my_props[prop_name] = this.state[prop_name];
+          }
+        } catch (err) {
+          _iterator5.e(err);
+        } finally {
+          _iterator5.f();
+        }
+      }
+
       var vp_height = this.get_height_minus_top_offset(this.vp_ref);
       var code_width = this.state.left_pane_width - 10;
       var ch_style = {
-        "width": code_width
+        "width": "100%"
       };
       var tc_item;
 
-      if (this.props.is_mpl || this.props.is_d3) {
+      if (my_props.is_mpl || my_props.is_d3) {
         var tc_height = this.get_new_tc_height();
-        var mode = this.props.is_mpl ? "python" : "javascript";
-        var code_content = this.props.is_mpl ? this.state.draw_plot_code : this.state.jscript_code;
-        var first_line_number = this.props.is_mpl ? this.state.draw_plot_line_number + 1 : 1;
-        var title_label = this.props.is_mpl ? "draw_plot" : "(selector, w, h, arg_dict) =>";
+        var mode = my_props.is_mpl ? "python" : "javascript";
+        var code_content = my_props.is_mpl ? this.state.draw_plot_code : this.state.jscript_code;
+        var first_line_number = my_props.is_mpl ? this.state.draw_plot_line_number + 1 : 1;
+        var title_label = my_props.is_mpl ? "draw_plot" : "(selector, w, h, arg_dict) =>";
         tc_item = /*#__PURE__*/_react["default"].createElement("div", {
           key: "dpcode",
           style: ch_style,
@@ -1048,10 +1115,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           mode: mode,
           handleChange: this.handleTopCodeChange,
           saveMe: this._saveAndCheckpoint,
-          readOnly: false,
           setCMObject: this._setDpObject,
           search_term: this.state.search_string,
-          dark_theme: this.state.dark_theme,
           first_line_number: first_line_number,
           code_container_height: tc_height
         }));
@@ -1059,7 +1124,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
 
       var rc_height;
 
-      if (this.props.is_mpl || this.props.is_d3) {
+      if (my_props.is_mpl || my_props.is_d3) {
         rc_height = this.get_new_rc_height(this.state.bottom_pane_height);
       } else {
         rc_height = this.get_new_rc_height(vp_height);
@@ -1077,19 +1142,19 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         code_content: this.state.render_content_code,
         handleChange: this.handleRenderContentChange,
         saveMe: this._saveAndCheckpoint,
-        readOnly: false,
         setCMObject: this._setRcObject,
         search_term: this.state.search_string,
-        dark_theme: this.state.dark_theme,
         first_line_number: this.state.render_content_line_number + 1,
         code_container_height: rc_height
       }));
 
       var left_pane;
 
-      if (this.props.is_mpl || this.props.is_d3) {
+      if (my_props.is_mpl || my_props.is_d3) {
         left_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(TileCreatorToolbar, {
-          tile_name: this.state.tile_name,
+          controlled: this.props.controlled,
+          am_selected: this.props.am_selected,
+          resource_name: my_props.resource_name,
           setResourceNameState: this._setResourceNameState,
           res_type: "tile",
           button_groups: this.button_groups,
@@ -1103,13 +1168,13 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           bottom_pane: bc_item,
           show_handle: true,
           available_height: vp_height,
-          available_width: this.state.left_pane_width,
+          available_width: this.state.left_pane_width - 25,
           handleSplitUpdate: this.handleTopPaneResize,
           id: "creator-left"
         }));
       } else {
         left_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(TileCreatorToolbar, {
-          tile_name: this.state.tile_name,
+          resource_name: my_props.resource_name,
           setResourceNameState: this._setResourceNameState,
           res_type: "tile",
           button_groups: this.button_groups,
@@ -1124,7 +1189,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       var mdata_panel = /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.CombinedMetadata, {
         tags: this.state.tags,
         notes: this.state.notes,
-        created: this.props.created,
+        created: my_props.created,
         category: this.state.category,
         res_type: "tile",
         handleChange: this.handleStateChange
@@ -1156,11 +1221,9 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         code_content: this.state.extra_functions,
         saveMe: this._saveAndCheckpoint,
         setCMObject: this._setEmObject,
-        readOnly: false,
         code_container_ref: this.methods_ref,
         code_container_height: methods_height,
         search_term: this.state.search_string,
-        dark_theme: this.state.dark_theme,
         first_line_number: this.state.extra_methods_line_number,
         refresh_required: this.state.methodsTabRefreshRequired
       }));
@@ -1205,30 +1268,38 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
 
       var outer_style = {
         width: "100%",
-        height: this.state.usable_height,
-        paddingLeft: _sizing_tools.SIDE_MARGIN
+        height: my_props.usable_height,
+        paddingLeft: this.props.controlled ? 5 : _sizing_tools.SIDE_MARGIN
       };
       var outer_class = "resource-viewer-holder";
 
       if (!window.in_context) {
-        if (this.state.dark_theme) {
+        if (dark_theme) {
           outer_class = outer_class + " bp3-dark";
         } else {
           outer_class = outer_class + " light-theme";
         }
       }
 
-      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, !window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+      if (this.top_ref && this.top_ref.current) {
+        my_props.usable_width = my_props.usable_width - this.top_ref.current.offsetLeft;
+      }
+
+      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_tactic_context.TacticContext.Provider, {
+        value: {
+          readOnly: this.props.readOnly,
+          tsocket: this.props.tsocket,
+          dark_theme: dark_theme,
+          setTheme: this.props.controlled ? this.context.setTheme : this._setTheme,
+          controlled: this.props.controlled,
+          am_selected: this.props.am_selected
+        }
+      }, !window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
         is_authenticated: window.is_authenticated,
         selected: null,
         show_api_links: true,
-        dark_theme: this.state.dark_theme,
-        set_parent_theme: this._setTheme,
         user_name: window.username
-      }), /*#__PURE__*/_react["default"].createElement(_core.ResizeSensor, {
-        onResize: this._handleResize,
-        observeParents: true
-      }, /*#__PURE__*/_react["default"].createElement("div", {
+      }), /*#__PURE__*/_react["default"].createElement("div", {
         className: outer_class,
         ref: this.top_ref,
         style: outer_style
@@ -1236,8 +1307,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         left_pane: left_pane,
         right_pane: right_pane,
         show_handle: true,
-        available_height: this.state.usable_height,
-        available_width: this.state.usable_width,
+        available_height: my_props.usable_height,
+        available_width: my_props.usable_width,
         handleSplitUpdate: this.handleLeftPaneResize
       }))));
     }
@@ -1246,7 +1317,14 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
   return CreatorApp;
 }(_react["default"].Component);
 
+exports.CreatorApp = CreatorApp;
 CreatorApp.propTypes = {
+  controlled: _propTypes["default"].bool,
+  am_selected: _propTypes["default"].bool,
+  changeResourceName: _propTypes["default"].func,
+  changeResourceTitle: _propTypes["default"].func,
+  changeResourceProps: _propTypes["default"].func,
+  updatePanel: _propTypes["default"].func,
   is_mpl: _propTypes["default"].bool,
   render_content_code: _propTypes["default"].string,
   render_content_line_number: _propTypes["default"].number,
@@ -1259,8 +1337,20 @@ CreatorApp.propTypes = {
   notes: _propTypes["default"].string,
   option_list: _propTypes["default"].array,
   export_list: _propTypes["default"].array,
-  created: _propTypes["default"].string
+  created: _propTypes["default"].string,
+  tsocket: _propTypes["default"].object,
+  usable_height: _propTypes["default"].number,
+  usable_width: _propTypes["default"].number
 };
+CreatorApp.defaultProps = {
+  am_selected: true,
+  controlled: false,
+  changeResourceName: null,
+  changeResourceTitle: null,
+  changeResourceProps: null,
+  updatePanel: null
+};
+CreatorApp.contextType = _tactic_context.TacticContext;
 
 if (!window.in_context) {
   tile_creator_main();

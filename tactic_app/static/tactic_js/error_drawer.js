@@ -57,10 +57,9 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
 function withErrorDrawer(WrappedComponent) {
-  var tsocket = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-  var title = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-  var position = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "right";
-  var size = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : "30%";
+  var title = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+  var position = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "right";
+  var size = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "30%";
   return /*#__PURE__*/function (_React$Component) {
     _inherits(_class, _React$Component);
 
@@ -73,7 +72,6 @@ function withErrorDrawer(WrappedComponent) {
 
       _this = _super.call(this, props);
       (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
-      _this.tsocket = tsocket;
       _this.state = {
         show_drawer: false,
         contents: [],
@@ -88,55 +86,64 @@ function withErrorDrawer(WrappedComponent) {
     _createClass(_class, [{
       key: "componentDidMount",
       value: function componentDidMount() {
-        if (this.tsocket) {
+        if (this.props.tsocket) {
           this.initSocket();
         }
       }
     }, {
       key: "componentDidUpdate",
       value: function componentDidUpdate() {
-        if (this.tsocket && this.tsocket.counter != this.socket_counter) {
+        if (this.props.tsocket && this.props.tsocket.counter != this.socket_counter) {
           this.initSocket();
         }
       }
     }, {
       key: "initSocket",
       value: function initSocket() {
-        this.tsocket.socket.on('close-error-drawer', this._close);
-        this.tsocket.socket.on('open-error-drawer', this._open);
-        this.tsocket.socket.on('add-error-drawer-entry', this._addEntry);
-        this.tsocket.socket.on("clear-error-drawer", this._clearAll);
-        this.socket_counter = this.tsocket.counter;
+        this.props.tsocket.reAttachListener('close-error-drawer', this._close);
+        this.props.tsocket.reAttachListener('open-error-drawer', this._open);
+        this.props.tsocket.reAttachListener('add-error-drawer-entry', this._addEntry);
+        this.props.tsocket.reAttachListener("clear-error-drawer", this._clearAll);
+        this.socket_counter = this.props.tsocket.counter;
       }
     }, {
       key: "_close",
-      value: function _close() {
-        this.setState({
-          show_drawer: false
-        });
+      value: function _close(data) {
+        if (data == null || !("main_id" in data) || data.main_id == this.props.main_id) {
+          this.setState({
+            show_drawer: false
+          });
+        }
       }
     }, {
       key: "_open",
-      value: function _open() {
-        this.setState({
-          show_drawer: true
-        });
+      value: function _open(data) {
+        if (data == null || !("main_id" in data) || data.main_id == this.props.main_id) {
+          this.setState({
+            show_drawer: true
+          });
+        }
       }
     }, {
       key: "_toggle",
-      value: function _toggle() {
-        this.setState({
-          show_drawer: !this.state.show_drawer
-        });
+      value: function _toggle(data) {
+        if (data == null || !("main_id" in data) || data.main_id == this.props.main_id) {
+          this.setState({
+            show_drawer: !this.state.show_drawer
+          });
+        }
       }
     }, {
       key: "_addEntry",
-      value: function _addEntry(entry) {
+      value: function _addEntry(data) {
         var open = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-        this.setState({
-          contents: [entry].concat(_toConsumableArray(this.state.contents)),
-          show_drawer: open
-        });
+
+        if (data == null || !("main_id" in data) || data.main_id == this.props.main_id) {
+          this.setState({
+            contents: [data].concat(_toConsumableArray(this.state.contents)),
+            show_drawer: open
+          });
+        }
       }
     }, {
       key: "_postAjaxFailure",
@@ -148,11 +155,13 @@ function withErrorDrawer(WrappedComponent) {
       }
     }, {
       key: "_clearAll",
-      value: function _clearAll() {
-        this.setState({
-          contents: [],
-          show_drawer: false
-        });
+      value: function _clearAll(data) {
+        if (data == null || !("main_id" in data) || data.main_id == this.props.main_id) {
+          this.setState({
+            contents: [],
+            show_drawer: false
+          });
+        }
       }
     }, {
       key: "_onClose",
@@ -185,6 +194,7 @@ function withErrorDrawer(WrappedComponent) {
         })), /*#__PURE__*/_react["default"].createElement(ErrorDrawer, _extends({}, this.state, {
           goToLineNumberFunc: this.state.goToLineNumber,
           title: "Error Drawer",
+          dark_theme: this.props.controlled ? this.props.dark_theme : window.dark_theme,
           size: this.state.error_drawer_size,
           onClose: this._onClose,
           clearAll: this._clearAll
@@ -324,7 +334,7 @@ var ErrorDrawer = /*#__PURE__*/function (_React$Component3) {
       });
       return /*#__PURE__*/_react["default"].createElement(_core.Drawer, {
         icon: "console",
-        className: window.dark_theme ? "bp3-dark" : "light-theme",
+        className: this.props.dark_theme ? "bp3-dark" : "light-theme",
         title: this.props.title,
         isOpen: this.props.show_drawer,
         position: this.props.position,

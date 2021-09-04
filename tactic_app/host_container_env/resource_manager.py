@@ -12,12 +12,12 @@ repository_user = User.get_user_by_username("repository")
 
 CHUNK_SIZE = int(int(os.environ.get("CHUNK_SIZE")) / 2)
 
-
-def doflash(message, alert_type='alert-info', user_id=None):
-    if user_id is None:
-        user_id = current_user.get_id()
-    data = {"message": message, "alert_type": alert_type}
-    socketio.emit('stop-spinner', data, namespace='/library', room=user_id)
+#
+# def doflash(message, alert_type='alert-info', user_id=None):
+#     if user_id is None:
+#         user_id = current_user.get_id()
+#     data = {"message": message, "alert_type": alert_type}
+#     socketio.emit('stop-spinner', data, namespace='/library', room=user_id)
 
 
 # noinspection PyMethodMayBeStatic
@@ -143,19 +143,19 @@ class ResourceManager(ExceptionMixin):
         return larray
 
     def show_um_message(self, message, library_id, timeout=3):
-        data = {"message": message, "timeout": timeout}
+        data = {"message": message, "timeout": timeout, "main_id": library_id}
         socketio.emit('show-status-msg', data, namespace='/library', room=library_id)
 
     def clear_um_message(self, library_id):
-        socketio.emit('clear-status-msg', {}, namespace='/library', room=library_id)
+        socketio.emit('clear-status-msg', {"main_id": library_id}, namespace='/library', room=library_id)
 
-    def start_library_spinner(self, library_id):
-        print("starting the library spinner")
-        socketio.emit('start-spinner', {}, namespace='/library', room=library_id)
-
-    def stop_library_spinner(self, library_id):
-        print("stopping the library spinner")
-        socketio.emit('stop-spinner', {}, namespace='/library', room=library_id)
+    # def start_library_spinner(self, library_id):
+    #     print("starting the library spinner")
+    #     socketio.emit('start-spinner', {"main_id": library_id}, namespace='/library', room=library_id)
+    #
+    # def stop_library_spinner(self, library_id):
+    #     print("stopping the library spinner")
+    #     socketio.emit('stop-spinner', {"main_id": library_id}, namespace='/library', room=library_id)
 
     def send_import_report(self, result, library_id):
         if "content" in result:

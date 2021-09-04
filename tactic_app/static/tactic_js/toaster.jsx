@@ -44,65 +44,65 @@ function doFlashAlways(data) {
     doFlash(data)
 }
 
-function withStatus(WrappedComponent, tsocket=null, light_dark=false, ref=null) {
+function withStatus(WrappedComponent) {
     return class extends React.Component {
         constructor(props) {
             super(props);
             doBinding(this);
-            this.tsocket = tsocket;
             this.state = {
                 show_spinner: false,
                 status_message: null,
-                dark_theme: false,
-                light_dark: light_dark,
                 spinner_size: this.props.spinner_size ? this.props.spinner_size : 25
             };
             this.socket_counter = null;
         }
 
         componentDidMount() {
-            if (this.tsocket) {
+            if (this.props.tsocket) {
                 this.initSocket();
             }
         }
 
         componentDidUpdate () {
-            if (this.tsocket && (this.tsocket.counter != this.socket_counter)) {
+            if (this.props.tsocket && (this.props.tsocket.counter != this.props.tsocket.socket_counter)) {
                 this.initSocket();
             }
         }
 
         initSocket() {
-            this.tsocket.socket.off('stop-spinner');
-            this.tsocket.socket.off('start-spinner');
-            this.tsocket.socket.off('show-status-msg');
-            this.tsocket.socket.off("clear-status-msg");
-
-            this.tsocket.socket.on('stop-spinner', this._stopSpinner);
-            this.tsocket.socket.on('start-spinner', this._startSpinner);
-            this.tsocket.socket.on('show-status-msg', this._statusMessageFromData);
-            this.tsocket.socket.on("clear-status-msg", this._clearStatusMessage);
-            this.socket_counter = this.tsocket.counter
+            this.props.tsocket.reAttachListener('stop-spinner', this._stopSpinner);
+            this.props.tsocket.reAttachListener('start-spinner', this._startSpinner);
+            this.props.tsocket.reAttachListener('show-status-msg', this._statusMessageFromData);
+            this.props.tsocket.reAttachListener("clear-status-msg", this._clearStatusMessage);
+            this.socket_counter = this.props.tsocket.counter
         }
 
-         _stopSpinner() {
-            this.setState({show_spinner: false})
+         _stopSpinner(data) {
+            if (data == null || (data.main_id == this.props.main_id)) {
+                this.setState({show_spinner: false})
+            }
         }
 
-        _startSpinner(dark_spinner=false) {
-            this.setState({show_spinner: true, dark_spinner: dark_spinner})
+        _startSpinner(data) {
+            if (data == null || (data.main_id == this.props.main_id)) {
+                this.setState({show_spinner: true, dark_spinner: false})
+            }
         }
 
-        _clearStatusMessage() {
-            this.setState({status_message: null});
+        _clearStatusMessage(data) {
+            if (data == null || (data.main_id == this.props.main_id)) {
+                this.setState({status_message: null});
+            }
         }
 
-        _clearStatus() {
-            this.setState({show_spinner: false, status_message: null});
+        _clearStatus(data) {
+            if (data == null || (data.main_id == this.props.main_id)) {
+                this.setState({show_spinner: false, status_message: null});
+            }
         }
 
         _statusMessage(message, timeout=null) {
-            this.setState({status_message: message}, ()=>{
+            this.setState({status_message: message}, () => {
                 if (timeout) {
                     setTimeout(self._clearStatusMessage, data.timeout * 1000);
                 }
@@ -110,20 +110,18 @@ function withStatus(WrappedComponent, tsocket=null, light_dark=false, ref=null) 
         }
 
         _statusMessageFromData(data) {
-            let self = this;
-            this.setState({status_message: data.message}, ()=>{
-                if (data.hasOwnProperty("timeout") && data.timeout != null) {
-                    setTimeout(self._clearStatusMessage, data.timeout * 1000);
-                }
-            });
+            if (data == null || (data.main_id == this.props.main_id)) {
+                let self = this;
+                this.setState({status_message: data.message}, () => {
+                    if (data.hasOwnProperty("timeout") && data.timeout != null) {
+                        setTimeout(self._clearStatusMessage, data.timeout * 1000);
+                    }
+                });
+            }
         }
 
         _setStatus(sstate) {
             this.setState(sstate)
-        }
-
-        _setStatusTheme(dark_theme) {
-            this.setState({dark_theme: dark_theme})
         }
 
         _statusFuncs() {
@@ -134,7 +132,6 @@ function withStatus(WrappedComponent, tsocket=null, light_dark=false, ref=null) 
                 clearStatusMessage: this._clearStatusMessage,
                 statusMessage: this._statusMessage,
                 setStatus: this._setStatus,
-                setStatusTheme: this._setStatusTheme
             }
         }
 
@@ -142,7 +139,7 @@ function withStatus(WrappedComponent, tsocket=null, light_dark=false, ref=null) 
             return (
                 <React.Fragment>
                     <WrappedComponent {...this.props}
-                                      ref={ref}
+                                      statusSocket={this.props.tsocket}
                                       statusFuncs={this._statusFuncs()}
                                       startSpinner={this._startSpinner}
                                       stopSpinner={this._stopSpinner}
@@ -150,9 +147,9 @@ function withStatus(WrappedComponent, tsocket=null, light_dark=false, ref=null) 
                                       clearStatusMessage={this._clearStatus}
                                       statusMessage={this._statusMessage}
                                       setStatus={this._setStatus}
-                                      setStatusTheme={this._setStatusTheme}
                     />
-                    <Status {...this.state}/>
+                    <Status {...this.state}
+                            dark_theme={this.props.controlled ? this.props.dark_theme : window.dark_theme}/>
                 </React.Fragment>
             )
         }
@@ -161,25 +158,38 @@ function withStatus(WrappedComponent, tsocket=null, light_dark=false, ref=null) 
 
 class Status extends React.Component {
 
+    constructor(props) {
+        super(props);
+        this.elRef = React.createRef();
+    }
+
     render () {
         let cname = "d-flex flex-row";
         let outer_cname;
         if (this.props.dark_theme) {
             outer_cname = "status-holder bp3-dark";
-            if (this.props.light_dark) {
-                outer_cname += " light-dark"
-            }
         }
         else {
             outer_cname = "status-holder light-theme"
         }
+        let left;
+        if (this.elRef && this.elRef.current) {
+            left = this.elRef.current.parentNode.offsetLeft + 25;
+        }
+        else {
+            left = 25;
+        }
+
+
         return (
-            <div style={{height: "100%", width: "100%", position: "absolute", "left": 0}} className={outer_cname}>
-                <div className={cname} style={{position: "absolute", bottom: 10, marginLeft: 15}}>
+            <div ref={this.elRef}
+                 style={{height: 35, width: "100%", position: "absolute", "left": left, "bottom": 0}}
+                 className={outer_cname}>
+                <div className={cname} style={{position: "absolute", bottom: 7, marginLeft: 15}}>
                     {this.props.show_spinner &&
                         <Spinner size={20} />}
                     {this.props.status_message &&
-                        <div className="d-flex flex-column justify-content-around" style={{positoin: "absolute", marginLeft: 50}}>
+                        <div className="d-flex flex-column justify-content-around" style={{marginLeft: 50}}>
                             <div id="status-msg-area" className="bp3-ui-text">{this.props.status_message}</div>
                         </div>
                     }

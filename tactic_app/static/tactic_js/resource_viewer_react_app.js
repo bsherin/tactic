@@ -33,6 +33,8 @@ var _toaster = require("./toaster.js");
 
 var _sizing_tools = require("./sizing_tools.js");
 
+var _tactic_context = require("./tactic_context.js");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
@@ -75,25 +77,17 @@ var ResourceViewerSocket = /*#__PURE__*/function (_TacticSocket) {
   _createClass(ResourceViewerSocket, [{
     key: "initialize_socket_stuff",
     value: function initialize_socket_stuff() {
-      var _this = this;
-
       var reconnect = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-      this.socket.emit('join', {
-        "room": window.user_id
-      });
-      this.socket.emit('join-main', {
-        "room": this.extra_args.resource_viewer_id,
-        "user_id": window.user_id
-      });
-      this.socket.on('handle-callback', _communication_react.handleCallback);
-      this.socket.on('close-user-windows', function (data) {
-        if (!(data["originator"] == _this.extra_args.resource_viewer_id)) {
-          window.close();
-        }
-      });
-      this.socket.on("doFlash", function (data) {
-        (0, _toaster.doFlash)(data);
-      });
+
+      if (!window.in_context) {
+        this.socket.emit('join', {
+          "room": window.user_id
+        }); // this.socket.emit('join-main', {"room": this.extra_args.resource_viewer_id, "user_id": window.user_id});
+
+        this.socket.on("doFlash", function (data) {
+          (0, _toaster.doFlash)(data);
+        });
+      }
     }
   }]);
 
@@ -137,35 +131,53 @@ var ResourceViewerApp = /*#__PURE__*/function (_React$Component) {
 
   var _super2 = _createSuper(ResourceViewerApp);
 
-  function ResourceViewerApp(props) {
-    var _this2;
+  function ResourceViewerApp(props, context) {
+    var _this;
 
     _classCallCheck(this, ResourceViewerApp);
 
-    _this2 = _super2.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this2));
-    _this2.top_ref = /*#__PURE__*/_react["default"].createRef();
-    _this2.savedContent = props.the_content;
-    _this2.savedTags = props.tags;
-    _this2.savedNotes = props.notes;
+    _this = _super2.call(this, props, context);
+    context.tsocket.socket.emit('join-main', {
+      "room": props.resource_viewer_id,
+      "user_id": window.user_id
+    });
+    context.tsocket.socket.on('handle-callback', function (task_packet) {
+      (0, _communication_react.handleCallback)(task_packet, props.resource_viewer_id);
+    });
 
-    var self = _assertThisInitialized(_this2);
+    if (!context.controlled) {
+      context.tsocket.socket.on('close-user-windows', function (data) {
+        if (!(data["originator"] == props.resource_viewer_id)) {
+          window.close();
+        }
+      });
+    }
 
-    _this2.mousetrap = new Mousetrap();
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
+    _this.top_ref = /*#__PURE__*/_react["default"].createRef();
+    _this.savedContent = props.the_content;
+    _this.savedTags = props.tags;
+    _this.savedNotes = props.notes;
 
-    _this2.mousetrap.bind(['command+s', 'ctrl+s'], function (e) {
-      self.props.saveMe();
-      e.preventDefault();
+    var self = _assertThisInitialized(_this);
+
+    _this.mousetrap = new Mousetrap();
+
+    _this.mousetrap.bind(['command+s', 'ctrl+s'], function (e) {
+      if (self.context.am_selected) {
+        self.props.saveMe();
+        e.preventDefault();
+      }
     });
 
     var aheight = (0, _sizing_tools.getUsableDimensions)().usable_height;
     var awidth = (0, _sizing_tools.getUsableDimensions)().usable_width - 170;
-    _this2.state = {
+    _this.state = {
       available_height: aheight,
       available_width: awidth
     };
-    _this2.state.mounted = false;
-    return _this2;
+    _this.state.mounted = false;
+    return _this;
   }
 
   _createClass(ResourceViewerApp, [{
@@ -214,13 +226,17 @@ var ResourceViewerApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
-      var left_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_blueprint_toolbar.ResourceviewerToolbar, {
+      var left_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_blueprint_toolbar.ResourceviewerToolbar //controlled={this.props.controlled}
+      //am_selected={this.props.am_selected}
+      , {
         button_groups: this.props.button_groups,
         setResourceNameState: this.props.setResourceNameState,
         resource_name: this.props.resource_name,
         show_search: this.props.show_search,
         search_string: this.props.search_string,
-        update_search_state: this.props.update_search_state,
+        update_search_state: this.props.update_search_state // tsocket={this.props.tsocket}
+        // dark_theme={this.props.dark_theme}
+        ,
         res_type: this.props.res_type
       }), this.props.children); //let available_height = this.get_new_hp_height(this.hp_ref);
 
@@ -275,9 +291,13 @@ ResourceViewerApp.propTypes = {
   handleStateChange: _propTypes["default"].func,
   meta_outer: _propTypes["default"].string,
   dark_theme: _propTypes["default"].bool,
+  tsocket: _propTypes["default"].object,
   saveMe: _propTypes["default"].func,
   children: _propTypes["default"].element
 };
 ResourceViewerApp.defaultProps = {
-  dark_theme: false
+  dark_theme: false,
+  am_selected: true,
+  controlled: false
 };
+ResourceViewerApp.contextType = _tactic_context.TacticContext;

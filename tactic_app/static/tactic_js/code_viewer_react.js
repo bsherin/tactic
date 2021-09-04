@@ -5,7 +5,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.code_viewer_in_context = code_viewer_in_context;
+exports.code_viewer_props = code_viewer_props;
+exports.CodeViewerApp = void 0;
 
 require("../tactic_css/tactic.scss");
 
@@ -18,8 +19,6 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 var _resource_viewer_react_app = require("./resource_viewer_react_app.js");
 
 var _reactCodemirror = require("./react-codemirror.js");
-
-var _resource_viewer_context = require("./resource_viewer_context.js");
 
 var _communication_react = require("./communication_react.js");
 
@@ -35,13 +34,19 @@ var _utilities_react2 = require("./utilities_react");
 
 var _blueprint_navbar = require("./blueprint_navbar");
 
+var _tactic_context = require("./tactic_context.js");
+
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
-function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
@@ -69,8 +74,18 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
+function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+
 function code_viewer_main() {
-  function gotElement(the_element) {
+  function gotProps(the_props) {
+    var CodeViewerAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(CodeViewerApp));
+
+    var the_element = /*#__PURE__*/_react["default"].createElement(CodeViewerAppPlus, _extends({}, the_props, {
+      controlled: false,
+      initial_theme: window.theme,
+      changeName: null
+    }));
+
     var domContainer = document.querySelector('#root');
     ReactDOM.render(the_element, domContainer);
   }
@@ -78,37 +93,30 @@ function code_viewer_main() {
   (0, _communication_react.postAjaxPromise)("view_code_in_context", {
     "resource_name": window.resource_name
   }).then(function (data) {
-    code_viewer_in_context(data, null, gotElement);
+    code_viewer_props(data, null, gotProps);
   });
 }
 
-function code_viewer_in_context(data, registerThemeSetter, finalCallback) {
-  var ref = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
+function code_viewer_props(data, registerDirtyMethod, finalCallback) {
   var resource_viewer_id = (0, _utilities_react2.guid)();
-
-  if (!window.in_context) {
-    window.resource_viewer_id = (0, _utilities_react2.guid)();
-    window.main_id = resource_viewer_id; // needed for postWithCallback
-  }
-
   var tsocket = new _resource_viewer_react_app.ResourceViewerSocket("main", 5000, {
     resource_viewer_id: resource_viewer_id
   });
-  var CodeViewerAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(CodeViewerApp, tsocket, false, ref));
-  var split_tags = data.mdata.tags == "" ? [] : data.mdata.tags.split(" ");
-  finalCallback( /*#__PURE__*/_react["default"].createElement(CodeViewerAppPlus, {
+  finalCallback({
+    resource_viewer_id: resource_viewer_id,
+    tsocket: tsocket,
+    split_tags: data.mdata.tags == "" ? [] : data.mdata.tags.split(" "),
     resource_name: data.resource_name,
     the_content: data.the_content,
-    registerThemeSetter: registerThemeSetter,
-    created: data.mdata.datestring,
-    initial_theme: window.theme,
-    tags: split_tags,
     notes: data.mdata.notes,
     readOnly: data.read_only,
     is_repository: false,
-    meta_outer: "#right-div"
-  }));
+    meta_outer: "#right-div",
+    registerDirtyMethod: registerDirtyMethod
+  });
 }
+
+var controllable_props = ["resource_name", "usable_height", "usable_width"];
 
 var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
   _inherits(CodeViewerApp, _React$Component);
@@ -125,29 +133,37 @@ var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
     _this.top_ref = /*#__PURE__*/_react["default"].createRef();
     _this.cc_ref = /*#__PURE__*/_react["default"].createRef();
     _this.savedContent = props.the_content;
-    _this.savedTags = props.tags;
+    _this.savedTags = props.split_tags;
     _this.savedNotes = props.notes;
 
     var self = _assertThisInitialized(_this);
 
-    window.addEventListener("beforeunload", function (e) {
-      if (self.dirty()) {
-        e.preventDefault();
-        e.returnValue = '';
-      }
-    });
-    var aheight = (0, _sizing_tools.getUsableDimensions)().usable_height;
-    var awidth = (0, _sizing_tools.getUsableDimensions)().usable_width;
     _this.state = {
-      resource_name: props.resource_name,
       code_content: props.the_content,
       notes: props.notes,
-      tags: props.tags,
-      usable_width: awidth,
-      usable_height: aheight,
-      search_string: "",
-      dark_theme: _this.props.initial_theme == "dark"
+      tags: props.split_tags,
+      search_string: ""
     };
+
+    if (props.controlled) {
+      props.registerDirtyMethod(_this._dirty);
+    }
+
+    if (!props.controlled) {
+      var aheight = (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
+      var awidth = (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
+      _this.state.usable_height = aheight;
+      _this.state.usable_width = awidth;
+      _this.state.dark_theme = props.initial_theme === "dark";
+      _this.state.resource_name = props.resource_name;
+      window.addEventListener("beforeunload", function (e) {
+        if (self._dirty()) {
+          e.preventDefault();
+          e.returnValue = '';
+        }
+      });
+    }
+
     return _this;
   }
 
@@ -159,34 +175,38 @@ var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "componentDidMount",
     value: function componentDidMount() {
-      window.addEventListener("resize", this._update_window_dimensions);
-
-      this._update_window_dimensions();
-
       this.props.stopSpinner();
-      this.props.setStatusTheme(this.state.dark_theme);
 
-      if (window.in_context) {
-        this.props.registerThemeSetter(this._setTheme);
-      } // window.dark_theme = this.state.dark_theme
+      if (!this.props.controlled) {
+        window.dark_theme = this.state.dark_theme;
+        window.addEventListener("resize", this._update_window_dimensions);
 
+        this._update_window_dimensions();
+      }
+    }
+  }, {
+    key: "_cProp",
+    value: function _cProp(pname) {
+      return this.props.controlled ? this.props[pname] : this.state[pname];
     }
   }, {
     key: "_update_window_dimensions",
     value: function _update_window_dimensions() {
-      var uwidth = window.innerWidth - 2 * _sizing_tools.SIDE_MARGIN;
-      var uheight = window.innerHeight;
+      if (!this.props.controlled) {
+        var uwidth = window.innerWidth - 2 * _sizing_tools.SIDE_MARGIN;
+        var uheight = window.innerHeight;
 
-      if (this.top_ref && this.top_ref.current) {
-        uheight = uheight - this.top_ref.current.offsetTop;
-      } else {
-        uheight = uheight - _sizing_tools.USUAL_TOOLBAR_HEIGHT;
+        if (this.top_ref && this.top_ref.current) {
+          uheight = uheight - this.top_ref.current.offsetTop;
+        } else {
+          uheight = uheight - _sizing_tools.USUAL_TOOLBAR_HEIGHT;
+        }
+
+        this.setState({
+          usable_height: uheight,
+          usable_width: uwidth
+        });
       }
-
-      this.setState({
-        usable_height: uheight,
-        usable_width: uwidth
-      });
     }
   }, {
     key: "_setTheme",
@@ -196,8 +216,6 @@ var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
       this.setState({
         dark_theme: dark_theme
       }, function () {
-        _this2.props.setStatusTheme(dark_theme);
-
         if (!window.in_context) {
           window.dark_theme = _this2.state.dark_theme;
         }
@@ -226,15 +244,10 @@ var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
           "click_handler": this._saveMe,
           tooltip: "Save"
         }, {
-          "name_text": "SaveAs",
-          "icon_name": "floppy-disk",
-          "click_handler": this._saveMeAs,
-          tooltip: "Save as"
-        }, {
           "name_text": "Share",
           "icon_name": "share",
           "click_handler": function click_handler() {
-            (0, _resource_viewer_react_app.sendToRepository)("code", _this3.state.resource_name);
+            (0, _resource_viewer_react_app.sendToRepository)("code", _this3._cProp("resource_name"));
           },
           tooltip: "Share to repository"
         }]];
@@ -272,9 +285,13 @@ var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_setResourceNameState",
     value: function _setResourceNameState(new_name) {
-      this.setState({
-        resource_name: new_name
-      });
+      if (this.props.controlled) {
+        this.props.changeResourceName(new_name);
+      } else {
+        this.setState({
+          resource_name: new_name
+        });
+      }
     }
   }, {
     key: "_handleCodeChange",
@@ -291,52 +308,79 @@ var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "get_new_cc_height",
     value: function get_new_cc_height() {
+      var uheight = this._cProp("usable_height");
+
       if (this.cc_ref && this.cc_ref.current) {
         // This will be true after the initial render
-        return this.state.usable_height - this.cc_ref.current.offsetTop;
+        return uheight - this.cc_ref.current.offsetTop;
       } else {
-        return this.state.usable_height - 100;
+        return uheight - 100;
       }
     }
   }, {
     key: "render",
     value: function render() {
-      var the_context = {
-        "readOnly": this.props.readOnly
-      };
+      var dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme; // let the_context = {"readOnly": this.props.readOnly};
+
+      var my_props = _objectSpread({}, this.props);
+
+      if (!this.props.controlled) {
+        var _iterator3 = _createForOfIteratorHelper(controllable_props),
+            _step3;
+
+        try {
+          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+            var prop_name = _step3.value;
+            my_props[prop_name] = this.state[prop_name];
+          }
+        } catch (err) {
+          _iterator3.e(err);
+        } finally {
+          _iterator3.f();
+        }
+      }
+
       var outer_style = {
         width: "100%",
-        height: this.state.usable_height,
+        height: my_props.usable_height,
         paddingLeft: _sizing_tools.SIDE_MARGIN
       };
       var cc_height = this.get_new_cc_height();
       var outer_class = "resource-viewer-holder";
 
-      if (!window.in_context) {
-        if (this.state.dark_theme) {
+      if (!this.props.controlled) {
+        if (dark_theme) {
           outer_class = outer_class + " bp3-dark";
         } else {
           outer_class = outer_class + " light-theme";
         }
       }
 
-      return /*#__PURE__*/_react["default"].createElement(_resource_viewer_context.ViewerContext.Provider, {
-        value: the_context
-      }, !window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+      return /*#__PURE__*/_react["default"].createElement(_tactic_context.TacticContext.Provider, {
+        value: {
+          readOnly: this.props.readOnly,
+          tsocket: this.props.tsocket,
+          dark_theme: dark_theme,
+          setTheme: this.props.controlled ? this.context.setTheme : this._setTheme,
+          controlled: this.props.controlled,
+          am_selected: this.props.am_selected
+        }
+      }, !this.props.controlled && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
         is_authenticated: window.is_authenticated,
         selected: null,
-        show_api_links: true,
-        dark_theme: this.state.dark_theme,
-        set_parent_theme: this._setTheme,
+        show_api_links: true // dark_theme={this.state.dark_theme}
+        // set_parent_theme={this._setTheme}
+        ,
         user_name: window.username
       }), /*#__PURE__*/_react["default"].createElement("div", {
         className: outer_class,
         ref: this.top_ref,
         style: outer_style
       }, /*#__PURE__*/_react["default"].createElement(_resource_viewer_react_app.ResourceViewerApp, _extends({}, this.props.statusFuncs, {
+        resource_viewer_id: this.props.resource_viewer_id,
         setResourceNameState: this._setResourceNameState,
         res_type: "code",
-        resource_name: this.state.resource_name,
+        resource_name: my_props.resource_name,
         button_groups: this.button_groups,
         handleStateChange: this._handleStateChange,
         created: this.props.created,
@@ -345,15 +389,12 @@ var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
         saveMe: this._saveMe,
         show_search: true,
         update_search_state: this._update_search_state,
-        dark_theme: this.state.dark_theme,
         meta_outer: this.props.meta_outer
       }), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
         code_content: this.state.code_content,
         handleChange: this._handleCodeChange,
         saveMe: this._saveMe,
-        readOnly: this.props.readOnly,
         search_term: this.state.search_string,
-        dark_theme: this.state.dark_theme,
         code_container_ref: this.cc_ref,
         code_container_height: cc_height
       }))));
@@ -367,14 +408,14 @@ var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
       var tags = this.state.tags; // In case it's modified wile saving
 
       var result_dict = {
-        "code_name": this.state.resource_name,
+        "code_name": this._cProp("resource_name"),
         "new_code": new_code,
         "tags": tagstring,
         "notes": notes,
         "user_id": window.user_id
       };
       var self = this;
-      (0, _communication_react.postWithCallback)("host", "update_code_task", result_dict, update_success);
+      (0, _communication_react.postWithCallback)("host", "update_code_task", result_dict, update_success, null, this.props.resource_viewer_id);
 
       function update_success(data) {
         if (data.success) {
@@ -398,8 +439,8 @@ var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
       return false;
     }
   }, {
-    key: "dirty",
-    value: function dirty() {
+    key: "_dirty",
+    value: function _dirty() {
       var current_content = this.state.code_content;
       var tags = this.state.tags;
       var notes = this.state.notes;
@@ -410,16 +451,33 @@ var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
   return CodeViewerApp;
 }(_react["default"].Component);
 
+exports.CodeViewerApp = CodeViewerApp;
 CodeViewerApp.propTypes = {
+  controlled: _propTypes["default"].bool,
+  am_selected: _propTypes["default"].bool,
+  changeResourceName: _propTypes["default"].func,
+  changeResourceTitle: _propTypes["default"].func,
+  changeResourceProps: _propTypes["default"].func,
+  updatePanel: _propTypes["default"].func,
   the_content: _propTypes["default"].string,
   created: _propTypes["default"].string,
   tags: _propTypes["default"].array,
   notes: _propTypes["default"].string,
-  dark_theme: _propTypes["default"].bool,
-  readOnly: _propTypes["default"].bool,
+  tsocket: _propTypes["default"].object,
   is_repository: _propTypes["default"].bool,
-  meta_outer: _propTypes["default"].string
+  meta_outer: _propTypes["default"].string,
+  usable_height: _propTypes["default"].number,
+  usable_width: _propTypes["default"].number
 };
+CodeViewerApp.defaultProps = {
+  am_selected: true,
+  controlled: false,
+  changeResourceName: null,
+  changeResourceTitle: null,
+  changeResourceProps: null,
+  updatePanel: null
+};
+CodeViewerApp.contextType = _tactic_context.TacticContext;
 
 if (!window.in_context) {
   code_viewer_main();

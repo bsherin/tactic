@@ -33,6 +33,8 @@ var _toaster = require("./toaster.js");
 
 var _utilities_react = require("./utilities_react.js");
 
+var _tactic_context = require("./tactic_context.js");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
@@ -122,25 +124,22 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate() {
-      if (this.props.tsocket.counter != this.socket_counter) {
+      if (this.context.tsocket.counter != this.socket_counter) {
         this.initSocket();
       }
     }
   }, {
+    key: "_handleTileSourceChange",
+    value: function _handleTileSourceChange(data) {
+      this._markSourceChange(data.tile_type);
+    }
+  }, {
     key: "initSocket",
     value: function initSocket() {
-      var self = this;
-      this.props.tsocket.socket.off("tile-message");
-      this.props.tsocket.socket.on("tile-message", this._handleTileMessage);
-      this.props.tsocket.socket.off("tile-finished-loading");
-      this.props.tsocket.socket.on("tile-finished-loading", function (data) {
-        self._handleTileFinishedLoading(data);
-      });
-      this.props.tsocket.socket.off("tile-source-change");
-      this.props.tsocket.socket.on('tile-source-change', function (data) {
-        self._markSourceChange(data.tile_type);
-      });
-      this.socket_counter = this.props.tsocket.counter;
+      this.context.tsocket.reAttachListener("tile-message", this._handleTileMessage);
+      this.context.tsocket.reAttachListener("tile-finished-loading", this._handleTileFinishedLoading);
+      this.context.tsocket.reAttachListener('tile-source-change', this._handleTileSourceChange);
+      this.socket_counter = this.context.tsocket.counter;
     }
   }, {
     key: "_resortTilesOld",
@@ -262,7 +261,7 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
         main_id: this.props.main_id,
         tile_id: tile_id
       };
-      (0, _communication_react.postWithCallback)(this.props.main_id, "RemoveTile", data_dict);
+      (0, _communication_react.postWithCallback)(this.props.main_id, "RemoveTile", data_dict, null, null, this.props.main_id);
     }
   }, {
     key: "_addToLog",
@@ -278,8 +277,11 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
     value: function _setTileValue(tile_id, field, value) {
       var callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
       var entry = this.get_tile_entry(tile_id);
-      entry[field] = value;
-      this.replace_tile_entry(tile_id, entry, callback);
+
+      if (entry) {
+        entry[field] = value;
+        this.replace_tile_entry(tile_id, entry, callback);
+      }
     }
   }, {
     key: "_setTileState",
@@ -314,28 +316,31 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_handleTileMessage",
     value: function _handleTileMessage(data) {
-      var self = this;
-      var handlerDict = {
-        hideOptions: function hideOptions(tile_id, data) {
-          return self._setTileValue(tile_id, "show_form", false);
-        },
-        startSpinner: function startSpinner(tile_id, data) {
-          return self._setTileValue(tile_id, "show_spinner", true);
-        },
-        stopSpinner: function stopSpinner(tile_id, data) {
-          return self._setTileValue(tile_id, "show_spinner", false);
-        },
-        displayTileContent: self._displayTileContent,
-        displayFormContent: function displayFormContent(tile_id, data) {
-          return self._setTileValue(tile_id, "form_data", data.form_data);
-        },
-        displayTileContentWithJavascript: self._displayTileContentWithJavascript,
-        updateLog: function updateLog(tile_id, data) {
-          return self._addToLog(tile_id, data.new_line);
-        }
-      };
       var tile_id = data.tile_id;
-      handlerDict[data.tile_message](tile_id, data);
+
+      if (this.tileIndex(tile_id) != -1) {
+        var self = this;
+        var handlerDict = {
+          hideOptions: function hideOptions(tile_id, data) {
+            return self._setTileValue(tile_id, "show_form", false);
+          },
+          startSpinner: function startSpinner(tile_id, data) {
+            return self._setTileValue(tile_id, "show_spinner", true);
+          },
+          stopSpinner: function stopSpinner(tile_id, data) {
+            return self._setTileValue(tile_id, "show_spinner", false);
+          },
+          displayTileContent: self._displayTileContent,
+          displayFormContent: function displayFormContent(tile_id, data) {
+            return self._setTileValue(tile_id, "form_data", data.form_data);
+          },
+          displayTileContentWithJavascript: self._displayTileContentWithJavascript,
+          updateLog: function updateLog(tile_id, data) {
+            return self._addToLog(tile_id, data.new_line);
+          }
+        };
+        handlerDict[data.tile_message](tile_id, data);
+      }
     }
   }, {
     key: "render",
@@ -352,7 +357,7 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
         id: "tile-div",
         main_id: this.props.main_id,
         style: outer_style,
-        helperClass: this.props.dark_theme ? "bp3-dark" : "light-theme",
+        helperClass: this.context.dark_theme ? "bp3-dark" : "light-theme",
         container_ref: this.props.tile_div_ref,
         ElementComponent: STileComponent,
         key_field_name: "tile_name",
@@ -382,16 +387,15 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
 exports.TileContainer = TileContainer;
 TileContainer.propTypes = {
   setMainStateValue: _propTypes["default"].func,
-  dark_theme: _propTypes["default"].bool,
   table_is_shrunk: _propTypes["default"].bool,
   tile_list: _propTypes["default"].array,
   tile_div_ref: _propTypes["default"].object,
   current_doc_name: _propTypes["default"].string,
   height: _propTypes["default"].number,
   broadcast_event: _propTypes["default"].func,
-  selected_row: _propTypes["default"].number,
-  tsocket: _propTypes["default"].object
+  selected_row: _propTypes["default"].number
 };
+TileContainer.contextType = _tactic_context.TacticContext;
 
 var RawSortHandle = /*#__PURE__*/function (_React$Component2) {
   _inherits(RawSortHandle, _React$Component2);
@@ -473,7 +477,7 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
       (0, _communication_react.postWithCallback)(this.props.tile_id, "TileSizeChange", {
         width: this.tdaWidth,
         height: this.tdaHeight
-      });
+      }, null, null, this.props.main_id);
     }
   }, {
     key: "_resizeTileAreaOld",
@@ -635,21 +639,21 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
         self._startLogStreaming();
 
         self._setTileBack(false);
-      });
+      }, null, this.props.main_id);
     }
   }, {
     key: "_startLogStreaming",
     value: function _startLogStreaming() {
       (0, _communication_react.postWithCallback)(this.props.main_id, "StartLogStreaming", {
         tile_id: this.props.tile_id
-      });
+      }, null, null, this.props.main_id);
     }
   }, {
     key: "_stopLogStreaming",
     value: function _stopLogStreaming() {
       (0, _communication_react.postWithCallback)(this.props.main_id, "StopLogStreaming", {
         tile_id: this.props.tile_id
-      });
+      }, null, null, this.props.main_id);
     }
   }, {
     key: "_toggleShrunk",
@@ -763,7 +767,7 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
       var self = this;
       (0, _communication_react.postWithCallback)(this.props.tile_id, "RefreshTile", {}, function () {
         self._stopSpinner();
-      });
+      }, null, self.props.main_id);
     }
   }, {
     key: "_reloadTile",
@@ -776,7 +780,7 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
 
       this._startSpinner();
 
-      (0, _communication_react.postWithCallback)(main_id, "reload_tile", data_dict, reload_success);
+      (0, _communication_react.postWithCallback)(self.props.main_id, "reload_tile", data_dict, reload_success, null, this.props.main_id);
 
       function reload_success(data) {
         if (data.success) {
@@ -810,7 +814,7 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
           data_dict.dataset[key] = dset[key];
         }
 
-        (0, _communication_react.postWithCallback)(self.props.tile_id, "TileElementClick", data_dict);
+        (0, _communication_react.postWithCallback)(self.props.tile_id, "TileElementClick", data_dict, null, null, self.props.main_id);
         e.stopPropagation();
       });
       $(this.body_ref.current).on(click_event, '.word-clickable', function (e) {
@@ -835,30 +839,30 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
         } while (range.toString().indexOf(' ') == -1 && range.toString().trim() !== '' && range.endOffset < nlen);
 
         data_dict.clicked_text = range.toString().trim();
-        (0, _communication_react.postWithCallback)(self.props.tile_id, "TileWordClick", data_dict);
+        (0, _communication_react.postWithCallback)(self.props.tile_id, "TileWordClick", data_dict, null, null, self.props.main_id);
       });
       $(this.body_ref.current).on(click_event, '.cell-clickable', function (e) {
         var data_dict = self._standard_click_data();
 
-        data_dict.clicked_cell = $(this).text();
-        (0, _communication_react.postWithCallback)(self.props.tile_id, "TileCellClick", data_dict);
+        data_dict.clicked_cell = $(self).text();
+        (0, _communication_react.postWithCallback)(self.props.tile_id, "TileCellClick", data_dict, null, null, self.props.main_id);
       });
       $(this.body_ref.current).on(click_event, '.row-clickable', function (e) {
         var data_dict = self._standard_click_data();
 
-        var cells = $(this).children();
+        var cells = $(self).children();
         var row_vals = [];
         cells.each(function () {
-          row_vals.push($(this).text());
+          row_vals.push($(self).text());
         });
         data_dict["clicked_row"] = row_vals;
-        (0, _communication_react.postWithCallback)(self.props.tile_id, "TileRowClick", data_dict);
+        (0, _communication_react.postWithCallback)(self.props.tile_id, "TileRowClick", data_dict, null, null, self.props.main_id);
       });
       $(this.body_ref.current).on(click_event, '.front button', function (e) {
         var data_dict = self._standard_click_data();
 
         data_dict["button_value"] = e.target.value;
-        (0, _communication_react.postWithCallback)(self.props.tile_id, "TileButtonClick", data_dict);
+        (0, _communication_react.postWithCallback)(self.props.tile_id, "TileButtonClick", data_dict, null, null, self.props.main_id);
       });
       $(this.body_ref.current).on('submit', '.front form', function (e) {
         var data_dict = self._standard_click_data();
@@ -871,7 +875,7 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
         }
 
         data_dict["form_data"] = form_data;
-        (0, _communication_react.postWithCallback)(self.props.tile_id, "TileFormSubmit", data_dict);
+        (0, _communication_react.postWithCallback)(self.props.tile_id, "TileFormSubmit", data_dict, null, null, self.props.main_id);
         return false;
       });
       $(this.body_ref.current).on("change", '.front select', function (e) {
@@ -879,13 +883,13 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
 
         data_dict.select_value = e.target.value;
         data_dict.select_name = e.target.name;
-        (0, _communication_react.postWithCallback)(self.props.tile_id, "SelectChange", data_dict);
+        (0, _communication_react.postWithCallback)(self.props.tile_id, "SelectChange", data_dict, null, null, self.props.main_id);
       });
       $(this.body_ref.current).on('change', '.front textarea', function (e) {
         var data_dict = self._standard_click_data();
 
         data_dict["text_value"] = e.target.value;
-        (0, _communication_react.postWithCallback)(self.props.tile_id, "TileTextAreaChange", data_dict);
+        (0, _communication_react.postWithCallback)(self.props.tile_id, "TileTextAreaChange", data_dict, null, null, self.props.main_id);
       });
     }
   }, {
@@ -986,7 +990,7 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
     key: "logText",
     value: function logText(the_text) {
       var self = this;
-      (0, _communication_react.postWithCallback)(this.props.tile_id, "LogTile", {});
+      (0, _communication_react.postWithCallback)(this.props.tile_id, "LogTile", {}, null, null, this.props.main_id);
     }
   }, {
     key: "_logMe",
@@ -1000,7 +1004,7 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
       data_dict["main_id"] = this.props.main_id;
       data_dict["tile_id"] = this.props.tile_id;
       data_dict["tile_name"] = this.props.tile_name;
-      (0, _communication_react.postWithCallback)(this.props.tile_id, "LogParams", data_dict);
+      (0, _communication_react.postWithCallback)(this.props.tile_id, "LogParams", data_dict, null, null, this.props.main_id);
     }
   }, {
     key: "_startResize",

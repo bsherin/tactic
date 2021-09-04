@@ -26,7 +26,7 @@ class MenuComponent extends React.Component {
         let pruned_list = Object.keys(this.props.option_dict).filter(this._filter_on_match_list);
         let choices = pruned_list.map((opt_name, index) => {
                 if (opt_name.startsWith("divider")) {
-                    return <MenuDivider/>
+                    return <MenuDivider key={index}/>
                 }
                 let icon = this.props.icon_dict.hasOwnProperty(opt_name) ? this.props.icon_dict[opt_name] : null;
                 return (
@@ -91,7 +91,7 @@ class ProjectMenu extends React.Component {
             let checkboxes;
             showModalReact("Save Project As", "New Project Name", CreateNewProject,
                       "NewProject", data["project_names"], null, doCancel)
-        });
+        }, null, this.props.main_id);
 
         function doCancel() {
             self.props.stopSpinner()
@@ -108,23 +108,26 @@ class ProjectMenu extends React.Component {
             result_dict.interface_state = self.props.interface_state;
             if (self.props.is_notebook) {
                 postWithCallback(self.props.main_id, "save_new_notebook_project", result_dict,
-                    save_as_success, self.props.postAjaxFailure);
+                    save_as_success, self.props.postAjaxFailur, self.props.main_id);
             }
             else {
                 result_dict["purgetiles"] = true;
                 postWithCallback(self.props.main_id, "save_new_project", result_dict,
-                    save_as_success, self.props.postAjaxFailure);
+                    save_as_success, self.props.postAjaxFailure, self.props.main_id);
             }
 
 
             function save_as_success(data_object) {
                 if (data_object["success"]) {
-                    self.props.setMainStateValue({"is_project": true, "project_name": new_name, "is_jupyter": false});
-                    document.title = new_name;
+                    self.props.setProjectName(new_name);
+                    if (!window.in_context) {
+                        document.title = new_name;
+                    }
                     self.props.clearStatusMessage();
                     data_object.alert_type = "alert-success";
                     data_object.timeout = 2000;
-                    postWithCallback("host", "refresh_project_selector_list", {'user_id': window.user_id});
+                    postWithCallback("host", "refresh_project_selector_list",
+                        {'user_id': window.user_id}, null, null, self.props.main_id);
                     self.props.updateLastSave();
                     self.props.stopSpinner();
                     doFlash(data_object)
@@ -152,7 +155,7 @@ class ProjectMenu extends React.Component {
 
         //tableObject.startTableSpinner();
         this.props.startSpinner();
-        postWithCallback(this.props.main_id, "update_project", result_dict, updateSuccess, self.props.postAjaxFailure);
+        postWithCallback(this.props.main_id, "update_project", result_dict, updateSuccess, self.props.postAjaxFailure, self.props.main_id);
         function updateSuccess(data) {
             self.props.startSpinner();
             if (data.success) {
@@ -177,7 +180,7 @@ class ProjectMenu extends React.Component {
             // noinspection JSUnusedAssignment
             showModalReact("Export Notebook in Jupyter Format", "New Project Name", ExportJupyter,
                       "NewJupyter", data["project_names"], checkboxes)
-        });
+        }, null, self.props.main_id);
         function ExportJupyter(new_name) {
             var cell_list = [];
             for (let entry of self.props.console_items) {
@@ -195,7 +198,7 @@ class ProjectMenu extends React.Component {
                 "cell_list": cell_list
             };
             postWithCallback(self.props.main_id, "export_to_jupyter_notebook",
-                result_dict, save_as_success, self.props.postAjaxFailure);
+                result_dict, save_as_success, self.props.postAjaxFailure, self.props.main_id);
 
             function save_as_success(data_object) {
                self.props.clearStatusMessage();
@@ -236,7 +239,7 @@ class ProjectMenu extends React.Component {
             "console_items": this.props.console_items,
             "user_id": window.user_id,
         };
-        postWithCallback(this.props.main_id, "console_to_notebook", result_dict)
+        postWithCallback(this.props.main_id, "console_to_notebook", result_dict, null, null, this.props.main_id)
     }
 
     get option_dict () {
@@ -307,7 +310,7 @@ class DocumentMenu extends React.Component {
                 {model_document_name: self.props.currentDoc,
                 new_document_name: new_name}, (result)=>{
                 self.props.stopSpinner()
-                }
+                }, null, self.props.main_id
             )
         }
 
@@ -328,7 +331,7 @@ class DocumentMenu extends React.Component {
                 {original_document_name: self.props.currentDoc,
                 new_document_name: new_name}, (result)=>{
                 self.props.stopSpinner()
-                }
+                }, null, self.props.main_id
             )
         }
 
@@ -349,7 +352,7 @@ class DocumentMenu extends React.Component {
                 {old_document_name: self.props.currentDoc,
                 new_document_name: new_name}, (result)=>{
                 self.props.stopSpinner()
-                }
+                }, null, self.props.main_id
             )
         }
 

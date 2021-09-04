@@ -26,7 +26,7 @@ import {postWithCallback} from "./communication_react.js"
 import {doFlash} from "./toaster.js"
 import {doBinding, arrayMove} from "./utilities_react.js";
 import {showConfirmDialogReact, showSelectResourceDialog} from "./modal_react.js";
-
+import {TacticContext} from "./tactic_context.js"
 export {ConsoleComponent}
 
 const MAX_CONSOLE_WIDTH = 1800;
@@ -54,16 +54,18 @@ const BUTTON_CONSUMED_SPACE = 208;
      }
 
      componentDidMount() {
-
-         this.setState({"mounted": true});
-         this.initSocket();
-         if (this.props.console_items.length == 0) {
-             this._addCodeArea("", false)
-         }
+        let self = this;
+         this.setState({"mounted": true}, ()=>{
+             self.initSocket();
+             if (this.props.console_items.length == 0) {
+                 self._addCodeArea("", false)
+             }
+             self._clear_all_selected_items()
+         })
      }
 
      componentDidUpdate() {
-         if (this.props.tsocket.counter != this.socket_counter) {
+         if (this.context.tsocket.counter != this.socket_counter) {
              this.initSocket();
          }
          if (this.state.show_console_error_log) {
@@ -80,9 +82,26 @@ const BUTTON_CONSUMED_SPACE = 208;
          // If I dont delete I end up with duplicatesSelectList
          // If I just keep the original one then I end up something with a handler linked
          // to an earlier state
-         this.props.tsocket.socket.off("console-message");
-         this.props.tsocket.socket.on("console-message", this._handleConsoleMessage);
-         this.socket_counter = this.props.tsocket.counter
+         let self = this;
+
+         function _handleConsoleMessage(data) {
+             if (data.main_id == self.props.main_id) {
+                 let handlerDict = {
+                     consoleLog: (data) => self._addConsoleEntry(data.message, data.force_open),
+                     stopConsoleSpinner: (data) => self._stopConsoleSpinner(data),
+                     consoleCodePrint: (data) => self._appendConsoleItemOutput(data),
+                     consoleCodeRun: (data) => self._startSpinner(data),
+                     updateLog: (data) => self._addToLog(data.new_line)
+                 };
+                 handlerDict[data.console_message](data)
+             }
+         }
+
+         // We have to careful to get the very same instance of the listerner function
+         // That requires storing it outside of this component since the console can be unmounted
+
+         this.context.tsocket.reAttachListener("console-message", _handleConsoleMessage);
+         this.socket_counter = this.context.tsocket.counter
      }
 
      _createTextEntry(unique_id, summary_text) {
@@ -102,7 +121,7 @@ const BUTTON_CONSUMED_SPACE = 208;
                  if (!data.success) {
                      doFlash(data)
                  }
-             });
+             }, null, this.props.main_id);
      }
 
      _addBlankText() {
@@ -131,17 +150,18 @@ const BUTTON_CONSUMED_SPACE = 208;
              "console_item": entry,
              "user_id": window.user_id,
          };
-         postWithCallback("host", "copy_console_cell", result_dict)
+         postWithCallback("host", "copy_console_cell", result_dict, null, null, this.props.main_id);
      }
 
      _pasteCell(unique_id = null) {
+         let self = this;
          postWithCallback("host", "get_copied_console_cell", {user_id: window.user_id}, (data) => {
              if (!data.success) {
                  doFlash(data)
              } else {
                  this._addConsoleEntry(data.console_item, true, false, unique_id)
              }
-         })
+         }, null, self.props.main_id)
      }
 
      _insertResourceLink() {
@@ -177,7 +197,7 @@ const BUTTON_CONSUMED_SPACE = 208;
                  if (!data.success) {
                      doFlash(data)
                  }
-             });
+             }, null, self.props.main_id);
      }
 
      _resetConsole() {
@@ -193,11 +213,11 @@ const BUTTON_CONSUMED_SPACE = 208;
              }
          }
          this.props.setMainStateValue("console_items", new_console_items);
-         postWithCallback(this.props.main_id, "clear_console_namespace", {})
+         postWithCallback(this.props.main_id, "clear_console_namespace", {}, null, null, this.props.main_id)
      }
 
      _stopAll() {
-         postWithCallback(this.props.main_id, "stop_all_console_code", {})
+         postWithCallback(this.props.main_id, "stop_all_console_code", {}, null, null, this.props.main_id)
      }
 
 
@@ -232,9 +252,9 @@ const BUTTON_CONSUMED_SPACE = 208;
                                  self.setState({"show_console_error_log": true});
                                  self._startPseudoLogStreaming()
                              });
-                         })
+                         }, null, self.props.main_id)
                      }
-                 })
+                 }, null, this.props.main_id)
              } else {
                  postWithCallback("host", "get_container_log", {"container_id": self.pseudo_tile_id}, function (res) {
                      self.setState({"console_error_log_text": res.log_text}, () => {
@@ -242,13 +262,13 @@ const BUTTON_CONSUMED_SPACE = 208;
                             self._startPseudoLogStreaming()
                          }
                      );
-                 })
+                 }, null, this.props.main_id)
              }
          }
      }
 
      _startPseudoLogStreaming() {
-        postWithCallback(this.props.main_id, "StartPseudoLogStreaming", {});
+        postWithCallback(this.props.main_id, "StartPseudoLogStreaming", {}, null, null, this.props.main_id);
     }
 
      _toggleMainLog() {
@@ -262,16 +282,16 @@ const BUTTON_CONSUMED_SPACE = 208;
                      self._startMainLogStreaming();
                      self.setState({"show_console_error_log": true})
                  });
-             })
+             }, null, this.props.main_id)
          }
      }
 
      _startMainLogStreaming() {
-        postWithCallback(this.props.main_id, "StartMainLogStreaming", {});
+        postWithCallback(this.props.main_id, "StartMainLogStreaming", {}), null, null, this.props.main_id;
     }
 
     _stopMainPseudoLogStreaming() {
-        postWithCallback(this.props.main_id, "StopMainPseudoLogStreaming", {});
+        postWithCallback(this.props.main_id, "StopMainPseudoLogStreaming", {}, null, null, this.props.main_id);
     }
 
      _setFocusedItem(unique_id, callback = null) {
@@ -325,6 +345,17 @@ const BUTTON_CONSUMED_SPACE = 208;
              new_console_items[cindex][d["field"]] = d["value"]
          }
          this.props.setMainStateValue("console_items", new_console_items, callback)
+     }
+
+     _clear_all_selected_items(callback=null) {
+         let self = this;
+         let new_console_items = [...this.props.console_items];
+         for (let item of new_console_items) {
+             item.am_selected = false
+         }
+         this.setState({currently_selected_item: false}, ()=>{
+             self.props.setMainStateValue("console_items", new_console_items, callback)
+         })
      }
 
      get_console_item_entry(unique_id) {
@@ -455,15 +486,17 @@ const BUTTON_CONSUMED_SPACE = 208;
      }
 
      _handleConsoleMessage(data) {
-         let self = this;
-         let handlerDict = {
-             consoleLog: (data) => self._addConsoleEntry(data.message, data.force_open),
-             stopConsoleSpinner: self._stopConsoleSpinner,
-             consoleCodePrint: this._appendConsoleItemOutput,
-             consoleCodeRun: this._startSpinner,
-             updateLog: (data)=>self._addToLog(data.new_line)
-         };
-         handlerDict[data.console_message](data)
+         if (data.main_id == this.props.main_id) {
+             let self = this;
+             let handlerDict = {
+                 consoleLog: (data) => self._addConsoleEntry(data.message, data.force_open),
+                 stopConsoleSpinner: self._stopConsoleSpinner,
+                 consoleCodePrint: this._appendConsoleItemOutput,
+                 consoleCodeRun: this._startSpinner,
+                 updateLog: (data) => self._addToLog(data.new_line)
+             };
+             handlerDict[data.console_message](data)
+         }
      }
 
      _addToLog(new_line) {
@@ -472,7 +505,7 @@ const BUTTON_CONSUMED_SPACE = 208;
 
      _bodyHeight() {
          if (this.state.mounted) {
-             return this.props.console_available_height - $(this.header_ref.current).outerHeight() - 2
+             return this.props.console_available_height - (this.body_ref.current.offsetTop - this.header_ref.current.offsetTop) - 2
          } else {
              return this.props.console_available_height - 75
          }
@@ -652,6 +685,9 @@ const BUTTON_CONSUMED_SPACE = 208;
          let header_style = {};
          if (!this.props.shrinkable) {
              header_style["paddingLeft"] = 10
+         }
+         if (!this.props.console_is_shrunk) {
+             header_style["paddingRight"] = 15
          }
          let key_bindings = [[["escape"], this._clearSelectedItem]];
          let filtered_items;
@@ -833,8 +869,7 @@ const BUTTON_CONSUMED_SPACE = 208;
                                                 ElementComponent={SSuperItem}
                                                 key_field_name="unique_id"
                                                 item_list={filtered_items}
-                                                dark_theme={this.props.dark_theme}
-                                                helperClass={this.props.dark_theme ? "bp3-dark" : "light-theme"}
+                                                helperClass={this.context.dark_theme ? "bp3-dark" : "light-theme"}
                                                 handle=".console-sorter"
                                                 onSortStart={(_, event) => event.preventDefault()} // This prevents Safari weirdness
                                                 onSortEnd={this._resortConsoleItems}
@@ -859,7 +894,9 @@ const BUTTON_CONSUMED_SPACE = 208;
                          <div id="padding-div" style={{height: 500}}></div>
                      </div>
                  }
-                 <KeyTrap global={true} bindings={key_bindings}/>
+                 <KeyTrap global={true}
+                          active={!this.context.controlled || this.context.am_selected}
+                          bindings={key_bindings}/>
              </Card>
          );
      }
@@ -873,19 +910,18 @@ RawConsoleComponent.propTypes = {
     setMainStateValue: PropTypes.func,
     console_available_height: PropTypes.number,
     console_available_width: PropTypes.number,
-    tsocket: PropTypes.object,
     style: PropTypes.object,
     shrinkable: PropTypes.bool,
     zoomable: PropTypes.bool,
-    dark_theme: PropTypes.bool
 };
 
  RawConsoleComponent.defaultProps = {
      style: {},
      shrinkable: true,
      zoomable: true,
-     dark_theme: false
  };
+
+ RawConsoleComponent.contextType = TacticContext;
 
 const ConsoleComponent = ContextMenuTarget(RawConsoleComponent);
 
@@ -923,10 +959,10 @@ class RawLogItem extends React.Component {
         super(props);
         this.ce_summary0ref = React.createRef();
         doBinding(this, "_", RawLogItem.prototype);
-        this.update_props = ["is_error", "am_shrunk", "am_selected", "summary_text", "console_text", "console_available_width"];
+        this.update_props = ["is_error", "am_shrunk", "summary_text", "console_text", "console_available_width"];
         this.update_state_vars = [];
         this.state = {selected: false};
-        this.last_output_text = ""
+        this.last_output_text = "";
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -1103,6 +1139,7 @@ class RawConsoleCodeItem extends React.Component {
                 return true
             }
         }
+
         return false
     }
 
@@ -1191,13 +1228,13 @@ class RawConsoleCodeItem extends React.Component {
                 if (go_to_next) {
                     self.props.goToNextCell(self.props.unique_id)
                 }
-            })
+            }, null, self.props.main_id)
         })
     }
 
     _stopMe() {
         this._stopMySpinner();
-        postWithCallback(this.props.main_id, "stop_console_code", {"console_id": this.props.unique_id})
+        postWithCallback(this.props.main_id, "stop_console_code", {"console_id": this.props.unique_id}, null, null, this.props.main_id)
     }
 
     _showMySpinner(callback=null) {
@@ -1359,7 +1396,6 @@ class RawConsoleCodeItem extends React.Component {
                                                          show_line_numbers={true}
                                                          code_content={this.props.console_text}
                                                          setCMObject={this._setCMObject}
-                                                         dark_theme={this.props.dark_theme}
                                                          extraKeys={this._extraKeys()}
                                                          search_term={this.props.search_string}
                                                          code_container_width={this.props.console_available_width - BUTTON_CONSUMED_SPACE}
@@ -1407,12 +1443,10 @@ RawConsoleCodeItem.propTypes = {
     summary_text: PropTypes.string,
     console_text: PropTypes.string,
     output_text: PropTypes.string,
-    dark_theme: PropTypes.bool,
     execution_count: PropTypes.number,
     console_available_width: PropTypes.number,
     setConsoleItemValue: PropTypes.func,
     selectConsoleItem: PropTypes.func,
-    am_selected: PropTypes.bool,
     handleDelete: PropTypes.func,
     addNewTextItem: PropTypes.func,
     addNewCodeItem: PropTypes.func,
@@ -1423,16 +1457,17 @@ RawConsoleCodeItem.propTypes = {
 const ConsoleCodeItem = ContextMenuTarget(RawConsoleCodeItem);
 
 class RawConsoleTextItem extends React.Component {
-    constructor(props) {
-        super(props);
+    constructor(props, context) {
+        super(props, context);
         doBinding(this, "_", RawConsoleTextItem.prototype);
         this.cmobject = null;
         this.elRef = React.createRef();
 
         this.ce_summary_ref = React.createRef();
         this.update_props = ["am_shrunk", "set_focus", "serach_string", "am_selected", "show_markdown",
-            "summary_text", "dark_theme", "console_text", "console_available_width"];
+            "summary_text", "console_text", "console_available_width"];
         this.update_state_vars = ["ce_ref"];
+        this.previous_dark_theme = context.dark_theme;
         this.state = {ce_ref: null}
     }
 
@@ -1447,6 +1482,10 @@ class RawConsoleTextItem extends React.Component {
             if (nextState[state_var] != this.state[state_var]) {
                 return true
             }
+        }
+        if (this.context.dark_theme != this.previous_dark_theme) {
+            this.previous_dark_theme = this.context.dark_theme;
+            return true
         }
         return false
     }
@@ -1683,7 +1722,6 @@ class RawConsoleTextItem extends React.Component {
                                                  mode="markdown"
                                                  code_content={this.props.console_text}
                                                  setCMObject={this._setCMObject}
-                                                 dark_theme={this.props.dark_theme}
                                                  extraKeys={this._extraKeys()}
                                                  search_term={this.props.search_string}
                                                  code_container_width={this.props.console_available_width - BUTTON_CONSUMED_SPACE}
@@ -1728,13 +1766,14 @@ RawConsoleTextItem.propTypes = {
     am_selected: PropTypes.bool,
     handleDelete: PropTypes.func,
     goToNextCell: PropTypes.func,
-    tsocket: PropTypes.object,
     setFocus: PropTypes.func,
 };
 
 RawConsoleTextItem.proptypes = {
     force_sync_to_prop: false,
 };
+
+RawConsoleTextItem.contextType = TacticContext;
 
 const ConsoleTextItem = ContextMenuTarget(RawConsoleTextItem);
 

@@ -10,51 +10,54 @@ import PropTypes from 'prop-types';
 
 import {ResourceViewerSocket, ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app.js";
 import {ReactCodemirror} from "./react-codemirror.js";
-import {ViewerContext} from "./resource_viewer_context.js";
 import {postAjaxPromise, postWithCallback} from "./communication_react.js"
 import {doFlash, withStatus} from "./toaster.js"
 
-import {getUsableDimensions, BOTTOM_MARGIN, SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT} from "./sizing_tools.js";
+import {getUsableDimensions, SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT} from "./sizing_tools.js";
 import {withErrorDrawer} from "./error_drawer.js";
 import {doBinding} from "./utilities_react.js";
 import {guid} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
+import {TacticContext} from "./tactic_context.js";
 
-export {code_viewer_in_context}
+export {code_viewer_props, CodeViewerApp}
 
 function code_viewer_main () {
-    function gotElement(the_element) {
+    function gotProps(the_props) {
+        let CodeViewerAppPlus = withErrorDrawer(withStatus(CodeViewerApp));
+        let the_element = <CodeViewerAppPlus {...the_props}
+                                     controlled={false}
+                                     initial_theme={window.theme}
+                                     changeName={null}
+        />;
         let domContainer = document.querySelector('#root');
         ReactDOM.render(the_element, domContainer)
+
     }
 
     postAjaxPromise("view_code_in_context", {"resource_name": window.resource_name})
         .then((data)=>{
-            code_viewer_in_context(data, null, gotElement)
+            code_viewer_props(data, null, gotProps);
         })
-
 }
 
-function code_viewer_in_context(data, registerThemeSetter, finalCallback, ref=null) {
+function code_viewer_props(data, registerDirtyMethod, finalCallback) {
     let resource_viewer_id = guid();
-    if (!window.in_context) {
-        window.resource_viewer_id = guid();
-        window.main_id = resource_viewer_id;  // needed for postWithCallback
-    }
     var tsocket = new ResourceViewerSocket("main", 5000, {resource_viewer_id: resource_viewer_id});
-    let CodeViewerAppPlus = withErrorDrawer(withStatus(CodeViewerApp, tsocket, false, ref));
-    let split_tags = data.mdata.tags == "" ? [] : data.mdata.tags.split(" ");
-    finalCallback(<CodeViewerAppPlus   resource_name={data.resource_name}
-                                       the_content={data.the_content}
-                                       registerThemeSetter={registerThemeSetter}
-                                       created={data.mdata.datestring}
-                                       initial_theme={window.theme}
-                                       tags={split_tags}
-                                       notes={data.mdata.notes}
-                                       readOnly={data.read_only}
-                                       is_repository={false}
-                                       meta_outer="#right-div"/>)
+    finalCallback({
+        resource_viewer_id: resource_viewer_id,
+        tsocket: tsocket,
+        split_tags: data.mdata.tags == "" ? [] : data.mdata.tags.split(" "),
+        resource_name: data.resource_name,
+        the_content: data.the_content,
+        notes: data.mdata.notes,
+        readOnly: data.read_only,
+        is_repository: false,
+        meta_outer: "#right-div",
+        registerDirtyMethod: registerDirtyMethod
+    })
 }
+const controllable_props = ["resource_name", "usable_height", "usable_width"];
 
 class CodeViewerApp extends React.Component {
 
@@ -64,28 +67,35 @@ class CodeViewerApp extends React.Component {
         this.top_ref = React.createRef();
         this.cc_ref = React.createRef();
         this.savedContent = props.the_content;
-        this.savedTags = props.tags;
+        this.savedTags = props.split_tags;
         this.savedNotes = props.notes;
         let self = this;
-        window.addEventListener("beforeunload", function (e) {
-            if (self.dirty()) {
-                e.preventDefault();
-                e.returnValue = ''
-            }
-        });
 
-        let aheight = getUsableDimensions().usable_height;
-        let awidth = getUsableDimensions().usable_width;
         this.state = {
-            resource_name: props.resource_name,
             code_content: props.the_content,
             notes: props.notes,
-            tags: props.tags,
-            usable_width: awidth,
-            usable_height: aheight,
+            tags: props.split_tags,
             search_string: "",
-            dark_theme: this.props.initial_theme == "dark"
         };
+
+        if (props.controlled) {
+            props.registerDirtyMethod(this._dirty)
+        }
+
+        if (!props.controlled) {
+            const aheight = getUsableDimensions(true).usable_height_no_bottom;
+            const awidth = getUsableDimensions(true).usable_width - 170;
+            this.state.usable_height = aheight;
+            this.state.usable_width = awidth;
+            this.state.dark_theme = props.initial_theme === "dark";
+            this.state.resource_name = props.resource_name;
+            window.addEventListener("beforeunload", function (e) {
+                if (self._dirty()) {
+                    e.preventDefault();
+                    e.returnValue = ''
+                }
+            });
+        }
     }
 
     _update_search_state(nstate) {
@@ -93,31 +103,33 @@ class CodeViewerApp extends React.Component {
     }
 
     componentDidMount() {
-        window.addEventListener("resize", this._update_window_dimensions);
-        this._update_window_dimensions();
         this.props.stopSpinner();
-        this.props.setStatusTheme(this.state.dark_theme);
-        if (window.in_context) {
-            this.props.registerThemeSetter(this._setTheme);
+        if (!this.props.controlled) {
+            window.dark_theme = this.state.dark_theme;
+            window.addEventListener("resize", this._update_window_dimensions);
+            this._update_window_dimensions();
         }
-        // window.dark_theme = this.state.dark_theme
+    }
+    
+    _cProp(pname) {
+            return this.props.controlled ? this.props[pname] :  this.state[pname]
     }
 
     _update_window_dimensions() {
-        let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
-        let uheight = window.innerHeight;
-        if (this.top_ref && this.top_ref.current) {
-            uheight = uheight - this.top_ref.current.offsetTop;
+        if (!this.props.controlled) {
+            let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
+            let uheight = window.innerHeight;
+            if (this.top_ref && this.top_ref.current) {
+                uheight = uheight - this.top_ref.current.offsetTop;
+            } else {
+                uheight = uheight - USUAL_TOOLBAR_HEIGHT
+            }
+            this.setState({usable_height: uheight, usable_width: uwidth})
         }
-        else {
-            uheight = uheight - USUAL_TOOLBAR_HEIGHT
-        }
-        this.setState({usable_height: uheight, usable_width: uwidth})
     }
 
     _setTheme(dark_theme) {
         this.setState({dark_theme: dark_theme}, ()=> {
-            this.props.setStatusTheme(dark_theme);
             if (!window.in_context) {
                 window.dark_theme = this.state.dark_theme
             }
@@ -133,9 +145,8 @@ class CodeViewerApp extends React.Component {
         }
         else {
             bgs = [[{"name_text": "Save", "icon_name": "saved", "click_handler": this._saveMe, tooltip: "Save"},
-                    {"name_text": "SaveAs", "icon_name": "floppy-disk", "click_handler": this._saveMeAs, tooltip: "Save as"},
                     {"name_text": "Share", "icon_name": "share",
-                          "click_handler": () => {sendToRepository("code", this.state.resource_name)}, tooltip: "Share to repository"}]
+                          "click_handler": () => {sendToRepository("code", this._cProp("resource_name"))}, tooltip: "Share to repository"}]
             ]
         }
 
@@ -145,11 +156,15 @@ class CodeViewerApp extends React.Component {
             }
         }
         return bgs
-
     }
 
     _setResourceNameState(new_name) {
-        this.setState({resource_name: new_name})
+        if (this.props.controlled) {
+            this.props.changeResourceName(new_name)
+        }
+        else {
+            this.setState({resource_name: new_name})
+        }
     }
 
     _handleCodeChange(new_code) {
@@ -161,45 +176,61 @@ class CodeViewerApp extends React.Component {
     }
 
     get_new_cc_height () {
+        let uheight = this._cProp("usable_height");
         if (this.cc_ref && this.cc_ref.current) {  // This will be true after the initial render
-            return this.state.usable_height - this.cc_ref.current.offsetTop
+            return uheight - this.cc_ref.current.offsetTop
         }
         else {
-            return this.state.usable_height - 100
+            return uheight - 100
         }
     }
 
     render() {
-        let the_context = {"readOnly": this.props.readOnly};
+        let dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
+        // let the_context = {"readOnly": this.props.readOnly};
+        let my_props = {...this.props};
+        if (!this.props.controlled) {
+            for (let prop_name of controllable_props) {
+                my_props[prop_name] = this.state[prop_name]
+            }
+        }
         let outer_style = {width: "100%",
-            height: this.state.usable_height,
+            height: my_props.usable_height,
             paddingLeft: SIDE_MARGIN
         };
         let cc_height = this.get_new_cc_height();
         let outer_class = "resource-viewer-holder";
-        if (!window.in_context) {
-            if (this.state.dark_theme) {
+        if (!this.props.controlled) {
+            if (dark_theme) {
                 outer_class = outer_class + " bp3-dark";
             } else {
                 outer_class = outer_class + " light-theme"
             }
         }
         return (
-            <ViewerContext.Provider value={the_context}>
-                {!window.in_context &&
+            <TacticContext.Provider value={{
+                    readOnly: this.props.readOnly,
+                    tsocket: this.props.tsocket,
+                    dark_theme: dark_theme,
+                    setTheme:  this.props.controlled ? this.context.setTheme : this._setTheme,
+                    controlled: this.props.controlled,
+                    am_selected: this.props.am_selected
+                }}>
+                {!this.props.controlled &&
                     <TacticNavbar is_authenticated={window.is_authenticated}
                           selected={null}
                           show_api_links={true}
-                          dark_theme={this.state.dark_theme}
-                          set_parent_theme={this._setTheme}
+                          // dark_theme={this.state.dark_theme}
+                          // set_parent_theme={this._setTheme}
                           user_name={window.username}/>
                 }
 
                 <div className={outer_class} ref={this.top_ref} style={outer_style}>
                     <ResourceViewerApp {...this.props.statusFuncs}
+                                       resource_viewer_id={this.props.resource_viewer_id}
                                        setResourceNameState={this._setResourceNameState}
                                        res_type="code"
-                                       resource_name={this.state.resource_name}
+                                       resource_name={my_props.resource_name}
                                        button_groups={this.button_groups}
                                        handleStateChange={this._handleStateChange}
                                        created={this.props.created}
@@ -208,20 +239,17 @@ class CodeViewerApp extends React.Component {
                                        saveMe={this._saveMe}
                                        show_search={true}
                                        update_search_state={this._update_search_state}
-                                       dark_theme={this.state.dark_theme}
                                        meta_outer={this.props.meta_outer}>
                         <ReactCodemirror code_content={this.state.code_content}
                                          handleChange={this._handleCodeChange}
                                          saveMe={this._saveMe}
-                                         readOnly={this.props.readOnly}
                                          search_term={this.state.search_string}
-                                         dark_theme={this.state.dark_theme}
                                          code_container_ref={this.cc_ref}
                                          code_container_height={cc_height}
                           />
                     </ResourceViewerApp>
                 </div>
-            </ViewerContext.Provider>
+            </TacticContext.Provider>
         )
     }
 
@@ -231,14 +259,15 @@ class CodeViewerApp extends React.Component {
         const notes = this.state.notes;
         const tags = this.state.tags;  // In case it's modified wile saving
         const result_dict = {
-            "code_name": this.state.resource_name,
+            "code_name": this._cProp("resource_name"),
             "new_code": new_code,
             "tags": tagstring,
             "notes": notes,
             "user_id": window.user_id
         };
         let self = this;
-        postWithCallback("host","update_code_task", result_dict, update_success);
+        postWithCallback("host","update_code_task", result_dict,
+            update_success, null, this.props.resource_viewer_id);
         function update_success(data) {
             if (data.success) {
                 self.savedContent = new_code;
@@ -257,7 +286,7 @@ class CodeViewerApp extends React.Component {
     }
 
 
-    dirty() {
+    _dirty() {
         let current_content = this.state.code_content;
         const tags = this.state.tags;
         const notes = this.state.notes;
@@ -266,15 +295,34 @@ class CodeViewerApp extends React.Component {
 }
 
 CodeViewerApp.propTypes = {
+    controlled: PropTypes.bool,
+    am_selected: PropTypes.bool,
+    changeResourceName: PropTypes.func,
+    changeResourceTitle: PropTypes.func,
+    changeResourceProps: PropTypes.func,
+    updatePanel: PropTypes.func,
     the_content: PropTypes.string,
     created: PropTypes.string,
     tags: PropTypes.array,
     notes: PropTypes.string,
-    dark_theme: PropTypes.bool,
-    readOnly: PropTypes.bool,
+    tsocket: PropTypes.object,
     is_repository: PropTypes.bool,
-    meta_outer: PropTypes.string
+    meta_outer: PropTypes.string,
+    usable_height: PropTypes.number,
+    usable_width: PropTypes.number
 };
+
+CodeViewerApp.defaultProps = {
+    am_selected: true,
+    controlled: false,
+    changeResourceName: null,
+    changeResourceTitle: null,
+    changeResourceProps: null,
+    updatePanel: null
+};
+
+CodeViewerApp.contextType = TacticContext;
+
 
 if (!window.in_context) {
     code_viewer_main();

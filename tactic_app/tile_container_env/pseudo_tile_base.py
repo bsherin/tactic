@@ -81,11 +81,13 @@ class PseudoTileClass(TileBase, MplFigure):
         ldata = copy.copy(task_data)
         ldata["console_message"] = console_message
         ldata["force_open"] = force_open
+        ldata["main_id"] = self._main_id
         emit_direct("console-message", ldata, namespace="/main", room=self._main_id)
 
     def emit_export_viewer_message(self, export_viewer_message, task_data):
         ldata = copy.copy(task_data)
         ldata["export_viewer_message"] = export_viewer_message
+        ldata["main_id"] = self._main_id
         emit_direct("export-viewer-message", ldata, namespace="/main", room=self._main_id)
 
     @_task_worthy

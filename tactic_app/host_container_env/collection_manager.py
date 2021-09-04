@@ -79,6 +79,7 @@ class CollectionManager(LibraryResourceManager):
         create_ready_block(rb_id, user_obj.username, [main_id, "client"], main_id)
         data_dict = {"success": True,
                      "kind": "notebook-viewer",
+                     "res_type": "project",
                      "project_name": "",
                      "resource_name": "new notebook",
                      "ready_block_id": rb_id,
@@ -171,6 +172,7 @@ class CollectionManager(LibraryResourceManager):
         data = {
             "success": True,
             "kind": "main-viewer",
+            "res_type": "collection",
             "short_collection_name": short_collection_name,
             "resource_name": short_collection_name,
             "collection_name": cname,

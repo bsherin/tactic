@@ -32,7 +32,11 @@ var _modal_react = require("./modal_react.js");
 
 var _import_dialog = require("./import_dialog.js");
 
+var _toaster = require("./toaster.js");
+
 var _communication_react = require("./communication_react.js");
+
+var _tactic_context = require("./tactic_context.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -71,7 +75,7 @@ var intent_colors = {
   regular: "#5c7080"
 };
 
-function ResourceviewerToolbar(props) {
+function ResourceviewerToolbar(props, context) {
   var tstyle = {
     "marginTop": 20,
     "paddingRight": 20,
@@ -93,8 +97,12 @@ function ResourceviewerToolbar(props) {
     res_type: props.res_type,
     large: false
   }), /*#__PURE__*/_react["default"].createElement("div", null, /*#__PURE__*/_react["default"].createElement(Toolbar, {
-    button_groups: props.button_groups,
-    alternate_outer_style: toolbar_outer_style
+    button_groups: props.button_groups // controlled={props.controlled}
+    // am_selected={props.am_selected}
+    ,
+    alternate_outer_style: toolbar_outer_style // tsocket={context.tsocket}
+    // dark_theme={context.dark_theme}
+
   })), props.show_search && /*#__PURE__*/_react["default"].createElement(_library_widgets.SearchForm, {
     update_search_state: props.update_search_state,
     search_string: props.search_string
@@ -104,6 +112,24 @@ function ResourceviewerToolbar(props) {
     }
   }));
 }
+
+ResourceviewerToolbar.propTypes = {
+  controlled: _propTypes["default"].bool,
+  am_selected: _propTypes["default"].bool,
+  button_groups: _propTypes["default"].array,
+  setResourceNameState: _propTypes["default"].func,
+  resource_name: _propTypes["default"].string,
+  show_search: _propTypes["default"].bool,
+  search_string: _propTypes["default"].string,
+  update_search_state: _propTypes["default"].func,
+  res_type: _propTypes["default"].string,
+  tsocket: _propTypes["default"].object,
+  dark_theme: _propTypes["default"].bool
+};
+ResourceviewerToolbar.defaultProps = {
+  controlled: false,
+  am_selected: true
+};
 
 var ToolbarButton = /*#__PURE__*/function (_React$Component) {
   _inherits(ToolbarButton, _React$Component);
@@ -238,7 +264,7 @@ var FileAdderButton = /*#__PURE__*/function (_React$Component3) {
   _createClass(FileAdderButton, [{
     key: "_showDialog",
     value: function _showDialog() {
-      (0, _import_dialog.showFileImportDialog)(this.props.resource_type, this.props.allowed_file_types, this.props.checkboxes, this.props.process_handler, this.props.combine, this.props.show_csv_options);
+      (0, _import_dialog.showFileImportDialog)(this.props.resource_type, this.props.allowed_file_types, this.props.checkboxes, this.props.process_handler, this.context.tsocket, this.context.dark_theme, this.props.combine, this.props.show_csv_options);
     }
   }, {
     key: "render",
@@ -260,16 +286,19 @@ FileAdderButton.propTypes = {
   name_text: _propTypes["default"].string,
   resource_type: _propTypes["default"].string,
   process_handler: _propTypes["default"].func,
-  allowed_file_types: _propTypes["default"].array,
+  allowed_file_types: _propTypes["default"].string,
   icon_name: _propTypes["default"].string,
   checkboxes: _propTypes["default"].array,
   combine: _propTypes["default"].bool,
   tooltip: _propTypes["default"].string,
-  show_csv_options: _propTypes["default"].bool
+  show_csv_options: _propTypes["default"].bool // tsocket: PropTypes.object,
+  // dark_theme: PropTypes.bool,
+
 };
 FileAdderButton.defaultProps = {
   multiple: false
 };
+FileAdderButton.contextType = _tactic_context.TacticContext;
 
 var Toolbar = /*#__PURE__*/function (_React$Component4) {
   _inherits(Toolbar, _React$Component4);
@@ -427,6 +456,8 @@ var Toolbar = /*#__PURE__*/function (_React$Component4) {
             tooltip: _this5.getTooltip(button),
             tooltipDelay: _this5.getTooltipDelay(button),
             show_csv_options: button.show_csv_options,
+            tsocket: _this5.context.tsocket,
+            dark_theme: _this5.context.dark_theme,
             key: index
           });
         });
@@ -449,7 +480,8 @@ var Toolbar = /*#__PURE__*/function (_React$Component4) {
           display: "flex",
           flexDirection: "row",
           justifyContent: "space-around",
-          marginBottom: 10
+          marginBottom: 10,
+          whiteSpace: "nowrap"
         };
       }
 
@@ -459,6 +491,7 @@ var Toolbar = /*#__PURE__*/function (_React$Component4) {
         ref: this.tb_ref
       }, items), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
         global: true,
+        active: !this.context.controlled || this.context.am_selected,
         bindings: key_bindings
       }));
     }
@@ -473,14 +506,20 @@ Toolbar.propTypes = {
   file_adders: _propTypes["default"].array,
   popup_buttons: _propTypes["default"].array,
   alternate_outer_style: _propTypes["default"].object,
-  inputRef: _propTypes["default"].func
+  inputRef: _propTypes["default"].func,
+  tsocket: _propTypes["default"].object,
+  dark_theme: _propTypes["default"].bool
 };
 Toolbar.defaultProps = {
+  controlled: false,
+  am_selected: true,
   file_adders: null,
   popup_buttons: null,
   alternate_outer_style: null,
-  sendRef: null
+  sendRef: null,
+  tsocket: null
 };
+Toolbar.contextType = _tactic_context.TacticContext;
 
 var Namebutton = /*#__PURE__*/function (_React$Component5) {
   _inherits(Namebutton, _React$Component5);
@@ -531,9 +570,10 @@ var Namebutton = /*#__PURE__*/function (_React$Component5) {
         if (data.success) {
           // self.setState({"current_name": new_name});
           self.props.setResourceNameState(new_name);
-          doFlash(data);
+          (0, _toaster.doFlash)(data);
+          return true;
         } else {
-          doFlash(data);
+          (0, _toaster.doFlash)(data);
           return false;
         }
       }
@@ -544,7 +584,8 @@ var Namebutton = /*#__PURE__*/function (_React$Component5) {
       // let name = this.props.handleRename == null ? this.state.current_name : this.props.resource_name;
       var name = this.props.resource_name;
       var style = {
-        fontSize: 20
+        fontSize: 18,
+        fontWeight: 800
       };
       return /*#__PURE__*/_react["default"].createElement(_core.Button, {
         id: "rename-button",
@@ -554,7 +595,7 @@ var Namebutton = /*#__PURE__*/function (_React$Component5) {
         style: style,
         tabIndex: -1,
         onClick: this.rename_me
-      }, /*#__PURE__*/_react["default"].createElement("h5", null, name));
+      }, /*#__PURE__*/_react["default"].createElement("div", null, name));
     }
   }]);
 

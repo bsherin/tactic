@@ -9,7 +9,7 @@ import React from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
-import { NavbarDivider, Spinner, Text} from "@blueprintjs/core";
+import { NavbarDivider } from "@blueprintjs/core";
 import _ from 'lodash';
 
 import {TacticNavbar} from "./blueprint_navbar.js";
@@ -22,93 +22,79 @@ import {TileContainer} from "./tile_react.js";
 import {ExportsViewer} from "./export_viewer_react.js";
 import {showModalReact, showSelectDialog} from "./modal_react.js";
 import {ConsoleComponent} from "./console_component.js";
-import {handleCallback, postWithCallback, postAsyncFalse, postAjaxPromise} from "./communication_react.js"
+import {handleCallback, postWithCallback, postAjaxPromise, postAjax} from "./communication_react.js";
 import {doFlash} from "./toaster.js"
 import {withStatus} from "./toaster.js";
 import {withErrorDrawer} from "./error_drawer.js";
-import {doBinding, get_ppi} from "./utilities_react.js";
+import {doBinding, get_ppi, renderSpinnerMessage} from "./utilities_react.js";
+import {TacticContext} from "./tactic_context.js";
 
 export {MainTacticSocket}
-export {main_main_in_context}
+export {main_props, MainApp}
 
 const MARGIN_SIZE = 0;
-const BOTTOM_MARGIN = 35;  // includes space for status messages at bottom
+const BOTTOM_MARGIN = 30;  // includes space for status messages at bottom
 const MARGIN_ADJUSTMENT = 8; // This is the amount at the top of both the table and the console
 const CONSOLE_HEADER_HEIGHT = 35;
 const EXTRA_TABLE_AREA_SPACE = 500;
+const USUAL_TOOLBAR_HEIGHT = 50;
 
 let ppi;
-
-function renderSpinnerMessage(msg) {
-    let domContainer = document.querySelector('#main-root');
-    ReactDOM.render(
-        (<div className="screen-center" style={{textAlign: "center"}}>
-            <Spinner size={100}/>
-            <Text className="pt-2">
-                {msg}
-            </Text>
-        </div>), domContainer
-    )
-}
 
 class MainTacticSocket extends TacticSocket {
 
     initialize_socket_stuff(reconnect=false) {
-        this.socket.emit('join', {"room": window.user_id});
-        if (reconnect) {
-            this.socket.emit('join-main', {"room": this.extra_args.main_id, "user_id": window.user_id}, function (response) {
-            })
-        }
-        this.socket.on('handle-callback', handleCallback);
-        this.socket.on('close-user-windows', function(data){
-                postAsyncFalse("host", "remove_mainwindow_task", {"main_id": this.extra_args.main_id});
-                if (!(data["originator"] == this.extra_args.main_id)) {
-                    window.close()
-                }
-            });
-
-        this.socket.on("window-open", function(data) {
-            window.open($SCRIPT_ROOT + "/load_temp_page/" + data["the_id"])
-        });
 
         this.socket.on("notebook-open", function(data) {
             window.open($SCRIPT_ROOT + "/open_notebook/" + data["the_id"])
         });
-        this.socket.on("doFlash", function(data) {
-            doFlash(data)
-        });
+
+        if (!window.in_context) {
+            this.socket.emit('join', {"room": window.user_id});
+            this.socket.on("doFlash", function(data) {
+                doFlash(data)
+                });
+        }
     }
 }
 
 function main_main() {
-    function gotElement(the_element) {
+    function gotProps(the_props) {
+        let MainAppPlus = withErrorDrawer(withStatus(MainApp));
+        let the_element = <MainAppPlus {...the_props}
+                                       controlled={false}
+                                       initial_theme={window.theme}
+                                       changeName={null}
+        />;
         const domContainer = document.querySelector('#main-root');
         ReactDOM.render(the_element, domContainer)
     }
+
+    renderSpinnerMessage("Starting up ...");
     const target = window.project_name == "" ? "main_collection_in_context" : "main_project_in_context";
     const resource_name = window.project_name == "" ? window.collection_name : window.project_name;
 
     postAjaxPromise(target, {"resource_name": resource_name})
         .then((data)=>{
-            main_main_in_context(data, null, gotElement)
+            main_props(data, null, gotProps)
         })
 }
 
-function main_main_in_context(data, registerThemeSetter, finalCallback, ref=null) {
-    var tsocket = new MainTacticSocket("main",
-        5000,
-        {main_id: data.main_id}
-    );
+
+function main_props(data, registerDirtyMethod, finalCallback) {
+
     ppi = get_ppi();
     let main_id = data.main_id;
-    if (!window.in_context) {
-        window.main_id = data.main_id;  // needed for postWithCallback
-    }
-
     let initial_tile_types;
 
+    var tsocket = new MainTacticSocket("main", 5000);
+    tsocket.socket.on('handle-callback', (task_packet)=>{handleCallback(task_packet, main_id)});
     tsocket.socket.on('finish-post-load', _finish_post_load_in_context);
-    tsocket.socket.on("remove-ready-block", ()=>{_everyone_ready_in_context()});
+
+    function readyListener() {
+        _everyone_ready_in_context(finalCallback)
+    }
+    tsocket.socket.on("remove-ready-block", readyListener);
     tsocket.socket.emit('join-main', {"room": main_id, "user_id": window.user_id}, function(response) {
             initial_tile_types = response.tile_types;
             tsocket.socket.emit('client-ready', {"room": main_id, "user_id": window.user_id,
@@ -119,7 +105,10 @@ function main_main_in_context(data, registerThemeSetter, finalCallback, ref=null
     });
 
     function _everyone_ready_in_context() {
-        // renderSpinnerMessage("Everyone is ready, initializing...");
+        if (!window.in_context){
+            renderSpinnerMessage("Everyone is ready, initializing...");
+        }
+        tsocket.socket.off("remove-ready-block", readyListener);
         if (data.is_project) {
             let data_dict = {
                 "project_name": data.project_name,
@@ -128,7 +117,7 @@ function main_main_in_context(data, registerThemeSetter, finalCallback, ref=null
                 "user_id": window.user_id,
                 "ppi": ppi
             };
-            postWithCallback(main_id, "initialize_project_mainwindow", data_dict)
+            postWithCallback(main_id, "initialize_project_mainwindow", data_dict, null, null, main_id)
         }
         else {
             let data_dict = {
@@ -138,12 +127,14 @@ function main_main_in_context(data, registerThemeSetter, finalCallback, ref=null
                 "user_id": window.user_id,
                 "ppi": ppi
             };
-            postWithCallback(main_id, "initialize_mainwindow", data_dict, _finish_post_load_in_context)
+            postWithCallback(main_id, "initialize_mainwindow", data_dict, _finish_post_load_in_context, null, main_id)
         }
     }
     function _finish_post_load_in_context(fdata) {
-        // renderSpinnerMessage("Creating the page...");
-        let MainAppPlus = withErrorDrawer(withStatus(MainApp, tsocket, true, ref), tsocket);
+        if (!window.in_context){
+            renderSpinnerMessage("Creating the page...");
+        }
+        tsocket.socket.off("finish-post-load", _finish_post_load_in_context);
         var interface_state;
         if (data.is_project) {
             interface_state = fdata.interface_state;
@@ -156,42 +147,44 @@ function main_main_in_context(data, registerThemeSetter, finalCallback, ref=null
             }
         }
         if (data.is_freeform) {
-            finalCallback(<MainAppPlus initial_is_project={data.is_project}
-                                       main_id={main_id}
-                                       registerThemeSetter={registerThemeSetter}
-                                       is_freeform={true}
-                                       initial_project_name={data.project_name}
-                                       is_notebook={false}
-                                       is_jupyter={false}
-                                       tsocket={tsocket}
-                                       short_collection_name={data.short_collection_name}
-                                       initial_tile_types={initial_tile_types}
-                                       interface_state={interface_state}
-                                       initial_data_text={fdata.data_text}
-                                       initial_theme={window.theme}
-                                       initial_doc_names={fdata.doc_names}/>)
+            finalCallback({is_project: data.is_project,
+                           main_id: main_id,
+                           is_freeform: true,
+                           resource_name: data.is_project ? data.project_name : data.short_collection_name,
+                           is_notebook: false,
+                           is_jupyter: false,
+                           tsocket: tsocket,
+                           short_collection_name: data.short_collection_name,
+                           initial_tile_types: initial_tile_types,
+                           interface_state: interface_state,
+                           initial_data_text: fdata.data_text,
+                           initial_theme: window.theme,
+                           initial_doc_names: fdata.doc_names,
+                            registerDirtyMethod: registerDirtyMethod
+            })
 
         }
         else {
-            finalCallback(<MainAppPlus initial_is_project={data.is_project}
-                           main_id={main_id}
-                           registerThemeSetter={registerThemeSetter}
-                           is_freeform={false}
-                           initial_project_name={data.project_name}
-                           is_notebook={false}
-                           is_jupyter={false}
-                           tsocket={tsocket}
-                           short_collection_name={data.short_collection_name}
-                           initial_tile_types={initial_tile_types}
-                           interface_state={interface_state}
-                           total_rows={fdata.total_rows}
-                           initial_theme={window.theme}
-                           initial_column_names={fdata.table_spec.header_list}
-                           initial_data_row_dict={fdata.data_row_dict}
-                           initial_column_widths={fdata.table_spec.column_widths}
-                           initial_hidden_columns_list={fdata.table_spec.hidden_columns_list}
-                           initial_cell_backgrounds={fdata.table_spec.cell_backgrounds}
-                           initial_doc_names={fdata.doc_names}/>);
+            finalCallback({is_project: data.is_project,
+                           main_id: main_id,
+                           is_freeform: false,
+                           is_notebook: false,
+                           is_jupyter: false,
+                           tsocket: tsocket,
+                           resource_name: data.is_project ? data.project_name : data.short_collection_name,
+                           short_collection_name: data.short_collection_name,
+                           initial_tile_types: initial_tile_types,
+                           interface_state: interface_state,
+                           total_rows: fdata.total_rows,
+                           initial_theme: window.theme,
+                           initial_column_names: fdata.table_spec.header_list,
+                           initial_data_row_dict: fdata.data_row_dict,
+                           initial_column_widths: fdata.table_spec.column_widths,
+                           initial_hidden_columns_list: fdata.table_spec.hidden_columns_list,
+                           initial_cell_backgrounds: fdata.table_spec.cell_backgrounds,
+                           initial_doc_names: fdata.doc_names,
+                           registerDirtyMethod: registerDirtyMethod
+            });
         }
 
     }
@@ -201,10 +194,20 @@ function main_main_in_context(data, registerThemeSetter, finalCallback, ref=null
 const save_attrs = ["tile_list", "table_is_shrunk", "console_width_fraction", "horizontal_fraction", "pipe_dict",
 "console_items", "console_is_shrunk", "height_fraction", "show_exports_pane", "show_console_pane", 'console_is_zoomed'];
 
+const controllable_props = ["is_project", "resource_name"];
+
 class MainApp extends React.Component {
     constructor (props) {
         super(props);
         doBinding(this);
+        if (!props.controlled) {
+            props.tsocket.socket.on('close-user-windows', function(data){
+                if (!(data["originator"] == props.main_id)) {
+                    window.close()
+                }
+            });
+        }
+
         this.table_container_ref = React.createRef();
         this.tile_div_ref = React.createRef();
         this.tbody_ref = React.createRef();
@@ -217,8 +220,6 @@ class MainApp extends React.Component {
                 mounted: false,
                 doc_names: props.initial_doc_names,
                 short_collection_name: this.props.short_collection_name,
-                is_project: this.props.initial_is_project,
-                project_name: this.props.initial_project_name,
                 console_items: [],
                 console_is_shrunk: true,
                 show_exports_pane: true,
@@ -227,14 +228,11 @@ class MainApp extends React.Component {
                 tile_types: this.props.initial_tile_types,
                 tile_list: [],
                 search_text: "",
-                usable_width: window.innerWidth - 2 * MARGIN_SIZE,
-                usable_height: window.innerHeight - BOTTOM_MARGIN,
                 height_fraction: .85,
                 alt_search_text: null,
                 table_is_shrunk: false,
                 console_width_fraction: .5,
                 horizontal_fraction: .65,
-                dark_theme: this.props.initial_theme == "dark"
         };
         let additions;
         if (this.props.is_freeform) {
@@ -265,10 +263,24 @@ class MainApp extends React.Component {
                 },
             };
         }
-
         this.state= Object.assign(base_state, additions);
+        let self = this;
+        if (this.props.controlled) {
+            props.registerDirtyMethod(this._dirty)
+        }
+        else {
+            this.state.dark_theme = props.initial_theme === "dark";
+            this.state.resource_name = props.resource_name;
+            this.state.is_project = props.is_project;
+            window.addEventListener("beforeunload", function (e) {
+                if (self._dirty()) {
+                    e.preventDefault();
+                    e.returnValue = ''
+                }
+            });
+        }
 
-        if (this.props.initial_is_project) {
+        if (props.is_project) {
             for (let attr of save_attrs) {
                 this.state[attr] = this.props.interface_state[attr]
             }
@@ -277,13 +289,10 @@ class MainApp extends React.Component {
             }
         }
         this.updateExportsList = null;
-        let self = this;
-        window.addEventListener("beforeunload", function (e) {
-            if (self.dirty()) {
-                e.preventDefault();
-                e.returnValue = ''
-            }
-        });
+    }
+
+    _cProp(pname) {
+        return this.props.controlled ? this.props[pname] :  this.state[pname]
     }
 
     _update_window_dimensions() {
@@ -297,7 +306,6 @@ class MainApp extends React.Component {
 
         this.setState({
             "usable_width": uwidth,
-            "usable_height": window.innerHeight - BOTTOM_MARGIN
         });
     }
 
@@ -305,7 +313,7 @@ class MainApp extends React.Component {
         this.last_save = this.interface_state
     }
 
-    dirty() {
+    _dirty() {
         let current_state = this.interface_state;
         for (let k in current_state) {
             if (current_state[k] != this.last_save[k]) {
@@ -317,20 +325,16 @@ class MainApp extends React.Component {
 
     componentDidMount() {
         this.setState({"mounted": true});
-        window.addEventListener("resize", this._update_window_dimensions);
-        if (!window.is_contest) {
-            document.title = this.state.is_project ? this.state.project_name : this.state.short_collection_name;
-        }
+
         this.initSocket();
         this._updateLastSave();
-        this.props.setStatusTheme(this.state.dark_theme);
-        if (!window.is_context) {
-            window.dark_theme = this.state.dark_theme
+
+        if (!this.props.controlled) {
+            document.title = this.state.resource_name;
+            window.dark_theme = this.state.dark_theme;
+            window.addEventListener("resize", this._update_window_dimensions);
+            this._update_window_dimensions();
         }
-        if (window.in_context) {
-            this.props.registerThemeSetter(this._setTheme);
-        }
-        this._update_window_dimensions()
     }
 
     componentDidUpdate () {
@@ -339,38 +343,49 @@ class MainApp extends React.Component {
         }
     }
 
-    initSocket() {
-        let self = this;
-        this.props.tsocket.socket.off('forcedisconnect');
-        this.props.tsocket.socket.on('forcedisconnect', function() {
-            this.props.tsocket.socket.disconnect()
-        });
-        this.props.tsocket.socket.off('table-message');
-        this.props.tsocket.socket.on('table-message', function (data) {
-            self._handleTableMessage(data)
-        });
-        this.props.tsocket.socket.off('update-menus');
-        this.props.tsocket.socket.on("update-menus", function () {
+    componentWillUnmount() {
+        this.delete_my_containers()
+    }
+
+    delete_my_containers() {
+        postAjax("/remove_mainwindow", {"main_id": this.props.main_id});
+    }
+
+    _update_menus_listener(data) {
+        if (!("main_id" in data) || (data.main_id == this.props.main_id)) {
+            let self = this;
             postWithCallback("host", "get_tile_types", {"user_id": window.user_id}, function (data) {
                 self.setState({tile_types: data.tile_types});
-            });
-        });
-        this.props.tsocket.socket.off('change-doc');
-        this.props.tsocket.socket.on('change-doc', function(data){
+            }), null, self.props.main_id;
+        }
+    }
+
+    _change_doc_listener(data) {
+        let self = this;
+        if (data.main_id == this.props.main_id) {
             let row_id = data.hasOwnProperty("row_id") ? data.row_id : null;
             if (self.state.table_is_shrunk) {
                 self.setState({table_is_shrunk: false})
             }
             self._handleChangeDoc(data.doc_name, row_id)
+        }
+    }
+
+    initSocket() {
+        let self = this;
+        this.props.tsocket.socket.emit('join-main', {"room": this.props.main_id, "user_id": window.user_id});
+        this.props.tsocket.reAttachListener('forcedisconnect', function() {
+            this.props.tsocket.socket.disconnect()
         });
+
+        this.props.tsocket.reAttachListener('table-message', this._handleTableMessage);
+        this.props.tsocket.reAttachListener("update-menus", this._update_menus_listener);
+        this.props.tsocket.reAttachListener('change-doc', this._change_doc_listener);
         this.socket_counter = this.props.tsocket.counter
     }
 
-
-
     _setTheme(dark_theme) {
         this.setState({dark_theme: dark_theme}, ()=> {
-            this.props.setStatusTheme(dark_theme);
             if (!window.in_context) {
                 window.dark_theme = this.state.dark_theme
             }
@@ -407,7 +422,6 @@ class MainApp extends React.Component {
             new_state[field_name] = value;
             this.setState(new_state, callback);
         }
-
     }
 
     _handleSearchFieldChange(search_text) {
@@ -428,10 +442,10 @@ class MainApp extends React.Component {
     set_visible_doc(doc_name, func) {
         const data_dict = {"doc_name": doc_name};
         if (func === null) {
-            postWithCallback(this.props.main_id, "set_visible_doc", data_dict)
+            postWithCallback(this.props.main_id, "set_visible_doc", data_dict, null, null, this.props.main_id)
         }
         else {
-            postWithCallback(this.props.main_id, "set_visible_doc", data_dict, func)
+            postWithCallback(this.props.main_id, "set_visible_doc", data_dict, func, null, this.props.main_id)
         }
     }
 
@@ -447,7 +461,7 @@ class MainApp extends React.Component {
                     self.setState({ show_table_spinner: false});
                 });
                 self.set_visible_doc(new_doc_name);
-              })
+              }, null, self.props.main_id)
         }
         else {
             const data_dict = {"doc_name": new_doc_name, "row_index": row_index, "set_visible_doc": true};
@@ -456,7 +470,7 @@ class MainApp extends React.Component {
                     self.setState({ show_table_spinner: false});
                     self.table_ref.current._scrollToRow(row_index);
                 });
-            });
+            }, null, this.props.main_id);
         }
     }
 
@@ -470,7 +484,7 @@ class MainApp extends React.Component {
         this.setState({table_spec: new_tspec});
         if (broadcast) {
             spec_update["doc_name"] = this.state.table_spec.current_doc_name;
-            postWithCallback(this.props.main_id, "UpdateTableSpec", spec_update);
+            postWithCallback(this.props.main_id, "UpdateTableSpec", spec_update, null, null, this.props.main_id);
             // this._broadcast_event_to_server("UpdateTableSpec", spec_update)
         }
     }
@@ -479,7 +493,7 @@ class MainApp extends React.Component {
         data_dict.main_id = this.props.main_id;
         data_dict.event_name = event_name;
         data_dict.doc_name = this.state.table_spec.current_doc_name;
-        postWithCallback(this.props.main_id, "distribute_events_stub", data_dict, callback)
+        postWithCallback(this.props.main_id, "distribute_events_stub", data_dict, callback, null, this.props.main_id)
     }
 
     _tile_command(menu_id) {
@@ -515,7 +529,7 @@ class MainApp extends React.Component {
                 else {
                     self.props.addErrorDrawerEntry({title: "Error creating tile", content: create_data})
                 }
-            })
+            }, null, self.props.main_id)
         }
     }
 
@@ -564,7 +578,7 @@ class MainApp extends React.Component {
 
     _getTableBodyHeight(table_available_height) {
         if (!this.state.mounted || !this.tbody_ref.current) {
-            return table_available_height- 50;
+            return table_available_height - 50;
         }
         else {
             let top_offset = this.tbody_ref.current.getBoundingClientRect().top - this.table_container_ref.current.getBoundingClientRect().top;
@@ -580,19 +594,21 @@ class MainApp extends React.Component {
     }
 
      _handleTableMessage(data) {
-        let self = this;
-        let handlerDict = {
-            refill_table: self._refill_table,
-            dehighlightAllText: (data)=>self._handleSearchFieldChange(null),
-            highlightTxtInDocument: (data)=>self._setAltSearchText(data.text_to_find),
-            updateNumberRows: (data)=>self._updateNumberRows(data.doc_name, data.number_rows),
-            setCellContent: (data)=>self._setCellContent(data.row, data.column_header, data.new_content),
-            colorTxtInCell: (data)=>self._colorTextInCell(data.row_id, data.column_header, data.token_text, data.color_dict),
-            setFreeformContent: (data)=>self._setFreeformDoc(data.doc_name, data.new_content),
-            updateDocList: (data)=>self._updateDocList(data.doc_names, data.visible_doc),
-            setCellBackground: (data)=>self._setCellBackgroundColor(data.row, data.column_header, data.color)
-        };
-        handlerDict[data.table_message](data)
+        if (data.main_id == this.props.main_id) {
+            let self = this;
+            let handlerDict = {
+                refill_table: self._refill_table,
+                dehighlightAllText: (data)=>self._handleSearchFieldChange(null),
+                highlightTxtInDocument: (data)=>self._setAltSearchText(data.text_to_find),
+                updateNumberRows: (data)=>self._updateNumberRows(data.doc_name, data.number_rows),
+                setCellContent: (data)=>self._setCellContent(data.row, data.column_header, data.new_content),
+                colorTxtInCell: (data)=>self._colorTextInCell(data.row_id, data.column_header, data.token_text, data.color_dict),
+                setFreeformContent: (data)=>self._setFreeformDoc(data.doc_name, data.new_content),
+                updateDocList: (data)=>self._updateDocList(data.doc_names, data.visible_doc),
+                setCellBackground: (data)=>self._setCellBackgroundColor(data.row, data.column_header, data.color)
+            };
+            handlerDict[data.table_message](data)
+        }
     }
 
     _setCellContent(row_id, column_header, new_content, broadcast = false) {
@@ -708,7 +724,7 @@ class MainApp extends React.Component {
             {"document_name": this.state.table_spec.current_doc_name,
                 "index": index,
                 "row_dict": {}
-            })
+            }, null, null, this.props.main_id)
     }
 
     _duplicateRow() {
@@ -716,7 +732,7 @@ class MainApp extends React.Component {
             {"document_name": this.state.table_spec.current_doc_name,
                 "index": this.state.selected_row,
                 "row_dict": this.state.data_row_dict[this.state.selected_row]
-            })
+            }, null, null, this.props.main_id)
     }
 
 
@@ -735,7 +751,7 @@ class MainApp extends React.Component {
         const data_dict = {"column_name": cname,
                             "doc_name": this.state.table_spec.current_doc_name,
                             "all_docs": delete_in_all};
-        postWithCallback(this.props.main_id, "DeleteColumn", data_dict);
+        postWithCallback(this.props.main_id, "DeleteColumn", data_dict, null, null, this.props.main_id);
     }
 
     _addColumn(add_in_all=false) {
@@ -776,7 +792,7 @@ class MainApp extends React.Component {
             {doc_name: this.state.table_spec.current_doc_name, row_index: row_index}, function (data) {
             let new_data_row_dict = Object.assign(self.state.data_row_dict, data.data_row_dict);
             self.setState({data_row_dict: new_data_row_dict})
-        })
+        }, null, this.props.main_id)
     }
 
     _changeCollection() {
@@ -786,17 +802,17 @@ class MainApp extends React.Component {
             let option_names = data["collection_names"];
             showSelectDialog("Select New Collection", "New Collection", "Cancel",
                 "Submit", changeTheCollection, option_names)
-        });
+        }, null, this.props.main_id);
         function changeTheCollection(new_collection_name) {
             const result_dict = {
                     "new_collection_name": new_collection_name,
                     "main_id": this.props.main_id
                 };
 
-            postWithCallback(self.props.main_id, "change_collection", result_dict, changeCollectionResult);
+            postWithCallback(self.props.main_id, "change_collection", result_dict, changeCollectionResult, null, self.props.main_id);
             function changeCollectionResult(data_object) {
                 if (data_object.success) {
-                    if (!this.state.is_project) document.title = new_collection_name;
+                    if (!window.in_context && !this.state.is_project) document.title = new_collection_name;
                     window._collection_name = data_object.collection_name;
                     self.setState({doc_names: data_object.doc_names, short_collection_name: data_object.short_collection_name},
                         ()=>{self._handleChangeDoc(data_object.doc_names[0])});
@@ -828,23 +844,33 @@ class MainApp extends React.Component {
     get_hp_height () {
         if (this.state.mounted && this.tile_div_ref.current) {
             if (this.state.console_is_shrunk) {
-                return (this.state.usable_height - this.tile_div_ref.current.getBoundingClientRect().top) - CONSOLE_HEADER_HEIGHT;
+                // return this._cProp("usable_height") - this.tile_div_ref.current.getBoundingClientRect().top - CONSOLE_HEADER_HEIGHT;
+                return window.innerHeight - this.tile_div_ref.current.offsetTop - CONSOLE_HEADER_HEIGHT - BOTTOM_MARGIN;
             }
             else {
-                return (this.state.usable_height - this.tile_div_ref.current.getBoundingClientRect().top) * this.state.height_fraction;
+                return (window.innerHeight - this.tile_div_ref.current.offsetTop - BOTTOM_MARGIN) * this.state.height_fraction;
             }
         }
         else {
-            return this.state.usable_height - 100
+            return window.innerHeight - 100
         }
     }
 
     get_vp_height () {
         if (this.state.mounted && this.tile_div_ref.current) {
-            return this.state.usable_height - this.tile_div_ref.current.getBoundingClientRect().top;
+            return window.innerHeight - this.tile_div_ref.current.offsetTop - BOTTOM_MARGIN;
         }
         else {
-            return this.state.usable_height - 50
+            return window.innerHeight - 50
+        }
+    }
+
+    get_zoomed_console_height() {
+        if (this.state.mounted && this.main_outer_ref.current) {
+            return window.innerHeight - this.main_outer_ref.current.offsetTop - BOTTOM_MARGIN;
+        }
+        else {
+            return window.innerHeight - 50
         }
     }
 
@@ -855,12 +881,44 @@ class MainApp extends React.Component {
         })
     }
 
-    render () {
+    _setProjectName(new_project_name) {
+        let self = this;
+        if (this.props.controlled) {
+            this.props.updatePanel({res_type: "project", title: new_project_name, panel: {resource_name: new_project_name, is_project: true}}, ()=>{
+                self.setState({is_jupyter: false})
+            })
+        }
+        else {
+            this.setState({"resource_name": new_name, "is_project": true})
+        }
+    }
+
+    _get_true_usable_width() {
+        let twidth;
+        if (this.main_outer_ref && this.main_outer_ref.current) {
+            twidth = window.innerWidth - MARGIN_SIZE - this.main_outer_ref.current.offsetLeft
+        }
+        else {
+            twidth = window.innerWidth - MARGIN_SIZE - 170
+        }
+        return twidth
+    }
+
+    render() {
+        let dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
         let vp_height;
         let hp_height;
         let console_available_height;
+        let my_props = {...this.props};
+        let true_usable_width = this._get_true_usable_width();
+        if (!this.props.controlled) {
+            for (let prop_name of controllable_props) {
+                my_props[prop_name] = this.state[prop_name]
+            }
+        }
+
         if (this.state.console_is_zoomed) {
-            console_available_height = this.state.usable_height - 50
+            console_available_height = this.get_zoomed_console_height();
         } else {
             vp_height = this.get_vp_height();
             hp_height = this.get_hp_height();
@@ -868,7 +926,7 @@ class MainApp extends React.Component {
                 console_available_height = CONSOLE_HEADER_HEIGHT;
             }
             else {
-                console_available_height = vp_height - hp_height - MARGIN_ADJUSTMENT - 1;
+                console_available_height = vp_height - hp_height - MARGIN_ADJUSTMENT - 3;
             }
         }
         let disabled_column_items = [];
@@ -881,20 +939,22 @@ class MainApp extends React.Component {
         if (this.state.selected_row == null) {
             disabled_row_items = ["Delete Row", "Insert Row Before", "Insert Row After", "Duplicate Row"]
         }
+        let project_name = my_props.is_project ? this.props.resource_name : "";
         let menus = (
             <React.Fragment>
                 <ProjectMenu {...this.props.statusFuncs}
                              main_id={this.props.main_id}
-                             project_name={this.state.project_name}
+                             project_name={project_name}
                              is_notebook={this.props.is_notebook}
                              is_juptyer={this.props.is_jupyter}
                              setMainStateValue={this._setMainStateValue}
+                             setProjectName={this._setProjectName}
                              postAjaxFailure={this.props.postAjaxFailure}
                              console_items={this.state.console_items}
                              interface_state={this.interface_state}
                              changeCollection={this._changeCollection}
                              updateLastSave={this._updateLastSave}
-                             disabled_items={this.state.is_project ? [] : ["Save"]}
+                             disabled_items={my_props.is_project ? [] : ["Save"]}
                              hidden_items={["Export as Jupyter Notebook"]}
                 />
                 <DocumentMenu {...this.props.statusFuncs}
@@ -905,7 +965,7 @@ class MainApp extends React.Component {
                 {!this.props.is_freeform &&
                     <ColumnMenu {...this.props.statusFuncs}
                                 main_id={this.props.main_id}
-                                project_name={this.state.project_name}
+                                project_name={project_name}
                                 is_notebook={this.props.is_notebook}
                                 is_juptyer={this.props.is_jupyter}
                                 moveColumn={this._moveColumn}
@@ -923,7 +983,7 @@ class MainApp extends React.Component {
                 {!this.props.is_freeform &&
                     <RowMenu {...this.props.statusFuncs}
                              main_id={this.props.main_id}
-                             project_name={this.state.project_name}
+                             project_name={project_name}
                              is_notebook={this.props.is_notebook}
                              is_juptyer={this.props.is_jupyter}
                              deleteRow={this._deleteRow}
@@ -936,7 +996,7 @@ class MainApp extends React.Component {
                 }
                 <ViewMenu {...this.props.statusFuncs}
                             main_id={this.props.main_id}
-                             project_name={this.state.project_name}
+                             project_name={project_name}
                              is_notebook={this.props.is_notebook}
                              is_juptyer={this.props.is_jupyter}
                           table_is_shrunk={this.state.table_is_shrunk}
@@ -1016,14 +1076,12 @@ class MainApp extends React.Component {
             <TileContainer  main_id={this.props.main_id}
                             height={tile_container_height}
                            tile_div_ref={this.tile_div_ref}
-                           dark_theme={this.state.dark_theme}
                            tile_list={_.cloneDeep(this.state.tile_list)}
                            current_doc_name={this.state.table_spec.current_doc_name}
                            table_is_shrunk={this.state.table_is_shrunk}
                            selected_row={this.state.selected_row}
                            broadcast_event={this._broadcast_event_to_server}
                            setMainStateValue={this._setMainStateValue}
-                           tsocket={this.props.tsocket}
             />
         );
 
@@ -1031,10 +1089,10 @@ class MainApp extends React.Component {
         if (this.state.show_exports_pane) {
             exports_pane = <ExportsViewer main_id={this.props.main_id}
                                           setUpdate={(ufunc)=>{this.updateExportsList = ufunc}}
+                                          setMainStateValue={this._setMainStateValue}
                                           available_height={console_available_height}
                                           console_is_shrunk={this.state.console_is_shrunk}
                                           console_is_zoomed={this.state.console_is_zoomed}
-                                          tsocket={this.props.tsocket}
             />
         }
         else {
@@ -1050,14 +1108,12 @@ class MainApp extends React.Component {
                                   show_exports_pane={this.state.show_exports_pane}
                                   setMainStateValue={this._setMainStateValue}
                                   console_available_height={console_available_height}
-                                  dark_theme={this.state.dark_theme}
-                                  console_available_width={this.state.usable_width * this.state.console_width_fraction - 16}
-                                  tsocket={this.props.tsocket}
+                                  console_available_width={true_usable_width * this.state.console_width_fraction - 16}
                                   />
                 );
         }
         else {
-            let console_available_width = this.state.usable_width * this.state.console_width_fraction - 16;
+            let console_available_width = true_usable_width * this.state.console_width_fraction - 16;
             console_pane = <div style={{width: console_available_width}}></div>
         }
 
@@ -1067,9 +1123,8 @@ class MainApp extends React.Component {
                              right_pane={exports_pane}
                              show_handle={!this.state.console_is_shrunk}
                              available_height={console_available_height}
-                             available_width={this.state.usable_width}
+                             available_width={true_usable_width}
                              initial_width_fraction={this.state.console_width_fraction}
-                             controlled={true}
                              dragIconSize={15}
                              handleSplitUpdate={this._handleConsoleFractionChange}
                 />
@@ -1107,9 +1162,8 @@ class MainApp extends React.Component {
                                      available_height={hp_height}
                                      show_handle={true}
                                      scrollAdjustSelectors={[".bp3-table-quadrant-scroll-container", "#tile-div"]}
-                                     available_width={this.state.usable_width}
+                                     available_width={true_usable_width}
                                      initial_width_fraction={this.state.horizontal_fraction}
-                                     controlled={true}
                                      dragIconSize={15}
                                      handleSplitUpdate={this._handleHorizontalFractionChange}
                                      handleResizeStart={this._handleResizeStart}
@@ -1122,7 +1176,7 @@ class MainApp extends React.Component {
             );
         }
         let outer_class = "main-outer";
-        if (this.state.dark_theme) {
+        if (dark_theme) {
             outer_class = outer_class + " bp3-dark";
         }
         else {
@@ -1130,36 +1184,43 @@ class MainApp extends React.Component {
         }
         return (
             <React.Fragment>
-                <TacticNavbar is_authenticated={window.is_authenticated}
-                              user_name={window.username}
-                              dark_theme={this.state.dark_theme}
-                              set_parent_theme={this._setTheme}
-                              menus={menus}
-                              min_navbar={window.in_context}
-                />
-                <div className={outer_class} ref={this.main_outer_ref}>
-                    {this.state.console_is_zoomed &&
-                        bottom_pane
-                    }
-                    {!this.state.console_is_zoomed && this.state.console_is_shrunk &&
-                        top_pane
-                    }
-                    {!this.state.console_is_zoomed && !this.state.console_is_shrunk &&
-                        <VerticalPanes top_pane={top_pane}
-                                       bottom_pane={bottom_pane}
-                                       show_handle={true}
-                                       available_width={this.state.usable_width}
-                                       available_height={vp_height}
-                                       initial_height_fraction={this.state.height_fraction}
-                                       dragIconSize={15}
-                                       scrollAdjustSelectors={[".bp3-table-quadrant-scroll-container", "#tile-div"]}
-                                       handleSplitUpdate={this._handleVerticalSplitUpdate}
-                                       handleResizeStart={this._handleResizeStart}
-                                       handleResizeEnd={this._handleResizeEnd}
-                                       overflow="hidden"
-                        />
-                    }
-                </div>
+                <TacticContext.Provider value={{
+                    readOnly: this.props.readOnly,
+                    tsocket: this.props.tsocket,
+                    dark_theme: dark_theme,
+                    setTheme:  this.props.controlled ? this.context.setTheme : this._setTheme,
+                    controlled: this.props.controlled,
+                    am_selected: this.props.am_selected
+                }}>
+                    <TacticNavbar is_authenticated={window.is_authenticated}
+                                  user_name={window.username}
+                                  menus={menus}
+                                  min_navbar={window.in_context}
+                    />
+                    <div className={outer_class} ref={this.main_outer_ref}>
+                        {this.state.console_is_zoomed &&
+                            bottom_pane
+                        }
+                        {!this.state.console_is_zoomed && this.state.console_is_shrunk &&
+                            top_pane
+                        }
+                        {!this.state.console_is_zoomed && !this.state.console_is_shrunk &&
+                            <VerticalPanes top_pane={top_pane}
+                                           bottom_pane={bottom_pane}
+                                           show_handle={true}
+                                           available_width={true_usable_width}
+                                           available_height={vp_height}
+                                           initial_height_fraction={this.state.height_fraction}
+                                           dragIconSize={15}
+                                           scrollAdjustSelectors={[".bp3-table-quadrant-scroll-container", "#tile-div"]}
+                                           handleSplitUpdate={this._handleVerticalSplitUpdate}
+                                           handleResizeStart={this._handleResizeStart}
+                                           handleResizeEnd={this._handleResizeEnd}
+                                           overflow="hidden"
+                            />
+                        }
+                    </div>
+                </TacticContext.Provider>
 
             </React.Fragment>
         )
@@ -1167,6 +1228,12 @@ class MainApp extends React.Component {
 }
 
 MainApp.propTypes = {
+    controlled: PropTypes.bool,
+    am_selected: PropTypes.bool,
+    changeResourceName: PropTypes.func,
+    changeResourceTitle: PropTypes.func,
+    changeResourceProps: PropTypes.func,
+    updatePanel: PropTypes.func,
     interface_state: PropTypes.object,
     initial_doc_names: PropTypes.array,
     initial_column_names: PropTypes.array,
@@ -1175,6 +1242,17 @@ MainApp.propTypes = {
     initial_hidden_columns_list: PropTypes.array,
     doc_names: PropTypes.array,
 };
+
+MainApp.defaultProps = {
+    am_selected: true,
+    controlled: false,
+    changeResourceName: null,
+    changeResourceTitle: null,
+    changeResourceProps: null,
+    updatePanel: null
+};
+
+MainApp.contextType = TacticContext;
 
 if (!window.in_context) {
     main_main();
