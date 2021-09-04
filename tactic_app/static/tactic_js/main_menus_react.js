@@ -77,7 +77,9 @@ var MenuComponent = /*#__PURE__*/function (_React$Component) {
       var pruned_list = Object.keys(this.props.option_dict).filter(this._filter_on_match_list);
       var choices = pruned_list.map(function (opt_name, index) {
         if (opt_name.startsWith("divider")) {
-          return /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null);
+          return /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, {
+            key: index
+          });
         }
 
         var icon = _this2.props.icon_dict.hasOwnProperty(opt_name) ? _this2.props.icon_dict[opt_name] : null;
@@ -159,7 +161,7 @@ var ProjectMenu = /*#__PURE__*/function (_React$Component2) {
       }, function (data) {
         var checkboxes;
         (0, _modal_react.showModalReact)("Save Project As", "New Project Name", CreateNewProject, "NewProject", data["project_names"], null, doCancel);
-      });
+      }, null, this.props.main_id);
 
       function doCancel() {
         self.props.stopSpinner();
@@ -176,26 +178,26 @@ var ProjectMenu = /*#__PURE__*/function (_React$Component2) {
         result_dict.interface_state = self.props.interface_state;
 
         if (self.props.is_notebook) {
-          (0, _communication_react.postWithCallback)(self.props.main_id, "save_new_notebook_project", result_dict, save_as_success, self.props.postAjaxFailure);
+          (0, _communication_react.postWithCallback)(self.props.main_id, "save_new_notebook_project", result_dict, save_as_success, self.props.postAjaxFailur, self.props.main_id);
         } else {
           result_dict["purgetiles"] = true;
-          (0, _communication_react.postWithCallback)(self.props.main_id, "save_new_project", result_dict, save_as_success, self.props.postAjaxFailure);
+          (0, _communication_react.postWithCallback)(self.props.main_id, "save_new_project", result_dict, save_as_success, self.props.postAjaxFailure, self.props.main_id);
         }
 
         function save_as_success(data_object) {
           if (data_object["success"]) {
-            self.props.setMainStateValue({
-              "is_project": true,
-              "project_name": new_name,
-              "is_jupyter": false
-            });
-            document.title = new_name;
+            self.props.setProjectName(new_name);
+
+            if (!window.in_context) {
+              document.title = new_name;
+            }
+
             self.props.clearStatusMessage();
             data_object.alert_type = "alert-success";
             data_object.timeout = 2000;
             (0, _communication_react.postWithCallback)("host", "refresh_project_selector_list", {
               'user_id': window.user_id
-            });
+            }, null, null, self.props.main_id);
             self.props.updateLastSave();
             self.props.stopSpinner();
             (0, _toaster.doFlash)(data_object);
@@ -221,7 +223,7 @@ var ProjectMenu = /*#__PURE__*/function (_React$Component2) {
       result_dict.interface_state = this.props.interface_state; //tableObject.startTableSpinner();
 
       this.props.startSpinner();
-      (0, _communication_react.postWithCallback)(this.props.main_id, "update_project", result_dict, updateSuccess, self.props.postAjaxFailure);
+      (0, _communication_react.postWithCallback)(this.props.main_id, "update_project", result_dict, updateSuccess, self.props.postAjaxFailure, self.props.main_id);
 
       function updateSuccess(data) {
         self.props.startSpinner();
@@ -250,7 +252,7 @@ var ProjectMenu = /*#__PURE__*/function (_React$Component2) {
         var checkboxes; // noinspection JSUnusedAssignment
 
         (0, _modal_react.showModalReact)("Export Notebook in Jupyter Format", "New Project Name", ExportJupyter, "NewJupyter", data["project_names"], checkboxes);
-      });
+      }, null, self.props.main_id);
 
       function ExportJupyter(new_name) {
         var cell_list = [];
@@ -282,7 +284,7 @@ var ProjectMenu = /*#__PURE__*/function (_React$Component2) {
           "main_id": self.props.main_id,
           "cell_list": cell_list
         };
-        (0, _communication_react.postWithCallback)(self.props.main_id, "export_to_jupyter_notebook", result_dict, save_as_success, self.props.postAjaxFailure);
+        (0, _communication_react.postWithCallback)(self.props.main_id, "export_to_jupyter_notebook", result_dict, save_as_success, self.props.postAjaxFailure, self.props.main_id);
 
         function save_as_success(data_object) {
           self.props.clearStatusMessage();
@@ -326,7 +328,7 @@ var ProjectMenu = /*#__PURE__*/function (_React$Component2) {
         "console_items": this.props.console_items,
         "user_id": window.user_id
       };
-      (0, _communication_react.postWithCallback)(this.props.main_id, "console_to_notebook", result_dict);
+      (0, _communication_react.postWithCallback)(this.props.main_id, "console_to_notebook", result_dict, null, null, this.props.main_id);
     }
   }, {
     key: "option_dict",
@@ -414,7 +416,7 @@ var DocumentMenu = /*#__PURE__*/function (_React$Component3) {
           new_document_name: new_name
         }, function (result) {
           self.props.stopSpinner();
-        });
+        }, null, self.props.main_id);
       }
     }
   }, {
@@ -434,7 +436,7 @@ var DocumentMenu = /*#__PURE__*/function (_React$Component3) {
           new_document_name: new_name
         }, function (result) {
           self.props.stopSpinner();
-        });
+        }, null, self.props.main_id);
       }
     }
   }, {
@@ -454,7 +456,7 @@ var DocumentMenu = /*#__PURE__*/function (_React$Component3) {
           new_document_name: new_name
         }, function (result) {
           self.props.stopSpinner();
-        });
+        }, null, self.props.main_id);
       }
     }
   }, {

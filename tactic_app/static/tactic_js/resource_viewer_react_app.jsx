@@ -15,22 +15,19 @@ import {doBinding} from "./utilities_react.js";
 
 import {doFlash, doFlashAlways} from "./toaster.js";
 import {getUsableDimensions} from "./sizing_tools.js"
+import {TacticContext} from "./tactic_context.js";
 
 export {ResourceViewerApp, ResourceViewerSocket, copyToLibrary, sendToRepository}
 
 class ResourceViewerSocket extends TacticSocket {
     initialize_socket_stuff(reconnect=false) {
-        this.socket.emit('join', {"room": window.user_id});
-        this.socket.emit('join-main', {"room": this.extra_args.resource_viewer_id, "user_id": window.user_id});
-        this.socket.on('handle-callback', handleCallback);
-        this.socket.on('close-user-windows', (data) => {
-            if (!(data["originator"] == this.extra_args.resource_viewer_id)) {
-                window.close()
-            }
-        });
-        this.socket.on("doFlash", function(data) {
-            doFlash(data)
-        });
+        if (!window.in_context) {
+            this.socket.emit('join', {"room": window.user_id});
+            // this.socket.emit('join-main', {"room": this.extra_args.resource_viewer_id, "user_id": window.user_id});
+            this.socket.on("doFlash", function (data) {
+                doFlash(data)
+            });
+        }
     }
 }
 
@@ -64,11 +61,19 @@ function sendToRepository(res_type, resource_name) {
     }
 }
 
-
 class ResourceViewerApp extends React.Component {
 
-    constructor(props) {
-        super(props);
+    constructor(props, context) {
+        super(props, context);
+        context.tsocket.socket.emit('join-main', {"room": props.resource_viewer_id, "user_id": window.user_id});
+        context.tsocket.socket.on('handle-callback', (task_packet)=>{handleCallback(task_packet, props.resource_viewer_id)});
+        if (!context.controlled) {
+            context.tsocket.socket.on('close-user-windows', (data) => {
+                if (!(data["originator"] == props.resource_viewer_id)) {
+                    window.close()
+                }
+            });
+        }
         doBinding(this);
         this.top_ref = React.createRef();
         this.savedContent = props.the_content;
@@ -76,9 +81,11 @@ class ResourceViewerApp extends React.Component {
         this.savedNotes = props.notes;
         let self = this;
         this.mousetrap = new Mousetrap();
-        this.mousetrap.bind(['command+s', 'ctrl+s'], function (e) {
-            self.props.saveMe();
-            e.preventDefault()
+        this.mousetrap.bind(['command+s', 'ctrl+s'], (e)=>{
+            if (self.context.am_selected){
+                self.props.saveMe();
+                e.preventDefault()
+            }
         });
         let aheight = getUsableDimensions().usable_height;
         let awidth = getUsableDimensions().usable_width - 170;
@@ -118,12 +125,16 @@ class ResourceViewerApp extends React.Component {
     render() {
         let left_pane = (
             <React.Fragment>
-                <ResourceviewerToolbar button_groups={this.props.button_groups}
+                <ResourceviewerToolbar //controlled={this.props.controlled}
+                                       //am_selected={this.props.am_selected}
+                                       button_groups={this.props.button_groups}
                                        setResourceNameState={this.props.setResourceNameState}
                                        resource_name={this.props.resource_name}
                                        show_search={this.props.show_search}
                                        search_string={this.props.search_string}
                                        update_search_state={this.props.update_search_state}
+                                       // tsocket={this.props.tsocket}
+                                       // dark_theme={this.props.dark_theme}
                                        res_type={this.props.res_type}/>
                 {this.props.children}
             </React.Fragment>
@@ -166,10 +177,15 @@ ResourceViewerApp.propTypes = {
     handleStateChange: PropTypes.func,
     meta_outer: PropTypes.string,
     dark_theme: PropTypes.bool,
+    tsocket: PropTypes.object,
     saveMe: PropTypes.func,
     children: PropTypes.element
 };
 
 ResourceViewerApp.defaultProps ={
-    dark_theme: false
+    dark_theme: false,
+    am_selected: true,
+    controlled: false,
 };
+
+ResourceViewerApp.contextType = TacticContext;

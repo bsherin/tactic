@@ -8,11 +8,15 @@ let callbacks = {};
 
 let megaplex_port = "8085";
 
-function handleCallback (task_packet) {
-    let task_id = task_packet.callback_id;
-    let func = callbacks[task_id];
-    delete callbacks[task_id];
-    func(task_packet.response_data);
+function handleCallback (task_packet, room_id) {
+    if (task_packet["room"] == room_id) {
+        let task_id = task_packet.callback_id;
+        if (task_id in callbacks) {
+            let func = callbacks[task_id];
+            delete callbacks[task_id];
+            func(task_packet.response_data);
+        }
+    }
 }
 
 function postAjax(target, data, callback) {
@@ -96,7 +100,7 @@ function postWithCallback(dest_id, task_type, task_data, callback_func, error_ca
         "task_type": task_type,
         "task_data": task_data,
         "response_data": null,
-        "main_id": window.main_id,
+        "main_id": special_main_id ? special_main_id : window.main_id,
         "expiration": null
     };
 

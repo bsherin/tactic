@@ -6,9 +6,12 @@
 /*jshint esversion: 6 */
 
 import _ from 'lodash';
+import React from "react";
+import * as ReactDOM from 'react-dom'
+import { Spinner, Text} from "@blueprintjs/core";
 
 export {doBinding, propsAreEqual, arrayMove, arraysMatch, get_ppi};
-export {remove_duplicates, doSignOut, guid, scrollMeIntoView};
+export {remove_duplicates, doSignOut, guid, scrollMeIntoView, renderSpinnerMessage};
 
 function doBinding(obj, seq="_", proto=null) {
     if (!proto) { proto = Object.getPrototypeOf(obj); }
@@ -147,4 +150,16 @@ function guid() {
   }
   return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
     s4() + '-' + s4() + s4() + s4();
+}
+
+function renderSpinnerMessage(msg, selector="#main-root") {
+    let domContainer = document.querySelector(selector);
+    ReactDOM.render(
+        (<div className="screen-center" style={{textAlign: "center"}}>
+            <Spinner size={100}/>
+            <Text className="pt-2">
+                {msg}
+            </Text>
+        </div>), domContainer
+    )
 }

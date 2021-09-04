@@ -268,7 +268,8 @@ class HorizontalPanes extends React.Component {
             width: this.left_width,
             height: this.props.available_height - this.props.bottom_margin,
             flexDirection: "column",
-            overflow: "hidden"
+            overflow: "hidden",
+            paddingLeft: window.in_context ? 5 : 12
         };
         // noinspection JSSuspiciousNameCombination
         let right_div_style = {
@@ -276,7 +277,7 @@ class HorizontalPanes extends React.Component {
             height: this.props.available_height - this.props.bottom_margin,
             flexDirection: "column",
         };
-        let cname = ""
+        let cname = "";
         if (this.props.right_pane_overflow == "auto") {
             cname = "contingent-scroll"
         }
@@ -286,7 +287,7 @@ class HorizontalPanes extends React.Component {
 
         let dstyle = this.props.hide_me ? {display: "none"} : {};
         let position_dict = {position: "relative", left: 0, top: (this.props.available_height - this.props.bottom_margin) / 2};
-        let outer_style = {width: "100%"}
+        let outer_style = {width: "100%"};
         if (this.props.left_margin) {
             outer_style["marginLeft"] = this.props.left_margin
         }
@@ -359,7 +360,7 @@ class VerticalPanes extends React.Component {
         this.old_bottom_height = 0;
         this.old_top_height = 0;
         this.unique_id = guid();
-        this.state = this.state = {
+        this.state = {
             "current_height_fraction": this.props.initial_height_fraction,
             "mounted": false
         };

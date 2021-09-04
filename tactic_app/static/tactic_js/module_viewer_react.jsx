@@ -8,57 +8,59 @@ import React from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
-import { ResizeSensor } from "@blueprintjs/core";
-
 import {ResourceViewerSocket, ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app.js";
 import {ReactCodemirror} from "./react-codemirror.js";
-import {ViewerContext} from "./resource_viewer_context.js";
 import {postAjax, postAjaxPromise, postWithCallback} from "./communication_react.js"
 import {doFlash} from "./toaster.js"
 import {withErrorDrawer} from "./error_drawer.js";
 import {withStatus} from "./toaster.js";
 import {doBinding} from "./utilities_react.js";
 
-import {SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, BOTTOM_MARGIN, getUsableDimensions} from "./sizing_tools.js";
+import {SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, getUsableDimensions} from "./sizing_tools.js";
 import {guid} from "./utilities_react.js";
 import {TacticNavbar} from "./blueprint_navbar.js";
 
-export {module_viewer_in_context}
-
+export {module_viewer_props, ModuleViewerApp}
+import {TacticContext} from "./tactic_context.js";
 
 function module_viewer_main () {
-    function gotElement(the_element) {
+    function gotProps(the_props) {
+        let ModuleViewerAppPlus = withErrorDrawer(withStatus(ModuleViewerApp));
+        let the_element = <ModuleViewerAppPlus {...the_props}
+                                     controlled={false}
+                                     initial_theme={window.theme}
+                                     changeName={null}
+        />;
         let domContainer = document.querySelector('#root');
         ReactDOM.render(the_element, domContainer)
     }
-    
+
     postAjaxPromise("view_module_in_context", {"resource_name": window.resource_name})
         .then((data)=>{
-            module_viewer_in_context(data, null, gotElement)
+            module_viewer_props(data, null, gotProps);
+
         })
-
 }
 
-function module_viewer_in_context(data, registerThemeSetter, finalCallback, ref=null) {
+const controllable_props = ["resource_name", "usable_height", "usable_width", "dark_theme"];
+
+function module_viewer_props(data, registerDirtyMethod, finalCallback) {
     let resource_viewer_id = guid();
-    if (!window.in_context) {
-        window.page_id = resource_viewer_id;
-        window.main_id = resource_viewer_id;  // needed for postWithCallback
-    }
     var tsocket = new ResourceViewerSocket("main", 5000, {resource_viewer_id: resource_viewer_id});
-    let ModuleViewerAppPlus = withErrorDrawer(withStatus(ModuleViewerApp, tsocket, false, ref));
-    let split_tags = data.mdata.tags == "" ? [] : data.mdata.tags.split(" ");
-    finalCallback(<ModuleViewerAppPlus resource_name={data.resource_name}
-                                       the_content={data.the_content}
-                                       registerThemeSetter={registerThemeSetter}
-                                       created={data.mdata.datestring}
-                                       initial_theme={window.theme}
-                                       tags={split_tags}
-                                       notes={data.mdata.notes}
-                                       readOnly={data.read_only}
-                                       is_repository={false}
-                                       meta_outer="#right-div"/>)
+    finalCallback({
+        resource_viewer_id: resource_viewer_id,
+        tsocket: tsocket,
+        split_tags: data.mdata.tags == "" ? [] : data.mdata.tags.split(" "),
+        resource_name: data.resource_name,
+        the_content: data.the_content,
+        notes: data.mdata.notes,
+        readOnly: data.read_only,
+        is_repository: false,
+        meta_outer: "#right-div",
+        registerDirtyMethod: registerDirtyMethod
+    })
 }
+
 
 class ModuleViewerApp extends React.Component {
 
@@ -68,28 +70,35 @@ class ModuleViewerApp extends React.Component {
         this.top_ref = React.createRef();
         this.cc_ref = React.createRef();
         this.savedContent = props.the_content;
-        this.savedTags = props.tags;
+        this.savedTags = props.split_tags;
         this.savedNotes = props.notes;
         let self = this;
-        window.addEventListener("beforeunload", function (e) {
-            if (self.dirty()) {
-                e.preventDefault();
-                e.returnValue = ''
-            }
-        });
 
-        let aheight = getUsableDimensions().usable_height;
-        let awidth = getUsableDimensions().usable_width;
         this.state = {
-            resource_name: props.resource_name,
             code_content: props.the_content,
             notes: props.notes,
-            tags: props.tags,
-            usable_width: awidth,
-            usable_height: aheight,
+            tags: props.split_tags,
             search_string: "",
-            dark_theme: this.props.initial_theme == "dark"
         };
+
+        if (props.controlled) {
+            props.registerDirtyMethod(this._dirty)
+        }
+
+        if (!props.controlled) {
+            const aheight = getUsableDimensions(true).usable_height_no_bottom;
+            const awidth = getUsableDimensions(true).usable_width - 170;
+            this.state.usable_height = aheight;
+            this.state.usable_width = awidth;
+            this.state.dark_theme = props.initial_theme === "dark";
+            this.state.resource_name = props.resource_name;
+            window.addEventListener("beforeunload", function (e) {
+                if (self._dirty()) {
+                    e.preventDefault();
+                    e.returnValue = ''
+                }
+            });
+        }
     }
 
 
@@ -98,30 +107,33 @@ class ModuleViewerApp extends React.Component {
     }
 
     componentDidMount() {
-        window.addEventListener("resize", this._update_window_dimensions);
-        this._update_window_dimensions();
         this.props.stopSpinner();
-        this.props.setStatusTheme(this.state.dark_theme);
-        if (window.in_context) {
-            this.props.registerThemeSetter(this._setTheme);
+        if (!this.props.controlled) {
+            window.dark_theme = this.state.dark_theme;
+            window.addEventListener("resize", this._update_window_dimensions);
+            this._update_window_dimensions();
         }
     }
 
+    _cProp(pname) {
+            return this.props.controlled ? this.props[pname] :  this.state[pname]
+    }
+
     _update_window_dimensions() {
-        let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
-        let uheight = window.innerHeight;
-        if (this.top_ref && this.top_ref.current) {
-            uheight = uheight - this.top_ref.current.offsetTop;
+        if (!this.props.controlled) {
+            let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
+            let uheight = window.innerHeight;
+            if (this.top_ref && this.top_ref.current) {
+                uheight = uheight - this.top_ref.current.offsetTop;
+            } else {
+                uheight = uheight - USUAL_TOOLBAR_HEIGHT
+            }
+            this.setState({usable_height: uheight, usable_width: uwidth})
         }
-        else {
-            uheight = uheight - USUAL_TOOLBAR_HEIGHT
-        }
-        this.setState({usable_height: uheight, usable_width: uwidth})
     }
 
     _setTheme(dark_theme) {
         this.setState({dark_theme: dark_theme}, ()=> {
-            this.props.setStatusTheme(dark_theme);
             if (!window.in_context) {
                 window.dark_theme = this.state.dark_theme
             }
@@ -142,7 +154,7 @@ class ModuleViewerApp extends React.Component {
                      {"name_text": "SaveAs", "icon_name": "floppy-disk", "click_handler": this._saveMeAs, tooltip: "Save as"},
                      {"name_text": "Load", "icon_name": "upload", "click_handler": this._loadModule, tooltip: "Load tile"},
                      {"name_text": "Share", "icon_name": "share",
-                        "click_handler": () => {sendToRepository("tile", this.state.resource_name)}, tooltip: "Share to repository"}],
+                        "click_handler": () => {sendToRepository("tile", this._cProp("resource_name"))}, tooltip: "Share to repository"}],
                     [{"name_text": "History", "icon_name": "history", "click_handler": this._showHistoryViewer, tooltip: "Show history viewer"},
                      {"name_text": "Compare", "icon_name": "comparison", "click_handler": this._showTileDiffer, tooltip: "Compare to another tile"}]
             ]
@@ -172,27 +184,40 @@ class ModuleViewerApp extends React.Component {
 
 
     get_new_cc_height () {
+        let uheight = this._cProp("usable_height");
         if (this.cc_ref && this.cc_ref.current) {  // This will be true after the initial render
-            return this.state.usable_height - this.cc_ref.current.offsetTop
+            return uheight - this.cc_ref.current.offsetTop
         }
         else {
-            return this.state.usable_height - 100
+            return uheight - 100
         }
     }
 
     _setResourceNameState(new_name) {
-        this.setState({resource_name: new_name})
+        if (this.props.controlled) {
+            this.props.changeResourceName(new_name)
+        }
+        else {
+            this.setState({resource_name: new_name})
+        }
     }
 
     render() {
+        let dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
         let the_context = {"readOnly": this.props.readOnly};
+        let my_props = {...this.props};
+        if (!this.props.controlled) {
+            for (let prop_name of controllable_props) {
+                my_props[prop_name] = this.state[prop_name]
+            }
+        }
         let outer_style = {width: "100%",
-            height: this.state.usable_height,
-            paddingLeft: SIDE_MARGIN,
+            height: my_props.usable_height,
+            paddingLeft: SIDE_MARGIN
         };
         let cc_height = this.get_new_cc_height();
         let outer_class = "resource-viewer-holder";
-        if (!window.in_context) {
+        if (!this.props.controlled) {
             // outer_class = "resource-viewer-holder";
             if (this.state.dark_theme) {
                 outer_class = outer_class + " bp3-dark";
@@ -201,20 +226,27 @@ class ModuleViewerApp extends React.Component {
             }
         }
         return (
-            <ViewerContext.Provider value={the_context}>
-                {!window.in_context &&
+            <TacticContext.Provider value={{
+                    readOnly: this.props.readOnly,
+                    tsocket: this.props.tsocket,
+                    dark_theme: dark_theme,
+                    setTheme:  this.props.controlled ? this.context.setTheme : this._setTheme,
+                    controlled: this.props.controlled,
+                    am_selected: this.props.am_selected
+                }}>
+                {!this.props.controlled &&
                     <TacticNavbar is_authenticated={window.is_authenticated}
                                   selected={null}
                                   show_api_links={true}
                                   dark_theme={this.state.dark_theme}
-                                  set_parent_theme={this._setTheme}
                                   user_name={window.username}/>
                 }
                 <div className={outer_class} ref={this.top_ref} style={outer_style}>
                         <ResourceViewerApp {...this.props.statusFuncs}
+                                           resource_viewer_id={my_props.resource_viewer_id}
                                            setResourceNameState={this._setResourceNameState}
                                            res_type="tile"
-                                           resource_name={this.state.resource_name}
+                                           resource_name={my_props.resource_name}
                                            button_groups={this.button_groups}
                                            handleStateChange={this._handleStateChange}
                                            created={this.props.created}
@@ -223,20 +255,17 @@ class ModuleViewerApp extends React.Component {
                                            saveMe={this._saveMe}
                                            show_search={true}
                                            update_search_state={this._update_search_state}
-                                           dark_theme={this.state.dark_theme}
                                            meta_outer={this.props.meta_outer}>
                             <ReactCodemirror code_content={this.state.code_content}
                                              handleChange={this._handleCodeChange}
                                              saveMe={this._saveMe}
-                                             readOnly={this.props.readOnly}
                                              search_term={this.state.search_string}
-                                             dark_theme={this.state.dark_theme}
                                              code_container_ref={this.cc_ref}
                                              code_container_height={cc_height}
                               />
                         </ResourceViewerApp>
                     </div>
-            </ViewerContext.Provider>
+            </TacticContext.Provider>
         )
     }
 
@@ -261,7 +290,7 @@ class ModuleViewerApp extends React.Component {
             let category;
             category = null;
             result_dict = {
-                "module_name": self.state.resource_name,
+                "module_name": self._cProp("resource_name"),
                 "category": category,
                 "tags": tagstring,
                 "notes": notes,
@@ -294,7 +323,8 @@ class ModuleViewerApp extends React.Component {
         this.doSavePromise()
             .then(function () {
                 self.props.statusMessage("Loading Module");
-                postWithCallback("host", "load_tile_module_task", {"tile_module_name": self.state.resource_name, "user_id": user_id}, load_success)
+                postWithCallback("host", "load_tile_module_task", {"tile_module_name": self._cProp("resource_name"), "user_id": user_id},
+                    load_success, self.props.resource_viewer_id)
             })
             .catch(self._doFlashStopSpinner);
 
@@ -312,7 +342,7 @@ class ModuleViewerApp extends React.Component {
         let self = this;
         this.doSavePromise()
             .then(function (){
-                statusMessage("Checkpointing");
+                self.props.statusMessage("Checkpointing");
                 self.doCheckpointPromise()
                     .then(self._doFlashStopSpinner)
                     .catch(self._doFlashStopSpinner)
@@ -325,7 +355,7 @@ class ModuleViewerApp extends React.Component {
     doCheckpointPromise() {
         let self = this;
         return new Promise (function (resolve, reject) {
-            postAjax("checkpoint_module", {"module_name": self.state.resource_name}, function (data) {
+            postAjax("checkpoint_module", {"module_name": self._cProp("resource_name")}, function (data) {
                 if (data.success) {
                     resolve(data)
                 }
@@ -337,15 +367,15 @@ class ModuleViewerApp extends React.Component {
     }
 
     _showHistoryViewer () {
-        window.open(`${$SCRIPT_ROOT}/show_history_viewer/${this.state.resource_name}`)
+        window.open(`${$SCRIPT_ROOT}/show_history_viewer/${this._cProp("resource_name")}`)
     }
 
     _showTileDiffer () {
-        window.open(`${$SCRIPT_ROOT}/show_tile_differ/${this.state.resource_name}`)
+        window.open(`${$SCRIPT_ROOT}/show_tile_differ/${this._cProp("resource_name")}`)
     }
 
 
-    dirty() {
+    _dirty() {
         let current_content = this.state.code_content;
         const tags = this.state.tags;
         const notes = this.state.notes;
@@ -354,6 +384,12 @@ class ModuleViewerApp extends React.Component {
 }
 
 ModuleViewerApp.propTypes = {
+    controlled: PropTypes.bool,
+    am_selected: PropTypes.bool,
+    changeResourceName: PropTypes.func,
+    changeResourceTitle: PropTypes.func,
+    changeResourceProps: PropTypes.func,
+    updatePanel: PropTypes.func,
     the_content: PropTypes.string,
     created: PropTypes.string,
     tags: PropTypes.array,
@@ -361,8 +397,22 @@ ModuleViewerApp.propTypes = {
     dark_theme: PropTypes.bool,
     readOnly: PropTypes.bool,
     is_repository: PropTypes.bool,
-    meta_outer: PropTypes.string
+    meta_outer: PropTypes.string,
+    tsocket: PropTypes.object,
+    usable_height: PropTypes.number,
+    usable_width: PropTypes.number
 };
+
+ModuleViewerApp.defaultProps = {
+    am_selected: true,
+    controlled: false,
+    changeResourceName: null,
+    changeResourceTitle: null,
+    changeResourceProps: null,
+    updatePanel: null
+};
+
+ModuleViewerApp.contextType = TacticContext;
 
 if (!window.in_context) {
     module_viewer_main();

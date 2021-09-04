@@ -68,7 +68,6 @@ class HistoryViewerApp extends React.Component {
         this.savedContent = props.edit_content
     }
     componentDidMount() {
-        this.props.setStatusTheme(this.state.dark_theme);
         window.dark_theme = this.state.dark_theme
     }
 

@@ -241,11 +241,12 @@ class QWorker(ExceptionMixin):
                 room = task_packet["room"]
             else:
                 room = task_packet["main_id"]
+                task_packet["room"] = room
             if "namespace" in task_packet:
                 namespace = task_packet["namespace"]
             else:
                 namespace = "/main"
-            debug_log("about to emit_direct handle-callback")
+            debug_log("about to emit_direct handle-callback. *** task_packet has room" + str(task_packet["room"]))
             emit_direct("handle-callback", task_packet, namespace=namespace, room=room)
         else:
             reply_to = task_packet["reply_to"]

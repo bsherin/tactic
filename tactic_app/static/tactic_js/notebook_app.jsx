@@ -13,95 +13,82 @@ import {TacticSocket} from "./tactic_socket.js";
 import {ConsoleComponent} from "./console_component.js";
 import {doFlash} from "./toaster.js"
 import {withStatus} from "./toaster.js";
-import {doBinding, get_ppi} from "./utilities_react.js";
+import {doBinding, get_ppi, renderSpinnerMessage} from "./utilities_react.js";
 
-import {handleCallback, postWithCallback, postAsyncFalse, postAjaxPromise} from "./communication_react.js"
+import {handleCallback, postWithCallback, postAjaxPromise, postAjax} from "./communication_react.js"
 import {ExportsViewer} from "./export_viewer_react";
 import {HorizontalPanes} from "./resizing_layouts";
+import {withErrorDrawer} from "./error_drawer.js";
+import {TacticContext} from "./tactic_context.js";
 
-const MARGIN_SIZE = 17;
+const MARGIN_SIZE = 10;
 const BOTTOM_MARGIN = 20;
 const USUAL_TOOLBAR_HEIGHT = 50;
 
 var tsocket;
 var ppi;
 
-export {main_notebook_in_context}
+export {notebook_props, NotebookApp}
 
 class MainTacticSocket extends TacticSocket {
 
     initialize_socket_stuff(reconnect=false) {
-        this.socket.emit('join', {"room": window.user_id});
-        if (reconnect) {
-            this.socket.emit('join-main', {"room": this.extra_args.main_id, "user_id": window.user_id}, function (response) {
-            })
-        }
-
-        this.socket.on('handle-callback', handleCallback);
-        let self = this;
-        this.socket.on('forcedisconnect', function() {
-            self.socket.disconnect()
-        });
-        this.socket.on('close-user-windows', function(data){
-                    postAsyncFalse("host", "remove_mainwindow_task", {"main_id": this.extra_args.main_id});
-                    if (!(data["originator"] == this.extra_args.main_id)) {
-                        window.close()
-                    }
-                });
-        this.socket.on("window-open", function(data) {
-            window.open($SCRIPT_ROOT + "/load_temp_page/" + data["the_id"])
-        });
-
         this.socket.on("notebook-open", function(data) {
             window.open($SCRIPT_ROOT + "/open_notebook/" + data["the_id"])
         });
-        this.socket.on("doFlash", function(data) {
-            doFlash(data)
-        });
+
+        if (!window.in_context) {
+            this.socket.emit('join', {"room": window.user_id});
+            this.socket.on("doFlash", function(data) {
+                doFlash(data)
+                });
+        }
     }
 }
 
 function main_main() {
-    function gotElement(the_element) {
+    function gotProps(the_props) {
+        let NotebookAppPlus = withErrorDrawer(withStatus(NotebookApp));
+        let the_element = <NotebookAppPlus {...the_props}
+                                            controlled={false}
+                                            initial_theme={window.theme}
+                                            changeName={null}
+        />;
         const domContainer = document.querySelector('#main-root');
         ReactDOM.render(the_element, domContainer)
     }
-    var resource_name;
-    var target;
 
-    if (window.is_new_notebook) {
-        target = "new_notebook_in_context";
-        resource_name = ""
-    }
-    else {
-        target = "main_project_in_context";
-        resource_name = window.project_name
-    }
+    renderSpinnerMessage("Starting up ...");
+    var target = window.is_new_notebook ? "new_notebook_in_context" : "main_project_in_context";
+    var resource_name = window.is_new_notebook ? "" : window.project_name;
 
     postAjaxPromise(target, {"resource_name": resource_name})
         .then((data)=>{
-            main_notebook_in_context(data, null, gotElement)
+            notebook_props(data, null, gotProps)
         })
 }
 
-function main_notebook_in_context(data, registerThemeSetter, finalCallback, ref=null) {
+function notebook_props(data, registerDirtyMethod, finalCallback) {
 
-    var tsocket = new MainTacticSocket("main",
-        5000,
-        {main_id: data.main_id});
     ppi = get_ppi();
     let main_id = data.main_id;
-    if (!window.in_context) {
-        window.main_id = data.main_id;  // needed for postWithCallback
+
+    var tsocket = new MainTacticSocket("main", 5000);
+    tsocket.socket.on('handle-callback', (task_packet)=>{handleCallback(task_packet, main_id)});
+    tsocket.socket.on('finish-post-load', _finish_post_load_in_context);
+
+    function readyListener() {
+        _everyone_ready_in_context(finalCallback)
     }
+
     let is_totally_new = !data.is_jupyter && !data.is_project && (data.temp_data_id == "");
     let opening_from_temp_id = data.temp_data_id != "";
-    tsocket.socket.on('finish-post-load', _finish_post_load_in_context);
-    tsocket.socket.on("remove-ready-block", _everyone_ready_in_context);
+
+
+    tsocket.socket.on("remove-ready-block", readyListener);
     tsocket.socket.emit('join-main', {"room": main_id, "user_id": window.user_id}, function(response) {
-        console.log("emitting client-read");
             tsocket.socket.emit('client-ready', {"room": main_id, "user_id": window.user_id, "participant": "client",
-            "rb_id": data.ready_block_id})
+            "rb_id": data.ready_block_id, "main_id": main_id})
     });
 
     window.addEventListener("unload", function sendRemove() {
@@ -109,7 +96,10 @@ function main_notebook_in_context(data, registerThemeSetter, finalCallback, ref=
     });
 
     function _everyone_ready_in_context() {
-        console.log("entering everyone ready");
+        if (!window.in_context){
+            renderSpinnerMessage("Everyone is ready, initializing...");
+        }
+        tsocket.socket.off("remove-ready-block", readyListener);
         let data_dict = {
                 "doc_type": "notebook",
                 "base_figure_url": data.base_figure_url,
@@ -117,8 +107,7 @@ function main_notebook_in_context(data, registerThemeSetter, finalCallback, ref=
                 "ppi": ppi
         };
         if (is_totally_new) {
-            console.log("about to intialize");
-            postWithCallback(main_id, "initialize_mainwindow", data_dict, _finish_post_load_in_context)
+            postWithCallback(main_id, "initialize_mainwindow", data_dict, _finish_post_load_in_context, null, main_id)
         }
         else {
             if (data.is_jupyter) {
@@ -131,98 +120,98 @@ function main_notebook_in_context(data, registerThemeSetter, finalCallback, ref=
             else  {
                 data_dict["unique_id"] = data.temp_data_id;
             }
-            console.log("about to intialize project");
-            postWithCallback(main_id, "initialize_project_mainwindow", data_dict)
+            postWithCallback(main_id, "initialize_project_mainwindow", data_dict, null, null, main_id)
         }
     }
 
     function _finish_post_load_in_context(fdata) {
-        let NotebookAppPlus = withStatus(NotebookApp, tsocket, true, ref);
+        if (!window.in_context){
+            renderSpinnerMessage("Creating the page...");
+        }
+        tsocket.socket.off("finish-post-load", _finish_post_load_in_context);
         var interface_state;
         if (data.is_project || opening_from_temp_id) {
             interface_state = fdata.interface_state
         }
         let domContainer = document.querySelector('#main-root');
         if (data.is_project || opening_from_temp_id) {
-            finalCallback(<NotebookAppPlus initial_is_project={true}
-                                           main_id={main_id}
-                                           registerThemeSetter={registerThemeSetter}
-                                           initial_project_name={data.project_name}
-                                           tsocket={tsocket}
-                                           interface_state={interface_state}
-                                           is_juptyer={data.is_jupyter}
-                                           initial_theme={window.theme}/>)
-            }
+            finalCallback({ is_project: true,
+                           main_id: main_id,
+                           resource_name: data.project_name,
+                           tsocket: tsocket,
+                           interface_state: interface_state,
+                           is_notebook: true,
+                           is_juptyer: data.is_jupyter,
+                           initial_theme: window.theme,
+                            registerDirtyMethod: registerDirtyMethod
+            })}
             else {
-                finalCallback(<NotebookAppPlus initial_is_project={false}
-                                               main_id={main_id}
-                                               registerThemeSetter={registerThemeSetter}
-                                               initial_project_name={data.project_name}
-                                               tsocket={tsocket}
-                                               interface_state={null}
-                                               is_juptyer={data.is_jupyter}
-                                               initial_theme={window.theme}/>)
+                finalCallback({ is_project: false,
+                               main_id: main_id,
+                               resource_name: data.project_name,
+                               tsocket: tsocket,
+                               interface_state: null,
+                                is_notebook: true,
+                               is_juptyer: data.is_jupyter,
+                               initial_theme: window.theme,
+                               registerDirtyMethod: registerDirtyMethod
+                })
             }
     }
 }
 
 const save_attrs = ["console_items", "show_exports_pane", "console_width_fraction"];
+const controllable_props = ["is_project", "resource_name"];
 
 class NotebookApp extends React.Component {
     constructor (props) {
         super(props);
         doBinding(this);
+        if (!props.controlled) {
+            props.tsocket.socket.on('close-user-windows', function(data){
+                if (!(data["originator"] == props.main_id)) {
+                    window.close()
+                }
+            });
+        }
+
         this.last_save = {};
         this.main_outer_ref = React.createRef();
+        this.socket_counter = null;
         this.state = {
             mounted: false,
             console_items: [],
-            project_name: this.props.initial_project_name,
-            is_project: this.props.initial_is_project,
-            usable_width: window.innerWidth - 2 * MARGIN_SIZE,
-            usable_height: window.innerHeight - BOTTOM_MARGIN,
             console_width_fraction: .5,
             show_exports_pane: true,
-            dark_theme: this.props.initial_theme == "dark"
         };
-        if (this.state.is_project) {
+
+        let self = this;
+        if (this.props.controlled) {
+            props.registerDirtyMethod(this._dirty)
+        }
+        else {
+            this.state.dark_theme = props.initial_theme === "dark";
+            this.state.resource_name = props.resource_name;
+            this.state.is_project = props.is_project;
+            window.addEventListener("beforeunload", function (e) {
+                if (self._dirty()) {
+                    e.preventDefault();
+                    e.returnValue = ''
+                }
+            });
+        }
+        if (props.is_project) {
             for (let attr of save_attrs) {
                 this.state[attr] = this.props.interface_state[attr]
             }
         }
-        let self = this;
-        window.addEventListener("beforeunload", function (e) {
-            if (self.dirty()) {
-                e.preventDefault();
-                e.returnValue = ''
-            }
-        });
+
     }
 
-    componentDidMount() {
-        this.setState({"mounted": true});
-        window.addEventListener("resize", this._update_window_dimensions);
-        if (!window.is_context) {
-            document.title = this.state.is_project ? this.state.project_name : "New Notebook";
-        }
-        this._updateLastSave();
-        this.props.stopSpinner();
-        this.props.setStatusTheme(this.state.dark_theme);
-        if (!window.is_context) {
-            window.dark_theme = this.state.dark_theme
-        }
-        if (window.in_context) {
-            this.props.registerThemeSetter(this._setTheme);
-        }
-        this._update_window_dimensions()
+    _cProp(pname) {
+        return this.props.controlled ? this.props[pname] :  this.state[pname]
     }
 
-    _setTheme(dark_theme) {
-        this.setState({dark_theme: dark_theme}, ()=> {
-            this.props.setStatusTheme(dark_theme);
-            window.dark_theme = this.state.dark_theme
-        })
-    }
 
     _update_window_dimensions() {
         let uwidth;
@@ -234,12 +223,65 @@ class NotebookApp extends React.Component {
         }
         this.setState({
             "usable_width": uwidth,
-            "usable_height": window.innerHeight - BOTTOM_MARGIN - USUAL_TOOLBAR_HEIGHT
         });
     }
 
-    _handleConsoleFractionChange(left_width, right_width, new_fraction) {
-        this.setState({console_width_fraction: new_fraction})
+    _updateLastSave() {
+        this.last_save = this.interface_state
+    }
+
+    _dirty() {
+        let current_state = this.interface_state;
+        for (let k in current_state) {
+            if (current_state[k] != this.last_save[k]) {
+                return true
+            }
+        }
+        return false
+    }
+
+    componentDidMount() {
+        this.setState({"mounted": true});
+        this.initSocket();
+        this._updateLastSave();
+        this.props.stopSpinner();
+
+        if (!this.props.controlled) {
+            document.title = this.state.resource_name;
+            window.dark_theme = this.state.dark_theme;
+            window.addEventListener("resize", this._update_window_dimensions);
+            this._update_window_dimensions();
+        }
+    }
+
+    componentDidUpdate () {
+        if (this.props.tsocket.counter != this.socket_counter) {
+            this.initSocket();
+        }
+    }
+
+    componentWillUnmount() {
+        this.delete_my_containers()
+    }
+
+    delete_my_containers() {
+        postAjax("/remove_mainwindow", {"main_id": this.props.main_id});
+    }
+
+    initSocket() {
+        let self = this;
+        this.props.tsocket.socket.emit('join-main', {"room": this.props.main_id, "user_id": window.user_id});
+        this.props.tsocket.reAttachListener('forcedisconnect', function() {
+            this.props.tsocket.socket.disconnect()
+        });
+
+        this.socket_counter = this.props.tsocket.counter
+    }
+
+    _setTheme(dark_theme) {
+        this.setState({dark_theme: dark_theme}, ()=> {
+            window.dark_theme = this.state.dark_theme
+        })
     }
 
     _setMainStateValue(field_name, value, callback=null) {
@@ -248,10 +290,15 @@ class NotebookApp extends React.Component {
         this.setState(new_state, callback);
     }
 
+
     _broadcast_event_to_server(event_name, data_dict, callback) {
         data_dict.main_id = this.props.main_id;
         data_dict.event_name = event_name;
-        postWithCallback(this.props.main_id, "distribute_events_stub", data_dict, callback)
+        postWithCallback(this.props.main_id, "distribute_events_stub", data_dict, callback, null, this.props.main-id)
+    }
+
+    _handleConsoleFractionChange(left_width, right_width, new_fraction) {
+        this.setState({console_width_fraction: new_fraction})
     }
 
     get interface_state() {
@@ -262,40 +309,75 @@ class NotebookApp extends React.Component {
         return interface_state
     }
 
-    _updateLastSave() {
-        this.last_save = this.interface_state
+    _setProjectName(new_project_name) {
+        let self = this;
+        if (this.props.controlled) {
+            this.props.updatePanel({res_type: "project", title: new_project_name, panel: {resource_name: new_project_name, is_project: true}}, ()=>{
+                self.setState({is_jupyter: false})
+            })
+        }
+        else {
+            this.setState({resource_name: new_name, is_project: true, is_jupyter: false});
+        }
     }
 
-    dirty() {
-        let current_state = this.interface_state;
-        for (let k in current_state) {
-            if (current_state[k] != this.last_save[k]) {
-                return true
-            }
+    // _get_console_available_height(uheight) {
+    //     let result;
+    //     if (this.main_outer_ref && this.main_outer_ref.current) {
+    //         result = uheight - this.main_outer_ref.current.offsetTop
+    //     }
+    //     else {
+    //         result = uheight - USUAL_TOOLBAR_HEIGHT
+    //     }
+    //     return result
+    // }
+
+    get_zoomed_console_height() {
+        if (this.state.mounted && this.main_outer_ref.current) {
+            return window.innerHeight - this.main_outer_ref.current.offsetTop - BOTTOM_MARGIN;
         }
-        return false
+        else {
+            return window.innerHeight - USUAL_TOOLBAR_HEIGHT;
+        }
+    }
+
+    _get_true_usable_width() {
+        let twidth;
+        if (this.main_outer_ref && this.main_outer_ref.current) {
+            twidth = window.innerWidth - this.main_outer_ref.current.offsetLeft
+        }
+        else {
+            twidth = window.innerWidth - 170
+        }
+        return twidth
     }
 
     render () {
-        let disabled_items = [];
-        if (!this.state.is_project || this.props.is_jupyter) {
-            disabled_items.push("Save")
+        let dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
+        let my_props = {...this.props};
+        let true_usable_width = this._get_true_usable_width();
+        if (!this.props.controlled) {
+            for (let prop_name of controllable_props) {
+                my_props[prop_name] = this.state[prop_name]
+            }
         }
-        let console_available_height = this.state.usable_height - USUAL_TOOLBAR_HEIGHT;
+
+        let console_available_height = this.get_zoomed_console_height();
+        let project_name = my_props.is_project ? this.props.resource_name : "";
         let menus = (
             <React.Fragment>
                 <ProjectMenu {...this.props.statusFuncs}
                              main_id={this.props.main_id}
-                             project_name={this.state.project_name}
-                             is_notebook={this.props.is_notebook}
+                             project_name={project_name}
+                             is_notebook={true}
                              is_juptyer={this.props.is_jupyter}
-                             setMainStateValue={this._setMainStateValue}
+                             setProjectName={this._setProjectName}
                              postAjaxFailure={this.props.postAjaxFailure}
                              console_items={this.state.console_items}
                              interface_state={this.interface_state}
                              updateLastSave={this._updateLastSave}
                              changeCollection={null}
-                             disabled_items={disabled_items}
+                             disabled_items={my_props.is_project ? [] : ["Save"]}
                              hidden_items={["Open Console as Notebook", "Export Table as Collection", "Change collection"]}
                 />
             </React.Fragment>
@@ -309,43 +391,46 @@ class NotebookApp extends React.Component {
                   show_exports_pane={this.state.show_exports_pane}
                   setMainStateValue={this._setMainStateValue}
                   console_available_height={console_available_height - MARGIN_SIZE}
-                  console_available_width={this.state.usable_width * this.state.console_width_fraction - 16}
+                  console_available_width={true_usable_width * this.state.console_width_fraction - 16}
                   zoomable={false}
                   shrinkable={false}
-                  dark_theme={this.state.dark_theme}
                   style={{marginTop: MARGIN_SIZE}}
-                  tsocket={this.props.tsocket}
                   />
         );
         let exports_pane;
         if (this.state.show_exports_pane) {
             exports_pane = <ExportsViewer main_id={this.props.main_id}
                                           setUpdate={(ufunc)=>{this.updateExportsList = ufunc}}
+                                          setMainStateValue={this._setMainStateValue}
                                           available_height={console_available_height - MARGIN_SIZE}
                                           console_is_shrunk={false}
-                                          console_is_zoomed={this.state.console_is_zoomed}
+                                          console_is_zoomed={true}
                                           style={{marginTop: MARGIN_SIZE}}
-                                          tsocket={this.props.tsocket}
             />
         }
         else {
             exports_pane = <div></div>
         }
         let outer_class = "main-outer";
-        if (this.state.dark_theme) {
+        if (dark_theme) {
             outer_class = outer_class + " bp3-dark";
         }
         else {
             outer_class = outer_class + " light-theme"
         }
-        console.log("returning");
         return (
             <React.Fragment>
+                <TacticContext.Provider value={{
+                    readOnly: this.props.readOnly,
+                    tsocket: this.props.tsocket,
+                    dark_theme: dark_theme,
+                    setTheme:  this.props.controlled ? this.context.setTheme : this._setTheme,
+                    controlled: this.props.controlled,
+                    am_selected: this.props.am_selected
+                }}>
                 <TacticNavbar is_authenticated={window.is_authenticated}
                     user_name={window.username}
                     menus={menus}
-                    dark_theme={this.state.dark_theme}
-                    set_parent_theme={this._setTheme}
                     show_api_links={true}
                     min_navbar={window.in_context}
                 />
@@ -355,14 +440,15 @@ class NotebookApp extends React.Component {
                                      right_pane={exports_pane}
                                      show_handle={true}
                                      available_height={console_available_height}
-                                     available_width={this.state.usable_width}
+                                     available_width={true_usable_width}
                                      initial_width_fraction={this.state.console_width_fraction}
                                      controlled={true}
-                                     left_margin={MARGIN_SIZE}
+                                     // left_margin={MARGIN_SIZE}
                                      dragIconSize={15}
                                      handleSplitUpdate={this._handleConsoleFractionChange}
                         />
-                </div>
+                    </div>
+                </TacticContext.Provider>
             </React.Fragment>
         )
     }
@@ -375,7 +461,7 @@ NotebookApp.propTypes = {
     interface_state: PropTypes.object,
 };
 
-
+NotebookApp.contextType = TacticContext;
 
 if (!window.in_context) {
     main_main();

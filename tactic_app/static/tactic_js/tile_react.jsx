@@ -15,6 +15,7 @@ import {SortableComponent} from "./sortable_container.js";
 import {postWithCallback} from "./communication_react.js"
 import {doFlash} from "./toaster.js"
 import {doBinding, propsAreEqual, arrayMove} from "./utilities_react.js";
+import {TacticContext} from "./tactic_context.js";
 
 export {TileContainer}
 
@@ -60,24 +61,20 @@ class TileContainer extends React.Component {
     }
 
     componentDidUpdate () {
-        if (this.props.tsocket.counter != this.socket_counter) {
+        if (this.context.tsocket.counter != this.socket_counter) {
             this.initSocket();
         }
     }
 
+    _handleTileSourceChange(data) {
+        this._markSourceChange(data.tile_type)
+    }
+
     initSocket() {
-        let self = this;
-        this.props.tsocket.socket.off("tile-message");
-        this.props.tsocket.socket.on("tile-message", this._handleTileMessage);
-        this.props.tsocket.socket.off("tile-finished-loading");
-        this.props.tsocket.socket.on("tile-finished-loading", (data) => {
-            self._handleTileFinishedLoading(data)
-        });
-        this.props.tsocket.socket.off("tile-source-change");
-        this.props.tsocket.socket.on('tile-source-change', function (data) {
-            self._markSourceChange(data.tile_type)
-        });
-        this.socket_counter = this.props.tsocket.counter
+        this.context.tsocket.reAttachListener("tile-message", this._handleTileMessage);
+        this.context.tsocket.reAttachListener("tile-finished-loading", this._handleTileFinishedLoading);
+        this.context.tsocket.reAttachListener('tile-source-change', this._handleTileSourceChange);
+        this.socket_counter = this.context.tsocket.counter
     }
 
      _resortTilesOld(new_sort_list) {
@@ -141,7 +138,7 @@ class TileContainer extends React.Component {
             main_id: this.props.main_id,
             tile_id: tile_id
         };
-        postWithCallback(this.props.main_id, "RemoveTile", data_dict);
+        postWithCallback(this.props.main_id, "RemoveTile", data_dict, null,null, this.props.main_id);
     }
 
     _addToLog(tile_id, new_line) {
@@ -153,8 +150,10 @@ class TileContainer extends React.Component {
 
     _setTileValue(tile_id, field, value, callback=null) {
         let entry = this.get_tile_entry(tile_id);
-        entry[field] = value;
-        this.replace_tile_entry(tile_id, entry, callback)
+        if (entry) {
+            entry[field] = value;
+            this.replace_tile_entry(tile_id, entry, callback)
+        }
     }
 
     _setTileState(tile_id, new_state, callback=null) {
@@ -178,18 +177,21 @@ class TileContainer extends React.Component {
     }
 
     _handleTileMessage(data) {
-        let self = this;
-        let handlerDict = {
-            hideOptions: (tile_id, data)=>self._setTileValue(tile_id, "show_form", false),
-            startSpinner: (tile_id, data)=>self._setTileValue(tile_id, "show_spinner", true),
-            stopSpinner: (tile_id, data)=>self._setTileValue(tile_id, "show_spinner", false),
-            displayTileContent: self._displayTileContent,
-            displayFormContent: (tile_id, data)=>self._setTileValue(tile_id, "form_data", data.form_data),
-            displayTileContentWithJavascript: self._displayTileContentWithJavascript,
-            updateLog: (tile_id, data)=>self._addToLog(tile_id, data.new_line)
-        };
         let tile_id = data.tile_id;
-        handlerDict[data.tile_message](tile_id, data)
+        if (this.tileIndex(tile_id) != -1) {
+            let self = this;
+            let handlerDict = {
+                hideOptions: (tile_id, data) => self._setTileValue(tile_id, "show_form", false),
+                startSpinner: (tile_id, data) => self._setTileValue(tile_id, "show_spinner", true),
+                stopSpinner: (tile_id, data) => self._setTileValue(tile_id, "show_spinner", false),
+                displayTileContent: self._displayTileContent,
+                displayFormContent: (tile_id, data) => self._setTileValue(tile_id, "form_data", data.form_data),
+                displayTileContentWithJavascript: self._displayTileContentWithJavascript,
+                updateLog: (tile_id, data) => self._addToLog(tile_id, data.new_line)
+            };
+
+            handlerDict[data.tile_message](tile_id, data)
+        }
     }
 
     render() {
@@ -201,7 +203,7 @@ class TileContainer extends React.Component {
             <SortableComponent id="tile-div"
                                main_id={this.props.main_id}
                                style={outer_style}
-                               helperClass={this.props.dark_theme ? "bp3-dark" : "light-theme"}
+                               helperClass={this.context.dark_theme ? "bp3-dark" : "light-theme"}
                                container_ref={this.props.tile_div_ref}
                                ElementComponent={STileComponent}
                                key_field_name="tile_name"
@@ -226,7 +228,6 @@ class TileContainer extends React.Component {
 
 TileContainer.propTypes = {
     setMainStateValue: PropTypes.func,
-    dark_theme: PropTypes.bool,
     table_is_shrunk: PropTypes.bool,
     tile_list: PropTypes.array,
     tile_div_ref: PropTypes.object,
@@ -234,8 +235,9 @@ TileContainer.propTypes = {
     height: PropTypes.number,
     broadcast_event: PropTypes.func,
     selected_row: PropTypes.number,
-    tsocket: PropTypes.object
 };
+
+TileContainer.contextType = TacticContext;
 
 class RawSortHandle extends React.Component {
 
@@ -288,7 +290,7 @@ class TileComponent extends React.Component {
     // need to know the size of the display area.
     _broadcastTileSize() {
         postWithCallback(this.props.tile_id, "TileSizeChange",
-            {width: this.tdaWidth, height: this.tdaHeight})
+            {width: this.tdaWidth, height: this.tdaHeight}, null, null, this.props.main_id)
     }
 
     _resizeTileAreaOld(event, ui, callback=null) {
@@ -392,15 +394,15 @@ class TileComponent extends React.Component {
             self.props.setTileState(self.props.tile_id, {show_log: true, show_form: false, log_content: res.log_text});
             self._startLogStreaming();
             self._setTileBack(false);
-        })
+        }, null, this.props.main_id)
     }
 
     _startLogStreaming() {
-        postWithCallback(this.props.main_id, "StartLogStreaming", {tile_id: this.props.tile_id});
+        postWithCallback(this.props.main_id, "StartLogStreaming", {tile_id: this.props.tile_id}, null, null, this.props.main_id);
     }
 
     _stopLogStreaming() {
-        postWithCallback(this.props.main_id, "StopLogStreaming", {tile_id: this.props.tile_id});
+        postWithCallback(this.props.main_id, "StopLogStreaming", {tile_id: this.props.tile_id}, null, null, this.props.main_id);
     }
 
     _toggleShrunk() {
@@ -471,14 +473,14 @@ class TileComponent extends React.Component {
         const self = this;
         postWithCallback(this.props.tile_id, "RefreshTile", {}, function() {
             self._stopSpinner();
-        })
+        }, null, self.props.main_id)
     }
 
     _reloadTile () {
         const self = this;
         const data_dict = {"tile_id": this.props.tile_id, "tile_name": this.props.tile_name};
         this._startSpinner();
-        postWithCallback(main_id, "reload_tile", data_dict, reload_success);
+        postWithCallback(self.props.main_id, "reload_tile", data_dict, reload_success, null, this.props.main_id);
 
         function reload_success (data) {
             if (data.success) {
@@ -506,7 +508,7 @@ class TileComponent extends React.Component {
                  if (!dset.hasOwnProperty(key)) continue;
                  data_dict.dataset[key] = dset[key]
              }
-             postWithCallback(self.props.tile_id, "TileElementClick", data_dict);
+             postWithCallback(self.props.tile_id, "TileElementClick", data_dict, null, null, self.props.main_id);
              e.stopPropagation()
          });
          $(this.body_ref.current).on(click_event, '.word-clickable', function(e) {
@@ -525,27 +527,27 @@ class TileComponent extends React.Component {
                  range.setEnd(node, range.endOffset + 1);
              } while (range.toString().indexOf(' ') == -1 && range.toString().trim() !== '' && range.endOffset < nlen);
              data_dict.clicked_text = range.toString().trim();
-             postWithCallback(self.props.tile_id, "TileWordClick", data_dict)
+             postWithCallback(self.props.tile_id, "TileWordClick", data_dict, null, null, self.props.main_id)
          });
          $(this.body_ref.current).on(click_event, '.cell-clickable', function(e) {
              let data_dict = self._standard_click_data();
-             data_dict.clicked_cell = $(this).text();
-             postWithCallback(self.props.tile_id, "TileCellClick", data_dict)
+             data_dict.clicked_cell = $(self).text();
+             postWithCallback(self.props.tile_id, "TileCellClick", data_dict, null, null, self.props.main_id)
          });
          $(this.body_ref.current).on(click_event, '.row-clickable', function(e) {
              let data_dict = self._standard_click_data();
-             const cells = $(this).children();
+             const cells = $(self).children();
              const row_vals = [];
              cells.each(function() {
-                row_vals.push($(this).text())
+                row_vals.push($(self).text())
              });
              data_dict["clicked_row"] = row_vals;
-             postWithCallback(self.props.tile_id, "TileRowClick", data_dict)
+             postWithCallback(self.props.tile_id, "TileRowClick", data_dict, null, null, self.props.main_id)
          });
          $(this.body_ref.current).on(click_event, '.front button', function(e) {
              let data_dict = self._standard_click_data();
              data_dict["button_value"] = e.target.value;
-             postWithCallback(self.props.tile_id, "TileButtonClick", data_dict)
+             postWithCallback(self.props.tile_id, "TileButtonClick", data_dict, null, null, self.props.main_id)
          });
          $(this.body_ref.current).on('submit', '.front form', function(e) {
              let data_dict = self._standard_click_data();
@@ -555,19 +557,19 @@ class TileComponent extends React.Component {
                 form_data[the_form[i]["name"]] = the_form[i]["value"]
              }
              data_dict["form_data"] = form_data;
-             postWithCallback(self.props.tile_id, "TileFormSubmit", data_dict);
+             postWithCallback(self.props.tile_id, "TileFormSubmit", data_dict, null, null, self.props.main_id);
              return false
          });
          $(this.body_ref.current).on("change", '.front select', function (e) {
              let data_dict = self._standard_click_data();
              data_dict.select_value = e.target.value;
              data_dict.select_name = e.target.name;
-             postWithCallback(self.props.tile_id, "SelectChange", data_dict)
+             postWithCallback(self.props.tile_id, "SelectChange", data_dict, null, null, self.props.main_id)
          });
          $(this.body_ref.current).on('change', '.front textarea', function(e) {
              let data_dict = self._standard_click_data();
              data_dict["text_value"] = e.target.value;
-             postWithCallback(self.props.tile_id, "TileTextAreaChange", data_dict)
+             postWithCallback(self.props.tile_id, "TileTextAreaChange", data_dict, null, null, self.props.main_id)
          });
     }
 
@@ -628,7 +630,7 @@ class TileComponent extends React.Component {
 
     logText(the_text) {
         let self = this;
-        postWithCallback(this.props.tile_id, "LogTile", {});
+        postWithCallback(this.props.tile_id, "LogTile", {}, null, null, this.props.main_id);
     }
     _logMe() {
         this.logText(this.props.front_content)
@@ -639,7 +641,7 @@ class TileComponent extends React.Component {
         data_dict["main_id"] = this.props.main_id;
         data_dict["tile_id"] = this.props.tile_id;
         data_dict["tile_name"] = this.props.tile_name;
-        postWithCallback(this.props.tile_id, "LogParams", data_dict)
+        postWithCallback(this.props.tile_id, "LogParams", data_dict, null, null, this.props.main_id)
     }
 
     _startResize(e, ui, startX, startY) {

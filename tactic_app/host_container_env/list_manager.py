@@ -66,6 +66,7 @@ class ListManager(LibraryResourceManager):
         data = {
             "success": True,
             "kind": "list-viewer",
+            "res_type": "list",
             "the_content": lstring,
             "mdata": mdata,
             "resource_name": list_name,

@@ -195,6 +195,7 @@ class TileManager(LibraryResourceManager):
         data = {
             "success": True,
             "kind": "module-viewer",
+            "res_type": "tile",
             "the_content": module_code,
             "mdata": mdata,
             "resource_name": module_name,
@@ -267,6 +268,7 @@ class TileManager(LibraryResourceManager):
         data = {
             "success": True,
             "kind": "creator-viewer",
+            "res_type": "tile",
             "resource_name": module_name,
             "module_viewer_id": id_info["module_viewer_id"],
             "ready_block_id": id_info["rb_id"],

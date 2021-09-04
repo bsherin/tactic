@@ -10,7 +10,7 @@ import React from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
-import { Tab, Tabs, ResizeSensor } from "@blueprintjs/core";
+import { Tab, Tabs } from "@blueprintjs/core";
 
 import {TacticSocket} from "./tactic_socket.js";
 import {Toolbar, Namebutton} from "./blueprint_toolbar.js";
@@ -23,80 +23,71 @@ import {handleCallback, postAjax, postAjaxPromise, postWithCallback} from "./com
 import {withStatus, doFlash} from "./toaster.js"
 import {getUsableDimensions, SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT} from "./sizing_tools.js";
 import {withErrorDrawer} from "./error_drawer.js";
-import {doBinding} from "./utilities_react.js"
+import {doBinding, renderSpinnerMessage} from "./utilities_react.js"
 import {TacticNavbar} from "./blueprint_navbar";
 import {SearchForm} from "./library_widgets";
+import {TacticContext} from "./tactic_context.js";
 
-export {tile_creator_main_in_context}
+export {creator_props, CreatorApp}
 
 const BOTTOM_MARGIN = 50;
 const MARGIN_SIZE = 17;
 
-
-// Note: it seems like the sendbeacon doesn't work if this callback has a line
-// before the sendbeacon
-window.addEventListener("unload", function sendRemove() {
-    navigator.sendBeacon("/delete_container_on_unload",
-        JSON.stringify({"container_id": window.module_viewer_id, "notify": false}));
-});
-
-
 class CreatorViewerSocket extends TacticSocket {
 
     initialize_socket_stuff (reconnect=false) {
-        this.socket.emit('join', {"room": window.user_id});
-        if (reconnect) {
-            this.socket.emit('join-main', {"room": this.extra_args.module_viewer_id, "user_id": window.user_id});
-        }
 
-        this.socket.on('handle-callback', handleCallback);
-        this.socket.on('close-user-windows', (data) => {
-            if (!(data["originator"] == window.module_viewer_id)) {
-                window.close()
-            }
-        });
-        this.socket.on("doFlash", function(data) {
-            doFlash(data)
-        });
+        if (!window.in_context) {
+            this.socket.emit('join', {"room": window.user_id});
+            this.socket.on("doFlash", function(data) {
+                doFlash(data)
+            });
+        }
     }
 }
 
 function tile_creator_main() {
-    function gotElement(the_element) {
+    function gotProps(the_props) {
+        let CreatorAppPlus = withErrorDrawer(withStatus(CreatorApp));
+        let the_element = <CreatorAppPlus {...the_props}
+                                     controlled={false}
+                                     initial_theme={window.theme}
+                                     changeName={null}
+        />;
         const domContainer = document.querySelector('#creator-root');
         ReactDOM.render(the_element, domContainer)
     }
-
+    renderSpinnerMessage("Starting up ...", '#creator-root');
     postAjaxPromise("view_in_creator_in_context", {"resource_name": window.module_name})
         .then((data)=>{
-            tile_creator_main_in_context(data, null, gotElement)
+            creator_props(data, null, gotProps)
         })
 }
 
-function tile_creator_main_in_context(data, registerThemeSetter, finalCallback, ref=null) {
-    var tsocket = new CreatorViewerSocket("main",
-        5000,
-        {module_viewer_id: data.module_viewer_id});
-
-    if (!window.in_context) {
-        window.main_id = data.module_viewer_id;  // needed for postWithCallback
-    }
+function creator_props(data, registerDirtyMethod, finalCallback) {
+    var tsocket = new CreatorViewerSocket("main", 5000);
 
     let mdata = data.mdata;
     let split_tags = mdata.tags == "" ? [] : mdata.tags.split(" ");
     let module_name = data.resource_name;
     let module_viewer_id = data.module_viewer_id;
     let tile_collection_name = data.tile_collection_name;
-
-    tsocket.socket.on("remove-ready-block", ()=>_everyone_ready_in_context());
-    tsocket.socket.emit('join-main', {"room": data.module_viewer_id, "user_id": window.user_id}, function(response) {
+    tsocket.socket.on('handle-callback', (task_packet)=>{handleCallback(task_packet, module_viewer_id)});
+    function readyListener() {
+        _everyone_ready_in_context(finalCallback)
+    }
+    tsocket.socket.on("remove-ready-block", readyListener);
+    tsocket.socket.emit('join-main', {"room": data.module_viewer_id, "user_id": window.user_id}, function (response) {
         tsocket.socket.emit('client-ready', {
             "room": data.module_viewer_id, "user_id": window.user_id, "participant": "client",
             "rb_id": data.ready_block_id, "main_id": data.module_viewer_id
         })
     });
 
-    function _everyone_ready_in_context() {
+    function _everyone_ready_in_context(finalCallback) {
+        if (!window.in_context){
+            renderSpinnerMessage("Everyone is ready, initializing...", '#creator-root');
+        }
         let the_content = {
             "module_name": module_name,
             "module_viewer_id": module_viewer_id,
@@ -104,11 +95,19 @@ function tile_creator_main_in_context(data, registerThemeSetter, finalCallback, 
             "user_id": window.user_id,
             "version_string": window.version_string
         };
+
+        window.addEventListener("unload", function sendRemove() {
+            navigator.sendBeacon("/delete_container_on_unload",
+                JSON.stringify({"container_id": module_viewer_id, "notify": false}));
+        });
         postWithCallback(module_viewer_id, "initialize_parser",
-            the_content, (pdata) => got_parsed_data_in_context(pdata));
+            the_content, (pdata) => got_parsed_data_in_context(pdata),null, module_viewer_id);
 
         function got_parsed_data_in_context(data_object) {
-            var CreatorAppPlus = withStatus(withErrorDrawer(CreatorApp, tsocket, false, ref));
+            if (!window.in_context){
+                renderSpinnerMessage("Creating the page...", '#creator-root');
+            }
+            tsocket.socket.off("remove-ready-block", readyListener);
             let parsed_data = data_object.the_content;
             let category = parsed_data.category ? parsed_data.category : "basic";
             let result_dict = {"res_type": "tile", "res_name": module_name, "is_repository": false};
@@ -121,8 +120,7 @@ function tile_creator_main_in_context(data, registerThemeSetter, finalCallback, 
                         for (let item of option[param]) {
                             if (!isfirst) {
                                 nstring += ", ";
-                            }
-                            else {
+                            } else {
                                 isfirst = false
                             }
                             nstring += "'" + String(item) + "'"
@@ -133,37 +131,36 @@ function tile_creator_main_in_context(data, registerThemeSetter, finalCallback, 
 
                 }
             }
+            finalCallback(
+                {
+                    resource_name: module_name,
+                    tsocket: tsocket,
+                    module_viewer_id: module_viewer_id,
+                    is_mpl: parsed_data.is_mpl,
+                    is_d3: parsed_data.is_d3,
+                    render_content_code: parsed_data.render_content_code,
+                    render_content_line_number: parsed_data.render_content_line_number,
+                    extra_methods_line_number: parsed_data.extra_methods_line_number,
+                    draw_plot_line_number: parsed_data.draw_plot_line_number,
+                    initial_line_number: null,
+                    category: category,
+                    extra_functions: parsed_data.extra_functions,
+                    draw_plot_code: parsed_data.draw_plot_code,
+                    jscript_code: parsed_data.jscript_code,
+                    tags: split_tags,
+                    notes: mdata.notes,
+                    initial_theme: window.theme,
+                    option_list: parsed_data.option_dict,
+                    export_list: parsed_data.export_list,
+                    created: mdata.datestring,
+                    registerDirtyMethod: registerDirtyMethod
+                }
+            );
 
-            finalCallback(<CreatorAppPlus tsocket={tsocket}
-                                          module_name={module_name}
-                                          module_viewer_id={module_viewer_id}
-                                            registerThemeSetter={registerThemeSetter}
-                                            is_mpl={parsed_data.is_mpl}
-                                            is_d3={parsed_data.is_d3}
-                                            render_content_code={parsed_data.render_content_code}
-                                            render_content_line_number={parsed_data.render_content_line_number}
-                                            extra_methods_line_number={parsed_data.extra_methods_line_number}
-                                            draw_plot_line_number={parsed_data.draw_plot_line_number}
-                                            initial_line_number={null}
-                                            category={category}
-                                            extra_functions={parsed_data.extra_functions}
-                                            draw_plot_code={parsed_data.draw_plot_code}
-                                            jscript_code={parsed_data.jscript_code}
-                                            tags={split_tags}
-                                            notes={mdata.notes}
-                                            initial_theme={window.theme}
-                                            option_list={parsed_data.option_dict}
-                                            export_list={parsed_data.export_list}
-                                            created={mdata.datestring}
-                />)
         }
+
     }
-
-
-
 }
-
-
 
 function TileCreatorToolbar(props) {
     let tstyle = {"marginTop": 20, "paddingRight": 20, "width": "100%"};
@@ -172,11 +169,12 @@ function TileCreatorToolbar(props) {
                 flexDirection: "row",
                 justifyContent: "space-around",
                 marginBottom: 0,
-                marginTop: 7
+                marginTop: 7,
+                whiteSpace: "nowrap"
     };
     return (
         <div style={tstyle} className="d-flex flex-row justify-content-between">
-            <Namebutton resource_name={props.tile_name}
+            <Namebutton resource_name={props.resource_name}
                         setResourceNameState={props.setResourceNameState}
                         res_type={props.res_type}
                         large={false}
@@ -187,19 +185,40 @@ function TileCreatorToolbar(props) {
                 />
             </div>
             <SearchForm update_search_state={props.update_search_state}
-                        search_string={props.search_string}/>
+                        search_string={props.search_string}
+                        field_width={200}
+            />
         </div>
     )
 }
+
+TileCreatorToolbar.proptypes = {
+    button_groups: PropTypes.array,
+    setResourceNameState: PropTypes.func,
+    resource_name: PropTypes.string,
+    search_string: PropTypes.string,
+    update_search_state: PropTypes.func,
+    res_type: PropTypes.string
+};
+
+TileCreatorToolbar.defaultProps = {
+};
+
+
+const controllable_props = ["resource_name", "usable_height", "usable_width"];
 
 class CreatorApp extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this);
+        if (!props.controlled) {
+            props.tsocket.socket.on('close-user-windows', (data) => {
+                if (!(data["originator"] == props.resource_viewer_id)) {
+                    window.close()
+                }
+            });
+        }
         this.top_ref = React.createRef();
-        let aheight = getUsableDimensions().usable_height;
-        let awidth = getUsableDimensions().usable_width;
-        let bheight = getUsableDimensions().usable_height;
         this.options_ref = React.createRef();
         this.left_div_ref = React.createRef();
         this.right_div_ref = React.createRef();
@@ -217,7 +236,6 @@ class CreatorApp extends React.Component {
         this.line_number = this.props.initial_line_number;
         this.socket_counter = null;
         this.state = {
-            tile_name: props.module_name,
             foregrounded_panes: {
                 "metadata": true,
                 "options": false,
@@ -240,16 +258,44 @@ class CreatorApp extends React.Component {
             category: this.props.category,
             total_height: window.innerHeight,
             selectedTabId: "metadata",
-            usable_width: awidth,
             old_usable_width: 0,
-            usable_height: aheight,
-            dark_theme: this.props.initial_theme == "dark",
-            body_height: bheight,
-            top_pane_height: this.props.is_mpl || this.props.is_d3 ? aheight / 2 - 25 : null,
-            bottom_pane_height: this.props.is_mpl || this.props.is_d3 ? aheight / 2 - 25 : null,
-            left_pane_width: awidth / 2 - 25,
             methodsTabRefreshRequired: true // This is toggled back and forth to force refresh
         };
+        let self = this;
+
+        if (props.controlled) {
+            props.registerDirtyMethod(this._dirty)
+        }
+        else {
+            const aheight = getUsableDimensions(true).usable_height_no_bottom;
+            const awidth = getUsableDimensions(true).usable_width - 170;
+            this.state.usable_height = aheight;
+            this.state.usable_width = awidth;
+            this.state.dark_theme = props.initial_theme === "dark";
+            window.dark_theme = this.state.dark_theme;
+            this.state.resource_name = props.resource_name;
+            window.addEventListener("beforeunload", function (e) {
+                if (self._dirty()) {
+                    e.preventDefault();
+                    e.returnValue = ''
+                }
+            });
+        }
+        let aheight;
+        let awidth;
+        if (!props.controlled) {
+            aheight = getUsableDimensions(true).usable_height_no_bottom;
+            awidth = getUsableDimensions(true).usable_width - 170;
+        }
+        else {
+            let aheight = this.props.usable_height;
+            let width = this.props.usable_width;
+        }
+        this.state.top_pane_height = this.props.is_mpl || this.props.is_d3 ? aheight / 2 - 25 : null,
+        this.state.bottom_pane_height = this.props.is_mpl || this.props.is_d3 ? aheight / 2 - 35 : null,
+        this.state.left_pane_width = awidth / 2 - 25,
+        this.state.bheight = aheight;
+
         this._setResourceNameState = this._setResourceNameState.bind(this);
         this.handleStateChange = this.handleStateChange.bind(this);
         this.handleRenderContentChange = this.handleRenderContentChange.bind(this);
@@ -260,13 +306,11 @@ class CreatorApp extends React.Component {
         this.handleMethodsChange = this.handleMethodsChange.bind(this);
         this.handleLeftPaneResize = this.handleLeftPaneResize.bind(this);
         this.handleTopPaneResize = this.handleTopPaneResize.bind(this);
-        let self = this;
-        window.addEventListener("beforeunload", function (e) {
-            if (self.dirty()) {
-                e.preventDefault();
-                e.returnValue = ''
-            }
-        });
+
+    }
+
+    _cProp(pname) {
+        return this.props.controlled ? this.props[pname] :  this.state[pname]
     }
 
     get button_groups() {
@@ -276,7 +320,7 @@ class CreatorApp extends React.Component {
                      {"name_text": "SaveAs", "icon_name": "floppy-disk", "click_handler": this._saveModuleAs, tooltip: "Save as"},
                      {"name_text": "Load", "icon_name": "upload", "click_handler": this._loadModule, key_bindings: ['ctrl+l'], tooltip: "Load tile"},
                      {"name_text": "Share", "icon_name": "share",
-                        "click_handler": () => {sendToRepository("tile", this.state.tile_name)}, tooltip: "Send to repository"}],
+                        "click_handler": () => {sendToRepository("tile", this._cProp("resource_name"))}, tooltip: "Send to repository"}],
                     [{"name_text": "History", "icon_name": "history", "click_handler": this._showHistoryViewer, tooltip: "Show history viewer"},
                      {"name_text": "Compare", "icon_name": "comparison", "click_handler": this._showTileDiffer, tooltip: "Compare to another tile"}],
                     [{"name_text": "Drawer", "icon_name": "drawer-right", "click_handler": this.props.toggleErrorDrawer, tooltip: "Toggle error drawer"}]
@@ -296,19 +340,18 @@ class CreatorApp extends React.Component {
 
     _setTheme(dark_theme) {
         this.setState({dark_theme: dark_theme}, ()=> {
-            this.props.setStatusTheme(dark_theme);
             if (!window.in_context) {
-                window.dark_theme = this.state.dark_theme
+                window.dark_theme = dark_theme
             }
         })
     }
 
     _showHistoryViewer () {
-        window.open(`${$SCRIPT_ROOT}/show_history_viewer/${this.state.tile_name}`)
+        window.open(`${$SCRIPT_ROOT}/show_history_viewer/${this.state.resource_name}`)
     }
 
     _showTileDiffer () {
-        window.open(`${$SCRIPT_ROOT}/show_tile_differ/${this.state.tile_name}`)
+        window.open(`${$SCRIPT_ROOT}/show_tile_differ/${this.state.resource_name}`)
     }
 
     _doFlashStopSpinner(data) {
@@ -329,7 +372,7 @@ class CreatorApp extends React.Component {
         }
     }
 
-    dirty() {
+    _dirty() {
         let current_state = this._getSaveDict();
         for (let k in current_state) {
             if (current_state[k] != this.last_save[k]) {
@@ -345,7 +388,14 @@ class CreatorApp extends React.Component {
         this.doSavePromise()
             .then(function () {
                 self.props.statusMessage("Loading Module");
-                postWithCallback("host", "load_tile_module_task", {"tile_module_name": self.state.tile_name, "user_id": user_id}, load_success)
+                postWithCallback(
+                    "host",
+                    "load_tile_module_task",
+                    {"tile_module_name": self._cProp("resource_name"), "user_id": user_id},
+                    load_success,
+                    null,
+                    self.props.module_viewer_id
+                    )
             })
             .catch((data)=>{self._logErrorStopSpinner(data.message, "Error loading module", true, data.line_number)});
 
@@ -400,7 +450,7 @@ class CreatorApp extends React.Component {
 
     _getSaveDict() {
         return {
-                "module_name": this.state.tile_name,
+                "module_name": this._cProp("resource_name"),
                 "category": this.state.category.length == 0 ? "basic" : this.state.category,
                 "tags": this.get_tags_string(),
                 "notes": this.state.notes,
@@ -429,14 +479,14 @@ class CreatorApp extends React.Component {
                 else {
                     reject(data)
                 }
-            })
+            },null, self.props.module_viewer_id)
         })
     }
 
     doCheckpointPromise() {
         let self = this;
         return new Promise (function (resolve, reject) {
-            postAjax("checkpoint_module", {"module_name": self.state.tile_name}, function (data) {
+            postAjax("checkpoint_module", {"module_name": self._cProp("resource_name")}, function (data) {
                 if (data.success) {
                     resolve(data)
                 }
@@ -458,15 +508,15 @@ class CreatorApp extends React.Component {
     }
 
     _update_window_dimensions() {
-        // let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
-        // let uheight = window.innerHeight;
-        // if (this.top_ref && this.top_ref.current) {
-        //     uheight = uheight - this.top_ref.current.offsetTop;
-        // }
-        // else {
-        //     uheight = uheight - USUAL_TOOLBAR_HEIGHT
-        // }
-        // this.setState({usable_height: uheight, usable_width: uwidth})
+        let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
+        let uheight = window.innerHeight;
+        if (this.top_ref && this.top_ref.current) {
+            uheight = uheight - this.top_ref.current.offsetTop;
+        }
+        else {
+            uheight = uheight - USUAL_TOOLBAR_HEIGHT
+        }
+        this.setState({usable_height: uheight, usable_width: uwidth})
     }
 
     _update_saved_state() {
@@ -530,30 +580,36 @@ class CreatorApp extends React.Component {
 
     componentDidMount() {
         this.setState({"mounted": true});
-        if (!window.in_context) {
-            document.title = this.state.tile_name;
-        }
         this._goToLineNumber();
         this.props.setGoToLineNumber(this._selectLineNumber);
-        window.addEventListener("resize", this._update_window_dimensions);
-        this._update_window_dimensions();
         this._update_saved_state();
         this.props.stopSpinner();
-        this.props.setStatusTheme(this.state.dark_theme);
         this.initSocket();
-        if (window.in_context) {
-            this.props.registerThemeSetter(this._setTheme);
+        if (!this.props.controlled) {
+            document.title = this.state.resource_name;
+            window.addEventListener("resize", this._update_window_dimensions);
+            this._update_window_dimensions();
         }
     }
 
     componentDidUpdate() {
+
         this._goToLineNumber();
         if (this.props.tsocket.counter != this.socket_counter) {
             this.initSocket();
         }
     }
+
+    componentWillUnmount() {
+        this.delete_my_container()
+    }
+
+    delete_my_container() {
+        postAjax("/delete_container_on_unload", {"container_id": this.props.module_viewer_id, "notify": false});
+    }
     
     initSocket() {
+        this.props.tsocket.socket.emit('join-main', {"room": this.props.module_viewer_id, "user_id": window.user_id});
         this.props.tsocket.socket.on('focus-me', (data)=>{
             window.focus();
             this._selectLineNumber(data.line_number)
@@ -600,14 +656,14 @@ class CreatorApp extends React.Component {
 
     get_height_minus_top_offset (element_ref, min_offset = 0, default_offset = 100) {
         if (this.state.mounted) {  // This will be true after the initial render
-            let offset = $(element_ref.current).offset().top;
+            let offset = element_ref.current.offsetTop;
             if (offset < min_offset) {
                 offset = min_offset
             }
-            return this.state.body_height - offset
+            return this._cProp("usable_height") - offset
         }
         else {
-            return this.state.body_height - default_offset
+            return this._cProp("usable_height") - default_offset
         }
     }
 
@@ -631,7 +687,7 @@ class CreatorApp extends React.Component {
 
     handleTopPaneResize (top_height, bottom_height, top_fraction) {
         this.setState({"top_pane_height": top_height,
-            "bottom_pane_height": bottom_height
+            "bottom_pane_height": bottom_height - 10
         })
     }
     
@@ -654,34 +710,39 @@ class CreatorApp extends React.Component {
     }
 
     _setResourceNameState(new_name) {
-        this.setState({"tile_name": new_name})
+        if (this.props.controlled) {
+            this.props.changeResourceName(new_name)
+        }
+        else {
+            this.setState({"resource_name": new_name})
+        }
     }
 
     _handleResize(entries) {
-        if (window.in_context) {
-            for (let entry of entries) {
-                if (entry.target.className.includes("pane-holder")) {
-                    // Must used window.innerWidth here otherwise we get the wrong value during initial mounting
-                    this.setState({usable_width: entry.contentRect.width - this.top_ref.current.offsetLeft - 30,
-                        usable_height: entry.contentRect.height - this.top_ref.current.offsetTop,
-                        body_height: entry.contentRect.height - this.top_ref.current.offsetTop
-                    });
-                    return
-                }
-            }
-        }
-        else {
-            for (let entry of entries) {
-                if (entry.target.className.id == "creator-root") {
-                    // Must used window.innerWidth here otherwise we get the wrong value during initial mounting
-                    this.setState({usable_width: entry.contentRect.width - this.top_ref.current.offsetLeft - 30,
-                        usable_height: entry.contentRect.height - this.top_ref.current.offsetTop,
-                        body_height: entry.contentRect.height - this.top_ref.current.offsetTop
-                    });
-                    return
-                }
-            }
-        }
+        // if (window.in_context) {
+        //     for (let entry of entries) {
+        //         if (entry.target.className.includes("pane-holder")) {
+        //             // Must used window.innerWidth here otherwise we get the wrong value during initial mounting
+        //             this.setState({usable_width: entry.contentRect.width - this.top_ref.current.offsetLeft - 30,
+        //                 usable_height: entry.contentRect.height - this.top_ref.current.offsetTop,
+        //                 body_height: entry.contentRect.height - this.top_ref.current.offsetTop
+        //             });
+        //             return
+        //         }
+        //     }
+        // }
+        // else {
+        //     for (let entry of entries) {
+        //         if (entry.target.className.id == "creator-root") {
+        //             // Must used window.innerWidth here otherwise we get the wrong value during initial mounting
+        //             this.setState({usable_width: entry.contentRect.width - this.top_ref.current.offsetLeft - 30,
+        //                 usable_height: entry.contentRect.height - this.top_ref.current.offsetTop,
+        //                 body_height: entry.contentRect.height - this.top_ref.current.offsetTop
+        //             });
+        //             return
+        //         }
+        //     }
+        // }
 
     }
 
@@ -698,19 +759,26 @@ class CreatorApp extends React.Component {
     }
 
     render() {
+        let dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme;
         //let hp_height = this.get_height_minus_top_offset(this.hp_ref);
+        let my_props = {...this.props};
+        if (!this.props.controlled) {
+            for (let prop_name of controllable_props) {
+                my_props[prop_name] = this.state[prop_name]
+            }
+        }
         let vp_height = this.get_height_minus_top_offset(this.vp_ref);
 
         let code_width = this.state.left_pane_width - 10;
-        let ch_style = {"width": code_width};
+        let ch_style = {"width": "100%"};
 
         let tc_item;
-        if (this.props.is_mpl || this.props.is_d3) {
+        if (my_props.is_mpl || my_props.is_d3) {
             let tc_height = this.get_new_tc_height();
-            let mode = this.props.is_mpl ? "python" : "javascript";
-            let code_content = this.props.is_mpl ? this.state.draw_plot_code : this.state.jscript_code;
-            let first_line_number =this.props.is_mpl ? this.state.draw_plot_line_number + 1: 1;
-            let title_label = this.props.is_mpl ? "draw_plot" : "(selector, w, h, arg_dict) =>";
+            let mode = my_props.is_mpl ? "python" : "javascript";
+            let code_content = my_props.is_mpl ? this.state.draw_plot_code : this.state.jscript_code;
+            let first_line_number =my_props.is_mpl ? this.state.draw_plot_line_number + 1: 1;
+            let title_label = my_props.is_mpl ? "draw_plot" : "(selector, w, h, arg_dict) =>";
             tc_item = (
                 <div key="dpcode" style={ch_style} className="d-flex flex-column align-items-baseline code-holder">
                     <span ref={this.tc_span_ref}>{title_label}</span>
@@ -718,10 +786,8 @@ class CreatorApp extends React.Component {
                                      mode={mode}
                                      handleChange={this.handleTopCodeChange}
                                      saveMe={this._saveAndCheckpoint}
-                                     readOnly={false}
                                      setCMObject={this._setDpObject}
                                      search_term={this.state.search_string}
-                                     dark_theme={this.state.dark_theme}
                                      first_line_number={first_line_number}
                                      code_container_height={tc_height}
                     />
@@ -729,7 +795,7 @@ class CreatorApp extends React.Component {
              );
         }
         let rc_height;
-        if (this.props.is_mpl || this.props.is_d3) {
+        if (my_props.is_mpl || my_props.is_d3) {
             rc_height = this.get_new_rc_height(this.state.bottom_pane_height)
         }
         else {
@@ -742,20 +808,20 @@ class CreatorApp extends React.Component {
                 <ReactCodemirror code_content={this.state.render_content_code}
                                  handleChange={this.handleRenderContentChange}
                                  saveMe={this._saveAndCheckpoint}
-                                 readOnly={false}
                                  setCMObject={this._setRcObject}
                                  search_term={this.state.search_string}
-                                 dark_theme={this.state.dark_theme}
                                  first_line_number={this.state.render_content_line_number + 1}
                                  code_container_height={rc_height}
                 />
             </div>
          );
         let left_pane;
-        if (this.props.is_mpl || this.props.is_d3) {
+        if (my_props.is_mpl || my_props.is_d3) {
             left_pane = (
                 <React.Fragment>
-                    <TileCreatorToolbar tile_name={this.state.tile_name}
+                    <TileCreatorToolbar controlled={this.props.controlled}
+                                        am_selected={this.props.am_selected}
+                                        resource_name={my_props.resource_name}
                                         setResourceNameState={this._setResourceNameState}
                                         res_type="tile"
                                         button_groups={this.button_groups}
@@ -768,7 +834,7 @@ class CreatorApp extends React.Component {
                                    bottom_pane={bc_item}
                                    show_handle={true}
                                    available_height={vp_height}
-                                   available_width={this.state.left_pane_width}
+                                   available_width={this.state.left_pane_width - 25}
                                    handleSplitUpdate={this.handleTopPaneResize}
                                    id="creator-left"
                                    />
@@ -778,7 +844,7 @@ class CreatorApp extends React.Component {
         else {
             left_pane = (
                 <React.Fragment>
-                    <TileCreatorToolbar tile_name={this.state.tile_name}
+                    <TileCreatorToolbar resource_name={my_props.resource_name}
                                         setResourceNameState={this._setResourceNameState}
                                         res_type="tile"
                                         button_groups={this.button_groups}
@@ -796,7 +862,7 @@ class CreatorApp extends React.Component {
 
         let mdata_panel = (<CombinedMetadata tags={this.state.tags}
                                                   notes={this.state.notes}
-                                                  created={this.props.created}
+                                                  created={my_props.created}
                                                   category={this.state.category}
                                                   res_type="tile"
                                                   handleChange={this.handleStateChange}
@@ -823,11 +889,9 @@ class CreatorApp extends React.Component {
                                  code_content={this.state.extra_functions}
                                  saveMe={this._saveAndCheckpoint}
                                  setCMObject={this._setEmObject}
-                                 readOnly={false}
                                  code_container_ref={this.methods_ref}
                                  code_container_height={methods_height}
                                  search_term={this.state.search_string}
-                                 dark_theme={this.state.dark_theme}
                                  first_line_number={this.state.extra_methods_line_number}
                                  refresh_required={this.state.methodsTabRefreshRequired}/>
              </div>
@@ -856,39 +920,48 @@ class CreatorApp extends React.Component {
         );
         let outer_style = {
             width: "100%",
-            height: this.state.usable_height,
-            paddingLeft: SIDE_MARGIN
+            height: my_props.usable_height,
+            paddingLeft: this.props.controlled ? 5 : SIDE_MARGIN
         };
         let outer_class = "resource-viewer-holder";
         if (!window.in_context) {
-            if (this.state.dark_theme) {
+            if (dark_theme) {
                 outer_class = outer_class + " bp3-dark";
             } else {
                 outer_class = outer_class + " light-theme"
             }
         }
+        if (this.top_ref && this.top_ref.current) {
+            my_props.usable_width = my_props.usable_width - this.top_ref.current.offsetLeft;
+        }
+
         return (
             <React.Fragment>
-                {!window.in_context &&
-                    <TacticNavbar is_authenticated={window.is_authenticated}
-                                  selected={null}
-                                  show_api_links={true}
-                                  dark_theme={this.state.dark_theme}
-                                  set_parent_theme={this._setTheme}
-                                  user_name={window.username}/>
-                }
+                <TacticContext.Provider value={{
+                    readOnly: this.props.readOnly,
+                    tsocket: this.props.tsocket,
+                    dark_theme: dark_theme,
+                    setTheme:  this.props.controlled ? this.context.setTheme : this._setTheme,
+                    controlled: this.props.controlled,
+                    am_selected: this.props.am_selected
+                }}>
+                    {!window.in_context &&
+                        <TacticNavbar is_authenticated={window.is_authenticated}
+                                      selected={null}
+                                      show_api_links={true}
+                                      user_name={window.username}/>
+                    }
 
-                <ResizeSensor onResize={this._handleResize} observeParents={true}>
-                    <div className={outer_class} ref={this.top_ref} style={outer_style}>
-                        <HorizontalPanes left_pane={left_pane}
-                                         right_pane={right_pane}
-                                         show_handle={true}
-                                         available_height={this.state.usable_height}
-                                         available_width={this.state.usable_width}
-                                         handleSplitUpdate={this.handleLeftPaneResize}
-                        />
-                    </div>
-                </ResizeSensor>
+                        <div className={outer_class} ref={this.top_ref} style={outer_style}>
+                            <HorizontalPanes left_pane={left_pane}
+                                             right_pane={right_pane}
+                                             show_handle={true}
+                                             available_height={my_props.usable_height}
+                                             available_width={my_props.usable_width}
+                                             handleSplitUpdate={this.handleLeftPaneResize}
+                            />
+                        </div>
+                </TacticContext.Provider>
             </React.Fragment>
         )
 
@@ -896,6 +969,12 @@ class CreatorApp extends React.Component {
 }
 
 CreatorApp.propTypes = {
+    controlled: PropTypes.bool,
+    am_selected: PropTypes.bool,
+    changeResourceName: PropTypes.func,
+    changeResourceTitle: PropTypes.func,
+    changeResourceProps: PropTypes.func,
+    updatePanel: PropTypes.func,
     is_mpl: PropTypes.bool,
     render_content_code: PropTypes.string,
     render_content_line_number: PropTypes.number,
@@ -908,8 +987,22 @@ CreatorApp.propTypes = {
     notes: PropTypes.string,
     option_list: PropTypes.array,
     export_list: PropTypes.array,
-    created: PropTypes.string
+    created: PropTypes.string,
+     tsocket: PropTypes.object,
+    usable_height: PropTypes.number,
+    usable_width: PropTypes.number
 };
+
+CreatorApp.defaultProps = {
+    am_selected: true,
+    controlled: false,
+    changeResourceName: null,
+    changeResourceTitle: null,
+    changeResourceProps: null,
+    updatePanel: null
+};
+
+CreatorApp.contextType = TacticContext;
 
 
 if (!window.in_context) {

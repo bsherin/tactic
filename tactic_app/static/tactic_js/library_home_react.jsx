@@ -14,7 +14,6 @@ import {Toolbar} from "./blueprint_toolbar.js"
 import {TacticSocket} from "./tactic_socket.js"
 import {handleCallback, postAjaxPromise, postWithCallbackNoMain} from "./communication_react.js"
 import {doFlash} from "./toaster.js"
-import {ViewerContext} from "./resource_viewer_context.js";
 import {LibraryPane} from "./library_pane.js"
 import {LoadedTileList} from "./library_widgets.js";
 import {SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, getUsableDimensions} from "./sizing_tools.js";
@@ -23,8 +22,9 @@ import {withErrorDrawer} from "./error_drawer.js";
 import {KeyTrap} from "./key_trap.js";
 import {doBinding, guid} from "./utilities_react.js";
 import {TacticNavbar} from "./blueprint_navbar";
+import {TacticContext} from "./tactic_context.js";
 
-export {library_in_context}
+export {library_props, LibraryHomeApp}
 
 function _library_home_main () {
     let library_id = guid();
@@ -33,68 +33,58 @@ function _library_home_main () {
     let tsocket = new LibraryTacticSocket("library",
         5000,
         {library_id: library_id});
-    // window.tsocket = tsocket;
-    const LibraryHomeAppPlus = withErrorDrawer(withStatus(LibraryHomeApp, tsocket), tsocket);
+    const LibraryHomeAppPlus = withErrorDrawer(withStatus(LibraryHomeApp));
     const domContainer = document.querySelector('#library-home-root');
-    ReactDOM.render(<LibraryHomeAppPlus initial_theme={window.theme} tsocket={tsocket}
-                                        registerLibraryTabChanger={null}
-                                        library_id={library_id}/>, domContainer)
+    ReactDOM.render(<LibraryHomeAppPlus {...library_props()}
+                                        controlled={false}
+                                        initial_theme={window.theme}
+                                        tsocket={tsocket}
+                                        registerLibraryTabChanger={null}/>, domContainer)
 }
 
-function library_in_context(handleCreateViewer, registerLibraryTabChanger) {
-    let library_id = guid();
-    window.page_id = library_id;
-    // window.page_id = library_id;
-    // window.main_id = library_id;
-    let tsocket = new LibraryTacticSocket("library",
-        5000,
-        {library_id: library_id});
-    // window.tsocket = tsocket;
-    const LibraryHomeAppPlus = withErrorDrawer(withStatus(LibraryHomeApp, tsocket), tsocket);
-    const domContainer = document.querySelector('#library-home-root');
-    return (
-        <div id="library-home-root">
-            <LibraryHomeAppPlus initial_theme={window.theme}
-                                handleCreateViewer={handleCreateViewer}
-                                tsocket={tsocket}
-                                registerLibraryTabChanger={registerLibraryTabChanger}
-                                library_id={library_id}/>
-        </div>
-    )
+function library_props() {
+    return {library_id: guid()}
 }
 
 class LibraryTacticSocket extends TacticSocket {
 
     initialize_socket_stuff(reconnect=false) {
         let self = this;
-        this.socket.emit('join', {"user_id":  window.user_id, "library_id":  this.extra_args.library_id});
+        // this.socket.emit('join', {"user_id":  window.user_id, "library_id":  this.extra_args.library_id});
 
-        this.socket.on("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
-        this.socket.on('handle-callback', handleCallback);
         this.socket.on('close-user-windows', data => {
             if (!(data["originator"] === self.extra_args.library_id)) {
                 window.close()
             }
         });
-        this.socket.on('doflash', doFlash);
+        if (!window.in_context) {
+            this.socket.on("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
+            this.socket.emit('join', {"room": window.user_id});
+            this.socket.on('handle-callback', (task_packet)=>{handleCallback(task_packet, self.extra_args.library_id)});
+            this.socket.on("doFlash", function(data) {
+                doFlash(data)
+            });
+        }
     }
 }
 
 const res_types = ["collection", "project", "tile", "list", "code"];
 const tab_panes = ["collections-pane", "projects-pane", "tiles-pane", "lists-pane", "code-pane"];
+const controllable_props = ["usable_height", "usable_width"];
 
 // noinspection JSUnusedLocalSymbols,JSRemoveUnnecessaryParentheses
 class LibraryHomeApp extends React.Component {
 
-    constructor(props) {
-        super(props);
-        const aheight = getUsableDimensions(true).usable_height_no_bottom;
-        const awidth = getUsableDimensions(true).usable_width - 170;
+    constructor(props, context) {
+        super(props, context);
+        let tsocket = props.controlled ? context.tsocket : props.tsocket;
+        tsocket.socket.emit('join', {"user_id":  window.user_id, "room": props.library_id});
+        // const aheight = getUsableDimensions(true).usable_height_no_bottom;
+        // const awidth = getUsableDimensions(true).usable_width - 170;
         this.state = {
             selected_tab_id: "collections-pane",
-            usable_width: awidth,
-            usable_height: aheight,
-            dark_theme: props.initial_theme === "dark",
+            // usable_width: awidth,
+            // usable_height: aheight,
             pane_states: {},
         };
         for (let res_type of res_types) {
@@ -121,16 +111,23 @@ class LibraryHomeApp extends React.Component {
         if (props.registerLibraryTabChanger) {
             props.registerLibraryTabChanger(this._handleTabChange)
         }
+        if (!window.controlled) {
+            const aheight = getUsableDimensions(true).usable_height_no_bottom;
+            const awidth = getUsableDimensions(true).usable_width - 170;
+            this.state.usable_height = aheight;
+            this.state.usable_width = awidth;
+            this.state.dark_theme = props.initial_theme === "dark"
+        }
     }
 
     componentDidMount() {
-        window.addEventListener("resize", this._update_window_dimensions);
         this.setState({"mounted": true});
-        this._update_window_dimensions();
-        this.props.stopSpinner();
-        this.props.setStatusTheme(this.state.dark_theme);
-        if (!this.in_context) {
-            window.dark_theme = this.state.dark_theme
+        this.props.stopSpinner(null);
+        // this.props.setStatusTheme(this.props.dark_theme);
+        if (!this.props.controlled) {
+            window.dark_theme = this.state.dark_theme;
+            window.addEventListener("resize", this._update_window_dimensions);
+            this._update_window_dimensions();
         }
     }
 
@@ -142,20 +139,22 @@ class LibraryHomeApp extends React.Component {
     }
 
     _update_window_dimensions() {
-        let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
-        let uheight = window.innerHeight;
-        if (this.top_ref && this.top_ref.current) {
-            uheight = uheight - this.top_ref.current.offsetTop;
+        if (!this.props.controlled) {
+            let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
+            let uheight = window.innerHeight;
+            if (this.top_ref && this.top_ref.current) {
+                uheight = uheight - this.top_ref.current.offsetTop;
+            }
+            else {
+                uheight = uheight - USUAL_TOOLBAR_HEIGHT
+            }
+            this.setState({usable_height: uheight, usable_width: uwidth})
         }
-        else {
-            uheight = uheight - USUAL_TOOLBAR_HEIGHT
-        }
-        this.setState({usable_height: uheight, usable_width: uwidth})
     }
 
     _setTheme(dark_theme) {
         this.setState({dark_theme}, ()=> {
-            this.props.setStatusTheme(dark_theme);
+            // this.props.setStatusTheme(dark_theme);
             window.dark_theme = dark_theme
         })
     }
@@ -188,9 +187,17 @@ class LibraryHomeApp extends React.Component {
     }
 
     render () {
-        let tile_widget = <LoadedTileList tsocket={this.props.tsocket}/>;
+        let tsocket = this.props.controlled ? this.context.tsocket : this.props.tsocket;
+        let dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
+        let tile_widget = <LoadedTileList/>;
+        let lib_props = {...this.props};
+        if (!this.props.controlled) {
+            for (let prop_name of controllable_props) {
+                lib_props[prop_name] = this.state[prop_name]
+            }
+        }
         let collection_pane = (
-                        <LibraryPane {...this.props}
+                        <LibraryPane {...lib_props}
                                      res_type="collection"
                                      allow_search_inside={false}
                                      allow_search_metadata={false}
@@ -199,10 +206,11 @@ class LibraryHomeApp extends React.Component {
                                      {...this.state.pane_states["collection"]}
                                      {...this.props.errorDrawerFuncs}
                                      errorDrawerFuncs={this.props.errorDrawerFuncs}
-                                     dark_theme={this.state.dark_theme}
-                                     tsocket={this.props.tsocket}/>
+                                     library_id={this.props.library_id}
+                                     // tsocket={this.props.tsocket}
+                        />
         );
-        let projects_pane = (<LibraryPane {...this.props}
+        let projects_pane = (<LibraryPane {...lib_props}
                                           res_type="project"
                                           allow_search_inside={false}
                                           allow_search_metadata={true}
@@ -210,10 +218,11 @@ class LibraryHomeApp extends React.Component {
                                           updatePaneState={this._updatePaneState}
                                           {...this.props.errorDrawerFuncs}
                                           {...this.state.pane_states["project"]}
-                                          dark_theme={this.state.dark_theme}
-                                          tsocket={this.props.tsocket}/>
+                                          library_id={this.props.library_id}
+                                          // tsocket={this.props.tsocket}
+            />
         );
-        let tiles_pane = (<LibraryPane {...this.props}
+        let tiles_pane = (<LibraryPane {...lib_props}
                                        res_type="tile"
                                        allow_search_inside={true}
                                        allow_search_metadata={true}
@@ -221,12 +230,13 @@ class LibraryHomeApp extends React.Component {
                                        updatePaneState={this._updatePaneState}
                                        {...this.props.errorDrawerFuncs}
                                        {...this.state.pane_states["tile"]}
+                                       library_id={this.props.library_id}
                                        tsocket={this.props.tsocket}
                                        aux_pane_title="loaded tile list"
-                                       dark_theme={this.state.dark_theme}
-                                       aux_pane={tile_widget}/>
+                                       // aux_pane={tile_widget}
+            />
         );
-        let lists_pane = (<LibraryPane {...this.props}
+        let lists_pane = (<LibraryPane {...lib_props}
                                        res_type="list"
                                        allow_search_inside={true}
                                        allow_search_metadata={true}
@@ -234,10 +244,11 @@ class LibraryHomeApp extends React.Component {
                                        {...this.props.errorDrawerFuncs}
                                        updatePaneState={this._updatePaneState}
                                        {...this.state.pane_states["list"]}
-                                        dark_theme={this.state.dark_theme}
-                                       tsocket={this.props.tsocket}/>
+                                       library_id={this.props.library_id}
+                                       // tsocket={this.props.tsocket}
+            />
         );
-        let code_pane = (<LibraryPane {...this.props}
+        let code_pane = (<LibraryPane {...lib_props}
                                       res_type="code"
                                       allow_search_inside={true}
                                       allow_search_metadata={true}
@@ -245,17 +256,18 @@ class LibraryHomeApp extends React.Component {
                                       {...this.props.errorDrawerFuncs}
                                       updatePaneState={this._updatePaneState}
                                       {...this.state.pane_states["code"]}
-                                      dark_theme={this.state.dark_theme}
-                                      tsocket={this.props.tsocket}/>
+                                      library_id={this.props.library_id}
+                                      // tsocket={this.props.tsocket}
+            />
         );
         let outer_style = {width: "100%",
-            height: this.state.usable_height,
+            height: lib_props.usable_height,
             paddingLeft: 0
         };
         let outer_class = "";
-        if (!window.in_context) {
+        if (!this.props.controlled) {
             outer_class = "library-pane-holder  ";
-            if (this.state.dark_theme) {
+            if (dark_theme) {
                 outer_class = `${outer_class} bp3-dark`;
             }
             else {
@@ -265,18 +277,24 @@ class LibraryHomeApp extends React.Component {
 
         let key_bindings = [[["tab"], this._goToNextPane], [["shift+tab"], this._goToPreviousPane]];
         return (
-            <ViewerContext.Provider value={{readOnly: false}}>
-                {!window.in_context &&
+            <TacticContext.Provider value={{
+                readOnly: false,
+                tsocket: tsocket,
+                dark_theme: dark_theme,
+                setTheme:  this.props.controlled ? this.context.setTheme : this._setTheme,
+                controlled: this.props.controlled
+            }}>
+                {!this.props.controlled &&
                     <TacticNavbar is_authenticated={window.is_authenticated}
                           selected={null}
                           show_api_links={false}
-                          dark_theme={this.state.dark_theme}
-                          set_parent_theme={this._setTheme}
+                          // dark_theme={lib_props.dark_theme}
+                          // set_parent_theme={this._setTheme}
                         user_name={window.username}/>
                 }
 
                 <div className={outer_class} ref={this.top_ref} style={outer_style}>
-                    <div style={{width: this.state.usable_width}}>
+                    <div style={{width: lib_props.usable_width}}>
                         <Tabs id="the_container" style={{marginTop: 100, height: "100%"}}
                                  selectedTabId={this.state.selected_tab_id}
                                  renderActiveTabPanelOnly={true}
@@ -309,11 +327,15 @@ class LibraryHomeApp extends React.Component {
                         </Tabs>
                     </div>
                 </div>
-                <KeyTrap global={true} bindings={key_bindings} />
-            </ViewerContext.Provider>
+                {!this.props.controlled &&
+                    <KeyTrap global={true} bindings={key_bindings}/>
+                }
+            </TacticContext.Provider>
         )
     }
 }
+
+LibraryHomeApp.contextType = TacticContext;
 
 class LibraryToolbar extends React.Component {
 
@@ -413,6 +435,8 @@ class LibraryToolbar extends React.Component {
                        alternate_outer_style={outer_style}
                        sendRef={this.props.sendRef}
                        popup_buttons={popup_buttons}
+                       // tsocket={this.props.tsocket}
+                       // dark_theme={this.props.dark_theme}
        />
     }
 }
@@ -424,7 +448,9 @@ LibraryToolbar.propTypes = {
     popup_buttons: PropTypes.array,
     multi_select: PropTypes.bool,
     left_position: PropTypes.number,
-    sendRef: PropTypes.func
+    sendRef: PropTypes.func,
+    dark_theme: PropTypes.bool,
+    tsocket: PropTypes.object,
 };
 
 LibraryToolbar.defaultProps = {
@@ -590,7 +616,10 @@ class CollectionToolbar extends React.Component {
                                file_adders={this.file_adders}
                                left_position={this.props.left_position}
                                sendRef={this.props.sendRef}
-                               multi_select={this.props.multi_select} />
+                               multi_select={this.props.multi_select}
+                               tsocket={this.props.tsocket}
+                               dark_theme={this.props.dark_theme}
+        />
      }
 }
 
@@ -651,7 +680,7 @@ class ProjectToolbar extends React.Component {
 
     get button_groups() {
         return [
-            [["notebook", this._new_notebook,"new-text-box", false, "regular", ["ctrl+n"], "New notebook", "Notebook"]],
+            [["notebook", this._new_notebook,"new-text-box", false, "regular", ["ctrl+n"], "New notebook", false]],
             [["open", this.props.view_func, "document-open", false, "regular", ["space", "return", "ctrl+o"], "View"]],
             [["duplicate", this._project_duplicate, "duplicate", false, "regular", [], "Duplicate"],
              ["rename", this.props.rename_func, "edit", false, "regular", [], "Rename"]],
@@ -676,7 +705,10 @@ class ProjectToolbar extends React.Component {
                                file_adders={this.file_adders}
                                left_position={this.props.left_position}
                                sendRef={this.props.sendRef}
-                               multi_select={this.props.multi_select} />
+                               multi_select={this.props.multi_select} 
+                               // tsocket={this.props.tsocket}
+                               // dark_theme={this.props.dark_theme}
+        />
      }
 
 }
@@ -835,7 +867,10 @@ class TileToolbar extends React.Component {
                                popup_buttons={this.popup_buttons}
                                left_position={this.props.left_position}
                                sendRef={this.props.sendRef}
-                               multi_select={this.props.multi_select} />
+                               multi_select={this.props.multi_select}
+                               tsocket={this.props.tsocket}
+                               dark_theme={this.props.dark_theme}
+        />
      }
 }
 
@@ -898,7 +933,10 @@ class ListToolbar extends React.Component {
                                popup_buttons={this.popup_buttons}
                                left_position={this.props.left_position}
                                sendRef={this.props.sendRef}
-                               multi_select={this.props.multi_select} />
+                               multi_select={this.props.multi_select}
+                               tsocket={this.props.tsocket}
+                               dark_theme={this.props.dark_theme}
+        />
      }
 
 }
@@ -978,7 +1016,10 @@ class CodeToolbar extends React.Component {
                                popup_buttons={this.popup_buttons}
                                left_position={this.props.left_position}
                                sendRef={this.props.sendRef}
-                               multi_select={this.props.multi_select} />
+                               multi_select={this.props.multi_select} 
+                               tsocket={this.props.tsocket}
+                               dark_theme={this.props.dark_theme}
+        />
      }
 
 }

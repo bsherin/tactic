@@ -15,7 +15,7 @@ class KeyTrap extends React.Component {
     }
 
     componentDidMount() {
-        this.initializeMousetrap()
+        this._initializeMousetrap()
     }
 
     componentWillUnmount() {
@@ -25,7 +25,8 @@ class KeyTrap extends React.Component {
         }
     }
 
-    initializeMousetrap() {
+    _initializeMousetrap() {
+        let self = this;
         if (this.mousetrap) {
             this.mousetrap.reset();
         }
@@ -42,14 +43,19 @@ class KeyTrap extends React.Component {
             }
 
             for (let binding of this.props.bindings) {
-                this.mousetrap.bind(binding[0], binding[1])
+                this.mousetrap.bind(binding[0], (e)=> {
+                        if (this.props.active) {
+                            binding[1](e)
+                        }
+                    }
+                )
             }
         }
     }
 
     componentDidUpdate() {
         if (!this.mousetrap) {
-            this.initializeMousetrap()
+            this._initializeMousetrap()
         }
     }
 
@@ -61,11 +67,13 @@ class KeyTrap extends React.Component {
 }
 
 KeyTrap.propTypes = {
+    active: PropTypes.bool,
     target_ref: PropTypes.object,
     bindings: PropTypes.array,
     global: PropTypes.bool
 };
 
 KeyTrap.defaultProps = {
+    active: true,
     global: false
 };

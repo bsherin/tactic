@@ -16,6 +16,7 @@ class TacticSocket {
         this.initialize_socket_stuff();
         this.watchForDisconnect();
         this.counter = null;
+        this.listeners = {}
     }
 
     connectme() {
@@ -25,6 +26,16 @@ class TacticSocket {
     }
 
     initialize_socket_stuff(reconnect=false) {}
+
+    // We have to careful to get the very same instance of the listerner function
+     // That requires storing it outside of this component since the console can be unmounted
+    reAttachListener(event, newListener) {
+        if  (event in this.listeners) {
+             this.socket.off(event, this.listeners[event]);
+         }
+        this.socket.on(event, newListener);
+        this.listeners[event] = newListener
+    }
 
     watchForDisconnect() {
         let self = this;

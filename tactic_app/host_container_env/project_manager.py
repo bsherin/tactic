@@ -154,12 +154,14 @@ class ProjectManager(LibraryResourceManager):
         is_notebook = doc_type == 'notebook' or doc_type == 'jupyter'
         if is_notebook:
             viewer = "notebook-viewer"
+            short_collection_name = ""
         else:
             viewer = "main-viewer"
-        full_collection_name = mdata["collection_name"]
-        short_collection_name = re.sub(r"^.*?\.data_collection\.", "", full_collection_name)
+            full_collection_name = mdata["collection_name"]
+            short_collection_name = re.sub(r"^.*?\.data_collection\.", "", full_collection_name)
         data_dict = {"success": True,
                      "kind": viewer,
+                     "res_type": "project",
                      "project_name": project_name,
                      "resource_name": project_name,
                      "ready_block_id": rb_id,

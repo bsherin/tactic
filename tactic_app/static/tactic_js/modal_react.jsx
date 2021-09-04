@@ -366,7 +366,10 @@ class ConfirmDialog extends React.Component {
 
     _cancelHandler() {
         this.setState({"show": false});
-        this.props.handleClose()
+        this.props.handleClose();
+        if (this.props.handleCancel) {
+            this.props.handleCancel()
+        }
     }
 
     render() {
@@ -392,6 +395,7 @@ class ConfirmDialog extends React.Component {
 
 ConfirmDialog.propTypes = {
     handleSubmit: PropTypes.func,
+    handleCancel: PropTypes.func,
     handleClose: PropTypes.func,
     title: PropTypes.string,
     text_body: PropTypes.string,
@@ -401,10 +405,11 @@ ConfirmDialog.propTypes = {
 
 ConfirmDialog.defaultProps = {
     submit_text: "Submit",
-    cancel_text: "Cancel"
+    cancel_text: "Cancel",
+    handleCancel: null
 };
 
-function showConfirmDialogReact(title, text_body, cancel_text, submit_text, submit_function) {
+function showConfirmDialogReact(title, text_body, cancel_text, submit_text, submit_function, cancel_function=null) {
 
     let domContainer = document.querySelector('#modal-area');
 
@@ -413,6 +418,7 @@ function showConfirmDialogReact(title, text_body, cancel_text, submit_text, subm
 
     }
     ReactDOM.render(<ConfirmDialog handleSubmit={submit_function}
+                                   handleCancel={cancel_function}
                                  handleClose={handle_close}
                                  title={title}
                                  text_body={text_body}

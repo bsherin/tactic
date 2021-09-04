@@ -1029,9 +1029,9 @@ pre code {
   fill: #30404d; }
 
 .status-holder.light-theme {
-  background-color: white; }
+  background-color: transparent; }
 .status-holder.bp3-dark {
-  background-color: #30404d; }
+  background-color: transparent; }
   .status-holder.bp3-dark.light-dark {
     background-color: #5c7080; }
 
@@ -1057,6 +1057,12 @@ table caption {
 
 .code-container {
   padding-bottom: 0; }
+
+#main-root, .main-root {
+  height: 100%; }
+
+.main-outer {
+  height: 100%; }
 
 /* General resources */
 .contingent-scroll {

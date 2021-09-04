@@ -614,6 +614,7 @@ var CommandsModule = /*#__PURE__*/function (_React$Component5) {
 
           var res = /*#__PURE__*/_react["default"].createElement(ObjectCategoryEntry, {
             category_name: category,
+            key: category,
             search_string: this.state.search_string,
             class_list: this.state.object_api_dict[category]
           });
@@ -637,6 +638,7 @@ var CommandsModule = /*#__PURE__*/function (_React$Component5) {
 
           var _res = /*#__PURE__*/_react["default"].createElement(CategoryEntry, {
             category_name: _category,
+            key: _category,
             search_string: this.state.search_string,
             command_list: this.state.api_dict[_category]
           });

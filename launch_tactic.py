@@ -143,7 +143,7 @@ def create_host(port=5000, debug=False):
         host_volume_dict[host_persist_dir] = {"bind": "/code/persist", "mode": "rw"}
         host_volume_dict[host_static_dir] = {"bind": "/code/static", "mode": "ro"}
         host_volume_dict[host_docs_dir] = {"bind": "/code/docs", "mode": "ro"}
-        env_vars = {"AM_TACTIC_HOST": True, "MYPORT": port}
+        env_vars = {"AM_TACTIC_HOST": True, "MYPORT": port, "USE_WAIT_TASKS": True}
         if debug:
             env_vars["DEBUG_CONTAINER"] = True
         _unique_id, _tactic_host_id = create_container("bsherin/tactic:host",

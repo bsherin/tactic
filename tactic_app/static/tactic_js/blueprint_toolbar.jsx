@@ -15,9 +15,11 @@ import {doBinding} from "./utilities_react.js";
 import {SearchForm} from "./library_widgets";
 
 import {showModalReact} from "./modal_react.js";
-import {showFileImportDialog} from "./import_dialog.js"
+import {showFileImportDialog} from "./import_dialog.js";
+import {doFlash} from "./toaster.js";
 
 import {postAjax} from "./communication_react.js"
+import {TacticContext} from "./tactic_context.js";
 
 export {Toolbar, ToolbarButton, Namebutton, ResourceviewerToolbar}
 
@@ -31,7 +33,7 @@ const intent_colors = {
     regular: "#5c7080"
 };
 
-function ResourceviewerToolbar(props) {
+function ResourceviewerToolbar(props, context) {
     let tstyle = {"marginTop": 20, "paddingRight": 20, "width": "100%"};
     let toolbar_outer_style = {
                 display: "flex",
@@ -50,7 +52,11 @@ function ResourceviewerToolbar(props) {
             />
             <div>
                 <Toolbar button_groups={props.button_groups}
+                         // controlled={props.controlled}
+                         // am_selected={props.am_selected}
                          alternate_outer_style={toolbar_outer_style}
+                         // tsocket={context.tsocket}
+                         // dark_theme={context.dark_theme}
                 />
             </div>
             {props.show_search &&
@@ -64,6 +70,25 @@ function ResourceviewerToolbar(props) {
         </div>
     )
 }
+
+ResourceviewerToolbar.propTypes = {
+    controlled: PropTypes.bool,
+    am_selected: PropTypes.bool,
+    button_groups: PropTypes.array,
+    setResourceNameState: PropTypes.func,
+    resource_name: PropTypes.string,
+    show_search: PropTypes.bool,
+    search_string: PropTypes.string,
+    update_search_state: PropTypes.func,
+    res_type: PropTypes.string,
+    tsocket: PropTypes.object,
+    dark_theme: PropTypes.bool
+};
+
+ResourceviewerToolbar.defaultProps = {
+    controlled: false,
+    am_selected: true
+};
 
 
 class ToolbarButton extends React.Component {
@@ -161,7 +186,8 @@ class FileAdderButton extends React.Component {
 
     _showDialog () {
         showFileImportDialog(this.props.resource_type, this.props.allowed_file_types,
-            this.props.checkboxes, this.props.process_handler, this.props.combine, this.props.show_csv_options)
+            this.props.checkboxes, this.props.process_handler, this.context.tsocket, this.context.dark_theme,
+            this.props.combine, this.props.show_csv_options)
     }
 
      render() {
@@ -182,17 +208,21 @@ FileAdderButton.propTypes = {
     name_text: PropTypes.string,
     resource_type: PropTypes.string,
     process_handler: PropTypes.func,
-    allowed_file_types: PropTypes.array,
+    allowed_file_types: PropTypes.string,
     icon_name: PropTypes.string,
     checkboxes: PropTypes.array,
     combine: PropTypes.bool,
     tooltip: PropTypes.string,
-    show_csv_options: PropTypes.bool
+    show_csv_options: PropTypes.bool,
+    // tsocket: PropTypes.object,
+    // dark_theme: PropTypes.bool,
 };
 
 FileAdderButton.defaultProps = {
     multiple: false
 };
+
+FileAdderButton.contextType = TacticContext;
 
 class Toolbar extends React.Component {
     constructor(props) {
@@ -282,6 +312,8 @@ class Toolbar extends React.Component {
                                  tooltip={this.getTooltip(button)}
                                  tooltipDelay={this.getTooltipDelay(button)}
                                  show_csv_options={button.show_csv_options}
+                                 tsocket={this.context.tsocket}
+                                 dark_theme={this.context.dark_theme}
                                  key={index}
                 />
             );
@@ -300,7 +332,8 @@ class Toolbar extends React.Component {
                 display: "flex",
                 flexDirection: "row",
                 justifyContent: "space-around",
-                marginBottom: 10
+                marginBottom: 10,
+                whiteSpace: "nowrap"
             }
         }
         return (
@@ -308,7 +341,9 @@ class Toolbar extends React.Component {
                 <div ref={this.tb_ref}>
                 {items}
                 </div>
-                <KeyTrap global={true} bindings={key_bindings} />
+                <KeyTrap global={true}
+                         active={!this.context.controlled || this.context.am_selected}
+                         bindings={key_bindings} />
             </div>
         )
     }
@@ -320,14 +355,22 @@ Toolbar.propTypes = {
     popup_buttons: PropTypes.array,
     alternate_outer_style: PropTypes.object,
     inputRef: PropTypes.func,
+    tsocket: PropTypes.object,
+    dark_theme: PropTypes.bool
 };
 
 Toolbar.defaultProps = {
+    controlled: false,
+    am_selected: true,
     file_adders: null,
     popup_buttons: null,
     alternate_outer_style: null,
-    sendRef: null
+    sendRef: null,
+    tsocket: null
 };
+
+Toolbar.contextType = TacticContext;
+
 
 class Namebutton extends React.Component {
 
@@ -363,7 +406,8 @@ class Namebutton extends React.Component {
             if (data.success) {
                 // self.setState({"current_name": new_name});
                 self.props.setResourceNameState(new_name);
-                doFlash(data)
+                doFlash(data);
+                return true
             } else {
                 doFlash(data);
                 return false
@@ -375,7 +419,7 @@ class Namebutton extends React.Component {
     render() {
         // let name = this.props.handleRename == null ? this.state.current_name : this.props.resource_name;
         let name = this.props.resource_name;
-        let style = {fontSize: 20};
+        let style = {fontSize: 18, fontWeight: 800};
         return (
             <Button id="rename-button"
                            large={this.props.large}
@@ -384,7 +428,7 @@ class Namebutton extends React.Component {
                            style={style}
                            tabIndex={-1}
                            onClick={this.rename_me}>
-                <h5>{name}</h5>
+                <div>{name}</div>
             </Button>
         )
     }

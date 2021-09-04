@@ -67,6 +67,7 @@ class TileDifferApp extends React.Component {
     }
     componentDidMount() {
         this.props.setStatusTheme(this.state.dark_theme);
+
         window.dark_theme = this.state.dark_theme
     }
 

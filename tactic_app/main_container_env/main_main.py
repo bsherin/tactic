@@ -76,6 +76,7 @@ class MainWorker(QWorker, ExceptionMixin):
         return
 
     def emit_to_main_client(self, message, data):
+        data["main_id"] = self.my_id
         emit_direct(message, data, namespace='/main', room=self.my_id)
 
     def emit_console_message(self, console_message, task_data=None, force_open=True):
@@ -84,6 +85,7 @@ class MainWorker(QWorker, ExceptionMixin):
         ldata = copy.copy(task_data)
         ldata["console_message"] = console_message
         ldata["force_open"] = force_open
+        ldata["main_id"] = self.my_id
         self.emit_to_main_client("console-message", ldata)
         return
 
@@ -91,12 +93,14 @@ class MainWorker(QWorker, ExceptionMixin):
         if data is None:
             data = {}
         data["export_viewer_message"] = message
+        data["main_id"] = self.my_id
         self.emit_to_main_client("export-viewer-message", data)
         return
 
     def send_error_entry(self, title, content):
         self.emit_to_main_client("add-error-drawer-entry", {"message": "add-error-drawer-entry",
                                                             "title": title,
+                                                            "main_id": self.my_id,
                                                             "content": content})
         return {"success": True}
 

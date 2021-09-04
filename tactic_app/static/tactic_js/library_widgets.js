@@ -27,6 +27,8 @@ var _communication_react = require("./communication_react.js");
 
 var _utilities_react = require("./utilities_react.js");
 
+var _tactic_context = require("./tactic_context.js");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
@@ -176,7 +178,7 @@ LibraryOmnibar.propTypes = {
   handleClose: _propTypes["default"].func,
   dark_theme: _propTypes["default"].bool
 };
-LibraryOmnibar.propTypes = {
+LibraryOmnibar.defaultProps = {
   dark_theme: false
 };
 
@@ -240,7 +242,7 @@ var SearchForm = /*#__PURE__*/function (_React$Component3) {
         value: this.props.search_string,
         onChange: this._handleSearchFieldChange,
         style: {
-          "width": 265
+          "width": this.props.field_width
         },
         autoCapitalize: "none",
         autoCorrect: "off"
@@ -270,13 +272,15 @@ SearchForm.propTypes = {
   update_search_state: _propTypes["default"].func,
   search_string: _propTypes["default"].string,
   search_inside: _propTypes["default"].bool,
-  search_metadata: _propTypes["default"].bool
+  search_metadata: _propTypes["default"].bool,
+  field_with: _propTypes["default"].number
 };
 SearchForm.defaultProps = {
   allow_search_inside: false,
   allow_search_metadata: false,
   search_inside: false,
-  search_metadata: false
+  search_metadata: false,
+  field_width: 265
 };
 
 var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
@@ -365,9 +369,14 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
       if (this.data_update_required != null) {
         this.props.initiateDataGrab(this.data_update_required);
         this.data_update_required = null;
-      } // const lastColumnRegion = Regions.column(Object.keys(this.props.columns).length - 1) // Your table last column
-      // this.table_ref.current.scrollToRegion(lastColumnRegion)
+      }
 
+      var lastColumnRegion = _table.Regions.column(Object.keys(this.props.columns).length - 1);
+
+      var firstColumnRegion = _table.Regions.column(0);
+
+      this.table_ref.current.scrollToRegion(lastColumnRegion);
+      this.table_ref.current.scrollToRegion(firstColumnRegion);
     }
   }, {
     key: "haveRowData",
@@ -584,15 +593,15 @@ var LoadedTileList = /*#__PURE__*/function (_React$Component5) {
     key: "initSocket",
     value: function initSocket() {
       var self = this;
-      this.props.tsocket.socket.on('update-loaded-tile-list', function (data) {
+      this.context.tsocket.socket.on('update-loaded-tile-list', function (data) {
         return self.set_state_from_dict(data.tile_load_dict);
       });
-      this.socket_counter = this.props.tsocket.counter;
+      this.socket_counter = this.context.tsocket.counter;
     }
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate() {
-      if (this.props.tsocket.counter != this.socket_counter) {
+      if (this.context.tsocket.counter != this.socket_counter) {
         this.initSocket();
       }
     }
@@ -633,9 +642,9 @@ var LoadedTileList = /*#__PURE__*/function (_React$Component5) {
 }(_react["default"].Component);
 
 exports.LoadedTileList = LoadedTileList;
-LoadedTileList.propTypes = {
-  tsocket: _propTypes["default"].object
+LoadedTileList.propTypes = {// tsocket: PropTypes.object
 };
+LoadedTileList.contextType = _tactic_context.TacticContext;
 var MAX_INITIAL_CELL_WIDTH = 300;
 
 function compute_initial_column_widths(header_list, data_list) {

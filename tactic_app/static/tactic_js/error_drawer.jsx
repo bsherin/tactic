@@ -10,56 +10,63 @@ import {postWithCallback} from "./communication_react.js";
 
 export {withErrorDrawer, ErrorItem}
 
-function withErrorDrawer(WrappedComponent, tsocket=null, title=null, position="right", size="30%") {
+function withErrorDrawer(WrappedComponent, title=null, position="right", size="30%") {
     return class extends React.Component {
         constructor(props) {
             super(props);
             doBinding(this);
-            this.tsocket = tsocket;
             this.state = {
                 show_drawer: false,
                 contents: [],
                 error_drawer_size: size,
                 position: position,
                 goToLineNumber: null
-            }
+            };
             this.socket_counter = null
         }
 
         componentDidMount() {
-            if (this.tsocket) {
+            if (this.props.tsocket) {
                 this.initSocket()
             }
         }
 
         componentDidUpdate () {
-            if (this.tsocket && (this.tsocket.counter != this.socket_counter)) {
+            if (this.props.tsocket && (this.props.tsocket.counter != this.socket_counter)) {
                 this.initSocket();
             }
         }
 
         initSocket() {
-            this.tsocket.socket.on('close-error-drawer', this._close);
-            this.tsocket.socket.on('open-error-drawer', this._open);
-            this.tsocket.socket.on('add-error-drawer-entry', this._addEntry);
-            this.tsocket.socket.on("clear-error-drawer", this._clearAll);
-            this.socket_counter = this.tsocket.counter
+            this.props.tsocket.reAttachListener('close-error-drawer', this._close);
+            this.props.tsocket.reAttachListener('open-error-drawer', this._open);
+            this.props.tsocket.reAttachListener('add-error-drawer-entry', this._addEntry);
+            this.props.tsocket.reAttachListener("clear-error-drawer", this._clearAll);
+            this.socket_counter = this.props.tsocket.counter
         }
 
-        _close() {
-            this.setState({show_drawer: false})
+        _close(data) {
+            if (data == null || !("main_id" in data) || (data.main_id == this.props.main_id)) {
+                this.setState({show_drawer: false})
+            }
         }
 
-        _open() {
-            this.setState({show_drawer: true})
+        _open(data) {
+            if (data == null || !("main_id" in data) || (data.main_id == this.props.main_id)) {
+                this.setState({show_drawer: true})
+            }
         }
 
-        _toggle() {
-            this.setState({show_drawer: !this.state.show_drawer})
+        _toggle(data) {
+            if (data == null || !("main_id" in data) || (data.main_id == this.props.main_id)) {
+                this.setState({show_drawer: !this.state.show_drawer})
+            }
         }
 
-        _addEntry(entry, open=true) {
-            this.setState({contents: [entry, ...this.state.contents], show_drawer: open})
+        _addEntry(data, open=true) {
+            if (data == null || !("main_id" in data) || (data.main_id == this.props.main_id)) {
+                this.setState({contents: [data, ...this.state.contents], show_drawer: open})
+            }
         }
 
         _postAjaxFailure(qXHR, textStatus, errorThrown) {
@@ -68,8 +75,10 @@ function withErrorDrawer(WrappedComponent, tsocket=null, title=null, position="r
         }
 
 
-        _clearAll() {
-            this.setState({contents: [], show_drawer: false})
+        _clearAll(data) {
+            if (data == null || !("main_id" in data) || (data.main_id == this.props.main_id)) {
+                this.setState({contents: [], show_drawer: false})
+            }
         }
 
        _onClose() {
@@ -99,6 +108,7 @@ function withErrorDrawer(WrappedComponent, tsocket=null, title=null, position="r
                     <ErrorDrawer {...this.state}
                                  goToLineNumberFunc={this.state.goToLineNumber}
                                  title="Error Drawer"
+                                 dark_theme={this.props.controlled ? this.props.dark_theme : window.dark_theme}
                                  size={this.state.error_drawer_size}
                                  onClose={this._onClose}
                                  clearAll={this._clearAll}/>
@@ -157,7 +167,7 @@ ErrorItem.propTypes = {
     line_number: PropTypes.number,
     goToLineNumberFunc: PropTypes.func,
     tile_type: PropTypes.string
-}
+};
 
 ErrorItem.defaultProps = {
     title: null,
@@ -165,10 +175,11 @@ ErrorItem.defaultProps = {
     line_number: null,
     goToLineNumberfunc: null,
     tile_type: null
-}
+};
 
 class ErrorDrawer extends React.Component {
     render () {
+
         let items = this.props.contents.map((entry, index)=>{
             let content_dict = {__html: entry.content};
             let has_link = false;
@@ -184,7 +195,7 @@ class ErrorDrawer extends React.Component {
         return (
             <Drawer
                     icon="console"
-                    className={window.dark_theme ? "bp3-dark" : "light-theme"}
+                    className={this.props.dark_theme ? "bp3-dark" : "light-theme"}
                     title={this.props.title}
                     isOpen={this.props.show_drawer}
                     position={this.props.position}

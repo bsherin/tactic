@@ -583,6 +583,10 @@ var ConfirmDialog = /*#__PURE__*/function (_React$Component4) {
         "show": false
       });
       this.props.handleClose();
+
+      if (this.props.handleCancel) {
+        this.props.handleCancel();
+      }
     }
   }, {
     key: "render",
@@ -613,6 +617,7 @@ var ConfirmDialog = /*#__PURE__*/function (_React$Component4) {
 
 ConfirmDialog.propTypes = {
   handleSubmit: _propTypes["default"].func,
+  handleCancel: _propTypes["default"].func,
   handleClose: _propTypes["default"].func,
   title: _propTypes["default"].string,
   text_body: _propTypes["default"].string,
@@ -621,10 +626,12 @@ ConfirmDialog.propTypes = {
 };
 ConfirmDialog.defaultProps = {
   submit_text: "Submit",
-  cancel_text: "Cancel"
+  cancel_text: "Cancel",
+  handleCancel: null
 };
 
 function showConfirmDialogReact(title, text_body, cancel_text, submit_text, submit_function) {
+  var cancel_function = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : null;
   var domContainer = document.querySelector('#modal-area');
 
   function handle_close() {
@@ -633,6 +640,7 @@ function showConfirmDialogReact(title, text_body, cancel_text, submit_text, subm
 
   ReactDOM.render( /*#__PURE__*/_react["default"].createElement(ConfirmDialog, {
     handleSubmit: submit_function,
+    handleCancel: cancel_function,
     handleClose: handle_close,
     title: title,
     text_body: text_body,

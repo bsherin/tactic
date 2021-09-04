@@ -274,11 +274,11 @@ $dark-table-border-style: $table-border-thickness solid;
 
 .status-holder {
     &.light-theme {
-        background-color: white;
+        background-color: transparent;
       }
 
     &.bp3-dark {
-        background-color: $dark-gray4;
+        background-color: transparent;
         &.light-dark{
             background-color: $gray1;
         }

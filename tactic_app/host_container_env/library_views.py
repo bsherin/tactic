@@ -109,16 +109,16 @@ def get_manager_for_type(res_type, is_repository=False):
         return managers[res_type][0]
 
 
-def start_spinner(user_id=None):
-    if user_id is None:
-        user_id = current_user.get_id()
-    socketio.emit('start-spinner', {}, namespace='/library', room=user_id)
-
-
-def stop_spinner(user_id=None):
-    if user_id is None:
-        user_id = current_user.get_id()
-    socketio.emit('stop-spinner', {}, namespace='/library', room=user_id)
+# def start_spinner(user_id=None):
+#     if user_id is None:
+#         user_id = current_user.get_id()
+#     socketio.emit('start-spinner', {}, namespace='/library', room=user_id)
+#
+#
+# def stop_spinner(user_id=None):
+#     if user_id is None:
+#         user_id = current_user.get_id()
+#     socketio.emit('stop-spinner', {}, namespace='/library', room=user_id)
 
 
 @app.route('/library')
@@ -154,6 +154,7 @@ def context():
                            css_source=css_source("context_react"),
                            module_source=js_source_dict["context_react"],
                            dark_theme_name=current_user.get_preferred_dark_theme())
+
 
 @app.route('/repository')
 @login_required

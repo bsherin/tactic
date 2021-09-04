@@ -6,6 +6,8 @@ import {postAjax} from "./communication_react.js"
 // import { CodeMirror } from "./codemirror/src/edit/main.js"
 // import "./codemirror/mode/python/python.js"
 
+import {TacticContext} from "./tactic_context.js"
+
 import CodeMirror from 'codemirror/lib/codemirror.js'
 import 'codemirror/mode/python/python.js'
 
@@ -60,9 +62,9 @@ class ReactCodemirror extends React.Component {
             highlightSelectionMatches: true,
             autoCloseBrackets: true,
             indentUnit: 4,
-            theme: this.props.dark_theme ? DARK_THEME : "default",
+            theme: this.context.dark_theme ? DARK_THEME : "default",
             mode: this.props.mode,
-            readOnly: this.props.readOnly
+            readOnly: this.context.readOnly
         });
         if (first_line_number != 1) {
             cmobject.setOption("firstLineNumber", first_line_number)
@@ -104,22 +106,22 @@ class ReactCodemirror extends React.Component {
         if (this.props.setCMObject != null) {
             this.props.setCMObject(this.cmobject)
         }
-        this.saved_theme = this.props.dark_theme;
+        this.saved_theme = this.context.dark_theme;
         this._doHighlight(this.props.search_term)
     }
 
     componentDidUpdate() {
-        if (this.props.dark_theme != this.saved_theme) {
-            if (this.props.dark_theme) {
+        if (this.context.dark_theme != this.saved_theme) {
+            if (this.context.dark_theme) {
                 this.cmobject.setOption("theme", DARK_THEME)
             }
             else {
                 this.cmobject.setOption("theme", "default")
             }
-            this.saved_theme = this.props.dark_theme
+            this.saved_theme = this.context.dark_theme
         }
         if (this.props.sync_to_prop || this.props.force_sync_to_prop) {
-            this.cmobject.setValue(this.props.code_content)
+            this.cmobject.setValue(this.props.code_content);
             if (this.props.force_sync_to_prop) {
                 this.props.clear_force_sync()
             }
@@ -181,7 +183,7 @@ class ReactCodemirror extends React.Component {
     }
 
     clearSelections() {
-        CodeMirror.commands.clearSearch(this.cmobject);
+        // CodeMirror.commands.clearSearch(this.cmobject);
         CodeMirror.commands.singleSelection(this.cmobject);
     }
 
@@ -219,30 +221,30 @@ class ReactCodemirror extends React.Component {
             e.preventDefault()
         });
 
-        if (is_mac) {
-            CodeMirror.keyMap["default"]["Cmd-S"] = function () {self.props.saveMe()};
-
-            this.mousetrap.bind(['command+l'], function (e) {
-                // self.loadModule();
-                e.preventDefault()
-            });
-            this.mousetrap.bind(['command+f'], function (e) {
-                self.searchCM();
-                e.preventDefault()
-            });
-        }
-        else {
-            CodeMirror.keyMap["default"]["Ctrl-S"] = function () {self.props.saveMe()};
-
-            this.mousetrap.bind(['ctrl+l'], function (e) {
-                // self.loadModule();
-                e.preventDefault()
-            });
-            this.mousetrap.bind(['ctrl+f'], function (e) {
-                self.searchCM();
-                e.preventDefault()
-            });
-        }
+        // if (is_mac) {
+        //     CodeMirror.keyMap["default"]["Cmd-S"] = function () {self.props.saveMe()};
+        //
+        //     this.mousetrap.bind(['command+l'], function (e) {
+        //         // self.loadModule();
+        //         e.preventDefault()
+        //     });
+        //     this.mousetrap.bind(['command+f'], function (e) {
+        //         self.searchCM();
+        //         e.preventDefault()
+        //     });
+        // }
+        // else {
+        //     CodeMirror.keyMap["default"]["Ctrl-S"] = function () {self.props.saveMe()};
+        //
+        //     this.mousetrap.bind(['ctrl+l'], function (e) {
+        //         // self.loadModule();
+        //         e.preventDefault()
+        //     });
+        //     this.mousetrap.bind(['ctrl+f'], function (e) {
+        //         self.searchCM();
+        //         e.preventDefault()
+        //     });
+        // }
     }
 
     render() {
@@ -271,9 +273,7 @@ ReactCodemirror.propTypes = {
     force_sync_to_prop: PropTypes.bool,
     clear_force_sync: PropTypes.func,
     mode: PropTypes.string,
-    dark_theme: PropTypes.bool,
     saveMe: PropTypes.func,
-    readOnly: PropTypes.bool,
     first_line_number: PropTypes.number,
     extraKeys: PropTypes.object,
     setCMObject: PropTypes.func,
@@ -298,7 +298,6 @@ ReactCodemirror.defaultProps = {
     sync_to_prop: false,
     force_sync_to_prop: false,
     clear_force_sync: null,
-    dark_theme: false,
     mode: "python",
     readOnly: false,
     extraKeys: {},
@@ -306,3 +305,5 @@ ReactCodemirror.defaultProps = {
     code_container_ref: null,
     code_container_width: "100%"
 };
+
+ReactCodemirror.contextType = TacticContext;

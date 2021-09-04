@@ -7,6 +7,7 @@ import {GlyphButton, SelectList} from "./blueprint_react_widgets.js";
 import {postWithCallback} from "./communication_react.js"
 import {doFlash} from "./toaster.js"
 import {doBinding} from "./utilities_react.js";
+import {TacticContext} from "./tactic_context.js";
 
 export {ExportsViewer}
 
@@ -23,7 +24,7 @@ class TextIcon extends React.Component {
 }
 
 TextIcon.propTypes = {
-    the_text: PropTypes.strin
+    the_text: PropTypes.string
 };
 
 const export_icon_dict = {
@@ -214,28 +215,29 @@ class ExportsViewer extends React.Component {
     }
 
     componentDidUpdate () {
-        if (this.props.tsocket.counter != this.socket_counter) {
+        if (this.context.tsocket.counter != this.socket_counter) {
             this.initSocket();
         }
     }
 
     initSocket() {
-        this.props.tsocket.socket.off("export-viewer-message");
-        this.props.tsocket.socket.on("export-viewer-message", this._handleExportViewerMessage);
-        this.socket_counter = this.props.tsocket.counter;
+        this.context.tsocket.reAttachListener("export-viewer-message", this._handleExportViewerMessage);
+        this.socket_counter = this.context.tsocket.counter;
     }
 
     _handleExportViewerMessage(data) {
-        let self = this;
-        let handlerDict = {
-            update_exports_popup: ()=>self._updateExportsList(),
-            display_result: self._displayResult,
-            showMySpinner: self._showMySpinner,
-            stopMySpinner: self._stopMySpinner,
-            startMySpinner: self._startMySpinner,
-            got_export_info: self._gotExportInfo
-        };
-        handlerDict[data.export_viewer_message](data)
+        if (data.main_id == this.props.main_id) {
+            let self = this;
+            let handlerDict = {
+                update_exports_popup: () => self._updateExportsList(),
+                display_result: self._displayResult,
+                showMySpinner: self._showMySpinner,
+                stopMySpinner: self._stopMySpinner,
+                startMySpinner: self._startMySpinner,
+                got_export_info: self._gotExportInfo
+            };
+            handlerDict[data.export_viewer_message](data)
+        }
     }
 
     _handleMaxRowsChange(new_value){
@@ -247,7 +249,7 @@ class ExportsViewer extends React.Component {
         let self = this;
         postWithCallback(this.props.main_id, "get_full_pipe_dict", {}, function (data) {
             self.setState({pipe_dict: data.pipe_dict, pipe_dict_updated: true})
-        })
+        }, null, this.props.main_id)
     }
 
     _refresh() {
@@ -268,13 +270,13 @@ class ExportsViewer extends React.Component {
         if (this.state.key_list) {
             send_data.key = this.state.key_list_value
         }
-        postWithCallback(this.props.main_id, "evaluate_export", send_data);
+        postWithCallback(this.props.main_id, "evaluate_export", send_data, null,null, this.props.main_id);
         if (e) e.preventDefault();
     }
 
     _stopMe() {
         this._stopMySpinner();
-        postWithCallback(this.props.main_id, "stop_evaluate_export", {})
+        postWithCallback(this.props.main_id, "stop_evaluate_export", {}, null, null, this.props.main_id);
     }
 
     _showMySpinner() {
@@ -321,7 +323,7 @@ class ExportsViewer extends React.Component {
             selected_export: fullname,
             selected_export_tilename: tilename,
             selected_export_short_name: shortname});
-        postWithCallback(this.props.main_id, "get_export_info", {"export_name": fullname})
+        postWithCallback(this.props.main_id, "get_export_info", {"export_name": fullname}, null, null, this.props.main_id);
     }
 
     _handleKeyListChange(new_value) {
@@ -365,7 +367,7 @@ class ExportsViewer extends React.Component {
             if (!data.success) {
                 doFlash(data)
             }
-        });
+        }, null, this.props.main_id);
     }
 
     render () {
@@ -471,7 +473,6 @@ ExportsViewer.propTypes = {
     console_is_shrunk: PropTypes.bool,
     console_is_zoomed: PropTypes.bool,
     setUpdate: PropTypes.func,
-    tsocket:PropTypes.object,
     style: PropTypes.object
 };
 
@@ -479,4 +480,5 @@ ExportsViewer.defaultProps = {
     style: {}
 };
 
+ExportsViewer.contextType = TacticContext;
 
