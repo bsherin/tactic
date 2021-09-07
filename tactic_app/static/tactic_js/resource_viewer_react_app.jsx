@@ -22,11 +22,11 @@ export {ResourceViewerApp, ResourceViewerSocket, copyToLibrary, sendToRepository
 
 class ResourceViewerSocket extends TacticSocket {
     initialize_socket_stuff(reconnect=false) {
+        if (reconnect) {
+            this.socket.emit('join', {"room": this.extra_args.resource_viewer_id})
+        }
         if (!window.in_context) {
             this.socket.emit('join', {"room": window.user_id});
-            this.attachListener("doFlash", function (data) {
-                doFlash(data)
-            });
         }
     }
 }
@@ -72,6 +72,9 @@ class ResourceViewerApp extends React.Component {
                 if (!(data["originator"] == props.resource_viewer_id)) {
                     window.close()
                 }
+            });
+            context.tsocket.attachListener("doFlash", function (data) {
+                doFlash(data)
             });
         }
         doBinding(this);

@@ -144,10 +144,9 @@ function withStatus(WrappedComponent) {
       }
     }, {
       key: "componentDidUpdate",
-      value: function componentDidUpdate() {
-        if (this.props.tsocket && this.props.tsocket.counter != this.props.tsocket.socket_counter) {
-          this.initSocket();
-        }
+      value: function componentDidUpdate() {// if (this.props.tsocket && (this.props.tsocket.counter != this.props.tsocket.socket_counter)) {
+        //     this.initSocket();
+        // }
       }
     }, {
       key: "initSocket",

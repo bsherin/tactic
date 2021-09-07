@@ -123,10 +123,9 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
     }
   }, {
     key: "componentDidUpdate",
-    value: function componentDidUpdate() {
-      if (this.context.tsocket.counter != this.socket_counter) {
-        this.initSocket();
-      }
+    value: function componentDidUpdate() {// if (this.context.tsocket.counter != this.socket_counter) {
+      //     this.initSocket();
+      // }
     }
   }, {
     key: "_handleTileSourceChange",

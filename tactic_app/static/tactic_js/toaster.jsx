@@ -99,9 +99,9 @@ function withStatus(WrappedComponent) {
         }
 
         componentDidUpdate () {
-            if (this.props.tsocket && (this.props.tsocket.counter != this.props.tsocket.socket_counter)) {
-                this.initSocket();
-            }
+            // if (this.props.tsocket && (this.props.tsocket.counter != this.props.tsocket.socket_counter)) {
+            //     this.initSocket();
+            // }
         }
 
         initSocket() {

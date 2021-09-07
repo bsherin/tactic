@@ -22,7 +22,7 @@ function withErrorDrawer(WrappedComponent, title=null, position="right", size="3
                 position: position,
                 goToLineNumber: null
             };
-            this.socket_counter = null
+            this.socket_counter = null;
         }
 
         componentDidMount() {
@@ -32,9 +32,9 @@ function withErrorDrawer(WrappedComponent, title=null, position="right", size="3
         }
 
         componentDidUpdate () {
-            if (this.props.tsocket && (this.props.tsocket.counter != this.socket_counter)) {
-                this.initSocket();
-            }
+            // if (this.props.tsocket && (this.props.tsocket.counter != this.socket_counter)) {
+            //     this.initSocket();
+            // }
         }
 
         initSocket() {
@@ -42,7 +42,7 @@ function withErrorDrawer(WrappedComponent, title=null, position="right", size="3
             this.props.tsocket.attachListener('open-error-drawer', this._open);
             this.props.tsocket.attachListener('add-error-drawer-entry', this._addEntry);
             this.props.tsocket.attachListener("clear-error-drawer", this._clearAll);
-            this.socket_counter = this.props.tsocket.counter
+            // this.socket_counter = this.props.tsocket.counter
         }
 
         _close(data) {

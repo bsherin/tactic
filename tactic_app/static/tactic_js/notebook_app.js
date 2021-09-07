@@ -101,18 +101,16 @@ var MainTacticSocket = /*#__PURE__*/function (_TacticSocket) {
     key: "initialize_socket_stuff",
     value: function initialize_socket_stuff() {
       var reconnect = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-      this.attachListener("window-open", function (data) {
-        window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
-      });
+
+      if (reconnect) {
+        this.socket.emit('join', {
+          "room": this.extra_args.main_id
+        });
+      }
+
       this.socket.emit('join', {
         "room": window.user_id
       });
-
-      if (!window.in_context) {
-        this.attachListener("doFlash", function (data) {
-          (0, _toaster.doFlash)(data);
-        });
-      }
     }
   }]);
 
@@ -152,10 +150,30 @@ function main_main() {
 function notebook_props(data, registerDirtyMethod, finalCallback) {
   ppi = (0, _utilities_react.get_ppi)();
   var main_id = data.main_id;
-  var tsocket = new MainTacticSocket("main", 5000);
+  var tsocket = new MainTacticSocket("main", 5000, {
+    main_id: main_id
+  });
   tsocket.attachListener('handle-callback', function (task_packet) {
     (0, _communication_react.handleCallback)(task_packet, main_id);
   });
+  tsocket.attachListener("window-open", function (data) {
+    window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
+  });
+  tsocket.attachListener('forcedisconnect', function () {
+    tsocket.socket.disconnect();
+  });
+
+  if (!window.in_context) {
+    tsocket.attachListener("doFlash", function (data) {
+      (0, _toaster.doFlash)(data);
+    });
+    tsocket.attachListener('close-user-windows', function (data) {
+      if (!(data["originator"] == main_id)) {
+        window.close();
+      }
+    });
+  }
+
   tsocket.socket.on('finish-post-load', _finish_post_load_in_context);
 
   function readyListener() {
@@ -269,15 +287,6 @@ var NotebookApp = /*#__PURE__*/function (_React$Component) {
 
     _this = _super2.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
-
-    if (!props.controlled) {
-      props.tsocket.attachListener('close-user-windows', function (data) {
-        if (!(data["originator"] == props.main_id)) {
-          window.close();
-        }
-      });
-    }
-
     _this.last_save = {};
     _this.main_outer_ref = /*#__PURE__*/_react["default"].createRef();
     _this.socket_counter = null;
@@ -405,10 +414,10 @@ var NotebookApp = /*#__PURE__*/function (_React$Component) {
     key: "initSocket",
     value: function initSocket() {
       var self = this; // this.props.tsocket.socket.emit('join-main', {"room": this.props.main_id, "user_id": window.user_id});
+      // this.props.tsocket.attachListener('forcedisconnect', function() {
+      //     self.props.tsocket.socket.disconnect()
+      // });
 
-      this.props.tsocket.attachListener('forcedisconnect', function () {
-        self.props.tsocket.socket.disconnect();
-      });
       this.socket_counter = this.props.tsocket.counter;
     }
   }, {

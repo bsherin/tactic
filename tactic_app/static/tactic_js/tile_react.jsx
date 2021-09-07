@@ -61,9 +61,9 @@ class TileContainer extends React.Component {
     }
 
     componentDidUpdate () {
-        if (this.context.tsocket.counter != this.socket_counter) {
-            this.initSocket();
-        }
+        // if (this.context.tsocket.counter != this.socket_counter) {
+        //     this.initSocket();
+        // }
     }
 
     _handleTileSourceChange(data) {

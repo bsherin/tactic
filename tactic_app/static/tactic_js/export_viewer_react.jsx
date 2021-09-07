@@ -187,8 +187,8 @@ ExportButtonList.propTypes = {
 };
 
 class ExportsViewer extends React.Component {
-    constructor(props) {
-        super(props);
+    constructor(props, context) {
+        super(props, context);
         doBinding(this);
         this.header_ref = React.createRef();
         this.footer_ref = React.createRef();
@@ -208,6 +208,7 @@ class ExportsViewer extends React.Component {
             pipe_dict: {},
         };
         this.socket_counter = null;
+        context.tsocket.attachListener("export-viewer-message", this._handleExportViewerMessage);
     }
 
     componentDidMount(){
@@ -217,14 +218,14 @@ class ExportsViewer extends React.Component {
     }
 
     componentDidUpdate () {
-        if (this.context.tsocket.counter != this.socket_counter) {
-            this.initSocket();
-        }
+        // if (this.context.tsocket.counter != this.socket_counter) {
+        //     this.initSocket();
+        // }
     }
 
     initSocket() {
-        this.context.tsocket.attachListener("export-viewer-message", this._handleExportViewerMessage);
-        this.socket_counter = this.context.tsocket.counter;
+        // this.context.tsocket.attachListener("export-viewer-message", this._handleExportViewerMessage);
+        // this.socket_counter = this.context.tsocket.counter;
     }
 
     _handleExportViewerMessage(data) {

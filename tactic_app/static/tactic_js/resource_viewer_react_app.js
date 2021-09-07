@@ -81,12 +81,15 @@ var ResourceViewerSocket = /*#__PURE__*/function (_TacticSocket) {
     value: function initialize_socket_stuff() {
       var reconnect = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
 
+      if (reconnect) {
+        this.socket.emit('join', {
+          "room": this.extra_args.resource_viewer_id
+        });
+      }
+
       if (!window.in_context) {
         this.socket.emit('join', {
           "room": window.user_id
-        });
-        this.attachListener("doFlash", function (data) {
-          (0, _toaster.doFlash)(data);
         });
       }
     }
@@ -150,6 +153,9 @@ var ResourceViewerApp = /*#__PURE__*/function (_React$Component) {
         if (!(data["originator"] == props.resource_viewer_id)) {
           window.close();
         }
+      });
+      context.tsocket.attachListener("doFlash", function (data) {
+        (0, _toaster.doFlash)(data);
       });
     }
 

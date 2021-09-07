@@ -100,7 +100,9 @@ var controllable_props = ["resource_name", "usable_height", "usable_width"];
 
 function module_viewer_props(data, registerDirtyMethod, finalCallback) {
   var resource_viewer_id = (0, _utilities_react.guid)();
-  var tsocket = new _resource_viewer_react_app.ResourceViewerSocket("main", 5000);
+  var tsocket = new _resource_viewer_react_app.ResourceViewerSocket("main", 5000, {
+    resource_viewer_id: resource_viewer_id
+  });
   finalCallback({
     resource_viewer_id: resource_viewer_id,
     tsocket: tsocket,

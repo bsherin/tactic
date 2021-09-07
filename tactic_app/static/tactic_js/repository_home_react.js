@@ -92,7 +92,7 @@ var tsocket;
 function _repository_home_main() {
   window.library_id = (0, _utilities_react2.guid)();
   tsocket = new LibraryTacticSocket("library", 5000, {
-    library_id: library_id
+    library_id: window.library_id
   });
   var RepositoryHomeAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(RepositoryHomeApp));
   var domContainer = document.querySelector('#library-home-root');
@@ -105,6 +105,23 @@ function _repository_home_main() {
 }
 
 function repository_props() {
+  if (!window.in_context) {
+    this.attachListener("window-open", function (data) {
+      return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
+    });
+    this.attachListener('handle-callback', function (task_packet) {
+      (0, _communication_react.handleCallback)(task_packet, self.extra_args.library_id);
+    });
+    this.attachListener("doFlash", function (data) {
+      (0, _toaster.doFlash)(data);
+    });
+    this.attachListener('close-user-windows', function (data) {
+      if (!(data["originator"] == window.library_id)) {
+        window.close();
+      }
+    });
+  }
+
   return {
     library_id: (0, _utilities_react2.guid)()
   };
@@ -125,23 +142,16 @@ var LibraryTacticSocket = /*#__PURE__*/function (_TacticSocket) {
     key: "initialize_socket_stuff",
     value: function initialize_socket_stuff() {
       var reconnect = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-      this.socket.emit('join', {
-        "room": window.user_id
-      });
 
-      if (!window.in_context) {
-        this.attachListener("window-open", function (data) {
-          return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
-        });
-        this.attachListener('handle-callback', function (task_packet) {
-          (0, _communication_react.handleCallback)(task_packet, self.extra_args.library_id);
-        });
-        this.attachListener("doFlash", function (data) {
-          (0, _toaster.doFlash)(data);
+      if (reconnect) {
+        this.socket.emit('join', {
+          "room": window.library_id
         });
       }
 
-      this.attachListener('doflash', _toaster.doFlash);
+      this.socket.emit('join', {
+        "room": window.user_id
+      });
     }
   }]);
 
@@ -162,18 +172,7 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
     _classCallCheck(this, RepositoryHomeApp);
 
     _this = _super2.call(this, props, context);
-
-    _this.attachListener('close-user-windows', function (data) {
-      if (!(data["originator"] == props.library_id)) {
-        window.close();
-      }
-    });
-
     var tsocket = props.controlled ? context.tsocket : props.tsocket;
-    tsocket.socket.emit('join', {
-      "user_id": window.user_id,
-      "room": props.library_id
-    });
     _this.state = {
       selected_tab_id: "collections-pane",
       pane_states: {}

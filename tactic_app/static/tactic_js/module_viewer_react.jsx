@@ -46,7 +46,7 @@ const controllable_props = ["resource_name", "usable_height", "usable_width"];
 
 function module_viewer_props(data, registerDirtyMethod, finalCallback) {
     let resource_viewer_id = guid();
-    var tsocket = new ResourceViewerSocket("main", 5000);
+    var tsocket = new ResourceViewerSocket("main", 5000, {resource_viewer_id: resource_viewer_id});
     finalCallback({
         resource_viewer_id: resource_viewer_id,
         tsocket: tsocket,

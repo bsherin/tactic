@@ -48,6 +48,12 @@ class TacticSocket {
         }
     }
 
+    restoreListeners() {
+        for (let event in this.listeners) {
+            this.attachListener(event, this.listeners[event])
+        }
+    }
+
     watchForDisconnect() {
         let self = this;
         this.attachListener("disconnect", function () {
@@ -63,7 +69,8 @@ class TacticSocket {
             clearInterval(this.recInterval);
             this.counter += 1;
             this.initialize_socket_stuff(true);
-            this.watchForDisconnect();
+            this.restoreListeners();
+            // this.watchForDisconnect();
             doFlash({"message": "reconnected to server", timeout: null, "is_reconnect_message": true})
         }
         else {
