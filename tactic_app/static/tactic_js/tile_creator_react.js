@@ -115,14 +115,15 @@ var CreatorViewerSocket = /*#__PURE__*/function (_TacticSocket) {
     value: function initialize_socket_stuff() {
       var reconnect = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
 
-      if (!window.in_context) {
+      if (reconnect) {
         this.socket.emit('join', {
-          "room": window.user_id
-        });
-        this.attachListener("doFlash", function (data) {
-          (0, _toaster.doFlash)(data);
+          "room": this.extra_args.module_viewer_id
         });
       }
+
+      this.socket.emit('join', {
+        "room": window.user_id
+      });
     }
   }]);
 
@@ -152,16 +153,24 @@ function tile_creator_main() {
 }
 
 function creator_props(data, registerDirtyMethod, finalCallback) {
-  var tsocket = new CreatorViewerSocket("main", 5000);
   var mdata = data.mdata;
   var split_tags = mdata.tags == "" ? [] : mdata.tags.split(" ");
   var module_name = data.resource_name;
   var module_viewer_id = data.module_viewer_id;
   window.name = module_viewer_id;
+  var tsocket = new CreatorViewerSocket("main", 5000, {
+    module_viewer_id: module_viewer_id
+  });
   var tile_collection_name = data.tile_collection_name;
   tsocket.attachListener('handle-callback', function (task_packet) {
     (0, _communication_react.handleCallback)(task_packet, module_viewer_id);
   });
+
+  if (!window.in_context) {
+    tsocket.attachListener("doFlash", function (data) {
+      (0, _toaster.doFlash)(data);
+    });
+  }
 
   function readyListener() {
     _everyone_ready_in_context(finalCallback);
@@ -353,6 +362,11 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       });
     }
 
+    props.tsocket.attachListener('focus-me', function (data) {
+      window.focus();
+
+      _this._selectLineNumber(data.line_number);
+    });
     _this.top_ref = /*#__PURE__*/_react["default"].createRef();
     _this.options_ref = /*#__PURE__*/_react["default"].createRef();
     _this.left_div_ref = /*#__PURE__*/_react["default"].createRef();
@@ -843,8 +857,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
 
       this._update_saved_state();
 
-      this.props.stopSpinner();
-      this.initSocket();
+      this.props.stopSpinner(); // this.initSocket();
 
       if (!this.props.controlled) {
         document.title = this.state.resource_name;
@@ -856,11 +869,10 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate() {
-      this._goToLineNumber();
+      this._goToLineNumber(); // if (this.props.tsocket.counter != this.socket_counter) {
+      //     this.initSocket();
+      // }
 
-      if (this.props.tsocket.counter != this.socket_counter) {
-        this.initSocket();
-      }
     }
   }, {
     key: "componentWillUnmount",
@@ -878,15 +890,11 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     }
   }, {
     key: "initSocket",
-    value: function initSocket() {
-      var _this3 = this;
-
-      this.props.tsocket.attachListener('focus-me', function (data) {
-        window.focus();
-
-        _this3._selectLineNumber(data.line_number);
-      });
-      this.socket_counter = this.props.tsocket.counter;
+    value: function initSocket() {// this.props.tsocket.attachListener('focus-me', (data)=>{
+      //     window.focus();
+      //     this._selectLineNumber(data.line_number)
+      // });
+      // this.socket_counter = this.props.tsocket.counter
     } // This toggles methodsTabRefreshRequired back and forth to force a refresh
 
   }, {
@@ -901,7 +909,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_handleTabSelect",
     value: function _handleTabSelect(newTabId, prevTabid, event) {
-      var _this4 = this;
+      var _this3 = this;
 
       this._refreshMethodsIfNecessary(newTabId); // if (this.state.foregrounded_panes[newTabId]) return;
 
@@ -912,7 +920,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         selectedTabId: newTabId,
         foregrounded_panes: new_fg
       }, function () {
-        _this4._update_window_dimensions();
+        _this3._update_window_dimensions();
       });
     }
   }, {

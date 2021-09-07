@@ -44,13 +44,12 @@ let ppi;
 class MainTacticSocket extends TacticSocket {
 
     initialize_socket_stuff(reconnect=false) {
+        if (reconnect) {
+            this.socket.emit('join', {"room": this.extra_args.main_id})
+        }
 
         this.socket.emit('join', {"room": window.user_id});
-        if (!window.in_context) {
-            this.attachListener("doFlash", function(data) {
-                doFlash(data)
-                });
-        }
+
     }
 }
 
@@ -83,8 +82,15 @@ function main_props(data, registerDirtyMethod, finalCallback) {
     let main_id = data.main_id;
     let initial_tile_types;
 
-    var tsocket = new MainTacticSocket("main", 5000);
+    var tsocket = new MainTacticSocket("main", 5000, {main_id: main_id});
     tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, main_id)});
+    if (!window.in_context) {
+        tsocket.attachListener("doFlash", function(data) {
+            doFlash(data)
+            });
+    }
+
+
     tsocket.socket.on('finish-post-load', _finish_post_load_in_context);
 
     function readyListener() {
@@ -96,6 +102,17 @@ function main_props(data, registerDirtyMethod, finalCallback) {
             tsocket.socket.emit('client-ready', {"room": main_id, "user_id": window.user_id,
                 "participant": "client", "rb_id": data.ready_block_id, "main_id": main_id})
     });
+    if (!window.in_context) {
+        tsocket.attachListener('close-user-windows', function(data){
+            if (!(data["originator"] == main_id)) {
+                window.close()
+            }
+        });
+        tsocket.attachListener("notebook-open", function(data) {
+            window.open($SCRIPT_ROOT + "/new_notebook_with_data/" + data.temp_data_id)
+        });
+    }
+
     window.addEventListener("unload", function sendRemove(event) {
         navigator.sendBeacon("/remove_mainwindow", JSON.stringify({"main_id": main_id}));
     });
@@ -196,24 +213,6 @@ class MainApp extends React.Component {
     constructor (props) {
         super(props);
         doBinding(this);
-        if (!props.controlled) {
-            props.tsocket.attachListener('close-user-windows', function(data){
-                if (!(data["originator"] == props.main_id)) {
-                    window.close()
-                }
-            });
-            props.tsocket.attachListener("notebook-open", function(data) {
-                window.open($SCRIPT_ROOT + "/new_notebook_with_data/" + data.temp_data_id)
-            });
-        }
-        else {
-            props.tsocket.attachListener("notebook-open", function(data) {
-                const the_view = `${$SCRIPT_ROOT}/new_notebook_in_context`;
-                postAjaxPromise(the_view, {temp_data_id: data.temp_data_id, resource_name: ""})
-                    .then(self.props.handleCreateViewer)
-                    .catch(doFlash);
-                })
-        }
 
         this.table_container_ref = React.createRef();
         this.tile_div_ref = React.createRef();
@@ -272,8 +271,22 @@ class MainApp extends React.Component {
         }
         this.state= Object.assign(base_state, additions);
         let self = this;
+        props.tsocket.attachListener('forcedisconnect', function() {
+            self.props.tsocket.socket.disconnect()
+        });
+
+        props.tsocket.attachListener('table-message', this._handleTableMessage);
+        props.tsocket.attachListener("update-menus", this._update_menus_listener);
+        props.tsocket.attachListener('change-doc', this._change_doc_listener);
+        props.tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, this.props.main_id)});
         if (this.props.controlled) {
-            props.registerDirtyMethod(this._dirty)
+            props.registerDirtyMethod(this._dirty);
+            props.tsocket.attachListener("notebook-open", function(data) {
+                const the_view = `${$SCRIPT_ROOT}/new_notebook_in_context`;
+                postAjaxPromise(the_view, {temp_data_id: data.temp_data_id, resource_name: ""})
+                    .then(self.props.handleCreateViewer)
+                    .catch(doFlash);
+                })
         }
         else {
             this.state.dark_theme = props.initial_theme === "dark";
@@ -333,7 +346,7 @@ class MainApp extends React.Component {
     componentDidMount() {
         this.setState({"mounted": true});
 
-        this.initSocket();
+        // this.initSocket();
         this._updateLastSave();
 
         if (!this.props.controlled) {
@@ -345,9 +358,9 @@ class MainApp extends React.Component {
     }
 
     componentDidUpdate () {
-        if (this.props.tsocket.counter != this.socket_counter) {
-            this.initSocket();
-        }
+        // if (this.props.tsocket.counter != this.socket_counter) {
+        //     this.initSocket();
+        // }
     }
 
     componentWillUnmount() {
@@ -382,16 +395,16 @@ class MainApp extends React.Component {
     initSocket() {
         let self = this;
         // this.props.tsocket.socket.emit('join-main', {"room": this.props.main_id, "user_id": window.user_id});
-        this.props.tsocket.attachListener('forcedisconnect', function() {
-            self.props.tsocket.socket.disconnect()
-        });
-
-
-        this.props.tsocket.attachListener('table-message', this._handleTableMessage);
-        this.props.tsocket.attachListener("update-menus", this._update_menus_listener);
-        this.props.tsocket.attachListener('change-doc', this._change_doc_listener);
-        this.props.tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, this.props.main_id)});
-        this.socket_counter = this.props.tsocket.counter
+        // this.props.tsocket.attachListener('forcedisconnect', function() {
+        //     self.props.tsocket.socket.disconnect()
+        // });
+        //
+        //
+        // this.props.tsocket.attachListener('table-message', this._handleTableMessage);
+        // this.props.tsocket.attachListener("update-menus", this._update_menus_listener);
+        // this.props.tsocket.attachListener('change-doc', this._change_doc_listener);
+        // this.props.tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, this.props.main_id)});
+        // this.socket_counter = this.props.tsocket.counter
     }
 
     _setTheme(dark_theme) {

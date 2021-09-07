@@ -35,7 +35,7 @@ function _repository_home_main () {
     tsocket = new LibraryTacticSocket(
         "library",
         5000,
-        {library_id: library_id}
+        {library_id: window.library_id}
     );
      let RepositoryHomeAppPlus = withErrorDrawer(withStatus(RepositoryHomeApp));
     let domContainer = document.querySelector('#library-home-root');
@@ -47,22 +47,28 @@ function _repository_home_main () {
 }
 
 function repository_props() {
+    if (!window.in_context) {
+        this.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
+        this.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, self.extra_args.library_id)});
+        this.attachListener("doFlash", function(data) {
+            doFlash(data)
+        });
+        this.attachListener('close-user-windows', (data) => {
+            if (!(data["originator"] == window.library_id)) {
+                window.close()
+            }
+        });
+    }
     return {library_id: guid()}
 }
 
 class LibraryTacticSocket extends TacticSocket {
 
     initialize_socket_stuff(reconnect=false) {
-        this.socket.emit('join', {"room": window.user_id});
-        if (!window.in_context) {
-            this.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
-            this.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, self.extra_args.library_id)});
-            this.attachListener("doFlash", function(data) {
-                doFlash(data)
-            });
+        if (reconnect) {
+            this.socket.emit('join', {"room": window.library_id});
         }
-
-        this.attachListener('doflash', doFlash);
+        this.socket.emit('join', {"room": window.user_id});
     }
 }
 
@@ -73,13 +79,9 @@ class RepositoryHomeApp extends React.Component {
 
     constructor(props, context) {
         super(props, context);
-        this.attachListener('close-user-windows', (data) => {
-            if (!(data["originator"] == props.library_id)) {
-                window.close()
-            }
-        });
+
         let tsocket = props.controlled ? context.tsocket : props.tsocket;
-        tsocket.socket.emit('join', {"user_id":  window.user_id, "room": props.library_id});
+
         this.state = {
             selected_tab_id: "collections-pane",
             pane_states: {}

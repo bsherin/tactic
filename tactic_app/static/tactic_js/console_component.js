@@ -91,12 +91,12 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
 
   var _super = _createSuper(RawConsoleComponent);
 
-  function RawConsoleComponent(props) {
+  function RawConsoleComponent(props, context) {
     var _this;
 
     _classCallCheck(this, RawConsoleComponent);
 
-    _this = _super.call(this, props);
+    _this = _super.call(this, props, context);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this), "_", RawConsoleComponent.prototype);
     _this.header_ref = /*#__PURE__*/_react["default"].createRef();
     _this.body_ref = /*#__PURE__*/_react["default"].createRef();
@@ -112,6 +112,35 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
     };
     _this.pseudo_tile_id = null;
     _this.socket_counter = null;
+
+    var self = _assertThisInitialized(_this);
+
+    function _handleConsoleMessage(data) {
+      if (data.main_id == self.props.main_id) {
+        var handlerDict = {
+          consoleLog: function consoleLog(data) {
+            return self._addConsoleEntry(data.message, data.force_open);
+          },
+          stopConsoleSpinner: function stopConsoleSpinner(data) {
+            return self._stopConsoleSpinner(data);
+          },
+          consoleCodePrint: function consoleCodePrint(data) {
+            return self._appendConsoleItemOutput(data);
+          },
+          consoleCodeRun: function consoleCodeRun(data) {
+            return self._startSpinner(data);
+          },
+          updateLog: function updateLog(data) {
+            return self._addToLog(data.new_line);
+          }
+        };
+        handlerDict[data.console_message](data);
+      }
+    } // We have to careful to get the very same instance of the listerner function
+    // That requires storing it outside of this component since the console can be unmounted
+
+
+    context.tsocket.attachListener("console-message", _handleConsoleMessage);
     return _this;
   }
 
@@ -136,10 +165,9 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate() {
-      if (this.context.tsocket.counter != this.socket_counter) {
-        this.initSocket();
-      }
-
+      // if (this.context.tsocket.counter != this.socket_counter) {
+      //     this.initSocket();
+      // }
       if (this.state.show_console_error_log) {
         if (this.body_ref && this.body_ref.current) {
           var el = this.body_ref.current; // In the computation below, note that the 500 comes from the height of the padding-div
@@ -150,40 +178,30 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
     }
   }, {
     key: "initSocket",
-    value: function initSocket() {
-      // It is necessary to delete and remake these callbacks
+    value: function initSocket() {// It is necessary to delete and remake these callbacks
       // If I dont delete I end up with duplicatesSelectList
       // If I just keep the original one then I end up something with a handler linked
       // to an earlier state
-      var self = this;
-
-      function _handleConsoleMessage(data) {
-        if (data.main_id == self.props.main_id) {
-          var handlerDict = {
-            consoleLog: function consoleLog(data) {
-              return self._addConsoleEntry(data.message, data.force_open);
-            },
-            stopConsoleSpinner: function stopConsoleSpinner(data) {
-              return self._stopConsoleSpinner(data);
-            },
-            consoleCodePrint: function consoleCodePrint(data) {
-              return self._appendConsoleItemOutput(data);
-            },
-            consoleCodeRun: function consoleCodeRun(data) {
-              return self._startSpinner(data);
-            },
-            updateLog: function updateLog(data) {
-              return self._addToLog(data.new_line);
-            }
-          };
-          handlerDict[data.console_message](data);
-        }
-      } // We have to careful to get the very same instance of the listerner function
-      // That requires storing it outside of this component since the console can be unmounted
-
-
-      this.context.tsocket.attachListener("console-message", _handleConsoleMessage);
-      this.socket_counter = this.context.tsocket.counter;
+      // let self = this;
+      //
+      // function _handleConsoleMessage(data) {
+      //     if (data.main_id == self.props.main_id) {
+      //         let handlerDict = {
+      //             consoleLog: (data) => self._addConsoleEntry(data.message, data.force_open),
+      //             stopConsoleSpinner: (data) => self._stopConsoleSpinner(data),
+      //             consoleCodePrint: (data) => self._appendConsoleItemOutput(data),
+      //             consoleCodeRun: (data) => self._startSpinner(data),
+      //             updateLog: (data) => self._addToLog(data.new_line)
+      //         };
+      //         handlerDict[data.console_message](data)
+      //     }
+      // }
+      //
+      // // We have to careful to get the very same instance of the listerner function
+      // // That requires storing it outside of this component since the console can be unmounted
+      //
+      // this.context.tsocket.attachListener("console-message", _handleConsoleMessage);
+      // this.socket_counter = this.context.tsocket.counter
     }
   }, {
     key: "_createTextEntry",

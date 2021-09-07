@@ -49,15 +49,7 @@ class ContextTacticSocket extends TacticSocket {
     initialize_socket_stuff(reconnect=false) {
         let self = this;
         this.socket.emit('join', {room: window.user_id});
-        this.socket.emit('join', {room: window.context_id, "user_id": window.user_id});
-        this.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
-        this.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, window.context_id)});
-        this.attachListener('close-user-windows', data => {
-            if (!(data["originator"] === window.context_id)) {
-                window.close()
-            }
-        });
-        this.attachListener('doflash', doFlash);
+        this.socket.emit('join', {room: window.context_id});
     }
 }
 window.context_id = guid();
@@ -65,6 +57,16 @@ window.main_id = window.context_id;
 
 let tsocket = new ContextTacticSocket("main",
     5000);
+tsocket.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
+tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, window.context_id)});
+tsocket.attachListener('close-user-windows', data => {
+    if (!(data["originator"] === window.context_id)) {
+        window.close()
+    }
+});
+tsocket.attachListener('doflash', doFlash);
+tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, window.context_id)});
+
 const LibraryHomeAppPlus = withErrorDrawer(withStatus(LibraryHomeApp));
 // const RepositoryHomeAppPlus = withErrorDrawer(withStatus(RepositoryHomeApp));
 const ListViewerAppPlus = withStatus(ListViewerApp);
@@ -175,13 +177,14 @@ class ContextApp extends React.Component {
                 e.preventDefault();
                 e.returnValue = 'Are you sure you want to close? All changes will be lost.'
         });
+        this.props.tsocket.attachListener("create-viewer", this._handleCreateViewer);
         this._update_window_dimensions(null);
     }
 
     componentDidUpdate() {
-        if (this.props.tsocket.counter != this.socket_counter) {
-            this.initSocket();
-        }
+        // if (this.props.tsocket.counter != this.socket_counter) {
+        //     this.initSocket();
+        // }
     }
 
     initSocket() {
@@ -189,8 +192,8 @@ class ContextApp extends React.Component {
          // If I dont delete I end up with duplicatesSelectList
          // If I just keep the original one then I end up something with a handler linked
          // to an earlier state
-         this.props.tsocket.attachListener("create-viewer", this._handleCreateViewer);
-         this.props.tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, window.context_id)});
+
+
          this.socket_counter = this.props.tsocket.counter
      }
 
@@ -555,7 +558,7 @@ class ContextApp extends React.Component {
             if (tab_entry.title.length > 20) {
                 visible_title = (
                     <Tooltip content={tab_entry.title} hoverOpenDelay={1000}>
-                        {tab_entry.title.slice(0, 13) + "…"}
+                        {tab_entry.title.slice(0, 17) + "…"}
                     </Tooltip>
                 )
             }

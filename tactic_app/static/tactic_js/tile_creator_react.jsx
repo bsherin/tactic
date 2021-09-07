@@ -37,13 +37,11 @@ const MARGIN_SIZE = 17;
 class CreatorViewerSocket extends TacticSocket {
 
     initialize_socket_stuff (reconnect=false) {
-
-        if (!window.in_context) {
-            this.socket.emit('join', {"room": window.user_id});
-            this.attachListener("doFlash", function(data) {
-                doFlash(data)
-            });
+        if (reconnect) {
+            this.socket.emit('join', {"room": this.extra_args.module_viewer_id})
         }
+        this.socket.emit('join', {"room": window.user_id});
+
     }
 }
 
@@ -66,15 +64,21 @@ function tile_creator_main() {
 }
 
 function creator_props(data, registerDirtyMethod, finalCallback) {
-    var tsocket = new CreatorViewerSocket("main", 5000);
+
 
     let mdata = data.mdata;
     let split_tags = mdata.tags == "" ? [] : mdata.tags.split(" ");
     let module_name = data.resource_name;
     let module_viewer_id = data.module_viewer_id;
     window.name = module_viewer_id;
+    var tsocket = new CreatorViewerSocket("main", 5000, {module_viewer_id: module_viewer_id});
     let tile_collection_name = data.tile_collection_name;
     tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, module_viewer_id)});
+    if (!window.in_context) {
+        tsocket.attachListener("doFlash", function(data) {
+            doFlash(data)
+        });
+    }
     function readyListener() {
         _everyone_ready_in_context(finalCallback)
     }
@@ -224,6 +228,10 @@ class CreatorApp extends React.Component {
                 }
             });
         }
+        props.tsocket.attachListener('focus-me', (data)=>{
+            window.focus();
+            this._selectLineNumber(data.line_number)
+        });
         this.top_ref = React.createRef();
         this.options_ref = React.createRef();
         this.left_div_ref = React.createRef();
@@ -597,7 +605,7 @@ class CreatorApp extends React.Component {
         this.props.setGoToLineNumber(this._selectLineNumber);
         this._update_saved_state();
         this.props.stopSpinner();
-        this.initSocket();
+        // this.initSocket();
         if (!this.props.controlled) {
             document.title = this.state.resource_name;
             window.addEventListener("resize", this._update_window_dimensions);
@@ -608,9 +616,9 @@ class CreatorApp extends React.Component {
     componentDidUpdate() {
 
         this._goToLineNumber();
-        if (this.props.tsocket.counter != this.socket_counter) {
-            this.initSocket();
-        }
+        // if (this.props.tsocket.counter != this.socket_counter) {
+        //     this.initSocket();
+        // }
     }
 
     componentWillUnmount() {
@@ -623,11 +631,11 @@ class CreatorApp extends React.Component {
     }
     
     initSocket() {
-        this.props.tsocket.attachListener('focus-me', (data)=>{
-            window.focus();
-            this._selectLineNumber(data.line_number)
-        });
-        this.socket_counter = this.props.tsocket.counter
+        // this.props.tsocket.attachListener('focus-me', (data)=>{
+        //     window.focus();
+        //     this._selectLineNumber(data.line_number)
+        // });
+        // this.socket_counter = this.props.tsocket.counter
     }
 
     // This toggles methodsTabRefreshRequired back and forth to force a refresh

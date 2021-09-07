@@ -82,7 +82,7 @@ class CollectionManager(LibraryResourceManager):
             temp_data_id = request.json["temp_data_id"]
             the_data = read_temp_data(db, temp_data_id)
             main_id, rb_id = main_container_info.create_main_container("new_notebook",
-                                                                       the_data["user_id"],
+                                                                       user_obj.get_id(),
                                                                        user_obj.username)
         else:
             temp_data_id = ""

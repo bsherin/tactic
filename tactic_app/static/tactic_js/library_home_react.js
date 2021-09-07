@@ -103,18 +103,31 @@ function _library_home_main() {
 
 function library_props() {
   var library_id = (0, _utilities_react.guid)();
-  var tsocket = new LibraryTacticSocket("main", 5000);
+  var tsocket = new LibraryTacticSocket("main", 5000, {
+    extra_args: library_id
+  });
   tsocket.attachListener('handle-callback', function (task_packet) {
     (0, _communication_react.handleCallback)(task_packet, library_id);
   });
   tsocket.socket.emit('join', {
     "user_id": window.user_id,
-    "room": window.user_id
-  });
-  tsocket.socket.emit('join', {
-    "user_id": window.user_id,
     "room": library_id
   });
+
+  if (!window.in_context) {
+    tsocket.attachListener("window-open", function (data) {
+      return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
+    });
+    tsocket.attachListener("doFlash", function (data) {
+      (0, _toaster.doFlash)(data);
+    });
+    tsocket.attachListener('close-user-windows', function (data) {
+      if (!(data["originator"] == library_id)) {
+        window.close();
+      }
+    });
+  }
+
   return {
     library_id: library_id,
     tsocket: tsocket
@@ -136,16 +149,17 @@ var LibraryTacticSocket = /*#__PURE__*/function (_TacticSocket) {
     key: "initialize_socket_stuff",
     value: function initialize_socket_stuff() {
       var reconnect = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-      var self = this;
 
-      if (!window.in_context) {
-        this.attachListener("window-open", function (data) {
-          return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
-        });
-        this.attachListener("doFlash", function (data) {
-          (0, _toaster.doFlash)(data);
+      if (reconnect) {
+        this.socket.emit('join', {
+          "room": this.extra_args.library_id
         });
       }
+
+      this.socket.emit('join', {
+        "user_id": window.user_id,
+        "room": window.user_id
+      });
     }
   }]);
 
@@ -167,15 +181,6 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
     _classCallCheck(this, LibraryHomeApp);
 
     _this = _super2.call(this, props, context);
-
-    if (!props.controlled) {
-      props.tsocket.attachListener('close-user-windows', function (data) {
-        if (!(data["originator"] == props.library_id)) {
-          window.close();
-        }
-      });
-    }
-
     _this.state = {
       selected_tab_id: "collections-pane",
       pane_states: {}
@@ -986,8 +991,7 @@ var ProjectToolbar = /*#__PURE__*/function (_React$Component4) {
       if (window.in_context) {
         var the_view = "".concat($SCRIPT_ROOT, "/new_notebook_in_context");
         (0, _communication_react.postAjaxPromise)(the_view, {
-          resource_name: "",
-          temp_data_id: ""
+          resource_name: ""
         }).then(self.props.handleCreateViewer)["catch"](_toaster.doFlash);
       } else {
         window.open("".concat($SCRIPT_ROOT, "/new_notebook"));

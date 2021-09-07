@@ -160,12 +160,12 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
 
   var _super2 = _createSuper(LibraryPane);
 
-  function LibraryPane(props) {
+  function LibraryPane(props, context) {
     var _this2;
 
     _classCallCheck(this, LibraryPane);
 
-    _this2 = _super2.call(this, props);
+    _this2 = _super2.call(this, props, context);
     _this2.top_ref = /*#__PURE__*/_react["default"].createRef();
     _this2.table_ref = /*#__PURE__*/_react["default"].createRef();
     _this2.resizing = false;
@@ -184,25 +184,28 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     _this2.toolbarRef = null;
     _this2.previous_search_spec = null;
     _this2.socket_counter = null;
+
+    if (context.tsocket != null && !props.is_repository) {
+      context.tsocket.attachListener("update-".concat(_this2.props.res_type, "-selector-row"), _this2._handleRowUpdate);
+      context.tsocket.attachListener("refresh-".concat(_this2.props.res_type, "-selector"), _this2._refresh_func);
+    }
+
     return _this2;
   }
 
   _createClass(LibraryPane, [{
     key: "initSocket",
-    value: function initSocket() {
-      if (this.context.tsocket != null && !this.props.is_repository) {
-        this.context.tsocket.attachListener("update-".concat(this.props.res_type, "-selector-row"), this._handleRowUpdate);
-        this.context.tsocket.attachListener("refresh-".concat(this.props.res_type, "-selector"), this._refresh_func);
-      }
-
-      this.socket_counter = this.context.tsocket.counter;
+    value: function initSocket() {// if ((this.context.tsocket != null) && (!this.props.is_repository)) {
+      //     this.context.tsocket.attachListener(`update-${this.props.res_type}-selector-row`, this._handleRowUpdate);
+      //     this.context.tsocket.attachListener(`refresh-${this.props.res_type}-selector`, this._refresh_func);
+      // }
+      // this.socket_counter = this.context.tsocket.counter
     }
   }, {
     key: "componentDidUpdate",
-    value: function componentDidUpdate() {
-      if (this.context.tsocket.counter != this.socket_counter) {
-        this.initSocket();
-      }
+    value: function componentDidUpdate() {// if (this.context.tsocket.counter != this.socket_counter) {
+      //     this.initSocket();
+      // }
     }
   }, {
     key: "_sendContextMenuItems",
@@ -305,8 +308,8 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "componentDidMount",
     value: function componentDidMount() {
-      var self = this;
-      this.initSocket();
+      var self = this; // this.initSocket();
+
       this.setState({
         "mounted": true
       });

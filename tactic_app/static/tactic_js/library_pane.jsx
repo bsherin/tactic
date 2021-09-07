@@ -81,8 +81,8 @@ BodyMenu.propTypes = {
 
 class LibraryPane extends React.Component {
 
-    constructor(props) {
-        super(props);
+    constructor(props, context) {
+        super(props, context);
         this.top_ref = React.createRef();
         this.table_ref = React.createRef();
         this.resizing = false;
@@ -101,20 +101,24 @@ class LibraryPane extends React.Component {
         this.toolbarRef = null;
         this.previous_search_spec = null;
         this.socket_counter = null;
+        if ((context.tsocket != null) && (!props.is_repository)) {
+            context.tsocket.attachListener(`update-${this.props.res_type}-selector-row`, this._handleRowUpdate);
+            context.tsocket.attachListener(`refresh-${this.props.res_type}-selector`, this._refresh_func);
+        }
     }
 
     initSocket() {
-        if ((this.context.tsocket != null) && (!this.props.is_repository)) {
-            this.context.tsocket.attachListener(`update-${this.props.res_type}-selector-row`, this._handleRowUpdate);
-            this.context.tsocket.attachListener(`refresh-${this.props.res_type}-selector`, this._refresh_func);
-        }
-        this.socket_counter = this.context.tsocket.counter
+        // if ((this.context.tsocket != null) && (!this.props.is_repository)) {
+        //     this.context.tsocket.attachListener(`update-${this.props.res_type}-selector-row`, this._handleRowUpdate);
+        //     this.context.tsocket.attachListener(`refresh-${this.props.res_type}-selector`, this._refresh_func);
+        // }
+        // this.socket_counter = this.context.tsocket.counter
     }
 
     componentDidUpdate () {
-        if (this.context.tsocket.counter != this.socket_counter) {
-            this.initSocket();
-        }
+        // if (this.context.tsocket.counter != this.socket_counter) {
+        //     this.initSocket();
+        // }
     }
 
     _sendContextMenuItems(items) {
@@ -177,7 +181,7 @@ class LibraryPane extends React.Component {
 
     componentDidMount() {
         let self = this;
-        this.initSocket();
+        // this.initSocket();
         this.setState({"mounted": true});
         let path;
 

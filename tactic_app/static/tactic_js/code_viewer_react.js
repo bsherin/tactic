@@ -100,7 +100,9 @@ function code_viewer_main() {
 
 function code_viewer_props(data, registerDirtyMethod, finalCallback) {
   var resource_viewer_id = (0, _utilities_react2.guid)();
-  var tsocket = new _resource_viewer_react_app.ResourceViewerSocket("main", 5000);
+  var tsocket = new _resource_viewer_react_app.ResourceViewerSocket("main", 5000, {
+    resource_viewer_id: resource_viewer_id
+  });
   finalCallback({
     resource_viewer_id: resource_viewer_id,
     tsocket: tsocket,

@@ -33,15 +33,11 @@ export {notebook_props, NotebookApp}
 class MainTacticSocket extends TacticSocket {
 
     initialize_socket_stuff(reconnect=false) {
-        this.attachListener("window-open", data => {
-            window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`)
-        });
-        this.socket.emit('join', {"room": window.user_id});
-        if (!window.in_context) {
-            this.attachListener("doFlash", function(data) {
-                doFlash(data)
-                });
+        if (reconnect) {
+            this.socket.emit('join', {"room": this.extra_args.main_id})
         }
+        this.socket.emit('join', {"room": window.user_id});
+
     }
 }
 
@@ -77,8 +73,25 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
     ppi = get_ppi();
     let main_id = data.main_id;
 
-    var tsocket = new MainTacticSocket("main", 5000);
+    var tsocket = new MainTacticSocket("main", 5000, {main_id: main_id});
     tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, main_id)});
+    tsocket.attachListener("window-open", data => {
+            window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`)
+        });
+    tsocket.attachListener('forcedisconnect', function() {
+        tsocket.socket.disconnect()
+    });
+    if (!window.in_context) {
+        tsocket.attachListener("doFlash", function(data) {
+            doFlash(data)
+            });
+
+        tsocket.attachListener('close-user-windows', function(data){
+            if (!(data["originator"] == main_id)) {
+                window.close()
+            }
+        });
+    }
     tsocket.socket.on('finish-post-load', _finish_post_load_in_context);
 
     function readyListener() {
@@ -172,13 +185,6 @@ class NotebookApp extends React.Component {
     constructor (props) {
         super(props);
         doBinding(this);
-        if (!props.controlled) {
-            props.tsocket.attachListener('close-user-windows', function(data){
-                if (!(data["originator"] == props.main_id)) {
-                    window.close()
-                }
-            });
-        }
 
         this.last_save = {};
         this.main_outer_ref = React.createRef();
@@ -277,9 +283,9 @@ class NotebookApp extends React.Component {
     initSocket() {
         let self = this;
         // this.props.tsocket.socket.emit('join-main', {"room": this.props.main_id, "user_id": window.user_id});
-        this.props.tsocket.attachListener('forcedisconnect', function() {
-            self.props.tsocket.socket.disconnect()
-        });
+        // this.props.tsocket.attachListener('forcedisconnect', function() {
+        //     self.props.tsocket.socket.disconnect()
+        // });
 
         this.socket_counter = this.props.tsocket.counter
     }

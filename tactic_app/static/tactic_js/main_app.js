@@ -131,15 +131,16 @@ var MainTacticSocket = /*#__PURE__*/function (_TacticSocket) {
     key: "initialize_socket_stuff",
     value: function initialize_socket_stuff() {
       var reconnect = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+
+      if (reconnect) {
+        this.socket.emit('join', {
+          "room": this.extra_args.main_id
+        });
+      }
+
       this.socket.emit('join', {
         "room": window.user_id
       });
-
-      if (!window.in_context) {
-        this.attachListener("doFlash", function (data) {
-          (0, _toaster.doFlash)(data);
-        });
-      }
     }
   }]);
 
@@ -176,10 +177,19 @@ function main_props(data, registerDirtyMethod, finalCallback) {
   ppi = (0, _utilities_react.get_ppi)();
   var main_id = data.main_id;
   var initial_tile_types;
-  var tsocket = new MainTacticSocket("main", 5000);
+  var tsocket = new MainTacticSocket("main", 5000, {
+    main_id: main_id
+  });
   tsocket.attachListener('handle-callback', function (task_packet) {
     (0, _communication_react.handleCallback)(task_packet, main_id);
   });
+
+  if (!window.in_context) {
+    tsocket.attachListener("doFlash", function (data) {
+      (0, _toaster.doFlash)(data);
+    });
+  }
+
   tsocket.socket.on('finish-post-load', _finish_post_load_in_context);
 
   function readyListener() {
@@ -200,6 +210,18 @@ function main_props(data, registerDirtyMethod, finalCallback) {
       "main_id": main_id
     });
   });
+
+  if (!window.in_context) {
+    tsocket.attachListener('close-user-windows', function (data) {
+      if (!(data["originator"] == main_id)) {
+        window.close();
+      }
+    });
+    tsocket.attachListener("notebook-open", function (data) {
+      window.open($SCRIPT_ROOT + "/new_notebook_with_data/" + data.temp_data_id);
+    });
+  }
+
   window.addEventListener("unload", function sendRemove(event) {
     navigator.sendBeacon("/remove_mainwindow", JSON.stringify({
       "main_id": main_id
@@ -312,26 +334,6 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
 
     _this = _super2.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
-
-    if (!props.controlled) {
-      props.tsocket.attachListener('close-user-windows', function (data) {
-        if (!(data["originator"] == props.main_id)) {
-          window.close();
-        }
-      });
-      props.tsocket.attachListener("notebook-open", function (data) {
-        window.open($SCRIPT_ROOT + "/new_notebook_with_data/" + data.temp_data_id);
-      });
-    } else {
-      props.tsocket.attachListener("notebook-open", function (data) {
-        var the_view = "".concat($SCRIPT_ROOT, "/new_notebook_in_context");
-        (0, _communication_react.postAjaxPromise)(the_view, {
-          temp_data_id: data.temp_data_id,
-          resource_name: ""
-        }).then(self.props.handleCreateViewer)["catch"](_toaster.doFlash);
-      });
-    }
-
     _this.table_container_ref = /*#__PURE__*/_react["default"].createRef();
     _this.tile_div_ref = /*#__PURE__*/_react["default"].createRef();
     _this.tbody_ref = /*#__PURE__*/_react["default"].createRef();
@@ -393,8 +395,25 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
 
     var self = _assertThisInitialized(_this);
 
+    props.tsocket.attachListener('forcedisconnect', function () {
+      self.props.tsocket.socket.disconnect();
+    });
+    props.tsocket.attachListener('table-message', _this._handleTableMessage);
+    props.tsocket.attachListener("update-menus", _this._update_menus_listener);
+    props.tsocket.attachListener('change-doc', _this._change_doc_listener);
+    props.tsocket.attachListener('handle-callback', function (task_packet) {
+      (0, _communication_react.handleCallback)(task_packet, _this.props.main_id);
+    });
+
     if (_this.props.controlled) {
       props.registerDirtyMethod(_this._dirty);
+      props.tsocket.attachListener("notebook-open", function (data) {
+        var the_view = "".concat($SCRIPT_ROOT, "/new_notebook_in_context");
+        (0, _communication_react.postAjaxPromise)(the_view, {
+          temp_data_id: data.temp_data_id,
+          resource_name: ""
+        }).then(self.props.handleCreateViewer)["catch"](_toaster.doFlash);
+      });
     } else {
       _this.state.dark_theme = props.initial_theme === "dark";
       _this.state.resource_name = props.resource_name;
@@ -484,8 +503,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
     value: function componentDidMount() {
       this.setState({
         "mounted": true
-      });
-      this.initSocket();
+      }); // this.initSocket();
 
       this._updateLastSave();
 
@@ -499,10 +517,9 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
     }
   }, {
     key: "componentDidUpdate",
-    value: function componentDidUpdate() {
-      if (this.props.tsocket.counter != this.socket_counter) {
-        this.initSocket();
-      }
+    value: function componentDidUpdate() {// if (this.props.tsocket.counter != this.socket_counter) {
+      //     this.initSocket();
+      // }
     }
   }, {
     key: "componentWillUnmount",
@@ -551,31 +568,28 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "initSocket",
     value: function initSocket() {
-      var _this2 = this;
-
       var self = this; // this.props.tsocket.socket.emit('join-main', {"room": this.props.main_id, "user_id": window.user_id});
-
-      this.props.tsocket.attachListener('forcedisconnect', function () {
-        self.props.tsocket.socket.disconnect();
-      });
-      this.props.tsocket.attachListener('table-message', this._handleTableMessage);
-      this.props.tsocket.attachListener("update-menus", this._update_menus_listener);
-      this.props.tsocket.attachListener('change-doc', this._change_doc_listener);
-      this.props.tsocket.attachListener('handle-callback', function (task_packet) {
-        (0, _communication_react.handleCallback)(task_packet, _this2.props.main_id);
-      });
-      this.socket_counter = this.props.tsocket.counter;
+      // this.props.tsocket.attachListener('forcedisconnect', function() {
+      //     self.props.tsocket.socket.disconnect()
+      // });
+      //
+      //
+      // this.props.tsocket.attachListener('table-message', this._handleTableMessage);
+      // this.props.tsocket.attachListener("update-menus", this._update_menus_listener);
+      // this.props.tsocket.attachListener('change-doc', this._change_doc_listener);
+      // this.props.tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, this.props.main_id)});
+      // this.socket_counter = this.props.tsocket.counter
     }
   }, {
     key: "_setTheme",
     value: function _setTheme(dark_theme) {
-      var _this3 = this;
+      var _this2 = this;
 
       this.setState({
         dark_theme: dark_theme
       }, function () {
         if (!window.in_context) {
-          window.dark_theme = _this3.state.dark_theme;
+          window.dark_theme = _this2.state.dark_theme;
         }
       });
     } // Every item in tile_list is a list of this form
@@ -791,7 +805,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "create_tile_menus",
     value: function create_tile_menus() {
-      var _this4 = this;
+      var _this3 = this;
 
       var menu_items = [];
 
@@ -819,7 +833,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
               var ttype = _step5.value;
 
               option_dict[ttype] = function () {
-                return _this4._tile_command(ttype);
+                return _this3._tile_command(ttype);
               };
             };
 
@@ -1356,7 +1370,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
-      var _this5 = this;
+      var _this4 = this;
 
       var dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
       var vp_height;
@@ -1449,10 +1463,10 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         is_juptyer: this.props.is_jupyter,
         deleteRow: this._deleteRow,
         insertRowBefore: function insertRowBefore() {
-          _this5._insertRow(_this5.state.selected_row);
+          _this4._insertRow(_this4.state.selected_row);
         },
         insertRowAfter: function insertRowAfter() {
-          _this5._insertRow(_this5.state.selected_row + 1);
+          _this4._insertRow(_this4.state.selected_row + 1);
         },
         duplicateRow: this._duplicateRow,
         selected_row: this.state.selected_row,
@@ -1553,7 +1567,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         exports_pane = /*#__PURE__*/_react["default"].createElement(_export_viewer_react.ExportsViewer, {
           main_id: this.props.main_id,
           setUpdate: function setUpdate(ufunc) {
-            _this5.updateExportsList = ufunc;
+            _this4.updateExportsList = ufunc;
           },
           setMainStateValue: this._setMainStateValue,
           available_height: console_available_height,

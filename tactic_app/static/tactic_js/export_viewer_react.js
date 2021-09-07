@@ -326,12 +326,12 @@ var ExportsViewer = /*#__PURE__*/function (_React$Component4) {
 
   var _super4 = _createSuper(ExportsViewer);
 
-  function ExportsViewer(props) {
+  function ExportsViewer(props, context) {
     var _this3;
 
     _classCallCheck(this, ExportsViewer);
 
-    _this3 = _super4.call(this, props);
+    _this3 = _super4.call(this, props, context);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this3));
     _this3.header_ref = /*#__PURE__*/_react["default"].createRef();
     _this3.footer_ref = /*#__PURE__*/_react["default"].createRef();
@@ -351,6 +351,7 @@ var ExportsViewer = /*#__PURE__*/function (_React$Component4) {
       pipe_dict: {}
     };
     _this3.socket_counter = null;
+    context.tsocket.attachListener("export-viewer-message", _this3._handleExportViewerMessage);
     return _this3;
   }
 
@@ -364,16 +365,14 @@ var ExportsViewer = /*#__PURE__*/function (_React$Component4) {
     }
   }, {
     key: "componentDidUpdate",
-    value: function componentDidUpdate() {
-      if (this.context.tsocket.counter != this.socket_counter) {
-        this.initSocket();
-      }
+    value: function componentDidUpdate() {// if (this.context.tsocket.counter != this.socket_counter) {
+      //     this.initSocket();
+      // }
     }
   }, {
     key: "initSocket",
-    value: function initSocket() {
-      this.context.tsocket.attachListener("export-viewer-message", this._handleExportViewerMessage);
-      this.socket_counter = this.context.tsocket.counter;
+    value: function initSocket() {// this.context.tsocket.attachListener("export-viewer-message", this._handleExportViewerMessage);
+      // this.socket_counter = this.context.tsocket.counter;
     }
   }, {
     key: "_handleExportViewerMessage",
