@@ -218,7 +218,7 @@ class QWorker(ExceptionMixin):
                       "reply_to": self.wait_worker.my_id,
                       "expiration": None}
 
-        # noinspection PyNoneFunctionAssignment
+        # noinspection PyNoneFunctionAssignment@
         resp = self.wait_worker.post_blocking_wait(dest_id, new_packet)
 
         if resp == "__ERROR__":

@@ -9,8 +9,9 @@
     }
 }
 
-$context-highlight-color: $blue5;
-$light-context-highlight-color: $blue2;
+$context-highlight-color: $orange4;
+$context-repository-highlight-color: $orange3;
+$light-context-highlight-color: $orange4;
 
 //.light-theme {
 //    #context-container {
@@ -53,22 +54,43 @@ $light-context-highlight-color: $blue2;
                 border-right: 1px solid $light-gray4;
             }
             .lib-tab-button {
-                color: white
+                color: white;
+
+                .bp3-icon {
+                    color: $gray4
+                }
             }
             .lib-tab-button.selected-lib-tab-button {
                 color: $context-highlight-color;
             }
-
+            .lib-tab-button.selected-rep-tab-button {
+                color: $context-repository-highlight-color;
+            }
         }
         .context-tab-button-content {
             color: white;
+
+            .context-library-title {
+                color: white;
+                font-size: medium
+            }
+
+            .bp3-icon {
+                color: $gray4
+            }
+
+
             .context-close-button:hover {
                     background: $gray1
             }
             &.selected-tab-button {
-                color: $context-highlight-color;
+                color: $context-highlight-color !important;
                 border-top: .5px solid $context-highlight-color;
                 border-bottom: .5px solid $context-highlight-color;
+
+                .repository-highlight {
+                    color: $context-repository-highlight-color
+                }
 
                 .context-close-button .bp3-icon {
                     color: $context-highlight-color;
@@ -101,7 +123,6 @@ $light-context-highlight-color: $blue2;
             margin-left: 10px;
             font-size: 13px;
             line-height: 28px;
-
         }
 
         > .bp3-tab-panel {
@@ -118,6 +139,10 @@ $light-context-highlight-color: $blue2;
             overflow: hidden;
             &:hover {
                 overflow-y: auto
+            }
+
+            .bp3-tab {
+                outline: none
             }
 
 

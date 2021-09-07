@@ -76,6 +76,8 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
+var SIDE_MARGIN = 15;
+
 function view_views() {
   var is_repository = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
 
@@ -166,18 +168,12 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     _this2 = _super2.call(this, props);
     _this2.top_ref = /*#__PURE__*/_react["default"].createRef();
     _this2.table_ref = /*#__PURE__*/_react["default"].createRef();
-    _this2.resizing = false; // let aheight = getUsableDimensions(true).usable_height_no_bottom;
-    // let awidth = getUsableDimensions(true).usable_width - 200;
-
+    _this2.resizing = false;
     _this2.get_url = "grab_".concat(props.res_type, "_list_chunk");
     _this2.state = {
       data_dict: {},
       num_rows: 0,
       mounted: false,
-      // available_height: aheight,
-      // available_width: awidth,
-      // top_pane_height: aheight / 2 - 50,
-      // match_list: [],
       tag_list: [],
       auxIsOpen: false,
       showOmnibar: false,
@@ -195,10 +191,8 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "initSocket",
     value: function initSocket() {
       if (this.context.tsocket != null && !this.props.is_repository) {
-        this.context.tsocket.socket.off("update-".concat(this.props.res_type, "-selector-row"));
-        this.context.tsocket.socket.off("refresh-".concat(this.props.res_type, "-selector"));
-        this.context.tsocket.socket.on("update-".concat(this.props.res_type, "-selector-row"), this._handleRowUpdate);
-        this.context.tsocket.socket.on("refresh-".concat(this.props.res_type, "-selector"), this._refresh_func);
+        this.context.tsocket.attachListener("update-".concat(this.props.res_type, "-selector-row"), this._handleRowUpdate);
+        this.context.tsocket.attachListener("refresh-".concat(this.props.res_type, "-selector"), this._refresh_func);
       }
 
       this.socket_counter = this.context.tsocket.counter;
@@ -709,7 +703,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "_handleRowDoubleClick",
     value: function _handleRowDoubleClick(row_dict) {
       var self = this;
-      var view_view = view_views(this.props.is_repostory)[this.props.res_type];
+      var view_view = view_views(this.props.is_repository)[this.props.res_type];
       if (view_view == null) return;
 
       this._updatePaneState({
@@ -1169,12 +1163,28 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       });
     }
   }, {
+    key: "_get_availabe_width",
+    value: function _get_availabe_width() {
+      var result;
+
+      if (this.top_ref && this.top_ref.current) {
+        result = window.innerWidth - this.top_ref.current.offsetLeft - SIDE_MARGIN;
+      } else {
+        result = window.innerWidth - 200;
+      }
+
+      return result;
+    }
+  }, {
     key: "render",
     value: function render() {
       var _this6 = this;
 
       var new_button_groups;
-      var left_width = (this.props.usable_width - _resizing_layouts.HANDLE_WIDTH - 200) * this.props.left_width_fraction;
+
+      var uwidth = this._get_availabe_width();
+
+      var left_width = (uwidth - _resizing_layouts.HANDLE_WIDTH) * this.props.left_width_fraction;
       var primary_mdata_fields = ["name", "created", "created_for_sort", "updated", "updated_for_sort", "tags", "notes"];
       var additional_metadata = {};
 
@@ -1250,7 +1260,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         table_width = left_width - this.table_ref.current.offsetLeft + this.top_ref.current.offsetLeft;
 
         if (this.toolbarRef && this.toolbarRef.current) {
-          var tbwidth = this.toolbarRef.current.getBoundingClientRect().width;
+          var tbwidth = this.toolbarRef.current.offsetWidth;
           toolbar_left = this.table_ref.current.offsetLeft + .5 * table_width - .5 * tbwidth;
           if (toolbar_left < 0) toolbar_left = 0;
         } else {
@@ -1340,16 +1350,14 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         view_resource: this._view_resource
       }, this.props.errorDrawerFuncs, {
         handleCreateViewer: this.props.handleCreateViewer,
-        library_id: this.props.library_id // dark_theme={this.props.dark_theme}
-        // tsocket={this.props.tsocket}
-
+        library_id: this.props.library_id
       })), /*#__PURE__*/_react["default"].createElement("div", {
         style: {
-          width: this.props.usable_width - 200,
+          width: uwidth,
           height: this.props.usable_height
         }
       }, /*#__PURE__*/_react["default"].createElement(_resizing_layouts.HorizontalPanes, {
-        available_width: this.props.usable_width - 200,
+        available_width: uwidth,
         available_height: this.props.usable_height - 100,
         show_handle: true,
         left_pane: left_pane,
@@ -1383,7 +1391,6 @@ LibraryPane.propTypes = {
   ToolbarClass: _propTypes["default"].func,
   updatePaneState: _propTypes["default"].func,
   is_repository: _propTypes["default"].bool,
-  tsocket: _propTypes["default"].object,
   aux_pane: _propTypes["default"].object,
   left_width_fraction: _propTypes["default"].number,
   selected_resource: _propTypes["default"].object,
@@ -1398,7 +1405,6 @@ LibraryPane.propTypes = {
   search_tag: _propTypes["default"].string,
   tag_button_state: _propTypes["default"].object,
   contextItems: _propTypes["default"].array,
-  dark_theme: _propTypes["default"].bool,
   library_id: _propTypes["default"].string
 };
 LibraryPane.defaultProps = {

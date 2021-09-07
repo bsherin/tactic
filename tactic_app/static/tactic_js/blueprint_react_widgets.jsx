@@ -2,10 +2,11 @@
 import React from "react";
 import PropTypes from 'prop-types';
 
-import { Tooltip, Button, FormGroup, InputGroup, HTMLSelect, HTMLTable } from "@blueprintjs/core";
+import { Tooltip, Button, FormGroup, InputGroup, HTMLSelect, HTMLTable, Icon } from "@blueprintjs/core";
 import {EditableCell, RowHeaderCell, Column, Table, RegionCardinality} from "@blueprintjs/table";
 
-export {LabeledSelectList, LabeledFormField, SelectList, OrderableTable, BpOrderableTable, DragThing, GlyphButton, withTooltip}
+export {LabeledSelectList, LabeledFormField, SelectList, OrderableTable, BpOrderableTable,
+    DragThing, GlyphButton, withTooltip, TopRightButtons}
 import {doBinding} from "./utilities_react.js";
 
 function withTooltip(WrappedComponent) {
@@ -25,6 +26,53 @@ function withTooltip(WrappedComponent) {
         }
     }
 }
+
+
+class TopRightButtons extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this);
+    }
+    render() {
+        let top_icon_style = {
+            display: "flex",
+            justifyContent: "flex-end",
+            marginTop: 0,
+            paddingTop: 3,
+            marginRight: 20
+        };
+        return (
+                <div style={top_icon_style}>
+                    <Button icon={<Icon icon="repeat" iconSize={18} />}
+                            style={{paddingLeft: 4, paddingRight:0}}
+                            minimal={true}
+                            className="context-close-button"
+                            small={true}
+                            tabIndex={-1}
+                            intent="danger"
+                            onClick={() => {
+                                 this.props.refreshTab()
+                            }}
+                    />
+                    <Button icon={<Icon icon="delete" iconSize={18} />}
+                            style={{paddingLeft: 15}}
+                            minimal={true}
+                            className="context-close-button"
+                            small={true}
+                            tabIndex={-1} intent="danger"
+                            onClick={() => {
+                                this.props.closeTab()
+                            }}
+                    />
+                </div>
+        )
+    }
+}
+
+TopRightButtons.propTypes = {
+    refreshTab: PropTypes.func,
+    closeTab: PropTypes.func,
+};
 
 class GlyphButton extends React.Component {
 

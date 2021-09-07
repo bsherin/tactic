@@ -11,6 +11,7 @@ import {doFlash, withStatus} from "./toaster.js"
 import {postAjax} from "./communication_react.js";
 import {doBinding, guid} from "./utilities_react.js";
 import {TacticNavbar, get_theme_cookie} from "./blueprint_navbar";
+import {TacticContext} from "./tactic_context.js";
 
 window.page_id = guid();
 
@@ -37,13 +38,11 @@ class LoginApp extends React.Component {
 
     componentDidMount() {
         $(this.input_ref).focus();
-        this.props.setStatusTheme(this.state.dark_theme);
         window.dark_theme = this.state.dark_theme
     }
 
     _setTheme(dark_theme) {
         this.setState({dark_theme: dark_theme}, ()=> {
-            this.props.setStatusTheme(dark_theme);
             window.dark_theme = this.state.dark_theme
         })
     }
@@ -99,56 +98,64 @@ class LoginApp extends React.Component {
         }
         return (
             <React.Fragment>
-                <TacticNavbar is_authenticated={window.is_authenticated}
-                              selected={null}
-                              show_api_links={false}
-                              dark_theme={this.state.dark_theme}
-                              set_parent_theme={this._setTheme}
-                              user_name={window.username}/>
-                <div className={outer_class} style={{textAlign:"center", height: "100%"}}>
-                    <div id="status-area"></div>
-                    <div className="d-flex flex-row justify-content-around">
-                        <img className="mb-4"
-                             src={window.tactic_img_url}
-                             alt="" width="72" height="72"/>
-                     </div>
-                     <div className="d-flex flex-row justify-content-around">
-                        <h4>Please sign in</h4>
-                    </div>
-                    <form onSubmit={e => {
-                              e.preventDefault();
-                              this._submit_login_info();
-                            }}>
-                        <FormGroup className="d-flex flex-row justify-content-around"
-                                      helperText={this.state.username_warning_text}
-                        >
-                            <InputGroup type="text"
-                                           onChange={this._onUsernameChange}
-                                           large={true}
-                                           fill={false}
-                                           placeholder="Username"
-                                           autoCapitalize="none"
-                                           autoCorrect="off"
-                                           inputRef={this._refHandler}
-                                           />
-                        </FormGroup>
-                        <FormGroup className="d-flex flex-row justify-content-around"
-                                      helperText={this.state.password_warning_text}
-                        >
-                            <InputGroup type="password"
-                                           onChange={this._onPasswordChange}
-                                           large={true}
-                                           fill={false}
-                                           placeholder="Password"
-                                           autoCapitalize="none"
-                                           autoCorrect="off"
-                           />
-                        </FormGroup>
-                         <div className="d-flex flex-row justify-content-around">
-                            <Button icon="log-in" large={true} type="submit" text="Sign in"/>
+                <TacticContext.Provider value={{
+                    readOnly: this.props.readOnly,
+                    tsocket: this.props.tsocket,
+                    dark_theme: this.state.dark_theme,
+                    setTheme:  this._setTheme,
+                    controlled: this.props.controlled,
+                    am_selected: this.props.am_selected
+                }}>
+                    <TacticNavbar is_authenticated={window.is_authenticated}
+                                  selected={null}
+                                  show_api_links={false}
+                                  page_id={window.page_id}
+                                  user_name={window.username}/>
+                    <div className={outer_class} style={{textAlign:"center", height: "100%"}}>
+                        <div id="status-area"></div>
+                        <div className="d-flex flex-row justify-content-around">
+                            <img className="mb-4"
+                                 src={window.tactic_img_url}
+                                 alt="" width="72" height="72"/>
                          </div>
-                    </form>
-                </div>
+                         <div className="d-flex flex-row justify-content-around">
+                            <h4>Please sign in</h4>
+                        </div>
+                        <form onSubmit={e => {
+                                  e.preventDefault();
+                                  this._submit_login_info();
+                                }}>
+                            <FormGroup className="d-flex flex-row justify-content-around"
+                                          helperText={this.state.username_warning_text}
+                            >
+                                <InputGroup type="text"
+                                               onChange={this._onUsernameChange}
+                                               large={true}
+                                               fill={false}
+                                               placeholder="Username"
+                                               autoCapitalize="none"
+                                               autoCorrect="off"
+                                               inputRef={this._refHandler}
+                                               />
+                            </FormGroup>
+                            <FormGroup className="d-flex flex-row justify-content-around"
+                                          helperText={this.state.password_warning_text}
+                            >
+                                <InputGroup type="password"
+                                               onChange={this._onPasswordChange}
+                                               large={true}
+                                               fill={false}
+                                               placeholder="Password"
+                                               autoCapitalize="none"
+                                               autoCorrect="off"
+                               />
+                            </FormGroup>
+                             <div className="d-flex flex-row justify-content-around">
+                                <Button icon="log-in" large={true} type="submit" text="Sign in"/>
+                             </div>
+                        </form>
+                    </div>
+                </TacticContext.Provider>
             </React.Fragment>
         )
     }

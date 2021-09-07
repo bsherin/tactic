@@ -219,6 +219,7 @@ var ExportButtonList = /*#__PURE__*/function (_React$Component3) {
       var groups = [];
       var group_names = Object.keys(this.props.pipe_dict);
       group_names.sort();
+      var index = 0;
 
       for (var _i = 0, _group_names = group_names; _i < _group_names.length; _i++) {
         var group = _group_names[_i];
@@ -246,6 +247,7 @@ var ExportButtonList = /*#__PURE__*/function (_React$Component3) {
             };
             group_items.push( /*#__PURE__*/_react["default"].createElement(ExportButtonListButton, {
               fullname: fullname,
+              key: fullname,
               shortname: shortname,
               type: type,
               active: this.props.value == fullname,
@@ -260,6 +262,7 @@ var ExportButtonList = /*#__PURE__*/function (_React$Component3) {
 
         if (group == "__log__") {
           groups.unshift( /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+            key: group,
             inline: false,
             label: null,
             className: "export-label"
@@ -271,6 +274,7 @@ var ExportButtonList = /*#__PURE__*/function (_React$Component3) {
           }, group_items)));
         } else {
           groups.push( /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+            key: group,
             inline: false,
             label: group,
             className: "export-label"
@@ -368,7 +372,7 @@ var ExportsViewer = /*#__PURE__*/function (_React$Component4) {
   }, {
     key: "initSocket",
     value: function initSocket() {
-      this.context.tsocket.reAttachListener("export-viewer-message", this._handleExportViewerMessage);
+      this.context.tsocket.attachListener("export-viewer-message", this._handleExportViewerMessage);
       this.socket_counter = this.context.tsocket.counter;
     }
   }, {

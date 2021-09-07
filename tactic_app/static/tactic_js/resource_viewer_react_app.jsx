@@ -3,7 +3,7 @@
 import React from "react";
 import PropTypes from 'prop-types';
 
-import { ResizeSensor } from "@blueprintjs/core";
+import { ResizeSensor, Button, Icon } from "@blueprintjs/core";
 
 import {ResourceviewerToolbar} from "./blueprint_toolbar.js";
 import {CombinedMetadata} from "./blueprint_mdata_fields.js";
@@ -12,6 +12,7 @@ import {TacticSocket} from "./tactic_socket.js"
 import {HorizontalPanes} from "./resizing_layouts.js";
 import {handleCallback, postAjax} from "./communication_react.js"
 import {doBinding} from "./utilities_react.js";
+import {TopRightButtons} from "./blueprint_react_widgets.js";
 
 import {doFlash, doFlashAlways} from "./toaster.js";
 import {getUsableDimensions} from "./sizing_tools.js"
@@ -23,8 +24,7 @@ class ResourceViewerSocket extends TacticSocket {
     initialize_socket_stuff(reconnect=false) {
         if (!window.in_context) {
             this.socket.emit('join', {"room": window.user_id});
-            // this.socket.emit('join-main', {"room": this.extra_args.resource_viewer_id, "user_id": window.user_id});
-            this.socket.on("doFlash", function (data) {
+            this.attachListener("doFlash", function (data) {
                 doFlash(data)
             });
         }
@@ -33,7 +33,7 @@ class ResourceViewerSocket extends TacticSocket {
 
 function copyToLibrary(res_type, resource_name) {
     $.getJSON($SCRIPT_ROOT + `get_resource_names/${res_type}`, function(data) {
-        showModal(`Import ${res_type}`, `New ${res_type} Name`, ImportResource, resource_name, data["resource_names"])
+        showModalReact(`Import ${res_type}`, `New ${res_type} Name`, ImportResource, resource_name, data["resource_names"])
         }
     );
     function ImportResource(new_name) {
@@ -65,10 +65,10 @@ class ResourceViewerApp extends React.Component {
 
     constructor(props, context) {
         super(props, context);
-        context.tsocket.socket.emit('join-main', {"room": props.resource_viewer_id, "user_id": window.user_id});
-        context.tsocket.socket.on('handle-callback', (task_packet)=>{handleCallback(task_packet, props.resource_viewer_id)});
+        context.tsocket.socket.emit('join', {"room": props.resource_viewer_id});
+        context.tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, props.resource_viewer_id)});
         if (!context.controlled) {
-            context.tsocket.socket.on('close-user-windows', (data) => {
+            context.tsocket.attachListener('close-user-windows', (data) => {
                 if (!(data["originator"] == props.resource_viewer_id)) {
                     window.close()
                 }
@@ -125,29 +125,31 @@ class ResourceViewerApp extends React.Component {
     render() {
         let left_pane = (
             <React.Fragment>
-                <ResourceviewerToolbar //controlled={this.props.controlled}
-                                       //am_selected={this.props.am_selected}
-                                       button_groups={this.props.button_groups}
+                <ResourceviewerToolbar button_groups={this.props.button_groups}
                                        setResourceNameState={this.props.setResourceNameState}
                                        resource_name={this.props.resource_name}
                                        show_search={this.props.show_search}
                                        search_string={this.props.search_string}
                                        update_search_state={this.props.update_search_state}
-                                       // tsocket={this.props.tsocket}
-                                       // dark_theme={this.props.dark_theme}
                                        res_type={this.props.res_type}/>
                 {this.props.children}
             </React.Fragment>
         );
         //let available_height = this.get_new_hp_height(this.hp_ref);
+
         let right_pane = (
-            <CombinedMetadata tags={this.props.tags}
-                              outer_style={{marginTop: 100, marginLeft: 20, overflow: "auto", padding: 15,
-                                            marginRight: 20}}
-                              created={this.props.created}
-                              notes={this.props.notes}
-                              handleChange={this.props.handleStateChange}
-                              res_type={this.props.res_type} />
+            <React.Fragment>
+                {window.in_context &&
+                    <TopRightButtons refreshTab={this.props.refreshTab} closeTab={this.props.closeTab}/>
+                }
+                <CombinedMetadata tags={this.props.tags}
+                                  outer_style={{marginTop: 90, marginLeft: 20, overflow: "auto", padding: 15,
+                                                marginRight: 20}}
+                                  created={this.props.created}
+                                  notes={this.props.notes}
+                                  handleChange={this.props.handleStateChange}
+                                  res_type={this.props.res_type} />
+                </React.Fragment>
         );
 
         return(
@@ -169,6 +171,8 @@ class ResourceViewerApp extends React.Component {
 ResourceViewerApp.propTypes = {
     resource_name: PropTypes.string,
     setResourceNameState: PropTypes.func,
+    refreshTab: PropTypes.func,
+    closeTab: PropTypes.func,
     res_type: PropTypes.string,
     button_groups: PropTypes.array,
     created: PropTypes.string,
@@ -186,6 +190,8 @@ ResourceViewerApp.defaultProps ={
     dark_theme: false,
     am_selected: true,
     controlled: false,
+    refreshTab: null,
+    closeTab: null,
 };
 
 ResourceViewerApp.contextType = TacticContext;

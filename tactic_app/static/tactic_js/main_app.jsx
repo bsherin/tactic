@@ -45,13 +45,9 @@ class MainTacticSocket extends TacticSocket {
 
     initialize_socket_stuff(reconnect=false) {
 
-        this.socket.on("notebook-open", function(data) {
-            window.open($SCRIPT_ROOT + "/open_notebook/" + data["the_id"])
-        });
-
+        this.socket.emit('join', {"room": window.user_id});
         if (!window.in_context) {
-            this.socket.emit('join', {"room": window.user_id});
-            this.socket.on("doFlash", function(data) {
+            this.attachListener("doFlash", function(data) {
                 doFlash(data)
                 });
         }
@@ -88,7 +84,7 @@ function main_props(data, registerDirtyMethod, finalCallback) {
     let initial_tile_types;
 
     var tsocket = new MainTacticSocket("main", 5000);
-    tsocket.socket.on('handle-callback', (task_packet)=>{handleCallback(task_packet, main_id)});
+    tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, main_id)});
     tsocket.socket.on('finish-post-load', _finish_post_load_in_context);
 
     function readyListener() {
@@ -201,11 +197,22 @@ class MainApp extends React.Component {
         super(props);
         doBinding(this);
         if (!props.controlled) {
-            props.tsocket.socket.on('close-user-windows', function(data){
+            props.tsocket.attachListener('close-user-windows', function(data){
                 if (!(data["originator"] == props.main_id)) {
                     window.close()
                 }
             });
+            props.tsocket.attachListener("notebook-open", function(data) {
+                window.open($SCRIPT_ROOT + "/new_notebook_with_data/" + data.temp_data_id)
+            });
+        }
+        else {
+            props.tsocket.attachListener("notebook-open", function(data) {
+                const the_view = `${$SCRIPT_ROOT}/new_notebook_in_context`;
+                postAjaxPromise(the_view, {temp_data_id: data.temp_data_id, resource_name: ""})
+                    .then(self.props.handleCreateViewer)
+                    .catch(doFlash);
+                })
         }
 
         this.table_container_ref = React.createRef();
@@ -344,6 +351,7 @@ class MainApp extends React.Component {
     }
 
     componentWillUnmount() {
+        this.props.tsocket.disconnect();
         this.delete_my_containers()
     }
 
@@ -373,14 +381,16 @@ class MainApp extends React.Component {
 
     initSocket() {
         let self = this;
-        this.props.tsocket.socket.emit('join-main', {"room": this.props.main_id, "user_id": window.user_id});
-        this.props.tsocket.reAttachListener('forcedisconnect', function() {
-            this.props.tsocket.socket.disconnect()
+        // this.props.tsocket.socket.emit('join-main', {"room": this.props.main_id, "user_id": window.user_id});
+        this.props.tsocket.attachListener('forcedisconnect', function() {
+            self.props.tsocket.socket.disconnect()
         });
 
-        this.props.tsocket.reAttachListener('table-message', this._handleTableMessage);
-        this.props.tsocket.reAttachListener("update-menus", this._update_menus_listener);
-        this.props.tsocket.reAttachListener('change-doc', this._change_doc_listener);
+
+        this.props.tsocket.attachListener('table-message', this._handleTableMessage);
+        this.props.tsocket.attachListener("update-menus", this._update_menus_listener);
+        this.props.tsocket.attachListener('change-doc', this._change_doc_listener);
+        this.props.tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, this.props.main_id)});
         this.socket_counter = this.props.tsocket.counter
     }
 
@@ -889,7 +899,7 @@ class MainApp extends React.Component {
             })
         }
         else {
-            this.setState({"resource_name": new_name, "is_project": true})
+            this.setState({"resource_name": new_project_name, "is_project": true})
         }
     }
 
@@ -1195,7 +1205,10 @@ class MainApp extends React.Component {
                     <TacticNavbar is_authenticated={window.is_authenticated}
                                   user_name={window.username}
                                   menus={menus}
+                                  page_id={this.props.main_id}
                                   min_navbar={window.in_context}
+                                  refreshTab={this.props.refreshTab}
+                                  closeTab={this.props.closeTab}
                     />
                     <div className={outer_class} ref={this.main_outer_ref}>
                         {this.state.console_is_zoomed &&
@@ -1234,6 +1247,8 @@ MainApp.propTypes = {
     changeResourceTitle: PropTypes.func,
     changeResourceProps: PropTypes.func,
     updatePanel: PropTypes.func,
+    refreshTab: PropTypes.func,
+    closeTab: PropTypes.func,
     interface_state: PropTypes.object,
     initial_doc_names: PropTypes.array,
     initial_column_names: PropTypes.array,
@@ -1249,6 +1264,8 @@ MainApp.defaultProps = {
     changeResourceName: null,
     changeResourceTitle: null,
     changeResourceProps: null,
+    refreshTab: null,
+    closeTab: null,
     updatePanel: null
 };
 

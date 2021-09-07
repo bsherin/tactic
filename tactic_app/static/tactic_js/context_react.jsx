@@ -22,6 +22,7 @@ import {doFlash, withStatus} from "./toaster.js";
 import {TacticNavbar} from "./blueprint_navbar";
 
 import {library_props, LibraryHomeApp} from "./library_home_react.js";
+// import {repository_props, RepositoryHomeApp} from "./repository_home_react.js";
 import {view_views} from "./library_pane.js";
 import {doBinding, guid} from "./utilities_react.js";
 import {module_viewer_props, ModuleViewerApp} from "./module_viewer_react.js";
@@ -48,16 +49,15 @@ class ContextTacticSocket extends TacticSocket {
     initialize_socket_stuff(reconnect=false) {
         let self = this;
         this.socket.emit('join', {room: window.user_id});
-        this.socket.emit('join-main', {"room": window.context_id, "user_id": window.user_id}, function (response) {
-            });
-        this.socket.on("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
-        this.socket.on('handle-callback', (task_packet)=>{handleCallback(task_packet, window.context_id)});
-        this.socket.on('close-user-windows', data => {
+        this.socket.emit('join', {room: window.context_id, "user_id": window.user_id});
+        this.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
+        this.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, window.context_id)});
+        this.attachListener('close-user-windows', data => {
             if (!(data["originator"] === window.context_id)) {
                 window.close()
             }
         });
-        this.socket.on('doflash', doFlash);
+        this.attachListener('doflash', doFlash);
     }
 }
 window.context_id = guid();
@@ -66,6 +66,7 @@ window.main_id = window.context_id;
 let tsocket = new ContextTacticSocket("main",
     5000);
 const LibraryHomeAppPlus = withErrorDrawer(withStatus(LibraryHomeApp));
+// const RepositoryHomeAppPlus = withErrorDrawer(withStatus(RepositoryHomeApp));
 const ListViewerAppPlus = withStatus(ListViewerApp);
 const CodeViewerAppPlus = withStatus(CodeViewerApp);
 const ModuleViewerAppPlus = withErrorDrawer(withStatus(ModuleViewerApp));
@@ -88,12 +89,14 @@ class ContextApp extends React.Component {
         doBinding(this);
         this.socket_counter = null;
         let library_panel_props = library_props();
+        // let repository_panel_props = repository_props();
 
         const aheight = getUsableDimensions(true).usable_height_no_bottom;
         const awidth = getUsableDimensions(true).usable_width - 170;
         this.state = {
             tab_ids: [],
             library_panel_props: library_panel_props,
+            // repository_panel_props: repository_panel_props,
             tab_panel_dict: {},
             dirty_methods: {},
             dark_theme: props.initial_theme === "dark",
@@ -101,10 +104,13 @@ class ContextApp extends React.Component {
             theme_setters: [],
             lastSelectedTabId: null,
             selectedLibraryTab: "collections",
+            // selectedRepositoryTab: "collections",
             usable_width: awidth,
             usable_height: aheight,
+            show_repository: false,
         };
         this.libraryTabChange = null;
+        // this.repositoryTabChange = null;
         this.top_ref = React.createRef();
         this.ref_dict = {};
         this.key_bindings = [[["tab"], this._goToNextPane], [["shift+tab"], this._goToPreviousPane]];
@@ -112,12 +118,7 @@ class ContextApp extends React.Component {
 
     _setTheme(dark_theme) {
         window.theme = dark_theme ? "dark" : "light";
-        this.setState({dark_theme}, ()=> {
-            // this.props.setStatusTheme(dark_theme);
-            // for (let setter of this.state.theme_setters) {
-            //     setter(dark_theme)
-            // }
-        })
+        this.setState({dark_theme}, )
     }
 
     _update_window_dimensions(callback=null) {
@@ -147,6 +148,13 @@ class ContextApp extends React.Component {
         this.libraryTabChange = handleTabChange
     }
 
+    _registerRepositoryTabChanger(handleTabChange) {
+        this.repositoryTabChange = handleTabChange
+    }
+
+
+
+
     _changeLibTab(res_type) {
         this.libraryTabChange(res_type + "-pane");
         this.setState({selectedLibraryTab: res_type})
@@ -156,6 +164,10 @@ class ContextApp extends React.Component {
         return ["collections", "projects", "tiles", "lists", "code"]
     }
 
+    componentWillUnmount() {
+        this.props.tsocket.disconnect();
+    }
+
     componentDidMount() {
         window.dark_theme = this.state.dark_theme;
         window.addEventListener("resize", ()=>this._update_window_dimensions(null));
@@ -163,7 +175,6 @@ class ContextApp extends React.Component {
                 e.preventDefault();
                 e.returnValue = 'Are you sure you want to close? All changes will be lost.'
         });
-        // let library_panel = library_in_context(this._handleCreateViewer, this._registerLibraryTabChanger);
         this._update_window_dimensions(null);
     }
 
@@ -178,13 +189,14 @@ class ContextApp extends React.Component {
          // If I dont delete I end up with duplicatesSelectList
          // If I just keep the original one then I end up something with a handler linked
          // to an earlier state
-         this.props.tsocket.reAttachListener("create-viewer", this._handleCreateViewer);
+         this.props.tsocket.attachListener("create-viewer", this._handleCreateViewer);
+         this.props.tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, window.context_id)});
          this.socket_counter = this.props.tsocket.counter
      }
 
      _refreshTab(the_id) {
         let self = this;
-        if (this.state.dirty_methods[the_id]()) {
+        if (!(the_id in this.state.dirty_methods) || this.state.dirty_methods[the_id]()) {
             const title = this.state.tab_panel_dict[the_id].title;
             const confirm_text = `Are you sure that you want to reload the tab ${title}? Changes will be lost`;
             let self = this;
@@ -207,11 +219,6 @@ class ContextApp extends React.Component {
                 const re = new RegExp("/$");
                 the_view = the_view.replace(re, "_in_context");
             }
-            // self._closeATab(the_id, ()=>{
-            //     postAjaxPromise($SCRIPT_ROOT + the_view, {context_id: window.context_id, resource_name: resource_name})
-            //         .then(self._handleCreateViewer)
-            //         .catch(doFlash);
-            // });
             const drmethod = (dmethod) => {self._registerDirtyMethod(the_id, dmethod)};
             self._updatePanel(the_id, {panel: "spinner"}, ()=>{
                 postAjaxPromise($SCRIPT_ROOT + the_view, {context_id: window.context_id, resource_name: resource_name})
@@ -235,7 +242,6 @@ class ContextApp extends React.Component {
                 copied_tab_ids.splice(idx, 1);
                 delete copied_tab_panel_dict[the_id];
                 delete copied_dirty_methods[the_id];
-                // delete this.ref_dict[the_id]
             }
             let new_state = {
                 tab_panel_dict: copied_tab_panel_dict,
@@ -260,13 +266,13 @@ class ContextApp extends React.Component {
             }
 
             this.setState(new_state, () => {
-                this.setState(stateUpdate, callback)
+                this.setState(stateUpdate, ()=>this._update_window_dimensions(callback))
             })
      }
 
      _closeTab(the_id) {
         let self = this;
-        if (this.state.dirty_methods[the_id]()) {
+        if (!(the_id in this.state.dirty_methods) || this.state.dirty_methods[the_id]()) {
             const title = this.state.tab_panel_dict[the_id].title;
             const confirm_text = `Are you sure that you want to close the tab ${title}? Changes will be lost`;
             showConfirmDialogReact(`close the tab ${title}"`, confirm_text, "do nothing",
@@ -347,7 +353,23 @@ class ContextApp extends React.Component {
      _updatePanel(the_id, new_panel, callback=null) {
          let new_tab_panel_dict = {...this.state.tab_panel_dict};
          for (let k in new_panel) {
-             new_tab_panel_dict[the_id][k] = new_panel[k]
+             if (k != "panel") {
+                 new_tab_panel_dict[the_id][k] = new_panel[k]
+             }
+         }
+
+         if ("panel" in new_panel) {
+              if (new_panel.panel == "spinner") {
+                 new_tab_panel_dict[the_id].panel = "spinner";
+              }
+              else if (new_tab_panel_dict[the_id].panel != "spinner") {
+                  for (let j in new_panel.panel) {
+                      new_tab_panel_dict[the_id].panel[j] = new_panel.panel[j]
+                  }
+              }
+              else {
+                  new_tab_panel_dict[the_id].panel = new_panel.panel
+              }
          }
          this.setState({tab_panel_dict: new_tab_panel_dict}, ()=>this._update_window_dimensions(callback))
      }
@@ -393,7 +415,6 @@ class ContextApp extends React.Component {
              let new_panel = self.propDict[data.kind](data, drmethod, (new_panel)=>{
                 this._updatePanel(new_id, {panel: new_panel});
              });
-
          })
 
      }
@@ -425,17 +446,61 @@ class ContextApp extends React.Component {
          e.preventDefault();
     }
 
-    _handleTabSelect(newTabId, prevTabId, event) {
-        this.setState({selectedTabId: newTabId, lastSelectedTabId: prevTabId}, ()=>this._update_window_dimensions(null))
+    _handleTabSelect(newTabId, prevTabId, event=null, callback=null) {
+        this.setState({selectedTabId: newTabId, lastSelectedTabId: prevTabId},
+            ()=>this._update_window_dimensions(callback))
+    }
+
+    _goToModule(module_name, line_number){
+        for (let tab_id in this.state.tab_panel_dict) {
+            let pdict = this.state.tab_panel_dict[tab_id];
+            if (pdict.kind == "creator-viewer" && pdict.panel.resource_name == module_name) {
+                this._handleTabSelect(tab_id, this.state.selectedTabId, null,()=>{
+                    if ("line_setter" in pdict) {
+                        pdict.line_setter(line_number)
+                    }
+                });
+                return
+            }
+        }
+        let self = this;
+        let the_view = view_views()["tile"];
+        const re = new RegExp("/$");
+        the_view = the_view.replace(re, "_in_context");
+        postAjaxPromise($SCRIPT_ROOT + the_view, {context_id: window.context_id, resource_name: module_name})
+            .then((data)=>{
+                const new_id = `${data.kind}: ${data.resource_name}`;
+                const drmethod = (dmethod) => {self._registerDirtyMethod(new_id, dmethod)};
+                this._addPanel(new_id, data.kind, data.res_type, data.resource_name, "spinner", ()=> {
+                     let new_panel = self.propDict[data.kind](data, drmethod, (new_panel)=>{
+                        this._updatePanel(new_id, {panel: new_panel}, ()=>{
+                            let pdict = self.state.tab_panel_dict[new_id];
+                            pdict.line_setter(line_number)
+                        });
+                     });
+                 })
+            })
+            .catch(doFlash);
+
+        return
+    }
+
+    _registerLineSetter(tab_id, rfunc) {
+         this._updatePanel(tab_id, {line_setter: rfunc})
     }
 
     render() {
       let bstyle = {paddingTop: 0, paddingBotton: 0};
         let lib_buttons = [];
+        let selected_lib_button;
+        let selected_bclass;
+        selected_lib_button = this.state.selectedLibraryTab;
+        selected_bclass = " selected-lib-tab-button";
+        // }
         for (let rt of this.resTypes) {
             let cname = "lib-tab-button";
-            if (rt == this.state.selectedLibraryTab) {
-                cname += " selected-lib-tab-button"
+            if (rt == selected_lib_button) {
+                cname += selected_bclass
             }
             lib_buttons.push(
                 <Button key={rt} icon={this.libIconDict[rt]} className={cname} alignText="left"
@@ -450,7 +515,8 @@ class ContextApp extends React.Component {
         if (this.state.selectedTabId == "library") {
             bclass += " selected-tab-button"
         }
-        let library_panel = (
+        let library_panel;
+        library_panel = (
             <div id="library-home-root">
                 <LibraryHomeAppPlus {...this.state.library_panel_props}
                                     controlled={true}
@@ -462,10 +528,15 @@ class ContextApp extends React.Component {
                     />
             </div>
         );
+        // }
+
         let ltab = (
-            <Tab id="library" key="library" className="context-tab" panel={library_panel}>
+            <Tab id="library" tabIndex={-1} key="library" className="context-tab" panel={library_panel}>
                 <div className={bclass}>
-                    <span style={{fontSize: 16}}>Library</span>
+                        <Button minimal={true}
+                                onClick={()=>{this._select_repository(false)}}>
+                            <span className="context-library-title">Library</span>
+                        </Button>
                     <div style={{display: "flex", flexDirection: "column"}}>
                         {lib_buttons}
                         <Divider/>
@@ -509,8 +580,13 @@ class ContextApp extends React.Component {
                                               this._changeResourceProps(tab_id, new_props, callback)
                                           }}
                                           updatePanel={(new_panel, callback=null)=>{
-                                              this._updatePanel(the_id, new_panel, callback)
+                                              this._updatePanel(tab_id, new_panel, callback)
                                           }}
+                                          goToModule={this._goToModule}
+                                          registerLineSetter={(rfunc)=>this._registerLineSetter(tab_id, rfunc)}
+                                          handleCreateViewer={this._handleCreateViewer}
+                                          refreshTab={()=>{this._refreshTab(tab_id)}}
+                                          closeTab={()=>{this._closeTab(tab_id)}}
                                           tsocket={tab_entry.panel.tsocket}
                                           usable_width={this.state.usable_width}
                                           usable_height={this.state.usable_height}
@@ -523,7 +599,7 @@ class ContextApp extends React.Component {
             }
             let icon_style = {verticalAlign: "middle", paddingLeft: 4};
             let new_tab = (
-                <Tab id={tab_id} key={tab_id} panelClassName="context-tab" title="" panel={wrapped_panel}>
+                <Tab id={tab_id} tabIndex={-1} key={tab_id} panelClassName="context-tab" title="" panel={wrapped_panel}>
                     <div className={bclass} style={{display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
                         <div style={{display: "table-cell", flexDirection: "row", justifyContent: "flex-start"}}>
                             <Icon icon={this.iconDict[tab_entry.kind]}
@@ -532,10 +608,10 @@ class ContextApp extends React.Component {
                             {visible_title}
                         </div>
                         <div>
-                            <Icon icon="refresh" style={icon_style} iconSize={14} className="context-close-button" tabIndex={-1} onClick={() => {
+                            <Icon icon="reset" style={icon_style} iconSize={13} className="context-close-button" tabIndex={-1} onClick={() => {
                                 this._refreshTab(tab_id)
                             }}/>
-                            <Icon icon="cross" style={icon_style} iconSize={14} className="context-close-button"tabIndex={-1} onClick={() => {
+                            <Icon icon="delete" style={icon_style} iconSize={13} className="context-close-button" tabIndex={-1} onClick={() => {
                                 this._closeTab(tab_id)
                             }}/>
                         </div>
@@ -567,8 +643,7 @@ class ContextApp extends React.Component {
                     <TacticNavbar is_authenticated={window.is_authenticated}
                                   selected={null}
                                   show_api_links={true}
-                                  // dark_theme={this.state.dark_theme}
-                                  // set_parent_theme={this._setTheme}
+                                  page_id={window.context_id}
                                   user_name={window.username}/>
                         <div className={outer_class} style={outer_style} ref={this.top_ref}>
                             <div id="context-container" style={outer_style}>

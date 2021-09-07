@@ -27,6 +27,7 @@ import {doBinding, renderSpinnerMessage} from "./utilities_react.js"
 import {TacticNavbar} from "./blueprint_navbar";
 import {SearchForm} from "./library_widgets";
 import {TacticContext} from "./tactic_context.js";
+import {TopRightButtons} from "./blueprint_react_widgets";
 
 export {creator_props, CreatorApp}
 
@@ -39,7 +40,7 @@ class CreatorViewerSocket extends TacticSocket {
 
         if (!window.in_context) {
             this.socket.emit('join', {"room": window.user_id});
-            this.socket.on("doFlash", function(data) {
+            this.attachListener("doFlash", function(data) {
                 doFlash(data)
             });
         }
@@ -71,13 +72,14 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
     let split_tags = mdata.tags == "" ? [] : mdata.tags.split(" ");
     let module_name = data.resource_name;
     let module_viewer_id = data.module_viewer_id;
+    window.name = module_viewer_id;
     let tile_collection_name = data.tile_collection_name;
-    tsocket.socket.on('handle-callback', (task_packet)=>{handleCallback(task_packet, module_viewer_id)});
+    tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, module_viewer_id)});
     function readyListener() {
         _everyone_ready_in_context(finalCallback)
     }
     tsocket.socket.on("remove-ready-block", readyListener);
-    tsocket.socket.emit('join-main', {"room": data.module_viewer_id, "user_id": window.user_id}, function (response) {
+    tsocket.socket.emit('join', {"room": data.module_viewer_id}, function (response) {
         tsocket.socket.emit('client-ready', {
             "room": data.module_viewer_id, "user_id": window.user_id, "participant": "client",
             "rb_id": data.ready_block_id, "main_id": data.module_viewer_id
@@ -112,6 +114,7 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
             let category = parsed_data.category ? parsed_data.category : "basic";
             let result_dict = {"res_type": "tile", "res_name": module_name, "is_repository": false};
             let odict = parsed_data.option_dict;
+            let initial_line_number = !window.in_context && window.line_number ? window.line_number : null;
             for (let option of odict) {
                 for (let param in option) {
                     if (Array.isArray(option[param])) {
@@ -142,7 +145,7 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
                     render_content_line_number: parsed_data.render_content_line_number,
                     extra_methods_line_number: parsed_data.extra_methods_line_number,
                     draw_plot_line_number: parsed_data.draw_plot_line_number,
-                    initial_line_number: null,
+                    initial_line_number: initial_line_number,
                     category: category,
                     extra_functions: parsed_data.extra_functions,
                     draw_plot_code: parsed_data.draw_plot_code,
@@ -163,7 +166,10 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
 }
 
 function TileCreatorToolbar(props) {
-    let tstyle = {"marginTop": 20, "paddingRight": 20, "width": "100%"};
+    let tstyle = {
+        "marginTop": window.in_context ? 0 : 20,
+        "paddingRight": 20,
+        "width": "100%"};
     let toolbar_outer_style = {
                 display: "flex",
                 flexDirection: "row",
@@ -212,7 +218,7 @@ class CreatorApp extends React.Component {
         super(props);
         doBinding(this);
         if (!props.controlled) {
-            props.tsocket.socket.on('close-user-windows', (data) => {
+            props.tsocket.attachListener('close-user-windows', (data) => {
                 if (!(data["originator"] == props.resource_viewer_id)) {
                     window.close()
                 }
@@ -347,11 +353,11 @@ class CreatorApp extends React.Component {
     }
 
     _showHistoryViewer () {
-        window.open(`${$SCRIPT_ROOT}/show_history_viewer/${this.state.resource_name}`)
+        window.open(`${$SCRIPT_ROOT}/show_history_viewer/${this._cProp("resource_name")}`)
     }
 
     _showTileDiffer () {
-        window.open(`${$SCRIPT_ROOT}/show_tile_differ/${this.state.resource_name}`)
+        window.open(`${$SCRIPT_ROOT}/show_tile_differ/${this._cProp("resource_name")}`)
     }
 
     _doFlashStopSpinner(data) {
@@ -364,12 +370,14 @@ class CreatorApp extends React.Component {
         this._goToLineNumber()
     }
 
-    _logErrorStopSpinner(content, title=null, open=true, line_number=null) {
+    _logErrorStopSpinner(title, data={}) {
         this.props.stopSpinner();
-        this.props.addErrorDrawerEntry({title: title, content: content, line_number: line_number}, true);
-        if (open) {
-            this.props.openErrorDrawer();
+        let entry = {title: title, content: data.message};
+        if ("line_number" in data) {
+            entry.line_number = data.line_number
         }
+        this.props.addErrorDrawerEntry(entry, true);
+        this.props.openErrorDrawer();
     }
 
     _dirty() {
@@ -397,7 +405,7 @@ class CreatorApp extends React.Component {
                     self.props.module_viewer_id
                     )
             })
-            .catch((data)=>{self._logErrorStopSpinner(data.message, "Error loading module", true, data.line_number)});
+            .catch((data)=>{self._logErrorStopSpinner( "Error loading module", data)});
 
         function load_success(data) {
             if (data.success) {
@@ -419,7 +427,7 @@ class CreatorApp extends React.Component {
         this.props.statusMessage("Saving Module");
         this.doSavePromise()
             .then(self._doFlashStopSpinner)
-            .catch((data)=> {self._logErrorStopSpinner(data.message, "Error saving module")});
+            .catch((data)=> {self._logErrorStopSpinner("Error saving module", data)});
         return false
     }
 
@@ -432,9 +440,9 @@ class CreatorApp extends React.Component {
                 self.props.statusMessage("Checkpointing");
                 self.doCheckpointPromise()
                     .then(self._doFlashStopSpinner)
-                    .catch((data)=>{self._logErrorStopSpinner(data.message, "Error checkpointing module")})
+                    .catch((data)=>{self._logErrorStopSpinner("Error checkpointing module", data)})
             })
-            .catch((data)=>{self._logErrorStopSpinner(data.message, "Error saving module")});
+            .catch((data)=>{self._logErrorStopSpinner( "Error saving module", data)});
         return false
 
     }
@@ -536,6 +544,7 @@ class CreatorApp extends React.Component {
 
     _goToLineNumber() {
         if (this.line_number) {
+            this.props.closeErrorDrawer();
             if (this.props.is_mpl || this.props.is_d3) {
                 if (this.line_number < this.state.draw_plot_line_number) {
                     if (this.emObject) {
@@ -580,7 +589,11 @@ class CreatorApp extends React.Component {
 
     componentDidMount() {
         this.setState({"mounted": true});
+
         this._goToLineNumber();
+        if (window.in_context) {
+            this.props.registerLineSetter(this._selectLineNumber)
+        }
         this.props.setGoToLineNumber(this._selectLineNumber);
         this._update_saved_state();
         this.props.stopSpinner();
@@ -601,6 +614,7 @@ class CreatorApp extends React.Component {
     }
 
     componentWillUnmount() {
+        this.props.tsocket.disconnect();
         this.delete_my_container()
     }
 
@@ -609,8 +623,7 @@ class CreatorApp extends React.Component {
     }
     
     initSocket() {
-        this.props.tsocket.socket.emit('join-main', {"room": this.props.module_viewer_id, "user_id": window.user_id});
-        this.props.tsocket.socket.on('focus-me', (data)=>{
+        this.props.tsocket.attachListener('focus-me', (data)=>{
             window.focus();
             this._selectLineNumber(data.line_number)
         });
@@ -906,7 +919,7 @@ class CreatorApp extends React.Component {
         );
         let right_pane = (
                 <React.Fragment>
-                    <div id="creator-resources" className="d-block mt-2">
+                    <div id="creator-resources" className={window.in_context ? "d-block" : "d-block mt-2"}>
                         <Tabs id="resource_tabs" selectedTabId={this.state.selectedTabId}
                                  large={true} onChange={this._handleTabSelect}>
                             <Tab id="metadata" title="metadata" panel={mdata_panel}/>
@@ -949,9 +962,12 @@ class CreatorApp extends React.Component {
                         <TacticNavbar is_authenticated={window.is_authenticated}
                                       selected={null}
                                       show_api_links={true}
+                                      page_id={this.props.module_viewer_id}
                                       user_name={window.username}/>
                     }
-
+                    {window.in_context &&
+                        <TopRightButtons refreshTab={this.props.refreshTab} closeTab={this.props.closeTab}/>
+                    }
                         <div className={outer_class} ref={this.top_ref} style={outer_style}>
                             <HorizontalPanes left_pane={left_pane}
                                              right_pane={right_pane}
@@ -974,6 +990,9 @@ CreatorApp.propTypes = {
     changeResourceName: PropTypes.func,
     changeResourceTitle: PropTypes.func,
     changeResourceProps: PropTypes.func,
+    refreshTab: PropTypes.func,
+    closeTab: PropTypes.func,
+    registerLineSetter: PropTypes.func,
     updatePanel: PropTypes.func,
     is_mpl: PropTypes.bool,
     render_content_code: PropTypes.string,
@@ -999,6 +1018,9 @@ CreatorApp.defaultProps = {
     changeResourceName: null,
     changeResourceTitle: null,
     changeResourceProps: null,
+    registerLineSetter: null,
+    refreshTab: null,
+    closeTab: null,
     updatePanel: null
 };
 

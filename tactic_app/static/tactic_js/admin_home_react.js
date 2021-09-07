@@ -75,7 +75,6 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
 window.library_id = (0, _utilities_react.guid)();
-window.page_id = window.library_id;
 var MARGIN_SIZE = 17;
 var tsocket;
 
@@ -104,18 +103,18 @@ var LibraryTacticSocket = /*#__PURE__*/function (_TacticSocket) {
       var reconnect = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
       this.socket.emit('join', {
         "user_id": window.user_id,
-        "library_id": window.library_id
+        "room": window.library_id
       });
-      this.socket.on("window-open", function (data) {
+      this.attachListener("window-open", function (data) {
         return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
       });
-      this.socket.on('handle-callback', _communication_react.handleCallback);
-      this.socket.on('close-user-windows', function (data) {
+      this.attachListener('handle-callback', _communication_react.handleCallback);
+      this.attachListener('close-user-windows', function (data) {
         if (!(data["originator"] == window.library_id)) {
           window.close();
         }
       });
-      this.socket.on('doflash', _toaster.doFlash);
+      this.attachListener('doflash', _toaster.doFlash);
     }
   }]);
 

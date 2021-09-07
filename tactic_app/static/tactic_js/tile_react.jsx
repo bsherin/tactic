@@ -71,9 +71,9 @@ class TileContainer extends React.Component {
     }
 
     initSocket() {
-        this.context.tsocket.reAttachListener("tile-message", this._handleTileMessage);
-        this.context.tsocket.reAttachListener("tile-finished-loading", this._handleTileFinishedLoading);
-        this.context.tsocket.reAttachListener('tile-source-change', this._handleTileSourceChange);
+        this.context.tsocket.attachListener("tile-message", this._handleTileMessage);
+        this.context.tsocket.attachListener("tile-finished-loading", this._handleTileFinishedLoading);
+        this.context.tsocket.attachListener('tile-source-change', this._handleTileSourceChange);
         this.socket_counter = this.context.tsocket.counter
     }
 

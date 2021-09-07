@@ -88,14 +88,14 @@ class HostWorker(QWorker):
             data = {"message": msg, "main_id": library_id}
         else:
             data = {"message": msg, "timeout": timeout, "main_id": library_id}
-        socketio.emit('show-status-msg', data, namespace='/library', room=library_id)
+        socketio.emit('show-status-msg', data, namespace='/main', room=library_id)
 
     def clear_um_status_message(self, library_id):
-        socketio.emit('clear-status-msg', {"main_id": library_id}, namespace='/library', room=library_id)
+        socketio.emit('clear-status-msg', {"main_id": library_id}, namespace='/main', room=library_id)
 
     def add_error_drawer_entry(self, title, content, library_id):
         data = {"title": title, "content": content, "main_id": library_id}
-        socketio.emit("add-error-drawer-entry", data, namespace='/library', room=library_id)
+        socketio.emit("add-error-drawer-entry", data, namespace='/main', room=library_id)
 
     @task_worthy
     def participant_ready(self, data):
@@ -185,7 +185,7 @@ class HostWorker(QWorker):
         if user_obj is None:
             user_obj = current_user
         socketio.emit('update-loaded-tile-list', {"tile_load_dict": tile_manager.loaded_tile_lists(user_obj)},
-                      namespace='/library', room=user_obj.get_id())
+                      namespace='/main', room=user_obj.get_id())
 
     @task_worthy_manual_submit
     def load_tile_module_task(self, data, task_packet):
@@ -197,7 +197,6 @@ class HostWorker(QWorker):
                     self.emit_loaded_tile_update(user_obj)
                 if "main_id" not in task_packet:
                     task_packet["room"] = user_id
-                    task_packet["namespace"] = "/library"
                 if not task_packet["callback_type"] == "no_callback":
                     self.submit_response(task_packet, {"success": False, "message": res_dict["message"],
                                                        "alert_type": "alert-warning"})
@@ -223,11 +222,8 @@ class HostWorker(QWorker):
             else:
                 umdata = {}
             socketio.emit('update-menus', umdata, namespace='/main', room=user_obj.get_id())
-            if "main_id" not in task_packet:
-                task_packet["room"] = user_id
-                task_packet["namespace"] = "/library"
-
             if not task_packet["callback_type"] == "no_callback":
+                print("about to submit response with task_packet " + str(task_packet))
                 self.submit_response(task_packet, {"success": True, "message": "Tile module successfully loaded",
                                                    "alert_type": "alert-success"})
             return
@@ -279,7 +275,7 @@ class HostWorker(QWorker):
     @task_worthy
     def show_um_status_message_task(self, data):
         data["main_id"] = data["library_id"]
-        socketio.emit('show-status-msg', data, namespace='/library', room=data["library_id"])
+        socketio.emit('show-status-msg', data, namespace='/main', room=data["library_id"])
 
     @task_worthy
     def show_main_status_message_task(self, data):
@@ -287,7 +283,7 @@ class HostWorker(QWorker):
 
     @task_worthy
     def clear_um_status_message_task(self, data):
-        socketio.emit('clear-status-msg', {"main_id": data["library_id"]}, namespace='/library', room=data["library_id"])
+        socketio.emit('clear-status-msg', {"main_id": data["library_id"]}, namespace='/main', room=data["library_id"])
 
     @task_worthy
     def update_collection_selector_list(self, data):

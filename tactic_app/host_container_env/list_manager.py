@@ -178,7 +178,8 @@ class ListManager(LibraryResourceManager):
                         taglist.append(new_tag)
                     mdata["tags"] = " ".join(taglist)
                     res_name = doc["list_name"]
-                    db[current_user.list_collection_name].update_one({"list_name": res_name}, {'$set': {"metadata": mdata}})
+                    db[current_user.list_collection_name].update_one({"list_name": res_name},
+                                                                     {'$set': {"metadata": mdata}})
         return
 
     def grab_list_list_chunk(self):
@@ -308,6 +309,8 @@ class RepositoryListManager(ListManager):
     def add_rules(self):
         app.add_url_rule('/repository_view_list/<list_name>', "repository_view_list",
                          login_required(self.repository_view_list), methods=['get'])
+        app.add_url_rule('/repository_view_list_in_context', "repository_view_list_in_context",
+                         login_required(self.repository_view_list_in_context), methods=['get', 'post'])
         app.add_url_rule('/repository_get_list/<list_name>', "repository_get_list",
                          login_required(self.repository_get_list), methods=['get', 'post'])
 
@@ -316,16 +319,32 @@ class RepositoryListManager(ListManager):
         javascript_source = url_for('static', filename=js_source_dict["list_viewer_react"])
         return render_template("library/resource_viewer_react.html",
                                resource_name=list_name,
-                               include_metadata=True,
-                               include_above_main_area=False,
                                theme=user_obj.get_theme(),
-                               include_right=True,
+                               is_repository=True,
                                read_only=True,
                                develop=str(_develop),
-                               is_repository=True,
                                javascript_source=javascript_source,
                                css_source=css_source("list_viewer_react"),
                                version_string=tstring)
+
+    def repository_view_list_in_context(self):
+        list_name = request.json["resource_name"]
+        the_list = repository_user.get_list(list_name)
+        lstring = ""
+        for w in the_list:
+            lstring += w + "\n"
+        mdata = repository_user.process_metadata(self.grab_metadata(list_name))
+        data = {
+            "success": True,
+            "kind": "list-viewer",
+            "res_type": "list",
+            "the_content": lstring,
+            "mdata": mdata,
+            "resource_name": list_name,
+            "read_only": True,
+            "is_repository": True
+        }
+        return jsonify(data)
 
     def repository_get_list(self, list_name):
         the_list = repository_user.get_list(list_name)

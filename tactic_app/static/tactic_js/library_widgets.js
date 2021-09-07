@@ -593,7 +593,7 @@ var LoadedTileList = /*#__PURE__*/function (_React$Component5) {
     key: "initSocket",
     value: function initSocket() {
       var self = this;
-      this.context.tsocket.socket.on('update-loaded-tile-list', function (data) {
+      this.context.tsocket.attachListener('update-loaded-tile-list', function (data) {
         return self.set_state_from_dict(data.tile_load_dict);
       });
       this.socket_counter = this.context.tsocket.counter;

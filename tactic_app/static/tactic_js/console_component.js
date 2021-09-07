@@ -182,7 +182,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
       // That requires storing it outside of this component since the console can be unmounted
 
 
-      this.context.tsocket.reAttachListener("console-message", _handleConsoleMessage);
+      this.context.tsocket.attachListener("console-message", _handleConsoleMessage);
       this.socket_counter = this.context.tsocket.counter;
     }
   }, {
@@ -807,25 +807,6 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$Component) {
       }
 
       this._setConsoleItemValue(data.console_id, "output_text", current + data.message);
-    }
-  }, {
-    key: "_handleConsoleMessage",
-    value: function _handleConsoleMessage(data) {
-      if (data.main_id == this.props.main_id) {
-        var self = this;
-        var handlerDict = {
-          consoleLog: function consoleLog(data) {
-            return self._addConsoleEntry(data.message, data.force_open);
-          },
-          stopConsoleSpinner: self._stopConsoleSpinner,
-          consoleCodePrint: this._appendConsoleItemOutput,
-          consoleCodeRun: this._startSpinner,
-          updateLog: function updateLog(data) {
-            return self._addToLog(data.new_line);
-          }
-        };
-        handlerDict[data.console_message](data);
-      }
     }
   }, {
     key: "_addToLog",
@@ -2349,10 +2330,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component6) {
       this.props.goToNextCell(this.props.unique_id);
 
       this._showMarkdown();
-    } // _notesRefHandler(the_ref) {
-    //     this.setState({ce_ref: the_ref});
-    // }
-
+    }
   }, {
     key: "_getFirstLine",
     value: function _getFirstLine() {

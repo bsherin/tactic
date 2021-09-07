@@ -25,7 +25,7 @@ var _markdownItLatex = _interopRequireDefault(require("markdown-it-latex"));
 
 var _lodash = _interopRequireDefault(require("lodash"));
 
-var _resource_viewer_context = require("./resource_viewer_context.js");
+var _tactic_context = require("./tactic_context.js");
 
 var _communication_react = require("./communication_react.js");
 
@@ -509,7 +509,7 @@ NativeTags.proptypes = {
   handleChange: _propTypes["default"].func,
   res_type: _propTypes["default"].string
 };
-NativeTags.contextType = _resource_viewer_context.ViewerContext;
+NativeTags.contextType = _tactic_context.TacticContext;
 
 var NotesField = /*#__PURE__*/function (_React$Component6) {
   _inherits(NotesField, _React$Component6);
@@ -646,7 +646,7 @@ var NotesField = /*#__PURE__*/function (_React$Component6) {
 }(_react["default"].Component);
 
 exports.NotesField = NotesField;
-NotesField.contextType = _resource_viewer_context.ViewerContext;
+NotesField.contextType = _tactic_context.TacticContext;
 NotesField.propTypes = {
   notes: _propTypes["default"].string,
   handleChange: _propTypes["default"].func,

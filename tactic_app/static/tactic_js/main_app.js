@@ -131,15 +131,12 @@ var MainTacticSocket = /*#__PURE__*/function (_TacticSocket) {
     key: "initialize_socket_stuff",
     value: function initialize_socket_stuff() {
       var reconnect = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-      this.socket.on("notebook-open", function (data) {
-        window.open($SCRIPT_ROOT + "/open_notebook/" + data["the_id"]);
+      this.socket.emit('join', {
+        "room": window.user_id
       });
 
       if (!window.in_context) {
-        this.socket.emit('join', {
-          "room": window.user_id
-        });
-        this.socket.on("doFlash", function (data) {
+        this.attachListener("doFlash", function (data) {
           (0, _toaster.doFlash)(data);
         });
       }
@@ -180,7 +177,7 @@ function main_props(data, registerDirtyMethod, finalCallback) {
   var main_id = data.main_id;
   var initial_tile_types;
   var tsocket = new MainTacticSocket("main", 5000);
-  tsocket.socket.on('handle-callback', function (task_packet) {
+  tsocket.attachListener('handle-callback', function (task_packet) {
     (0, _communication_react.handleCallback)(task_packet, main_id);
   });
   tsocket.socket.on('finish-post-load', _finish_post_load_in_context);
@@ -317,10 +314,21 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
 
     if (!props.controlled) {
-      props.tsocket.socket.on('close-user-windows', function (data) {
+      props.tsocket.attachListener('close-user-windows', function (data) {
         if (!(data["originator"] == props.main_id)) {
           window.close();
         }
+      });
+      props.tsocket.attachListener("notebook-open", function (data) {
+        window.open($SCRIPT_ROOT + "/new_notebook_with_data/" + data.temp_data_id);
+      });
+    } else {
+      props.tsocket.attachListener("notebook-open", function (data) {
+        var the_view = "".concat($SCRIPT_ROOT, "/new_notebook_in_context");
+        (0, _communication_react.postAjaxPromise)(the_view, {
+          temp_data_id: data.temp_data_id,
+          resource_name: ""
+        }).then(self.props.handleCreateViewer)["catch"](_toaster.doFlash);
       });
     }
 
@@ -499,6 +507,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "componentWillUnmount",
     value: function componentWillUnmount() {
+      this.props.tsocket.disconnect();
       this.delete_my_containers();
     }
   }, {
@@ -542,29 +551,31 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "initSocket",
     value: function initSocket() {
-      var self = this;
-      this.props.tsocket.socket.emit('join-main', {
-        "room": this.props.main_id,
-        "user_id": window.user_id
+      var _this2 = this;
+
+      var self = this; // this.props.tsocket.socket.emit('join-main', {"room": this.props.main_id, "user_id": window.user_id});
+
+      this.props.tsocket.attachListener('forcedisconnect', function () {
+        self.props.tsocket.socket.disconnect();
       });
-      this.props.tsocket.reAttachListener('forcedisconnect', function () {
-        this.props.tsocket.socket.disconnect();
+      this.props.tsocket.attachListener('table-message', this._handleTableMessage);
+      this.props.tsocket.attachListener("update-menus", this._update_menus_listener);
+      this.props.tsocket.attachListener('change-doc', this._change_doc_listener);
+      this.props.tsocket.attachListener('handle-callback', function (task_packet) {
+        (0, _communication_react.handleCallback)(task_packet, _this2.props.main_id);
       });
-      this.props.tsocket.reAttachListener('table-message', this._handleTableMessage);
-      this.props.tsocket.reAttachListener("update-menus", this._update_menus_listener);
-      this.props.tsocket.reAttachListener('change-doc', this._change_doc_listener);
       this.socket_counter = this.props.tsocket.counter;
     }
   }, {
     key: "_setTheme",
     value: function _setTheme(dark_theme) {
-      var _this2 = this;
+      var _this3 = this;
 
       this.setState({
         dark_theme: dark_theme
       }, function () {
         if (!window.in_context) {
-          window.dark_theme = _this2.state.dark_theme;
+          window.dark_theme = _this3.state.dark_theme;
         }
       });
     } // Every item in tile_list is a list of this form
@@ -780,7 +791,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "create_tile_menus",
     value: function create_tile_menus() {
-      var _this3 = this;
+      var _this4 = this;
 
       var menu_items = [];
 
@@ -808,7 +819,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
               var ttype = _step5.value;
 
               option_dict[ttype] = function () {
-                return _this3._tile_command(ttype);
+                return _this4._tile_command(ttype);
               };
             };
 
@@ -1324,7 +1335,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         });
       } else {
         this.setState({
-          "resource_name": new_name,
+          "resource_name": new_project_name,
           "is_project": true
         });
       }
@@ -1345,7 +1356,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
-      var _this4 = this;
+      var _this5 = this;
 
       var dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
       var vp_height;
@@ -1438,10 +1449,10 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         is_juptyer: this.props.is_jupyter,
         deleteRow: this._deleteRow,
         insertRowBefore: function insertRowBefore() {
-          _this4._insertRow(_this4.state.selected_row);
+          _this5._insertRow(_this5.state.selected_row);
         },
         insertRowAfter: function insertRowAfter() {
-          _this4._insertRow(_this4.state.selected_row + 1);
+          _this5._insertRow(_this5.state.selected_row + 1);
         },
         duplicateRow: this._duplicateRow,
         selected_row: this.state.selected_row,
@@ -1542,7 +1553,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         exports_pane = /*#__PURE__*/_react["default"].createElement(_export_viewer_react.ExportsViewer, {
           main_id: this.props.main_id,
           setUpdate: function setUpdate(ufunc) {
-            _this4.updateExportsList = ufunc;
+            _this5.updateExportsList = ufunc;
           },
           setMainStateValue: this._setMainStateValue,
           available_height: console_available_height,
@@ -1638,7 +1649,10 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         is_authenticated: window.is_authenticated,
         user_name: window.username,
         menus: menus,
-        min_navbar: window.in_context
+        page_id: this.props.main_id,
+        min_navbar: window.in_context,
+        refreshTab: this.props.refreshTab,
+        closeTab: this.props.closeTab
       }), /*#__PURE__*/_react["default"].createElement("div", {
         className: outer_class,
         ref: this.main_outer_ref
@@ -1670,6 +1684,8 @@ MainApp.propTypes = {
   changeResourceTitle: _propTypes["default"].func,
   changeResourceProps: _propTypes["default"].func,
   updatePanel: _propTypes["default"].func,
+  refreshTab: _propTypes["default"].func,
+  closeTab: _propTypes["default"].func,
   interface_state: _propTypes["default"].object,
   initial_doc_names: _propTypes["default"].array,
   initial_column_names: _propTypes["default"].array,
@@ -1684,6 +1700,8 @@ MainApp.defaultProps = {
   changeResourceName: null,
   changeResourceTitle: null,
   changeResourceProps: null,
+  refreshTab: null,
+  closeTab: null,
   updatePanel: null
 };
 MainApp.contextType = _tactic_context.TacticContext;

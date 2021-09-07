@@ -11,28 +11,36 @@ import {postAjaxPromise} from "./communication_react.js"
 import {withErrorDrawer} from "./error_drawer.js";
 import {withStatus} from "./toaster.js";
 import {doBinding, guid} from "./utilities_react.js";
-import {TacticNavbar} from "./blueprint_navbar";
+import {TacticNavbar} from "./blueprint_navbar.js";
+import {TacticContext} from "./tactic_context.js";
 
 window.resource_viewer_id = guid();
 window.main_id = window.resource_viewer_id;
 
 function tile_differ_main ()  {
+    function gotProps(the_props) {
+        let TileDifferAppPlus = withErrorDrawer(withStatus(TileDifferApp));
+        let the_element = <TileDifferAppPlus {...the_props}
+                                             controlled={false}
+                                             initial_theme={window.theme}
+                                             changeName={null}
+                    />;
+        let domContainer = document.querySelector('#root');
+        ReactDOM.render(the_element, domContainer)
+
+    }
     let get_url = "get_module_code";
     var tsocket = new MergeViewerSocket("main", 5000);
-    let TileDifferAppPlus = withErrorDrawer(withStatus(TileDifferApp, tsocket), tsocket);
+
     postAjaxPromise(`${get_url}/${window.resource_name}`, {})
         .then(function (data) {
             var edit_content = data.the_content;
             postAjaxPromise("get_tile_names")
-                .then(function (data) {
-                    let tile_list = data.tile_names;
-                    let domContainer = document.querySelector('#root');
-                    ReactDOM.render(<TileDifferAppPlus resource_name={window.resource_name}
-                                                       tile_list={tile_list}
-                                                       edit_content={edit_content}
-                                                       initial_theme={window.theme}
-                                                       second_resource_name={window.second_resource_name}
-                    />, domContainer);
+                .then(function (data2) {
+                    data.tile_list = data2.tile_names;
+                    data.resource_name = window.resource_name,
+                    data.second_resource_name = window.second_resource_name;
+                    tile_differ_props(data, null, gotProps)
                 })
                 .catch(doFlash)
 
@@ -41,40 +49,60 @@ function tile_differ_main ()  {
         .catch(doFlash);
 }
 
+function tile_differ_props(data, registerDirtyMethod, finalCallback) {
+    let resource_viewer_id = guid();
+    var tsocket = new MergeViewerSocket("main", 5000, {resource_viewer_id: resource_viewer_id});
+    finalCallback({
+        resource_viewer_id: resource_viewer_id,
+        tsocket: tsocket,
+        tile_list: data.tile_list,
+        resource_name: data.resource_name,
+        second_resource_name: data.second_resource_name,
+        edit_content: data.the_content,
+        is_repository: false,
+        registerDirtyMethod: registerDirtyMethod
+    })
+}
+
 class TileDifferApp extends React.Component {
 
     constructor(props) {
         super(props);
         doBinding(this);
         let self = this;
-        window.onbeforeunload = function(e) {
-            if (self.dirty()) {
-                return "Any unsaved changes will be lost."
-            }
-        };
-
         this.state = {
             "edit_content": props.edit_content,
             "right_content": "",
             "tile_popup_val": props.second_resource_name == "none" ? props.resource_name : props.second_resource_name,
             "tile_list": props.tile_list,
-            dark_theme: this.props.initial_theme == "dark"
         };
         this.handleEditChange = this.handleEditChange.bind(this);
         this.handleSelectChange = this.handleSelectChange.bind(this);
         this.saveFromLeft = this.saveFromLeft.bind(this);
-        this.savedContent = props.edit_content
+        this.savedContent = props.edit_content;
+
+        if (!props.controlled) {
+            this.state.dark_theme = props.initial_theme === "dark";
+            this.state.resource_name = props.resource_name;
+            window.addEventListener("beforeunload", function (e) {
+                if (self._dirty()) {
+                    e.preventDefault();
+                    e.returnValue = ''
+                }
+            });
+        }
     }
     componentDidMount() {
-        this.props.setStatusTheme(this.state.dark_theme);
-
-        window.dark_theme = this.state.dark_theme
+        if (!this.props.controlled) {
+            window.dark_theme = this.state.dark_theme
+        }
     }
 
     _setTheme(dark_theme) {
         this.setState({dark_theme: dark_theme}, ()=> {
-            this.props.setStatusTheme(dark_theme);
-            window.dark_theme = this.state.dark_theme
+            if (!window.in_context) {
+                window.dark_theme = this.state.dark_theme
+            }
         })
     }
 
@@ -93,15 +121,26 @@ class TileDifferApp extends React.Component {
     }
 
     render() {
+        let dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
         return (
-            <React.Fragment>
-                <TacticNavbar is_authenticated={window.is_authenticated}
+            <TacticContext.Provider value={{
+                    readOnly: this.props.readOnly,
+                    tsocket: this.props.tsocket,
+                    dark_theme: dark_theme,
+                    setTheme:  this.props.controlled ? this.context.setTheme : this._setTheme,
+                    controlled: this.props.controlled,
+                    am_selected: this.props.am_selected
+                }}>
+                {!this.props.controlled} {
+                    <TacticNavbar is_authenticated={window.is_authenticated}
                                   selected={null}
                                   show_api_links={true}
-                                  dark_theme={this.state.dark_theme}
-                                  set_parent_theme={this._setTheme}
+                                  page_id={this.props.resource_viewer_id}
                                   user_name={window.username}/>
+                }
+
                 <MergeViewerApp {...this.props.statusFuncs}
+                                resource_viewer_id={this.props.resource_viewer_id}
                                 resource_name={this.props.resource_name}
                                 option_list={this.state.tile_list}
                                 select_val={this.state.tile_popup_val}
@@ -109,10 +148,9 @@ class TileDifferApp extends React.Component {
                                 right_content={this.state.right_content}
                                 handleSelectChange={this.handleSelectChange}
                                 handleEditChange={this.handleEditChange}
-                                dark_theme={this.state.dark_theme}
                                 saveHandler={this.saveFromLeft}
                 />
-        </React.Fragment>
+            </TacticContext.Provider>
         )
     }
 
@@ -138,5 +176,8 @@ TileDifferApp.propTypes = {
     second_resource_name: PropTypes.string
 };
 
+TileDifferApp.contextType = TacticContext;
 
-tile_differ_main();
+if (!window.in_context) {
+    tile_differ_main();
+}

@@ -199,8 +199,8 @@ function postAsyncFalse(dest_id, task_type, task_data){
     });
 }
 
-function postWithCallbackNoMain(dest_id, task_type, task_data, callback_func){
-    const task_packet =  {
+function postWithCallbackNoMain(dest_id, task_type, task_data, callback_func, task_packet_additions={}){
+    let task_packet =  {
         "source": "client",
         "dest": dest_id,
         "task_type": task_type,
@@ -220,6 +220,7 @@ function postWithCallbackNoMain(dest_id, task_type, task_data, callback_func){
         task_packet.callback_type = "no_callback";
         task_packet.reply_to = null
     }
+    task_packet = {...task_packet, ...task_packet_additions};
     $.ajax({
         url: $SCRIPT_ROOT + "/post_from_client",
         contentType : 'application/json',

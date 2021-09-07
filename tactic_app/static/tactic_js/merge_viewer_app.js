@@ -19,9 +19,9 @@ var _tactic_socket = require("./tactic_socket.js");
 
 var _toaster = require("./toaster.js");
 
-var _communication_react = require("./communication_react.js");
-
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields.js");
+
+var _tactic_context = require("./tactic_context.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -73,19 +73,10 @@ var MergeViewerSocket = /*#__PURE__*/function (_TacticSocket) {
     value: function initialize_socket_stuff() {
       var reconnect = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
       this.socket.emit('join', {
-        "room": user_id
+        "room": window.user_id,
+        user_id: window.user_id
       });
-      this.socket.emit('join-main', {
-        "room": resource_viewer_id,
-        "user_id": user_id
-      });
-      this.socket.on('handle-callback', _communication_react.handleCallback);
-      this.socket.on('close-user-windows', function (data) {
-        if (!(data["originator"] == resource_viewer_id)) {
-          window.close();
-        }
-      });
-      this.socket.on("doFlash", function (data) {
+      this.attachListener("doFlash", function (data) {
         (0, _toaster.doFlash)(data);
       });
     }
@@ -157,8 +148,8 @@ var MergeViewerApp = /*#__PURE__*/function (_React$Component) {
 
       if (this.state.mounted) {
         // This will be true after the initial render
-        new_ld_height = this.state.inner_height - $(this.left_div_ref.current).offset().top - bottom_margin;
-        max_merge_height = new_ld_height - this.above_main_ref.current.offsetHeight;
+        new_ld_height = this.state.inner_height - this.left_div_ref.current.offsetTop;
+        max_merge_height = new_ld_height - bottom_margin;
       } else {
         new_ld_height = this.state.inner_height - 45 - bottom_margin;
         max_merge_height = new_ld_height - 50;
@@ -176,7 +167,7 @@ var MergeViewerApp = /*#__PURE__*/function (_React$Component) {
       var new_ld_height;
       var max_merge_height;
 
-      var _this$get_new_heights = this.get_new_heights(40);
+      var _this$get_new_heights = this.get_new_heights(65);
 
       var _this$get_new_heights2 = _slicedToArray(_this$get_new_heights, 2);
 
@@ -190,7 +181,7 @@ var MergeViewerApp = /*#__PURE__*/function (_React$Component) {
       };
       var outer_class = "merge-viewer-outer";
 
-      if (this.props.dark_theme) {
+      if (this.context.dark_theme) {
         outer_class = outer_class + " bp3-dark";
       } else {
         outer_class = outer_class + " light-theme";
@@ -244,6 +235,6 @@ MergeViewerApp.propTypes = {
   right_content: _propTypes["default"].string,
   handleSelectChange: _propTypes["default"].func,
   handleEditChange: _propTypes["default"].func,
-  saveHandler: _propTypes["default"].func,
-  dark_theme: _propTypes["default"].bool
+  saveHandler: _propTypes["default"].func
 };
+MergeViewerApp.contextType = _tactic_context.TacticContext;

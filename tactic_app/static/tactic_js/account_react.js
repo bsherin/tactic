@@ -18,6 +18,8 @@ var _utilities_react = require("./utilities_react.js");
 
 var _blueprint_navbar = require("./blueprint_navbar");
 
+var _tactic_context = require("./tactic_context.js");
+
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -50,8 +52,7 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
-window.page_id = (0, _utilities_react.guid)();
-window.main_id = window.page_id;
+window.main_id = (0, _utilities_react.guid)();
 
 function _account_main() {
   if (window._show_message) (0, _toaster.doFlash)(window._message);
@@ -181,11 +182,6 @@ var AccountApp = /*#__PURE__*/function (_React$Component3) {
     value: function componentDidMount() {
       var self = this;
       (0, _communication_react.postAjax)("get_account_info", {}, function (data) {
-        // let new_fields = [];
-        // let new_helper_text = Object.assign({}, this.state.helper_text);
-        // for (let fdict of data.field_list) {
-        //     new_field = Object.assign({}, fdict);
-        // }
         var new_state = {
           fields: data.field_list
         };
@@ -423,12 +419,19 @@ var AccountApp = /*#__PURE__*/function (_React$Component3) {
       }
 
       var self = this;
-      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_tactic_context.TacticContext.Provider, {
+        value: {
+          readOnly: false,
+          tsocket: this.props.tsocket,
+          dark_theme: this.state.dark_theme,
+          setTheme: this.props.controlled ? this.context.setTheme : this._setTheme,
+          controlled: this.props.controlled
+        }
+      }, /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
         is_authenticated: window.is_authenticated,
         selected: null,
         show_api_links: false,
-        dark_theme: this.state.dark_theme,
-        set_parent_theme: this._setTheme,
+        page_id: window.main_id,
         user_name: window.username
       }), /*#__PURE__*/_react["default"].createElement("div", {
         className: outer_class
@@ -458,7 +461,7 @@ var AccountApp = /*#__PURE__*/function (_React$Component3) {
         large: true,
         text: "Update Password",
         onClick: this._submitPassword
-      }))));
+      })))));
     }
   }]);
 

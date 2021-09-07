@@ -6,22 +6,15 @@ import {ReactCodemirrorMergeView} from "./react-codemirror-mergeview.js";
 import {Toolbar} from "./blueprint_toolbar.js";
 import {TacticSocket} from "./tactic_socket.js";
 import {doFlash} from "./toaster.js";
-import {handleCallback} from "./communication_react.js"
 import {BpSelect} from "./blueprint_mdata_fields.js";
+import {TacticContext} from "./tactic_context.js";
 
 export{MergeViewerApp, MergeViewerSocket}
 
 class MergeViewerSocket extends TacticSocket {
     initialize_socket_stuff(reconnect=false) {
-        this.socket.emit('join', {"room": user_id});
-        this.socket.emit('join-main', {"room": resource_viewer_id, "user_id": user_id});
-        this.socket.on('handle-callback', handleCallback);
-        this.socket.on('close-user-windows', (data) => {
-            if (!(data["originator"] == resource_viewer_id)) {
-                window.close()
-            }
-        });
-        this.socket.on("doFlash", function(data) {
+        this.socket.emit('join', {"room": window.user_id, user_id: window.user_id});
+        this.attachListener("doFlash", function(data) {
             doFlash(data)
         });
     }
@@ -67,8 +60,8 @@ class MergeViewerApp extends React.Component {
         let new_ld_height;
         let max_merge_height;
         if (this.state.mounted) {  // This will be true after the initial render
-            new_ld_height = this.state.inner_height - $(this.left_div_ref.current).offset().top - bottom_margin;
-            max_merge_height = new_ld_height - this.above_main_ref.current.offsetHeight;
+            new_ld_height = this.state.inner_height - this.left_div_ref.current.offsetTop ;
+            max_merge_height = new_ld_height - bottom_margin;
         }
         else {
             new_ld_height = this.state.inner_height - 45 - bottom_margin;
@@ -81,7 +74,7 @@ class MergeViewerApp extends React.Component {
         let toolbar_holder_style = {"paddingTop": 20, paddingLeft: 50};
         let new_ld_height;
         let max_merge_height;
-        [new_ld_height, max_merge_height] = this.get_new_heights(40);
+        [new_ld_height, max_merge_height] = this.get_new_heights(65);
         let left_div_style = {
             "width": "100%",
             "height": new_ld_height,
@@ -90,7 +83,7 @@ class MergeViewerApp extends React.Component {
 
         };
         let outer_class = "merge-viewer-outer";
-        if (this.props.dark_theme) {
+        if (this.context.dark_theme) {
             outer_class = outer_class + " bp3-dark";
         }
         else {
@@ -134,5 +127,6 @@ MergeViewerApp.propTypes = {
     handleSelectChange: PropTypes.func,
     handleEditChange: PropTypes.func,
     saveHandler: PropTypes.func,
-    dark_theme: PropTypes.bool
 };
+
+MergeViewerApp.contextType = TacticContext;

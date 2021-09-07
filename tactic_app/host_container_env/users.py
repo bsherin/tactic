@@ -131,20 +131,13 @@ class User(UserMixin, MongoAccess):
             return User(result)
 
     def get_theme(self):
-        print("in get theme")
-        theme = self.user_data_dict["theme"]
-        print("got theme {}".format(str(theme)))
-        if theme == "dark":
-            return "dark"
-        else:
-            return "light"
+        return self.user_data_dict["theme"]
 
     def get_preferred_dark_theme(self):
-        preferred_dark_theme = self.user_data_dict["preferred_dark_theme"]
-        if preferred_dark_theme is None:
-            return default_dark_theme
-        else:
-            return preferred_dark_theme
+        return self.user_data_dict["preferred_dark_theme"]
+
+    def get_preferred_interface(self):
+        return self.user_data_dict["preferred_interface"]
 
     def get_tzoffset(self):
         return self.user_data_dict["tzoffset"]
@@ -157,7 +150,7 @@ class User(UserMixin, MongoAccess):
             if hasattr(self, key):
                 result[key] = getattr(self, key)
             else:
-                result[key] = None
+                result[key] = fdict["default"]
         return result
 
     def create_collection_meta_data(self, collection_type):

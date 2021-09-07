@@ -101,15 +101,15 @@ var MainTacticSocket = /*#__PURE__*/function (_TacticSocket) {
     key: "initialize_socket_stuff",
     value: function initialize_socket_stuff() {
       var reconnect = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-      this.socket.on("notebook-open", function (data) {
-        window.open($SCRIPT_ROOT + "/open_notebook/" + data["the_id"]);
+      this.attachListener("window-open", function (data) {
+        window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
+      });
+      this.socket.emit('join', {
+        "room": window.user_id
       });
 
       if (!window.in_context) {
-        this.socket.emit('join', {
-          "room": window.user_id
-        });
-        this.socket.on("doFlash", function (data) {
+        this.attachListener("doFlash", function (data) {
           (0, _toaster.doFlash)(data);
         });
       }
@@ -136,9 +136,15 @@ function main_main() {
   (0, _utilities_react.renderSpinnerMessage)("Starting up ...");
   var target = window.is_new_notebook ? "new_notebook_in_context" : "main_project_in_context";
   var resource_name = window.is_new_notebook ? "" : window.project_name;
-  (0, _communication_react.postAjaxPromise)(target, {
+  var post_data = {
     "resource_name": resource_name
-  }).then(function (data) {
+  };
+
+  if (window.is_new_notebook) {
+    post_data.temp_data_id = window.temp_data_id;
+  }
+
+  (0, _communication_react.postAjaxPromise)(target, post_data).then(function (data) {
     notebook_props(data, null, gotProps);
   });
 }
@@ -147,7 +153,7 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
   ppi = (0, _utilities_react.get_ppi)();
   var main_id = data.main_id;
   var tsocket = new MainTacticSocket("main", 5000);
-  tsocket.socket.on('handle-callback', function (task_packet) {
+  tsocket.attachListener('handle-callback', function (task_packet) {
     (0, _communication_react.handleCallback)(task_packet, main_id);
   });
   tsocket.socket.on('finish-post-load', _finish_post_load_in_context);
@@ -159,9 +165,8 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
   var is_totally_new = !data.is_jupyter && !data.is_project && data.temp_data_id == "";
   var opening_from_temp_id = data.temp_data_id != "";
   tsocket.socket.on("remove-ready-block", readyListener);
-  tsocket.socket.emit('join-main', {
-    "room": main_id,
-    "user_id": window.user_id
+  tsocket.socket.emit('join', {
+    "room": main_id
   }, function (response) {
     tsocket.socket.emit('client-ready', {
       "room": main_id,
@@ -172,6 +177,7 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
     });
   });
   window.addEventListener("unload", function sendRemove() {
+    console.log("got the beacon");
     navigator.sendBeacon("/remove_mainwindow", JSON.stringify({
       "main_id": main_id
     }));
@@ -265,7 +271,7 @@ var NotebookApp = /*#__PURE__*/function (_React$Component) {
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
 
     if (!props.controlled) {
-      props.tsocket.socket.on('close-user-windows', function (data) {
+      props.tsocket.attachListener('close-user-windows', function (data) {
         if (!(data["originator"] == props.main_id)) {
           window.close();
         }
@@ -385,6 +391,7 @@ var NotebookApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "componentWillUnmount",
     value: function componentWillUnmount() {
+      this.props.tsocket.disconnect();
       this.delete_my_containers();
     }
   }, {
@@ -397,13 +404,10 @@ var NotebookApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "initSocket",
     value: function initSocket() {
-      var self = this;
-      this.props.tsocket.socket.emit('join-main', {
-        "room": this.props.main_id,
-        "user_id": window.user_id
-      });
-      this.props.tsocket.reAttachListener('forcedisconnect', function () {
-        this.props.tsocket.socket.disconnect();
+      var self = this; // this.props.tsocket.socket.emit('join-main', {"room": this.props.main_id, "user_id": window.user_id});
+
+      this.props.tsocket.attachListener('forcedisconnect', function () {
+        self.props.tsocket.socket.disconnect();
       });
       this.socket_counter = this.props.tsocket.counter;
     }
@@ -481,7 +485,7 @@ var NotebookApp = /*#__PURE__*/function (_React$Component) {
         });
       } else {
         this.setState({
-          resource_name: new_name,
+          resource_name: new_project_name,
           is_project: true,
           is_jupyter: false
         });
@@ -622,7 +626,10 @@ var NotebookApp = /*#__PURE__*/function (_React$Component) {
         user_name: window.username,
         menus: menus,
         show_api_links: true,
-        min_navbar: window.in_context
+        page_id: this.props.main_id,
+        min_navbar: window.in_context,
+        refreshTab: this.props.refreshTab,
+        closeTab: this.props.closeTab
       }), /*#__PURE__*/_react["default"].createElement("div", {
         className: outer_class,
         ref: this.main_outer_ref
@@ -649,7 +656,13 @@ NotebookApp.propTypes = {
   console_items: _propTypes["default"].array,
   console_component: _propTypes["default"].object,
   is_project: _propTypes["default"].bool,
-  interface_state: _propTypes["default"].object
+  interface_state: _propTypes["default"].object,
+  refreshTab: _propTypes["default"].func,
+  closeTab: _propTypes["default"].func
+};
+NotebookApp.defaultProps = {
+  refreshTab: null,
+  closeTab: null
 };
 NotebookApp.contextType = _tactic_context.TacticContext;
 

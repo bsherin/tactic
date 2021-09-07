@@ -25,7 +25,7 @@ import redis_tools
 
 import tactic_app
 
-print("about to do socketio.run")
+# print("about to do socketio.run")
 # socketio.run(app, host="0.0.0.0", port=5000)
-print("did it")
+# print("did it")
 

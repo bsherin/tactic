@@ -100,10 +100,10 @@ function withErrorDrawer(WrappedComponent) {
     }, {
       key: "initSocket",
       value: function initSocket() {
-        this.props.tsocket.reAttachListener('close-error-drawer', this._close);
-        this.props.tsocket.reAttachListener('open-error-drawer', this._open);
-        this.props.tsocket.reAttachListener('add-error-drawer-entry', this._addEntry);
-        this.props.tsocket.reAttachListener("clear-error-drawer", this._clearAll);
+        this.props.tsocket.attachListener('close-error-drawer', this._close);
+        this.props.tsocket.attachListener('open-error-drawer', this._open);
+        this.props.tsocket.attachListener('add-error-drawer-entry', this._addEntry);
+        this.props.tsocket.attachListener("clear-error-drawer", this._clearAll);
         this.socket_counter = this.props.tsocket.counter;
       }
     }, {
@@ -192,7 +192,10 @@ function withErrorDrawer(WrappedComponent) {
         return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(WrappedComponent, _extends({}, this.props, errorDrawerFuncs, {
           errorDrawerFuncs: errorDrawerFuncs
         })), /*#__PURE__*/_react["default"].createElement(ErrorDrawer, _extends({}, this.state, {
+          main_id: this.props.main_id,
           goToLineNumberFunc: this.state.goToLineNumber,
+          goToModule: this.props.goToModule,
+          closeErrorDrawer: this._close,
           title: "Error Drawer",
           dark_theme: this.props.controlled ? this.props.dark_theme : window.dark_theme,
           size: this.state.error_drawer_size,
@@ -226,21 +229,27 @@ var ErrorItem = /*#__PURE__*/function (_React$Component2) {
     value: function _openError() {
       var _this3 = this;
 
+      // This first condition will be true if this error drawer is in the tile creator
       if (this.props.goToLineNumberFunc) {
         this.props.goToLineNumberFunc(this.props.line_number);
       } else {
-        window.blur();
-        (0, _communication_react.postWithCallback)("host", "go_to_module_viewer_if_exists", {
-          user_id: window.user_id,
-          tile_type: this.props.tile_type,
-          line_number: this.props.line_number
-        }, function (data) {
-          if (!data.success) {
-            window.open($SCRIPT_ROOT + "/view_location_in_creator/" + _this3.props.tile_type + "/" + _this3.props.line_number);
-          } else {
-            window.open("", data.window_name);
-          }
-        });
+        if (!window.in_context) {
+          window.blur();
+          (0, _communication_react.postWithCallback)("host", "go_to_module_viewer_if_exists", {
+            user_id: window.user_id,
+            tile_type: this.props.tile_type,
+            line_number: this.props.line_number
+          }, function (data) {
+            if (!data.success) {
+              window.open($SCRIPT_ROOT + "/view_location_in_creator/" + _this3.props.tile_type + "/" + _this3.props.line_number);
+            } else {
+              window.open("", data.window_name);
+            }
+          }, null, this.props.main_id);
+        } else {
+          this.props.closeErrorDrawer();
+          this.props.goToModule(this.props.tile_type, this.props.line_number);
+        }
       }
     }
   }, {
@@ -327,7 +336,10 @@ var ErrorDrawer = /*#__PURE__*/function (_React$Component3) {
           title: entry.title,
           content: entry.content,
           has_link: has_link,
+          main_id: _this4.props.main_id,
           goToLineNumberFunc: _this4.props.goToLineNumberFunc,
+          closeErrorDrawer: _this4.props.closeErrorDrawer,
+          goToModule: _this4.props.goToModule,
           line_number: entry.line_number,
           tile_type: entry.tile_type
         });

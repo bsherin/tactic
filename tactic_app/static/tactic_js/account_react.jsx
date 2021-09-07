@@ -11,9 +11,9 @@ import {postAjax} from "./communication_react.js";
 
 import {doBinding, guid} from "./utilities_react.js";
 import {TacticNavbar} from "./blueprint_navbar";
+import {TacticContext} from "./tactic_context.js";
 
-window.page_id = guid();
-window.main_id = window.page_id;
+window.main_id = guid();
 
 function _account_main() {
     if (window._show_message) doFlash(window._message);
@@ -90,11 +90,6 @@ class AccountApp extends React.Component {
     componentDidMount() {
         let self = this;
         postAjax("get_account_info", {}, (data)=> {
-                // let new_fields = [];
-                // let new_helper_text = Object.assign({}, this.state.helper_text);
-                // for (let fdict of data.field_list) {
-                //     new_field = Object.assign({}, fdict);
-                // }
                 let new_state = {fields: data.field_list};
                 self.setState(new_state);
                 window.dark_theme = self.state.dark_theme
@@ -255,36 +250,43 @@ class AccountApp extends React.Component {
         return (
 
             <React.Fragment>
-                <TacticNavbar is_authenticated={window.is_authenticated}
-                              selected={null}
-                              show_api_links={false}
-                              dark_theme={this.state.dark_theme}
-                              set_parent_theme={this._setTheme}
-                              user_name={window.username}/>
-                <div className={outer_class}>
-                    <div style={{display: "flex", "flex-direction": "column"}}>
-                        <div className="account-pane bp3-card">
-                            <h6>User Info</h6>
-                            {field_items[0]}
+                <TacticContext.Provider value={{
+                    readOnly: false,
+                    tsocket: this.props.tsocket,
+                    dark_theme: this.state.dark_theme,
+                    setTheme:  this.props.controlled ? this.context.setTheme : this._setTheme,
+                    controlled: this.props.controlled
+                }}>
+                    <TacticNavbar is_authenticated={window.is_authenticated}
+                                  selected={null}
+                                  show_api_links={false}
+                                  page_id={window.main_id}
+                                  user_name={window.username}/>
+                    <div className={outer_class}>
+                        <div style={{display: "flex", "flex-direction": "column"}}>
+                            <div className="account-pane bp3-card">
+                                <h6>User Info</h6>
+                                {field_items[0]}
+                            </div>
+                            <div className="account-pane bp3-card">
+                                <h6>User Settings</h6>
+                                {field_items[1]}
+                            </div>
                         </div>
                         <div className="account-pane bp3-card">
-                            <h6>User Settings</h6>
-                            {field_items[1]}
+                            <h6>Change Password</h6>
+                            <AccountTextField name="password"
+                                          value={this.state.password}
+                                          helper_text={this.state.password_helper}
+                                          onFieldChange={this._onFieldChange}/>
+                            <AccountTextField name="confirm_password"
+                                          value={this.state.confirm_password}
+                                          helper_text={this.state.password_helper}
+                                          onFieldChange={this._onFieldChange}/>
+                            <Button icon="log-in" large={true} text="Update Password" onClick={this._submitPassword}/>
                         </div>
                     </div>
-                    <div className="account-pane bp3-card">
-                        <h6>Change Password</h6>
-                        <AccountTextField name="password"
-                                      value={this.state.password}
-                                      helper_text={this.state.password_helper}
-                                      onFieldChange={this._onFieldChange}/>
-                        <AccountTextField name="confirm_password"
-                                      value={this.state.confirm_password}
-                                      helper_text={this.state.password_helper}
-                                      onFieldChange={this._onFieldChange}/>
-                        <Button icon="log-in" large={true} text="Update Password" onClick={this._submitPassword}/>
-                    </div>
-                </div>
+                </TacticContext.Provider>
             </React.Fragment>
         )
     }

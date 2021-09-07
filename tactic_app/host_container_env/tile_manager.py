@@ -282,7 +282,7 @@ class TileManager(LibraryResourceManager):
         try:
             loaded_tile_management.unload_user_tiles(current_user.username)
             socketio.emit('update-loaded-tile-list', {"tile_load_dict": self.loaded_tile_lists(current_user)},
-                          namespace='/library', room=current_user.get_id())
+                          namespace='/main', room=current_user.get_id())
             socketio.emit('update-menus', {}, namespace='/main', room=current_user.get_id())
             return jsonify({"message": "Tiles successfully unloaded", "alert_type": "alert-success"})
         except Exception as ex:
@@ -383,8 +383,27 @@ class RepositoryTileManager(TileManager):
     def add_rules(self):
         app.add_url_rule('/repository_view_module/<module_name>', "repository_view_module",
                          login_required(self.repository_view_module), methods=['get'])
+        app.add_url_rule('/repository_view_module_in_context', "repository_view_module_in_context",
+                         login_required(self.repository_view_module_in_context), methods=['get', 'post'])
         app.add_url_rule('/repository_get_module_code/<module_name>', "repository_get_module_code",
                          login_required(self.repository_get_module_code), methods=['get', 'post'])
+
+    def repository_view_module_in_context(self):
+        module_name = request.json["resource_name"]
+        module_code = repository_user.get_tile_module(module_name)
+        mdata = repository_user.process_metadata(self.grab_metadata(module_name))
+        data = {
+            "success": True,
+            "kind": "module-viewer",
+            "res_type": "tile",
+            "the_content": module_code,
+            "mdata": mdata,
+            "resource_name": module_name,
+            "read_only": True,
+            "is_repository": True,
+
+        }
+        return jsonify(data)
 
     def repository_view_module(self, module_name):
         javascript_source = url_for('static', filename=js_source_dict["module_viewer_react"])

@@ -185,6 +185,7 @@ def on_join(data):
     join_room(room)
     print("user joined room " + room)
 
+
 @socketio.on('join', namespace='/library')
 @login_required
 def on_join(data):
