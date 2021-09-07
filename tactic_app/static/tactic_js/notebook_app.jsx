@@ -33,13 +33,12 @@ export {notebook_props, NotebookApp}
 class MainTacticSocket extends TacticSocket {
 
     initialize_socket_stuff(reconnect=false) {
-        this.socket.on("notebook-open", function(data) {
-            window.open($SCRIPT_ROOT + "/open_notebook/" + data["the_id"])
+        this.attachListener("window-open", data => {
+            window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`)
         });
-
+        this.socket.emit('join', {"room": window.user_id});
         if (!window.in_context) {
-            this.socket.emit('join', {"room": window.user_id});
-            this.socket.on("doFlash", function(data) {
+            this.attachListener("doFlash", function(data) {
                 doFlash(data)
                 });
         }
@@ -62,7 +61,12 @@ function main_main() {
     var target = window.is_new_notebook ? "new_notebook_in_context" : "main_project_in_context";
     var resource_name = window.is_new_notebook ? "" : window.project_name;
 
-    postAjaxPromise(target, {"resource_name": resource_name})
+    let post_data = {"resource_name": resource_name};
+    if (window.is_new_notebook) {
+        post_data.temp_data_id = window.temp_data_id
+    }
+
+    postAjaxPromise(target, post_data)
         .then((data)=>{
             notebook_props(data, null, gotProps)
         })
@@ -74,7 +78,7 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
     let main_id = data.main_id;
 
     var tsocket = new MainTacticSocket("main", 5000);
-    tsocket.socket.on('handle-callback', (task_packet)=>{handleCallback(task_packet, main_id)});
+    tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, main_id)});
     tsocket.socket.on('finish-post-load', _finish_post_load_in_context);
 
     function readyListener() {
@@ -86,12 +90,13 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
 
 
     tsocket.socket.on("remove-ready-block", readyListener);
-    tsocket.socket.emit('join-main', {"room": main_id, "user_id": window.user_id}, function(response) {
+    tsocket.socket.emit('join', {"room": main_id}, function(response) {
             tsocket.socket.emit('client-ready', {"room": main_id, "user_id": window.user_id, "participant": "client",
             "rb_id": data.ready_block_id, "main_id": main_id})
     });
 
     window.addEventListener("unload", function sendRemove() {
+        console.log("got the beacon");
         navigator.sendBeacon("/remove_mainwindow", JSON.stringify({"main_id": main_id}));
     });
 
@@ -168,7 +173,7 @@ class NotebookApp extends React.Component {
         super(props);
         doBinding(this);
         if (!props.controlled) {
-            props.tsocket.socket.on('close-user-windows', function(data){
+            props.tsocket.attachListener('close-user-windows', function(data){
                 if (!(data["originator"] == props.main_id)) {
                     window.close()
                 }
@@ -261,6 +266,7 @@ class NotebookApp extends React.Component {
     }
 
     componentWillUnmount() {
+        this.props.tsocket.disconnect();
         this.delete_my_containers()
     }
 
@@ -270,9 +276,9 @@ class NotebookApp extends React.Component {
 
     initSocket() {
         let self = this;
-        this.props.tsocket.socket.emit('join-main', {"room": this.props.main_id, "user_id": window.user_id});
-        this.props.tsocket.reAttachListener('forcedisconnect', function() {
-            this.props.tsocket.socket.disconnect()
+        // this.props.tsocket.socket.emit('join-main', {"room": this.props.main_id, "user_id": window.user_id});
+        this.props.tsocket.attachListener('forcedisconnect', function() {
+            self.props.tsocket.socket.disconnect()
         });
 
         this.socket_counter = this.props.tsocket.counter
@@ -317,7 +323,7 @@ class NotebookApp extends React.Component {
             })
         }
         else {
-            this.setState({resource_name: new_name, is_project: true, is_jupyter: false});
+            this.setState({resource_name: new_project_name, is_project: true, is_jupyter: false});
         }
     }
 
@@ -428,12 +434,15 @@ class NotebookApp extends React.Component {
                     controlled: this.props.controlled,
                     am_selected: this.props.am_selected
                 }}>
-                <TacticNavbar is_authenticated={window.is_authenticated}
-                    user_name={window.username}
-                    menus={menus}
-                    show_api_links={true}
-                    min_navbar={window.in_context}
-                />
+                    <TacticNavbar is_authenticated={window.is_authenticated}
+                                  user_name={window.username}
+                                  menus={menus}
+                                  show_api_links={true}
+                                  page_id={this.props.main_id}
+                                  min_navbar={window.in_context}
+                                  refreshTab={this.props.refreshTab}
+                                  closeTab={this.props.closeTab}
+                    />
                 <div className={outer_class} ref={this.main_outer_ref}>
 
                     <HorizontalPanes left_pane={console_pane}
@@ -459,6 +468,13 @@ NotebookApp.propTypes = {
     console_component: PropTypes.object,
     is_project: PropTypes.bool,
     interface_state: PropTypes.object,
+    refreshTab: PropTypes.func,
+    closeTab: PropTypes.func,
+};
+
+NotebookApp.defaultProps = {
+    refreshTab: null,
+    closeTab: null,
 };
 
 NotebookApp.contextType = TacticContext;

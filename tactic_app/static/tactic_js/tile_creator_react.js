@@ -54,6 +54,8 @@ var _library_widgets = require("./library_widgets");
 
 var _tactic_context = require("./tactic_context.js");
 
+var _blueprint_react_widgets = require("./blueprint_react_widgets");
+
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -117,7 +119,7 @@ var CreatorViewerSocket = /*#__PURE__*/function (_TacticSocket) {
         this.socket.emit('join', {
           "room": window.user_id
         });
-        this.socket.on("doFlash", function (data) {
+        this.attachListener("doFlash", function (data) {
           (0, _toaster.doFlash)(data);
         });
       }
@@ -155,8 +157,9 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
   var split_tags = mdata.tags == "" ? [] : mdata.tags.split(" ");
   var module_name = data.resource_name;
   var module_viewer_id = data.module_viewer_id;
+  window.name = module_viewer_id;
   var tile_collection_name = data.tile_collection_name;
-  tsocket.socket.on('handle-callback', function (task_packet) {
+  tsocket.attachListener('handle-callback', function (task_packet) {
     (0, _communication_react.handleCallback)(task_packet, module_viewer_id);
   });
 
@@ -165,9 +168,8 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
   }
 
   tsocket.socket.on("remove-ready-block", readyListener);
-  tsocket.socket.emit('join-main', {
-    "room": data.module_viewer_id,
-    "user_id": window.user_id
+  tsocket.socket.emit('join', {
+    "room": data.module_viewer_id
   }, function (response) {
     tsocket.socket.emit('client-ready', {
       "room": data.module_viewer_id,
@@ -214,6 +216,7 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
         "is_repository": false
       };
       var odict = parsed_data.option_dict;
+      var initial_line_number = !window.in_context && window.line_number ? window.line_number : null;
 
       var _iterator = _createForOfIteratorHelper(odict),
           _step;
@@ -269,7 +272,7 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
         render_content_line_number: parsed_data.render_content_line_number,
         extra_methods_line_number: parsed_data.extra_methods_line_number,
         draw_plot_line_number: parsed_data.draw_plot_line_number,
-        initial_line_number: null,
+        initial_line_number: initial_line_number,
         category: category,
         extra_functions: parsed_data.extra_functions,
         draw_plot_code: parsed_data.draw_plot_code,
@@ -288,7 +291,7 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
 
 function TileCreatorToolbar(props) {
   var tstyle = {
-    "marginTop": 20,
+    "marginTop": window.in_context ? 0 : 20,
     "paddingRight": 20,
     "width": "100%"
   };
@@ -343,7 +346,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
 
     if (!props.controlled) {
-      props.tsocket.socket.on('close-user-windows', function (data) {
+      props.tsocket.attachListener('close-user-windows', function (data) {
         if (!(data["originator"] == props.resource_viewer_id)) {
           window.close();
         }
@@ -538,12 +541,12 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_showHistoryViewer",
     value: function _showHistoryViewer() {
-      window.open("".concat($SCRIPT_ROOT, "/show_history_viewer/").concat(this.state.resource_name));
+      window.open("".concat($SCRIPT_ROOT, "/show_history_viewer/").concat(this._cProp("resource_name")));
     }
   }, {
     key: "_showTileDiffer",
     value: function _showTileDiffer() {
-      window.open("".concat($SCRIPT_ROOT, "/show_tile_differ/").concat(this.state.resource_name));
+      window.open("".concat($SCRIPT_ROOT, "/show_tile_differ/").concat(this._cProp("resource_name")));
     }
   }, {
     key: "_doFlashStopSpinner",
@@ -560,20 +563,20 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     }
   }, {
     key: "_logErrorStopSpinner",
-    value: function _logErrorStopSpinner(content) {
-      var title = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-      var open = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
-      var line_number = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
+    value: function _logErrorStopSpinner(title) {
+      var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       this.props.stopSpinner();
-      this.props.addErrorDrawerEntry({
+      var entry = {
         title: title,
-        content: content,
-        line_number: line_number
-      }, true);
+        content: data.message
+      };
 
-      if (open) {
-        this.props.openErrorDrawer();
+      if ("line_number" in data) {
+        entry.line_number = data.line_number;
       }
+
+      this.props.addErrorDrawerEntry(entry, true);
+      this.props.openErrorDrawer();
     }
   }, {
     key: "_dirty",
@@ -600,7 +603,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           "user_id": user_id
         }, load_success, null, self.props.module_viewer_id);
       })["catch"](function (data) {
-        self._logErrorStopSpinner(data.message, "Error loading module", true, data.line_number);
+        self._logErrorStopSpinner("Error loading module", data);
       });
 
       function load_success(data) {
@@ -628,7 +631,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       this.props.startSpinner();
       this.props.statusMessage("Saving Module");
       this.doSavePromise().then(self._doFlashStopSpinner)["catch"](function (data) {
-        self._logErrorStopSpinner(data.message, "Error saving module");
+        self._logErrorStopSpinner("Error saving module", data);
       });
       return false;
     }
@@ -640,10 +643,10 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       this.doSavePromise().then(function () {
         self.props.statusMessage("Checkpointing");
         self.doCheckpointPromise().then(self._doFlashStopSpinner)["catch"](function (data) {
-          self._logErrorStopSpinner(data.message, "Error checkpointing module");
+          self._logErrorStopSpinner("Error checkpointing module", data);
         });
       })["catch"](function (data) {
-        self._logErrorStopSpinner(data.message, "Error saving module");
+        self._logErrorStopSpinner("Error saving module", data);
       });
       return false;
     }
@@ -776,6 +779,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     key: "_goToLineNumber",
     value: function _goToLineNumber() {
       if (this.line_number) {
+        this.props.closeErrorDrawer();
+
         if (this.props.is_mpl || this.props.is_d3) {
           if (this.line_number < this.state.draw_plot_line_number) {
             if (this.emObject) {
@@ -830,6 +835,10 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
 
       this._goToLineNumber();
 
+      if (window.in_context) {
+        this.props.registerLineSetter(this._selectLineNumber);
+      }
+
       this.props.setGoToLineNumber(this._selectLineNumber);
 
       this._update_saved_state();
@@ -856,6 +865,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "componentWillUnmount",
     value: function componentWillUnmount() {
+      this.props.tsocket.disconnect();
       this.delete_my_container();
     }
   }, {
@@ -871,11 +881,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     value: function initSocket() {
       var _this3 = this;
 
-      this.props.tsocket.socket.emit('join-main', {
-        "room": this.props.module_viewer_id,
-        "user_id": window.user_id
-      });
-      this.props.tsocket.socket.on('focus-me', function (data) {
+      this.props.tsocket.attachListener('focus-me', function (data) {
         window.focus();
 
         _this3._selectLineNumber(data.line_number);
@@ -1238,7 +1244,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
 
       var right_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
         id: "creator-resources",
-        className: "d-block mt-2"
+        className: window.in_context ? "d-block" : "d-block mt-2"
       }, /*#__PURE__*/_react["default"].createElement(_core.Tabs, {
         id: "resource_tabs",
         selectedTabId: this.state.selectedTabId,
@@ -1298,7 +1304,11 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         is_authenticated: window.is_authenticated,
         selected: null,
         show_api_links: true,
+        page_id: this.props.module_viewer_id,
         user_name: window.username
+      }), window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.TopRightButtons, {
+        refreshTab: this.props.refreshTab,
+        closeTab: this.props.closeTab
       }), /*#__PURE__*/_react["default"].createElement("div", {
         className: outer_class,
         ref: this.top_ref,
@@ -1324,6 +1334,9 @@ CreatorApp.propTypes = {
   changeResourceName: _propTypes["default"].func,
   changeResourceTitle: _propTypes["default"].func,
   changeResourceProps: _propTypes["default"].func,
+  refreshTab: _propTypes["default"].func,
+  closeTab: _propTypes["default"].func,
+  registerLineSetter: _propTypes["default"].func,
   updatePanel: _propTypes["default"].func,
   is_mpl: _propTypes["default"].bool,
   render_content_code: _propTypes["default"].string,
@@ -1348,6 +1361,9 @@ CreatorApp.defaultProps = {
   changeResourceName: null,
   changeResourceTitle: null,
   changeResourceProps: null,
+  registerLineSetter: null,
+  refreshTab: null,
+  closeTab: null,
   updatePanel: null
 };
 CreatorApp.contextType = _tactic_context.TacticContext;

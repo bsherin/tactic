@@ -11,7 +11,6 @@ import PropTypes from 'prop-types';
 import { TextArea } from "@blueprintjs/core";
 
 import {ResourceViewerSocket, ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app.js";
-import {ViewerContext} from "./resource_viewer_context.js";
 import {postAjax, postAjaxPromise} from "./communication_react.js"
 import {doFlash} from "./toaster.js"
 
@@ -37,8 +36,8 @@ function list_viewer_main () {
         let domContainer = document.querySelector('#root');
         ReactDOM.render(the_element, domContainer)
     }
-
-    postAjaxPromise("view_list_in_context", {"resource_name": window.resource_name})
+    let target = window.is_repository ? "repository_view_list_in_context" : "view_list_in_context";
+    postAjaxPromise(target, {"resource_name": window.resource_name})
         .then((data)=>{
             list_viewer_props(data, null, gotProps);
         })
@@ -48,7 +47,7 @@ function list_viewer_main () {
 function list_viewer_props(data, registerDirtyMethod, finalCallback) {
 
     let resource_viewer_id = guid();
-    var tsocket = new ResourceViewerSocket("main", 5000, {resource_viewer_id: resource_viewer_id});
+    var tsocket = new ResourceViewerSocket("main", 5000);
 
     finalCallback({
         resource_viewer_id: resource_viewer_id,
@@ -58,7 +57,7 @@ function list_viewer_props(data, registerDirtyMethod, finalCallback) {
         the_content: data.the_content,
         notes: data.mdata.notes,
         readOnly: data.read_only,
-        is_repository: false,
+        is_repository: data.is_repository,
         meta_outer: "#right-div",
         registerDirtyMethod: registerDirtyMethod
     })
@@ -82,7 +81,7 @@ class ListEditor extends React.Component {
 
     }
 }
-ListEditor.contextType = ViewerContext;
+ListEditor.contextType = TacticContext;
 
 ListEditor.propTypes = {
     the_content: PropTypes.string,
@@ -155,7 +154,7 @@ class ListViewerApp extends React.Component {
     get button_groups() {
         let bgs;
         if (this.props.is_repository) {
-            bgs = [[{"name_text": "Copy", "icon_name": "share",
+            bgs = [[{"name_text": "Copy", "icon_name": "import",
                         "click_handler": () => {copyToLibrary("list", this._cProp("resource_name"))}, tooltip: "Copy to library"}]
             ]
         }
@@ -217,7 +216,6 @@ class ListViewerApp extends React.Component {
 
     render() {
         let dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
-        // let the_context = {"readOnly": this.props.readOnly};
         let my_props = {...this.props};
         if (!this.props.controlled) {
             for (let prop_name of controllable_props) {
@@ -247,16 +245,17 @@ class ListViewerApp extends React.Component {
                 }}>
                 {!this.props.controlled &&
                     <TacticNavbar is_authenticated={window.is_authenticated}
-                          selected={null}
-                          show_api_links={true}
-                          // dark_theme={this.state.dark_theme}
-                          // set_parent_theme={this._setTheme}
-                          user_name={window.username}/>
+                                  selected={null}
+                                  show_api_links={true}
+                                  page_id={this.props.resource_viewer_id}
+                                  user_name={window.username}/>
                 }
                 <div className={outer_class} ref={this.top_ref} style={outer_style}>
                     <ResourceViewerApp {...this.props.statusFuncs}
                                        resource_viewer_id={this.props.resource_viewer_id}
                                        setResourceNameState={this._setResourceNameState}
+                                       refreshTab={this.props.refreshTab}
+                                       closeTab={this.props.closeTab}
                                        resource_name={my_props.resource_name}
                                        created={this.props.created}
                                        meta_outer={this.props.meta_outer}
@@ -324,6 +323,8 @@ ListViewerApp.propTypes = {
     changeResourceTitle: PropTypes.func,
     changeResourceProps: PropTypes.func,
     updatePanel: PropTypes.func,
+    refreshTab: PropTypes.func,
+    closeTab: PropTypes.func,
     the_content: PropTypes.string,
     created: PropTypes.string,
     tags: PropTypes.array,
@@ -342,6 +343,8 @@ ListViewerApp.defaultProps = {
     changeResourceName: null,
     changeResourceTitle: null,
     changeResourceProps: null,
+    refreshTab: null,
+    closeTab: null,
     updatePanel: null
 };
 

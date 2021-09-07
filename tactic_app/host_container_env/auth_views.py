@@ -36,10 +36,11 @@ tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 def login():
     print("entering login view")
     next_view = request.args.get('next')
+
     if next_view is None:
         if current_user.is_authenticated:
-            return redirect(url_for("library"))
-        next_view = "/library"
+            return redirect(url_for("successful_login"))
+        next_view = "successful_login"
     javascript_source = url_for('static', filename=js_source_dict["auth_react"])
     return render_template('auth/login_react.html', develop=str(_develop),
                            javascript_source=javascript_source,
@@ -48,12 +49,21 @@ def login():
                            next_view=next_view, version_string=tstring)
 
 
+@app.route("/successful_login", methods=['GET', 'POST'])
+def successful_login():
+    if current_user.get_preferred_interface() == "single-window":
+        view_text = "context"
+    else:
+        view_text = "library"
+    return redirect(url_for(view_text))
+
+
 @app.route('/relogin', methods=['GET', 'POST'])
 def relogin():
     print("entering relogin view")
     next_view = request.args.get('next')
     if next_view is None:
-        next_view = "/library"
+        next_view = "successful_login"
     javascript_source = url_for('static', filename=js_source_dict["auth_react"])
     return render_template('auth/login_react.html', after_register="no", message="",
                            javascript_source=javascript_source,
@@ -110,7 +120,7 @@ def check_if_admin():
 def logout(page_id):
     print("in logout")
     user_id = current_user.get_id()
-    socketio.emit('close-user-windows', {"originator": page_id}, namespace='/library', room=user_id)
+    # socketio.emit('close-user-windows', {"originator": page_id}, namespace='/library', room=user_id)
     socketio.emit('close-user-windows', {"originator": page_id}, namespace='/main', room=user_id)
     loaded_tile_management.remove_user(current_user.username)
     # The containers should be gone by this point. But make sure.
@@ -220,7 +230,7 @@ def csrf_error(reason):
                            show_message="yes",
                            css_source=css_source("auth_react"),
                            after_register="no", message=reason, alert_type="",
-                           next_view=next_view, version_string=tstring), 400
+                           next_view="successful_login", version_string=tstring), 400
 
 
 

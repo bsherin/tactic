@@ -409,6 +409,7 @@ class ObjectCategoryEntry extends React.Component {
             show_whole_category = true;
             show_category = true
         }
+        let index = 0;
         for (let class_entry of this.props.class_list) {
             let entries = [];
             let show_class = false;
@@ -423,33 +424,39 @@ class ObjectCategoryEntry extends React.Component {
                     entry["kind"] = "class_" + entry["kind"];
                     let show_entry = false;
                     if (show_whole_class || stringIncludes(entry.signature, this.props.search_string)) {
-                        entries.push(<CommandEntry {...entry}/>);
+                        entries.push(<CommandEntry key={`entry_${index}`} {...entry}/>);
+                        index += 1;
                         show_class = true;
-                        show_category = true
+                        show_category = true;
+
                     }
                 }
                 if (show_class) {
                     classes.push(
-                        <React.Fragment>
-                            <h6 style={{marginTop: 20, fontFamily: "monospace"}}>{"class " + class_entry[0]}</h6>
+                        <React.Fragment key={`class_${index}`}>
+                            <h6 style={{marginTop: 20, fontFamily: "monospace"}}>{"class" + class_entry[0]}</h6>
                             {entries}
                         </React.Fragment>
-                    )
+                    );
+                    index += 1;
                 }
+
 
             }
             else {
                 let entry = class_entry[1];
                 if (show_whole_category || stringIncludes(entry.signature, this.props.search_string)) {
-                    entries.push(<CommandEntry {...entry}/>);
+                    entries.push(<CommandEntry key={`entry_${index}`} {...entry}/>);
+                    index += 1;
                     show_category = true
                 }
             }
+
         }
 
         if (show_category) {
             return (
-                <React.Fragment>
+                <React.Fragment key={this.props.category_name} >
                     <h5 style={{marginTop: 20}}>
                         {this.props.category_name}
                     </h5>
@@ -484,10 +491,12 @@ class CategoryEntry extends React.Component {
             show_category = true
         }
         let entries = [];
+        let index = 0;
         for (let entry of this.props.command_list) {
             if (show_whole_category || stringIncludes(entry.signature, this.props.search_string)) {
                 show_category = true;
-                entries.push(<CommandEntry {...entry}/>)
+                entries.push(<CommandEntry key={index} {...entry}/>);
+                index += 1;
             }
 
         }

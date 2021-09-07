@@ -118,6 +118,7 @@ class ExportButtonList extends React.Component {
         let groups = [];
         let group_names = Object.keys(this.props.pipe_dict);
         group_names.sort();
+        let index = 0;
         for (let group of group_names) {
             let group_items = [];
             let entries = this.props.pipe_dict[group];
@@ -132,6 +133,7 @@ class ExportButtonList extends React.Component {
                 this.export_index[fullname] = {tilename: group, shortname: shortname};
                 group_items.push(
                     <ExportButtonListButton fullname={fullname}
+                                            key={fullname}
                                             shortname={shortname}
                                             type={type}
                                             active={this.props.value == fullname}
@@ -141,7 +143,7 @@ class ExportButtonList extends React.Component {
             }
             if (group == "__log__") {
                 groups.unshift(
-                    <FormGroup inline={false} label={null} className="export-label">
+                    <FormGroup key={group} inline={false} label={null} className="export-label">
                         <ButtonGroup minimal={false} vertical={true} alignText="left" key={group} >
                             {group_items}
                         </ButtonGroup>
@@ -150,7 +152,7 @@ class ExportButtonList extends React.Component {
             }
             else {
                 groups.push(
-                    <FormGroup inline={false} label={group} className="export-label">
+                    <FormGroup key={group} inline={false} label={group} className="export-label">
                         <ButtonGroup minimal={false} vertical={true} alignText="left" key={group} >
                             {group_items}
                         </ButtonGroup>
@@ -221,7 +223,7 @@ class ExportsViewer extends React.Component {
     }
 
     initSocket() {
-        this.context.tsocket.reAttachListener("export-viewer-message", this._handleExportViewerMessage);
+        this.context.tsocket.attachListener("export-viewer-message", this._handleExportViewerMessage);
         this.socket_counter = this.context.tsocket.counter;
     }
 

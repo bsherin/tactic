@@ -38,10 +38,10 @@ function withErrorDrawer(WrappedComponent, title=null, position="right", size="3
         }
 
         initSocket() {
-            this.props.tsocket.reAttachListener('close-error-drawer', this._close);
-            this.props.tsocket.reAttachListener('open-error-drawer', this._open);
-            this.props.tsocket.reAttachListener('add-error-drawer-entry', this._addEntry);
-            this.props.tsocket.reAttachListener("clear-error-drawer", this._clearAll);
+            this.props.tsocket.attachListener('close-error-drawer', this._close);
+            this.props.tsocket.attachListener('open-error-drawer', this._open);
+            this.props.tsocket.attachListener('add-error-drawer-entry', this._addEntry);
+            this.props.tsocket.attachListener("clear-error-drawer", this._clearAll);
             this.socket_counter = this.props.tsocket.counter
         }
 
@@ -106,7 +106,10 @@ function withErrorDrawer(WrappedComponent, title=null, position="right", size="3
                                       errorDrawerFuncs={errorDrawerFuncs}
                     />
                     <ErrorDrawer {...this.state}
+                                 main_id={this.props.main_id}
                                  goToLineNumberFunc={this.state.goToLineNumber}
+                                 goToModule={this.props.goToModule}
+                                 closeErrorDrawer={this._close}
                                  title="Error Drawer"
                                  dark_theme={this.props.controlled ? this.props.dark_theme : window.dark_theme}
                                  size={this.state.error_drawer_size}
@@ -125,22 +128,30 @@ class ErrorItem extends React.Component {
     }
 
     _openError() {
+        // This first condition will be true if this error drawer is in the tile creator
         if (this.props.goToLineNumberFunc) {
             this.props.goToLineNumberFunc(this.props.line_number)
         }
         else {
-            window.blur();
-            postWithCallback("host", "go_to_module_viewer_if_exists",
-                {user_id: window.user_id,
-                    tile_type: this.props.tile_type,
-                    line_number: this.props.line_number}, (data)=>{
-                    if (!data.success) {
-                        window.open($SCRIPT_ROOT + "/view_location_in_creator/" + this.props.tile_type + "/" + this.props.line_number);
-                    }
-                    else {
-                        window.open("", data.window_name)
-                    }
-                })
+            if (!window.in_context) {
+                window.blur();
+                postWithCallback("host", "go_to_module_viewer_if_exists",
+                    {
+                        user_id: window.user_id,
+                        tile_type: this.props.tile_type,
+                        line_number: this.props.line_number
+                    }, (data) => {
+                        if (!data.success) {
+                            window.open($SCRIPT_ROOT + "/view_location_in_creator/" + this.props.tile_type + "/" + this.props.line_number);
+                        } else {
+                            window.open("", data.window_name)
+                        }
+                    }, null, this.props.main_id)
+            }
+            else {
+                this.props.closeErrorDrawer();
+                this.props.goToModule(this.props.tile_type, this.props.line_number)
+            }
         }
     }
 
@@ -188,7 +199,10 @@ class ErrorDrawer extends React.Component {
             }
             return(
                 <ErrorItem key={index} title={entry.title} content={entry.content} has_link={has_link}
+                           main_id={this.props.main_id}
                            goToLineNumberFunc={this.props.goToLineNumberFunc}
+                           closeErrorDrawer={this.props.closeErrorDrawer}
+                           goToModule={this.props.goToModule}
                            line_number={entry.line_number} tile_type={entry.tile_type}/>
             )
         });

@@ -103,10 +103,8 @@ var AdminPane = /*#__PURE__*/function (_React$Component) {
     key: "initSocket",
     value: function initSocket() {
       if (this.props.tsocket != null) {
-        this.props.tsocket.socket.off("update-".concat(this.props.res_type, "-selector-row"));
-        this.props.tsocket.socket.off("refresh-".concat(this.props.res_type, "-selector"));
-        this.props.tsocket.socket.on("update-".concat(this.props.res_type, "-selector-row"), this._handleRowUpdate);
-        this.props.tsocket.socket.on("refresh-".concat(this.props.res_type, "-selector"), this._refresh_func);
+        this.props.tsocket.attachListener("update-".concat(this.props.res_type, "-selector-row"), this._handleRowUpdate);
+        this.props.tsocket.attachListener("refresh-".concat(this.props.res_type, "-selector"), this._refresh_func);
       }
 
       this.socket_counter = this.props.tsocket.counter;

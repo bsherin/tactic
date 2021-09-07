@@ -31,6 +31,8 @@ var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
+function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+
 function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
@@ -720,6 +722,8 @@ var ObjectCategoryEntry = /*#__PURE__*/function (_React$Component6) {
         show_category = true;
       }
 
+      var index = 0;
+
       var _iterator7 = _createForOfIteratorHelper(this.props.class_list),
           _step7;
 
@@ -748,7 +752,10 @@ var ObjectCategoryEntry = /*#__PURE__*/function (_React$Component6) {
                 var show_entry = false;
 
                 if (show_whole_class || stringIncludes(entry.signature, this.props.search_string)) {
-                  entries.push( /*#__PURE__*/_react["default"].createElement(CommandEntry, entry));
+                  entries.push( /*#__PURE__*/_react["default"].createElement(CommandEntry, _extends({
+                    key: "entry_".concat(index)
+                  }, entry)));
+                  index += 1;
                   show_class = true;
                   show_category = true;
                 }
@@ -760,18 +767,24 @@ var ObjectCategoryEntry = /*#__PURE__*/function (_React$Component6) {
             }
 
             if (show_class) {
-              classes.push( /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("h6", {
+              classes.push( /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, {
+                key: "class_".concat(index)
+              }, /*#__PURE__*/_react["default"].createElement("h6", {
                 style: {
                   marginTop: 20,
                   fontFamily: "monospace"
                 }
-              }, "class " + class_entry[0]), entries));
+              }, "class" + class_entry[0]), entries));
+              index += 1;
             }
           } else {
             var _entry = class_entry[1];
 
             if (show_whole_category || stringIncludes(_entry.signature, this.props.search_string)) {
-              entries.push( /*#__PURE__*/_react["default"].createElement(CommandEntry, _entry));
+              entries.push( /*#__PURE__*/_react["default"].createElement(CommandEntry, _extends({
+                key: "entry_".concat(index)
+              }, _entry)));
+              index += 1;
               show_category = true;
             }
           }
@@ -783,7 +796,9 @@ var ObjectCategoryEntry = /*#__PURE__*/function (_React$Component6) {
       }
 
       if (show_category) {
-        return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("h5", {
+        return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, {
+          key: this.props.category_name
+        }, /*#__PURE__*/_react["default"].createElement("h5", {
           style: {
             marginTop: 20
           }
@@ -830,6 +845,7 @@ var CategoryEntry = /*#__PURE__*/function (_React$Component7) {
       }
 
       var entries = [];
+      var index = 0;
 
       var _iterator9 = _createForOfIteratorHelper(this.props.command_list),
           _step9;
@@ -840,7 +856,10 @@ var CategoryEntry = /*#__PURE__*/function (_React$Component7) {
 
           if (show_whole_category || stringIncludes(entry.signature, this.props.search_string)) {
             show_category = true;
-            entries.push( /*#__PURE__*/_react["default"].createElement(CommandEntry, entry));
+            entries.push( /*#__PURE__*/_react["default"].createElement(CommandEntry, _extends({
+              key: index
+            }, entry)));
+            index += 1;
           }
         }
       } catch (err) {

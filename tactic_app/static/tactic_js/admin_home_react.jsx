@@ -26,7 +26,6 @@ import {withErrorDrawer} from "./error_drawer.js";
 import {doBinding, guid} from "./utilities_react.js";
 
 window.library_id = guid();
-window.page_id = window.library_id;
 const MARGIN_SIZE = 17;
 
 let tsocket;
@@ -43,16 +42,16 @@ class LibraryTacticSocket extends TacticSocket {
 
     initialize_socket_stuff(reconnect=false) {
 
-        this.socket.emit('join', {"user_id":  window.user_id, "library_id":  window.library_id});
+        this.socket.emit('join', {"user_id":  window.user_id, "room":  window.library_id});
 
-        this.socket.on("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
-        this.socket.on('handle-callback', handleCallback);
-        this.socket.on('close-user-windows', (data) => {
+        this.attachListener("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
+        this.attachListener('handle-callback', handleCallback);
+        this.attachListener('close-user-windows', (data) => {
             if (!(data["originator"] == window.library_id)) {
                 window.close()
             }
         });
-        this.socket.on('doflash', doFlash);
+        this.attachListener('doflash', doFlash);
     }
 }
 

@@ -405,7 +405,7 @@ class LoadedTileList extends React.Component {
 
     initSocket() {
         let self = this;
-        this.context.tsocket.socket.on('update-loaded-tile-list', (data)=>self.set_state_from_dict(data.tile_load_dict));
+        this.context.tsocket.attachListener('update-loaded-tile-list', (data)=>self.set_state_from_dict(data.tile_load_dict));
         this.socket_counter = this.context.tsocket.counter
     }
 

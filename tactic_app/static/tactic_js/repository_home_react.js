@@ -2,6 +2,12 @@
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.repository_props = repository_props;
+exports.RepositoryHomeApp = void 0;
+
 require("../tactic_css/tactic.scss");
 
 require("../tactic_css/tactic_table.scss");
@@ -16,6 +22,8 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 
 var _core = require("@blueprintjs/core");
 
+var _table = require("@blueprintjs/table");
+
 var _blueprint_toolbar = require("./blueprint_toolbar.js");
 
 var _tactic_socket = require("./tactic_socket.js");
@@ -28,8 +36,6 @@ var _library_pane = require("./library_pane.js");
 
 var _sizing_tools = require("./sizing_tools.js");
 
-var _resource_viewer_context = require("./resource_viewer_context.js");
-
 var _error_drawer = require("./error_drawer.js");
 
 var _utilities_react = require("./utilities_react.js");
@@ -38,13 +44,19 @@ var _utilities_react2 = require("./utilities_react");
 
 var _blueprint_navbar = require("./blueprint_navbar");
 
+var _tactic_context = require("./tactic_context.js");
+
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
-function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
@@ -72,18 +84,30 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
-window.library_id = (0, _utilities_react2.guid)();
-window.page_id = window.library_id;
+function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+
 var MARGIN_SIZE = 17;
 var tsocket;
 
 function _repository_home_main() {
-  tsocket = new LibraryTacticSocket("library", 5000);
-  var RepositoryHomeAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(RepositoryHomeApp, tsocket), tsocket);
+  window.library_id = (0, _utilities_react2.guid)();
+  tsocket = new LibraryTacticSocket("library", 5000, {
+    library_id: library_id
+  });
+  var RepositoryHomeAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(RepositoryHomeApp));
   var domContainer = document.querySelector('#library-home-root');
-  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(RepositoryHomeAppPlus, {
-    initial_theme: window.theme
-  }), domContainer);
+  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(RepositoryHomeAppPlus, _extends({}, repository_props(), {
+    initial_theme: window.theme,
+    controlled: false,
+    tsocket: tsocket,
+    registerLibraryTabChanger: null
+  })), domContainer);
+}
+
+function repository_props() {
+  return {
+    library_id: (0, _utilities_react2.guid)()
+  };
 }
 
 var LibraryTacticSocket = /*#__PURE__*/function (_TacticSocket) {
@@ -102,19 +126,22 @@ var LibraryTacticSocket = /*#__PURE__*/function (_TacticSocket) {
     value: function initialize_socket_stuff() {
       var reconnect = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
       this.socket.emit('join', {
-        "user_id": window.user_id,
-        "library_id": window.library_id
+        "room": window.user_id
       });
-      this.socket.on("window-open", function (data) {
-        return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
-      });
-      this.socket.on('handle-callback', _communication_react.handleCallback);
-      this.socket.on('close-user-windows', function (data) {
-        if (!(data["originator"] == window.library_id)) {
-          window.close();
-        }
-      });
-      this.socket.on('doflash', _toaster.doFlash);
+
+      if (!window.in_context) {
+        this.attachListener("window-open", function (data) {
+          return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
+        });
+        this.attachListener('handle-callback', function (task_packet) {
+          (0, _communication_react.handleCallback)(task_packet, self.extra_args.library_id);
+        });
+        this.attachListener("doFlash", function (data) {
+          (0, _toaster.doFlash)(data);
+        });
+      }
+
+      this.attachListener('doflash', _toaster.doFlash);
     }
   }]);
 
@@ -122,25 +149,33 @@ var LibraryTacticSocket = /*#__PURE__*/function (_TacticSocket) {
 }(_tactic_socket.TacticSocket);
 
 var res_types = ["collection", "project", "tile", "list", "code"];
+var controllable_props = ["usable_height", "usable_width"];
 
 var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
   _inherits(RepositoryHomeApp, _React$Component);
 
   var _super2 = _createSuper(RepositoryHomeApp);
 
-  function RepositoryHomeApp(props) {
+  function RepositoryHomeApp(props, context) {
     var _this;
 
     _classCallCheck(this, RepositoryHomeApp);
 
-    _this = _super2.call(this, props);
-    var aheight = (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
-    var awidth = (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
+    _this = _super2.call(this, props, context);
+
+    _this.attachListener('close-user-windows', function (data) {
+      if (!(data["originator"] == props.library_id)) {
+        window.close();
+      }
+    });
+
+    var tsocket = props.controlled ? context.tsocket : props.tsocket;
+    tsocket.socket.emit('join', {
+      "user_id": window.user_id,
+      "room": props.library_id
+    });
     _this.state = {
       selected_tab_id: "collections-pane",
-      usable_width: awidth,
-      usable_height: aheight,
-      dark_theme: props.initial_theme == "dark",
       pane_states: {}
     };
 
@@ -164,16 +199,14 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
             active_tag: "all",
             tree: []
           },
-          search_from_field: false,
-          search_from_tag: false,
           sorting_column: "updated",
-          sorting_field: "updated_for_sort",
           sorting_direction: "descending",
           multi_select: false,
           list_of_selected: [],
           search_string: "",
           search_inside: false,
-          search_metadata: false
+          search_metadata: false,
+          selectedRegions: [_table.Regions.row(0)]
         };
       }
     } catch (err) {
@@ -184,22 +217,36 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
 
     _this.top_ref = /*#__PURE__*/_react["default"].createRef();
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
+
+    if (props.registerLibraryTabChanger) {
+      props.registerLibraryTabChanger(_this._handleTabChange);
+    }
+
+    if (!window.controlled) {
+      var aheight = (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
+      var awidth = (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
+      _this.state.usable_height = aheight;
+      _this.state.usable_width = awidth;
+      _this.state.dark_theme = props.initial_theme === "dark";
+    }
+
     return _this;
   }
 
   _createClass(RepositoryHomeApp, [{
     key: "componentDidMount",
     value: function componentDidMount() {
-      window.addEventListener("resize", this._update_window_dimensions);
       this.setState({
         "mounted": true
       });
-
-      this._update_window_dimensions();
-
       this.props.stopSpinner();
-      this.props.setStatusTheme(this.state.dark_theme);
-      window.dark_theme = this.state.dark_theme;
+
+      if (!this.props.controlled) {
+        window.dark_theme = this.state.dark_theme;
+        window.addEventListener("resize", this._update_window_dimensions);
+
+        this._update_window_dimensions();
+      }
     }
   }, {
     key: "_updatePaneState",
@@ -215,31 +262,29 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_update_window_dimensions",
     value: function _update_window_dimensions() {
-      var uwidth = window.innerWidth - 2 * _sizing_tools.SIDE_MARGIN;
-      var uheight = window.innerHeight;
+      if (!this.props.controlled) {
+        var uwidth = window.innerWidth - 2 * _sizing_tools.SIDE_MARGIN;
+        var uheight = window.innerHeight;
 
-      if (this.top_ref && this.top_ref.current) {
-        uheight = uheight - this.top_ref.current.offsetTop;
-      } else {
-        uheight = uheight - _sizing_tools.USUAL_TOOLBAR_HEIGHT;
+        if (this.top_ref && this.top_ref.current) {
+          uheight = uheight - this.top_ref.current.offsetTop;
+        } else {
+          uheight = uheight - _sizing_tools.USUAL_TOOLBAR_HEIGHT;
+        }
+
+        this.setState({
+          usable_height: uheight,
+          usable_width: uwidth
+        });
       }
-
-      this.setState({
-        usable_height: uheight,
-        usable_width: uwidth
-      });
     }
   }, {
     key: "_setTheme",
     value: function _setTheme(dark_theme) {
-      var _this2 = this;
-
       this.setState({
         dark_theme: dark_theme
       }, function () {
-        _this2.props.setStatusTheme(dark_theme);
-
-        window.dark_theme = _this2.state.dark_theme;
+        window.dark_theme = dark_theme;
       });
     }
   }, {
@@ -257,7 +302,28 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
-      var collection_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({
+      var tsocket = this.props.controlled ? this.context.tsocket : this.props.tsocket;
+      var dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
+
+      var lib_props = _objectSpread({}, this.props);
+
+      if (!this.props.controlled) {
+        var _iterator2 = _createForOfIteratorHelper(controllable_props),
+            _step2;
+
+        try {
+          for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+            var prop_name = _step2.value;
+            lib_props[prop_name] = this.state[prop_name];
+          }
+        } catch (err) {
+          _iterator2.e(err);
+        } finally {
+          _iterator2.f();
+        }
+      }
+
+      var collection_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
         res_type: "collection",
         allow_search_inside: false,
         allow_search_metadata: false,
@@ -265,12 +331,10 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
         updatePaneState: this._updatePaneState
       }, this.state.pane_states["collection"], this.props.errorDrawerFuncs, {
         errorDrawerFuncs: this.props.errorDrawerFuncs,
-        is_repository: true,
-        dark_theme: this.state.dark_theme,
-        tsocket: tsocket
+        is_repository: true
       }));
 
-      var projects_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({
+      var projects_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
         res_type: "project",
         allow_search_inside: false,
         allow_search_metadata: true,
@@ -278,12 +342,10 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
         updatePaneState: this._updatePaneState
       }, this.state.pane_states["project"], this.props.errorDrawerFuncs, {
         errorDrawerFuncs: this.props.errorDrawerFuncs,
-        is_repository: true,
-        dark_theme: this.state.dark_theme,
-        tsocket: tsocket
+        is_repository: true
       }));
 
-      var tiles_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({
+      var tiles_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
         res_type: "tile",
         allow_search_inside: true,
         allow_search_metadata: true,
@@ -291,12 +353,10 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
         updatePaneState: this._updatePaneState
       }, this.state.pane_states["tile"], this.props.errorDrawerFuncs, {
         errorDrawerFuncs: this.props.errorDrawerFuncs,
-        is_repository: true,
-        dark_theme: this.state.dark_theme,
-        tsocket: tsocket
+        is_repository: true
       }));
 
-      var lists_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({
+      var lists_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
         res_type: "list",
         allow_search_inside: true,
         allow_search_metadata: true,
@@ -304,12 +364,10 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
         updatePaneState: this._updatePaneState
       }, this.state.pane_states["list"], this.props.errorDrawerFuncs, {
         errorDrawerFuncs: this.props.errorDrawerFuncs,
-        is_repository: true,
-        dark_theme: this.state.dark_theme,
-        tsocket: tsocket
+        is_repository: true
       }));
 
-      var code_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({
+      var code_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
         res_type: "code",
         allow_search_inside: true,
         allow_search_metadata: true,
@@ -317,9 +375,7 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
         updatePaneState: this._updatePaneState
       }, this.state.pane_states["code"], this.props.errorDrawerFuncs, {
         errorDrawerFuncs: this.props.errorDrawerFuncs,
-        is_repository: true,
-        dark_theme: this.state.dark_theme,
-        tsocket: tsocket
+        is_repository: true
       }));
 
       var outer_style = {
@@ -327,24 +383,31 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
         height: this.state.usable_height,
         paddingLeft: 0
       };
-      var outer_class = "pane-holder  ";
+      var outer_class = "";
 
-      if (this.state.dark_theme) {
-        outer_class = outer_class + " bp3-dark";
-      } else {
-        outer_class = outer_class + " light-theme";
+      if (!this.props.controlled) {
+        outer_class = "library-pane-holder  ";
+
+        if (dark_theme) {
+          outer_class = "".concat(outer_class, " bp3-dark");
+        } else {
+          outer_class = "".concat(outer_class, " light-theme");
+        }
       }
 
-      return /*#__PURE__*/_react["default"].createElement(_resource_viewer_context.ViewerContext.Provider, {
+      return /*#__PURE__*/_react["default"].createElement(_tactic_context.TacticContext.Provider, {
         value: {
-          readOnly: true
+          readOnly: true,
+          tsocket: tsocket,
+          dark_theme: dark_theme,
+          setTheme: this.props.controlled ? this.context.setTheme : this._setTheme,
+          controlled: this.props.controlled
         }
-      }, /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+      }, !this.props.controlled && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
         is_authenticated: window.is_authenticated,
         selected: null,
+        page_id: this.props.library_id,
         show_api_links: false,
-        dark_theme: this.state.dark_theme,
-        set_parent_theme: this._setTheme,
         user_name: window.username
       }), /*#__PURE__*/_react["default"].createElement("div", {
         id: "repository_container",
@@ -353,7 +416,7 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
         style: outer_style
       }, /*#__PURE__*/_react["default"].createElement("div", {
         style: {
-          width: this.state.usable_width
+          width: lib_props.usable_width
         }
       }, /*#__PURE__*/_react["default"].createElement(_core.Tabs, {
         id: "the_container",
@@ -426,6 +489,9 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
   return RepositoryHomeApp;
 }(_react["default"].Component);
 
+exports.RepositoryHomeApp = RepositoryHomeApp;
+RepositoryHomeApp.contextType = _tactic_context.TacticContext;
+
 var LibraryToolbar = /*#__PURE__*/function (_React$Component2) {
   _inherits(LibraryToolbar, _React$Component2);
 
@@ -444,20 +510,20 @@ var LibraryToolbar = /*#__PURE__*/function (_React$Component2) {
       var new_group;
       var new_button;
 
-      var _iterator2 = _createForOfIteratorHelper(this.props.button_groups),
-          _step2;
+      var _iterator3 = _createForOfIteratorHelper(this.props.button_groups),
+          _step3;
 
       try {
-        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-          var group = _step2.value;
+        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+          var group = _step3.value;
           new_group = [];
 
-          var _iterator3 = _createForOfIteratorHelper(group),
-              _step3;
+          var _iterator4 = _createForOfIteratorHelper(group),
+              _step4;
 
           try {
-            for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-              var button = _step3.value;
+            for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+              var button = _step4.value;
 
               if (!this.props.multi_select || button[3]) {
                 new_button = {
@@ -483,9 +549,9 @@ var LibraryToolbar = /*#__PURE__*/function (_React$Component2) {
               }
             }
           } catch (err) {
-            _iterator3.e(err);
+            _iterator4.e(err);
           } finally {
-            _iterator3.f();
+            _iterator4.f();
           }
 
           if (new_group.length != 0) {
@@ -493,9 +559,9 @@ var LibraryToolbar = /*#__PURE__*/function (_React$Component2) {
           }
         }
       } catch (err) {
-        _iterator2.e(err);
+        _iterator3.e(err);
       } finally {
-        _iterator2.f();
+        _iterator3.f();
       }
 
       return new_bgs;
@@ -506,24 +572,29 @@ var LibraryToolbar = /*#__PURE__*/function (_React$Component2) {
       if (this.props.file_adders == null || this.props.file_adders.length == 0) return [];
       var file_adders = [];
 
-      var _iterator4 = _createForOfIteratorHelper(this.props.file_adders),
-          _step4;
+      var _iterator5 = _createForOfIteratorHelper(this.props.file_adders),
+          _step5;
 
       try {
-        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-          var button = _step4.value;
+        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+          var button = _step5.value;
           var new_button = {
             name_text: button[0],
-            click_handler: button[1],
-            icon_name: button[2],
-            multiple: button[3]
+            resource_type: button[1],
+            process_handler: button[2],
+            allowed_file_types: button[3],
+            icon_name: button[4],
+            checkboxes: button[5],
+            combine: button[6],
+            tooltip: button[7],
+            show_csv_options: button[8]
           };
           file_adders.push(new_button);
         }
       } catch (err) {
-        _iterator4.e(err);
+        _iterator5.e(err);
       } finally {
-        _iterator4.f();
+        _iterator5.f();
       }
 
       return file_adders;
@@ -534,24 +605,24 @@ var LibraryToolbar = /*#__PURE__*/function (_React$Component2) {
       if (this.props.popup_buttons == null || this.props.popup_buttons.length == 0) return [];
       var popup_buttons = [];
 
-      var _iterator5 = _createForOfIteratorHelper(this.props.popup_buttons),
-          _step5;
+      var _iterator6 = _createForOfIteratorHelper(this.props.popup_buttons),
+          _step6;
 
       try {
-        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-          var button = _step5.value;
+        for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+          var button = _step6.value;
           var new_button = {
             name: button[0],
             icon_name: button[1]
           };
           var opt_list = [];
 
-          var _iterator6 = _createForOfIteratorHelper(button[2]),
-              _step6;
+          var _iterator7 = _createForOfIteratorHelper(button[2]),
+              _step7;
 
           try {
-            for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-              var opt = _step6.value;
+            for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
+              var opt = _step7.value;
               opt_list.push({
                 opt_name: opt[0],
                 opt_func: opt[1],
@@ -559,18 +630,18 @@ var LibraryToolbar = /*#__PURE__*/function (_React$Component2) {
               });
             }
           } catch (err) {
-            _iterator6.e(err);
+            _iterator7.e(err);
           } finally {
-            _iterator6.f();
+            _iterator7.f();
           }
 
           new_button["option_list"] = opt_list;
           popup_buttons.push(new_button);
         }
       } catch (err) {
-        _iterator5.e(err);
+        _iterator6.e(err);
       } finally {
-        _iterator5.f();
+        _iterator6.f();
       }
 
       return popup_buttons;
@@ -625,13 +696,13 @@ var RepositoryCollectionToolbar = /*#__PURE__*/function (_React$Component3) {
   var _super4 = _createSuper(RepositoryCollectionToolbar);
 
   function RepositoryCollectionToolbar(props) {
-    var _this3;
+    var _this2;
 
     _classCallCheck(this, RepositoryCollectionToolbar);
 
-    _this3 = _super4.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this3));
-    return _this3;
+    _this2 = _super4.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this2));
+    return _this2;
   }
 
   _createClass(RepositoryCollectionToolbar, [{
@@ -662,13 +733,13 @@ var RepositoryProjectToolbar = /*#__PURE__*/function (_React$Component4) {
   var _super5 = _createSuper(RepositoryProjectToolbar);
 
   function RepositoryProjectToolbar(props) {
-    var _this4;
+    var _this3;
 
     _classCallCheck(this, RepositoryProjectToolbar);
 
-    _this4 = _super5.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this4));
-    return _this4;
+    _this3 = _super5.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this3));
+    return _this3;
   }
 
   _createClass(RepositoryProjectToolbar, [{
@@ -699,13 +770,13 @@ var RepositoryTileToolbar = /*#__PURE__*/function (_React$Component5) {
   var _super6 = _createSuper(RepositoryTileToolbar);
 
   function RepositoryTileToolbar(props) {
-    var _this5;
+    var _this4;
 
     _classCallCheck(this, RepositoryTileToolbar);
 
-    _this5 = _super6.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this5));
-    return _this5;
+    _this4 = _super6.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this4));
+    return _this4;
   }
 
   _createClass(RepositoryTileToolbar, [{
@@ -741,13 +812,13 @@ var RepositoryListToolbar = /*#__PURE__*/function (_React$Component6) {
   var _super7 = _createSuper(RepositoryListToolbar);
 
   function RepositoryListToolbar(props) {
-    var _this6;
+    var _this5;
 
     _classCallCheck(this, RepositoryListToolbar);
 
-    _this6 = _super7.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this6));
-    return _this6;
+    _this5 = _super7.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this5));
+    return _this5;
   }
 
   _createClass(RepositoryListToolbar, [{
@@ -783,13 +854,13 @@ var RepositoryCodeToolbar = /*#__PURE__*/function (_React$Component7) {
   var _super8 = _createSuper(RepositoryCodeToolbar);
 
   function RepositoryCodeToolbar(props) {
-    var _this7;
+    var _this6;
 
     _classCallCheck(this, RepositoryCodeToolbar);
 
-    _this7 = _super8.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this7));
-    return _this7;
+    _this6 = _super8.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this6));
+    return _this6;
   }
 
   _createClass(RepositoryCodeToolbar, [{
@@ -819,4 +890,6 @@ var RepositoryCodeToolbar = /*#__PURE__*/function (_React$Component7) {
 
 RepositoryCodeToolbar.propTypes = specializedToolbarPropTypes;
 
-_repository_home_main();
+if (!window.in_context) {
+  _repository_home_main();
+}

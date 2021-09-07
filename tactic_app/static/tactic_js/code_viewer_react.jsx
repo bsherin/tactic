@@ -34,8 +34,8 @@ function code_viewer_main () {
         ReactDOM.render(the_element, domContainer)
 
     }
-
-    postAjaxPromise("view_code_in_context", {"resource_name": window.resource_name})
+    let target = window.is_repository ? "repository_view_code_in_context" : "view_code_in_context";
+    postAjaxPromise(target, {"resource_name": window.resource_name})
         .then((data)=>{
             code_viewer_props(data, null, gotProps);
         })
@@ -43,7 +43,7 @@ function code_viewer_main () {
 
 function code_viewer_props(data, registerDirtyMethod, finalCallback) {
     let resource_viewer_id = guid();
-    var tsocket = new ResourceViewerSocket("main", 5000, {resource_viewer_id: resource_viewer_id});
+    var tsocket = new ResourceViewerSocket("main", 5000);
     finalCallback({
         resource_viewer_id: resource_viewer_id,
         tsocket: tsocket,
@@ -52,7 +52,7 @@ function code_viewer_props(data, registerDirtyMethod, finalCallback) {
         the_content: data.the_content,
         notes: data.mdata.notes,
         readOnly: data.read_only,
-        is_repository: false,
+        is_repository: data.is_repository,
         meta_outer: "#right-div",
         registerDirtyMethod: registerDirtyMethod
     })
@@ -139,7 +139,7 @@ class CodeViewerApp extends React.Component {
     get button_groups() {
         let bgs;
         if (this.props.is_repository) {
-             bgs =[[{"name_text": "Copy", "icon_name": "share",
+             bgs =[[{"name_text": "Copy", "icon_name": "import",
                         "click_handler": () => {copyToLibrary("code", this.state.resource_name)}, tooltip: "Copy to library"}]
             ]
         }
@@ -218,17 +218,18 @@ class CodeViewerApp extends React.Component {
                 }}>
                 {!this.props.controlled &&
                     <TacticNavbar is_authenticated={window.is_authenticated}
-                          selected={null}
-                          show_api_links={true}
-                          // dark_theme={this.state.dark_theme}
-                          // set_parent_theme={this._setTheme}
-                          user_name={window.username}/>
+                                  selected={null}
+                                  show_api_links={true}
+                                  page_id={this.props.resource_viewer_id}
+                                  user_name={window.username}/>
                 }
 
                 <div className={outer_class} ref={this.top_ref} style={outer_style}>
                     <ResourceViewerApp {...this.props.statusFuncs}
                                        resource_viewer_id={this.props.resource_viewer_id}
                                        setResourceNameState={this._setResourceNameState}
+                                       refreshTab={this.props.refreshTab}
+                                       closeTab={this.props.closeTab}
                                        res_type="code"
                                        resource_name={my_props.resource_name}
                                        button_groups={this.button_groups}
@@ -301,11 +302,12 @@ CodeViewerApp.propTypes = {
     changeResourceTitle: PropTypes.func,
     changeResourceProps: PropTypes.func,
     updatePanel: PropTypes.func,
+    refreshTab: PropTypes.func,
+    closeTab: PropTypes.func,
     the_content: PropTypes.string,
     created: PropTypes.string,
     tags: PropTypes.array,
     notes: PropTypes.string,
-    tsocket: PropTypes.object,
     is_repository: PropTypes.bool,
     meta_outer: PropTypes.string,
     usable_height: PropTypes.number,
@@ -318,7 +320,9 @@ CodeViewerApp.defaultProps = {
     changeResourceName: null,
     changeResourceTitle: null,
     changeResourceProps: null,
-    updatePanel: null
+    updatePanel: null,
+    refreshTab: null,
+    closeTab: null,
 };
 
 CodeViewerApp.contextType = TacticContext;

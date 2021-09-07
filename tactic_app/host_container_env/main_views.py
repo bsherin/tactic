@@ -38,8 +38,8 @@ def test_disconnect():
 def on_join(data):
     room = data["room"]
     join_room(room)
-
     print("user joined room " + room)
+    return True
 
 
 @socketio.on('join-main', namespace='/main')
@@ -47,7 +47,6 @@ def on_join_main(data):
     room = data["room"]
     join_room(room)
     print("user joined room " + room)
-    socketio.emit("joined-mainid", room=room)
     tile_types = tactic_app.host_worker.get_tile_types({"user_id": data["user_id"]})
     return tile_types
 

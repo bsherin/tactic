@@ -15,7 +15,8 @@ const mdi = markdownIt({html: true});
 mdi.use(markdownItLatex);
 import _ from 'lodash';
 
-import {ViewerContext} from "./resource_viewer_context.js";
+
+import {TacticContext} from "./tactic_context.js"
 import {postAjaxPromise} from "./communication_react.js"
 
 import {doBinding, propsAreEqual} from "./utilities_react.js";
@@ -337,7 +338,7 @@ NativeTags.proptypes = {
 };
 
 
-NativeTags.contextType = ViewerContext;
+NativeTags.contextType = TacticContext;
 
 class NotesField extends React.Component {
 
@@ -447,7 +448,7 @@ class NotesField extends React.Component {
     }
 }
 
-NotesField.contextType = ViewerContext;
+NotesField.contextType = TacticContext;
 
 NotesField.propTypes = {
     notes: PropTypes.string,

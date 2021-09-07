@@ -90,7 +90,8 @@ function code_viewer_main() {
     ReactDOM.render(the_element, domContainer);
   }
 
-  (0, _communication_react.postAjaxPromise)("view_code_in_context", {
+  var target = window.is_repository ? "repository_view_code_in_context" : "view_code_in_context";
+  (0, _communication_react.postAjaxPromise)(target, {
     "resource_name": window.resource_name
   }).then(function (data) {
     code_viewer_props(data, null, gotProps);
@@ -99,9 +100,7 @@ function code_viewer_main() {
 
 function code_viewer_props(data, registerDirtyMethod, finalCallback) {
   var resource_viewer_id = (0, _utilities_react2.guid)();
-  var tsocket = new _resource_viewer_react_app.ResourceViewerSocket("main", 5000, {
-    resource_viewer_id: resource_viewer_id
-  });
+  var tsocket = new _resource_viewer_react_app.ResourceViewerSocket("main", 5000);
   finalCallback({
     resource_viewer_id: resource_viewer_id,
     tsocket: tsocket,
@@ -110,7 +109,7 @@ function code_viewer_props(data, registerDirtyMethod, finalCallback) {
     the_content: data.the_content,
     notes: data.mdata.notes,
     readOnly: data.read_only,
-    is_repository: false,
+    is_repository: data.is_repository,
     meta_outer: "#right-div",
     registerDirtyMethod: registerDirtyMethod
   });
@@ -231,7 +230,7 @@ var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
       if (this.props.is_repository) {
         bgs = [[{
           "name_text": "Copy",
-          "icon_name": "share",
+          "icon_name": "import",
           "click_handler": function click_handler() {
             (0, _resource_viewer_react_app.copyToLibrary)("code", _this3.state.resource_name);
           },
@@ -368,9 +367,8 @@ var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
       }, !this.props.controlled && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
         is_authenticated: window.is_authenticated,
         selected: null,
-        show_api_links: true // dark_theme={this.state.dark_theme}
-        // set_parent_theme={this._setTheme}
-        ,
+        show_api_links: true,
+        page_id: this.props.resource_viewer_id,
         user_name: window.username
       }), /*#__PURE__*/_react["default"].createElement("div", {
         className: outer_class,
@@ -379,6 +377,8 @@ var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
       }, /*#__PURE__*/_react["default"].createElement(_resource_viewer_react_app.ResourceViewerApp, _extends({}, this.props.statusFuncs, {
         resource_viewer_id: this.props.resource_viewer_id,
         setResourceNameState: this._setResourceNameState,
+        refreshTab: this.props.refreshTab,
+        closeTab: this.props.closeTab,
         res_type: "code",
         resource_name: my_props.resource_name,
         button_groups: this.button_groups,
@@ -459,11 +459,12 @@ CodeViewerApp.propTypes = {
   changeResourceTitle: _propTypes["default"].func,
   changeResourceProps: _propTypes["default"].func,
   updatePanel: _propTypes["default"].func,
+  refreshTab: _propTypes["default"].func,
+  closeTab: _propTypes["default"].func,
   the_content: _propTypes["default"].string,
   created: _propTypes["default"].string,
   tags: _propTypes["default"].array,
   notes: _propTypes["default"].string,
-  tsocket: _propTypes["default"].object,
   is_repository: _propTypes["default"].bool,
   meta_outer: _propTypes["default"].string,
   usable_height: _propTypes["default"].number,
@@ -475,7 +476,9 @@ CodeViewerApp.defaultProps = {
   changeResourceName: null,
   changeResourceTitle: null,
   changeResourceProps: null,
-  updatePanel: null
+  updatePanel: null,
+  refreshTab: null,
+  closeTab: null
 };
 CodeViewerApp.contextType = _tactic_context.TacticContext;
 

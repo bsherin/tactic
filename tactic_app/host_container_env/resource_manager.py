@@ -44,13 +44,13 @@ class ResourceManager(ExceptionMixin):
     def update_selector_row(self, res_dict):
         user_obj = current_user
         socketio.emit("update-{}-selector-row".format(self.res_type), res_dict,
-                      namespace='/library', room=user_obj.get_id())
+                      namespace='/main', room=user_obj.get_id())
 
     def refresh_selector_list(self, user_obj=None):
         if user_obj is None:
             user_obj = current_user
         socketio.emit("refresh-{}-selector".format(self.res_type), {},
-                      namespace='/library', room=user_obj.get_id())
+                      namespace='/main', room=user_obj.get_id())
 
     def get_resource_list(self):
         if self.is_repository:
@@ -144,10 +144,10 @@ class ResourceManager(ExceptionMixin):
 
     def show_um_message(self, message, library_id, timeout=3):
         data = {"message": message, "timeout": timeout, "main_id": library_id}
-        socketio.emit('show-status-msg', data, namespace='/library', room=library_id)
+        socketio.emit('show-status-msg', data, namespace='/main', room=library_id)
 
     def clear_um_message(self, library_id):
-        socketio.emit('clear-status-msg', {"main_id": library_id}, namespace='/library', room=library_id)
+        socketio.emit('clear-status-msg', {"main_id": library_id}, namespace='/main', room=library_id)
 
     # def start_library_spinner(self, library_id):
     #     print("starting the library spinner")
@@ -182,7 +182,7 @@ class ResourceManager(ExceptionMixin):
                 content += "<br>File {}:</br>".format(filename)
                 content += "{}".format(val)
         data = {"title": title, "content": content, "resource_name": new_resource_name, "success": result["success"]}
-        socketio.emit("upload-response", data, namespace='/library', room=library_id)
+        socketio.emit("upload-response", data, namespace='/main', room=library_id)
         return
 
 

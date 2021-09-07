@@ -118,11 +118,11 @@ class LogStreamer(object):
     def __init__(self, socketio):
         self.socketio = socketio
 
-    def background_log_lines(self, cont_id, user_id, base_data, event_name):
+    def background_log_lines(self, cont_id, room, base_data, event_name):
         cont = get_container(cont_id)
         for line in cont.logs(stream=True, tail=0):
             base_data["new_line"] = line.decode()
-            self.socketio.emit(event_name, base_data, namespace="/main", room=user_id)
+            self.socketio.emit(event_name, base_data, namespace="/main", room=room)
             self.socketio.sleep(0.05)
         return
 

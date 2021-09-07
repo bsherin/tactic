@@ -72,8 +72,7 @@ class FileImportDialog extends React.Component {
     }
 
     initSocket() {
-        this.props.tsocket.socket.off("upload-response");
-        this.props.tsocket.socket.on("upload-response", this._handleResponse);
+        this.props.tsocket.attachListener("upload-response", this._handleResponse);
         this.socket_counter = this.props.tsocket.counter
     }
 
@@ -208,8 +207,6 @@ class FileImportDialog extends React.Component {
     }
 
     render() {
-        // let preview_style = {width: "unset", minHeight: "fit-content"};
-        console.log("entering render with this.current_url " + this.current_url);
         let half_width = .5 * this.state.current_picker_width - 10;
         let name_style = {display: "inline-block", maxWidth: half_width};
         let progress_style = {
@@ -326,7 +323,7 @@ class FileImportDialog extends React.Component {
                             {this.props.show_csv_options &&
                             <div>
                                 <Divider/>
-                                <Button onClick={this._toggleCSVOptions} minimal={true} intent="primary" larg={true}>
+                                <Button onClick={this._toggleCSVOptions} minimal={true} intent="primary" large={true}>
                                     csv options: {this.state.csv_options_open ? "manual" : "auto"}
                                 </Button>
                                 <Collapse isOpen={this.state.csv_options_open}>
@@ -392,7 +389,7 @@ FileImportDialog.propTypes = {
     textoptions: PropTypes.array,
     popupoptions: PropTypes.array,
     handleClose: PropTypes.func,
-    tsocket: PropTypes.func,
+    tsocket: PropTypes.object,
     dark_theme: PropTypes.bool
 };
 

@@ -26,6 +26,8 @@ var _communication_react = require("./communication_react");
 
 var _tactic_context = require("./tactic_context.js");
 
+var _blueprint_react_widgets = require("./blueprint_react_widgets");
+
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -58,7 +60,7 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
-var library_url = $SCRIPT_ROOT + '/library';
+var library_url = window.in_context ? $SCRIPT_ROOT + '/context' : $SCRIPT_ROOT + '/library';
 var repository_url = $SCRIPT_ROOT + '/repository';
 var account_url = $SCRIPT_ROOT + '/account_info';
 var login_url = $SCRIPT_ROOT + "/login";
@@ -175,9 +177,10 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
       });
     }
   }, {
-    key: "handle_signout",
-    value: function handle_signout() {
-      (0, _utilities_react.doSignOut)(window.page_id);
+    key: "_handle_signout",
+    value: function _handle_signout() {
+      window.open($SCRIPT_ROOT + "/logout/" + this.props.page_id, "_self");
+      return false;
     }
   }, {
     key: "_toggleTheme",
@@ -252,7 +255,7 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
     value: function _authenticatedItems() {
       return [{
         icon: "home",
-        text: "Library",
+        text: window.in_context ? "Context" : "Library",
         intent: this.getIntent("library"),
         onClick: function onClick() {
           window.open(library_url);
@@ -275,7 +278,7 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
         icon: "log-out",
         text: "Logout",
         intent: this.getIntent("logout"),
-        onClick: this.handle_signout
+        onClick: this._handle_signout
       }];
     }
   }, {
@@ -389,7 +392,10 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
           },
           className: "bp3-navbar-group bp3-align-left",
           ref: this.lg_ref
-        }, this.props.menus != null && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, this.props.menus)));
+        }, this.props.menus != null && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, this.props.menus)), window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.TopRightButtons, {
+          refreshTab: this.props.refreshTab,
+          closeTab: this.props.closeTab
+        }));
       }
 
       return /*#__PURE__*/_react["default"].createElement(_core.Navbar, {
@@ -436,20 +442,21 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
 exports.TacticNavbar = TacticNavbar;
 TacticNavbar.propTypes = {
   min_navbar: _propTypes["default"].bool,
+  refreshTab: _propTypes["default"].func,
+  closeTab: _propTypes["default"].func,
   is_authenticated: _propTypes["default"].bool,
   user_name: _propTypes["default"].string,
   menus: _propTypes["default"].object,
-  selected: _propTypes["default"].string // dark_theme: PropTypes.bool,
-  // set_parent_theme: PropTypes.func,
-
+  selected: _propTypes["default"].string,
+  page_id: _propTypes["default"].string
 };
 TacticNavbar.defaultProps = {
   min_navbar: false,
+  refreshTab: null,
+  closeTab: null,
   menus: null,
   selected: null,
-  show_api_links: false // dark_theme: false,
-  // set_parent_theme: null
-
+  show_api_links: false
 };
 TacticNavbar.contextType = _tactic_context.TacticContext;
 

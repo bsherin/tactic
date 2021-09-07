@@ -100,7 +100,7 @@ const BUTTON_CONSUMED_SPACE = 208;
          // We have to careful to get the very same instance of the listerner function
          // That requires storing it outside of this component since the console can be unmounted
 
-         this.context.tsocket.reAttachListener("console-message", _handleConsoleMessage);
+         this.context.tsocket.attachListener("console-message", _handleConsoleMessage);
          this.socket_counter = this.context.tsocket.counter
      }
 
@@ -483,20 +483,6 @@ const BUTTON_CONSUMED_SPACE = 208;
              current += "<br>"
          }
          this._setConsoleItemValue(data.console_id, "output_text", current + data.message)
-     }
-
-     _handleConsoleMessage(data) {
-         if (data.main_id == this.props.main_id) {
-             let self = this;
-             let handlerDict = {
-                 consoleLog: (data) => self._addConsoleEntry(data.message, data.force_open),
-                 stopConsoleSpinner: self._stopConsoleSpinner,
-                 consoleCodePrint: this._appendConsoleItemOutput,
-                 consoleCodeRun: this._startSpinner,
-                 updateLog: (data) => self._addToLog(data.new_line)
-             };
-             handlerDict[data.console_message](data)
-         }
      }
 
      _addToLog(new_line) {
@@ -1596,10 +1582,6 @@ class RawConsoleTextItem extends React.Component {
         this.props.goToNextCell(this.props.unique_id);
         this._showMarkdown();
     }
-
-    // _notesRefHandler(the_ref) {
-    //     this.setState({ce_ref: the_ref});
-    // }
 
     _getFirstLine() {
         let re = /^(.*)$/m;

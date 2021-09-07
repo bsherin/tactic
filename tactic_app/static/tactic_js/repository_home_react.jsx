@@ -9,7 +9,7 @@ import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
 import { Tabs, Tab, Tooltip, Icon, Position } from "@blueprintjs/core";
-
+import {Regions} from "@blueprintjs/table";
 
 import {Toolbar} from "./blueprint_toolbar.js"
 import {TacticSocket} from "./tactic_socket.js"
@@ -17,56 +17,71 @@ import {handleCallback} from "./communication_react.js"
 import {doFlash} from "./toaster.js"
 import {LibraryPane} from "./library_pane.js"
 import {getUsableDimensions, SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT} from "./sizing_tools.js";
-import {ViewerContext} from "./resource_viewer_context.js";
 import {withStatus} from "./toaster.js";
 import {withErrorDrawer} from "./error_drawer.js";
 import {doBinding} from "./utilities_react.js";
 import {guid} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
+import {TacticContext} from "./tactic_context.js";
 
-window.library_id = guid();
-window.page_id = window.library_id;
+export {repository_props, RepositoryHomeApp}
+
 const MARGIN_SIZE = 17;
 
 let tsocket;
 
 function _repository_home_main () {
-    tsocket = new LibraryTacticSocket("library", 5000);
-     let RepositoryHomeAppPlus = withErrorDrawer(withStatus(RepositoryHomeApp, tsocket), tsocket);
+    window.library_id = guid();
+    tsocket = new LibraryTacticSocket(
+        "library",
+        5000,
+        {library_id: library_id}
+    );
+     let RepositoryHomeAppPlus = withErrorDrawer(withStatus(RepositoryHomeApp));
     let domContainer = document.querySelector('#library-home-root');
-    ReactDOM.render(<RepositoryHomeAppPlus initial_theme={window.theme}/>, domContainer)
+    ReactDOM.render(<RepositoryHomeAppPlus {...repository_props()}
+                                           initial_theme={window.theme}
+                                           controlled={false}
+                                           tsocket={tsocket}
+                                           registerLibraryTabChanger={null}/>, domContainer)
+}
+
+function repository_props() {
+    return {library_id: guid()}
 }
 
 class LibraryTacticSocket extends TacticSocket {
 
     initialize_socket_stuff(reconnect=false) {
+        this.socket.emit('join', {"room": window.user_id});
+        if (!window.in_context) {
+            this.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
+            this.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, self.extra_args.library_id)});
+            this.attachListener("doFlash", function(data) {
+                doFlash(data)
+            });
+        }
 
-        this.socket.emit('join', {"user_id":  window.user_id, "library_id":  window.library_id});
-
-        this.socket.on("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
-
-        this.socket.on('handle-callback', handleCallback);
-        this.socket.on('close-user-windows', (data) => {
-            if (!(data["originator"] == window.library_id)) {
-                window.close()
-            }
-        });
-        this.socket.on('doflash', doFlash);
+        this.attachListener('doflash', doFlash);
     }
 }
 
 var res_types = ["collection", "project", "tile", "list", "code"];
+const controllable_props = ["usable_height", "usable_width"];
+
 class RepositoryHomeApp extends React.Component {
 
-    constructor(props) {
-        super(props);
-        let aheight = getUsableDimensions(true).usable_height_no_bottom;
-        let awidth = getUsableDimensions(true).usable_width - 170;
+    constructor(props, context) {
+        super(props, context);
+        this.attachListener('close-user-windows', (data) => {
+            if (!(data["originator"] == props.library_id)) {
+                window.close()
+            }
+        });
+        let tsocket = props.controlled ? context.tsocket : props.tsocket;
+        tsocket.socket.emit('join', {"user_id":  window.user_id, "room": props.library_id});
         this.state = {
             selected_tab_id: "collections-pane",
-            usable_width: awidth,
-            usable_height: aheight,
-            dark_theme: props.initial_theme == "dark",
             pane_states: {}
         };
          for (let res_type of res_types) {
@@ -78,29 +93,38 @@ class RepositoryHomeApp extends React.Component {
                     active_tag: "all",
                     tree: []
                 },
-                search_from_field: false,
-                search_from_tag: false,
                 sorting_column: "updated",
-                sorting_field: "updated_for_sort",
                 sorting_direction: "descending",
                 multi_select: false,
                 list_of_selected: [],
                 search_string: "",
                 search_inside: false,
                 search_metadata: false,
+                selectedRegions: [Regions.row(0)]
             }
         }
         this.top_ref = React.createRef();
         doBinding(this);
+        if (props.registerLibraryTabChanger) {
+            props.registerLibraryTabChanger(this._handleTabChange)
+        }
+        if (!window.controlled) {
+            const aheight = getUsableDimensions(true).usable_height_no_bottom;
+            const awidth = getUsableDimensions(true).usable_width - 170;
+            this.state.usable_height = aheight;
+            this.state.usable_width = awidth;
+            this.state.dark_theme = props.initial_theme === "dark"
+        }
     }
 
     componentDidMount() {
-        window.addEventListener("resize", this._update_window_dimensions);
         this.setState({"mounted": true});
-        this._update_window_dimensions();
-        this.props.stopSpinner()
-        this.props.setStatusTheme(this.state.dark_theme);
-        window.dark_theme = this.state.dark_theme
+        this.props.stopSpinner();
+        if (!this.props.controlled) {
+            window.dark_theme = this.state.dark_theme;
+            window.addEventListener("resize", this._update_window_dimensions);
+            this._update_window_dimensions();
+        }
     }
 
     _updatePaneState (res_type, state_update, callback=null) {
@@ -111,21 +135,22 @@ class RepositoryHomeApp extends React.Component {
     }
 
     _update_window_dimensions() {
-        let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
-        let uheight = window.innerHeight;
-        if (this.top_ref && this.top_ref.current) {
-            uheight = uheight - this.top_ref.current.offsetTop;
+        if (!this.props.controlled) {
+            let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
+            let uheight = window.innerHeight;
+            if (this.top_ref && this.top_ref.current) {
+                uheight = uheight - this.top_ref.current.offsetTop;
+            }
+            else {
+                uheight = uheight - USUAL_TOOLBAR_HEIGHT
+            }
+            this.setState({usable_height: uheight, usable_width: uwidth})
         }
-        else {
-            uheight = uheight  -USUAL_TOOLBAR_HEIGHT
-        }
-        this.setState({usable_height: uheight, usable_width: uwidth})
     }
 
     _setTheme(dark_theme) {
         this.setState({dark_theme: dark_theme}, ()=> {
-            this.props.setStatusTheme(dark_theme);
-            window.dark_theme = this.state.dark_theme
+            window.dark_theme = dark_theme
         })
     }
 
@@ -138,8 +163,17 @@ class RepositoryHomeApp extends React.Component {
     }
 
     render () {
+        let tsocket = this.props.controlled ? this.context.tsocket : this.props.tsocket;
+        let dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
+        let lib_props = {...this.props};
+        if (!this.props.controlled) {
+            for (let prop_name of controllable_props) {
+                lib_props[prop_name] = this.state[prop_name]
+            }
+        }
         let collection_pane = (
-                        <LibraryPane res_type="collection"
+                        <LibraryPane {...lib_props}
+                                     res_type="collection"
                                      allow_search_inside={false}
                                      allow_search_metadata={false}
                                      ToolbarClass={RepositoryCollectionToolbar}
@@ -147,11 +181,10 @@ class RepositoryHomeApp extends React.Component {
                                      {...this.state.pane_states["collection"]}
                                      {...this.props.errorDrawerFuncs}
                                      errorDrawerFuncs={this.props.errorDrawerFuncs}
-                                     is_repository={true}
-                                     dark_theme={this.state.dark_theme}
-                                     tsocket={tsocket}/>
+                                     is_repository={true}/>
         );
-        let projects_pane = (<LibraryPane res_type="project"
+        let projects_pane = (<LibraryPane {...lib_props}
+                                          res_type="project"
                                           allow_search_inside={false}
                                           allow_search_metadata={true}
                                           ToolbarClass={RepositoryProjectToolbar}
@@ -159,11 +192,10 @@ class RepositoryHomeApp extends React.Component {
                                           {...this.state.pane_states["project"]}
                                           {...this.props.errorDrawerFuncs}
                                           errorDrawerFuncs={this.props.errorDrawerFuncs}
-                                          is_repository={true}
-                                          dark_theme={this.state.dark_theme}
-                                          tsocket={tsocket}/>
+                                          is_repository={true}/>
         );
-        let tiles_pane = (<LibraryPane res_type="tile"
+        let tiles_pane = (<LibraryPane {...lib_props}
+                                       res_type="tile"
                                        allow_search_inside={true}
                                        allow_search_metadata={true}
                                        ToolbarClass={RepositoryTileToolbar}
@@ -171,11 +203,10 @@ class RepositoryHomeApp extends React.Component {
                                        {...this.state.pane_states["tile"]}
                                        {...this.props.errorDrawerFuncs}
                                        errorDrawerFuncs={this.props.errorDrawerFuncs}
-                                       is_repository={true}
-                                       dark_theme={this.state.dark_theme}
-                                       tsocket={tsocket}/>
+                                       is_repository={true}/>
         );
-        let lists_pane = (<LibraryPane res_type="list"
+        let lists_pane = (<LibraryPane {...lib_props}
+                                       res_type="list"
                                        allow_search_inside={true}
                                        allow_search_metadata={true}
                                        ToolbarClass={RepositoryListToolbar}
@@ -183,11 +214,10 @@ class RepositoryHomeApp extends React.Component {
                                        {...this.state.pane_states["list"]}
                                        {...this.props.errorDrawerFuncs}
                                        errorDrawerFuncs={this.props.errorDrawerFuncs}
-                                       is_repository={true}
-                                       dark_theme={this.state.dark_theme}
-                                       tsocket={tsocket}/>
+                                       is_repository={true}/>
         );
-        let code_pane = (<LibraryPane res_type="code"
+        let code_pane = (<LibraryPane {...lib_props}
+                                      res_type="code"
                                       allow_search_inside={true}
                                       allow_search_metadata={true}
                                       ToolbarClass={RepositoryCodeToolbar}
@@ -195,31 +225,39 @@ class RepositoryHomeApp extends React.Component {
                                       {...this.state.pane_states["code"]}
                                       {...this.props.errorDrawerFuncs}
                                       errorDrawerFuncs={this.props.errorDrawerFuncs}
-                                      is_repository={true}
-                                      dark_theme={this.state.dark_theme}
-                                      tsocket={tsocket}/>
+                                      is_repository={true}/>
         );
         let outer_style = {width: "100%",
             height: this.state.usable_height,
             paddingLeft: 0
         };
-        let outer_class = "pane-holder  "
-        if (this.state.dark_theme) {
-            outer_class = outer_class + " bp3-dark";
-        }
-        else {
-            outer_class = outer_class + " light-theme";
+        let outer_class = "";
+        if (!this.props.controlled) {
+            outer_class = "library-pane-holder  ";
+            if (dark_theme) {
+                outer_class = `${outer_class} bp3-dark`;
+            }
+            else {
+                outer_class = `${outer_class} light-theme`;
+            }
         }
         return (
-            <ViewerContext.Provider value={{readOnly: true}}>
-                <TacticNavbar is_authenticated={window.is_authenticated}
-                          selected={null}
-                          show_api_links={false}
-                          dark_theme={this.state.dark_theme}
-                          set_parent_theme={this._setTheme}
-                          user_name={window.username}/>
+            <TacticContext.Provider value={{
+                readOnly: true,
+                tsocket: tsocket,
+                dark_theme: dark_theme,
+                setTheme:  this.props.controlled ? this.context.setTheme : this._setTheme,
+                controlled: this.props.controlled
+            }}>
+                {!this.props.controlled &&
+                    <TacticNavbar is_authenticated={window.is_authenticated}
+                                  selected={null}
+                                  page_id={this.props.library_id}
+                                  show_api_links={false}
+                                  user_name={window.username}/>
+                }
                 <div id="repository_container" className={outer_class} ref={this.top_ref} style={outer_style}>
-                    <div style={{width: this.state.usable_width}}>
+                    <div style={{width: lib_props.usable_width}}>
                         <Tabs id="the_container" style={{marginTop: 100}}
                                  selectedTabId={this.state.selected_tab_id}
                                  renderActiveTabPanelOnly={true}
@@ -252,10 +290,12 @@ class RepositoryHomeApp extends React.Component {
                         </Tabs>
                     </div>
                 </div>
-            </ViewerContext.Provider>
+            </TacticContext.Provider>
         )
     }
 }
+
+RepositoryHomeApp.contextType = TacticContext;
 
 class LibraryToolbar extends React.Component {
 
@@ -295,9 +335,16 @@ class LibraryToolbar extends React.Component {
         let file_adders = [];
         for (let button of this.props.file_adders) {
             let new_button = {name_text: button[0],
-                click_handler: button[1],
-                icon_name: button[2],
-                multiple: button[3]};
+                resource_type: button[1],
+                process_handler: button[2],
+                allowed_file_types: button[3],
+                icon_name: button[4],
+                checkboxes: button[5],
+                combine: button[6],
+                tooltip: button[7],
+                show_csv_options: button[8]
+            };
+
             file_adders.push(new_button)
         }
         return file_adders
@@ -494,5 +541,6 @@ class RepositoryCodeToolbar extends React.Component {
 
 RepositoryCodeToolbar.propTypes = specializedToolbarPropTypes;
 
-
-_repository_home_main();
+if (!window.in_context) {
+    _repository_home_main();
+}

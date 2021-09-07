@@ -22,13 +22,13 @@ var _utilities_react = require("./utilities_react.js");
 
 var _blueprint_navbar = require("./blueprint_navbar");
 
+var _tactic_context = require("./tactic_context.js");
+
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 
 function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
@@ -56,28 +56,52 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
+function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+
 window.resource_viewer_id = (0, _utilities_react.guid)();
 window.main_id = window.resource_viewer_id;
 
 function history_viewer_main() {
+  function gotProps(the_props) {
+    var HistoryViewerAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(HistoryViewerApp));
+
+    var the_element = /*#__PURE__*/_react["default"].createElement(HistoryViewerAppPlus, _extends({}, the_props, {
+      controlled: false,
+      initial_theme: window.theme,
+      changeName: null
+    }));
+
+    var domContainer = document.querySelector('#root');
+    ReactDOM.render(the_element, domContainer);
+  }
+
   var get_url = "get_module_code";
   var tsocket = new _merge_viewer_app.MergeViewerSocket("main", 5000);
-  var HistoryViewerAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(HistoryViewerApp, tsocket), tsocket);
   (0, _communication_react.postAjaxPromise)("".concat(get_url, "/").concat(window.resource_name), {}).then(function (data) {
     var edit_content = data.the_content;
     (0, _communication_react.postAjaxPromise)("get_checkpoint_dates", {
       "module_name": window.resource_name
-    }).then(function (data) {
-      var history_list = data.checkpoints;
-      var domContainer = document.querySelector('#root');
-      ReactDOM.render( /*#__PURE__*/_react["default"].createElement(HistoryViewerAppPlus, {
-        resource_name: window.resource_name,
-        history_list: history_list,
-        initial_theme: window.theme,
-        edit_content: edit_content
-      }), domContainer);
+    }).then(function (data2) {
+      data.history_list = data2.checkpoints;
+      data.resource_name = window.resource_name, history_viewer_props(data, null, gotProps);
     })["catch"](_toaster.doFlash);
   })["catch"](_toaster.doFlash);
+}
+
+function history_viewer_props(data, registerDirtyMethod, finalCallback) {
+  var resource_viewer_id = (0, _utilities_react.guid)();
+  var tsocket = new _merge_viewer_app.MergeViewerSocket("main", 5000, {
+    resource_viewer_id: resource_viewer_id
+  });
+  finalCallback({
+    resource_viewer_id: resource_viewer_id,
+    tsocket: tsocket,
+    history_list: data.history_list,
+    resource_name: data.resource_name,
+    edit_content: data.the_content,
+    is_repository: false,
+    registerDirtyMethod: registerDirtyMethod
+  });
 }
 
 var HistoryViewerApp = /*#__PURE__*/function (_React$Component) {
@@ -95,30 +119,37 @@ var HistoryViewerApp = /*#__PURE__*/function (_React$Component) {
 
     var self = _assertThisInitialized(_this);
 
-    window.onbeforeunload = function (e) {
-      if (self.dirty()) {
-        return "Any unsaved changes will be lost.";
-      }
-    };
-
     _this.state = {
       "edit_content": props.edit_content,
       "right_content": "",
       "history_popup_val": props.history_list[0]["updatestring"],
-      "history_list": props.history_list,
-      dark_theme: _this.props.initial_theme == "dark"
+      "history_list": props.history_list
     };
     _this.handleEditChange = _this.handleEditChange.bind(_assertThisInitialized(_this));
     _this.handleSelectChange = _this.handleSelectChange.bind(_assertThisInitialized(_this));
     _this.checkpointThenSaveFromLeft = _this.checkpointThenSaveFromLeft.bind(_assertThisInitialized(_this));
     _this.savedContent = props.edit_content;
+
+    if (!props.controlled) {
+      _this.state.dark_theme = props.initial_theme === "dark";
+      _this.state.resource_name = props.resource_name;
+      window.addEventListener("beforeunload", function (e) {
+        if (self._dirty()) {
+          e.preventDefault();
+          e.returnValue = '';
+        }
+      });
+    }
+
     return _this;
   }
 
   _createClass(HistoryViewerApp, [{
     key: "componentDidMount",
     value: function componentDidMount() {
-      window.dark_theme = this.state.dark_theme;
+      if (!this.props.controlled) {
+        window.dark_theme = this.state.dark_theme;
+      }
     }
   }, {
     key: "_setTheme",
@@ -128,9 +159,9 @@ var HistoryViewerApp = /*#__PURE__*/function (_React$Component) {
       this.setState({
         dark_theme: dark_theme
       }, function () {
-        _this2.props.setStatusTheme(dark_theme);
-
-        window.dark_theme = _this2.state.dark_theme;
+        if (!window.in_context) {
+          window.dark_theme = _this2.state.dark_theme;
+        }
       });
     }
   }, {
@@ -149,7 +180,7 @@ var HistoryViewerApp = /*#__PURE__*/function (_React$Component) {
           if (item["updatestring"] == new_value) {
             var updatestring_for_sort = item["updatestring_for_sort"];
             (0, _communication_react.postAjaxPromise)("get_checkpoint_code", {
-              "module_name": self.props.resource_name,
+              "module_name": self.state.resource_name,
               "updatestring_for_sort": updatestring_for_sort
             }).then(function (data) {
               self.setState({
@@ -178,14 +209,24 @@ var HistoryViewerApp = /*#__PURE__*/function (_React$Component) {
       var option_list = this.state.history_list.map(function (item) {
         return item["updatestring"];
       });
-      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+      var dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
+      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_tactic_context.TacticContext.Provider, {
+        value: {
+          readOnly: this.props.readOnly,
+          tsocket: this.props.tsocket,
+          dark_theme: dark_theme,
+          setTheme: this.props.controlled ? this.context.setTheme : this._setTheme,
+          controlled: this.props.controlled,
+          am_selected: this.props.am_selected
+        }
+      }, !this.props.controlled, " ", /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
         is_authenticated: window.is_authenticated,
         selected: null,
         show_api_links: true,
-        dark_theme: this.state.dark_theme,
-        set_parent_theme: this._setTheme,
+        page_id: this.props.resource_viewer_id,
         user_name: window.username
       }), /*#__PURE__*/_react["default"].createElement(_merge_viewer_app.MergeViewerApp, _extends({}, this.props.statusFuncs, {
+        resource_viewer_id: this.props.resource_viewer_id,
         resource_name: this.props.resource_name,
         option_list: option_list,
         select_val: this.state.history_popup_val,
@@ -195,7 +236,7 @@ var HistoryViewerApp = /*#__PURE__*/function (_React$Component) {
         handleEditChange: this.handleEditChange,
         dark_theme: this.state.dark_theme,
         saveHandler: this.checkpointThenSaveFromLeft
-      })));
+      }))));
     }
   }, {
     key: "doCheckpointPromise",
@@ -220,7 +261,7 @@ var HistoryViewerApp = /*#__PURE__*/function (_React$Component) {
       var current_popup_val = this.state.history_popup_val;
       this.doCheckpointPromise().then(function () {
         (0, _communication_react.postAjaxPromise)("get_checkpoint_dates", {
-          "module_name": self.props.resource_name
+          "module_name": self.state.resource_name
         }).then(function (data) {
           self.setState({
             "history_list": data.checkpoints
@@ -253,4 +294,8 @@ HistoryViewerApp.propTypes = {
   history_list: _propTypes["default"].array,
   edit_content: _propTypes["default"].string
 };
-history_viewer_main();
+HistoryViewerApp.contextType = _tactic_context.TacticContext;
+
+if (!window.in_context) {
+  history_viewer_main();
+}

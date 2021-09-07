@@ -46,7 +46,10 @@ class CollectionManager(LibraryResourceManager):
     name_field = ""
 
     def add_rules(self):
-        app.add_url_rule('/new_notebook', "new_notebook", login_required(self.new_notebook), methods=['get', 'post'])
+        app.add_url_rule('/new_notebook', "new_notebook",
+                         login_required(self.new_notebook), methods=['get', 'post'])
+        app.add_url_rule('/new_notebook_with_data/<temp_data_id>', "new_notebook_with_data",
+                         login_required(self.new_notebook_with_data), methods=['get', 'post'])
         app.add_url_rule('/new_notebook_in_context', "new_notebook_in_context",
                          login_required(self.new_notebook_in_context), methods=['get', 'post'])
         app.add_url_rule('/open_notebook/<unique_id>', "open_notebook",
@@ -75,7 +78,17 @@ class CollectionManager(LibraryResourceManager):
 
     def new_notebook_in_context(self):
         user_obj = current_user
-        main_id, rb_id = main_container_info.create_main_container("new_notebook", user_obj.get_id(), user_obj.username)
+        if "temp_data_id" in request.json:
+            temp_data_id = request.json["temp_data_id"]
+            the_data = read_temp_data(db, temp_data_id)
+            main_id, rb_id = main_container_info.create_main_container("new_notebook",
+                                                                       the_data["user_id"],
+                                                                       user_obj.username)
+        else:
+            temp_data_id = ""
+            main_id, rb_id = main_container_info.create_main_container("new_notebook",
+                                                                       user_obj.get_id(),
+                                                                       user_obj.username)
         create_ready_block(rb_id, user_obj.username, [main_id, "client"], main_id)
         data_dict = {"success": True,
                      "kind": "notebook-viewer",
@@ -84,7 +97,7 @@ class CollectionManager(LibraryResourceManager):
                      "resource_name": "new notebook",
                      "ready_block_id": rb_id,
                      "main_id": main_id,
-                     "temp_data_id": "",
+                     "temp_data_id": temp_data_id,
                      "collection_name": "",
                      "doc_names": [],
                      "short_collection_name": "",
@@ -98,33 +111,15 @@ class CollectionManager(LibraryResourceManager):
                      "base_figure_url": url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1]}
         return jsonify(data_dict)
 
-    def new_notebook_old(self):
-        user_obj = current_user
-        main_id, rb_id = main_container_info.create_main_container("new_notebook", user_obj.get_id(), user_obj.username)
-        create_ready_block(rb_id, user_obj.username, [main_id, "client"], main_id)
-        return render_template("main_react.html",
-                               window_title="new notebook",
-                               project_name='',
-                               base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
-                               main_id=main_id,
-                               ready_block_id=rb_id,
-                               temp_data_id="",
-                               develop=str(_develop),
-                               uses_codemirror="True",
-                               theme=user_obj.get_theme(),
-                               dark_theme_name=user_obj.get_preferred_dark_theme(),
-                               is_jupyter="False",
-                               version_string=tstring,
-                               css_source=css_source("notebook_app"),
-                               module_source=js_source_dict["notebook_app"])
-
     def new_notebook(self):
+        return self.new_notebook_with_data("")
 
+    def new_notebook_with_data(self, temp_data_id):
         return render_template("main_react.html",
                                project_name='',
                                is_new_notebook="True",
                                base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
-                               temp_data_id="",
+                               temp_data_id=temp_data_id,
                                develop=str(_develop),
                                theme=current_user.get_theme(),
                                dark_theme_name=current_user.get_preferred_dark_theme(),

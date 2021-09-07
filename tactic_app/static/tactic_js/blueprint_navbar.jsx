@@ -7,13 +7,14 @@ import PropTypes from 'prop-types';
 import { Button, Navbar, NavbarDivider, OverflowList, Alignment, Switch} from "@blueprintjs/core";
 
 import {MenuComponent} from "./main_menus_react.js";
-import {doBinding, doSignOut} from "./utilities_react.js";
+import {doBinding} from "./utilities_react.js";
 import {postWithCallback} from "./communication_react";
 import {TacticContext} from "./tactic_context.js";
+import {TopRightButtons} from "./blueprint_react_widgets";
 
 export {render_navbar, TacticNavbar, get_theme_cookie, set_theme_cookie}
 
-let library_url = $SCRIPT_ROOT + '/library';
+let library_url = window.in_context ? $SCRIPT_ROOT + '/context' : $SCRIPT_ROOT + '/library';
 let repository_url = $SCRIPT_ROOT + '/repository';
 let account_url = $SCRIPT_ROOT + '/account_info';
 let login_url = $SCRIPT_ROOT + "/login";
@@ -85,8 +86,9 @@ class TacticNavbar extends React.Component {
         });
     }
 
-    handle_signout () {
-        doSignOut(window.page_id)
+    _handle_signout () {
+        window.open($SCRIPT_ROOT + "/logout/" + this.props.page_id, "_self");
+        return false
     }
 
     _toggleTheme () {
@@ -148,17 +150,25 @@ class TacticNavbar extends React.Component {
 
     _authenticatedItems() {
         return [{
-                icon: "home", text: "Library", intent: this.getIntent("library"),
+                    icon: "home",
+                    text: window.in_context ? "Context" : "Library",
+                    intent: this.getIntent("library"),
                     onClick: ()=>{window.open(library_url)}
                 }, {
-                icon: "database", text: "Repository", intent: this.getIntent("repository"),
+                    icon: "database",
+                    text: "Repository",
+                    intent: this.getIntent("repository"),
                     onClick: ()=>{window.open(repository_url)}
                 }, {
-                icon: "person", text: this.props.user_name, intent: this.getIntent("account"),
+                    icon: "person",
+                    text: this.props.user_name,
+                    intent: this.getIntent("account"),
                     onClick: ()=>{window.open(account_url)}
                 }, {
-                icon: "log-out", text: "Logout", intent: this.getIntent("logout"),
-                    onClick: this.handle_signout
+                    icon: "log-out",
+                    text: "Logout",
+                    intent: this.getIntent("logout"),
+                    onClick: this._handle_signout
             }
         ]
     }
@@ -223,6 +233,9 @@ class TacticNavbar extends React.Component {
                                     {this.props.menus}
                                 </React.Fragment>)}
                     </div>
+                    {window.in_context &&
+                        <TopRightButtons refreshTab={this.props.refreshTab} closeTab={this.props.closeTab}/>
+                    }
                 </Navbar>
             )
         }
@@ -266,21 +279,22 @@ class TacticNavbar extends React.Component {
 
 TacticNavbar.propTypes = {
     min_navbar: PropTypes.bool,
+    refreshTab: PropTypes.func,
+    closeTab: PropTypes.func,
     is_authenticated: PropTypes.bool,
     user_name: PropTypes.string,
     menus: PropTypes.object,
     selected: PropTypes.string,
-    // dark_theme: PropTypes.bool,
-    // set_parent_theme: PropTypes.func,
+    page_id: PropTypes.string,
 };
 
 TacticNavbar.defaultProps = {
     min_navbar: false,
+    refreshTab: null,
+    closeTab: null,
     menus: null,
     selected: null,
     show_api_links: false,
-    // dark_theme: false,
-    // set_parent_theme: null
 };
 
 TacticNavbar.contextType = TacticContext;

@@ -29,6 +29,8 @@ var _communication_react = require("./communication_react.js");
 
 var _utilities_react = require("./utilities_react.js");
 
+var _blueprint_react_widgets = require("./blueprint_react_widgets.js");
+
 var _toaster = require("./toaster.js");
 
 var _sizing_tools = require("./sizing_tools.js");
@@ -82,9 +84,8 @@ var ResourceViewerSocket = /*#__PURE__*/function (_TacticSocket) {
       if (!window.in_context) {
         this.socket.emit('join', {
           "room": window.user_id
-        }); // this.socket.emit('join-main', {"room": this.extra_args.resource_viewer_id, "user_id": window.user_id});
-
-        this.socket.on("doFlash", function (data) {
+        });
+        this.attachListener("doFlash", function (data) {
           (0, _toaster.doFlash)(data);
         });
       }
@@ -98,7 +99,7 @@ exports.ResourceViewerSocket = ResourceViewerSocket;
 
 function copyToLibrary(res_type, resource_name) {
   $.getJSON($SCRIPT_ROOT + "get_resource_names/".concat(res_type), function (data) {
-    showModal("Import ".concat(res_type), "New ".concat(res_type, " Name"), ImportResource, resource_name, data["resource_names"]);
+    (0, _modal_react.showModalReact)("Import ".concat(res_type), "New ".concat(res_type, " Name"), ImportResource, resource_name, data["resource_names"]);
   });
 
   function ImportResource(new_name) {
@@ -137,16 +138,15 @@ var ResourceViewerApp = /*#__PURE__*/function (_React$Component) {
     _classCallCheck(this, ResourceViewerApp);
 
     _this = _super2.call(this, props, context);
-    context.tsocket.socket.emit('join-main', {
-      "room": props.resource_viewer_id,
-      "user_id": window.user_id
+    context.tsocket.socket.emit('join', {
+      "room": props.resource_viewer_id
     });
-    context.tsocket.socket.on('handle-callback', function (task_packet) {
+    context.tsocket.attachListener('handle-callback', function (task_packet) {
       (0, _communication_react.handleCallback)(task_packet, props.resource_viewer_id);
     });
 
     if (!context.controlled) {
-      context.tsocket.socket.on('close-user-windows', function (data) {
+      context.tsocket.attachListener('close-user-windows', function (data) {
         if (!(data["originator"] == props.resource_viewer_id)) {
           window.close();
         }
@@ -226,25 +226,24 @@ var ResourceViewerApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
-      var left_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_blueprint_toolbar.ResourceviewerToolbar //controlled={this.props.controlled}
-      //am_selected={this.props.am_selected}
-      , {
+      var left_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_blueprint_toolbar.ResourceviewerToolbar, {
         button_groups: this.props.button_groups,
         setResourceNameState: this.props.setResourceNameState,
         resource_name: this.props.resource_name,
         show_search: this.props.show_search,
         search_string: this.props.search_string,
-        update_search_state: this.props.update_search_state // tsocket={this.props.tsocket}
-        // dark_theme={this.props.dark_theme}
-        ,
+        update_search_state: this.props.update_search_state,
         res_type: this.props.res_type
       }), this.props.children); //let available_height = this.get_new_hp_height(this.hp_ref);
 
 
-      var right_pane = /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.CombinedMetadata, {
+      var right_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.TopRightButtons, {
+        refreshTab: this.props.refreshTab,
+        closeTab: this.props.closeTab
+      }), /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.CombinedMetadata, {
         tags: this.props.tags,
         outer_style: {
-          marginTop: 100,
+          marginTop: 90,
           marginLeft: 20,
           overflow: "auto",
           padding: 15,
@@ -254,7 +253,7 @@ var ResourceViewerApp = /*#__PURE__*/function (_React$Component) {
         notes: this.props.notes,
         handleChange: this.props.handleStateChange,
         res_type: this.props.res_type
-      });
+      }));
 
       return /*#__PURE__*/_react["default"].createElement(_core.ResizeSensor, {
         onResize: this._handleResize,
@@ -283,6 +282,8 @@ exports.ResourceViewerApp = ResourceViewerApp;
 ResourceViewerApp.propTypes = {
   resource_name: _propTypes["default"].string,
   setResourceNameState: _propTypes["default"].func,
+  refreshTab: _propTypes["default"].func,
+  closeTab: _propTypes["default"].func,
   res_type: _propTypes["default"].string,
   button_groups: _propTypes["default"].array,
   created: _propTypes["default"].string,
@@ -298,6 +299,8 @@ ResourceViewerApp.propTypes = {
 ResourceViewerApp.defaultProps = {
   dark_theme: false,
   am_selected: true,
-  controlled: false
+  controlled: false,
+  refreshTab: null,
+  closeTab: null
 };
 ResourceViewerApp.contextType = _tactic_context.TacticContext;

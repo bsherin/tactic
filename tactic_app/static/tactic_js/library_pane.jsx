@@ -20,6 +20,7 @@ import {doBinding} from "./utilities_react.js";
 
 export {LibraryPane, view_views}
 
+const SIDE_MARGIN = 15;
 
 function view_views(is_repository=false) {
 
@@ -85,17 +86,11 @@ class LibraryPane extends React.Component {
         this.top_ref = React.createRef();
         this.table_ref = React.createRef();
         this.resizing = false;
-        // let aheight = getUsableDimensions(true).usable_height_no_bottom;
-        // let awidth = getUsableDimensions(true).usable_width - 200;
         this.get_url = `grab_${props.res_type}_list_chunk`;
         this.state = {
             data_dict: {},
             num_rows: 0,
             mounted: false,
-            // available_height: aheight,
-            // available_width: awidth,
-            // top_pane_height: aheight / 2 - 50,
-            // match_list: [],
             tag_list: [],
             auxIsOpen: false,
             showOmnibar: false,
@@ -110,10 +105,8 @@ class LibraryPane extends React.Component {
 
     initSocket() {
         if ((this.context.tsocket != null) && (!this.props.is_repository)) {
-            this.context.tsocket.socket.off(`update-${this.props.res_type}-selector-row`);
-            this.context.tsocket.socket.off(`refresh-${this.props.res_type}-selector`);
-            this.context.tsocket.socket.on(`update-${this.props.res_type}-selector-row`, this._handleRowUpdate);
-            this.context.tsocket.socket.on(`refresh-${this.props.res_type}-selector`, this._refresh_func);
+            this.context.tsocket.attachListener(`update-${this.props.res_type}-selector-row`, this._handleRowUpdate);
+            this.context.tsocket.attachListener(`refresh-${this.props.res_type}-selector`, this._refresh_func);
         }
         this.socket_counter = this.context.tsocket.counter
     }
@@ -466,7 +459,7 @@ class LibraryPane extends React.Component {
 
     _handleRowDoubleClick(row_dict) {
         let self = this;
-        let view_view = view_views(this.props.is_repostory)[this.props.res_type];
+        let view_view = view_views(this.props.is_repository)[this.props.res_type];
         if (view_view == null) return;
         this._updatePaneState({
                 selected_resource: row_dict,
@@ -828,10 +821,22 @@ class LibraryPane extends React.Component {
     _communicateColumnWidthSum(total_width) {
         this.setState({total_width: total_width})
     }
+    
+    _get_availabe_width() {
+        let result;
+        if (this.top_ref && this.top_ref.current) {
+            result = window.innerWidth - this.top_ref.current.offsetLeft - SIDE_MARGIN;
+        }
+        else {
+            result = window.innerWidth - 200
+        }
+        return result
+    }
 
     render() {
         let new_button_groups;
-        let left_width = (this.props.usable_width - HANDLE_WIDTH - 200) * this.props.left_width_fraction;
+        let uwidth = this._get_availabe_width();
+        let left_width = (uwidth - HANDLE_WIDTH) * this.props.left_width_fraction;
         const primary_mdata_fields = ["name", "created", "created_for_sort", "updated",  "updated_for_sort", "tags", "notes"];
         let additional_metadata = {};
         for (let field in this.props.selected_resource) {
@@ -902,7 +907,7 @@ class LibraryPane extends React.Component {
         if (this.table_ref && this.table_ref.current) {
             table_width = left_width - this.table_ref.current.offsetLeft + this.top_ref.current.offsetLeft;
             if (this.toolbarRef && this.toolbarRef.current) {
-                let tbwidth = this.toolbarRef.current.getBoundingClientRect().width;
+                let tbwidth = this.toolbarRef.current.offsetWidth;
                 toolbar_left = this.table_ref.current.offsetLeft + .5 * table_width - .5 * tbwidth;
                 if (toolbar_left < 0) toolbar_left = 0
             }
@@ -984,12 +989,10 @@ class LibraryPane extends React.Component {
                                   {...this.props.errorDrawerFuncs}
                                   handleCreateViewer={this.props.handleCreateViewer}
                                   library_id={this.props.library_id}
-                                  // dark_theme={this.props.dark_theme}
-                                  // tsocket={this.props.tsocket}
                                   />
-                      <div style={{width: this.props.usable_width - 200, height: this.props.usable_height}}>
+                      <div style={{width: uwidth, height: this.props.usable_height}}>
                           <HorizontalPanes
-                                 available_width={this.props.usable_width - 200}
+                                 available_width={uwidth}
                                  available_height={this.props.usable_height - 100}
                                  show_handle={true}
                                  left_pane={left_pane}
@@ -1020,7 +1023,6 @@ LibraryPane.propTypes = {
     ToolbarClass: PropTypes.func,
     updatePaneState: PropTypes.func,
     is_repository: PropTypes.bool,
-    tsocket: PropTypes.object,
     aux_pane: PropTypes.object,
     left_width_fraction: PropTypes.number,
     selected_resource: PropTypes.object,
@@ -1035,7 +1037,6 @@ LibraryPane.propTypes = {
     search_tag: PropTypes.string,
     tag_button_state: PropTypes.object,
     contextItems: PropTypes.array,
-    dark_theme: PropTypes.bool,
     library_id: PropTypes.string
 
 };

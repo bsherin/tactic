@@ -91,25 +91,33 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 
 function _library_home_main() {
-  var library_id = (0, _utilities_react.guid)();
-  window.page_id = library_id; // window.main_id = library_id;
-
-  var tsocket = new LibraryTacticSocket("library", 5000, {
-    library_id: library_id
-  });
+  // window.main_id = library_id;
   var LibraryHomeAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(LibraryHomeApp));
   var domContainer = document.querySelector('#library-home-root');
   ReactDOM.render( /*#__PURE__*/_react["default"].createElement(LibraryHomeAppPlus, _extends({}, library_props(), {
     controlled: false,
     initial_theme: window.theme,
-    tsocket: tsocket,
     registerLibraryTabChanger: null
   })), domContainer);
 }
 
 function library_props() {
+  var library_id = (0, _utilities_react.guid)();
+  var tsocket = new LibraryTacticSocket("main", 5000);
+  tsocket.attachListener('handle-callback', function (task_packet) {
+    (0, _communication_react.handleCallback)(task_packet, library_id);
+  });
+  tsocket.socket.emit('join', {
+    "user_id": window.user_id,
+    "room": window.user_id
+  });
+  tsocket.socket.emit('join', {
+    "user_id": window.user_id,
+    "room": library_id
+  });
   return {
-    library_id: (0, _utilities_react.guid)()
+    library_id: library_id,
+    tsocket: tsocket
   };
 }
 
@@ -128,25 +136,13 @@ var LibraryTacticSocket = /*#__PURE__*/function (_TacticSocket) {
     key: "initialize_socket_stuff",
     value: function initialize_socket_stuff() {
       var reconnect = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-      var self = this; // this.socket.emit('join', {"user_id":  window.user_id, "library_id":  this.extra_args.library_id});
-
-      this.socket.on('close-user-windows', function (data) {
-        if (!(data["originator"] === self.extra_args.library_id)) {
-          window.close();
-        }
-      });
+      var self = this;
 
       if (!window.in_context) {
-        this.socket.on("window-open", function (data) {
+        this.attachListener("window-open", function (data) {
           return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
         });
-        this.socket.emit('join', {
-          "room": window.user_id
-        });
-        this.socket.on('handle-callback', function (task_packet) {
-          (0, _communication_react.handleCallback)(task_packet, self.extra_args.library_id);
-        });
-        this.socket.on("doFlash", function (data) {
+        this.attachListener("doFlash", function (data) {
           (0, _toaster.doFlash)(data);
         });
       }
@@ -171,17 +167,17 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
     _classCallCheck(this, LibraryHomeApp);
 
     _this = _super2.call(this, props, context);
-    var tsocket = props.controlled ? context.tsocket : props.tsocket;
-    tsocket.socket.emit('join', {
-      "user_id": window.user_id,
-      "room": props.library_id
-    }); // const aheight = getUsableDimensions(true).usable_height_no_bottom;
-    // const awidth = getUsableDimensions(true).usable_width - 170;
+
+    if (!props.controlled) {
+      props.tsocket.attachListener('close-user-windows', function (data) {
+        if (!(data["originator"] == props.library_id)) {
+          window.close();
+        }
+      });
+    }
 
     _this.state = {
       selected_tab_id: "collections-pane",
-      // usable_width: awidth,
-      // usable_height: aheight,
       pane_states: {}
     };
 
@@ -290,7 +286,6 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
       this.setState({
         dark_theme: dark_theme
       }, function () {
-        // this.props.setStatusTheme(dark_theme);
         window.dark_theme = dark_theme;
       });
     } // This mechanism in _handleTabChange necessary in order to force the pane to change
@@ -336,9 +331,13 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
       return paneId === this.state.selected_tab_id ? "white" : "#CED9E0";
     }
   }, {
+    key: "componentWillUnmount",
+    value: function componentWillUnmount() {
+      this.props.tsocket.disconnect();
+    }
+  }, {
     key: "render",
     value: function render() {
-      var tsocket = this.props.controlled ? this.context.tsocket : this.props.tsocket;
       var dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
 
       var tile_widget = /*#__PURE__*/_react["default"].createElement(_library_widgets.LoadedTileList, null);
@@ -369,8 +368,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
         updatePaneState: this._updatePaneState
       }, this.state.pane_states["collection"], this.props.errorDrawerFuncs, {
         errorDrawerFuncs: this.props.errorDrawerFuncs,
-        library_id: this.props.library_id // tsocket={this.props.tsocket}
-
+        library_id: this.props.library_id
       }));
 
       var projects_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
@@ -380,8 +378,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
         ToolbarClass: ProjectToolbar,
         updatePaneState: this._updatePaneState
       }, this.props.errorDrawerFuncs, this.state.pane_states["project"], {
-        library_id: this.props.library_id // tsocket={this.props.tsocket}
-
+        library_id: this.props.library_id
       }));
 
       var tiles_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
@@ -392,9 +389,8 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
         updatePaneState: this._updatePaneState
       }, this.props.errorDrawerFuncs, this.state.pane_states["tile"], {
         library_id: this.props.library_id,
-        tsocket: this.props.tsocket,
-        aux_pane_title: "loaded tile list" // aux_pane={tile_widget}
-
+        aux_pane_title: "loaded tile list",
+        aux_pane: tile_widget
       }));
 
       var lists_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
@@ -405,8 +401,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
       }, this.props.errorDrawerFuncs, {
         updatePaneState: this._updatePaneState
       }, this.state.pane_states["list"], {
-        library_id: this.props.library_id // tsocket={this.props.tsocket}
-
+        library_id: this.props.library_id
       }));
 
       var code_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
@@ -417,8 +412,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
       }, this.props.errorDrawerFuncs, {
         updatePaneState: this._updatePaneState
       }, this.state.pane_states["code"], {
-        library_id: this.props.library_id // tsocket={this.props.tsocket}
-
+        library_id: this.props.library_id
       }));
 
       var outer_style = {
@@ -442,7 +436,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
       return /*#__PURE__*/_react["default"].createElement(_tactic_context.TacticContext.Provider, {
         value: {
           readOnly: false,
-          tsocket: tsocket,
+          tsocket: this.props.tsocket,
           dark_theme: dark_theme,
           setTheme: this.props.controlled ? this.context.setTheme : this._setTheme,
           controlled: this.props.controlled
@@ -450,9 +444,8 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
       }, !this.props.controlled && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
         is_authenticated: window.is_authenticated,
         selected: null,
-        show_api_links: false // dark_theme={lib_props.dark_theme}
-        // set_parent_theme={this._setTheme}
-        ,
+        show_api_links: false,
+        page_id: this.props.library_id,
         user_name: window.username
       }), /*#__PURE__*/_react["default"].createElement("div", {
         className: outer_class,
@@ -729,9 +722,7 @@ var LibraryToolbar = /*#__PURE__*/function (_React$Component2) {
         file_adders: this.prepare_file_adders(),
         alternate_outer_style: outer_style,
         sendRef: this.props.sendRef,
-        popup_buttons: popup_buttons // tsocket={this.props.tsocket}
-        // dark_theme={this.props.dark_theme}
-
+        popup_buttons: popup_buttons
       });
     }
   }]);
@@ -746,9 +737,7 @@ LibraryToolbar.propTypes = {
   popup_buttons: _propTypes["default"].array,
   multi_select: _propTypes["default"].bool,
   left_position: _propTypes["default"].number,
-  sendRef: _propTypes["default"].func,
-  dark_theme: _propTypes["default"].bool,
-  tsocket: _propTypes["default"].object
+  sendRef: _propTypes["default"].func
 };
 LibraryToolbar.defaultProps = {
   file_adders: null,
@@ -958,9 +947,7 @@ var CollectionToolbar = /*#__PURE__*/function (_React$Component3) {
         file_adders: this.file_adders,
         left_position: this.props.left_position,
         sendRef: this.props.sendRef,
-        multi_select: this.props.multi_select,
-        tsocket: this.props.tsocket,
-        dark_theme: this.props.dark_theme
+        multi_select: this.props.multi_select
       });
     }
   }]);
@@ -999,8 +986,8 @@ var ProjectToolbar = /*#__PURE__*/function (_React$Component4) {
       if (window.in_context) {
         var the_view = "".concat($SCRIPT_ROOT, "/new_notebook_in_context");
         (0, _communication_react.postAjaxPromise)(the_view, {
-          context_id: context_id,
-          resource_name: ""
+          resource_name: "",
+          temp_data_id: ""
         }).then(self.props.handleCreateViewer)["catch"](_toaster.doFlash);
       } else {
         window.open("".concat($SCRIPT_ROOT, "/new_notebook"));
@@ -1074,9 +1061,7 @@ var ProjectToolbar = /*#__PURE__*/function (_React$Component4) {
         file_adders: this.file_adders,
         left_position: this.props.left_position,
         sendRef: this.props.sendRef,
-        multi_select: this.props.multi_select // tsocket={this.props.tsocket}
-        // dark_theme={this.props.dark_theme}
-
+        multi_select: this.props.multi_select
       });
     }
   }]);
@@ -1150,7 +1135,7 @@ var TileToolbar = /*#__PURE__*/function (_React$Component5) {
       var resource_name = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
       var self = this;
       if (!resource_name) resource_name = this.props.list_of_selected[0];
-      (0, _communication_react.postWithCallbackNoMain)("host", "load_tile_module_task", {
+      (0, _communication_react.postWithCallback)("host", "load_tile_module_task", {
         "tile_module_name": resource_name,
         "user_id": window.user_id
       }, function (data) {
@@ -1162,7 +1147,7 @@ var TileToolbar = /*#__PURE__*/function (_React$Component5) {
         } else {
           (0, _toaster.doFlash)(data);
         }
-      });
+      }, null, this.props.library_id);
     }
   }, {
     key: "_unload_all_tiles",

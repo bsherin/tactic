@@ -20,15 +20,15 @@ var _error_drawer = require("./error_drawer.js");
 
 var _utilities_react = require("./utilities_react.js");
 
-var _blueprint_navbar = require("./blueprint_navbar");
+var _blueprint_navbar = require("./blueprint_navbar.js");
+
+var _tactic_context = require("./tactic_context.js");
 
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -50,27 +50,52 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
+function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+
 window.resource_viewer_id = (0, _utilities_react.guid)();
 window.main_id = window.resource_viewer_id;
 
 function tile_differ_main() {
+  function gotProps(the_props) {
+    var TileDifferAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(TileDifferApp));
+
+    var the_element = /*#__PURE__*/_react["default"].createElement(TileDifferAppPlus, _extends({}, the_props, {
+      controlled: false,
+      initial_theme: window.theme,
+      changeName: null
+    }));
+
+    var domContainer = document.querySelector('#root');
+    ReactDOM.render(the_element, domContainer);
+  }
+
   var get_url = "get_module_code";
   var tsocket = new _merge_viewer_app.MergeViewerSocket("main", 5000);
-  var TileDifferAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(TileDifferApp, tsocket), tsocket);
   (0, _communication_react.postAjaxPromise)("".concat(get_url, "/").concat(window.resource_name), {}).then(function (data) {
     var edit_content = data.the_content;
-    (0, _communication_react.postAjaxPromise)("get_tile_names").then(function (data) {
-      var tile_list = data.tile_names;
-      var domContainer = document.querySelector('#root');
-      ReactDOM.render( /*#__PURE__*/_react["default"].createElement(TileDifferAppPlus, {
-        resource_name: window.resource_name,
-        tile_list: tile_list,
-        edit_content: edit_content,
-        initial_theme: window.theme,
-        second_resource_name: window.second_resource_name
-      }), domContainer);
+    (0, _communication_react.postAjaxPromise)("get_tile_names").then(function (data2) {
+      data.tile_list = data2.tile_names;
+      data.resource_name = window.resource_name, data.second_resource_name = window.second_resource_name;
+      tile_differ_props(data, null, gotProps);
     })["catch"](_toaster.doFlash);
   })["catch"](_toaster.doFlash);
+}
+
+function tile_differ_props(data, registerDirtyMethod, finalCallback) {
+  var resource_viewer_id = (0, _utilities_react.guid)();
+  var tsocket = new _merge_viewer_app.MergeViewerSocket("main", 5000, {
+    resource_viewer_id: resource_viewer_id
+  });
+  finalCallback({
+    resource_viewer_id: resource_viewer_id,
+    tsocket: tsocket,
+    tile_list: data.tile_list,
+    resource_name: data.resource_name,
+    second_resource_name: data.second_resource_name,
+    edit_content: data.the_content,
+    is_repository: false,
+    registerDirtyMethod: registerDirtyMethod
+  });
 }
 
 var TileDifferApp = /*#__PURE__*/function (_React$Component) {
@@ -88,31 +113,37 @@ var TileDifferApp = /*#__PURE__*/function (_React$Component) {
 
     var self = _assertThisInitialized(_this);
 
-    window.onbeforeunload = function (e) {
-      if (self.dirty()) {
-        return "Any unsaved changes will be lost.";
-      }
-    };
-
     _this.state = {
       "edit_content": props.edit_content,
       "right_content": "",
       "tile_popup_val": props.second_resource_name == "none" ? props.resource_name : props.second_resource_name,
-      "tile_list": props.tile_list,
-      dark_theme: _this.props.initial_theme == "dark"
+      "tile_list": props.tile_list
     };
     _this.handleEditChange = _this.handleEditChange.bind(_assertThisInitialized(_this));
     _this.handleSelectChange = _this.handleSelectChange.bind(_assertThisInitialized(_this));
     _this.saveFromLeft = _this.saveFromLeft.bind(_assertThisInitialized(_this));
     _this.savedContent = props.edit_content;
+
+    if (!props.controlled) {
+      _this.state.dark_theme = props.initial_theme === "dark";
+      _this.state.resource_name = props.resource_name;
+      window.addEventListener("beforeunload", function (e) {
+        if (self._dirty()) {
+          e.preventDefault();
+          e.returnValue = '';
+        }
+      });
+    }
+
     return _this;
   }
 
   _createClass(TileDifferApp, [{
     key: "componentDidMount",
     value: function componentDidMount() {
-      this.props.setStatusTheme(this.state.dark_theme);
-      window.dark_theme = this.state.dark_theme;
+      if (!this.props.controlled) {
+        window.dark_theme = this.state.dark_theme;
+      }
     }
   }, {
     key: "_setTheme",
@@ -122,9 +153,9 @@ var TileDifferApp = /*#__PURE__*/function (_React$Component) {
       this.setState({
         dark_theme: dark_theme
       }, function () {
-        _this2.props.setStatusTheme(dark_theme);
-
-        window.dark_theme = _this2.state.dark_theme;
+        if (!window.in_context) {
+          window.dark_theme = _this2.state.dark_theme;
+        }
       });
     }
   }, {
@@ -148,14 +179,24 @@ var TileDifferApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
-      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+      var dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
+      return /*#__PURE__*/_react["default"].createElement(_tactic_context.TacticContext.Provider, {
+        value: {
+          readOnly: this.props.readOnly,
+          tsocket: this.props.tsocket,
+          dark_theme: dark_theme,
+          setTheme: this.props.controlled ? this.context.setTheme : this._setTheme,
+          controlled: this.props.controlled,
+          am_selected: this.props.am_selected
+        }
+      }, !this.props.controlled, " ", /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
         is_authenticated: window.is_authenticated,
         selected: null,
         show_api_links: true,
-        dark_theme: this.state.dark_theme,
-        set_parent_theme: this._setTheme,
+        page_id: this.props.resource_viewer_id,
         user_name: window.username
       }), /*#__PURE__*/_react["default"].createElement(_merge_viewer_app.MergeViewerApp, _extends({}, this.props.statusFuncs, {
+        resource_viewer_id: this.props.resource_viewer_id,
         resource_name: this.props.resource_name,
         option_list: this.state.tile_list,
         select_val: this.state.tile_popup_val,
@@ -163,7 +204,6 @@ var TileDifferApp = /*#__PURE__*/function (_React$Component) {
         right_content: this.state.right_content,
         handleSelectChange: this.handleSelectChange,
         handleEditChange: this.handleEditChange,
-        dark_theme: this.state.dark_theme,
         saveHandler: this.saveFromLeft
       })));
     }
@@ -192,4 +232,8 @@ TileDifferApp.propTypes = {
   edit_content: _propTypes["default"].string,
   second_resource_name: _propTypes["default"].string
 };
-tile_differ_main();
+TileDifferApp.contextType = _tactic_context.TacticContext;
+
+if (!window.in_context) {
+  tile_differ_main();
+}

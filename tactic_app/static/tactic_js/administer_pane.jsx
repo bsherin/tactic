@@ -43,10 +43,8 @@ class AdminPane extends React.Component {
 
     initSocket() {
         if (this.props.tsocket != null) {
-            this.props.tsocket.socket.off(`update-${this.props.res_type}-selector-row`);
-            this.props.tsocket.socket.off(`refresh-${this.props.res_type}-selector`);
-            this.props.tsocket.socket.on(`update-${this.props.res_type}-selector-row`, this._handleRowUpdate);
-            this.props.tsocket.socket.on(`refresh-${this.props.res_type}-selector`, this._refresh_func);
+            this.props.tsocket.attachListener(`update-${this.props.res_type}-selector-row`, this._handleRowUpdate);
+            this.props.tsocket.attachListener(`refresh-${this.props.res_type}-selector`, this._refresh_func);
         }
         this.socket_counter = this.props.tsocket.counter
     }

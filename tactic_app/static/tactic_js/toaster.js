@@ -42,11 +42,14 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
+var DEFAULT_TIMEOUT = 2000;
+var disconnect_toast_id = null;
+var reconnect_toast_id = null;
+
 var AppToaster = _core.Toaster.create({
   className: "recipe-toaster",
   position: _core.Position.TOP,
-  autoFocus: false,
-  timeout: 2000
+  autoFocus: false
 });
 
 var intent_dict = {
@@ -58,21 +61,52 @@ var intent_dict = {
 function doFlash(data) {
   var intent;
 
-  if (!data.hasOwnProperty("alert_type")) {
+  if (!("alert_type" in data)) {
     intent = null;
   } else {
     intent = intent_dict[data.alert_type];
   }
 
-  if (!data.hasOwnProperty("timeout")) {
-    data.timeout = null;
+  if (!("timeout" in data)) {
+    data.timeout = DEFAULT_TIMEOUT;
   }
 
-  AppToaster.show({
-    message: data.message,
-    timeout: data.timeout,
-    intent: intent
-  });
+  if ("is_disconnect_message" in data) {
+    if (disconnect_toast_id) {
+      AppToaster.dismiss(disconnect_toast_id);
+    }
+
+    if (reconnect_toast_id) {
+      AppToaster.dismiss(reconnect_toast_id);
+    }
+
+    disconnect_toast_id = AppToaster.show({
+      message: data.message,
+      timeout: data.timeout,
+      intent: intent
+    });
+  } else if ("is_reconnect_message" in data) {
+    if (reconnect_toast_id) {
+      AppToaster.dismiss(reconnect_toast_id);
+    }
+
+    if (disconnect_toast_id) {
+      AppToaster.dismiss(disconnect_toast_id);
+      disconnect_toast_id = null;
+    }
+
+    reconnect_toast_id = AppToaster.show({
+      message: data.message,
+      timeout: data.timeout,
+      intent: intent
+    });
+  } else {
+    AppToaster.show({
+      message: data.message,
+      timeout: data.timeout,
+      intent: intent
+    });
+  }
 }
 
 function doFlashAlways(data) {
@@ -118,10 +152,10 @@ function withStatus(WrappedComponent) {
     }, {
       key: "initSocket",
       value: function initSocket() {
-        this.props.tsocket.reAttachListener('stop-spinner', this._stopSpinner);
-        this.props.tsocket.reAttachListener('start-spinner', this._startSpinner);
-        this.props.tsocket.reAttachListener('show-status-msg', this._statusMessageFromData);
-        this.props.tsocket.reAttachListener("clear-status-msg", this._clearStatusMessage);
+        this.props.tsocket.attachListener('stop-spinner', this._stopSpinner);
+        this.props.tsocket.attachListener('start-spinner', this._startSpinner);
+        this.props.tsocket.attachListener('show-status-msg', this._statusMessageFromData);
+        this.props.tsocket.attachListener("clear-status-msg", this._clearStatusMessage);
         this.socket_counter = this.props.tsocket.counter;
       }
     }, {

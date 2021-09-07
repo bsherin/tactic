@@ -34,19 +34,19 @@ function module_viewer_main () {
         let domContainer = document.querySelector('#root');
         ReactDOM.render(the_element, domContainer)
     }
-
-    postAjaxPromise("view_module_in_context", {"resource_name": window.resource_name})
+    let target = window.is_repository ? "repository_view_module_in_context" : "view_module_in_context";
+    postAjaxPromise(target, {"resource_name": window.resource_name})
         .then((data)=>{
             module_viewer_props(data, null, gotProps);
 
         })
 }
 
-const controllable_props = ["resource_name", "usable_height", "usable_width", "dark_theme"];
+const controllable_props = ["resource_name", "usable_height", "usable_width"];
 
 function module_viewer_props(data, registerDirtyMethod, finalCallback) {
     let resource_viewer_id = guid();
-    var tsocket = new ResourceViewerSocket("main", 5000, {resource_viewer_id: resource_viewer_id});
+    var tsocket = new ResourceViewerSocket("main", 5000);
     finalCallback({
         resource_viewer_id: resource_viewer_id,
         tsocket: tsocket,
@@ -55,7 +55,7 @@ function module_viewer_props(data, registerDirtyMethod, finalCallback) {
         the_content: data.the_content,
         notes: data.mdata.notes,
         readOnly: data.read_only,
-        is_repository: false,
+        is_repository: data.is_repository,
         meta_outer: "#right-div",
         registerDirtyMethod: registerDirtyMethod
     })
@@ -143,7 +143,7 @@ class ModuleViewerApp extends React.Component {
         let bgs;
         if (this.props.is_repository) {
             bgs = [
-                    [{"name_text": "Copy", "icon_name": "share",
+                    [{"name_text": "Copy", "icon_name": "import",
                         "click_handler": () => {copyToLibrary("modules", this.state.resource_name)}, tooltip: "Copy to library"}]
             ]
         }
@@ -238,13 +238,15 @@ class ModuleViewerApp extends React.Component {
                     <TacticNavbar is_authenticated={window.is_authenticated}
                                   selected={null}
                                   show_api_links={true}
-                                  dark_theme={this.state.dark_theme}
+                                  page_id={this.props.resource_viewer_id}
                                   user_name={window.username}/>
                 }
                 <div className={outer_class} ref={this.top_ref} style={outer_style}>
                         <ResourceViewerApp {...this.props.statusFuncs}
                                            resource_viewer_id={my_props.resource_viewer_id}
                                            setResourceNameState={this._setResourceNameState}
+                                           refreshTab={this.props.refreshTab}
+                                           closeTab={this.props.closeTab}
                                            res_type="tile"
                                            resource_name={my_props.resource_name}
                                            button_groups={this.button_groups}
@@ -390,6 +392,8 @@ ModuleViewerApp.propTypes = {
     changeResourceTitle: PropTypes.func,
     changeResourceProps: PropTypes.func,
     updatePanel: PropTypes.func,
+    refreshTab: PropTypes.func,
+    closeTab: PropTypes.func,
     the_content: PropTypes.string,
     created: PropTypes.string,
     tags: PropTypes.array,
@@ -398,7 +402,6 @@ ModuleViewerApp.propTypes = {
     readOnly: PropTypes.bool,
     is_repository: PropTypes.bool,
     meta_outer: PropTypes.string,
-    tsocket: PropTypes.object,
     usable_height: PropTypes.number,
     usable_width: PropTypes.number
 };
@@ -409,6 +412,8 @@ ModuleViewerApp.defaultProps = {
     changeResourceName: null,
     changeResourceTitle: null,
     changeResourceProps: null,
+    refreshTab: null,
+    closeTab: null,
     updatePanel: null
 };
 

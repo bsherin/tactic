@@ -62,7 +62,7 @@ class StateTasksMixin:
 
             thread = socketio.start_background_task(worker.background_log_lines,
                                                     tile_id,
-                                                    self.user_id,
+                                                    self.mworker.my_id,
                                                     {"tile_message": "updateLog", "tile_id": tile_id},
                                                     "tile-message")
             streaming_workers[tile_id] = thread
@@ -526,7 +526,7 @@ class LoadSaveTasksMixin:
             cdict = make_jsonizable_and_compress(console_dict)
             save_dict = {"file_id": self.fs.put(cdict), "user_id": self.user_id}
             unique_id = store_temp_data(self.db, save_dict)
-            self.mworker.emit_to_main_client("notebook-open", {"message": "notebook-open", "the_id": unique_id})
+            self.mworker.emit_to_main_client("notebook-open", {"message": "notebook-open", "temp_data_id": unique_id})
             return
 
         self.mworker.post_task(self.mworker.my_id, "compile_save_dict", {}, got_save_dict)
@@ -1518,8 +1518,8 @@ class ConsoleTasksMixin:
         print("created a worker")
         thread = socketio.start_background_task(worker.background_log_lines,
                                                 self.mworker.my_id,
-                                                self.user_id,
-                                                {"console_message": "updateLog"},
+                                                self.mworker.my_id,
+                                                {"console_message": "updateLog", "main_id": self.mworker.my_id},
                                                 "console-message")
         console_log_thread = thread
         print("leaving StartMainLogStreaming")
@@ -1535,8 +1535,8 @@ class ConsoleTasksMixin:
 
             thread = socketio.start_background_task(worker.background_log_lines,
                                                     self.pseudo_tile_id,
-                                                    self.user_id,
-                                                    {"console_message": "updateLog"},
+                                                    self.mworker.my_id,
+                                                    {"console_message": "updateLog", "main_id": self.mworker.my_id},
                                                     "console-message")
             console_log_thread = thread
         return None

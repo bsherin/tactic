@@ -215,8 +215,26 @@ class RepositoryCodeManager(CodeManager):
     def add_rules(self):
         app.add_url_rule('/repository_view_code/<code_name>', "repository_view_code",
                          login_required(self.repository_view_code), methods=['get', "post"])
+        app.add_url_rule('/repository_view_code_in_context', "repository_view_code_in_context",
+                         login_required(self.repository_view_code_in_context), methods=['get', 'post'])
         app.add_url_rule('/repository_get_code_code/<code_name>', "repository_get_code_code",
                          login_required(self.repository_get_code_code), methods=['get', 'post'])
+
+    def repository_view_code_in_context(self):
+        code_name = request.json["resource_name"]
+        code_code = repository_user.get_code(code_name)
+        mdata = repository_user.process_metadata(self.grab_metadata(code_name))
+        data = {
+            "success": True,
+            "kind": "code-viewer",
+            "res_type": "code",
+            "the_content": code_code,
+            "mdata": mdata,
+            "resource_name": code_name,
+            "read_only": True,
+            "is_repository": True,
+        }
+        return jsonify(data)
 
     def repository_view_code(self, code_name):
         user_obj = current_user

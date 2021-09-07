@@ -20,8 +20,6 @@ var _core = require("@blueprintjs/core");
 
 var _resource_viewer_react_app = require("./resource_viewer_react_app.js");
 
-var _resource_viewer_context = require("./resource_viewer_context.js");
-
 var _communication_react = require("./communication_react.js");
 
 var _toaster = require("./toaster.js");
@@ -92,7 +90,8 @@ function list_viewer_main() {
     ReactDOM.render(the_element, domContainer);
   }
 
-  (0, _communication_react.postAjaxPromise)("view_list_in_context", {
+  var target = window.is_repository ? "repository_view_list_in_context" : "view_list_in_context";
+  (0, _communication_react.postAjaxPromise)(target, {
     "resource_name": window.resource_name
   }).then(function (data) {
     list_viewer_props(data, null, gotProps);
@@ -101,9 +100,7 @@ function list_viewer_main() {
 
 function list_viewer_props(data, registerDirtyMethod, finalCallback) {
   var resource_viewer_id = (0, _utilities_react2.guid)();
-  var tsocket = new _resource_viewer_react_app.ResourceViewerSocket("main", 5000, {
-    resource_viewer_id: resource_viewer_id
-  });
+  var tsocket = new _resource_viewer_react_app.ResourceViewerSocket("main", 5000);
   finalCallback({
     resource_viewer_id: resource_viewer_id,
     tsocket: tsocket,
@@ -112,7 +109,7 @@ function list_viewer_props(data, registerDirtyMethod, finalCallback) {
     the_content: data.the_content,
     notes: data.mdata.notes,
     readOnly: data.read_only,
-    is_repository: false,
+    is_repository: data.is_repository,
     meta_outer: "#right-div",
     registerDirtyMethod: registerDirtyMethod
   });
@@ -153,7 +150,7 @@ var ListEditor = /*#__PURE__*/function (_React$Component) {
   return ListEditor;
 }(_react["default"].Component);
 
-ListEditor.contextType = _resource_viewer_context.ViewerContext;
+ListEditor.contextType = _tactic_context.TacticContext;
 ListEditor.propTypes = {
   the_content: _propTypes["default"].string,
   handleChange: _propTypes["default"].func,
@@ -251,7 +248,7 @@ var ListViewerApp = /*#__PURE__*/function (_React$Component2) {
       if (this.props.is_repository) {
         bgs = [[{
           "name_text": "Copy",
-          "icon_name": "share",
+          "icon_name": "import",
           "click_handler": function click_handler() {
             (0, _resource_viewer_react_app.copyToLibrary)("list", _this3._cProp("resource_name"));
           },
@@ -359,7 +356,7 @@ var ListViewerApp = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "render",
     value: function render() {
-      var dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme; // let the_context = {"readOnly": this.props.readOnly};
+      var dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
 
       var my_props = _objectSpread({}, this.props);
 
@@ -406,9 +403,8 @@ var ListViewerApp = /*#__PURE__*/function (_React$Component2) {
       }, !this.props.controlled && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
         is_authenticated: window.is_authenticated,
         selected: null,
-        show_api_links: true // dark_theme={this.state.dark_theme}
-        // set_parent_theme={this._setTheme}
-        ,
+        show_api_links: true,
+        page_id: this.props.resource_viewer_id,
         user_name: window.username
       }), /*#__PURE__*/_react["default"].createElement("div", {
         className: outer_class,
@@ -417,6 +413,8 @@ var ListViewerApp = /*#__PURE__*/function (_React$Component2) {
       }, /*#__PURE__*/_react["default"].createElement(_resource_viewer_react_app.ResourceViewerApp, _extends({}, this.props.statusFuncs, {
         resource_viewer_id: this.props.resource_viewer_id,
         setResourceNameState: this._setResourceNameState,
+        refreshTab: this.props.refreshTab,
+        closeTab: this.props.closeTab,
         resource_name: my_props.resource_name,
         created: this.props.created,
         meta_outer: this.props.meta_outer,
@@ -492,6 +490,8 @@ ListViewerApp.propTypes = {
   changeResourceTitle: _propTypes["default"].func,
   changeResourceProps: _propTypes["default"].func,
   updatePanel: _propTypes["default"].func,
+  refreshTab: _propTypes["default"].func,
+  closeTab: _propTypes["default"].func,
   the_content: _propTypes["default"].string,
   created: _propTypes["default"].string,
   tags: _propTypes["default"].array,
@@ -509,6 +509,8 @@ ListViewerApp.defaultProps = {
   changeResourceName: null,
   changeResourceTitle: null,
   changeResourceProps: null,
+  refreshTab: null,
+  closeTab: null,
   updatePanel: null
 };
 ListViewerApp.contextType = _tactic_context.TacticContext;
