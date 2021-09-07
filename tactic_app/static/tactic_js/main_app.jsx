@@ -373,12 +373,10 @@ class MainApp extends React.Component {
     }
 
     _update_menus_listener(data) {
-        if (!("main_id" in data) || (data.main_id == this.props.main_id)) {
-            let self = this;
-            postWithCallback("host", "get_tile_types", {"user_id": window.user_id}, function (data) {
-                self.setState({tile_types: data.tile_types});
-            }), null, self.props.main_id;
-        }
+        let self = this;
+        postWithCallback("host", "get_tile_types", {"user_id": window.user_id}, function (data) {
+            self.setState({tile_types: data.tile_types});
+        }), null, self.props.main_id;
     }
 
     _change_doc_listener(data) {

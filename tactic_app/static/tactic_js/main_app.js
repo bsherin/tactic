@@ -537,16 +537,14 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_update_menus_listener",
     value: function _update_menus_listener(data) {
-      if (!("main_id" in data) || data.main_id == this.props.main_id) {
-        var self = this;
-        (0, _communication_react.postWithCallback)("host", "get_tile_types", {
-          "user_id": window.user_id
-        }, function (data) {
-          self.setState({
-            tile_types: data.tile_types
-          });
-        }), null, self.props.main_id;
-      }
+      var self = this;
+      (0, _communication_react.postWithCallback)("host", "get_tile_types", {
+        "user_id": window.user_id
+      }, function (data) {
+        self.setState({
+          tile_types: data.tile_types
+        });
+      }), null, self.props.main_id;
     }
   }, {
     key: "_change_doc_listener",
