@@ -996,7 +996,7 @@ pre code {
   background-color: #293742;
   border-bottom: 1px solid #10161a26; }
 .bp3-dark #table-area {
-  border-right: 1px solid; }
+  border-right: 1px none; }
   .bp3-dark #table-area mark {
     background-color: #cebde6; }
 .bp3-dark .tile-panel-heading {
