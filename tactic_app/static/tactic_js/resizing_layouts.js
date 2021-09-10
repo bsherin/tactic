@@ -180,17 +180,28 @@ var DragHandle = /*#__PURE__*/function (_React$Component) {
         style.transform = "rotate(45deg)";
       }
 
+      var wrappedElement;
+
+      if (this.props.useVerticalBar) {
+        wrappedElement = /*#__PURE__*/_react["default"].createElement("div", {
+          className: "resize-border",
+          style: style
+        });
+      } else {
+        wrappedElement = /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+          icon: this.icon_dict[this.props.direction],
+          iconSize: this.props.iconSize,
+          style: style
+        });
+      }
+
       return /*#__PURE__*/_react["default"].createElement(_reactDraggable.DraggableCore, {
         onStart: this._dragStart,
         onStop: this._dragEnd,
         onDrag: this._onDrag,
         grid: [5, 5],
         scale: 1
-      }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-        icon: this.icon_dict[this.props.direction],
-        iconSize: this.props.iconSize,
-        style: style
-      }));
+      }, wrappedElement);
     }
   }]);
 
@@ -204,14 +215,16 @@ DragHandle.propTypes = {
   dragStart: _propTypes["default"].func,
   dragEnd: _propTypes["default"].func,
   direction: _propTypes["default"].string,
-  iconSize: _propTypes["default"].number
+  iconSize: _propTypes["default"].number,
+  useVerticalBar: _propTypes["default"].bool
 };
 DragHandle.defaultProps = {
   direction: "x",
   iconSize: 20,
   onDrag: null,
   dragStart: null,
-  dragEnd: null
+  dragEnd: null,
+  useVerticalBar: false
 };
 
 var HorizontalPanes = /*#__PURE__*/function (_React$Component2) {

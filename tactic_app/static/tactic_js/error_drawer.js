@@ -91,18 +91,12 @@ function withErrorDrawer(WrappedComponent) {
         }
       }
     }, {
-      key: "componentDidUpdate",
-      value: function componentDidUpdate() {// if (this.props.tsocket && (this.props.tsocket.counter != this.socket_counter)) {
-        //     this.initSocket();
-        // }
-      }
-    }, {
       key: "initSocket",
       value: function initSocket() {
         this.props.tsocket.attachListener('close-error-drawer', this._close);
         this.props.tsocket.attachListener('open-error-drawer', this._open);
         this.props.tsocket.attachListener('add-error-drawer-entry', this._addEntry);
-        this.props.tsocket.attachListener("clear-error-drawer", this._clearAll); // this.socket_counter = this.props.tsocket.counter
+        this.props.tsocket.attachListener("clear-error-drawer", this._clearAll);
       }
     }, {
       key: "_close",

@@ -73,7 +73,6 @@ class FileImportDialog extends React.Component {
 
     initSocket() {
         this.props.tsocket.attachListener("upload-response", this._handleResponse);
-        // this.socket_counter = this.props.tsocket.counter
     }
 
 
@@ -93,9 +92,6 @@ class FileImportDialog extends React.Component {
 
     componentDidUpdate() {
         this._updatePickerSize();
-        // if (this.props.tsocket.counter != this.socket_counter) {
-        //     this.initSocket();
-        // }
     }
 
     _checkbox_change_handler(event) {

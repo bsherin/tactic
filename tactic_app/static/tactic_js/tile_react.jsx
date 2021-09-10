@@ -38,8 +38,6 @@ function composeObjs(base_style, new_style) {
     return Object.assign(Object.assign({}, base_style), new_style)
 }
 
-
-
 class TileContainer extends React.Component {
     constructor(props) {
         super(props);
@@ -55,26 +53,17 @@ class TileContainer extends React.Component {
         this._setTileValue(data.tile_id, "finished_loading", true)
     }
 
-    componentDidMount() {
-        this.setState({"mounted": true});
-        this.initSocket()
-    }
-
-    componentDidUpdate () {
-        // if (this.context.tsocket.counter != this.socket_counter) {
-        //     this.initSocket();
-        // }
-    }
-
     _handleTileSourceChange(data) {
         this._markSourceChange(data.tile_type)
+    }
+    componentDidMount() {
+        this.initSocket()
     }
 
     initSocket() {
         this.context.tsocket.attachListener("tile-message", this._handleTileMessage);
         this.context.tsocket.attachListener("tile-finished-loading", this._handleTileFinishedLoading);
         this.context.tsocket.attachListener('tile-source-change', this._handleTileSourceChange);
-        this.socket_counter = this.context.tsocket.counter
     }
 
      _resortTilesOld(new_sort_list) {

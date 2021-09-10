@@ -90,6 +90,8 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 
 function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 
+var TAB_BAR_WIDTH = 50;
+
 function _library_home_main() {
   // window.main_id = library_id;
   var LibraryHomeAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(LibraryHomeApp));
@@ -103,84 +105,29 @@ function _library_home_main() {
 
 function library_props() {
   var library_id = (0, _utilities_react.guid)();
-  var tsocket = new LibraryTacticSocket("main", 5000, {
-    extra_args: library_id
-  });
-  tsocket.attachListener('handle-callback', function (task_packet) {
-    (0, _communication_react.handleCallback)(task_packet, library_id);
-  });
-  tsocket.socket.emit('join', {
-    "user_id": window.user_id,
-    "room": library_id
-  });
-
-  if (!window.in_context) {
-    tsocket.attachListener("window-open", function (data) {
-      return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
-    });
-    tsocket.attachListener("doFlash", function (data) {
-      (0, _toaster.doFlash)(data);
-    });
-    tsocket.attachListener('close-user-windows', function (data) {
-      if (!(data["originator"] == library_id)) {
-        window.close();
-      }
-    });
-  }
-
+  var tsocket = new _tactic_socket.TacticSocket("main", 5000, library_id);
   return {
     library_id: library_id,
     tsocket: tsocket
   };
 }
 
-var LibraryTacticSocket = /*#__PURE__*/function (_TacticSocket) {
-  _inherits(LibraryTacticSocket, _TacticSocket);
-
-  var _super = _createSuper(LibraryTacticSocket);
-
-  function LibraryTacticSocket() {
-    _classCallCheck(this, LibraryTacticSocket);
-
-    return _super.apply(this, arguments);
-  }
-
-  _createClass(LibraryTacticSocket, [{
-    key: "initialize_socket_stuff",
-    value: function initialize_socket_stuff() {
-      var reconnect = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-
-      if (reconnect) {
-        this.socket.emit('join', {
-          "room": this.extra_args.library_id
-        });
-      }
-
-      this.socket.emit('join', {
-        "user_id": window.user_id,
-        "room": window.user_id
-      });
-    }
-  }]);
-
-  return LibraryTacticSocket;
-}(_tactic_socket.TacticSocket);
-
 var res_types = ["collection", "project", "tile", "list", "code"];
 var tab_panes = ["collections-pane", "projects-pane", "tiles-pane", "lists-pane", "code-pane"];
-var controllable_props = ["usable_height", "usable_width"]; // noinspection JSUnusedLocalSymbols,JSRemoveUnnecessaryParentheses
+var controllable_props = ["usable_width", "usable_height"]; // noinspection JSUnusedLocalSymbols,JSRemoveUnnecessaryParentheses
 
 var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
   _inherits(LibraryHomeApp, _React$Component);
 
-  var _super2 = _createSuper(LibraryHomeApp);
+  var _super = _createSuper(LibraryHomeApp);
 
   function LibraryHomeApp(props, context) {
     var _this;
 
     _classCallCheck(this, LibraryHomeApp);
 
-    _this = _super2.call(this, props, context);
+    _this = _super.call(this, props, context);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
     _this.state = {
       selected_tab_id: "collections-pane",
       pane_states: {}
@@ -223,7 +170,8 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
     }
 
     _this.top_ref = /*#__PURE__*/_react["default"].createRef();
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
+
+    _this.initSocket();
 
     if (props.registerLibraryTabChanger) {
       props.registerLibraryTabChanger(_this._handleTabChange);
@@ -241,6 +189,28 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
   }
 
   _createClass(LibraryHomeApp, [{
+    key: "initSocket",
+    value: function initSocket() {
+      var self = this;
+      this.props.tsocket.attachListener('handle-callback', function (task_packet) {
+        (0, _communication_react.handleCallback)(task_packet, self.props.library_id);
+      });
+
+      if (!window.in_context) {
+        this.props.tsocket.attachListener("window-open", function (data) {
+          return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
+        });
+        this.props.tsocket.attachListener("doFlash", function (data) {
+          (0, _toaster.doFlash)(data);
+        });
+        this.props.tsocket.attachListener('close-user-windows', function (data) {
+          if (!(data["originator"] == library_id)) {
+            window.close();
+          }
+        });
+      }
+    }
+  }, {
     key: "componentDidMount",
     value: function componentDidMount() {
       this.setState({
@@ -250,9 +220,9 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
 
       if (!this.props.controlled) {
         window.dark_theme = this.state.dark_theme;
-        window.addEventListener("resize", this._update_window_dimensions);
+        window.addEventListener("resize", this._handleResize);
 
-        this._update_window_dimensions();
+        this._handleResize();
       }
     }
   }, {
@@ -302,7 +272,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
     value: function _handleTabChange(newTabId, prevTabId, event) {
       this.setState({
         selected_tab_id: newTabId
-      }, this._update_window_dimensions);
+      });
     }
   }, {
     key: "_goToNextPane",
@@ -341,6 +311,14 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
       this.props.tsocket.disconnect();
     }
   }, {
+    key: "_handleResize",
+    value: function _handleResize(entires) {
+      this.setState({
+        usable_width: window.innerWidth - this.top_ref.current.offsetLeft,
+        usable_height: window.innerHeight - this.top_ref.current.offsetTop
+      });
+    }
+  }, {
     key: "render",
     value: function render() {
       var dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
@@ -363,6 +341,8 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
         } finally {
           _iterator2.f();
         }
+
+        lib_props.usable_width -= TAB_BAR_WIDTH;
       }
 
       var collection_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
@@ -421,8 +401,8 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
       }));
 
       var outer_style = {
+        height: this.state.available_height,
         width: "100%",
-        height: lib_props.usable_height,
         paddingLeft: 0
       };
       var outer_class = "";
@@ -456,10 +436,6 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
         className: outer_class,
         ref: this.top_ref,
         style: outer_style
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        style: {
-          width: lib_props.usable_width
-        }
       }, /*#__PURE__*/_react["default"].createElement(_core.Tabs, {
         id: "the_container",
         style: {
@@ -531,7 +507,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
         iconSize: 20,
         tabIndex: -1,
         color: this.getIconColor("code-pane")
-      })))))), !this.props.controlled && /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
+      }))))), !this.props.controlled && /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
         global: true,
         bindings: key_bindings
       }));
@@ -547,12 +523,12 @@ LibraryHomeApp.contextType = _tactic_context.TacticContext;
 var LibraryToolbar = /*#__PURE__*/function (_React$Component2) {
   _inherits(LibraryToolbar, _React$Component2);
 
-  var _super3 = _createSuper(LibraryToolbar);
+  var _super2 = _createSuper(LibraryToolbar);
 
   function LibraryToolbar() {
     _classCallCheck(this, LibraryToolbar);
 
-    return _super3.apply(this, arguments);
+    return _super2.apply(this, arguments);
   }
 
   _createClass(LibraryToolbar, [{
@@ -767,14 +743,14 @@ var specializedToolbarPropTypes = {
 var CollectionToolbar = /*#__PURE__*/function (_React$Component3) {
   _inherits(CollectionToolbar, _React$Component3);
 
-  var _super4 = _createSuper(CollectionToolbar);
+  var _super3 = _createSuper(CollectionToolbar);
 
   function CollectionToolbar(props) {
     var _this2;
 
     _classCallCheck(this, CollectionToolbar);
 
-    _this2 = _super4.call(this, props);
+    _this2 = _super3.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this2));
     _this2.upload_name = null;
     return _this2;
@@ -965,14 +941,14 @@ CollectionToolbar.propTypes = specializedToolbarPropTypes;
 var ProjectToolbar = /*#__PURE__*/function (_React$Component4) {
   _inherits(ProjectToolbar, _React$Component4);
 
-  var _super5 = _createSuper(ProjectToolbar);
+  var _super4 = _createSuper(ProjectToolbar);
 
   function ProjectToolbar(props) {
     var _this4;
 
     _classCallCheck(this, ProjectToolbar);
 
-    _this4 = _super5.call(this, props);
+    _this4 = _super4.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this4));
     return _this4;
   }
@@ -1078,14 +1054,14 @@ ProjectToolbar.propTypes = specializedToolbarPropTypes;
 var TileToolbar = /*#__PURE__*/function (_React$Component5) {
   _inherits(TileToolbar, _React$Component5);
 
-  var _super6 = _createSuper(TileToolbar);
+  var _super5 = _createSuper(TileToolbar);
 
   function TileToolbar(props) {
     var _this5;
 
     _classCallCheck(this, TileToolbar);
 
-    _this5 = _super6.call(this, props);
+    _this5 = _super5.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this5));
     return _this5;
   }
@@ -1293,14 +1269,14 @@ TileToolbar.propTypes = specializedToolbarPropTypes;
 var ListToolbar = /*#__PURE__*/function (_React$Component6) {
   _inherits(ListToolbar, _React$Component6);
 
-  var _super7 = _createSuper(ListToolbar);
+  var _super6 = _createSuper(ListToolbar);
 
   function ListToolbar(props) {
     var _this7;
 
     _classCallCheck(this, ListToolbar);
 
-    _this7 = _super7.call(this, props);
+    _this7 = _super6.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this7));
     return _this7;
   }
@@ -1387,14 +1363,14 @@ ListToolbar.propTypes = specializedToolbarPropTypes;
 var CodeToolbar = /*#__PURE__*/function (_React$Component7) {
   _inherits(CodeToolbar, _React$Component7);
 
-  var _super8 = _createSuper(CodeToolbar);
+  var _super7 = _createSuper(CodeToolbar);
 
   function CodeToolbar(props) {
     var _this8;
 
     _classCallCheck(this, CodeToolbar);
 
-    _this8 = _super8.call(this, props);
+    _this8 = _super7.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this8));
     return _this8;
   }

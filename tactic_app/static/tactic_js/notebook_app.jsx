@@ -20,26 +20,18 @@ import {ExportsViewer} from "./export_viewer_react";
 import {HorizontalPanes} from "./resizing_layouts";
 import {withErrorDrawer} from "./error_drawer.js";
 import {TacticContext} from "./tactic_context.js";
+import {getUsableDimensions} from "./sizing_tools.js";
 
 const MARGIN_SIZE = 10;
 const BOTTOM_MARGIN = 20;
+const MARGIN_ADJUSTMENT = 8; // This is the amount at the top of both the table and the conso
 const USUAL_TOOLBAR_HEIGHT = 50;
+const MENU_BAR_HEIGHT = 30; // will only appear when in context
 
 var tsocket;
 var ppi;
 
 export {notebook_props, NotebookApp}
-
-class MainTacticSocket extends TacticSocket {
-
-    initialize_socket_stuff(reconnect=false) {
-        if (reconnect) {
-            this.socket.emit('join', {"room": this.extra_args.main_id})
-        }
-        this.socket.emit('join', {"room": window.user_id});
-
-    }
-}
 
 function main_main() {
     function gotProps(the_props) {
@@ -73,25 +65,11 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
     ppi = get_ppi();
     let main_id = data.main_id;
 
-    var tsocket = new MainTacticSocket("main", 5000, {main_id: main_id});
-    tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, main_id)});
-    tsocket.attachListener("window-open", data => {
-            window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`)
-        });
-    tsocket.attachListener('forcedisconnect', function() {
-        tsocket.socket.disconnect()
+    var tsocket = new TacticSocket("main", 5000, main_id, function(response) {
+        tsocket.socket.on("remove-ready-block", readyListener);
+        tsocket.socket.emit('client-ready', {"room": main_id, "user_id": window.user_id, "participant": "client",
+            "rb_id": data.ready_block_id, "main_id": main_id})
     });
-    if (!window.in_context) {
-        tsocket.attachListener("doFlash", function(data) {
-            doFlash(data)
-            });
-
-        tsocket.attachListener('close-user-windows', function(data){
-            if (!(data["originator"] == main_id)) {
-                window.close()
-            }
-        });
-    }
     tsocket.socket.on('finish-post-load', _finish_post_load_in_context);
 
     function readyListener() {
@@ -101,12 +79,6 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
     let is_totally_new = !data.is_jupyter && !data.is_project && (data.temp_data_id == "");
     let opening_from_temp_id = data.temp_data_id != "";
 
-
-    tsocket.socket.on("remove-ready-block", readyListener);
-    tsocket.socket.emit('join', {"room": main_id}, function(response) {
-            tsocket.socket.emit('client-ready', {"room": main_id, "user_id": window.user_id, "participant": "client",
-            "rb_id": data.ready_block_id, "main_id": main_id})
-    });
 
     window.addEventListener("unload", function sendRemove() {
         console.log("got the beacon");
@@ -118,6 +90,7 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
             renderSpinnerMessage("Everyone is ready, initializing...");
         }
         tsocket.socket.off("remove-ready-block", readyListener);
+        tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, main_id)});
         let data_dict = {
                 "doc_type": "notebook",
                 "base_figure_url": data.base_figure_url,
@@ -179,7 +152,7 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
 }
 
 const save_attrs = ["console_items", "show_exports_pane", "console_width_fraction"];
-const controllable_props = ["is_project", "resource_name"];
+const controllable_props = ["is_project", "resource_name", "usable_width", "usable_height"];
 
 class NotebookApp extends React.Component {
     constructor (props) {
@@ -198,11 +171,15 @@ class NotebookApp extends React.Component {
 
         let self = this;
         if (this.props.controlled) {
-            props.registerDirtyMethod(this._dirty)
+            props.registerDirtyMethod(this._dirty);
+            this.height_adjustment = MENU_BAR_HEIGHT;
         }
         else {
+            this.height_adjustment = 0;
             this.state.dark_theme = props.initial_theme === "dark";
             this.state.resource_name = props.resource_name;
+            this.state.usable_height = getUsableDimensions(true).usable_height_no_bottom;
+            this.state.usable_width = getUsableDimensions(true).usable_width - 170;
             this.state.is_project = props.is_project;
             window.addEventListener("beforeunload", function (e) {
                 if (self._dirty()) {
@@ -226,15 +203,16 @@ class NotebookApp extends React.Component {
 
     _update_window_dimensions() {
         let uwidth;
+        let uheight;
         if (this.main_outer_ref && this.main_outer_ref.current) {
-            uwidth = window.innerWidth - MARGIN_SIZE - this.main_outer_ref.current.offsetLeft
+            uheight = window.innerHeight - this.main_outer_ref.current.offsetTop;
+            uwidth = window.innerWidth - this.main_outer_ref.current.offsetLeft;
         }
         else {
-            uwidth = window.innerWidth - 2 * MARGIN_SIZE
+            uheight = window.innerHeight - USUAL_TOOLBAR_HEIGHT;
+            uwidth = window.innerWidth - 2 * MARGIN_SIZE;
         }
-        this.setState({
-            "usable_width": uwidth,
-        });
+        this.setState({usable_height: uheight, usable_width: uwidth})
     }
 
     _updateLastSave() {
@@ -253,7 +231,6 @@ class NotebookApp extends React.Component {
 
     componentDidMount() {
         this.setState({"mounted": true});
-        this.initSocket();
         this._updateLastSave();
         this.props.stopSpinner();
 
@@ -262,12 +239,6 @@ class NotebookApp extends React.Component {
             window.dark_theme = this.state.dark_theme;
             window.addEventListener("resize", this._update_window_dimensions);
             this._update_window_dimensions();
-        }
-    }
-
-    componentDidUpdate () {
-        if (this.props.tsocket.counter != this.socket_counter) {
-            this.initSocket();
         }
     }
 
@@ -282,12 +253,24 @@ class NotebookApp extends React.Component {
 
     initSocket() {
         let self = this;
-        // this.props.tsocket.socket.emit('join-main', {"room": this.props.main_id, "user_id": window.user_id});
-        // this.props.tsocket.attachListener('forcedisconnect', function() {
-        //     self.props.tsocket.socket.disconnect()
-        // });
+        this.props.tsocket.attachListener('forcedisconnect', function() {
+            this.props.tsocket.socket.disconnect()
+        });
 
-        this.socket_counter = this.props.tsocket.counter
+        if (!window.in_context) {
+            this.props.tsocket.attachListener("window-open", data => {
+                window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`)
+            });
+            this.props.tsocket.attachListener("doFlash", function(data) {
+                doFlash(data)
+                });
+
+            this.props.tsocket.attachListener('close-user-windows', function(data){
+                if (!(data["originator"] == main_id)) {
+                    window.close()
+                }
+            });
+        }
     }
 
     _setTheme(dark_theme) {
@@ -333,48 +316,25 @@ class NotebookApp extends React.Component {
         }
     }
 
-    // _get_console_available_height(uheight) {
-    //     let result;
-    //     if (this.main_outer_ref && this.main_outer_ref.current) {
-    //         result = uheight - this.main_outer_ref.current.offsetTop
-    //     }
-    //     else {
-    //         result = uheight - USUAL_TOOLBAR_HEIGHT
-    //     }
-    //     return result
-    // }
-
     get_zoomed_console_height() {
         if (this.state.mounted && this.main_outer_ref.current) {
-            return window.innerHeight - this.main_outer_ref.current.offsetTop - BOTTOM_MARGIN;
+            return this._cProp("usable_height")  - this.height_adjustment - BOTTOM_MARGIN;
         }
         else {
-            return window.innerHeight - USUAL_TOOLBAR_HEIGHT;
+            return this._cProp("usable_height") - this.height_adjustment - 50
         }
-    }
-
-    _get_true_usable_width() {
-        let twidth;
-        if (this.main_outer_ref && this.main_outer_ref.current) {
-            twidth = window.innerWidth - this.main_outer_ref.current.offsetLeft
-        }
-        else {
-            twidth = window.innerWidth - 170
-        }
-        return twidth
     }
 
     render () {
         let dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
         let my_props = {...this.props};
-        let true_usable_width = this._get_true_usable_width();
         if (!this.props.controlled) {
             for (let prop_name of controllable_props) {
                 my_props[prop_name] = this.state[prop_name]
             }
         }
-
-        let console_available_height = this.get_zoomed_console_height();
+        let true_usable_width = my_props.usable_width;
+        let console_available_height = this.get_zoomed_console_height() - MARGIN_ADJUSTMENT;
         let project_name = my_props.is_project ? this.props.resource_name : "";
         let menus = (
             <React.Fragment>
@@ -430,6 +390,10 @@ class NotebookApp extends React.Component {
         else {
             outer_class = outer_class + " light-theme"
         }
+        let outer_style = {
+            width: "100%",
+            height: my_props.usable_height - this.height_adjustment,
+        };
         return (
             <React.Fragment>
                 <TacticContext.Provider value={{
@@ -449,7 +413,7 @@ class NotebookApp extends React.Component {
                                   refreshTab={this.props.refreshTab}
                                   closeTab={this.props.closeTab}
                     />
-                <div className={outer_class} ref={this.main_outer_ref}>
+                <div className={outer_class} ref={this.main_outer_ref} style={outer_style}>
 
                     <HorizontalPanes left_pane={console_pane}
                                      right_pane={exports_pane}
@@ -458,7 +422,6 @@ class NotebookApp extends React.Component {
                                      available_width={true_usable_width}
                                      initial_width_fraction={this.state.console_width_fraction}
                                      controlled={true}
-                                     // left_margin={MARGIN_SIZE}
                                      dragIconSize={15}
                                      handleSplitUpdate={this._handleConsoleFractionChange}
                         />

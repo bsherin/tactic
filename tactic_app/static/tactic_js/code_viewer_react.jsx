@@ -8,12 +8,14 @@ import React from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
-import {ResourceViewerSocket, ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app.js";
 import {ReactCodemirror} from "./react-codemirror.js";
+
+import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app.js";
+import {TacticSocket} from "./tactic_socket.js";
 import {postAjaxPromise, postWithCallback} from "./communication_react.js"
 import {doFlash, withStatus} from "./toaster.js"
 
-import {getUsableDimensions, SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT} from "./sizing_tools.js";
+import {getUsableDimensions, SIDE_MARGIN} from "./sizing_tools.js";
 import {withErrorDrawer} from "./error_drawer.js";
 import {doBinding} from "./utilities_react.js";
 import {guid} from "./utilities_react";
@@ -32,7 +34,6 @@ function code_viewer_main () {
         />;
         let domContainer = document.querySelector('#root');
         ReactDOM.render(the_element, domContainer)
-
     }
     let target = window.is_repository ? "repository_view_code_in_context" : "view_code_in_context";
     postAjaxPromise(target, {"resource_name": window.resource_name})
@@ -42,8 +43,10 @@ function code_viewer_main () {
 }
 
 function code_viewer_props(data, registerDirtyMethod, finalCallback) {
+    
     let resource_viewer_id = guid();
-    var tsocket = new ResourceViewerSocket("main", 5000, {resource_viewer_id: resource_viewer_id});
+    var tsocket = new TacticSocket("main", 5000, resource_viewer_id);
+
     finalCallback({
         resource_viewer_id: resource_viewer_id,
         tsocket: tsocket,
@@ -110,23 +113,6 @@ class CodeViewerApp extends React.Component {
             this._update_window_dimensions();
         }
     }
-    
-    _cProp(pname) {
-            return this.props.controlled ? this.props[pname] :  this.state[pname]
-    }
-
-    _update_window_dimensions() {
-        if (!this.props.controlled) {
-            let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
-            let uheight = window.innerHeight;
-            if (this.top_ref && this.top_ref.current) {
-                uheight = uheight - this.top_ref.current.offsetTop;
-            } else {
-                uheight = uheight - USUAL_TOOLBAR_HEIGHT
-            }
-            this.setState({usable_height: uheight, usable_width: uwidth})
-        }
-    }
 
     _setTheme(dark_theme) {
         this.setState({dark_theme: dark_theme}, ()=> {
@@ -135,21 +121,25 @@ class CodeViewerApp extends React.Component {
             }
         })
     }
+    
+    _cProp(pname) {
+            return this.props.controlled ? this.props[pname] :  this.state[pname]
+    }
 
     get button_groups() {
         let bgs;
         if (this.props.is_repository) {
-             bgs =[[{"name_text": "Copy", "icon_name": "import",
-                        "click_handler": () => {copyToLibrary("code", this.state.resource_name)}, tooltip: "Copy to library"}]
+            bgs = [[{"name_text": "Copy", "icon_name": "import",
+                        "click_handler": () => {copyToLibrary("list", this._cProp("resource_name"))}, tooltip: "Copy to library"}]
             ]
         }
         else {
             bgs = [[{"name_text": "Save", "icon_name": "saved", "click_handler": this._saveMe, tooltip: "Save"},
                     {"name_text": "Share", "icon_name": "share",
-                          "click_handler": () => {sendToRepository("code", this._cProp("resource_name"))}, tooltip: "Share to repository"}]
+                          "click_handler": () => {sendToRepository("code", this._cProp("resource_name"))},
+                        tooltip: "Share to repository"}]
             ]
         }
-
         for (let bg of bgs) {
             for (let but of bg) {
                 but.click_handler = but.click_handler.bind(this)
@@ -167,14 +157,21 @@ class CodeViewerApp extends React.Component {
         }
     }
 
-    _handleCodeChange(new_code) {
-        this.setState({"code_content": new_code})
-    }
-
     _handleStateChange(state_stuff) {
         this.setState(state_stuff)
     }
 
+    _handleCodeChange(new_code) {
+        this.setState({"code_content": new_code})
+    }
+
+    _update_window_dimensions() {
+        this.setState({
+            usable_width: window.innerWidth - this.top_ref.current.offsetLeft,
+            usable_height: window.innerHeight - this.top_ref.current.offsetTop
+        });
+    }
+    
     get_new_cc_height () {
         let uheight = this._cProp("usable_height");
         if (this.cc_ref && this.cc_ref.current) {  // This will be true after the initial render
@@ -187,14 +184,14 @@ class CodeViewerApp extends React.Component {
 
     render() {
         let dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
-        // let the_context = {"readOnly": this.props.readOnly};
         let my_props = {...this.props};
         if (!this.props.controlled) {
             for (let prop_name of controllable_props) {
                 my_props[prop_name] = this.state[prop_name]
             }
         }
-        let outer_style = {width: "100%",
+        let outer_style = {
+            width: "100%",
             height: my_props.usable_height,
             paddingLeft: SIDE_MARGIN
         };
@@ -223,9 +220,8 @@ class CodeViewerApp extends React.Component {
                                   page_id={this.props.resource_viewer_id}
                                   user_name={window.username}/>
                 }
-
                 <div className={outer_class} ref={this.top_ref} style={outer_style}>
-                    <ResourceViewerApp {...this.props.statusFuncs}
+                    <ResourceViewerApp {...my_props}
                                        resource_viewer_id={this.props.resource_viewer_id}
                                        setResourceNameState={this._setResourceNameState}
                                        refreshTab={this.props.refreshTab}
@@ -235,12 +231,12 @@ class CodeViewerApp extends React.Component {
                                        button_groups={this.button_groups}
                                        handleStateChange={this._handleStateChange}
                                        created={this.props.created}
+                                       meta_outer={this.props.meta_outer}
                                        notes={this.state.notes}
                                        tags={this.state.tags}
                                        saveMe={this._saveMe}
                                        show_search={true}
-                                       update_search_state={this._update_search_state}
-                                       meta_outer={this.props.meta_outer}>
+                                       update_search_state={this._update_search_state}>
                         <ReactCodemirror code_content={this.state.code_content}
                                          handleChange={this._handleCodeChange}
                                          saveMe={this._saveMe}
@@ -308,8 +304,10 @@ CodeViewerApp.propTypes = {
     created: PropTypes.string,
     tags: PropTypes.array,
     notes: PropTypes.string,
+    readOnly: PropTypes.bool,
     is_repository: PropTypes.bool,
     meta_outer: PropTypes.string,
+    tsocket: PropTypes.object,
     usable_height: PropTypes.number,
     usable_width: PropTypes.number
 };

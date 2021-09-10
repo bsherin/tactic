@@ -8,7 +8,8 @@ import React from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
-import {ResourceViewerSocket, ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app.js";
+import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app.js";
+import {TacticSocket} from "./tactic_socket.js";
 import {ReactCodemirror} from "./react-codemirror.js";
 import {postAjax, postAjaxPromise, postWithCallback} from "./communication_react.js"
 import {doFlash} from "./toaster.js"
@@ -45,8 +46,10 @@ function module_viewer_main () {
 const controllable_props = ["resource_name", "usable_height", "usable_width"];
 
 function module_viewer_props(data, registerDirtyMethod, finalCallback) {
+
     let resource_viewer_id = guid();
-    var tsocket = new ResourceViewerSocket("main", 5000, {resource_viewer_id: resource_viewer_id});
+    var tsocket = new TacticSocket("main", 5000, resource_viewer_id);
+
     finalCallback({
         resource_viewer_id: resource_viewer_id,
         tsocket: tsocket,
@@ -120,16 +123,10 @@ class ModuleViewerApp extends React.Component {
     }
 
     _update_window_dimensions() {
-        if (!this.props.controlled) {
-            let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
-            let uheight = window.innerHeight;
-            if (this.top_ref && this.top_ref.current) {
-                uheight = uheight - this.top_ref.current.offsetTop;
-            } else {
-                uheight = uheight - USUAL_TOOLBAR_HEIGHT
-            }
-            this.setState({usable_height: uheight, usable_width: uwidth})
-        }
+        this.setState({
+            usable_width: window.innerWidth - this.top_ref.current.offsetLeft,
+            usable_height: window.innerHeight - this.top_ref.current.offsetTop
+        });
     }
 
     _setTheme(dark_theme) {
@@ -211,7 +208,8 @@ class ModuleViewerApp extends React.Component {
                 my_props[prop_name] = this.state[prop_name]
             }
         }
-        let outer_style = {width: "100%",
+        let outer_style = {
+            width: "100%",
             height: my_props.usable_height,
             paddingLeft: SIDE_MARGIN
         };
@@ -242,7 +240,7 @@ class ModuleViewerApp extends React.Component {
                                   user_name={window.username}/>
                 }
                 <div className={outer_class} ref={this.top_ref} style={outer_style}>
-                        <ResourceViewerApp {...this.props.statusFuncs}
+                        <ResourceViewerApp {...my_props}
                                            resource_viewer_id={my_props.resource_viewer_id}
                                            setResourceNameState={this._setResourceNameState}
                                            refreshTab={this.props.refreshTab}

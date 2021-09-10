@@ -6,15 +6,15 @@ export {TacticSocket}
 
 class TacticSocket {
 
-    constructor (name_space, retry_interval, extra_args=null) {
+    constructor (name_space, retry_interval, main_id=null, on_initial_join=null) {
 
         this.name_space = name_space;
         this.recInterval = null;
         this.retry_interval = retry_interval;
-        this.extra_args = extra_args;
+        this.main_id = main_id;
         this.listeners = {};
         this.connectme();
-        this.initialize_socket_stuff();
+        this.join_rooms(false, on_initial_join);
         this.watchForDisconnect();
         this.counter = null;
     }
@@ -25,7 +25,20 @@ class TacticSocket {
         this.counter = 0;
     }
 
-    initialize_socket_stuff(reconnect=false) {}
+    join_rooms(reconnect=false, on_join=null) {
+        this.socket.emit('join', {"room": window.user_id});
+        if (this.main_id) {
+            if (on_join) {
+                this.socket.emit('join', {
+                    "room": this.main_id,
+                    "user_id": window.user_id,
+                    "return_tile_types": true
+                    }, on_join);
+            } else {
+                this.socket.emit('join', {"room": this.main_id, "return_tile_types": false});
+            }
+        }
+    }
 
     // We have to careful to get the very same instance of the listerner function
      // That requires storing it outside of this component since the console can be unmounted
@@ -68,7 +81,7 @@ class TacticSocket {
         if (this.socket.connected) {
             clearInterval(this.recInterval);
             this.counter += 1;
-            this.initialize_socket_stuff(true);
+            this.join_rooms(true, null);
             this.restoreListeners();
             // this.watchForDisconnect();
             doFlash({"message": "reconnected to server", timeout: null, "is_reconnect_message": true})

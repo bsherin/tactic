@@ -91,9 +91,7 @@ var tsocket;
 
 function _repository_home_main() {
   window.library_id = (0, _utilities_react2.guid)();
-  tsocket = new LibraryTacticSocket("library", 5000, {
-    library_id: window.library_id
-  });
+  tsocket = new _tactic_socket.TacticSocket("library", 5000, window.library_id);
   var RepositoryHomeAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(RepositoryHomeApp));
   var domContainer = document.querySelector('#library-home-root');
   ReactDOM.render( /*#__PURE__*/_react["default"].createElement(RepositoryHomeAppPlus, _extends({}, repository_props(), {
@@ -105,58 +103,10 @@ function _repository_home_main() {
 }
 
 function repository_props() {
-  if (!window.in_context) {
-    this.attachListener("window-open", function (data) {
-      return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
-    });
-    this.attachListener('handle-callback', function (task_packet) {
-      (0, _communication_react.handleCallback)(task_packet, self.extra_args.library_id);
-    });
-    this.attachListener("doFlash", function (data) {
-      (0, _toaster.doFlash)(data);
-    });
-    this.attachListener('close-user-windows', function (data) {
-      if (!(data["originator"] == window.library_id)) {
-        window.close();
-      }
-    });
-  }
-
   return {
     library_id: (0, _utilities_react2.guid)()
   };
 }
-
-var LibraryTacticSocket = /*#__PURE__*/function (_TacticSocket) {
-  _inherits(LibraryTacticSocket, _TacticSocket);
-
-  var _super = _createSuper(LibraryTacticSocket);
-
-  function LibraryTacticSocket() {
-    _classCallCheck(this, LibraryTacticSocket);
-
-    return _super.apply(this, arguments);
-  }
-
-  _createClass(LibraryTacticSocket, [{
-    key: "initialize_socket_stuff",
-    value: function initialize_socket_stuff() {
-      var reconnect = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-
-      if (reconnect) {
-        this.socket.emit('join', {
-          "room": window.library_id
-        });
-      }
-
-      this.socket.emit('join', {
-        "room": window.user_id
-      });
-    }
-  }]);
-
-  return LibraryTacticSocket;
-}(_tactic_socket.TacticSocket);
 
 var res_types = ["collection", "project", "tile", "list", "code"];
 var controllable_props = ["usable_height", "usable_width"];
@@ -164,15 +114,14 @@ var controllable_props = ["usable_height", "usable_width"];
 var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
   _inherits(RepositoryHomeApp, _React$Component);
 
-  var _super2 = _createSuper(RepositoryHomeApp);
+  var _super = _createSuper(RepositoryHomeApp);
 
   function RepositoryHomeApp(props, context) {
     var _this;
 
     _classCallCheck(this, RepositoryHomeApp);
 
-    _this = _super2.call(this, props, context);
-    var tsocket = props.controlled ? context.tsocket : props.tsocket;
+    _this = _super.call(this, props, context);
     _this.state = {
       selected_tab_id: "collections-pane",
       pane_states: {}
@@ -229,10 +178,35 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
       _this.state.dark_theme = props.initial_theme === "dark";
     }
 
+    _this.initSocket();
+
     return _this;
   }
 
   _createClass(RepositoryHomeApp, [{
+    key: "initSocket",
+    value: function initSocket() {
+      var self = this;
+      var tsocket = this.props.controlled ? this.context.tsocket : this.props.tsocket;
+
+      if (!window.in_context) {
+        tsocket.attachListener("window-open", function (data) {
+          return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
+        });
+        tsocket.attachListener('handle-callback', function (task_packet) {
+          (0, _communication_react.handleCallback)(task_packet, self.extra_args.library_id);
+        });
+        tsocket.attachListener("doFlash", function (data) {
+          (0, _toaster.doFlash)(data);
+        });
+        tsocket.attachListener('close-user-windows', function (data) {
+          if (!(data["originator"] == window.library_id)) {
+            window.close();
+          }
+        });
+      }
+    }
+  }, {
     key: "componentDidMount",
     value: function componentDidMount() {
       this.setState({
@@ -494,12 +468,12 @@ RepositoryHomeApp.contextType = _tactic_context.TacticContext;
 var LibraryToolbar = /*#__PURE__*/function (_React$Component2) {
   _inherits(LibraryToolbar, _React$Component2);
 
-  var _super3 = _createSuper(LibraryToolbar);
+  var _super2 = _createSuper(LibraryToolbar);
 
   function LibraryToolbar() {
     _classCallCheck(this, LibraryToolbar);
 
-    return _super3.apply(this, arguments);
+    return _super2.apply(this, arguments);
   }
 
   _createClass(LibraryToolbar, [{
@@ -692,14 +666,14 @@ var specializedToolbarPropTypes = {
 var RepositoryCollectionToolbar = /*#__PURE__*/function (_React$Component3) {
   _inherits(RepositoryCollectionToolbar, _React$Component3);
 
-  var _super4 = _createSuper(RepositoryCollectionToolbar);
+  var _super3 = _createSuper(RepositoryCollectionToolbar);
 
   function RepositoryCollectionToolbar(props) {
     var _this2;
 
     _classCallCheck(this, RepositoryCollectionToolbar);
 
-    _this2 = _super4.call(this, props);
+    _this2 = _super3.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this2));
     return _this2;
   }
@@ -729,14 +703,14 @@ RepositoryCollectionToolbar.propTypes = specializedToolbarPropTypes;
 var RepositoryProjectToolbar = /*#__PURE__*/function (_React$Component4) {
   _inherits(RepositoryProjectToolbar, _React$Component4);
 
-  var _super5 = _createSuper(RepositoryProjectToolbar);
+  var _super4 = _createSuper(RepositoryProjectToolbar);
 
   function RepositoryProjectToolbar(props) {
     var _this3;
 
     _classCallCheck(this, RepositoryProjectToolbar);
 
-    _this3 = _super5.call(this, props);
+    _this3 = _super4.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this3));
     return _this3;
   }
@@ -766,14 +740,14 @@ RepositoryProjectToolbar.propTypes = specializedToolbarPropTypes;
 var RepositoryTileToolbar = /*#__PURE__*/function (_React$Component5) {
   _inherits(RepositoryTileToolbar, _React$Component5);
 
-  var _super6 = _createSuper(RepositoryTileToolbar);
+  var _super5 = _createSuper(RepositoryTileToolbar);
 
   function RepositoryTileToolbar(props) {
     var _this4;
 
     _classCallCheck(this, RepositoryTileToolbar);
 
-    _this4 = _super6.call(this, props);
+    _this4 = _super5.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this4));
     return _this4;
   }
@@ -808,14 +782,14 @@ RepositoryTileToolbar.propTypes = specializedToolbarPropTypes;
 var RepositoryListToolbar = /*#__PURE__*/function (_React$Component6) {
   _inherits(RepositoryListToolbar, _React$Component6);
 
-  var _super7 = _createSuper(RepositoryListToolbar);
+  var _super6 = _createSuper(RepositoryListToolbar);
 
   function RepositoryListToolbar(props) {
     var _this5;
 
     _classCallCheck(this, RepositoryListToolbar);
 
-    _this5 = _super7.call(this, props);
+    _this5 = _super6.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this5));
     return _this5;
   }
@@ -850,14 +824,14 @@ RepositoryListToolbar.propTypes = specializedToolbarPropTypes;
 var RepositoryCodeToolbar = /*#__PURE__*/function (_React$Component7) {
   _inherits(RepositoryCodeToolbar, _React$Component7);
 
-  var _super8 = _createSuper(RepositoryCodeToolbar);
+  var _super7 = _createSuper(RepositoryCodeToolbar);
 
   function RepositoryCodeToolbar(props) {
     var _this6;
 
     _classCallCheck(this, RepositoryCodeToolbar);
 
-    _this6 = _super8.call(this, props);
+    _this6 = _super7.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this6));
     return _this6;
   }

@@ -13,9 +13,7 @@ import {withStatus} from "./toaster.js";
 import {doBinding, guid} from "./utilities_react.js";
 import {TacticNavbar} from "./blueprint_navbar.js";
 import {TacticContext} from "./tactic_context.js";
-
-window.resource_viewer_id = guid();
-window.main_id = window.resource_viewer_id;
+import {TacticSocket} from "./tactic_socket.js";
 
 function tile_differ_main ()  {
     function gotProps(the_props) {
@@ -30,7 +28,6 @@ function tile_differ_main ()  {
 
     }
     let get_url = "get_module_code";
-    var tsocket = new MergeViewerSocket("main", 5000);
 
     postAjaxPromise(`${get_url}/${window.resource_name}`, {})
         .then(function (data) {
@@ -51,7 +48,7 @@ function tile_differ_main ()  {
 
 function tile_differ_props(data, registerDirtyMethod, finalCallback) {
     let resource_viewer_id = guid();
-    var tsocket = new MergeViewerSocket("main", 5000, {resource_viewer_id: resource_viewer_id});
+    var tsocket = new TacticSocket("main", 5000, resource_viewer_id);
     finalCallback({
         resource_viewer_id: resource_viewer_id,
         tsocket: tsocket,
@@ -91,6 +88,16 @@ class TileDifferApp extends React.Component {
                 }
             });
         }
+        this.initSocket()
+    }
+    initSocket() {
+        this.props.tsocket.attachListener("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
+        this.props.tsocket.attachListener('close-user-windows', (data) => {
+            if (!(data["originator"] == window.library_id)) {
+                window.close()
+            }
+        });
+        this.props.tsocket.attachListener('doflash', doFlash);
     }
     componentDidMount() {
         if (!this.props.controlled) {

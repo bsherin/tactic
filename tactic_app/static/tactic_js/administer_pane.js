@@ -96,6 +96,9 @@ var AdminPane = /*#__PURE__*/function (_React$Component) {
     _this.toolbarRef = null;
     _this.previous_search_spec = null;
     _this.socket_counter = null;
+
+    _this.initSocket();
+
     return _this;
   }
 
@@ -105,15 +108,6 @@ var AdminPane = /*#__PURE__*/function (_React$Component) {
       if (this.props.tsocket != null) {
         this.props.tsocket.attachListener("update-".concat(this.props.res_type, "-selector-row"), this._handleRowUpdate);
         this.props.tsocket.attachListener("refresh-".concat(this.props.res_type, "-selector"), this._refresh_func);
-      }
-
-      this.socket_counter = this.props.tsocket.counter;
-    }
-  }, {
-    key: "componentDidUpdate",
-    value: function componentDidUpdate() {
-      if (this.props.tsocket.counter != this.socket_counter) {
-        this.initSocket();
       }
     }
   }, {
@@ -187,7 +181,6 @@ var AdminPane = /*#__PURE__*/function (_React$Component) {
     key: "componentDidMount",
     value: function componentDidMount() {
       var self = this;
-      this.initSocket();
       this.setState({
         "mounted": true
       });

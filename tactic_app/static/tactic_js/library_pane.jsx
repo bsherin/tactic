@@ -2,7 +2,7 @@
 import React from "react";
 import PropTypes from 'prop-types';
 
-import { Menu, MenuItem, Button, Collapse, ResizeSensor } from "@blueprintjs/core";
+import { Menu, MenuItem, Button, Collapse } from "@blueprintjs/core";
 import {Regions} from "@blueprintjs/table";
 import _ from 'lodash';
 
@@ -13,14 +13,13 @@ import {HorizontalPanes, HANDLE_WIDTH} from "./resizing_layouts.js";
 import {showModalReact, showConfirmDialogReact} from "./modal_react.js";
 import {postAjax, postAjaxPromise} from "./communication_react.js"
 import {TacticContext} from "./tactic_context.js";
+import {SIDE_MARGIN} from "./sizing_tools.js";
 
 import {doFlash} from "./toaster.js"
 import {KeyTrap} from "./key_trap.js";
 import {doBinding} from "./utilities_react.js";
 
 export {LibraryPane, view_views}
-
-const SIDE_MARGIN = 15;
 
 function view_views(is_repository=false) {
 
@@ -101,25 +100,17 @@ class LibraryPane extends React.Component {
         this.toolbarRef = null;
         this.previous_search_spec = null;
         this.socket_counter = null;
-        if ((context.tsocket != null) && (!props.is_repository)) {
-            context.tsocket.attachListener(`update-${this.props.res_type}-selector-row`, this._handleRowUpdate);
-            context.tsocket.attachListener(`refresh-${this.props.res_type}-selector`, this._refresh_func);
-        }
+        this.initSocket();
+
     }
 
     initSocket() {
-        // if ((this.context.tsocket != null) && (!this.props.is_repository)) {
-        //     this.context.tsocket.attachListener(`update-${this.props.res_type}-selector-row`, this._handleRowUpdate);
-        //     this.context.tsocket.attachListener(`refresh-${this.props.res_type}-selector`, this._refresh_func);
-        // }
-        // this.socket_counter = this.context.tsocket.counter
+        if ((this.context.tsocket != null) && (!this.props.is_repository)) {
+            this.context.tsocket.attachListener(`update-${this.props.res_type}-selector-row`, this._handleRowUpdate);
+            this.context.tsocket.attachListener(`refresh-${this.props.res_type}-selector`, this._refresh_func);
+        }
     }
 
-    componentDidUpdate () {
-        // if (this.context.tsocket.counter != this.socket_counter) {
-        //     this.initSocket();
-        // }
-    }
 
     _sendContextMenuItems(items) {
         this.setState({contextMenuItems: items})
@@ -181,7 +172,6 @@ class LibraryPane extends React.Component {
 
     componentDidMount() {
         let self = this;
-        // this.initSocket();
         this.setState({"mounted": true});
         let path;
 
@@ -826,7 +816,7 @@ class LibraryPane extends React.Component {
         this.setState({total_width: total_width})
     }
     
-    _get_availabe_width() {
+    _get_available_width() {
         let result;
         if (this.top_ref && this.top_ref.current) {
             result = window.innerWidth - this.top_ref.current.offsetLeft - SIDE_MARGIN;
@@ -839,7 +829,7 @@ class LibraryPane extends React.Component {
 
     render() {
         let new_button_groups;
-        let uwidth = this._get_availabe_width();
+        let uwidth = this.props.usable_width - 2 * SIDE_MARGIN;
         let left_width = (uwidth - HANDLE_WIDTH) * this.props.left_width_fraction;
         const primary_mdata_fields = ["name", "created", "created_for_sort", "updated",  "updated_for_sort", "tags", "notes"];
         let additional_metadata = {};
@@ -971,7 +961,7 @@ class LibraryPane extends React.Component {
             </React.Fragment>
         );
         return (
-            <ResizeSensor onResize={this._handleResize} observeParents={true}>
+
                 <div ref={this.top_ref} className="d-flex flex-column mt-3" >
                     <ToolbarClass selected_resource={this.props.selected_resource}
                                   multi_select={this.props.multi_select}
@@ -1015,7 +1005,6 @@ class LibraryPane extends React.Component {
                                     handleClose={this._closeOmnibar}
                                     showOmnibar={this.state.showOmnibar}/>
                 </div>
-            </ResizeSensor>
         )
     }
 }

@@ -68,14 +68,6 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
-function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -96,39 +88,16 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
+function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+
 var BOTTOM_MARGIN = 50;
 var MARGIN_SIZE = 17;
-
-var CreatorViewerSocket = /*#__PURE__*/function (_TacticSocket) {
-  _inherits(CreatorViewerSocket, _TacticSocket);
-
-  var _super = _createSuper(CreatorViewerSocket);
-
-  function CreatorViewerSocket() {
-    _classCallCheck(this, CreatorViewerSocket);
-
-    return _super.apply(this, arguments);
-  }
-
-  _createClass(CreatorViewerSocket, [{
-    key: "initialize_socket_stuff",
-    value: function initialize_socket_stuff() {
-      var reconnect = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-
-      if (reconnect) {
-        this.socket.emit('join', {
-          "room": this.extra_args.module_viewer_id
-        });
-      }
-
-      this.socket.emit('join', {
-        "room": window.user_id
-      });
-    }
-  }]);
-
-  return CreatorViewerSocket;
-}(_tactic_socket.TacticSocket);
 
 function tile_creator_main() {
   function gotProps(the_props) {
@@ -158,28 +127,13 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
   var module_name = data.resource_name;
   var module_viewer_id = data.module_viewer_id;
   window.name = module_viewer_id;
-  var tsocket = new CreatorViewerSocket("main", 5000, {
-    module_viewer_id: module_viewer_id
-  });
-  var tile_collection_name = data.tile_collection_name;
-  tsocket.attachListener('handle-callback', function (task_packet) {
-    (0, _communication_react.handleCallback)(task_packet, module_viewer_id);
-  });
-
-  if (!window.in_context) {
-    tsocket.attachListener("doFlash", function (data) {
-      (0, _toaster.doFlash)(data);
-    });
-  }
 
   function readyListener() {
     _everyone_ready_in_context(finalCallback);
   }
 
-  tsocket.socket.on("remove-ready-block", readyListener);
-  tsocket.socket.emit('join', {
-    "room": data.module_viewer_id
-  }, function (response) {
+  var tsocket = new _tactic_socket.TacticSocket("main", 5000, module_viewer_id, function (response) {
+    tsocket.socket.on("remove-ready-block", readyListener);
     tsocket.socket.emit('client-ready', {
       "room": data.module_viewer_id,
       "user_id": window.user_id,
@@ -188,6 +142,7 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
       "main_id": data.module_viewer_id
     });
   });
+  var tile_collection_name = data.tile_collection_name;
 
   function _everyone_ready_in_context(finalCallback) {
     if (!window.in_context) {
@@ -206,6 +161,9 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
         "container_id": module_viewer_id,
         "notify": false
       }));
+    });
+    tsocket.attachListener('handle-callback', function (task_packet) {
+      (0, _communication_react.handleCallback)(task_packet, module_viewer_id);
     });
     (0, _communication_react.postWithCallback)(module_viewer_id, "initialize_parser", the_content, function (pdata) {
       return got_parsed_data_in_context(pdata);
@@ -339,34 +297,23 @@ TileCreatorToolbar.proptypes = {
   res_type: _propTypes["default"].string
 };
 TileCreatorToolbar.defaultProps = {};
-var controllable_props = ["resource_name", "usable_height", "usable_width"];
+var controllable_props = ["resource_name", "usable_width", "usable_height"];
 
 var CreatorApp = /*#__PURE__*/function (_React$Component) {
   _inherits(CreatorApp, _React$Component);
 
-  var _super2 = _createSuper(CreatorApp);
+  var _super = _createSuper(CreatorApp);
 
   function CreatorApp(props) {
     var _this;
 
     _classCallCheck(this, CreatorApp);
 
-    _this = _super2.call(this, props);
+    _this = _super.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
 
-    if (!props.controlled) {
-      props.tsocket.attachListener('close-user-windows', function (data) {
-        if (!(data["originator"] == props.resource_viewer_id)) {
-          window.close();
-        }
-      });
-    }
+    _this.initSocket();
 
-    props.tsocket.attachListener('focus-me', function (data) {
-      window.focus();
-
-      _this._selectLineNumber(data.line_number);
-    });
     _this.top_ref = /*#__PURE__*/_react["default"].createRef();
     _this.options_ref = /*#__PURE__*/_react["default"].createRef();
     _this.left_div_ref = /*#__PURE__*/_react["default"].createRef();
@@ -405,7 +352,6 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       option_list: _this.props.option_list,
       export_list: _this.props.export_list,
       category: _this.props.category,
-      total_height: window.innerHeight,
       selectedTabId: "metadata",
       old_usable_width: 0,
       methodsTabRefreshRequired: true // This is toggled back and forth to force refresh
@@ -417,12 +363,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     if (props.controlled) {
       props.registerDirtyMethod(_this._dirty);
     } else {
-      var _aheight = (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
-
-      var _awidth = (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
-
-      _this.state.usable_height = _aheight;
-      _this.state.usable_width = _awidth;
+      _this.state.usable_height = (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
+      _this.state.usable_width = (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
       _this.state.dark_theme = props.initial_theme === "dark";
       window.dark_theme = _this.state.dark_theme;
       _this.state.resource_name = props.resource_name;
@@ -434,23 +376,14 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       });
     }
 
-    var aheight;
-    var awidth;
+    _this.state.top_pane_fraction = _this.props.is_mpl || _this.props.is_d3 ? .5 : 1;
+    _this.state.left_pane_fraction = .5; // this.state.left_pane_width = this._cProp("usable_width") / 2 - 25,
+    // this.state.bheight = aheight;
 
-    if (!props.controlled) {
-      aheight = (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
-      awidth = (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
-    } else {
-      var _aheight2 = _this.props.usable_height;
-      var width = _this.props.usable_width;
-    }
-
-    _this.state.top_pane_height = _this.props.is_mpl || _this.props.is_d3 ? aheight / 2 - 25 : null, _this.state.bottom_pane_height = _this.props.is_mpl || _this.props.is_d3 ? aheight / 2 - 35 : null, _this.state.left_pane_width = awidth / 2 - 25, _this.state.bheight = aheight;
     _this._setResourceNameState = _this._setResourceNameState.bind(_assertThisInitialized(_this));
     _this.handleStateChange = _this.handleStateChange.bind(_assertThisInitialized(_this));
     _this.handleRenderContentChange = _this.handleRenderContentChange.bind(_assertThisInitialized(_this));
     _this.handleTopCodeChange = _this.handleTopCodeChange.bind(_assertThisInitialized(_this));
-    _this._update_window_dimensions = _this._update_window_dimensions.bind(_assertThisInitialized(_this));
     _this.handleOptionsChange = _this.handleOptionsChange.bind(_assertThisInitialized(_this));
     _this.handleExportsChange = _this.handleExportsChange.bind(_assertThisInitialized(_this));
     _this.handleMethodsChange = _this.handleMethodsChange.bind(_assertThisInitialized(_this));
@@ -460,6 +393,28 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
   }
 
   _createClass(CreatorApp, [{
+    key: "initSocket",
+    value: function initSocket() {
+      var _this2 = this;
+
+      this.props.tsocket.attachListener('focus-me', function (data) {
+        window.focus();
+
+        _this2._selectLineNumber(data.line_number);
+      });
+
+      if (!window.in_context) {
+        this.props.tsocket.attachListener("doFlash", function (data) {
+          (0, _toaster.doFlash)(data);
+        });
+        this.props.tsocket.attachListener('close-user-windows', function (data) {
+          if (!(data["originator"] == props.resource_viewer_id)) {
+            window.close();
+          }
+        });
+      }
+    }
+  }, {
     key: "_cProp",
     value: function _cProp(pname) {
       return this.props.controlled ? this.props[pname] : this.state[pname];
@@ -467,7 +422,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "button_groups",
     get: function get() {
-      var _this2 = this;
+      var _this3 = this;
 
       var bgs = [[{
         "name_text": "Save",
@@ -496,7 +451,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         "name_text": "Share",
         "icon_name": "share",
         "click_handler": function click_handler() {
-          (0, _resource_viewer_react_app.sendToRepository)("tile", _this2._cProp("resource_name"));
+          (0, _resource_viewer_react_app.sendToRepository)("tile", _this3._cProp("resource_name"));
         },
         tooltip: "Send to repository"
       }], [{
@@ -753,18 +708,9 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_update_window_dimensions",
     value: function _update_window_dimensions() {
-      var uwidth = window.innerWidth - 2 * _sizing_tools.SIDE_MARGIN;
-      var uheight = window.innerHeight;
-
-      if (this.top_ref && this.top_ref.current) {
-        uheight = uheight - this.top_ref.current.offsetTop;
-      } else {
-        uheight = uheight - _sizing_tools.USUAL_TOOLBAR_HEIGHT;
-      }
-
       this.setState({
-        usable_height: uheight,
-        usable_width: uwidth
+        usable_width: window.innerWidth - this.top_ref.current.offsetLeft,
+        usable_height: window.innerHeight - this.top_ref.current.offsetTop
       });
     }
   }, {
@@ -857,7 +803,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
 
       this._update_saved_state();
 
-      this.props.stopSpinner(); // this.initSocket();
+      this.props.stopSpinner();
 
       if (!this.props.controlled) {
         document.title = this.state.resource_name;
@@ -869,10 +815,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate() {
-      this._goToLineNumber(); // if (this.props.tsocket.counter != this.socket_counter) {
-      //     this.initSocket();
-      // }
-
+      this._goToLineNumber();
     }
   }, {
     key: "componentWillUnmount",
@@ -887,14 +830,6 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         "container_id": this.props.module_viewer_id,
         "notify": false
       });
-    }
-  }, {
-    key: "initSocket",
-    value: function initSocket() {// this.props.tsocket.attachListener('focus-me', (data)=>{
-      //     window.focus();
-      //     this._selectLineNumber(data.line_number)
-      // });
-      // this.socket_counter = this.props.tsocket.counter
     } // This toggles methodsTabRefreshRequired back and forth to force a refresh
 
   }, {
@@ -909,7 +844,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_handleTabSelect",
     value: function _handleTabSelect(newTabId, prevTabid, event) {
-      var _this3 = this;
+      var _this4 = this;
 
       this._refreshMethodsIfNecessary(newTabId); // if (this.state.foregrounded_panes[newTabId]) return;
 
@@ -920,7 +855,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         selectedTabId: newTabId,
         foregrounded_panes: new_fg
       }, function () {
-        _this3._update_window_dimensions();
+        _this4._update_window_dimensions();
       });
     }
   }, {
@@ -980,9 +915,9 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     value: function get_new_tc_height() {
       if (this.state.mounted) {
         // This will be true after the initial render
-        return this.state.top_pane_height - this.tc_span_ref.current.offsetHeight;
+        return this._cProp("usable_height") * top_fraction - 35;
       } else {
-        return this.state.top_pane_height - 50;
+        return this._cProp("usable_height") - 50;
       }
     }
   }, {
@@ -998,15 +933,14 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     key: "handleTopPaneResize",
     value: function handleTopPaneResize(top_height, bottom_height, top_fraction) {
       this.setState({
-        "top_pane_height": top_height,
-        "bottom_pane_height": bottom_height - 10
+        "top_pane_fraction": top_fraction
       });
     }
   }, {
     key: "handleLeftPaneResize",
     value: function handleLeftPaneResize(left_width, right_width, left_fraction) {
       this.setState({
-        "left_pane_width": left_width
+        "left_pane_fraction": left_fraction
       });
     }
   }, {
@@ -1039,33 +973,6 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           "resource_name": new_name
         });
       }
-    }
-  }, {
-    key: "_handleResize",
-    value: function _handleResize(entries) {// if (window.in_context) {
-      //     for (let entry of entries) {
-      //         if (entry.target.className.includes("pane-holder")) {
-      //             // Must used window.innerWidth here otherwise we get the wrong value during initial mounting
-      //             this.setState({usable_width: entry.contentRect.width - this.top_ref.current.offsetLeft - 30,
-      //                 usable_height: entry.contentRect.height - this.top_ref.current.offsetTop,
-      //                 body_height: entry.contentRect.height - this.top_ref.current.offsetTop
-      //             });
-      //             return
-      //         }
-      //     }
-      // }
-      // else {
-      //     for (let entry of entries) {
-      //         if (entry.target.className.id == "creator-root") {
-      //             // Must used window.innerWidth here otherwise we get the wrong value during initial mounting
-      //             this.setState({usable_width: entry.contentRect.width - this.top_ref.current.offsetLeft - 30,
-      //                 usable_height: entry.contentRect.height - this.top_ref.current.offsetTop,
-      //                 body_height: entry.contentRect.height - this.top_ref.current.offsetTop
-      //             });
-      //             return
-      //         }
-      //     }
-      // }
     }
   }, {
     key: "_setDpObject",
@@ -1106,7 +1013,9 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       }
 
       var vp_height = this.get_height_minus_top_offset(this.vp_ref);
-      var code_width = this.state.left_pane_width - 10;
+      var uwidth = my_props.usable_width - 2 * _sizing_tools.SIDE_MARGIN;
+      var uheight = my_props.usable_height;
+      var code_width = uwidth * this.state.left_pane_fraction - 35;
       var ch_style = {
         "width": "100%"
       };
@@ -1139,7 +1048,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       var rc_height;
 
       if (my_props.is_mpl || my_props.is_d3) {
-        rc_height = this.get_new_rc_height(this.state.bottom_pane_height);
+        var bheight = (1 - this.state.top_pane_fraction) * uheight - 35;
+        rc_height = this.get_new_rc_height(bheight);
       } else {
         rc_height = this.get_new_rc_height(vp_height);
       }
@@ -1182,7 +1092,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           bottom_pane: bc_item,
           show_handle: true,
           available_height: vp_height,
-          available_width: this.state.left_pane_width - 25,
+          available_width: this.state.left_pane_fraction * uwidth - 25,
           handleSplitUpdate: this.handleTopPaneResize,
           id: "creator-left"
         }));
@@ -1282,7 +1192,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
 
       var outer_style = {
         width: "100%",
-        height: my_props.usable_height,
+        height: uheight,
         paddingLeft: this.props.controlled ? 5 : _sizing_tools.SIDE_MARGIN
       };
       var outer_class = "resource-viewer-holder";
@@ -1293,11 +1203,10 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         } else {
           outer_class = outer_class + " light-theme";
         }
-      }
+      } // if (this.top_ref && this.top_ref.current) {
+      //     my_props.usable_width = my_props.usable_width - this.top_ref.current.offsetLeft;
+      // }
 
-      if (this.top_ref && this.top_ref.current) {
-        my_props.usable_width = my_props.usable_width - this.top_ref.current.offsetLeft;
-      }
 
       return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_tactic_context.TacticContext.Provider, {
         value: {
@@ -1317,7 +1226,10 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       }), window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.TopRightButtons, {
         refreshTab: this.props.refreshTab,
         closeTab: this.props.closeTab
-      }), /*#__PURE__*/_react["default"].createElement("div", {
+      }), /*#__PURE__*/_react["default"].createElement(_core.ResizeSensor, {
+        onResize: this._handleResize,
+        observeParents: true
+      }, /*#__PURE__*/_react["default"].createElement("div", {
         className: outer_class,
         ref: this.top_ref,
         style: outer_style
@@ -1325,10 +1237,10 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         left_pane: left_pane,
         right_pane: right_pane,
         show_handle: true,
-        available_height: my_props.usable_height,
-        available_width: my_props.usable_width,
+        available_height: uheight,
+        available_width: uwidth,
         handleSplitUpdate: this.handleLeftPaneResize
-      }))));
+      })))));
     }
   }]);
 

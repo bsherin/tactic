@@ -18,6 +18,8 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 
 var _resource_viewer_react_app = require("./resource_viewer_react_app.js");
 
+var _tactic_socket = require("./tactic_socket.js");
+
 var _reactCodemirror = require("./react-codemirror.js");
 
 var _communication_react = require("./communication_react.js");
@@ -100,9 +102,7 @@ var controllable_props = ["resource_name", "usable_height", "usable_width"];
 
 function module_viewer_props(data, registerDirtyMethod, finalCallback) {
   var resource_viewer_id = (0, _utilities_react.guid)();
-  var tsocket = new _resource_viewer_react_app.ResourceViewerSocket("main", 5000, {
-    resource_viewer_id: resource_viewer_id
-  });
+  var tsocket = new _tactic_socket.TacticSocket("main", 5000, resource_viewer_id);
   finalCallback({
     resource_viewer_id: resource_viewer_id,
     tsocket: tsocket,
@@ -191,21 +191,10 @@ var ModuleViewerApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_update_window_dimensions",
     value: function _update_window_dimensions() {
-      if (!this.props.controlled) {
-        var uwidth = window.innerWidth - 2 * _sizing_tools.SIDE_MARGIN;
-        var uheight = window.innerHeight;
-
-        if (this.top_ref && this.top_ref.current) {
-          uheight = uheight - this.top_ref.current.offsetTop;
-        } else {
-          uheight = uheight - _sizing_tools.USUAL_TOOLBAR_HEIGHT;
-        }
-
-        this.setState({
-          usable_height: uheight,
-          usable_width: uwidth
-        });
-      }
+      this.setState({
+        usable_width: window.innerWidth - this.top_ref.current.offsetLeft,
+        usable_height: window.innerHeight - this.top_ref.current.offsetTop
+      });
     }
   }, {
     key: "_setTheme",
@@ -410,7 +399,7 @@ var ModuleViewerApp = /*#__PURE__*/function (_React$Component) {
         className: outer_class,
         ref: this.top_ref,
         style: outer_style
-      }, /*#__PURE__*/_react["default"].createElement(_resource_viewer_react_app.ResourceViewerApp, _extends({}, this.props.statusFuncs, {
+      }, /*#__PURE__*/_react["default"].createElement(_resource_viewer_react_app.ResourceViewerApp, _extends({}, my_props, {
         resource_viewer_id: my_props.resource_viewer_id,
         setResourceNameState: this._setResourceNameState,
         refreshTab: this.props.refreshTab,

@@ -119,6 +119,16 @@ class DragHandle extends React.Component {
         if (this.props.direction == "both") {
             style.transform = "rotate(45deg)"
         }
+        let wrappedElement;
+        if (this.props.useVerticalBar) {
+            wrappedElement = <div className="resize-border" style={style}/>
+        }
+        else {
+            wrappedElement = <Icon icon={this.icon_dict[this.props.direction]}
+                         iconSize={this.props.iconSize}
+                         style={style}
+                    />
+        }
         return (
             <DraggableCore
                 onStart={this._dragStart}
@@ -126,10 +136,7 @@ class DragHandle extends React.Component {
                 onDrag={this._onDrag}
                 grid={[5, 5]}
                 scale={1}>
-                <Icon icon={this.icon_dict[this.props.direction]}
-                         iconSize={this.props.iconSize}
-                         style={style}
-                    />
+                {wrappedElement}
             </DraggableCore>
         )
     }
@@ -141,7 +148,9 @@ DragHandle.propTypes = {
     dragStart: PropTypes.func,
     dragEnd: PropTypes.func,
     direction: PropTypes.string,
-    iconSize: PropTypes.number
+    iconSize: PropTypes.number,
+    useVerticalBar: PropTypes.bool,
+
 };
 DragHandle.defaultProps = {
     direction: "x",
@@ -149,6 +158,7 @@ DragHandle.defaultProps = {
     onDrag: null,
     dragStart: null,
     dragEnd: null,
+    useVerticalBar: false
 };
 
 class HorizontalPanes extends React.Component {

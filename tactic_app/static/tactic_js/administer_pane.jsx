@@ -39,19 +39,13 @@ class AdminPane extends React.Component {
         this.toolbarRef = null;
         this.previous_search_spec = null;
         this.socket_counter = null;
+        this.initSocket()
     }
 
     initSocket() {
         if (this.props.tsocket != null) {
             this.props.tsocket.attachListener(`update-${this.props.res_type}-selector-row`, this._handleRowUpdate);
             this.props.tsocket.attachListener(`refresh-${this.props.res_type}-selector`, this._refresh_func);
-        }
-        this.socket_counter = this.props.tsocket.counter
-    }
-
-    componentDidUpdate () {
-        if (this.props.tsocket.counter != this.socket_counter) {
-            this.initSocket();
         }
     }
 
@@ -102,7 +96,6 @@ class AdminPane extends React.Component {
 
     componentDidMount() {
         let self = this;
-        this.initSocket();
         this.setState({"mounted": true});
         let path;
         this._grabNewChunkWithRow(0, true, null, true, null)

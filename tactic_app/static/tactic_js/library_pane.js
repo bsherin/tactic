@@ -32,6 +32,8 @@ var _communication_react = require("./communication_react.js");
 
 var _tactic_context = require("./tactic_context.js");
 
+var _sizing_tools = require("./sizing_tools.js");
+
 var _toaster = require("./toaster.js");
 
 var _key_trap = require("./key_trap.js");
@@ -75,8 +77,6 @@ function _assertThisInitialized(self) { if (self === void 0) { throw new Referen
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-var SIDE_MARGIN = 15;
 
 function view_views() {
   var is_repository = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
@@ -185,27 +185,18 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     _this2.previous_search_spec = null;
     _this2.socket_counter = null;
 
-    if (context.tsocket != null && !props.is_repository) {
-      context.tsocket.attachListener("update-".concat(_this2.props.res_type, "-selector-row"), _this2._handleRowUpdate);
-      context.tsocket.attachListener("refresh-".concat(_this2.props.res_type, "-selector"), _this2._refresh_func);
-    }
+    _this2.initSocket();
 
     return _this2;
   }
 
   _createClass(LibraryPane, [{
     key: "initSocket",
-    value: function initSocket() {// if ((this.context.tsocket != null) && (!this.props.is_repository)) {
-      //     this.context.tsocket.attachListener(`update-${this.props.res_type}-selector-row`, this._handleRowUpdate);
-      //     this.context.tsocket.attachListener(`refresh-${this.props.res_type}-selector`, this._refresh_func);
-      // }
-      // this.socket_counter = this.context.tsocket.counter
-    }
-  }, {
-    key: "componentDidUpdate",
-    value: function componentDidUpdate() {// if (this.context.tsocket.counter != this.socket_counter) {
-      //     this.initSocket();
-      // }
+    value: function initSocket() {
+      if (this.context.tsocket != null && !this.props.is_repository) {
+        this.context.tsocket.attachListener("update-".concat(this.props.res_type, "-selector-row"), this._handleRowUpdate);
+        this.context.tsocket.attachListener("refresh-".concat(this.props.res_type, "-selector"), this._refresh_func);
+      }
     }
   }, {
     key: "_sendContextMenuItems",
@@ -308,8 +299,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "componentDidMount",
     value: function componentDidMount() {
-      var self = this; // this.initSocket();
-
+      var self = this;
       this.setState({
         "mounted": true
       });
@@ -1166,12 +1156,12 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       });
     }
   }, {
-    key: "_get_availabe_width",
-    value: function _get_availabe_width() {
+    key: "_get_available_width",
+    value: function _get_available_width() {
       var result;
 
       if (this.top_ref && this.top_ref.current) {
-        result = window.innerWidth - this.top_ref.current.offsetLeft - SIDE_MARGIN;
+        result = window.innerWidth - this.top_ref.current.offsetLeft - _sizing_tools.SIDE_MARGIN;
       } else {
         result = window.innerWidth - 200;
       }
@@ -1184,9 +1174,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       var _this6 = this;
 
       var new_button_groups;
-
-      var uwidth = this._get_availabe_width();
-
+      var uwidth = this.props.usable_width - 2 * _sizing_tools.SIDE_MARGIN;
       var left_width = (uwidth - _resizing_layouts.HANDLE_WIDTH) * this.props.left_width_fraction;
       var primary_mdata_fields = ["name", "created", "created_for_sort", "updated", "updated_for_sort", "tags", "notes"];
       var additional_metadata = {};
@@ -1327,10 +1315,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         handleAddTag: this._handleAddTag
       }))));
 
-      return /*#__PURE__*/_react["default"].createElement(_core.ResizeSensor, {
-        onResize: this._handleResize,
-        observeParents: true
-      }, /*#__PURE__*/_react["default"].createElement("div", {
+      return /*#__PURE__*/_react["default"].createElement("div", {
         ref: this.top_ref,
         className: "d-flex flex-column mt-3"
       }, /*#__PURE__*/_react["default"].createElement(ToolbarClass, _extends({
@@ -1379,7 +1364,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         onItemSelect: this._omnibarSelect,
         handleClose: this._closeOmnibar,
         showOmnibar: this.state.showOmnibar
-      })));
+      }));
     }
   }]);
 

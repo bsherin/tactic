@@ -51,6 +51,29 @@ const BUTTON_CONSUMED_SPACE = 208;
          };
          this.pseudo_tile_id = null;
          this.socket_counter = null;
+         this.initSocket();
+     }
+
+     componentDidMount() {
+        let self = this;
+         this.setState({"mounted": true}, ()=>{
+             if (this.props.console_items.length == 0) {
+                 self._addCodeArea("", false)
+             }
+             self._clear_all_selected_items()
+         })
+     }
+
+     componentDidUpdate() {
+         if (this.state.show_console_error_log) {
+            if (this.body_ref && this.body_ref.current) {
+                const el = this.body_ref.current;
+                this.body_ref.current.scrollTop = el.scrollHeight - 500 - el.offsetHeight + 45
+            }
+        }
+     }
+
+     initSocket() {
          let self = this;
          function _handleConsoleMessage(data) {
              if (data.main_id == self.props.main_id) {
@@ -68,58 +91,7 @@ const BUTTON_CONSUMED_SPACE = 208;
          // We have to careful to get the very same instance of the listerner function
          // That requires storing it outside of this component since the console can be unmounted
 
-         context.tsocket.attachListener("console-message", _handleConsoleMessage);
-     }
-
-     componentDidMount() {
-        let self = this;
-         this.setState({"mounted": true}, ()=>{
-             self.initSocket();
-             if (this.props.console_items.length == 0) {
-                 self._addCodeArea("", false)
-             }
-             self._clear_all_selected_items()
-         })
-     }
-
-     componentDidUpdate() {
-         // if (this.context.tsocket.counter != this.socket_counter) {
-         //     this.initSocket();
-         // }
-         if (this.state.show_console_error_log) {
-            if (this.body_ref && this.body_ref.current) {
-                const el = this.body_ref.current;
-                // In the computation below, note that the 500 comes from the height of the padding-div
-                this.body_ref.current.scrollTop = el.scrollHeight - 500 - el.offsetHeight + 45
-            }
-        }
-     }
-
-     initSocket() {
-         // It is necessary to delete and remake these callbacks
-         // If I dont delete I end up with duplicatesSelectList
-         // If I just keep the original one then I end up something with a handler linked
-         // to an earlier state
-         // let self = this;
-         //
-         // function _handleConsoleMessage(data) {
-         //     if (data.main_id == self.props.main_id) {
-         //         let handlerDict = {
-         //             consoleLog: (data) => self._addConsoleEntry(data.message, data.force_open),
-         //             stopConsoleSpinner: (data) => self._stopConsoleSpinner(data),
-         //             consoleCodePrint: (data) => self._appendConsoleItemOutput(data),
-         //             consoleCodeRun: (data) => self._startSpinner(data),
-         //             updateLog: (data) => self._addToLog(data.new_line)
-         //         };
-         //         handlerDict[data.console_message](data)
-         //     }
-         // }
-         //
-         // // We have to careful to get the very same instance of the listerner function
-         // // That requires storing it outside of this component since the console can be unmounted
-         //
-         // this.context.tsocket.attachListener("console-message", _handleConsoleMessage);
-         // this.socket_counter = this.context.tsocket.counter
+         this.context.tsocket.attachListener("console-message", _handleConsoleMessage);
      }
 
      _createTextEntry(unique_id, summary_text) {

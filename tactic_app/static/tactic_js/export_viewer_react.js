@@ -350,8 +350,9 @@ var ExportsViewer = /*#__PURE__*/function (_React$Component4) {
       type: null,
       pipe_dict: {}
     };
-    _this3.socket_counter = null;
-    context.tsocket.attachListener("export-viewer-message", _this3._handleExportViewerMessage);
+
+    _this3.initSocket();
+
     return _this3;
   }
 
@@ -359,20 +360,13 @@ var ExportsViewer = /*#__PURE__*/function (_React$Component4) {
     key: "componentDidMount",
     value: function componentDidMount() {
       this.props.setUpdate(this._updateExportsList);
-      this.initSocket();
 
       this._updateExportsList();
     }
   }, {
-    key: "componentDidUpdate",
-    value: function componentDidUpdate() {// if (this.context.tsocket.counter != this.socket_counter) {
-      //     this.initSocket();
-      // }
-    }
-  }, {
     key: "initSocket",
-    value: function initSocket() {// this.context.tsocket.attachListener("export-viewer-message", this._handleExportViewerMessage);
-      // this.socket_counter = this.context.tsocket.counter;
+    value: function initSocket() {
+      this.context.tsocket.attachListener("export-viewer-message", this._handleExportViewerMessage);
     }
   }, {
     key: "_handleExportViewerMessage",

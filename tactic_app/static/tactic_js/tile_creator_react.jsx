@@ -10,7 +10,7 @@ import React from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
-import { Tab, Tabs } from "@blueprintjs/core";
+import { Tab, Tabs, ResizeSensor } from "@blueprintjs/core";
 
 import {TacticSocket} from "./tactic_socket.js";
 import {Toolbar, Namebutton} from "./blueprint_toolbar.js";
@@ -21,7 +21,7 @@ import {OptionModule, ExportModule, CommandsModule} from "./creator_modules_reac
 import {HorizontalPanes, VerticalPanes} from "./resizing_layouts.js";
 import {handleCallback, postAjax, postAjaxPromise, postWithCallback} from "./communication_react.js"
 import {withStatus, doFlash} from "./toaster.js"
-import {getUsableDimensions, SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT} from "./sizing_tools.js";
+import {getUsableDimensions, SIDE_MARGIN} from "./sizing_tools.js";
 import {withErrorDrawer} from "./error_drawer.js";
 import {doBinding, renderSpinnerMessage} from "./utilities_react.js"
 import {TacticNavbar} from "./blueprint_navbar";
@@ -33,17 +33,6 @@ export {creator_props, CreatorApp}
 
 const BOTTOM_MARGIN = 50;
 const MARGIN_SIZE = 17;
-
-class CreatorViewerSocket extends TacticSocket {
-
-    initialize_socket_stuff (reconnect=false) {
-        if (reconnect) {
-            this.socket.emit('join', {"room": this.extra_args.module_viewer_id})
-        }
-        this.socket.emit('join', {"room": window.user_id});
-
-    }
-}
 
 function tile_creator_main() {
     function gotProps(the_props) {
@@ -65,30 +54,26 @@ function tile_creator_main() {
 
 function creator_props(data, registerDirtyMethod, finalCallback) {
 
-
     let mdata = data.mdata;
     let split_tags = mdata.tags == "" ? [] : mdata.tags.split(" ");
     let module_name = data.resource_name;
     let module_viewer_id = data.module_viewer_id;
     window.name = module_viewer_id;
-    var tsocket = new CreatorViewerSocket("main", 5000, {module_viewer_id: module_viewer_id});
-    let tile_collection_name = data.tile_collection_name;
-    tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, module_viewer_id)});
-    if (!window.in_context) {
-        tsocket.attachListener("doFlash", function(data) {
-            doFlash(data)
-        });
-    }
+
     function readyListener() {
-        _everyone_ready_in_context(finalCallback)
+        _everyone_ready_in_context(finalCallback);
     }
-    tsocket.socket.on("remove-ready-block", readyListener);
-    tsocket.socket.emit('join', {"room": data.module_viewer_id}, function (response) {
+
+    var tsocket = new TacticSocket("main", 5000, module_viewer_id, function (response) {
+        tsocket.socket.on("remove-ready-block", readyListener);
         tsocket.socket.emit('client-ready', {
             "room": data.module_viewer_id, "user_id": window.user_id, "participant": "client",
             "rb_id": data.ready_block_id, "main_id": data.module_viewer_id
         })
     });
+    let tile_collection_name = data.tile_collection_name;
+
+
 
     function _everyone_ready_in_context(finalCallback) {
         if (!window.in_context){
@@ -106,6 +91,7 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
             navigator.sendBeacon("/delete_container_on_unload",
                 JSON.stringify({"container_id": module_viewer_id, "notify": false}));
         });
+        tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, module_viewer_id)});
         postWithCallback(module_viewer_id, "initialize_parser",
             the_content, (pdata) => got_parsed_data_in_context(pdata),null, module_viewer_id);
 
@@ -215,23 +201,13 @@ TileCreatorToolbar.defaultProps = {
 };
 
 
-const controllable_props = ["resource_name", "usable_height", "usable_width"];
+const controllable_props = ["resource_name", "usable_width", "usable_height"];
 
 class CreatorApp extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this);
-        if (!props.controlled) {
-            props.tsocket.attachListener('close-user-windows', (data) => {
-                if (!(data["originator"] == props.resource_viewer_id)) {
-                    window.close()
-                }
-            });
-        }
-        props.tsocket.attachListener('focus-me', (data)=>{
-            window.focus();
-            this._selectLineNumber(data.line_number)
-        });
+        this.initSocket();
         this.top_ref = React.createRef();
         this.options_ref = React.createRef();
         this.left_div_ref = React.createRef();
@@ -270,10 +246,9 @@ class CreatorApp extends React.Component {
             option_list: this.props.option_list,
             export_list: this.props.export_list,
             category: this.props.category,
-            total_height: window.innerHeight,
             selectedTabId: "metadata",
             old_usable_width: 0,
-            methodsTabRefreshRequired: true // This is toggled back and forth to force refresh
+            methodsTabRefreshRequired: true, // This is toggled back and forth to force refresh
         };
         let self = this;
 
@@ -281,10 +256,8 @@ class CreatorApp extends React.Component {
             props.registerDirtyMethod(this._dirty)
         }
         else {
-            const aheight = getUsableDimensions(true).usable_height_no_bottom;
-            const awidth = getUsableDimensions(true).usable_width - 170;
-            this.state.usable_height = aheight;
-            this.state.usable_width = awidth;
+            this.state.usable_height = getUsableDimensions(true).usable_height_no_bottom;
+            this.state.usable_width = getUsableDimensions(true).usable_width - 170;
             this.state.dark_theme = props.initial_theme === "dark";
             window.dark_theme = this.state.dark_theme;
             this.state.resource_name = props.resource_name;
@@ -295,32 +268,39 @@ class CreatorApp extends React.Component {
                 }
             });
         }
-        let aheight;
-        let awidth;
-        if (!props.controlled) {
-            aheight = getUsableDimensions(true).usable_height_no_bottom;
-            awidth = getUsableDimensions(true).usable_width - 170;
-        }
-        else {
-            let aheight = this.props.usable_height;
-            let width = this.props.usable_width;
-        }
-        this.state.top_pane_height = this.props.is_mpl || this.props.is_d3 ? aheight / 2 - 25 : null,
-        this.state.bottom_pane_height = this.props.is_mpl || this.props.is_d3 ? aheight / 2 - 35 : null,
-        this.state.left_pane_width = awidth / 2 - 25,
-        this.state.bheight = aheight;
+
+        this.state.top_pane_fraction = this.props.is_mpl || this.props.is_d3 ? .5 : 1;
+        this.state.left_pane_fraction = .5;
+        // this.state.left_pane_width = this._cProp("usable_width") / 2 - 25,
+        // this.state.bheight = aheight;
 
         this._setResourceNameState = this._setResourceNameState.bind(this);
         this.handleStateChange = this.handleStateChange.bind(this);
         this.handleRenderContentChange = this.handleRenderContentChange.bind(this);
         this.handleTopCodeChange = this.handleTopCodeChange.bind(this);
-        this._update_window_dimensions = this._update_window_dimensions.bind(this);
         this.handleOptionsChange = this.handleOptionsChange.bind(this);
         this.handleExportsChange = this.handleExportsChange.bind(this);
         this.handleMethodsChange = this.handleMethodsChange.bind(this);
         this.handleLeftPaneResize = this.handleLeftPaneResize.bind(this);
         this.handleTopPaneResize = this.handleTopPaneResize.bind(this);
 
+    }
+
+    initSocket() {
+        this.props.tsocket.attachListener('focus-me', (data)=>{
+            window.focus();
+            this._selectLineNumber(data.line_number)
+        });
+        if (!window.in_context) {
+            this.props.tsocket.attachListener("doFlash", function(data) {
+                doFlash(data)
+            });
+            this.props.tsocket.attachListener('close-user-windows', (data) => {
+                if (!(data["originator"] == props.resource_viewer_id)) {
+                    window.close()
+                }
+            });
+        }
     }
 
     _cProp(pname) {
@@ -524,15 +504,10 @@ class CreatorApp extends React.Component {
     }
 
     _update_window_dimensions() {
-        let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
-        let uheight = window.innerHeight;
-        if (this.top_ref && this.top_ref.current) {
-            uheight = uheight - this.top_ref.current.offsetTop;
-        }
-        else {
-            uheight = uheight - USUAL_TOOLBAR_HEIGHT
-        }
-        this.setState({usable_height: uheight, usable_width: uwidth})
+        this.setState({
+            usable_width: window.innerWidth - this.top_ref.current.offsetLeft,
+            usable_height: window.innerHeight - this.top_ref.current.offsetTop
+        });
     }
 
     _update_saved_state() {
@@ -605,7 +580,6 @@ class CreatorApp extends React.Component {
         this.props.setGoToLineNumber(this._selectLineNumber);
         this._update_saved_state();
         this.props.stopSpinner();
-        // this.initSocket();
         if (!this.props.controlled) {
             document.title = this.state.resource_name;
             window.addEventListener("resize", this._update_window_dimensions);
@@ -616,9 +590,6 @@ class CreatorApp extends React.Component {
     componentDidUpdate() {
 
         this._goToLineNumber();
-        // if (this.props.tsocket.counter != this.socket_counter) {
-        //     this.initSocket();
-        // }
     }
 
     componentWillUnmount() {
@@ -628,14 +599,6 @@ class CreatorApp extends React.Component {
 
     delete_my_container() {
         postAjax("/delete_container_on_unload", {"container_id": this.props.module_viewer_id, "notify": false});
-    }
-    
-    initSocket() {
-        // this.props.tsocket.attachListener('focus-me', (data)=>{
-        //     window.focus();
-        //     this._selectLineNumber(data.line_number)
-        // });
-        // this.socket_counter = this.props.tsocket.counter
     }
 
     // This toggles methodsTabRefreshRequired back and forth to force a refresh
@@ -690,10 +653,10 @@ class CreatorApp extends React.Component {
 
     get_new_tc_height () {
         if (this.state.mounted) {  // This will be true after the initial render
-            return this.state.top_pane_height - this.tc_span_ref.current.offsetHeight
+            return this._cProp("usable_height") * top_fraction - 35
         }
         else {
-            return this.state.top_pane_height - 50
+            return this._cProp("usable_height") - 50
         }
     }
 
@@ -707,14 +670,11 @@ class CreatorApp extends React.Component {
     }
 
     handleTopPaneResize (top_height, bottom_height, top_fraction) {
-        this.setState({"top_pane_height": top_height,
-            "bottom_pane_height": bottom_height - 10
-        })
+        this.setState({"top_pane_fraction": top_fraction})
     }
     
     handleLeftPaneResize(left_width, right_width, left_fraction) {
-        this.setState({"left_pane_width": left_width,
-        })
+        this.setState({"left_pane_fraction": left_fraction})
     }
 
     handleTopCodeChange(new_code) {
@@ -739,34 +699,6 @@ class CreatorApp extends React.Component {
         }
     }
 
-    _handleResize(entries) {
-        // if (window.in_context) {
-        //     for (let entry of entries) {
-        //         if (entry.target.className.includes("pane-holder")) {
-        //             // Must used window.innerWidth here otherwise we get the wrong value during initial mounting
-        //             this.setState({usable_width: entry.contentRect.width - this.top_ref.current.offsetLeft - 30,
-        //                 usable_height: entry.contentRect.height - this.top_ref.current.offsetTop,
-        //                 body_height: entry.contentRect.height - this.top_ref.current.offsetTop
-        //             });
-        //             return
-        //         }
-        //     }
-        // }
-        // else {
-        //     for (let entry of entries) {
-        //         if (entry.target.className.id == "creator-root") {
-        //             // Must used window.innerWidth here otherwise we get the wrong value during initial mounting
-        //             this.setState({usable_width: entry.contentRect.width - this.top_ref.current.offsetLeft - 30,
-        //                 usable_height: entry.contentRect.height - this.top_ref.current.offsetTop,
-        //                 body_height: entry.contentRect.height - this.top_ref.current.offsetTop
-        //             });
-        //             return
-        //         }
-        //     }
-        // }
-
-    }
-
     _setDpObject(cmobject){
         this.dpObject = cmobject
     }
@@ -789,8 +721,10 @@ class CreatorApp extends React.Component {
             }
         }
         let vp_height = this.get_height_minus_top_offset(this.vp_ref);
+        let uwidth = my_props.usable_width - 2 * SIDE_MARGIN;
+        let uheight = my_props.usable_height;
 
-        let code_width = this.state.left_pane_width - 10;
+        let code_width = uwidth * this.state.left_pane_fraction - 35;
         let ch_style = {"width": "100%"};
 
         let tc_item;
@@ -817,7 +751,8 @@ class CreatorApp extends React.Component {
         }
         let rc_height;
         if (my_props.is_mpl || my_props.is_d3) {
-            rc_height = this.get_new_rc_height(this.state.bottom_pane_height)
+            let bheight = (1 - this.state.top_pane_fraction) * uheight - 35;
+            rc_height = this.get_new_rc_height(bheight)
         }
         else {
             rc_height = this.get_new_rc_height(vp_height)
@@ -855,7 +790,7 @@ class CreatorApp extends React.Component {
                                    bottom_pane={bc_item}
                                    show_handle={true}
                                    available_height={vp_height}
-                                   available_width={this.state.left_pane_width - 25}
+                                   available_width={this.state.left_pane_fraction * uwidth - 25}
                                    handleSplitUpdate={this.handleTopPaneResize}
                                    id="creator-left"
                                    />
@@ -941,7 +876,7 @@ class CreatorApp extends React.Component {
         );
         let outer_style = {
             width: "100%",
-            height: my_props.usable_height,
+            height: uheight,
             paddingLeft: this.props.controlled ? 5 : SIDE_MARGIN
         };
         let outer_class = "resource-viewer-holder";
@@ -952,9 +887,9 @@ class CreatorApp extends React.Component {
                 outer_class = outer_class + " light-theme"
             }
         }
-        if (this.top_ref && this.top_ref.current) {
-            my_props.usable_width = my_props.usable_width - this.top_ref.current.offsetLeft;
-        }
+        // if (this.top_ref && this.top_ref.current) {
+        //     my_props.usable_width = my_props.usable_width - this.top_ref.current.offsetLeft;
+        // }
 
         return (
             <React.Fragment>
@@ -976,15 +911,17 @@ class CreatorApp extends React.Component {
                     {window.in_context &&
                         <TopRightButtons refreshTab={this.props.refreshTab} closeTab={this.props.closeTab}/>
                     }
+                    <ResizeSensor onResize={this._handleResize} observeParents={true}>
                         <div className={outer_class} ref={this.top_ref} style={outer_style}>
                             <HorizontalPanes left_pane={left_pane}
                                              right_pane={right_pane}
                                              show_handle={true}
-                                             available_height={my_props.usable_height}
-                                             available_width={my_props.usable_width}
+                                             available_height={uheight}
+                                             available_width={uwidth}
                                              handleSplitUpdate={this.handleLeftPaneResize}
                             />
                         </div>
+                    </ResizeSensor>
                 </TacticContext.Provider>
             </React.Fragment>
         )
@@ -1015,7 +952,7 @@ CreatorApp.propTypes = {
     option_list: PropTypes.array,
     export_list: PropTypes.array,
     created: PropTypes.string,
-     tsocket: PropTypes.object,
+    tsocket: PropTypes.object,
     usable_height: PropTypes.number,
     usable_width: PropTypes.number
 };

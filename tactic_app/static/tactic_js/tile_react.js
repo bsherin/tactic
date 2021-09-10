@@ -114,23 +114,14 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
       this._setTileValue(data.tile_id, "finished_loading", true);
     }
   }, {
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      this.setState({
-        "mounted": true
-      });
-      this.initSocket();
-    }
-  }, {
-    key: "componentDidUpdate",
-    value: function componentDidUpdate() {// if (this.context.tsocket.counter != this.socket_counter) {
-      //     this.initSocket();
-      // }
-    }
-  }, {
     key: "_handleTileSourceChange",
     value: function _handleTileSourceChange(data) {
       this._markSourceChange(data.tile_type);
+    }
+  }, {
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      this.initSocket();
     }
   }, {
     key: "initSocket",
@@ -138,7 +129,6 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
       this.context.tsocket.attachListener("tile-message", this._handleTileMessage);
       this.context.tsocket.attachListener("tile-finished-loading", this._handleTileFinishedLoading);
       this.context.tsocket.attachListener('tile-source-change', this._handleTileSourceChange);
-      this.socket_counter = this.context.tsocket.counter;
     }
   }, {
     key: "_resortTilesOld",

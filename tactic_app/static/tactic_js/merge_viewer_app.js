@@ -23,6 +23,8 @@ var _blueprint_mdata_fields = require("./blueprint_mdata_fields.js");
 
 var _tactic_context = require("./tactic_context.js");
 
+var _communication_react = require("./communication_react");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
@@ -113,6 +115,16 @@ var MergeViewerApp = /*#__PURE__*/function (_React$Component) {
   }
 
   _createClass(MergeViewerApp, [{
+    key: "initSocket",
+    value: function initSocket() {
+      this.tsocket.attachListener('close-user-windows', function (data) {
+        if (!(data["originator"] == window.library_id)) {
+          window.close();
+        }
+      });
+      this.tsocket.attachListener('doflash', _toaster.doFlash);
+    }
+  }, {
     key: "button_groups",
     get: function get() {
       return [[{
