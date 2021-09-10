@@ -143,19 +143,12 @@ function withStatus(WrappedComponent) {
         }
       }
     }, {
-      key: "componentDidUpdate",
-      value: function componentDidUpdate() {// if (this.props.tsocket && (this.props.tsocket.counter != this.props.tsocket.socket_counter)) {
-        //     this.initSocket();
-        // }
-      }
-    }, {
       key: "initSocket",
       value: function initSocket() {
         this.props.tsocket.attachListener('stop-spinner', this._stopSpinner);
         this.props.tsocket.attachListener('start-spinner', this._startSpinner);
         this.props.tsocket.attachListener('show-status-msg', this._statusMessageFromData);
         this.props.tsocket.attachListener("clear-status-msg", this._clearStatusMessage);
-        this.socket_counter = this.props.tsocket.counter;
       }
     }, {
       key: "_stopSpinner",

@@ -20,6 +20,8 @@ var _core = require("@blueprintjs/core");
 
 var _resource_viewer_react_app = require("./resource_viewer_react_app.js");
 
+var _tactic_socket = require("./tactic_socket.js");
+
 var _communication_react = require("./communication_react.js");
 
 var _toaster = require("./toaster.js");
@@ -29,8 +31,6 @@ var _sizing_tools = require("./sizing_tools.js");
 var _error_drawer = require("./error_drawer.js");
 
 var _utilities_react = require("./utilities_react.js");
-
-var _utilities_react2 = require("./utilities_react");
 
 var _blueprint_navbar = require("./blueprint_navbar");
 
@@ -99,10 +99,8 @@ function list_viewer_main() {
 }
 
 function list_viewer_props(data, registerDirtyMethod, finalCallback) {
-  var resource_viewer_id = (0, _utilities_react2.guid)();
-  var tsocket = new _resource_viewer_react_app.ResourceViewerSocket("main", 5000, {
-    resource_viewer_id: resource_viewer_id
-  });
+  var resource_viewer_id = (0, _utilities_react.guid)();
+  var tsocket = new _tactic_socket.TacticSocket("main", 5000, resource_viewer_id);
   finalCallback({
     resource_viewer_id: resource_viewer_id,
     tsocket: tsocket,
@@ -302,6 +300,17 @@ var ListViewerApp = /*#__PURE__*/function (_React$Component2) {
       return bgs;
     }
   }, {
+    key: "_setResourceNameState",
+    value: function _setResourceNameState(new_name) {
+      if (this.props.controlled) {
+        this.props.changeResourceName(new_name);
+      } else {
+        this.setState({
+          resource_name: new_name
+        });
+      }
+    }
+  }, {
     key: "_handleStateChange",
     value: function _handleStateChange(state_stuff) {
       this.setState(state_stuff);
@@ -316,21 +325,10 @@ var ListViewerApp = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_update_window_dimensions",
     value: function _update_window_dimensions() {
-      if (!this.props.controlled) {
-        var uwidth = window.innerWidth - 2 * _sizing_tools.SIDE_MARGIN;
-        var uheight = window.innerHeight;
-
-        if (this.top_ref && this.top_ref.current) {
-          uheight = uheight - this.top_ref.current.offsetTop;
-        } else {
-          uheight = uheight - _sizing_tools.USUAL_TOOLBAR_HEIGHT;
-        }
-
-        this.setState({
-          usable_height: uheight,
-          usable_width: uwidth
-        });
-      }
+      this.setState({
+        usable_width: window.innerWidth - this.top_ref.current.offsetLeft,
+        usable_height: window.innerHeight - this.top_ref.current.offsetTop
+      });
     }
   }, {
     key: "get_new_le_height",
@@ -342,17 +340,6 @@ var ListViewerApp = /*#__PURE__*/function (_React$Component2) {
         return uheight - this.le_ref.current.offsetTop;
       } else {
         return uheight - 100;
-      }
-    }
-  }, {
-    key: "_setResourceNameState",
-    value: function _setResourceNameState(new_name) {
-      if (this.props.controlled) {
-        this.props.changeResourceName(new_name);
-      } else {
-        this.setState({
-          resource_name: new_name
-        });
       }
     }
   }, {
@@ -381,7 +368,7 @@ var ListViewerApp = /*#__PURE__*/function (_React$Component2) {
       var outer_style = {
         width: "100%",
         height: my_props.usable_height,
-        paddingLeft: window.in_context ? 0 : _sizing_tools.SIDE_MARGIN
+        paddingLeft: _sizing_tools.SIDE_MARGIN
       };
       var outer_class = "resource-viewer-holder";
 
@@ -412,17 +399,17 @@ var ListViewerApp = /*#__PURE__*/function (_React$Component2) {
         className: outer_class,
         ref: this.top_ref,
         style: outer_style
-      }, /*#__PURE__*/_react["default"].createElement(_resource_viewer_react_app.ResourceViewerApp, _extends({}, this.props.statusFuncs, {
+      }, /*#__PURE__*/_react["default"].createElement(_resource_viewer_react_app.ResourceViewerApp, _extends({}, my_props, {
         resource_viewer_id: this.props.resource_viewer_id,
         setResourceNameState: this._setResourceNameState,
         refreshTab: this.props.refreshTab,
         closeTab: this.props.closeTab,
-        resource_name: my_props.resource_name,
-        created: this.props.created,
-        meta_outer: this.props.meta_outer,
         res_type: "list",
+        resource_name: my_props.resource_name,
         button_groups: this.button_groups,
         handleStateChange: this._handleStateChange,
+        created: this.props.created,
+        meta_outer: this.props.meta_outer,
         notes: this.state.notes,
         tags: this.state.tags,
         saveMe: this._saveMe
@@ -511,9 +498,9 @@ ListViewerApp.defaultProps = {
   changeResourceName: null,
   changeResourceTitle: null,
   changeResourceProps: null,
+  updatePanel: null,
   refreshTab: null,
-  closeTab: null,
-  updatePanel: null
+  closeTab: null
 };
 ListViewerApp.contextType = _tactic_context.TacticContext;
 

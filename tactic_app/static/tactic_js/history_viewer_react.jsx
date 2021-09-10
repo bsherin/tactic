@@ -8,7 +8,7 @@ import React from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
-import {MergeViewerSocket, MergeViewerApp} from "./merge_viewer_app.js";
+import {MergeViewerApp} from "./merge_viewer_app.js";
 import {doFlash} from "./toaster.js"
 import {postAjax, postAjaxPromise} from "./communication_react.js"
 import {withErrorDrawer} from "./error_drawer.js";
@@ -17,9 +17,7 @@ import {withStatus} from "./toaster.js";
 import {doBinding, guid} from "./utilities_react.js";
 import {TacticNavbar} from "./blueprint_navbar";
 import {TacticContext} from "./tactic_context.js";
-
-window.resource_viewer_id = guid();
-window.main_id = window.resource_viewer_id;
+import {TacticSocket} from "./tactic_socket.js";
 
 function history_viewer_main ()  {
     function gotProps(the_props) {
@@ -34,7 +32,6 @@ function history_viewer_main ()  {
 
     }
     let get_url = "get_module_code";
-    var tsocket = new MergeViewerSocket("main", 5000);
 
     postAjaxPromise(`${get_url}/${window.resource_name}`, {})
         .then(function (data) {
@@ -54,7 +51,7 @@ function history_viewer_main ()  {
 
 function history_viewer_props(data, registerDirtyMethod, finalCallback) {
     let resource_viewer_id = guid();
-    var tsocket = new MergeViewerSocket("main", 5000, {resource_viewer_id: resource_viewer_id});
+    var tsocket = new TacticSocket("main", 5000, resource_viewer_id);
     finalCallback({
         resource_viewer_id: resource_viewer_id,
         tsocket: tsocket,
@@ -82,7 +79,7 @@ class HistoryViewerApp extends React.Component {
         this.handleEditChange = this.handleEditChange.bind(this);
         this.handleSelectChange = this.handleSelectChange.bind(this);
         this.checkpointThenSaveFromLeft = this.checkpointThenSaveFromLeft.bind(this);
-        this.savedContent = props.edit_content
+        this.savedContent = props.edit_content;
 
         if (!props.controlled) {
             this.state.dark_theme = props.initial_theme === "dark";
@@ -94,7 +91,19 @@ class HistoryViewerApp extends React.Component {
                 }
             });
         }
+        this.initSocket()
     }
+
+    initSocket() {
+        this.props.tsocket.attachListener("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
+        this.props.tsocket.attachListener('close-user-windows', (data) => {
+            if (!(data["originator"] == window.library_id)) {
+                window.close()
+            }
+        });
+        this.props.tsocket.attachListener('doflash', doFlash);
+    }
+
     componentDidMount() {
         if (!this.props.controlled) {
             window.dark_theme = this.state.dark_theme

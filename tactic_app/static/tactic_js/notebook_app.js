@@ -40,6 +40,8 @@ var _error_drawer = require("./error_drawer.js");
 
 var _tactic_context = require("./tactic_context.js");
 
+var _sizing_tools = require("./sizing_tools.js");
+
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -57,8 +59,6 @@ function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symb
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
-function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -80,42 +80,17 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
+function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+
 var MARGIN_SIZE = 10;
 var BOTTOM_MARGIN = 20;
+var MARGIN_ADJUSTMENT = 8; // This is the amount at the top of both the table and the conso
+
 var USUAL_TOOLBAR_HEIGHT = 50;
+var MENU_BAR_HEIGHT = 30; // will only appear when in context
+
 var tsocket;
 var ppi;
-
-var MainTacticSocket = /*#__PURE__*/function (_TacticSocket) {
-  _inherits(MainTacticSocket, _TacticSocket);
-
-  var _super = _createSuper(MainTacticSocket);
-
-  function MainTacticSocket() {
-    _classCallCheck(this, MainTacticSocket);
-
-    return _super.apply(this, arguments);
-  }
-
-  _createClass(MainTacticSocket, [{
-    key: "initialize_socket_stuff",
-    value: function initialize_socket_stuff() {
-      var reconnect = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-
-      if (reconnect) {
-        this.socket.emit('join', {
-          "room": this.extra_args.main_id
-        });
-      }
-
-      this.socket.emit('join', {
-        "room": window.user_id
-      });
-    }
-  }]);
-
-  return MainTacticSocket;
-}(_tactic_socket.TacticSocket);
 
 function main_main() {
   function gotProps(the_props) {
@@ -150,42 +125,8 @@ function main_main() {
 function notebook_props(data, registerDirtyMethod, finalCallback) {
   ppi = (0, _utilities_react.get_ppi)();
   var main_id = data.main_id;
-  var tsocket = new MainTacticSocket("main", 5000, {
-    main_id: main_id
-  });
-  tsocket.attachListener('handle-callback', function (task_packet) {
-    (0, _communication_react.handleCallback)(task_packet, main_id);
-  });
-  tsocket.attachListener("window-open", function (data) {
-    window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
-  });
-  tsocket.attachListener('forcedisconnect', function () {
-    tsocket.socket.disconnect();
-  });
-
-  if (!window.in_context) {
-    tsocket.attachListener("doFlash", function (data) {
-      (0, _toaster.doFlash)(data);
-    });
-    tsocket.attachListener('close-user-windows', function (data) {
-      if (!(data["originator"] == main_id)) {
-        window.close();
-      }
-    });
-  }
-
-  tsocket.socket.on('finish-post-load', _finish_post_load_in_context);
-
-  function readyListener() {
-    _everyone_ready_in_context(finalCallback);
-  }
-
-  var is_totally_new = !data.is_jupyter && !data.is_project && data.temp_data_id == "";
-  var opening_from_temp_id = data.temp_data_id != "";
-  tsocket.socket.on("remove-ready-block", readyListener);
-  tsocket.socket.emit('join', {
-    "room": main_id
-  }, function (response) {
+  var tsocket = new _tactic_socket.TacticSocket("main", 5000, main_id, function (response) {
+    tsocket.socket.on("remove-ready-block", readyListener);
     tsocket.socket.emit('client-ready', {
       "room": main_id,
       "user_id": window.user_id,
@@ -194,6 +135,14 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
       "main_id": main_id
     });
   });
+  tsocket.socket.on('finish-post-load', _finish_post_load_in_context);
+
+  function readyListener() {
+    _everyone_ready_in_context(finalCallback);
+  }
+
+  var is_totally_new = !data.is_jupyter && !data.is_project && data.temp_data_id == "";
+  var opening_from_temp_id = data.temp_data_id != "";
   window.addEventListener("unload", function sendRemove() {
     console.log("got the beacon");
     navigator.sendBeacon("/remove_mainwindow", JSON.stringify({
@@ -207,6 +156,9 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
     }
 
     tsocket.socket.off("remove-ready-block", readyListener);
+    tsocket.attachListener('handle-callback', function (task_packet) {
+      (0, _communication_react.handleCallback)(task_packet, main_id);
+    });
     var data_dict = {
       "doc_type": "notebook",
       "base_figure_url": data.base_figure_url,
@@ -273,19 +225,19 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
 }
 
 var save_attrs = ["console_items", "show_exports_pane", "console_width_fraction"];
-var controllable_props = ["is_project", "resource_name"];
+var controllable_props = ["is_project", "resource_name", "usable_width", "usable_height"];
 
 var NotebookApp = /*#__PURE__*/function (_React$Component) {
   _inherits(NotebookApp, _React$Component);
 
-  var _super2 = _createSuper(NotebookApp);
+  var _super = _createSuper(NotebookApp);
 
   function NotebookApp(props) {
     var _this;
 
     _classCallCheck(this, NotebookApp);
 
-    _this = _super2.call(this, props);
+    _this = _super.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
     _this.last_save = {};
     _this.main_outer_ref = /*#__PURE__*/_react["default"].createRef();
@@ -301,9 +253,13 @@ var NotebookApp = /*#__PURE__*/function (_React$Component) {
 
     if (_this.props.controlled) {
       props.registerDirtyMethod(_this._dirty);
+      _this.height_adjustment = MENU_BAR_HEIGHT;
     } else {
+      _this.height_adjustment = 0;
       _this.state.dark_theme = props.initial_theme === "dark";
       _this.state.resource_name = props.resource_name;
+      _this.state.usable_height = (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
+      _this.state.usable_width = (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
       _this.state.is_project = props.is_project;
       window.addEventListener("beforeunload", function (e) {
         if (self._dirty()) {
@@ -341,15 +297,19 @@ var NotebookApp = /*#__PURE__*/function (_React$Component) {
     key: "_update_window_dimensions",
     value: function _update_window_dimensions() {
       var uwidth;
+      var uheight;
 
       if (this.main_outer_ref && this.main_outer_ref.current) {
-        uwidth = window.innerWidth - MARGIN_SIZE - this.main_outer_ref.current.offsetLeft;
+        uheight = window.innerHeight - this.main_outer_ref.current.offsetTop;
+        uwidth = window.innerWidth - this.main_outer_ref.current.offsetLeft;
       } else {
+        uheight = window.innerHeight - USUAL_TOOLBAR_HEIGHT;
         uwidth = window.innerWidth - 2 * MARGIN_SIZE;
       }
 
       this.setState({
-        "usable_width": uwidth
+        usable_height: uheight,
+        usable_width: uwidth
       });
     }
   }, {
@@ -376,7 +336,6 @@ var NotebookApp = /*#__PURE__*/function (_React$Component) {
       this.setState({
         "mounted": true
       });
-      this.initSocket();
 
       this._updateLastSave();
 
@@ -388,13 +347,6 @@ var NotebookApp = /*#__PURE__*/function (_React$Component) {
         window.addEventListener("resize", this._update_window_dimensions);
 
         this._update_window_dimensions();
-      }
-    }
-  }, {
-    key: "componentDidUpdate",
-    value: function componentDidUpdate() {
-      if (this.props.tsocket.counter != this.socket_counter) {
-        this.initSocket();
       }
     }
   }, {
@@ -413,12 +365,24 @@ var NotebookApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "initSocket",
     value: function initSocket() {
-      var self = this; // this.props.tsocket.socket.emit('join-main', {"room": this.props.main_id, "user_id": window.user_id});
-      // this.props.tsocket.attachListener('forcedisconnect', function() {
-      //     self.props.tsocket.socket.disconnect()
-      // });
+      var self = this;
+      this.props.tsocket.attachListener('forcedisconnect', function () {
+        this.props.tsocket.socket.disconnect();
+      });
 
-      this.socket_counter = this.props.tsocket.counter;
+      if (!window.in_context) {
+        this.props.tsocket.attachListener("window-open", function (data) {
+          window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
+        });
+        this.props.tsocket.attachListener("doFlash", function (data) {
+          (0, _toaster.doFlash)(data);
+        });
+        this.props.tsocket.attachListener('close-user-windows', function (data) {
+          if (!(data["originator"] == main_id)) {
+            window.close();
+          }
+        });
+      }
     }
   }, {
     key: "_setTheme",
@@ -499,38 +463,15 @@ var NotebookApp = /*#__PURE__*/function (_React$Component) {
           is_jupyter: false
         });
       }
-    } // _get_console_available_height(uheight) {
-    //     let result;
-    //     if (this.main_outer_ref && this.main_outer_ref.current) {
-    //         result = uheight - this.main_outer_ref.current.offsetTop
-    //     }
-    //     else {
-    //         result = uheight - USUAL_TOOLBAR_HEIGHT
-    //     }
-    //     return result
-    // }
-
+    }
   }, {
     key: "get_zoomed_console_height",
     value: function get_zoomed_console_height() {
       if (this.state.mounted && this.main_outer_ref.current) {
-        return window.innerHeight - this.main_outer_ref.current.offsetTop - BOTTOM_MARGIN;
+        return this._cProp("usable_height") - this.height_adjustment - BOTTOM_MARGIN;
       } else {
-        return window.innerHeight - USUAL_TOOLBAR_HEIGHT;
+        return this._cProp("usable_height") - this.height_adjustment - 50;
       }
-    }
-  }, {
-    key: "_get_true_usable_width",
-    value: function _get_true_usable_width() {
-      var twidth;
-
-      if (this.main_outer_ref && this.main_outer_ref.current) {
-        twidth = window.innerWidth - this.main_outer_ref.current.offsetLeft;
-      } else {
-        twidth = window.innerWidth - 170;
-      }
-
-      return twidth;
     }
   }, {
     key: "render",
@@ -540,8 +481,6 @@ var NotebookApp = /*#__PURE__*/function (_React$Component) {
       var dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
 
       var my_props = _objectSpread({}, this.props);
-
-      var true_usable_width = this._get_true_usable_width();
 
       if (!this.props.controlled) {
         var _iterator3 = _createForOfIteratorHelper(controllable_props),
@@ -559,7 +498,8 @@ var NotebookApp = /*#__PURE__*/function (_React$Component) {
         }
       }
 
-      var console_available_height = this.get_zoomed_console_height();
+      var true_usable_width = my_props.usable_width;
+      var console_available_height = this.get_zoomed_console_height() - MARGIN_ADJUSTMENT;
       var project_name = my_props.is_project ? this.props.resource_name : "";
 
       var menus = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_main_menus_react.ProjectMenu, _extends({}, this.props.statusFuncs, {
@@ -621,6 +561,10 @@ var NotebookApp = /*#__PURE__*/function (_React$Component) {
         outer_class = outer_class + " light-theme";
       }
 
+      var outer_style = {
+        width: "100%",
+        height: my_props.usable_height - this.height_adjustment
+      };
       return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_tactic_context.TacticContext.Provider, {
         value: {
           readOnly: this.props.readOnly,
@@ -641,7 +585,8 @@ var NotebookApp = /*#__PURE__*/function (_React$Component) {
         closeTab: this.props.closeTab
       }), /*#__PURE__*/_react["default"].createElement("div", {
         className: outer_class,
-        ref: this.main_outer_ref
+        ref: this.main_outer_ref,
+        style: outer_style
       }, /*#__PURE__*/_react["default"].createElement(_resizing_layouts.HorizontalPanes, {
         left_pane: console_pane,
         right_pane: exports_pane,
@@ -649,8 +594,7 @@ var NotebookApp = /*#__PURE__*/function (_React$Component) {
         available_height: console_available_height,
         available_width: true_usable_width,
         initial_width_fraction: this.state.console_width_fraction,
-        controlled: true // left_margin={MARGIN_SIZE}
-        ,
+        controlled: true,
         dragIconSize: 15,
         handleSplitUpdate: this._handleConsoleFractionChange
       }))));

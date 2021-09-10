@@ -24,6 +24,8 @@ var _blueprint_navbar = require("./blueprint_navbar.js");
 
 var _tactic_context = require("./tactic_context.js");
 
+var _tactic_socket = require("./tactic_socket.js");
+
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -52,9 +54,6 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 
 function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 
-window.resource_viewer_id = (0, _utilities_react.guid)();
-window.main_id = window.resource_viewer_id;
-
 function tile_differ_main() {
   function gotProps(the_props) {
     var TileDifferAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(TileDifferApp));
@@ -70,7 +69,6 @@ function tile_differ_main() {
   }
 
   var get_url = "get_module_code";
-  var tsocket = new _merge_viewer_app.MergeViewerSocket("main", 5000);
   (0, _communication_react.postAjaxPromise)("".concat(get_url, "/").concat(window.resource_name), {}).then(function (data) {
     var edit_content = data.the_content;
     (0, _communication_react.postAjaxPromise)("get_tile_names").then(function (data2) {
@@ -83,9 +81,7 @@ function tile_differ_main() {
 
 function tile_differ_props(data, registerDirtyMethod, finalCallback) {
   var resource_viewer_id = (0, _utilities_react.guid)();
-  var tsocket = new _merge_viewer_app.MergeViewerSocket("main", 5000, {
-    resource_viewer_id: resource_viewer_id
-  });
+  var tsocket = new _tactic_socket.TacticSocket("main", 5000, resource_viewer_id);
   finalCallback({
     resource_viewer_id: resource_viewer_id,
     tsocket: tsocket,
@@ -135,10 +131,25 @@ var TileDifferApp = /*#__PURE__*/function (_React$Component) {
       });
     }
 
+    _this.initSocket();
+
     return _this;
   }
 
   _createClass(TileDifferApp, [{
+    key: "initSocket",
+    value: function initSocket() {
+      this.props.tsocket.attachListener("window-open", function (data) {
+        return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
+      });
+      this.props.tsocket.attachListener('close-user-windows', function (data) {
+        if (!(data["originator"] == window.library_id)) {
+          window.close();
+        }
+      });
+      this.props.tsocket.attachListener('doflash', _toaster.doFlash);
+    }
+  }, {
     key: "componentDidMount",
     value: function componentDidMount() {
       if (!this.props.controlled) {

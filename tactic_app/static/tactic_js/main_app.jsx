@@ -28,8 +28,8 @@ import {withStatus} from "./toaster.js";
 import {withErrorDrawer} from "./error_drawer.js";
 import {doBinding, get_ppi, renderSpinnerMessage} from "./utilities_react.js";
 import {TacticContext} from "./tactic_context.js";
+import {getUsableDimensions} from "./sizing_tools.js";
 
-export {MainTacticSocket}
 export {main_props, MainApp}
 
 const MARGIN_SIZE = 0;
@@ -38,20 +38,9 @@ const MARGIN_ADJUSTMENT = 8; // This is the amount at the top of both the table 
 const CONSOLE_HEADER_HEIGHT = 35;
 const EXTRA_TABLE_AREA_SPACE = 500;
 const USUAL_TOOLBAR_HEIGHT = 50;
+const MENU_BAR_HEIGHT = 30; // will only appear when in context
 
 let ppi;
-
-class MainTacticSocket extends TacticSocket {
-
-    initialize_socket_stuff(reconnect=false) {
-        if (reconnect) {
-            this.socket.emit('join', {"room": this.extra_args.main_id})
-        }
-
-        this.socket.emit('join', {"room": window.user_id});
-
-    }
-}
 
 function main_main() {
     function gotProps(the_props) {
@@ -82,35 +71,17 @@ function main_props(data, registerDirtyMethod, finalCallback) {
     let main_id = data.main_id;
     let initial_tile_types;
 
-    var tsocket = new MainTacticSocket("main", 5000, {main_id: main_id});
-    tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, main_id)});
-    if (!window.in_context) {
-        tsocket.attachListener("doFlash", function(data) {
-            doFlash(data)
-            });
-    }
-
+    var tsocket = new TacticSocket("main", 5000, main_id, function(response) {
+            tsocket.socket.on("remove-ready-block", readyListener);
+            initial_tile_types = response.tile_types;
+            tsocket.socket.emit('client-ready', {"room": main_id, "user_id": window.user_id,
+                "participant": "client", "rb_id": data.ready_block_id, "main_id": main_id})
+    });
 
     tsocket.socket.on('finish-post-load', _finish_post_load_in_context);
 
     function readyListener() {
         _everyone_ready_in_context(finalCallback)
-    }
-    tsocket.socket.on("remove-ready-block", readyListener);
-    tsocket.socket.emit('join-main', {"room": main_id, "user_id": window.user_id}, function(response) {
-            initial_tile_types = response.tile_types;
-            tsocket.socket.emit('client-ready', {"room": main_id, "user_id": window.user_id,
-                "participant": "client", "rb_id": data.ready_block_id, "main_id": main_id})
-    });
-    if (!window.in_context) {
-        tsocket.attachListener('close-user-windows', function(data){
-            if (!(data["originator"] == main_id)) {
-                window.close()
-            }
-        });
-        tsocket.attachListener("notebook-open", function(data) {
-            window.open($SCRIPT_ROOT + "/new_notebook_with_data/" + data.temp_data_id)
-        });
     }
 
     window.addEventListener("unload", function sendRemove(event) {
@@ -122,6 +93,7 @@ function main_props(data, registerDirtyMethod, finalCallback) {
             renderSpinnerMessage("Everyone is ready, initializing...");
         }
         tsocket.socket.off("remove-ready-block", readyListener);
+        tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, main_id)});
         if (data.is_project) {
             let data_dict = {
                 "project_name": data.project_name,
@@ -207,13 +179,13 @@ function main_props(data, registerDirtyMethod, finalCallback) {
 const save_attrs = ["tile_list", "table_is_shrunk", "console_width_fraction", "horizontal_fraction", "pipe_dict",
 "console_items", "console_is_shrunk", "height_fraction", "show_exports_pane", "show_console_pane", 'console_is_zoomed'];
 
-const controllable_props = ["is_project", "resource_name"];
+const controllable_props = ["is_project", "resource_name", "usable_width", "usable_height"];
 
 class MainApp extends React.Component {
     constructor (props) {
         super(props);
         doBinding(this);
-
+        this.initSocket();
         this.table_container_ref = React.createRef();
         this.tile_div_ref = React.createRef();
         this.tbody_ref = React.createRef();
@@ -271,25 +243,16 @@ class MainApp extends React.Component {
         }
         this.state= Object.assign(base_state, additions);
         let self = this;
-        props.tsocket.attachListener('forcedisconnect', function() {
-            self.props.tsocket.socket.disconnect()
-        });
 
-        props.tsocket.attachListener('table-message', this._handleTableMessage);
-        props.tsocket.attachListener("update-menus", this._update_menus_listener);
-        props.tsocket.attachListener('change-doc', this._change_doc_listener);
-        props.tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, this.props.main_id)});
         if (this.props.controlled) {
             props.registerDirtyMethod(this._dirty);
-            props.tsocket.attachListener("notebook-open", function(data) {
-                const the_view = `${$SCRIPT_ROOT}/new_notebook_in_context`;
-                postAjaxPromise(the_view, {temp_data_id: data.temp_data_id, resource_name: ""})
-                    .then(self.props.handleCreateViewer)
-                    .catch(doFlash);
-                })
+            this.height_adjustment = MENU_BAR_HEIGHT;
         }
         else {
+            this.height_adjustment = 0;
             this.state.dark_theme = props.initial_theme === "dark";
+            this.state.usable_height = getUsableDimensions(true).usable_height_no_bottom;
+            this.state.usable_width = getUsableDimensions(true).usable_width - 170;
             this.state.resource_name = props.resource_name;
             this.state.is_project = props.is_project;
             window.addEventListener("beforeunload", function (e) {
@@ -317,17 +280,18 @@ class MainApp extends React.Component {
 
     _update_window_dimensions() {
         let uwidth;
+        let uheight;
         if (this.main_outer_ref && this.main_outer_ref.current) {
-            uwidth = window.innerWidth - MARGIN_SIZE - this.main_outer_ref.current.offsetLeft
+            uheight = window.innerHeight - this.main_outer_ref.current.offsetTop;
+            uwidth = window.innerWidth - this.main_outer_ref.current.offsetLeft;
         }
         else {
-            uwidth = window.innerWidth - 2 * MARGIN_SIZE
+            uheight = window.innerHeight - USUAL_TOOLBAR_HEIGHT;
+            uwidth = window.innerWidth - 2 * MARGIN_SIZE;
         }
-
-        this.setState({
-            "usable_width": uwidth,
-        });
+        this.setState({usable_height: uheight, usable_width: uwidth})
     }
+
 
     _updateLastSave() {
         this.last_save = this.interface_state
@@ -345,8 +309,6 @@ class MainApp extends React.Component {
 
     componentDidMount() {
         this.setState({"mounted": true});
-
-        // this.initSocket();
         this._updateLastSave();
 
         if (!this.props.controlled) {
@@ -355,12 +317,6 @@ class MainApp extends React.Component {
             window.addEventListener("resize", this._update_window_dimensions);
             this._update_window_dimensions();
         }
-    }
-
-    componentDidUpdate () {
-        // if (this.props.tsocket.counter != this.socket_counter) {
-        //     this.initSocket();
-        // }
     }
 
     componentWillUnmount() {
@@ -392,17 +348,38 @@ class MainApp extends React.Component {
 
     initSocket() {
         let self = this;
-        // this.props.tsocket.socket.emit('join-main', {"room": this.props.main_id, "user_id": window.user_id});
-        // this.props.tsocket.attachListener('forcedisconnect', function() {
-        //     self.props.tsocket.socket.disconnect()
-        // });
-        //
-        //
-        // this.props.tsocket.attachListener('table-message', this._handleTableMessage);
-        // this.props.tsocket.attachListener("update-menus", this._update_menus_listener);
-        // this.props.tsocket.attachListener('change-doc', this._change_doc_listener);
-        // this.props.tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, this.props.main_id)});
-        // this.socket_counter = this.props.tsocket.counter
+        if (!window.in_context) {
+            this.props.tsocket.attachListener("window-open", data => {
+                window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`)
+            });
+            this.props.tsocket.attachListener('close-user-windows', function(data){
+                if (!(data["originator"] == main_id)) {
+                    window.close()
+                }
+            });
+            this.props.tsocket.attachListener("notebook-open", function(data) {
+                window.open($SCRIPT_ROOT + "/new_notebook_with_data/" + data.temp_data_id)
+            });
+            this.props.tsocket.attachListener("doFlash", function(data) {
+                doFlash(data)
+            });
+        }
+        else {
+            this.props.tsocket.attachListener("notebook-open", function(data) {
+                const the_view = `${$SCRIPT_ROOT}/new_notebook_in_context`;
+                postAjaxPromise(the_view, {temp_data_id: data.temp_data_id, resource_name: ""})
+                    .then(self.props.handleCreateViewer)
+                    .catch(doFlash);
+            })
+        }
+        this.props.tsocket.attachListener('forcedisconnect', function() {
+            self.props.tsocket.socket.disconnect()
+        });
+
+        this.props.tsocket.attachListener('table-message', this._handleTableMessage);
+        this.props.tsocket.attachListener("update-menus", this._update_menus_listener);
+        this.props.tsocket.attachListener('change-doc', this._change_doc_listener);
+        this.props.tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, this.props.main_id)});
     }
 
     _setTheme(dark_theme) {
@@ -866,32 +843,32 @@ class MainApp extends React.Component {
         if (this.state.mounted && this.tile_div_ref.current) {
             if (this.state.console_is_shrunk) {
                 // return this._cProp("usable_height") - this.tile_div_ref.current.getBoundingClientRect().top - CONSOLE_HEADER_HEIGHT;
-                return window.innerHeight - this.tile_div_ref.current.offsetTop - CONSOLE_HEADER_HEIGHT - BOTTOM_MARGIN;
+                return this._cProp("usable_height") - CONSOLE_HEADER_HEIGHT - BOTTOM_MARGIN - this.height_adjustment;
             }
             else {
-                return (window.innerHeight - this.tile_div_ref.current.offsetTop - BOTTOM_MARGIN) * this.state.height_fraction;
+                return (this._cProp("usable_height") - BOTTOM_MARGIN - this.height_adjustment) * this.state.height_fraction;
             }
         }
         else {
-            return window.innerHeight - 100
+            return this._cProp("usable_height") - 100
         }
     }
 
     get_vp_height () {
         if (this.state.mounted && this.tile_div_ref.current) {
-            return window.innerHeight - this.tile_div_ref.current.offsetTop - BOTTOM_MARGIN;
+            return this._cProp("usable_height") - this.height_adjustment - BOTTOM_MARGIN;
         }
         else {
-            return window.innerHeight - 50
+            return this._cProp("usable_height") - this.height_adjustment - 50
         }
     }
 
     get_zoomed_console_height() {
         if (this.state.mounted && this.main_outer_ref.current) {
-            return window.innerHeight - this.main_outer_ref.current.offsetTop - BOTTOM_MARGIN;
+            return this._cProp("usable_height")  - this.height_adjustment - BOTTOM_MARGIN;
         }
         else {
-            return window.innerHeight - 50
+            return this._cProp("usable_height") - this.height_adjustment - 50
         }
     }
 
@@ -914,32 +891,20 @@ class MainApp extends React.Component {
         }
     }
 
-    _get_true_usable_width() {
-        let twidth;
-        if (this.main_outer_ref && this.main_outer_ref.current) {
-            twidth = window.innerWidth - MARGIN_SIZE - this.main_outer_ref.current.offsetLeft
-        }
-        else {
-            twidth = window.innerWidth - MARGIN_SIZE - 170
-        }
-        return twidth
-    }
-
     render() {
         let dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
         let vp_height;
         let hp_height;
         let console_available_height;
         let my_props = {...this.props};
-        let true_usable_width = this._get_true_usable_width();
         if (!this.props.controlled) {
             for (let prop_name of controllable_props) {
                 my_props[prop_name] = this.state[prop_name]
             }
         }
-
+        let true_usable_width = my_props.usable_width;
         if (this.state.console_is_zoomed) {
-            console_available_height = this.get_zoomed_console_height();
+            console_available_height = this.get_zoomed_console_height() - MARGIN_ADJUSTMENT;
         } else {
             vp_height = this.get_vp_height();
             hp_height = this.get_hp_height();
@@ -1203,6 +1168,10 @@ class MainApp extends React.Component {
         else {
             outer_class = outer_class + " light-theme"
         }
+        let outer_style = {
+            width: "100%",
+            height: my_props.usable_height - this.height_adjustment,
+        };
         return (
             <React.Fragment>
                 <TacticContext.Provider value={{
@@ -1221,7 +1190,7 @@ class MainApp extends React.Component {
                                   refreshTab={this.props.refreshTab}
                                   closeTab={this.props.closeTab}
                     />
-                    <div className={outer_class} ref={this.main_outer_ref}>
+                    <div className={outer_class} ref={this.main_outer_ref} style={outer_style}>
                         {this.state.console_is_zoomed &&
                             bottom_pane
                         }

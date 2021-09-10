@@ -32,27 +32,10 @@ let tsocket;
 
 function _administer_home_main () {
     render_navbar("library");
-    tsocket = new LibraryTacticSocket("library", 5000);
-    let AdministerHomeAppPlus = withErrorDrawer(withStatus(AdministerHomeApp, tsocket), tsocket);
+    tsocket = new TacticSocket("main", 5000, window.library_id);
+    let AdministerHomeAppPlus = withErrorDrawer(withStatus(AdministerHomeApp));
     let domContainer = document.querySelector('#library-home-root');
-    ReactDOM.render(<AdministerHomeAppPlus/>, domContainer)
-}
-
-class LibraryTacticSocket extends TacticSocket {
-
-    initialize_socket_stuff(reconnect=false) {
-
-        this.socket.emit('join', {"user_id":  window.user_id, "room":  window.library_id});
-
-        this.attachListener("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
-        this.attachListener('handle-callback', handleCallback);
-        this.attachListener('close-user-windows', (data) => {
-            if (!(data["originator"] == window.library_id)) {
-                window.close()
-            }
-        });
-        this.attachListener('doflash', doFlash);
-    }
+    ReactDOM.render(<AdministerHomeAppPlus tsocket={tsocket}/>, domContainer)
 }
 
 var res_types = ["container", "user"];
@@ -104,6 +87,18 @@ class AdministerHomeApp extends React.Component {
         }
         this.top_ref = React.createRef();
         doBinding(this);
+        this.initSocket();
+    }
+
+    initSocket() {
+        this.props.tsocket.attachListener("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
+        this.props.tsocket.attachListener('handle-callback', handleCallback);
+        this.props.tsocket.attachListener('close-user-windows', (data) => {
+            if (!(data["originator"] == window.library_id)) {
+                window.close()
+            }
+        });
+        this.props.tsocket.attachListener('doflash', doFlash);
     }
 
     componentDidMount() {

@@ -80,46 +80,13 @@ var tsocket;
 
 function _administer_home_main() {
   (0, _blueprint_navbar.render_navbar)("library");
-  tsocket = new LibraryTacticSocket("library", 5000);
-  var AdministerHomeAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(AdministerHomeApp, tsocket), tsocket);
+  tsocket = new _tactic_socket.TacticSocket("main", 5000, window.library_id);
+  var AdministerHomeAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(AdministerHomeApp));
   var domContainer = document.querySelector('#library-home-root');
-  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(AdministerHomeAppPlus, null), domContainer);
+  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(AdministerHomeAppPlus, {
+    tsocket: tsocket
+  }), domContainer);
 }
-
-var LibraryTacticSocket = /*#__PURE__*/function (_TacticSocket) {
-  _inherits(LibraryTacticSocket, _TacticSocket);
-
-  var _super = _createSuper(LibraryTacticSocket);
-
-  function LibraryTacticSocket() {
-    _classCallCheck(this, LibraryTacticSocket);
-
-    return _super.apply(this, arguments);
-  }
-
-  _createClass(LibraryTacticSocket, [{
-    key: "initialize_socket_stuff",
-    value: function initialize_socket_stuff() {
-      var reconnect = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-      this.socket.emit('join', {
-        "user_id": window.user_id,
-        "room": window.library_id
-      });
-      this.attachListener("window-open", function (data) {
-        return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
-      });
-      this.attachListener('handle-callback', _communication_react.handleCallback);
-      this.attachListener('close-user-windows', function (data) {
-        if (!(data["originator"] == window.library_id)) {
-          window.close();
-        }
-      });
-      this.attachListener('doflash', _toaster.doFlash);
-    }
-  }]);
-
-  return LibraryTacticSocket;
-}(_tactic_socket.TacticSocket);
 
 var res_types = ["container", "user"];
 var col_names = {
@@ -135,14 +102,14 @@ function NamesToDict(acc, item) {
 var AdministerHomeApp = /*#__PURE__*/function (_React$Component) {
   _inherits(AdministerHomeApp, _React$Component);
 
-  var _super2 = _createSuper(AdministerHomeApp);
+  var _super = _createSuper(AdministerHomeApp);
 
   function AdministerHomeApp(props) {
     var _this;
 
     _classCallCheck(this, AdministerHomeApp);
 
-    _this = _super2.call(this, props);
+    _this = _super.call(this, props);
     var aheight = (0, _sizing_tools.getUsableDimensions)().usable_height_no_bottom;
     var awidth = (0, _sizing_tools.getUsableDimensions)().usable_width - 170;
     _this.state = {
@@ -188,10 +155,27 @@ var AdministerHomeApp = /*#__PURE__*/function (_React$Component) {
 
     _this.top_ref = /*#__PURE__*/_react["default"].createRef();
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
+
+    _this.initSocket();
+
     return _this;
   }
 
   _createClass(AdministerHomeApp, [{
+    key: "initSocket",
+    value: function initSocket() {
+      this.props.tsocket.attachListener("window-open", function (data) {
+        return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
+      });
+      this.props.tsocket.attachListener('handle-callback', _communication_react.handleCallback);
+      this.props.tsocket.attachListener('close-user-windows', function (data) {
+        if (!(data["originator"] == window.library_id)) {
+          window.close();
+        }
+      });
+      this.props.tsocket.attachListener('doflash', _toaster.doFlash);
+    }
+  }, {
     key: "componentDidMount",
     value: function componentDidMount() {
       window.addEventListener("resize", this._update_window_dimensions);
@@ -327,12 +311,12 @@ var AdministerHomeApp = /*#__PURE__*/function (_React$Component) {
 var AdminToolbar = /*#__PURE__*/function (_React$Component2) {
   _inherits(AdminToolbar, _React$Component2);
 
-  var _super3 = _createSuper(AdminToolbar);
+  var _super2 = _createSuper(AdminToolbar);
 
   function AdminToolbar() {
     _classCallCheck(this, AdminToolbar);
 
-    return _super3.apply(this, arguments);
+    return _super2.apply(this, arguments);
   }
 
   _createClass(AdminToolbar, [{
@@ -418,14 +402,14 @@ AdminToolbar.propTypes = {
 var ContainerToolbar = /*#__PURE__*/function (_React$Component3) {
   _inherits(ContainerToolbar, _React$Component3);
 
-  var _super4 = _createSuper(ContainerToolbar);
+  var _super3 = _createSuper(ContainerToolbar);
 
   function ContainerToolbar(props) {
     var _this2;
 
     _classCallCheck(this, ContainerToolbar);
 
-    _this2 = _super4.call(this, props);
+    _this2 = _super3.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this2));
     return _this2;
   }
@@ -502,14 +486,14 @@ ContainerToolbar.propTypes = {
 var UserToolbar = /*#__PURE__*/function (_React$Component4) {
   _inherits(UserToolbar, _React$Component4);
 
-  var _super5 = _createSuper(UserToolbar);
+  var _super4 = _createSuper(UserToolbar);
 
   function UserToolbar(props) {
     var _this3;
 
     _classCallCheck(this, UserToolbar);
 
-    _this3 = _super5.call(this, props);
+    _this3 = _super4.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this3));
     return _this3;
   }

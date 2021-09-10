@@ -16,9 +16,11 @@ var ReactDOM = _interopRequireWildcard(require("react-dom"));
 
 var _propTypes = _interopRequireDefault(require("prop-types"));
 
+var _reactCodemirror = require("./react-codemirror.js");
+
 var _resource_viewer_react_app = require("./resource_viewer_react_app.js");
 
-var _reactCodemirror = require("./react-codemirror.js");
+var _tactic_socket = require("./tactic_socket.js");
 
 var _communication_react = require("./communication_react.js");
 
@@ -100,9 +102,7 @@ function code_viewer_main() {
 
 function code_viewer_props(data, registerDirtyMethod, finalCallback) {
   var resource_viewer_id = (0, _utilities_react2.guid)();
-  var tsocket = new _resource_viewer_react_app.ResourceViewerSocket("main", 5000, {
-    resource_viewer_id: resource_viewer_id
-  });
+  var tsocket = new _tactic_socket.TacticSocket("main", 5000, resource_viewer_id);
   finalCallback({
     resource_viewer_id: resource_viewer_id,
     tsocket: tsocket,
@@ -186,30 +186,6 @@ var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
       }
     }
   }, {
-    key: "_cProp",
-    value: function _cProp(pname) {
-      return this.props.controlled ? this.props[pname] : this.state[pname];
-    }
-  }, {
-    key: "_update_window_dimensions",
-    value: function _update_window_dimensions() {
-      if (!this.props.controlled) {
-        var uwidth = window.innerWidth - 2 * _sizing_tools.SIDE_MARGIN;
-        var uheight = window.innerHeight;
-
-        if (this.top_ref && this.top_ref.current) {
-          uheight = uheight - this.top_ref.current.offsetTop;
-        } else {
-          uheight = uheight - _sizing_tools.USUAL_TOOLBAR_HEIGHT;
-        }
-
-        this.setState({
-          usable_height: uheight,
-          usable_width: uwidth
-        });
-      }
-    }
-  }, {
     key: "_setTheme",
     value: function _setTheme(dark_theme) {
       var _this2 = this;
@@ -223,6 +199,11 @@ var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
       });
     }
   }, {
+    key: "_cProp",
+    value: function _cProp(pname) {
+      return this.props.controlled ? this.props[pname] : this.state[pname];
+    }
+  }, {
     key: "button_groups",
     get: function get() {
       var _this3 = this;
@@ -234,7 +215,7 @@ var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
           "name_text": "Copy",
           "icon_name": "import",
           "click_handler": function click_handler() {
-            (0, _resource_viewer_react_app.copyToLibrary)("code", _this3.state.resource_name);
+            (0, _resource_viewer_react_app.copyToLibrary)("list", _this3._cProp("resource_name"));
           },
           tooltip: "Copy to library"
         }]];
@@ -295,6 +276,11 @@ var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
       }
     }
   }, {
+    key: "_handleStateChange",
+    value: function _handleStateChange(state_stuff) {
+      this.setState(state_stuff);
+    }
+  }, {
     key: "_handleCodeChange",
     value: function _handleCodeChange(new_code) {
       this.setState({
@@ -302,9 +288,12 @@ var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
       });
     }
   }, {
-    key: "_handleStateChange",
-    value: function _handleStateChange(state_stuff) {
-      this.setState(state_stuff);
+    key: "_update_window_dimensions",
+    value: function _update_window_dimensions() {
+      this.setState({
+        usable_width: window.innerWidth - this.top_ref.current.offsetLeft,
+        usable_height: window.innerHeight - this.top_ref.current.offsetTop
+      });
     }
   }, {
     key: "get_new_cc_height",
@@ -321,7 +310,7 @@ var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
-      var dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme; // let the_context = {"readOnly": this.props.readOnly};
+      var dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
 
       var my_props = _objectSpread({}, this.props);
 
@@ -376,7 +365,7 @@ var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
         className: outer_class,
         ref: this.top_ref,
         style: outer_style
-      }, /*#__PURE__*/_react["default"].createElement(_resource_viewer_react_app.ResourceViewerApp, _extends({}, this.props.statusFuncs, {
+      }, /*#__PURE__*/_react["default"].createElement(_resource_viewer_react_app.ResourceViewerApp, _extends({}, my_props, {
         resource_viewer_id: this.props.resource_viewer_id,
         setResourceNameState: this._setResourceNameState,
         refreshTab: this.props.refreshTab,
@@ -386,12 +375,12 @@ var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
         button_groups: this.button_groups,
         handleStateChange: this._handleStateChange,
         created: this.props.created,
+        meta_outer: this.props.meta_outer,
         notes: this.state.notes,
         tags: this.state.tags,
         saveMe: this._saveMe,
         show_search: true,
-        update_search_state: this._update_search_state,
-        meta_outer: this.props.meta_outer
+        update_search_state: this._update_search_state
       }), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
         code_content: this.state.code_content,
         handleChange: this._handleCodeChange,
@@ -467,8 +456,10 @@ CodeViewerApp.propTypes = {
   created: _propTypes["default"].string,
   tags: _propTypes["default"].array,
   notes: _propTypes["default"].string,
+  readOnly: _propTypes["default"].bool,
   is_repository: _propTypes["default"].bool,
   meta_outer: _propTypes["default"].string,
+  tsocket: _propTypes["default"].object,
   usable_height: _propTypes["default"].number,
   usable_width: _propTypes["default"].number
 };

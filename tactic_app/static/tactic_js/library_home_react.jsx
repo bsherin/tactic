@@ -6,7 +6,7 @@ import React from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
-import { Tabs, Tab, Tooltip, Icon, Position } from "@blueprintjs/core";
+import { Tabs, Tab, Tooltip, Icon, Position, ResizeSensor } from "@blueprintjs/core";
 import {Regions} from "@blueprintjs/table";
 
 import {showModalReact} from "./modal_react.js";
@@ -24,6 +24,8 @@ import {doBinding, guid} from "./utilities_react.js";
 import {TacticNavbar} from "./blueprint_navbar";
 import {TacticContext} from "./tactic_context.js";
 
+const TAB_BAR_WIDTH = 50;
+
 export {library_props, LibraryHomeApp}
 
 function _library_home_main () {
@@ -39,44 +41,21 @@ function _library_home_main () {
 
 function library_props() {
     let library_id = guid();
-    let tsocket = new LibraryTacticSocket("main", 5000, {extra_args: library_id});
-    tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, library_id)});
-
-    tsocket.socket.emit('join', {"user_id": window.user_id, "room": library_id});
-    if (!window.in_context) {
-        tsocket.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
-        tsocket.attachListener("doFlash", function(data) {
-            doFlash(data)
-        });
-        tsocket.attachListener('close-user-windows', (data) => {
-            if (!(data["originator"] == library_id)) {
-                window.close()
-            }
-        });
-    }
+    let tsocket = new TacticSocket("main", 5000, library_id);
     return {library_id: library_id, tsocket: tsocket}
-}
-
-class LibraryTacticSocket extends TacticSocket {
-
-    initialize_socket_stuff(reconnect=false) {
-        if (reconnect) {
-            this.socket.emit('join', {"room": this.extra_args.library_id})
-        }
-        this.socket.emit('join', {"user_id": window.user_id, "room": window.user_id});
-
-    }
 }
 
 const res_types = ["collection", "project", "tile", "list", "code"];
 const tab_panes = ["collections-pane", "projects-pane", "tiles-pane", "lists-pane", "code-pane"];
-const controllable_props = ["usable_height", "usable_width"];
+const controllable_props = ["usable_width", "usable_height"];
 
 // noinspection JSUnusedLocalSymbols,JSRemoveUnnecessaryParentheses
 class LibraryHomeApp extends React.Component {
 
     constructor(props, context) {
         super(props, context);
+        doBinding(this);
+
         this.state = {
             selected_tab_id: "collections-pane",
             pane_states: {},
@@ -101,7 +80,7 @@ class LibraryHomeApp extends React.Component {
             }
         }
         this.top_ref = React.createRef();
-        doBinding(this);
+        this.initSocket();
         if (props.registerLibraryTabChanger) {
             props.registerLibraryTabChanger(this._handleTabChange)
         }
@@ -113,6 +92,23 @@ class LibraryHomeApp extends React.Component {
             this.state.dark_theme = props.initial_theme === "dark"
         }
     }
+    initSocket() {
+        let self = this;
+        this.props.tsocket.attachListener('handle-callback', (task_packet)=>{
+            handleCallback(task_packet, self.props.library_id)
+        });
+        if (!window.in_context) {
+            this.props.tsocket.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
+            this.props.tsocket.attachListener("doFlash", function(data) {
+                doFlash(data)
+            });
+            this.props.tsocket.attachListener('close-user-windows', (data) => {
+                if (!(data["originator"] == library_id)) {
+                    window.close()
+                }
+            });
+        }
+    }
 
     componentDidMount() {
         this.setState({"mounted": true});
@@ -120,8 +116,8 @@ class LibraryHomeApp extends React.Component {
         // this.props.setStatusTheme(this.props.dark_theme);
         if (!this.props.controlled) {
             window.dark_theme = this.state.dark_theme;
-            window.addEventListener("resize", this._update_window_dimensions);
-            this._update_window_dimensions();
+            window.addEventListener("resize", this._handleResize);
+            this._handleResize();
         }
     }
 
@@ -156,7 +152,7 @@ class LibraryHomeApp extends React.Component {
     // before updating window dimensions (which seems to be necessary to get
     // the pane to be appropriately sized when it's shown
     _handleTabChange(newTabId, prevTabId, event) {
-        this.setState({selected_tab_id: newTabId}, this._update_window_dimensions)
+        this.setState({selected_tab_id: newTabId})
     }
 
     _goToNextPane() {
@@ -183,6 +179,13 @@ class LibraryHomeApp extends React.Component {
         this.props.tsocket.disconnect();
     }
 
+    _handleResize(entires) {
+        this.setState({
+            usable_width: window.innerWidth - this.top_ref.current.offsetLeft,
+            usable_height: window.innerHeight - this.top_ref.current.offsetTop
+        });
+    }
+
     render () {
         let dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
         let tile_widget = <LoadedTileList/>;
@@ -191,6 +194,7 @@ class LibraryHomeApp extends React.Component {
             for (let prop_name of controllable_props) {
                 lib_props[prop_name] = this.state[prop_name]
             }
+            lib_props.usable_width -= TAB_BAR_WIDTH;
         }
         let collection_pane = (
                         <LibraryPane {...lib_props}
@@ -251,8 +255,9 @@ class LibraryHomeApp extends React.Component {
                                       library_id={this.props.library_id}
             />
         );
-        let outer_style = {width: "100%",
-            height: lib_props.usable_height,
+        let outer_style = {
+            height: this.state.available_height,
+            width: "100%",
             paddingLeft: 0
         };
         let outer_class = "";
@@ -282,41 +287,39 @@ class LibraryHomeApp extends React.Component {
                                   page_id={this.props.library_id}
                                   user_name={window.username}/>
                 }
-
                 <div className={outer_class} ref={this.top_ref} style={outer_style}>
-                    <div style={{width: lib_props.usable_width}}>
-                        <Tabs id="the_container" style={{marginTop: 100, height: "100%"}}
-                                 selectedTabId={this.state.selected_tab_id}
-                                 renderActiveTabPanelOnly={true}
-                                 vertical={true} large={true} onChange={this._handleTabChange}>
-                            <Tab id="collections-pane" panel={collection_pane}>
-                                <Tooltip content="Collections" position={Position.RIGHT} intent="warning">
-                                    <Icon icon="database" iconSize={20} tabIndex={-1} color={this.getIconColor("collections-pane")}/>
-                                </Tooltip>
-                            </Tab>
-                            <Tab id="projects-pane" panel={projects_pane}>
-                                <Tooltip content="Projects" position={Position.RIGHT} intent="warning">
-                                    <Icon icon="projects" iconSize={20} tabIndex={-1} color={this.getIconColor("projects-pane")}/>
-                                </Tooltip>
-                            </Tab>
-                            <Tab id="tiles-pane" panel={tiles_pane}>
-                                <Tooltip content="Tiles" position={Position.RIGHT} intent="warning">
-                                    <Icon icon="application" iconSize={20} tabIndex={-1} color={this.getIconColor("tiles-pane")}/>
-                                </Tooltip>
-                            </Tab>
-                            <Tab id="lists-pane" panel={lists_pane}>
-                                <Tooltip content="Lists" position={Position.RIGHT} intent="warning">
-                                    <Icon icon="list" iconSize={20} tabIndex={-1} color={this.getIconColor("lists-pane")}/>
-                                </Tooltip>
-                            </Tab>
-                            <Tab id="code-pane" panel={code_pane}>
-                                <Tooltip content="Code" position={Position.RIGHT} intent="warning">
-                                    <Icon icon="code" iconSize={20} tabIndex={-1} color={this.getIconColor("code-pane")}/>
-                                </Tooltip>
-                            </Tab>
-                        </Tabs>
-                    </div>
+                    <Tabs id="the_container" style={{marginTop: 100, height: "100%"}}
+                             selectedTabId={this.state.selected_tab_id}
+                             renderActiveTabPanelOnly={true}
+                             vertical={true} large={true} onChange={this._handleTabChange}>
+                        <Tab id="collections-pane" panel={collection_pane}>
+                            <Tooltip content="Collections" position={Position.RIGHT} intent="warning">
+                                <Icon icon="database" iconSize={20} tabIndex={-1} color={this.getIconColor("collections-pane")}/>
+                            </Tooltip>
+                        </Tab>
+                        <Tab id="projects-pane" panel={projects_pane}>
+                            <Tooltip content="Projects" position={Position.RIGHT} intent="warning">
+                                <Icon icon="projects" iconSize={20} tabIndex={-1} color={this.getIconColor("projects-pane")}/>
+                            </Tooltip>
+                        </Tab>
+                        <Tab id="tiles-pane" panel={tiles_pane}>
+                            <Tooltip content="Tiles" position={Position.RIGHT} intent="warning">
+                                <Icon icon="application" iconSize={20} tabIndex={-1} color={this.getIconColor("tiles-pane")}/>
+                            </Tooltip>
+                        </Tab>
+                        <Tab id="lists-pane" panel={lists_pane}>
+                            <Tooltip content="Lists" position={Position.RIGHT} intent="warning">
+                                <Icon icon="list" iconSize={20} tabIndex={-1} color={this.getIconColor("lists-pane")}/>
+                            </Tooltip>
+                        </Tab>
+                        <Tab id="code-pane" panel={code_pane}>
+                            <Tooltip content="Code" position={Position.RIGHT} intent="warning">
+                                <Icon icon="code" iconSize={20} tabIndex={-1} color={this.getIconColor("code-pane")}/>
+                            </Tooltip>
+                        </Tab>
+                    </Tabs>
                 </div>
+
                 {!this.props.controlled &&
                     <KeyTrap global={true} bindings={key_bindings}/>
                 }

@@ -9,7 +9,7 @@ import React from "react";
 import * as ReactDOM from 'react-dom';
 // import PropTypes from 'prop-types';
 
-import { Tab, Tabs, Button, Icon, Divider, Tooltip, Spinner } from "@blueprintjs/core";
+import { Tab, Tabs, Button, Icon, Divider, Spinner } from "@blueprintjs/core";
 
 
 import { FocusStyleManager } from "@blueprintjs/core";
@@ -32,40 +32,23 @@ import {notebook_props, NotebookApp} from "./notebook_app.js";
 import {code_viewer_props, CodeViewerApp} from "./code_viewer_react.js";
 import {list_viewer_props, ListViewerApp} from "./list_viewer_react.js";
 import {withErrorDrawer} from "./error_drawer.js";
-import {getUsableDimensions, SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT} from "./sizing_tools.js";
+import {getUsableDimensions, USUAL_TOOLBAR_HEIGHT} from "./sizing_tools.js";
 import {showConfirmDialogReact} from "./modal_react.js";
 import {postAjaxPromise} from "./communication_react.js";
 import {KeyTrap} from "./key_trap";
 import {TacticContext} from "./tactic_context.js";
-
+import {DragHandle} from "./resizing_layouts.js";
 
 const spinner_panel = (
      <div style={{height: "100%", position: "absolute", top: "50%", left: "50%"}}>
          <Spinner size={100}/>
      </div>);
 
-class ContextTacticSocket extends TacticSocket {
 
-    initialize_socket_stuff(reconnect=false) {
-        let self = this;
-        this.socket.emit('join', {room: window.user_id});
-        this.socket.emit('join', {room: window.context_id});
-    }
-}
 window.context_id = guid();
 window.main_id = window.context_id;
 
-let tsocket = new ContextTacticSocket("main",
-    5000);
-tsocket.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
-tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, window.context_id)});
-tsocket.attachListener('close-user-windows', data => {
-    if (!(data["originator"] === window.context_id)) {
-        window.close()
-    }
-});
-tsocket.attachListener('doflash', doFlash);
-tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, window.context_id)});
+let tsocket = new TacticSocket("main", 5000, window.context_id);
 
 const LibraryHomeAppPlus = withErrorDrawer(withStatus(LibraryHomeApp));
 // const RepositoryHomeAppPlus = withErrorDrawer(withStatus(RepositoryHomeApp));
@@ -89,6 +72,7 @@ class ContextApp extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this);
+        this.initSocket();
         this.socket_counter = null;
         let library_panel_props = library_props();
         // let repository_panel_props = repository_props();
@@ -109,6 +93,7 @@ class ContextApp extends React.Component {
             // selectedRepositoryTab: "collections",
             usable_width: awidth,
             usable_height: aheight,
+            tabWidth: 150,
             show_repository: false,
         };
         this.libraryTabChange = null;
@@ -123,16 +108,36 @@ class ContextApp extends React.Component {
         this.setState({dark_theme}, )
     }
 
+    get_tab_list_elem() {
+        return document.querySelector("#context-container .context-tab-list > .bp3-tab-list");
+    }
+
+    _handleTabResize(e, ui, lastX, lastY, dx, dy) {
+        let tab_elem = this.get_tab_list_elem();
+        tab_elem.setAttribute("style",`width:${lastX}px`);
+    }
+
     _update_window_dimensions(callback=null) {
-        let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
-        let uheight = window.innerHeight;
+        const tab_list_elem = this.get_tab_list_elem();
+
+        let uwidth;
+        let uheight;
+        let tabWidth;
         if (this.top_ref && this.top_ref.current) {
-            uheight = uheight - this.top_ref.current.offsetTop;
+            uheight = window.innerHeight - this.top_ref.current.offsetTop;
         }
         else {
-            uheight = uheight - USUAL_TOOLBAR_HEIGHT
+            uheight = window.innerHeight - USUAL_TOOLBAR_HEIGHT
         }
-        this.setState({usable_height: uheight, usable_width: uwidth}, callback)
+        if (tab_list_elem) {
+            uwidth = window.innerWidth - tab_list_elem.offsetWidth;
+            tabWidth =  tab_list_elem.offsetWidth
+        }
+        else {
+            uwidth = window.innerWidth - 150;
+            tabWidth = 150
+        }
+        this.setState({usable_height: uheight, usable_width: uwidth, tabWidth: tabWidth}, callback)
     }
 
     _registerThemeSetter(setter) {
@@ -155,8 +160,6 @@ class ContextApp extends React.Component {
     }
 
 
-
-
     _changeLibTab(res_type) {
         this.libraryTabChange(res_type + "-pane");
         this.setState({selectedLibraryTab: res_type})
@@ -177,14 +180,17 @@ class ContextApp extends React.Component {
                 e.preventDefault();
                 e.returnValue = 'Are you sure you want to close? All changes will be lost.'
         });
-        this.props.tsocket.attachListener("create-viewer", this._handleCreateViewer);
+        
         this._update_window_dimensions(null);
-    }
+        const tab_list_elem =  document.querySelector("#context-container .context-tab-list > .bp3-tab-list");
+        let self = this;
+        const resizeObserver = new ResizeObserver(entries => {
+          self._update_window_dimensions(null)
+        });
+        if (tab_list_elem) {
+            resizeObserver.observe(tab_list_elem)
+        }
 
-    componentDidUpdate() {
-        // if (this.props.tsocket.counter != this.socket_counter) {
-        //     this.initSocket();
-        // }
     }
 
     initSocket() {
@@ -192,9 +198,16 @@ class ContextApp extends React.Component {
          // If I dont delete I end up with duplicatesSelectList
          // If I just keep the original one then I end up something with a handler linked
          // to an earlier state
+        this.props.tsocket.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
+        this.props.tsocket.attachListener('close-user-windows', data => {
+            if (!(data["originator"] === window.context_id)) {
+                window.close()
+            }
+        });
+        this.props.tsocket.attachListener('doflash', doFlash);
+        this.props.tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, window.context_id)});
+        this.props.tsocket.attachListener("create-viewer", this._handleCreateViewer);
 
-
-         this.socket_counter = this.props.tsocket.counter
      }
 
      _refreshTab(the_id) {
@@ -554,17 +567,7 @@ class ContextApp extends React.Component {
             if (this.state.selectedTabId == tab_id) {
                 bclass += " selected-tab-button"
             }
-            let visible_title;
-            if (tab_entry.title.length > 20) {
-                visible_title = (
-                    <Tooltip content={tab_entry.title} hoverOpenDelay={1000}>
-                        {tab_entry.title.slice(0, 17) + "…"}
-                    </Tooltip>
-                )
-            }
-            else {
-                visible_title = tab_entry.title
-            }
+            let visible_title = tab_entry.title;
             let wrapped_panel;
             if (tab_entry.panel == "spinner") {
                 wrapped_panel = spinner_panel
@@ -650,6 +653,12 @@ class ContextApp extends React.Component {
                                   user_name={window.username}/>
                         <div className={outer_class} style={outer_style} ref={this.top_ref}>
                             <div id="context-container" style={outer_style}>
+                                <DragHandle position_dict={{position: "absolute", left: this.state.tabWidth - 5}}
+                                        onDrag={this._handleTabResize}
+                                        dragStart={null}
+                                        dragEnd={null}
+                                        direction="x"
+                                        useVerticalBar={true}/>
                                 <Tabs id="context-tabs" selectedTabId={this.state.selectedTabId}
                                       className="context-tab-list"
                                       vertical={true}

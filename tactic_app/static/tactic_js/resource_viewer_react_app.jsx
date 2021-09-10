@@ -3,33 +3,21 @@
 import React from "react";
 import PropTypes from 'prop-types';
 
-import { ResizeSensor, Button, Icon } from "@blueprintjs/core";
+import { ResizeSensor} from "@blueprintjs/core";
 
 import {ResourceviewerToolbar} from "./blueprint_toolbar.js";
 import {CombinedMetadata} from "./blueprint_mdata_fields.js";
 import {showModalReact} from "./modal_react.js";
-import {TacticSocket} from "./tactic_socket.js"
 import {HorizontalPanes} from "./resizing_layouts.js";
 import {handleCallback, postAjax} from "./communication_react.js"
 import {doBinding} from "./utilities_react.js";
 import {TopRightButtons} from "./blueprint_react_widgets.js";
 
 import {doFlash, doFlashAlways} from "./toaster.js";
-import {getUsableDimensions} from "./sizing_tools.js"
+import {SIDE_MARGIN} from "./sizing_tools.js"
 import {TacticContext} from "./tactic_context.js";
 
-export {ResourceViewerApp, ResourceViewerSocket, copyToLibrary, sendToRepository}
-
-class ResourceViewerSocket extends TacticSocket {
-    initialize_socket_stuff(reconnect=false) {
-        if (reconnect) {
-            this.socket.emit('join', {"room": this.extra_args.resource_viewer_id})
-        }
-        if (!window.in_context) {
-            this.socket.emit('join', {"room": window.user_id});
-        }
-    }
-}
+export {ResourceViewerApp, copyToLibrary, sendToRepository}
 
 function copyToLibrary(res_type, resource_name) {
     $.getJSON($SCRIPT_ROOT + `get_resource_names/${res_type}`, function(data) {
@@ -65,19 +53,8 @@ class ResourceViewerApp extends React.Component {
 
     constructor(props, context) {
         super(props, context);
-        context.tsocket.socket.emit('join', {"room": props.resource_viewer_id});
-        context.tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, props.resource_viewer_id)});
-        if (!context.controlled) {
-            context.tsocket.attachListener('close-user-windows', (data) => {
-                if (!(data["originator"] == props.resource_viewer_id)) {
-                    window.close()
-                }
-            });
-            context.tsocket.attachListener("doFlash", function (data) {
-                doFlash(data)
-            });
-        }
         doBinding(this);
+        this.initSocket();
         this.top_ref = React.createRef();
         this.savedContent = props.the_content;
         this.savedTags = props.tags;
@@ -90,39 +67,31 @@ class ResourceViewerApp extends React.Component {
                 e.preventDefault()
             }
         });
-        let aheight = getUsableDimensions().usable_height;
-        let awidth = getUsableDimensions().usable_width - 170;
-        this.state = {
-            available_height: aheight,
-            available_width: awidth,
-        };
-        this.state.mounted = false;
+
+        this.state = {mounted: false};
+    }
+
+    initSocket() {
+        let self = this;
+        this.context.tsocket.attachListener('handle-callback', (task_packet)=>{
+            handleCallback(task_packet, self.props.resource_viewer_id)
+        });
+        if (!this.context.controlled) {
+            this.context.tsocket.attachListener('close-user-windows', (data) => {
+                if (!(data["originator"] == self.props.resource_viewer_id)) {
+                    window.close()
+                }
+            });
+            this.context.tsocket.attachListener("doFlash", function (data) {
+                doFlash(data)
+            });
+        }
     }
 
     componentDidMount() {
-        // window.addEventListener("resize", this._update_window_dimensions);
         this.setState({"mounted": true});
         // this._update_window_dimensions();
         this.props.stopSpinner()
-    }
-
-    _handleResize(entries) {
-        if (this.resizing) return;
-        let target;
-        if (window.in_context) {
-            target = "pane-holder"
-        }
-        else {
-            target = "resource-viewer-holder"
-        }
-        for (let entry of entries) {
-            if (entry.target.className.includes(target)) {
-                this.setState({available_width: entry.contentRect.width - this.top_ref.current.offsetLeft - 30,
-                    available_height: entry.contentRect.height - this.top_ref.current.offsetTop
-                });
-                return
-            }
-        }
     }
 
     render() {
@@ -157,9 +126,9 @@ class ResourceViewerApp extends React.Component {
 
         return(
             <ResizeSensor onResize={this._handleResize} observeParents={true}>
-                <div ref={this.top_ref} style={{width: this.state.available_width, height: this.state.available_height}}>
-                   <HorizontalPanes available_width={this.state.available_width}
-                                    available_height={this.state.available_height}
+                <div ref={this.top_ref} style={{width: this.props.usable_width, height: this.props.usable_height}}>
+                   <HorizontalPanes available_width={this.props.usable_width - 2 * SIDE_MARGIN}
+                                    available_height={this.props.usable_height}
                                     left_pane={left_pane}
                                     show_handle={true}
                                     right_pane={right_pane}

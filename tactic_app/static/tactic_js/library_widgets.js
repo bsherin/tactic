@@ -595,13 +595,7 @@ var LoadedTileList = /*#__PURE__*/function (_React$Component5) {
       var self = this;
       this.context.tsocket.attachListener('update-loaded-tile-list', function (data) {
         return self.set_state_from_dict(data.tile_load_dict);
-      }); // this.socket_counter = this.context.tsocket.counter
-    }
-  }, {
-    key: "componentDidUpdate",
-    value: function componentDidUpdate() {// if (this.context.tsocket.counter != this.socket_counter) {
-      //     this.initSocket();
-      // }
+      });
     }
   }, {
     key: "render",

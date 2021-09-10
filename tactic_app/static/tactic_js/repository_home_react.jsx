@@ -32,10 +32,10 @@ let tsocket;
 
 function _repository_home_main () {
     window.library_id = guid();
-    tsocket = new LibraryTacticSocket(
+    tsocket = new TacticSocket(
         "library",
         5000,
-        {library_id: window.library_id}
+        window.library_id
     );
      let RepositoryHomeAppPlus = withErrorDrawer(withStatus(RepositoryHomeApp));
     let domContainer = document.querySelector('#library-home-root');
@@ -47,29 +47,7 @@ function _repository_home_main () {
 }
 
 function repository_props() {
-    if (!window.in_context) {
-        this.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
-        this.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, self.extra_args.library_id)});
-        this.attachListener("doFlash", function(data) {
-            doFlash(data)
-        });
-        this.attachListener('close-user-windows', (data) => {
-            if (!(data["originator"] == window.library_id)) {
-                window.close()
-            }
-        });
-    }
     return {library_id: guid()}
-}
-
-class LibraryTacticSocket extends TacticSocket {
-
-    initialize_socket_stuff(reconnect=false) {
-        if (reconnect) {
-            this.socket.emit('join', {"room": window.library_id});
-        }
-        this.socket.emit('join', {"room": window.user_id});
-    }
 }
 
 var res_types = ["collection", "project", "tile", "list", "code"];
@@ -79,8 +57,6 @@ class RepositoryHomeApp extends React.Component {
 
     constructor(props, context) {
         super(props, context);
-
-        let tsocket = props.controlled ? context.tsocket : props.tsocket;
 
         this.state = {
             selected_tab_id: "collections-pane",
@@ -116,6 +92,24 @@ class RepositoryHomeApp extends React.Component {
             this.state.usable_height = aheight;
             this.state.usable_width = awidth;
             this.state.dark_theme = props.initial_theme === "dark"
+        }
+        this.initSocket();
+    }
+    
+    initSocket() {
+        let self = this;
+        let tsocket = this.props.controlled ? this.context.tsocket : this.props.tsocket;
+        if (!window.in_context) {
+            tsocket.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
+            tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, self.extra_args.library_id)});
+            tsocket.attachListener("doFlash", function(data) {
+                doFlash(data)
+            });
+            tsocket.attachListener('close-user-windows', (data) => {
+                if (!(data["originator"] == window.library_id)) {
+                    window.close()
+                }
+            });
         }
     }
 
