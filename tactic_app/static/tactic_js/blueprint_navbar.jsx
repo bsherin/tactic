@@ -14,10 +14,11 @@ import {TopRightButtons} from "./blueprint_react_widgets";
 
 export {render_navbar, TacticNavbar, get_theme_cookie, set_theme_cookie}
 
-let library_url = window.in_context ? $SCRIPT_ROOT + '/context' : $SCRIPT_ROOT + '/library';
-let repository_url = $SCRIPT_ROOT + '/repository';
-let account_url = $SCRIPT_ROOT + '/account_info';
-let login_url = $SCRIPT_ROOT + "/login";
+const context_url = $SCRIPT_ROOT + '/context';
+const library_url = $SCRIPT_ROOT + '/library';
+const repository_url = $SCRIPT_ROOT + '/repository';
+const account_url = $SCRIPT_ROOT + '/account_info';
+const login_url = $SCRIPT_ROOT + "/login";
 
 const padding = 10;
 
@@ -150,11 +151,18 @@ class TacticNavbar extends React.Component {
 
     _authenticatedItems() {
         return [{
-                    icon: "home",
-                    text: window.in_context ? "Context" : "Library",
+                    icon: "add",
+                    text: "Context",
+                    intent: this.getIntent("library"),
+                    onClick: ()=>{window.open(context_url)}
+                },
+                 {
+                    icon: "add",
+                    text: "Tabbed",
                     intent: this.getIntent("library"),
                     onClick: ()=>{window.open(library_url)}
-                }, {
+                },
+                {
                     icon: "database",
                     text: "Repository",
                     intent: this.getIntent("repository"),

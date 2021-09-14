@@ -14,8 +14,7 @@ import markdownItLatex from 'markdown-it-latex'
 const mdi = markdownIt({html: true});
 mdi.use(markdownItLatex);
 import _ from 'lodash';
-
-
+export {icon_dict};
 import {TacticContext} from "./tactic_context.js"
 import {postAjaxPromise} from "./communication_react.js"
 

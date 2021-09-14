@@ -125,6 +125,11 @@ function main_main() {
 function notebook_props(data, registerDirtyMethod, finalCallback) {
   ppi = (0, _utilities_react.get_ppi)();
   var main_id = data.main_id;
+
+  if (!window.in_context) {
+    window.main_id = main_id;
+  }
+
   var tsocket = new _tactic_socket.TacticSocket("main", 5000, main_id, function (response) {
     tsocket.socket.on("remove-ready-block", readyListener);
     tsocket.socket.emit('client-ready', {
@@ -572,7 +577,8 @@ var NotebookApp = /*#__PURE__*/function (_React$Component) {
           dark_theme: dark_theme,
           setTheme: this.props.controlled ? this.context.setTheme : this._setTheme,
           controlled: this.props.controlled,
-          am_selected: this.props.am_selected
+          am_selected: this.props.am_selected,
+          handleCreateViewer: this.context.handleCreateViewer
         }
       }, /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
         is_authenticated: window.is_authenticated,

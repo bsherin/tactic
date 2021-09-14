@@ -599,7 +599,26 @@ class HostWorker(QWorker):
                            "show_markdown": False}
         data["console_message"] = "consoleLog"
         self.emit_console_message(data)
-        return {"success": True}
+        return {"success": True, "unique_id": unique_id}
+
+    @task_worthy
+    def print_link_area_to_console(self, data):
+        from tactic_app import socketio
+        user_id = data["user_id"]
+        user_obj = load_user(user_id)
+        user_tstring = user_obj.get_timestrings(datetime.datetime.utcnow())[0]
+        unique_id = str(uuid.uuid4())
+        summary_text = "text item " + user_tstring
+        data["message"] = {"unique_id": unique_id,
+                           "type": "text",
+                           "am_shrunk": False,
+                           "search_string": None,
+                           "summary_text": summary_text,
+                           "console_text": "",
+                           "show_markdown": True}
+        data["console_message"] = "createLink"
+        self.emit_console_message(data)
+        return {"success": True, "unique_id": unique_id}
 
     @task_worthy
     def print_code_area_to_console(self, data):

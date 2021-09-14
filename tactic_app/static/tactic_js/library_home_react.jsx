@@ -1,3 +1,5 @@
+// noinspection JSCheckFunctionSignatures
+
 import "../tactic_css/tactic.scss";
 import "../tactic_css/tactic_table.scss";
 import "../tactic_css/library_home.scss";
@@ -6,7 +8,7 @@ import React from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
-import { Tabs, Tab, Tooltip, Icon, Position, ResizeSensor } from "@blueprintjs/core";
+import { Tabs, Tab, Tooltip, Icon, Position } from "@blueprintjs/core";
 import {Regions} from "@blueprintjs/table";
 
 import {showModalReact} from "./modal_react.js";
@@ -26,7 +28,7 @@ import {TacticContext} from "./tactic_context.js";
 
 const TAB_BAR_WIDTH = 50;
 
-export {library_props, LibraryHomeApp}
+export {library_props, LibraryHomeApp, res_types}
 
 function _library_home_main () {
     // window.main_id = library_id;
@@ -199,6 +201,7 @@ class LibraryHomeApp extends React.Component {
         let collection_pane = (
                         <LibraryPane {...lib_props}
                                      res_type="collection"
+                                     open_resources={this.props.open_resources ? this.props.open_resources["collection"] : null}
                                      allow_search_inside={false}
                                      allow_search_metadata={false}
                                      ToolbarClass={CollectionToolbar}
@@ -211,6 +214,7 @@ class LibraryHomeApp extends React.Component {
         );
         let projects_pane = (<LibraryPane {...lib_props}
                                           res_type="project"
+                                          open_resources={this.props.open_resources ? this.props.open_resources["project"] : null}
                                           allow_search_inside={false}
                                           allow_search_metadata={true}
                                           ToolbarClass={ProjectToolbar}
@@ -222,6 +226,7 @@ class LibraryHomeApp extends React.Component {
         );
         let tiles_pane = (<LibraryPane {...lib_props}
                                        res_type="tile"
+                                       open_resources={this.props.open_resources ? this.props.open_resources["tile"] : null}
                                        allow_search_inside={true}
                                        allow_search_metadata={true}
                                        ToolbarClass={TileToolbar}
@@ -235,6 +240,7 @@ class LibraryHomeApp extends React.Component {
         );
         let lists_pane = (<LibraryPane {...lib_props}
                                        res_type="list"
+                                       open_resources={this.props.open_resources ? this.props.open_resources["list"] : null}
                                        allow_search_inside={true}
                                        allow_search_metadata={true}
                                        ToolbarClass={ListToolbar}
@@ -246,6 +252,7 @@ class LibraryHomeApp extends React.Component {
         );
         let code_pane = (<LibraryPane {...lib_props}
                                       res_type="code"
+                                      open_resources={this.props.open_resources ? this.props.open_resources["code"] : null}
                                       allow_search_inside={true}
                                       allow_search_metadata={true}
                                       ToolbarClass={CodeToolbar}
@@ -278,7 +285,8 @@ class LibraryHomeApp extends React.Component {
                 tsocket: this.props.tsocket,
                 dark_theme: dark_theme,
                 setTheme:  this.props.controlled ? this.context.setTheme : this._setTheme,
-                controlled: this.props.controlled
+                controlled: this.props.controlled,
+                handleCreateViewer: this.context.handleCreateViewer
             }}>
                 {!this.props.controlled &&
                     <TacticNavbar is_authenticated={window.is_authenticated}
@@ -327,6 +335,14 @@ class LibraryHomeApp extends React.Component {
         )
     }
 }
+
+LibraryHomeApp.propTypes = {
+    open_resources: PropTypes.object
+};
+
+LibraryHomeApp.defaultProps = {
+    open_resources: null
+};
 
 LibraryHomeApp.contextType = TacticContext;
 
@@ -579,7 +595,14 @@ class CollectionToolbar extends React.Component {
      }
 
      get context_menu_items() {
-        return [ {text: "open", icon: "document-open", onClick: this.props.view_resource},
+        let menu_items = [ {text: "open", icon: "document-open", onClick: this.props.view_resource}];
+        if (window.in_context) {
+            menu_items.push({text: "open in separate tab", icon: "document-open", onClick: (resource_name)=>{
+                this.props.view_resource(resource_name, null, true)
+                }
+            })
+        }
+        menu_items = menu_items.concat([
             {text: "__divider__"},
             {text: "rename", icon: "edit", onClick: this.props.rename_func},
             {text: "duplicate", icon: "duplicate", onClick: this._collection_duplicate},
@@ -587,7 +610,8 @@ class CollectionToolbar extends React.Component {
             {text: "download", icon: "cloud-download", onClick: this._downloadCollection},
             {text: "__divider__"},
             {text: "delete", icon: "trash", onClick: this._collection_delete, intent: "danger"}
-        ]
+        ]);
+        return menu_items
      }
 
      get file_adders() {
@@ -628,7 +652,7 @@ class ProjectToolbar extends React.Component {
         if (window.in_context) {
             const the_view = `${$SCRIPT_ROOT}/new_notebook_in_context`;
             postAjaxPromise(the_view, {resource_name: ""})
-                .then(self.props.handleCreateViewer)
+                .then(self.context.handleCreateViewer)
                 .catch(doFlash);
         }
         else {
@@ -656,13 +680,21 @@ class ProjectToolbar extends React.Component {
     }
 
     get context_menu_items() {
-        return [ {text: "open", icon: "document-open", onClick: this.props.view_resource},
+        let menu_items = [ {text: "open", icon: "document-open", onClick: this.props.view_resource}];
+        if (window.in_context) {
+            menu_items.push({text: "open in separate tab", icon: "document-open", onClick: (resource_name)=>{
+                this.props.view_resource(resource_name, null, true)
+                }
+            })
+        }
+        menu_items = menu_items.concat([
             {text: "__divider__"},
             {text: "rename", icon: "edit", onClick: this.props.rename_func},
             {text: "duplicate", icon: "duplicate", onClick: this._project_duplicate},
             {text: "__divider__"},
             {text: "delete", icon: "trash", onClick: this._project_delete, intent: "danger"}
-        ]
+        ]);
+        return menu_items
      }
 
     get button_groups() {
@@ -699,6 +731,7 @@ class ProjectToolbar extends React.Component {
 }
 
 ProjectToolbar.propTypes = specializedToolbarPropTypes;
+ProjectToolbar.contextType = TacticContext;
 
 class TileToolbar extends React.Component {
     constructor(props) {
@@ -710,12 +743,12 @@ class TileToolbar extends React.Component {
         this.props.view_func("/view_module/")
     }
 
-    _view_named_tile(resource_name) {
-        this.props.view_resource(resource_name, "/view_module/")
+    _view_named_tile(resource_name, in_new_tab=false) {
+        this.props.view_resource(resource_name, "/view_module/", in_new_tab)
     }
 
-    _creator_view_named_tile(resource_name) {
-        this.props.view_resource(resource_name, "/view_in_creator/")
+    _creator_view_named_tile(resource_name, in_new_tab=false) {
+        this.props.view_resource(resource_name, "/view_in_creator/", in_new_tab)
     }
 
     _creator_view() {
@@ -817,8 +850,21 @@ class TileToolbar extends React.Component {
     }
 
     get context_menu_items() {
-        return [ {text: "edit", icon: "edit", onClick: this._view_named_tile},
+        let menu_items = [ {text: "edit", icon: "edit", onClick: this._view_named_tile},
             {text: "edit in creator", icon: "annotation", onClick: this._creator_view_named_tile},
+        ];
+
+        if (window.in_context) {
+            menu_items.push({text: "edit in separate tab", icon: "edit", onClick: (resource_name)=>{
+                this._view_named_tile(resource_name, true)
+                }
+            });
+            menu_items.push({text: "edit in creator in separate tab", icon: "annotation", onClick: (resource_name)=>{
+                this._creator_view_named_tile(resource_name, true)
+                }
+            })
+        }
+        menu_items = menu_items.concat([
             {text: "__divider__"},
             {text: "load", icon: "upload", onClick: this._load_tile},
             {text: "__divider__"},
@@ -826,7 +872,8 @@ class TileToolbar extends React.Component {
             {text: "duplicate", icon: "duplicate", onClick: this._tile_duplicate},
             {text: "__divider__"},
             {text: "delete", icon: "trash", onClick: this._tile_delete, intent: "danger"}
-        ]
+        ]);
+        return menu_items
      }
 
     get button_groups() {
@@ -883,13 +930,21 @@ class ListToolbar extends React.Component {
     }
 
      get context_menu_items() {
-        return [ {text: "edit", icon: "document-open", onClick: this.props.view_resource},
+        let menu_items = [ {text: "edit", icon: "document-open", onClick: this.props.view_resource}];
+        if (window.in_context) {
+            menu_items.push({text: "open in separate tab", icon: "document-open", onClick: (resource_name)=>{
+                this.props.view_resource(resource_name, null, true)
+                }
+            })
+        }
+        menu_items = menu_items.concat([
             {text: "__divider__"},
             {text: "rename", icon: "edit", onClick: this.props.rename_func},
             {text: "duplicate", icon: "duplicate", onClick: this._list_duplicate},
             {text: "__divider__"},
             {text: "delete", icon: "trash", onClick: this._list_delete, intent: "danger"}
-        ]
+        ]);
+        return menu_items
      }
 
     get button_groups() {
@@ -974,13 +1029,21 @@ class CodeToolbar extends React.Component {
     }
 
      get context_menu_items() {
-        return [ {text: "edit", icon: "document-open", onClick: this.props.view_resource},
+        let menu_items = [ {text: "edit", icon: "document-open", onClick: this.props.view_resource}];
+        if (window.in_context) {
+            menu_items.push({text: "open in separate tab", icon: "document-open", onClick: (resource_name)=>{
+                this.props.view_resource(resource_name, null, true)
+                }
+            })
+        }
+        menu_items = menu_items.concat([
             {text: "__divider__"},
             {text: "rename", icon: "edit", onClick: this.props.rename_func},
             {text: "duplicate", icon: "duplicate", onClick: this._code_duplicate},
             {text: "__divider__"},
             {text: "delete", icon: "trash", onClick: this._code_delete, intent: "danger"}
-        ]
+        ]);
+        return menu_items
      }
 
     get button_groups() {

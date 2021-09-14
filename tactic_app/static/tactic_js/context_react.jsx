@@ -38,6 +38,7 @@ import {postAjaxPromise} from "./communication_react.js";
 import {KeyTrap} from "./key_trap";
 import {TacticContext} from "./tactic_context.js";
 import {DragHandle} from "./resizing_layouts.js";
+import {res_types} from "./library_home_react.js";
 
 const spinner_panel = (
      <div style={{height: "100%", position: "absolute", top: "50%", left: "50%"}}>
@@ -531,14 +532,25 @@ class ContextApp extends React.Component {
         if (this.state.selectedTabId == "library") {
             bclass += " selected-tab-button"
         }
+        let open_resources = {};
+        for (let res_type of res_types) {
+            open_resources[res_type] = [];
+        }
+        for (let the_id in this.state.tab_panel_dict) {
+            const entry = this.state.tab_panel_dict[the_id];
+            if (entry.panel != "spinner") {
+                open_resources[entry.res_type].push(entry.panel.resource_name);
+            }
+
+        }
         let library_panel;
         library_panel = (
             <div id="library-home-root">
                 <LibraryHomeAppPlus {...this.state.library_panel_props}
                                     controlled={true}
+                                    open_resources={open_resources}
                                     registerLibraryTabChanger={this._registerLibraryTabChanger}
                                     dark_theme={this.state.dark_theme}  // needed for error drawer
-                                    handleCreateViewer={this._handleCreateViewer}
                                     usable_width={this.state.usable_width}
                                     usable_height={this.state.usable_height}
                     />
@@ -590,7 +602,6 @@ class ContextApp extends React.Component {
                                           }}
                                           goToModule={this._goToModule}
                                           registerLineSetter={(rfunc)=>this._registerLineSetter(tab_id, rfunc)}
-                                          handleCreateViewer={this._handleCreateViewer}
                                           refreshTab={()=>{this._refreshTab(tab_id)}}
                                           closeTab={()=>{this._closeTab(tab_id)}}
                                           tsocket={tab_entry.panel.tsocket}
@@ -645,10 +656,11 @@ class ContextApp extends React.Component {
                         tsocket: this.props.tsocket,
                         dark_theme: this.state.dark_theme,
                         setTheme:  this._setTheme,
+                        handleCreateViewer: this._handleCreateViewer
                     }}>
                     <TacticNavbar is_authenticated={window.is_authenticated}
                                   selected={null}
-                                  show_api_links={true}
+                                  show_api_links={false}
                                   page_id={window.context_id}
                                   user_name={window.username}/>
                         <div className={outer_class} style={outer_style} ref={this.top_ref}>

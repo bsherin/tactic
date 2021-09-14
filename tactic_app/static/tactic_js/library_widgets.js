@@ -409,6 +409,14 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
           the_text = "";
         }
 
+        var tclass;
+
+        if (_this6.props.open_resources && _this6.props.open_resources.includes(_this6.props.data_dict[rowIndex][_this6.props.identifier_field])) {
+          tclass = "open-selector-row";
+        } else {
+          tclass = "";
+        }
+
         return /*#__PURE__*/_react["default"].createElement(_table.Cell, {
           key: column_name,
           interactive: true,
@@ -417,6 +425,7 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
           onKeyDown: _this6.props.keyHandler,
           wrapText: true
         }, /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
+          className: tclass,
           onDoubleClick: function onDoubleClick() {
             return self.props.handleRowDoubleClick(self.props.data_dict[rowIndex]);
           }
@@ -508,6 +517,7 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
 exports.BpSelectorTable = BpSelectorTable;
 BpSelectorTable.propTypes = {
   columns: _propTypes["default"].object,
+  open_resources: _propTypes["default"].array,
   maxColumnWidth: _propTypes["default"].number,
   enableColumnResizing: _propTypes["default"].bool,
   selectedRegions: _propTypes["default"].array,

@@ -1056,7 +1056,8 @@ table caption {
   background-color: #f9f9f9; }
 
 .code-container {
-  padding-bottom: 0; }
+  padding-bottom: 0;
+  overflow: hidden; }
 
 #main-root, .main-root {
   height: 100%; }

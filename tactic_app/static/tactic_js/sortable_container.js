@@ -5,6 +5,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.MySortableElement = MySortableElement;
 exports.SortableComponent = void 0;
 
 var _react = _interopRequireDefault(require("react"));
@@ -18,6 +19,12 @@ var _utilities_react = require("./utilities_react.js");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -39,17 +46,41 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
+function MySortableElement(WrappedComponent) {
+  var SElement = (0, _reactSortableHoc.SortableElement)(WrappedComponent);
+  return /*#__PURE__*/function (_React$PureComponent) {
+    _inherits(_class, _React$PureComponent);
+
+    var _super = _createSuper(_class);
+
+    function _class() {
+      _classCallCheck(this, _class);
+
+      return _super.apply(this, arguments);
+    }
+
+    _createClass(_class, [{
+      key: "render",
+      value: function render() {
+        return /*#__PURE__*/_react["default"].createElement(SElement, this.props);
+      }
+    }]);
+
+    return _class;
+  }(_react["default"].PureComponent);
+}
+
 var RawSortableComponent = /*#__PURE__*/function (_React$Component) {
   _inherits(RawSortableComponent, _React$Component);
 
-  var _super = _createSuper(RawSortableComponent);
+  var _super2 = _createSuper(RawSortableComponent);
 
   function RawSortableComponent(props) {
     var _this;
 
     _classCallCheck(this, RawSortableComponent);
 
-    _this = _super.call(this, props);
+    _this = _super2.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
     _this.state = {
       mounted: false
@@ -76,6 +107,10 @@ var RawSortableComponent = /*#__PURE__*/function (_React$Component) {
       var _this2 = this;
 
       var WrappedComponent = this.props.ElementComponent;
+
+      var props_to_pass = _objectSpread({}, this.props);
+
+      delete props_to_pass.item_list;
       return /*#__PURE__*/_react["default"].createElement("div", {
         id: this.props.id,
         style: this.props.style,
@@ -84,7 +119,7 @@ var RawSortableComponent = /*#__PURE__*/function (_React$Component) {
         return /*#__PURE__*/_react["default"].createElement(WrappedComponent, _extends({
           key: entry[_this2.props.key_field_name],
           index: index
-        }, _this2.props, entry));
+        }, props_to_pass, entry));
       }));
     }
   }]);

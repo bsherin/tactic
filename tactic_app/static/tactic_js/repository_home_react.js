@@ -374,7 +374,8 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
           tsocket: tsocket,
           dark_theme: dark_theme,
           setTheme: this.props.controlled ? this.context.setTheme : this._setTheme,
-          controlled: this.props.controlled
+          controlled: this.props.controlled,
+          handleCreateViewer: this.context.handleCreateViewer
         }
       }, !this.props.controlled && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
         is_authenticated: window.is_authenticated,

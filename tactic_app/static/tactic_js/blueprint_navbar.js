@@ -60,7 +60,8 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
-var library_url = window.in_context ? $SCRIPT_ROOT + '/context' : $SCRIPT_ROOT + '/library';
+var context_url = $SCRIPT_ROOT + '/context';
+var library_url = $SCRIPT_ROOT + '/library';
 var repository_url = $SCRIPT_ROOT + '/repository';
 var account_url = $SCRIPT_ROOT + '/account_info';
 var login_url = $SCRIPT_ROOT + "/login";
@@ -254,8 +255,15 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
     key: "_authenticatedItems",
     value: function _authenticatedItems() {
       return [{
-        icon: "home",
-        text: window.in_context ? "Context" : "Library",
+        icon: "add",
+        text: "Context",
+        intent: this.getIntent("library"),
+        onClick: function onClick() {
+          window.open(context_url);
+        }
+      }, {
+        icon: "add",
+        text: "Tabbed",
         intent: this.getIntent("library"),
         onClick: function onClick() {
           window.open(library_url);

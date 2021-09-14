@@ -465,7 +465,7 @@ class LibraryPane extends React.Component {
             view_view = view_view.replace(re, "_in_context");
             postAjaxPromise($SCRIPT_ROOT + view_view, {context_id: context_id,
                 resource_name: row_dict.name})
-                .then(self.props.handleCreateViewer)
+                .then(self.context.handleCreateViewer)
                 .catch(doFlash);
         }
         else {
@@ -611,7 +611,7 @@ class LibraryPane extends React.Component {
             const re = new RegExp("/$");
             the_view = the_view.replace(re, "_in_context");
             postAjaxPromise($SCRIPT_ROOT + the_view, {context_id: context_id, resource_name: this.props.selected_resource.name})
-                .then(self.props.handleCreateViewer)
+                .then(self.context.handleCreateViewer)
                 .catch(doFlash);
         }
         else if (!this.state.multi_select) {
@@ -619,16 +619,16 @@ class LibraryPane extends React.Component {
         }
     }
 
-    _view_resource(resource_name, the_view=null) {
+    _view_resource(resource_name, the_view=null, force_new_tab=false) {
         const self = this;
         if (the_view == null) {
             the_view = view_views(this.props.is_repository)[this.props.res_type]
         }
-        if (window.in_context) {
+        if (window.in_context && !force_new_tab) {
             const re = new RegExp("/$");
             the_view = the_view.replace(re, "_in_context");
             postAjaxPromise($SCRIPT_ROOT + the_view, {context_id: context_id, resource_name: resource_name})
-                .then(self.props.handleCreateViewer)
+                .then(self.context.handleCreateViewer)
                 .catch(doFlash);
 
 
@@ -769,23 +769,6 @@ class LibraryPane extends React.Component {
 
     _refresh_func(callback=null) {
         this._grabNewChunkWithRow(0, true, null, true, callback)
-    }
-
-    // _handleTopRightPaneResize (top_height, bottom_height, top_fraction) {
-    //     this.setState({"top_pane_height": top_height
-    //     })
-    // }
-
-    _handleResize(entries) {
-        // if (this.resizing) return;
-        // for (let entry of entries) {
-        //     if (entry.target.className.includes("pane-holder")) {
-        //         this.setState({available_width: entry.contentRect.width - this.top_ref.current.offsetLeft - 30,
-        //             available_height: entry.contentRect.height - this.top_ref.current.offsetTop
-        //         });
-        //         return
-        //     }
-        // }
     }
 
     _toggleAuxVisibility() {
@@ -946,6 +929,7 @@ class LibraryPane extends React.Component {
                         {/*<div style={th_style} id={`${this.props.res_type}-table`}>*/}
                         <BpSelectorTable data_dict={this.state.data_dict}
                                          num_rows={this.state.num_rows}
+                                         open_resources={this.props.open_resources}
                                          sortColumn={this._set_sort_state}
                                          selectedRegions={this.props.selectedRegions}
                                          communicateColumnWidthSum={this._communicateColumnWidthSum}
@@ -981,7 +965,7 @@ class LibraryPane extends React.Component {
                                   sendContextMenuItems={this._sendContextMenuItems}
                                   view_resource={this._view_resource}
                                   {...this.props.errorDrawerFuncs}
-                                  handleCreateViewer={this.props.handleCreateViewer}
+                                  handleCreateViewer={this.context.handleCreateViewer}
                                   library_id={this.props.library_id}
                                   />
                       <div style={{width: uwidth, height: this.props.usable_height}}>
@@ -1011,6 +995,7 @@ class LibraryPane extends React.Component {
 
 LibraryPane.propTypes = {
     res_type: PropTypes.string,
+    open_resources: PropTypes.array,
     allow_search_inside: PropTypes.bool,
     allow_search_metadata: PropTypes.bool,
     ToolbarClass: PropTypes.func,

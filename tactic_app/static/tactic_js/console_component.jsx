@@ -6,11 +6,12 @@ import 'codemirror/mode/markdown/markdown.js'
 
 import { Icon, Card, EditableText, Spinner} from "@blueprintjs/core";
 import { Menu, MenuItem, InputGroup, ButtonGroup, Button} from "@blueprintjs/core";
+import _ from 'lodash';
 
 // The next line is an ugly workaround
 // See blueprintjs issue 3891
 import {ContextMenuTarget} from '@blueprintjs/core/lib/esnext/components/context-menu/contextMenuTarget.js';
-import { SortableHandle, SortableElement } from 'react-sortable-hoc';
+import { SortableHandle } from 'react-sortable-hoc';
 import markdownIt from 'markdown-it'
 import 'markdown-it-latex/dist/index.css'
 import markdownItLatex from 'markdown-it-latex'
@@ -21,18 +22,22 @@ mdi.use(markdownItLatex);
 import {GlyphButton} from "./blueprint_react_widgets.js";
 import {ReactCodemirror} from "./react-codemirror.js";
 import {SortableComponent} from "./sortable_container.js";
+import {MySortableElement} from "./sortable_container.js";
 import {KeyTrap} from "./key_trap.js";
-import {postWithCallback} from "./communication_react.js"
+import {postAjaxPromise, postWithCallback} from "./communication_react.js"
 import {doFlash} from "./toaster.js"
 import {doBinding, arrayMove} from "./utilities_react.js";
 import {showConfirmDialogReact, showSelectResourceDialog} from "./modal_react.js";
 import {TacticContext} from "./tactic_context.js"
+import {icon_dict} from "./blueprint_mdata_fields.js";
+import {view_views} from "./library_pane.js";
+
 export {ConsoleComponent}
 
 const MAX_CONSOLE_WIDTH = 1800;
 const BUTTON_CONSUMED_SPACE = 208;
 
- class RawConsoleComponent extends React.Component {
+ class RawConsoleComponent extends React.PureComponent {
      constructor(props, context) {
          super(props, context);
          doBinding(this, "_", RawConsoleComponent.prototype);
@@ -79,6 +84,12 @@ const BUTTON_CONSUMED_SPACE = 208;
              if (data.main_id == self.props.main_id) {
                  let handlerDict = {
                      consoleLog: (data) => self._addConsoleEntry(data.message, data.force_open),
+                     createLink: (data) => {
+                         let unique_id = data.message.unique_id;
+                         self._addConsoleEntry(data.message, data.force_open, null, null, ()=>{
+                             self._insertLinkInItem(unique_id)
+                         })
+                     },
                      stopConsoleSpinner: (data) => self._stopConsoleSpinner(data),
                      consoleCodePrint: (data) => self._appendConsoleItemOutput(data),
                      consoleCodeRun: (data) => self._startSpinner(data),
@@ -105,11 +116,14 @@ const BUTTON_CONSUMED_SPACE = 208;
          }
      }
 
-     _addConsoleText(the_text) {
+     _addConsoleText(the_text, callback=null) {
          postWithCallback("host", "print_text_area_to_console",
              {"console_text": the_text, "user_id": window.user_id, "main_id": this.props.main_id}, function (data) {
                  if (!data.success) {
                      doFlash(data)
+                 }
+                 else if (callback) {
+                     callback()
                  }
              }, null, this.props.main_id);
      }
@@ -154,24 +168,38 @@ const BUTTON_CONSUMED_SPACE = 208;
          }, null, self.props.main_id)
      }
 
+     _addConsoleTextLink(callback=null) {
+         postWithCallback("host", "print_link_area_to_console",
+             {"user_id": window.user_id, "main_id": this.props.main_id}, function (data) {
+                 if (!data.success) {
+                     doFlash(data)
+                 }
+                 else if (callback) {
+                     callback()
+                 }
+             }, null, this.props.main_id);
+     }
+
      _insertResourceLink() {
-         if (!this.state.currently_selected_item) return;
-         let entry = this.get_console_item_entry(this.state.currently_selected_item);
-         if (!entry || entry.type != "text") return;
-         const type_paths = {
-             collection: "main_collection",
-             project: "main_project",
-             tile: "last_saved_view",
-             list: "view_list",
-             code: "view_code"
-         };
-
-         function build_link(type, selected_resource) {
-             return `[\`${selected_resource}\`](${type_paths[type]}/${selected_resource})`
+         if (!this.state.currently_selected_item) {
+             this._addConsoleTextLink();
+             return
          }
+         let entry = this.get_console_item_entry(this.state.currently_selected_item);
+         if (!entry || entry.type != "text") {
+             this._addConsoleTextLink();
+             return;
+         }
+         this._insertLinkInItem(this.state.currently_selected_item);
+     }
 
+     _insertLinkInItem(unique_id) {
+         let self = this;
+         let entry = this.get_console_item_entry(unique_id);
          showSelectResourceDialog("cancel", "insert link", (result) => {
-             this._insertTextInCell(build_link(result.type, result.selected_resource))
+             let new_links = "links" in entry ? [...entry.links] : [];
+             new_links.push({res_type: result.type,res_name: result.selected_resource});
+             self._setConsoleItemValue(entry.unique_id, "links", new_links)
          })
      }
 
@@ -322,7 +350,7 @@ const BUTTON_CONSUMED_SPACE = 208;
      }
 
      replace_console_item_entry(unique_id, new_entry, callback = null) {
-         let new_console_items = [...this.props.console_items];
+         let new_console_items = _.cloneDeep(this.props.console_items);
          let cindex = this._consoleItemIndex(unique_id);
          new_console_items.splice(cindex, 1, new_entry);
          this.props.setMainStateValue("console_items", new_console_items, callback)
@@ -349,7 +377,7 @@ const BUTTON_CONSUMED_SPACE = 208;
      }
 
      get_console_item_entry(unique_id) {
-         return Object.assign({}, this.props.console_items[this._consoleItemIndex(unique_id)])
+         return _.cloneDeep(this.props.console_items[this._consoleItemIndex(unique_id)]);
      }
 
      _selectConsoleItem(unique_id, callback=null) {
@@ -433,7 +461,7 @@ const BUTTON_CONSUMED_SPACE = 208;
 
      }
 
-     _addConsoleEntry(new_entry, force_open = true, set_focus = false, unique_id = null) {
+     _addConsoleEntry(new_entry, force_open = true, set_focus = false, unique_id = null, callback=null) {
          new_entry.set_focus = set_focus;
          let insert_index;
          if (unique_id) {
@@ -445,10 +473,15 @@ const BUTTON_CONSUMED_SPACE = 208;
          }
          let new_console_items = [...this.props.console_items];
          new_console_items.splice(insert_index, 0, new_entry);
-         this.props.setMainStateValue("console_items", new_console_items);
-         if (force_open) {
-             this.props.setMainStateValue("console_is_shrunk", false)
-         }
+         this.props.setMainStateValue("console_items", new_console_items, ()=>{
+             if (force_open) {
+                 this.props.setMainStateValue("console_is_shrunk", false)
+             }
+             if (callback) {
+                 callback()
+             }
+         });
+
      }
 
      _startSpinner(data) {
@@ -863,6 +896,8 @@ const BUTTON_CONSUMED_SPACE = 208;
                                                 pasteCell={this._pasteCell}
                                                 insertResourceLink={this._insertResourceLink}
                                                 useDragHandle={true}
+                                                dark_theme={this.context.dark_theme}
+                                                handleCreateViewer={this.context.handleCreateViewer}
                                                 axis="y"
                              />
                          </React.Fragment>
@@ -901,7 +936,7 @@ RawConsoleComponent.propTypes = {
 
 const ConsoleComponent = ContextMenuTarget(RawConsoleComponent);
 
- class RawSortHandle extends React.Component {
+ class RawSortHandle extends React.PureComponent {
 
     render () {
         return (
@@ -915,7 +950,16 @@ const ConsoleComponent = ContextMenuTarget(RawConsoleComponent);
 
 const Shandle = SortableHandle(RawSortHandle);
 
-class SuperItem extends React.Component {
+class SuperItem extends React.PureComponent {
+    // shouldComponentUpdate(nextProps, nextState) {
+    //     let update_props = all_update_props[this.props.type];
+    //     for (let prop of update_props) {
+    //         if (nextProps[prop] != this.props[prop]) {
+    //             return true
+    //         }
+    //     }
+    //     return false
+    // }
     render() {
         if (this.props.type == "text") {
             return <ConsoleTextItem {...this.props}/>
@@ -928,14 +972,16 @@ class SuperItem extends React.Component {
     }
 }
 
-const SSuperItem = SortableElement(SuperItem);
+const SSuperItem = MySortableElement(SuperItem);
+
+const log_item_update_props = ["is_error", "am_shrunk", "summary_text", "console_text", "console_available_width"];
 
 class RawLogItem extends React.Component {
     constructor(props) {
         super(props);
         this.ce_summary0ref = React.createRef();
         doBinding(this, "_", RawLogItem.prototype);
-        this.update_props = ["is_error", "am_shrunk", "summary_text", "console_text", "console_available_width"];
+        this.update_props = log_item_update_props;
         this.update_state_vars = [];
         this.state = {selected: false};
         this.last_output_text = "";
@@ -1095,6 +1141,8 @@ RawLogItem.propTypes = {
 
 const LogItem = ContextMenuTarget(RawLogItem);
 
+const code_item_update_props = ["am_shrunk", "set_focus", "am_selected", "search_string", "summary_text", "console_text",
+            "show_spinner", "execution_count", "output_text", "console_available_width", "dark_theme"];
 
 class RawConsoleCodeItem extends React.Component {
     constructor(props) {
@@ -1102,8 +1150,7 @@ class RawConsoleCodeItem extends React.Component {
         doBinding(this, "_", RawConsoleCodeItem.prototype);
         this.cmobject = null;
         this.elRef = React.createRef();
-        this.update_props = ["am_shrunk", "set_focus", "am_selected", "search_string", "summary_text", "console_text",
-            "show_spinner", "execution_count", "output_text", "console_available_width", "dark_theme"];
+        this.update_props = code_item_update_props;
         this.update_state_vars = [];
         this.state = {};
         this.last_output_text = ""
@@ -1432,18 +1479,72 @@ RawConsoleCodeItem.propTypes = {
 
 const ConsoleCodeItem = ContextMenuTarget(RawConsoleCodeItem);
 
+class ResourceLinkButton extends React.PureComponent {
+    constructor(props) {
+        super(props);
+        doBinding(this);
+        this.my_view = view_views(false)[props.res_type];
+        if (window.in_context) {
+            const re = new RegExp("/$");
+            this.my_view = this.my_view.replace(re, "_in_context");
+        }
+    }
+
+    _goToLink() {
+        let self = this;
+        if (window.in_context) {
+            postAjaxPromise($SCRIPT_ROOT + this.my_view, {context_id: window.context_id,
+                resource_name: this.props.res_name})
+                .then(self.props.handleCreateViewer)
+                .catch(doFlash);
+        }
+        else {
+            window.open($SCRIPT_ROOT + this.my_view + this.props.res_name)
+        }
+    }
+
+    render() {
+        let self = this;
+        return (
+            <ButtonGroup className="link-button-group">
+                <Button small={true}
+                        text={this.props.res_name}
+                        icon={icon_dict[this.props.res_type]}
+                        minimal={true}
+                        onClick={this._goToLink}/>
+                <Button small={true}
+                        icon="small-cross"
+                        minimal={true}
+                        onClick={(e)=>{
+                            self.props.deleteMe(self.props.my_index);
+                            e.stopPropagation()
+                        }}
+                />
+            </ButtonGroup>
+        )
+    }
+}
+
+ResourceLinkButton.propTypes = {
+    res_type: PropTypes.string,
+    res_name: PropTypes.string,
+    deleteMe: PropTypes.func
+};
+
+const text_item_update_props = ["am_shrunk", "set_focus", "serach_string", "am_selected", "show_markdown",
+            "summary_text", "console_text", "console_available_width", "links"];
+
 class RawConsoleTextItem extends React.Component {
-    constructor(props, context) {
-        super(props, context);
+    constructor(props) {
+        super(props);
         doBinding(this, "_", RawConsoleTextItem.prototype);
         this.cmobject = null;
         this.elRef = React.createRef();
 
         this.ce_summary_ref = React.createRef();
-        this.update_props = ["am_shrunk", "set_focus", "serach_string", "am_selected", "show_markdown",
-            "summary_text", "console_text", "console_available_width"];
+        this.update_props = text_item_update_props;
         this.update_state_vars = ["ce_ref"];
-        this.previous_dark_theme = context.dark_theme;
+        this.previous_dark_theme = props.dark_theme;
         this.state = {ce_ref: null}
     }
 
@@ -1459,8 +1560,8 @@ class RawConsoleTextItem extends React.Component {
                 return true
             }
         }
-        if (this.context.dark_theme != this.previous_dark_theme) {
-            this.previous_dark_theme = this.context.dark_theme;
+        if (this.props.dark_theme != this.previous_dark_theme) {
+            this.previous_dark_theme = this.props.dark_theme;
             return true
         }
         return false
@@ -1524,9 +1625,7 @@ class RawConsoleTextItem extends React.Component {
     }
 
     _showMarkdown() {
-        if (!this.hasOnlyWhitespace) {
-            this.props.setConsoleItemValue(this.props.unique_id, "show_markdown", true);
-        }
+        this.props.setConsoleItemValue(this.props.unique_id, "show_markdown", true);
     }
 
     _toggleMarkdown() {
@@ -1596,6 +1695,25 @@ class RawConsoleTextItem extends React.Component {
         this.props.selectConsoleItem(this.props.unique_id)
     }
 
+    _insertResourceLink() {
+        let self = this;
+         showSelectResourceDialog("cancel", "insert link", (result) => {
+             let new_links = [...self.props.links];
+             new_links.push({res_type: result.type,res_name: result.selected_resource});
+             self.props.setConsoleItemValue(self.props.unique_id, "links", new_links)
+         })
+     }
+
+    _deleteLinkButton(index) {
+        let new_links = _.cloneDeep(this.props.links);
+        new_links.splice(index, 1);
+        let self = this;
+        this.props.setConsoleItemValue(this.props.unique_id, "links", new_links, ()=>{
+            console.log("i am here with nlinks " + String(self.props.links.length))
+        });
+
+    }
+
     renderContextMenu() {
         // return a single element, or nothing to use default browser behavior
         return (
@@ -1606,7 +1724,7 @@ class RawConsoleTextItem extends React.Component {
                           text="Show Markdown" />
                 <Menu.Divider/>
                 <MenuItem icon="link"
-                          onClick={this.props.insertResourceLink}
+                          onClick={this._insertResourceLink}
                           text="Insert ResourceLink" />
                 <MenuItem icon="duplicate"
                           onClick={this._copyMe}
@@ -1643,7 +1761,7 @@ class RawConsoleTextItem extends React.Component {
     }
 
     render () {
-        let really_show_markdown =  this.hasOnlyWhitespace ? false : this.props.show_markdown;
+        let really_show_markdown =  this.hasOnlyWhitespace && this.props.links.length == 0 ? false : this.props.show_markdown;
         var converted_markdown;
         if (really_show_markdown) {
             converted_markdown = mdi.render(this.props.console_text)
@@ -1656,6 +1774,15 @@ class RawConsoleTextItem extends React.Component {
         }
         let gbstyle={marginLeft: 1};
         let body_width = this.props.console_available_width - BUTTON_CONSUMED_SPACE;
+        let self = this;
+        let link_buttons = this.props.links.map((link, index) =>
+            <ResourceLinkButton key={index}
+                                my_index={index}
+                                handleCreateViewer={this.props.handleCreateViewer}
+                                deleteMe={self._deleteLinkButton}
+                                res_type={link.res_type}
+                                res_name={link.res_name}/>
+        );
         return (
             <div className={panel_class + " d-flex flex-row"} onClick={this._consoleItemClick}
                  ref={this.elRef} id={this.props.unique_id} style={{marginBottom: 10}}>
@@ -1683,30 +1810,33 @@ class RawConsoleTextItem extends React.Component {
                                                  tooltip="Convert to/from markdown"
                                                  icon="paragraph"/>
                                 </div>
-                            {!really_show_markdown &&
-                                <React.Fragment>
-                                <ReactCodemirror handleChange={this._handleChange}
-                                                 show_line_numbers={false}
-                                                 soft_wrap={true}
-                                                 sync_to_prop={false}
-                                                 force_sync_to_prop={this.props.force_sync_to_prop}
-                                                 clear_force_sync={this._clearForceSync}
-                                                 mode="markdown"
-                                                 code_content={this.props.console_text}
-                                                 setCMObject={this._setCMObject}
-                                                 extraKeys={this._extraKeys()}
-                                                 search_term={this.props.search_string}
-                                                 code_container_width={this.props.console_available_width - BUTTON_CONSUMED_SPACE}
-                                                 saveMe={null}/>
-                                     {/*<KeyTrap target_ref={this.state.ce_ref} bindings={key_bindings} />*/}
-                                 </React.Fragment>
-                            }
-                            {really_show_markdown &&
-                                <div className="text-panel-output"
-                                     onDoubleClick={this._hideMarkdown}
-                                     style={{width: body_width, padding: 9}}
-                                     dangerouslySetInnerHTML={converted_dict}/>
-                            }
+                            <div className="d-flex flex-column">
+                                {!really_show_markdown &&
+                                    <React.Fragment>
+                                    <ReactCodemirror handleChange={this._handleChange}
+                                                     show_line_numbers={false}
+                                                     soft_wrap={true}
+                                                     sync_to_prop={false}
+                                                     force_sync_to_prop={this.props.force_sync_to_prop}
+                                                     clear_force_sync={this._clearForceSync}
+                                                     mode="markdown"
+                                                     code_content={this.props.console_text}
+                                                     setCMObject={this._setCMObject}
+                                                     extraKeys={this._extraKeys()}
+                                                     search_term={this.props.search_string}
+                                                     code_container_width={this.props.console_available_width - BUTTON_CONSUMED_SPACE}
+                                                     saveMe={null}/>
+                                         {/*<KeyTrap target_ref={this.state.ce_ref} bindings={key_bindings} />*/}
+                                     </React.Fragment>
+                                }
+                                {really_show_markdown && !this.hasOnlyWhitespace &&
+                                    <div className="text-panel-output"
+                                         onDoubleClick={this._hideMarkdown}
+                                         style={{width: body_width, padding: 9}}
+                                         dangerouslySetInnerHTML={converted_dict}/>
+                                }
+                                    {link_buttons}
+                            </div>
 
                             <div className="button-div d-flex flex-row">
                                  <GlyphButton handleClick={this._deleteMe}
@@ -1739,13 +1869,22 @@ RawConsoleTextItem.propTypes = {
     handleDelete: PropTypes.func,
     goToNextCell: PropTypes.func,
     setFocus: PropTypes.func,
+    links: PropTypes.array
 };
 
-RawConsoleTextItem.proptypes = {
+RawConsoleTextItem.defaultProps = {
     force_sync_to_prop: false,
+    links: []
 };
-
-RawConsoleTextItem.contextType = TacticContext;
 
 const ConsoleTextItem = ContextMenuTarget(RawConsoleTextItem);
+
+ const all_update_props = {
+     "text": text_item_update_props,
+     "code": code_item_update_props,
+     "fixed": log_item_update_props
+ };
+
+
+
 
