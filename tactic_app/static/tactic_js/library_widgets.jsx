@@ -273,6 +273,14 @@ class BpSelectorTable extends React.Component {
             else {
                 the_text = ""
             }
+            let tclass;
+            if (this.props.open_resources &&
+                this.props.open_resources.includes(this.props.data_dict[rowIndex][this.props.identifier_field])) {
+                tclass = "open-selector-row";
+            }
+            else {
+                tclass = ""
+            }
             return (
                 <Cell key={column_name}
                           interactive={true}
@@ -281,7 +289,7 @@ class BpSelectorTable extends React.Component {
                           onKeyDown={this.props.keyHandler}
                           wrapText={true}>
                     <React.Fragment>
-                        <div onDoubleClick={()=>self.props.handleRowDoubleClick(self.props.data_dict[rowIndex])}>
+                        <div className={tclass} onDoubleClick={()=>self.props.handleRowDoubleClick(self.props.data_dict[rowIndex])}>
                             <TruncatedFormat>
                                 {the_text}
                             </TruncatedFormat>
@@ -317,8 +325,8 @@ class BpSelectorTable extends React.Component {
                                key={column_name}
                                name={column_name}/>
         });
-        let obj = {cwidths: this.state.columnWidths, nrows: this.props.num_rows}
-        let hsh = hash(obj)
+        let obj = {cwidths: this.state.columnWidths, nrows: this.props.num_rows};
+        let hsh = hash(obj);
 
         return (
             <Table numRows={this.props.num_rows}
@@ -345,6 +353,7 @@ class BpSelectorTable extends React.Component {
 
 BpSelectorTable.propTypes = {
     columns: PropTypes.object,
+    open_resources: PropTypes.array,
     maxColumnWidth: PropTypes.number,
     enableColumnResizing: PropTypes.bool,
     selectedRegions: PropTypes.array,

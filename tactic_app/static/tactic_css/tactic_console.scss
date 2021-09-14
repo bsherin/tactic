@@ -115,6 +115,13 @@ body {
         white-space: nowrap
     }
 
+.bp3-dark {
+    .link-button-group {
+        .bp3-button-text {
+            color: $gray4
+        }
+    }
+}
 .log-panel {
     border: none;
     margin: 1px 4px 1px 8px;
@@ -229,6 +236,18 @@ body {
             //min-height: 110px;
             .convert-markdown-button, .close-log-button, .run-log-button, .clear-code-button, .shrink-log-button {
                 display: inline-block;
+            }
+        }
+
+        .link-button-group {
+            min-height: unset;
+            margin-top: 5px;
+            padding-left: 6px;
+
+            .bp3-button {
+                margin-top: 6px;
+                padding-left: 0;
+                padding-right: 0;
             }
         }
 

@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.library_props = library_props;
-exports.LibraryHomeApp = void 0;
+exports.res_types = exports.LibraryHomeApp = void 0;
 
 require("../tactic_css/tactic.scss");
 
@@ -113,6 +113,7 @@ function library_props() {
 }
 
 var res_types = ["collection", "project", "tile", "list", "code"];
+exports.res_types = res_types;
 var tab_panes = ["collections-pane", "projects-pane", "tiles-pane", "lists-pane", "code-pane"];
 var controllable_props = ["usable_width", "usable_height"]; // noinspection JSUnusedLocalSymbols,JSRemoveUnnecessaryParentheses
 
@@ -347,6 +348,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
 
       var collection_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
         res_type: "collection",
+        open_resources: this.props.open_resources ? this.props.open_resources["collection"] : null,
         allow_search_inside: false,
         allow_search_metadata: false,
         ToolbarClass: CollectionToolbar,
@@ -358,6 +360,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
 
       var projects_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
         res_type: "project",
+        open_resources: this.props.open_resources ? this.props.open_resources["project"] : null,
         allow_search_inside: false,
         allow_search_metadata: true,
         ToolbarClass: ProjectToolbar,
@@ -368,6 +371,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
 
       var tiles_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
         res_type: "tile",
+        open_resources: this.props.open_resources ? this.props.open_resources["tile"] : null,
         allow_search_inside: true,
         allow_search_metadata: true,
         ToolbarClass: TileToolbar,
@@ -380,6 +384,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
 
       var lists_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
         res_type: "list",
+        open_resources: this.props.open_resources ? this.props.open_resources["list"] : null,
         allow_search_inside: true,
         allow_search_metadata: true,
         ToolbarClass: ListToolbar
@@ -391,6 +396,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
 
       var code_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
         res_type: "code",
+        open_resources: this.props.open_resources ? this.props.open_resources["code"] : null,
         allow_search_inside: true,
         allow_search_metadata: true,
         ToolbarClass: CodeToolbar
@@ -424,7 +430,8 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
           tsocket: this.props.tsocket,
           dark_theme: dark_theme,
           setTheme: this.props.controlled ? this.context.setTheme : this._setTheme,
-          controlled: this.props.controlled
+          controlled: this.props.controlled,
+          handleCreateViewer: this.context.handleCreateViewer
         }
       }, !this.props.controlled && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
         is_authenticated: window.is_authenticated,
@@ -518,6 +525,12 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
 }(_react["default"].Component);
 
 exports.LibraryHomeApp = LibraryHomeApp;
+LibraryHomeApp.propTypes = {
+  open_resources: _propTypes["default"].object
+};
+LibraryHomeApp.defaultProps = {
+  open_resources: null
+};
 LibraryHomeApp.contextType = _tactic_context.TacticContext;
 
 var LibraryToolbar = /*#__PURE__*/function (_React$Component2) {
@@ -881,11 +894,25 @@ var CollectionToolbar = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "context_menu_items",
     get: function get() {
-      return [{
+      var _this4 = this;
+
+      var menu_items = [{
         text: "open",
         icon: "document-open",
         onClick: this.props.view_resource
-      }, {
+      }];
+
+      if (window.in_context) {
+        menu_items.push({
+          text: "open in separate tab",
+          icon: "document-open",
+          onClick: function onClick(resource_name) {
+            _this4.props.view_resource(resource_name, null, true);
+          }
+        });
+      }
+
+      menu_items = menu_items.concat([{
         text: "__divider__"
       }, {
         text: "rename",
@@ -908,7 +935,8 @@ var CollectionToolbar = /*#__PURE__*/function (_React$Component3) {
         icon: "trash",
         onClick: this._collection_delete,
         intent: "danger"
-      }];
+      }]);
+      return menu_items;
     }
   }, {
     key: "file_adders",
@@ -944,13 +972,13 @@ var ProjectToolbar = /*#__PURE__*/function (_React$Component4) {
   var _super4 = _createSuper(ProjectToolbar);
 
   function ProjectToolbar(props) {
-    var _this4;
+    var _this5;
 
     _classCallCheck(this, ProjectToolbar);
 
-    _this4 = _super4.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this4));
-    return _this4;
+    _this5 = _super4.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this5));
+    return _this5;
   }
 
   _createClass(ProjectToolbar, [{
@@ -968,7 +996,7 @@ var ProjectToolbar = /*#__PURE__*/function (_React$Component4) {
         var the_view = "".concat($SCRIPT_ROOT, "/new_notebook_in_context");
         (0, _communication_react.postAjaxPromise)(the_view, {
           resource_name: ""
-        }).then(self.props.handleCreateViewer)["catch"](_toaster.doFlash);
+        }).then(self.context.handleCreateViewer)["catch"](_toaster.doFlash);
       } else {
         window.open("".concat($SCRIPT_ROOT, "/new_notebook"));
       }
@@ -998,11 +1026,25 @@ var ProjectToolbar = /*#__PURE__*/function (_React$Component4) {
   }, {
     key: "context_menu_items",
     get: function get() {
-      return [{
+      var _this6 = this;
+
+      var menu_items = [{
         text: "open",
         icon: "document-open",
         onClick: this.props.view_resource
-      }, {
+      }];
+
+      if (window.in_context) {
+        menu_items.push({
+          text: "open in separate tab",
+          icon: "document-open",
+          onClick: function onClick(resource_name) {
+            _this6.props.view_resource(resource_name, null, true);
+          }
+        });
+      }
+
+      menu_items = menu_items.concat([{
         text: "__divider__"
       }, {
         text: "rename",
@@ -1019,7 +1061,8 @@ var ProjectToolbar = /*#__PURE__*/function (_React$Component4) {
         icon: "trash",
         onClick: this._project_delete,
         intent: "danger"
-      }];
+      }]);
+      return menu_items;
     }
   }, {
     key: "button_groups",
@@ -1050,6 +1093,7 @@ var ProjectToolbar = /*#__PURE__*/function (_React$Component4) {
 }(_react["default"].Component);
 
 ProjectToolbar.propTypes = specializedToolbarPropTypes;
+ProjectToolbar.contextType = _tactic_context.TacticContext;
 
 var TileToolbar = /*#__PURE__*/function (_React$Component5) {
   _inherits(TileToolbar, _React$Component5);
@@ -1057,13 +1101,13 @@ var TileToolbar = /*#__PURE__*/function (_React$Component5) {
   var _super5 = _createSuper(TileToolbar);
 
   function TileToolbar(props) {
-    var _this5;
+    var _this7;
 
     _classCallCheck(this, TileToolbar);
 
-    _this5 = _super5.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this5));
-    return _this5;
+    _this7 = _super5.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this7));
+    return _this7;
   }
 
   _createClass(TileToolbar, [{
@@ -1074,12 +1118,14 @@ var TileToolbar = /*#__PURE__*/function (_React$Component5) {
   }, {
     key: "_view_named_tile",
     value: function _view_named_tile(resource_name) {
-      this.props.view_resource(resource_name, "/view_module/");
+      var in_new_tab = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+      this.props.view_resource(resource_name, "/view_module/", in_new_tab);
     }
   }, {
     key: "_creator_view_named_tile",
     value: function _creator_view_named_tile(resource_name) {
-      this.props.view_resource(resource_name, "/view_in_creator/");
+      var in_new_tab = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+      this.props.view_resource(resource_name, "/view_in_creator/", in_new_tab);
     }
   }, {
     key: "_creator_view",
@@ -1193,20 +1239,22 @@ var TileToolbar = /*#__PURE__*/function (_React$Component5) {
   }, {
     key: "popup_buttons",
     get: function get() {
-      var _this6 = this;
+      var _this8 = this;
 
       return [["tile", "new-text-box", [["StandardTile", function () {
-        _this6._new_in_creator("BasicTileTemplate");
+        _this8._new_in_creator("BasicTileTemplate");
       }, "code"], ["MatplotlibTile", function () {
-        _this6._new_in_creator("MatplotlibTileTemplate");
+        _this8._new_in_creator("MatplotlibTileTemplate");
       }, "timeline-line-chart"], ["D3Tile", function () {
-        _this6._new_in_creator("D3TileTemplate");
+        _this8._new_in_creator("D3TileTemplate");
       }, "timeline-area-chart"]]]];
     }
   }, {
     key: "context_menu_items",
     get: function get() {
-      return [{
+      var _this9 = this;
+
+      var menu_items = [{
         text: "edit",
         icon: "edit",
         onClick: this._view_named_tile
@@ -1214,7 +1262,26 @@ var TileToolbar = /*#__PURE__*/function (_React$Component5) {
         text: "edit in creator",
         icon: "annotation",
         onClick: this._creator_view_named_tile
-      }, {
+      }];
+
+      if (window.in_context) {
+        menu_items.push({
+          text: "edit in separate tab",
+          icon: "edit",
+          onClick: function onClick(resource_name) {
+            _this9._view_named_tile(resource_name, true);
+          }
+        });
+        menu_items.push({
+          text: "edit in creator in separate tab",
+          icon: "annotation",
+          onClick: function onClick(resource_name) {
+            _this9._creator_view_named_tile(resource_name, true);
+          }
+        });
+      }
+
+      menu_items = menu_items.concat([{
         text: "__divider__"
       }, {
         text: "load",
@@ -1237,7 +1304,8 @@ var TileToolbar = /*#__PURE__*/function (_React$Component5) {
         icon: "trash",
         onClick: this._tile_delete,
         intent: "danger"
-      }];
+      }]);
+      return menu_items;
     }
   }, {
     key: "button_groups",
@@ -1272,13 +1340,13 @@ var ListToolbar = /*#__PURE__*/function (_React$Component6) {
   var _super6 = _createSuper(ListToolbar);
 
   function ListToolbar(props) {
-    var _this7;
+    var _this10;
 
     _classCallCheck(this, ListToolbar);
 
-    _this7 = _super6.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this7));
-    return _this7;
+    _this10 = _super6.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this10));
+    return _this10;
   }
 
   _createClass(ListToolbar, [{
@@ -1304,11 +1372,25 @@ var ListToolbar = /*#__PURE__*/function (_React$Component6) {
   }, {
     key: "context_menu_items",
     get: function get() {
-      return [{
+      var _this11 = this;
+
+      var menu_items = [{
         text: "edit",
         icon: "document-open",
         onClick: this.props.view_resource
-      }, {
+      }];
+
+      if (window.in_context) {
+        menu_items.push({
+          text: "open in separate tab",
+          icon: "document-open",
+          onClick: function onClick(resource_name) {
+            _this11.props.view_resource(resource_name, null, true);
+          }
+        });
+      }
+
+      menu_items = menu_items.concat([{
         text: "__divider__"
       }, {
         text: "rename",
@@ -1325,7 +1407,8 @@ var ListToolbar = /*#__PURE__*/function (_React$Component6) {
         icon: "trash",
         onClick: this._list_delete,
         intent: "danger"
-      }];
+      }]);
+      return menu_items;
     }
   }, {
     key: "button_groups",
@@ -1366,13 +1449,13 @@ var CodeToolbar = /*#__PURE__*/function (_React$Component7) {
   var _super7 = _createSuper(CodeToolbar);
 
   function CodeToolbar(props) {
-    var _this8;
+    var _this12;
 
     _classCallCheck(this, CodeToolbar);
 
-    _this8 = _super7.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this8));
-    return _this8;
+    _this12 = _super7.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this12));
+    return _this12;
   }
 
   _createClass(CodeToolbar, [{
@@ -1414,20 +1497,34 @@ var CodeToolbar = /*#__PURE__*/function (_React$Component7) {
   }, {
     key: "popup_buttons",
     get: function get() {
-      var _this9 = this;
+      var _this13 = this;
 
       return [["code", "new-text-box", [["BasicCodeTemplate", function () {
-        _this9._new_code("BasicCodeTemplate");
+        _this13._new_code("BasicCodeTemplate");
       }, "code"]]]];
     }
   }, {
     key: "context_menu_items",
     get: function get() {
-      return [{
+      var _this14 = this;
+
+      var menu_items = [{
         text: "edit",
         icon: "document-open",
         onClick: this.props.view_resource
-      }, {
+      }];
+
+      if (window.in_context) {
+        menu_items.push({
+          text: "open in separate tab",
+          icon: "document-open",
+          onClick: function onClick(resource_name) {
+            _this14.props.view_resource(resource_name, null, true);
+          }
+        });
+      }
+
+      menu_items = menu_items.concat([{
         text: "__divider__"
       }, {
         text: "rename",
@@ -1444,7 +1541,8 @@ var CodeToolbar = /*#__PURE__*/function (_React$Component7) {
         icon: "trash",
         onClick: this._code_delete,
         intent: "danger"
-      }];
+      }]);
+      return menu_items;
     }
   }, {
     key: "button_groups",

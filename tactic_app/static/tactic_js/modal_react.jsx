@@ -9,7 +9,7 @@ import {BpSelect} from "./blueprint_mdata_fields.js"
 import {doBinding} from "./utilities_react.js";
 import {postWithCallback} from "./communication_react.js";
 
-export {showModalReact, showConfirmDialogReact, showSelectDialog,
+export {showModalReact, showConfirmDialogReact, showSelectDialog, SelectResourceDialog,
     showSelectResourceDialog, showInformDialogReact}
 
 class ModalDialog extends React.Component {
@@ -337,10 +337,19 @@ function showSelectResourceDialog(cancel_text, submit_text, submit_function, dar
     function handle_close () {
         ReactDOM.unmountComponentAtNode(domContainer)
     }
-    ReactDOM.render(<SelectResourceDialog handleSubmit={submit_function}
+    let the_elem = <SelectResourceDialog handleSubmit={submit_function}
                                           handleClose={handle_close}
                                           submit_text={submit_text}
-                                          cancel_text={cancel_text}/>, domContainer);
+                                          cancel_text={cancel_text}/>;
+    ReactDOM.render(the_elem, domContainer);
+    // ReactDOM.render(<ConfirmDialog handleSubmit={null}
+    //                                handleCancel={null}
+    //                              handleClose={handle_close}
+    //                              title="blah"
+    //                              text_body="blip"
+    //                              submit_text="mob"
+    //                              cancel_text="mob2"/>, domContainer);
+
 }
 
 class ConfirmDialog extends React.Component {

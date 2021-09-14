@@ -915,7 +915,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     value: function get_new_tc_height() {
       if (this.state.mounted) {
         // This will be true after the initial render
-        return this._cProp("usable_height") * top_fraction - 35;
+        return this._cProp("usable_height") * this.state.top_pane_fraction - 35;
       } else {
         return this._cProp("usable_height") - 50;
       }

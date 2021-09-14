@@ -5,7 +5,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.BpSelectAdvanced = exports.BpSelect = exports.CombinedMetadata = exports.NotesField = void 0;
+exports.BpSelectAdvanced = exports.BpSelect = exports.CombinedMetadata = exports.NotesField = exports.icon_dict = void 0;
 
 require("../tactic_css/tactic_select.scss");
 
@@ -78,6 +78,7 @@ var icon_dict = {
   list: "list",
   code: "code"
 };
+exports.icon_dict = icon_dict;
 
 var BpSelectAdvanced = /*#__PURE__*/function (_React$Component) {
   _inherits(BpSelectAdvanced, _React$Component);

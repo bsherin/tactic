@@ -243,7 +243,8 @@ class RepositoryHomeApp extends React.Component {
                 tsocket: tsocket,
                 dark_theme: dark_theme,
                 setTheme:  this.props.controlled ? this.context.setTheme : this._setTheme,
-                controlled: this.props.controlled
+                controlled: this.props.controlled,
+                handleCreateViewer: this.context.handleCreateViewer
             }}>
                 {!this.props.controlled &&
                     <TacticNavbar is_authenticated={window.is_authenticated}

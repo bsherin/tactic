@@ -104,7 +104,8 @@ class LoginApp extends React.Component {
                     dark_theme: this.state.dark_theme,
                     setTheme:  this._setTheme,
                     controlled: this.props.controlled,
-                    am_selected: this.props.am_selected
+                    am_selected: this.props.am_selected,
+
                 }}>
                     <TacticNavbar is_authenticated={window.is_authenticated}
                                   selected={null}

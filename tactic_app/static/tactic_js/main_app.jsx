@@ -69,6 +69,9 @@ function main_props(data, registerDirtyMethod, finalCallback) {
 
     ppi = get_ppi();
     let main_id = data.main_id;
+    if (!window.in_context) {
+        window.main_id = main_id;
+    }
     let initial_tile_types;
 
     var tsocket = new TacticSocket("main", 5000, main_id, function(response) {
@@ -368,7 +371,7 @@ class MainApp extends React.Component {
             this.props.tsocket.attachListener("notebook-open", function(data) {
                 const the_view = `${$SCRIPT_ROOT}/new_notebook_in_context`;
                 postAjaxPromise(the_view, {temp_data_id: data.temp_data_id, resource_name: ""})
-                    .then(self.props.handleCreateViewer)
+                    .then(self.context.handleCreateViewer)
                     .catch(doFlash);
             })
         }
@@ -1180,7 +1183,8 @@ class MainApp extends React.Component {
                     dark_theme: dark_theme,
                     setTheme:  this.props.controlled ? this.context.setTheme : this._setTheme,
                     controlled: this.props.controlled,
-                    am_selected: this.props.am_selected
+                    am_selected: this.props.am_selected,
+                    handleCreateViewer: this.context.handleCreateViewer
                 }}>
                     <TacticNavbar is_authenticated={window.is_authenticated}
                                   user_name={window.username}

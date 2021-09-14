@@ -39,11 +39,12 @@ def on_join(data):
     room = data["room"]
     join_room(room)
     print("user joined room " + room)
-    if data["return_tile_types"]:
+    if "return_tile_types" in data and data["return_tile_types"]:
         tile_types = tactic_app.host_worker.get_tile_types({"user_id": data["user_id"]})
         return tile_types
     else:
         return True
+
 
 @socketio.on('join-main', namespace='/main')
 def on_join_main(data):

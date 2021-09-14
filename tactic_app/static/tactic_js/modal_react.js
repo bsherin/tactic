@@ -10,6 +10,7 @@ exports.showConfirmDialogReact = showConfirmDialogReact;
 exports.showSelectDialog = showSelectDialog;
 exports.showSelectResourceDialog = showSelectResourceDialog;
 exports.showInformDialogReact = showInformDialogReact;
+exports.SelectResourceDialog = void 0;
 
 var _react = _interopRequireDefault(require("react"));
 
@@ -518,6 +519,7 @@ var SelectResourceDialog = /*#__PURE__*/function (_React$Component3) {
   return SelectResourceDialog;
 }(_react["default"].Component);
 
+exports.SelectResourceDialog = SelectResourceDialog;
 SelectResourceDialog.propTypes = {
   handleSubmit: _propTypes["default"].func,
   handleClose: _propTypes["default"].func,
@@ -534,12 +536,20 @@ function showSelectResourceDialog(cancel_text, submit_text, submit_function) {
     ReactDOM.unmountComponentAtNode(domContainer);
   }
 
-  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(SelectResourceDialog, {
+  var the_elem = /*#__PURE__*/_react["default"].createElement(SelectResourceDialog, {
     handleSubmit: submit_function,
     handleClose: handle_close,
     submit_text: submit_text,
     cancel_text: cancel_text
-  }), domContainer);
+  });
+
+  ReactDOM.render(the_elem, domContainer); // ReactDOM.render(<ConfirmDialog handleSubmit={null}
+  //                                handleCancel={null}
+  //                              handleClose={handle_close}
+  //                              title="blah"
+  //                              text_body="blip"
+  //                              submit_text="mob"
+  //                              cancel_text="mob2"/>, domContainer);
 }
 
 var ConfirmDialog = /*#__PURE__*/function (_React$Component4) {

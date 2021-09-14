@@ -64,6 +64,9 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
 
     ppi = get_ppi();
     let main_id = data.main_id;
+    if (!window.in_context) {
+        window.main_id = main_id;
+    }
 
     var tsocket = new TacticSocket("main", 5000, main_id, function(response) {
         tsocket.socket.on("remove-ready-block", readyListener);
@@ -402,7 +405,8 @@ class NotebookApp extends React.Component {
                     dark_theme: dark_theme,
                     setTheme:  this.props.controlled ? this.context.setTheme : this._setTheme,
                     controlled: this.props.controlled,
-                    am_selected: this.props.am_selected
+                    am_selected: this.props.am_selected,
+                    handleCreateViewer: this.context.handleCreateViewer
                 }}>
                     <TacticNavbar is_authenticated={window.is_authenticated}
                                   user_name={window.username}

@@ -711,7 +711,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         (0, _communication_react.postAjaxPromise)($SCRIPT_ROOT + view_view, {
           context_id: context_id,
           resource_name: row_dict.name
-        }).then(self.props.handleCreateViewer)["catch"](_toaster.doFlash);
+        }).then(self.context.handleCreateViewer)["catch"](_toaster.doFlash);
       } else {
         window.open($SCRIPT_ROOT + view_view + row_dict.name);
       }
@@ -908,7 +908,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         (0, _communication_react.postAjaxPromise)($SCRIPT_ROOT + the_view, {
           context_id: context_id,
           resource_name: this.props.selected_resource.name
-        }).then(self.props.handleCreateViewer)["catch"](_toaster.doFlash);
+        }).then(self.context.handleCreateViewer)["catch"](_toaster.doFlash);
       } else if (!this.state.multi_select) {
         window.open($SCRIPT_ROOT + the_view + this.props.selected_resource.name);
       }
@@ -917,19 +917,20 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "_view_resource",
     value: function _view_resource(resource_name) {
       var the_view = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      var force_new_tab = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
       var self = this;
 
       if (the_view == null) {
         the_view = view_views(this.props.is_repository)[this.props.res_type];
       }
 
-      if (window.in_context) {
+      if (window.in_context && !force_new_tab) {
         var re = new RegExp("/$");
         the_view = the_view.replace(re, "_in_context");
         (0, _communication_react.postAjaxPromise)($SCRIPT_ROOT + the_view, {
           context_id: context_id,
           resource_name: resource_name
-        }).then(self.props.handleCreateViewer)["catch"](_toaster.doFlash);
+        }).then(self.context.handleCreateViewer)["catch"](_toaster.doFlash);
       } else {
         window.open($SCRIPT_ROOT + the_view + resource_name);
       }
@@ -1095,22 +1096,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
       this._grabNewChunkWithRow(0, true, null, true, callback);
-    } // _handleTopRightPaneResize (top_height, bottom_height, top_fraction) {
-    //     this.setState({"top_pane_height": top_height
-    //     })
-    // }
-
-  }, {
-    key: "_handleResize",
-    value: function _handleResize(entries) {// if (this.resizing) return;
-      // for (let entry of entries) {
-      //     if (entry.target.className.includes("pane-holder")) {
-      //         this.setState({available_width: entry.contentRect.width - this.top_ref.current.offsetLeft - 30,
-      //             available_height: entry.contentRect.height - this.top_ref.current.offsetTop
-      //         });
-      //         return
-      //     }
-      // }
     }
   }, {
     key: "_toggleAuxVisibility",
@@ -1304,6 +1289,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       }), /*#__PURE__*/_react["default"].createElement(_library_widgets.BpSelectorTable, {
         data_dict: this.state.data_dict,
         num_rows: this.state.num_rows,
+        open_resources: this.props.open_resources,
         sortColumn: this._set_sort_state,
         selectedRegions: this.props.selectedRegions,
         communicateColumnWidthSum: this._communicateColumnWidthSum,
@@ -1337,7 +1323,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         sendContextMenuItems: this._sendContextMenuItems,
         view_resource: this._view_resource
       }, this.props.errorDrawerFuncs, {
-        handleCreateViewer: this.props.handleCreateViewer,
+        handleCreateViewer: this.context.handleCreateViewer,
         library_id: this.props.library_id
       })), /*#__PURE__*/_react["default"].createElement("div", {
         style: {
@@ -1374,6 +1360,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
 exports.LibraryPane = LibraryPane;
 LibraryPane.propTypes = {
   res_type: _propTypes["default"].string,
+  open_resources: _propTypes["default"].array,
   allow_search_inside: _propTypes["default"].bool,
   allow_search_metadata: _propTypes["default"].bool,
   ToolbarClass: _propTypes["default"].func,
