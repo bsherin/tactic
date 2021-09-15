@@ -3,7 +3,7 @@
 //
 
 $log-panel-border-style: 1px solid #c7c7c7;
-$log-panel-font-color: #616161;
+
 
 $button-notclose-opacity: .9;
 $button-notclose-hover-opacity: .3;
@@ -320,7 +320,6 @@ body {
 
 .log-panel-body {
     padding: 0;
-    color: $log-panel-font-color !important;
 
     .bp3-input:focus {
         outline: none;

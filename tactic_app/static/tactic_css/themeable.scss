@@ -6,6 +6,8 @@ $table-border-thickness: 1px;
 $table-border-style: $table-border-thickness solid $table-border-color;
 $dark-table-border-style: $table-border-thickness none;
 
+$log-panel-font-color: #616161;
+$log-panel-font-color-dark: white;
 
 .light-theme {
     &.resource-viewer-holder, &.merge-viewer-outer &.login-body {
@@ -122,6 +124,10 @@ $dark-table-border-style: $table-border-thickness none;
         color: #6c757d;
     }
 
+    .log-panel-body {
+        color: $log-panel-font-color !important;
+    }
+
     .log-panel {
 
         .CodeMirror {
@@ -198,6 +204,10 @@ $dark-table-border-style: $table-border-thickness none;
                 font-weight: 900
             }
         }
+    }
+
+    .log-panel-body {
+        color: $log-panel-font-color-dark !important;
     }
 
     &.main-outer {
