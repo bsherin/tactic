@@ -951,6 +951,8 @@ pre code {
   color: #5c7080; }
 .light-theme .export-header-text {
   color: #6c757d; }
+.light-theme .log-panel-body {
+  color: #616161 !important; }
 .light-theme .log-panel .CodeMirror {
   border: 1px solid #c7c7c7 !important; }
 .light-theme .log-panel .CodeMirror-lines {
@@ -990,6 +992,8 @@ pre code {
   background-color: #30404d;
   color: #48aff0 !important;
   font-weight: 900; }
+.bp3-dark .log-panel-body {
+  color: white !important; }
 .bp3-dark.main-outer {
   background-color: #5c7080; }
 .bp3-dark #main-panel .main-heading {
