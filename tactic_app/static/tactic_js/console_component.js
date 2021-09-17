@@ -41,8 +41,6 @@ var _utilities_react = require("./utilities_react.js");
 
 var _modal_react = require("./modal_react.js");
 
-var _tactic_context = require("./tactic_context.js");
-
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields.js");
 
 var _library_pane = require("./library_pane.js");
@@ -187,7 +185,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       // That requires storing it outside of this component since the console can be unmounted
 
 
-      this.context.tsocket.attachListener("console-message", _handleConsoleMessage);
+      this.props.tsocket.attachListener("console-message", _handleConsoleMessage);
     }
   }, {
     key: "_createTextEntry",
@@ -1359,7 +1357,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
         ElementComponent: SSuperItem,
         key_field_name: "unique_id",
         item_list: filtered_items,
-        helperClass: this.context.dark_theme ? "bp3-dark" : "light-theme",
+        helperClass: this.props.dark_theme ? "bp3-dark" : "light-theme",
         handle: ".console-sorter",
         onSortStart: function onSortStart(_, event) {
           return event.preventDefault();
@@ -1380,8 +1378,8 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
         pasteCell: this._pasteCell,
         insertResourceLink: this._insertResourceLink,
         useDragHandle: true,
-        dark_theme: this.context.dark_theme,
-        handleCreateViewer: this.context.handleCreateViewer,
+        dark_theme: this.props.dark_theme,
+        handleCreateViewer: this.props.handleCreateViewer,
         axis: "y"
       })), /*#__PURE__*/_react["default"].createElement("div", {
         id: "padding-div",
@@ -1390,7 +1388,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
         }
       })), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
         global: true,
-        active: !this.context.controlled || this.context.am_selected,
+        active: !this.props.controlled || this.props.am_selected,
         bindings: key_bindings
       }));
     }
@@ -1415,7 +1413,6 @@ RawConsoleComponent.defaultProps = {
   shrinkable: true,
   zoomable: true
 };
-RawConsoleComponent.contextType = _tactic_context.TacticContext;
 var ConsoleComponent = (0, _contextMenuTarget.ContextMenuTarget)(RawConsoleComponent);
 exports.ConsoleComponent = ConsoleComponent;
 
@@ -2110,6 +2107,8 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component2) {
         icon: "stop"
       })), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
         handleChange: this._handleChange,
+        dark_theme: this.props.dark_theme,
+        readOnly: false,
         show_line_numbers: true,
         code_content: this.props.console_text,
         setCMObject: this._setCMObject,
@@ -2633,6 +2632,8 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component3) {
         className: "d-flex flex-column"
       }, !really_show_markdown && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
         handleChange: this._handleChange,
+        dark_theme: this.props.dark_theme,
+        readOnly: false,
         show_line_numbers: false,
         soft_wrap: true,
         sync_to_prop: false,

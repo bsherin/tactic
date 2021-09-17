@@ -16,7 +16,6 @@ import {withStatus} from "./toaster.js";
 
 import {doBinding, guid} from "./utilities_react.js";
 import {TacticNavbar} from "./blueprint_navbar";
-import {TacticContext} from "./tactic_context.js";
 import {TacticSocket} from "./tactic_socket.js";
 
 function history_viewer_main ()  {
@@ -140,25 +139,20 @@ class HistoryViewerApp extends React.Component {
 
     render() {
         let option_list = this.state.history_list.map((item) => item["updatestring"]);
-        let dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
+        let dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme;
         return (
-            <React.Fragment>
-                <TacticContext.Provider value={{
-                    readOnly: this.props.readOnly,
-                    tsocket: this.props.tsocket,
-                    dark_theme: dark_theme,
-                    setTheme:  this.props.controlled ? this.context.setTheme : this._setTheme,
-                    controlled: this.props.controlled,
-                    am_selected: this.props.am_selected
-                }}>
+                <React.Fragment>
                     {!this.props.controlled} {
                         <TacticNavbar is_authenticated={window.is_authenticated}
+                                      dark_theme={dark_theme}
+                                    setTheme={this.props.controlled ? this.props.setTheme : this._setTheme}
                                       selected={null}
                                       show_api_links={true}
                                       page_id={this.props.resource_viewer_id}
                                       user_name={window.username}/>
                     }
                     <MergeViewerApp {...this.props.statusFuncs}
+                                    dark_theme={dark_theme}
                                     resource_viewer_id={this.props.resource_viewer_id}
                                     resource_name={this.props.resource_name}
                                     option_list={option_list}
@@ -167,10 +161,8 @@ class HistoryViewerApp extends React.Component {
                                     right_content={this.state.right_content}
                                     handleSelectChange={this.handleSelectChange}
                                     handleEditChange={this.handleEditChange}
-                                    dark_theme={this.state.dark_theme}
                                     saveHandler={this.checkpointThenSaveFromLeft}
                 />
-                </TacticContext.Provider>
             </React.Fragment>
         )
     }
@@ -225,8 +217,6 @@ HistoryViewerApp.propTypes = {
     history_list: PropTypes.array,
     edit_content: PropTypes.string,
 };
-
-HistoryViewerApp.contextType = TacticContext;
 
 if (!window.in_context) {
     history_viewer_main();

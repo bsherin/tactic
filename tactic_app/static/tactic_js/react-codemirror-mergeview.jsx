@@ -25,7 +25,6 @@ import 'codemirror/theme/material.css'
 import 'codemirror/theme/nord.css'
 import 'codemirror/theme/oceanic-next.css'
 import 'codemirror/theme/pastel-on-dark.css'
-import {TacticContext} from "./tactic_context.js";
 
 
 export {ReactCodemirrorMergeView}
@@ -50,7 +49,7 @@ class ReactCodemirrorMergeView extends React.Component {
             highlightSelectionMatches: true,
             autoCloseBrackets: true,
             indentUnit: 4,
-            theme: this.context.dark_theme ? DARK_THEME : "default",
+            theme: this.props.dark_theme ? DARK_THEME : "default",
             origRight: this.props.right_content
         });
 
@@ -83,8 +82,8 @@ class ReactCodemirrorMergeView extends React.Component {
     }
 
     componentDidUpdate() {
-        if (this.context.dark_theme != this.saved_theme) {
-            if (this.context.dark_theme) {
+        if (this.props.dark_theme != this.saved_theme) {
+            if (this.props.dark_theme) {
                 this.cmobject.editor().setOption("theme", DARK_THEME);
                 this.cmobject.rightOriginal().setOption("theme", DARK_THEME)
             }
@@ -92,7 +91,7 @@ class ReactCodemirrorMergeView extends React.Component {
                 this.cmobject.editor().setOption("theme", "default");
                 this.cmobject.rightOriginal().setOption("theme", "default")
             }
-            this.saved_theme = this.context.dark_theme
+            this.saved_theme = this.props.dark_theme
         }
         if (this.cmobject.editor().getValue() != this.props.editor_content) {
             this.cmobject.editor().setValue(this.props.editor_content)
@@ -106,7 +105,7 @@ class ReactCodemirrorMergeView extends React.Component {
         this.resizeHeights(this.props.max_height);
         this.refreshAreas();
         this.create_keymap();
-        this.saved_theme = this.context.dark_theme
+        this.saved_theme = this.props.dark_theme
     }
 
     handleChange(cm, changeObject) {
@@ -201,5 +200,3 @@ ReactCodemirrorMergeView.propTypes = {
     dark_theme: PropTypes.bool,
     saveMe: PropTypes.func,
 };
-
-ReactCodemirrorMergeView.contextType = TacticContext;

@@ -36,8 +36,6 @@ var _toaster = require("./toaster.js");
 
 var _communication_react = require("./communication_react.js");
 
-var _tactic_context = require("./tactic_context.js");
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
@@ -75,7 +73,7 @@ var intent_colors = {
   regular: "#5c7080"
 };
 
-function ResourceviewerToolbar(props, context) {
+function ResourceviewerToolbar(props) {
   var tstyle = {
     "marginTop": 20,
     "paddingRight": 20,
@@ -97,12 +95,12 @@ function ResourceviewerToolbar(props, context) {
     res_type: props.res_type,
     large: false
   }), /*#__PURE__*/_react["default"].createElement("div", null, /*#__PURE__*/_react["default"].createElement(Toolbar, {
-    button_groups: props.button_groups // controlled={props.controlled}
-    // am_selected={props.am_selected}
-    ,
-    alternate_outer_style: toolbar_outer_style // tsocket={context.tsocket}
-    // dark_theme={context.dark_theme}
-
+    button_groups: props.button_groups,
+    controlled: props.controlled,
+    am_selected: props.am_selected,
+    alternate_outer_style: toolbar_outer_style,
+    tsocket: props.tsocket,
+    dark_theme: props.dark_theme
   })), props.show_search && /*#__PURE__*/_react["default"].createElement(_library_widgets.SearchForm, {
     update_search_state: props.update_search_state,
     search_string: props.search_string
@@ -264,7 +262,7 @@ var FileAdderButton = /*#__PURE__*/function (_React$Component3) {
   _createClass(FileAdderButton, [{
     key: "_showDialog",
     value: function _showDialog() {
-      (0, _import_dialog.showFileImportDialog)(this.props.resource_type, this.props.allowed_file_types, this.props.checkboxes, this.props.process_handler, this.context.tsocket, this.context.dark_theme, this.props.combine, this.props.show_csv_options);
+      (0, _import_dialog.showFileImportDialog)(this.props.resource_type, this.props.allowed_file_types, this.props.checkboxes, this.props.process_handler, this.props.tsocket, this.props.dark_theme, this.props.combine, this.props.show_csv_options);
     }
   }, {
     key: "render",
@@ -291,14 +289,13 @@ FileAdderButton.propTypes = {
   checkboxes: _propTypes["default"].array,
   combine: _propTypes["default"].bool,
   tooltip: _propTypes["default"].string,
-  show_csv_options: _propTypes["default"].bool // tsocket: PropTypes.object,
-  // dark_theme: PropTypes.bool,
-
+  show_csv_options: _propTypes["default"].bool,
+  tsocket: _propTypes["default"].object,
+  dark_theme: _propTypes["default"].bool
 };
 FileAdderButton.defaultProps = {
   multiple: false
 };
-FileAdderButton.contextType = _tactic_context.TacticContext;
 
 var Toolbar = /*#__PURE__*/function (_React$Component4) {
   _inherits(Toolbar, _React$Component4);
@@ -456,8 +453,8 @@ var Toolbar = /*#__PURE__*/function (_React$Component4) {
             tooltip: _this5.getTooltip(button),
             tooltipDelay: _this5.getTooltipDelay(button),
             show_csv_options: button.show_csv_options,
-            tsocket: _this5.context.tsocket,
-            dark_theme: _this5.context.dark_theme,
+            tsocket: _this5.props.tsocket,
+            dark_theme: _this5.props.dark_theme,
             key: index
           });
         });
@@ -491,7 +488,7 @@ var Toolbar = /*#__PURE__*/function (_React$Component4) {
         ref: this.tb_ref
       }, items), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
         global: true,
-        active: !this.context.controlled || this.context.am_selected,
+        active: !this.props.controlled || this.props.am_selected,
         bindings: key_bindings
       }));
     }
@@ -519,7 +516,6 @@ Toolbar.defaultProps = {
   sendRef: null,
   tsocket: null
 };
-Toolbar.contextType = _tactic_context.TacticContext;
 
 var Namebutton = /*#__PURE__*/function (_React$Component5) {
   _inherits(Namebutton, _React$Component5);

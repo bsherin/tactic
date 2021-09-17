@@ -33,8 +33,6 @@ var _toaster = require("./toaster.js");
 
 var _utilities_react = require("./utilities_react.js");
 
-var _tactic_context = require("./tactic_context.js");
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
@@ -126,9 +124,9 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "initSocket",
     value: function initSocket() {
-      this.context.tsocket.attachListener("tile-message", this._handleTileMessage);
-      this.context.tsocket.attachListener("tile-finished-loading", this._handleTileFinishedLoading);
-      this.context.tsocket.attachListener('tile-source-change', this._handleTileSourceChange);
+      this.props.tsocket.attachListener("tile-message", this._handleTileMessage);
+      this.props.tsocket.attachListener("tile-finished-loading", this._handleTileFinishedLoading);
+      this.props.tsocket.attachListener('tile-source-change', this._handleTileSourceChange);
     }
   }, {
     key: "_resortTilesOld",
@@ -346,7 +344,7 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
         id: "tile-div",
         main_id: this.props.main_id,
         style: outer_style,
-        helperClass: this.context.dark_theme ? "bp3-dark" : "light-theme",
+        helperClass: this.props.dark_theme ? "bp3-dark" : "light-theme",
         container_ref: this.props.tile_div_ref,
         ElementComponent: STileComponent,
         key_field_name: "tile_name",
@@ -384,7 +382,6 @@ TileContainer.propTypes = {
   broadcast_event: _propTypes["default"].func,
   selected_row: _propTypes["default"].number
 };
-TileContainer.contextType = _tactic_context.TacticContext;
 
 var RawSortHandle = /*#__PURE__*/function (_React$Component2) {
   _inherits(RawSortHandle, _React$Component2);

@@ -27,7 +27,6 @@ import {doFlash} from "./toaster.js"
 import {withStatus} from "./toaster.js";
 import {withErrorDrawer} from "./error_drawer.js";
 import {doBinding, get_ppi, renderSpinnerMessage} from "./utilities_react.js";
-import {TacticContext} from "./tactic_context.js";
 import {getUsableDimensions} from "./sizing_tools.js";
 
 export {main_props, MainApp}
@@ -371,7 +370,7 @@ class MainApp extends React.Component {
             this.props.tsocket.attachListener("notebook-open", function(data) {
                 const the_view = `${$SCRIPT_ROOT}/new_notebook_in_context`;
                 postAjaxPromise(the_view, {temp_data_id: data.temp_data_id, resource_name: ""})
-                    .then(self.context.handleCreateViewer)
+                    .then(self.props.handleCreateViewer)
                     .catch(doFlash);
             })
         }
@@ -895,7 +894,7 @@ class MainApp extends React.Component {
     }
 
     render() {
-        let dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
+        let dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme;
         let vp_height;
         let hp_height;
         let console_available_height;
@@ -1063,6 +1062,8 @@ class MainApp extends React.Component {
         let tile_container_height = this.state.console_is_shrunk ? table_available_height - MARGIN_ADJUSTMENT : table_available_height;
         let tile_pane = (
             <TileContainer  main_id={this.props.main_id}
+                            tsocket={this.props.tsocket}
+                            dark_theme={this.props.dark_theme}
                             height={tile_container_height}
                            tile_div_ref={this.tile_div_ref}
                            tile_list={_.cloneDeep(this.state.tile_list)}
@@ -1077,6 +1078,7 @@ class MainApp extends React.Component {
         let exports_pane;
         if (this.state.show_exports_pane) {
             exports_pane = <ExportsViewer main_id={this.props.main_id}
+                                          tsocket={this.props.tsocket}
                                           setUpdate={(ufunc)=>{this.updateExportsList = ufunc}}
                                           setMainStateValue={this._setMainStateValue}
                                           available_height={console_available_height}
@@ -1091,6 +1093,11 @@ class MainApp extends React.Component {
         if (this.state.show_console_pane) {
             console_pane = (
                 <ConsoleComponent main_id={this.props.main_id}
+                                  tsocket={this.props.tsocket}
+                                  dark_theme={dark_theme}
+                                  handleCreateViewer={this.props.handleCreateViewer}
+                                  controlled={this.props.controlled}
+                                  am_selected={this.props.am_selected}
                                   console_items={this.state.console_items}
                                   console_is_shrunk={this.state.console_is_shrunk}
                                   console_is_zoomed={this.state.console_is_zoomed}
@@ -1177,48 +1184,39 @@ class MainApp extends React.Component {
         };
         return (
             <React.Fragment>
-                <TacticContext.Provider value={{
-                    readOnly: this.props.readOnly,
-                    tsocket: this.props.tsocket,
-                    dark_theme: dark_theme,
-                    setTheme:  this.props.controlled ? this.context.setTheme : this._setTheme,
-                    controlled: this.props.controlled,
-                    am_selected: this.props.am_selected,
-                    handleCreateViewer: this.context.handleCreateViewer
-                }}>
-                    <TacticNavbar is_authenticated={window.is_authenticated}
-                                  user_name={window.username}
-                                  menus={menus}
-                                  page_id={this.props.main_id}
-                                  min_navbar={window.in_context}
-                                  refreshTab={this.props.refreshTab}
-                                  closeTab={this.props.closeTab}
-                    />
-                    <div className={outer_class} ref={this.main_outer_ref} style={outer_style}>
-                        {this.state.console_is_zoomed &&
-                            bottom_pane
-                        }
-                        {!this.state.console_is_zoomed && this.state.console_is_shrunk &&
-                            top_pane
-                        }
-                        {!this.state.console_is_zoomed && !this.state.console_is_shrunk &&
-                            <VerticalPanes top_pane={top_pane}
-                                           bottom_pane={bottom_pane}
-                                           show_handle={true}
-                                           available_width={true_usable_width}
-                                           available_height={vp_height}
-                                           initial_height_fraction={this.state.height_fraction}
-                                           dragIconSize={15}
-                                           scrollAdjustSelectors={[".bp3-table-quadrant-scroll-container", "#tile-div"]}
-                                           handleSplitUpdate={this._handleVerticalSplitUpdate}
-                                           handleResizeStart={this._handleResizeStart}
-                                           handleResizeEnd={this._handleResizeEnd}
-                                           overflow="hidden"
-                            />
-                        }
-                    </div>
-                </TacticContext.Provider>
-
+                <TacticNavbar is_authenticated={window.is_authenticated}
+                              dark_theme={dark_theme}
+                              setTheme={this.props.controlled ? this.props.setTheme : this._setTheme}
+                              user_name={window.username}
+                              menus={menus}
+                              page_id={this.props.main_id}
+                              min_navbar={window.in_context}
+                              refreshTab={this.props.refreshTab}
+                              closeTab={this.props.closeTab}
+                />
+                <div className={outer_class} ref={this.main_outer_ref} style={outer_style}>
+                    {this.state.console_is_zoomed &&
+                        bottom_pane
+                    }
+                    {!this.state.console_is_zoomed && this.state.console_is_shrunk &&
+                        top_pane
+                    }
+                    {!this.state.console_is_zoomed && !this.state.console_is_shrunk &&
+                        <VerticalPanes top_pane={top_pane}
+                                       bottom_pane={bottom_pane}
+                                       show_handle={true}
+                                       available_width={true_usable_width}
+                                       available_height={vp_height}
+                                       initial_height_fraction={this.state.height_fraction}
+                                       dragIconSize={15}
+                                       scrollAdjustSelectors={[".bp3-table-quadrant-scroll-container", "#tile-div"]}
+                                       handleSplitUpdate={this._handleVerticalSplitUpdate}
+                                       handleResizeStart={this._handleResizeStart}
+                                       handleResizeEnd={this._handleResizeEnd}
+                                       overflow="hidden"
+                        />
+                    }
+                </div>
             </React.Fragment>
         )
     }
@@ -1252,8 +1250,6 @@ MainApp.defaultProps = {
     closeTab: null,
     updatePanel: null
 };
-
-MainApp.contextType = TacticContext;
 
 if (!window.in_context) {
     main_main();

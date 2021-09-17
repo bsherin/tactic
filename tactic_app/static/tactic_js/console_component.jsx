@@ -28,7 +28,6 @@ import {postAjaxPromise, postWithCallback} from "./communication_react.js"
 import {doFlash} from "./toaster.js"
 import {doBinding, arrayMove} from "./utilities_react.js";
 import {showConfirmDialogReact, showSelectResourceDialog} from "./modal_react.js";
-import {TacticContext} from "./tactic_context.js"
 import {icon_dict} from "./blueprint_mdata_fields.js";
 import {view_views} from "./library_pane.js";
 
@@ -102,7 +101,7 @@ const BUTTON_CONSUMED_SPACE = 208;
          // We have to careful to get the very same instance of the listerner function
          // That requires storing it outside of this component since the console can be unmounted
 
-         this.context.tsocket.attachListener("console-message", _handleConsoleMessage);
+         this.props.tsocket.attachListener("console-message", _handleConsoleMessage);
      }
 
      _createTextEntry(unique_id, summary_text) {
@@ -878,7 +877,7 @@ const BUTTON_CONSUMED_SPACE = 208;
                                                 ElementComponent={SSuperItem}
                                                 key_field_name="unique_id"
                                                 item_list={filtered_items}
-                                                helperClass={this.context.dark_theme ? "bp3-dark" : "light-theme"}
+                                                helperClass={this.props.dark_theme ? "bp3-dark" : "light-theme"}
                                                 handle=".console-sorter"
                                                 onSortStart={(_, event) => event.preventDefault()} // This prevents Safari weirdness
                                                 onSortEnd={this._resortConsoleItems}
@@ -896,8 +895,8 @@ const BUTTON_CONSUMED_SPACE = 208;
                                                 pasteCell={this._pasteCell}
                                                 insertResourceLink={this._insertResourceLink}
                                                 useDragHandle={true}
-                                                dark_theme={this.context.dark_theme}
-                                                handleCreateViewer={this.context.handleCreateViewer}
+                                                dark_theme={this.props.dark_theme}
+                                                handleCreateViewer={this.props.handleCreateViewer}
                                                 axis="y"
                              />
                          </React.Fragment>
@@ -906,7 +905,7 @@ const BUTTON_CONSUMED_SPACE = 208;
                      </div>
                  }
                  <KeyTrap global={true}
-                          active={!this.context.controlled || this.context.am_selected}
+                          active={!this.props.controlled || this.props.am_selected}
                           bindings={key_bindings}/>
              </Card>
          );
@@ -931,8 +930,6 @@ RawConsoleComponent.propTypes = {
      shrinkable: true,
      zoomable: true,
  };
-
- RawConsoleComponent.contextType = TacticContext;
 
 const ConsoleComponent = ContextMenuTarget(RawConsoleComponent);
 
@@ -1416,6 +1413,8 @@ class RawConsoleCodeItem extends React.Component {
                                             }
                                         </div>
                                         <ReactCodemirror handleChange={this._handleChange}
+                                                         dark_theme={this.props.dark_theme}
+                                                         readOnly={false}
                                                          show_line_numbers={true}
                                                          code_content={this.props.console_text}
                                                          setCMObject={this._setCMObject}
@@ -1814,6 +1813,8 @@ class RawConsoleTextItem extends React.Component {
                                 {!really_show_markdown &&
                                     <React.Fragment>
                                     <ReactCodemirror handleChange={this._handleChange}
+                                                     dark_theme={this.props.dark_theme}
+                                                     readOnly={false}
                                                      show_line_numbers={false}
                                                      soft_wrap={true}
                                                      sync_to_prop={false}

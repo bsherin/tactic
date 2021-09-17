@@ -33,8 +33,6 @@ var _toaster = require("./toaster.js");
 
 var _sizing_tools = require("./sizing_tools.js");
 
-var _tactic_context = require("./tactic_context.js");
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -92,12 +90,12 @@ var ResourceViewerApp = /*#__PURE__*/function (_React$Component) {
 
   var _super = _createSuper(ResourceViewerApp);
 
-  function ResourceViewerApp(props, context) {
+  function ResourceViewerApp(props) {
     var _this;
 
     _classCallCheck(this, ResourceViewerApp);
 
-    _this = _super.call(this, props, context);
+    _this = _super.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
 
     _this.initSocket();
@@ -112,7 +110,7 @@ var ResourceViewerApp = /*#__PURE__*/function (_React$Component) {
     _this.mousetrap = new Mousetrap();
 
     _this.mousetrap.bind(['command+s', 'ctrl+s'], function (e) {
-      if (self.context.am_selected) {
+      if (self.props.am_selected) {
         self.props.saveMe();
         e.preventDefault();
       }
@@ -128,17 +126,17 @@ var ResourceViewerApp = /*#__PURE__*/function (_React$Component) {
     key: "initSocket",
     value: function initSocket() {
       var self = this;
-      this.context.tsocket.attachListener('handle-callback', function (task_packet) {
+      this.props.tsocket.attachListener('handle-callback', function (task_packet) {
         (0, _communication_react.handleCallback)(task_packet, self.props.resource_viewer_id);
       });
 
-      if (!this.context.controlled) {
-        this.context.tsocket.attachListener('close-user-windows', function (data) {
+      if (!this.props.controlled) {
+        this.props.tsocket.attachListener('close-user-windows', function (data) {
           if (!(data["originator"] == self.props.resource_viewer_id)) {
             window.close();
           }
         });
-        this.context.tsocket.attachListener("doFlash", function (data) {
+        this.props.tsocket.attachListener("doFlash", function (data) {
           (0, _toaster.doFlash)(data);
         });
       }
@@ -162,7 +160,11 @@ var ResourceViewerApp = /*#__PURE__*/function (_React$Component) {
         show_search: this.props.show_search,
         search_string: this.props.search_string,
         update_search_state: this.props.update_search_state,
-        res_type: this.props.res_type
+        res_type: this.props.res_type,
+        controlled: this.props.controlled,
+        am_selected: this.props.am_selected,
+        tsocket: this.props.tsocket,
+        dark_theme: this.props.dark_theme
       }), this.props.children); //let available_height = this.get_new_hp_height(this.hp_ref);
 
 
@@ -180,6 +182,7 @@ var ResourceViewerApp = /*#__PURE__*/function (_React$Component) {
         },
         created: this.props.created,
         notes: this.props.notes,
+        readOnly: this.props.readOnly,
         handleChange: this.props.handleStateChange,
         res_type: this.props.res_type
       }));
@@ -232,4 +235,3 @@ ResourceViewerApp.defaultProps = {
   refreshTab: null,
   closeTab: null
 };
-ResourceViewerApp.contextType = _tactic_context.TacticContext;

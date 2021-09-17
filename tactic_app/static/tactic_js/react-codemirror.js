@@ -13,8 +13,6 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 
 var _communication_react = require("./communication_react.js");
 
-var _tactic_context = require("./tactic_context.js");
-
 var _codemirror = _interopRequireDefault(require("codemirror/lib/codemirror.js"));
 
 require("codemirror/mode/python/python.js");
@@ -117,9 +115,9 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
         highlightSelectionMatches: true,
         autoCloseBrackets: true,
         indentUnit: 4,
-        theme: this.context.dark_theme ? DARK_THEME : "default",
+        theme: this.props.dark_theme ? DARK_THEME : "default",
         mode: this.props.mode,
-        readOnly: this.context.readOnly
+        readOnly: this.props.readOnly
       });
 
       if (first_line_number != 1) {
@@ -164,21 +162,21 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
         this.props.setCMObject(this.cmobject);
       }
 
-      this.saved_theme = this.context.dark_theme;
+      this.saved_theme = this.props.dark_theme;
 
       this._doHighlight(this.props.search_term);
     }
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate() {
-      if (this.context.dark_theme != this.saved_theme) {
-        if (this.context.dark_theme) {
+      if (this.props.dark_theme != this.saved_theme) {
+        if (this.props.dark_theme) {
           this.cmobject.setOption("theme", DARK_THEME);
         } else {
           this.cmobject.setOption("theme", "default");
         }
 
-        this.saved_theme = this.context.dark_theme;
+        this.saved_theme = this.props.dark_theme;
       }
 
       if (this.props.sync_to_prop || this.props.force_sync_to_prop) {
@@ -403,4 +401,3 @@ ReactCodemirror.defaultProps = {
   code_container_ref: null,
   code_container_width: "100%"
 };
-ReactCodemirror.contextType = _tactic_context.TacticContext;

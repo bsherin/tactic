@@ -26,7 +26,6 @@ import {withErrorDrawer} from "./error_drawer.js";
 import {doBinding, renderSpinnerMessage} from "./utilities_react.js"
 import {TacticNavbar} from "./blueprint_navbar";
 import {SearchForm} from "./library_widgets";
-import {TacticContext} from "./tactic_context.js";
 import {TopRightButtons} from "./blueprint_react_widgets";
 
 export {creator_props, CreatorApp}
@@ -178,6 +177,10 @@ function TileCreatorToolbar(props) {
             <div>
                 <Toolbar button_groups={props.button_groups}
                          alternate_outer_style={toolbar_outer_style}
+                         dark_theme={props.dark_theme}
+                          controlled={props.controlled}
+                          am_selected={props.am_selected}
+                          tsocket={props.tsocket}
                 />
             </div>
             <SearchForm update_search_state={props.update_search_state}
@@ -411,6 +414,9 @@ class CreatorApp extends React.Component {
 
     _saveMe() {
         let self = this;
+        if (!self.props.am_selected) {
+            return false
+        }
         this.props.startSpinner();
         this.props.statusMessage("Saving Module");
         this.doSavePromise()
@@ -745,6 +751,8 @@ class CreatorApp extends React.Component {
                                      search_term={this.state.search_string}
                                      first_line_number={first_line_number}
                                      code_container_height={tc_height}
+                                     dark_theme={dark_theme}
+                                     readOnly={this.props.read_only}
                     />
                 </div>
              );
@@ -768,6 +776,8 @@ class CreatorApp extends React.Component {
                                  search_term={this.state.search_string}
                                  first_line_number={this.state.render_content_line_number + 1}
                                  code_container_height={rc_height}
+                                 dark_theme={dark_theme}
+                                 readOnly={this.props.read_only}
                 />
             </div>
          );
@@ -777,6 +787,8 @@ class CreatorApp extends React.Component {
                 <React.Fragment>
                     <TileCreatorToolbar controlled={this.props.controlled}
                                         am_selected={this.props.am_selected}
+                                        tsocket={this.props.tsocket}
+                                        dark_theme={this.props.dark_theme}
                                         resource_name={my_props.resource_name}
                                         setResourceNameState={this._setResourceNameState}
                                         res_type="tile"
@@ -817,11 +829,12 @@ class CreatorApp extends React.Component {
         }
 
         let mdata_panel = (<CombinedMetadata tags={this.state.tags}
-                                                  notes={this.state.notes}
-                                                  created={my_props.created}
-                                                  category={this.state.category}
-                                                  res_type="tile"
-                                                  handleChange={this.handleStateChange}
+                                             readOnly={this.props.readOnly}
+                                              notes={this.state.notes}
+                                              created={my_props.created}
+                                              category={this.state.category}
+                                              res_type="tile"
+                                              handleChange={this.handleStateChange}
                                                 />);
         let option_panel = (
             <OptionModule options_ref={this.options_ref}
@@ -842,6 +855,8 @@ class CreatorApp extends React.Component {
         let methods_panel = (
             <div style={{marginTop: 30}}>
                 <ReactCodemirror handleChange={this.handleMethodsChange}
+                                 dark_theme={dark_theme}
+                                 readOnly={this.props.readOnly}
                                  code_content={this.state.extra_functions}
                                  saveMe={this._saveAndCheckpoint}
                                  setCMObject={this._setEmObject}
@@ -893,36 +908,29 @@ class CreatorApp extends React.Component {
 
         return (
             <React.Fragment>
-                <TacticContext.Provider value={{
-                    readOnly: this.props.readOnly,
-                    tsocket: this.props.tsocket,
-                    dark_theme: dark_theme,
-                    setTheme:  this.props.controlled ? this.context.setTheme : this._setTheme,
-                    controlled: this.props.controlled,
-                    am_selected: this.props.am_selected
-                }}>
-                    {!window.in_context &&
-                        <TacticNavbar is_authenticated={window.is_authenticated}
-                                      selected={null}
-                                      show_api_links={true}
-                                      page_id={this.props.module_viewer_id}
-                                      user_name={window.username}/>
-                    }
-                    {window.in_context &&
-                        <TopRightButtons refreshTab={this.props.refreshTab} closeTab={this.props.closeTab}/>
-                    }
-                    <ResizeSensor onResize={this._handleResize} observeParents={true}>
-                        <div className={outer_class} ref={this.top_ref} style={outer_style}>
-                            <HorizontalPanes left_pane={left_pane}
-                                             right_pane={right_pane}
-                                             show_handle={true}
-                                             available_height={uheight}
-                                             available_width={uwidth}
-                                             handleSplitUpdate={this.handleLeftPaneResize}
-                            />
-                        </div>
-                    </ResizeSensor>
-                </TacticContext.Provider>
+                {!window.in_context &&
+                    <TacticNavbar is_authenticated={window.is_authenticated}
+                                  dark_theme={dark_theme}
+                                  setTheme={this.props.controlled ? this.props.setTheme : this._setTheme}
+                                  selected={null}
+                                  show_api_links={true}
+                                  page_id={this.props.module_viewer_id}
+                                  user_name={window.username}/>
+                }
+                {window.in_context &&
+                    <TopRightButtons refreshTab={this.props.refreshTab} closeTab={this.props.closeTab}/>
+                }
+                <ResizeSensor onResize={this._handleResize} observeParents={true}>
+                    <div className={outer_class} ref={this.top_ref} style={outer_style}>
+                        <HorizontalPanes left_pane={left_pane}
+                                         right_pane={right_pane}
+                                         show_handle={true}
+                                         available_height={uheight}
+                                         available_width={uwidth}
+                                         handleSplitUpdate={this.handleLeftPaneResize}
+                        />
+                    </div>
+                </ResizeSensor>
             </React.Fragment>
         )
 
@@ -968,8 +976,6 @@ CreatorApp.defaultProps = {
     closeTab: null,
     updatePanel: null
 };
-
-CreatorApp.contextType = TacticContext;
 
 
 if (!window.in_context) {

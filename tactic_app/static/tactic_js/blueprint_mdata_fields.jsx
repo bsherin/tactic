@@ -15,7 +15,6 @@ const mdi = markdownIt({html: true});
 mdi.use(markdownItLatex);
 import _ from 'lodash';
 export {icon_dict};
-import {TacticContext} from "./tactic_context.js"
 import {postAjaxPromise} from "./communication_react.js"
 
 import {doBinding, propsAreEqual} from "./utilities_react.js";
@@ -306,7 +305,7 @@ class NativeTags extends React.Component {
     }
 
       render () {
-        if (this.context.readOnly) {
+        if (this.props.readOnly) {
             return (
                 <TagInput values={this.props.tags} disabled={true}/>
             )
@@ -335,9 +334,6 @@ NativeTags.proptypes = {
     handleChange: PropTypes.func,
     res_type: PropTypes.string
 };
-
-
-NativeTags.contextType = TacticContext;
 
 class NotesField extends React.Component {
 
@@ -382,7 +378,7 @@ class NotesField extends React.Component {
     }
 
     _hideMarkdown() {
-        if (this.context.readOnly) return;
+        if (this.props.readOnly) return;
         this.awaiting_focus = true;  // We can't set focus until the input is visible
         this.setState({"show_markdown": false});
     }
@@ -434,7 +430,7 @@ class NotesField extends React.Component {
                       onBlur={this._handleMyBlur}
                       onChange={this.props.handleChange}
                       value={this.props.notes}
-                      disabled={this.context.readOnly}
+                      disabled={this.props.readOnly}
                       style={notes_style}
             />
             <div ref={this.md_ref}
@@ -446,8 +442,6 @@ class NotesField extends React.Component {
         )
     }
 }
-
-NotesField.contextType = TacticContext;
 
 NotesField.propTypes = {
     notes: PropTypes.string,
@@ -513,6 +507,7 @@ class CombinedMetadata extends React.Component {
 
                     <FormGroup label="Tags">
                         <NativeTags tags={this.props.tags}
+                                    readOnly={this.props.readOnly}
                                      handleChange={this._handleTagsChange}
                                     res_type={this.props.res_type}/>
                     </FormGroup>
@@ -524,6 +519,7 @@ class CombinedMetadata extends React.Component {
                     }
                     <FormGroup label="Notes">
                         <NotesField notes={this.props.notes}
+                                    readOnly={this.props.readOnly}
                                     handleChange={this._handleNotesChange}
                                     show_markdown_initial={true}
                                     handleBlur={this.props.handleNotesBlur}

@@ -22,7 +22,6 @@ import {withErrorDrawer} from "./error_drawer.js";
 import {doBinding} from "./utilities_react.js";
 import {guid} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
-import {TacticContext} from "./tactic_context.js";
 
 export {repository_props, RepositoryHomeApp}
 
@@ -98,7 +97,7 @@ class RepositoryHomeApp extends React.Component {
     
     initSocket() {
         let self = this;
-        let tsocket = this.props.controlled ? this.context.tsocket : this.props.tsocket;
+        let tsocket = this.props.tsocket;
         if (!window.in_context) {
             tsocket.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
             tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, self.extra_args.library_id)});
@@ -159,8 +158,8 @@ class RepositoryHomeApp extends React.Component {
     }
 
     render () {
-        let tsocket = this.props.controlled ? this.context.tsocket : this.props.tsocket;
-        let dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
+        let tsocket = this.props.tsocket;
+        let dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme;
         let lib_props = {...this.props};
         if (!this.props.controlled) {
             for (let prop_name of controllable_props) {
@@ -238,16 +237,11 @@ class RepositoryHomeApp extends React.Component {
             }
         }
         return (
-            <TacticContext.Provider value={{
-                readOnly: true,
-                tsocket: tsocket,
-                dark_theme: dark_theme,
-                setTheme:  this.props.controlled ? this.context.setTheme : this._setTheme,
-                controlled: this.props.controlled,
-                handleCreateViewer: this.context.handleCreateViewer
-            }}>
+            <React.Fragment>
                 {!this.props.controlled &&
                     <TacticNavbar is_authenticated={window.is_authenticated}
+                                  dark_theme={dark_theme}
+                                  set_theme={this.props.controlled ? this.props.setTheme : this._setTheme}
                                   selected={null}
                                   page_id={this.props.library_id}
                                   show_api_links={false}
@@ -287,12 +281,10 @@ class RepositoryHomeApp extends React.Component {
                         </Tabs>
                     </div>
                 </div>
-            </TacticContext.Provider>
+            </React.Fragment>
         )
     }
 }
-
-RepositoryHomeApp.contextType = TacticContext;
 
 class LibraryToolbar extends React.Component {
 
@@ -378,6 +370,10 @@ class LibraryToolbar extends React.Component {
                        alternate_outer_style={outer_style}
                        sendRef={this.props.sendRef}
                        popup_buttons={popup_buttons}
+                       dark_theme={this.props.dark_theme}
+                      controlled={this.props.controlled}
+                      am_selected={this.props.am_selected}
+                      tsocket={this.props.tsocket}
        />
     }
 }
@@ -421,7 +417,12 @@ class RepositoryCollectionToolbar extends React.Component {
         return <LibraryToolbar button_groups={this.button_groups}
                                left_position={this.props.left_position}
                                sendRef={this.props.sendRef}
-                               multi_select={this.props.multi_select} />
+                               multi_select={this.props.multi_select}
+                               dark_theme={this.props.dark_theme}
+                              controlled={this.props.controlled}
+                              am_selected={this.props.am_selected}
+                              tsocket={this.props.tsocket}
+        />
      }
 }
 
@@ -445,7 +446,12 @@ class RepositoryProjectToolbar extends React.Component {
         return <LibraryToolbar button_groups={this.button_groups}
                                left_position={this.props.left_position}
                                sendRef={this.props.sendRef}
-                               multi_select={this.props.multi_select} />
+                               multi_select={this.props.multi_select}
+                               dark_theme={this.props.dark_theme}
+                              controlled={this.props.controlled}
+                              am_selected={this.props.am_selected}
+                              tsocket={this.props.tsocket}
+        />
      }
 
 }
@@ -473,7 +479,12 @@ class RepositoryTileToolbar extends React.Component {
         return <LibraryToolbar button_groups={this.button_groups}
                                left_position={this.props.left_position}
                                sendRef={this.props.sendRef}
-                               multi_select={this.props.multi_select} />
+                               multi_select={this.props.multi_select}
+                               dark_theme={this.props.dark_theme}
+                              controlled={this.props.controlled}
+                              am_selected={this.props.am_selected}
+                              tsocket={this.props.tsocket}
+        />
      }
 
 }
@@ -501,7 +512,12 @@ class RepositoryListToolbar extends React.Component {
         return <LibraryToolbar button_groups={this.button_groups}
                                left_position={this.props.left_position}
                                sendRef={this.props.sendRef}
-                               multi_select={this.props.multi_select} />
+                               multi_select={this.props.multi_select}
+                               dark_theme={this.props.dark_theme}
+                              controlled={this.props.controlled}
+                              am_selected={this.props.am_selected}
+                              tsocket={this.props.tsocket}
+        />
      }
 
 }
@@ -531,7 +547,12 @@ class RepositoryCodeToolbar extends React.Component {
         return <LibraryToolbar button_groups={this.button_groups}
                                left_position={this.props.left_position}
                                sendRef={this.props.sendRef}
-                               multi_select={this.props.multi_select} />
+                               multi_select={this.props.multi_select}
+                               dark_theme={this.props.dark_theme}
+                              controlled={this.props.controlled}
+                              am_selected={this.props.am_selected}
+                              tsocket={this.props.tsocket}
+        />
      }
 
 }

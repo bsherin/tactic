@@ -5,14 +5,13 @@ import React from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
-import {MergeViewerSocket, MergeViewerApp} from "./merge_viewer_app.js";
+import {MergeViewerApp} from "./merge_viewer_app.js";
 import {doFlash} from "./toaster.js"
 import {postAjaxPromise} from "./communication_react.js"
 import {withErrorDrawer} from "./error_drawer.js";
 import {withStatus} from "./toaster.js";
 import {doBinding, guid} from "./utilities_react.js";
 import {TacticNavbar} from "./blueprint_navbar.js";
-import {TacticContext} from "./tactic_context.js";
 import {TacticSocket} from "./tactic_socket.js";
 
 function tile_differ_main ()  {
@@ -128,18 +127,13 @@ class TileDifferApp extends React.Component {
     }
 
     render() {
-        let dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
+        let dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme;
         return (
-            <TacticContext.Provider value={{
-                    readOnly: this.props.readOnly,
-                    tsocket: this.props.tsocket,
-                    dark_theme: dark_theme,
-                    setTheme:  this.props.controlled ? this.context.setTheme : this._setTheme,
-                    controlled: this.props.controlled,
-                    am_selected: this.props.am_selected
-                }}>
+            <React.Fragment>
                 {!this.props.controlled} {
                     <TacticNavbar is_authenticated={window.is_authenticated}
+                                  dark_theme={dark_theme}
+                                  setTheme={this.props.controlled ? this.props.setTheme : this._setTheme}
                                   selected={null}
                                   show_api_links={true}
                                   page_id={this.props.resource_viewer_id}
@@ -147,6 +141,7 @@ class TileDifferApp extends React.Component {
                 }
 
                 <MergeViewerApp {...this.props.statusFuncs}
+                                dark_theme={dark_theme}
                                 resource_viewer_id={this.props.resource_viewer_id}
                                 resource_name={this.props.resource_name}
                                 option_list={this.state.tile_list}
@@ -157,7 +152,7 @@ class TileDifferApp extends React.Component {
                                 handleEditChange={this.handleEditChange}
                                 saveHandler={this.saveFromLeft}
                 />
-            </TacticContext.Provider>
+            </React.Fragment>
         )
     }
 
@@ -182,8 +177,6 @@ TileDifferApp.propTypes = {
     edit_content: PropTypes.string,
     second_resource_name: PropTypes.string
 };
-
-TileDifferApp.contextType = TacticContext;
 
 if (!window.in_context) {
     tile_differ_main();

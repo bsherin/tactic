@@ -15,7 +15,6 @@ import {SortableComponent} from "./sortable_container.js";
 import {postWithCallback} from "./communication_react.js"
 import {doFlash} from "./toaster.js"
 import {doBinding, propsAreEqual, arrayMove} from "./utilities_react.js";
-import {TacticContext} from "./tactic_context.js";
 
 export {TileContainer}
 
@@ -61,9 +60,9 @@ class TileContainer extends React.Component {
     }
 
     initSocket() {
-        this.context.tsocket.attachListener("tile-message", this._handleTileMessage);
-        this.context.tsocket.attachListener("tile-finished-loading", this._handleTileFinishedLoading);
-        this.context.tsocket.attachListener('tile-source-change', this._handleTileSourceChange);
+        this.props.tsocket.attachListener("tile-message", this._handleTileMessage);
+        this.props.tsocket.attachListener("tile-finished-loading", this._handleTileFinishedLoading);
+        this.props.tsocket.attachListener('tile-source-change', this._handleTileSourceChange);
     }
 
      _resortTilesOld(new_sort_list) {
@@ -192,7 +191,7 @@ class TileContainer extends React.Component {
             <SortableComponent id="tile-div"
                                main_id={this.props.main_id}
                                style={outer_style}
-                               helperClass={this.context.dark_theme ? "bp3-dark" : "light-theme"}
+                               helperClass={this.props.dark_theme ? "bp3-dark" : "light-theme"}
                                container_ref={this.props.tile_div_ref}
                                ElementComponent={STileComponent}
                                key_field_name="tile_name"
@@ -225,8 +224,6 @@ TileContainer.propTypes = {
     broadcast_event: PropTypes.func,
     selected_row: PropTypes.number,
 };
-
-TileContainer.contextType = TacticContext;
 
 class RawSortHandle extends React.Component {
 

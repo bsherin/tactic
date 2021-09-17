@@ -36,7 +36,6 @@ import {getUsableDimensions, USUAL_TOOLBAR_HEIGHT} from "./sizing_tools.js";
 import {showConfirmDialogReact} from "./modal_react.js";
 import {postAjaxPromise} from "./communication_react.js";
 import {KeyTrap} from "./key_trap";
-import {TacticContext} from "./tactic_context.js";
 import {DragHandle} from "./resizing_layouts.js";
 import {res_types} from "./library_home_react.js";
 
@@ -548,9 +547,12 @@ class ContextApp extends React.Component {
             <div id="library-home-root">
                 <LibraryHomeAppPlus {...this.state.library_panel_props}
                                     controlled={true}
+                                    am_selected={this.state.selectedTabId == "library"}
                                     open_resources={open_resources}
                                     registerLibraryTabChanger={this._registerLibraryTabChanger}
-                                    dark_theme={this.state.dark_theme}  // needed for error drawer
+                                    dark_theme={this.state.dark_theme}
+                                    setTheme={this._setTheme}
+                                    handleCreateViewer={this._handleCreateViewer}
                                     usable_width={this.state.usable_width}
                                     usable_height={this.state.usable_height}
                     />
@@ -589,6 +591,8 @@ class ContextApp extends React.Component {
                 let the_panel = <TheClass {...tab_entry.panel}
                                           controlled={true}
                                           dark_theme={this.state.dark_theme}  // needed for error drawer and status
+                                          handleCreateViewer={this._handleCreateViewer}
+                                          setTheme={this._setTheme}
                                           am_selected={tab_id == this.state.selectedTabId}
                                           changeResourceName={(new_name, change_title=true)=>{
                                               this._changeResourceName(tab_id, new_name, change_title)
@@ -651,36 +655,30 @@ class ContextApp extends React.Component {
         };
         return (
             <React.Fragment>
-                <TacticContext.Provider value={{
-                        readOnly: false,
-                        tsocket: this.props.tsocket,
-                        dark_theme: this.state.dark_theme,
-                        setTheme:  this._setTheme,
-                        handleCreateViewer: this._handleCreateViewer
-                    }}>
-                    <TacticNavbar is_authenticated={window.is_authenticated}
-                                  selected={null}
-                                  show_api_links={false}
-                                  page_id={window.context_id}
-                                  user_name={window.username}/>
-                        <div className={outer_class} style={outer_style} ref={this.top_ref}>
-                            <div id="context-container" style={outer_style}>
-                                <DragHandle position_dict={{position: "absolute", left: this.state.tabWidth - 5}}
-                                        onDrag={this._handleTabResize}
-                                        dragStart={null}
-                                        dragEnd={null}
-                                        direction="x"
-                                        useVerticalBar={true}/>
-                                <Tabs id="context-tabs" selectedTabId={this.state.selectedTabId}
-                                      className="context-tab-list"
-                                      vertical={true}
-                                      onChange={this._handleTabSelect}>
-                                    {all_tabs}
-                                </Tabs>
-                            </div>
+                <TacticNavbar is_authenticated={window.is_authenticated}
+                              dark_theme={this.state.dark_theme}
+                              setTheme={this._setTheme}
+                              selected={null}
+                              show_api_links={false}
+                              page_id={window.context_id}
+                              user_name={window.username}/>
+                    <div className={outer_class} style={outer_style} ref={this.top_ref}>
+                        <div id="context-container" style={outer_style}>
+                            <DragHandle position_dict={{position: "absolute", left: this.state.tabWidth - 5}}
+                                    onDrag={this._handleTabResize}
+                                    dragStart={null}
+                                    dragEnd={null}
+                                    direction="x"
+                                    useVerticalBar={true}/>
+                            <Tabs id="context-tabs" selectedTabId={this.state.selectedTabId}
+                                  className="context-tab-list"
+                                  vertical={true}
+                                  onChange={this._handleTabSelect}>
+                                {all_tabs}
+                            </Tabs>
                         </div>
-                        <KeyTrap global={true} bindings={this.key_bindings}/>
-                </TacticContext.Provider>
+                    </div>
+                    <KeyTrap global={true} bindings={this.key_bindings}/>
             </React.Fragment>
         )
     }

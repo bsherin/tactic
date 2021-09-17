@@ -9,7 +9,6 @@ import { Button, Navbar, NavbarDivider, OverflowList, Alignment, Switch} from "@
 import {MenuComponent} from "./main_menus_react.js";
 import {doBinding} from "./utilities_react.js";
 import {postWithCallback} from "./communication_react";
-import {TacticContext} from "./tactic_context.js";
 import {TopRightButtons} from "./blueprint_react_widgets";
 
 export {render_navbar, TacticNavbar, get_theme_cookie, set_theme_cookie}
@@ -70,7 +69,7 @@ class TacticNavbar extends React.Component {
         window.addEventListener("resize", this._update_window_dimensions);
         this._update_window_dimensions();
         this.setState({old_left_width: this._getLeftWidth()});
-        this.last_theme = this.context.dark_theme
+        this.last_theme = this.props.dark_theme
     }
 
     // For some reason sizing things are a little flaky without old_left_width stuff
@@ -95,12 +94,12 @@ class TacticNavbar extends React.Component {
     _toggleTheme () {
         const result_dict = {
             "user_id": window.user_id,
-            "theme": !this.context.dark_theme ? "dark" : "light",
+            "theme": !this.props.dark_theme ? "dark" : "light",
         };
         postWithCallback("host", "set_user_theme", result_dict,
                     null, null);
-        if (this.context.setTheme) {
-            this.context.setTheme(!this.context.dark_theme)
+        if (this.props.setTheme) {
+            this.props.setTheme(!this.props.dark_theme)
         }
 
     }
@@ -117,8 +116,8 @@ class TacticNavbar extends React.Component {
             postWithCallback("host", "set_user_theme", result_dict,
                         null, null);
         }
-        if (this.context.setTheme) {
-            this.context.setTheme(event.target.checked)
+        if (this.props.setTheme) {
+            this.props.setTheme(event.target.checked)
         }
     }
 
@@ -231,7 +230,7 @@ class TacticNavbar extends React.Component {
         let right_width = this._getRightWidth();
         let right_style = {width: right_width};
         right_style.justifyContent = "flex-end";
-        let theme_class = this.context.dark_theme ? "bp3-dark" : "light-theme";
+        let theme_class = this.props.dark_theme ? "bp3-dark" : "light-theme";
         if (this.props.min_navbar) {
             return (
                 <Navbar style={{paddingLeft: 10, height: 30}} className={theme_class}>
@@ -271,7 +270,7 @@ class TacticNavbar extends React.Component {
 
                 <NavbarDivider />
                 <Switch
-                       checked={this.context.dark_theme}
+                       checked={this.props.dark_theme}
                        onChange={this._setTheme}
                        large={false}
                        style={{marginBottom: 0}}
@@ -305,7 +304,6 @@ TacticNavbar.defaultProps = {
     show_api_links: false,
 };
 
-TacticNavbar.contextType = TacticContext;
 
 function render_navbar (selected=null, show_api_links=false, dark_theme=false) {
     let domContainer = document.querySelector('#navbar-root');

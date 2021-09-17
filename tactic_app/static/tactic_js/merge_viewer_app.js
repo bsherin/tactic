@@ -5,7 +5,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.MergeViewerSocket = exports.MergeViewerApp = void 0;
+exports.MergeViewerApp = void 0;
 
 var _react = _interopRequireDefault(require("react"));
 
@@ -15,15 +15,7 @@ var _reactCodemirrorMergeview = require("./react-codemirror-mergeview.js");
 
 var _blueprint_toolbar = require("./blueprint_toolbar.js");
 
-var _tactic_socket = require("./tactic_socket.js");
-
-var _toaster = require("./toaster.js");
-
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields.js");
-
-var _tactic_context = require("./tactic_context.js");
-
-var _communication_react = require("./communication_react");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -59,47 +51,17 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
-var MergeViewerSocket = /*#__PURE__*/function (_TacticSocket) {
-  _inherits(MergeViewerSocket, _TacticSocket);
-
-  var _super = _createSuper(MergeViewerSocket);
-
-  function MergeViewerSocket() {
-    _classCallCheck(this, MergeViewerSocket);
-
-    return _super.apply(this, arguments);
-  }
-
-  _createClass(MergeViewerSocket, [{
-    key: "initialize_socket_stuff",
-    value: function initialize_socket_stuff() {
-      var reconnect = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-      this.socket.emit('join', {
-        "room": window.user_id,
-        user_id: window.user_id
-      });
-      this.attachListener("doFlash", function (data) {
-        (0, _toaster.doFlash)(data);
-      });
-    }
-  }]);
-
-  return MergeViewerSocket;
-}(_tactic_socket.TacticSocket);
-
-exports.MergeViewerSocket = MergeViewerSocket;
-
 var MergeViewerApp = /*#__PURE__*/function (_React$Component) {
   _inherits(MergeViewerApp, _React$Component);
 
-  var _super2 = _createSuper(MergeViewerApp);
+  var _super = _createSuper(MergeViewerApp);
 
   function MergeViewerApp(props) {
     var _this;
 
     _classCallCheck(this, MergeViewerApp);
 
-    _this = _super2.call(this, props);
+    _this = _super.call(this, props);
     _this.left_div_ref = /*#__PURE__*/_react["default"].createRef();
     _this.above_main_ref = /*#__PURE__*/_react["default"].createRef();
     _this.merge_element_ref = /*#__PURE__*/_react["default"].createRef();
@@ -115,16 +77,6 @@ var MergeViewerApp = /*#__PURE__*/function (_React$Component) {
   }
 
   _createClass(MergeViewerApp, [{
-    key: "initSocket",
-    value: function initSocket() {
-      this.tsocket.attachListener('close-user-windows', function (data) {
-        if (!(data["originator"] == window.library_id)) {
-          window.close();
-        }
-      });
-      this.tsocket.attachListener('doflash', _toaster.doFlash);
-    }
-  }, {
     key: "button_groups",
     get: function get() {
       return [[{
@@ -193,7 +145,7 @@ var MergeViewerApp = /*#__PURE__*/function (_React$Component) {
       };
       var outer_class = "merge-viewer-outer";
 
-      if (this.context.dark_theme) {
+      if (this.props.dark_theme) {
         outer_class = outer_class + " bp3-dark";
       } else {
         outer_class = outer_class + " light-theme";
@@ -225,11 +177,11 @@ var MergeViewerApp = /*#__PURE__*/function (_React$Component) {
         value: this.props.select_val
       })), /*#__PURE__*/_react["default"].createElement(_reactCodemirrorMergeview.ReactCodemirrorMergeView, {
         handleEditChange: this.props.handleEditChange,
+        dark_theme: this.props.dark_theme,
         editor_content: this.props.edit_content,
         right_content: this.props.right_content,
         saveMe: this.props.saveHandler,
         max_height: max_merge_height,
-        dark_theme: this.props.dark_theme,
         ref: this.merge_element_ref
       })));
     }
@@ -247,6 +199,6 @@ MergeViewerApp.propTypes = {
   right_content: _propTypes["default"].string,
   handleSelectChange: _propTypes["default"].func,
   handleEditChange: _propTypes["default"].func,
+  dark_theme: _propTypes["default"].bool,
   saveHandler: _propTypes["default"].func
 };
-MergeViewerApp.contextType = _tactic_context.TacticContext;

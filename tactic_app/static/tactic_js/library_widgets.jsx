@@ -12,7 +12,6 @@ import _ from 'lodash';
 
 import {postAjax} from "./communication_react.js"
 import {doBinding} from "./utilities_react.js";
-import {TacticContext} from "./tactic_context.js";
 
 export {SearchForm}
 export {BpSelectorTable}
@@ -414,7 +413,7 @@ class LoadedTileList extends React.Component {
 
     initSocket() {
         let self = this;
-        this.context.tsocket.attachListener('update-loaded-tile-list', (data)=>self.set_state_from_dict(data.tile_load_dict));
+        this.props.tsocket.attachListener('update-loaded-tile-list', (data)=>self.set_state_from_dict(data.tile_load_dict));
     }
 
     render () {
@@ -456,10 +455,9 @@ class LoadedTileList extends React.Component {
 }
 
 LoadedTileList.propTypes = {
-    // tsocket: PropTypes.object
+    tsocket: PropTypes.object
 };
 
-LoadedTileList.contextType = TacticContext;
 
 const MAX_INITIAL_CELL_WIDTH = 300;
 

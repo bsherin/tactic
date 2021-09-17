@@ -21,8 +21,6 @@ var _toaster = require("./toaster.js");
 
 var _utilities_react = require("./utilities_react.js");
 
-var _tactic_context = require("./tactic_context.js");
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
@@ -326,12 +324,12 @@ var ExportsViewer = /*#__PURE__*/function (_React$Component4) {
 
   var _super4 = _createSuper(ExportsViewer);
 
-  function ExportsViewer(props, context) {
+  function ExportsViewer(props) {
     var _this3;
 
     _classCallCheck(this, ExportsViewer);
 
-    _this3 = _super4.call(this, props, context);
+    _this3 = _super4.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this3));
     _this3.header_ref = /*#__PURE__*/_react["default"].createRef();
     _this3.footer_ref = /*#__PURE__*/_react["default"].createRef();
@@ -366,7 +364,7 @@ var ExportsViewer = /*#__PURE__*/function (_React$Component4) {
   }, {
     key: "initSocket",
     value: function initSocket() {
-      this.context.tsocket.attachListener("export-viewer-message", this._handleExportViewerMessage);
+      this.props.tsocket.attachListener("export-viewer-message", this._handleExportViewerMessage);
     }
   }, {
     key: "_handleExportViewerMessage",
@@ -697,4 +695,3 @@ ExportsViewer.propTypes = {
 ExportsViewer.defaultProps = {
   style: {}
 };
-ExportsViewer.contextType = _tactic_context.TacticContext;
