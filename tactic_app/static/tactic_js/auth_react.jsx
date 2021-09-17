@@ -6,19 +6,17 @@ import * as ReactDOM from 'react-dom'
 
 import { FormGroup, InputGroup, Button } from "@blueprintjs/core";
 
-
 import {doFlash, withStatus} from "./toaster.js"
 import {postAjax} from "./communication_react.js";
 import {doBinding, guid} from "./utilities_react.js";
 import {TacticNavbar, get_theme_cookie} from "./blueprint_navbar";
-import {TacticContext} from "./tactic_context.js";
 
 window.page_id = guid();
 
 function _login_main() {
     if (window._show_message) doFlash(window._message);
     let domContainer = document.querySelector('#root');
-    ReactDOM.render(<LoginAppWithStatus/>, domContainer)
+    ReactDOM.render(<LoginAppWithStatus controlled={false}/>, domContainer)
 }
 
 
@@ -98,16 +96,9 @@ class LoginApp extends React.Component {
         }
         return (
             <React.Fragment>
-                <TacticContext.Provider value={{
-                    readOnly: this.props.readOnly,
-                    tsocket: this.props.tsocket,
-                    dark_theme: this.state.dark_theme,
-                    setTheme:  this._setTheme,
-                    controlled: this.props.controlled,
-                    am_selected: this.props.am_selected,
-
-                }}>
                     <TacticNavbar is_authenticated={window.is_authenticated}
+                                  dark_theme={this.state.dark_theme}
+                                  setTheme={this._setTheme}
                                   selected={null}
                                   show_api_links={false}
                                   page_id={window.page_id}
@@ -156,7 +147,6 @@ class LoginApp extends React.Component {
                              </div>
                         </form>
                     </div>
-                </TacticContext.Provider>
             </React.Fragment>
         )
     }

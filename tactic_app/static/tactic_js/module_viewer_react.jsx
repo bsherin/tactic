@@ -17,12 +17,11 @@ import {withErrorDrawer} from "./error_drawer.js";
 import {withStatus} from "./toaster.js";
 import {doBinding} from "./utilities_react.js";
 
-import {SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, getUsableDimensions} from "./sizing_tools.js";
+import {SIDE_MARGIN, getUsableDimensions} from "./sizing_tools.js";
 import {guid} from "./utilities_react.js";
 import {TacticNavbar} from "./blueprint_navbar.js";
 
 export {module_viewer_props, ModuleViewerApp}
-import {TacticContext} from "./tactic_context.js";
 
 function module_viewer_main () {
     function gotProps(the_props) {
@@ -200,7 +199,7 @@ class ModuleViewerApp extends React.Component {
     }
 
     render() {
-        let dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
+        let dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme;
         let the_context = {"readOnly": this.props.readOnly};
         let my_props = {...this.props};
         if (!this.props.controlled) {
@@ -224,16 +223,11 @@ class ModuleViewerApp extends React.Component {
             }
         }
         return (
-            <TacticContext.Provider value={{
-                    readOnly: this.props.readOnly,
-                    tsocket: this.props.tsocket,
-                    dark_theme: dark_theme,
-                    setTheme:  this.props.controlled ? this.context.setTheme : this._setTheme,
-                    controlled: this.props.controlled,
-                    am_selected: this.props.am_selected
-                }}>
+            <React.Fragment>
                 {!this.props.controlled &&
                     <TacticNavbar is_authenticated={window.is_authenticated}
+                                  dark_theme={dark_theme}
+                                  setTheme={this.props.controlled ? this.props.setTheme : this._setTheme}
                                   selected={null}
                                   show_api_links={true}
                                   page_id={this.props.resource_viewer_id}
@@ -257,6 +251,8 @@ class ModuleViewerApp extends React.Component {
                                            update_search_state={this._update_search_state}
                                            meta_outer={this.props.meta_outer}>
                             <ReactCodemirror code_content={this.state.code_content}
+                                             dark_theme={dark_theme}
+                                             readOnly={this.props.readOnly}
                                              handleChange={this._handleCodeChange}
                                              saveMe={this._saveMe}
                                              search_term={this.state.search_string}
@@ -265,7 +261,7 @@ class ModuleViewerApp extends React.Component {
                               />
                         </ResourceViewerApp>
                     </div>
-            </TacticContext.Provider>
+            </React.Fragment>
         )
     }
 
@@ -414,8 +410,6 @@ ModuleViewerApp.defaultProps = {
     closeTab: null,
     updatePanel: null
 };
-
-ModuleViewerApp.contextType = TacticContext;
 
 if (!window.in_context) {
     module_viewer_main();

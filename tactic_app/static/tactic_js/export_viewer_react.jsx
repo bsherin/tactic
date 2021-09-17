@@ -7,7 +7,6 @@ import {GlyphButton, SelectList} from "./blueprint_react_widgets.js";
 import {postWithCallback} from "./communication_react.js"
 import {doFlash} from "./toaster.js"
 import {doBinding} from "./utilities_react.js";
-import {TacticContext} from "./tactic_context.js";
 
 export {ExportsViewer}
 
@@ -187,8 +186,8 @@ ExportButtonList.propTypes = {
 };
 
 class ExportsViewer extends React.Component {
-    constructor(props, context) {
-        super(props, context);
+    constructor(props) {
+        super(props);
         doBinding(this);
         this.header_ref = React.createRef();
         this.footer_ref = React.createRef();
@@ -217,7 +216,7 @@ class ExportsViewer extends React.Component {
     }
 
     initSocket() {
-        this.context.tsocket.attachListener("export-viewer-message", this._handleExportViewerMessage);
+        this.props.tsocket.attachListener("export-viewer-message", this._handleExportViewerMessage);
     }
 
     _handleExportViewerMessage(data) {
@@ -237,7 +236,6 @@ class ExportsViewer extends React.Component {
 
     _handleMaxRowsChange(new_value){
         this.setState({max_rows: new_value}, this._eval)
-
     }
 
     _updateExportsList() {
@@ -474,6 +472,4 @@ ExportsViewer.propTypes = {
 ExportsViewer.defaultProps = {
     style: {}
 };
-
-ExportsViewer.contextType = TacticContext;
 

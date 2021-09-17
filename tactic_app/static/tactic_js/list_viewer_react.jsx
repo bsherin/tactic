@@ -20,7 +20,6 @@ import {withErrorDrawer} from "./error_drawer.js";
 import {doBinding} from "./utilities_react.js";
 import {guid} from "./utilities_react.js";
 import {TacticNavbar} from "./blueprint_navbar";
-import {TacticContext} from "./tactic_context.js";
 
 export {list_viewer_props, ListViewerApp}
 
@@ -71,7 +70,7 @@ class ListEditor extends React.Component {
                 <TextArea
                       cols="50"
                       style={tastyle}
-                      disabled={this.context.readOnly}
+                      disabled={this.props.readOnly}
                       onChange={this.props.handleChange}
                       value={this.props.the_content}
             />
@@ -80,7 +79,6 @@ class ListEditor extends React.Component {
 
     }
 }
-ListEditor.contextType = TacticContext;
 
 ListEditor.propTypes = {
     the_content: PropTypes.string,
@@ -229,16 +227,11 @@ class ListViewerApp extends React.Component {
             }
         }
         return (
-            <TacticContext.Provider value={{
-                    readOnly: this.props.readOnly,
-                    tsocket: this.props.tsocket,
-                    dark_theme: dark_theme,
-                    setTheme:  this.props.controlled ? this.context.setTheme : this._setTheme,
-                    controlled: this.props.controlled,
-                    am_selected: this.props.am_selected
-                }}>
+            <React.Fragment>
                 {!this.props.controlled &&
                     <TacticNavbar is_authenticated={window.is_authenticated}
+                                  dark_theme={dark_theme}
+                                  setTheme={this.props.controlled ? this.props.setTheme : this._setTheme}
                                   selected={null}
                                   show_api_links={true}
                                   page_id={this.props.resource_viewer_id}
@@ -260,13 +253,14 @@ class ListViewerApp extends React.Component {
                                        tags={this.state.tags}
                                        saveMe={this._saveMe}>
                             <ListEditor the_content={this.state.list_content}
+                                        readOnly={this.props.readOnly}
                                         outer_ref={this.le_ref}
                                         height={this.get_new_le_height()}
                                         handleChange={this._handleListChange}
                             />
                     </ResourceViewerApp>
                 </div>
-            </TacticContext.Provider>
+            </React.Fragment>
         )
     }
 
@@ -340,8 +334,6 @@ ListViewerApp.defaultProps = {
     refreshTab: null,
     closeTab: null,
 };
-
-ListViewerApp.contextType = TacticContext;
 
 
 if (!window.in_context) {

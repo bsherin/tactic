@@ -30,8 +30,6 @@ var _modal_react = require("./modal_react.js");
 
 var _communication_react = require("./communication_react.js");
 
-var _tactic_context = require("./tactic_context.js");
-
 var _sizing_tools = require("./sizing_tools.js");
 
 var _toaster = require("./toaster.js");
@@ -160,12 +158,12 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
 
   var _super2 = _createSuper(LibraryPane);
 
-  function LibraryPane(props, context) {
+  function LibraryPane(props) {
     var _this2;
 
     _classCallCheck(this, LibraryPane);
 
-    _this2 = _super2.call(this, props, context);
+    _this2 = _super2.call(this, props);
     _this2.top_ref = /*#__PURE__*/_react["default"].createRef();
     _this2.table_ref = /*#__PURE__*/_react["default"].createRef();
     _this2.resizing = false;
@@ -193,9 +191,9 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   _createClass(LibraryPane, [{
     key: "initSocket",
     value: function initSocket() {
-      if (this.context.tsocket != null && !this.props.is_repository) {
-        this.context.tsocket.attachListener("update-".concat(this.props.res_type, "-selector-row"), this._handleRowUpdate);
-        this.context.tsocket.attachListener("refresh-".concat(this.props.res_type, "-selector"), this._refresh_func);
+      if (this.props.tsocket != null && !this.props.is_repository) {
+        this.props.tsocket.attachListener("update-".concat(this.props.res_type, "-selector-row"), this._handleRowUpdate);
+        this.props.tsocket.attachListener("refresh-".concat(this.props.res_type, "-selector"), this._refresh_func);
       }
     }
   }, {
@@ -711,7 +709,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         (0, _communication_react.postAjaxPromise)($SCRIPT_ROOT + view_view, {
           context_id: context_id,
           resource_name: row_dict.name
-        }).then(self.context.handleCreateViewer)["catch"](_toaster.doFlash);
+        }).then(self.props.handleCreateViewer)["catch"](_toaster.doFlash);
       } else {
         window.open($SCRIPT_ROOT + view_view + row_dict.name);
       }
@@ -908,7 +906,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         (0, _communication_react.postAjaxPromise)($SCRIPT_ROOT + the_view, {
           context_id: context_id,
           resource_name: this.props.selected_resource.name
-        }).then(self.context.handleCreateViewer)["catch"](_toaster.doFlash);
+        }).then(self.props.handleCreateViewer)["catch"](_toaster.doFlash);
       } else if (!this.state.multi_select) {
         window.open($SCRIPT_ROOT + the_view + this.props.selected_resource.name);
       }
@@ -930,7 +928,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         (0, _communication_react.postAjaxPromise)($SCRIPT_ROOT + the_view, {
           context_id: context_id,
           resource_name: resource_name
-        }).then(self.context.handleCreateViewer)["catch"](_toaster.doFlash);
+        }).then(self.props.handleCreateViewer)["catch"](_toaster.doFlash);
       } else {
         window.open($SCRIPT_ROOT + the_view + resource_name);
       }
@@ -1323,8 +1321,12 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         sendContextMenuItems: this._sendContextMenuItems,
         view_resource: this._view_resource
       }, this.props.errorDrawerFuncs, {
-        handleCreateViewer: this.context.handleCreateViewer,
-        library_id: this.props.library_id
+        handleCreateViewer: this.props.handleCreateViewer,
+        library_id: this.props.library_id,
+        dark_theme: this.props.dark_theme,
+        controlled: this.props.controlled,
+        am_selected: this.props.am_selected,
+        tsocket: this.props.tsocket
       })), /*#__PURE__*/_react["default"].createElement("div", {
         style: {
           width: uwidth,
@@ -1388,4 +1390,3 @@ LibraryPane.defaultProps = {
   aux_pane: null,
   dark_theme: false
 };
-LibraryPane.contextType = _tactic_context.TacticContext;

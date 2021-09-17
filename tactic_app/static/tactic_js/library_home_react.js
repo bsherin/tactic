@@ -48,8 +48,6 @@ var _utilities_react = require("./utilities_react.js");
 
 var _blueprint_navbar = require("./blueprint_navbar");
 
-var _tactic_context = require("./tactic_context.js");
-
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -122,12 +120,12 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
 
   var _super = _createSuper(LibraryHomeApp);
 
-  function LibraryHomeApp(props, context) {
+  function LibraryHomeApp(props) {
     var _this;
 
     _classCallCheck(this, LibraryHomeApp);
 
-    _this = _super.call(this, props, context);
+    _this = _super.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
     _this.state = {
       selected_tab_id: "collections-pane",
@@ -322,9 +320,11 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
-      var dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
+      var dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme;
 
-      var tile_widget = /*#__PURE__*/_react["default"].createElement(_library_widgets.LoadedTileList, null);
+      var tile_widget = /*#__PURE__*/_react["default"].createElement(_library_widgets.LoadedTileList, {
+        tsocket: this.props.tsocket
+      });
 
       var lib_props = _objectSpread({}, this.props);
 
@@ -348,6 +348,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
 
       var collection_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
         res_type: "collection",
+        handleCreateViewer: this.props.handleCreateViewer,
         open_resources: this.props.open_resources ? this.props.open_resources["collection"] : null,
         allow_search_inside: false,
         allow_search_metadata: false,
@@ -360,6 +361,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
 
       var projects_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
         res_type: "project",
+        handleCreateViewer: this.props.handleCreateViewer,
         open_resources: this.props.open_resources ? this.props.open_resources["project"] : null,
         allow_search_inside: false,
         allow_search_metadata: true,
@@ -371,6 +373,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
 
       var tiles_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
         res_type: "tile",
+        handleCreateViewer: this.props.handleCreateViewer,
         open_resources: this.props.open_resources ? this.props.open_resources["tile"] : null,
         allow_search_inside: true,
         allow_search_metadata: true,
@@ -396,6 +399,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
 
       var code_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
         res_type: "code",
+        handleCreateViewer: this.props.handleCreateViewer,
         open_resources: this.props.open_resources ? this.props.open_resources["code"] : null,
         allow_search_inside: true,
         allow_search_metadata: true,
@@ -424,17 +428,10 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
       }
 
       var key_bindings = [[["tab"], this._goToNextPane], [["shift+tab"], this._goToPreviousPane]];
-      return /*#__PURE__*/_react["default"].createElement(_tactic_context.TacticContext.Provider, {
-        value: {
-          readOnly: false,
-          tsocket: this.props.tsocket,
-          dark_theme: dark_theme,
-          setTheme: this.props.controlled ? this.context.setTheme : this._setTheme,
-          controlled: this.props.controlled,
-          handleCreateViewer: this.context.handleCreateViewer
-        }
-      }, !this.props.controlled && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, !this.props.controlled && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
         is_authenticated: window.is_authenticated,
+        dark_theme: dark_theme,
+        set_theme: this.props.controlled ? this.props.setTheme : this._setTheme,
         selected: null,
         show_api_links: false,
         page_id: this.props.library_id,
@@ -531,7 +528,6 @@ LibraryHomeApp.propTypes = {
 LibraryHomeApp.defaultProps = {
   open_resources: null
 };
-LibraryHomeApp.contextType = _tactic_context.TacticContext;
 
 var LibraryToolbar = /*#__PURE__*/function (_React$Component2) {
   _inherits(LibraryToolbar, _React$Component2);
@@ -716,6 +712,10 @@ var LibraryToolbar = /*#__PURE__*/function (_React$Component2) {
         file_adders: this.prepare_file_adders(),
         alternate_outer_style: outer_style,
         sendRef: this.props.sendRef,
+        controlled: this.props.controlled,
+        am_selected: this.props.am_selected,
+        tsocket: this.props.tsocket,
+        dark_theme: this.props.dark_theme,
         popup_buttons: popup_buttons
       });
     }
@@ -956,7 +956,11 @@ var CollectionToolbar = /*#__PURE__*/function (_React$Component3) {
         file_adders: this.file_adders,
         left_position: this.props.left_position,
         sendRef: this.props.sendRef,
-        multi_select: this.props.multi_select
+        multi_select: this.props.multi_select,
+        dark_theme: this.props.dark_theme,
+        controlled: this.props.controlled,
+        am_selected: this.props.am_selected,
+        tsocket: this.props.tsocket
       });
     }
   }]);
@@ -996,7 +1000,7 @@ var ProjectToolbar = /*#__PURE__*/function (_React$Component4) {
         var the_view = "".concat($SCRIPT_ROOT, "/new_notebook_in_context");
         (0, _communication_react.postAjaxPromise)(the_view, {
           resource_name: ""
-        }).then(self.context.handleCreateViewer)["catch"](_toaster.doFlash);
+        }).then(self.props.handleCreateViewer)["catch"](_toaster.doFlash);
       } else {
         window.open("".concat($SCRIPT_ROOT, "/new_notebook"));
       }
@@ -1084,7 +1088,11 @@ var ProjectToolbar = /*#__PURE__*/function (_React$Component4) {
         file_adders: this.file_adders,
         left_position: this.props.left_position,
         sendRef: this.props.sendRef,
-        multi_select: this.props.multi_select
+        multi_select: this.props.multi_select,
+        dark_theme: this.props.dark_theme,
+        controlled: this.props.controlled,
+        am_selected: this.props.am_selected,
+        tsocket: this.props.tsocket
       });
     }
   }]);
@@ -1093,7 +1101,6 @@ var ProjectToolbar = /*#__PURE__*/function (_React$Component4) {
 }(_react["default"].Component);
 
 ProjectToolbar.propTypes = specializedToolbarPropTypes;
-ProjectToolbar.contextType = _tactic_context.TacticContext;
 
 var TileToolbar = /*#__PURE__*/function (_React$Component5) {
   _inherits(TileToolbar, _React$Component5);
@@ -1323,8 +1330,10 @@ var TileToolbar = /*#__PURE__*/function (_React$Component5) {
         left_position: this.props.left_position,
         sendRef: this.props.sendRef,
         multi_select: this.props.multi_select,
-        tsocket: this.props.tsocket,
-        dark_theme: this.props.dark_theme
+        dark_theme: this.props.dark_theme,
+        controlled: this.props.controlled,
+        am_selected: this.props.am_selected,
+        tsocket: this.props.tsocket
       });
     }
   }]);
@@ -1432,8 +1441,10 @@ var ListToolbar = /*#__PURE__*/function (_React$Component6) {
         left_position: this.props.left_position,
         sendRef: this.props.sendRef,
         multi_select: this.props.multi_select,
-        tsocket: this.props.tsocket,
-        dark_theme: this.props.dark_theme
+        dark_theme: this.props.dark_theme,
+        controlled: this.props.controlled,
+        am_selected: this.props.am_selected,
+        tsocket: this.props.tsocket
       });
     }
   }]);
@@ -1560,8 +1571,10 @@ var CodeToolbar = /*#__PURE__*/function (_React$Component7) {
         left_position: this.props.left_position,
         sendRef: this.props.sendRef,
         multi_select: this.props.multi_select,
-        tsocket: this.props.tsocket,
-        dark_theme: this.props.dark_theme
+        dark_theme: this.props.dark_theme,
+        controlled: this.props.controlled,
+        am_selected: this.props.am_selected,
+        tsocket: this.props.tsocket
       });
     }
   }]);

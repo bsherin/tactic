@@ -44,8 +44,6 @@ var _utilities_react2 = require("./utilities_react");
 
 var _blueprint_navbar = require("./blueprint_navbar");
 
-var _tactic_context = require("./tactic_context.js");
-
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -187,7 +185,7 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
     key: "initSocket",
     value: function initSocket() {
       var self = this;
-      var tsocket = this.props.controlled ? this.context.tsocket : this.props.tsocket;
+      var tsocket = this.props.tsocket;
 
       if (!window.in_context) {
         tsocket.attachListener("window-open", function (data) {
@@ -275,8 +273,8 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
-      var tsocket = this.props.controlled ? this.context.tsocket : this.props.tsocket;
-      var dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
+      var tsocket = this.props.tsocket;
+      var dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme;
 
       var lib_props = _objectSpread({}, this.props);
 
@@ -368,17 +366,10 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
         }
       }
 
-      return /*#__PURE__*/_react["default"].createElement(_tactic_context.TacticContext.Provider, {
-        value: {
-          readOnly: true,
-          tsocket: tsocket,
-          dark_theme: dark_theme,
-          setTheme: this.props.controlled ? this.context.setTheme : this._setTheme,
-          controlled: this.props.controlled,
-          handleCreateViewer: this.context.handleCreateViewer
-        }
-      }, !this.props.controlled && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, !this.props.controlled && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
         is_authenticated: window.is_authenticated,
+        dark_theme: dark_theme,
+        set_theme: this.props.controlled ? this.props.setTheme : this._setTheme,
         selected: null,
         page_id: this.props.library_id,
         show_api_links: false,
@@ -464,7 +455,6 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
 }(_react["default"].Component);
 
 exports.RepositoryHomeApp = RepositoryHomeApp;
-RepositoryHomeApp.contextType = _tactic_context.TacticContext;
 
 var LibraryToolbar = /*#__PURE__*/function (_React$Component2) {
   _inherits(LibraryToolbar, _React$Component2);
@@ -636,7 +626,11 @@ var LibraryToolbar = /*#__PURE__*/function (_React$Component2) {
         file_adders: this.prepare_file_adders(),
         alternate_outer_style: outer_style,
         sendRef: this.props.sendRef,
-        popup_buttons: popup_buttons
+        popup_buttons: popup_buttons,
+        dark_theme: this.props.dark_theme,
+        controlled: this.props.controlled,
+        am_selected: this.props.am_selected,
+        tsocket: this.props.tsocket
       });
     }
   }]);
@@ -691,7 +685,11 @@ var RepositoryCollectionToolbar = /*#__PURE__*/function (_React$Component3) {
         button_groups: this.button_groups,
         left_position: this.props.left_position,
         sendRef: this.props.sendRef,
-        multi_select: this.props.multi_select
+        multi_select: this.props.multi_select,
+        dark_theme: this.props.dark_theme,
+        controlled: this.props.controlled,
+        am_selected: this.props.am_selected,
+        tsocket: this.props.tsocket
       });
     }
   }]);
@@ -728,7 +726,11 @@ var RepositoryProjectToolbar = /*#__PURE__*/function (_React$Component4) {
         button_groups: this.button_groups,
         left_position: this.props.left_position,
         sendRef: this.props.sendRef,
-        multi_select: this.props.multi_select
+        multi_select: this.props.multi_select,
+        dark_theme: this.props.dark_theme,
+        controlled: this.props.controlled,
+        am_selected: this.props.am_selected,
+        tsocket: this.props.tsocket
       });
     }
   }]);
@@ -770,7 +772,11 @@ var RepositoryTileToolbar = /*#__PURE__*/function (_React$Component5) {
         button_groups: this.button_groups,
         left_position: this.props.left_position,
         sendRef: this.props.sendRef,
-        multi_select: this.props.multi_select
+        multi_select: this.props.multi_select,
+        dark_theme: this.props.dark_theme,
+        controlled: this.props.controlled,
+        am_selected: this.props.am_selected,
+        tsocket: this.props.tsocket
       });
     }
   }]);
@@ -812,7 +818,11 @@ var RepositoryListToolbar = /*#__PURE__*/function (_React$Component6) {
         button_groups: this.button_groups,
         left_position: this.props.left_position,
         sendRef: this.props.sendRef,
-        multi_select: this.props.multi_select
+        multi_select: this.props.multi_select,
+        dark_theme: this.props.dark_theme,
+        controlled: this.props.controlled,
+        am_selected: this.props.am_selected,
+        tsocket: this.props.tsocket
       });
     }
   }]);
@@ -854,7 +864,11 @@ var RepositoryCodeToolbar = /*#__PURE__*/function (_React$Component7) {
         button_groups: this.button_groups,
         left_position: this.props.left_position,
         sendRef: this.props.sendRef,
-        multi_select: this.props.multi_select
+        multi_select: this.props.multi_select,
+        dark_theme: this.props.dark_theme,
+        controlled: this.props.controlled,
+        am_selected: this.props.am_selected,
+        tsocket: this.props.tsocket
       });
     }
   }]);

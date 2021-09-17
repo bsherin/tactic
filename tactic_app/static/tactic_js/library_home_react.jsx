@@ -24,7 +24,6 @@ import {withErrorDrawer} from "./error_drawer.js";
 import {KeyTrap} from "./key_trap.js";
 import {doBinding, guid} from "./utilities_react.js";
 import {TacticNavbar} from "./blueprint_navbar";
-import {TacticContext} from "./tactic_context.js";
 
 const TAB_BAR_WIDTH = 50;
 
@@ -54,8 +53,8 @@ const controllable_props = ["usable_width", "usable_height"];
 // noinspection JSUnusedLocalSymbols,JSRemoveUnnecessaryParentheses
 class LibraryHomeApp extends React.Component {
 
-    constructor(props, context) {
-        super(props, context);
+    constructor(props) {
+        super(props);
         doBinding(this);
 
         this.state = {
@@ -189,8 +188,8 @@ class LibraryHomeApp extends React.Component {
     }
 
     render () {
-        let dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
-        let tile_widget = <LoadedTileList/>;
+        let dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme;
+        let tile_widget = <LoadedTileList tsocket={this.props.tsocket}/>;
         let lib_props = {...this.props};
         if (!this.props.controlled) {
             for (let prop_name of controllable_props) {
@@ -201,6 +200,7 @@ class LibraryHomeApp extends React.Component {
         let collection_pane = (
                         <LibraryPane {...lib_props}
                                      res_type="collection"
+                                     handleCreateViewer={this.props.handleCreateViewer}
                                      open_resources={this.props.open_resources ? this.props.open_resources["collection"] : null}
                                      allow_search_inside={false}
                                      allow_search_metadata={false}
@@ -214,6 +214,7 @@ class LibraryHomeApp extends React.Component {
         );
         let projects_pane = (<LibraryPane {...lib_props}
                                           res_type="project"
+                                          handleCreateViewer={this.props.handleCreateViewer}
                                           open_resources={this.props.open_resources ? this.props.open_resources["project"] : null}
                                           allow_search_inside={false}
                                           allow_search_metadata={true}
@@ -226,6 +227,7 @@ class LibraryHomeApp extends React.Component {
         );
         let tiles_pane = (<LibraryPane {...lib_props}
                                        res_type="tile"
+                                     handleCreateViewer={this.props.handleCreateViewer}
                                        open_resources={this.props.open_resources ? this.props.open_resources["tile"] : null}
                                        allow_search_inside={true}
                                        allow_search_metadata={true}
@@ -252,6 +254,7 @@ class LibraryHomeApp extends React.Component {
         );
         let code_pane = (<LibraryPane {...lib_props}
                                       res_type="code"
+                                      handleCreateViewer={this.props.handleCreateViewer}
                                       open_resources={this.props.open_resources ? this.props.open_resources["code"] : null}
                                       allow_search_inside={true}
                                       allow_search_metadata={true}
@@ -280,16 +283,11 @@ class LibraryHomeApp extends React.Component {
 
         let key_bindings = [[["tab"], this._goToNextPane], [["shift+tab"], this._goToPreviousPane]];
         return (
-            <TacticContext.Provider value={{
-                readOnly: false,
-                tsocket: this.props.tsocket,
-                dark_theme: dark_theme,
-                setTheme:  this.props.controlled ? this.context.setTheme : this._setTheme,
-                controlled: this.props.controlled,
-                handleCreateViewer: this.context.handleCreateViewer
-            }}>
+            <React.Fragment>
                 {!this.props.controlled &&
                     <TacticNavbar is_authenticated={window.is_authenticated}
+                                  dark_theme={dark_theme}
+                                  set_theme={this.props.controlled ? this.props.setTheme : this._setTheme}
                                   selected={null}
                                   show_api_links={false}
                                   page_id={this.props.library_id}
@@ -331,7 +329,7 @@ class LibraryHomeApp extends React.Component {
                 {!this.props.controlled &&
                     <KeyTrap global={true} bindings={key_bindings}/>
                 }
-            </TacticContext.Provider>
+            </React.Fragment>
         )
     }
 }
@@ -343,8 +341,6 @@ LibraryHomeApp.propTypes = {
 LibraryHomeApp.defaultProps = {
     open_resources: null
 };
-
-LibraryHomeApp.contextType = TacticContext;
 
 class LibraryToolbar extends React.Component {
 
@@ -443,6 +439,10 @@ class LibraryToolbar extends React.Component {
                        file_adders={this.prepare_file_adders()}
                        alternate_outer_style={outer_style}
                        sendRef={this.props.sendRef}
+                       controlled={this.props.controlled}
+                       am_selected={this.props.am_selected}
+                       tsocket={this.props.tsocket}
+                       dark_theme={this.props.dark_theme}
                        popup_buttons={popup_buttons}
        />
     }
@@ -630,6 +630,10 @@ class CollectionToolbar extends React.Component {
                                left_position={this.props.left_position}
                                sendRef={this.props.sendRef}
                                multi_select={this.props.multi_select}
+                               dark_theme={this.props.dark_theme}
+                              controlled={this.props.controlled}
+                              am_selected={this.props.am_selected}
+                              tsocket={this.props.tsocket}
         />
      }
 }
@@ -652,7 +656,7 @@ class ProjectToolbar extends React.Component {
         if (window.in_context) {
             const the_view = `${$SCRIPT_ROOT}/new_notebook_in_context`;
             postAjaxPromise(the_view, {resource_name: ""})
-                .then(self.context.handleCreateViewer)
+                .then(self.props.handleCreateViewer)
                 .catch(doFlash);
         }
         else {
@@ -725,13 +729,16 @@ class ProjectToolbar extends React.Component {
                                left_position={this.props.left_position}
                                sendRef={this.props.sendRef}
                                multi_select={this.props.multi_select}
+                               dark_theme={this.props.dark_theme}
+                                  controlled={this.props.controlled}
+                                  am_selected={this.props.am_selected}
+                                  tsocket={this.props.tsocket}
         />
      }
 
 }
 
 ProjectToolbar.propTypes = specializedToolbarPropTypes;
-ProjectToolbar.contextType = TacticContext;
 
 class TileToolbar extends React.Component {
     constructor(props) {
@@ -900,8 +907,10 @@ class TileToolbar extends React.Component {
                                left_position={this.props.left_position}
                                sendRef={this.props.sendRef}
                                multi_select={this.props.multi_select}
-                               tsocket={this.props.tsocket}
                                dark_theme={this.props.dark_theme}
+                              controlled={this.props.controlled}
+                              am_selected={this.props.am_selected}
+                              tsocket={this.props.tsocket}
         />
      }
 }
@@ -974,8 +983,10 @@ class ListToolbar extends React.Component {
                                left_position={this.props.left_position}
                                sendRef={this.props.sendRef}
                                multi_select={this.props.multi_select}
-                               tsocket={this.props.tsocket}
                                dark_theme={this.props.dark_theme}
+                                  controlled={this.props.controlled}
+                                  am_selected={this.props.am_selected}
+                                  tsocket={this.props.tsocket}
         />
      }
 
@@ -1065,8 +1076,10 @@ class CodeToolbar extends React.Component {
                                left_position={this.props.left_position}
                                sendRef={this.props.sendRef}
                                multi_select={this.props.multi_select} 
-                               tsocket={this.props.tsocket}
                                dark_theme={this.props.dark_theme}
+                              controlled={this.props.controlled}
+                              am_selected={this.props.am_selected}
+                              tsocket={this.props.tsocket}
         />
      }
 

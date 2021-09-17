@@ -22,8 +22,6 @@ var _utilities_react = require("./utilities_react.js");
 
 var _blueprint_navbar = require("./blueprint_navbar.js");
 
-var _tactic_context = require("./tactic_context.js");
-
 var _tactic_socket = require("./tactic_socket.js");
 
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
@@ -190,23 +188,17 @@ var TileDifferApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
-      var dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
-      return /*#__PURE__*/_react["default"].createElement(_tactic_context.TacticContext.Provider, {
-        value: {
-          readOnly: this.props.readOnly,
-          tsocket: this.props.tsocket,
-          dark_theme: dark_theme,
-          setTheme: this.props.controlled ? this.context.setTheme : this._setTheme,
-          controlled: this.props.controlled,
-          am_selected: this.props.am_selected
-        }
-      }, !this.props.controlled, " ", /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+      var dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme;
+      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, !this.props.controlled, " ", /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
         is_authenticated: window.is_authenticated,
+        dark_theme: dark_theme,
+        setTheme: this.props.controlled ? this.props.setTheme : this._setTheme,
         selected: null,
         show_api_links: true,
         page_id: this.props.resource_viewer_id,
         user_name: window.username
       }), /*#__PURE__*/_react["default"].createElement(_merge_viewer_app.MergeViewerApp, _extends({}, this.props.statusFuncs, {
+        dark_theme: dark_theme,
         resource_viewer_id: this.props.resource_viewer_id,
         resource_name: this.props.resource_name,
         option_list: this.state.tile_list,
@@ -243,7 +235,6 @@ TileDifferApp.propTypes = {
   edit_content: _propTypes["default"].string,
   second_resource_name: _propTypes["default"].string
 };
-TileDifferApp.contextType = _tactic_context.TacticContext;
 
 if (!window.in_context) {
   tile_differ_main();

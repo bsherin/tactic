@@ -52,8 +52,6 @@ var _blueprint_navbar = require("./blueprint_navbar");
 
 var _library_widgets = require("./library_widgets");
 
-var _tactic_context = require("./tactic_context.js");
-
 var _blueprint_react_widgets = require("./blueprint_react_widgets");
 
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
@@ -280,7 +278,11 @@ function TileCreatorToolbar(props) {
     large: false
   }), /*#__PURE__*/_react["default"].createElement("div", null, /*#__PURE__*/_react["default"].createElement(_blueprint_toolbar.Toolbar, {
     button_groups: props.button_groups,
-    alternate_outer_style: toolbar_outer_style
+    alternate_outer_style: toolbar_outer_style,
+    dark_theme: props.dark_theme,
+    controlled: props.controlled,
+    am_selected: props.am_selected,
+    tsocket: props.tsocket
   })), /*#__PURE__*/_react["default"].createElement(_library_widgets.SearchForm, {
     update_search_state: props.update_search_state,
     search_string: props.search_string,
@@ -597,6 +599,11 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     key: "_saveMe",
     value: function _saveMe() {
       var self = this;
+
+      if (!self.props.am_selected) {
+        return false;
+      }
+
       this.props.startSpinner();
       this.props.statusMessage("Saving Module");
       this.doSavePromise().then(self._doFlashStopSpinner)["catch"](function (data) {
@@ -1041,7 +1048,9 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           setCMObject: this._setDpObject,
           search_term: this.state.search_string,
           first_line_number: first_line_number,
-          code_container_height: tc_height
+          code_container_height: tc_height,
+          dark_theme: dark_theme,
+          readOnly: this.props.read_only
         }));
       }
 
@@ -1069,7 +1078,9 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         setCMObject: this._setRcObject,
         search_term: this.state.search_string,
         first_line_number: this.state.render_content_line_number + 1,
-        code_container_height: rc_height
+        code_container_height: rc_height,
+        dark_theme: dark_theme,
+        readOnly: this.props.read_only
       }));
 
       var left_pane;
@@ -1078,6 +1089,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         left_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(TileCreatorToolbar, {
           controlled: this.props.controlled,
           am_selected: this.props.am_selected,
+          tsocket: this.props.tsocket,
+          dark_theme: this.props.dark_theme,
           resource_name: my_props.resource_name,
           setResourceNameState: this._setResourceNameState,
           res_type: "tile",
@@ -1112,6 +1125,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
 
       var mdata_panel = /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.CombinedMetadata, {
         tags: this.state.tags,
+        readOnly: this.props.readOnly,
         notes: this.state.notes,
         created: my_props.created,
         category: this.state.category,
@@ -1142,6 +1156,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         }
       }, /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
         handleChange: this.handleMethodsChange,
+        dark_theme: dark_theme,
+        readOnly: this.props.readOnly,
         code_content: this.state.extra_functions,
         saveMe: this._saveAndCheckpoint,
         setCMObject: this._setEmObject,
@@ -1208,17 +1224,10 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       // }
 
 
-      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_tactic_context.TacticContext.Provider, {
-        value: {
-          readOnly: this.props.readOnly,
-          tsocket: this.props.tsocket,
-          dark_theme: dark_theme,
-          setTheme: this.props.controlled ? this.context.setTheme : this._setTheme,
-          controlled: this.props.controlled,
-          am_selected: this.props.am_selected
-        }
-      }, !window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, !window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
         is_authenticated: window.is_authenticated,
+        dark_theme: dark_theme,
+        setTheme: this.props.controlled ? this.props.setTheme : this._setTheme,
         selected: null,
         show_api_links: true,
         page_id: this.props.module_viewer_id,
@@ -1240,7 +1249,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         available_height: uheight,
         available_width: uwidth,
         handleSplitUpdate: this.handleLeftPaneResize
-      })))));
+      }))));
     }
   }]);
 
@@ -1286,7 +1295,6 @@ CreatorApp.defaultProps = {
   closeTab: null,
   updatePanel: null
 };
-CreatorApp.contextType = _tactic_context.TacticContext;
 
 if (!window.in_context) {
   tile_creator_main();

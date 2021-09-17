@@ -12,7 +12,6 @@ import {SearchForm, BpSelectorTable, LibraryOmnibar} from "./library_widgets.js"
 import {HorizontalPanes, HANDLE_WIDTH} from "./resizing_layouts.js";
 import {showModalReact, showConfirmDialogReact} from "./modal_react.js";
 import {postAjax, postAjaxPromise} from "./communication_react.js"
-import {TacticContext} from "./tactic_context.js";
 import {SIDE_MARGIN} from "./sizing_tools.js";
 
 import {doFlash} from "./toaster.js"
@@ -80,8 +79,8 @@ BodyMenu.propTypes = {
 
 class LibraryPane extends React.Component {
 
-    constructor(props, context) {
-        super(props, context);
+    constructor(props) {
+        super(props);
         this.top_ref = React.createRef();
         this.table_ref = React.createRef();
         this.resizing = false;
@@ -105,9 +104,9 @@ class LibraryPane extends React.Component {
     }
 
     initSocket() {
-        if ((this.context.tsocket != null) && (!this.props.is_repository)) {
-            this.context.tsocket.attachListener(`update-${this.props.res_type}-selector-row`, this._handleRowUpdate);
-            this.context.tsocket.attachListener(`refresh-${this.props.res_type}-selector`, this._refresh_func);
+        if ((this.props.tsocket != null) && (!this.props.is_repository)) {
+            this.props.tsocket.attachListener(`update-${this.props.res_type}-selector-row`, this._handleRowUpdate);
+            this.props.tsocket.attachListener(`refresh-${this.props.res_type}-selector`, this._refresh_func);
         }
     }
 
@@ -465,7 +464,7 @@ class LibraryPane extends React.Component {
             view_view = view_view.replace(re, "_in_context");
             postAjaxPromise($SCRIPT_ROOT + view_view, {context_id: context_id,
                 resource_name: row_dict.name})
-                .then(self.context.handleCreateViewer)
+                .then(self.props.handleCreateViewer)
                 .catch(doFlash);
         }
         else {
@@ -611,7 +610,7 @@ class LibraryPane extends React.Component {
             const re = new RegExp("/$");
             the_view = the_view.replace(re, "_in_context");
             postAjaxPromise($SCRIPT_ROOT + the_view, {context_id: context_id, resource_name: this.props.selected_resource.name})
-                .then(self.context.handleCreateViewer)
+                .then(self.props.handleCreateViewer)
                 .catch(doFlash);
         }
         else if (!this.state.multi_select) {
@@ -628,7 +627,7 @@ class LibraryPane extends React.Component {
             const re = new RegExp("/$");
             the_view = the_view.replace(re, "_in_context");
             postAjaxPromise($SCRIPT_ROOT + the_view, {context_id: context_id, resource_name: resource_name})
-                .then(self.context.handleCreateViewer)
+                .then(self.props.handleCreateViewer)
                 .catch(doFlash);
 
 
@@ -965,8 +964,12 @@ class LibraryPane extends React.Component {
                                   sendContextMenuItems={this._sendContextMenuItems}
                                   view_resource={this._view_resource}
                                   {...this.props.errorDrawerFuncs}
-                                  handleCreateViewer={this.context.handleCreateViewer}
+                                  handleCreateViewer={this.props.handleCreateViewer}
                                   library_id={this.props.library_id}
+                                  dark_theme={this.props.dark_theme}
+                                  controlled={this.props.controlled}
+                                  am_selected={this.props.am_selected}
+                                  tsocket={this.props.tsocket}
                                   />
                       <div style={{width: uwidth, height: this.props.usable_height}}>
                           <HorizontalPanes
@@ -1025,6 +1028,4 @@ LibraryPane.defaultProps = {
     aux_pane: null,
     dark_theme: false
 };
-
-LibraryPane.contextType = TacticContext;
 

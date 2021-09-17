@@ -43,8 +43,6 @@ require("codemirror/theme/oceanic-next.css");
 
 require("codemirror/theme/pastel-on-dark.css");
 
-var _tactic_context = require("./tactic_context.js");
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
@@ -103,7 +101,7 @@ var ReactCodemirrorMergeView = /*#__PURE__*/function (_React$Component) {
         highlightSelectionMatches: true,
         autoCloseBrackets: true,
         indentUnit: 4,
-        theme: this.context.dark_theme ? DARK_THEME : "default",
+        theme: this.props.dark_theme ? DARK_THEME : "default",
         origRight: this.props.right_content
       });
 
@@ -141,8 +139,8 @@ var ReactCodemirrorMergeView = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate() {
-      if (this.context.dark_theme != this.saved_theme) {
-        if (this.context.dark_theme) {
+      if (this.props.dark_theme != this.saved_theme) {
+        if (this.props.dark_theme) {
           this.cmobject.editor().setOption("theme", DARK_THEME);
           this.cmobject.rightOriginal().setOption("theme", DARK_THEME);
         } else {
@@ -150,7 +148,7 @@ var ReactCodemirrorMergeView = /*#__PURE__*/function (_React$Component) {
           this.cmobject.rightOriginal().setOption("theme", "default");
         }
 
-        this.saved_theme = this.context.dark_theme;
+        this.saved_theme = this.props.dark_theme;
       }
 
       if (this.cmobject.editor().getValue() != this.props.editor_content) {
@@ -167,7 +165,7 @@ var ReactCodemirrorMergeView = /*#__PURE__*/function (_React$Component) {
       this.resizeHeights(this.props.max_height);
       this.refreshAreas();
       this.create_keymap();
-      this.saved_theme = this.context.dark_theme;
+      this.saved_theme = this.props.dark_theme;
     }
   }, {
     key: "handleChange",
@@ -302,4 +300,3 @@ ReactCodemirrorMergeView.propTypes = {
   dark_theme: _propTypes["default"].bool,
   saveMe: _propTypes["default"].func
 };
-ReactCodemirrorMergeView.contextType = _tactic_context.TacticContext;

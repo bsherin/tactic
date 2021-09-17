@@ -25,8 +25,6 @@ var _markdownItLatex = _interopRequireDefault(require("markdown-it-latex"));
 
 var _lodash = _interopRequireDefault(require("lodash"));
 
-var _tactic_context = require("./tactic_context.js");
-
 var _communication_react = require("./communication_react.js");
 
 var _utilities_react = require("./utilities_react.js");
@@ -475,7 +473,7 @@ var NativeTags = /*#__PURE__*/function (_React$Component5) {
   }, {
     key: "render",
     value: function render() {
-      if (this.context.readOnly) {
+      if (this.props.readOnly) {
         return /*#__PURE__*/_react["default"].createElement(_core.TagInput, {
           values: this.props.tags,
           disabled: true
@@ -510,7 +508,6 @@ NativeTags.proptypes = {
   handleChange: _propTypes["default"].func,
   res_type: _propTypes["default"].string
 };
-NativeTags.contextType = _tactic_context.TacticContext;
 
 var NotesField = /*#__PURE__*/function (_React$Component6) {
   _inherits(NotesField, _React$Component6);
@@ -568,7 +565,7 @@ var NotesField = /*#__PURE__*/function (_React$Component6) {
   }, {
     key: "_hideMarkdown",
     value: function _hideMarkdown() {
-      if (this.context.readOnly) return;
+      if (this.props.readOnly) return;
       this.awaiting_focus = true; // We can't set focus until the input is visible
 
       this.setState({
@@ -631,7 +628,7 @@ var NotesField = /*#__PURE__*/function (_React$Component6) {
         onBlur: this._handleMyBlur,
         onChange: this.props.handleChange,
         value: this.props.notes,
-        disabled: this.context.readOnly,
+        disabled: this.props.readOnly,
         style: notes_style
       }), /*#__PURE__*/_react["default"].createElement("div", {
         ref: this.md_ref,
@@ -647,7 +644,6 @@ var NotesField = /*#__PURE__*/function (_React$Component6) {
 }(_react["default"].Component);
 
 exports.NotesField = NotesField;
-NotesField.contextType = _tactic_context.TacticContext;
 NotesField.propTypes = {
   notes: _propTypes["default"].string,
   handleChange: _propTypes["default"].func,
@@ -747,6 +743,7 @@ var CombinedMetadata = /*#__PURE__*/function (_React$Component7) {
         label: "Tags"
       }, /*#__PURE__*/_react["default"].createElement(NativeTags, {
         tags: this.props.tags,
+        readOnly: this.props.readOnly,
         handleChange: this._handleTagsChange,
         res_type: this.props.res_type
       })), this.props.category != null && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
@@ -758,6 +755,7 @@ var CombinedMetadata = /*#__PURE__*/function (_React$Component7) {
         label: "Notes"
       }, /*#__PURE__*/_react["default"].createElement(NotesField, {
         notes: this.props.notes,
+        readOnly: this.props.readOnly,
         handleChange: this._handleNotesChange,
         show_markdown_initial: true,
         handleBlur: this.props.handleNotesBlur

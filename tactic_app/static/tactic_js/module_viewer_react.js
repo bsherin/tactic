@@ -34,8 +34,6 @@ var _sizing_tools = require("./sizing_tools.js");
 
 var _blueprint_navbar = require("./blueprint_navbar.js");
 
-var _tactic_context = require("./tactic_context.js");
-
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -340,7 +338,7 @@ var ModuleViewerApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
-      var dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
+      var dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme;
       var the_context = {
         "readOnly": this.props.readOnly
       };
@@ -380,17 +378,10 @@ var ModuleViewerApp = /*#__PURE__*/function (_React$Component) {
         }
       }
 
-      return /*#__PURE__*/_react["default"].createElement(_tactic_context.TacticContext.Provider, {
-        value: {
-          readOnly: this.props.readOnly,
-          tsocket: this.props.tsocket,
-          dark_theme: dark_theme,
-          setTheme: this.props.controlled ? this.context.setTheme : this._setTheme,
-          controlled: this.props.controlled,
-          am_selected: this.props.am_selected
-        }
-      }, !this.props.controlled && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, !this.props.controlled && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
         is_authenticated: window.is_authenticated,
+        dark_theme: dark_theme,
+        setTheme: this.props.controlled ? this.props.setTheme : this._setTheme,
         selected: null,
         show_api_links: true,
         page_id: this.props.resource_viewer_id,
@@ -417,6 +408,8 @@ var ModuleViewerApp = /*#__PURE__*/function (_React$Component) {
         meta_outer: this.props.meta_outer
       }), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
         code_content: this.state.code_content,
+        dark_theme: dark_theme,
+        readOnly: this.props.readOnly,
         handleChange: this._handleCodeChange,
         saveMe: this._saveMe,
         search_term: this.state.search_string,
@@ -580,7 +573,6 @@ ModuleViewerApp.defaultProps = {
   closeTab: null,
   updatePanel: null
 };
-ModuleViewerApp.contextType = _tactic_context.TacticContext;
 
 if (!window.in_context) {
   module_viewer_main();

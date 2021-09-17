@@ -15,7 +15,6 @@ import {TopRightButtons} from "./blueprint_react_widgets.js";
 
 import {doFlash, doFlashAlways} from "./toaster.js";
 import {SIDE_MARGIN} from "./sizing_tools.js"
-import {TacticContext} from "./tactic_context.js";
 
 export {ResourceViewerApp, copyToLibrary, sendToRepository}
 
@@ -51,8 +50,8 @@ function sendToRepository(res_type, resource_name) {
 
 class ResourceViewerApp extends React.Component {
 
-    constructor(props, context) {
-        super(props, context);
+    constructor(props) {
+        super(props);
         doBinding(this);
         this.initSocket();
         this.top_ref = React.createRef();
@@ -62,7 +61,7 @@ class ResourceViewerApp extends React.Component {
         let self = this;
         this.mousetrap = new Mousetrap();
         this.mousetrap.bind(['command+s', 'ctrl+s'], (e)=>{
-            if (self.context.am_selected){
+            if (self.props.am_selected){
                 self.props.saveMe();
                 e.preventDefault()
             }
@@ -73,16 +72,16 @@ class ResourceViewerApp extends React.Component {
 
     initSocket() {
         let self = this;
-        this.context.tsocket.attachListener('handle-callback', (task_packet)=>{
+        this.props.tsocket.attachListener('handle-callback', (task_packet)=>{
             handleCallback(task_packet, self.props.resource_viewer_id)
         });
-        if (!this.context.controlled) {
-            this.context.tsocket.attachListener('close-user-windows', (data) => {
+        if (!this.props.controlled) {
+            this.props.tsocket.attachListener('close-user-windows', (data) => {
                 if (!(data["originator"] == self.props.resource_viewer_id)) {
                     window.close()
                 }
             });
-            this.context.tsocket.attachListener("doFlash", function (data) {
+            this.props.tsocket.attachListener("doFlash", function (data) {
                 doFlash(data)
             });
         }
@@ -103,7 +102,12 @@ class ResourceViewerApp extends React.Component {
                                        show_search={this.props.show_search}
                                        search_string={this.props.search_string}
                                        update_search_state={this.props.update_search_state}
-                                       res_type={this.props.res_type}/>
+                                       res_type={this.props.res_type}
+                                       controlled={this.props.controlled}
+                                       am_selected={this.props.am_selected}
+                                       tsocket={this.props.tsocket}
+                                       dark_theme={this.props.dark_theme}
+                />
                 {this.props.children}
             </React.Fragment>
         );
@@ -119,6 +123,7 @@ class ResourceViewerApp extends React.Component {
                                                 marginRight: 20}}
                                   created={this.props.created}
                                   notes={this.props.notes}
+                                  readOnly={this.props.readOnly}
                                   handleChange={this.props.handleStateChange}
                                   res_type={this.props.res_type} />
                 </React.Fragment>
@@ -165,5 +170,3 @@ ResourceViewerApp.defaultProps ={
     refreshTab: null,
     closeTab: null,
 };
-
-ResourceViewerApp.contextType = TacticContext;

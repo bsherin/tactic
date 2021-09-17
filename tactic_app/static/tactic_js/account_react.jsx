@@ -11,14 +11,13 @@ import {postAjax} from "./communication_react.js";
 
 import {doBinding, guid} from "./utilities_react.js";
 import {TacticNavbar} from "./blueprint_navbar";
-import {TacticContext} from "./tactic_context.js";
 
 window.main_id = guid();
 
 function _account_main() {
     if (window._show_message) doFlash(window._message);
     let domContainer = document.querySelector('#root');
-    ReactDOM.render(<AccountApp initial_theme={window.theme}/>, domContainer)
+    ReactDOM.render(<AccountApp initial_theme={window.theme} controlled={false}/>, domContainer)
 }
 
 const field_names = ["new_password", "confirm_new_password"];
@@ -250,43 +249,37 @@ class AccountApp extends React.Component {
         return (
 
             <React.Fragment>
-                <TacticContext.Provider value={{
-                    readOnly: false,
-                    tsocket: this.props.tsocket,
-                    dark_theme: this.state.dark_theme,
-                    setTheme:  this.props.controlled ? this.context.setTheme : this._setTheme,
-                    controlled: this.props.controlled
-                }}>
-                    <TacticNavbar is_authenticated={window.is_authenticated}
-                                  selected={null}
-                                  show_api_links={false}
-                                  page_id={window.main_id}
-                                  user_name={window.username}/>
-                    <div className={outer_class}>
-                        <div style={{display: "flex", "flex-direction": "column"}}>
-                            <div className="account-pane bp3-card">
-                                <h6>User Info</h6>
-                                {field_items[0]}
-                            </div>
-                            <div className="account-pane bp3-card">
-                                <h6>User Settings</h6>
-                                {field_items[1]}
-                            </div>
+                <TacticNavbar is_authenticated={window.is_authenticated}
+                              dark_theme={this.state.dark_theme}
+                              setTheme={this.props.controlled ? this.props.setTheme : this._setTheme}
+                              selected={null}
+                              show_api_links={false}
+                              page_id={window.main_id}
+                              user_name={window.username}/>
+                <div className={outer_class}>
+                    <div style={{display: "flex", "flex-direction": "column"}}>
+                        <div className="account-pane bp3-card">
+                            <h6>User Info</h6>
+                            {field_items[0]}
                         </div>
                         <div className="account-pane bp3-card">
-                            <h6>Change Password</h6>
-                            <AccountTextField name="password"
-                                          value={this.state.password}
-                                          helper_text={this.state.password_helper}
-                                          onFieldChange={this._onFieldChange}/>
-                            <AccountTextField name="confirm_password"
-                                          value={this.state.confirm_password}
-                                          helper_text={this.state.password_helper}
-                                          onFieldChange={this._onFieldChange}/>
-                            <Button icon="log-in" large={true} text="Update Password" onClick={this._submitPassword}/>
+                            <h6>User Settings</h6>
+                            {field_items[1]}
                         </div>
                     </div>
-                </TacticContext.Provider>
+                    <div className="account-pane bp3-card">
+                        <h6>Change Password</h6>
+                        <AccountTextField name="password"
+                                      value={this.state.password}
+                                      helper_text={this.state.password_helper}
+                                      onFieldChange={this._onFieldChange}/>
+                        <AccountTextField name="confirm_password"
+                                      value={this.state.confirm_password}
+                                      helper_text={this.state.password_helper}
+                                      onFieldChange={this._onFieldChange}/>
+                        <Button icon="log-in" large={true} text="Update Password" onClick={this._submitPassword}/>
+                    </div>
+                </div>
             </React.Fragment>
         )
     }

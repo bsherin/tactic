@@ -6,8 +6,6 @@ import {postAjax} from "./communication_react.js"
 // import { CodeMirror } from "./codemirror/src/edit/main.js"
 // import "./codemirror/mode/python/python.js"
 
-import {TacticContext} from "./tactic_context.js"
-
 import CodeMirror from 'codemirror/lib/codemirror.js'
 import 'codemirror/mode/python/python.js'
 
@@ -62,9 +60,9 @@ class ReactCodemirror extends React.Component {
             highlightSelectionMatches: true,
             autoCloseBrackets: true,
             indentUnit: 4,
-            theme: this.context.dark_theme ? DARK_THEME : "default",
+            theme: this.props.dark_theme ? DARK_THEME : "default",
             mode: this.props.mode,
-            readOnly: this.context.readOnly
+            readOnly: this.props.readOnly
         });
         if (first_line_number != 1) {
             cmobject.setOption("firstLineNumber", first_line_number)
@@ -106,19 +104,19 @@ class ReactCodemirror extends React.Component {
         if (this.props.setCMObject != null) {
             this.props.setCMObject(this.cmobject)
         }
-        this.saved_theme = this.context.dark_theme;
+        this.saved_theme = this.props.dark_theme;
         this._doHighlight(this.props.search_term)
     }
 
     componentDidUpdate() {
-        if (this.context.dark_theme != this.saved_theme) {
-            if (this.context.dark_theme) {
+        if (this.props.dark_theme != this.saved_theme) {
+            if (this.props.dark_theme) {
                 this.cmobject.setOption("theme", DARK_THEME)
             }
             else {
                 this.cmobject.setOption("theme", "default")
             }
-            this.saved_theme = this.context.dark_theme
+            this.saved_theme = this.props.dark_theme
         }
         if (this.props.sync_to_prop || this.props.force_sync_to_prop) {
             this.cmobject.setValue(this.props.code_content);
@@ -142,7 +140,7 @@ class ReactCodemirror extends React.Component {
         }
         else{
             this.cmobject.operation(function() {
-                self._removeOverlay()
+                self._removeOverlay();
                 self._addOverlay(self.props.search_term)
             })
         }
@@ -150,7 +148,7 @@ class ReactCodemirror extends React.Component {
 
     _addOverlay(query, hasBoundary=false, style="searchhighlight") {
         // var state = cm.state.matchHighlighter;
-        this.overlay = this._makeOverlay(query, hasBoundary, style)
+        this.overlay = this._makeOverlay(query, hasBoundary, style);
         this.cmobject.addOverlay(this.overlay);
       }
 
@@ -305,5 +303,3 @@ ReactCodemirror.defaultProps = {
     code_container_ref: null,
     code_container_width: "100%"
 };
-
-ReactCodemirror.contextType = TacticContext;

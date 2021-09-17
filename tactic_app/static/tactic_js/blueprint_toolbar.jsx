@@ -19,7 +19,6 @@ import {showFileImportDialog} from "./import_dialog.js";
 import {doFlash} from "./toaster.js";
 
 import {postAjax} from "./communication_react.js"
-import {TacticContext} from "./tactic_context.js";
 
 export {Toolbar, ToolbarButton, Namebutton, ResourceviewerToolbar}
 
@@ -33,7 +32,7 @@ const intent_colors = {
     regular: "#5c7080"
 };
 
-function ResourceviewerToolbar(props, context) {
+function ResourceviewerToolbar(props) {
     let tstyle = {"marginTop": 20, "paddingRight": 20, "width": "100%"};
     let toolbar_outer_style = {
                 display: "flex",
@@ -52,11 +51,11 @@ function ResourceviewerToolbar(props, context) {
             />
             <div>
                 <Toolbar button_groups={props.button_groups}
-                         // controlled={props.controlled}
-                         // am_selected={props.am_selected}
+                         controlled={props.controlled}
+                         am_selected={props.am_selected}
                          alternate_outer_style={toolbar_outer_style}
-                         // tsocket={context.tsocket}
-                         // dark_theme={context.dark_theme}
+                         tsocket={props.tsocket}
+                         dark_theme={props.dark_theme}
                 />
             </div>
             {props.show_search &&
@@ -186,7 +185,7 @@ class FileAdderButton extends React.Component {
 
     _showDialog () {
         showFileImportDialog(this.props.resource_type, this.props.allowed_file_types,
-            this.props.checkboxes, this.props.process_handler, this.context.tsocket, this.context.dark_theme,
+            this.props.checkboxes, this.props.process_handler, this.props.tsocket, this.props.dark_theme,
             this.props.combine, this.props.show_csv_options)
     }
 
@@ -214,15 +213,13 @@ FileAdderButton.propTypes = {
     combine: PropTypes.bool,
     tooltip: PropTypes.string,
     show_csv_options: PropTypes.bool,
-    // tsocket: PropTypes.object,
-    // dark_theme: PropTypes.bool,
+    tsocket: PropTypes.object,
+    dark_theme: PropTypes.bool,
 };
 
 FileAdderButton.defaultProps = {
     multiple: false
 };
-
-FileAdderButton.contextType = TacticContext;
 
 class Toolbar extends React.Component {
     constructor(props) {
@@ -312,8 +309,8 @@ class Toolbar extends React.Component {
                                  tooltip={this.getTooltip(button)}
                                  tooltipDelay={this.getTooltipDelay(button)}
                                  show_csv_options={button.show_csv_options}
-                                 tsocket={this.context.tsocket}
-                                 dark_theme={this.context.dark_theme}
+                                 tsocket={this.props.tsocket}
+                                 dark_theme={this.props.dark_theme}
                                  key={index}
                 />
             );
@@ -342,7 +339,7 @@ class Toolbar extends React.Component {
                 {items}
                 </div>
                 <KeyTrap global={true}
-                         active={!this.context.controlled || this.context.am_selected}
+                         active={!this.props.controlled || this.props.am_selected}
                          bindings={key_bindings} />
             </div>
         )
@@ -369,7 +366,6 @@ Toolbar.defaultProps = {
     tsocket: null
 };
 
-Toolbar.contextType = TacticContext;
 
 
 class Namebutton extends React.Component {

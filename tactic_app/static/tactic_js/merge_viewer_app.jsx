@@ -5,9 +5,8 @@ import PropTypes from 'prop-types';
 import {ReactCodemirrorMergeView} from "./react-codemirror-mergeview.js";
 import {Toolbar} from "./blueprint_toolbar.js";
 import {BpSelect} from "./blueprint_mdata_fields.js";
-import {TacticContext} from "./tactic_context.js";
 
-export{MergeViewerApp, MergeViewerSocket}
+export {MergeViewerApp}
 
 class MergeViewerApp extends React.Component {
 
@@ -71,8 +70,9 @@ class MergeViewerApp extends React.Component {
             paddingRight: 25
 
         };
+
         let outer_class = "merge-viewer-outer";
-        if (this.context.dark_theme) {
+        if (this.props.dark_theme) {
             outer_class = outer_class + " bp3-dark";
         }
         else {
@@ -93,11 +93,11 @@ class MergeViewerApp extends React.Component {
                                   value={this.props.select_val}/>
                     </div>
                     <ReactCodemirrorMergeView handleEditChange={this.props.handleEditChange}
+                                              dark_theme={this.props.dark_theme}
                                               editor_content={this.props.edit_content}
                                               right_content={this.props.right_content}
                                               saveMe={this.props.saveHandler}
                                               max_height={max_merge_height}
-                                              dark_theme={this.props.dark_theme}
                                               ref={this.merge_element_ref}
 
                     />
@@ -115,7 +115,6 @@ MergeViewerApp.propTypes = {
     right_content: PropTypes.string,
     handleSelectChange: PropTypes.func,
     handleEditChange: PropTypes.func,
+    dark_theme: PropTypes.bool,
     saveHandler: PropTypes.func,
 };
-
-MergeViewerApp.contextType = TacticContext;

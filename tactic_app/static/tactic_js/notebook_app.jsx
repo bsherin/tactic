@@ -19,7 +19,6 @@ import {handleCallback, postWithCallback, postAjaxPromise, postAjax} from "./com
 import {ExportsViewer} from "./export_viewer_react";
 import {HorizontalPanes} from "./resizing_layouts";
 import {withErrorDrawer} from "./error_drawer.js";
-import {TacticContext} from "./tactic_context.js";
 import {getUsableDimensions} from "./sizing_tools.js";
 
 const MARGIN_SIZE = 10;
@@ -329,7 +328,7 @@ class NotebookApp extends React.Component {
     }
 
     render () {
-        let dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
+        let dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme;
         let my_props = {...this.props};
         if (!this.props.controlled) {
             for (let prop_name of controllable_props) {
@@ -360,6 +359,11 @@ class NotebookApp extends React.Component {
         let console_pane = (
             <ConsoleComponent {...this.props.statusFuncs}
                   main_id={this.props.main_id}
+                  tsocket={this.props.tsocket}
+                  dark_theme={dark_theme}
+                  handleCreateViewer={this.props.handleCreateViewer}
+                  controlled={this.props.controlled}
+                  am_selected={this.props.am_selected}
                   console_items={this.state.console_items}
                   console_is_shrunk={false}
                   console_is_zoomed={true}
@@ -375,6 +379,7 @@ class NotebookApp extends React.Component {
         let exports_pane;
         if (this.state.show_exports_pane) {
             exports_pane = <ExportsViewer main_id={this.props.main_id}
+                                          tsocket={this.props.tsocket}
                                           setUpdate={(ufunc)=>{this.updateExportsList = ufunc}}
                                           setMainStateValue={this._setMainStateValue}
                                           available_height={console_available_height - MARGIN_SIZE}
@@ -399,24 +404,17 @@ class NotebookApp extends React.Component {
         };
         return (
             <React.Fragment>
-                <TacticContext.Provider value={{
-                    readOnly: this.props.readOnly,
-                    tsocket: this.props.tsocket,
-                    dark_theme: dark_theme,
-                    setTheme:  this.props.controlled ? this.context.setTheme : this._setTheme,
-                    controlled: this.props.controlled,
-                    am_selected: this.props.am_selected,
-                    handleCreateViewer: this.context.handleCreateViewer
-                }}>
-                    <TacticNavbar is_authenticated={window.is_authenticated}
-                                  user_name={window.username}
-                                  menus={menus}
-                                  show_api_links={true}
-                                  page_id={this.props.main_id}
-                                  min_navbar={window.in_context}
-                                  refreshTab={this.props.refreshTab}
-                                  closeTab={this.props.closeTab}
-                    />
+                <TacticNavbar is_authenticated={window.is_authenticated}
+                              dark_theme={dark_theme}
+                              setTheme={this.props.controlled ? this.props.setTheme : this._setTheme}
+                              user_name={window.username}
+                              menus={menus}
+                              show_api_links={true}
+                              page_id={this.props.main_id}
+                              min_navbar={window.in_context}
+                              refreshTab={this.props.refreshTab}
+                              closeTab={this.props.closeTab}
+                />
                 <div className={outer_class} ref={this.main_outer_ref} style={outer_style}>
 
                     <HorizontalPanes left_pane={console_pane}
@@ -430,7 +428,6 @@ class NotebookApp extends React.Component {
                                      handleSplitUpdate={this._handleConsoleFractionChange}
                         />
                     </div>
-                </TacticContext.Provider>
             </React.Fragment>
         )
     }
@@ -449,8 +446,6 @@ NotebookApp.defaultProps = {
     refreshTab: null,
     closeTab: null,
 };
-
-NotebookApp.contextType = TacticContext;
 
 if (!window.in_context) {
     main_main();

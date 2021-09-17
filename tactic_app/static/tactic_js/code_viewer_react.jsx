@@ -20,7 +20,6 @@ import {withErrorDrawer} from "./error_drawer.js";
 import {doBinding} from "./utilities_react.js";
 import {guid} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
-import {TacticContext} from "./tactic_context.js";
 
 export {code_viewer_props, CodeViewerApp}
 
@@ -183,7 +182,7 @@ class CodeViewerApp extends React.Component {
     }
 
     render() {
-        let dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
+        let dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme;
         let my_props = {...this.props};
         if (!this.props.controlled) {
             for (let prop_name of controllable_props) {
@@ -205,16 +204,11 @@ class CodeViewerApp extends React.Component {
             }
         }
         return (
-            <TacticContext.Provider value={{
-                    readOnly: this.props.readOnly,
-                    tsocket: this.props.tsocket,
-                    dark_theme: dark_theme,
-                    setTheme:  this.props.controlled ? this.context.setTheme : this._setTheme,
-                    controlled: this.props.controlled,
-                    am_selected: this.props.am_selected
-                }}>
+            <React.Fragment>
                 {!this.props.controlled &&
                     <TacticNavbar is_authenticated={window.is_authenticated}
+                                  dark_theme={dark_theme}
+                                  setTheme={this.props.controlled ? this.props.setTheme : this._setTheme}
                                   selected={null}
                                   show_api_links={true}
                                   page_id={this.props.resource_viewer_id}
@@ -238,6 +232,8 @@ class CodeViewerApp extends React.Component {
                                        show_search={true}
                                        update_search_state={this._update_search_state}>
                         <ReactCodemirror code_content={this.state.code_content}
+                                         dark_theme={dark_theme}
+                                         readOnly={this.props.readOnly}
                                          handleChange={this._handleCodeChange}
                                          saveMe={this._saveMe}
                                          search_term={this.state.search_string}
@@ -246,7 +242,7 @@ class CodeViewerApp extends React.Component {
                           />
                     </ResourceViewerApp>
                 </div>
-            </TacticContext.Provider>
+            </React.Fragment>
         )
     }
 
@@ -322,8 +318,6 @@ CodeViewerApp.defaultProps = {
     refreshTab: null,
     closeTab: null,
 };
-
-CodeViewerApp.contextType = TacticContext;
 
 
 if (!window.in_context) {
