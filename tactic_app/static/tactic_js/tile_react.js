@@ -830,16 +830,16 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
       $(this.body_ref.current).on(click_event, '.cell-clickable', function (e) {
         var data_dict = self._standard_click_data();
 
-        data_dict.clicked_cell = $(self).text();
+        data_dict.clicked_cell = $(this).text();
         (0, _communication_react.postWithCallback)(self.props.tile_id, "TileCellClick", data_dict, null, null, self.props.main_id);
       });
       $(this.body_ref.current).on(click_event, '.row-clickable', function (e) {
         var data_dict = self._standard_click_data();
 
-        var cells = $(self).children();
+        var cells = $(this).children();
         var row_vals = [];
         cells.each(function () {
-          row_vals.push($(self).text());
+          row_vals.push($(this).text());
         });
         data_dict["clicked_row"] = row_vals;
         (0, _communication_react.postWithCallback)(self.props.tile_id, "TileRowClick", data_dict, null, null, self.props.main_id);

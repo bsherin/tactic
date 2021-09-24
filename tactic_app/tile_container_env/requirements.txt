@@ -26,3 +26,4 @@ kombu
 textblob
 wikipedia-api
 docutils
+lime
