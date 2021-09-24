@@ -35,7 +35,7 @@ else:
                       "duplicate_user_react": './tactic_js_dist/duplicate_user_react.production.bundle.js',
                       "account_react": './tactic_js_dist/account_react.production.bundle.js',
                       "auth_react": './tactic_js_dist/auth_react.production.bundle.js',
-                      "history_viewer_react": './tactic_js_dev/history_viewer_react.bundle.js',
+                      "history_viewer_react": './tactic_js_dist/history_viewer_react.production.bundle.js',
                       "tile_differ_react": './tactic_js_dist/tile_differ_react.production.bundle.js',
                       "context_react": './tactic_js_dist/context_react.production.bundle.js'
                       }

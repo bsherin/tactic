@@ -517,15 +517,15 @@ class TileComponent extends React.Component {
          });
          $(this.body_ref.current).on(click_event, '.cell-clickable', function(e) {
              let data_dict = self._standard_click_data();
-             data_dict.clicked_cell = $(self).text();
+             data_dict.clicked_cell = $(this).text();
              postWithCallback(self.props.tile_id, "TileCellClick", data_dict, null, null, self.props.main_id)
          });
          $(this.body_ref.current).on(click_event, '.row-clickable', function(e) {
              let data_dict = self._standard_click_data();
-             const cells = $(self).children();
+             const cells = $(this).children();
              const row_vals = [];
              cells.each(function() {
-                row_vals.push($(self).text())
+                row_vals.push($(this).text())
              });
              data_dict["clicked_row"] = row_vals;
              postWithCallback(self.props.tile_id, "TileRowClick", data_dict, null, null, self.props.main_id)
