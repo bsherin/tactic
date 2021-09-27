@@ -45,6 +45,8 @@ require("codemirror/theme/oceanic-next.css");
 
 require("codemirror/theme/pastel-on-dark.css");
 
+var _utilities_react = require("./utilities_react");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
@@ -101,6 +103,8 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
 
     _this.saved_theme = null;
     _this.overlay = null;
+    _this.matches = null;
+    _this.focus_line_number = null;
     return _this;
   }
 
@@ -167,6 +171,11 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
       this._doHighlight(this.props.search_term);
     }
   }, {
+    key: "shouldComponentUpdate",
+    value: function shouldComponentUpdate(nextProps, nextState) {
+      return !(0, _utilities_react.propsAreEqual)(nextProps, this.props);
+    }
+  }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate() {
       if (this.props.dark_theme != this.saved_theme) {
@@ -196,6 +205,37 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
       this._doHighlight(this.props.search_term);
     }
   }, {
+    key: "_lineNumberFromSearchNumber",
+    value: function _lineNumberFromSearchNumber() {
+      var lines = this.props.code_content.split("\n");
+      var lnum = 0;
+      var mnum = -1;
+      var reg = new RegExp(this.props.search_term, "g");
+
+      var _iterator = _createForOfIteratorHelper(lines),
+          _step;
+
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var line = _step.value;
+          mnum += (line.match(reg) || []).length;
+
+          if (mnum >= this.props.current_search_number) {
+            console.log("got lnum " + String(lnum));
+            return lnum;
+          }
+
+          lnum += 1;
+        }
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
+      }
+
+      return null;
+    }
+  }, {
     key: "_doHighlight",
     value: function _doHighlight() {
       var self = this;
@@ -205,6 +245,14 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
           self._removeOverlay();
         });
       } else {
+        if (this.props.current_search_number != null) {
+          var lnum = this._lineNumberFromSearchNumber();
+
+          if (lnum) {
+            this._scrollToLine(lnum);
+          }
+        }
+
         this.cmobject.operation(function () {
           self._removeOverlay();
 
@@ -213,21 +261,50 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
       }
     }
   }, {
+    key: "_scrollToLine",
+    value: function _scrollToLine(lnumber) {
+      console.log("scrolling to line " + String(lnumber));
+      this.cmobject.scrollIntoView({
+        line: lnumber,
+        "char": 0
+      }, 50);
+    }
+  }, {
     key: "_addOverlay",
     value: function _addOverlay(query) {
       var hasBoundary = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
       var style = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "searchhighlight";
+      var focus_style = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "focussearchhighlight";
       // var state = cm.state.matchHighlighter;
-      this.overlay = this._makeOverlay(query, hasBoundary, style);
+      var prev_matches = this.matches;
+      var reg = new RegExp(query, "g");
+      this.matches = (this.props.code_content.match(reg) || []).length;
+
+      if (this.props.setSearchMatches && this.matches != prev_matches) {
+        this.props.setSearchMatches(this.matches);
+      }
+
+      this.overlay = this._makeOverlay(query, hasBoundary, style, focus_style);
       this.cmobject.addOverlay(this.overlay);
     }
   }, {
     key: "_makeOverlay",
-    value: function _makeOverlay(query, hasBoundary, style) {
+    value: function _makeOverlay(query, hasBoundary, style, focus_style) {
       var self = this;
+      var mcounter = -1;
+      console.log("entering makeOverlay with current_search_number " + String(self.props.current_search_number));
       return {
         token: function token(stream) {
-          if (stream.match(query) && (!hasBoundary || self._boundariesAround(stream, hasBoundary))) return style;
+          if (stream.match(query) && (!hasBoundary || self._boundariesAround(stream, hasBoundary))) {
+            mcounter += 1;
+
+            if (mcounter == self.props.current_search_number) {
+              return focus_style;
+            }
+
+            return style;
+          }
+
           stream.next();
           stream.skipTo(query.charAt(0)) || stream.skipToEnd();
         }
@@ -267,32 +344,32 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
         self.ordered_api_categories = data.ordered_api_categories;
         self.api_list = [];
 
-        var _iterator = _createForOfIteratorHelper(self.ordered_api_categories),
-            _step;
+        var _iterator2 = _createForOfIteratorHelper(self.ordered_api_categories),
+            _step2;
 
         try {
-          for (_iterator.s(); !(_step = _iterator.n()).done;) {
-            var cat = _step.value;
+          for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+            var cat = _step2.value;
 
-            var _iterator2 = _createForOfIteratorHelper(self.api_dict_by_category[cat]),
-                _step2;
+            var _iterator3 = _createForOfIteratorHelper(self.api_dict_by_category[cat]),
+                _step3;
 
             try {
-              for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-                var entry = _step2.value;
+              for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+                var entry = _step3.value;
                 self.api_list.push(entry["name"]);
               }
             } catch (err) {
-              _iterator2.e(err);
+              _iterator3.e(err);
             } finally {
-              _iterator2.f();
+              _iterator3.f();
             }
           } //noinspection JSUnresolvedVariable
 
         } catch (err) {
-          _iterator.e(err);
+          _iterator2.e(err);
         } finally {
-          _iterator.f();
+          _iterator2.f();
         }
 
         _codemirror["default"].commands.autocomplete = function (cm) {
@@ -319,30 +396,7 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
       this.mousetrap.bind(['escape'], function (e) {
         self.clearSelections();
         e.preventDefault();
-      }); // if (is_mac) {
-      //     CodeMirror.keyMap["default"]["Cmd-S"] = function () {self.props.saveMe()};
-      //
-      //     this.mousetrap.bind(['command+l'], function (e) {
-      //         // self.loadModule();
-      //         e.preventDefault()
-      //     });
-      //     this.mousetrap.bind(['command+f'], function (e) {
-      //         self.searchCM();
-      //         e.preventDefault()
-      //     });
-      // }
-      // else {
-      //     CodeMirror.keyMap["default"]["Ctrl-S"] = function () {self.props.saveMe()};
-      //
-      //     this.mousetrap.bind(['ctrl+l'], function (e) {
-      //         // self.loadModule();
-      //         e.preventDefault()
-      //     });
-      //     this.mousetrap.bind(['ctrl+f'], function (e) {
-      //         self.searchCM();
-      //         e.preventDefault()
-      //     });
-      // }
+      });
     }
   }, {
     key: "render",
@@ -381,7 +435,9 @@ ReactCodemirror.propTypes = {
   searchTerm: _propTypes["default"].string,
   code_container_ref: _propTypes["default"].object,
   code_container_width: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
-  code_container_height: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number])
+  code_container_height: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
+  setSearchMatches: _propTypes["default"].func,
+  current_search_number: _propTypes["default"].number
 };
 ReactCodemirror.defaultProps = {
   first_line_number: 1,
@@ -399,5 +455,7 @@ ReactCodemirror.defaultProps = {
   extraKeys: {},
   setCMObject: null,
   code_container_ref: null,
-  code_container_width: "100%"
+  code_container_width: "100%",
+  setSearchMatches: null,
+  current_search_number: null
 };

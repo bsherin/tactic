@@ -5,7 +5,7 @@ import React from "react";
 import PropTypes from 'prop-types';
 import hash from "object-hash"
 
-import { InputGroup, Menu, MenuItem, Switch, Card } from "@blueprintjs/core";
+import { InputGroup, Menu, MenuItem, Switch, Card, Button, ButtonGroup } from "@blueprintjs/core";
 import { Cell, Column, Table, ColumnHeaderCell, RegionCardinality, TruncatedFormat, Regions } from "@blueprintjs/table";
 import {Omnibar} from "@blueprintjs/select"
 import _ from 'lodash';
@@ -139,13 +139,13 @@ class SearchForm extends React.Component {
             <React.Fragment>
                 <div className="d-flex flex-row mb-2 mt-2">
                     <InputGroup type="search"
-                                      placeholder="Search"
-                                   leftIcon="search"
-                                      value={this.props.search_string}
-                                      onChange={this._handleSearchFieldChange}
-                                      style={{"width": this.props.field_width}}
-                                    autoCapitalize="none"
-                                       autoCorrect="off"
+                                placeholder="Search"
+                                leftIcon="search"
+                                value={this.props.search_string}
+                                onChange={this._handleSearchFieldChange}
+                                style={{"width": this.props.field_width}}
+                                autoCapitalize="none"
+                                autoCorrect="off"
                     />
 
                 {this.props.allow_search_metadata &&
@@ -164,6 +164,13 @@ class SearchForm extends React.Component {
                                onChange={this._handleSearchInsideChange}
                     />
                 }
+                    {this.props.include_search_jumper &&
+                        <ButtonGroup style={{marginLeft: 5, padding: 2}}>
+                            <Button onClick={this.props.searchNext} icon="caret-down" text={undefined} small={true}/>
+                            <Button onClick={this.props.searchPrev} icon="caret-up" text={undefined} small={true}/>
+                        </ButtonGroup>
+
+                    }
                 </div>
             </React.Fragment>
         )
@@ -177,7 +184,10 @@ SearchForm.propTypes = {
     search_string: PropTypes.string,
     search_inside: PropTypes.bool,
     search_metadata: PropTypes.bool,
-    field_with: PropTypes.number
+    field_with: PropTypes.number,
+    include_search_jumper: PropTypes.bool,
+    searchNext: PropTypes.func,
+    searchPrev: PropTypes.func
 };
 
 SearchForm.defaultProps = {
@@ -185,7 +195,11 @@ SearchForm.defaultProps = {
     allow_search_metadata: false,
     search_inside: false,
     search_metadata: false,
-    field_width: 265
+    field_width: 265,
+    include_search_jumper: false,
+    current_search_number: null,
+    searchNext: null,
+    searchPrev: null
 };
 
 class BpSelectorTable extends React.Component {

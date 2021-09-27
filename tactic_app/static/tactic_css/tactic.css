@@ -901,6 +901,8 @@ pre code {
   background-color: lightgreen; }
 .light-theme .cm-searchhighlight {
   background-color: yellow; }
+.light-theme .cm-focussearchhighlight {
+  background-color: blue; }
 .light-theme.account-settings {
   background-color: white; }
 .light-theme.pane-holder, .light-theme.library-pane-holder {
@@ -974,6 +976,9 @@ pre code {
   color: black !important; }
 .bp3-dark .cm-searchhighlight {
   background-color: #6aaed8;
+  color: black !important; }
+.bp3-dark .cm-focussearchhighlight {
+  background-color: yellow;
   color: black !important; }
 .bp3-dark.account-settings {
   background-color: #30404d; }
