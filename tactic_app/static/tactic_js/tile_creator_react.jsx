@@ -178,9 +178,9 @@ function TileCreatorToolbar(props) {
                 <Toolbar button_groups={props.button_groups}
                          alternate_outer_style={toolbar_outer_style}
                          dark_theme={props.dark_theme}
-                          controlled={props.controlled}
-                          am_selected={props.am_selected}
-                          tsocket={props.tsocket}
+                         controlled={props.controlled}
+                         am_selected={props.am_selected}
+                         tsocket={props.tsocket}
                 />
             </div>
             <SearchForm update_search_state={props.update_search_state}
@@ -189,6 +189,7 @@ function TileCreatorToolbar(props) {
                         include_search_jumper={true}
                         searchPrev={props.searchPrev}
                         searchNext={props.searchNext}
+                        search_ref={props.search_ref}
             />
         </div>
     )
@@ -200,7 +201,8 @@ TileCreatorToolbar.proptypes = {
     resource_name: PropTypes.string,
     search_string: PropTypes.string,
     update_search_state: PropTypes.func,
-    res_type: PropTypes.string
+    res_type: PropTypes.string,
+    search_ref: PropTypes.object
 };
 
 TileCreatorToolbar.defaultProps = {
@@ -225,6 +227,7 @@ class CreatorApp extends React.Component {
         this.methods_ref = React.createRef();
         this.commands_ref = React.createRef();
         this.draw_plot_bounding_ref = React.createRef();
+        this.search_ref = React.createRef();
         this.last_save = {};
         this.dpObject = null;
         this.rcObject = null;
@@ -343,6 +346,18 @@ class CreatorApp extends React.Component {
         return bgs
     }
 
+    _extraKeys() {
+        let self = this;
+        return {
+                'Ctrl-S': self._saveMe,
+                'Ctrl-L': self._loadModule,
+                'Ctrl-M': self._saveAndCheckpoint,
+                'Ctrl-F': ()=>{self.search_ref.current.focus()},
+                'Cmd-F': ()=>{self.search_ref.current.focus()}
+
+            }
+    }
+
     _searchNext() {
         if (this.state.current_search_number >= this.search_match_numbers[this.state.current_search_cm] - 1) {
             let next_cm;
@@ -392,10 +407,8 @@ class CreatorApp extends React.Component {
             if (next_cm == "em") {
                  this._handleTabSelect("methods");
             }
-            console.log("searchPrev got a new cm with search_number " + String(next_search_number));
             this.setState({current_search_cm: next_cm, current_search_number: next_search_number})
         } else {
-             console.log("searchPrev got the same cm with search_number " + String(this.state.current_search_number - 1));
              this.setState({current_search_number: this.state.current_search_number - 1})
          }
     }
@@ -834,6 +847,7 @@ class CreatorApp extends React.Component {
                     <span ref={this.tc_span_ref}>{title_label}</span>
                     <ReactCodemirror code_content={code_content}
                                      mode={mode}
+                                     extraKeys={this._extraKeys()}
                                      current_search_number={this.state.current_search_cm == "tc" ? this.state.current_search_number : null}
                                      handleChange={this.handleTopCodeChange}
                                      saveMe={this._saveAndCheckpoint}
@@ -863,6 +877,7 @@ class CreatorApp extends React.Component {
                 <ReactCodemirror code_content={this.state.render_content_code}
                                  current_search_number={this.state.current_search_cm == "rc" ? this.state.current_search_number : null}
                                  handleChange={this.handleRenderContentChange}
+                                 extraKeys={this._extraKeys()}
                                  saveMe={this._saveAndCheckpoint}
                                  setCMObject={this._setRcObject}
                                  search_term={this.state.search_string}
@@ -892,6 +907,7 @@ class CreatorApp extends React.Component {
                                         searchNext={this._searchNext}
                                         searchPrev={this._searchPrev}
                                         key="toolbar"
+                                        search_ref={this.search_ref}
                                         />
                     <div ref={this.vp_ref}/>
                     <VerticalPanes top_pane={tc_item}
@@ -916,6 +932,7 @@ class CreatorApp extends React.Component {
                                         search_string={this.state.search_string}
                                         searchNext={this._searchNext}
                                         searchPrev={this._searchPrev}
+                                        search_ref={this.search_ref}
                                         key="toolbar"
                                         />
                     <div ref={this.vp_ref}>
@@ -955,6 +972,7 @@ class CreatorApp extends React.Component {
                 <ReactCodemirror handleChange={this.handleMethodsChange}
                                  current_search_number={this.state.current_search_cm == "em" ? this.state.current_search_number : null}
                                  dark_theme={dark_theme}
+                                 extraKeys={this._extraKeys()}
                                  readOnly={this.props.readOnly}
                                  code_content={this.state.extra_functions}
                                  saveMe={this._saveAndCheckpoint}

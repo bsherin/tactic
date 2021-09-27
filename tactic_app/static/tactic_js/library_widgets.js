@@ -243,7 +243,8 @@ var SearchForm = /*#__PURE__*/function (_React$Component3) {
           "width": this.props.field_width
         },
         autoCapitalize: "none",
-        autoCorrect: "off"
+        autoCorrect: "off",
+        inputRef: this.props.search_ref
       }), this.props.allow_search_metadata && /*#__PURE__*/_react["default"].createElement(_core.Switch, {
         label: "metadata",
         className: "ml-2",
@@ -289,7 +290,8 @@ SearchForm.propTypes = {
   field_with: _propTypes["default"].number,
   include_search_jumper: _propTypes["default"].bool,
   searchNext: _propTypes["default"].func,
-  searchPrev: _propTypes["default"].func
+  searchPrev: _propTypes["default"].func,
+  search_ref: _propTypes["default"].object
 };
 SearchForm.defaultProps = {
   allow_search_inside: false,
@@ -300,7 +302,8 @@ SearchForm.defaultProps = {
   include_search_jumper: false,
   current_search_number: null,
   searchNext: null,
-  searchPrev: null
+  searchPrev: null,
+  search_ref: null
 };
 
 var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {

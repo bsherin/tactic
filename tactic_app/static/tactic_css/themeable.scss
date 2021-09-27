@@ -19,11 +19,11 @@ $log-panel-font-color-dark: white;
     }
 
     .cm-searchhighlight {
-        background-color: yellow
+        background-color: $light-gray2;
     }
 
     .cm-focussearchhighlight {
-        background-color: blue
+        background-color: $orange5;
     }
 
     &.account-settings {

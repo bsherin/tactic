@@ -52,7 +52,7 @@ class ReactCodemirror extends React.Component {
         this.saved_theme = null;
         this.overlay = null;
         this.matches = null;
-        this.focus_line_number = null;
+        this.search_focus_info = null
     }
 
     createCMArea(codearea, first_line_number = 1) {
@@ -141,14 +141,14 @@ class ReactCodemirror extends React.Component {
     _lineNumberFromSearchNumber() {
         let lines = this.props.code_content.split("\n");
         let lnum = 0;
-        let mnum = -1;
+        let mnum = 0;
         let reg = new RegExp(this.props.search_term, "g");
         for (let line of lines) {
-            mnum += (line.match(reg) || []).length;
-            if (mnum >= this.props.current_search_number) {
-                console.log("got lnum " + String(lnum));
-                return lnum
+            let new_matches = (line.match(reg) || []).length;
+            if (new_matches + mnum - 1 >= this.props.current_search_number) {
+                return {line: lnum, match: this.props.current_search_number - mnum};
             }
+            mnum += new_matches;
             lnum += 1
         }
         return null
@@ -163,10 +163,13 @@ class ReactCodemirror extends React.Component {
         }
         else{
             if (this.props.current_search_number != null) {
-                let lnum = this._lineNumberFromSearchNumber();
-                if (lnum) {
-                    this._scrollToLine(lnum)
+                this.search_focus_info = {...this._lineNumberFromSearchNumber()};
+                if (this.search_focus_info) {
+                    this._scrollToLine(this.search_focus_info.line)
                 }
+            }
+            else {
+                this.search_focus_info = null;
             }
             this.cmobject.operation(function() {
                 self._removeOverlay();
@@ -176,7 +179,6 @@ class ReactCodemirror extends React.Component {
     }
 
     _scrollToLine(lnumber) {
-        console.log("scrolling to line " + String(lnumber));
         this.cmobject.scrollIntoView({line: lnumber, char: 0}, 50);
     }
 
@@ -195,14 +197,28 @@ class ReactCodemirror extends React.Component {
 
     _makeOverlay(query, hasBoundary, style, focus_style) {
         let self = this;
-        let mcounter = -1;
-        console.log("entering makeOverlay with current_search_number " + String(self.props.current_search_number));
+        let last_line = -1;
+        let line_counter = -1;
         return {token: function(stream) {
           if (stream.match(query) &&
               (!hasBoundary || self._boundariesAround(stream, hasBoundary))) {
-              mcounter += 1;
-              if (mcounter == self.props.current_search_number) {
-                  return focus_style
+              let lnum = stream.lineOracle.line;
+
+              if (self.search_focus_info && lnum == self.search_focus_info.line) {
+                  if (lnum != last_line) {
+                      line_counter = 0;
+                      last_line = lnum
+                  }
+                  else {
+                      line_counter += 1
+                  }
+                  if (line_counter == self.search_focus_info.match) {
+                      return focus_style
+                  }
+              }
+              else {
+                  last_line = -1;
+                  line_counter = -1;
               }
               return style;
           }
