@@ -256,7 +256,22 @@ var SearchForm = /*#__PURE__*/function (_React$Component3) {
         large: false,
         checked: this.props.search_inside,
         onChange: this._handleSearchInsideChange
-      })));
+      }), this.props.include_search_jumper && /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, {
+        style: {
+          marginLeft: 5,
+          padding: 2
+        }
+      }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
+        onClick: this.props.searchNext,
+        icon: "caret-down",
+        text: undefined,
+        small: true
+      }), /*#__PURE__*/_react["default"].createElement(_core.Button, {
+        onClick: this.props.searchPrev,
+        icon: "caret-up",
+        text: undefined,
+        small: true
+      }))));
     }
   }]);
 
@@ -271,14 +286,21 @@ SearchForm.propTypes = {
   search_string: _propTypes["default"].string,
   search_inside: _propTypes["default"].bool,
   search_metadata: _propTypes["default"].bool,
-  field_with: _propTypes["default"].number
+  field_with: _propTypes["default"].number,
+  include_search_jumper: _propTypes["default"].bool,
+  searchNext: _propTypes["default"].func,
+  searchPrev: _propTypes["default"].func
 };
 SearchForm.defaultProps = {
   allow_search_inside: false,
   allow_search_metadata: false,
   search_inside: false,
   search_metadata: false,
-  field_width: 265
+  field_width: 265,
+  include_search_jumper: false,
+  current_search_number: null,
+  searchNext: null,
+  searchPrev: null
 };
 
 var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {

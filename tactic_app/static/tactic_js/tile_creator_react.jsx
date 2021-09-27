@@ -186,6 +186,9 @@ function TileCreatorToolbar(props) {
             <SearchForm update_search_state={props.update_search_state}
                         search_string={props.search_string}
                         field_width={200}
+                        include_search_jumper={true}
+                        searchPrev={props.searchPrev}
+                        searchNext={props.searchNext}
             />
         </div>
     )
@@ -228,6 +231,7 @@ class CreatorApp extends React.Component {
         this.emObject = null;
         this.line_number = this.props.initial_line_number;
         this.socket_counter = null;
+        this.cm_list = this.props.is_mpl || this.props.is_d3 ? ["tc", "rc", "em"] : ["rc", "em"];
         this.state = {
             foregrounded_panes: {
                 "metadata": true,
@@ -251,6 +255,8 @@ class CreatorApp extends React.Component {
             category: this.props.category,
             selectedTabId: "metadata",
             old_usable_width: 0,
+            current_search_number: null,
+            current_search_cm: this.cm_list[0],
             methodsTabRefreshRequired: true, // This is toggled back and forth to force refresh
         };
         let self = this;
@@ -272,6 +278,8 @@ class CreatorApp extends React.Component {
             });
         }
 
+        this.cm_list = this.props.is_mpl || this.props.is_d3 ? ["tc", "rc", "em"] : ["rc", "em"];
+
         this.state.top_pane_fraction = this.props.is_mpl || this.props.is_d3 ? .5 : 1;
         this.state.left_pane_fraction = .5;
         // this.state.left_pane_width = this._cProp("usable_width") / 2 - 25,
@@ -286,7 +294,11 @@ class CreatorApp extends React.Component {
         this.handleMethodsChange = this.handleMethodsChange.bind(this);
         this.handleLeftPaneResize = this.handleLeftPaneResize.bind(this);
         this.handleTopPaneResize = this.handleTopPaneResize.bind(this);
-
+        this.search_match_numbers = {
+            tc: null,
+            rc: null,
+            em: null
+        }
     }
 
     initSocket() {
@@ -331,8 +343,81 @@ class CreatorApp extends React.Component {
         return bgs
     }
 
+    _searchNext() {
+        if (this.state.current_search_number >= this.search_match_numbers[this.state.current_search_cm] - 1) {
+            let next_cm;
+            if (this.state.current_search_cm == "rc") {
+                next_cm = "em";
+                this._handleTabSelect("methods");
+            } else if (this.state.current_search_cm == "tc") {
+                next_cm = "rc"
+            } else {
+                if (this.props.is_mpl || this.props.is_d3) {
+                    next_cm = "tc"
+                } else {
+                    next_cm = "rc"
+                }
+            }
+            if (next_cm == "em") {
+                this._handleTabSelect("methods");
+            }
+            this.setState({current_search_cm: next_cm, current_search_number: 0});
+        } else {
+            this.setState({current_search_number: this.state.current_search_number + 1})
+        }
+    }
+
+    _searchPrev() {
+        let next_cm;
+        let next_search_number;
+         if (this.state.current_search_number <= 0) {
+            if (this.state.current_search_cm == "em") {
+                next_cm = "rc";
+                next_search_number = this.search_match_numbers["rc"] - 1
+            }
+            else if (this.state.current_search_cm == "tc") {
+                next_cm = "em";
+                next_search_number = this.search_match_numbers["em"] - 1
+            }
+            else {
+                if (this.props.is_mpl || this.props.is_d3) {
+                    next_cm = "tc";
+                    next_search_number = this.search_match_numbers["tc"] - 1
+                }
+                else {
+                    next_cm = "em";
+                    next_search_number = this.search_match_numbers["em"] - 1
+                }
+            }
+            if (next_cm == "em") {
+                 this._handleTabSelect("methods");
+            }
+            console.log("searchPrev got a new cm with search_number " + String(next_search_number));
+            this.setState({current_search_cm: next_cm, current_search_number: next_search_number})
+        } else {
+             console.log("searchPrev got the same cm with search_number " + String(this.state.current_search_number - 1));
+             this.setState({current_search_number: this.state.current_search_number - 1})
+         }
+    }
+
     _updateSearchState(new_state) {
+        new_state.current_search_cm = this.cm_list[0];
+        new_state.current_search_number = 0;
         this.setState(new_state)
+    }
+
+    _noSearchResults() {
+        if (this.state.search_string == "" || this.state.search_string == null) {
+            return true
+        }
+        else {
+            for (let cm of this.cm_list) {
+                if (this.search_match_numbers[cm]) {
+                    return false
+                }
+            }
+            return true
+        }
     }
 
     _setTheme(dark_theme) {
@@ -717,6 +802,10 @@ class CreatorApp extends React.Component {
         this.emObject = cmobject
     }
 
+    _setSearchMatches(rc_name, num) {
+        this.search_match_numbers[rc_name] = num
+    }
+
     render() {
         let dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme;
         //let hp_height = this.get_height_minus_top_offset(this.hp_ref);
@@ -745,6 +834,7 @@ class CreatorApp extends React.Component {
                     <span ref={this.tc_span_ref}>{title_label}</span>
                     <ReactCodemirror code_content={code_content}
                                      mode={mode}
+                                     current_search_number={this.state.current_search_cm == "tc" ? this.state.current_search_number : null}
                                      handleChange={this.handleTopCodeChange}
                                      saveMe={this._saveAndCheckpoint}
                                      setCMObject={this._setDpObject}
@@ -753,6 +843,7 @@ class CreatorApp extends React.Component {
                                      code_container_height={tc_height}
                                      dark_theme={dark_theme}
                                      readOnly={this.props.read_only}
+                                     setSearchMatches={(num)=>this._setSearchMatches("tc", num)}
                     />
                 </div>
              );
@@ -770,6 +861,7 @@ class CreatorApp extends React.Component {
             <div key="rccode" id="rccode" style={ch_style} className="d-flex flex-column align-items-baseline code-holder">
                 <span className="bp3-ui-text" ref={this.rc_span_ref}>render_content</span>
                 <ReactCodemirror code_content={this.state.render_content_code}
+                                 current_search_number={this.state.current_search_cm == "rc" ? this.state.current_search_number : null}
                                  handleChange={this.handleRenderContentChange}
                                  saveMe={this._saveAndCheckpoint}
                                  setCMObject={this._setRcObject}
@@ -778,6 +870,8 @@ class CreatorApp extends React.Component {
                                  code_container_height={rc_height}
                                  dark_theme={dark_theme}
                                  readOnly={this.props.read_only}
+                                 setSearchMatches={(num)=>this._setSearchMatches("rc", num)}
+
                 />
             </div>
          );
@@ -795,6 +889,8 @@ class CreatorApp extends React.Component {
                                         button_groups={this.button_groups}
                                         update_search_state={this._updateSearchState}
                                         search_string={this.state.search_string}
+                                        searchNext={this._searchNext}
+                                        searchPrev={this._searchPrev}
                                         key="toolbar"
                                         />
                     <div ref={this.vp_ref}/>
@@ -818,6 +914,8 @@ class CreatorApp extends React.Component {
                                         button_groups={this.button_groups}
                                         update_search_state={this._updateSearchState}
                                         search_string={this.state.search_string}
+                                        searchNext={this._searchNext}
+                                        searchPrev={this._searchPrev}
                                         key="toolbar"
                                         />
                     <div ref={this.vp_ref}>
@@ -855,6 +953,7 @@ class CreatorApp extends React.Component {
         let methods_panel = (
             <div style={{marginTop: 30}}>
                 <ReactCodemirror handleChange={this.handleMethodsChange}
+                                 current_search_number={this.state.current_search_cm == "em" ? this.state.current_search_number : null}
                                  dark_theme={dark_theme}
                                  readOnly={this.props.readOnly}
                                  code_content={this.state.extra_functions}
@@ -864,7 +963,9 @@ class CreatorApp extends React.Component {
                                  code_container_height={methods_height}
                                  search_term={this.state.search_string}
                                  first_line_number={this.state.extra_methods_line_number}
-                                 refresh_required={this.state.methodsTabRefreshRequired}/>
+                                 refresh_required={this.state.methodsTabRefreshRequired}
+                                 setSearchMatches={(num)=>this._setSearchMatches("em", num)}
+                />
              </div>
 
         );

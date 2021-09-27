@@ -22,6 +22,10 @@ $log-panel-font-color-dark: white;
         background-color: yellow
     }
 
+    .cm-focussearchhighlight {
+        background-color: blue
+    }
+
     &.account-settings {
       background-color: white
     }
@@ -171,6 +175,11 @@ $log-panel-font-color-dark: white;
     .cm-searchhighlight {
         background-color: #6aaed8;
         color: black !important
+    }
+
+    .cm-focussearchhighlight {
+        background-color: yellow;
+        color: black !important;
     }
 
     &.account-settings {

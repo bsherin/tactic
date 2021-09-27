@@ -286,7 +286,10 @@ function TileCreatorToolbar(props) {
   })), /*#__PURE__*/_react["default"].createElement(_library_widgets.SearchForm, {
     update_search_state: props.update_search_state,
     search_string: props.search_string,
-    field_width: 200
+    field_width: 200,
+    include_search_jumper: true,
+    searchPrev: props.searchPrev,
+    searchNext: props.searchNext
   }));
 }
 
@@ -333,6 +336,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     _this.emObject = null;
     _this.line_number = _this.props.initial_line_number;
     _this.socket_counter = null;
+    _this.cm_list = _this.props.is_mpl || _this.props.is_d3 ? ["tc", "rc", "em"] : ["rc", "em"];
     _this.state = {
       foregrounded_panes: {
         "metadata": true,
@@ -356,6 +360,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       category: _this.props.category,
       selectedTabId: "metadata",
       old_usable_width: 0,
+      current_search_number: null,
+      current_search_cm: _this.cm_list[0],
       methodsTabRefreshRequired: true // This is toggled back and forth to force refresh
 
     };
@@ -378,6 +384,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       });
     }
 
+    _this.cm_list = _this.props.is_mpl || _this.props.is_d3 ? ["tc", "rc", "em"] : ["rc", "em"];
     _this.state.top_pane_fraction = _this.props.is_mpl || _this.props.is_d3 ? .5 : 1;
     _this.state.left_pane_fraction = .5; // this.state.left_pane_width = this._cProp("usable_width") / 2 - 25,
     // this.state.bheight = aheight;
@@ -391,6 +398,11 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     _this.handleMethodsChange = _this.handleMethodsChange.bind(_assertThisInitialized(_this));
     _this.handleLeftPaneResize = _this.handleLeftPaneResize.bind(_assertThisInitialized(_this));
     _this.handleTopPaneResize = _this.handleTopPaneResize.bind(_assertThisInitialized(_this));
+    _this.search_match_numbers = {
+      tc: null,
+      rc: null,
+      em: null
+    };
     return _this;
   }
 
@@ -494,9 +506,110 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       return bgs;
     }
   }, {
+    key: "_searchNext",
+    value: function _searchNext() {
+      if (this.state.current_search_number >= this.search_match_numbers[this.state.current_search_cm] - 1) {
+        var next_cm;
+
+        if (this.state.current_search_cm == "rc") {
+          next_cm = "em";
+
+          this._handleTabSelect("methods");
+        } else if (this.state.current_search_cm == "tc") {
+          next_cm = "rc";
+        } else {
+          if (this.props.is_mpl || this.props.is_d3) {
+            next_cm = "tc";
+          } else {
+            next_cm = "rc";
+          }
+        }
+
+        if (next_cm == "em") {
+          this._handleTabSelect("methods");
+        }
+
+        this.setState({
+          current_search_cm: next_cm,
+          current_search_number: 0
+        });
+      } else {
+        this.setState({
+          current_search_number: this.state.current_search_number + 1
+        });
+      }
+    }
+  }, {
+    key: "_searchPrev",
+    value: function _searchPrev() {
+      var next_cm;
+      var next_search_number;
+
+      if (this.state.current_search_number <= 0) {
+        if (this.state.current_search_cm == "em") {
+          next_cm = "rc";
+          next_search_number = this.search_match_numbers["rc"] - 1;
+        } else if (this.state.current_search_cm == "tc") {
+          next_cm = "em";
+          next_search_number = this.search_match_numbers["em"] - 1;
+        } else {
+          if (this.props.is_mpl || this.props.is_d3) {
+            next_cm = "tc";
+            next_search_number = this.search_match_numbers["tc"] - 1;
+          } else {
+            next_cm = "em";
+            next_search_number = this.search_match_numbers["em"] - 1;
+          }
+        }
+
+        if (next_cm == "em") {
+          this._handleTabSelect("methods");
+        }
+
+        console.log("searchPrev got a new cm with search_number " + String(next_search_number));
+        this.setState({
+          current_search_cm: next_cm,
+          current_search_number: next_search_number
+        });
+      } else {
+        console.log("searchPrev got the same cm with search_number " + String(this.state.current_search_number - 1));
+        this.setState({
+          current_search_number: this.state.current_search_number - 1
+        });
+      }
+    }
+  }, {
     key: "_updateSearchState",
     value: function _updateSearchState(new_state) {
+      new_state.current_search_cm = this.cm_list[0];
+      new_state.current_search_number = 0;
       this.setState(new_state);
+    }
+  }, {
+    key: "_noSearchResults",
+    value: function _noSearchResults() {
+      if (this.state.search_string == "" || this.state.search_string == null) {
+        return true;
+      } else {
+        var _iterator4 = _createForOfIteratorHelper(this.cm_list),
+            _step4;
+
+        try {
+          for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+            var cm = _step4.value;
+
+            if (this.search_match_numbers[cm]) {
+              return false;
+            }
+          }
+        } catch (err) {
+          _iterator4.e(err);
+        } finally {
+          _iterator4.f();
+        }
+
+        return true;
+      }
     }
   }, {
     key: "_setTheme",
@@ -632,18 +745,18 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       var taglist = this.state.tags;
       var tags = "";
 
-      var _iterator4 = _createForOfIteratorHelper(taglist),
-          _step4;
+      var _iterator5 = _createForOfIteratorHelper(taglist),
+          _step5;
 
       try {
-        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-          var tag = _step4.value;
+        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+          var tag = _step5.value;
           tags = tags + tag + " ";
         }
       } catch (err) {
-        _iterator4.e(err);
+        _iterator5.e(err);
       } finally {
-        _iterator4.f();
+        _iterator5.f();
       }
 
       return tags.trim();
@@ -997,25 +1110,32 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       this.emObject = cmobject;
     }
   }, {
+    key: "_setSearchMatches",
+    value: function _setSearchMatches(rc_name, num) {
+      this.search_match_numbers[rc_name] = num;
+    }
+  }, {
     key: "render",
     value: function render() {
+      var _this5 = this;
+
       var dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme; //let hp_height = this.get_height_minus_top_offset(this.hp_ref);
 
       var my_props = _objectSpread({}, this.props);
 
       if (!this.props.controlled) {
-        var _iterator5 = _createForOfIteratorHelper(controllable_props),
-            _step5;
+        var _iterator6 = _createForOfIteratorHelper(controllable_props),
+            _step6;
 
         try {
-          for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-            var prop_name = _step5.value;
+          for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+            var prop_name = _step6.value;
             my_props[prop_name] = this.state[prop_name];
           }
         } catch (err) {
-          _iterator5.e(err);
+          _iterator6.e(err);
         } finally {
-          _iterator5.f();
+          _iterator6.f();
         }
       }
 
@@ -1043,6 +1163,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         }, title_label), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
           code_content: code_content,
           mode: mode,
+          current_search_number: this.state.current_search_cm == "tc" ? this.state.current_search_number : null,
           handleChange: this.handleTopCodeChange,
           saveMe: this._saveAndCheckpoint,
           setCMObject: this._setDpObject,
@@ -1050,7 +1171,10 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           first_line_number: first_line_number,
           code_container_height: tc_height,
           dark_theme: dark_theme,
-          readOnly: this.props.read_only
+          readOnly: this.props.read_only,
+          setSearchMatches: function setSearchMatches(num) {
+            return _this5._setSearchMatches("tc", num);
+          }
         }));
       }
 
@@ -1073,6 +1197,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         ref: this.rc_span_ref
       }, "render_content"), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
         code_content: this.state.render_content_code,
+        current_search_number: this.state.current_search_cm == "rc" ? this.state.current_search_number : null,
         handleChange: this.handleRenderContentChange,
         saveMe: this._saveAndCheckpoint,
         setCMObject: this._setRcObject,
@@ -1080,7 +1205,10 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         first_line_number: this.state.render_content_line_number + 1,
         code_container_height: rc_height,
         dark_theme: dark_theme,
-        readOnly: this.props.read_only
+        readOnly: this.props.read_only,
+        setSearchMatches: function setSearchMatches(num) {
+          return _this5._setSearchMatches("rc", num);
+        }
       }));
 
       var left_pane;
@@ -1097,6 +1225,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           button_groups: this.button_groups,
           update_search_state: this._updateSearchState,
           search_string: this.state.search_string,
+          searchNext: this._searchNext,
+          searchPrev: this._searchPrev,
           key: "toolbar"
         }), /*#__PURE__*/_react["default"].createElement("div", {
           ref: this.vp_ref
@@ -1117,6 +1247,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           button_groups: this.button_groups,
           update_search_state: this._updateSearchState,
           search_string: this.state.search_string,
+          searchNext: this._searchNext,
+          searchPrev: this._searchPrev,
           key: "toolbar"
         }), /*#__PURE__*/_react["default"].createElement("div", {
           ref: this.vp_ref
@@ -1156,6 +1288,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         }
       }, /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
         handleChange: this.handleMethodsChange,
+        current_search_number: this.state.current_search_cm == "em" ? this.state.current_search_number : null,
         dark_theme: dark_theme,
         readOnly: this.props.readOnly,
         code_content: this.state.extra_functions,
@@ -1165,7 +1298,10 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         code_container_height: methods_height,
         search_term: this.state.search_string,
         first_line_number: this.state.extra_methods_line_number,
-        refresh_required: this.state.methodsTabRefreshRequired
+        refresh_required: this.state.methodsTabRefreshRequired,
+        setSearchMatches: function setSearchMatches(num) {
+          return _this5._setSearchMatches("em", num);
+        }
       }));
 
       var commands_height = this.get_height_minus_top_offset(this.commands_ref, 128, 128);

@@ -27,6 +27,7 @@ import 'codemirror/theme/material.css'
 import 'codemirror/theme/nord.css'
 import 'codemirror/theme/oceanic-next.css'
 import 'codemirror/theme/pastel-on-dark.css'
+import {propsAreEqual} from "./utilities_react";
 
 
 export {ReactCodemirror}
@@ -49,7 +50,9 @@ class ReactCodemirror extends React.Component {
         this.mousetrap = new Mousetrap();
         this.create_api();
         this.saved_theme = null;
-        this.overlay = null
+        this.overlay = null;
+        this.matches = null;
+        this.focus_line_number = null;
     }
 
     createCMArea(codearea, first_line_number = 1) {
@@ -108,6 +111,10 @@ class ReactCodemirror extends React.Component {
         this._doHighlight(this.props.search_term)
     }
 
+    shouldComponentUpdate(nextProps, nextState) {
+        return !propsAreEqual(nextProps, this.props)
+    }
+
     componentDidUpdate() {
         if (this.props.dark_theme != this.saved_theme) {
             if (this.props.dark_theme) {
@@ -131,6 +138,22 @@ class ReactCodemirror extends React.Component {
         this._doHighlight(this.props.search_term)
     }
 
+    _lineNumberFromSearchNumber() {
+        let lines = this.props.code_content.split("\n");
+        let lnum = 0;
+        let mnum = -1;
+        let reg = new RegExp(this.props.search_term, "g");
+        for (let line of lines) {
+            mnum += (line.match(reg) || []).length;
+            if (mnum >= this.props.current_search_number) {
+                console.log("got lnum " + String(lnum));
+                return lnum
+            }
+            lnum += 1
+        }
+        return null
+    }
+
     _doHighlight() {
         let self = this;
         if (this.props.search_term == null || this.props.search_term == "") {
@@ -139,25 +162,51 @@ class ReactCodemirror extends React.Component {
             })
         }
         else{
+            if (this.props.current_search_number != null) {
+                let lnum = this._lineNumberFromSearchNumber();
+                if (lnum) {
+                    this._scrollToLine(lnum)
+                }
+            }
             this.cmobject.operation(function() {
                 self._removeOverlay();
-                self._addOverlay(self.props.search_term)
-            })
+                self._addOverlay(self.props.search_term);
+            });
         }
     }
 
-    _addOverlay(query, hasBoundary=false, style="searchhighlight") {
+    _scrollToLine(lnumber) {
+        console.log("scrolling to line " + String(lnumber));
+        this.cmobject.scrollIntoView({line: lnumber, char: 0}, 50);
+    }
+
+    _addOverlay(query, hasBoundary=false, style="searchhighlight", focus_style="focussearchhighlight") {
         // var state = cm.state.matchHighlighter;
-        this.overlay = this._makeOverlay(query, hasBoundary, style);
+        let prev_matches = this.matches;
+        var reg = new RegExp(query, "g");
+        this.matches = (this.props.code_content.match(reg) || []).length;
+        if (this.props.setSearchMatches && this.matches != prev_matches) {
+            this.props.setSearchMatches(this.matches)
+        }
+        this.overlay = this._makeOverlay(query, hasBoundary, style, focus_style);
         this.cmobject.addOverlay(this.overlay);
+
       }
 
-    _makeOverlay(query, hasBoundary, style) {
+    _makeOverlay(query, hasBoundary, style, focus_style) {
         let self = this;
+        let mcounter = -1;
+        console.log("entering makeOverlay with current_search_number " + String(self.props.current_search_number));
         return {token: function(stream) {
           if (stream.match(query) &&
-              (!hasBoundary || self._boundariesAround(stream, hasBoundary)))
-            return style;
+              (!hasBoundary || self._boundariesAround(stream, hasBoundary))) {
+              mcounter += 1;
+              if (mcounter == self.props.current_search_number) {
+                  return focus_style
+              }
+              return style;
+          }
+
           stream.next();
           stream.skipTo(query.charAt(0)) || stream.skipToEnd();
         }};
@@ -219,30 +268,6 @@ class ReactCodemirror extends React.Component {
             e.preventDefault()
         });
 
-        // if (is_mac) {
-        //     CodeMirror.keyMap["default"]["Cmd-S"] = function () {self.props.saveMe()};
-        //
-        //     this.mousetrap.bind(['command+l'], function (e) {
-        //         // self.loadModule();
-        //         e.preventDefault()
-        //     });
-        //     this.mousetrap.bind(['command+f'], function (e) {
-        //         self.searchCM();
-        //         e.preventDefault()
-        //     });
-        // }
-        // else {
-        //     CodeMirror.keyMap["default"]["Ctrl-S"] = function () {self.props.saveMe()};
-        //
-        //     this.mousetrap.bind(['ctrl+l'], function (e) {
-        //         // self.loadModule();
-        //         e.preventDefault()
-        //     });
-        //     this.mousetrap.bind(['ctrl+f'], function (e) {
-        //         self.searchCM();
-        //         e.preventDefault()
-        //     });
-        // }
     }
 
     render() {
@@ -282,7 +307,9 @@ ReactCodemirror.propTypes = {
         PropTypes.number]),
     code_container_height: PropTypes.oneOfType([
         PropTypes.string,
-        PropTypes.number])
+        PropTypes.number]),
+    setSearchMatches: PropTypes.func,
+    current_search_number: PropTypes.number
 };
 
 ReactCodemirror.defaultProps = {
@@ -301,5 +328,7 @@ ReactCodemirror.defaultProps = {
     extraKeys: {},
     setCMObject: null,
     code_container_ref: null,
-    code_container_width: "100%"
+    code_container_width: "100%",
+    setSearchMatches: null,
+    current_search_number: null
 };
