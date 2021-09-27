@@ -900,9 +900,9 @@ pre code {
 .light-theme .cm-matchhighlight {
   background-color: lightgreen; }
 .light-theme .cm-searchhighlight {
-  background-color: yellow; }
+  background-color: #d8e1e8; }
 .light-theme .cm-focussearchhighlight {
-  background-color: blue; }
+  background-color: #ffb366; }
 .light-theme.account-settings {
   background-color: white; }
 .light-theme.pane-holder, .light-theme.library-pane-holder {

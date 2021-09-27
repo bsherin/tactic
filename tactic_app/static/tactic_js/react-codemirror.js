@@ -49,6 +49,12 @@ var _utilities_react = require("./utilities_react");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
@@ -104,7 +110,7 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
     _this.saved_theme = null;
     _this.overlay = null;
     _this.matches = null;
-    _this.focus_line_number = null;
+    _this.search_focus_info = null;
     return _this;
   }
 
@@ -209,7 +215,7 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
     value: function _lineNumberFromSearchNumber() {
       var lines = this.props.code_content.split("\n");
       var lnum = 0;
-      var mnum = -1;
+      var mnum = 0;
       var reg = new RegExp(this.props.search_term, "g");
 
       var _iterator = _createForOfIteratorHelper(lines),
@@ -218,13 +224,16 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
       try {
         for (_iterator.s(); !(_step = _iterator.n()).done;) {
           var line = _step.value;
-          mnum += (line.match(reg) || []).length;
+          var new_matches = (line.match(reg) || []).length;
 
-          if (mnum >= this.props.current_search_number) {
-            console.log("got lnum " + String(lnum));
-            return lnum;
+          if (new_matches + mnum - 1 >= this.props.current_search_number) {
+            return {
+              line: lnum,
+              match: this.props.current_search_number - mnum
+            };
           }
 
+          mnum += new_matches;
           lnum += 1;
         }
       } catch (err) {
@@ -246,11 +255,13 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
         });
       } else {
         if (this.props.current_search_number != null) {
-          var lnum = this._lineNumberFromSearchNumber();
+          this.search_focus_info = _objectSpread({}, this._lineNumberFromSearchNumber());
 
-          if (lnum) {
-            this._scrollToLine(lnum);
+          if (this.search_focus_info) {
+            this._scrollToLine(this.search_focus_info.line);
           }
+        } else {
+          this.search_focus_info = null;
         }
 
         this.cmobject.operation(function () {
@@ -263,7 +274,6 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_scrollToLine",
     value: function _scrollToLine(lnumber) {
-      console.log("scrolling to line " + String(lnumber));
       this.cmobject.scrollIntoView({
         line: lnumber,
         "char": 0
@@ -291,15 +301,27 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
     key: "_makeOverlay",
     value: function _makeOverlay(query, hasBoundary, style, focus_style) {
       var self = this;
-      var mcounter = -1;
-      console.log("entering makeOverlay with current_search_number " + String(self.props.current_search_number));
+      var last_line = -1;
+      var line_counter = -1;
       return {
         token: function token(stream) {
           if (stream.match(query) && (!hasBoundary || self._boundariesAround(stream, hasBoundary))) {
-            mcounter += 1;
+            var lnum = stream.lineOracle.line;
 
-            if (mcounter == self.props.current_search_number) {
-              return focus_style;
+            if (self.search_focus_info && lnum == self.search_focus_info.line) {
+              if (lnum != last_line) {
+                line_counter = 0;
+                last_line = lnum;
+              } else {
+                line_counter += 1;
+              }
+
+              if (line_counter == self.search_focus_info.match) {
+                return focus_style;
+              }
+            } else {
+              last_line = -1;
+              line_counter = -1;
             }
 
             return style;

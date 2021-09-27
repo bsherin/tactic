@@ -146,6 +146,7 @@ class SearchForm extends React.Component {
                                 style={{"width": this.props.field_width}}
                                 autoCapitalize="none"
                                 autoCorrect="off"
+                                inputRef={this.props.search_ref}
                     />
 
                 {this.props.allow_search_metadata &&
@@ -187,7 +188,8 @@ SearchForm.propTypes = {
     field_with: PropTypes.number,
     include_search_jumper: PropTypes.bool,
     searchNext: PropTypes.func,
-    searchPrev: PropTypes.func
+    searchPrev: PropTypes.func,
+    search_ref: PropTypes.object
 };
 
 SearchForm.defaultProps = {
@@ -199,7 +201,8 @@ SearchForm.defaultProps = {
     include_search_jumper: false,
     current_search_number: null,
     searchNext: null,
-    searchPrev: null
+    searchPrev: null,
+    search_ref: null
 };
 
 class BpSelectorTable extends React.Component {

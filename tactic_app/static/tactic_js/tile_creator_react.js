@@ -289,7 +289,8 @@ function TileCreatorToolbar(props) {
     field_width: 200,
     include_search_jumper: true,
     searchPrev: props.searchPrev,
-    searchNext: props.searchNext
+    searchNext: props.searchNext,
+    search_ref: props.search_ref
   }));
 }
 
@@ -299,7 +300,8 @@ TileCreatorToolbar.proptypes = {
   resource_name: _propTypes["default"].string,
   search_string: _propTypes["default"].string,
   update_search_state: _propTypes["default"].func,
-  res_type: _propTypes["default"].string
+  res_type: _propTypes["default"].string,
+  search_ref: _propTypes["default"].object
 };
 TileCreatorToolbar.defaultProps = {};
 var controllable_props = ["resource_name", "usable_width", "usable_height"];
@@ -330,6 +332,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     _this.methods_ref = /*#__PURE__*/_react["default"].createRef();
     _this.commands_ref = /*#__PURE__*/_react["default"].createRef();
     _this.draw_plot_bounding_ref = /*#__PURE__*/_react["default"].createRef();
+    _this.search_ref = /*#__PURE__*/_react["default"].createRef();
     _this.last_save = {};
     _this.dpObject = null;
     _this.rcObject = null;
@@ -506,6 +509,22 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       return bgs;
     }
   }, {
+    key: "_extraKeys",
+    value: function _extraKeys() {
+      var self = this;
+      return {
+        'Ctrl-S': self._saveMe,
+        'Ctrl-L': self._loadModule,
+        'Ctrl-M': self._saveAndCheckpoint,
+        'Ctrl-F': function CtrlF() {
+          self.search_ref.current.focus();
+        },
+        'Cmd-F': function CmdF() {
+          self.search_ref.current.focus();
+        }
+      };
+    }
+  }, {
     key: "_searchNext",
     value: function _searchNext() {
       if (this.state.current_search_number >= this.search_match_numbers[this.state.current_search_cm] - 1) {
@@ -566,13 +585,11 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           this._handleTabSelect("methods");
         }
 
-        console.log("searchPrev got a new cm with search_number " + String(next_search_number));
         this.setState({
           current_search_cm: next_cm,
           current_search_number: next_search_number
         });
       } else {
-        console.log("searchPrev got the same cm with search_number " + String(this.state.current_search_number - 1));
         this.setState({
           current_search_number: this.state.current_search_number - 1
         });
@@ -1163,6 +1180,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         }, title_label), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
           code_content: code_content,
           mode: mode,
+          extraKeys: this._extraKeys(),
           current_search_number: this.state.current_search_cm == "tc" ? this.state.current_search_number : null,
           handleChange: this.handleTopCodeChange,
           saveMe: this._saveAndCheckpoint,
@@ -1199,6 +1217,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         code_content: this.state.render_content_code,
         current_search_number: this.state.current_search_cm == "rc" ? this.state.current_search_number : null,
         handleChange: this.handleRenderContentChange,
+        extraKeys: this._extraKeys(),
         saveMe: this._saveAndCheckpoint,
         setCMObject: this._setRcObject,
         search_term: this.state.search_string,
@@ -1227,7 +1246,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           search_string: this.state.search_string,
           searchNext: this._searchNext,
           searchPrev: this._searchPrev,
-          key: "toolbar"
+          key: "toolbar",
+          search_ref: this.search_ref
         }), /*#__PURE__*/_react["default"].createElement("div", {
           ref: this.vp_ref
         }), /*#__PURE__*/_react["default"].createElement(_resizing_layouts.VerticalPanes, {
@@ -1249,6 +1269,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           search_string: this.state.search_string,
           searchNext: this._searchNext,
           searchPrev: this._searchPrev,
+          search_ref: this.search_ref,
           key: "toolbar"
         }), /*#__PURE__*/_react["default"].createElement("div", {
           ref: this.vp_ref
@@ -1290,6 +1311,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         handleChange: this.handleMethodsChange,
         current_search_number: this.state.current_search_cm == "em" ? this.state.current_search_number : null,
         dark_theme: dark_theme,
+        extraKeys: this._extraKeys(),
         readOnly: this.props.readOnly,
         code_content: this.state.extra_functions,
         saveMe: this._saveAndCheckpoint,
