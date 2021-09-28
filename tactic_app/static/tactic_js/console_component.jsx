@@ -971,7 +971,7 @@ class SuperItem extends React.PureComponent {
 
 const SSuperItem = MySortableElement(SuperItem);
 
-const log_item_update_props = ["is_error", "am_shrunk", "summary_text", "console_text", "console_available_width"];
+const log_item_update_props = ["is_error", "am_shrunk", "am_selected", "summary_text", "console_text", "console_available_width"];
 
 class RawLogItem extends React.Component {
     constructor(props) {

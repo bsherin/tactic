@@ -1486,7 +1486,7 @@ var SuperItem = /*#__PURE__*/function (_React$PureComponent3) {
 }(_react["default"].PureComponent);
 
 var SSuperItem = (0, _sortable_container.MySortableElement)(SuperItem);
-var log_item_update_props = ["is_error", "am_shrunk", "summary_text", "console_text", "console_available_width"];
+var log_item_update_props = ["is_error", "am_shrunk", "am_selected", "summary_text", "console_text", "console_available_width"];
 
 var RawLogItem = /*#__PURE__*/function (_React$Component) {
   _inherits(RawLogItem, _React$Component);
