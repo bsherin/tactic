@@ -161,12 +161,12 @@ class OptionModule extends React.Component {
                 </div>
                 {this.props.foregrounded &&
                     <BpOrderableTable columns={cols}
-                                data_array={this.props.data_list}
-                                active_row={this.state.active_row}
-                                handleActiveRowChange={this.handleActiveRowChange}
-                                handleChange={this.props.handleChange}
-                                content_editable={true}
-                />
+                                    data_array={this.props.data_list}
+                                    active_row={this.state.active_row}
+                                    handleActiveRowChange={this.handleActiveRowChange}
+                                    handleChange={this.props.handleChange}
+                                    content_editable={true}
+                    />
                 }
 
                 <OptionModuleForm handleCreate={this.handleCreate}/>

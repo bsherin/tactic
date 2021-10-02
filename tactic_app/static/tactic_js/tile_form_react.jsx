@@ -54,6 +54,7 @@ class TileForm extends React.Component {
     render() {
         var option_items = [];
         for (let option of this.props.options) {
+            if ("visible" in option && !option["visible"]) continue;
             let att_name = option["name"];
             if (selector_types.includes(option["type"])) {
                 option_items.push(<SelectOption att_name={att_name}
@@ -63,58 +64,61 @@ class TileForm extends React.Component {
                                                 buttonIcon={selector_type_icons[option["type"]]}
                                                 updateValue={this._updateValue}/>)
             }
-            else if (option["type"] == "pipe_select") {
-                option_items.push(<PipeOption att_name={att_name}
-                                              key={att_name}
-                                              value={_.cloneDeep(option.starting_value)}
-                                              pipe_dict={_.cloneDeep(option["pipe_dict"])}
-                                              updateValue={this._updateValue}
-                />)
-            }
-            else if (option["type"] == "boolean") {
-                option_items.push(<BoolOption att_name={att_name}
-                                              key={att_name}
-                                                  value={option.starting_value}
+            else switch (option["type"]) {
+                case "pipe_select":
+                    option_items.push(<PipeOption att_name={att_name}
+                                                  key={att_name}
+                                                  value={_.cloneDeep(option.starting_value)}
+                                                  pipe_dict={_.cloneDeep(option["pipe_dict"])}
                                                   updateValue={this._updateValue}
-                />)
-            }
-            else if (option["type"] == "textarea") {
-                option_items.push(<TextAreaOption att_name={att_name}
+                    />);
+                    break;
+                case "boolean":
+                    option_items.push(<BoolOption att_name={att_name}
                                                   key={att_name}
                                                   value={option.starting_value}
                                                   updateValue={this._updateValue}
-                />)
-            }
-            else if (option["type"] == "codearea") {
-                option_items.push(<CodeAreaOption att_name={att_name}
+                    />);
+                    break;
+                case "textarea":
+                    option_items.push(<TextAreaOption att_name={att_name}
+                                                      key={att_name}
+                                                      value={option.starting_value}
+                                                      updateValue={this._updateValue}
+                    />);
+                    break;
+                case "codearea":
+                    option_items.push(<CodeAreaOption att_name={att_name}
+                                                      key={att_name}
+                                                      value={option.starting_value}
+                                                      updateValue={this._updateValue}
+                    />);
+                    break;
+                case "text":
+                    option_items.push(<TextOption att_name={att_name}
                                                   key={att_name}
                                                   value={option.starting_value}
+                                                  leftIcon="paragraph"
                                                   updateValue={this._updateValue}
-                />)
-            }
-            else if (option["type"] == "text") {
-                option_items.push(<TextOption att_name={att_name}
-                                              key={att_name}
-                                              value={option.starting_value}
-                                              leftIcon="paragraph"
-                                              updateValue={this._updateValue}
-                />)
-            }
+                    />);
+                    break;
+                case "int":
+                    option_items.push(<IntOption att_name={att_name}
+                                                 key={att_name}
+                                                 value={option.starting_value}
+                                                 updateValue={this._updateValue}
+                    />);
+                    break;
 
-            else if (option["type"] == "int") {
-                option_items.push(<IntOption att_name={att_name}
-                                              key={att_name}
-                                              value={option.starting_value}
-                                              updateValue={this._updateValue}
-                />)
-            }
-
-            else if (option["type"] == "float") {
-                option_items.push(<FloatOption att_name={att_name}
-                                              key={att_name}
-                                              value={option.starting_value}
-                                              updateValue={this._updateValue}
-                />)
+                case "float":
+                    option_items.push(<FloatOption att_name={att_name}
+                                                   key={att_name}
+                                                   value={option.starting_value}
+                                                   updateValue={this._updateValue}
+                    />);
+                    break;
+                default:
+                    break;
             }
         }
         return (

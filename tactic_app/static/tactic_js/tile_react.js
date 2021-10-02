@@ -664,27 +664,22 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "_updateOptionValue",
     value: function _updateOptionValue(option_name, value) {
-      var options = _lodash["default"].cloneDeep(this.props.form_data);
-
-      var _iterator6 = _createForOfIteratorHelper(options),
-          _step6;
-
-      try {
-        for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-          var opt = _step6.value;
-
-          if (opt.name == option_name) {
-            opt.starting_value = value;
-            break;
-          }
-        }
-      } catch (err) {
-        _iterator6.e(err);
-      } finally {
-        _iterator6.f();
-      }
-
-      this.props.setTileValue(this.props.tile_id, "form_data", options);
+      // let options = _.cloneDeep(this.props.form_data);
+      // for (let opt of options) {
+      //     if (opt.name == option_name) {
+      //         opt.starting_value = value;
+      //         break
+      //     }
+      // }
+      var self = this;
+      var data_dict = {
+        tile_id: this.props.tile_id,
+        option_name: option_name,
+        value: value
+      };
+      (0, _communication_react.postWithCallback)(this.props.tile_id, "_update_single_option", data_dict, function (data) {
+        self.props.setTileValue(self.props.tile_id, "form_data", data.form_data);
+      }); // this.props.setTileValue(this.props.tile_id, "form_data", options)
     }
   }, {
     key: "_toggleBack",
@@ -713,18 +708,18 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
       this.props.setTileValue(this.props.tile_id, "show_spinner", true);
       var data = {};
 
-      var _iterator7 = _createForOfIteratorHelper(this.props.form_data),
-          _step7;
+      var _iterator6 = _createForOfIteratorHelper(this.props.form_data),
+          _step6;
 
       try {
-        for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
-          var opt = _step7.value;
+        for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+          var opt = _step6.value;
           data[opt.name] = opt.starting_value;
         }
       } catch (err) {
-        _iterator7.e(err);
+        _iterator6.e(err);
       } finally {
-        _iterator7.f();
+        _iterator6.f();
       }
 
       data.tile_id = this.props.tile_id;

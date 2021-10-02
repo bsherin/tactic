@@ -455,16 +455,16 @@ class BpOrderableTable extends React.Component {
                                name={column_name}/>
         });
         return (
-            <Table  enableFocusedCell={true}
-                       numRows={this.props.data_array.length}
-                       enableColumnReordering={false}
-                       selectionModes={[RegionCardinality.FULL_COLUMNS, RegionCardinality.FULL_ROWS]}
-                       enableRowReordering={true}
-                       onRowsReordered={this._onRowsReordered}
-                       onSelection={this._onSelection}
-                       enableMultipleSelection={false}
-                       >
-                        {columns}
+            <Table enableFocusedCell={false}
+                   numRows={this.props.data_array.length}
+                   enableColumnReordering={false}
+                   selectionModes={[RegionCardinality.FULL_COLUMNS, RegionCardinality.FULL_ROWS]}
+                   enableRowReordering={true}
+                   onRowsReordered={this._onRowsReordered}
+                   onSelection={this._onSelection}
+                   enableMultipleSelection={false}
+                   >
+                    {columns}
                 </Table>
         )
     }

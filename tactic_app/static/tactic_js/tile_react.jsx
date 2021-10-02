@@ -409,14 +409,19 @@ class TileComponent extends React.Component {
     }
 
     _updateOptionValue(option_name, value) {
-        let options = _.cloneDeep(this.props.form_data);
-        for (let opt of options) {
-            if (opt.name == option_name) {
-                opt.starting_value = value;
-                break
-            }
-        }
-        this.props.setTileValue(this.props.tile_id, "form_data", options)
+        // let options = _.cloneDeep(this.props.form_data);
+        // for (let opt of options) {
+        //     if (opt.name == option_name) {
+        //         opt.starting_value = value;
+        //         break
+        //     }
+        // }
+        let self = this;
+        const data_dict = {tile_id: this.props.tile_id, option_name: option_name, value: value};
+        postWithCallback(this.props.tile_id, "_update_single_option", data_dict, function (data) {
+            self.props.setTileValue(self.props.tile_id, "form_data", data.form_data)
+        })
+        // this.props.setTileValue(this.props.tile_id, "form_data", options)
     }
 
     _toggleBack() {

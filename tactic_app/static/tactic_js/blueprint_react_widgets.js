@@ -698,7 +698,7 @@ var BpOrderableTable = /*#__PURE__*/function (_React$Component10) {
         });
       });
       return /*#__PURE__*/_react["default"].createElement(_table.Table, {
-        enableFocusedCell: true,
+        enableFocusedCell: false,
         numRows: this.props.data_array.length,
         enableColumnReordering: false,
         selectionModes: [_table.RegionCardinality.FULL_COLUMNS, _table.RegionCardinality.FULL_ROWS],
