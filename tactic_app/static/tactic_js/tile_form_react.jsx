@@ -3,7 +3,7 @@
 import React from "react";
 import PropTypes from 'prop-types';
 
-import { FormGroup, InputGroup, Button, Switch, HTMLSelect, TextArea } from "@blueprintjs/core";
+import { FormGroup, InputGroup, Button, Divider, Switch, HTMLSelect, TextArea } from "@blueprintjs/core";
 import _ from 'lodash';
 
 import {ReactCodemirror} from "./react-codemirror.js";
@@ -117,6 +117,11 @@ class TileForm extends React.Component {
                                                    updateValue={this._updateValue}
                     />);
                     break;
+                case "divider":
+                    option_items.push(<DividerOption att_name={att_name}
+                                                   key={att_name}
+                    />);
+                    break;
                 default:
                     break;
             }
@@ -138,6 +143,32 @@ TileForm.propTypes = {
     options: PropTypes.array,
     handleSubmit: PropTypes.func,
     updateValue: PropTypes.func
+};
+
+class DividerOption extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this)
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        return !propsAreEqual(nextProps, this.props)
+    }
+
+    render() {
+        return (
+            <div style={{marginTop: 25, marginBottom: 15}}>
+                <Divider/>
+                <div style={{paddingLeft: 20, fontSize: "large", fontStyle: "italic"}}>
+                    {this.props.att_name}
+                </div>
+            </div>
+        )
+    }
+}
+
+DividerOption.propTypes = {
+    att_name: PropTypes.string
 };
 
 class TextOption extends React.Component {
