@@ -285,6 +285,11 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         return None
 
     @_task_worthy
+    def OptionChange(self, data):
+        self.handle_option_change(data["option_name"], data["value"])
+        return None
+
+    @_task_worthy
     def HideOptions(self, data):
         self._hide_options()
         return None
@@ -344,12 +349,26 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         self._restore_stdout()
         return {"encoded_val": encoded_val}
 
+    def modify_options(self):
+        return self.options
+
+    @_task_worthy
+    def _update_single_option(self, data):
+        setattr(self, data["option_name"], data["value"])
+        self.post_event("OptionChange", data)
+        return self._create_form_data(self._saved_form_data)
+
+    def handle_option_change(self, att_name, att_value):
+        return
+
     @_task_worthy
     def _create_form_data(self, data):
+        self._saved_form_data = data
         self._pipe_dict = data["pipe_dict"]
+        moptions = self.modify_options()
         try:
             form_data = []
-            for option in self.options:
+            for option in moptions:
                 form_item = {}
                 print("got option " + str(option))
                 att_name = option["name"]
@@ -364,6 +383,10 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                 self.save_attrs.append(att_name)
                 starting_value = getattr(self, att_name)
                 form_item["starting_value"] = starting_value
+                if "visible" in option and not option["visible"]:
+                    form_item["visible"] = False
+                else:
+                    form_item["visible"] = True
                 if option["type"] == "column_select":
                     form_item["option_list"] = data["current_header_list"]
                 elif option["type"] == "tokenizer_select":  # for backward compatibility
