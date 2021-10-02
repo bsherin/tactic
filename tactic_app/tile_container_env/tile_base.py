@@ -181,7 +181,6 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
 
     @_task_worthy
     def RefreshTileFromSave(self, data):
-        print("in RefreshTileFromSave")
         self._refresh_from_save()
         return None
 
@@ -323,6 +322,8 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     def LogParams(self, data):
         parray = [["name", "value"]]
         for opt in self.options:
+            if opt["type"] == "divider":
+                continue
             parray.append([opt["name"], getattr(self, opt["name"])])
         summary = "Parameters for tile " + data["tile_name"]
 
@@ -338,7 +339,6 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
 
     @_task_worthy
     def _transfer_pipe_value(self, data):
-        print("in _transfer_pipe_value")
         self._save_stdout()
         export_name = data["export_name"]
         if hasattr(self, export_name):
@@ -370,10 +370,12 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
             form_data = []
             for option in moptions:
                 form_item = {}
-                print("got option " + str(option))
                 att_name = option["name"]
                 form_item["name"] = att_name
                 form_item["type"] = option["type"]
+                if option["type"] == "divider":
+                    form_data.append(form_item)
+                    continue
                 if "tags" in option:
                     option_tags = option["tags"].split()
                 else:
@@ -501,8 +503,6 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         result["tile_id"] = self._tworker.my_id
         tmi_string = "{}.tile_module_index".format(os.environ.get("USERNAME"))
         result["module_name"] = redis_tm.hget(tmi_string, self.tile_type)
-        print("got module_name {}".format(result["module_name"]))
-        print("done compiling attributes")
         return result
     # </editor-fold>
 
@@ -751,6 +751,8 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
 
     def update_options(self, form_data):
         for opt in self.options:
+            if opt["type"] == "divider":
+                continue
             if opt["type"] == "int":
                 setattr(self, opt["name"], int(form_data[opt["name"]]))
             elif opt["type"] == "float":

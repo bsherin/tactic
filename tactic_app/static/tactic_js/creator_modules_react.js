@@ -70,7 +70,7 @@ var OptionModuleForm = /*#__PURE__*/function (_React$Component) {
     _classCallCheck(this, OptionModuleForm);
 
     _this = _super.call(this, props);
-    _this.option_types = ['text', 'int', 'float', 'boolean', 'textarea', 'codearea', 'column_select', 'document_select', 'list_select', 'collection_select', 'palette_select', 'pipe_select', 'custom_list', 'function_select', 'class_select', 'tile_select'];
+    _this.option_types = ['text', 'int', 'float', 'boolean', 'textarea', 'codearea', 'column_select', 'document_select', 'list_select', 'collection_select', 'palette_select', 'pipe_select', 'custom_list', 'function_select', 'class_select', 'tile_select', 'divider'];
     _this.taggable_types = ["class_select", "function_select", "pipe_select", "list_select", "collection_select"];
     _this.state = {
       "name": "",
@@ -159,7 +159,7 @@ var OptionModuleForm = /*#__PURE__*/function (_React$Component) {
         option_list: this.option_types,
         onChange: this.handleTypeChange,
         the_value: this.state.type
-      }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.LabeledFormField, {
+      }), this.state.type != "divider" && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.LabeledFormField, {
         label: "Default",
         onChange: this.handleDefaultChange,
         the_value: this.state.default_value

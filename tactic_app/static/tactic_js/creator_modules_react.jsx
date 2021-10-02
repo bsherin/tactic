@@ -21,7 +21,8 @@ class OptionModuleForm extends React.Component {
     constructor(props){
         super(props);
         this.option_types = ['text', 'int', 'float', 'boolean', 'textarea', 'codearea', 'column_select', 'document_select',
-            'list_select', 'collection_select', 'palette_select', 'pipe_select', 'custom_list', 'function_select', 'class_select', 'tile_select'];
+            'list_select', 'collection_select', 'palette_select', 'pipe_select', 'custom_list', 'function_select',
+            'class_select', 'tile_select', 'divider'];
         this.taggable_types = ["class_select", "function_select", "pipe_select", "list_select",
                                       "collection_select"];
         this.state = {
@@ -77,7 +78,9 @@ class OptionModuleForm extends React.Component {
                 <div style={{display: "flex", flexDirection: "row", padding: 25}}>
                     <LabeledFormField label="Name" onChange={this.handleNameChange} the_value={this.state.name} />
                     <LabeledSelectList label="Type" option_list={this.option_types} onChange={this.handleTypeChange} the_value={this.state.type}/>
-                    <LabeledFormField label="Default" onChange={this.handleDefaultChange} the_value={this.state.default_value}/>
+                    {this.state.type != "divider" &&
+                        <LabeledFormField label="Default" onChange={this.handleDefaultChange} the_value={this.state.default_value}/>
+                    }
                     {this.state.type == "custom_list" &&
                         <LabeledFormField label="Special List" onChange={this.handleSpecialListChange} the_value={this.state.special_list}/>}
                     {this.taggable_types.includes(this.state.type) &&
