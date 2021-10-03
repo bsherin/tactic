@@ -2,7 +2,7 @@ Tile Structure
 ==============
 
 This section explains the full structure of the code that describes a tile.
-If you us the `Tile Creator <Tile-Creator.html>`__ you might not need to know
+If you use the `Tile Creator <Tile-Creator.html>`__ you might not need to know
 any of this. But, on occasion, you might want to directly edit the source of
 a tile.
 
@@ -84,6 +84,8 @@ and ``type`` is the type. Obviously. At present the option types are:
 -  *boolean*. Displays a checkbox.
 -  *tile_select*. Displays a list of the names of all of the tiles in
    the current project.
+-  *divider*. Creates a separator and section heading in the option list
+   on the back of a tile.
 
 By default, when the user clicks “submit” on the back of the tile, the
 values in each of the fields will be stored as properties in the tile

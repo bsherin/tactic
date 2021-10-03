@@ -318,7 +318,7 @@ Filter-And-Iterate
 .. category_start
 
 Object API-related
------------------
+------------------
 
     The commands ``Library``, ``Collection``, ``Tiles``, and ``Pipes`` return objects that provide direct access
     to elements of the object-oriented API. Note that you do not type ``self`` before these commands. This is documented
@@ -583,7 +583,7 @@ Plots
         When using matplotlib.pyplot to work in interactive mode, use this alternative
         command to generate html to display the figure.
         :param bool use_svg: If  True, then this produces an svg element that is embedded directly.
-            in the page. If it's false, then the html produced contains a link that references a png file hosted on the server.
+        in the page. If it's false, then the html produced contains a link that references a png file hosted on the server.
 
         The following code will work in the log or a notebook:
 

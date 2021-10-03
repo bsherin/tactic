@@ -65,3 +65,53 @@ Clicks on Tile Front
         the textarea. The default handler does nothing.
 
 .. category_end
+
+.. category_start
+
+Dynamic Options
+---------------
+
+    .. py:method:: modify_options(self)
+
+        Sometimes you might want the options in a tile to vary based on some conditions.
+        For example, you might want some options to appear or disappear based on the value
+        of another boolean option. This can be accomplished by adding a ``modify_options`` method
+        to your tile.
+
+        ``modify_options`` is run any time the form on the back of a tile is generated. It must
+        return the options, suitably revised. Refer to `Tile Structure <Tile-Structure.html>`__ to see what
+        how the options list should look.
+
+        You can add a "visible" key to an item in the option list. If you do, this will determine whether the
+        option is visible. (If there is no such key, the option will be visible.) You can also hide an option
+        simply by not including it in the revised options.
+
+        Here's an example pattern:
+
+        .. code-block:: python
+
+            def opt_requirements(self, opt_name):
+                reqs = {
+                    "folds": lambda : self.cross_validate,
+                    "test_fraction": lambda : not self.cross_validate,
+                    "svc_balance": lambda : self.algorithm == "SVC",
+                    "neighbors": lambda : self.algorithm == "KNeighbors",
+                    "neighbor_weights": lambda : self.algorithm == "KNeighbors",
+                    "max_iter": lambda : self.algorithm == "MLP",
+                    "max_ngram": lambda : not self.feature_type == "wordvec",
+                    "vocab_size": lambda : not self.feature_type == "wordvec",
+                    "wordvec_model": lambda : self.feature_type == "wordvec",
+                }
+                result = True
+                if opt_name in reqs:
+                    result = reqs[opt_name]()
+                return result
+
+            def modify_options(self):
+                new_options = []
+                for opt in self.options:
+                    opt["visible"] = self.opt_requirements(opt["name"])
+                    new_options.append(opt)
+                return new_options
+
+.. category_end
