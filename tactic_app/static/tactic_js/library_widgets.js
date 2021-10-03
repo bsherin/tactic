@@ -231,7 +231,32 @@ var SearchForm = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "render",
     value: function render() {
-      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
+      var match_text;
+
+      if (this.props.number_matches != null && this.props.search_string && this.props.search_string != "") {
+        switch (this.props.number_matches) {
+          case 0:
+            match_text = "no matches";
+            break;
+
+          case 1:
+            match_text = "1 match";
+            break;
+
+          default:
+            match_text = "".concat(this.props.number_matches, " matches");
+            break;
+        }
+      } else {
+        match_text = null;
+      }
+
+      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+        helperText: match_text,
+        style: {
+          marginBottom: 0
+        }
+      }, /*#__PURE__*/_react["default"].createElement("div", {
         className: "d-flex flex-row mb-2 mt-2"
       }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
         type: "search",
@@ -272,7 +297,7 @@ var SearchForm = /*#__PURE__*/function (_React$Component3) {
         icon: "caret-up",
         text: undefined,
         small: true
-      }))));
+      })))));
     }
   }]);
 
@@ -291,7 +316,8 @@ SearchForm.propTypes = {
   include_search_jumper: _propTypes["default"].bool,
   searchNext: _propTypes["default"].func,
   searchPrev: _propTypes["default"].func,
-  search_ref: _propTypes["default"].object
+  search_ref: _propTypes["default"].object,
+  number_matches: _propTypes["default"].number
 };
 SearchForm.defaultProps = {
   allow_search_inside: false,
@@ -303,7 +329,8 @@ SearchForm.defaultProps = {
   current_search_number: null,
   searchNext: null,
   searchPrev: null,
-  search_ref: null
+  search_ref: null,
+  number_matches: null
 };
 
 var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
