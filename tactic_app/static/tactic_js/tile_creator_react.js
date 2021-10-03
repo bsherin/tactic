@@ -290,7 +290,8 @@ function TileCreatorToolbar(props) {
     include_search_jumper: true,
     searchPrev: props.searchPrev,
     searchNext: props.searchNext,
-    search_ref: props.search_ref
+    search_ref: props.search_ref,
+    number_matches: props.search_matches
   }));
 }
 
@@ -301,7 +302,8 @@ TileCreatorToolbar.proptypes = {
   search_string: _propTypes["default"].string,
   update_search_state: _propTypes["default"].func,
   res_type: _propTypes["default"].string,
-  search_ref: _propTypes["default"].object
+  search_ref: _propTypes["default"].object,
+  search_matches: _propTypes["default"].number
 };
 TileCreatorToolbar.defaultProps = {};
 var controllable_props = ["resource_name", "usable_width", "usable_height"];
@@ -365,8 +367,9 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       old_usable_width: 0,
       current_search_number: null,
       current_search_cm: _this.cm_list[0],
-      methodsTabRefreshRequired: true // This is toggled back and forth to force refresh
-
+      methodsTabRefreshRequired: true,
+      // This is toggled back and forth to force refresh
+      search_matches: 0
     };
 
     var self = _assertThisInitialized(_this);
@@ -402,9 +405,9 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     _this.handleLeftPaneResize = _this.handleLeftPaneResize.bind(_assertThisInitialized(_this));
     _this.handleTopPaneResize = _this.handleTopPaneResize.bind(_assertThisInitialized(_this));
     _this.search_match_numbers = {
-      tc: null,
-      rc: null,
-      em: null
+      tc: 0,
+      rc: 0,
+      em: 0
     };
     return _this;
   }
@@ -1130,6 +1133,15 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     key: "_setSearchMatches",
     value: function _setSearchMatches(rc_name, num) {
       this.search_match_numbers[rc_name] = num;
+      var current_matches = 0;
+
+      for (var cname in this.search_match_numbers) {
+        current_matches += this.search_match_numbers[cname];
+      }
+
+      this.setState({
+        search_matches: current_matches
+      });
     }
   }, {
     key: "render",
@@ -1247,7 +1259,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           searchNext: this._searchNext,
           searchPrev: this._searchPrev,
           key: "toolbar",
-          search_ref: this.search_ref
+          search_ref: this.search_ref,
+          search_matches: this.state.search_matches
         }), /*#__PURE__*/_react["default"].createElement("div", {
           ref: this.vp_ref
         }), /*#__PURE__*/_react["default"].createElement(_resizing_layouts.VerticalPanes, {
@@ -1270,7 +1283,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           searchNext: this._searchNext,
           searchPrev: this._searchPrev,
           search_ref: this.search_ref,
-          key: "toolbar"
+          key: "toolbar",
+          search_matches: this.state.search_matches
         }), /*#__PURE__*/_react["default"].createElement("div", {
           ref: this.vp_ref
         }, bc_item));

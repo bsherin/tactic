@@ -5,7 +5,7 @@ import React from "react";
 import PropTypes from 'prop-types';
 import hash from "object-hash"
 
-import { InputGroup, Menu, MenuItem, Switch, Card, Button, ButtonGroup } from "@blueprintjs/core";
+import { InputGroup, Menu, MenuItem, FormGroup, Switch, Card, Button, ButtonGroup } from "@blueprintjs/core";
 import { Cell, Column, Table, ColumnHeaderCell, RegionCardinality, TruncatedFormat, Regions } from "@blueprintjs/table";
 import {Omnibar} from "@blueprintjs/select"
 import _ from 'lodash';
@@ -135,44 +135,63 @@ class SearchForm extends React.Component {
     }
 
     render() {
+        let match_text;
+        if (this.props.number_matches != null && this.props.search_string && this.props.search_string != "") {
+            switch (this.props.number_matches) {
+                case 0:
+                    match_text = "no matches";
+                    break;
+                case 1:
+                    match_text = "1 match";
+                    break;
+                default:
+                    match_text = `${this.props.number_matches} matches`;
+                    break;
+            }
+        }
+        else {
+            match_text = null
+        }
         return (
             <React.Fragment>
-                <div className="d-flex flex-row mb-2 mt-2">
-                    <InputGroup type="search"
-                                placeholder="Search"
-                                leftIcon="search"
-                                value={this.props.search_string}
-                                onChange={this._handleSearchFieldChange}
-                                style={{"width": this.props.field_width}}
-                                autoCapitalize="none"
-                                autoCorrect="off"
-                                inputRef={this.props.search_ref}
-                    />
+                <FormGroup helperText={match_text} style={{marginBottom: 0}}>
+                    <div className="d-flex flex-row mb-2 mt-2">
+                        <InputGroup type="search"
+                                    placeholder="Search"
+                                    leftIcon="search"
+                                    value={this.props.search_string}
+                                    onChange={this._handleSearchFieldChange}
+                                    style={{"width": this.props.field_width}}
+                                    autoCapitalize="none"
+                                    autoCorrect="off"
+                                    inputRef={this.props.search_ref}
+                        />
 
-                {this.props.allow_search_metadata &&
-                    <Switch label="metadata"
-                                 className="ml-2"
-                                large={false}
-                                checked={this.props.search_metadata}
-                                onChange={this._handleSearchMetadataChange}
-                    />
-                }
-                {this.props.allow_search_inside &&
-                    <Switch label="inside"
-                               className="ml-2"
-                               large={false}
-                               checked={this.props.search_inside}
-                               onChange={this._handleSearchInsideChange}
-                    />
-                }
-                    {this.props.include_search_jumper &&
-                        <ButtonGroup style={{marginLeft: 5, padding: 2}}>
-                            <Button onClick={this.props.searchNext} icon="caret-down" text={undefined} small={true}/>
-                            <Button onClick={this.props.searchPrev} icon="caret-up" text={undefined} small={true}/>
-                        </ButtonGroup>
-
+                    {this.props.allow_search_metadata &&
+                        <Switch label="metadata"
+                                     className="ml-2"
+                                    large={false}
+                                    checked={this.props.search_metadata}
+                                    onChange={this._handleSearchMetadataChange}
+                        />
                     }
-                </div>
+                    {this.props.allow_search_inside &&
+                        <Switch label="inside"
+                                   className="ml-2"
+                                   large={false}
+                                   checked={this.props.search_inside}
+                                   onChange={this._handleSearchInsideChange}
+                        />
+                    }
+                        {this.props.include_search_jumper &&
+                            <ButtonGroup style={{marginLeft: 5, padding: 2}}>
+                                <Button onClick={this.props.searchNext} icon="caret-down" text={undefined} small={true}/>
+                                <Button onClick={this.props.searchPrev} icon="caret-up" text={undefined} small={true}/>
+                            </ButtonGroup>
+
+                        }
+                    </div>
+                </FormGroup>
             </React.Fragment>
         )
     }
@@ -189,7 +208,8 @@ SearchForm.propTypes = {
     include_search_jumper: PropTypes.bool,
     searchNext: PropTypes.func,
     searchPrev: PropTypes.func,
-    search_ref: PropTypes.object
+    search_ref: PropTypes.object,
+    number_matches: PropTypes.number
 };
 
 SearchForm.defaultProps = {
@@ -202,7 +222,8 @@ SearchForm.defaultProps = {
     current_search_number: null,
     searchNext: null,
     searchPrev: null,
-    search_ref: null
+    search_ref: null,
+    number_matches: null
 };
 
 class BpSelectorTable extends React.Component {

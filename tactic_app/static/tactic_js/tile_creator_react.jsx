@@ -190,6 +190,7 @@ function TileCreatorToolbar(props) {
                         searchPrev={props.searchPrev}
                         searchNext={props.searchNext}
                         search_ref={props.search_ref}
+                        number_matches={props.search_matches}
             />
         </div>
     )
@@ -202,7 +203,8 @@ TileCreatorToolbar.proptypes = {
     search_string: PropTypes.string,
     update_search_state: PropTypes.func,
     res_type: PropTypes.string,
-    search_ref: PropTypes.object
+    search_ref: PropTypes.object,
+    search_matches: PropTypes.number
 };
 
 TileCreatorToolbar.defaultProps = {
@@ -261,6 +263,7 @@ class CreatorApp extends React.Component {
             current_search_number: null,
             current_search_cm: this.cm_list[0],
             methodsTabRefreshRequired: true, // This is toggled back and forth to force refresh
+            search_matches: 0
         };
         let self = this;
 
@@ -298,9 +301,9 @@ class CreatorApp extends React.Component {
         this.handleLeftPaneResize = this.handleLeftPaneResize.bind(this);
         this.handleTopPaneResize = this.handleTopPaneResize.bind(this);
         this.search_match_numbers = {
-            tc: null,
-            rc: null,
-            em: null
+            tc: 0,
+            rc: 0,
+            em: 0
         }
     }
 
@@ -816,7 +819,13 @@ class CreatorApp extends React.Component {
     }
 
     _setSearchMatches(rc_name, num) {
-        this.search_match_numbers[rc_name] = num
+        this.search_match_numbers[rc_name] = num;
+        let current_matches = 0;
+        for (let cname in this.search_match_numbers) {
+            current_matches += this.search_match_numbers[cname]
+
+        }
+        this.setState({search_matches: current_matches})
     }
 
     render() {
@@ -908,6 +917,7 @@ class CreatorApp extends React.Component {
                                         searchPrev={this._searchPrev}
                                         key="toolbar"
                                         search_ref={this.search_ref}
+                                        search_matches={this.state.search_matches}
                                         />
                     <div ref={this.vp_ref}/>
                     <VerticalPanes top_pane={tc_item}
@@ -934,6 +944,7 @@ class CreatorApp extends React.Component {
                                         searchPrev={this._searchPrev}
                                         search_ref={this.search_ref}
                                         key="toolbar"
+                                        search_matches={this.state.search_matches}
                                         />
                     <div ref={this.vp_ref}>
                         {bc_item}
