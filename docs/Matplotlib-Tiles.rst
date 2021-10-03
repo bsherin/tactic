@@ -54,7 +54,7 @@ colors manually to get perfect behavior, if you want. The commands you'll want
 are things like ``self.patch.set_facecolor("#5c7080")`` and ``ax.set_facecolor("#5c7080")``.
 
 Raw Code for a Matplotlib Tile
------------------------------
+------------------------------
 
 In case you're in interested in such things, this is what the same tile
 looks like viewed in the `Module Viewer <Module-Viewer.html>`__.
