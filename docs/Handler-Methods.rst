@@ -78,7 +78,8 @@ Dynamic Options
         of another boolean option. This can be accomplished by adding a ``modify_options`` method
         to your tile.
 
-        ``modify_options`` is run any time the form on the back of a tile is generated. It must
+        ``modify_options`` is run any time the form on the back of a tile is (re)generated. This includes
+        any time that an individual option is changed on the back of a tile. It must
         return the options, suitably revised. Refer to `Tile Structure <Tile-Structure.html>`__ to see what
         how the options list should look.
 
@@ -113,5 +114,10 @@ Dynamic Options
                     opt["visible"] = self.opt_requirements(opt["name"])
                     new_options.append(opt)
                 return new_options
+
+    .. py:method:: handle_option_change(self, opt_name, value)
+
+        Called when the user changes an individual option on the back of a tile. ``opt_name``
+        is the name of the option and ``value`` is the new value.
 
 .. category_end
