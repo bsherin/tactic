@@ -31,12 +31,12 @@ $regular: #5c7080;
     }
 
     .bp3-button.bp3-intent-danger {
-        background-color: $light-gray5;
-        color: $danger !important;
-
-        .bp3-icon {
-            color: $danger !important
-        }
+        //background-color: $light-gray5;
+        //color: $danger !important;
+        //
+        //.bp3-icon {
+        //    color: $danger !important
+        //}
     }
 
     .open-selector-row {
@@ -172,10 +172,10 @@ $regular: #5c7080;
     }
 
     .bp3-tabs.bp3-vertical > .bp3-tab-panel {
-        padding-left: 5px !important;
+        padding-left: 0 !important;
         //background-color: #f5f8fa;
         //border-left: 1px solid #CED9E0;
-        margin-left: 5px
+        margin-left: 0px
     }
 
     .bp3-checkbox .bp3-control-indicator:focus {
@@ -249,7 +249,6 @@ $regular: #5c7080;
 
 #loaded_tile_widget {
     margin-top: 15px;
-    margin-left: 15px;
     h6 {
         font-weight: 600
     }

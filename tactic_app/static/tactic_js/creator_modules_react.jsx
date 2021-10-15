@@ -527,6 +527,7 @@ CategoryEntry.propTypes = {
     search_string: PropTypes.string
 };
 
+// noinspection JSIgnoredPromiseFromCall
 class CommandEntry extends React.Component {
     constructor(props) {
         super(props);

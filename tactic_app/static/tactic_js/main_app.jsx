@@ -13,6 +13,7 @@ import { NavbarDivider } from "@blueprintjs/core";
 import _ from 'lodash';
 
 import {TacticNavbar} from "./blueprint_navbar.js";
+import {TacticMenubar} from "./menu_utilities.js";
 import {MainTableCard, MainTableCardHeader, FreeformBody} from "./table_react.js";
 import {BlueprintTable, compute_added_column_width} from "./blueprint_table.js";
 import {TacticSocket} from "./tactic_socket.js"
@@ -546,6 +547,8 @@ class MainApp extends React.Component {
             }
             menu_items.push(<MenuComponent menu_name={category}
                                            option_dict={option_dict}
+                                           binding_dict={{}}
+                                           icon_dict={{}}
                                            disabled_items={[]}
                                            key={category}
             />)
@@ -1018,6 +1021,7 @@ class MainApp extends React.Component {
                                  broadcast_event_to_server={this._broadcast_event_to_server}
             />
         );
+
         let card_body;
         if (this.props.is_freeform) {
             card_body = <FreeformBody main_id={this.props.main_id}
@@ -1182,18 +1186,29 @@ class MainApp extends React.Component {
             width: "100%",
             height: my_props.usable_height - this.height_adjustment,
         };
+        let stheme = this.props.controlled ? this.props.setTheme : this._setTheme;
         return (
             <React.Fragment>
-                <TacticNavbar is_authenticated={window.is_authenticated}
+                {!window.in_context &&
+                    <TacticNavbar is_authenticated={window.is_authenticated}
                               dark_theme={dark_theme}
-                              setTheme={this.props.controlled ? this.props.setTheme : this._setTheme}
+                              setTheme={stheme}
                               user_name={window.username}
-                              menus={menus}
+                              menus={null}
                               page_id={this.props.main_id}
-                              min_navbar={window.in_context}
-                              refreshTab={this.props.refreshTab}
-                              closeTab={this.props.closeTab}
-                />
+                    />
+                }
+                <TacticMenubar  dark_theme={dark_theme}
+                                      menus={menus}
+                                      showRefresh={true}
+                                      showClose={true}
+                                      refreshTab={this.props.refreshTab}
+                                      closeTab={this.props.closeTab}
+                                      resource_name={this._cProp("resource_name")}
+                                      showErrorDrawerButton={true}
+                                      toggleErrorDrawer={this.props.toggleErrorDrawer}
+                    />
+
                 <div className={outer_class} ref={this.main_outer_ref} style={outer_style}>
                     {this.state.console_is_zoomed &&
                         bottom_pane

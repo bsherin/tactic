@@ -12,14 +12,15 @@ import { TextArea } from "@blueprintjs/core";
 
 import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app.js";
 import {TacticSocket} from "./tactic_socket.js";
-import {postAjax, postAjaxPromise} from "./communication_react.js"
+import {postAjax, postAjaxPromise, postWithCallback} from "./communication_react.js"
 import {doFlash, withStatus} from "./toaster.js"
 
-import {SIDE_MARGIN, getUsableDimensions} from "./sizing_tools.js";
+import {getUsableDimensions, BOTTOM_MARGIN} from "./sizing_tools.js";
 import {withErrorDrawer} from "./error_drawer.js";
 import {doBinding} from "./utilities_react.js";
 import {guid} from "./utilities_react.js";
 import {TacticNavbar} from "./blueprint_navbar";
+import {showModalReact} from "./modal_react";
 
 export {list_viewer_props, ListViewerApp}
 
@@ -47,10 +48,12 @@ function list_viewer_props(data, registerDirtyMethod, finalCallback) {
     let resource_viewer_id = guid();
     var tsocket = new TacticSocket("main", 5000, resource_viewer_id);
 
+
     finalCallback({
         resource_viewer_id: resource_viewer_id,
         tsocket: tsocket,
         split_tags: data.mdata.tags == "" ? [] : data.mdata.tags.split(" "),
+        created: data.mdata.datestring,
         resource_name: data.resource_name,
         the_content: data.the_content,
         notes: data.mdata.notes,
@@ -61,12 +64,20 @@ function list_viewer_props(data, registerDirtyMethod, finalCallback) {
     })
 }
 
+const LIST_PADDING_TOP = 15;
+
 class ListEditor extends React.Component {
 
     render() {
-        let tastyle = {resize: "horizontal", height: this.props.height, margin: 2};
+        let tastyle = {
+            resize: "horizontal",
+            margin: 2,
+            height: this.props.height - LIST_PADDING_TOP,
+        };
         return (
-            <div id="listarea-container" ref={this.props.outer_ref}>
+            <div id="listarea-container"
+                 ref={this.props.outer_ref}
+                 style={{margin: 0, paddingTop: LIST_PADDING_TOP}}>
                 <TextArea
                       cols="50"
                       style={tastyle}
@@ -149,26 +160,49 @@ class ListViewerApp extends React.Component {
             return this.props.controlled ? this.props[pname] :  this.state[pname]
     }
 
-    get button_groups() {
-        let bgs;
+    get menu_specs() {
+        let ms;
         if (this.props.is_repository) {
-            bgs = [[{"name_text": "Copy", "icon_name": "import",
-                        "click_handler": () => {copyToLibrary("list", this._cProp("resource_name"))}, tooltip: "Copy to library"}]
-            ]
+            ms = {
+                Transfer: [{
+                    "name_text": "Copy to library", "icon_name": "import",
+                    "click_handler": () => {
+                        copyToLibrary("list", this._cProp("resource_name"))
+                    }, tooltip: "Copy to library"
+                }]
+            }
         }
         else {
-            bgs = [[{"name_text": "Save", "icon_name": "saved", "click_handler": this._saveMe, tooltip: "Save"},
-                    {"name_text": "Share", "icon_name": "share",
-                          "click_handler": () => {sendToRepository("list", this._cProp("resource_name"))},
-                        tooltip: "Share to repository"}]
-            ]
+            ms = {
+                Save: [
+                    {name_text: "Save",
+                    icon_name: "saved",
+                    click_handler: this._saveMe,
+                    key_bindings: ['ctrl+s'],
+                    tooltip: "Save"},
+                    {name_text: "Save As...",
+                        icon_name: "floppy-disk",
+                        click_handler: this._saveMeAs,
+                        tooltip: "Save as"},
+                ],
+                Transfer: [
+                    {name_text: "Share",
+                        icon_name: "share",
+                        click_handler: () => {
+                            sendToRepository("list", this._cProp("resource_name"))
+                        },
+                        tooltip: "Share to repository"
+                    },
+                ]
+
+            }
         }
-        for (let bg of bgs) {
-            for (let but of bg) {
+        for (const [menu_name, menu] of Object.entries(ms)) {
+            for (let but of menu) {
                 but.click_handler = but.click_handler.bind(this)
             }
         }
-        return bgs
+        return ms
     }
 
     _setResourceNameState(new_name) {
@@ -198,11 +232,72 @@ class ListViewerApp extends React.Component {
     get_new_le_height () {
         let uheight = this._cProp("usable_height");
         if (this.le_ref && this.le_ref.current) {  // This will be true after the initial render
-            return uheight - this.le_ref.current.offsetTop
+            return uheight - this.le_ref.current.offsetTop - BOTTOM_MARGIN
         }
         else {
             return uheight - 100
         }
+    }
+
+    _saveMe() {
+        if (!this.props.am_selected) {
+            return false
+        }
+        const new_list_as_string = this.state.list_content;
+        const tagstring = this.state.tags.join(" ");
+        const notes = this.state.notes;
+        const tags = this.state.tags;  // In case it's modified wile saving
+        const result_dict = {
+            "list_name": this._cProp("resource_name"),
+            "new_list_as_string": new_list_as_string,
+            "tags": tagstring,
+            "notes": notes
+        };
+        let self = this;
+        postAjax("update_list", result_dict, update_success);
+        function update_success(data) {
+            if (data.success) {
+                self.savedContent = new_list_as_string;
+                self.savedTags = tags;
+                self.savedNotes = notes;
+                data.timeout = 2000;
+            }
+            doFlash(data);
+            return false
+        }
+    }
+
+    _saveMeAs(e) {
+        this.props.startSpinner();
+        let self = this;
+        postWithCallback("host", "get_list_names", {"user_id": window.user_id}, function (data) {
+            let checkboxes;
+            showModalReact("Save List As", "New List Name", CreateNewList,
+                      "NewList", data["list_names"], null, doCancel)
+        }, null, this.props.main_id);
+        function doCancel() {
+            self.props.stopSpinner()
+        }
+        function CreateNewList(new_name) {
+            const result_dict = {
+                "new_res_name": new_name,
+                "res_to_copy": self._cProp("resource_name")
+            };
+            postAjaxPromise('/create_duplicate_list', result_dict)
+                .then((data) => {
+                    self._setResourceNameState(new_name)
+                    }
+                )
+                .catch(doFlash)
+        }
+    }
+
+
+    _dirty() {
+        let current_content = this.state.list_content;
+        const tags = this.state.tags;
+        const notes = this.state.notes;
+        return !((current_content == this.savedContent) && (tags == this.savedTags) && (notes == this.savedNotes))
     }
 
     render() {
@@ -216,7 +311,8 @@ class ListViewerApp extends React.Component {
         let outer_style = {
             width: "100%",
             height: my_props.usable_height,
-            paddingLeft: SIDE_MARGIN
+            paddingLeft: 0,
+            position: "relative"
         };
         let outer_class = "resource-viewer-holder";
         if (!this.props.controlled) {
@@ -245,12 +341,13 @@ class ListViewerApp extends React.Component {
                                        closeTab={this.props.closeTab}
                                        res_type="list"
                                        resource_name={my_props.resource_name}
-                                       button_groups={this.button_groups}
+                                       menu_specs={this.menu_specs}
                                        handleStateChange={this._handleStateChange}
                                        created={this.props.created}
                                        meta_outer={this.props.meta_outer}
                                        notes={this.state.notes}
                                        tags={this.state.tags}
+                                       showErrorDrawerButton={false}
                                        saveMe={this._saveMe}>
                             <ListEditor the_content={this.state.list_content}
                                         readOnly={this.props.readOnly}
@@ -262,44 +359,6 @@ class ListViewerApp extends React.Component {
                 </div>
             </React.Fragment>
         )
-    }
-
-    _saveMe() {
-        const new_list_as_string = this.state.list_content;
-        const tagstring = this.state.tags.join(" ");
-        const notes = this.state.notes;
-        const tags = this.state.tags;  // In case it's modified wile saving
-        const result_dict = {
-            "list_name": this._cProp("resource_name"),
-            "new_list_as_string": new_list_as_string,
-            "tags": tagstring,
-            "notes": notes
-        };
-        let self = this;
-        postAjax("update_list", result_dict, update_success);
-        function update_success(data) {
-            if (data.success) {
-                self.savedContent = new_list_as_string;
-                self.savedTags = tags;
-                self.savedNotes = notes;
-                data.timeout = 2000;
-            }
-            doFlash(data);
-            return false
-        }
-    }
-
-    _saveMeAs(e) {
-        doFlash({"message": "not implemented yet", "timeout": 10});
-        return false
-    }
-
-
-    _dirty() {
-        let current_content = this.state.list_content;
-        const tags = this.state.tags;
-        const notes = this.state.notes;
-        return !((current_content == this.savedContent) && (tags == this.savedTags) && (notes == this.savedNotes))
     }
 }
 

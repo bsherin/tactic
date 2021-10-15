@@ -12,7 +12,7 @@ import {SearchForm, BpSelectorTable, LibraryOmnibar} from "./library_widgets.js"
 import {HorizontalPanes, HANDLE_WIDTH} from "./resizing_layouts.js";
 import {showModalReact, showConfirmDialogReact} from "./modal_react.js";
 import {postAjax, postAjaxPromise} from "./communication_react.js"
-import {SIDE_MARGIN} from "./sizing_tools.js";
+import {SIDE_MARGIN, BOTTOM_MARGIN} from "./sizing_tools.js";
 
 import {doFlash} from "./toaster.js"
 import {KeyTrap} from "./key_trap.js";
@@ -797,22 +797,11 @@ class LibraryPane extends React.Component {
     _communicateColumnWidthSum(total_width) {
         this.setState({total_width: total_width})
     }
-    
-    _get_available_width() {
-        let result;
-        if (this.top_ref && this.top_ref.current) {
-            result = window.innerWidth - this.top_ref.current.offsetLeft - SIDE_MARGIN;
-        }
-        else {
-            result = window.innerWidth - 200
-        }
-        return result
-    }
 
     render() {
         let new_button_groups;
-        let uwidth = this.props.usable_width - 2 * SIDE_MARGIN;
-        let left_width = (uwidth - HANDLE_WIDTH) * this.props.left_width_fraction;
+        let uwidth = this.props.usable_width;
+        let left_width = (uwidth) * this.props.left_width_fraction;
         const primary_mdata_fields = ["name", "created", "created_for_sort", "updated",  "updated_for_sort", "tags", "notes"];
         let additional_metadata = {};
         for (let field in this.props.selected_resource) {
@@ -824,11 +813,10 @@ class LibraryPane extends React.Component {
             additional_metadata = null
         }
 
-        let right_pane;
+        // let right_pane;
         let split_tags = this.props.selected_resource.tags == "" ? [] : this.props.selected_resource.tags.split(" ");
-        let outer_style = {marginLeft: 5, marginRight: 5, marginTop: 90, overflow: "auto",
-            padding: 15};
-        let mdata_element = (
+        let outer_style = {marginTop: 0, marginLeft: 20, overflow: "auto", padding: 15, marginRight: 0, height: "100%"};
+        let right_pane = (
                 <CombinedMetadata tags={split_tags}
                                   elevation={2}
                                   name={this.props.selected_resource.name}
@@ -840,31 +828,11 @@ class LibraryPane extends React.Component {
                                   outer_style={outer_style}
                                   handleNotesBlur={this.props.multi_select ? null : this._saveFromSelectedResource}
                                   additional_metadata={additional_metadata}
+                                  aux_pane={this.props.aux_pane}
+                                  aux_pane_title={this.props.aux_pane_title}
                 />
          );
 
-        if (this.props.aux_pane == null) {
-            right_pane = mdata_element;
-        }
-        else {
-            let button_base = this.state.auxIsOpen ? "Hide" : "Show";
-            right_pane = (
-                <React.Fragment>
-                    {mdata_element}
-                    <div  className="d-flex flex-row justify-content-around" style={{marginTop: 20}}>
-                        <Button fill={false}
-                                   small={true}
-                                   minimal={false}
-                                   onClick={this._toggleAuxVisibility}>
-                            {button_base + " " + this.props.aux_pane_title}
-                        </Button>
-                    </div>
-                    <Collapse isOpen={this.state.auxIsOpen} keepChildrenMounted={true}>
-                        {this.props.aux_pane}
-                    </Collapse>
-                </React.Fragment>
-            )
-        }
         let th_style= {
             "display": "inline-block",
             "verticalAlign": "top",
@@ -876,24 +844,17 @@ class LibraryPane extends React.Component {
         };
 
         // let filtered_data_list = _.cloneDeep(this.state.data_list.filter(this._filter_on_match_list));
-        let ToolbarClass = this.props.ToolbarClass;
+        let MenubarClass = this.props.MenubarClass;
 
         let table_width;
-        let toolbar_left;
+        let left_pane_height;
         if (this.table_ref && this.table_ref.current) {
             table_width = left_width - this.table_ref.current.offsetLeft + this.top_ref.current.offsetLeft;
-            if (this.toolbarRef && this.toolbarRef.current) {
-                let tbwidth = this.toolbarRef.current.offsetWidth;
-                toolbar_left = this.table_ref.current.offsetLeft + .5 * table_width - .5 * tbwidth;
-                if (toolbar_left < 0) toolbar_left = 0
-            }
-            else {
-                toolbar_left = 175
-            }
+            left_pane_height = this.props.usable_height - this.table_ref.current.offsetTop - BOTTOM_MARGIN
         }
         else {
             table_width = left_width - 150;
-            toolbar_left = 175
+            left_pane_height = this.props.usable_height - 100
         }
 
         let key_bindings = [
@@ -917,7 +878,11 @@ class LibraryPane extends React.Component {
                     </div>
                     <div ref={this.table_ref}
                          // className="d-flex flex-column"
-                         style={{width: table_width, maxWidth: this.state.total_width, padding: 5}}>
+                         style={{width: table_width,
+                             maxWidth: this.state.total_width,
+                             maxHeight: left_pane_height,
+                             marginTop: 15,
+                             padding: 5}}>
                         <SearchForm allow_search_inside={this.props.allow_search_inside}
                                     allow_search_metadata={this.props.allow_search_metadata}
                                     update_search_state={this._update_search_state}
@@ -944,37 +909,37 @@ class LibraryPane extends React.Component {
             </React.Fragment>
         );
         return (
+            <React.Fragment>
+                <MenubarClass selected_resource={this.props.selected_resource}
+                          multi_select={this.props.multi_select}
+                          list_of_selected={this.props.list_of_selected}
+                          view_func={this._view_func}
+                          send_repository_func={this._send_repository_func}
+                          repository_copy_func={this._repository_copy_func}
+                          duplicate_func={this._duplicate_func}
+                          refresh_func={this._refresh_func}
+                          delete_func={this._delete_func}
+                          rename_func={this._rename_func}
+                          startSpinner={this.props.startSpinner}
+                          stopSpinner={this.props.stopSpinner}
+                          clearStatusMessage={this.props.clearStatusMessage}
+                          sendRef={this._sendToolbarRef}
+                          sendContextMenuItems={this._sendContextMenuItems}
+                          view_resource={this._view_resource}
+                          {...this.props.errorDrawerFuncs}
+                          handleCreateViewer={this.props.handleCreateViewer}
+                          library_id={this.props.library_id}
+                          dark_theme={this.props.dark_theme}
+                          controlled={this.props.controlled}
+                          am_selected={this.props.am_selected}
+                          tsocket={this.props.tsocket}
+                          />
 
-                <div ref={this.top_ref} className="d-flex flex-column mt-3" >
-                    <ToolbarClass selected_resource={this.props.selected_resource}
-                                  multi_select={this.props.multi_select}
-                                  list_of_selected={this.props.list_of_selected}
-                                  view_func={this._view_func}
-                                  send_repository_func={this._send_repository_func}
-                                  repository_copy_func={this._repository_copy_func}
-                                  duplicate_func={this._duplicate_func}
-                                  refresh_func={this._refresh_func}
-                                  delete_func={this._delete_func}
-                                  rename_func={this._rename_func}
-                                  startSpinner={this.props.startSpinner}
-                                  stopSpinner={this.props.stopSpinner}
-                                  clearStatusMessage={this.props.clearStatusMessage}
-                                  left_position={toolbar_left}
-                                  sendRef={this._sendToolbarRef}
-                                  sendContextMenuItems={this._sendContextMenuItems}
-                                  view_resource={this._view_resource}
-                                  {...this.props.errorDrawerFuncs}
-                                  handleCreateViewer={this.props.handleCreateViewer}
-                                  library_id={this.props.library_id}
-                                  dark_theme={this.props.dark_theme}
-                                  controlled={this.props.controlled}
-                                  am_selected={this.props.am_selected}
-                                  tsocket={this.props.tsocket}
-                                  />
+                <div ref={this.top_ref} className="d-flex flex-column" >
                       <div style={{width: uwidth, height: this.props.usable_height}}>
                           <HorizontalPanes
                                  available_width={uwidth}
-                                 available_height={this.props.usable_height - 100}
+                                 available_height={this.props.usable_height}
                                  show_handle={true}
                                  left_pane={left_pane}
                                  right_pane={right_pane}
@@ -992,6 +957,7 @@ class LibraryPane extends React.Component {
                                     handleClose={this._closeOmnibar}
                                     showOmnibar={this.state.showOmnibar}/>
                 </div>
+            </React.Fragment>
         )
     }
 }
@@ -1001,7 +967,7 @@ LibraryPane.propTypes = {
     open_resources: PropTypes.array,
     allow_search_inside: PropTypes.bool,
     allow_search_metadata: PropTypes.bool,
-    ToolbarClass: PropTypes.func,
+    MenubarClass: PropTypes.func,
     updatePaneState: PropTypes.func,
     is_repository: PropTypes.bool,
     aux_pane: PropTypes.object,

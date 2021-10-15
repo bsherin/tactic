@@ -186,16 +186,25 @@ $log-panel-font-color-dark: white;
         background-color: $dark-gray4
     }
 
-    &.pane-holder, &.library-pane-holder {
+    &.pane-holder{
+      background-color: #475562
+    }
+
+    &.library-pane-holder {
       background-color: $dark-gray4
     }
 
-    .combined-metadata, div.filepicker {
-      background-color: $dark-gray3;
+    .combined-metadata, div.filepicker, #options-pane, #exports-pane {
+      background-color: $dark-gray5;
+    }
+
+    div.filepicker {
+      background-color: $dark-gray5
+
     }
 
     .notes-field-markdown-output {
-        background-color: $dark-gray5;
+        background-color: $dark-gray4;
         color: $light-gray5
     }
 

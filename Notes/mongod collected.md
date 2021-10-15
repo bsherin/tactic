@@ -13,4 +13,4 @@ use admin
 db.db.shutdownServer()
 
 
-One time I had to created a this directory `/var/run/mongodb` to get the mongo server to start.
+One time I had to create a this directory `/var/run/mongodb` to get the mongo server to start.

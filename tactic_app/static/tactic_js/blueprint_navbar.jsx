@@ -9,7 +9,6 @@ import { Button, Navbar, NavbarDivider, OverflowList, Alignment, Switch} from "@
 import {MenuComponent} from "./main_menus_react.js";
 import {doBinding} from "./utilities_react.js";
 import {postWithCallback} from "./communication_react";
-import {TopRightButtons} from "./blueprint_react_widgets";
 
 export {render_navbar, TacticNavbar, get_theme_cookie, set_theme_cookie}
 
@@ -34,6 +33,7 @@ function get_theme_cookie() {
 function set_theme_cookie(theme) {
     document.cookie = "tactic_theme=" + theme;
 }
+
 
 class TacticNavbar extends React.Component {
 
@@ -202,6 +202,7 @@ class TacticNavbar extends React.Component {
         return (
             <MenuComponent alt_button={()=>(<span className="bp3-breadcrumbs-collapsed" style={{marginTop: 5}}></span>)}
                            option_dict={opt_dict}
+                           binding_dict={{}}
                            icon_dict={icon_dict}/>
         )
     }
@@ -231,21 +232,6 @@ class TacticNavbar extends React.Component {
         let right_style = {width: right_width};
         right_style.justifyContent = "flex-end";
         let theme_class = this.props.dark_theme ? "bp3-dark" : "light-theme";
-        if (this.props.min_navbar) {
-            return (
-                <Navbar style={{paddingLeft: 10, height: 30}} className={theme_class}>
-                    <div style={{height: 30}} className="bp3-navbar-group bp3-align-left" ref={this.lg_ref}>
-                            {this.props.menus != null && (
-                                <React.Fragment>
-                                    {this.props.menus}
-                                </React.Fragment>)}
-                    </div>
-                    {window.in_context &&
-                        <TopRightButtons refreshTab={this.props.refreshTab} closeTab={this.props.closeTab}/>
-                    }
-                </Navbar>
-            )
-        }
         return (
             <Navbar style={{paddingLeft: 10}} className={theme_class}>
                 <div className="bp3-navbar-group bp3-align-left" ref={this.lg_ref}>
@@ -285,7 +271,6 @@ class TacticNavbar extends React.Component {
 }
 
 TacticNavbar.propTypes = {
-    min_navbar: PropTypes.bool,
     refreshTab: PropTypes.func,
     closeTab: PropTypes.func,
     is_authenticated: PropTypes.bool,
@@ -296,7 +281,6 @@ TacticNavbar.propTypes = {
 };
 
 TacticNavbar.defaultProps = {
-    min_navbar: false,
     refreshTab: null,
     closeTab: null,
     menus: null,

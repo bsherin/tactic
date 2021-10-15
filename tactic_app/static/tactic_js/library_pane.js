@@ -1139,26 +1139,13 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       });
     }
   }, {
-    key: "_get_available_width",
-    value: function _get_available_width() {
-      var result;
-
-      if (this.top_ref && this.top_ref.current) {
-        result = window.innerWidth - this.top_ref.current.offsetLeft - _sizing_tools.SIDE_MARGIN;
-      } else {
-        result = window.innerWidth - 200;
-      }
-
-      return result;
-    }
-  }, {
     key: "render",
     value: function render() {
       var _this6 = this;
 
       var new_button_groups;
-      var uwidth = this.props.usable_width - 2 * _sizing_tools.SIDE_MARGIN;
-      var left_width = (uwidth - _resizing_layouts.HANDLE_WIDTH) * this.props.left_width_fraction;
+      var uwidth = this.props.usable_width;
+      var left_width = uwidth * this.props.left_width_fraction;
       var primary_mdata_fields = ["name", "created", "created_for_sort", "updated", "updated_for_sort", "tags", "notes"];
       var additional_metadata = {};
 
@@ -1170,19 +1157,20 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
 
       if (Object.keys(additional_metadata).length == 0) {
         additional_metadata = null;
-      }
+      } // let right_pane;
 
-      var right_pane;
+
       var split_tags = this.props.selected_resource.tags == "" ? [] : this.props.selected_resource.tags.split(" ");
       var outer_style = {
-        marginLeft: 5,
-        marginRight: 5,
-        marginTop: 90,
+        marginTop: 0,
+        marginLeft: 20,
         overflow: "auto",
-        padding: 15
+        padding: 15,
+        marginRight: 0,
+        height: "100%"
       };
 
-      var mdata_element = /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.CombinedMetadata, {
+      var right_pane = /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.CombinedMetadata, {
         tags: split_tags,
         elevation: 2,
         name: this.props.selected_resource.name,
@@ -1193,28 +1181,10 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         res_type: this.props.res_type,
         outer_style: outer_style,
         handleNotesBlur: this.props.multi_select ? null : this._saveFromSelectedResource,
-        additional_metadata: additional_metadata
+        additional_metadata: additional_metadata,
+        aux_pane: this.props.aux_pane,
+        aux_pane_title: this.props.aux_pane_title
       });
-
-      if (this.props.aux_pane == null) {
-        right_pane = mdata_element;
-      } else {
-        var button_base = this.state.auxIsOpen ? "Hide" : "Show";
-        right_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, mdata_element, /*#__PURE__*/_react["default"].createElement("div", {
-          className: "d-flex flex-row justify-content-around",
-          style: {
-            marginTop: 20
-          }
-        }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
-          fill: false,
-          small: true,
-          minimal: false,
-          onClick: this._toggleAuxVisibility
-        }, button_base + " " + this.props.aux_pane_title)), /*#__PURE__*/_react["default"].createElement(_core.Collapse, {
-          isOpen: this.state.auxIsOpen,
-          keepChildrenMounted: true
-        }, this.props.aux_pane));
-      }
 
       var th_style = {
         "display": "inline-block",
@@ -1226,23 +1196,16 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         "whiteSpace": "nowrap"
       }; // let filtered_data_list = _.cloneDeep(this.state.data_list.filter(this._filter_on_match_list));
 
-      var ToolbarClass = this.props.ToolbarClass;
+      var MenubarClass = this.props.MenubarClass;
       var table_width;
-      var toolbar_left;
+      var left_pane_height;
 
       if (this.table_ref && this.table_ref.current) {
         table_width = left_width - this.table_ref.current.offsetLeft + this.top_ref.current.offsetLeft;
-
-        if (this.toolbarRef && this.toolbarRef.current) {
-          var tbwidth = this.toolbarRef.current.offsetWidth;
-          toolbar_left = this.table_ref.current.offsetLeft + .5 * table_width - .5 * tbwidth;
-          if (toolbar_left < 0) toolbar_left = 0;
-        } else {
-          toolbar_left = 175;
-        }
+        left_pane_height = this.props.usable_height - this.table_ref.current.offsetTop - _sizing_tools.BOTTOM_MARGIN;
       } else {
         table_width = left_width - 150;
-        toolbar_left = 175;
+        left_pane_height = this.props.usable_height - 100;
       }
 
       var key_bindings = [[["up"], function () {
@@ -1275,6 +1238,8 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         style: {
           width: table_width,
           maxWidth: this.state.total_width,
+          maxHeight: left_pane_height,
+          marginTop: 15,
           padding: 5
         }
       }, /*#__PURE__*/_react["default"].createElement(_library_widgets.SearchForm, {
@@ -1299,10 +1264,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         handleAddTag: this._handleAddTag
       }))));
 
-      return /*#__PURE__*/_react["default"].createElement("div", {
-        ref: this.top_ref,
-        className: "d-flex flex-column mt-3"
-      }, /*#__PURE__*/_react["default"].createElement(ToolbarClass, _extends({
+      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(MenubarClass, _extends({
         selected_resource: this.props.selected_resource,
         multi_select: this.props.multi_select,
         list_of_selected: this.props.list_of_selected,
@@ -1316,7 +1278,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         startSpinner: this.props.startSpinner,
         stopSpinner: this.props.stopSpinner,
         clearStatusMessage: this.props.clearStatusMessage,
-        left_position: toolbar_left,
         sendRef: this._sendToolbarRef,
         sendContextMenuItems: this._sendContextMenuItems,
         view_resource: this._view_resource
@@ -1328,13 +1289,16 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         am_selected: this.props.am_selected,
         tsocket: this.props.tsocket
       })), /*#__PURE__*/_react["default"].createElement("div", {
+        ref: this.top_ref,
+        className: "d-flex flex-column"
+      }, /*#__PURE__*/_react["default"].createElement("div", {
         style: {
           width: uwidth,
           height: this.props.usable_height
         }
       }, /*#__PURE__*/_react["default"].createElement(_resizing_layouts.HorizontalPanes, {
         available_width: uwidth,
-        available_height: this.props.usable_height - 100,
+        available_height: this.props.usable_height,
         show_handle: true,
         left_pane: left_pane,
         right_pane: right_pane,
@@ -1352,7 +1316,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         onItemSelect: this._omnibarSelect,
         handleClose: this._closeOmnibar,
         showOmnibar: this.state.showOmnibar
-      }));
+      })));
     }
   }]);
 
@@ -1365,7 +1329,7 @@ LibraryPane.propTypes = {
   open_resources: _propTypes["default"].array,
   allow_search_inside: _propTypes["default"].bool,
   allow_search_metadata: _propTypes["default"].bool,
-  ToolbarClass: _propTypes["default"].func,
+  MenubarClass: _propTypes["default"].func,
   updatePaneState: _propTypes["default"].func,
   is_repository: _propTypes["default"].bool,
   aux_pane: _propTypes["default"].object,

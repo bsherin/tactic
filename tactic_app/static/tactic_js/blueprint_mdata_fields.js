@@ -299,7 +299,7 @@ var BpSelect = /*#__PURE__*/function (_React$Component3) {
             flip: false,
             preventOverflow: true
           },
-          position: _core.PopoverPosition.BOTTOM_LEFT
+          position: this.props.popoverPosition
         }
       }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
         className: "button-in-select",
@@ -323,11 +323,13 @@ BpSelect.propTypes = {
   value: _propTypes["default"].string,
   buttonTextObject: _propTypes["default"].object,
   buttonIcon: _propTypes["default"].string,
-  buttonStyle: _propTypes["default"].object
+  buttonStyle: _propTypes["default"].object,
+  popoverPosition: _propTypes["default"].object
 };
 BpSelect.defaultProps = {
   buttonIcon: null,
   buttonStyle: {},
+  popoverPosition: _core.PopoverPosition.BOTTOM_LEFT,
   buttonTextObject: null,
   filterable: true,
   small: undefined
@@ -666,6 +668,9 @@ var CombinedMetadata = /*#__PURE__*/function (_React$Component7) {
 
     _this7 = _super7.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this7));
+    _this7.state = {
+      auxIsOpen: false
+    };
     return _this7;
   }
 
@@ -695,6 +700,13 @@ var CombinedMetadata = /*#__PURE__*/function (_React$Component7) {
     value: function _handleCategoryChange(event) {
       this.props.handleChange({
         "category": event.target.value
+      });
+    }
+  }, {
+    key: "_toggleAuxVisibility",
+    value: function _toggleAuxVisibility() {
+      this.setState({
+        auxIsOpen: !this.state.auxIsOpen
       });
     }
   }, {
@@ -730,6 +742,7 @@ var CombinedMetadata = /*#__PURE__*/function (_React$Component7) {
         }
       }
 
+      var button_base = this.state.auxIsOpen ? "Hide" : "Show";
       return /*#__PURE__*/_react["default"].createElement(_core.Card, {
         elevation: this.props.elevation,
         className: "combined-metadata accent-bg",
@@ -771,7 +784,24 @@ var CombinedMetadata = /*#__PURE__*/function (_React$Component7) {
       }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
         disabled: true,
         value: this.props.updated
-      })), this.props.additional_metadata != null && additional_items);
+      })), this.props.additional_metadata != null && additional_items, this.props.aux_pane != null && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
+        className: "d-flex flex-row justify-content-around",
+        style: {
+          marginTop: 20
+        }
+      }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
+        fill: false,
+        small: true,
+        minimal: false,
+        onClick: this._toggleAuxVisibility
+      }, button_base + " " + this.props.aux_pane_title)), /*#__PURE__*/_react["default"].createElement(_core.Collapse, {
+        isOpen: this.state.auxIsOpen,
+        keepChildrenMounted: true
+      }, this.props.aux_pane)), /*#__PURE__*/_react["default"].createElement("div", {
+        style: {
+          height: 100
+        }
+      }));
     }
   }]);
 
@@ -791,7 +821,8 @@ CombinedMetadata.propTypes = {
   category: _propTypes["default"].string,
   handleChange: _propTypes["default"].func,
   handleNotesBlur: _propTypes["default"].func,
-  additional_metadata: _propTypes["default"].object
+  additional_metadata: _propTypes["default"].object,
+  aux_pane: _propTypes["default"].object
 };
 CombinedMetadata.defaultProps = {
   outer_style: {
@@ -804,5 +835,6 @@ CombinedMetadata.defaultProps = {
   category: null,
   name: null,
   updated: null,
-  additional_metadata: null
+  additional_metadata: null,
+  aux_pane: null
 };

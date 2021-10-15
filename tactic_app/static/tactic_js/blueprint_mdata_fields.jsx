@@ -5,7 +5,7 @@ import React from "react";
 import PropTypes from 'prop-types';
 
 import { PopoverPosition, Button, MenuDivider, MenuItem, TagInput, TextArea, FormGroup, InputGroup,
-    Card, Icon} from "@blueprintjs/core";
+    Card, Icon, Collapse} from "@blueprintjs/core";
 import {Select, MultiSelect} from "@blueprintjs/select";
 
 import markdownIt from 'markdown-it'
@@ -174,7 +174,7 @@ class BpSelect extends React.Component {
                 popoverProps={{minimal: true,
                     boundary: "window",
                     modifiers: {flip: false, preventOverflow: true},
-                    position: PopoverPosition.BOTTOM_LEFT}}>
+                    position: this.props.popoverPosition}}>
                 <Button className="button-in-select"
                            style={this.props.buttonStyle}
                            small={this.props.small}
@@ -193,12 +193,14 @@ BpSelect.propTypes = {
     value: PropTypes.string,
     buttonTextObject: PropTypes.object,
     buttonIcon: PropTypes.string,
-    buttonStyle: PropTypes.object
+    buttonStyle: PropTypes.object,
+    popoverPosition: PropTypes.object
 };
 
 BpSelect.defaultProps = {
     buttonIcon: null,
     buttonStyle: {},
+    popoverPosition: PopoverPosition.BOTTOM_LEFT,
     buttonTextObject: null,
     filterable: true,
     small: undefined
@@ -460,6 +462,9 @@ class CombinedMetadata extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this)
+        this.state = {
+            auxIsOpen: false
+        }
     }
 
     _handleNotesChange(event) {
@@ -476,6 +481,11 @@ class CombinedMetadata extends React.Component {
 
     _handleCategoryChange(event) {
         this.props.handleChange({"category": event.target.value})
+    }
+
+
+    _toggleAuxVisibility() {
+        this.setState({auxIsOpen: !this.state.auxIsOpen})
     }
 
     render () {
@@ -499,6 +509,7 @@ class CombinedMetadata extends React.Component {
                 )
             }
         }
+        let button_base = this.state.auxIsOpen ? "Hide" : "Show";
         return (
             <Card elevation={this.props.elevation} className="combined-metadata accent-bg" style={this.props.outer_style}>
                 {this.props.name != null &&
@@ -536,6 +547,22 @@ class CombinedMetadata extends React.Component {
                     {this.props.additional_metadata != null &&
                         additional_items
                     }
+                {this.props.aux_pane != null &&
+                    <React.Fragment>
+                    <div  className="d-flex flex-row justify-content-around" style={{marginTop: 20}}>
+                        <Button fill={false}
+                                   small={true}
+                                   minimal={false}
+                                   onClick={this._toggleAuxVisibility}>
+                            {button_base + " " + this.props.aux_pane_title}
+                        </Button>
+                    </div>
+                    <Collapse isOpen={this.state.auxIsOpen} keepChildrenMounted={true}>
+                        {this.props.aux_pane}
+                    </Collapse>
+                </React.Fragment>
+                }
+                <div style={{height: 100}}/>
             </Card>
         )
     }
@@ -554,6 +581,7 @@ CombinedMetadata.propTypes = {
     handleChange: PropTypes.func,
     handleNotesBlur: PropTypes.func,
     additional_metadata: PropTypes.object,
+    aux_pane: PropTypes.object
 };
 
 CombinedMetadata.defaultProps = {
@@ -563,5 +591,6 @@ CombinedMetadata.defaultProps = {
     category: null,
     name: null,
     updated: null,
-    additional_metadata: null
+    additional_metadata: null,
+    aux_pane: null
 };

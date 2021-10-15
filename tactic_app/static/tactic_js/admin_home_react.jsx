@@ -10,7 +10,6 @@ import PropTypes from 'prop-types';
 import { Tabs, Tab, Tooltip, Icon, Position } from "@blueprintjs/core";
 import {Regions} from "@blueprintjs/table";
 
-import {Toolbar} from "./blueprint_toolbar.js"
 import {TacticSocket} from "./tactic_socket.js"
 import {showConfirmDialogReact} from "./modal_react.js";
 import {doFlash} from "./toaster.js"
@@ -24,6 +23,7 @@ import {SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, getUsableDimensions} from "./sizing_t
 import {ViewerContext} from "./resource_viewer_context.js";
 import {withErrorDrawer} from "./error_drawer.js";
 import {doBinding, guid} from "./utilities_react.js";
+import {LibraryMenubar} from "./library_menubars";
 
 window.library_id = guid();
 const MARGIN_SIZE = 17;
@@ -141,7 +141,7 @@ class AdministerHomeApp extends React.Component {
                        res_type="container"
                        allow_search_inside={false}
                        allow_search_metadata={false}
-                       ToolbarClass={ContainerToolbar}
+                       MenubarClass={ContainerMenubar}
                        updatePaneState={this._updatePaneState}
                        {...this.state.pane_states["container"]}
                        {...this.props.errorDrawerFuncs}
@@ -157,7 +157,7 @@ class AdministerHomeApp extends React.Component {
                        res_type="user"
                        allow_search_inside={false}
                        allow_search_metadata={false}
-                       ToolbarClass={UserToolbar}
+                       MenubarClass={UserMenubar}
                        updatePaneState={this._updatePaneState}
                        {...this.state.pane_states["user"]}
                        {...this.props.errorDrawerFuncs}
@@ -196,57 +196,7 @@ class AdministerHomeApp extends React.Component {
     }
 }
 
-class AdminToolbar extends React.Component {
-
-    prepare_button_groups() {
-        let new_bgs = [];
-        let new_group;
-        let new_button;
-        for (let group of this.props.button_groups) {
-            new_group = [];
-            for (let button of group) {
-                if (!this.props.multi_select || button[3]) {
-                    new_button = {name_text: button[0],
-                        click_handler: button[1],
-                        icon_name: button[2],
-                        multi_select: button[3],
-                        tooltip: button[4]};
-                    new_group.push(new_button)
-                }
-            }
-            if (new_group.length != 0) {
-                new_bgs.push(new_group)
-            }
-
-        }
-        return new_bgs
-    }
-
-    render() {
-        let outer_style = {
-                display: "flex",
-                flexDirection: "row",
-                position: "relative",
-                left: this.props.left_position,
-                marginBottom: 10
-        };
-       return <Toolbar button_groups={this.prepare_button_groups()}
-                       file_adders={null}
-                       alternate_outer_style={outer_style}
-                       sendRef={this.props.sendRef}
-                       popup_buttons={null}
-       />
-    }
-}
-
-AdminToolbar.propTypes = {
-    button_groups: PropTypes.array,
-    left_position: PropTypes.number,
-    sendRef: PropTypes.func
-};
-
-
-class ContainerToolbar extends React.Component {
+class ContainerMenubar extends React.Component {
 
     constructor(props) {
         super(props);
@@ -292,27 +242,48 @@ class ContainerToolbar extends React.Component {
 
     }
 
-    get button_groups() {
-        return [
-            [["reset", this._reset_server_func, "reset", false, "Reset host container"],
-                ["killall", this._clear_user_func, "clean", false, "Clear user containers"],
-                ["killone", this._destroy_container, "delete", false, "Destroy one container"]
+     get menu_specs() {
+        let self = this;
+        let ms = {
+            Danger: [
+                {name_text: "Reset Host Container", icon_name: "reset",
+                    click_handler: this._reset_server_func},
+                {name_text: "Kill All User Containers", icon_name: "clean",
+                    click_handler: this._clear_user_func},
+                {name_text: "Kill One Container", icon_name: "console",
+                    click_handler: this._destroy_container},
             ],
-            [["log", this._container_logs, "console", false, "Container logs"],
-            ["refresh", this.props.refresh_func, "refresh", false, "Refresh"]]
+            Logs: [
+                {name_text: "Show Container Log", icon_name: "delete",
+                    click_handler: this._container_logs}
+            ],
 
-        ];
-     }
+        };
+        for (const [menu_name, menu] of Object.entries(ms)) {
+            for (let but of menu) {
+                but.click_handler = but.click_handler.bind(this)
+            }
+        }
+        return ms
+    }
 
      render () {
-        return <AdminToolbar button_groups={this.button_groups}
-                             left_position={this.props.left_position}
-                             sendRef={this.props.sendRef}
+        return <LibraryMenubar menu_specs={this.menu_specs}
+                               context_menu_items={null}
+                               multi_select={false}
+                               dark_theme={false}
+                               controlled={false}
+                               am_selected={false}
+                               refreshTab={this.props.refresh_func}
+                               closeTab={null}
+                               resource_name=""
+                               showErrorDrawerButton={false}
+                               toggleErrorDrawer={null}
         />
      }
 }
 
-ContainerToolbar.propTypes = {
+ContainerMenubar.propTypes = {
     selected_resource: PropTypes.object,
     list_of_selected: PropTypes.array,
     setConsoleText: PropTypes.func,
@@ -321,7 +292,7 @@ ContainerToolbar.propTypes = {
 
 };
 
-class UserToolbar extends React.Component {
+class UserMenubar extends React.Component {
 
     constructor(props) {
         super(props);
@@ -377,15 +348,42 @@ class UserToolbar extends React.Component {
         ];
      }
 
+     get menu_specs() {
+        let self = this;
+        let ms = {
+            Manage: [
+                {name_text: "Create User", icon_name: "new-object",
+                    click_handler: this._create_user},
+                {name_text: "Delete User", icon_name: "delete",
+                    click_handler: this._delete_user},
+            ]
+        };
+        for (const [menu_name, menu] of Object.entries(ms)) {
+            for (let but of menu) {
+                but.click_handler = but.click_handler.bind(this)
+            }
+        }
+        return ms
+    }
+
+
      render () {
-        return <AdminToolbar button_groups={this.button_groups}
-                             left_position={this.props.left_position}
-                             sendRef={this.props.sendRef}
+        return <LibraryMenubar menu_specs={this.menu_specs}
+                               context_menu_items={null}
+                               multi_select={false}
+                               dark_theme={false}
+                               controlled={false}
+                               am_selected={false}
+                               refreshTab={this.props.refresh_func}
+                               closeTab={null}
+                               resource_name=""
+                               showErrorDrawerButton={false}
+                               toggleErrorDrawer={null}
         />
      }
 }
 
-UserToolbar.propTypes = {
+UserMenubar.propTypes = {
     selected_resource: PropTypes.object,
     list_of_selected: PropTypes.array,
     setConsoleText: PropTypes.func,

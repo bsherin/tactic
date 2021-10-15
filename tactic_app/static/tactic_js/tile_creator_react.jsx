@@ -13,7 +13,7 @@ import PropTypes from 'prop-types';
 import { Tab, Tabs, ResizeSensor } from "@blueprintjs/core";
 
 import {TacticSocket} from "./tactic_socket.js";
-import {Toolbar, Namebutton} from "./blueprint_toolbar.js";
+import {TacticMenubar} from "./menu_utilities.js"
 import {sendToRepository} from "./resource_viewer_react_app.js";
 import {ReactCodemirror} from "./react-codemirror.js";
 import {CombinedMetadata} from "./blueprint_mdata_fields.js";
@@ -24,9 +24,9 @@ import {withStatus, doFlash} from "./toaster.js"
 import {getUsableDimensions, SIDE_MARGIN} from "./sizing_tools.js";
 import {withErrorDrawer} from "./error_drawer.js";
 import {doBinding, renderSpinnerMessage} from "./utilities_react.js"
-import {TacticNavbar} from "./blueprint_navbar";
+import {TacticNavbar} from "./blueprint_navbar.js";
 import {SearchForm} from "./library_widgets";
-import {TopRightButtons} from "./blueprint_react_widgets";
+import {showModalReact} from "./modal_react";
 
 export {creator_props, CreatorApp}
 
@@ -73,9 +73,8 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
     let tile_collection_name = data.tile_collection_name;
 
 
-
     function _everyone_ready_in_context(finalCallback) {
-        if (!window.in_context){
+        if (!window.in_context) {
             renderSpinnerMessage("Everyone is ready, initializing...", '#creator-root');
         }
         let the_content = {
@@ -90,12 +89,14 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
             navigator.sendBeacon("/delete_container_on_unload",
                 JSON.stringify({"container_id": module_viewer_id, "notify": false}));
         });
-        tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, module_viewer_id)});
+        tsocket.attachListener('handle-callback', (task_packet) => {
+            handleCallback(task_packet, module_viewer_id)
+        });
         postWithCallback(module_viewer_id, "initialize_parser",
-            the_content, (pdata) => got_parsed_data_in_context(pdata),null, module_viewer_id);
+            the_content, (pdata) => got_parsed_data_in_context(pdata), null, module_viewer_id);
 
         function got_parsed_data_in_context(data_object) {
-            if (!window.in_context){
+            if (!window.in_context) {
                 renderSpinnerMessage("Creating the page...", '#creator-root');
             }
             tsocket.socket.off("remove-ready-block", readyListener);
@@ -123,6 +124,7 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
 
                 }
             }
+
             finalCallback(
                 {
                     resource_name: module_name,
@@ -148,9 +150,7 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
                     registerDirtyMethod: registerDirtyMethod
                 }
             );
-
         }
-
     }
 }
 
@@ -169,20 +169,6 @@ function TileCreatorToolbar(props) {
     };
     return (
         <div style={tstyle} className="d-flex flex-row justify-content-between">
-            <Namebutton resource_name={props.resource_name}
-                        setResourceNameState={props.setResourceNameState}
-                        res_type={props.res_type}
-                        large={false}
-            />
-            <div>
-                <Toolbar button_groups={props.button_groups}
-                         alternate_outer_style={toolbar_outer_style}
-                         dark_theme={props.dark_theme}
-                         controlled={props.controlled}
-                         am_selected={props.am_selected}
-                         tsocket={props.tsocket}
-                />
-            </div>
             <SearchForm update_search_state={props.update_search_state}
                         search_string={props.search_string}
                         field_width={200}
@@ -328,32 +314,34 @@ class CreatorApp extends React.Component {
         return this.props.controlled ? this.props[pname] :  this.state[pname]
     }
 
-    get button_groups() {
-        let bgs = [
-                    [{"name_text": "Save", "icon_name": "saved","click_handler": this._saveMe, key_bindings: ['ctrl+s', "command+s"], tooltip: "Save"},
-                     {"name_text": "Mark", "icon_name": "map-marker", "click_handler": this._saveAndCheckpoint, key_bindings: ['ctrl+m'], tooltip: "Save and checkpoint"},
-                     {"name_text": "SaveAs", "icon_name": "floppy-disk", "click_handler": this._saveModuleAs, tooltip: "Save as"},
-                     {"name_text": "Load", "icon_name": "upload", "click_handler": this._loadModule, key_bindings: ['ctrl+l'], tooltip: "Load tile"},
-                     {"name_text": "Share", "icon_name": "share",
-                        "click_handler": () => {sendToRepository("tile", this._cProp("resource_name"))}, tooltip: "Send to repository"}],
-                    [{"name_text": "History", "icon_name": "history", "click_handler": this._showHistoryViewer, tooltip: "Show history viewer"},
-                     {"name_text": "Compare", "icon_name": "comparison", "click_handler": this._showTileDiffer, tooltip: "Compare to another tile"}],
-                    [{"name_text": "Drawer", "icon_name": "drawer-right", "click_handler": this.props.toggleErrorDrawer, tooltip: "Toggle error drawer"}]
-            ];
+    get menu_specs() {
+        let ms = {
+                    Save :[{"name_text": "Save", "icon_name": "saved","click_handler": this._saveMe, key_bindings: ['ctrl+s'], tooltip: "Save"},
+                        {"name_text": "Save As...", "icon_name": "floppy-disk", "click_handler": this._saveModuleAs, tooltip: "Save as"},
+                        {"name_text": "Save and Checkpoint", "icon_name": "map-marker", "click_handler": this._saveAndCheckpoint, key_bindings: ['ctrl+m'], tooltip: "Save and checkpoint"}],
+                    Load: [{"name_text": "Save and Load", "icon_name": "upload", "click_handler": this._saveAndLoadModule, key_bindings: ['ctrl+l'], tooltip: "Save and load module"},
+                            {"name_text": "Load", "icon_name": "upload", "click_handler": this._loadModule, tooltip: "Load tile"}],
+                    Compare: [{"name_text": "View History", "icon_name": "history", "click_handler": this._showHistoryViewer, tooltip: "Show history viewer"},
+                              {"name_text": "Compare to Other Modules", "icon_name": "comparison", "click_handler": this._showTileDiffer, tooltip: "Compare to another tile"}],
+                    Transfer: [
+                        {"name_text": "Share", "icon_name": "share",
+                            "click_handler": () => {sendToRepository("tile", this._cProp("resource_name"))}, tooltip: "Send to repository"}
+                    ]
+            };
 
-        for (let bg of bgs) {
-            for (let but of bg) {
+        for (let menu in ms) {
+            for (let but of ms[menu]) {
                 but.click_handler = but.click_handler.bind(this)
             }
         }
-        return bgs
+        return ms
     }
 
     _extraKeys() {
         let self = this;
         return {
                 'Ctrl-S': self._saveMe,
-                'Ctrl-L': self._loadModule,
+                'Ctrl-L': self._saveAndLoadModule,
                 'Ctrl-M': self._saveAndCheckpoint,
                 'Ctrl-F': ()=>{self.search_ref.current.focus()},
                 'Cmd-F': ()=>{self.search_ref.current.focus()}
@@ -482,7 +470,7 @@ class CreatorApp extends React.Component {
         return false
     }
 
-    _loadModule() {
+    _saveAndLoadModule() {
         let self = this;
         this.props.startSpinner();
         this.doSavePromise()
@@ -491,7 +479,7 @@ class CreatorApp extends React.Component {
                 postWithCallback(
                     "host",
                     "load_tile_module_task",
-                    {"tile_module_name": self._cProp("resource_name"), "user_id": user_id},
+                    {"tile_module_name": self._cProp("resource_name"), "user_id": window.user_id},
                     load_success,
                     null,
                     self.props.module_viewer_id
@@ -507,10 +495,53 @@ class CreatorApp extends React.Component {
             return false
         }
     }
+    
+    _loadModule() {
+        let self = this;
+        this.props.startSpinner();
+        self.props.statusMessage("Loading Module");
+        postWithCallback(
+            "host",
+            "load_tile_module_task",
+            {"tile_module_name": self._cProp("resource_name"), "user_id": window.user_id},
+            load_success,
+            null,
+            self.props.module_viewer_id
+        );
+
+        function load_success(data) {
+            if (data.success) {
+                data.timeout = 2000;
+            }
+            self._doFlashStopSpinner(data);
+            return false
+        }
+    }
 
     _saveModuleAs() {
-        doFlash({"message": "not implemented yet"});
-        return false
+        this.props.startSpinner();
+        let self = this;
+        postWithCallback("host", "get_tile_names", {"user_id": window.user_id}, function (data) {
+            let checkboxes;
+            showModalReact("Save Module As", "New ModuleName Name", CreateNewModule,
+                      "NewModule", data["tile_names"], null, doCancel)
+        }, null, this.props.main_id);
+        function doCancel() {
+            self.props.stopSpinner()
+        }
+        function CreateNewModule(new_name) {
+            const result_dict = {
+                "new_res_name": new_name,
+                "res_to_copy": self._cProp("resource_name")
+            };
+            postAjaxPromise('/create_duplicate_tile', result_dict)
+                .then((data) => {
+                    self._setResourceNameState(new_name)
+                    }
+                )
+                .catch(doFlash)
+        }
+
     }
 
     _saveMe() {
@@ -853,7 +884,20 @@ class CreatorApp extends React.Component {
             let title_label = my_props.is_mpl ? "draw_plot" : "(selector, w, h, arg_dict) =>";
             tc_item = (
                 <div key="dpcode" style={ch_style} className="d-flex flex-column align-items-baseline code-holder">
-                    <span ref={this.tc_span_ref}>{title_label}</span>
+                    <div style={{display: "flex", flexDirection: "row", justifyContent: "space-between", width: "100%"}}>
+                        <span className="bp3-ui-text"
+                              ref={this.tc_span_ref}
+                              style={{display: "flex", alignItems: "self-end"}}>{title_label}</span>
+                        <SearchForm update_search_state={this._updateSearchState}
+                            search_string={this.state.search_string}
+                            field_width={200}
+                            include_search_jumper={true}
+                            searchPrev={this._searchPrev}
+                            searchNext={this._searchNext}
+                            search_ref={this.search_ref}
+                            number_matches={this.state.search_matches}
+                        />
+                    </div>
                     <ReactCodemirror code_content={code_content}
                                      mode={mode}
                                      extraKeys={this._extraKeys()}
@@ -882,7 +926,22 @@ class CreatorApp extends React.Component {
 
         let bc_item = (
             <div key="rccode" id="rccode" style={ch_style} className="d-flex flex-column align-items-baseline code-holder">
-                <span className="bp3-ui-text" ref={this.rc_span_ref}>render_content</span>
+                <div style={{display: "flex", flexDirection: "row", justifyContent: "space-between", width: "100%"}}>
+                    <span className="bp3-ui-text"
+                          style={{display: "flex", alignItems: "self-end"}}
+                          ref={this.rc_span_ref}>render_content</span>
+                    {!my_props.is_mpl && !my_props.is_d3 &&
+                        <SearchForm update_search_state={this._updateSearchState}
+                            search_string={this.state.search_string}
+                            field_width={200}
+                            include_search_jumper={true}
+                            searchPrev={this._searchPrev}
+                            searchNext={this._searchNext}
+                            search_ref={this.search_ref}
+                            number_matches={this.state.search_matches}
+                        />
+                    }
+                </div>
                 <ReactCodemirror code_content={this.state.render_content_code}
                                  current_search_number={this.state.current_search_cm == "rc" ? this.state.current_search_number : null}
                                  handleChange={this.handleRenderContentChange}
@@ -903,22 +962,6 @@ class CreatorApp extends React.Component {
         if (my_props.is_mpl || my_props.is_d3) {
             left_pane = (
                 <React.Fragment>
-                    <TileCreatorToolbar controlled={this.props.controlled}
-                                        am_selected={this.props.am_selected}
-                                        tsocket={this.props.tsocket}
-                                        dark_theme={this.props.dark_theme}
-                                        resource_name={my_props.resource_name}
-                                        setResourceNameState={this._setResourceNameState}
-                                        res_type="tile"
-                                        button_groups={this.button_groups}
-                                        update_search_state={this._updateSearchState}
-                                        search_string={this.state.search_string}
-                                        searchNext={this._searchNext}
-                                        searchPrev={this._searchPrev}
-                                        key="toolbar"
-                                        search_ref={this.search_ref}
-                                        search_matches={this.state.search_matches}
-                                        />
                     <div ref={this.vp_ref}/>
                     <VerticalPanes top_pane={tc_item}
                                    bottom_pane={bc_item}
@@ -934,18 +977,7 @@ class CreatorApp extends React.Component {
         else {
             left_pane = (
                 <React.Fragment>
-                    <TileCreatorToolbar resource_name={my_props.resource_name}
-                                        setResourceNameState={this._setResourceNameState}
-                                        res_type="tile"
-                                        button_groups={this.button_groups}
-                                        update_search_state={this._updateSearchState}
-                                        search_string={this.state.search_string}
-                                        searchNext={this._searchNext}
-                                        searchPrev={this._searchPrev}
-                                        search_ref={this.search_ref}
-                                        key="toolbar"
-                                        search_matches={this.state.search_matches}
-                                        />
+
                     <div ref={this.vp_ref}>
                         {bc_item}
                     </div>
@@ -979,7 +1011,7 @@ class CreatorApp extends React.Component {
         );
         let methods_height = this.get_height_minus_top_offset(this.methods_ref, 128, 128);
         let methods_panel = (
-            <div style={{marginTop: 30}}>
+            <div>
                 <ReactCodemirror handleChange={this.handleMethodsChange}
                                  current_search_number={this.state.current_search_cm == "em" ? this.state.current_search_number : null}
                                  dark_theme={dark_theme}
@@ -1007,7 +1039,7 @@ class CreatorApp extends React.Component {
         );
         let right_pane = (
                 <React.Fragment>
-                    <div id="creator-resources" className={window.in_context ? "d-block" : "d-block mt-2"}>
+                    <div id="creator-resources" className="d-block">
                         <Tabs id="resource_tabs" selectedTabId={this.state.selectedTabId}
                                  large={true} onChange={this._handleTabSelect}>
                             <Tab id="metadata" title="metadata" panel={mdata_panel}/>
@@ -1022,9 +1054,10 @@ class CreatorApp extends React.Component {
         let outer_style = {
             width: "100%",
             height: uheight,
-            paddingLeft: this.props.controlled ? 5 : SIDE_MARGIN
+            paddingLeft: this.props.controlled ? 5 : SIDE_MARGIN,
+            paddingTop: 15
         };
-        let outer_class = "resource-viewer-holder";
+        let outer_class = "resource-viewer-holder pane-holder";
         if (!window.in_context) {
             if (dark_theme) {
                 outer_class = outer_class + " bp3-dark";
@@ -1035,9 +1068,9 @@ class CreatorApp extends React.Component {
         // if (this.top_ref && this.top_ref.current) {
         //     my_props.usable_width = my_props.usable_width - this.top_ref.current.offsetLeft;
         // }
-
         return (
             <React.Fragment>
+
                 {!window.in_context &&
                     <TacticNavbar is_authenticated={window.is_authenticated}
                                   dark_theme={dark_theme}
@@ -1047,20 +1080,26 @@ class CreatorApp extends React.Component {
                                   page_id={this.props.module_viewer_id}
                                   user_name={window.username}/>
                 }
-                {window.in_context &&
-                    <TopRightButtons refreshTab={this.props.refreshTab} closeTab={this.props.closeTab}/>
-                }
-                <ResizeSensor onResize={this._handleResize} observeParents={true}>
-                    <div className={outer_class} ref={this.top_ref} style={outer_style}>
-                        <HorizontalPanes left_pane={left_pane}
-                                         right_pane={right_pane}
-                                         show_handle={true}
-                                         available_height={uheight}
-                                         available_width={uwidth}
-                                         handleSplitUpdate={this.handleLeftPaneResize}
-                        />
-                    </div>
-                </ResizeSensor>
+                <TacticMenubar menu_specs={this.menu_specs}
+                               showRefresh={window.in_context}
+                               showClose={window.in_context}
+                               dark_theme={dark_theme}
+                               refreshTab={this.props.refreshTab}
+                               closeTab={this.props.closeTab}
+                               resource_name={this._cProp("resource_name")}
+                               toggleErrorDrawer={this.props.toggleErrorDrawer}
+                               controlled={this.props.controlled}
+                               am_selected={this.props.am_selected}
+                />
+                <div className={outer_class} ref={this.top_ref} style={outer_style}>
+                    <HorizontalPanes left_pane={left_pane}
+                                     right_pane={right_pane}
+                                     show_handle={true}
+                                     available_height={uheight}
+                                     available_width={uwidth}
+                                     handleSplitUpdate={this.handleLeftPaneResize}
+                    />
+                </div>
             </React.Fragment>
         )
 

@@ -93,7 +93,6 @@ var AdminPane = /*#__PURE__*/function (_React$Component) {
       total_width: 500
     };
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
-    _this.toolbarRef = null;
     _this.previous_search_spec = null;
     _this.socket_counter = null;
 
@@ -498,11 +497,6 @@ var AdminPane = /*#__PURE__*/function (_React$Component) {
       }
     }
   }, {
-    key: "_sendToolbarRef",
-    value: function _sendToolbarRef(the_ref) {
-      this.toolbarRef = the_ref;
-    }
-  }, {
     key: "_communicateColumnWidthSum",
     value: function _communicateColumnWidthSum(total_width) {
       this.setState({
@@ -549,7 +543,7 @@ var AdminPane = /*#__PURE__*/function (_React$Component) {
         "whiteSpace": "nowrap",
         "overflowX": "hidden"
       };
-      var ToolbarClass = this.props.ToolbarClass;
+      var MenubarClass = this.props.MenubarClass;
       var column_specs = {};
 
       var _iterator3 = _createForOfIteratorHelper(this.props.colnames),
@@ -570,21 +564,11 @@ var AdminPane = /*#__PURE__*/function (_React$Component) {
       }
 
       var table_width;
-      var toolbar_left;
 
       if (this.table_ref && this.table_ref.current) {
         table_width = left_width - this.table_ref.current.offsetLeft;
-
-        if (this.toolbarRef && this.toolbarRef.current) {
-          var tbwidth = this.toolbarRef.current.getBoundingClientRect().width;
-          toolbar_left = this.table_ref.current.offsetLeft + .5 * table_width - .5 * tbwidth;
-          if (toolbar_left < 0) toolbar_left = 0;
-        } else {
-          toolbar_left = 175;
-        }
       } else {
         table_width = left_width - 150;
-        toolbar_left = 175;
       }
 
       var left_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
@@ -621,13 +605,7 @@ var AdminPane = /*#__PURE__*/function (_React$Component) {
         identifier_field: this.props.id_field
       }))));
 
-      return /*#__PURE__*/_react["default"].createElement(_core.ResizeSensor, {
-        onResize: this._handleResize,
-        observeParents: true
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        ref: this.top_ref,
-        className: "d-flex flex-column mt-3"
-      }, /*#__PURE__*/_react["default"].createElement(ToolbarClass, _extends({
+      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(MenubarClass, _extends({
         selected_resource: this.props.selected_resource,
         list_of_selected: this.props.list_of_selected,
         setConsoleText: this._setConsoleText,
@@ -635,10 +613,14 @@ var AdminPane = /*#__PURE__*/function (_React$Component) {
         refresh_func: this._refresh_func,
         startSpinner: this.props.startSpinner,
         stopSpinner: this.props.stopSpinner,
-        clearStatusMessage: this.props.clearStatusMessage,
-        left_position: toolbar_left,
-        sendRef: this._sendToolbarRef
-      }, this.props.errorDrawerFuncs)), /*#__PURE__*/_react["default"].createElement("div", {
+        clearStatusMessage: this.props.clearStatusMessage
+      }, this.props.errorDrawerFuncs)), /*#__PURE__*/_react["default"].createElement(_core.ResizeSensor, {
+        onResize: this._handleResize,
+        observeParents: true
+      }, /*#__PURE__*/_react["default"].createElement("div", {
+        ref: this.top_ref,
+        className: "d-flex flex-column mt-3"
+      }, /*#__PURE__*/_react["default"].createElement("div", {
         style: {
           width: this.state.available_width,
           height: this.state.available_height
@@ -651,7 +633,7 @@ var AdminPane = /*#__PURE__*/function (_React$Component) {
         available_height: this.state.available_height,
         initial_width_fraction: .65,
         handleSplitUpdate: this._handleSplitResize
-      }))));
+      })))));
     }
   }]);
 
@@ -667,7 +649,7 @@ AdminPane.propTypes = {
   allow_search_metadata: _propTypes["default"].bool,
   search_inside_view: _propTypes["default"].string,
   search_metadata_view: _propTypes["default"].string,
-  ToolbarClass: _propTypes["default"].func,
+  MenubarClass: _propTypes["default"].func,
   is_repository: _propTypes["default"].bool,
   tsocket: _propTypes["default"].object,
   colnames: _propTypes["default"].array,

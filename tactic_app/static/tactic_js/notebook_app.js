@@ -20,6 +20,8 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 
 var _blueprint_navbar = require("./blueprint_navbar.js");
 
+var _menu_utilities = require("./menu_utilities.js");
+
 var _main_menus_react = require("./main_menus_react.js");
 
 var _tactic_socket = require("./tactic_socket.js");
@@ -574,17 +576,25 @@ var NotebookApp = /*#__PURE__*/function (_React$Component) {
         width: "100%",
         height: my_props.usable_height - this.height_adjustment
       };
-      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+      var stheme = this.props.controlled ? this.props.setTheme : this._setTheme;
+      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, !window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
         is_authenticated: window.is_authenticated,
         dark_theme: dark_theme,
-        setTheme: this.props.controlled ? this.props.setTheme : this._setTheme,
+        setTheme: stheme,
         user_name: window.username,
+        menus: null,
+        page_id: this.props.main_id
+      }), /*#__PURE__*/_react["default"].createElement(_menu_utilities.TacticMenubar, {
+        dark_theme: dark_theme,
         menus: menus,
-        show_api_links: true,
+        showRefresh: true,
+        showClose: true,
         page_id: this.props.main_id,
-        min_navbar: window.in_context,
         refreshTab: this.props.refreshTab,
-        closeTab: this.props.closeTab
+        closeTab: this.props.closeTab,
+        resource_name: this._cProp("resource_name"),
+        showErrorDrawerButton: true,
+        toggleErrorDrawer: this.props.toggleErrorDrawer
       }), /*#__PURE__*/_react["default"].createElement("div", {
         className: outer_class,
         ref: this.main_outer_ref,

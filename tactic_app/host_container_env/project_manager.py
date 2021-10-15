@@ -55,14 +55,18 @@ class ProjectManager(LibraryResourceManager):
         save_dict = db[user_obj.project_collection_name].find_one({"project_name": project_name})
         mdata = save_dict["metadata"]
 
+        print("in download_jupyter with mdata " + str(mdata))
         if not mdata["type"] == "jupyter":
             return NotImplementedError
 
         project_dict = read_project_dict(fs, mdata, save_dict["file_id"])
-        str_io = io.StringIO()
-        str_io.write(project_dict["jupyter_text"])
-        str_io.seek(0)
-        return send_file(str_io,
+        # str_io = io.StringIO()
+        # str_io.write(project_dict["jupyter_text"])
+        # str_io.seek(0)
+        mem = io.BytesIO()
+        mem.write(project_dict["jupyter_text"].encode())
+        mem.seek(0)
+        return send_file(mem,
                          attachment_filename=new_name,
                          as_attachment=True)
 

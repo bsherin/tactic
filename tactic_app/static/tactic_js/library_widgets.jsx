@@ -155,7 +155,7 @@ class SearchForm extends React.Component {
         return (
             <React.Fragment>
                 <FormGroup helperText={match_text} style={{marginBottom: 0}}>
-                    <div className="d-flex flex-row mb-2 mt-2">
+                    <div className="d-flex flex-row" style={{marginTop: 5, marginBottom: 5}}>
                         <InputGroup type="search"
                                     placeholder="Search"
                                     leftIcon="search"
@@ -164,12 +164,13 @@ class SearchForm extends React.Component {
                                     style={{"width": this.props.field_width}}
                                     autoCapitalize="none"
                                     autoCorrect="off"
+                                    small={true}
                                     inputRef={this.props.search_ref}
                         />
 
                     {this.props.allow_search_metadata &&
                         <Switch label="metadata"
-                                     className="ml-2"
+                                     className="ml-2 mb-0 mt-1"
                                     large={false}
                                     checked={this.props.search_metadata}
                                     onChange={this._handleSearchMetadataChange}
@@ -177,7 +178,7 @@ class SearchForm extends React.Component {
                     }
                     {this.props.allow_search_inside &&
                         <Switch label="inside"
-                                   className="ml-2"
+                                   className="ml-2 mb-0 mt-1"
                                    large={false}
                                    checked={this.props.search_inside}
                                    onChange={this._handleSearchInsideChange}

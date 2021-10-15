@@ -11,5 +11,5 @@ user_data_fields = [
     {"name": "preferred_dark_theme", "editable": True, "display_text": "codemirror dark theme",
      "type": "select", "default": "nord", "options": ["material", "nord", "oceanic-next", "pastel-on-dark"], "info_type": "setting"},
     {"name": "preferred_interface", "editable": True, "display_text": "preferred interface",
-     "type": "select", "default": "separate-tabs", "options": ["separate-tabs", "single-window"], "info_type": "setting"}
+     "type": "select", "default": "single-window", "options": ["separate-tabs", "single-window"], "info_type": "setting"}
 ]

@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 
 import { doBinding } from "./utilities_react.js";
 
-export { Sizer, getUsableDimensions, SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, TOP_MARGIN, BOTTOM_MARGIN, SizeContext };
+export { Sizer, getUsableDimensions, SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, TOP_MARGIN, BOTTOM_MARGIN, MENU_BAR_HEIGHT, SizeContext };
 
 const SIDE_MARGIN = 15;
 const BOTTOM_MARGIN = 35;
@@ -13,6 +13,7 @@ const TOP_MARGIN = 25;
 const INITIAL_DECREMENT = 50;
 const USUAL_TOOLBAR_HEIGHT = 50;
 const USUAL_NAVBAR_HEIGHT = 50;
+const MENU_BAR_HEIGHT = 30;
 
 function getUsableDimensions(subtract_navbar = false) {
     let subtractor;

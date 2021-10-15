@@ -3,80 +3,15 @@
 import React from "react";
 import PropTypes from 'prop-types';
 
-import { MenuItem, MenuDivider, Menu, Popover, PopoverPosition, Button } from "@blueprintjs/core";
-
 import {showModalReact} from "./modal_react.js";
 import {postWithCallback} from "./communication_react.js"
 import {doFlash} from "./toaster.js"
 import {doBinding} from "./utilities_react.js";
+import {MenuComponent, ToolMenu} from "./menu_utilities.js";
 
 export {ProjectMenu, DocumentMenu, ColumnMenu, RowMenu, ViewMenu, MenuComponent}
 
-class MenuComponent extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this)
-    }
 
-     _filter_on_match_list(opt_name) {
-        return !this.props.hidden_items.includes(opt_name)
-    }
-
-    render () {
-        let pruned_list = Object.keys(this.props.option_dict).filter(this._filter_on_match_list);
-        let choices = pruned_list.map((opt_name, index) => {
-                if (opt_name.startsWith("divider")) {
-                    return <MenuDivider key={index}/>
-                }
-                let icon = this.props.icon_dict.hasOwnProperty(opt_name) ? this.props.icon_dict[opt_name] : null;
-                return (
-                    <MenuItem disabled={this.props.disable_all || this.props.disabled_items.includes(opt_name)}
-                                 onClick={this.props.option_dict[opt_name]}
-                                 icon={icon}
-                                 key={opt_name}
-                                 text={opt_name}
-                    >
-                    </MenuItem>
-                )
-            }
-        );
-        let the_menu = (
-            <Menu>
-                {choices}
-            </Menu>
-        );
-        if (this.props.alt_button) {
-            let AltButton = this.props.alt_button;
-            return (<Popover minimal={true} content={the_menu} position={PopoverPosition.BOTTOM_LEFT}>
-                <AltButton/>
-            </Popover>)
-        } else {
-            return (
-                <Popover minimal={true} content={the_menu} position={PopoverPosition.BOTTOM_LEFT}>
-                    <Button text={this.props.menu_name} small={true} minimal={true}/>
-                </Popover>
-            )
-        }
-    }
-}
-
-MenuComponent.propTypes = {
-    menu_name: PropTypes.string,
-    option_dict: PropTypes.object,
-    icon_dict: PropTypes.object,
-    disabled_items: PropTypes.array,
-    disable_all: PropTypes.bool,
-    hidden_items: PropTypes.array,
-    alt_button: PropTypes.func
-};
-
-MenuComponent.defaultProps = {
-    disabled_items: [],
-    disable_all: false,
-    hidden_items: [],
-    icon_dict: {},
-    alt_button: null
-};
 
 class ProjectMenu extends React.Component {
     constructor(props) {
@@ -266,14 +201,34 @@ class ProjectMenu extends React.Component {
         }
     }
 
+    get menu_items() {
+        let items = [
+            {name_text: "Save As...", icon_name: "floppy-disk", click_handler: this._saveProjectAs},
+            {name_text: "Save", icon_name: "saved", click_handler: this._saveProject},
+            {name_text: "divider1", icon_name: null, click_handler: "divider"},
+            {name_text: "Export as Jupyter Notebook", icon_name: "export", click_handler: this._exportAsJupyter,},
+            {name_text: "Export Table as Collection", icon_name: "export", click_handler: this._exportDataTable},
+            {name_text: "Open Console as Notebook", icon_name: "console", click_handler: this._consoleToNotebook},
+            {name_text: "divider2", icon_name: null, click_handler: "divider"},
+            {name_text: "Change collection", icon_name: "exchange", click_handler: this.props.changeCollection},
+        ];
+        let reduced_items = [];
+        for (let item of items) {
+            if (!this.props.hidden_items.includes(item.name_text)) {
+                reduced_items.push(item)
+            }
+        }
+        return reduced_items
+    }
+
+
     render () {
         return (
-            <MenuComponent menu_name="Project"
-                           option_dict={this.option_dict}
-                           icon_dict={this.icon_dict}
-                           disabled_items={this.props.disabled_items}
-                           disable_all={false}
-                           hidden_items={this.props.hidden_items}
+            <ToolMenu menu_name="Project"
+                      menu_items={this.menu_items}
+                       binding_dict={{}}
+                       disabled_items={this.props.disabled_items}
+                       disable_all={false}
             />
         )
     }
@@ -381,6 +336,7 @@ class DocumentMenu extends React.Component {
             <MenuComponent menu_name="Document"
                            option_dict={this.option_dict}
                            icon_dict={this.icon_dict}
+                           binding_dict={{}}
                            disabled_items={this.props.disabled_items}
                            hidden_items={[]}
             />
@@ -467,6 +423,7 @@ class ColumnMenu extends React.Component {
             <MenuComponent menu_name="Column"
                            option_dict={this.option_dict}
                            icon_dict={this.icon_dict}
+                           binding_dict={{}}
                            disabled_items={this.props.disabled_items}
                            hidden_items={[]}
             />
@@ -517,6 +474,7 @@ class RowMenu extends React.Component {
             <MenuComponent menu_name="Row"
                            option_dict={this.option_dict}
                            icon_dict={this.icon_dict}
+                           binding_dict={{}}
                            disabled_items={this.props.disabled_items}
                            hidden_items={[]}
             />
@@ -594,6 +552,7 @@ class ViewMenu extends React.Component {
                            option_dict={this.option_dict}
                            icon_dict={this.icon_dict}
                            disabled_items={[]}
+                           binding_dict={{}}
                            disable_all={this.props.disable_all}
                            hidden_items={[]}
             />

@@ -5,16 +5,16 @@ import PropTypes from 'prop-types';
 
 import { ResizeSensor} from "@blueprintjs/core";
 
-import {ResourceviewerToolbar} from "./blueprint_toolbar.js";
 import {CombinedMetadata} from "./blueprint_mdata_fields.js";
 import {showModalReact} from "./modal_react.js";
 import {HorizontalPanes} from "./resizing_layouts.js";
 import {handleCallback, postAjax} from "./communication_react.js"
 import {doBinding} from "./utilities_react.js";
-import {TopRightButtons} from "./blueprint_react_widgets.js";
+import {TacticMenubar} from "./menu_utilities.js"
 
 import {doFlash, doFlashAlways} from "./toaster.js";
 import {SIDE_MARGIN} from "./sizing_tools.js"
+import {SearchForm} from "./library_widgets";
 
 export {ResourceViewerApp, copyToLibrary, sendToRepository}
 
@@ -59,14 +59,6 @@ class ResourceViewerApp extends React.Component {
         this.savedTags = props.tags;
         this.savedNotes = props.notes;
         let self = this;
-        this.mousetrap = new Mousetrap();
-        this.mousetrap.bind(['command+s', 'ctrl+s'], (e)=>{
-            if (self.props.am_selected){
-                self.props.saveMe();
-                e.preventDefault()
-            }
-        });
-
         this.state = {mounted: false};
     }
 
@@ -96,18 +88,15 @@ class ResourceViewerApp extends React.Component {
     render() {
         let left_pane = (
             <React.Fragment>
-                <ResourceviewerToolbar button_groups={this.props.button_groups}
-                                       setResourceNameState={this.props.setResourceNameState}
-                                       resource_name={this.props.resource_name}
-                                       show_search={this.props.show_search}
-                                       search_string={this.props.search_string}
-                                       update_search_state={this.props.update_search_state}
-                                       res_type={this.props.res_type}
-                                       controlled={this.props.controlled}
-                                       am_selected={this.props.am_selected}
-                                       tsocket={this.props.tsocket}
-                                       dark_theme={this.props.dark_theme}
-                />
+                {this.props.show_search &&
+                    <div style={{display: "flex", justifyContent: "flex-end", marginBottom: 5, marginTop: 15}}>
+                        <SearchForm
+                            update_search_state={this.props.update_search_state}
+                            search_string={this.props.search_string}
+                            search_ref={this.props.search_ref}
+                        />
+                    </div>
+                    }
                 {this.props.children}
             </React.Fragment>
         );
@@ -115,12 +104,9 @@ class ResourceViewerApp extends React.Component {
 
         let right_pane = (
             <React.Fragment>
-                {window.in_context &&
-                    <TopRightButtons refreshTab={this.props.refreshTab} closeTab={this.props.closeTab}/>
-                }
                 <CombinedMetadata tags={this.props.tags}
-                                  outer_style={{marginTop: 90, marginLeft: 20, overflow: "auto", padding: 15,
-                                                marginRight: 20}}
+                                  outer_style={{marginTop: 0, marginLeft: 20, overflow: "auto", padding: 15,
+                                                marginRight: 0, height: "100%"}}
                                   created={this.props.created}
                                   notes={this.props.notes}
                                   readOnly={this.props.readOnly}
@@ -130,17 +116,30 @@ class ResourceViewerApp extends React.Component {
         );
 
         return(
-            <ResizeSensor onResize={this._handleResize} observeParents={true}>
-                <div ref={this.top_ref} style={{width: this.props.usable_width, height: this.props.usable_height}}>
-                   <HorizontalPanes available_width={this.props.usable_width - 2 * SIDE_MARGIN}
-                                    available_height={this.props.usable_height}
-                                    left_pane={left_pane}
-                                    show_handle={true}
-                                    right_pane={right_pane}
-                                    am_outer={true}
-                    />
-                </div>
-            </ResizeSensor>
+            <React.Fragment>
+                <TacticMenubar menu_specs={this.props.menu_specs}
+                               dark_theme={this.props.dark_theme}
+                               showRefresh={window.in_context}
+                               showClose={window.in_context}
+                               refreshTab={this.props.refreshTab}
+                               closeTab={this.props.closeTab}
+                               resource_name={this.props.resource_name}
+                               showErrorDrawerButton={this.props.showErrorDrawerButton}
+                               toggleErrorDrawer={this.props.toggleErrorDrawer}
+                />
+                <ResizeSensor onResize={this._handleResize} observeParents={true}>
+                    <div ref={this.top_ref} style={{width: this.props.usable_width, height: this.props.usable_height, marginLeft: 15, marginTop: 0}}>
+                       <HorizontalPanes available_width={this.props.usable_width - SIDE_MARGIN}
+                                        available_height={this.props.usable_height}
+                                        left_pane={left_pane}
+                                        show_handle={true}
+                                        right_pane={right_pane}
+                                        initial_width_fraction={.65}
+                                        am_outer={true}
+                        />
+                    </div>
+                </ResizeSensor>
+            </React.Fragment>
         )
     }
 }
@@ -151,7 +150,7 @@ ResourceViewerApp.propTypes = {
     refreshTab: PropTypes.func,
     closeTab: PropTypes.func,
     res_type: PropTypes.string,
-    button_groups: PropTypes.array,
+    menu_specs: PropTypes.object,
     created: PropTypes.string,
     tags: PropTypes.array,
     notes: PropTypes.string,
@@ -160,13 +159,21 @@ ResourceViewerApp.propTypes = {
     dark_theme: PropTypes.bool,
     tsocket: PropTypes.object,
     saveMe: PropTypes.func,
-    children: PropTypes.element
+    children: PropTypes.element,
+    show_search: PropTypes.bool,
+    update_search_state: PropTypes.func,
+    search_ref: PropTypes.object,
+    showErrorDrawerButton: PropTypes.bool,
+    toggleErrorDrawer: PropTypes.func,
 };
 
 ResourceViewerApp.defaultProps ={
+    showErrorDrawerButton: false,
+    toggleErrorDrawer: null,
     dark_theme: false,
     am_selected: true,
     controlled: false,
     refreshTab: null,
     closeTab: null,
+    search_ref: null
 };
