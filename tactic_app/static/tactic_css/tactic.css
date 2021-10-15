@@ -982,12 +982,16 @@ pre code {
   color: black !important; }
 .bp3-dark.account-settings {
   background-color: #30404d; }
-.bp3-dark.pane-holder, .bp3-dark.library-pane-holder {
+.bp3-dark.pane-holder {
+  background-color: #475562; }
+.bp3-dark.library-pane-holder {
   background-color: #30404d; }
-.bp3-dark .combined-metadata, .bp3-dark div.filepicker {
-  background-color: #293742; }
+.bp3-dark .combined-metadata, .bp3-dark div.filepicker, .bp3-dark #options-pane, .bp3-dark #exports-pane {
+  background-color: #394b59; }
+.bp3-dark div.filepicker {
+  background-color: #394b59; }
 .bp3-dark .notes-field-markdown-output {
-  background-color: #394b59;
+  background-color: #30404d;
   color: #f5f8fa; }
 .bp3-dark .tactic-tag-button-list .bp3-tree-node-selected .bp3-tree-node-content {
   background-color: #30404d;

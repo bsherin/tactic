@@ -89,7 +89,7 @@ def update_from_left():
                                                          {'$set': {"tile_module": module_code, "metadata": mdata}})
         tile_manager.refresh_selector_list()
         create_recent_checkpoint(module_name)
-        return jsonify({"success": True, "message": "Module Successfully Saved<br>Refresh any open viewers",
+        return jsonify({"success": True, "message": "Module successfully saved; refresh any open viewers",
                         "alert_type": "alert-success"})
     except Exception as ex:
         return generic_exception_handler.get_exception_for_ajax(ex, "Error saving module")

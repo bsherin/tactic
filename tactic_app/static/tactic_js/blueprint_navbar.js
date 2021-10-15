@@ -24,8 +24,6 @@ var _utilities_react = require("./utilities_react.js");
 
 var _communication_react = require("./communication_react");
 
-var _blueprint_react_widgets = require("./blueprint_react_widgets");
-
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -335,6 +333,7 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
           });
         },
         option_dict: opt_dict,
+        binding_dict: {},
         icon_dict: icon_dict
       });
     }
@@ -384,26 +383,6 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
       };
       right_style.justifyContent = "flex-end";
       var theme_class = this.props.dark_theme ? "bp3-dark" : "light-theme";
-
-      if (this.props.min_navbar) {
-        return /*#__PURE__*/_react["default"].createElement(_core.Navbar, {
-          style: {
-            paddingLeft: 10,
-            height: 30
-          },
-          className: theme_class
-        }, /*#__PURE__*/_react["default"].createElement("div", {
-          style: {
-            height: 30
-          },
-          className: "bp3-navbar-group bp3-align-left",
-          ref: this.lg_ref
-        }, this.props.menus != null && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, this.props.menus)), window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.TopRightButtons, {
-          refreshTab: this.props.refreshTab,
-          closeTab: this.props.closeTab
-        }));
-      }
-
       return /*#__PURE__*/_react["default"].createElement(_core.Navbar, {
         style: {
           paddingLeft: 10
@@ -447,7 +426,6 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
 
 exports.TacticNavbar = TacticNavbar;
 TacticNavbar.propTypes = {
-  min_navbar: _propTypes["default"].bool,
   refreshTab: _propTypes["default"].func,
   closeTab: _propTypes["default"].func,
   is_authenticated: _propTypes["default"].bool,
@@ -457,7 +435,6 @@ TacticNavbar.propTypes = {
   page_id: _propTypes["default"].string
 };
 TacticNavbar.defaultProps = {
-  min_navbar: false,
   refreshTab: null,
   closeTab: null,
   menus: null,

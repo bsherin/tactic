@@ -8,6 +8,7 @@ import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
 import {TacticNavbar} from "./blueprint_navbar.js";
+import {TacticMenubar} from "./menu_utilities.js";
 import {ProjectMenu} from "./main_menus_react.js";
 import {TacticSocket} from "./tactic_socket.js";
 import {ConsoleComponent} from "./console_component.js";
@@ -402,21 +403,31 @@ class NotebookApp extends React.Component {
             width: "100%",
             height: my_props.usable_height - this.height_adjustment,
         };
+        let stheme = this.props.controlled ? this.props.setTheme : this._setTheme;
         return (
             <React.Fragment>
-                <TacticNavbar is_authenticated={window.is_authenticated}
-                              dark_theme={dark_theme}
-                              setTheme={this.props.controlled ? this.props.setTheme : this._setTheme}
-                              user_name={window.username}
-                              menus={menus}
-                              show_api_links={true}
-                              page_id={this.props.main_id}
-                              min_navbar={window.in_context}
-                              refreshTab={this.props.refreshTab}
-                              closeTab={this.props.closeTab}
+                {!window.in_context &&
+                    <TacticNavbar is_authenticated={window.is_authenticated}
+                          dark_theme={dark_theme}
+                          setTheme={stheme}
+                          user_name={window.username}
+                          menus={null}
+                          page_id={this.props.main_id}
+                    />
+                }
+
+                <TacticMenubar dark_theme={dark_theme}
+                               menus={menus}
+                               showRefresh={true}
+                               showClose={true}
+                               page_id={this.props.main_id}
+                               refreshTab={this.props.refreshTab}
+                               closeTab={this.props.closeTab}
+                               resource_name={this._cProp("resource_name")}
+                               showErrorDrawerButton={true}
+                               toggleErrorDrawer={this.props.toggleErrorDrawer}
                 />
                 <div className={outer_class} ref={this.main_outer_ref} style={outer_style}>
-
                     <HorizontalPanes left_pane={console_pane}
                                      right_pane={exports_pane}
                                      show_handle={true}

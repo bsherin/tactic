@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.LabeledSelectList = LabeledSelectList;
 exports.withTooltip = withTooltip;
-exports.TopRightButtons = exports.GlyphButton = exports.DragThing = exports.BpOrderableTable = exports.OrderableTable = exports.SelectList = exports.LabeledFormField = void 0;
+exports.GlyphButton = exports.DragThing = exports.BpOrderableTable = exports.OrderableTable = exports.SelectList = exports.LabeledFormField = void 0;
 
 var _react = _interopRequireDefault(require("react"));
 
@@ -86,95 +86,20 @@ function withTooltip(WrappedComponent) {
   }(_react["default"].Component);
 }
 
-var TopRightButtons = /*#__PURE__*/function (_React$Component2) {
-  _inherits(TopRightButtons, _React$Component2);
+var GlyphButton = /*#__PURE__*/function (_React$Component2) {
+  _inherits(GlyphButton, _React$Component2);
 
-  var _super2 = _createSuper(TopRightButtons);
-
-  function TopRightButtons(props) {
-    var _this;
-
-    _classCallCheck(this, TopRightButtons);
-
-    _this = _super2.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
-    return _this;
-  }
-
-  _createClass(TopRightButtons, [{
-    key: "render",
-    value: function render() {
-      var _this2 = this;
-
-      var top_icon_style = {
-        display: "flex",
-        justifyContent: "flex-end",
-        marginTop: 0,
-        paddingTop: 3,
-        marginRight: 20
-      };
-      return /*#__PURE__*/_react["default"].createElement("div", {
-        style: top_icon_style
-      }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
-        icon: /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-          icon: "repeat",
-          iconSize: 18
-        }),
-        style: {
-          paddingLeft: 4,
-          paddingRight: 0
-        },
-        minimal: true,
-        className: "context-close-button",
-        small: true,
-        tabIndex: -1,
-        intent: "danger",
-        onClick: function onClick() {
-          _this2.props.refreshTab();
-        }
-      }), /*#__PURE__*/_react["default"].createElement(_core.Button, {
-        icon: /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-          icon: "delete",
-          iconSize: 18
-        }),
-        style: {
-          paddingLeft: 15
-        },
-        minimal: true,
-        className: "context-close-button",
-        small: true,
-        tabIndex: -1,
-        intent: "danger",
-        onClick: function onClick() {
-          _this2.props.closeTab();
-        }
-      }));
-    }
-  }]);
-
-  return TopRightButtons;
-}(_react["default"].Component);
-
-exports.TopRightButtons = TopRightButtons;
-TopRightButtons.propTypes = {
-  refreshTab: _propTypes["default"].func,
-  closeTab: _propTypes["default"].func
-};
-
-var GlyphButton = /*#__PURE__*/function (_React$Component3) {
-  _inherits(GlyphButton, _React$Component3);
-
-  var _super3 = _createSuper(GlyphButton);
+  var _super2 = _createSuper(GlyphButton);
 
   function GlyphButton(props) {
-    var _this3;
+    var _this;
 
     _classCallCheck(this, GlyphButton);
 
-    _this3 = _super3.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this3));
-    _this3.update_props = ["icon", "minimal", "extra_glyph_text", "style"];
-    return _this3;
+    _this = _super2.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
+    _this.update_props = ["icon", "minimal", "extra_glyph_text", "style"];
+    return _this;
   }
 
   _createClass(GlyphButton, [{
@@ -254,26 +179,26 @@ GlyphButton.defaultProps = {
 };
 exports.GlyphButton = GlyphButton = withTooltip(GlyphButton);
 
-var DragThing = /*#__PURE__*/function (_React$Component4) {
-  _inherits(DragThing, _React$Component4);
+var DragThing = /*#__PURE__*/function (_React$Component3) {
+  _inherits(DragThing, _React$Component3);
 
-  var _super4 = _createSuper(DragThing);
+  var _super3 = _createSuper(DragThing);
 
   function DragThing(props) {
-    var _this4;
+    var _this2;
 
     _classCallCheck(this, DragThing);
 
-    _this4 = _super4.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this4));
-    _this4.state = {
+    _this2 = _super3.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this2));
+    _this2.state = {
       xpos: 0,
       ypos: 0,
       initial_x: null,
       initial_y: null,
       active: false
     };
-    return _this4;
+    return _this2;
   }
 
   _createClass(DragThing, [{
@@ -336,15 +261,15 @@ DragThing.propTypes = {
   handleDrag: _propTypes["default"].func
 };
 
-var LabeledFormField = /*#__PURE__*/function (_React$Component5) {
-  _inherits(LabeledFormField, _React$Component5);
+var LabeledFormField = /*#__PURE__*/function (_React$Component4) {
+  _inherits(LabeledFormField, _React$Component4);
 
-  var _super5 = _createSuper(LabeledFormField);
+  var _super4 = _createSuper(LabeledFormField);
 
   function LabeledFormField() {
     _classCallCheck(this, LabeledFormField);
 
-    return _super5.apply(this, arguments);
+    return _super4.apply(this, arguments);
   }
 
   _createClass(LabeledFormField, [{
@@ -389,19 +314,19 @@ function LabeledSelectList(props) {
   }));
 }
 
-var SelectList = /*#__PURE__*/function (_React$Component6) {
-  _inherits(SelectList, _React$Component6);
+var SelectList = /*#__PURE__*/function (_React$Component5) {
+  _inherits(SelectList, _React$Component5);
 
-  var _super6 = _createSuper(SelectList);
+  var _super5 = _createSuper(SelectList);
 
   function SelectList(props) {
-    var _this5;
+    var _this3;
 
     _classCallCheck(this, SelectList);
 
-    _this5 = _super6.call(this, props);
-    _this5.handleChange = _this5.handleChange.bind(_assertThisInitialized(_this5));
-    return _this5;
+    _this3 = _super5.call(this, props);
+    _this3.handleChange = _this3.handleChange.bind(_assertThisInitialized(_this3));
+    return _this3;
   }
 
   _createClass(SelectList, [{
@@ -463,20 +388,20 @@ SelectList.defaultProps = {
   minimal: false
 };
 
-var TableCell = /*#__PURE__*/function (_React$Component7) {
-  _inherits(TableCell, _React$Component7);
+var TableCell = /*#__PURE__*/function (_React$Component6) {
+  _inherits(TableCell, _React$Component6);
 
-  var _super7 = _createSuper(TableCell);
+  var _super6 = _createSuper(TableCell);
 
   function TableCell(props) {
-    var _this6;
+    var _this4;
 
     _classCallCheck(this, TableCell);
 
-    _this6 = _super7.call(this, props);
-    _this6.handleChange = _this6.handleChange.bind(_assertThisInitialized(_this6));
-    _this6.td_ref = /*#__PURE__*/_react["default"].createRef();
-    return _this6;
+    _this4 = _super6.call(this, props);
+    _this4.handleChange = _this4.handleChange.bind(_assertThisInitialized(_this4));
+    _this4.td_ref = /*#__PURE__*/_react["default"].createRef();
+    return _this4;
   }
 
   _createClass(TableCell, [{
@@ -507,19 +432,19 @@ TableCell.propTypes = {
   theColumn: _propTypes["default"].string
 };
 
-var TableRow = /*#__PURE__*/function (_React$Component8) {
-  _inherits(TableRow, _React$Component8);
+var TableRow = /*#__PURE__*/function (_React$Component7) {
+  _inherits(TableRow, _React$Component7);
 
-  var _super8 = _createSuper(TableRow);
+  var _super7 = _createSuper(TableRow);
 
   function TableRow(props) {
-    var _this7;
+    var _this5;
 
     _classCallCheck(this, TableRow);
 
-    _this7 = _super8.call(this, props);
-    _this7.handleClick = _this7.handleClick.bind(_assertThisInitialized(_this7));
-    return _this7;
+    _this5 = _super7.call(this, props);
+    _this5.handleClick = _this5.handleClick.bind(_assertThisInitialized(_this5));
+    return _this5;
   }
 
   _createClass(TableRow, [{
@@ -530,16 +455,16 @@ var TableRow = /*#__PURE__*/function (_React$Component8) {
   }, {
     key: "render",
     value: function render() {
-      var _this8 = this;
+      var _this6 = this;
 
       var cells = this.props.columns.map(function (col, index) {
         return /*#__PURE__*/_react["default"].createElement(TableCell, {
           key: index,
-          content_editable: _this8.props.content_editable,
-          theRow: _this8.props.row_index,
+          content_editable: _this6.props.content_editable,
+          theRow: _this6.props.row_index,
           theCol: col,
-          handleCellChange: _this8.props.handleCellChange
-        }, _this8.props.data_dict[col]);
+          handleCellChange: _this6.props.handleCellChange
+        }, _this6.props.data_dict[col]);
       });
       cells.push( /*#__PURE__*/_react["default"].createElement("td", {
         key: "999"
@@ -571,15 +496,15 @@ TableRow.defaultProps = {
   content_editable: false
 };
 
-var TableHeader = /*#__PURE__*/function (_React$Component9) {
-  _inherits(TableHeader, _React$Component9);
+var TableHeader = /*#__PURE__*/function (_React$Component8) {
+  _inherits(TableHeader, _React$Component8);
 
-  var _super9 = _createSuper(TableHeader);
+  var _super8 = _createSuper(TableHeader);
 
   function TableHeader() {
     _classCallCheck(this, TableHeader);
 
-    return _super9.apply(this, arguments);
+    return _super8.apply(this, arguments);
   }
 
   _createClass(TableHeader, [{
@@ -607,19 +532,19 @@ TableHeader.propTypes = {
   columns: _propTypes["default"].array
 };
 
-var BpOrderableTable = /*#__PURE__*/function (_React$Component10) {
-  _inherits(BpOrderableTable, _React$Component10);
+var BpOrderableTable = /*#__PURE__*/function (_React$Component9) {
+  _inherits(BpOrderableTable, _React$Component9);
 
-  var _super10 = _createSuper(BpOrderableTable);
+  var _super9 = _createSuper(BpOrderableTable);
 
   function BpOrderableTable(props) {
-    var _this9;
+    var _this7;
 
     _classCallCheck(this, BpOrderableTable);
 
-    _this9 = _super10.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this9));
-    return _this9;
+    _this7 = _super9.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this7));
+    return _this7;
   }
 
   _createClass(BpOrderableTable, [{
@@ -652,7 +577,7 @@ var BpOrderableTable = /*#__PURE__*/function (_React$Component10) {
   }, {
     key: "_cellRendererCreator",
     value: function _cellRendererCreator(column_name) {
-      var _this10 = this;
+      var _this8 = this;
 
       var self = this;
       return function (rowIndex) {
@@ -668,7 +593,7 @@ var BpOrderableTable = /*#__PURE__*/function (_React$Component10) {
           key: column_name,
           truncated: true,
           rowIndex: rowIndex,
-          columnIndex: _this10.props.columns.indexOf(column_name),
+          columnIndex: _this8.props.columns.indexOf(column_name),
           wrapText: true,
           onConfirm: self._onConfirmCellEdit,
           value: the_text
@@ -724,21 +649,21 @@ BpOrderableTable.defaultProps = {
   content_editable: false
 };
 
-var OrderableTable = /*#__PURE__*/function (_React$Component11) {
-  _inherits(OrderableTable, _React$Component11);
+var OrderableTable = /*#__PURE__*/function (_React$Component10) {
+  _inherits(OrderableTable, _React$Component10);
 
-  var _super11 = _createSuper(OrderableTable);
+  var _super10 = _createSuper(OrderableTable);
 
   function OrderableTable(props) {
-    var _this11;
+    var _this9;
 
     _classCallCheck(this, OrderableTable);
 
-    _this11 = _super11.call(this, props);
-    _this11.tbody_ref = /*#__PURE__*/_react["default"].createRef();
-    _this11.update_option_order = _this11.update_option_order.bind(_assertThisInitialized(_this11));
-    _this11.handleCellChange = _this11.handleCellChange.bind(_assertThisInitialized(_this11));
-    return _this11;
+    _this9 = _super10.call(this, props);
+    _this9.tbody_ref = /*#__PURE__*/_react["default"].createRef();
+    _this9.update_option_order = _this9.update_option_order.bind(_assertThisInitialized(_this9));
+    _this9.handleCellChange = _this9.handleCellChange.bind(_assertThisInitialized(_this9));
+    return _this9;
   }
 
   _createClass(OrderableTable, [{
@@ -760,12 +685,12 @@ var OrderableTable = /*#__PURE__*/function (_React$Component11) {
   }, {
     key: "update_option_order",
     value: function update_option_order(event, ui) {
-      var _this12 = this;
+      var _this10 = this;
 
       var new_order = $(this.tbody_ref.current).sortable("toArray");
       var new_active_row = new_order.indexOf(String(this.props.active_row));
       var new_data_list = new_order.map(function (id, idx) {
-        return _this12.props.data_array[parseInt(id)];
+        return _this10.props.data_array[parseInt(id)];
       });
       this.props.handleChange(new_data_list);
       this.props.handleActiveRowChange(new_active_row);
@@ -773,18 +698,18 @@ var OrderableTable = /*#__PURE__*/function (_React$Component11) {
   }, {
     key: "render",
     value: function render() {
-      var _this13 = this;
+      var _this11 = this;
 
       var trows = this.props.data_array.map(function (ddict, index) {
         return /*#__PURE__*/_react["default"].createElement(TableRow, {
-          columns: _this13.props.columns,
+          columns: _this11.props.columns,
           data_dict: ddict,
-          key: ddict[_this13.props.columns[0]],
+          key: ddict[_this11.props.columns[0]],
           row_index: index,
-          active: index == _this13.props.active_row,
-          handleRowClick: _this13.props.handleActiveRowChange,
-          content_editable: _this13.props.content_editable,
-          handleCellChange: _this13.handleCellChange
+          active: index == _this11.props.active_row,
+          handleRowClick: _this11.props.handleActiveRowChange,
+          content_editable: _this11.props.content_editable,
+          handleCellChange: _this11.handleCellChange
         });
       });
       return /*#__PURE__*/_react["default"].createElement(_core.HTMLTable, {

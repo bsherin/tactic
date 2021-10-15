@@ -257,7 +257,11 @@ var SearchForm = /*#__PURE__*/function (_React$Component3) {
           marginBottom: 0
         }
       }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: "d-flex flex-row mb-2 mt-2"
+        className: "d-flex flex-row",
+        style: {
+          marginTop: 5,
+          marginBottom: 5
+        }
       }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
         type: "search",
         placeholder: "Search",
@@ -269,16 +273,17 @@ var SearchForm = /*#__PURE__*/function (_React$Component3) {
         },
         autoCapitalize: "none",
         autoCorrect: "off",
+        small: true,
         inputRef: this.props.search_ref
       }), this.props.allow_search_metadata && /*#__PURE__*/_react["default"].createElement(_core.Switch, {
         label: "metadata",
-        className: "ml-2",
+        className: "ml-2 mb-0 mt-1",
         large: false,
         checked: this.props.search_metadata,
         onChange: this._handleSearchMetadataChange
       }), this.props.allow_search_inside && /*#__PURE__*/_react["default"].createElement(_core.Switch, {
         label: "inside",
-        className: "ml-2",
+        className: "ml-2 mb-0 mt-1",
         large: false,
         checked: this.props.search_inside,
         onChange: this._handleSearchInsideChange

@@ -15,8 +15,6 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 
 var _core = require("@blueprintjs/core");
 
-var _blueprint_toolbar = require("./blueprint_toolbar.js");
-
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields.js");
 
 var _modal_react = require("./modal_react.js");
@@ -27,11 +25,13 @@ var _communication_react = require("./communication_react.js");
 
 var _utilities_react = require("./utilities_react.js");
 
-var _blueprint_react_widgets = require("./blueprint_react_widgets.js");
+var _menu_utilities = require("./menu_utilities.js");
 
 var _toaster = require("./toaster.js");
 
 var _sizing_tools = require("./sizing_tools.js");
+
+var _library_widgets = require("./library_widgets");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -107,15 +107,6 @@ var ResourceViewerApp = /*#__PURE__*/function (_React$Component) {
 
     var self = _assertThisInitialized(_this);
 
-    _this.mousetrap = new Mousetrap();
-
-    _this.mousetrap.bind(['command+s', 'ctrl+s'], function (e) {
-      if (self.props.am_selected) {
-        self.props.saveMe();
-        e.preventDefault();
-      }
-    });
-
     _this.state = {
       mounted: false
     };
@@ -153,32 +144,29 @@ var ResourceViewerApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
-      var left_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_blueprint_toolbar.ResourceviewerToolbar, {
-        button_groups: this.props.button_groups,
-        setResourceNameState: this.props.setResourceNameState,
-        resource_name: this.props.resource_name,
-        show_search: this.props.show_search,
-        search_string: this.props.search_string,
+      var left_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, this.props.show_search && /*#__PURE__*/_react["default"].createElement("div", {
+        style: {
+          display: "flex",
+          justifyContent: "flex-end",
+          marginBottom: 5,
+          marginTop: 15
+        }
+      }, /*#__PURE__*/_react["default"].createElement(_library_widgets.SearchForm, {
         update_search_state: this.props.update_search_state,
-        res_type: this.props.res_type,
-        controlled: this.props.controlled,
-        am_selected: this.props.am_selected,
-        tsocket: this.props.tsocket,
-        dark_theme: this.props.dark_theme
-      }), this.props.children); //let available_height = this.get_new_hp_height(this.hp_ref);
+        search_string: this.props.search_string,
+        search_ref: this.props.search_ref
+      })), this.props.children); //let available_height = this.get_new_hp_height(this.hp_ref);
 
 
-      var right_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.TopRightButtons, {
-        refreshTab: this.props.refreshTab,
-        closeTab: this.props.closeTab
-      }), /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.CombinedMetadata, {
+      var right_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.CombinedMetadata, {
         tags: this.props.tags,
         outer_style: {
-          marginTop: 90,
+          marginTop: 0,
           marginLeft: 20,
           overflow: "auto",
           padding: 15,
-          marginRight: 20
+          marginRight: 0,
+          height: "100%"
         },
         created: this.props.created,
         notes: this.props.notes,
@@ -187,23 +175,36 @@ var ResourceViewerApp = /*#__PURE__*/function (_React$Component) {
         res_type: this.props.res_type
       }));
 
-      return /*#__PURE__*/_react["default"].createElement(_core.ResizeSensor, {
+      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_menu_utilities.TacticMenubar, {
+        menu_specs: this.props.menu_specs,
+        dark_theme: this.props.dark_theme,
+        showRefresh: window.in_context,
+        showClose: window.in_context,
+        refreshTab: this.props.refreshTab,
+        closeTab: this.props.closeTab,
+        resource_name: this.props.resource_name,
+        showErrorDrawerButton: this.props.showErrorDrawerButton,
+        toggleErrorDrawer: this.props.toggleErrorDrawer
+      }), /*#__PURE__*/_react["default"].createElement(_core.ResizeSensor, {
         onResize: this._handleResize,
         observeParents: true
       }, /*#__PURE__*/_react["default"].createElement("div", {
         ref: this.top_ref,
         style: {
           width: this.props.usable_width,
-          height: this.props.usable_height
+          height: this.props.usable_height,
+          marginLeft: 15,
+          marginTop: 0
         }
       }, /*#__PURE__*/_react["default"].createElement(_resizing_layouts.HorizontalPanes, {
-        available_width: this.props.usable_width - 2 * _sizing_tools.SIDE_MARGIN,
+        available_width: this.props.usable_width - _sizing_tools.SIDE_MARGIN,
         available_height: this.props.usable_height,
         left_pane: left_pane,
         show_handle: true,
         right_pane: right_pane,
+        initial_width_fraction: .65,
         am_outer: true
-      })));
+      }))));
     }
   }]);
 
@@ -217,7 +218,7 @@ ResourceViewerApp.propTypes = {
   refreshTab: _propTypes["default"].func,
   closeTab: _propTypes["default"].func,
   res_type: _propTypes["default"].string,
-  button_groups: _propTypes["default"].array,
+  menu_specs: _propTypes["default"].object,
   created: _propTypes["default"].string,
   tags: _propTypes["default"].array,
   notes: _propTypes["default"].string,
@@ -226,12 +227,20 @@ ResourceViewerApp.propTypes = {
   dark_theme: _propTypes["default"].bool,
   tsocket: _propTypes["default"].object,
   saveMe: _propTypes["default"].func,
-  children: _propTypes["default"].element
+  children: _propTypes["default"].element,
+  show_search: _propTypes["default"].bool,
+  update_search_state: _propTypes["default"].func,
+  search_ref: _propTypes["default"].object,
+  showErrorDrawerButton: _propTypes["default"].bool,
+  toggleErrorDrawer: _propTypes["default"].func
 };
 ResourceViewerApp.defaultProps = {
+  showErrorDrawerButton: false,
+  toggleErrorDrawer: null,
   dark_theme: false,
   am_selected: true,
   controlled: false,
   refreshTab: null,
-  closeTab: null
+  closeTab: null,
+  search_ref: null
 };

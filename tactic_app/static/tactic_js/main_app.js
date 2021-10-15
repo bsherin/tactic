@@ -28,6 +28,8 @@ var _lodash = _interopRequireDefault(require("lodash"));
 
 var _blueprint_navbar = require("./blueprint_navbar.js");
 
+var _menu_utilities = require("./menu_utilities.js");
+
 var _table_react = require("./table_react.js");
 
 var _blueprint_table = require("./blueprint_table.js");
@@ -811,6 +813,8 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
           menu_items.push( /*#__PURE__*/_react["default"].createElement(_main_menus_react.MenuComponent, {
             menu_name: category,
             option_dict: option_dict,
+            binding_dict: {},
+            icon_dict: {},
             disabled_items: [],
             key: category
           }));
@@ -1611,16 +1615,24 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         width: "100%",
         height: my_props.usable_height - this.height_adjustment
       };
-      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+      var stheme = this.props.controlled ? this.props.setTheme : this._setTheme;
+      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, !window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
         is_authenticated: window.is_authenticated,
         dark_theme: dark_theme,
-        setTheme: this.props.controlled ? this.props.setTheme : this._setTheme,
+        setTheme: stheme,
         user_name: window.username,
+        menus: null,
+        page_id: this.props.main_id
+      }), /*#__PURE__*/_react["default"].createElement(_menu_utilities.TacticMenubar, {
+        dark_theme: dark_theme,
         menus: menus,
-        page_id: this.props.main_id,
-        min_navbar: window.in_context,
+        showRefresh: true,
+        showClose: true,
         refreshTab: this.props.refreshTab,
-        closeTab: this.props.closeTab
+        closeTab: this.props.closeTab,
+        resource_name: this._cProp("resource_name"),
+        showErrorDrawerButton: true,
+        toggleErrorDrawer: this.props.toggleErrorDrawer
       }), /*#__PURE__*/_react["default"].createElement("div", {
         className: outer_class,
         ref: this.main_outer_ref,

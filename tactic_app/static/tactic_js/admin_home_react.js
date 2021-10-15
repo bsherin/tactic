@@ -18,8 +18,6 @@ var _core = require("@blueprintjs/core");
 
 var _table = require("@blueprintjs/table");
 
-var _blueprint_toolbar = require("./blueprint_toolbar.js");
-
 var _tactic_socket = require("./tactic_socket.js");
 
 var _modal_react = require("./modal_react.js");
@@ -40,15 +38,25 @@ var _error_drawer = require("./error_drawer.js");
 
 var _utilities_react = require("./utilities_react.js");
 
+var _library_menubars = require("./library_menubars");
+
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return; var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
 function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
@@ -234,7 +242,7 @@ var AdministerHomeApp = /*#__PURE__*/function (_React$Component) {
         res_type: "container",
         allow_search_inside: false,
         allow_search_metadata: false,
-        ToolbarClass: ContainerToolbar,
+        MenubarClass: ContainerMenubar,
         updatePaneState: this._updatePaneState
       }, this.state.pane_states["container"], this.props.errorDrawerFuncs, {
         errorDrawerFuncs: this.props.errorDrawerFuncs,
@@ -247,7 +255,7 @@ var AdministerHomeApp = /*#__PURE__*/function (_React$Component) {
         res_type: "user",
         allow_search_inside: false,
         allow_search_metadata: false,
-        ToolbarClass: UserToolbar,
+        MenubarClass: UserMenubar,
         updatePaneState: this._updatePaneState
       }, this.state.pane_states["user"], this.props.errorDrawerFuncs, {
         errorDrawerFuncs: this.props.errorDrawerFuncs,
@@ -308,113 +316,22 @@ var AdministerHomeApp = /*#__PURE__*/function (_React$Component) {
   return AdministerHomeApp;
 }(_react["default"].Component);
 
-var AdminToolbar = /*#__PURE__*/function (_React$Component2) {
-  _inherits(AdminToolbar, _React$Component2);
+var ContainerMenubar = /*#__PURE__*/function (_React$Component2) {
+  _inherits(ContainerMenubar, _React$Component2);
 
-  var _super2 = _createSuper(AdminToolbar);
+  var _super2 = _createSuper(ContainerMenubar);
 
-  function AdminToolbar() {
-    _classCallCheck(this, AdminToolbar);
-
-    return _super2.apply(this, arguments);
-  }
-
-  _createClass(AdminToolbar, [{
-    key: "prepare_button_groups",
-    value: function prepare_button_groups() {
-      var new_bgs = [];
-      var new_group;
-      var new_button;
-
-      var _iterator2 = _createForOfIteratorHelper(this.props.button_groups),
-          _step2;
-
-      try {
-        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-          var group = _step2.value;
-          new_group = [];
-
-          var _iterator3 = _createForOfIteratorHelper(group),
-              _step3;
-
-          try {
-            for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-              var button = _step3.value;
-
-              if (!this.props.multi_select || button[3]) {
-                new_button = {
-                  name_text: button[0],
-                  click_handler: button[1],
-                  icon_name: button[2],
-                  multi_select: button[3],
-                  tooltip: button[4]
-                };
-                new_group.push(new_button);
-              }
-            }
-          } catch (err) {
-            _iterator3.e(err);
-          } finally {
-            _iterator3.f();
-          }
-
-          if (new_group.length != 0) {
-            new_bgs.push(new_group);
-          }
-        }
-      } catch (err) {
-        _iterator2.e(err);
-      } finally {
-        _iterator2.f();
-      }
-
-      return new_bgs;
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var outer_style = {
-        display: "flex",
-        flexDirection: "row",
-        position: "relative",
-        left: this.props.left_position,
-        marginBottom: 10
-      };
-      return /*#__PURE__*/_react["default"].createElement(_blueprint_toolbar.Toolbar, {
-        button_groups: this.prepare_button_groups(),
-        file_adders: null,
-        alternate_outer_style: outer_style,
-        sendRef: this.props.sendRef,
-        popup_buttons: null
-      });
-    }
-  }]);
-
-  return AdminToolbar;
-}(_react["default"].Component);
-
-AdminToolbar.propTypes = {
-  button_groups: _propTypes["default"].array,
-  left_position: _propTypes["default"].number,
-  sendRef: _propTypes["default"].func
-};
-
-var ContainerToolbar = /*#__PURE__*/function (_React$Component3) {
-  _inherits(ContainerToolbar, _React$Component3);
-
-  var _super3 = _createSuper(ContainerToolbar);
-
-  function ContainerToolbar(props) {
+  function ContainerMenubar(props) {
     var _this2;
 
-    _classCallCheck(this, ContainerToolbar);
+    _classCallCheck(this, ContainerMenubar);
 
-    _this2 = _super3.call(this, props);
+    _this2 = _super2.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this2));
     return _this2;
   }
 
-  _createClass(ContainerToolbar, [{
+  _createClass(ContainerMenubar, [{
     key: "_doFlashStopSpinner",
     value: function _doFlashStopSpinner(data) {
       this.props.stopSpinner();
@@ -457,25 +374,75 @@ var ContainerToolbar = /*#__PURE__*/function (_React$Component3) {
       this.props.stopSpinner();
     }
   }, {
-    key: "button_groups",
+    key: "menu_specs",
     get: function get() {
-      return [[["reset", this._reset_server_func, "reset", false, "Reset host container"], ["killall", this._clear_user_func, "clean", false, "Clear user containers"], ["killone", this._destroy_container, "delete", false, "Destroy one container"]], [["log", this._container_logs, "console", false, "Container logs"], ["refresh", this.props.refresh_func, "refresh", false, "Refresh"]]];
+      var self = this;
+      var ms = {
+        Danger: [{
+          name_text: "Reset Host Container",
+          icon_name: "reset",
+          click_handler: this._reset_server_func
+        }, {
+          name_text: "Kill All User Containers",
+          icon_name: "clean",
+          click_handler: this._clear_user_func
+        }, {
+          name_text: "Kill One Container",
+          icon_name: "console",
+          click_handler: this._destroy_container
+        }],
+        Logs: [{
+          name_text: "Show Container Log",
+          icon_name: "delete",
+          click_handler: this._container_logs
+        }]
+      };
+
+      for (var _i = 0, _Object$entries = Object.entries(ms); _i < _Object$entries.length; _i++) {
+        var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
+            menu_name = _Object$entries$_i[0],
+            menu = _Object$entries$_i[1];
+
+        var _iterator2 = _createForOfIteratorHelper(menu),
+            _step2;
+
+        try {
+          for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+            var but = _step2.value;
+            but.click_handler = but.click_handler.bind(this);
+          }
+        } catch (err) {
+          _iterator2.e(err);
+        } finally {
+          _iterator2.f();
+        }
+      }
+
+      return ms;
     }
   }, {
     key: "render",
     value: function render() {
-      return /*#__PURE__*/_react["default"].createElement(AdminToolbar, {
-        button_groups: this.button_groups,
-        left_position: this.props.left_position,
-        sendRef: this.props.sendRef
+      return /*#__PURE__*/_react["default"].createElement(_library_menubars.LibraryMenubar, {
+        menu_specs: this.menu_specs,
+        context_menu_items: null,
+        multi_select: false,
+        dark_theme: false,
+        controlled: false,
+        am_selected: false,
+        refreshTab: this.props.refresh_func,
+        closeTab: null,
+        resource_name: "",
+        showErrorDrawerButton: false,
+        toggleErrorDrawer: null
       });
     }
   }]);
 
-  return ContainerToolbar;
+  return ContainerMenubar;
 }(_react["default"].Component);
 
-ContainerToolbar.propTypes = {
+ContainerMenubar.propTypes = {
   selected_resource: _propTypes["default"].object,
   list_of_selected: _propTypes["default"].array,
   setConsoleText: _propTypes["default"].func,
@@ -483,22 +450,22 @@ ContainerToolbar.propTypes = {
   refresh_func: _propTypes["default"].func
 };
 
-var UserToolbar = /*#__PURE__*/function (_React$Component4) {
-  _inherits(UserToolbar, _React$Component4);
+var UserMenubar = /*#__PURE__*/function (_React$Component3) {
+  _inherits(UserMenubar, _React$Component3);
 
-  var _super4 = _createSuper(UserToolbar);
+  var _super3 = _createSuper(UserMenubar);
 
-  function UserToolbar(props) {
+  function UserMenubar(props) {
     var _this3;
 
-    _classCallCheck(this, UserToolbar);
+    _classCallCheck(this, UserMenubar);
 
-    _this3 = _super4.call(this, props);
+    _this3 = _super3.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this3));
     return _this3;
   }
 
-  _createClass(UserToolbar, [{
+  _createClass(UserMenubar, [{
     key: "_delete_user",
     value: function _delete_user() {
       var user_id = this.props.selected_resource._id;
@@ -549,20 +516,66 @@ var UserToolbar = /*#__PURE__*/function (_React$Component4) {
       ["refresh", this.props.refresh_func, "refresh", false, "Refresh"]]];
     }
   }, {
+    key: "menu_specs",
+    get: function get() {
+      var self = this;
+      var ms = {
+        Manage: [{
+          name_text: "Create User",
+          icon_name: "new-object",
+          click_handler: this._create_user
+        }, {
+          name_text: "Delete User",
+          icon_name: "delete",
+          click_handler: this._delete_user
+        }]
+      };
+
+      for (var _i2 = 0, _Object$entries2 = Object.entries(ms); _i2 < _Object$entries2.length; _i2++) {
+        var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
+            menu_name = _Object$entries2$_i[0],
+            menu = _Object$entries2$_i[1];
+
+        var _iterator3 = _createForOfIteratorHelper(menu),
+            _step3;
+
+        try {
+          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+            var but = _step3.value;
+            but.click_handler = but.click_handler.bind(this);
+          }
+        } catch (err) {
+          _iterator3.e(err);
+        } finally {
+          _iterator3.f();
+        }
+      }
+
+      return ms;
+    }
+  }, {
     key: "render",
     value: function render() {
-      return /*#__PURE__*/_react["default"].createElement(AdminToolbar, {
-        button_groups: this.button_groups,
-        left_position: this.props.left_position,
-        sendRef: this.props.sendRef
+      return /*#__PURE__*/_react["default"].createElement(_library_menubars.LibraryMenubar, {
+        menu_specs: this.menu_specs,
+        context_menu_items: null,
+        multi_select: false,
+        dark_theme: false,
+        controlled: false,
+        am_selected: false,
+        refreshTab: this.props.refresh_func,
+        closeTab: null,
+        resource_name: "",
+        showErrorDrawerButton: false,
+        toggleErrorDrawer: null
       });
     }
   }]);
 
-  return UserToolbar;
+  return UserMenubar;
 }(_react["default"].Component);
 
-UserToolbar.propTypes = {
+UserMenubar.propTypes = {
   selected_resource: _propTypes["default"].object,
   list_of_selected: _propTypes["default"].array,
   setConsoleText: _propTypes["default"].func,

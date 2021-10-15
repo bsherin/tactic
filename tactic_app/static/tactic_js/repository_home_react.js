@@ -18,13 +18,9 @@ var _react = _interopRequireDefault(require("react"));
 
 var ReactDOM = _interopRequireWildcard(require("react-dom"));
 
-var _propTypes = _interopRequireDefault(require("prop-types"));
-
 var _core = require("@blueprintjs/core");
 
 var _table = require("@blueprintjs/table");
-
-var _blueprint_toolbar = require("./blueprint_toolbar.js");
 
 var _tactic_socket = require("./tactic_socket.js");
 
@@ -43,6 +39,8 @@ var _utilities_react = require("./utilities_react.js");
 var _utilities_react2 = require("./utilities_react");
 
 var _blueprint_navbar = require("./blueprint_navbar");
+
+var _repository_menubars = require("./repository_menubars.js");
 
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
@@ -298,7 +296,7 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
         res_type: "collection",
         allow_search_inside: false,
         allow_search_metadata: false,
-        ToolbarClass: RepositoryCollectionToolbar,
+        MenubarClass: _repository_menubars.RepositoryCollectionMenubar,
         updatePaneState: this._updatePaneState
       }, this.state.pane_states["collection"], this.props.errorDrawerFuncs, {
         errorDrawerFuncs: this.props.errorDrawerFuncs,
@@ -309,7 +307,7 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
         res_type: "project",
         allow_search_inside: false,
         allow_search_metadata: true,
-        ToolbarClass: RepositoryProjectToolbar,
+        MenubarClass: _repository_menubars.RepositoryProjectMenubar,
         updatePaneState: this._updatePaneState
       }, this.state.pane_states["project"], this.props.errorDrawerFuncs, {
         errorDrawerFuncs: this.props.errorDrawerFuncs,
@@ -320,7 +318,7 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
         res_type: "tile",
         allow_search_inside: true,
         allow_search_metadata: true,
-        ToolbarClass: RepositoryTileToolbar,
+        MenubarClass: _repository_menubars.RepositoryTileMenubar,
         updatePaneState: this._updatePaneState
       }, this.state.pane_states["tile"], this.props.errorDrawerFuncs, {
         errorDrawerFuncs: this.props.errorDrawerFuncs,
@@ -331,7 +329,7 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
         res_type: "list",
         allow_search_inside: true,
         allow_search_metadata: true,
-        ToolbarClass: RepositoryListToolbar,
+        MenubarClass: _repository_menubars.RepositoryListMenubar,
         updatePaneState: this._updatePaneState
       }, this.state.pane_states["list"], this.props.errorDrawerFuncs, {
         errorDrawerFuncs: this.props.errorDrawerFuncs,
@@ -342,7 +340,7 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
         res_type: "code",
         allow_search_inside: true,
         allow_search_metadata: true,
-        ToolbarClass: RepositoryCodeToolbar,
+        MenubarClass: _repository_menubars.RepositoryCodeMenubar,
         updatePaneState: this._updatePaneState
       }, this.state.pane_states["code"], this.props.errorDrawerFuncs, {
         errorDrawerFuncs: this.props.errorDrawerFuncs,
@@ -455,428 +453,6 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
 }(_react["default"].Component);
 
 exports.RepositoryHomeApp = RepositoryHomeApp;
-
-var LibraryToolbar = /*#__PURE__*/function (_React$Component2) {
-  _inherits(LibraryToolbar, _React$Component2);
-
-  var _super2 = _createSuper(LibraryToolbar);
-
-  function LibraryToolbar() {
-    _classCallCheck(this, LibraryToolbar);
-
-    return _super2.apply(this, arguments);
-  }
-
-  _createClass(LibraryToolbar, [{
-    key: "prepare_button_groups",
-    value: function prepare_button_groups() {
-      var new_bgs = [];
-      var new_group;
-      var new_button;
-
-      var _iterator3 = _createForOfIteratorHelper(this.props.button_groups),
-          _step3;
-
-      try {
-        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-          var group = _step3.value;
-          new_group = [];
-
-          var _iterator4 = _createForOfIteratorHelper(group),
-              _step4;
-
-          try {
-            for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-              var button = _step4.value;
-
-              if (!this.props.multi_select || button[3]) {
-                new_button = {
-                  name_text: button[0],
-                  click_handler: button[1],
-                  icon_name: button[2],
-                  multi_select: button[3]
-                };
-
-                if (button.length > 4) {
-                  new_button.intent = button[4];
-                }
-
-                if (button.length > 5) {
-                  new_button.key_bindings = button[5];
-                }
-
-                if (button.length > 6) {
-                  new_button.tooltip = button[6];
-                }
-
-                new_group.push(new_button);
-              }
-            }
-          } catch (err) {
-            _iterator4.e(err);
-          } finally {
-            _iterator4.f();
-          }
-
-          if (new_group.length != 0) {
-            new_bgs.push(new_group);
-          }
-        }
-      } catch (err) {
-        _iterator3.e(err);
-      } finally {
-        _iterator3.f();
-      }
-
-      return new_bgs;
-    }
-  }, {
-    key: "prepare_file_adders",
-    value: function prepare_file_adders() {
-      if (this.props.file_adders == null || this.props.file_adders.length == 0) return [];
-      var file_adders = [];
-
-      var _iterator5 = _createForOfIteratorHelper(this.props.file_adders),
-          _step5;
-
-      try {
-        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-          var button = _step5.value;
-          var new_button = {
-            name_text: button[0],
-            resource_type: button[1],
-            process_handler: button[2],
-            allowed_file_types: button[3],
-            icon_name: button[4],
-            checkboxes: button[5],
-            combine: button[6],
-            tooltip: button[7],
-            show_csv_options: button[8]
-          };
-          file_adders.push(new_button);
-        }
-      } catch (err) {
-        _iterator5.e(err);
-      } finally {
-        _iterator5.f();
-      }
-
-      return file_adders;
-    }
-  }, {
-    key: "prepare_popup_buttons",
-    value: function prepare_popup_buttons() {
-      if (this.props.popup_buttons == null || this.props.popup_buttons.length == 0) return [];
-      var popup_buttons = [];
-
-      var _iterator6 = _createForOfIteratorHelper(this.props.popup_buttons),
-          _step6;
-
-      try {
-        for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-          var button = _step6.value;
-          var new_button = {
-            name: button[0],
-            icon_name: button[1]
-          };
-          var opt_list = [];
-
-          var _iterator7 = _createForOfIteratorHelper(button[2]),
-              _step7;
-
-          try {
-            for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
-              var opt = _step7.value;
-              opt_list.push({
-                opt_name: opt[0],
-                opt_func: opt[1],
-                opt_icon: opt[2]
-              });
-            }
-          } catch (err) {
-            _iterator7.e(err);
-          } finally {
-            _iterator7.f();
-          }
-
-          new_button["option_list"] = opt_list;
-          popup_buttons.push(new_button);
-        }
-      } catch (err) {
-        _iterator6.e(err);
-      } finally {
-        _iterator6.f();
-      }
-
-      return popup_buttons;
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var outer_style = {
-        display: "flex",
-        flexDirection: "row",
-        position: "relative",
-        left: this.props.left_position,
-        marginBottom: 10
-      };
-      var popup_buttons = this.prepare_popup_buttons();
-      return /*#__PURE__*/_react["default"].createElement(_blueprint_toolbar.Toolbar, {
-        button_groups: this.prepare_button_groups(),
-        file_adders: this.prepare_file_adders(),
-        alternate_outer_style: outer_style,
-        sendRef: this.props.sendRef,
-        popup_buttons: popup_buttons,
-        dark_theme: this.props.dark_theme,
-        controlled: this.props.controlled,
-        am_selected: this.props.am_selected,
-        tsocket: this.props.tsocket
-      });
-    }
-  }]);
-
-  return LibraryToolbar;
-}(_react["default"].Component);
-
-LibraryToolbar.propTypes = {
-  button_groups: _propTypes["default"].array,
-  file_adders: _propTypes["default"].array,
-  popup_buttons: _propTypes["default"].array,
-  multi_select: _propTypes["default"].bool,
-  left_position: _propTypes["default"].number,
-  sendRef: _propTypes["default"].func
-};
-LibraryToolbar.defaultProps = {
-  file_adders: null,
-  popup_buttons: null
-};
-var specializedToolbarPropTypes = {
-  view_func: _propTypes["default"].func,
-  repository_copy_func: _propTypes["default"].func,
-  selected_resource: _propTypes["default"].object,
-  list_of_selected: _propTypes["default"].array,
-  muti_select: _propTypes["default"].bool
-};
-
-var RepositoryCollectionToolbar = /*#__PURE__*/function (_React$Component3) {
-  _inherits(RepositoryCollectionToolbar, _React$Component3);
-
-  var _super3 = _createSuper(RepositoryCollectionToolbar);
-
-  function RepositoryCollectionToolbar(props) {
-    var _this2;
-
-    _classCallCheck(this, RepositoryCollectionToolbar);
-
-    _this2 = _super3.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this2));
-    return _this2;
-  }
-
-  _createClass(RepositoryCollectionToolbar, [{
-    key: "button_groups",
-    get: function get() {
-      return [[["copy", this.props.repository_copy_func, "import", false, "regular", [], "Copy to library"]]];
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      return /*#__PURE__*/_react["default"].createElement(LibraryToolbar, {
-        button_groups: this.button_groups,
-        left_position: this.props.left_position,
-        sendRef: this.props.sendRef,
-        multi_select: this.props.multi_select,
-        dark_theme: this.props.dark_theme,
-        controlled: this.props.controlled,
-        am_selected: this.props.am_selected,
-        tsocket: this.props.tsocket
-      });
-    }
-  }]);
-
-  return RepositoryCollectionToolbar;
-}(_react["default"].Component);
-
-RepositoryCollectionToolbar.propTypes = specializedToolbarPropTypes;
-
-var RepositoryProjectToolbar = /*#__PURE__*/function (_React$Component4) {
-  _inherits(RepositoryProjectToolbar, _React$Component4);
-
-  var _super4 = _createSuper(RepositoryProjectToolbar);
-
-  function RepositoryProjectToolbar(props) {
-    var _this3;
-
-    _classCallCheck(this, RepositoryProjectToolbar);
-
-    _this3 = _super4.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this3));
-    return _this3;
-  }
-
-  _createClass(RepositoryProjectToolbar, [{
-    key: "button_groups",
-    get: function get() {
-      return [[["copy", this.props.repository_copy_func, "import", false, "regular", [], "Copy to library"]]];
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      return /*#__PURE__*/_react["default"].createElement(LibraryToolbar, {
-        button_groups: this.button_groups,
-        left_position: this.props.left_position,
-        sendRef: this.props.sendRef,
-        multi_select: this.props.multi_select,
-        dark_theme: this.props.dark_theme,
-        controlled: this.props.controlled,
-        am_selected: this.props.am_selected,
-        tsocket: this.props.tsocket
-      });
-    }
-  }]);
-
-  return RepositoryProjectToolbar;
-}(_react["default"].Component);
-
-RepositoryProjectToolbar.propTypes = specializedToolbarPropTypes;
-
-var RepositoryTileToolbar = /*#__PURE__*/function (_React$Component5) {
-  _inherits(RepositoryTileToolbar, _React$Component5);
-
-  var _super5 = _createSuper(RepositoryTileToolbar);
-
-  function RepositoryTileToolbar(props) {
-    var _this4;
-
-    _classCallCheck(this, RepositoryTileToolbar);
-
-    _this4 = _super5.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this4));
-    return _this4;
-  }
-
-  _createClass(RepositoryTileToolbar, [{
-    key: "_tile_view",
-    value: function _tile_view(e) {
-      this.props.view_func("/repository_view_module/");
-    }
-  }, {
-    key: "button_groups",
-    get: function get() {
-      return [[["view", this._tile_view, "eye-open", false, "regular", [], "view"], ["copy", this.props.repository_copy_func, "import", false, "regular", [], "Copy to library"]]];
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      return /*#__PURE__*/_react["default"].createElement(LibraryToolbar, {
-        button_groups: this.button_groups,
-        left_position: this.props.left_position,
-        sendRef: this.props.sendRef,
-        multi_select: this.props.multi_select,
-        dark_theme: this.props.dark_theme,
-        controlled: this.props.controlled,
-        am_selected: this.props.am_selected,
-        tsocket: this.props.tsocket
-      });
-    }
-  }]);
-
-  return RepositoryTileToolbar;
-}(_react["default"].Component);
-
-RepositoryTileToolbar.propTypes = specializedToolbarPropTypes;
-
-var RepositoryListToolbar = /*#__PURE__*/function (_React$Component6) {
-  _inherits(RepositoryListToolbar, _React$Component6);
-
-  var _super6 = _createSuper(RepositoryListToolbar);
-
-  function RepositoryListToolbar(props) {
-    var _this5;
-
-    _classCallCheck(this, RepositoryListToolbar);
-
-    _this5 = _super6.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this5));
-    return _this5;
-  }
-
-  _createClass(RepositoryListToolbar, [{
-    key: "_list_view",
-    value: function _list_view(e) {
-      this.props.view_func("/repository_view_list/");
-    }
-  }, {
-    key: "button_groups",
-    get: function get() {
-      return [[["view", this._list_view, "eye-open", false, "regular", [], "view"], ["copy", this.props.repository_copy_func, "import", false, "regular", [], "Copy to library"]]];
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      return /*#__PURE__*/_react["default"].createElement(LibraryToolbar, {
-        button_groups: this.button_groups,
-        left_position: this.props.left_position,
-        sendRef: this.props.sendRef,
-        multi_select: this.props.multi_select,
-        dark_theme: this.props.dark_theme,
-        controlled: this.props.controlled,
-        am_selected: this.props.am_selected,
-        tsocket: this.props.tsocket
-      });
-    }
-  }]);
-
-  return RepositoryListToolbar;
-}(_react["default"].Component);
-
-RepositoryListToolbar.propTypes = specializedToolbarPropTypes;
-
-var RepositoryCodeToolbar = /*#__PURE__*/function (_React$Component7) {
-  _inherits(RepositoryCodeToolbar, _React$Component7);
-
-  var _super7 = _createSuper(RepositoryCodeToolbar);
-
-  function RepositoryCodeToolbar(props) {
-    var _this6;
-
-    _classCallCheck(this, RepositoryCodeToolbar);
-
-    _this6 = _super7.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this6));
-    return _this6;
-  }
-
-  _createClass(RepositoryCodeToolbar, [{
-    key: "_code_view",
-    value: function _code_view(e) {
-      this.props.view_func("/repository_view_code/");
-    }
-  }, {
-    key: "button_groups",
-    get: function get() {
-      return [[["view", this._code_view, "eye-open", false, "regular", [], "view"], ["copy", this.props.repository_copy_func, "import", false, "regular", [], "Copy to library"]]];
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      return /*#__PURE__*/_react["default"].createElement(LibraryToolbar, {
-        button_groups: this.button_groups,
-        left_position: this.props.left_position,
-        sendRef: this.props.sendRef,
-        multi_select: this.props.multi_select,
-        dark_theme: this.props.dark_theme,
-        controlled: this.props.controlled,
-        am_selected: this.props.am_selected,
-        tsocket: this.props.tsocket
-      });
-    }
-  }]);
-
-  return RepositoryCodeToolbar;
-}(_react["default"].Component);
-
-RepositoryCodeToolbar.propTypes = specializedToolbarPropTypes;
 
 if (!window.in_context) {
   _repository_home_main();

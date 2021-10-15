@@ -2,9 +2,11 @@
 import React from "react";
 import PropTypes from 'prop-types';
 
+import {PopoverPosition} from "@blueprintjs/core";
+
 import {ReactCodemirrorMergeView} from "./react-codemirror-mergeview.js";
-import {Toolbar} from "./blueprint_toolbar.js";
 import {BpSelect} from "./blueprint_mdata_fields.js";
+import {TacticMenubar} from "./menu_utilities";
 
 export {MergeViewerApp}
 
@@ -27,6 +29,25 @@ class MergeViewerApp extends React.Component {
     get button_groups() {
         return [[{"name_text": "Save", "icon_name": "saved", "click_handler": this.props.saveHandler}]];
 
+    }
+
+    get menu_specs() {
+        let ms;
+        ms = {
+            Save: [
+                {name_text: "Save",
+                icon_name: "saved",
+                click_handler: this.props.saveHandler,
+                key_bindings: ['ctrl+s']},
+            ]
+
+        };
+        for (const [menu_name, menu] of Object.entries(ms)) {
+            for (let but of menu) {
+                but.click_handler = but.click_handler.bind(this)
+            }
+        }
+        return ms
     }
 
     componentDidMount() {
@@ -80,29 +101,40 @@ class MergeViewerApp extends React.Component {
         }
         let current_style = {"bottom": 0};
         return (
-            <div className={outer_class}>
-                <div style={toolbar_holder_style}>
-                    <Toolbar button_groups={this.button_groups}/>
-                </div>
-                <div id="left-div" ref={this.left_div_ref} style={left_div_style}>
-                    <div id="above-main" ref={this.above_main_ref} className="d-flex flex-row justify-content-between mb-2">
-                        <span className="align-self-end">Current</span>
-                        <BpSelect options={this.props.option_list}
-                                  onChange={this.props.handleSelectChange}
-                                  buttonIcon="application"
-                                  value={this.props.select_val}/>
-                    </div>
-                    <ReactCodemirrorMergeView handleEditChange={this.props.handleEditChange}
-                                              dark_theme={this.props.dark_theme}
-                                              editor_content={this.props.edit_content}
-                                              right_content={this.props.right_content}
-                                              saveMe={this.props.saveHandler}
-                                              max_height={max_merge_height}
-                                              ref={this.merge_element_ref}
-
+            <React.Fragment>
+                <TacticMenubar menu_specs={this.menu_specs}
+                               showRefresh={false}
+                               showClose={false}
+                               dark_theme={this.props.dark_theme}
+                               refreshTab={null}
+                               closeTab={null}
+                               resource_name={this.props.resource_name}
+                               toggleErrorDrawer={this.props.toggleErrorDrawer}
+                               controlled={false}
+                               am_selected={false}
                     />
+                <div className={outer_class}>
+                    <div id="left-div" ref={this.left_div_ref} style={left_div_style}>
+                        <div id="above-main" ref={this.above_main_ref} className="d-flex flex-row justify-content-between mb-2">
+                            <span className="align-self-end">Current</span>
+                            <BpSelect options={this.props.option_list}
+                                      onChange={this.props.handleSelectChange}
+                                      buttonIcon="application"
+                                      popoverPosition={PopoverPosition.BOTTOM_RIGHT}
+                                      value={this.props.select_val}/>
+                        </div>
+                        <ReactCodemirrorMergeView handleEditChange={this.props.handleEditChange}
+                                                  dark_theme={this.props.dark_theme}
+                                                  editor_content={this.props.edit_content}
+                                                  right_content={this.props.right_content}
+                                                  saveMe={this.props.saveHandler}
+                                                  max_height={max_merge_height}
+                                                  ref={this.merge_element_ref}
+
+                        />
+                    </div>
                 </div>
-            </div>
+            </React.Fragment>
         )
     }
 }

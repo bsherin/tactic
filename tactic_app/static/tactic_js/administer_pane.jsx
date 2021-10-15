@@ -36,7 +36,6 @@ class AdminPane extends React.Component {
             total_width: 500,
         };
         doBinding(this);
-        this.toolbarRef = null;
         this.previous_search_spec = null;
         this.socket_counter = null;
         this.initSocket()
@@ -319,10 +318,6 @@ class AdminPane extends React.Component {
         }
     }
 
-    _sendToolbarRef(the_ref) {
-        this.toolbarRef = the_ref;
-    }
-
     _communicateColumnWidthSum(total_width) {
         this.setState({total_width: total_width + 50})
     }
@@ -357,7 +352,7 @@ class AdminPane extends React.Component {
             "overflowX": "hidden"
         };
 
-        let ToolbarClass = this.props.ToolbarClass;
+        let MenubarClass = this.props.MenubarClass;
 
         let column_specs = {};
         for (let col of this.props.colnames) {
@@ -365,21 +360,11 @@ class AdminPane extends React.Component {
         }
 
         let table_width;
-        let toolbar_left;
         if (this.table_ref && this.table_ref.current) {
             table_width = left_width - this.table_ref.current.offsetLeft;
-            if (this.toolbarRef && this.toolbarRef.current) {
-                let tbwidth = this.toolbarRef.current.getBoundingClientRect().width;
-                toolbar_left = this.table_ref.current.offsetLeft + .5 * table_width - .5 * tbwidth;
-                if (toolbar_left < 0) toolbar_left = 0
-            }
-            else {
-                toolbar_left = 175
-            }
         }
         else {
             table_width = left_width - 150;
-            toolbar_left = 175
         }
 
         let left_pane = (
@@ -411,33 +396,34 @@ class AdminPane extends React.Component {
             </React.Fragment>
         );
         return (
-            <ResizeSensor onResize={this._handleResize} observeParents={true}>
-                <div ref={this.top_ref} className="d-flex flex-column mt-3" >
-                    <ToolbarClass selected_resource={this.props.selected_resource}
-                                  list_of_selected={this.props.list_of_selected}
-                                  setConsoleText={this._setConsoleText}
-                                  delete_row={this._delete_row}
-                                  refresh_func={this._refresh_func}
-                                  startSpinner={this.props.startSpinner}
-                                  stopSpinner={this.props.stopSpinner}
-                                  clearStatusMessage={this.props.clearStatusMessage}
-                                  left_position={toolbar_left}
-                                  sendRef={this._sendToolbarRef}
-                                  {...this.props.errorDrawerFuncs}
-                                  />
-                      <div style={{width: this.state.available_width, height: this.state.available_height}}>
-                            <HorizontalPanes
-                                left_pane={left_pane}
-                                right_pane={right_pane}
-                                show_handle={true}
-                                available_width={this.state.available_width}
-                                available_height={this.state.available_height}
-                                initial_width_fraction={.65}
-                                handleSplitUpdate={this._handleSplitResize}
-                            />
-                      </div>
-                </div>
-            </ResizeSensor>
+            <React.Fragment>
+                <MenubarClass selected_resource={this.props.selected_resource}
+                              list_of_selected={this.props.list_of_selected}
+                              setConsoleText={this._setConsoleText}
+                              delete_row={this._delete_row}
+                              refresh_func={this._refresh_func}
+                              startSpinner={this.props.startSpinner}
+                              stopSpinner={this.props.stopSpinner}
+                              clearStatusMessage={this.props.clearStatusMessage}
+                              {...this.props.errorDrawerFuncs}
+                              />
+                <ResizeSensor onResize={this._handleResize} observeParents={true}>
+                    <div ref={this.top_ref} className="d-flex flex-column mt-3" >
+                          <div style={{width: this.state.available_width, height: this.state.available_height}}>
+                                <HorizontalPanes
+                                    left_pane={left_pane}
+                                    right_pane={right_pane}
+                                    show_handle={true}
+                                    available_width={this.state.available_width}
+                                    available_height={this.state.available_height}
+                                    initial_width_fraction={.65}
+                                    handleSplitUpdate={this._handleSplitResize}
+                                />
+                          </div>
+                    </div>
+                </ResizeSensor>
+            </React.Fragment>
+
         )
     }
 }
@@ -450,7 +436,7 @@ AdminPane.propTypes = {
     allow_search_metadata: PropTypes.bool,
     search_inside_view: PropTypes.string,
     search_metadata_view: PropTypes.string,
-    ToolbarClass: PropTypes.func,
+    MenubarClass: PropTypes.func,
     is_repository: PropTypes.bool,
     tsocket: PropTypes.object,
     colnames: PropTypes.array,

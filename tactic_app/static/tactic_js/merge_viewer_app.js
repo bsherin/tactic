@@ -11,13 +11,17 @@ var _react = _interopRequireDefault(require("react"));
 
 var _propTypes = _interopRequireDefault(require("prop-types"));
 
-var _reactCodemirrorMergeview = require("./react-codemirror-mergeview.js");
+var _core = require("@blueprintjs/core");
 
-var _blueprint_toolbar = require("./blueprint_toolbar.js");
+var _reactCodemirrorMergeview = require("./react-codemirror-mergeview.js");
 
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields.js");
 
+var _menu_utilities = require("./menu_utilities");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 
@@ -84,6 +88,41 @@ var MergeViewerApp = /*#__PURE__*/function (_React$Component) {
         "icon_name": "saved",
         "click_handler": this.props.saveHandler
       }]];
+    }
+  }, {
+    key: "menu_specs",
+    get: function get() {
+      var ms;
+      ms = {
+        Save: [{
+          name_text: "Save",
+          icon_name: "saved",
+          click_handler: this.props.saveHandler,
+          key_bindings: ['ctrl+s']
+        }]
+      };
+
+      for (var _i = 0, _Object$entries = Object.entries(ms); _i < _Object$entries.length; _i++) {
+        var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
+            menu_name = _Object$entries$_i[0],
+            menu = _Object$entries$_i[1];
+
+        var _iterator = _createForOfIteratorHelper(menu),
+            _step;
+
+        try {
+          for (_iterator.s(); !(_step = _iterator.n()).done;) {
+            var but = _step.value;
+            but.click_handler = but.click_handler.bind(this);
+          }
+        } catch (err) {
+          _iterator.e(err);
+        } finally {
+          _iterator.f();
+        }
+      }
+
+      return ms;
     }
   }, {
     key: "componentDidMount",
@@ -154,13 +193,20 @@ var MergeViewerApp = /*#__PURE__*/function (_React$Component) {
       var current_style = {
         "bottom": 0
       };
-      return /*#__PURE__*/_react["default"].createElement("div", {
+      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_menu_utilities.TacticMenubar, {
+        menu_specs: this.menu_specs,
+        showRefresh: false,
+        showClose: false,
+        dark_theme: this.props.dark_theme,
+        refreshTab: null,
+        closeTab: null,
+        resource_name: this.props.resource_name,
+        toggleErrorDrawer: this.props.toggleErrorDrawer,
+        controlled: false,
+        am_selected: false
+      }), /*#__PURE__*/_react["default"].createElement("div", {
         className: outer_class
       }, /*#__PURE__*/_react["default"].createElement("div", {
-        style: toolbar_holder_style
-      }, /*#__PURE__*/_react["default"].createElement(_blueprint_toolbar.Toolbar, {
-        button_groups: this.button_groups
-      })), /*#__PURE__*/_react["default"].createElement("div", {
         id: "left-div",
         ref: this.left_div_ref,
         style: left_div_style
@@ -174,6 +220,7 @@ var MergeViewerApp = /*#__PURE__*/function (_React$Component) {
         options: this.props.option_list,
         onChange: this.props.handleSelectChange,
         buttonIcon: "application",
+        popoverPosition: _core.PopoverPosition.BOTTOM_RIGHT,
         value: this.props.select_val
       })), /*#__PURE__*/_react["default"].createElement(_reactCodemirrorMergeview.ReactCodemirrorMergeView, {
         handleEditChange: this.props.handleEditChange,
@@ -183,7 +230,7 @@ var MergeViewerApp = /*#__PURE__*/function (_React$Component) {
         saveMe: this.props.saveHandler,
         max_height: max_merge_height,
         ref: this.merge_element_ref
-      })));
+      }))));
     }
   }]);
 

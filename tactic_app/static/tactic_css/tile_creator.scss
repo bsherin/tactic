@@ -1,7 +1,7 @@
 @import "blueprint_variables.scss";
 
 #creator-root, .creator-root {
-  margin-right: 25px;
+  //margin-right: 25px;
   vertical-align: top;
 
   .code-holder {
@@ -20,20 +20,18 @@
     margin-right: 0
   }
 
-  #rccode {
-    span {
-      margin-top: 10px
-    }
-  }
+  //#rccode {
+  //  span {
+  //    margin-top: 2px
+  //  }
+  //}
 }
 
-#context-root {
-  .creator-root {
+  #creator-root, .creator-root {
     .bp3-large > .bp3-tab {
       margin-top: 0px
     }
   }
-}
 
 #creator-resources {
   height: 100%;

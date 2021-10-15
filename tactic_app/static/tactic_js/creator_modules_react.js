@@ -887,7 +887,7 @@ CategoryEntry.propTypes = {
   category_name: _propTypes["default"].string,
   command_list: _propTypes["default"].array,
   search_string: _propTypes["default"].string
-};
+}; // noinspection JSIgnoredPromiseFromCall
 
 var CommandEntry = /*#__PURE__*/function (_React$Component8) {
   _inherits(CommandEntry, _React$Component8);

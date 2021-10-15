@@ -5,13 +5,17 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.MenuComponent = exports.ViewMenu = exports.RowMenu = exports.ColumnMenu = exports.DocumentMenu = exports.ProjectMenu = void 0;
+Object.defineProperty(exports, "MenuComponent", {
+  enumerable: true,
+  get: function get() {
+    return _menu_utilities.MenuComponent;
+  }
+});
+exports.ViewMenu = exports.RowMenu = exports.ColumnMenu = exports.DocumentMenu = exports.ProjectMenu = void 0;
 
 var _react = _interopRequireDefault(require("react"));
 
 var _propTypes = _interopRequireDefault(require("prop-types"));
-
-var _core = require("@blueprintjs/core");
 
 var _modal_react = require("./modal_react.js");
 
@@ -20,6 +24,8 @@ var _communication_react = require("./communication_react.js");
 var _toaster = require("./toaster.js");
 
 var _utilities_react = require("./utilities_react.js");
+
+var _menu_utilities = require("./menu_utilities.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -49,106 +55,19 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
-var MenuComponent = /*#__PURE__*/function (_React$Component) {
-  _inherits(MenuComponent, _React$Component);
+var ProjectMenu = /*#__PURE__*/function (_React$Component) {
+  _inherits(ProjectMenu, _React$Component);
 
-  var _super = _createSuper(MenuComponent);
+  var _super = _createSuper(ProjectMenu);
 
-  function MenuComponent(props) {
+  function ProjectMenu(props) {
     var _this;
 
-    _classCallCheck(this, MenuComponent);
+    _classCallCheck(this, ProjectMenu);
 
     _this = _super.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
     return _this;
-  }
-
-  _createClass(MenuComponent, [{
-    key: "_filter_on_match_list",
-    value: function _filter_on_match_list(opt_name) {
-      return !this.props.hidden_items.includes(opt_name);
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var _this2 = this;
-
-      var pruned_list = Object.keys(this.props.option_dict).filter(this._filter_on_match_list);
-      var choices = pruned_list.map(function (opt_name, index) {
-        if (opt_name.startsWith("divider")) {
-          return /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, {
-            key: index
-          });
-        }
-
-        var icon = _this2.props.icon_dict.hasOwnProperty(opt_name) ? _this2.props.icon_dict[opt_name] : null;
-        return /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-          disabled: _this2.props.disable_all || _this2.props.disabled_items.includes(opt_name),
-          onClick: _this2.props.option_dict[opt_name],
-          icon: icon,
-          key: opt_name,
-          text: opt_name
-        });
-      });
-
-      var the_menu = /*#__PURE__*/_react["default"].createElement(_core.Menu, null, choices);
-
-      if (this.props.alt_button) {
-        var AltButton = this.props.alt_button;
-        return /*#__PURE__*/_react["default"].createElement(_core.Popover, {
-          minimal: true,
-          content: the_menu,
-          position: _core.PopoverPosition.BOTTOM_LEFT
-        }, /*#__PURE__*/_react["default"].createElement(AltButton, null));
-      } else {
-        return /*#__PURE__*/_react["default"].createElement(_core.Popover, {
-          minimal: true,
-          content: the_menu,
-          position: _core.PopoverPosition.BOTTOM_LEFT
-        }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
-          text: this.props.menu_name,
-          small: true,
-          minimal: true
-        }));
-      }
-    }
-  }]);
-
-  return MenuComponent;
-}(_react["default"].Component);
-
-exports.MenuComponent = MenuComponent;
-MenuComponent.propTypes = {
-  menu_name: _propTypes["default"].string,
-  option_dict: _propTypes["default"].object,
-  icon_dict: _propTypes["default"].object,
-  disabled_items: _propTypes["default"].array,
-  disable_all: _propTypes["default"].bool,
-  hidden_items: _propTypes["default"].array,
-  alt_button: _propTypes["default"].func
-};
-MenuComponent.defaultProps = {
-  disabled_items: [],
-  disable_all: false,
-  hidden_items: [],
-  icon_dict: {},
-  alt_button: null
-};
-
-var ProjectMenu = /*#__PURE__*/function (_React$Component2) {
-  _inherits(ProjectMenu, _React$Component2);
-
-  var _super2 = _createSuper(ProjectMenu);
-
-  function ProjectMenu(props) {
-    var _this3;
-
-    _classCallCheck(this, ProjectMenu);
-
-    _this3 = _super2.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this3));
-    return _this3;
   }
 
   _createClass(ProjectMenu, [{
@@ -357,15 +276,62 @@ var ProjectMenu = /*#__PURE__*/function (_React$Component2) {
       };
     }
   }, {
+    key: "menu_items",
+    get: function get() {
+      var items = [{
+        name_text: "Save As...",
+        icon_name: "floppy-disk",
+        click_handler: this._saveProjectAs
+      }, {
+        name_text: "Save",
+        icon_name: "saved",
+        click_handler: this._saveProject
+      }, {
+        name_text: "divider1",
+        icon_name: null,
+        click_handler: "divider"
+      }, {
+        name_text: "Export as Jupyter Notebook",
+        icon_name: "export",
+        click_handler: this._exportAsJupyter
+      }, {
+        name_text: "Export Table as Collection",
+        icon_name: "export",
+        click_handler: this._exportDataTable
+      }, {
+        name_text: "Open Console as Notebook",
+        icon_name: "console",
+        click_handler: this._consoleToNotebook
+      }, {
+        name_text: "divider2",
+        icon_name: null,
+        click_handler: "divider"
+      }, {
+        name_text: "Change collection",
+        icon_name: "exchange",
+        click_handler: this.props.changeCollection
+      }];
+      var reduced_items = [];
+
+      for (var _i = 0, _items = items; _i < _items.length; _i++) {
+        var item = _items[_i];
+
+        if (!this.props.hidden_items.includes(item.name_text)) {
+          reduced_items.push(item);
+        }
+      }
+
+      return reduced_items;
+    }
+  }, {
     key: "render",
     value: function render() {
-      return /*#__PURE__*/_react["default"].createElement(MenuComponent, {
+      return /*#__PURE__*/_react["default"].createElement(_menu_utilities.ToolMenu, {
         menu_name: "Project",
-        option_dict: this.option_dict,
-        icon_dict: this.icon_dict,
+        menu_items: this.menu_items,
+        binding_dict: {},
         disabled_items: this.props.disabled_items,
-        disable_all: false,
-        hidden_items: this.props.hidden_items
+        disable_all: false
       });
     }
   }]);
@@ -384,19 +350,19 @@ ProjectMenu.propTypes = {
   hidden_items: _propTypes["default"].array
 };
 
-var DocumentMenu = /*#__PURE__*/function (_React$Component3) {
-  _inherits(DocumentMenu, _React$Component3);
+var DocumentMenu = /*#__PURE__*/function (_React$Component2) {
+  _inherits(DocumentMenu, _React$Component2);
 
-  var _super3 = _createSuper(DocumentMenu);
+  var _super2 = _createSuper(DocumentMenu);
 
   function DocumentMenu(props) {
-    var _this4;
+    var _this2;
 
     _classCallCheck(this, DocumentMenu);
 
-    _this4 = _super3.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this4));
-    return _this4;
+    _this2 = _super2.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this2));
+    return _this2;
   }
 
   _createClass(DocumentMenu, [{
@@ -480,10 +446,11 @@ var DocumentMenu = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "render",
     value: function render() {
-      return /*#__PURE__*/_react["default"].createElement(MenuComponent, {
+      return /*#__PURE__*/_react["default"].createElement(_menu_utilities.MenuComponent, {
         menu_name: "Document",
         option_dict: this.option_dict,
         icon_dict: this.icon_dict,
+        binding_dict: {},
         disabled_items: this.props.disabled_items,
         hidden_items: []
       });
@@ -499,19 +466,19 @@ DocumentMenu.propTypes = {
   currentDoc: _propTypes["default"].string
 };
 
-var ColumnMenu = /*#__PURE__*/function (_React$Component4) {
-  _inherits(ColumnMenu, _React$Component4);
+var ColumnMenu = /*#__PURE__*/function (_React$Component3) {
+  _inherits(ColumnMenu, _React$Component3);
 
-  var _super4 = _createSuper(ColumnMenu);
+  var _super3 = _createSuper(ColumnMenu);
 
   function ColumnMenu(props) {
-    var _this5;
+    var _this3;
 
     _classCallCheck(this, ColumnMenu);
 
-    _this5 = _super4.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this5));
-    return _this5;
+    _this3 = _super3.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this3));
+    return _this3;
   }
 
   _createClass(ColumnMenu, [{
@@ -548,7 +515,7 @@ var ColumnMenu = /*#__PURE__*/function (_React$Component4) {
   }, {
     key: "option_dict",
     get: function get() {
-      var _this6 = this;
+      var _this4 = this;
 
       return {
         "Shift Left": this._shift_column_left,
@@ -561,16 +528,16 @@ var ColumnMenu = /*#__PURE__*/function (_React$Component4) {
         "Unhide All": this.props.unhideAllColumns,
         "divider2": "divider",
         "Add Column": function AddColumn() {
-          return _this6.props.addColumn(false);
+          return _this4.props.addColumn(false);
         },
         "Add Column In All Docs": function AddColumnInAllDocs() {
-          return _this6.props.addColumn(true);
+          return _this4.props.addColumn(true);
         },
         "Delete Column": function DeleteColumn() {
-          return _this6.props.deleteColumn(false);
+          return _this4.props.deleteColumn(false);
         },
         "Delete Column In All Docs": function DeleteColumnInAllDocs() {
-          return _this6.props.deleteColumn(true);
+          return _this4.props.deleteColumn(true);
         }
       };
     }
@@ -594,10 +561,11 @@ var ColumnMenu = /*#__PURE__*/function (_React$Component4) {
   }, {
     key: "render",
     value: function render() {
-      return /*#__PURE__*/_react["default"].createElement(MenuComponent, {
+      return /*#__PURE__*/_react["default"].createElement(_menu_utilities.MenuComponent, {
         menu_name: "Column",
         option_dict: this.option_dict,
         icon_dict: this.icon_dict,
+        binding_dict: {},
         disabled_items: this.props.disabled_items,
         hidden_items: []
       });
@@ -621,19 +589,19 @@ ColumnMenu.propTypes = {
   disabled_items: _propTypes["default"].array
 };
 
-var RowMenu = /*#__PURE__*/function (_React$Component5) {
-  _inherits(RowMenu, _React$Component5);
+var RowMenu = /*#__PURE__*/function (_React$Component4) {
+  _inherits(RowMenu, _React$Component4);
 
-  var _super5 = _createSuper(RowMenu);
+  var _super4 = _createSuper(RowMenu);
 
   function RowMenu(props) {
-    var _this7;
+    var _this5;
 
     _classCallCheck(this, RowMenu);
 
-    _this7 = _super5.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this7));
-    return _this7;
+    _this5 = _super4.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this5));
+    return _this5;
   }
 
   _createClass(RowMenu, [{
@@ -659,10 +627,11 @@ var RowMenu = /*#__PURE__*/function (_React$Component5) {
   }, {
     key: "render",
     value: function render() {
-      return /*#__PURE__*/_react["default"].createElement(MenuComponent, {
+      return /*#__PURE__*/_react["default"].createElement(_menu_utilities.MenuComponent, {
         menu_name: "Row",
         option_dict: this.option_dict,
         icon_dict: this.icon_dict,
+        binding_dict: {},
         disabled_items: this.props.disabled_items,
         hidden_items: []
       });
@@ -682,19 +651,19 @@ RowMenu.propTypes = {
   disabled_items: _propTypes["default"].array
 };
 
-var ViewMenu = /*#__PURE__*/function (_React$Component6) {
-  _inherits(ViewMenu, _React$Component6);
+var ViewMenu = /*#__PURE__*/function (_React$Component5) {
+  _inherits(ViewMenu, _React$Component5);
 
-  var _super6 = _createSuper(ViewMenu);
+  var _super5 = _createSuper(ViewMenu);
 
   function ViewMenu(props) {
-    var _this8;
+    var _this6;
 
     _classCallCheck(this, ViewMenu);
 
-    _this8 = _super6.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this8));
-    return _this8;
+    _this6 = _super5.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this6));
+    return _this6;
   }
 
   _createClass(ViewMenu, [{
@@ -756,11 +725,12 @@ var ViewMenu = /*#__PURE__*/function (_React$Component6) {
   }, {
     key: "render",
     value: function render() {
-      return /*#__PURE__*/_react["default"].createElement(MenuComponent, {
+      return /*#__PURE__*/_react["default"].createElement(_menu_utilities.MenuComponent, {
         menu_name: "View",
         option_dict: this.option_dict,
         icon_dict: this.icon_dict,
         disabled_items: [],
+        binding_dict: {},
         disable_all: this.props.disable_all,
         hidden_items: []
       });
