@@ -2,17 +2,17 @@
 import React from "react";
 import PropTypes from 'prop-types';
 
-import { Menu, MenuItem, Button, Collapse } from "@blueprintjs/core";
+import { Menu, MenuItem } from "@blueprintjs/core";
 import {Regions} from "@blueprintjs/table";
 import _ from 'lodash';
 
 import {TagButtonList} from "./tag_buttons_react.js";
 import {CombinedMetadata} from "./blueprint_mdata_fields.js";
 import {SearchForm, BpSelectorTable, LibraryOmnibar} from "./library_widgets.js";
-import {HorizontalPanes, HANDLE_WIDTH} from "./resizing_layouts.js";
+import {HorizontalPanes} from "./resizing_layouts.js";
 import {showModalReact, showConfirmDialogReact} from "./modal_react.js";
 import {postAjax, postAjaxPromise} from "./communication_react.js"
-import {SIDE_MARGIN, BOTTOM_MARGIN} from "./sizing_tools.js";
+import {BOTTOM_MARGIN} from "./sizing_tools.js";
 
 import {doFlash} from "./toaster.js"
 import {KeyTrap} from "./key_trap.js";
