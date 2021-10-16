@@ -29,6 +29,7 @@ import {withStatus} from "./toaster.js";
 import {withErrorDrawer} from "./error_drawer.js";
 import {doBinding, get_ppi, renderSpinnerMessage} from "./utilities_react.js";
 import {getUsableDimensions} from "./sizing_tools.js";
+import {ErrorBoundary} from "./error_boundary";
 
 export {main_props, MainApp}
 
@@ -1188,7 +1189,7 @@ class MainApp extends React.Component {
         };
         let stheme = this.props.controlled ? this.props.setTheme : this._setTheme;
         return (
-            <React.Fragment>
+            <ErrorBoundary>
                 {!window.in_context &&
                     <TacticNavbar is_authenticated={window.is_authenticated}
                               dark_theme={dark_theme}
@@ -1208,31 +1209,32 @@ class MainApp extends React.Component {
                                       showErrorDrawerButton={true}
                                       toggleErrorDrawer={this.props.toggleErrorDrawer}
                     />
-
-                <div className={outer_class} ref={this.main_outer_ref} style={outer_style}>
-                    {this.state.console_is_zoomed &&
-                        bottom_pane
-                    }
-                    {!this.state.console_is_zoomed && this.state.console_is_shrunk &&
-                        top_pane
-                    }
-                    {!this.state.console_is_zoomed && !this.state.console_is_shrunk &&
-                        <VerticalPanes top_pane={top_pane}
-                                       bottom_pane={bottom_pane}
-                                       show_handle={true}
-                                       available_width={true_usable_width}
-                                       available_height={vp_height}
-                                       initial_height_fraction={this.state.height_fraction}
-                                       dragIconSize={15}
-                                       scrollAdjustSelectors={[".bp3-table-quadrant-scroll-container", "#tile-div"]}
-                                       handleSplitUpdate={this._handleVerticalSplitUpdate}
-                                       handleResizeStart={this._handleResizeStart}
-                                       handleResizeEnd={this._handleResizeEnd}
-                                       overflow="hidden"
-                        />
-                    }
-                </div>
-            </React.Fragment>
+                <ErrorBoundary>
+                    <div className={outer_class} ref={this.main_outer_ref} style={outer_style}>
+                        {this.state.console_is_zoomed &&
+                            bottom_pane
+                        }
+                        {!this.state.console_is_zoomed && this.state.console_is_shrunk &&
+                            top_pane
+                        }
+                        {!this.state.console_is_zoomed && !this.state.console_is_shrunk &&
+                            <VerticalPanes top_pane={top_pane}
+                                           bottom_pane={bottom_pane}
+                                           show_handle={true}
+                                           available_width={true_usable_width}
+                                           available_height={vp_height}
+                                           initial_height_fraction={this.state.height_fraction}
+                                           dragIconSize={15}
+                                           scrollAdjustSelectors={[".bp3-table-quadrant-scroll-container", "#tile-div"]}
+                                           handleSplitUpdate={this._handleVerticalSplitUpdate}
+                                           handleResizeStart={this._handleResizeStart}
+                                           handleResizeEnd={this._handleResizeEnd}
+                                           overflow="hidden"
+                            />
+                        }
+                    </div>
+                </ErrorBoundary>
+            </ErrorBoundary>
         )
     }
 }

@@ -194,7 +194,7 @@ BpSelect.propTypes = {
     buttonTextObject: PropTypes.object,
     buttonIcon: PropTypes.string,
     buttonStyle: PropTypes.object,
-    popoverPosition: PropTypes.object
+    popoverPosition: PropTypes.string
 };
 
 BpSelect.defaultProps = {

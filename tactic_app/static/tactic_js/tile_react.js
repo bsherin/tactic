@@ -33,6 +33,8 @@ var _toaster = require("./toaster.js");
 
 var _utilities_react = require("./utilities_react.js");
 
+var _error_boundary = require("./error_boundary.js");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
@@ -664,13 +666,6 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "_updateOptionValue",
     value: function _updateOptionValue(option_name, value) {
-      // let options = _.cloneDeep(this.props.form_data);
-      // for (let opt of options) {
-      //     if (opt.name == option_name) {
-      //         opt.starting_value = value;
-      //         break
-      //     }
-      // }
       var self = this;
       var data_dict = {
         tile_id: this.props.tile_id,
@@ -678,8 +673,10 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
         value: value
       };
       (0, _communication_react.postWithCallback)(this.props.tile_id, "_update_single_option", data_dict, function (data) {
-        self.props.setTileValue(self.props.tile_id, "form_data", data.form_data);
-      }); // this.props.setTileValue(this.props.tile_id, "form_data", options)
+        if (data.success) {
+          self.props.setTileValue(self.props.tile_id, "form_data", data.form_data);
+        }
+      });
     }
   }, {
     key: "_toggleBack",
@@ -1040,7 +1037,7 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
         style: this.main_style,
         className: tile_class,
         id: this.props.tile_id
-      }, /*#__PURE__*/_react["default"].createElement("div", {
+      }, /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement("div", {
         className: tph_class
       }, /*#__PURE__*/_react["default"].createElement("div", {
         className: "left-glyphs",
@@ -1137,7 +1134,7 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
         dragEnd: this._stopResize,
         direction: "both",
         iconSize: 15
-      }));
+      })));
     }
   }]);
 

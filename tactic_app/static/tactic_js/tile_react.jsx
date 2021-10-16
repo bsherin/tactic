@@ -15,6 +15,7 @@ import {SortableComponent} from "./sortable_container.js";
 import {postWithCallback} from "./communication_react.js"
 import {doFlash} from "./toaster.js"
 import {doBinding, propsAreEqual, arrayMove} from "./utilities_react.js";
+import {ErrorBoundary} from "./error_boundary.js";
 
 export {TileContainer}
 
@@ -409,19 +410,13 @@ class TileComponent extends React.Component {
     }
 
     _updateOptionValue(option_name, value) {
-        // let options = _.cloneDeep(this.props.form_data);
-        // for (let opt of options) {
-        //     if (opt.name == option_name) {
-        //         opt.starting_value = value;
-        //         break
-        //     }
-        // }
         let self = this;
         const data_dict = {tile_id: this.props.tile_id, option_name: option_name, value: value};
         postWithCallback(this.props.tile_id, "_update_single_option", data_dict, function (data) {
-            self.props.setTileValue(self.props.tile_id, "form_data", data.form_data)
+            if (data.success) {
+                self.props.setTileValue(self.props.tile_id, "form_data", data.form_data)
+            }
         })
-        // this.props.setTileValue(this.props.tile_id, "form_data", options)
     }
 
     _toggleBack() {
@@ -656,86 +651,88 @@ class TileComponent extends React.Component {
         let draghandle_position_dict = {position: "absolute", bottom: 2, right: 1};
         return (
             <Card ref={this.my_ref} elevation={2} style={this.main_style} className={tile_class} id={this.props.tile_id}>
-                <div className={tph_class} >
-                    <div className="left-glyphs" ref={this.left_glyphs_ref} style={this.lg_style}>
-                        <ButtonGroup>
-                        {this.props.shrunk &&
-                            <GlyphButton
-                                         icon="chevron-right"
-                                         handleClick={this._toggleShrunk} />}
+                <ErrorBoundary>
+                    <div className={tph_class} >
+                        <div className="left-glyphs" ref={this.left_glyphs_ref} style={this.lg_style}>
+                            <ButtonGroup>
+                            {this.props.shrunk &&
+                                <GlyphButton
+                                             icon="chevron-right"
+                                             handleClick={this._toggleShrunk} />}
 
-                        {!this.props.shrunk &&
-                            <GlyphButton
-                                         icon="chevron-down"
-                                         handleClick={this._toggleShrunk} />}
-                        <GlyphButton intent="primary"
-                                     handleClick={this._toggleBack}
-                                     icon="cog"/>
-                         <Shandle tile_name={this.props.tile_name}/>
-                        </ButtonGroup>
+                            {!this.props.shrunk &&
+                                <GlyphButton
+                                             icon="chevron-down"
+                                             handleClick={this._toggleShrunk} />}
+                            <GlyphButton intent="primary"
+                                         handleClick={this._toggleBack}
+                                         icon="cog"/>
+                             <Shandle tile_name={this.props.tile_name}/>
+                            </ButtonGroup>
+                        </div>
+
+                        <div className="right-glyphs" ref={this.right_glyphs_ref}>
+                            <ButtonGroup>
+                            {this.props.show_spinner && <Spinner size={17} />}
+
+                            <GlyphButton handleClick={this._toggleTileLog}
+                                         tooltip="Show tile container log"
+                                         icon="console"/>
+                            <GlyphButton handleClick={this._logMe}
+                                         tooltip="Send current display to log"
+                                         icon="clipboard"/>
+                            <GlyphButton handleClick={this._logParams}
+                                         tooltip="Send current parameters to log"
+                                         icon="th"/>
+                            <GlyphButton intent="warning"
+                                         handleClick={this._reloadTile}
+                                         tooltip="Reload tile source from library and rerun"
+                                         icon="refresh"/>
+                            <GlyphButton intent="danger"
+                                         handleClick={this._closeTile}
+                                         ttooltip="Remove tile"
+                                         icon="trash"/>
+                            </ButtonGroup>
+                        </div>
                     </div>
-
-                    <div className="right-glyphs" ref={this.right_glyphs_ref}>
-                        <ButtonGroup>
-                        {this.props.show_spinner && <Spinner size={17} />}
-
-                        <GlyphButton handleClick={this._toggleTileLog}
-                                     tooltip="Show tile container log"
-                                     icon="console"/>
-                        <GlyphButton handleClick={this._logMe}
-                                     tooltip="Send current display to log"
-                                     icon="clipboard"/>
-                        <GlyphButton handleClick={this._logParams}
-                                     tooltip="Send current parameters to log"
-                                     icon="th"/>
-                        <GlyphButton intent="warning"
-                                     handleClick={this._reloadTile}
-                                     tooltip="Reload tile source from library and rerun"
-                                     icon="refresh"/>
-                        <GlyphButton intent="danger"
-                                     handleClick={this._closeTile}
-                                     ttooltip="Remove tile"
-                                     icon="trash"/>
-                        </ButtonGroup>
-                    </div>
-                </div>
-                {!this.props.shrunk &&
-                    <div ref={this.body_ref} style={this.panel_body_style} className="tile-body">
-                        <Transition in={this.props.show_form} timeout={ANI_DURATION}>
-                            {state => (
-                                <div className="back" style={composeObjs(this.back_style, this.transitionStylesAltUp[state])}>
-                                    <TileForm options={_.cloneDeep(this.props.form_data)}
-                                              tile_id={this.props.tile_id}
-                                              updateValue={this._updateOptionValue}
-                                              handleSubmit={this._handleSubmitOptions}/>
-                                </div>
-                            )}
-                        </Transition>
-                        <Transition in={this.props.show_log} timeout={ANI_DURATION}>
-                            {state => (
-                                <div className="tile-log" ref={this.log_ref} 
-                                     style={composeObjs(this.tile_log_style, this.transitionFadeStyles[state])}>
-                                    <div className="tile-log-area">
-                                        <pre style={{fontSize: 12}}>{this.props.log_content}</pre>
+                    {!this.props.shrunk &&
+                        <div ref={this.body_ref} style={this.panel_body_style} className="tile-body">
+                            <Transition in={this.props.show_form} timeout={ANI_DURATION}>
+                                {state => (
+                                    <div className="back" style={composeObjs(this.back_style, this.transitionStylesAltUp[state])}>
+                                        <TileForm options={_.cloneDeep(this.props.form_data)}
+                                                  tile_id={this.props.tile_id}
+                                                  updateValue={this._updateOptionValue}
+                                                  handleSubmit={this._handleSubmitOptions}/>
                                     </div>
+                                )}
+                            </Transition>
+                            <Transition in={this.props.show_log} timeout={ANI_DURATION}>
+                                {state => (
+                                    <div className="tile-log" ref={this.log_ref}
+                                         style={composeObjs(this.tile_log_style, this.transitionFadeStyles[state])}>
+                                        <div className="tile-log-area">
+                                            <pre style={{fontSize: 12}}>{this.props.log_content}</pre>
+                                        </div>
+                                    </div>
+                                )}
+                            </Transition>
+                            <Transition in={show_front} timeout={ANI_DURATION}>
+                                {state => (
+                                <div className="front" style={composeObjs(this.front_style, this.transitionStylesAltDown[state])}>
+                                    <div className="tile-display-area" style={this.state.tda_style} ref={this.tda_ref} dangerouslySetInnerHTML={front_dict}></div>
                                 </div>
-                            )}
-                        </Transition>
-                        <Transition in={show_front} timeout={ANI_DURATION}>
-                            {state => (
-                            <div className="front" style={composeObjs(this.front_style, this.transitionStylesAltDown[state])}>
-                                <div className="tile-display-area" style={this.state.tda_style} ref={this.tda_ref} dangerouslySetInnerHTML={front_dict}></div>
-                            </div>
-                            )}
-                        </Transition>
-                    </div>
-                }
-                <DragHandle position_dict={draghandle_position_dict}
-                            dragStart={this._startResize}
-                            onDrag={this._onResize}
-                            dragEnd={this._stopResize}
-                            direction="both"
-                            iconSize={15}/>
+                                )}
+                            </Transition>
+                        </div>
+                    }
+                    <DragHandle position_dict={draghandle_position_dict}
+                                dragStart={this._startResize}
+                                onDrag={this._onResize}
+                                dragEnd={this._stopResize}
+                                direction="both"
+                                iconSize={15}/>
+                </ErrorBoundary>
             </Card>
         )
     }

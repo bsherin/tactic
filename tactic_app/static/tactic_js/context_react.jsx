@@ -7,11 +7,8 @@ import "../tactic_css/tile_creator.scss";
 
 import React from "react";
 import * as ReactDOM from 'react-dom';
-// import PropTypes from 'prop-types';
 
 import { Tab, Tabs, Button, Icon, Divider, Spinner } from "@blueprintjs/core";
-
-
 import { FocusStyleManager } from "@blueprintjs/core";
 
 FocusStyleManager.onlyShowFocusOnTabs();
@@ -20,9 +17,9 @@ import {TacticSocket} from "./tactic_socket";
 import {handleCallback} from "./communication_react.js";
 import {doFlash, withStatus} from "./toaster.js";
 import {TacticNavbar} from "./blueprint_navbar";
+import {ErrorBoundary} from "./error_boundary.js";
 
 import {library_props, LibraryHomeApp} from "./library_home_react.js";
-// import {repository_props, RepositoryHomeApp} from "./repository_home_react.js";
 import {view_views} from "./library_pane.js";
 import {doBinding, guid} from "./utilities_react.js";
 import {module_viewer_props, ModuleViewerApp} from "./module_viewer_react.js";
@@ -613,9 +610,11 @@ class ContextApp extends React.Component {
                                           usable_height={this.state.usable_height}
                     />;
                 wrapped_panel = (
-                     <div id={tab_id + "-holder"} className={this.panelRootDict[this.state.tab_panel_dict[tab_id].kind]}>
-                         {the_panel}
-                     </div>
+                    <ErrorBoundary>
+                         <div id={tab_id + "-holder"} className={this.panelRootDict[this.state.tab_panel_dict[tab_id].kind]}>
+                             {the_panel}
+                         </div>
+                    </ErrorBoundary>
                  );
             }
             let icon_style = {verticalAlign: "middle", paddingLeft: 4};

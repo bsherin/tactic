@@ -58,6 +58,8 @@ var _utilities_react = require("./utilities_react.js");
 
 var _sizing_tools = require("./sizing_tools.js");
 
+var _error_boundary = require("./error_boundary");
+
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -1616,7 +1618,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         height: my_props.usable_height - this.height_adjustment
       };
       var stheme = this.props.controlled ? this.props.setTheme : this._setTheme;
-      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, !window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+      return /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, !window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
         is_authenticated: window.is_authenticated,
         dark_theme: dark_theme,
         setTheme: stheme,
@@ -1633,7 +1635,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         resource_name: this._cProp("resource_name"),
         showErrorDrawerButton: true,
         toggleErrorDrawer: this.props.toggleErrorDrawer
-      }), /*#__PURE__*/_react["default"].createElement("div", {
+      }), /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement("div", {
         className: outer_class,
         ref: this.main_outer_ref,
         style: outer_style
@@ -1650,7 +1652,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         handleResizeStart: this._handleResizeStart,
         handleResizeEnd: this._handleResizeEnd,
         overflow: "hidden"
-      })));
+      }))));
     }
   }]);
 

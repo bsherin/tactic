@@ -542,7 +542,7 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
         nrows: this.props.num_rows
       };
       var hsh = (0, _objectHash["default"])(obj);
-      return /*#__PURE__*/_react["default"].createElement(_table.Table, {
+      return /*#__PURE__*/_react["default"].createElement(_core.HotkeysProvider, null, /*#__PURE__*/_react["default"].createElement(_table.Table2, {
         numRows: this.props.num_rows // key={this.props.num_rows}
         ,
         ref: this.table_ref,
@@ -562,7 +562,7 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
         onSelection: function onSelection(regions) {
           return _this8.props.onSelection(regions);
         }
-      }, columns);
+      }, columns));
     }
   }]);
 
@@ -721,9 +721,9 @@ function compute_initial_column_widths(header_list, data_list) {
 
   try {
     for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-      var _c2 = _step2.value;
-      column_widths[_c2] = 0;
-      columns_remaining.push(_c2);
+      var c = _step2.value;
+      column_widths[c] = 0;
+      columns_remaining.push(c);
     }
   } catch (err) {
     _iterator2.e(err);
@@ -740,46 +740,57 @@ function compute_initial_column_widths(header_list, data_list) {
 
   ctx.font = body_font;
 
-  for (var r = 0; r < data_list.length; ++r) {
-    if (columns_remaining.length == 0) {
-      break;
-    }
+  var _iterator3 = _createForOfIteratorHelper(data_list),
+      _step3;
 
-    the_row = data_list[r];
-    var cols_to_remove = [];
+  try {
+    for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+      var item = _step3.value;
 
-    var _iterator3 = _createForOfIteratorHelper(columns_remaining),
-        _step3;
+      if (columns_remaining.length == 0) {
+        break;
+      }
 
-    try {
-      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-        var _c = _step3.value;
-        the_text = the_row[_c];
-        the_width = ctx.measureText(the_text).width + added_body_width;
+      the_row = item;
+      var cols_to_remove = [];
 
-        if (the_width > max_field_width) {
-          the_width = max_field_width;
-          cols_to_remove.push(_c);
+      var _iterator5 = _createForOfIteratorHelper(columns_remaining),
+          _step5;
+
+      try {
+        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+          var _c2 = _step5.value;
+          the_text = the_row[_c2];
+          the_width = ctx.measureText(the_text).width + added_body_width;
+
+          if (the_width > max_field_width) {
+            the_width = max_field_width;
+            cols_to_remove.push(_c2);
+          }
+
+          if (the_width > column_widths[_c2]) {
+            column_widths[_c2] = the_width;
+          }
         }
+      } catch (err) {
+        _iterator5.e(err);
+      } finally {
+        _iterator5.f();
+      }
 
-        if (the_width > column_widths[_c]) {
-          column_widths[_c] = the_width;
+      for (var _i = 0, _cols_to_remove = cols_to_remove; _i < _cols_to_remove.length; _i++) {
+        var _c = _cols_to_remove[_i];
+        var index = columns_remaining.indexOf(_c);
+
+        if (index !== -1) {
+          columns_remaining.splice(index, 1);
         }
       }
-    } catch (err) {
-      _iterator3.e(err);
-    } finally {
-      _iterator3.f();
     }
-
-    for (var _i = 0, _cols_to_remove = cols_to_remove; _i < _cols_to_remove.length; _i++) {
-      var c = _cols_to_remove[_i];
-      var index = columns_remaining.indexOf(c);
-
-      if (index !== -1) {
-        columns_remaining.splice(index, 1);
-      }
-    }
+  } catch (err) {
+    _iterator3.e(err);
+  } finally {
+    _iterator3.f();
   }
 
   var result = [];
