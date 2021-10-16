@@ -673,7 +673,7 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
         value: value
       };
       (0, _communication_react.postWithCallback)(this.props.tile_id, "_update_single_option", data_dict, function (data) {
-        if (data.success) {
+        if (data && "form_data" in data) {
           self.props.setTileValue(self.props.tile_id, "form_data", data.form_data);
         }
       });
