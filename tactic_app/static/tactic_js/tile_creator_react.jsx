@@ -10,7 +10,7 @@ import React from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
-import { Tab, Tabs, ResizeSensor } from "@blueprintjs/core";
+import { Tab, Tabs } from "@blueprintjs/core";
 
 import {TacticSocket} from "./tactic_socket.js";
 import {TacticMenubar} from "./menu_utilities.js"
@@ -27,6 +27,7 @@ import {doBinding, renderSpinnerMessage} from "./utilities_react.js"
 import {TacticNavbar} from "./blueprint_navbar.js";
 import {SearchForm} from "./library_widgets";
 import {showModalReact} from "./modal_react";
+import {ErrorBoundary} from "./error_boundary";
 
 export {creator_props, CreatorApp}
 
@@ -642,10 +643,12 @@ class CreatorApp extends React.Component {
     }
 
     _update_window_dimensions() {
-        this.setState({
-            usable_width: window.innerWidth - this.top_ref.current.offsetLeft,
-            usable_height: window.innerHeight - this.top_ref.current.offsetTop
-        });
+        if (this.top_ref && this.top_ref.current) {
+            this.setState({
+                usable_width: window.innerWidth - this.top_ref.current.offsetLeft,
+                usable_height: window.innerHeight - this.top_ref.current.offsetTop
+            });
+        }
     }
 
     _update_saved_state() {
@@ -777,7 +780,7 @@ class CreatorApp extends React.Component {
     }
 
     get_height_minus_top_offset (element_ref, min_offset = 0, default_offset = 100) {
-        if (this.state.mounted) {  // This will be true after the initial render
+        if (this.state.mounted && element_ref && element_ref.current) {  // This will be true after the initial render
             let offset = element_ref.current.offsetTop;
             if (offset < min_offset) {
                 offset = min_offset
@@ -799,7 +802,7 @@ class CreatorApp extends React.Component {
     }
 
     get_new_rc_height (outer_rc_height) {
-        if (this.state.mounted) {
+        if (this.state.mounted && this.rc_span_ref && this.rc_span_ref.current) {
             return outer_rc_height - this.rc_span_ref.current.offsetHeight
         }
         else {
@@ -1065,12 +1068,8 @@ class CreatorApp extends React.Component {
                 outer_class = outer_class + " light-theme"
             }
         }
-        // if (this.top_ref && this.top_ref.current) {
-        //     my_props.usable_width = my_props.usable_width - this.top_ref.current.offsetLeft;
-        // }
         return (
-            <React.Fragment>
-
+            <ErrorBoundary>
                 {!window.in_context &&
                     <TacticNavbar is_authenticated={window.is_authenticated}
                                   dark_theme={dark_theme}
@@ -1091,16 +1090,18 @@ class CreatorApp extends React.Component {
                                controlled={this.props.controlled}
                                am_selected={this.props.am_selected}
                 />
-                <div className={outer_class} ref={this.top_ref} style={outer_style}>
-                    <HorizontalPanes left_pane={left_pane}
-                                     right_pane={right_pane}
-                                     show_handle={true}
-                                     available_height={uheight}
-                                     available_width={uwidth}
-                                     handleSplitUpdate={this.handleLeftPaneResize}
-                    />
-                </div>
-            </React.Fragment>
+                <ErrorBoundary>
+                    <div className={outer_class} ref={this.top_ref} style={outer_style}>
+                        <HorizontalPanes left_pane={left_pane}
+                                         right_pane={right_pane}
+                                         show_handle={true}
+                                         available_height={uheight}
+                                         available_width={uwidth}
+                                         handleSplitUpdate={this.handleLeftPaneResize}
+                        />
+                    </div>
+                </ErrorBoundary>
+            </ErrorBoundary>
         )
 
     }

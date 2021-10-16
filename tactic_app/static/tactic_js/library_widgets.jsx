@@ -5,8 +5,8 @@ import React from "react";
 import PropTypes from 'prop-types';
 import hash from "object-hash"
 
-import { InputGroup, Menu, MenuItem, FormGroup, Switch, Card, Button, ButtonGroup } from "@blueprintjs/core";
-import { Cell, Column, Table, ColumnHeaderCell, RegionCardinality, TruncatedFormat, Regions } from "@blueprintjs/table";
+import { InputGroup, HotkeysProvider, Menu, MenuItem, FormGroup, Switch, Card, Button, ButtonGroup } from "@blueprintjs/core";
+import { Cell, Column, Table2, ColumnHeaderCell, RegionCardinality, TruncatedFormat, Regions } from "@blueprintjs/table";
 import {Omnibar} from "@blueprintjs/select"
 import _ from 'lodash';
 
@@ -367,7 +367,8 @@ class BpSelectorTable extends React.Component {
         let hsh = hash(obj);
 
         return (
-            <Table numRows={this.props.num_rows}
+            <HotkeysProvider>
+            <Table2 numRows={this.props.num_rows}
                    // key={this.props.num_rows}
                    ref={this.table_ref}
                    bodyContextMenuRenderer={(mcontext)=>this.props.renderBodyContextMenu(mcontext)}
@@ -384,7 +385,8 @@ class BpSelectorTable extends React.Component {
                    onSelection={(regions)=>this.props.onSelection(regions)}
                    >
                         {columns}
-                </Table>
+                </Table2>
+            </HotkeysProvider>
         )
     }
 }
@@ -528,11 +530,11 @@ function compute_initial_column_widths(header_list, data_list) {
     // Keep track of the largest value for each column
     // Once a column has the max value can ignore that column in the future.
     ctx.font = body_font;
-    for (let r = 0; r < data_list.length; ++r) {
+    for (const item of data_list) {
         if (columns_remaining.length == 0) {
             break;
         }
-        the_row = data_list[r];
+        the_row = item;
         let cols_to_remove = [];
         for (let c of columns_remaining) {
             the_text = the_row[c];
