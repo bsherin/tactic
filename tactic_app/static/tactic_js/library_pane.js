@@ -247,11 +247,10 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         _iterator.f();
       }
 
-      return (
-        /*#__PURE__*/
-        // <BodyMenu items={this.state.contextMenuItems} selected_rows={selected_rows}/>
-        _react["default"].createElement("div", null)
-      );
+      return /*#__PURE__*/_react["default"].createElement(BodyMenu, {
+        items: this.state.contextMenuItems,
+        selected_rows: selected_rows
+      });
     }
   }, {
     key: "_onTableSelection",
