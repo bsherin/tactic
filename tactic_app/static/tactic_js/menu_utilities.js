@@ -98,7 +98,8 @@ var TacticMenubar = /*#__PURE__*/function (_React$Component) {
         showRefresh: this.props.showRefresh,
         showClose: this.props.showClose,
         refreshTab: this.props.refreshTab,
-        closeTab: this.props.closeTab
+        closeTab: this.props.closeTab,
+        extraButtons: this.props.extraButtons
       }), this.props.resource_name && /*#__PURE__*/_react["default"].createElement("div", {
         style: name_style
       }, this.props.resource_name), /*#__PURE__*/_react["default"].createElement("div", {
@@ -128,7 +129,8 @@ TacticMenubar.propTypes = {
   resource_name: _propTypes["default"].string,
   controlled: _propTypes["default"].bool,
   am_selected: _propTypes["default"].bool,
-  diabled_items: _propTypes["default"].array
+  diabled_items: _propTypes["default"].array,
+  extraButtons: _propTypes["default"].array
 };
 TacticMenubar.defaultProps = {
   showClose: window.in_context,
@@ -140,7 +142,8 @@ TacticMenubar.defaultProps = {
   showErrorDrawerButton: false,
   toggleErrorDrawer: null,
   resource_name: null,
-  disabled_items: []
+  disabled_items: [],
+  extraButtons: null
 };
 
 function ErrorDrawerButton(props) {
@@ -201,6 +204,29 @@ var TopLeftButtons = /*#__PURE__*/function (_React$Component2) {
         paddingTop: 0,
         marginRight: 8
       };
+      var ebuttons = [];
+
+      if (this.props.extraButtons != null) {
+        this.props.extraButtons.map(function (but_info, index) {
+          ebuttons.push( /*#__PURE__*/_react["default"].createElement(_core.Button, {
+            icon: /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+              icon: but_info.icon,
+              iconSize: 14
+            }),
+            style: {
+              paddingLeft: 8
+            },
+            minimal: true,
+            className: "context-close-button",
+            small: true,
+            tabIndex: -1,
+            onClick: function onClick() {
+              but_info.onClick();
+            }
+          }));
+        });
+      }
+
       return /*#__PURE__*/_react["default"].createElement("div", {
         style: top_icon_style
       }, this.props.showClose && /*#__PURE__*/_react["default"].createElement(_core.Button, {
@@ -236,7 +262,7 @@ var TopLeftButtons = /*#__PURE__*/function (_React$Component2) {
         onClick: function onClick() {
           _this2.props.refreshTab();
         }
-      }));
+      }), this.props.extraButtons && ebuttons);
     }
   }]);
 
@@ -248,7 +274,11 @@ TopLeftButtons.propTypes = {
   showRefresh: _propTypes["default"].bool,
   showClose: _propTypes["default"].bool,
   refreshTab: _propTypes["default"].func,
-  closeTab: _propTypes["default"].func
+  closeTab: _propTypes["default"].func,
+  extraButtons: _propTypes["default"].array
+};
+TopLeftButtons.defaultProps = {
+  extraButtons: null
 };
 
 var MenuComponent = /*#__PURE__*/function (_React$Component3) {

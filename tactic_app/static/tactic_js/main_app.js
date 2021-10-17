@@ -1634,7 +1634,11 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         closeTab: this.props.closeTab,
         resource_name: this._cProp("resource_name"),
         showErrorDrawerButton: true,
-        toggleErrorDrawer: this.props.toggleErrorDrawer
+        toggleErrorDrawer: this.props.toggleErrorDrawer,
+        extraButtons: [{
+          onClick: this._toggleTableShrink,
+          icon: this.state.table_is_shrunk ? "th" : "th-disconnect"
+        }]
       }), /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement("div", {
         className: outer_class,
         ref: this.main_outer_ref,
