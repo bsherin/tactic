@@ -45,7 +45,9 @@ class TacticMenubar extends React.Component {
                     <TopLeftButtons showRefresh={this.props.showRefresh}
                                     showClose={this.props.showClose}
                                     refreshTab={this.props.refreshTab}
-                                    closeTab={this.props.closeTab}/>
+                                    closeTab={this.props.closeTab}
+                                    extraButtons={this.props.extraButtons}
+                    />
                 }
                 {this.props.resource_name &&
                     <div style={name_style}>{this.props.resource_name}</div>
@@ -75,7 +77,8 @@ TacticMenubar.propTypes = {
     resource_name: PropTypes.string,
     controlled: PropTypes.bool,
     am_selected: PropTypes.bool,
-    diabled_items: PropTypes.array
+    diabled_items: PropTypes.array,
+    extraButtons: PropTypes.array
 };
 
 TacticMenubar.defaultProps = {
@@ -88,7 +91,8 @@ TacticMenubar.defaultProps = {
     showErrorDrawerButton: false,
     toggleErrorDrawer: null,
     resource_name: null,
-    disabled_items: []
+    disabled_items: [],
+    extraButtons: null
 };
 
 function ErrorDrawerButton (props) {
@@ -128,6 +132,23 @@ class TopLeftButtons extends React.Component {
             paddingTop: 0,
             marginRight: 8
         };
+        let ebuttons = [];
+        if (this.props.extraButtons != null) {
+            this.props.extraButtons.map((but_info, index) => {
+                ebuttons.push(<
+                    Button icon={<Icon icon={but_info.icon} iconSize={14}/>}
+                         style={{paddingLeft: 8}}
+                         minimal={true}
+                         className="context-close-button"
+                         small={true}
+                         tabIndex={-1}
+                         onClick={() => {
+                             but_info.onClick()
+                         }}
+                />)
+
+            })
+        }
         return (
                 <div style={top_icon_style}>
                     {this.props.showClose &&
@@ -153,6 +174,9 @@ class TopLeftButtons extends React.Component {
                                  this.props.refreshTab()
                              }}
                     />}
+                    {this.props.extraButtons &&
+                        ebuttons
+                    }
                 </div>
         )
     }
@@ -163,7 +187,13 @@ TopLeftButtons.propTypes = {
     showClose: PropTypes.bool,
     refreshTab: PropTypes.func,
     closeTab: PropTypes.func,
+    extraButtons: PropTypes.array,
 };
+
+TopLeftButtons.defaultProps = {
+    extraButtons: null
+};
+
 class MenuComponent extends React.Component {
     constructor(props) {
         super(props);

@@ -245,7 +245,7 @@ function withStatus(WrappedComponent) {
           statusMessage: this._statusMessage,
           setStatus: this._setStatus
         })), /*#__PURE__*/_react["default"].createElement(Status, _extends({}, this.state, {
-          dark_theme: this.props.controlled ? this.props.dark_theme : window.dark_theme
+          dark_theme: this.props.controlled ? this.props.dark_theme : window.theme == "dark"
         })));
       }
     }]);

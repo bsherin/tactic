@@ -177,7 +177,7 @@ function withStatus(WrappedComponent) {
                                       setStatus={this._setStatus}
                     />
                     <Status {...this.state}
-                            dark_theme={this.props.controlled ? this.props.dark_theme : window.dark_theme}/>
+                            dark_theme={this.props.controlled ? this.props.dark_theme : window.theme == "dark"}/>
                 </React.Fragment>
             )
         }

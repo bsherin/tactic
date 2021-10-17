@@ -1208,6 +1208,10 @@ class MainApp extends React.Component {
                                       resource_name={this._cProp("resource_name")}
                                       showErrorDrawerButton={true}
                                       toggleErrorDrawer={this.props.toggleErrorDrawer}
+                                      extraButtons={[
+                                          {onClick: this._toggleTableShrink,
+                                           icon: this.state.table_is_shrunk ? "th" : "th-disconnect"}
+                                      ]}
                     />
                 <ErrorBoundary>
                     <div className={outer_class} ref={this.main_outer_ref} style={outer_style}>
