@@ -1183,7 +1183,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         self.setState({
           data_row_dict: new_data_row_dict
         });
-      }, null, this.props.main_id);
+      }, null, self.props.main_id);
     }
   }, {
     key: "_changeCollection",
@@ -1195,12 +1195,12 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
       }, function (data) {
         var option_names = data["collection_names"];
         (0, _modal_react.showSelectDialog)("Select New Collection", "New Collection", "Cancel", "Submit", changeTheCollection, option_names);
-      }, null, this.props.main_id);
+      }, null, self.props.main_id);
 
       function changeTheCollection(new_collection_name) {
         var result_dict = {
           "new_collection_name": new_collection_name,
-          "main_id": this.props.main_id
+          "main_id": self.props.main_id
         };
         (0, _communication_react.postWithCallback)(self.props.main_id, "change_collection", result_dict, changeCollectionResult, null, self.props.main_id);
 
