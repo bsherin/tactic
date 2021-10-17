@@ -796,7 +796,7 @@ class MainApp extends React.Component {
             {doc_name: this.state.table_spec.current_doc_name, row_index: row_index}, function (data) {
             let new_data_row_dict = Object.assign(self.state.data_row_dict, data.data_row_dict);
             self.setState({data_row_dict: new_data_row_dict})
-        }, null, this.props.main_id)
+        }, null, self.props.main_id)
     }
 
     _changeCollection() {
@@ -806,11 +806,11 @@ class MainApp extends React.Component {
             let option_names = data["collection_names"];
             showSelectDialog("Select New Collection", "New Collection", "Cancel",
                 "Submit", changeTheCollection, option_names)
-        }, null, this.props.main_id);
+        }, null, self.props.main_id);
         function changeTheCollection(new_collection_name) {
             const result_dict = {
                     "new_collection_name": new_collection_name,
-                    "main_id": this.props.main_id
+                    "main_id": self.props.main_id
                 };
 
             postWithCallback(self.props.main_id, "change_collection", result_dict, changeCollectionResult, null, self.props.main_id);
