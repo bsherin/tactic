@@ -1394,6 +1394,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         disabled_items: my_props.is_project ? [] : ["Save"],
         hidden_items: ["Export as Jupyter Notebook"]
       })), /*#__PURE__*/_react["default"].createElement(_main_menus_react.DocumentMenu, _extends({}, this.props.statusFuncs, {
+        main_id: this.props.main_id,
         documentNames: this.state.doc_names,
         currentDoc: this.state.table_spec.current_doc_name
       })), !this.props.is_freeform && /*#__PURE__*/_react["default"].createElement(_main_menus_react.ColumnMenu, _extends({}, this.props.statusFuncs, {

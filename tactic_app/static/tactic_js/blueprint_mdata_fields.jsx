@@ -461,7 +461,7 @@ class CombinedMetadata extends React.Component {
 
     constructor(props) {
         super(props);
-        doBinding(this)
+        doBinding(this);
         this.state = {
             auxIsOpen: false
         }
