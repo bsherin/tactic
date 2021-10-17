@@ -26,7 +26,7 @@ class ProjectMenu extends React.Component {
             let checkboxes;
             showModalReact("Save Project As", "New Project Name", CreateNewProject,
                       "NewProject", data["project_names"], null, doCancel)
-        }, null, this.props.main_id);
+        }, null, self.props.main_id);
 
         function doCancel() {
             self.props.stopSpinner()
@@ -151,10 +151,11 @@ class ProjectMenu extends React.Component {
     }
 
     _exportDataTable() {
+        let self = this;
         showModalReact("Export Data", "New Collection Name", function (new_name) {
             const result_dict = {
                 "export_name": new_name,
-                "main_id": this.props.main_id,
+                "main_id": self.props.main_id,
                 "user_id": window.user_id
             };
             $.ajax({
@@ -275,7 +276,7 @@ class DocumentMenu extends React.Component {
         this.props.startSpinner();
         let self = this;
         showModalReact("Duplicate Document", "New Document Name", doDuplicate,
-            this.props.currentDoc, this.props.documentNames, null, doCancel);
+            self.props.currentDoc, self.props.documentNames, null, doCancel);
 
         function doCancel() {
             self.props.stopSpinner()
@@ -296,7 +297,7 @@ class DocumentMenu extends React.Component {
         this.props.startSpinner();
         let self = this;
         showModalReact("Rename Document", "New Document Name", doRename,
-            this.props.currentDoc, this.props.documentNames, null, doCancel);
+            self.props.currentDoc, self.props.documentNames, null, doCancel);
 
         function doCancel() {
             self.props.stopSpinner()

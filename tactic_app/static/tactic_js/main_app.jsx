@@ -950,6 +950,7 @@ class MainApp extends React.Component {
                              hidden_items={["Export as Jupyter Notebook"]}
                 />
                 <DocumentMenu {...this.props.statusFuncs}
+                              main_id={this.props.main_id}
                               documentNames={this.state.doc_names}
                               currentDoc={this.state.table_spec.current_doc_name}
 

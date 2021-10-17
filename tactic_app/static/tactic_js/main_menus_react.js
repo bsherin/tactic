@@ -80,7 +80,7 @@ var ProjectMenu = /*#__PURE__*/function (_React$Component) {
       }, function (data) {
         var checkboxes;
         (0, _modal_react.showModalReact)("Save Project As", "New Project Name", CreateNewProject, "NewProject", data["project_names"], null, doCancel);
-      }, null, this.props.main_id);
+      }, null, self.props.main_id);
 
       function doCancel() {
         self.props.stopSpinner();
@@ -223,10 +223,11 @@ var ProjectMenu = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_exportDataTable",
     value: function _exportDataTable() {
+      var self = this;
       (0, _modal_react.showModalReact)("Export Data", "New Collection Name", function (new_name) {
         var result_dict = {
           "export_name": new_name,
-          "main_id": this.props.main_id,
+          "main_id": self.props.main_id,
           "user_id": window.user_id
         };
         $.ajax({
@@ -390,7 +391,7 @@ var DocumentMenu = /*#__PURE__*/function (_React$Component2) {
     value: function _duplicateDocument() {
       this.props.startSpinner();
       var self = this;
-      (0, _modal_react.showModalReact)("Duplicate Document", "New Document Name", doDuplicate, this.props.currentDoc, this.props.documentNames, null, doCancel);
+      (0, _modal_react.showModalReact)("Duplicate Document", "New Document Name", doDuplicate, self.props.currentDoc, self.props.documentNames, null, doCancel);
 
       function doCancel() {
         self.props.stopSpinner();
@@ -410,7 +411,7 @@ var DocumentMenu = /*#__PURE__*/function (_React$Component2) {
     value: function _renameDocument() {
       this.props.startSpinner();
       var self = this;
-      (0, _modal_react.showModalReact)("Rename Document", "New Document Name", doRename, this.props.currentDoc, this.props.documentNames, null, doCancel);
+      (0, _modal_react.showModalReact)("Rename Document", "New Document Name", doRename, self.props.currentDoc, self.props.documentNames, null, doCancel);
 
       function doCancel() {
         self.props.stopSpinner();
