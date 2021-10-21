@@ -978,6 +978,7 @@ class TacticCollection:
         return "TacticCollection with {} docs".format(str(len(self)))
 
 
+# noinspection PyProtectedMember
 class DetachedTacticCollection(TacticCollection):
     def __init__(self, doc_type, doc_dict=None, collection_metadata=None):
         self._iter_value = -1
@@ -1077,7 +1078,7 @@ class DetachedTacticCollection(TacticCollection):
         raise NotImplementedError
 
     def __setitem__(self, docname, new_doc):
-        if not isinstance(new_doc, DetachedTacticDocument):
+        if not isinstance(new_doc, self._doc_class):
             raise TypeError("Not a DetachedTacticDocument")
         new_doc._docname = docname
         self._doc_dict[docname] = new_doc
@@ -1088,7 +1089,10 @@ class DetachedTacticCollection(TacticCollection):
         metadata_dict = {}
         self.rewind()
         for doc in self:
-            full_collection[doc.name] = doc.dict_list
+            if self._doc_type == "table":
+                full_collection[doc.name] = doc.dict_list
+            else:
+                full_collection[doc.name] = doc.text
             metadata_dict[doc.name] = doc.metadata
         _tworker.tile_instance.create_collection(collection_name, full_collection, self._doc_type, metadata_dict)
 

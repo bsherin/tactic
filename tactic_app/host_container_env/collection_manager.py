@@ -300,6 +300,10 @@ class CollectionManager(LibraryResourceManager):
                 if m:
                     mdata = db[cname].find_one({"name": "__metadata__"})
                     entry = self.build_res_dict(m.group(1), mdata, user_obj)
+                    if "type" in mdata:
+                        entry["doc_type"] = mdata["type"]
+                    else:
+                        entry["doc_type"] = "table"
                     if re.match(search_text, m.group(1)):
                         if search_spec["active_tag"]:
                             if search_spec["active_tag"] in self.get_all_subtags(entry["tags"]):

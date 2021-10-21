@@ -7,7 +7,7 @@ user_data_fields = [
     {"name": "favorite_dumpling", "editable": True, "display_text": "favorite dumpling", "type": "text", "default": "", "info_type": "info"},
     {"name": "tzoffset", "editable": False, "default": None},
     {"name": "theme", "editable": True, "display_text": "tactic theme",
-     "type": "select", "default": "light", "options": ["dark", "light"], "info_type": "setting"},
+     "type": "select", "default": "dark", "options": ["dark", "light"], "info_type": "setting"},
     {"name": "preferred_dark_theme", "editable": True, "display_text": "codemirror dark theme",
      "type": "select", "default": "nord", "options": ["material", "nord", "oceanic-next", "pastel-on-dark"], "info_type": "setting"},
     {"name": "preferred_interface", "editable": True, "display_text": "preferred interface",

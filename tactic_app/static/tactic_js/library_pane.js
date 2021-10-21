@@ -185,6 +185,12 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
 
     _this2.initSocket();
 
+    _this2.blank_selected_resource = {};
+
+    for (var col in _this2.props.columns) {
+      _this2.blank_selected_resource[col] = "";
+    }
+
     return _this2;
   }
 
@@ -435,18 +441,13 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       var new_data_list = _toConsumableArray(this.state.data_list);
 
       new_data_list.splice(ind, 1);
+      var self = this;
 
       if (this.props.list_of_selected.includes(name)) {
         this._updatePaneState({
           list_of_selected: [],
           multi_select: false,
-          selected_resource: {
-            "name": "",
-            "tags": "",
-            "notes": "",
-            "updated": "",
-            "created": ""
-          }
+          selected_resource: self.blank_selected_resource
         });
       }
 
@@ -1251,6 +1252,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         search_metadata: this.props.search_metadata
       }), /*#__PURE__*/_react["default"].createElement(_library_widgets.BpSelectorTable, {
         data_dict: this.state.data_dict,
+        columns: this.props.columns,
         num_rows: this.state.num_rows,
         open_resources: this.props.open_resources,
         sortColumn: this._set_sort_state,
@@ -1325,6 +1327,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
 
 exports.LibraryPane = LibraryPane;
 LibraryPane.propTypes = {
+  columns: _propTypes["default"].object,
   res_type: _propTypes["default"].string,
   open_resources: _propTypes["default"].array,
   allow_search_inside: _propTypes["default"].bool,
@@ -1349,6 +1352,24 @@ LibraryPane.propTypes = {
   library_id: _propTypes["default"].string
 };
 LibraryPane.defaultProps = {
+  columns: {
+    "name": {
+      "sort_field": "name",
+      "first_sort": "ascending"
+    },
+    "created": {
+      "sort_field": "created_for_sort",
+      "first_sort": "descending"
+    },
+    "updated": {
+      "sort_field": "updated_for_sort",
+      "first_sort": "ascending"
+    },
+    "tags": {
+      "sort_field": "tags",
+      "first_sort": "ascending"
+    }
+  },
   is_repository: false,
   tsocket: null,
   aux_pane: null,

@@ -130,6 +130,7 @@ def logout(page_id):
 
 
 @app.route('/register', methods=['GET', 'POST'])
+@login_required
 def register():
     if ANYONE_CAN_REGISTER or (current_user.username == "admin"):
         return render_template('auth/register_react.html',
@@ -141,6 +142,7 @@ def register():
 
 
 @app.route('/user_duplicate/<old_username>', methods=['GET', 'POST'])
+@login_required
 def user_duplicate(old_username):
     if ANYONE_CAN_REGISTER or (current_user.username == "admin"):
         return render_template('auth/duplicate_user_react.html',
@@ -152,6 +154,7 @@ def user_duplicate(old_username):
 
 
 @app.route('/attempt_register', methods=['GET', 'POST'])
+@login_required
 def attempt_register():
     data = request.json
     result_dict = User.create_new({"username": data["username"], "password": data["password"]})
@@ -202,6 +205,7 @@ def account_info():
 
 
 @app.route('/get_account_info', methods=['GET', 'POST'])
+@fresh_login_required
 def get_account_info():
     user_data = current_user.user_data_dict
     field_list = []

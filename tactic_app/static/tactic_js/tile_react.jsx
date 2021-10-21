@@ -431,9 +431,13 @@ class TileComponent extends React.Component {
     }
 
     _handleSubmitOptions() {
-        this.props.setTileValue(this.props.tile_id, "show_form", false);
-        this._startSpinner();
-        this.props.setTileValue(this.props.tile_id, "show_spinner", true);
+        this.props.setTileState(this.props.tile_id, {
+            show_form: false,
+            show_spinner: true
+
+        });
+        // this.props.setTileValue(this.props.tile_id, "show_form", false);
+        // this._startSpinner();
         let data = {};
         for (let opt of this.props.form_data) {
             data[opt.name] = opt.starting_value
