@@ -4,10 +4,11 @@ import sys
 import json
 import copy
 import requests
+import functools
 
 from flask import request, jsonify, render_template, send_file, url_for
 from flask_login import current_user, login_required
-from flask_socketio import join_room
+from flask_socketio import join_room, disconnect
 from tactic_app import app, db, fs, socketio, csrf
 from library_views import collection_manager
 from docker_functions import destroy_container, destroy_child_containers
@@ -23,9 +24,21 @@ tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 from js_source_management import _develop
 
 
+def authenticated_only(f):
+    @functools.wraps(f)
+    def wrapped(*args, **kwargs):
+        if not current_user.is_authenticated:
+            disconnect()
+        else:
+            return f(*args, **kwargs)
+    return wrapped
+
+
 # The main window should join a room associated with the user
 @socketio.on('connect', namespace='/main')
+@authenticated_only
 def connected_msg():
+    print("authentication checked")
     print("client connected for user {} in main_views".format(current_user.username))
 
 
@@ -35,6 +48,7 @@ def test_disconnect():
 
 
 @socketio.on('join', namespace='/main')
+@authenticated_only
 def on_join(data):
     room = data["room"]
     join_room(room)
@@ -47,6 +61,7 @@ def on_join(data):
 
 
 @socketio.on('join-main', namespace='/main')
+@authenticated_only
 def on_join_main(data):
     room = data["room"]
     join_room(room)
@@ -56,6 +71,7 @@ def on_join_main(data):
 
 
 @socketio.on('client-ready', namespace='/main')
+@authenticated_only
 def on_client_ready(data):
     tactic_app.host_worker.participant_ready(data)
     return
@@ -101,6 +117,7 @@ def get_mainwindow_property(main_id, prop_name, callback):
 
 
 @socketio.on('ready-to-begin', namespace='/main')
+@authenticated_only
 def on_ready_to_begin(data):
     socketio.emit("begin-post-load", data, namespace='/main', room=data["room"])
 

@@ -198,6 +198,12 @@ class LibraryHomeApp extends React.Component {
         }
         let collection_pane = (
                         <LibraryPane {...lib_props}
+                                    columns={{"name": {"sort_field": "name", "first_sort": "ascending"},
+                                              "type": {"sort_field": "type", "first_sort": "ascending"},
+                                             "created": {"sort_field": "created_for_sort", "first_sort": "descending"},
+                                              "updated": {"sort_field": "updated_for_sort", "first_sort": "ascending"},
+                                             "tags": {"sort_field": "tags", "first_sort": "ascending"}
+                                             }}
                                      res_type="collection"
                                      handleCreateViewer={this.props.handleCreateViewer}
                                      open_resources={this.props.open_resources ? this.props.open_resources["collection"] : null}

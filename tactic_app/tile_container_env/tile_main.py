@@ -149,6 +149,7 @@ class TileWorker(QWorker):
                                                                                           data["new_base_figure_url"])
             self.tile_instance.base_figure_url = data["new_base_figure_url"]
             self.tile_instance.my_address = data["my_address"]
+            self.tile_instance.user_id = os.environ["OWNER"]
             if "doc_type" in data:
                 self.tile_instance.doc_type = data["doc_type"]
             else:
@@ -204,6 +205,7 @@ class TileWorker(QWorker):
                 setattr(self.tile_instance, attr, val)
             form_data = self.tile_instance._create_form_data(reload_dict["form_info"])["form_data"]
             self.tile_instance.my_address = reload_dict["tile_address"]
+            self.tile_instance.user_id = os.environ["OWNER"]
             document_object.Collection.__fully_initialize__()
 
             if not self.tile_instance.exports:

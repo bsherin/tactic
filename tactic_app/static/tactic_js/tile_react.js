@@ -698,11 +698,12 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "_handleSubmitOptions",
     value: function _handleSubmitOptions() {
-      this.props.setTileValue(this.props.tile_id, "show_form", false);
+      this.props.setTileState(this.props.tile_id, {
+        show_form: false,
+        show_spinner: true
+      }); // this.props.setTileValue(this.props.tile_id, "show_form", false);
+      // this._startSpinner();
 
-      this._startSpinner();
-
-      this.props.setTileValue(this.props.tile_id, "show_spinner", true);
       var data = {};
 
       var _iterator6 = _createForOfIteratorHelper(this.props.form_data),

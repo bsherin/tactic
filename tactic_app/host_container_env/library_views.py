@@ -425,6 +425,7 @@ def save_metadata():
 
 
 @app.route('/delete_tag', methods=['POST'])
+@login_required
 def delete_tag():
     try:
         res_type = request.json["res_type"]
@@ -438,6 +439,7 @@ def delete_tag():
 
 
 @app.route('/rename_tag', methods=['POST'])
+@login_required
 def rename_tag():
     try:
         res_type = request.json["res_type"]
