@@ -142,7 +142,7 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
         "Ctrl-Space": "autocomplete"
       });
       cmobject.setOption("extraKeys", all_extra_keys);
-      cmobject.setSize(null, "100%");
+      cmobject.setSize(null, this.props.code_container_width);
       cmobject.on("change", this.handleChange);
       cmobject.on("blur", this.handleBlur);
       return cmobject;
@@ -183,7 +183,7 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
     }
   }, {
     key: "componentDidUpdate",
-    value: function componentDidUpdate() {
+    value: function componentDidUpdate(prevProps) {
       if (this.props.dark_theme != this.saved_theme) {
         if (this.props.dark_theme) {
           this.cmobject.setOption("theme", DARK_THEME);
@@ -192,6 +192,10 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
         }
 
         this.saved_theme = this.props.dark_theme;
+      }
+
+      if (this.props.soft_wrap != prevProps.soft_wrap) {
+        this.cmobject.setOption("lineWrapping", this.props.soft_wrap);
       }
 
       if (this.props.sync_to_prop || this.props.force_sync_to_prop) {

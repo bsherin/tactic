@@ -81,7 +81,7 @@ class ReactCodemirror extends React.Component {
         );
 
         cmobject.setOption("extraKeys", all_extra_keys);
-        cmobject.setSize(null, "100%");
+        cmobject.setSize(null, this.props.code_container_width);
         cmobject.on("change", this.handleChange);
         cmobject.on("blur", this.handleBlur);
         return cmobject
@@ -115,7 +115,7 @@ class ReactCodemirror extends React.Component {
         return !propsAreEqual(nextProps, this.props)
     }
 
-    componentDidUpdate() {
+    componentDidUpdate(prevProps) {
         if (this.props.dark_theme != this.saved_theme) {
             if (this.props.dark_theme) {
                 this.cmobject.setOption("theme", DARK_THEME)
@@ -124,6 +124,9 @@ class ReactCodemirror extends React.Component {
                 this.cmobject.setOption("theme", "default")
             }
             this.saved_theme = this.props.dark_theme
+        }
+        if (this.props.soft_wrap != prevProps.soft_wrap) {
+            this.cmobject.setOption("lineWrapping", this.props.soft_wrap)
         }
         if (this.props.sync_to_prop || this.props.force_sync_to_prop) {
             this.cmobject.setValue(this.props.code_content);

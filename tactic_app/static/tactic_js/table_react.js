@@ -141,8 +141,11 @@ var FreeformBody = /*#__PURE__*/function (_React$Component) {
         handleChange: null,
         code_content: this.props.data_text,
         sync_to_prop: true,
+        dark_theme: this.props.dark_theme,
+        soft_wrap: this.props.soft_wrap,
         mode: "Plain Text",
         code_container_height: this.props.code_container_height,
+        code_container_width: this.props.code_container_width - 30,
         setCMObject: this._setCMObject,
         readOnly: false
       }));
@@ -161,7 +164,8 @@ FreeformBody.propTypes = {
   code_container_height: _propTypes["default"].number,
   search_text: _propTypes["default"].string,
   alt_search_text: _propTypes["default"].string,
-  setMainStateValue: _propTypes["default"].func
+  setMainStateValue: _propTypes["default"].func,
+  soft_wrap: _propTypes["default"].bool
 };
 
 function SmallSpinner() {
@@ -325,7 +329,13 @@ var MainTableCardHeader = /*#__PURE__*/function (_React$Component2) {
           alignItems: "center"
         },
         className: "d-flex flex-row"
-      }, /*#__PURE__*/_react["default"].createElement(_core.Switch, {
+      }, this.props.is_freeform && /*#__PURE__*/_react["default"].createElement(_core.Switch, {
+        label: "soft wrap",
+        className: "mr-2 mb-0",
+        large: false,
+        checked: this.props.soft_wrap,
+        onChange: this.props.handleSoftWrapChange
+      }), /*#__PURE__*/_react["default"].createElement(_core.Switch, {
         label: "edit",
         className: "mr-4 mb-0",
         large: false,
@@ -368,7 +378,15 @@ MainTableCardHeader.propTypes = {
   doc_names: _propTypes["default"].array,
   show_table_spinner: _propTypes["default"].bool,
   show_filter_button: _propTypes["default"].bool,
-  broadcast_event_to_server: _propTypes["default"].func
+  broadcast_event_to_server: _propTypes["default"].func,
+  is_freeform: _propTypes["default"].bool,
+  soft_wrap: _propTypes["default"].bool,
+  handleSoftWrapChange: _propTypes["default"].func
+};
+MainTableCardHeader.defaultProps = {
+  is_freeform: false,
+  soft_wrap: false,
+  handleSoftWrapChange: null
 };
 var MAX_INITIAL_CELL_WIDTH = 400;
 var EXTRA_TABLE_AREA_SPACE = 500;
