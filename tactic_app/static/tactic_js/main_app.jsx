@@ -220,6 +220,7 @@ class MainApp extends React.Component {
         if (this.props.is_freeform) {
             additions = {
                 data_text: props.initial_data_text,
+                soft_wrap: false,
                 table_spec: {
                     current_doc_name: props.initial_doc_names[0]
                 }
@@ -435,6 +436,10 @@ class MainApp extends React.Component {
     
     _handleSpreadsheetModeChange(event) {
         this.setState({"spreadsheet_mode": event.target.checked});
+    }
+
+    _handleSoftWrapChange(event) {
+        this.setState({"soft_wrap": event.target.checked});
     }
 
     _setAltSearchText(the_text) {
@@ -1020,7 +1025,10 @@ class MainApp extends React.Component {
                                  show_filter_button={!this.props.is_freeform}
                                  spreadsheet_mode={this.state.spreadsheet_mode}
                                  handleSpreadsheetModeChange={this._handleSpreadsheetModeChange}
+                                 soft_wrap={this.state.soft_wrap}
+                                 handleSoftWrapChange={this._handleSoftWrapChange}
                                  broadcast_event_to_server={this._broadcast_event_to_server}
+                                 is_freeform={this.props.is_freeform}
             />
         );
 
@@ -1028,11 +1036,14 @@ class MainApp extends React.Component {
         if (this.props.is_freeform) {
             card_body = <FreeformBody main_id={this.props.main_id}
                                       my_ref={this.tbody_ref}
+                                      dark_theme={dark_theme}
                                       document_name={this.state.table_spec.current_doc_name}
                                       data_text={this.state.data_text}
                                       code_container_height={this._getTableBodyHeight(table_available_height)}
                                       search_text={this.state.search_text}
+                                      soft_wrap={this.state.soft_wrap}
                                       setMainStateValue={this._setMainStateValue}
+                                      code_container_width={this.state.horizontal_fraction * true_usable_width}
                                       alt_search_text={this.state.alt_search_text}
             />
         } else {

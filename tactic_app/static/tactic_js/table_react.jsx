@@ -85,8 +85,11 @@ class FreeformBody extends React.Component{
                                  handleChange={null}
                                  code_content={this.props.data_text}
                                  sync_to_prop={true}
+                                 dark_theme={this.props.dark_theme}
+                                 soft_wrap={this.props.soft_wrap}
                                  mode="Plain Text"
                                  code_container_height={this.props.code_container_height}
+                                 code_container_width={this.props.code_container_width - 30}
                                  setCMObject={this._setCMObject}
                                  readOnly={false}/>
             </div>
@@ -102,7 +105,8 @@ FreeformBody.propTypes = {
     code_container_height: PropTypes.number,
     search_text: PropTypes.string,
     alt_search_text: PropTypes.string,
-    setMainStateValue: PropTypes.func
+    setMainStateValue: PropTypes.func,
+    soft_wrap: PropTypes.bool,
 };
 
 
@@ -205,6 +209,14 @@ class MainTableCardHeader extends React.Component {
                 </div>
                 <div id="heading-right" ref={this.heading_right_ref} style={{opacity: heading_right_opacity}} className="d-flex flex-column justify-content-around">
                     <form onSubmit={this._handleSubmit} style={{alignItems: "center"}} className="d-flex flex-row">
+                        {this.props.is_freeform &&
+                            <Switch label="soft wrap"
+                                     className="mr-2 mb-0"
+                                    large={false}
+                                    checked={this.props.soft_wrap}
+                                    onChange={this.props.handleSoftWrapChange}
+                            />
+                        }
                             <Switch label="edit"
                                      className="mr-4 mb-0"
                                     large={false}
@@ -252,8 +264,17 @@ MainTableCardHeader.propTypes = {
     doc_names: PropTypes.array,
     show_table_spinner: PropTypes.bool,
     show_filter_button: PropTypes.bool,
-    broadcast_event_to_server: PropTypes.func
+    broadcast_event_to_server: PropTypes.func,
+    is_freeform: PropTypes.bool,
+    soft_wrap: PropTypes.bool,
+    handleSoftWrapChange: PropTypes.func
 
+};
+
+MainTableCardHeader.defaultProps = {
+    is_freeform: false,
+    soft_wrap: false,
+    handleSoftWrapChange: null
 };
 
 const MAX_INITIAL_CELL_WIDTH = 400;
