@@ -97,7 +97,11 @@ class ContextApp extends React.Component {
         // this.repositoryTabChange = null;
         this.top_ref = React.createRef();
         this.ref_dict = {};
-        this.key_bindings = [[["tab"], this._goToNextPane], [["shift+tab"], this._goToPreviousPane]];
+        this.key_bindings = [
+            [["tab"], this._goToNextPane],
+            [["shift+tab"], this._goToPreviousPane],
+            [["ctrl+w"], ()=>{this._closeTab(this.state.selectedTabId)}]
+        ];
     }
 
     _setTheme(dark_theme) {
@@ -285,6 +289,9 @@ class ContextApp extends React.Component {
 
      _closeTab(the_id) {
         let self = this;
+        if (the_id == "library") {
+            return
+        }
         if (!(the_id in this.state.dirty_methods) || this.state.dirty_methods[the_id]()) {
             const title = this.state.tab_panel_dict[the_id].title;
             const confirm_text = `Are you sure that you want to close the tab ${title}? Changes will be lost`;

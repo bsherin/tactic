@@ -41,8 +41,9 @@ class ResourceManager(ExceptionMixin):
     def add_rules(self):
         print("not implemented")
 
-    def update_selector_row(self, res_dict):
-        user_obj = current_user
+    def update_selector_row(self, res_dict, user_obj=None):
+        if user_obj is None:
+            user_obj = current_user
         socketio.emit("update-{}-selector-row".format(self.res_type), res_dict,
                       namespace='/main', room=user_obj.get_id())
 
@@ -191,7 +192,8 @@ class LibraryResourceManager(ResourceManager):
     def __init__(self, res_type):
         ResourceManager.__init__(self, res_type)
 
-    def grab_resource_list_chunk(self, collection_name, name_field, content_field, additional_mdata_fields=None):
+    def grab_resource_list_chunk(self, collection_name, name_field, content_field, additional_mdata_fields=None,
+                                 do_jsonify=True):
         #  search_spec has active_tag, search_string, search_inside, search_metadata, sort_field, sort_direction
         def sort_mdata_key(item):
             if sort_field not in item:
@@ -256,4 +258,8 @@ class LibraryResourceManager(ResourceManager):
         chunk_dict = {}
         for n, r in enumerate(chunk_list):
             chunk_dict[n + chunk_start] = r
-        return jsonify({"success": True, "chunk_dict": chunk_dict, "all_tags": all_tags, "num_rows": len(sorted_results)})
+        result = {"success": True, "chunk_dict": chunk_dict, "all_tags": all_tags, "num_rows": len(sorted_results)}
+        if do_jsonify:
+            return jsonify(result)
+        else:
+            return result

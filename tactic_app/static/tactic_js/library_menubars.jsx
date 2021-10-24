@@ -443,6 +443,11 @@ class TileMenubar extends React.Component {
         $.getJSON(`${$SCRIPT_ROOT}/unload_all_tiles`, doFlash)
     }
 
+    _unload_module(resource_name=null) {
+        if (!resource_name) resource_name = this.props.list_of_selected[0];
+        $.getJSON(`${$SCRIPT_ROOT}/unload_one_module/${resource_name}`, doFlash)
+    }
+
     _tile_delete(resource_name=null) {
         this.props.delete_func("/delete_tile_module", resource_name)
     }
@@ -508,6 +513,7 @@ class TileMenubar extends React.Component {
         menu_items = menu_items.concat([
             {text: "__divider__"},
             {text: "load", icon: "upload", onClick: this._load_tile},
+            {text: "unload", icon: "undo", onClick: this._unload_module},
             {text: "__divider__"},
             {text: "rename", icon: "edit", onClick: this.props.rename_func},
             {text: "duplicate", icon: "duplicate", onClick: this._tile_duplicate},
@@ -544,7 +550,8 @@ class TileMenubar extends React.Component {
                     multi_select: true},
             ],
             Load: [{name_text: "Load", icon_name: "upload", click_handler: ()=>{this._load_tile()}},
-                {name_text: "Unload All Tiles", icon_name: "clean", click_handler: this._unload_all_tiles},
+                {name_text: "Unload", icon_name: "undo", click_handler: ()=>{this._unload_module()}},
+                {name_text: "Reset", icon_name: "reset", click_handler: this._unload_all_tiles},
 
             ],
             Compare: [{name_text: "View History", icon_name: "history", click_handler: this._showHistoryViewer, tooltip: "Show history viewer"},

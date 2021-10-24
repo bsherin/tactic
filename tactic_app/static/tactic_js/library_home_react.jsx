@@ -15,7 +15,6 @@ import {TacticSocket} from "./tactic_socket.js"
 import {handleCallback} from "./communication_react.js"
 import {doFlash} from "./toaster.js"
 import {LibraryPane} from "./library_pane.js"
-import {LoadedTileList} from "./library_widgets.js";
 import {SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, getUsableDimensions} from "./sizing_tools.js";
 import {withStatus} from "./toaster.js";
 import {withErrorDrawer} from "./error_drawer.js";
@@ -188,7 +187,6 @@ class LibraryHomeApp extends React.Component {
 
     render () {
         let dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme;
-        let tile_widget = <LoadedTileList tsocket={this.props.tsocket}/>;
         let lib_props = {...this.props};
         if (!this.props.controlled) {
             for (let prop_name of controllable_props) {
@@ -231,6 +229,12 @@ class LibraryHomeApp extends React.Component {
             />
         );
         let tiles_pane = (<LibraryPane {...lib_props}
+                                    columns={{"name": {"sort_field": "name", "first_sort": "ascending"},
+                                              "icon:upload": {"sort_field": null, "first_sort": "ascending"},
+                                             "created": {"sort_field": "created_for_sort", "first_sort": "descending"},
+                                              "updated": {"sort_field": "updated_for_sort", "first_sort": "ascending"},
+                                             "tags": {"sort_field": "tags", "first_sort": "ascending"}
+                                             }}
                                        res_type="tile"
                                        handleCreateViewer={this.props.handleCreateViewer}
                                        open_resources={this.props.open_resources ? this.props.open_resources["tile"] : null}
@@ -241,8 +245,6 @@ class LibraryHomeApp extends React.Component {
                                        {...this.props.errorDrawerFuncs}
                                        {...this.state.pane_states["tile"]}
                                        library_id={this.props.library_id}
-                                       aux_pane_title="loaded tile list"
-                                       aux_pane={tile_widget}
             />
         );
         let lists_pane = (<LibraryPane {...lib_props}

@@ -32,8 +32,6 @@ var _toaster = require("./toaster.js");
 
 var _library_pane = require("./library_pane.js");
 
-var _library_widgets = require("./library_widgets.js");
-
 var _sizing_tools = require("./sizing_tools.js");
 
 var _error_drawer = require("./error_drawer.js");
@@ -320,10 +318,6 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
     value: function render() {
       var dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme;
 
-      var tile_widget = /*#__PURE__*/_react["default"].createElement(_library_widgets.LoadedTileList, {
-        tsocket: this.props.tsocket
-      });
-
       var lib_props = _objectSpread({}, this.props);
 
       if (!this.props.controlled) {
@@ -392,6 +386,28 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
       }));
 
       var tiles_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
+        columns: {
+          "name": {
+            "sort_field": "name",
+            "first_sort": "ascending"
+          },
+          "icon:upload": {
+            "sort_field": null,
+            "first_sort": "ascending"
+          },
+          "created": {
+            "sort_field": "created_for_sort",
+            "first_sort": "descending"
+          },
+          "updated": {
+            "sort_field": "updated_for_sort",
+            "first_sort": "ascending"
+          },
+          "tags": {
+            "sort_field": "tags",
+            "first_sort": "ascending"
+          }
+        },
         res_type: "tile",
         handleCreateViewer: this.props.handleCreateViewer,
         open_resources: this.props.open_resources ? this.props.open_resources["tile"] : null,
@@ -400,9 +416,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
         MenubarClass: _library_menubars.TileMenubar,
         updatePaneState: this._updatePaneState
       }, this.props.errorDrawerFuncs, this.state.pane_states["tile"], {
-        library_id: this.props.library_id,
-        aux_pane_title: "loaded tile list",
-        aux_pane: tile_widget
+        library_id: this.props.library_id
       }));
 
       var lists_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {

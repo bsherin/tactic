@@ -26,7 +26,6 @@ def load_user_default_tiles(username):
         tm_list = the_user.get_resource_names("tile", tag_filter="default")
 
         for tm in tm_list:
-            print('posting task to load tile_module {}'.format(tm))
             tactic_app.host_worker.post_task("host", "load_tile_module_task", {"tile_module_name": tm,
                                                                                "user_id": the_user.get_id(),
                                                                                "show_failed_loads": True,
@@ -140,7 +139,7 @@ def get_module_from_type(username, tile_type):
         if tile_type not in the_types:
             return None
         else:
-            return hget(username, "tile_module_index", the_type)
+            return hget(username, "tile_module_index", tile_type)
 
 
 def get_loaded_user_modules(username):
@@ -166,6 +165,23 @@ def unload_one_tile(username, tile_name, tile_module_name):
     if hexists(username, "tile_module_index"):
         if tile_name in hkeys(username, "tile_module_index"):
             hdel(username, "tile_module_index", tile_name)
+    return
+
+
+def unload_one_module(username, tile_module_name):
+    all_user_tiles_keys = redis_tm.keys("{}.user_tiles.*".format(username))
+    for k in all_user_tiles_keys:
+        sstring = tile_type_string(username)
+        _cat, tile_type = re.findall(sstring, k)[0]
+        mod = get_module_from_type(username, tile_type)
+        if mod == tile_module_name:
+            redis_tm.delete(k)
+        if hexists(username, "tile_module_index"):
+            if tile_type in hkeys(username, "tile_module_index"):
+                hdel(username, "tile_module_index", tile_type)
+    if hexists(username, "loaded_user_modules"):
+        if tile_module_name in hkeys(username, "loaded_user_modules"):
+            hdel(username, "loaded_user_modules", tile_module_name)
     return
 
 

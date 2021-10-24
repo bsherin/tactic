@@ -5,7 +5,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.LibraryOmnibar = exports.LoadedTileList = exports.BpSelectorTable = exports.SearchForm = void 0;
+exports.LibraryOmnibar = exports.BpSelectorTable = exports.SearchForm = void 0;
 
 require("../tactic_css/tactic_select.scss");
 
@@ -22,8 +22,6 @@ var _table = require("@blueprintjs/table");
 var _select = require("@blueprintjs/select");
 
 var _lodash = _interopRequireDefault(require("lodash"));
-
-var _communication_react = require("./communication_react.js");
 
 var _utilities_react = require("./utilities_react.js");
 
@@ -456,12 +454,22 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
           });
         }
 
-        var the_text;
+        var the_body;
 
         if (Object.keys(self.props.data_dict[rowIndex]).includes(column_name)) {
-          the_text = self.props.data_dict[rowIndex][column_name];
+          var the_text = self.props.data_dict[rowIndex][column_name];
+
+          if (the_text.startsWith("icon:")) {
+            the_text = the_text.replace(/(^icon:)/gi, "");
+            the_body = /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+              icon: the_text,
+              size: 14
+            });
+          } else {
+            the_body = /*#__PURE__*/_react["default"].createElement(_table.TruncatedFormat, null, the_text);
+          }
         } else {
-          the_text = "";
+          the_body = "";
         }
 
         var tclass;
@@ -484,13 +492,15 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
           onDoubleClick: function onDoubleClick() {
             return self.props.handleRowDoubleClick(self.props.data_dict[rowIndex]);
           }
-        }, /*#__PURE__*/_react["default"].createElement(_table.TruncatedFormat, null, the_text))));
+        }, the_body)));
       };
     }
   }, {
     key: "_renderMenu",
     value: function _renderMenu(sortColumn) {
       var _this7 = this;
+
+      if (!this.props.columns[sortColumn].sort_field) return null;
 
       var sortAsc = function sortAsc() {
         _this7.props.sortColumn(sortColumn, _this7.props.columns[sortColumn].sort_field, "ascending");
@@ -511,6 +521,25 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
       }));
     }
   }, {
+    key: "_columnHeaderNameRenderer",
+    value: function _columnHeaderNameRenderer(the_text) {
+      var the_body;
+
+      if (the_text.startsWith("icon:")) {
+        the_text = the_text.replace(/(^icon:)/gi, "");
+        the_body = /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+          icon: the_text,
+          size: 14
+        });
+      } else {
+        the_body = /*#__PURE__*/_react["default"].createElement("div", {
+          className: "bp3-table-truncated-text"
+        }, the_text);
+      }
+
+      return the_body;
+    }
+  }, {
     key: "render",
     value: function render() {
       var _this8 = this;
@@ -523,6 +552,7 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
         var columnHeaderCellRenderer = function columnHeaderCellRenderer() {
           return /*#__PURE__*/_react["default"].createElement(_table.ColumnHeaderCell, {
             name: column_name,
+            nameRenderer: _this8._columnHeaderNameRenderer,
             menuRenderer: function menuRenderer() {
               return self._renderMenu(column_name);
             }
@@ -614,95 +644,8 @@ BpSelectorTable.defaultProps = {
   keyHandler: null,
   draggable: true
 };
-
-var LoadedTileList = /*#__PURE__*/function (_React$Component5) {
-  _inherits(LoadedTileList, _React$Component5);
-
-  var _super5 = _createSuper(LoadedTileList);
-
-  function LoadedTileList(props) {
-    var _this9;
-
-    _classCallCheck(this, LoadedTileList);
-
-    _this9 = _super5.call(this, props);
-    _this9.state = {
-      default_list: [],
-      failed_list: [],
-      other_list: []
-    };
-    _this9.socket_counter = null;
-    return _this9;
-  }
-
-  _createClass(LoadedTileList, [{
-    key: "set_state_from_dict",
-    value: function set_state_from_dict(tldict) {
-      this.setState({
-        default_list: tldict.default_tiles,
-        failed_list: tldict.failed_loads,
-        other_list: tldict.nondefault_tiles
-      });
-    }
-  }, {
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      var self = this;
-      this.initSocket();
-      (0, _communication_react.postAjax)("get_loaded_tile_lists", {}, function (data) {
-        var tldict = data.tile_load_dict;
-        self.set_state_from_dict(tldict);
-      });
-    }
-  }, {
-    key: "initSocket",
-    value: function initSocket() {
-      var self = this;
-      this.props.tsocket.attachListener('update-loaded-tile-list', function (data) {
-        return self.set_state_from_dict(data.tile_load_dict);
-      });
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var default_items = this.state.default_list.map(function (tile_name) {
-        return /*#__PURE__*/_react["default"].createElement("p", {
-          key: tile_name
-        }, tile_name);
-      });
-      var failed_items = this.state.failed_list.map(function (tile_name) {
-        return /*#__PURE__*/_react["default"].createElement("p", {
-          key: tile_name
-        }, /*#__PURE__*/_react["default"].createElement("a", {
-          style: {
-            color: "red"
-          }
-        }, tile_name + "(failed)"));
-      });
-      var other_loads = this.state.other_list.map(function (tile_name) {
-        return /*#__PURE__*/_react["default"].createElement("p", {
-          key: tile_name
-        }, tile_name);
-      });
-      return /*#__PURE__*/_react["default"].createElement("div", {
-        id: "loaded_tile_widget",
-        className: "d-flex flex-row"
-      }, /*#__PURE__*/_react["default"].createElement(_core.Card, null, /*#__PURE__*/_react["default"].createElement("h6", null, "Loaded Default"), default_items, failed_items), /*#__PURE__*/_react["default"].createElement(_core.Card, {
-        style: {
-          marginLeft: 10
-        }
-      }, /*#__PURE__*/_react["default"].createElement("h6", null, "Loaded Other"), other_loads));
-    }
-  }]);
-
-  return LoadedTileList;
-}(_react["default"].Component);
-
-exports.LoadedTileList = LoadedTileList;
-LoadedTileList.propTypes = {
-  tsocket: _propTypes["default"].object
-};
 var MAX_INITIAL_CELL_WIDTH = 300;
+var ICON_WIDTH = 35;
 
 function compute_initial_column_widths(header_list, data_list) {
   var ncols = header_list.length;
@@ -761,7 +704,12 @@ function compute_initial_column_widths(header_list, data_list) {
         for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
           var _c2 = _step5.value;
           the_text = the_row[_c2];
-          the_width = ctx.measureText(the_text).width + added_body_width;
+
+          if (the_text.startsWith("icon:")) {
+            the_width = ICON_WIDTH;
+          } else {
+            the_width = ctx.measureText(the_text).width + added_body_width;
+          }
 
           if (the_width > max_field_width) {
             the_width = max_field_width;
