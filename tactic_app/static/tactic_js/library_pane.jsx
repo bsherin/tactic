@@ -227,10 +227,11 @@ class LibraryPane extends React.Component {
 
     _handleRowUpdate(res_dict) {
         let res_name = res_dict.name;
-        let res_tags = res_dict.tags.split(" ");
         let ind = this.get_data_dict_index(res_name);
+        if (!ind) return;
         let new_data_dict = _.cloneDeep(this.state.data_dict);
         let the_row = new_data_dict[ind];
+
         for (let field in res_dict) {
             if ("new_name" in res_dict && field == "name") {}
             else if (field == "new_name") {
@@ -245,17 +246,21 @@ class LibraryPane extends React.Component {
             this.props.updatePaneState({"selected_resource": the_row})
         }
         let new_state = {"data_dict": new_data_dict };
-        let new_tag_list = _.cloneDeep(this.state.tag_list);
-        let new_tag_found = false;
-        for (let tag of res_tags) {
-            if (!new_tag_list.includes(tag)){
-                new_tag_list.push(tag);
-                new_tag_found = true;
+        if ("tags" in res_dict) {
+            let res_tags = res_dict.tags.split(" ");
+            let new_tag_list = _.cloneDeep(this.state.tag_list);
+            let new_tag_found = false;
+            for (let tag of res_tags) {
+                if (!new_tag_list.includes(tag)){
+                    new_tag_list.push(tag);
+                    new_tag_found = true;
+                }
+            }
+            if (new_tag_found) {
+                new_state["tag_list"] = new_tag_list;
             }
         }
-        if (new_tag_found) {
-            new_state["tag_list"] = new_tag_list;
-        }
+
         this.setState(new_state);
     }
 

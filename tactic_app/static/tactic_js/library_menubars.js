@@ -758,6 +758,13 @@ var TileMenubar = /*#__PURE__*/function (_React$Component4) {
       $.getJSON("".concat($SCRIPT_ROOT, "/unload_all_tiles"), _toaster.doFlash);
     }
   }, {
+    key: "_unload_module",
+    value: function _unload_module() {
+      var resource_name = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      if (!resource_name) resource_name = this.props.list_of_selected[0];
+      $.getJSON("".concat($SCRIPT_ROOT, "/unload_one_module/").concat(resource_name), _toaster.doFlash);
+    }
+  }, {
     key: "_tile_delete",
     value: function _tile_delete() {
       var resource_name = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
@@ -851,6 +858,10 @@ var TileMenubar = /*#__PURE__*/function (_React$Component4) {
         text: "load",
         icon: "upload",
         onClick: this._load_tile
+      }, {
+        text: "unload",
+        icon: "undo",
+        onClick: this._unload_module
       }, {
         text: "__divider__"
       }, {
@@ -947,8 +958,14 @@ var TileMenubar = /*#__PURE__*/function (_React$Component4) {
             _this10._load_tile();
           }
         }, {
-          name_text: "Unload All Tiles",
-          icon_name: "clean",
+          name_text: "Unload",
+          icon_name: "undo",
+          click_handler: function click_handler() {
+            _this10._unload_module();
+          }
+        }, {
+          name_text: "Reset",
+          icon_name: "reset",
           click_handler: this._unload_all_tiles
         }],
         Compare: [{

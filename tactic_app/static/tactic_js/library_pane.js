@@ -377,8 +377,8 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "_handleRowUpdate",
     value: function _handleRowUpdate(res_dict) {
       var res_name = res_dict.name;
-      var res_tags = res_dict.tags.split(" ");
       var ind = this.get_data_dict_index(res_name);
+      if (!ind) return;
 
       var new_data_dict = _lodash["default"].cloneDeep(this.state.data_dict);
 
@@ -402,30 +402,34 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         "data_dict": new_data_dict
       };
 
-      var new_tag_list = _lodash["default"].cloneDeep(this.state.tag_list);
+      if ("tags" in res_dict) {
+        var res_tags = res_dict.tags.split(" ");
 
-      var new_tag_found = false;
+        var new_tag_list = _lodash["default"].cloneDeep(this.state.tag_list);
 
-      var _iterator3 = _createForOfIteratorHelper(res_tags),
-          _step3;
+        var new_tag_found = false;
 
-      try {
-        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-          var tag = _step3.value;
+        var _iterator3 = _createForOfIteratorHelper(res_tags),
+            _step3;
 
-          if (!new_tag_list.includes(tag)) {
-            new_tag_list.push(tag);
-            new_tag_found = true;
+        try {
+          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+            var tag = _step3.value;
+
+            if (!new_tag_list.includes(tag)) {
+              new_tag_list.push(tag);
+              new_tag_found = true;
+            }
           }
+        } catch (err) {
+          _iterator3.e(err);
+        } finally {
+          _iterator3.f();
         }
-      } catch (err) {
-        _iterator3.e(err);
-      } finally {
-        _iterator3.f();
-      }
 
-      if (new_tag_found) {
-        new_state["tag_list"] = new_tag_list;
+        if (new_tag_found) {
+          new_state["tag_list"] = new_tag_list;
+        }
       }
 
       this.setState(new_state);

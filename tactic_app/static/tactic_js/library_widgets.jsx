@@ -5,17 +5,16 @@ import React from "react";
 import PropTypes from 'prop-types';
 import hash from "object-hash"
 
-import { InputGroup, HotkeysProvider, Menu, MenuItem, FormGroup, Switch, Card, Button, ButtonGroup } from "@blueprintjs/core";
+import { InputGroup, HotkeysProvider, Menu, MenuItem, Icon, FormGroup, Switch, Button, ButtonGroup } from "@blueprintjs/core";
 import { Cell, Column, Table2, ColumnHeaderCell, RegionCardinality, TruncatedFormat, Regions } from "@blueprintjs/table";
 import {Omnibar} from "@blueprintjs/select"
 import _ from 'lodash';
 
-import {postAjax} from "./communication_react.js"
+
 import {doBinding} from "./utilities_react.js";
 
 export {SearchForm}
 export {BpSelectorTable}
-export {LoadedTileList}
 export {LibraryOmnibar}
 
 class OmnibarItem extends React.Component{
@@ -304,12 +303,22 @@ class BpSelectorTable extends React.Component {
                     </Cell>
                 )
             }
-            let the_text;
+            let the_body;
             if (Object.keys(self.props.data_dict[rowIndex]).includes(column_name)) {
-                the_text = self.props.data_dict[rowIndex][column_name];
+                let the_text = self.props.data_dict[rowIndex][column_name];
+                if (the_text.startsWith("icon:")) {
+                    the_text = the_text.replace(/(^icon:)/gi, "");
+                    the_body = <Icon icon={the_text} size={14}/>
+                }
+                else {
+                    the_body = (<TruncatedFormat>
+                                {the_text}
+                            </TruncatedFormat>)
+                }
+
             }
             else {
-                the_text = ""
+                the_body = ""
             }
             let tclass;
             if (this.props.open_resources &&
@@ -328,9 +337,7 @@ class BpSelectorTable extends React.Component {
                           wrapText={true}>
                     <React.Fragment>
                         <div className={tclass} onDoubleClick={()=>self.props.handleRowDoubleClick(self.props.data_dict[rowIndex])}>
-                            <TruncatedFormat>
-                                {the_text}
-                            </TruncatedFormat>
+                                {the_body}
                         </div>
                     </React.Fragment>
                 </Cell>
@@ -339,15 +346,28 @@ class BpSelectorTable extends React.Component {
     }
 
     _renderMenu(sortColumn) {
-            let sortAsc = () => {this.props.sortColumn(sortColumn, this.props.columns[sortColumn].sort_field, "ascending")};
-            let sortDesc = () => {this.props.sortColumn(sortColumn, this.props.columns[sortColumn].sort_field, "descending")};
-            return (
-                <Menu>
-                    <MenuItem icon="sort-asc" onClick={sortAsc} text="Sort Asc"/>
-                    <MenuItem icon="sort-desc" onClick={sortDesc} text="Sort Desc"/>
-                </Menu>
-            );
+        if (!this.props.columns[sortColumn].sort_field) return null;
+        let sortAsc = () => {this.props.sortColumn(sortColumn, this.props.columns[sortColumn].sort_field, "ascending")};
+        let sortDesc = () => {this.props.sortColumn(sortColumn, this.props.columns[sortColumn].sort_field, "descending")};
+        return (
+            <Menu>
+                <MenuItem icon="sort-asc" onClick={sortAsc} text="Sort Asc"/>
+                <MenuItem icon="sort-desc" onClick={sortDesc} text="Sort Desc"/>
+            </Menu>
+        );
+    }
+
+    _columnHeaderNameRenderer(the_text) {
+        let the_body;
+        if (the_text.startsWith("icon:")) {
+            the_text = the_text.replace(/(^icon:)/gi, "");
+            the_body = <Icon icon={the_text} size={14}/>
         }
+        else {
+            the_body = <div className="bp3-table-truncated-text">{the_text}</div>
+        }
+        return the_body
+    }
 
     render() {
         let self = this;
@@ -355,6 +375,7 @@ class BpSelectorTable extends React.Component {
         let columns = column_names.map((column_name)=> {
             const cellRenderer = self._cellRendererCreator(column_name);
             const columnHeaderCellRenderer = () => <ColumnHeaderCell name={column_name}
+                                                                     nameRenderer={this._columnHeaderNameRenderer}
                         menuRenderer={()=>{return(self._renderMenu(column_name))}}/>;
 
             return <Column cellRenderer={cellRenderer}
@@ -423,84 +444,8 @@ BpSelectorTable.defaultProps = {
     draggable: true
 };
 
-class LoadedTileList extends React.Component {
-
-    constructor(props) {
-        super(props);
-        this.state = {default_list: [],
-                failed_list: [],
-                other_list: []
-
-        };
-        this.socket_counter = null;
-    }
-
-    set_state_from_dict(tldict) {
-        this.setState({
-            default_list: tldict.default_tiles,
-            failed_list: tldict.failed_loads,
-            other_list: tldict.nondefault_tiles
-        })
-    }
-
-    componentDidMount() {
-        let self = this;
-        this.initSocket();
-        postAjax("get_loaded_tile_lists", {}, function(data) {
-            let tldict = data.tile_load_dict;
-            self.set_state_from_dict(tldict)
-        })
-    }
-
-    initSocket() {
-        let self = this;
-        this.props.tsocket.attachListener('update-loaded-tile-list', (data)=>self.set_state_from_dict(data.tile_load_dict));
-    }
-
-    render () {
-        let default_items = this.state.default_list.map((tile_name) => (
-            <p key={tile_name}>
-                {tile_name}
-            </p>
-        ));
-        let failed_items = this.state.failed_list.map((tile_name) => (
-            <p key={tile_name}>
-                <a style={{color: "red"}}>
-                    {tile_name + "(failed)"}
-                </a>
-            </p>
-        ));
-        let other_loads = this.state.other_list.map((tile_name) => (
-            <p key={tile_name}>
-                {tile_name}
-            </p>
-        ));
-        return (
-            <div id="loaded_tile_widget" className="d-flex flex-row">
-                <Card>
-                    <h6>
-                        Loaded Default
-                    </h6>
-                        {default_items}
-                        {failed_items}
-                </Card>
-                <Card style={{marginLeft: 10}}>
-                    <h6>
-                        Loaded Other
-                    </h6>
-                        {other_loads}
-                </Card>
-            </div>
-        )
-    }
-}
-
-LoadedTileList.propTypes = {
-    tsocket: PropTypes.object
-};
-
-
 const MAX_INITIAL_CELL_WIDTH = 300;
+const ICON_WIDTH = 35;
 
 function compute_initial_column_widths(header_list, data_list) {
     const ncols = header_list.length;
@@ -538,7 +483,12 @@ function compute_initial_column_widths(header_list, data_list) {
         let cols_to_remove = [];
         for (let c of columns_remaining) {
             the_text = the_row[c];
-            the_width = ctx.measureText(the_text).width + added_body_width;
+            if (the_text.startsWith("icon:")) {
+                the_width = ICON_WIDTH
+            }
+            else {
+                the_width = ctx.measureText(the_text).width + added_body_width;
+            }
 
             if (the_width > max_field_width) {
                 the_width = max_field_width;

@@ -50,6 +50,8 @@ class TileManager(LibraryResourceManager):
                          login_required(self.last_saved_view_in_context), methods=['get', 'post'])
         app.add_url_rule('/get_api_html', "get_api_html",
                          login_required(self.get_api_html), methods=['get', 'post'])
+        app.add_url_rule('/unload_one_module/<module_name>', "unload_one_module",
+                         login_required(self.unload_one_module), methods=['get', 'post'])
         app.add_url_rule('/unload_all_tiles', "unload_all_tiles",
                          login_required(self.unload_all_tiles), methods=['get', 'post'])
         app.add_url_rule('/add_tile_module', "add_tile_module",
@@ -281,12 +283,18 @@ class TileManager(LibraryResourceManager):
     def unload_all_tiles(self):
         try:
             loaded_tile_management.unload_user_tiles(current_user.username)
-            socketio.emit('update-loaded-tile-list', {"tile_load_dict": self.loaded_tile_lists(current_user)},
-                          namespace='/main', room=current_user.get_id())
+            self.refresh_selector_list(current_user)
             socketio.emit('update-menus', {}, namespace='/main', room=current_user.get_id())
             return jsonify({"message": "Tiles successfully unloaded", "alert_type": "alert-success"})
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error unloading tiles")
+
+    def unload_one_module(self, module_name):
+        user_obj = current_user
+        loaded_tile_management.unload_one_module(user_obj.username, module_name)
+        self.update_selector_row({"name": module_name, "icon:upload": ""}, user_obj)
+        socketio.emit('update-menus', {}, namespace='/main', room=current_user.get_id())
+        return jsonify({"success": True, "message": "Tile unloaded"})
 
     def send_tile_source_changed_message(self, data):
         socketio.emit('tile-source-change', data, nhandamespace='/main', room=data["user_id"])
@@ -328,8 +336,20 @@ class TileManager(LibraryResourceManager):
             colname = repository_user.tile_collection_name
         else:
             colname = current_user.tile_collection_name
+        result = self.grab_resource_list_chunk(colname, "tile_module_name", "tile_module", None, False)
 
-        return self.grab_resource_list_chunk(colname, "tile_module_name", "tile_module")
+        if not request.json["is_repository"]:
+            failed_loads = set(loaded_tile_management.get_failed_loads_list(current_user.username))
+            successful_loads = set(loaded_tile_management.get_loaded_user_modules(current_user.username))
+            chunk_dict = result["chunk_dict"]
+            for ckey, val in chunk_dict.items():
+                if val["name"] in failed_loads:
+                    val["icon:upload"] = "icon:error"
+                elif val["name"] in successful_loads:
+                    val["icon:upload"] = "icon:upload"
+                else:
+                    val["icon:upload"] = ""
+        return jsonify(result)
 
     def create_tile_module(self):
         user_obj = current_user
