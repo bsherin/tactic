@@ -196,8 +196,8 @@ class LibraryHomeApp extends React.Component {
         }
         let collection_pane = (
                         <LibraryPane {...lib_props}
-                                    columns={{"name": {"sort_field": "name", "first_sort": "ascending"},
-                                              "type": {"sort_field": "type", "first_sort": "ascending"},
+                                    columns={{"icon:th": {"sort_field": "type", "first_sort": "ascending"},
+                                              "name": {"sort_field": "name", "first_sort": "ascending"},
                                              "created": {"sort_field": "created_for_sort", "first_sort": "descending"},
                                               "updated": {"sort_field": "updated_for_sort", "first_sort": "ascending"},
                                              "tags": {"sort_field": "tags", "first_sort": "ascending"}
@@ -216,6 +216,12 @@ class LibraryHomeApp extends React.Component {
                         />
         );
         let projects_pane = (<LibraryPane {...lib_props}
+                                            columns={{"icon:projects": {"sort_field": "type", "first_sort": "ascending"},
+                                              "name": {"sort_field": "name", "first_sort": "ascending"},
+                                             "created": {"sort_field": "created_for_sort", "first_sort": "descending"},
+                                              "updated": {"sort_field": "updated_for_sort", "first_sort": "ascending"},
+                                             "tags": {"sort_field": "tags", "first_sort": "ascending"}
+                                             }}
                                           res_type="project"
                                           handleCreateViewer={this.props.handleCreateViewer}
                                           open_resources={this.props.open_resources ? this.props.open_resources["project"] : null}
@@ -229,11 +235,12 @@ class LibraryHomeApp extends React.Component {
             />
         );
         let tiles_pane = (<LibraryPane {...lib_props}
-                                    columns={{"name": {"sort_field": "name", "first_sort": "ascending"},
+                                    columns={{"icon:code": {"sort_field": "type", "first_sort": "ascending"},
+                                              "name": {"sort_field": "name", "first_sort": "ascending"},
                                               "icon:upload": {"sort_field": null, "first_sort": "ascending"},
-                                             "created": {"sort_field": "created_for_sort", "first_sort": "descending"},
+                                              "created": {"sort_field": "created_for_sort", "first_sort": "descending"},
                                               "updated": {"sort_field": "updated_for_sort", "first_sort": "ascending"},
-                                             "tags": {"sort_field": "tags", "first_sort": "ascending"}
+                                              "tags": {"sort_field": "tags", "first_sort": "ascending"}
                                              }}
                                        res_type="tile"
                                        handleCreateViewer={this.props.handleCreateViewer}

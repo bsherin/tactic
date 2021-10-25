@@ -340,12 +340,12 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
 
       var collection_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
         columns: {
-          "name": {
-            "sort_field": "name",
+          "icon:th": {
+            "sort_field": "type",
             "first_sort": "ascending"
           },
-          "type": {
-            "sort_field": "type",
+          "name": {
+            "sort_field": "name",
             "first_sort": "ascending"
           },
           "created": {
@@ -374,6 +374,28 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
       }));
 
       var projects_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
+        columns: {
+          "icon:projects": {
+            "sort_field": "type",
+            "first_sort": "ascending"
+          },
+          "name": {
+            "sort_field": "name",
+            "first_sort": "ascending"
+          },
+          "created": {
+            "sort_field": "created_for_sort",
+            "first_sort": "descending"
+          },
+          "updated": {
+            "sort_field": "updated_for_sort",
+            "first_sort": "ascending"
+          },
+          "tags": {
+            "sort_field": "tags",
+            "first_sort": "ascending"
+          }
+        },
         res_type: "project",
         handleCreateViewer: this.props.handleCreateViewer,
         open_resources: this.props.open_resources ? this.props.open_resources["project"] : null,
@@ -387,6 +409,10 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
 
       var tiles_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
         columns: {
+          "icon:code": {
+            "sort_field": "type",
+            "first_sort": "ascending"
+          },
           "name": {
             "sort_field": "name",
             "first_sort": "ascending"

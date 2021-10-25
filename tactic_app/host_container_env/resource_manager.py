@@ -150,14 +150,6 @@ class ResourceManager(ExceptionMixin):
     def clear_um_message(self, library_id):
         socketio.emit('clear-status-msg', {"main_id": library_id}, namespace='/main', room=library_id)
 
-    # def start_library_spinner(self, library_id):
-    #     print("starting the library spinner")
-    #     socketio.emit('start-spinner', {"main_id": library_id}, namespace='/library', room=library_id)
-    #
-    # def stop_library_spinner(self, library_id):
-    #     print("stopping the library spinner")
-    #     socketio.emit('stop-spinner', {"main_id": library_id}, namespace='/library', room=library_id)
-
     def send_import_report(self, result, library_id):
         if "content" in result:
             content = result["content"]

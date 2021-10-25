@@ -295,15 +295,18 @@ class CollectionManager(LibraryResourceManager):
             string_start = user_obj.username + ".data_collection."
             found_collections = []
             all_tags = []
+            icon_dict = {"table": "icon:th", "freeform": "icon:align-left"}
             for cname in cnames:
                 m = re.search(string_start + "(.*)", cname)
                 if m:
                     mdata = db[cname].find_one({"name": "__metadata__"})
                     entry = self.build_res_dict(m.group(1), mdata, user_obj)
                     if "type" in mdata:
-                        entry["doc_type"] = mdata["type"]
+                        entry["doc_type"] = icon_dict[mdata["type"]]
+                        entry["icon:th"] = entry["doc_type"]
                     else:
-                        entry["doc_type"] = "table"
+                        entry["doc_type"] = icon_dict["table"]
+                        entry["icon:th"] = entry["doc_type"]
                     if re.match(search_text, m.group(1)):
                         if search_spec["active_tag"]:
                             if search_spec["active_tag"] in self.get_all_subtags(entry["tags"]):
