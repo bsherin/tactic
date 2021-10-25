@@ -338,6 +338,9 @@ class TileManager(LibraryResourceManager):
             colname = current_user.tile_collection_name
         result = self.grab_resource_list_chunk(colname, "tile_module_name", "tile_module", None, False)
 
+        type_dict = {"standard": "icon:code",
+                     "matplotlib": "icon:timeline-line-chart",
+                     "d3": "icon:timeline-area-chart"}
         if not request.json["is_repository"]:
             failed_loads = set(loaded_tile_management.get_failed_loads_list(current_user.username))
             successful_loads = set(loaded_tile_management.get_loaded_user_modules(current_user.username))
@@ -349,6 +352,11 @@ class TileManager(LibraryResourceManager):
                     val["icon:upload"] = "icon:upload"
                 else:
                     val["icon:upload"] = ""
+                if "type" in val and val["type"] in type_dict:
+                    val["icon:code"] = type_dict[val["type"]]
+                else:
+                    val["icon:code"] = type_dict["standard"]
+
         return jsonify(result)
 
     def create_tile_module(self):

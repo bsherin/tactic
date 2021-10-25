@@ -237,8 +237,20 @@ class ProjectManager(LibraryResourceManager):
         else:
             colname = current_user.project_collection_name
 
-        return self.grab_resource_list_chunk(colname, "project_name", None,
-                                             ["collection_name", "loaded_tiles", "type"])
+        result = self.grab_resource_list_chunk(colname, "project_name", None,
+                                             ["collection_name", "loaded_tiles", "type"], False)
+        chunk_dict = result["chunk_dict"]
+        icon_dict = {"table": "icon:projects",
+                     "freeform": "icon:projects",
+                     "notebook": "icon:console",
+                     "jupyter": "icon:globe-network"}
+
+        for ckey, val in chunk_dict.items():
+            if "type" in val:
+                val["icon:projects"] = icon_dict[val["type"]]
+            else:
+                val["icon:projects"] = icon_dict["table"]
+        return jsonify(result)
 
     def rename_me(self, old_name):
         try:
