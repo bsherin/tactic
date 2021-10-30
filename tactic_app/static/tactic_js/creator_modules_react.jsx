@@ -4,17 +4,71 @@ import React from "react";
 import PropTypes from 'prop-types';
 
 import { Button, Card, Collapse, Divider, Menu, MenuItem, MenuDivider } from "@blueprintjs/core";
+import {RegionCardinality} from "@blueprintjs/table";
 
 import {Toolbar} from "./blueprint_toolbar.js";
 import {postAjax} from "./communication_react.js";
 import {SearchForm} from "./library_widgets.js";
-import {LabeledSelectList, LabeledFormField, BpOrderableTable, GlyphButton} from "./blueprint_react_widgets.js";
+import {LabeledSelectList, LabeledFormField, LabeledTextArea, BpOrderableTable, GlyphButton} from "./blueprint_react_widgets.js";
 import {doFlash} from "./toaster.js";
 import _ from 'lodash';
-import {doBinding} from "./utilities_react";
+import {doBinding, isInt} from "./utilities_react";
 import {BpSelect} from "./blueprint_mdata_fields";
 
-export {OptionModule, ExportModule, CommandsModule}
+export {OptionModule, ExportModule, CommandsModule, correctOptionListTypes}
+
+function correctType(type, val, error_flag="__ERROR__") {
+    let result;
+    if (val == null || val.length == 0) {
+        return null
+    }
+    switch (type) {
+        case "int":
+            if (isInt(val)) {
+                result = typeof val == "number" ? val : parseInt(val)
+            }
+            else {
+                result = error_flag
+            }
+            break;
+        case "float":
+            if (isNaN(Number(val)) && isNaN(parseFloat(val))) {
+                result = error_flag
+            } else {
+                result = typeof val == "number" ? val : parseFloat(val)
+            }
+            break;
+        case "boolean":
+            if (typeof val == "boolean") {
+                result = val
+            }
+            else {
+                let lval = val.toLowerCase();
+                if (lval == "false") {
+                    result = false
+                }
+                else if (lval == "true") {
+                    result = true;
+                }
+                else {
+                    result = error_flag;
+                }
+            }
+            break;
+        default:
+            result = val;
+            break;
+    }
+    return result
+}
+
+function correctOptionListTypes(option_list) {
+    let copied_olist = _.cloneDeep(option_list);
+    for (let option of copied_olist) {
+        option.default = correctType(option.type, option.default, null)
+    }
+    return copied_olist
+}
 
 class OptionModuleForm extends React.Component {
 
@@ -23,14 +77,8 @@ class OptionModuleForm extends React.Component {
         this.option_types = ['text', 'int', 'float', 'boolean', 'textarea', 'codearea', 'column_select', 'document_select',
             'list_select', 'collection_select', 'palette_select', 'pipe_select', 'custom_list', 'function_select',
             'class_select', 'tile_select', 'divider'];
-        this.taggable_types = ["class_select", "function_select", "pipe_select", "list_select",
-                                      "collection_select"];
+        this.taggable_types = ["class_select", "function_select", "pipe_select", "list_select", "collection_select"];
         this.state = {
-            "name": "",
-            "type": "text",
-            "default": "",
-            "special_list": "",
-            "tags": ""
         };
         this.handleNameChange = this.handleNameChange.bind(this);
         this.handleDefaultChange = this.handleDefaultChange.bind(this);
@@ -40,19 +88,25 @@ class OptionModuleForm extends React.Component {
         this.handleSpecialListChange = this.handleSpecialListChange.bind(this)
     }
 
+    _setFormState(new_state) {
+       let new_form_state = Object.assign(_.cloneDeep(this.props.form_state), new_state);
+       this.props.setFormState(new_form_state)
+    }
+
     handleNameChange(event) {
-        this.setState({ "name": event.target.value });
+        this._setFormState({ "name": event.target.value });
     }
 
     handleDefaultChange(event) {
-        this.setState({ "default": event.target.value });
+        let new_val = this.props.form_state.type == "boolean" ? event.target.checked : event.target.value;
+        this._setFormState({ "default": new_val });
     }
     handleTagChange(event) {
-        this.setState({ "tags": event.target.value });
+        this._setFormState({ "tags": event.target.value });
     }
 
     handleSpecialListChange(event) {
-        this.setState({ "special_list": event.currentTarget.value });
+        this._setFormState({ "special_list": textRowsToArray(event.target.value) });
     }
     
     handleTypeChange(event) {
@@ -64,47 +118,155 @@ class OptionModuleForm extends React.Component {
         if (!this.taggable_types.includes(new_type)) {
             updater["tags"] = ""
         }
+        if (new_type == "boolean") {
+            updater["default"] = false
+        }
 
-        this.setState(updater)
+        this._setFormState(updater)
     }
 
-    handleSubmit() {
-        this.props.handleCreate(this.state)
+    _handleClear() {
+        this._setFormState({
+            name: "",
+            default: "",
+            special_list: "",
+            tags: "",
+            default_warning_text: null,
+            name_warning_text: null
+        })
+    }
+
+    handleSubmit(update) {
+        let copied_state = _.cloneDeep(this.props.form_state);
+        delete copied_state.default_warning_text;
+        delete copied_state.name_warning_text;
+        if (!update && this.props.nameExists(this.props.form_state.name, update)) {
+            this._setFormState({name_warning_text: "Name exists"});
+            return
+        }
+        let val = this.props.form_state.default;
+        let fixed_val = correctType(copied_state.type, val);
+        if (fixed_val == "__ERROR__") {
+            this._setFormState({default_warning_text: "Invalid value"});
+            return
+        } else {
+            copied_state.default = fixed_val
+
+        }
+        this._setFormState({default_warning_text: null, name_warning_text: null});
+        this.props.handleCreate(copied_state, update)
     }
 
     render () {
+        let self = this;
         return (
             <form>
                 <div style={{display: "flex", flexDirection: "row", padding: 25}}>
-                    <LabeledFormField label="Name" onChange={this.handleNameChange} the_value={this.state.name} />
-                    <LabeledSelectList label="Type" option_list={this.option_types} onChange={this.handleTypeChange} the_value={this.state.type}/>
-                    {this.state.type != "divider" &&
-                        <LabeledFormField label="Default" onChange={this.handleDefaultChange} the_value={this.state.default_value}/>
+                    <Button type="submit"
+                            style={{height: "fit-content", alignSelf: "start", marginTop: 23, marginRight: 5}}
+                            text="create"
+                            onClick={e =>{
+                                e.preventDefault();
+                                self.handleSubmit(false)}} />
+                    <Button type="submit"
+                            style={{height: "fit-content", alignSelf: "start", marginTop: 23, marginRight: 5}}
+                            disabled={this.props.active_row == null}
+                            text="update"
+                            onClick={e =>{
+                                e.preventDefault();
+                                self.handleSubmit(true)}} />
+                    <LabeledFormField label="Name" onChange={this.handleNameChange} the_value={this.props.form_state.name}
+                                      helperText={this.props.form_state.name_warning_text}
+                    />
+                    <LabeledSelectList label="Type" option_list={this.option_types} onChange={this.handleTypeChange} the_value={this.props.form_state.type}/>
+                    {this.props.form_state.type != "divider" &&
+                        <LabeledFormField label="Default" onChange={this.handleDefaultChange} the_value={this.props.form_state.default}
+                                          isBool={this.props.form_state.type == "boolean"}
+                                          helperText={this.props.form_state.default_warning_text}
+                        />
                     }
-                    {this.state.type == "custom_list" &&
-                        <LabeledFormField label="Special List" onChange={this.handleSpecialListChange} the_value={this.state.special_list}/>}
-                    {this.taggable_types.includes(this.state.type) &&
-                        <LabeledFormField label="Tag" onChange={this.handleTagChange} the_value={this.state.tag}/>
+                    {this.props.form_state.type == "custom_list" &&
+                        <LabeledTextArea label="Special List"
+                                         onChange={this.handleSpecialListChange}
+                                         the_value={arrayToTextRows(this.props.form_state.special_list)}/>}
+                    {this.taggable_types.includes(this.props.form_state.type) &&
+                        <LabeledFormField label="Tag" onChange={this.handleTagChange} the_value={this.props.form_state.tag}/>
                     }
-                </div>
-                <Button type="submit" text="Create" onClick={e => {
-                    e.preventDefault();
-                    this.handleSubmit()}} />
+
+                    <Button style={{height: "fit-content", alignSelf: "start", marginTop: 23, marginLeft: 5}}
+                            icon="eraser"
+                            onClick={e =>{
+                                e.preventDefault();
+                                self._handleClear()}} />
+                    </div>
             </form>
         )
     }
 }
 
 OptionModuleForm.propTypes = {
-    handleCreate: PropTypes.func
+    handleCreate: PropTypes.func,
+    nameExists: PropTypes.func,
+    setFormState: PropTypes.func,
+    form_state: PropTypes.object,
+    active_row: PropTypes.number
 };
+
+function arrayToString(ar) {
+    let nstring = "[";
+    let isfirst = true;
+    for (let item of ar) {
+        if (!isfirst) {
+            nstring += ", ";
+        } else {
+            isfirst = false
+        }
+        nstring += "'" + String(item) + "'"
+    }
+    nstring += "]";
+    return nstring
+}
+
+function arrayToTextRows(ar) {
+    let nstring = "";
+    let isfirst = true;
+    for (let item of ar) {
+        if (!isfirst) {
+            nstring += "\n";
+        } else {
+            isfirst = false
+        }
+        nstring += String(item)
+    }
+    return nstring
+}
+
+function textRowsToArray(tstring) {
+    let slist = [];
+    for (let item of tstring.toString().split("\n")) {
+        slist.push(item)
+    }
+    return slist
+}
 
 class OptionModule extends React.Component {
 
     constructor(props) {
         super(props);
+        doBinding(this);
+        this.table_ref = React.createRef();
+        this.blank_form = {
+            name: "",
+            type: "text",
+            default: "",
+            special_list: "",
+            tags: "",
+            default_warning_text: null,
+            name_warning_text: null
+        };
         this.state = {
-            "active_row": 0
+            active_row: null,
+            form_state: {...this.blank_form}
         };
         this.handleActiveRowChange = this.handleActiveRowChange.bind(this);
         this.handleCreate = this.handleCreate.bind(this)
@@ -113,7 +275,8 @@ class OptionModule extends React.Component {
     delete_option() {
         let new_data_list = _.cloneDeep(this.props.data_list);
         new_data_list.splice(this.state.active_row, 1);
-        this.props.handleChange(new_data_list)
+        this.props.handleChange(new_data_list);
+        this.setState({active_row: null})
     }
 
     send_doc_text() {
@@ -124,15 +287,59 @@ class OptionModule extends React.Component {
         this.props.handleNotesAppend(res_string);
     }
 
-    handleCreate(new_row) {
-        let new_data_list = this.props.data_list;
-        new_data_list.push(new_row);
-        this.props.handleChange(new_data_list)
+    _clearHighlights() {
+        let new_data_list = [];
+        for (let option of this.props.data_list) {
+            if ("className" in option && option.className) {
+                let new_option = {...option};
+                new_option.className = "";
+                new_data_list.push(new_option)
+            }
+            else {
+                new_data_list.push(option)
+            }
+        }
+        let self = this;
+        // The forceUpdate below is necessary to consistently make the change appear
+        this.props.handleChange(new_data_list, ()=>{self.table_ref.current.forceUpdate()})
     }
 
+    handleCreate(new_row, update) {
+        let new_data_list = [...this.props.data_list];
+        new_row.className = "option-row-highlight";
+        if (update) {
+            new_data_list[this.state.active_row] = new_row;
+
+        }
+        else {
+            new_data_list.push(new_row);
+        }
+        let self = this;
+        this.props.handleChange(new_data_list, ()=>{setTimeout(self._clearHighlights, 5 * 1000);})
+    }
+
+    _setFormState(new_form_state) {
+        this.setState({form_state: new_form_state})
+    }
+
+    _nameExists(name, update) {
+        let rnum = 0;
+        for (let option of this.props.data_list) {
+            if (option.name == name) {
+                return !(update && (rnum == this.state.active_row))
+            }
+            rnum += 1;
+        }
+        return false
+    }
 
     handleActiveRowChange(row_index) {
-        this.setState({"active_row": row_index})
+        let new_form_state = Object.assign({...this.blank_form}, this.props.data_list[row_index]);
+        this.setState({form_state: new_form_state, active_row: row_index})
+    }
+
+    _handleRowDeSelect() {
+        this.setState({active_row: null})
     }
     
     get button_groups() {
@@ -152,10 +359,22 @@ class OptionModule extends React.Component {
         let options_pane_style = {
             "marginTop": 10,
             "marginLeft": 10,
-            "marginRight": 10
+            "marginRight": 10,
+            "height": this.props.available_height
         };
         if (this.state.active_row >= this.props.data_list.length) {
             this.state.active_row = this.props.data_list.length - 1
+        }
+        let copied_dlist = _.cloneDeep(this.props.data_list);
+        for (let option of copied_dlist) {
+            if (typeof option.default == "boolean") {
+                option.default = option.default ? "True" : "False"
+            }
+            for (let param in option) {
+                if (Array.isArray(option[param])) {
+                    option[param] = arrayToString(option[param]);
+                }
+            }
         }
         return (
             <Card elevation={1} id="options-pane" className="d-flex flex-column" style={options_pane_style}>
@@ -164,15 +383,22 @@ class OptionModule extends React.Component {
                 </div>
                 {this.props.foregrounded &&
                     <BpOrderableTable columns={cols}
-                                    data_array={this.props.data_list}
-                                    active_row={this.state.active_row}
-                                    handleActiveRowChange={this.handleActiveRowChange}
-                                    handleChange={this.props.handleChange}
-                                    content_editable={true}
+                                      ref={this.table_ref}
+                                      data_array={copied_dlist}
+                                      active_row={this.state.active_row}
+                                      handleActiveRowChange={this.handleActiveRowChange}
+                                      handleChange={(olist)=>{this.props.handleChange(correctOptionListTypes(olist))}}
+                                      selectionModes={[RegionCardinality.FULL_ROWS]}
+                                      handleDeSelect={this._handleRowDeSelect}
+                                      content_editable={false}
                     />
                 }
 
-                <OptionModuleForm handleCreate={this.handleCreate}/>
+                <OptionModuleForm handleCreate={this.handleCreate}
+                                  active_row={this.state.active_row}
+                                  setFormState={this._setFormState}
+                                  form_state={this.state.form_state}
+                                  nameExists={this._nameExists}/>
             </Card>
         )
     }
@@ -183,7 +409,8 @@ OptionModule.propTypes = {
     data_list: PropTypes.array,
     foregrounded: PropTypes.bool,
     handleChange: PropTypes.func,
-    handleNotesAppend: PropTypes.func
+    handleNotesAppend: PropTypes.func,
+    available_height: PropTypes.number
 };
 
 class ExportModuleForm extends React.Component {
@@ -284,7 +511,8 @@ class ExportModule extends React.Component {
         let exports_pane_style = {
             "marginTop": 10,
             "marginLeft": 10,
-            "marginRight": 10
+            "marginRight": 10,
+            "height": this.props.available_height
         };
         if (this.state.active_row >= this.props.data_list.length) {
             this.state.active_row = this.props.data_list.length - 1
@@ -314,8 +542,8 @@ ExportModule.propTypes = {
     data_list: PropTypes.array,
     foregrounded: PropTypes.bool,
     handleChange: PropTypes.func,
-    handleNotesAppend: PropTypes.func
-
+    handleNotesAppend: PropTypes.func,
+    available_height: PropTypes.number
 };
 
 class CommandsModule extends React.Component {

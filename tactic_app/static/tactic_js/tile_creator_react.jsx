@@ -17,7 +17,7 @@ import {TacticMenubar} from "./menu_utilities.js"
 import {sendToRepository} from "./resource_viewer_react_app.js";
 import {ReactCodemirror} from "./react-codemirror.js";
 import {CombinedMetadata} from "./blueprint_mdata_fields.js";
-import {OptionModule, ExportModule, CommandsModule} from "./creator_modules_react.js";
+import {OptionModule, ExportModule, CommandsModule, correctOptionListTypes} from "./creator_modules_react.js";
 import {HorizontalPanes, VerticalPanes} from "./resizing_layouts.js";
 import {handleCallback, postAjax, postAjaxPromise, postWithCallback} from "./communication_react.js"
 import {withStatus, doFlash} from "./toaster.js"
@@ -49,7 +49,7 @@ function tile_creator_main() {
     postAjaxPromise("view_in_creator_in_context", {"resource_name": window.module_name})
         .then((data)=>{
             creator_props(data, null, gotProps)
-        })
+    })
 }
 
 function creator_props(data, registerDirtyMethod, finalCallback) {
@@ -106,25 +106,6 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
             let result_dict = {"res_type": "tile", "res_name": module_name, "is_repository": false};
             let odict = parsed_data.option_dict;
             let initial_line_number = !window.in_context && window.line_number ? window.line_number : null;
-            for (let option of odict) {
-                for (let param in option) {
-                    if (Array.isArray(option[param])) {
-                        let nstring = "[";
-                        let isfirst = true;
-                        for (let item of option[param]) {
-                            if (!isfirst) {
-                                nstring += ", ";
-                            } else {
-                                isfirst = false
-                            }
-                            nstring += "'" + String(item) + "'"
-                        }
-                        nstring += "]";
-                        option[param] = nstring
-                    }
-
-                }
-            }
 
             finalCallback(
                 {
@@ -145,7 +126,7 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
                     tags: split_tags,
                     notes: mdata.notes,
                     initial_theme: window.theme,
-                    option_list: parsed_data.option_dict,
+                    option_list: correctOptionListTypes(parsed_data.option_dict),
                     export_list: parsed_data.export_list,
                     created: mdata.datestring,
                     registerDirtyMethod: registerDirtyMethod
@@ -196,7 +177,6 @@ TileCreatorToolbar.proptypes = {
 
 TileCreatorToolbar.defaultProps = {
 };
-
 
 const controllable_props = ["resource_name", "usable_width", "usable_height"];
 
@@ -275,8 +255,6 @@ class CreatorApp extends React.Component {
 
         this.state.top_pane_fraction = this.props.is_mpl || this.props.is_d3 ? .5 : 1;
         this.state.left_pane_fraction = .5;
-        // this.state.left_pane_width = this._cProp("usable_width") / 2 - 25,
-        // this.state.bheight = aheight;
 
         this._setResourceNameState = this._setResourceNameState.bind(this);
         this.handleStateChange = this.handleStateChange.bind(this);
@@ -317,18 +295,18 @@ class CreatorApp extends React.Component {
 
     get menu_specs() {
         let ms = {
-                    Save :[{"name_text": "Save", "icon_name": "saved","click_handler": this._saveMe, key_bindings: ['ctrl+s'], tooltip: "Save"},
-                        {"name_text": "Save As...", "icon_name": "floppy-disk", "click_handler": this._saveModuleAs, tooltip: "Save as"},
-                        {"name_text": "Save and Checkpoint", "icon_name": "map-marker", "click_handler": this._saveAndCheckpoint, key_bindings: ['ctrl+m'], tooltip: "Save and checkpoint"}],
-                    Load: [{"name_text": "Save and Load", "icon_name": "upload", "click_handler": this._saveAndLoadModule, key_bindings: ['ctrl+l'], tooltip: "Save and load module"},
-                            {"name_text": "Load", "icon_name": "upload", "click_handler": this._loadModule, tooltip: "Load tile"}],
-                    Compare: [{"name_text": "View History", "icon_name": "history", "click_handler": this._showHistoryViewer, tooltip: "Show history viewer"},
-                              {"name_text": "Compare to Other Modules", "icon_name": "comparison", "click_handler": this._showTileDiffer, tooltip: "Compare to another tile"}],
-                    Transfer: [
-                        {"name_text": "Share", "icon_name": "share",
-                            "click_handler": () => {sendToRepository("tile", this._cProp("resource_name"))}, tooltip: "Send to repository"}
-                    ]
-            };
+            Save :[{name_text: "Save", icon_name: "saved", click_handler: this._saveMe, key_bindings: ['ctrl+s']},
+                   {name_text: "Save As...", icon_name: "floppy-disk", click_handler: this._saveModuleAs},
+                   {name_text: "Save and Checkpoint", icon_name: "map-marker", click_handler: this._saveAndCheckpoint, key_bindings: ['ctrl+m']}],
+            Load: [{name_text: "Save and Load", icon_name: "upload", click_handler: this._saveAndLoadModule, key_bindings: ['ctrl+l']},
+                   {name_text: "Load", icon_name: "upload", click_handler: this._loadModule}],
+            Compare: [{name_text: "View History", icon_name: "history", click_handler: this._showHistoryViewer},
+                      {name_text: "Compare to Other Modules", icon_name: "comparison", click_handler: this._showTileDiffer}],
+            Transfer: [
+                {name_text: "Share", icon_name: "share",
+                    click_handler: () => {sendToRepository("tile", this._cProp("resource_name"))}}
+            ]
+        };
 
         for (let menu in ms) {
             for (let but of ms[menu]) {
@@ -767,8 +745,8 @@ class CreatorApp extends React.Component {
         this.setState(state_stuff)
     }
     
-    handleOptionsChange(new_option_list) {
-        this.setState({"option_list": new_option_list})
+    handleOptionsChange(new_option_list, callback=null) {
+        this.setState({"option_list": new_option_list}, callback)
     }
     
     handleExportsChange(new_export_list) {
@@ -988,7 +966,8 @@ class CreatorApp extends React.Component {
                 </React.Fragment>
             );
         }
-
+        let default_module_height = this.get_height_minus_top_offset(null, 128, 128);
+        let mdata_style = {marginLeft: 20, overflow: "auto", padding: 15, height: default_module_height};
         let mdata_panel = (<CombinedMetadata tags={this.state.tags}
                                              readOnly={this.props.readOnly}
                                               notes={this.state.notes}
@@ -996,13 +975,16 @@ class CreatorApp extends React.Component {
                                               category={this.state.category}
                                               res_type="tile"
                                               handleChange={this.handleStateChange}
+                                             outer_style={mdata_style}
                                                 />);
+
         let option_panel = (
             <OptionModule options_ref={this.options_ref}
                           data_list={this.state.option_list}
                           foregrounded={this.state.foregrounded_panes["options"]}
                           handleChange={this.handleOptionsChange}
                           handleNotesAppend={this._handleNotesAppend}
+                          available_height={default_module_height}
                                 />
         );
         let export_panel = (
@@ -1010,6 +992,7 @@ class CreatorApp extends React.Component {
                           foregrounded={this.state.foregrounded_panes["exports"]}
                           handleChange={this.handleExportsChange}
                           handleNotesAppend={this._handleNotesAppend}
+                          available_height={default_module_height}
                                 />
         );
         let methods_height = this.get_height_minus_top_offset(this.methods_ref, 128, 128);
@@ -1044,7 +1027,7 @@ class CreatorApp extends React.Component {
                 <React.Fragment>
                     <div id="creator-resources" className="d-block">
                         <Tabs id="resource_tabs" selectedTabId={this.state.selectedTabId}
-                                 large={true} onChange={this._handleTabSelect}>
+                                 large={false} onChange={this._handleTabSelect}>
                             <Tab id="metadata" title="metadata" panel={mdata_panel}/>
                             <Tab id="options" title="options" panel={option_panel}/>
                             <Tab id="exports" title="exports" panel={export_panel}/>

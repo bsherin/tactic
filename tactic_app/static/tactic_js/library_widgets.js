@@ -653,11 +653,14 @@ function compute_initial_column_widths(header_list, data_list) {
   // set up a canvas so that we can use it to compute the width of text
 
   var body_font = $($(".bp3-table-truncated-text")[0]).css("font");
+  var header_font = $($(".bp3-table-column-name-text")[0]).css("font");
   var canvas_element = document.getElementById("measure-canvas");
   var ctx = canvas_element.getContext("2d");
-  var added_body_width = 15;
+  var added_body_width = 20;
+  var added_header_width = 30;
   var column_widths = {};
   var columns_remaining = [];
+  ctx.font = header_font;
 
   var _iterator2 = _createForOfIteratorHelper(header_list),
       _step2;
@@ -665,7 +668,13 @@ function compute_initial_column_widths(header_list, data_list) {
   try {
     for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
       var c = _step2.value;
-      column_widths[c] = 0;
+
+      if (c.startsWith("icon:")) {
+        column_widths[c] = ICON_WIDTH;
+      } else {
+        column_widths[c] = ctx.measureText(c).width + added_header_width;
+      }
+
       columns_remaining.push(c);
     }
   } catch (err) {

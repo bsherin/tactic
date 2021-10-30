@@ -20,7 +20,7 @@ CHUNK_SIZE = int(int(os.environ.get("CHUNK_SIZE")) / 2)
 #     socketio.emit('stop-spinner', data, namespace='/library', room=user_id)
 
 
-# noinspection PyMethodMayBeStatic
+# noinspection PyMethodMayBeStatic,PyMissingConstructor
 class ResourceManager(ExceptionMixin):
     is_repository = False
     rep_string = ""
