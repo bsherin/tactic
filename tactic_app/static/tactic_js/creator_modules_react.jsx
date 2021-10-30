@@ -125,17 +125,6 @@ class OptionModuleForm extends React.Component {
         this._setFormState(updater)
     }
 
-    _handleClear() {
-        this._setFormState({
-            name: "",
-            default: "",
-            special_list: "",
-            tags: "",
-            default_warning_text: null,
-            name_warning_text: null
-        })
-    }
-
     handleSubmit(update) {
         let copied_state = _.cloneDeep(this.props.form_state);
         delete copied_state.default_warning_text;
@@ -197,7 +186,7 @@ class OptionModuleForm extends React.Component {
                             icon="eraser"
                             onClick={e =>{
                                 e.preventDefault();
-                                self._handleClear()}} />
+                                self.props.clearForm()}} />
                     </div>
             </form>
         )
@@ -208,6 +197,7 @@ OptionModuleForm.propTypes = {
     handleCreate: PropTypes.func,
     nameExists: PropTypes.func,
     setFormState: PropTypes.func,
+    clearForm: PropTypes.func,
     form_state: PropTypes.object,
     active_row: PropTypes.number
 };
@@ -275,8 +265,15 @@ class OptionModule extends React.Component {
     delete_option() {
         let new_data_list = _.cloneDeep(this.props.data_list);
         new_data_list.splice(this.state.active_row, 1);
-        this.props.handleChange(new_data_list);
-        this.setState({active_row: null})
+        let old_active_row = this.state.active_row;
+        this.props.handleChange(new_data_list, ()=>{
+            if (old_active_row >= this.props.data_list.length) {
+                this._handleRowDeSelect()
+            }
+            else {
+                this.handleActiveRowChange(old_active_row)
+            }
+        });
     }
 
     send_doc_text() {
@@ -338,8 +335,19 @@ class OptionModule extends React.Component {
         this.setState({form_state: new_form_state, active_row: row_index})
     }
 
+    _clearForm() {
+        this._setFormState({
+            name: "",
+            default: "",
+            special_list: "",
+            tags: "",
+            default_warning_text: null,
+            name_warning_text: null
+        })
+    }
+
     _handleRowDeSelect() {
-        this.setState({active_row: null})
+        this.setState({active_row: null}, this._clearForm)
     }
     
     get button_groups() {
@@ -397,6 +405,7 @@ class OptionModule extends React.Component {
                 <OptionModuleForm handleCreate={this.handleCreate}
                                   active_row={this.state.active_row}
                                   setFormState={this._setFormState}
+                                  clearForm={this._clearForm}
                                   form_state={this.state.form_state}
                                   nameExists={this._nameExists}/>
             </Card>
