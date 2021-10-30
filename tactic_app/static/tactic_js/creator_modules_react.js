@@ -230,18 +230,6 @@ var OptionModuleForm = /*#__PURE__*/function (_React$Component) {
       this._setFormState(updater);
     }
   }, {
-    key: "_handleClear",
-    value: function _handleClear() {
-      this._setFormState({
-        name: "",
-        "default": "",
-        special_list: "",
-        tags: "",
-        default_warning_text: null,
-        name_warning_text: null
-      });
-    }
-  }, {
     key: "handleSubmit",
     value: function handleSubmit(update) {
       var copied_state = _lodash["default"].cloneDeep(this.props.form_state);
@@ -348,8 +336,7 @@ var OptionModuleForm = /*#__PURE__*/function (_React$Component) {
         icon: "eraser",
         onClick: function onClick(e) {
           e.preventDefault();
-
-          self._handleClear();
+          self.props.clearForm();
         }
       })));
     }
@@ -362,6 +349,7 @@ OptionModuleForm.propTypes = {
   handleCreate: _propTypes["default"].func,
   nameExists: _propTypes["default"].func,
   setFormState: _propTypes["default"].func,
+  clearForm: _propTypes["default"].func,
   form_state: _propTypes["default"].object,
   active_row: _propTypes["default"].number
 };
@@ -477,12 +465,18 @@ var OptionModule = /*#__PURE__*/function (_React$Component2) {
   _createClass(OptionModule, [{
     key: "delete_option",
     value: function delete_option() {
+      var _this3 = this;
+
       var new_data_list = _lodash["default"].cloneDeep(this.props.data_list);
 
       new_data_list.splice(this.state.active_row, 1);
-      this.props.handleChange(new_data_list);
-      this.setState({
-        active_row: null
+      var old_active_row = this.state.active_row;
+      this.props.handleChange(new_data_list, function () {
+        if (old_active_row >= _this3.props.data_list.length) {
+          _this3._handleRowDeSelect();
+        } else {
+          _this3.handleActiveRowChange(old_active_row);
+        }
       });
     }
   }, {
@@ -600,11 +594,23 @@ var OptionModule = /*#__PURE__*/function (_React$Component2) {
       });
     }
   }, {
+    key: "_clearForm",
+    value: function _clearForm() {
+      this._setFormState({
+        name: "",
+        "default": "",
+        special_list: "",
+        tags: "",
+        default_warning_text: null,
+        name_warning_text: null
+      });
+    }
+  }, {
     key: "_handleRowDeSelect",
     value: function _handleRowDeSelect() {
       this.setState({
         active_row: null
-      });
+      }, this._clearForm);
     }
   }, {
     key: "button_groups",
@@ -644,7 +650,7 @@ var OptionModule = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "render",
     value: function render() {
-      var _this3 = this;
+      var _this4 = this;
 
       var cols = ["name", "type", "default", "special_list", "tags"];
       var options_pane_style = {
@@ -699,7 +705,7 @@ var OptionModule = /*#__PURE__*/function (_React$Component2) {
         active_row: this.state.active_row,
         handleActiveRowChange: this.handleActiveRowChange,
         handleChange: function handleChange(olist) {
-          _this3.props.handleChange(correctOptionListTypes(olist));
+          _this4.props.handleChange(correctOptionListTypes(olist));
         },
         selectionModes: [_table.RegionCardinality.FULL_ROWS],
         handleDeSelect: this._handleRowDeSelect,
@@ -708,6 +714,7 @@ var OptionModule = /*#__PURE__*/function (_React$Component2) {
         handleCreate: this.handleCreate,
         active_row: this.state.active_row,
         setFormState: this._setFormState,
+        clearForm: this._clearForm,
         form_state: this.state.form_state,
         nameExists: this._nameExists
       }));
@@ -732,19 +739,19 @@ var ExportModuleForm = /*#__PURE__*/function (_React$Component3) {
   var _super3 = _createSuper(ExportModuleForm);
 
   function ExportModuleForm(props) {
-    var _this4;
+    var _this5;
 
     _classCallCheck(this, ExportModuleForm);
 
-    _this4 = _super3.call(this, props);
-    _this4.state = {
+    _this5 = _super3.call(this, props);
+    _this5.state = {
       "name": "",
       "tags": ""
     };
-    _this4.handleNameChange = _this4.handleNameChange.bind(_assertThisInitialized(_this4));
-    _this4.handleTagChange = _this4.handleTagChange.bind(_assertThisInitialized(_this4));
-    _this4.handleSubmit = _this4.handleSubmit.bind(_assertThisInitialized(_this4));
-    return _this4;
+    _this5.handleNameChange = _this5.handleNameChange.bind(_assertThisInitialized(_this5));
+    _this5.handleTagChange = _this5.handleTagChange.bind(_assertThisInitialized(_this5));
+    _this5.handleSubmit = _this5.handleSubmit.bind(_assertThisInitialized(_this5));
+    return _this5;
   }
 
   _createClass(ExportModuleForm, [{
@@ -769,7 +776,7 @@ var ExportModuleForm = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "render",
     value: function render() {
-      var _this5 = this;
+      var _this6 = this;
 
       return /*#__PURE__*/_react["default"].createElement("form", null, /*#__PURE__*/_react["default"].createElement("div", {
         style: {
@@ -791,7 +798,7 @@ var ExportModuleForm = /*#__PURE__*/function (_React$Component3) {
         onClick: function onClick(e) {
           e.preventDefault();
 
-          _this5.handleSubmit();
+          _this6.handleSubmit();
         }
       }));
     }
@@ -810,17 +817,17 @@ var ExportModule = /*#__PURE__*/function (_React$Component4) {
   var _super4 = _createSuper(ExportModule);
 
   function ExportModule(props) {
-    var _this6;
+    var _this7;
 
     _classCallCheck(this, ExportModule);
 
-    _this6 = _super4.call(this, props);
-    _this6.state = {
+    _this7 = _super4.call(this, props);
+    _this7.state = {
       "active_row": 0
     };
-    _this6.handleActiveRowChange = _this6.handleActiveRowChange.bind(_assertThisInitialized(_this6));
-    _this6.handleCreate = _this6.handleCreate.bind(_assertThisInitialized(_this6));
-    return _this6;
+    _this7.handleActiveRowChange = _this7.handleActiveRowChange.bind(_assertThisInitialized(_this7));
+    _this7.handleCreate = _this7.handleCreate.bind(_assertThisInitialized(_this7));
+    return _this7;
   }
 
   _createClass(ExportModule, [{
@@ -955,20 +962,20 @@ var CommandsModule = /*#__PURE__*/function (_React$Component5) {
   var _super5 = _createSuper(CommandsModule);
 
   function CommandsModule(props) {
-    var _this7;
+    var _this8;
 
     _classCallCheck(this, CommandsModule);
 
-    _this7 = _super5.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this7));
-    _this7.state = {
+    _this8 = _super5.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this8));
+    _this8.state = {
       search_string: "",
       api_dict: {},
       ordered_categories: [],
       object_api_dict: {},
       ordered_object_categories: []
     };
-    return _this7;
+    return _this8;
   }
 
   _createClass(CommandsModule, [{
@@ -1095,13 +1102,13 @@ var ObjectCategoryEntry = /*#__PURE__*/function (_React$Component6) {
   var _super6 = _createSuper(ObjectCategoryEntry);
 
   function ObjectCategoryEntry(props) {
-    var _this8;
+    var _this9;
 
     _classCallCheck(this, ObjectCategoryEntry);
 
-    _this8 = _super6.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this8));
-    return _this8;
+    _this9 = _super6.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this9));
+    return _this9;
   }
 
   _createClass(ObjectCategoryEntry, [{
@@ -1218,13 +1225,13 @@ var CategoryEntry = /*#__PURE__*/function (_React$Component7) {
   var _super7 = _createSuper(CategoryEntry);
 
   function CategoryEntry(props) {
-    var _this9;
+    var _this10;
 
     _classCallCheck(this, CategoryEntry);
 
-    _this9 = _super7.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this9));
-    return _this9;
+    _this10 = _super7.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this10));
+    return _this10;
   }
 
   _createClass(CategoryEntry, [{
@@ -1289,16 +1296,16 @@ var CommandEntry = /*#__PURE__*/function (_React$Component8) {
   var _super8 = _createSuper(CommandEntry);
 
   function CommandEntry(props) {
-    var _this10;
+    var _this11;
 
     _classCallCheck(this, CommandEntry);
 
-    _this10 = _super8.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this10));
-    _this10.state = {
+    _this11 = _super8.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this11));
+    _this11.state = {
       isOpen: false
     };
-    return _this10;
+    return _this11;
   }
 
   _createClass(CommandEntry, [{
@@ -1381,17 +1388,17 @@ var ApiMenu = /*#__PURE__*/function (_React$Component9) {
   var _super9 = _createSuper(ApiMenu);
 
   function ApiMenu(props) {
-    var _this11;
+    var _this12;
 
     _classCallCheck(this, ApiMenu);
 
-    _this11 = _super9.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this11));
-    _this11.state = {
+    _this12 = _super9.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this12));
+    _this12.state = {
       currently_selected: null,
       menu_created: false
     };
-    return _this11;
+    return _this12;
   }
 
   _createClass(ApiMenu, [{
