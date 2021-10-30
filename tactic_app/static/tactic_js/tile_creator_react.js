@@ -68,6 +68,12 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -87,12 +93,6 @@ function _assertThisInitialized(self) { if (self === void 0) { throw new Referen
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
 function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 
@@ -184,51 +184,6 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
       };
       var odict = parsed_data.option_dict;
       var initial_line_number = !window.in_context && window.line_number ? window.line_number : null;
-
-      var _iterator = _createForOfIteratorHelper(odict),
-          _step;
-
-      try {
-        for (_iterator.s(); !(_step = _iterator.n()).done;) {
-          var option = _step.value;
-
-          for (var param in option) {
-            if (Array.isArray(option[param])) {
-              var nstring = "[";
-              var isfirst = true;
-
-              var _iterator2 = _createForOfIteratorHelper(option[param]),
-                  _step2;
-
-              try {
-                for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-                  var item = _step2.value;
-
-                  if (!isfirst) {
-                    nstring += ", ";
-                  } else {
-                    isfirst = false;
-                  }
-
-                  nstring += "'" + String(item) + "'";
-                }
-              } catch (err) {
-                _iterator2.e(err);
-              } finally {
-                _iterator2.f();
-              }
-
-              nstring += "]";
-              option[param] = nstring;
-            }
-          }
-        }
-      } catch (err) {
-        _iterator.e(err);
-      } finally {
-        _iterator.f();
-      }
-
       finalCallback({
         resource_name: module_name,
         tsocket: tsocket,
@@ -247,7 +202,7 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
         tags: split_tags,
         notes: mdata.notes,
         initial_theme: window.theme,
-        option_list: parsed_data.option_dict,
+        option_list: (0, _creator_modules_react.correctOptionListTypes)(parsed_data.option_dict),
         export_list: parsed_data.export_list,
         created: mdata.datestring,
         registerDirtyMethod: registerDirtyMethod
@@ -382,9 +337,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
 
     _this.cm_list = _this.props.is_mpl || _this.props.is_d3 ? ["tc", "rc", "em"] : ["rc", "em"];
     _this.state.top_pane_fraction = _this.props.is_mpl || _this.props.is_d3 ? .5 : 1;
-    _this.state.left_pane_fraction = .5; // this.state.left_pane_width = this._cProp("usable_width") / 2 - 25,
-    // this.state.bheight = aheight;
-
+    _this.state.left_pane_fraction = .5;
     _this._setResourceNameState = _this._setResourceNameState.bind(_assertThisInitialized(_this));
     _this.handleStateChange = _this.handleStateChange.bind(_assertThisInitialized(_this));
     _this.handleRenderContentChange = _this.handleRenderContentChange.bind(_assertThisInitialized(_this));
@@ -436,69 +389,61 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
 
       var ms = {
         Save: [{
-          "name_text": "Save",
-          "icon_name": "saved",
-          "click_handler": this._saveMe,
-          key_bindings: ['ctrl+s'],
-          tooltip: "Save"
+          name_text: "Save",
+          icon_name: "saved",
+          click_handler: this._saveMe,
+          key_bindings: ['ctrl+s']
         }, {
-          "name_text": "Save As...",
-          "icon_name": "floppy-disk",
-          "click_handler": this._saveModuleAs,
-          tooltip: "Save as"
+          name_text: "Save As...",
+          icon_name: "floppy-disk",
+          click_handler: this._saveModuleAs
         }, {
-          "name_text": "Save and Checkpoint",
-          "icon_name": "map-marker",
-          "click_handler": this._saveAndCheckpoint,
-          key_bindings: ['ctrl+m'],
-          tooltip: "Save and checkpoint"
+          name_text: "Save and Checkpoint",
+          icon_name: "map-marker",
+          click_handler: this._saveAndCheckpoint,
+          key_bindings: ['ctrl+m']
         }],
         Load: [{
-          "name_text": "Save and Load",
-          "icon_name": "upload",
-          "click_handler": this._saveAndLoadModule,
-          key_bindings: ['ctrl+l'],
-          tooltip: "Save and load module"
+          name_text: "Save and Load",
+          icon_name: "upload",
+          click_handler: this._saveAndLoadModule,
+          key_bindings: ['ctrl+l']
         }, {
-          "name_text": "Load",
-          "icon_name": "upload",
-          "click_handler": this._loadModule,
-          tooltip: "Load tile"
+          name_text: "Load",
+          icon_name: "upload",
+          click_handler: this._loadModule
         }],
         Compare: [{
-          "name_text": "View History",
-          "icon_name": "history",
-          "click_handler": this._showHistoryViewer,
-          tooltip: "Show history viewer"
+          name_text: "View History",
+          icon_name: "history",
+          click_handler: this._showHistoryViewer
         }, {
-          "name_text": "Compare to Other Modules",
-          "icon_name": "comparison",
-          "click_handler": this._showTileDiffer,
-          tooltip: "Compare to another tile"
+          name_text: "Compare to Other Modules",
+          icon_name: "comparison",
+          click_handler: this._showTileDiffer
         }],
         Transfer: [{
-          "name_text": "Share",
-          "icon_name": "share",
-          "click_handler": function click_handler() {
+          name_text: "Share",
+          icon_name: "share",
+          click_handler: function click_handler() {
             (0, _resource_viewer_react_app.sendToRepository)("tile", _this3._cProp("resource_name"));
-          },
-          tooltip: "Send to repository"
+          }
         }]
       };
 
       for (var menu in ms) {
-        var _iterator3 = _createForOfIteratorHelper(ms[menu]),
-            _step3;
+        var _iterator = _createForOfIteratorHelper(ms[menu]),
+            _step;
 
         try {
-          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-            var but = _step3.value;
+          for (_iterator.s(); !(_step = _iterator.n()).done;) {
+            var but = _step.value;
             but.click_handler = but.click_handler.bind(this);
           }
         } catch (err) {
-          _iterator3.e(err);
+          _iterator.e(err);
         } finally {
-          _iterator3.f();
+          _iterator.f();
         }
       }
 
@@ -604,21 +549,21 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       if (this.state.search_string == "" || this.state.search_string == null) {
         return true;
       } else {
-        var _iterator4 = _createForOfIteratorHelper(this.cm_list),
-            _step4;
+        var _iterator2 = _createForOfIteratorHelper(this.cm_list),
+            _step2;
 
         try {
-          for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-            var cm = _step4.value;
+          for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+            var cm = _step2.value;
 
             if (this.search_match_numbers[cm]) {
               return false;
             }
           }
         } catch (err) {
-          _iterator4.e(err);
+          _iterator2.e(err);
         } finally {
-          _iterator4.f();
+          _iterator2.f();
         }
 
         return true;
@@ -797,18 +742,18 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       var taglist = this.state.tags;
       var tags = "";
 
-      var _iterator5 = _createForOfIteratorHelper(taglist),
-          _step5;
+      var _iterator3 = _createForOfIteratorHelper(taglist),
+          _step3;
 
       try {
-        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-          var tag = _step5.value;
+        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+          var tag = _step3.value;
           tags = tags + tag + " ";
         }
       } catch (err) {
-        _iterator5.e(err);
+        _iterator3.e(err);
       } finally {
-        _iterator5.f();
+        _iterator3.f();
       }
 
       return tags.trim();
@@ -1047,9 +992,10 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "handleOptionsChange",
     value: function handleOptionsChange(new_option_list) {
+      var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
       this.setState({
         "option_list": new_option_list
-      });
+      }, callback);
     }
   }, {
     key: "handleExportsChange",
@@ -1187,18 +1133,18 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       var my_props = _objectSpread({}, this.props);
 
       if (!this.props.controlled) {
-        var _iterator6 = _createForOfIteratorHelper(controllable_props),
-            _step6;
+        var _iterator4 = _createForOfIteratorHelper(controllable_props),
+            _step4;
 
         try {
-          for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-            var prop_name = _step6.value;
+          for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+            var prop_name = _step4.value;
             my_props[prop_name] = this.state[prop_name];
           }
         } catch (err) {
-          _iterator6.e(err);
+          _iterator4.e(err);
         } finally {
-          _iterator6.f();
+          _iterator4.f();
         }
       }
 
@@ -1337,6 +1283,14 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         }, bc_item));
       }
 
+      var default_module_height = this.get_height_minus_top_offset(null, 128, 128);
+      var mdata_style = {
+        marginLeft: 20,
+        overflow: "auto",
+        padding: 15,
+        height: default_module_height
+      };
+
       var mdata_panel = /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.CombinedMetadata, {
         tags: this.state.tags,
         readOnly: this.props.readOnly,
@@ -1344,7 +1298,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         created: my_props.created,
         category: this.state.category,
         res_type: "tile",
-        handleChange: this.handleStateChange
+        handleChange: this.handleStateChange,
+        outer_style: mdata_style
       });
 
       var option_panel = /*#__PURE__*/_react["default"].createElement(_creator_modules_react.OptionModule, {
@@ -1352,14 +1307,16 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         data_list: this.state.option_list,
         foregrounded: this.state.foregrounded_panes["options"],
         handleChange: this.handleOptionsChange,
-        handleNotesAppend: this._handleNotesAppend
+        handleNotesAppend: this._handleNotesAppend,
+        available_height: default_module_height
       });
 
       var export_panel = /*#__PURE__*/_react["default"].createElement(_creator_modules_react.ExportModule, {
         data_list: this.state.export_list,
         foregrounded: this.state.foregrounded_panes["exports"],
         handleChange: this.handleExportsChange,
-        handleNotesAppend: this._handleNotesAppend
+        handleNotesAppend: this._handleNotesAppend,
+        available_height: default_module_height
       });
 
       var methods_height = this.get_height_minus_top_offset(this.methods_ref, 128, 128);
@@ -1397,7 +1354,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       }, /*#__PURE__*/_react["default"].createElement(_core.Tabs, {
         id: "resource_tabs",
         selectedTabId: this.state.selectedTabId,
-        large: true,
+        large: false,
         onChange: this._handleTabSelect
       }, /*#__PURE__*/_react["default"].createElement(_core.Tab, {
         id: "metadata",

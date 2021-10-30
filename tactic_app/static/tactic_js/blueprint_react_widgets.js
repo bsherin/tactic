@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.LabeledSelectList = LabeledSelectList;
 exports.withTooltip = withTooltip;
-exports.GlyphButton = exports.DragThing = exports.BpOrderableTable = exports.OrderableTable = exports.SelectList = exports.LabeledFormField = void 0;
+exports.GlyphButton = exports.DragThing = exports.BpOrderableTable = exports.OrderableTable = exports.SelectList = exports.LabeledTextArea = exports.LabeledFormField = void 0;
 
 var _react = _interopRequireDefault(require("react"));
 
@@ -261,28 +261,71 @@ DragThing.propTypes = {
   handleDrag: _propTypes["default"].func
 };
 
-var LabeledFormField = /*#__PURE__*/function (_React$Component4) {
-  _inherits(LabeledFormField, _React$Component4);
+var LabeledTextArea = /*#__PURE__*/function (_React$Component4) {
+  _inherits(LabeledTextArea, _React$Component4);
 
-  var _super4 = _createSuper(LabeledFormField);
+  var _super4 = _createSuper(LabeledTextArea);
 
-  function LabeledFormField() {
-    _classCallCheck(this, LabeledFormField);
+  function LabeledTextArea() {
+    _classCallCheck(this, LabeledTextArea);
 
     return _super4.apply(this, arguments);
   }
 
-  _createClass(LabeledFormField, [{
+  _createClass(LabeledTextArea, [{
     key: "render",
     value: function render() {
       return /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
         label: this.props.label,
         style: {
           marginRight: 5
-        }
-      }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
+        },
+        helperText: this.props.helperText
+      }, /*#__PURE__*/_react["default"].createElement(_core.TextArea, {
         onChange: this.props.onChange,
+        style: {
+          resize: "none"
+        },
+        growVertically: true,
         value: this.props.the_value
+      }));
+    }
+  }]);
+
+  return LabeledTextArea;
+}(_react["default"].Component);
+
+exports.LabeledTextArea = LabeledTextArea;
+
+var LabeledFormField = /*#__PURE__*/function (_React$Component5) {
+  _inherits(LabeledFormField, _React$Component5);
+
+  var _super5 = _createSuper(LabeledFormField);
+
+  function LabeledFormField() {
+    _classCallCheck(this, LabeledFormField);
+
+    return _super5.apply(this, arguments);
+  }
+
+  _createClass(LabeledFormField, [{
+    key: "render",
+    value: function render() {
+      var fvalue = this.props.the_value == null ? "" : this.props.the_value;
+      return /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+        label: this.props.label,
+        style: {
+          marginRight: 5
+        },
+        helperText: this.props.helperText
+      }, this.props.isBool ? /*#__PURE__*/_react["default"].createElement(_core.Switch, {
+        onChange: this.props.onChange,
+        checked: this.props.the_value,
+        innerLabel: "False",
+        innerLabelChecked: "True"
+      }) : /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
+        onChange: this.props.onChange,
+        value: fvalue
       }));
     }
   }]);
@@ -293,12 +336,16 @@ var LabeledFormField = /*#__PURE__*/function (_React$Component4) {
 exports.LabeledFormField = LabeledFormField;
 LabeledFormField.propTypes = {
   show: _propTypes["default"].bool,
+  isBool: _propTypes["default"].bool,
   label: _propTypes["default"].string,
   onChange: _propTypes["default"].func,
-  the_value: _propTypes["default"].string
+  the_value: _propTypes["default"].oneOfType([_propTypes["default"].bool, _propTypes["default"].number, _propTypes["default"].string]),
+  helperText: _propTypes["default"].string
 };
 LabeledFormField.defaultProps = {
-  show: true
+  show: true,
+  helperText: null,
+  isBool: false
 };
 
 function LabeledSelectList(props) {
@@ -314,17 +361,17 @@ function LabeledSelectList(props) {
   }));
 }
 
-var SelectList = /*#__PURE__*/function (_React$Component5) {
-  _inherits(SelectList, _React$Component5);
+var SelectList = /*#__PURE__*/function (_React$Component6) {
+  _inherits(SelectList, _React$Component6);
 
-  var _super5 = _createSuper(SelectList);
+  var _super6 = _createSuper(SelectList);
 
   function SelectList(props) {
     var _this3;
 
     _classCallCheck(this, SelectList);
 
-    _this3 = _super5.call(this, props);
+    _this3 = _super6.call(this, props);
     _this3.handleChange = _this3.handleChange.bind(_assertThisInitialized(_this3));
     return _this3;
   }
@@ -388,17 +435,17 @@ SelectList.defaultProps = {
   minimal: false
 };
 
-var TableCell = /*#__PURE__*/function (_React$Component6) {
-  _inherits(TableCell, _React$Component6);
+var TableCell = /*#__PURE__*/function (_React$Component7) {
+  _inherits(TableCell, _React$Component7);
 
-  var _super6 = _createSuper(TableCell);
+  var _super7 = _createSuper(TableCell);
 
   function TableCell(props) {
     var _this4;
 
     _classCallCheck(this, TableCell);
 
-    _this4 = _super6.call(this, props);
+    _this4 = _super7.call(this, props);
     _this4.handleChange = _this4.handleChange.bind(_assertThisInitialized(_this4));
     _this4.td_ref = /*#__PURE__*/_react["default"].createRef();
     return _this4;
@@ -432,17 +479,17 @@ TableCell.propTypes = {
   theColumn: _propTypes["default"].string
 };
 
-var TableRow = /*#__PURE__*/function (_React$Component7) {
-  _inherits(TableRow, _React$Component7);
+var TableRow = /*#__PURE__*/function (_React$Component8) {
+  _inherits(TableRow, _React$Component8);
 
-  var _super7 = _createSuper(TableRow);
+  var _super8 = _createSuper(TableRow);
 
   function TableRow(props) {
     var _this5;
 
     _classCallCheck(this, TableRow);
 
-    _this5 = _super7.call(this, props);
+    _this5 = _super8.call(this, props);
     _this5.handleClick = _this5.handleClick.bind(_assertThisInitialized(_this5));
     return _this5;
   }
@@ -496,15 +543,15 @@ TableRow.defaultProps = {
   content_editable: false
 };
 
-var TableHeader = /*#__PURE__*/function (_React$Component8) {
-  _inherits(TableHeader, _React$Component8);
+var TableHeader = /*#__PURE__*/function (_React$Component9) {
+  _inherits(TableHeader, _React$Component9);
 
-  var _super8 = _createSuper(TableHeader);
+  var _super9 = _createSuper(TableHeader);
 
   function TableHeader() {
     _classCallCheck(this, TableHeader);
 
-    return _super8.apply(this, arguments);
+    return _super9.apply(this, arguments);
   }
 
   _createClass(TableHeader, [{
@@ -532,18 +579,19 @@ TableHeader.propTypes = {
   columns: _propTypes["default"].array
 };
 
-var BpOrderableTable = /*#__PURE__*/function (_React$Component9) {
-  _inherits(BpOrderableTable, _React$Component9);
+var BpOrderableTable = /*#__PURE__*/function (_React$Component10) {
+  _inherits(BpOrderableTable, _React$Component10);
 
-  var _super9 = _createSuper(BpOrderableTable);
+  var _super10 = _createSuper(BpOrderableTable);
 
   function BpOrderableTable(props) {
     var _this7;
 
     _classCallCheck(this, BpOrderableTable);
 
-    _this7 = _super9.call(this, props);
+    _this7 = _super10.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this7));
+    _this7.table_ref = /*#__PURE__*/_react["default"].createRef();
     return _this7;
   }
 
@@ -568,7 +616,13 @@ var BpOrderableTable = /*#__PURE__*/function (_React$Component9) {
   }, {
     key: "_onSelection",
     value: function _onSelection(regions) {
-      if (regions.length == 0) return; // Without this get an error when clicking on a body cell
+      if (regions.length == 0) {
+        if (this.props.handleDeSelect) {
+          this.props.handleDeSelect();
+        }
+
+        return;
+      }
 
       if (regions[0].hasOwnProperty("rows")) {
         this.props.handleActiveRowChange(regions[0]["rows"][0]);
@@ -582,22 +636,42 @@ var BpOrderableTable = /*#__PURE__*/function (_React$Component9) {
       var self = this;
       return function (rowIndex) {
         var the_text;
+        var className;
+
+        if ("className" in self.props.data_array[rowIndex]) {
+          className = self.props.data_array[rowIndex].className;
+        } else {
+          className = null;
+        }
 
         if (rowIndex < self.props.data_array.length && Object.keys(self.props.data_array[rowIndex]).includes(column_name)) {
           the_text = self.props.data_array[rowIndex][column_name];
+          the_text = the_text == null ? "" : the_text;
         } else {
           the_text = "";
         }
 
-        return /*#__PURE__*/_react["default"].createElement(_table.EditableCell, {
-          key: column_name,
-          truncated: true,
-          rowIndex: rowIndex,
-          columnIndex: _this8.props.columns.indexOf(column_name),
-          wrapText: true,
-          onConfirm: self._onConfirmCellEdit,
-          value: the_text
-        });
+        if (_this8.props.content_editable) {
+          return /*#__PURE__*/_react["default"].createElement(_table.EditableCell, {
+            key: column_name,
+            className: className,
+            truncated: true,
+            rowIndex: rowIndex,
+            columnIndex: _this8.props.columns.indexOf(column_name),
+            wrapText: true,
+            onConfirm: self._onConfirmCellEdit,
+            value: the_text
+          });
+        } else {
+          return /*#__PURE__*/_react["default"].createElement(_table.Cell, {
+            key: column_name,
+            className: className,
+            truncated: true,
+            rowIndex: rowIndex,
+            columnIndex: _this8.props.columns.indexOf(column_name),
+            wrapText: true
+          }, the_text);
+        }
       };
     }
   }, {
@@ -622,16 +696,18 @@ var BpOrderableTable = /*#__PURE__*/function (_React$Component9) {
           name: column_name
         });
       });
-      return /*#__PURE__*/_react["default"].createElement(_table.Table, {
+      return /*#__PURE__*/_react["default"].createElement(_core.HotkeysProvider, null, /*#__PURE__*/_react["default"].createElement(_table.Table2, {
         enableFocusedCell: false,
+        ref: this.table_ref,
+        onCompleteRender: this._onCompleteRender,
         numRows: this.props.data_array.length,
         enableColumnReordering: false,
-        selectionModes: [_table.RegionCardinality.FULL_COLUMNS, _table.RegionCardinality.FULL_ROWS],
+        selectionModes: this.props.selectionModes,
         enableRowReordering: true,
         onRowsReordered: this._onRowsReordered,
         onSelection: this._onSelection,
         enableMultipleSelection: false
-      }, columns);
+      }, columns));
     }
   }]);
 
@@ -643,23 +719,27 @@ BpOrderableTable.propTypes = {
   columns: _propTypes["default"].array,
   data_array: _propTypes["default"].array,
   handleActiveRowChange: _propTypes["default"].func,
-  handleChange: _propTypes["default"].func
+  handleDeSelect: _propTypes["default"].func,
+  handleChange: _propTypes["default"].func,
+  selectionModes: _propTypes["default"].array
 };
 BpOrderableTable.defaultProps = {
-  content_editable: false
+  content_editable: true,
+  selectionModes: [_table.RegionCardinality.FULL_COLUMNS, _table.RegionCardinality.FULL_ROWS],
+  handleDeSelect: null
 };
 
-var OrderableTable = /*#__PURE__*/function (_React$Component10) {
-  _inherits(OrderableTable, _React$Component10);
+var OrderableTable = /*#__PURE__*/function (_React$Component11) {
+  _inherits(OrderableTable, _React$Component11);
 
-  var _super10 = _createSuper(OrderableTable);
+  var _super11 = _createSuper(OrderableTable);
 
   function OrderableTable(props) {
     var _this9;
 
     _classCallCheck(this, OrderableTable);
 
-    _this9 = _super10.call(this, props);
+    _this9 = _super11.call(this, props);
     _this9.tbody_ref = /*#__PURE__*/_react["default"].createRef();
     _this9.update_option_order = _this9.update_option_order.bind(_assertThisInitialized(_this9));
     _this9.handleCellChange = _this9.handleCellChange.bind(_assertThisInitialized(_this9));

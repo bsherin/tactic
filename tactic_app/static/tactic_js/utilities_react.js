@@ -10,6 +10,7 @@ exports.propsAreEqual = propsAreEqual;
 exports.arrayMove = arrayMove;
 exports.arraysMatch = arraysMatch;
 exports.get_ppi = get_ppi;
+exports.isInt = isInt;
 exports.remove_duplicates = remove_duplicates;
 exports.doSignOut = doSignOut;
 exports.guid = guid;
@@ -60,6 +61,14 @@ function doBinding(obj) {
   } finally {
     _iterator.f();
   }
+}
+
+function isInt(value) {
+  if (isNaN(value)) {
+    return false;
+  }
+
+  return parseFloat(value) == parseInt(value);
 }
 
 function propsAreEqual(p1, p2) {

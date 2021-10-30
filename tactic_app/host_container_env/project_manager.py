@@ -238,7 +238,7 @@ class ProjectManager(LibraryResourceManager):
             colname = current_user.project_collection_name
 
         result = self.grab_resource_list_chunk(colname, "project_name", None,
-                                             ["collection_name", "loaded_tiles", "type"], False)
+                                               ["collection_name", "loaded_tiles", "type"], False)
         chunk_dict = result["chunk_dict"]
         icon_dict = {"table": "icon:projects",
                      "freeform": "icon:projects",
@@ -306,7 +306,8 @@ class ProjectManager(LibraryResourceManager):
                 taglist.remove(tag)
                 mdata["tags"] = " ".join(taglist)
                 res_name = doc["project_name"]
-                db[current_user.project_collection_name].update_one({"project_name": res_name}, {'$set': {"metadata": mdata}})
+                db[current_user.project_collection_name].update_one({"project_name": res_name},
+                                                                    {'$set': {"metadata": mdata}})
         return
 
     def rename_tag(self, tag_changes):
@@ -324,7 +325,8 @@ class ProjectManager(LibraryResourceManager):
                         taglist.append(new_tag)
                     mdata["tags"] = " ".join(taglist)
                     res_name = doc["project_name"]
-                    db[current_user.project_collection_name].update_one({"project_name": res_name}, {'$set': {"metadata": mdata}})
+                    db[current_user.project_collection_name].update_one({"project_name": res_name},
+                                                                        {'$set': {"metadata": mdata}})
         return
 
 

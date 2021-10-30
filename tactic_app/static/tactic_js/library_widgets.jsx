@@ -455,17 +455,24 @@ function compute_initial_column_widths(header_list, data_list) {
 
     // set up a canvas so that we can use it to compute the width of text
     let body_font = $($(".bp3-table-truncated-text")[0]).css("font");
+    let header_font = $($(".bp3-table-column-name-text")[0]).css("font");
     let canvas_element = document.getElementById("measure-canvas");
     let ctx = canvas_element.getContext("2d");
-    let added_body_width = 15;
+    let added_body_width = 20;
+    let added_header_width = 30;
 
     let column_widths = {};
     let columns_remaining = [];
+    ctx.font = header_font;
     for (let c of header_list) {
-        column_widths[c] = 0;
+        if (c.startsWith("icon:")) {
+            column_widths[c] = ICON_WIDTH
+        }
+        else {
+            column_widths[c] = ctx.measureText(c).width + added_header_width;
+        }
         columns_remaining.push(c)
     }
-
     let the_row;
     let the_width;
     let the_text;

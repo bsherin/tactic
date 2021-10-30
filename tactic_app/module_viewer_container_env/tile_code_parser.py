@@ -199,14 +199,12 @@ class TileParser(object):
             if target.attr == "save_attrs":
                 continue
             val = al.value
-            if isinstance(val, ast.Num):
-                adict[target.attr] = val.n
-            elif isinstance(val, ast.Str):
-                adict[target.attr] = val.s
-            elif isinstance(val, ast.Name):
+            if isinstance(val, ast.Name):
                 adict[target.attr] = val.id
                 if adict[target.attr] == "None":
                     adict[target.attr] = None
+            else:
+                adict[target.attr] = ast.literal_eval(val)
         return adict
 
     def get_exports(self):

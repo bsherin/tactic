@@ -2,11 +2,11 @@
 import React from "react";
 import PropTypes from 'prop-types';
 
-import { Tooltip, Button, FormGroup, InputGroup, HTMLSelect, HTMLTable, Icon } from "@blueprintjs/core";
-import {EditableCell, RowHeaderCell, Column, Table, RegionCardinality} from "@blueprintjs/table";
+import { Tooltip, HotkeysProvider, Button, FormGroup, InputGroup, HTMLSelect, HTMLTable, Switch, TextArea } from "@blueprintjs/core";
+import {EditableCell, Cell, RowHeaderCell, Column, Table2, RegionCardinality} from "@blueprintjs/table";
 
-export {LabeledSelectList, LabeledFormField, SelectList, OrderableTable, BpOrderableTable,
-    DragThing, GlyphButton, withTooltip}
+export {LabeledSelectList, LabeledFormField, LabeledTextArea, SelectList, OrderableTable,
+    BpOrderableTable, DragThing, GlyphButton, withTooltip}
 import {doBinding} from "./utilities_react.js";
 
 function withTooltip(WrappedComponent) {
@@ -151,13 +151,27 @@ DragThing.propTypes = {
     handleDrag: PropTypes.func
 };
 
+class LabeledTextArea extends React.Component {
+    render() {
+        return (
+            <FormGroup label={this.props.label} style={{marginRight: 5}} helperText={this.props.helperText}>
+                <TextArea onChange={this.props.onChange} style={{resize: "none"}} growVertically={true} value={this.props.the_value}/>
+            </FormGroup>
+        )
+    }
+}
 
 class LabeledFormField extends React.Component {
 
     render() {
+        let fvalue = this.props.the_value == null ? "" : this.props.the_value;
         return (
-            <FormGroup label={this.props.label} style={{marginRight: 5}}>
-                <InputGroup onChange={this.props.onChange} value={this.props.the_value}/>
+            <FormGroup label={this.props.label} style={{marginRight: 5}} helperText={this.props.helperText}>
+                {this.props.isBool ?
+                    <Switch onChange={this.props.onChange} checked={this.props.the_value}
+                            innerLabel="False" innerLabelChecked="True" /> :
+                    <InputGroup onChange={this.props.onChange} value={fvalue}/>
+                }
             </FormGroup>
         )
     }
@@ -165,13 +179,20 @@ class LabeledFormField extends React.Component {
 
 LabeledFormField.propTypes = {
     show: PropTypes.bool,
+    isBool: PropTypes.bool,
     label: PropTypes.string,
     onChange: PropTypes.func,
-    the_value: PropTypes.string
+    the_value: PropTypes.oneOfType([
+        PropTypes.bool,
+        PropTypes.number,
+        PropTypes.string]),
+    helperText: PropTypes.string
 };
 
 LabeledFormField.defaultProps = {
-    show: true
+    show: true,
+    helperText: null,
+    isBool: false
 };
 
 function LabeledSelectList(props) {
@@ -349,6 +370,7 @@ class BpOrderableTable extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this);
+        this.table_ref = React.createRef();
     }
 
     _onRowsReordered(oldIndex, newIndex) {
@@ -366,7 +388,12 @@ class BpOrderableTable extends React.Component {
     }
 
     _onSelection(regions) {
-        if (regions.length == 0) return;  // Without this get an error when clicking on a body cell
+        if (regions.length == 0) {
+            if (this.props.handleDeSelect) {
+                this.props.handleDeSelect()
+            }
+            return
+        }
         if (regions[0].hasOwnProperty("rows")) {
             this.props.handleActiveRowChange(regions[0]["rows"][0])
         }
@@ -376,26 +403,49 @@ class BpOrderableTable extends React.Component {
         let self = this;
         return (rowIndex) => {
             let the_text;
+            let className;
+            if ("className" in self.props.data_array[rowIndex]) {
+                className = self.props.data_array[rowIndex].className
+            }
+            else {
+                className = null
+            }
             if ((rowIndex < self.props.data_array.length) && (Object.keys(self.props.data_array[rowIndex]).includes(column_name))) {
                 the_text = self.props.data_array[rowIndex][column_name];
+                the_text = the_text == null ? "" : the_text
             }
             else {
                 the_text = ""
             }
-            return (<EditableCell key={column_name}
+            if (this.props.content_editable) {
+                return (<EditableCell key={column_name}
+                                      className={className}
                                       truncated={true}
                                       rowIndex={rowIndex}
                                       columnIndex={this.props.columns.indexOf(column_name)}
                                       wrapText={true}
                                       onConfirm={self._onConfirmCellEdit}
                                       value={the_text}/>
-            )
+                )
+            }
+            else {
+                return (
+                    <Cell key={column_name}
+                          className={className}
+                          truncated={true}
+                              rowIndex={rowIndex}
+                              columnIndex={this.props.columns.indexOf(column_name)}
+                              wrapText={true}>
+                        {the_text}
+                    </Cell>
+                )
+            }
         };
     }
 
     _rowHeaderCellRenderer(rowIndex) {
         return (<RowHeaderCell key={rowIndex}
-                                   name={rowIndex}/>)
+                               name={rowIndex}/>)
     }
 
     render() {
@@ -403,22 +453,26 @@ class BpOrderableTable extends React.Component {
         let columns = this.props.columns.map((column_name)=> {
             const cellRenderer = self._cellRendererCreator(column_name);
             return <Column cellRenderer={cellRenderer}
-                               enableColumnReordering={false}
-                               key={column_name}
-                               name={column_name}/>
+                           enableColumnReordering={false}
+                           key={column_name}
+                           name={column_name}/>
         });
         return (
-            <Table enableFocusedCell={false}
-                   numRows={this.props.data_array.length}
-                   enableColumnReordering={false}
-                   selectionModes={[RegionCardinality.FULL_COLUMNS, RegionCardinality.FULL_ROWS]}
-                   enableRowReordering={true}
-                   onRowsReordered={this._onRowsReordered}
-                   onSelection={this._onSelection}
-                   enableMultipleSelection={false}
-                   >
-                    {columns}
-                </Table>
+            <HotkeysProvider>
+                <Table2 enableFocusedCell={false}
+                        ref={this.table_ref}
+                        onCompleteRender={this._onCompleteRender}
+                        numRows={this.props.data_array.length}
+                        enableColumnReordering={false}
+                        selectionModes={this.props.selectionModes}
+                        enableRowReordering={true}
+                        onRowsReordered={this._onRowsReordered}
+                        onSelection={this._onSelection}
+                        enableMultipleSelection={false}
+                       >
+                        {columns}
+                    </Table2>
+            </HotkeysProvider>
         )
     }
 }
@@ -427,11 +481,15 @@ BpOrderableTable.propTypes = {
     columns: PropTypes.array,
     data_array: PropTypes.array,
     handleActiveRowChange: PropTypes.func,
+    handleDeSelect: PropTypes.func,
     handleChange: PropTypes.func,
+    selectionModes: PropTypes.array,
 };
 
 BpOrderableTable.defaultProps = {
-    content_editable: false
+    content_editable: true,
+    selectionModes: [RegionCardinality.FULL_COLUMNS, RegionCardinality.FULL_ROWS],
+    handleDeSelect: null
 };
 
 

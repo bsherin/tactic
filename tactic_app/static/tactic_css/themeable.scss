@@ -9,6 +9,11 @@ $dark-table-border-style: $table-border-thickness none;
 $log-panel-font-color: #616161;
 $log-panel-font-color-dark: white;
 
+.option-row-highlight {
+    color: $orange3 !important;
+    font-weight: bold !important
+}
+
 .light-theme {
     &.resource-viewer-holder, &.merge-viewer-outer &.login-body {
       background-color: white
@@ -59,6 +64,8 @@ $log-panel-font-color-dark: white;
             }
         }
     }
+
+
 
     #creator-root, creator-root {
         .light-theme {

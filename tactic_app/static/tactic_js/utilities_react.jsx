@@ -10,7 +10,7 @@ import React from "react";
 import * as ReactDOM from 'react-dom'
 import { Spinner, Text} from "@blueprintjs/core";
 
-export {doBinding, propsAreEqual, arrayMove, arraysMatch, get_ppi};
+export {doBinding, propsAreEqual, arrayMove, arraysMatch, get_ppi, isInt};
 export {remove_duplicates, doSignOut, guid, scrollMeIntoView, renderSpinnerMessage};
 
 function doBinding(obj, seq="_", proto=null) {
@@ -20,6 +20,14 @@ function doBinding(obj, seq="_", proto=null) {
             obj[key] = obj[key].bind(obj);
         }
     }
+}
+
+function isInt(value) {
+  if (isNaN(value)) {
+    return false;
+  }
+
+  return parseFloat(value) == parseInt(value)
 }
 
 function propsAreEqual(p1, p2, skipProps=[]) {
