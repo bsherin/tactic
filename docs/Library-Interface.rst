@@ -1,18 +1,18 @@
 Library Interface
 ===================
 
-This Library interface is what you see when you log in. It is what you use to manage all of the resources in your library,
+This Library interface is what you see when you use to manage the resources in your library,
 such as the data you upload, and the tiles you create or import. It is also from here that you can launch viewers
-and editors of those resources. Here it is, with the :guilabel:`Tiles`  tab selected.
+and editors of those resources. Here it is, with the :guilabel:`Tiles`  pane selected.
 
-.. figure:: images/bplibrary_interface.png
+.. figure:: images/bplibrary_interface2.png
 
 Here's a little tour:
 
 The sidebar
 -------------
 
-There are four tabs accessible from the sidebard on the left, each one corresponding to one of the categories of resources.
+There are four Library panes accessible from the sidebar on the left, each one corresponding to one of the categories of resources.
 They are, from top to bottom:
 
 1. Data Collections. This is your raw data.
@@ -21,14 +21,12 @@ They are, from top to bottom:
 4. Lists. Your lists, obviously.
 5. Code resources. These are explained a bit `here. <Working-With-Code-Resources.html>`__
 
-If you forget which tab is which, hover over the tab with your mouse, and a tooltip will appear.
-
-The toolbar
+The menubar
 -------------
 
-Across the top is a toolbar with a number of small buttons. These differ in function depending on
-what resource you are managing. To learn what these do, hover over the button and a tooltip will appear. I think these
-will mostly be self-explanatory. They do things such as let you view a resource, delete it, combine resources, etc.
+Across the top is each library pane is a menubar with a number of menus These differ in function depending on
+what resource you are managing. I think these will mostly be self-explanatory.
+They do things such as let you view a resource, delete it, combine resources, etc.
 
 The tag tree
 --------------
@@ -53,7 +51,7 @@ there are switches that allow you to search :guilabel:`inside` a resource or sea
 associated with resources.
 
 You can also :kbd:`Right-Click` (or :kbd:`Control-Click`) on a row in the table to access a context menu. The available
-functions replicate a subset of the functions available in the toolbar.
+functions replicate a subset of the functions available in the menubar.
 
 The omnibar
 -------------
@@ -67,11 +65,6 @@ The metadata editor
 Finally, on the ride side of the library interface is a panel where you can view and edit the metadata associated with
 the selected resource.
 
-The loaded tile list
----------------------
-
-Oh, and there's one last thing: In the :guilabel:`Tile` resource tab, below the metadata editor, is a button that
-will let you display the loaded tile list. This shows which tile types are currently loaded.
 
 Keyboard shortcuts
 ---------------------
@@ -80,11 +73,11 @@ Actually, I forgot something else. There are a few handy keyboard shortcuts in t
 
 :kbd:`Tab`
 
-    Cycle forward through the sidebar tabs.
+    Cycle forward through the sidebar panes. (For these purposes, the Libray is treated as a single pane.)
 
 :kbd:`Shift-Tab`
 
-    Cycle backward through the sidebar tabs.
+    Cycle backward through the sidebar panes.
 
 :kbd:`Arrow-Up`, :kbd:`Arrow-Down`
 
@@ -97,4 +90,3 @@ Actually, I forgot something else. There are a few handy keyboard shortcuts in t
 :kbd:`Ctrl-Space`
 
     Show the omnibar.
-

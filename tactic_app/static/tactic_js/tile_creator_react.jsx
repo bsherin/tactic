@@ -1069,6 +1069,7 @@ class CreatorApp extends React.Component {
                                refreshTab={this.props.refreshTab}
                                closeTab={this.props.closeTab}
                                resource_name={this._cProp("resource_name")}
+                               showErrorDrawerButton={true}
                                toggleErrorDrawer={this.props.toggleErrorDrawer}
                                controlled={this.props.controlled}
                                am_selected={this.props.am_selected}

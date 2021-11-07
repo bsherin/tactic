@@ -6,15 +6,15 @@ available for datasets, “table” and “freeform.” Freeform datasets
 consist of a set of unstructured text documents. Table datasets consist
 of a set of tables of data.
 
-To upload data, go to the collections tab of your user library. Then, click
-on the "Import Collection" button located on the right side of the toolbar.
+To upload data, go to the collections tab of your user library. Then select
+"Import Data" from the menubar.
 
 .. note::
 
     You can select any number of files and these files will be loaded as documents within a single
     collection.
 
-.. figure:: images/upload_col_with_arrow.jpeg
+.. figure:: images/upload_col.png
 
 To choose files, you can either click within the dashed space to select them
 manually or drag and drop them in the same area.

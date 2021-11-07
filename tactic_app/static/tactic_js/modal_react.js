@@ -73,7 +73,7 @@ var ModalDialog = /*#__PURE__*/function (_React$Component) {
     var default_name = _this.props.default_value;
     var name_counter = 1;
 
-    while (_this.name_exists(default_name)) {
+    while (_this._name_exists(default_name)) {
       name_counter += 1;
       default_name = _this.props.default_value + String(name_counter);
     }
@@ -134,8 +134,8 @@ var ModalDialog = /*#__PURE__*/function (_React$Component) {
       }
     }
   }, {
-    key: "name_exists",
-    value: function name_exists(name) {
+    key: "_name_exists",
+    value: function _name_exists(name) {
       return this.props.existing_names.indexOf(name) > -1;
     }
   }, {
@@ -148,7 +148,7 @@ var ModalDialog = /*#__PURE__*/function (_React$Component) {
         this.setState({
           "warning_text": msg
         });
-      } else if (this.name_exists(this.state.current_value)) {
+      } else if (this._name_exists(this.state.current_value)) {
         msg = "That name already exists";
         this.setState({
           "warning_text": msg

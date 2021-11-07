@@ -23,7 +23,7 @@ export all of the documents to an excel file.
 The :guilabel:`Project` menu also has an option :guilabel:`change_collection` which lets
 you swap out the data collection in the main data table.
 
-.. figure:: images/maininterfacetop.png
+.. figure:: images/maininterfacetop2.png
 
 There are some useful buttons at the top of the panel that holds the
 table. In the top-left corner is a button that shrinks the entire table
@@ -99,7 +99,7 @@ The Log in brief
 At the bottom of the main interface, on the left, is the log. The top of
 the log looks like this. Nice, huh!
 
-.. figure:: images/bpconsole_top.png
+.. figure:: images/bpconsole_top2.png
 
 As mentioned above, if you click the log button on a tile, then the tile
 will send some sort of information to the log. That’s useful for
@@ -124,18 +124,18 @@ pipes. In order to figure out what’s going on in a project, it’s often
 helpful to be able to poke around inside these exported variables.
 That’s what the exports viewer allows you to do.
 
-.. figure:: images/bpexports_top.png
+.. figure:: images/bpexports_top2.png
 
-The figure above shows the exports viewer with one export display.
-There’s a popup list that lets you select which variable you want to
-view. To actually see it’s contents after selecting it, you have to
-click the :guilabel:`Eval` button. The refresh button at the top left refreshes
-what you see in the heading of the panel. This might be necessary, for
-example, after running the tile in which the selected export appears.
-Note that you might still need to click Eval to see the most current
-contents of this export.
-
+The list on the left allows you to select one of the exports to view.
 The text box in the heading allows you to further specify how the
-variable is evluated.
+variable is evaluated. The little triangle allows you to re-evaluate
+the export. The circle with an arrow sends code to the log that grabs
+this export.
+
+There's a bonus: The exports viewer will also show any variables
+created in the log.
+
+
+
 
 
