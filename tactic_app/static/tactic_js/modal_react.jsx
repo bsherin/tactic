@@ -19,7 +19,7 @@ class ModalDialog extends React.Component {
         doBinding(this);
         let default_name = this.props.default_value;
         var name_counter = 1;
-        while (this.name_exists(default_name)) {
+        while (this._name_exists(default_name)) {
             name_counter += 1;
             default_name = this.props.default_value + String(name_counter)
         }
@@ -53,7 +53,7 @@ class ModalDialog extends React.Component {
         }
     }
 
-    name_exists(name) {
+    _name_exists(name) {
         return (this.props.existing_names.indexOf(name) > -1)
     }
 
@@ -63,7 +63,7 @@ class ModalDialog extends React.Component {
             msg = "An empty name is not allowed here.";
             this.setState({"warning_text": msg})
         }
-        else if (this.name_exists(this.state.current_value)) {
+        else if (this._name_exists(this.state.current_value)) {
             msg = "That name already exists";
             this.setState({"warning_text": msg})
         }

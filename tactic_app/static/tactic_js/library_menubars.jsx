@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 
 import {TacticMenubar} from "./menu_utilities.js";
 import {doBinding} from "./utilities_react";
-import {showModalReact} from "./modal_react";
+import {showModalReact, showSelectDialog} from "./modal_react";
 import {doFlash} from "./toaster";
 import {postAjaxPromise, postWithCallback} from "./communication_react";
 import {showFileImportDialog} from "./import_dialog";
@@ -103,7 +103,12 @@ class CollectionMenubar extends React.Component {
         var res_name = this.props.selected_resource.name;
         let self = this;
         if (!this.props.multi_select) {
-            showModalReact("Name of collection to combine with " + res_name, "collection Name", function (other_name) {
+             $.getJSON(`${$SCRIPT_ROOT}get_resource_names/collection`, function (data) {
+                 showSelectDialog("Select a new collection to combine with " + res_name, "Collection to Combine",
+                     "Cancel", "Combine", doTheCombine, data["resource_names"])
+             });
+
+           function doTheCombine(other_name) {
                 self.props.startSpinner(true);
                 const target = `${$SCRIPT_ROOT}/combine_collections/${res_name}/${other_name}`;
                 $.post(target, (data)=>{
@@ -115,7 +120,7 @@ class CollectionMenubar extends React.Component {
                         doFlash(data);
                     }
                 });
-            }, null, null, null, null)
+            }
         }
         else {
             $.getJSON(`${$SCRIPT_ROOT}get_resource_names/collection`, function (data) {

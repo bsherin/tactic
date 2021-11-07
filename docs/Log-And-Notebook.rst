@@ -14,18 +14,15 @@ the Project menu and select :guilabel:`open-console-as-notebook`. This will
 start a Notebook project using the current contents of the Log.
 
 The second way to create a Notebook project is from the Library
-manager. Click on the projects tab on the left sidebar. Then click |new notebook but reference| in the toolbar.
+manager. Activate the projects pane. Then select :guilabel:`New notebook`
+from the :guilabel:`Open` menu.
 
-.. |new notebook but reference| image:: images/new_notebook_button.png
-   :height: 25
-   :class: inimage
-
-.. image:: images/bpnew_notebook.png
+.. image:: images/bpnew_notebook2.png
 
 Logs and Notebooks pretty much work the same way. You use the buttons at
 the top to manually add new elements:
 
-.. figure:: images/bp_console_top.png
+.. figure:: images/bpconsole_top2.png
 
 |new text but|
     Add a new text cell.
@@ -41,6 +38,8 @@ the top to manually add new elements:
     Pastes the cell from the special cell clipbaord
 |reset but|
     Clears the log namespace and clear all code output
+|stop but|
+    Stop any running cells.
 |clear but|
     Entirely erases all contents from the log.
 |log but|
@@ -53,6 +52,10 @@ the top to manually add new elements:
    :class: inimage
 
 .. |new text but| image:: images/new_text_but.png
+   :height: 25
+   :class: inimage
+
+.. |stop but| image:: images/stop_but.png
    :height: 25
    :class: inimage
 

@@ -403,6 +403,15 @@ class CollectionManager(LibraryResourceManager):
             })
         return doc_list
 
+    def get_doc_type(self, coll_name):
+        user_obj = current_user
+        coll_mdata = user_obj.get_collection_metadata(coll_name)
+        if "type" in coll_mdata and coll_mdata["type"] == "freeform":
+            doc_type = "freeform"
+        else:
+            doc_type = "table"
+        return doc_type
+
     def combine_collections(self, base_collection_name, collection_to_add):
         try:
             user_obj = current_user
@@ -414,11 +423,20 @@ class CollectionManager(LibraryResourceManager):
             if collection_to_add not in user_obj.data_collections:
                 error_string = base_collection_name + " doesn't exist"
                 return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
-
+            doc_type = self.get_doc_type(base_collection_name)
             coll_dict, dm_dict, hl_dict, coll_mdata = user_obj.get_all_collection_info(collection_to_add)
+            if not coll_mdata["type"] == doc_type:
+                error_string = "Cannot combine freeform and table collections"
+                return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
             for dname, doc in coll_dict.items():
+                print("about to append doc " + dname)
+                if doc_type == "freeform":
+                    hlist = None
+                else:
+                    hlist = hl_dict[dname]
+                print("got hlist")
                 user_obj.append_document_to_collection(base_collection_name, dname, doc, coll_mdata["type"],
-                                                       hl_dict[dname], dm_dict[dname])
+                                                       hlist, dm_dict[dname])
             user_obj.update_collection_time(base_collection_name)
             self.update_selector_row(self.build_res_dict(base_collection_name, coll_mdata))
             return jsonify({"success": True,
@@ -600,6 +618,7 @@ class CollectionManager(LibraryResourceManager):
             original_collections = request.json["original_collections"]
             new_name = request.json["new_name"]
             coll_dict, dm_dict, hl_dict, coll_mdata = user_obj.get_all_collection_info(original_collections[0])
+            doc_type = coll_mdata["type"]
             user_obj.create_complete_collection(new_name,
                                                 coll_dict,
                                                 coll_mdata["type"],
@@ -607,10 +626,19 @@ class CollectionManager(LibraryResourceManager):
                                                 hl_dict,
                                                 coll_mdata)
             for col in original_collections[1:]:
+                if not self.get_doc_type(col) == doc_type:
+                    error_string = "Cannot combine freeform and table collections"
+                    return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
+            for col in original_collections[1:]:
                 coll_dict, dm_dict, hl_dict, coll_mdata = user_obj.get_all_collection_info(col)
                 for dname, doc in coll_dict.items():
-                    user_obj.append_document_to_collection(new_name, dname, doc, coll_mdata["type"],
-                                                           hl_dict[dname], dm_dict[dname])
+                    if doc_type == "freeform":
+                        hlist = None
+                    else:
+                        hlist = hl_dict[dname]
+                    user_obj.append_document_to_collection(new_name, dname, doc, doc_type,
+                                                           hlist, dm_dict[dname])
             user_obj.update_collection_time(new_name)
             metadata = user_obj.get_collection_metadata(new_name)
             new_row = self.build_res_dict(new_name, metadata, user_obj)

@@ -191,7 +191,7 @@ var CollectionMenubar = /*#__PURE__*/function (_React$Component2) {
       var self = this;
 
       if (!this.props.multi_select) {
-        (0, _modal_react.showModalReact)("Name of collection to combine with " + res_name, "collection Name", function (other_name) {
+        var doTheCombine = function doTheCombine(other_name) {
           self.props.startSpinner(true);
           var target = "".concat($SCRIPT_ROOT, "/combine_collections/").concat(res_name, "/").concat(other_name);
           $.post(target, function (data) {
@@ -206,7 +206,11 @@ var CollectionMenubar = /*#__PURE__*/function (_React$Component2) {
               (0, _toaster.doFlash)(data);
             }
           });
-        }, null, null, null, null);
+        };
+
+        $.getJSON("".concat($SCRIPT_ROOT, "get_resource_names/collection"), function (data) {
+          (0, _modal_react.showSelectDialog)("Select a new collection to combine with " + res_name, "Collection to Combine", "Cancel", "Combine", doTheCombine, data["resource_names"]);
+        });
       } else {
         $.getJSON("".concat($SCRIPT_ROOT, "get_resource_names/collection"), function (data) {
           (0, _modal_react.showModalReact)("Combine Collections", "Name for combined collection", CreateCombinedCollection, "NewCollection", data["resource_names"]);

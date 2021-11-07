@@ -3,13 +3,13 @@ Settings and Themes
 
 If you click on your username at the top right of the toolbar, you'll be taken to the account interace.
 
-.. image:: images/account_interface.png
+.. image:: images/account_interface2.png
    :scale: 25 %
    :align: center
 
 (Note that your dumpling preferences will not be shared with any third parties.)
 
-I think this is pretty much self-explantory except, perhaps, for the tactic theme and the codemirror dark theme.
+I think this is pretty much self-explantory except, perhaps, for the User Settings.
 
 Dark Theme
 ----------
@@ -44,3 +44,14 @@ Here, for example is what code looks like with the pastel-on-dark theme:
 
 .. image:: images/dark_theme_pastel.png
    :scale: 25 %
+
+Preferred Interface
+--------------------
+There are two choices here, single-window and separate-tabs. In single-window, which
+is currently the default, you'll pretty much do everything in a single browser tab,
+and you'll jump among open panes using the sidebar. One of these single windows
+is called a "context". In separate-tabs mode, things will tend to be opened in
+separate browser tabs.
+
+Note that, at any time, you can click in the toolbar to create a new context or
+tabbed view.
