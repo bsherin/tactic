@@ -396,11 +396,11 @@ def destroy_container(tactic_id, notify=True):
         return -1
 
 
-def destroy_user_containers(owner_id):
+def destroy_user_containers(owner_id, notify=True):
     for cont in cli.containers.list():
         if container_owner(cont) == owner_id:
             uid = container_id(cont)
-            destroy_container(uid)
+            destroy_container(uid, notify)
 
 
 def get_matching_user_containers(owner_id, image_name, other_name):
