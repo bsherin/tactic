@@ -43,9 +43,9 @@ true_host_resources_dir = os.environ.get("TRUE_HOST_RESOURCES_DIR")
 class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationTasksMixin, APISupportTasksMixin,
                  ExportsTasksMixin, ConsoleTasksMixin, DataSupportTasksMixin, ExceptionMixin):
     save_attrs = ["short_collection_name", "collection_name",
-                  "doc_dict", "project_name", "loaded_modules", "user_id",
+                  "doc_dict", "project_name", "loaded_modules",
                   "doc_type", "purgetiles"]
-    notebook_save_attrs = ["project_name", "user_id", "doc_type"]
+    notebook_save_attrs = ["project_name", "doc_type"]
     update_events = ["CellChange", "FreeformTextChange", "CreateColumn", "DeleteColumn", "SearchTable",
                      "SaveTableSpec", "MainClose",
                      "DehighlightTable", "SetCellContent", "RemoveTile", "ColorTextInCell",
@@ -91,7 +91,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         self.ppi = data_dict["ppi"]
         self.username = os.environ.get("USERNAME")
         # self.vmanager = VolumeManager("/code/persist")
-
+        self.user_id = os.environ.get("OWNER")
         if ("project_name" not in data_dict) or (data_dict["doc_type"] == "jupyter"):
             self.doc_type = data_dict["doc_type"]
             self.tile_instances = []
@@ -100,7 +100,6 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             self.project_name = None
             self.console_html = None
             self.console_cm_code = {}
-            self.user_id = os.environ.get("OWNER")
             self.purgetiles = False
             if self.doc_type == "notebook" or self.doc_type == "jupyter":
                 self.collection_name = ""

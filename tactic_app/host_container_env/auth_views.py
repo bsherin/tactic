@@ -91,12 +91,15 @@ def attempt_login():
     user = User.get_user_by_username(data["username"])
     if user is not None and user.verify_password(data["password"]):
         login_user(user, remember=data["remember_me"])
-        user.set_user_timezone_offset(data["tzOffset"])
-        user.set_last_login()
-        print("about to call load_user_default_tiles")
-        error_list = loaded_tile_management.load_user_default_tiles(current_user.username)
-        result_dict["logged_in"] = True
-        result_dict["tile_loading_errors"] = error_list
+        if current_user.is_anonymous:
+            result_dict["logged_in"] = False
+        else:
+            user.set_user_timezone_offset(data["tzOffset"])
+            user.set_last_login()
+            print("about to call load_user_default_tiles")
+            error_list = loaded_tile_management.load_user_default_tiles(current_user.username)
+            result_dict["logged_in"] = True
+            result_dict["tile_loading_errors"] = error_list
     else:
         result_dict["logged_in"] = False
     return jsonify(result_dict)

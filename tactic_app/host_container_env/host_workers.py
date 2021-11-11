@@ -312,7 +312,7 @@ class HostWorker(QWorker):
         print("in remove_mainwindow_task")
         main_id = data["main_id"]
         destroy_child_containers(main_id)
-        destroy_container(main_id, notify=True)
+        destroy_container(main_id, notify=False)
         return {"success": True}
 
     @task_worthy
@@ -581,6 +581,11 @@ class HostWorker(QWorker):
     @task_worthy
     def flash_to_main(self, data):
         socketio.emit("doFlash", data, namespace='/main', room=data["main_id"])
+        return {"success": True}
+
+    @task_worthy
+    def flash_to_user(self, data):
+        socketio.emit("doFlash", data, namespace='/main', room=data["user_id"])
         return {"success": True}
 
     @task_worthy

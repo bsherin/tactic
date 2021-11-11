@@ -65,7 +65,8 @@ try:
     STEP_SIZE = int(os.environ.get("STEP_SIZE"))
 
     # Now the local server branch is what executes on the remote server
-    print("getting mongo client")
+    print("getting mongo client mongo_uri = " + str(mongo_uri))
+
     client = MongoClient(mongo_uri, serverSelectionTimeoutMS=30000)
     print("got the client")
     # force connection on a request as the

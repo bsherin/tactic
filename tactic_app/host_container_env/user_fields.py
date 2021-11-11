@@ -2,6 +2,8 @@
 
 user_data_fields = [
     {"name": "username", "editable": False},
+    {"name": "alt_id", "editable": False, "default": None},
+    {"name": "status", "editable": False, "default": "active"},
     {"name": "email", "editable": True, "display_text": "email", "type": "text", "default": "", "info_type": "info"},
     {"name": "full_name", "editable": True, "display_text": "full name", "type": "text", "default": "", "info_type": "info"},
     {"name": "favorite_dumpling", "editable": True, "display_text": "favorite dumpling", "type": "text", "default": "", "info_type": "info"},
