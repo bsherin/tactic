@@ -47,7 +47,8 @@ class UserManager(ResourceManager):
         if username is not None:
             user_instance = User.get_user_by_username(username)
             loaded_tile_management.remove_user(username)
-            tactic_app.host_worker.post_task("host", "destroy_a_users_containers", {"user_id": user_instance.get_id()})
+            tactic_app.host_worker.post_task("host", "destroy_a_users_containers",
+                                             {"user_id": user_instance.get_id(), "notify": True})
             tactic_app.host_worker.post_task("host", "flash_to_user", {
                 "user_id": user_instance.get_id(),
                 "alert_type": "alert-warning",

@@ -293,7 +293,7 @@ class HostWorker(QWorker):
 
     @task_worthy
     def destroy_a_users_containers(self, data):
-        destroy_user_containers(data["user_id"])
+        destroy_user_containers(data["user_id"], data["notify"])
         return {"success": True}
 
     @task_worthy

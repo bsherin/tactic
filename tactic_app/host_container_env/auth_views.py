@@ -127,7 +127,7 @@ def logout(page_id):
     socketio.emit('close-user-windows', {"originator": page_id}, namespace='/main', room=user_id)
     loaded_tile_management.remove_user(current_user.username)
     # The containers should be gone by this point. But make sure.
-    tactic_app.host_worker.post_task("host", "destroy_a_users_containers", {"user_id": user_id})
+    tactic_app.host_worker.post_task("host", "destroy_a_users_containers", {"user_id": user_id, "notify": False})
     logout_user()
     return redirect(url_for("login"))
 
