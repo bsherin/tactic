@@ -378,18 +378,19 @@ def destroy_container(tactic_id, notify=True):
 
             if notify:
                 if cont_type == "main" or cont_type == "module_viewer":
-                    message = "Underlying container has been destroyed. This window won't function now."
-                    dest_id = tactic_id
+                    other_name = container_other_name(cont)
+                    message = "Underlying container for {} has been destroyed".format(other_name)
                 elif cont_type == "tile":
                     tile_name = container_other_name(cont)
-                    dest_id = container_parent(cont)
                     message = "Container for tile {} has been destroyed".format(tile_name)
             cont.remove(force=True)
             delete_list_of_queues([tactic_id, tactic_id + "_wait"])
             if notify and message is not None:
-                data = {"message": message, "alert_type": "alert-warning", "main_id": dest_id}
-                print("about to flash to main")
-                post_task_noqworker("host", "host", "flash_to_main", data)
+                data = {"message": message,
+                        "alert_type": "alert-warning",
+                        "timeout": -1,
+                        "user_id": container_owner(cont)}
+                post_task_noqworker("host", "host", "flash_to_user", data)
             return
     except:
         return -1
@@ -415,7 +416,7 @@ def destroy_child_containers(parent_id):
     for cont in cli.containers.list():
         if container_parent(cont) == parent_id:
             uid = container_id(cont)
-            destroy_container(uid)
+            destroy_container(uid, notify=False)
 
 
 def connect_to_network(container, network):

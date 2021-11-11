@@ -5,6 +5,7 @@ import re
 import sys
 import copy
 import datetime
+import uuid
 from collections import OrderedDict
 from flask import jsonify, request
 from flask_login import UserMixin
@@ -26,11 +27,21 @@ class ModuleNotFoundError(Exception):
     pass
 
 
+USE_ALT_IDS = True
+if USE_ALT_IDS:
+    ID_FIELD = "alt_id"
+else:
+    ID_FIELD = "_id"
+
+
 @login_manager.user_loader
 def load_user(userid):
     # This expects that userid will be a string
-    # If it's an ObjectId, rather than a string, I get an error likely having to do with login_manager
-    result = db.user_collection.find_one({"_id": ObjectId(userid)})
+    # If it's an ObjectId, rather than a string, I get an error likely having to do with login_manager'
+    if USE_ALT_IDS:
+        result = db.user_collection.find_one({ID_FIELD: userid})
+    else:
+        result = db.user_collection.find_one({ID_FIELD: ObjectId(userid)})
 
     if result is None:
         return None
@@ -38,16 +49,17 @@ def load_user(userid):
         return User(result)
 
 
-def remove_user(userid):
+def remove_user(trueid):
     try:
-        user = load_user(userid)
+        username = get_username_true_id(trueid)
+        user = User.get_user_by_username(username)
         db.drop_collection(user.list_collection_name)
         db.drop_collection(user.tile_collection_name)
         db.drop_collection(user.code_collection_name)
         user.delete_all_data_collections()  # have to do this because of gridfs pointers
         user.delete_all_projects()  # have to do this because of gridfs pointers
         db.drop_collection(user.project_collection_name)
-        db.user_collection.delete_one({"_id": ObjectId(userid)})
+        db.user_collection.delete_one({"_id": ObjectId(trueid)})
         return {"success": True, "message": "User successfully revmoed."}
     except Exception as ex:
         return generic_exception_handler.get_traceback_exception_dict(ex)
@@ -55,6 +67,21 @@ def remove_user(userid):
 
 def get_all_users():
     return db.user_collection.find()
+
+
+def create_new_alt_id(username):
+    update_dict = {"alt_id": str(ObjectId())}
+    db["user_collection"].update_one({"username": username},
+                                     {'$set': update_dict})
+    return update_dict
+
+
+def get_username_true_id(userid):
+    result = db.user_collection.find_one({"_id": ObjectId(userid)})
+    if result is not None and "username" in result:
+        return result["username"]
+    else:
+        return None
 
 
 class User(UserMixin, MongoAccess):
@@ -71,11 +98,26 @@ class User(UserMixin, MongoAccess):
                 setattr(self, key, fdict["default"])
         self.password_hash = user_dict["password_hash"]
 
+    def create_new_alt_key(self, username=None):
+        update_dict = {"alt_id": str(ObjectId())}
+        if username is None:
+            username = self.username
+        db["user_collection"].update_one({"username": username},
+                                         {'$set': update_dict})
+        return update_dict
+
+    @property
     def is_authenticated(self):
+        # This really should always return True
         return True
 
+    @property
     def is_anonymous(self):
         return False
+
+    @property
+    def is_active(self):
+        return self.status == "active"
 
     def set_user_timezone_offset(self, tzoffset):
         db["user_collection"].update_one({"username": self.username},
@@ -100,7 +142,7 @@ class User(UserMixin, MongoAccess):
         else:
             datestring = ""
         additional_mdata = copy.copy(mdata)
-        standard_mdata = ["datetime", "tags", "notes", "_id", "name"]
+        standard_mdata = ["datetime", "tags", "notes", "_id", ID_FIELD, "name"]
         for field in standard_mdata:
             if field in additional_mdata:
                 del additional_mdata[field]
@@ -128,6 +170,8 @@ class User(UserMixin, MongoAccess):
         if result is None:
             return None
         else:
+            if USE_ALT_IDS and "alt_id" not in result:
+                create_new_alt_id(username)
             return User(result)
 
     def get_theme(self):
@@ -153,17 +197,11 @@ class User(UserMixin, MongoAccess):
                 result[key] = fdict["default"]
         return result
 
-    def create_collection_meta_data(self, collection_type):
-        result = {
-            "username": self.username,
-            "user_id": self.get_id(),
-            "collection_type": collection_type
-        }
-        return result
+    def get_true_id(self):
+        return str(db.user_collection.find_one({"username": self.username})["_id"])
 
     def update_account(self, data_dict):
         update_dict = {}
-        print("in update_account with " + str(data_dict))
         if "password" in data_dict:
             if len(data_dict["password"]) < 4:
                 return {"success": False, "message": "Passwords must be at least 4 characters."}
@@ -200,7 +238,7 @@ class User(UserMixin, MongoAccess):
     # get_id is required by login_manager
     def get_id(self):
         # Note that I have to convert this to a string for login_manager to be happy.
-        return str(db.user_collection.find_one({"username": self.username})["_id"])
+        return str(db.user_collection.find_one({"username": self.username})[ID_FIELD])
 
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)

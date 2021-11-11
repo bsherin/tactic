@@ -110,7 +110,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     def __init__(self, main_id_ignored=None, tile_id_ignored=None, tile_name=None):
         self._sleepperiod = .0001
         self.save_attrs = ["current_html", "tile_type", "tile_name", "doc_type", "configured",
-                           "width", "height", "user_id", "base_figure_url",
+                           "width", "height", "base_figure_url",
                            "img_dict", "is_d3"]
         # These define the state of a tile and should be saved
 

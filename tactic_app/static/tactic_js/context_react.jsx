@@ -205,7 +205,9 @@ class ContextApp extends React.Component {
                 window.close()
             }
         });
-        this.props.tsocket.attachListener('doflash', doFlash);
+        this.props.tsocket.attachListener("doFlash", function(data) {
+                doFlash(data)
+            });
         this.props.tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, window.context_id)});
         this.props.tsocket.attachListener("create-viewer", this._handleCreateViewer);
 

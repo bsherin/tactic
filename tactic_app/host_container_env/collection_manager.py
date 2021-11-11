@@ -52,8 +52,6 @@ class CollectionManager(LibraryResourceManager):
                          login_required(self.new_notebook_with_data), methods=['get', 'post'])
         app.add_url_rule('/new_notebook_in_context', "new_notebook_in_context",
                          login_required(self.new_notebook_in_context), methods=['get', 'post'])
-        app.add_url_rule('/open_notebook/<unique_id>', "open_notebook",
-                         login_required(self.open_notebook), methods=['get'])
         app.add_url_rule('/main_collection/<collection_name>', "main",
                          login_required(self.main_collection), methods=['get'])
         app.add_url_rule('/main_collection_in_context', "main_in_context",
@@ -124,27 +122,6 @@ class CollectionManager(LibraryResourceManager):
                                theme=current_user.get_theme(),
                                dark_theme_name=current_user.get_preferred_dark_theme(),
                                is_jupyter="False",
-                               version_string=tstring,
-                               css_source=css_source("notebook_app"),
-                               module_source=js_source_dict["notebook_app"])
-
-    def open_notebook(self, unique_id):
-        the_data = read_temp_data(db, unique_id)
-        user_obj = load_user(the_data["user_id"])
-        main_id, rb_id = main_container_info.create_main_container("new_notebook", the_data["user_id"], user_obj.username)
-        create_ready_block(rb_id, user_obj.username, [main_id, "client"], main_id)
-        return render_template("main_notebook.html",
-                               window_title="new notebook",
-                               project_name='',
-                               base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
-                               main_id=main_id,
-                               ready_block_id=rb_id,
-                               temp_data_id=unique_id,
-                               develop=str(_develop),
-                               theme=user_obj.get_theme(),
-                               is_jupyter="False",
-                               uses_codemirror="True",
-                               dark_theme_name=user_obj.get_preferred_dark_theme(),
                                version_string=tstring,
                                css_source=css_source("notebook_app"),
                                module_source=js_source_dict["notebook_app"])

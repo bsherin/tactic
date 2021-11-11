@@ -14,10 +14,13 @@ if a tile is loaded, then it appears in the tile menus at the top of a project.
 When you first log in, Tactic automatically loads all of the tiles with the tag **default**.
 So you can control your default set by adding or removing this tag from your tile modules.
 
-You can manually load additional tiles using the :guilabel:`load` button in your tile library,
-or from the `Tile Creator <Tile-Creator.html>`__ or `Module
-Viewer <Module-Viewer.html>`__. Any loaded tile is immediately available universally,
+You can manage the loaded tiles from the tile pane of your library. Loaded tiles have an up arrow. You can use the
+:guilabel:`load` menu to manually load and unload individual tiles. You can also reset the set of loaded tiles
+to just the tiles with the default tag. Any loaded tile is immediately available universally,
 across all of your open projects, or in any new project windows you open.
+
+It's also possible to load a tile from the `Tile Creator <Tile-Creator.html>`__ or `Module
+Viewer <Module-Viewer.html>`__.
 
 .. note::
     If you load a tile, and an existing tile has the same name, then the old
@@ -29,10 +32,6 @@ across all of your open projects, or in any new project windows you open.
     same. However, if you use the module viewer, the name of the tile class need not be the
     same as the containing module. In fact, it is even possible to have multiple tile classes
     within a single module.
-
-If you go to your tile library, and click :guilabel:`unload`, this will unload
-all of the tiles that were previously loaded and then it will reload all of the tiles
-with the **default** tag..
 
 Suppose you **edit a previously loaded tile** in the module viewer, then
 click “save and load.” In that case, any new versions of this tile will

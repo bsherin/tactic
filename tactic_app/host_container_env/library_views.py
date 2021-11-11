@@ -86,7 +86,6 @@ def copy_between_accounts(source_user, dest_user, res_type, new_res_name, res_na
                 new_res_dict["metadata"]["datetime"] = datetime.datetime.utcnow()
             if res_type == "project":
                 project_dict = read_project_dict(fs, new_res_dict["metadata"], old_dict["file_id"])
-                project_dict["user_id"] = dest_user.get_id()
                 pdict = make_jsonizable_and_compress(project_dict)
                 new_res_dict["file_id"] = fs.put(pdict)
             elif "file_id" in new_res_dict:

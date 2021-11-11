@@ -42,7 +42,7 @@ var res_types = ["container", "user"];
 
 var col_names = {
     container: ["Id", "Other_name", "Name", "Image", "Owner", "Status", "Uptime"],
-    user: ["_id", "username", "full_name", "last_login", "email"]
+    user: ["_id", "username", "full_name", "last_login", "email", "alt_id", "status"]
 };
 
 function NamesToDict (acc, item) {
@@ -306,7 +306,25 @@ class UserMenubar extends React.Component {
             $.getJSON($SCRIPT_ROOT + '/delete_user/' + user_id, doFlash);
         });
     }
+    _bump_user_alt_id () {
+        let user_id = this.props.selected_resource._id;
+        const confirm_text = "Are you sure that you want to bump the id for user " + String(user_id) + "?";
+        showConfirmDialogReact("Bump User", confirm_text, "do nothing", "bump", function () {
+            $.getJSON($SCRIPT_ROOT + '/bump_one_alt_id/' + user_id, doFlash);
+        });
+    }
 
+    _toggle_status () {
+        let user_id = this.props.selected_resource._id;
+        $.getJSON($SCRIPT_ROOT + '/toggle_status/' + user_id, doFlash);
+    }
+
+    _bump_all_alt_ids () {
+        const confirm_text = "Are you sure that you want to bump all alt ids?";
+        showConfirmDialogReact("Bump all", confirm_text, "do nothing", "bump", function () {
+            $.getJSON($SCRIPT_ROOT + '/bump_all_alt_ids', doFlash);
+        });
+    }
     _update_user_starters (event) {
         let user_id = this.props.selected_resource._id;
         const confirm_text = "Are you sure that you want to update starter tiles for user " + String(user_id) + "?";
@@ -354,8 +372,14 @@ class UserMenubar extends React.Component {
             Manage: [
                 {name_text: "Create User", icon_name: "new-object",
                     click_handler: this._create_user},
+                {name_text: "Toggle Status", icon_name: "exchange",
+                    click_handler: this._toggle_status},
                 {name_text: "Delete User", icon_name: "delete",
                     click_handler: this._delete_user},
+                {name_text: "Bump Alt Id", icon_name: "reset",
+                    click_handler: this._bump_user_alt_id},
+                {name_text: "Bump All Alt Ids", icon_name: "reset",
+                    click_handler: this._bump_all_alt_ids},
             ]
         };
         for (const [menu_name, menu] of Object.entries(ms)) {

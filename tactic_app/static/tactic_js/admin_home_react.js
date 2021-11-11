@@ -99,7 +99,7 @@ function _administer_home_main() {
 var res_types = ["container", "user"];
 var col_names = {
   container: ["Id", "Other_name", "Name", "Image", "Owner", "Status", "Uptime"],
-  user: ["_id", "username", "full_name", "last_login", "email"]
+  user: ["_id", "username", "full_name", "last_login", "email", "alt_id", "status"]
 };
 
 function NamesToDict(acc, item) {
@@ -475,6 +475,29 @@ var UserMenubar = /*#__PURE__*/function (_React$Component3) {
       });
     }
   }, {
+    key: "_bump_user_alt_id",
+    value: function _bump_user_alt_id() {
+      var user_id = this.props.selected_resource._id;
+      var confirm_text = "Are you sure that you want to bump the id for user " + String(user_id) + "?";
+      (0, _modal_react.showConfirmDialogReact)("Bump User", confirm_text, "do nothing", "bump", function () {
+        $.getJSON($SCRIPT_ROOT + '/bump_one_alt_id/' + user_id, _toaster.doFlash);
+      });
+    }
+  }, {
+    key: "_toggle_status",
+    value: function _toggle_status() {
+      var user_id = this.props.selected_resource._id;
+      $.getJSON($SCRIPT_ROOT + '/toggle_status/' + user_id, _toaster.doFlash);
+    }
+  }, {
+    key: "_bump_all_alt_ids",
+    value: function _bump_all_alt_ids() {
+      var confirm_text = "Are you sure that you want to bump all alt ids?";
+      (0, _modal_react.showConfirmDialogReact)("Bump all", confirm_text, "do nothing", "bump", function () {
+        $.getJSON($SCRIPT_ROOT + '/bump_all_alt_ids', _toaster.doFlash);
+      });
+    }
+  }, {
     key: "_update_user_starters",
     value: function _update_user_starters(event) {
       var user_id = this.props.selected_resource._id;
@@ -525,9 +548,21 @@ var UserMenubar = /*#__PURE__*/function (_React$Component3) {
           icon_name: "new-object",
           click_handler: this._create_user
         }, {
+          name_text: "Toggle Status",
+          icon_name: "exchange",
+          click_handler: this._toggle_status
+        }, {
           name_text: "Delete User",
           icon_name: "delete",
           click_handler: this._delete_user
+        }, {
+          name_text: "Bump Alt Id",
+          icon_name: "reset",
+          click_handler: this._bump_user_alt_id
+        }, {
+          name_text: "Bump All Alt Ids",
+          icon_name: "reset",
+          click_handler: this._bump_all_alt_ids
         }]
       };
 

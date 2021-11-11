@@ -91,6 +91,9 @@ def read_project_dict(fs, mdata, file_id):
             project_dict = debinarize_python_object(binarized_python_object)
     else:  # legacy
         project_dict = pickle.loads(zlib.decompress(fs.get(file_id).read()).decode("utf-8", "ignore").encode("ascii"))
+    # legacy
+    if "user_id" in project_dict:
+        del project_dict["user_id"]
     return project_dict
 
 
