@@ -88,6 +88,10 @@ class LoadSaveTasksMixin:
             tile_id = tile_save_dict["tile_id"]
             del tile_save_dict["tile_id"]
             module_name = tile_save_dict["module_name"]
+            if "tile_type" in tile_save_dict:
+                print("got tile_type " + str(tile_save_dict["tile_type"]))
+            else:
+                print("no tile_type")
             if module_name is not None:
                 result["used_modules"].append(module_name)
             del tile_save_dict["module_name"]
@@ -95,6 +99,7 @@ class LoadSaveTasksMixin:
             if tile_id in tile_ids_to_compile:
                 tile_ids_to_compile.remove(tile_id)
             if not tile_ids_to_compile:
+                print("compiled all tile_ids")
                 if self.pseudo_tile_id is None:
                     result["pseudo_tile_instance"] = None
                 else:

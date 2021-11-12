@@ -1680,11 +1680,22 @@ var RawLogItem = /*#__PURE__*/function (_React$Component) {
           marginTop: 5
         },
         handleClick: this._toggleShrink
-      })), this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_core.EditableText, {
+      })), this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.EditableText, {
         value: this.props.summary_text,
         onChange: this._handleSummaryTextChange,
         className: "log-panel-summary"
-      }), !this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
+      }), /*#__PURE__*/_react["default"].createElement("div", {
+        className: "button-div d-flex flex-row"
+      }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+        handleClick: this._deleteMe,
+        intent: "danger",
+        tooltip: "Delete this item",
+        style: {
+          marginLeft: 10,
+          marginRight: 66
+        },
+        icon: "trash"
+      }))), !this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
         className: "d-flex flex-column"
       }, /*#__PURE__*/_react["default"].createElement("div", {
         className: "log-panel-body d-flex flex-row"
@@ -2082,9 +2093,20 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component2) {
           marginTop: 5
         },
         handleClick: this._toggleShrink
-      })), this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
+      })), this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
         className: "log-panel-summary code-panel-summary"
-      }, this._getFirstLine()), !this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
+      }, this._getFirstLine()), /*#__PURE__*/_react["default"].createElement("div", {
+        className: "button-div d-flex flex-row"
+      }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+        handleClick: this._deleteMe,
+        intent: "danger",
+        tooltip: "Delete this item",
+        style: {
+          marginLeft: 10,
+          marginRight: 66
+        },
+        icon: "trash"
+      }))), !this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
         className: "d-flex flex-column",
         style: {
           width: "100%"
@@ -2612,9 +2634,20 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component3) {
           marginTop: 5
         },
         handleClick: this._toggleShrink
-      })), this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
+      })), this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
         className: "log-panel-summary"
-      }, this._getFirstLine()), !this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
+      }, this._getFirstLine()), /*#__PURE__*/_react["default"].createElement("div", {
+        className: "button-div d-flex flex-row"
+      }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+        handleClick: this._deleteMe,
+        intent: "danger",
+        tooltip: "Delete this item",
+        style: {
+          marginLeft: 10,
+          marginRight: 66
+        },
+        icon: "trash"
+      }))), !this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
         className: "d-flex flex-column",
         style: {
           width: "100%"
