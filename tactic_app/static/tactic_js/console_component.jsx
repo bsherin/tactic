@@ -1099,9 +1099,18 @@ class RawLogItem extends React.Component {
                         }
                 </div>
                 {this.props.am_shrunk &&
-                    <EditableText value={this.props.summary_text}
+                    <React.Fragment>
+                        <EditableText value={this.props.summary_text}
                                      onChange={this._handleSummaryTextChange}
                                      className="log-panel-summary"/>
+                        <div className="button-div d-flex flex-row">
+                             <GlyphButton handleClick={this._deleteMe}
+                                          intent="danger"
+                                          tooltip="Delete this item"
+                                          style={{marginLeft: 10, marginRight: 66}}
+                                          icon="trash"/>
+                        </div>
+                    </React.Fragment>
                 }
                 {!this.props.am_shrunk &&
                     <div className="d-flex flex-column">
@@ -1391,7 +1400,17 @@ class RawConsoleCodeItem extends React.Component {
                         }
                     </div>
                 {this.props.am_shrunk &&
-                     <div className="log-panel-summary code-panel-summary">{this._getFirstLine()}</div>
+                    <React.Fragment>
+                        <div className="log-panel-summary code-panel-summary">{this._getFirstLine()}</div>
+                        <div className="button-div d-flex flex-row">
+                             <GlyphButton handleClick={this._deleteMe}
+                                          intent="danger"
+                                          tooltip="Delete this item"
+                                          style={{marginLeft: 10, marginRight: 66}}
+                                          icon="trash"/>
+                        </div>
+                    </React.Fragment>
+
                 }
                 {!this.props.am_shrunk &&
                     <React.Fragment>
@@ -1798,7 +1817,16 @@ class RawConsoleTextItem extends React.Component {
                         }
                 </div>
                 {this.props.am_shrunk &&
-                    <div className="log-panel-summary">{this._getFirstLine()}</div>
+                    <React.Fragment>
+                        <div className="log-panel-summary">{this._getFirstLine()}</div>
+                        <div className="button-div d-flex flex-row">
+                             <GlyphButton handleClick={this._deleteMe}
+                                          intent="danger"
+                                          tooltip="Delete this item"
+                                          style={{marginLeft: 10, marginRight: 66}}
+                                          icon="trash"/>
+                        </div>
+                    </React.Fragment>
                 }
                 {!this.props.am_shrunk &&
                     <div className="d-flex flex-column" style={{width: "100%"}}>

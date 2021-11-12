@@ -90,11 +90,8 @@ class TileWorker(QWorker):
 
     @task_worthy
     def load_source(self, data_dict):
-        try:
-            tile_code = data_dict["tile_code"]
-            result = exec_tile_code(tile_code)
-        except Exception as ex:
-            return self.handle_exception(ex, "Error loading source")
+        tile_code = data_dict["tile_code"]
+        result = exec_tile_code(tile_code)
         return result
 
     @task_worthy
@@ -126,6 +123,8 @@ class TileWorker(QWorker):
     def load_source_and_recreate(self, data):
         result = self.load_source(data)
         if not result["success"]:
+            print("didn't load successfully")
+            print("message " + result["message"])
             return result
         return self.recreate_from_save(data["tile_save_dict"])
 
