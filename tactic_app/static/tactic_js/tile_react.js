@@ -35,6 +35,10 @@ var _utilities_react = require("./utilities_react.js");
 
 var _error_boundary = require("./error_boundary.js");
 
+var _menu_utilities = require("./menu_utilities.js");
+
+var _modal_react = require("./modal_react");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
@@ -348,6 +352,7 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
         style: outer_style,
         helperClass: this.props.dark_theme ? "bp3-dark" : "light-theme",
         container_ref: this.props.tile_div_ref,
+        goToModule: this.props.goToModule,
         ElementComponent: STileComponent,
         key_field_name: "tile_name",
         item_list: _lodash["default"].cloneDeep(this.props.tile_list),
@@ -382,7 +387,8 @@ TileContainer.propTypes = {
   current_doc_name: _propTypes["default"].string,
   height: _propTypes["default"].number,
   broadcast_event: _propTypes["default"].func,
-  selected_row: _propTypes["default"].number
+  selected_row: _propTypes["default"].number,
+  goToModule: _propTypes["default"].func
 };
 
 var RawSortHandle = /*#__PURE__*/function (_React$Component2) {
@@ -651,7 +657,10 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "_closeTile",
     value: function _closeTile() {
-      this.props.handleClose(this.props.tile_id);
+      var self = this;
+      (0, _modal_react.showConfirmDialogReact)("Delete Tile", "Delete tile ".concat(this.props.tile_name), "do nothing", "delete", function () {
+        self.props.handleClose(self.props.tile_id);
+      });
     }
   }, {
     key: "_standard_click_data",
@@ -972,6 +981,28 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
       (0, _communication_react.postWithCallback)(this.props.tile_id, "LogTile", {}, null, null, this.props.main_id);
     }
   }, {
+    key: "_editMe",
+    value: function _editMe() {
+      var self = this;
+
+      if (!window.in_context) {
+        window.blur();
+        (0, _communication_react.postWithCallback)("host", "go_to_module_viewer_if_exists", {
+          user_id: window.user_id,
+          tile_type: this.props.tile_type,
+          line_number: 0
+        }, function (data) {
+          if (!data.success) {
+            window.open($SCRIPT_ROOT + "/view_location_in_creator/" + self.props.tile_type + "/" + "0");
+          } else {
+            window.open("", data.window_name);
+          }
+        }, null, this.props.main_id);
+      } else {
+        this.props.goToModule(this.props.tile_type, 0);
+      }
+    }
+  }, {
     key: "_logMe",
     value: function _logMe() {
       this.logText(this.props.front_content);
@@ -1032,6 +1063,32 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
         bottom: 2,
         right: 1
       };
+      var tile_menu_options = {
+        "Reload from library": this._reloadTile,
+        "Edit my source": this._editMe,
+        "divider0": "divider",
+        "Toggle console": this._toggleTileLog,
+        "divider1": "divider",
+        "Log me": this._logMe,
+        "Log parameters": this._logParams,
+        "divider2": "divider",
+        "Delete me": this._closeTile
+      };
+      var menu_icons = {
+        "Reload from library": "refresh",
+        "Edit my source": "edit",
+        "Toggle console": "console",
+        "Log me": "clipboard",
+        "Log parameters": "th",
+        "Delete me": "trash"
+      };
+
+      var menu_button = /*#__PURE__*/_react["default"].createElement(_core.Button, {
+        minimal: true,
+        small: true,
+        icon: "more"
+      });
+
       return /*#__PURE__*/_react["default"].createElement(_core.Card, {
         ref: this.my_ref,
         elevation: 2,
@@ -1058,31 +1115,20 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
         tile_name: this.props.tile_name
       }))), /*#__PURE__*/_react["default"].createElement("div", {
         className: "right-glyphs",
+        style: {
+          marginRight: 10
+        },
         ref: this.right_glyphs_ref
       }, /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, null, this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_core.Spinner, {
         size: 17
-      }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        handleClick: this._toggleTileLog,
-        tooltip: "Show tile container log",
-        icon: "console"
-      }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        handleClick: this._logMe,
-        tooltip: "Send current display to log",
-        icon: "clipboard"
-      }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        handleClick: this._logParams,
-        tooltip: "Send current parameters to log",
-        icon: "th"
-      }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        intent: "warning",
-        handleClick: this._reloadTile,
-        tooltip: "Reload tile source from library and rerun",
-        icon: "refresh"
-      }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        intent: "danger",
-        handleClick: this._closeTile,
-        ttooltip: "Remove tile",
-        icon: "trash"
+      }), /*#__PURE__*/_react["default"].createElement(_menu_utilities.MenuComponent, {
+        option_dict: tile_menu_options,
+        icon_dict: menu_icons,
+        item_class: "tile-menu-item",
+        position: _core.PopoverPosition.BOTTOM_RIGHT,
+        alt_button: function alt_button() {
+          return menu_button;
+        }
       })))), !this.props.shrunk && /*#__PURE__*/_react["default"].createElement("div", {
         ref: this.body_ref,
         style: this.panel_body_style,
@@ -1161,7 +1207,8 @@ TileComponent.propTypes = {
   setTileState: _propTypes["default"].func,
   broadcast_event: _propTypes["default"].func,
   handleReload: _propTypes["default"].string,
-  handleClose: _propTypes["default"].func
+  handleClose: _propTypes["default"].func,
+  goToModule: _propTypes["default"].func
 };
 TileComponent.defaultProps = {
   javascript_code: null

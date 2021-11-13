@@ -357,7 +357,8 @@ var MenuComponent = /*#__PURE__*/function (_React$Component3) {
           icon: icon,
           labelElement: label,
           key: opt_name,
-          text: opt_name
+          text: opt_name,
+          className: _this4.props.item_class
         });
       });
 
@@ -368,13 +369,13 @@ var MenuComponent = /*#__PURE__*/function (_React$Component3) {
         return /*#__PURE__*/_react["default"].createElement(_core.Popover, {
           minimal: true,
           content: the_menu,
-          position: _core.PopoverPosition.BOTTOM_LEFT
+          position: this.props.position
         }, /*#__PURE__*/_react["default"].createElement(AltButton, null));
       } else {
         return /*#__PURE__*/_react["default"].createElement(_core.Popover, {
           minimal: true,
           content: the_menu,
-          position: _core.PopoverPosition.BOTTOM_LEFT
+          position: this.props.position
         }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
           text: this.props.menu_name,
           small: true,
@@ -390,21 +391,26 @@ var MenuComponent = /*#__PURE__*/function (_React$Component3) {
 exports.MenuComponent = MenuComponent;
 MenuComponent.propTypes = {
   menu_name: _propTypes["default"].string,
+  item_class: _propTypes["default"].string,
   option_dict: _propTypes["default"].object,
   icon_dict: _propTypes["default"].object,
   binding_dict: _propTypes["default"].object,
   disabled_items: _propTypes["default"].array,
   disable_all: _propTypes["default"].bool,
   hidden_items: _propTypes["default"].array,
-  alt_button: _propTypes["default"].func
+  alt_button: _propTypes["default"].func,
+  position: _propTypes["default"].string
 };
 MenuComponent.defaultProps = {
+  menu_name: null,
+  item_class: "",
   disabled_items: [],
-  binding_dict: null,
+  binding_dict: {},
   disable_all: false,
   hidden_items: [],
   icon_dict: {},
-  alt_button: null
+  alt_button: null,
+  position: _core.PopoverPosition.BOTTOM_LEFT
 };
 
 var ToolMenu = /*#__PURE__*/function (_React$Component4) {
