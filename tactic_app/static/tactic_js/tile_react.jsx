@@ -2,7 +2,7 @@
 import React from "react";
 import PropTypes from 'prop-types';
 
-import { Icon, Card, ButtonGroup, Spinner } from "@blueprintjs/core";
+import { Icon, Card, Button, ButtonGroup, Spinner, PopoverPosition } from "@blueprintjs/core";
 import {Transition} from "react-transition-group";
 import { SortableHandle, SortableElement } from 'react-sortable-hoc';
 import _ from 'lodash';
@@ -16,6 +16,8 @@ import {postWithCallback} from "./communication_react.js"
 import {doFlash} from "./toaster.js"
 import {doBinding, propsAreEqual, arrayMove} from "./utilities_react.js";
 import {ErrorBoundary} from "./error_boundary.js";
+import {MenuComponent} from "./menu_utilities.js"
+import {showConfirmDialogReact} from "./modal_react";
 
 export {TileContainer}
 
@@ -194,6 +196,7 @@ class TileContainer extends React.Component {
                                style={outer_style}
                                helperClass={this.props.dark_theme ? "bp3-dark" : "light-theme"}
                                container_ref={this.props.tile_div_ref}
+                               goToModule={this.props.goToModule}
                                ElementComponent={STileComponent}
                                key_field_name="tile_name"
                                item_list={_.cloneDeep(this.props.tile_list)}
@@ -224,6 +227,7 @@ TileContainer.propTypes = {
     height: PropTypes.number,
     broadcast_event: PropTypes.func,
     selected_row: PropTypes.number,
+    goToModule: PropTypes.func,
 };
 
 class RawSortHandle extends React.Component {
@@ -397,7 +401,10 @@ class TileComponent extends React.Component {
     }
 
     _closeTile() {
-        this.props.handleClose(this.props.tile_id)
+        let self = this;
+        showConfirmDialogReact("Delete Tile", `Delete tile ${this.props.tile_name}`,"do nothing", "delete", function () {
+             self.props.handleClose(self.props.tile_id);
+         });
     }
 
     _standard_click_data() {
@@ -622,6 +629,28 @@ class TileComponent extends React.Component {
         let self = this;
         postWithCallback(this.props.tile_id, "LogTile", {}, null, null, this.props.main_id);
     }
+
+    _editMe() {
+        let self = this;
+        if (!window.in_context) {
+            window.blur();
+            postWithCallback("host", "go_to_module_viewer_if_exists",
+                {
+                    user_id: window.user_id,
+                    tile_type: this.props.tile_type,
+                    line_number: 0
+                }, (data) => {
+                    if (!data.success) {
+                        window.open($SCRIPT_ROOT + "/view_location_in_creator/" + self.props.tile_type + "/" + "0");
+                    } else {
+                        window.open("", data.window_name)
+                    }
+                }, null, this.props.main_id)
+        }
+        else {
+            this.props.goToModule(this.props.tile_type, 0)
+        }
+    }
     _logMe() {
         this.logText(this.props.front_content)
     }
@@ -653,6 +682,29 @@ class TileComponent extends React.Component {
         let tile_class = this.props.table_is_shrunk ? "tile-panel tile-panel-float" : "tile-panel";
         let tph_class = this.props.source_changed ? "tile-panel-heading tile-source-changed" : "tile-panel-heading";
         let draghandle_position_dict = {position: "absolute", bottom: 2, right: 1};
+        let tile_menu_options = {
+            "Reload from library": this._reloadTile,
+            "Edit my source": this._editMe,
+            "divider0": "divider",
+            "Toggle console": this._toggleTileLog,
+            "divider1": "divider",
+            "Log me": this._logMe,
+            "Log parameters": this._logParams,
+            "divider2": "divider",
+            "Delete me": this._closeTile,
+        };
+        let menu_icons = {
+            "Reload from library": "refresh",
+            "Edit my source": "edit",
+            "Toggle console": "console",
+            "Log me": "clipboard",
+            "Log parameters": "th",
+            "Delete me": "trash"
+        };
+        let menu_button = <Button minimal={true}
+                                  small={true}
+                                  icon="more"/>;
+
         return (
             <Card ref={this.my_ref} elevation={2} style={this.main_style} className={tile_class} id={this.props.tile_id}>
                 <ErrorBoundary>
@@ -675,27 +727,16 @@ class TileComponent extends React.Component {
                             </ButtonGroup>
                         </div>
 
-                        <div className="right-glyphs" ref={this.right_glyphs_ref}>
+                        <div className="right-glyphs"
+                             style={{marginRight: 10}}
+                             ref={this.right_glyphs_ref}>
                             <ButtonGroup>
                             {this.props.show_spinner && <Spinner size={17} />}
-
-                            <GlyphButton handleClick={this._toggleTileLog}
-                                         tooltip="Show tile container log"
-                                         icon="console"/>
-                            <GlyphButton handleClick={this._logMe}
-                                         tooltip="Send current display to log"
-                                         icon="clipboard"/>
-                            <GlyphButton handleClick={this._logParams}
-                                         tooltip="Send current parameters to log"
-                                         icon="th"/>
-                            <GlyphButton intent="warning"
-                                         handleClick={this._reloadTile}
-                                         tooltip="Reload tile source from library and rerun"
-                                         icon="refresh"/>
-                            <GlyphButton intent="danger"
-                                         handleClick={this._closeTile}
-                                         ttooltip="Remove tile"
-                                         icon="trash"/>
+                                <MenuComponent option_dict={tile_menu_options}
+                                               icon_dict={menu_icons}
+                                               item_class="tile-menu-item"
+                                               position={PopoverPosition.BOTTOM_RIGHT}
+                                               alt_button={()=>(menu_button)}/>
                             </ButtonGroup>
                         </div>
                     </div>
@@ -762,6 +803,7 @@ TileComponent.propTypes = {
     broadcast_event: PropTypes.func,
     handleReload: PropTypes.string,
     handleClose: PropTypes.func,
+    goToModule: PropTypes.func
 };
 
 TileComponent.defaultProps = {

@@ -240,6 +240,7 @@ class MenuComponent extends React.Component {
                               labelElement={label}
                               key={opt_name}
                               text={opt_name}
+                              className={this.props.item_class}
                     >
                     </MenuItem>
                 )
@@ -252,12 +253,12 @@ class MenuComponent extends React.Component {
         );
         if (this.props.alt_button) {
             let AltButton = this.props.alt_button;
-            return (<Popover minimal={true} content={the_menu} position={PopoverPosition.BOTTOM_LEFT}>
+            return (<Popover minimal={true} content={the_menu} position={this.props.position}>
                 <AltButton/>
             </Popover>)
         } else {
             return (
-                <Popover minimal={true} content={the_menu} position={PopoverPosition.BOTTOM_LEFT}>
+                <Popover minimal={true} content={the_menu} position={this.props.position}>
                     <Button text={this.props.menu_name} small={true} minimal={true}/>
                 </Popover>
             )
@@ -267,22 +268,27 @@ class MenuComponent extends React.Component {
 
 MenuComponent.propTypes = {
     menu_name: PropTypes.string,
+    item_class: PropTypes.string,
     option_dict: PropTypes.object,
     icon_dict: PropTypes.object,
     binding_dict: PropTypes.object,
     disabled_items: PropTypes.array,
     disable_all: PropTypes.bool,
     hidden_items: PropTypes.array,
-    alt_button: PropTypes.func
+    alt_button: PropTypes.func,
+    position: PropTypes.string
 };
 
 MenuComponent.defaultProps = {
+    menu_name: null,
+    item_class: "",
     disabled_items: [],
-    binding_dict: null,
+    binding_dict: {},
     disable_all: false,
     hidden_items: [],
     icon_dict: {},
-    alt_button: null
+    alt_button: null,
+    position: PopoverPosition.BOTTOM_LEFT
 };
 
 class ToolMenu extends React.Component {

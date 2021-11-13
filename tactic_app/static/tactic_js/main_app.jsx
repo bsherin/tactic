@@ -1088,6 +1088,7 @@ class MainApp extends React.Component {
                            table_is_shrunk={this.state.table_is_shrunk}
                            selected_row={this.state.selected_row}
                            broadcast_event={this._broadcast_event_to_server}
+                            goToModule={this.props.goToModule}
                            setMainStateValue={this._setMainStateValue}
             />
         );
