@@ -219,6 +219,7 @@ var TopLeftButtons = /*#__PURE__*/function (_React$Component2) {
             minimal: true,
             className: "context-close-button",
             small: true,
+            key: index,
             tabIndex: -1,
             onClick: function onClick() {
               but_info.onClick();

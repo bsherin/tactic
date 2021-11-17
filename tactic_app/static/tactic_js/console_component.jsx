@@ -30,6 +30,7 @@ import {doBinding, arrayMove} from "./utilities_react.js";
 import {showConfirmDialogReact, showSelectResourceDialog} from "./modal_react.js";
 import {icon_dict} from "./blueprint_mdata_fields.js";
 import {view_views} from "./library_pane.js";
+import {TacticMenubar} from "./menu_utilities.js";
 
 export {ConsoleComponent}
 
@@ -681,6 +682,32 @@ const BUTTON_CONSUMED_SPACE = 208;
         return this.state.filter_console_items
      }
 
+     get menu_specs() {
+         let self = this;
+        let ms = {
+            Insert :[{name_text: "Text Cell", icon_name: "new-text-box", click_handler: this._addBlankText},
+                   {name_text: "Code Cell", icon_name: "code", click_handler: this._addBlankCode},
+                   {name_text: "Resource Linkt", icon_name: "link", click_handler: this._insertResourceLink}],
+            Edit: [{name_text: "Copy Cell", icon_name: "duplicate", click_handler: () => {self._copyCell()}},
+                   {name_text: "Paste Cell", icon_name: "clipboard", click_handler: () => {self._pasteCell()}},
+                   {name_text: "Clear Log", icon_name: "trash", click_handler: this._clear_console}
+            ],
+            Execute: [{name_text: "Stop All", icon_name: "stop", click_handler: this._stopAll},
+                      {name_text: "Reset All", icon_name: "reset", click_handler: this._resetConsole}],
+        };
+
+        if (!this.state.show_console_error_log) {
+            ms["Consoles"] = [{name_text: "Show Log Console", icon_name: "console", click_handler: this._toggleConsoleLog},
+                      {name_text: "Show Main Console", icon_name: "console", click_handler: this._toggleMainLog}]
+        }
+        else {
+            ms["Consoles"] = [{name_text: "Hide Console", icon_name: "console", click_handler: this._toggleMainLog}]
+        }
+
+        return ms
+
+    }
+
      render() {
          let gbstyle = {marginLeft: 1, marginTop: 2};
          let console_class = this.props.console_is_shrunk ? "am-shrunk" : "not-shrunk";
@@ -730,79 +757,15 @@ const BUTTON_CONSUMED_SPACE = 208;
                                           icon="chevron-down"/>
                              }
 
-                             <GlyphButton extra_glyph_text={this._glif_text(show_glif_text, "text")}
-                                          style={gbstyle}
-                                          intent="primary"
-                                          tooltip="Add new text area"
-                                          handleClick={this._addBlankText}
-                                          icon="new-text-box"/>
-                             <GlyphButton extra_glyph_text={this._glif_text(show_glif_text, "code")}
-                                          handleClick={this._addBlankCode}
-                                          tooltip="Add new code area"
-                                          intent="primary"
-                                          style={gbstyle}
-                                          icon="code"/>
-                             <GlyphButton extra_glyph_text={this._glif_text(show_glif_text, "link")}
-                                          handleClick={this._insertResourceLink}
-                                          tooltip="Insert a resource link"
-                                          intent="primary"
-                                          style={gbstyle}
-                                          icon="link"/>
-                             <GlyphButton extra_glyph_text={this._glif_text(show_glif_text, "copy")}
-                                          handleClick={() => {
-                                              this._copyCell()
-                                          }}
-                                          tooltip="Copy cell"
-                                          intent="primary"
-                                          style={gbstyle}
-                                          icon="duplicate"/>
-                             <GlyphButton extra_glyph_text={this._glif_text(show_glif_text, "paste")}
-                                          handleClick={() => {
-                                              this._pasteCell()
-                                          }}
-                                          tooltip="Paste cell"
-                                          intent="primary"
-                                          style={gbstyle}
-                                          icon="clipboard"/>
-                             <GlyphButton handleClick={this._resetConsole}
-                                          style={gbstyle}
-                                          tooltip="Clear all output and reset namespace"
-                                          intent="warning"
-                                          extra_glyph_text={this._glif_text(show_glif_text, "reset")}
-                                          icon="reset"/>
-                             <GlyphButton handleClick={this._stopAll}
-                                          style={gbstyle}
-                                          tooltip="Stop all"
-                                          intent="warning"
-                                          extra_glyph_text={this._glif_text(show_glif_text, "stop")}
-                                          icon="stop"/>
-                             <GlyphButton extra_glyph_text={this._glif_text(show_glif_text, "clear")}
-                                          style={gbstyle}
-                                          tooltip="Totally erase everything"
-                                          handleClick={this._clearConsole}
-                                          intent="danger"
-                                          icon="trash"/>
-                             {!this.state.show_console_error_log &&
-                                 <React.Fragment>
-                                      <GlyphButton extra_glyph_text={this._glif_text(show_glif_text, "log")}
-                                                  style={gbstyle}
-                                                  tooltip="Show container log for the log"
-                                                  handleClick={this._toggleConsoleLog}
-                                                  icon="console"/>
-                                     <GlyphButton extra_glyph_text={this._glif_text(show_glif_text, "main")}
-                                                  tooltip="Show container log for the main project container"
-                                                  style={gbstyle}
-                                                  handleClick={this._toggleMainLog}
-                                                  icon="console"/>
-                                 </React.Fragment>
-                             }
-                             {this.state.show_console_error_log &&
-                                 <GlyphButton extra_glyph_text={this._glif_text(show_glif_text, "hide")}
-                                              tooltip="Show container log for the main project container"
-                                              style={gbstyle}
-                                              handleClick={this._toggleMainLog}
-                                              icon="console"/>
-                             }
+                             <TacticMenubar menu_specs={this.menu_specs}
+                                            showRefresh={false}
+                                            showClose={false}
+                                            dark_theme={this.props.dark_theme}
+                                            refreshTab={this.props.refreshTab}
+                                            closeTab={null}
+                                            controlled={false} // This doesn't matter
+                                            am_selected={false} // Also doesn't matter
+                                            />
 
                          </div>
 
