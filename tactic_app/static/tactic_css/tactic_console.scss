@@ -57,6 +57,13 @@ body {
     }
 }
 
+#console-header-left .bp3-navbar {
+    box-shadow: none;
+    &.light-theme {
+        background-color: transparent;
+    }
+}
+
 #console-panel .CodeMirror{
   height: auto !important;
   margin-top: 2px;

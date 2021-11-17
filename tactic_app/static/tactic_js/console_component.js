@@ -45,6 +45,8 @@ var _blueprint_mdata_fields = require("./blueprint_mdata_fields.js");
 
 var _library_pane = require("./library_pane.js");
 
+var _menu_utilities = require("./menu_utilities.js");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -1114,10 +1116,74 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       return this.state.filter_console_items;
     }
   }, {
+    key: "menu_specs",
+    get: function get() {
+      var self = this;
+      var ms = {
+        Insert: [{
+          name_text: "Text Cell",
+          icon_name: "new-text-box",
+          click_handler: this._addBlankText
+        }, {
+          name_text: "Code Cell",
+          icon_name: "code",
+          click_handler: this._addBlankCode
+        }, {
+          name_text: "Resource Linkt",
+          icon_name: "link",
+          click_handler: this._insertResourceLink
+        }],
+        Edit: [{
+          name_text: "Copy Cell",
+          icon_name: "duplicate",
+          click_handler: function click_handler() {
+            self._copyCell();
+          }
+        }, {
+          name_text: "Paste Cell",
+          icon_name: "clipboard",
+          click_handler: function click_handler() {
+            self._pasteCell();
+          }
+        }, {
+          name_text: "Clear Log",
+          icon_name: "trash",
+          click_handler: this._clear_console
+        }],
+        Execute: [{
+          name_text: "Stop All",
+          icon_name: "stop",
+          click_handler: this._stopAll
+        }, {
+          name_text: "Reset All",
+          icon_name: "reset",
+          click_handler: this._resetConsole
+        }]
+      };
+
+      if (!this.state.show_console_error_log) {
+        ms["Consoles"] = [{
+          name_text: "Show Log Console",
+          icon_name: "console",
+          click_handler: this._toggleConsoleLog
+        }, {
+          name_text: "Show Main Console",
+          icon_name: "console",
+          click_handler: this._toggleMainLog
+        }];
+      } else {
+        ms["Consoles"] = [{
+          name_text: "Hide Console",
+          icon_name: "console",
+          click_handler: this._toggleMainLog
+        }];
+      }
+
+      return ms;
+    }
+  }, {
     key: "render",
     value: function render() {
-      var _this14 = this;
-
       var gbstyle = {
         marginLeft: 1,
         marginTop: 2
@@ -1194,84 +1260,17 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
           marginLeft: 2
         },
         icon: "chevron-down"
-      }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        extra_glyph_text: this._glif_text(show_glif_text, "text"),
-        style: gbstyle,
-        intent: "primary",
-        tooltip: "Add new text area",
-        handleClick: this._addBlankText,
-        icon: "new-text-box"
-      }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        extra_glyph_text: this._glif_text(show_glif_text, "code"),
-        handleClick: this._addBlankCode,
-        tooltip: "Add new code area",
-        intent: "primary",
-        style: gbstyle,
-        icon: "code"
-      }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        extra_glyph_text: this._glif_text(show_glif_text, "link"),
-        handleClick: this._insertResourceLink,
-        tooltip: "Insert a resource link",
-        intent: "primary",
-        style: gbstyle,
-        icon: "link"
-      }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        extra_glyph_text: this._glif_text(show_glif_text, "copy"),
-        handleClick: function handleClick() {
-          _this14._copyCell();
-        },
-        tooltip: "Copy cell",
-        intent: "primary",
-        style: gbstyle,
-        icon: "duplicate"
-      }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        extra_glyph_text: this._glif_text(show_glif_text, "paste"),
-        handleClick: function handleClick() {
-          _this14._pasteCell();
-        },
-        tooltip: "Paste cell",
-        intent: "primary",
-        style: gbstyle,
-        icon: "clipboard"
-      }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        handleClick: this._resetConsole,
-        style: gbstyle,
-        tooltip: "Clear all output and reset namespace",
-        intent: "warning",
-        extra_glyph_text: this._glif_text(show_glif_text, "reset"),
-        icon: "reset"
-      }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        handleClick: this._stopAll,
-        style: gbstyle,
-        tooltip: "Stop all",
-        intent: "warning",
-        extra_glyph_text: this._glif_text(show_glif_text, "stop"),
-        icon: "stop"
-      }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        extra_glyph_text: this._glif_text(show_glif_text, "clear"),
-        style: gbstyle,
-        tooltip: "Totally erase everything",
-        handleClick: this._clearConsole,
-        intent: "danger",
-        icon: "trash"
-      }), !this.state.show_console_error_log && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        extra_glyph_text: this._glif_text(show_glif_text, "log"),
-        style: gbstyle,
-        tooltip: "Show container log for the log",
-        handleClick: this._toggleConsoleLog,
-        icon: "console"
-      }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        extra_glyph_text: this._glif_text(show_glif_text, "main"),
-        tooltip: "Show container log for the main project container",
-        style: gbstyle,
-        handleClick: this._toggleMainLog,
-        icon: "console"
-      })), this.state.show_console_error_log && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        extra_glyph_text: this._glif_text(show_glif_text, "hide"),
-        tooltip: "Show container log for the main project container",
-        style: gbstyle,
-        handleClick: this._toggleMainLog,
-        icon: "console"
+      }), /*#__PURE__*/_react["default"].createElement(_menu_utilities.TacticMenubar, {
+        menu_specs: this.menu_specs,
+        showRefresh: false,
+        showClose: false,
+        dark_theme: this.props.dark_theme,
+        refreshTab: this.props.refreshTab,
+        closeTab: null,
+        controlled: false // This doesn't matter
+        ,
+        am_selected: false // Also doesn't matter
+
       })), /*#__PURE__*/_react["default"].createElement("div", {
         id: "console-header-right",
         className: "d-flex flex-row"
@@ -1494,20 +1493,20 @@ var RawLogItem = /*#__PURE__*/function (_React$Component) {
   var _super4 = _createSuper(RawLogItem);
 
   function RawLogItem(props) {
-    var _this15;
+    var _this14;
 
     _classCallCheck(this, RawLogItem);
 
-    _this15 = _super4.call(this, props);
-    _this15.ce_summary0ref = /*#__PURE__*/_react["default"].createRef();
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this15), "_", RawLogItem.prototype);
-    _this15.update_props = log_item_update_props;
-    _this15.update_state_vars = [];
-    _this15.state = {
+    _this14 = _super4.call(this, props);
+    _this14.ce_summary0ref = /*#__PURE__*/_react["default"].createRef();
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this14), "_", RawLogItem.prototype);
+    _this14.update_props = log_item_update_props;
+    _this14.update_state_vars = [];
+    _this14.state = {
       selected: false
     };
-    _this15.last_output_text = "";
-    return _this15;
+    _this14.last_output_text = "";
+    return _this14;
   }
 
   _createClass(RawLogItem, [{
@@ -1747,19 +1746,19 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component2) {
   var _super5 = _createSuper(RawConsoleCodeItem);
 
   function RawConsoleCodeItem(props) {
-    var _this16;
+    var _this15;
 
     _classCallCheck(this, RawConsoleCodeItem);
 
-    _this16 = _super5.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this16), "_", RawConsoleCodeItem.prototype);
-    _this16.cmobject = null;
-    _this16.elRef = /*#__PURE__*/_react["default"].createRef();
-    _this16.update_props = code_item_update_props;
-    _this16.update_state_vars = [];
-    _this16.state = {};
-    _this16.last_output_text = "";
-    return _this16;
+    _this15 = _super5.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this15), "_", RawConsoleCodeItem.prototype);
+    _this15.cmobject = null;
+    _this15.elRef = /*#__PURE__*/_react["default"].createRef();
+    _this15.update_props = code_item_update_props;
+    _this15.update_state_vars = [];
+    _this15.state = {};
+    _this15.last_output_text = "";
+    return _this15;
   }
 
   _createClass(RawConsoleCodeItem, [{
@@ -1787,7 +1786,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this17 = this;
+      var _this16 = this;
 
       if (this.props.set_focus) {
         if (this.cmobject != null) {
@@ -1805,7 +1804,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component2) {
 
       if (this.cmobject != null) {
         this.cmobject.on("focus", function () {
-          self.props.setFocus(_this17.props.unique_id, self._selectMe);
+          self.props.setFocus(_this16.props.unique_id, self._selectMe);
         });
         this.cmobject.on("blur", function () {
           self.props.setFocus(null);
@@ -2020,7 +2019,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "renderContextMenu",
     value: function renderContextMenu() {
-      var _this18 = this;
+      var _this17 = this;
 
       // return a single element, or nothing to use default browser behavior
       return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, !this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
@@ -2050,7 +2049,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component2) {
         icon: "clean",
         intent: "warning",
         onClick: function onClick() {
-          _this18._clearOutput();
+          _this17._clearOutput();
         },
         text: "Clear Output"
       }));
@@ -2065,7 +2064,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "render",
     value: function render() {
-      var _this19 = this;
+      var _this18 = this;
 
       var panel_style = this.props.am_shrunk ? "log-panel log-panel-invisible" : "log-panel log-panel-visible";
 
@@ -2151,7 +2150,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component2) {
         icon: "trash"
       }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
         handleClick: function handleClick() {
-          _this19._clearOutput();
+          _this18._clearOutput();
         },
         intent: "warning",
         tooltip: "Clear this item's output",
@@ -2208,20 +2207,20 @@ var ResourceLinkButton = /*#__PURE__*/function (_React$PureComponent4) {
   var _super6 = _createSuper(ResourceLinkButton);
 
   function ResourceLinkButton(props) {
-    var _this20;
+    var _this19;
 
     _classCallCheck(this, ResourceLinkButton);
 
-    _this20 = _super6.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this20));
-    _this20.my_view = (0, _library_pane.view_views)(false)[props.res_type];
+    _this19 = _super6.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this19));
+    _this19.my_view = (0, _library_pane.view_views)(false)[props.res_type];
 
     if (window.in_context) {
       var re = new RegExp("/$");
-      _this20.my_view = _this20.my_view.replace(re, "_in_context");
+      _this19.my_view = _this19.my_view.replace(re, "_in_context");
     }
 
-    return _this20;
+    return _this19;
   }
 
   _createClass(ResourceLinkButton, [{
@@ -2278,22 +2277,22 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component3) {
   var _super7 = _createSuper(RawConsoleTextItem);
 
   function RawConsoleTextItem(props) {
-    var _this21;
+    var _this20;
 
     _classCallCheck(this, RawConsoleTextItem);
 
-    _this21 = _super7.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this21), "_", RawConsoleTextItem.prototype);
-    _this21.cmobject = null;
-    _this21.elRef = /*#__PURE__*/_react["default"].createRef();
-    _this21.ce_summary_ref = /*#__PURE__*/_react["default"].createRef();
-    _this21.update_props = text_item_update_props;
-    _this21.update_state_vars = ["ce_ref"];
-    _this21.previous_dark_theme = props.dark_theme;
-    _this21.state = {
+    _this20 = _super7.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this20), "_", RawConsoleTextItem.prototype);
+    _this20.cmobject = null;
+    _this20.elRef = /*#__PURE__*/_react["default"].createRef();
+    _this20.ce_summary_ref = /*#__PURE__*/_react["default"].createRef();
+    _this20.update_props = text_item_update_props;
+    _this20.update_state_vars = ["ce_ref"];
+    _this20.previous_dark_theme = props.dark_theme;
+    _this20.state = {
       ce_ref: null
     };
-    return _this21;
+    return _this20;
   }
 
   _createClass(RawConsoleTextItem, [{
@@ -2343,7 +2342,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this22 = this;
+      var _this21 = this;
 
       if (this.props.set_focus) {
         if (this.props.show_markdown) {
@@ -2362,7 +2361,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component3) {
 
       if (this.cmobject != null) {
         this.cmobject.on("focus", function () {
-          self.props.setFocus(_this22.props.unique_id, self._selectMe);
+          self.props.setFocus(_this21.props.unique_id, self._selectMe);
         });
         this.cmobject.on("blur", function () {
           self.props.setFocus(null);
@@ -2581,7 +2580,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "render",
     value: function render() {
-      var _this23 = this;
+      var _this22 = this;
 
       var really_show_markdown = this.hasOnlyWhitespace && this.props.links.length == 0 ? false : this.props.show_markdown;
       var converted_markdown;
@@ -2609,7 +2608,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component3) {
         return /*#__PURE__*/_react["default"].createElement(ResourceLinkButton, {
           key: index,
           my_index: index,
-          handleCreateViewer: _this23.props.handleCreateViewer,
+          handleCreateViewer: _this22.props.handleCreateViewer,
           deleteMe: self._deleteLinkButton,
           res_type: link.res_type,
           res_name: link.res_name

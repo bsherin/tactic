@@ -135,14 +135,15 @@ class TopLeftButtons extends React.Component {
         let ebuttons = [];
         if (this.props.extraButtons != null) {
             this.props.extraButtons.map((but_info, index) => {
-                ebuttons.push(<
-                    Button icon={<Icon icon={but_info.icon} iconSize={14}/>}
-                         style={{paddingLeft: 8}}
-                         minimal={true}
-                         className="context-close-button"
-                         small={true}
-                         tabIndex={-1}
-                         onClick={() => {
+                ebuttons.push(
+                    <Button icon={<Icon icon={but_info.icon} iconSize={14}/>}
+                            style={{paddingLeft: 8}}
+                            minimal={true}
+                            className="context-close-button"
+                            small={true}
+                            key={index}
+                            tabIndex={-1}
+                            onClick={() => {
                              but_info.onClick()
                          }}
                 />)
