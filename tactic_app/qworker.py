@@ -14,6 +14,8 @@ import communication_utils
 from exception_mixin import ExceptionMixin, MessagePostException
 from threading import Lock
 
+PAUSE_TIME = .01
+
 thread = None
 thread_lock = Lock()
 
@@ -114,12 +116,23 @@ class QWorker(ExceptionMixin):
                 new_retries = retries + 1
                 self.start_background_thread(retries=new_retries)
 
+    def interrupt_and_restart(self):
+        global thread
+        global thread_lock
+        self.channel.queue_delete(queue=self.my_id)
+        self.connection.close()
+        thread.kill()
+        thread = None
+        # thread_lock.release()
+        self.start()
+        return
+
     def start(self):
         global thread
         with thread_lock:
             if thread is None:
                 thread = socketio.start_background_task(target=self.start_background_thread)
-        debug_log('Background thread started')
+                debug_log('Background thread started')
 
     def ready(self):
         return
@@ -140,6 +153,7 @@ class QWorker(ExceptionMixin):
                 self.handle_response(task_packet)
             else:
                 self.handle_event(task_packet)
+            gevent.sleep(PAUSE_TIME)
         except Exception as ex:
             special_string = "Got error in handle delivery"
             debug_log(special_string)
@@ -193,6 +207,7 @@ class QWorker(ExceptionMixin):
                           "expiration": expiration}
             # self.channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
             self.post_packet(dest_id, new_packet, reply_to, callback_id)
+            gevent.sleep(PAUSE_TIME)
             result = {"success": True}
 
         except Exception as ex:
@@ -220,7 +235,7 @@ class QWorker(ExceptionMixin):
 
         # noinspection PyNoneFunctionAssignment@
         resp = self.wait_worker.post_blocking_wait(dest_id, new_packet)
-
+        gevent.sleep(PAUSE_TIME)
         if resp == "__ERROR__":
             error_string = "Got post_blocking_wait error with msg_type {}, destination {}, and source {}".format(task_type,
                                                                                                                  dest_id,

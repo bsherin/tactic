@@ -384,7 +384,10 @@ def destroy_container(tactic_id, notify=True):
                     tile_name = container_other_name(cont)
                     message = "Container for tile {} has been destroyed".format(tile_name)
             cont.remove(force=True)
-            delete_list_of_queues([tactic_id, tactic_id + "_wait"])
+            cont_list = [tactic_id, tactic_id + "_wait"]
+            if cont_type == "tile":
+                cont_list.append("kill_" + tactic_id)
+            delete_list_of_queues(cont_list)
             if notify and message is not None:
                 data = {"message": message,
                         "alert_type": "alert-warning",

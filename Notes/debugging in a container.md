@@ -13,8 +13,9 @@ I just need to place a settrace whereever
 
     ```RUN pip install pydevd-pycharm~=193.5233.109```
     new vesion ```RUN pip install pydevd-pycharm~=201.6668.115```
+    newer version ``` RUN pip install pydevd-pycharm~-213.5605.23```
 
-2. Insert these lines somewhere near to where I want to debug. I also need to import pydevd_pycharm before 
+3. Insert these lines somewhere near to where I want to debug. I also need to import pydevd_pycharm before 
    monkey_patching.
    
 ```python

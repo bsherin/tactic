@@ -11,10 +11,11 @@ print("entering tile__main")
 from flask import Flask
 import exception_mixin
 from exception_mixin import ExceptionMixin
+from threading import Lock
 
 import copy
 # noinspection PyUnresolvedReferences
-from qworker import QWorker, task_worthy, RETRIES
+from qworker import QWorker, task_worthy, RETRIES, debug_log, socketio, PAUSE_TIME
 # noinspection PyUnresolvedReferences
 
 import qworker
@@ -37,10 +38,44 @@ import sys, os
 sys.stdout = sys.stderr
 import time
 
+kill_thread = None
+kill_thread_lock = Lock()
+
 
 # noinspection PyUnusedLocal,PyProtectedMember
+class KillWorker(QWorker):
+    def __init__(self):
+        self.my_id = "kill_" + os.environ.get("MY_ID")
+        # self.handler_instances = {"this_worker": self}
+        self.channel = None
+        self.connection = None
+        self.generate_heartbeats = False
+        print("initialized killworker")
+        return
+
+    def handle_delivery(self, channel, method, props, body):
+        try:
+            task_packet = json.loads(body)
+            debug_log("***in handle_delivery in KillWorker with task_type {}".format(task_packet["task_type"]))
+            if task_packet["task_type"] == "StopMe":
+                tile_base._tworker.interrupt_and_restart()
+                tile_base._tworker.emit_tile_message("stopSpinner")
+        except Exception as ex:
+            special_string = "Got error in kill handle delivery"
+            debug_log(special_string)
+            debug_log(self.handle_exception(ex, special_string))
+        return
+
+    def start(self):
+        print("starting kill_thread")
+        global kill_thread
+        with kill_thread_lock:
+            if kill_thread is None:
+                kill_thread = socketio.start_background_task(target=self.start_background_thread)
+        debug_log('Background kill_thread started')
 
 
+# noinspection PyProtectedMember,PyUnusedLocal
 class TileWorker(QWorker):
     def __init__(self):
         QWorker.__init__(self)
@@ -65,10 +100,12 @@ class TileWorker(QWorker):
         data["tile_message"] = message
         data["tile_id"] = self.my_id
         emit_direct("tile-message", data, namespace="/main", room=self.tile_instance.user_id)
+        gevent.sleep(PAUSE_TIME)
         return
 
     def emit_to_client(self, message, data):
         emit_direct(message, data, namespace="/main", room=self.tile_instance._main_id)
+        gevent.sleep(PAUSE_TIME)
 
     def send_error_entry(self, title, content, line_number):
         data = {"message": "add-error-drawer-entry",
@@ -181,7 +218,7 @@ class TileWorker(QWorker):
     @task_worthy
     def kill_me(self, data):
         self.connection.close()
-
+        kill_worker.connection.close()
         sys.exit()
 
     @task_worthy
@@ -310,6 +347,8 @@ if __name__ == "__main__":
 
     print("tworker is created, about to start my_id is " + str(tile_base._tworker.my_id))
     tile_base._tworker.start()
+    kill_worker = KillWorker()
+    kill_worker.start()
     print("tworker started, my_id is " + str(tile_base._tworker.my_id))
     while True:
         time.sleep(1000)
