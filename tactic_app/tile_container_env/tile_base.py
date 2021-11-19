@@ -160,18 +160,6 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     def TileSizeChange(self, data):
         self.width = data["width"]  # this might not be used for anything
         self.height = data["height"]  # this might not be used for anything
-        # self.full_tile_width = data["full_tile_width"]
-        # self.full_tile_height = data["full_tile_height"]
-        # self.header_height = data["header_height"]
-        # self.front_height = data["front_height"]
-        # self.front_width = data["front_width"]
-        # self.back_height = data["back_height"]
-        # self.back_width = data["back_width"]
-        # self.tile_log_height = data["tile_log_height"]
-        # self.tile_log_width = data["tile_log_width"]
-        # self.tda_height = data["tda_height"]
-        # self.tda_width = data["tda_width"]
-        # self._margin = data["margin"]
         if self.configured:
             if isinstance(self, MplFigure):
                 self._resize_mpl_tile()

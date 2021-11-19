@@ -99,8 +99,8 @@ def create_mongo():
             print("mongo doesn't yet exist so I'm making it")
         if restart_rabbit or not mongo_exists:
             print("creating tactic-mongo")
-            mongo_volume_dict = {"/Users/bls910/data/db": {"bind": "/data/db", "mode": "rw"}}
-            _unique_id, _mongo_id = create_container("mongo",
+            mongo_volume_dict = {"/Users/bls910/mongo/data": {"bind": "/data/db", "mode": "rw"}}
+            _unique_id, _mongo_id = create_container("mongo:4.2",
                                                      container_name="tactic-mongo",
                                                      host_name="tactic-mongo",
                                                      volume_dict=mongo_volume_dict,

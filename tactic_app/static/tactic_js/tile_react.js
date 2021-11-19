@@ -455,6 +455,7 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
     };
     _this2.last_front_content = "";
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this2));
+    _this2.menu_component = _this2._createMenu();
     return _this2;
   }
 
@@ -760,6 +761,7 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "_reloadTile",
     value: function _reloadTile() {
+      var resubmit = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
       var self = this;
       var data_dict = {
         "tile_id": this.props.tile_id,
@@ -776,7 +778,7 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
 
           self.props.setTileValue(self.props.tile_id, "source_changed", false);
 
-          if (data.options_changed) {
+          if (data.options_changed || !resubmit) {
             self._stopSpinner();
 
             self._setTileBack(true);
@@ -981,6 +983,11 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
       (0, _communication_react.postWithCallback)(this.props.tile_id, "LogTile", {}, null, null, this.props.main_id);
     }
   }, {
+    key: "_stopMe",
+    value: function _stopMe() {
+      (0, _communication_react.postWithCallback)("kill_" + this.props.tile_id, "StopMe", {}, null);
+    }
+  }, {
     key: "_editMe",
     value: function _editMe() {
       var self = this;
@@ -1047,6 +1054,58 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
       });
     }
   }, {
+    key: "_createMenu",
+    value: function _createMenu() {
+      var self = this;
+      var tile_menu_options = {
+        "Run me": self._handleSubmitOptions,
+        "Stop me": self._stopMe,
+        "divider99": "divider",
+        "Reload from library": function ReloadFromLibrary() {
+          self._reloadTile(false);
+        },
+        "Reload and resubmit": function ReloadAndResubmit() {
+          self._reloadTile(true);
+        },
+        "divider0": "divider",
+        "Toggle console": self._toggleTileLog,
+        "divider1": "divider",
+        "Log me": self._logMe,
+        "Log parameters": self._logParams,
+        "divider2": "divider",
+        "Edit my source": self._editMe,
+        "divider3": "divider",
+        "Delete me": self._closeTile
+      };
+      var menu_icons = {
+        "Reload from library": "refresh",
+        "Reload and resubmit": "social-media",
+        "Run me": "play",
+        "Stop me": "stop",
+        "Toggle console": "console",
+        "Log me": "clipboard",
+        "Log parameters": "th",
+        "Edit my source": "edit",
+        "Delete me": "trash"
+      };
+
+      var menu_button = /*#__PURE__*/_react["default"].createElement(_core.Button, {
+        minimal: true,
+        small: true,
+        icon: "more"
+      });
+
+      return /*#__PURE__*/_react["default"].createElement(_menu_utilities.MenuComponent, {
+        option_dict: tile_menu_options,
+        icon_dict: menu_icons,
+        item_class: "tile-menu-item",
+        position: _core.PopoverPosition.BOTTOM_RIGHT,
+        alt_button: function alt_button() {
+          return menu_button;
+        }
+      });
+    }
+  }, {
     key: "render",
     value: function render() {
       var _this4 = this;
@@ -1063,32 +1122,6 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
         bottom: 2,
         right: 1
       };
-      var tile_menu_options = {
-        "Reload from library": this._reloadTile,
-        "Edit my source": this._editMe,
-        "divider0": "divider",
-        "Toggle console": this._toggleTileLog,
-        "divider1": "divider",
-        "Log me": this._logMe,
-        "Log parameters": this._logParams,
-        "divider2": "divider",
-        "Delete me": this._closeTile
-      };
-      var menu_icons = {
-        "Reload from library": "refresh",
-        "Edit my source": "edit",
-        "Toggle console": "console",
-        "Log me": "clipboard",
-        "Log parameters": "th",
-        "Delete me": "trash"
-      };
-
-      var menu_button = /*#__PURE__*/_react["default"].createElement(_core.Button, {
-        minimal: true,
-        small: true,
-        icon: "more"
-      });
-
       return /*#__PURE__*/_react["default"].createElement(_core.Card, {
         ref: this.my_ref,
         elevation: 2,
@@ -1119,17 +1152,17 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
           marginRight: 10
         },
         ref: this.right_glyphs_ref
-      }, /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, null, this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_core.Spinner, {
+      }, /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, null, this.props.show_log && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+        intent: "primary",
+        handleClick: this._toggleTileLog,
+        icon: "console"
+      }), this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+        intent: "danger",
+        handleClick: this._stopMe,
+        icon: "stop"
+      }), this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_core.Spinner, {
         size: 17
-      }), /*#__PURE__*/_react["default"].createElement(_menu_utilities.MenuComponent, {
-        option_dict: tile_menu_options,
-        icon_dict: menu_icons,
-        item_class: "tile-menu-item",
-        position: _core.PopoverPosition.BOTTOM_RIGHT,
-        alt_button: function alt_button() {
-          return menu_button;
-        }
-      })))), !this.props.shrunk && /*#__PURE__*/_react["default"].createElement("div", {
+      }), this.menu_component))), !this.props.shrunk && /*#__PURE__*/_react["default"].createElement("div", {
         ref: this.body_ref,
         style: this.panel_body_style,
         className: "tile-body"

@@ -270,6 +270,7 @@ class TileComponent extends React.Component {
         };
         this.last_front_content = "";
         doBinding(this);
+        this.menu_component = this._createMenu();
     }
 
     shouldComponentUpdate(nextProps, nextState, nextContext) {
@@ -473,7 +474,7 @@ class TileComponent extends React.Component {
         }, null, self.props.main_id)
     }
 
-    _reloadTile () {
+    _reloadTile (resubmit=false) {
         const self = this;
         const data_dict = {"tile_id": this.props.tile_id, "tile_name": this.props.tile_name};
         this._startSpinner();
@@ -483,7 +484,7 @@ class TileComponent extends React.Component {
             if (data.success) {
                 self._displayFormContent(data);
                 self.props.setTileValue(self.props.tile_id, "source_changed", false);
-                if (data.options_changed) {
+                if (data.options_changed || !resubmit) {
                     self._stopSpinner();
                     self._setTileBack(true)
                 }
@@ -630,6 +631,10 @@ class TileComponent extends React.Component {
         postWithCallback(this.props.tile_id, "LogTile", {}, null, null, this.props.main_id);
     }
 
+    _stopMe() {
+        postWithCallback("kill_" + this.props.tile_id, "StopMe", {}, null)
+    }
+
     _editMe() {
         let self = this;
         if (!window.in_context) {
@@ -675,6 +680,49 @@ class TileComponent extends React.Component {
         this.setState({resizing: false, dwidth: 0, dheight:0}, ()=>{this._resizeTileArea(dx, dy)})
     }
 
+    _createMenu() {
+        let self = this;
+        let tile_menu_options = {
+                "Run me": self._handleSubmitOptions,
+                "Stop me": self._stopMe,
+                "divider99": "divider",
+                "Reload from library": ()=>{self._reloadTile(false)},
+                "Reload and resubmit": ()=>{self._reloadTile(true)},
+                "divider0": "divider",
+                "Toggle console": self._toggleTileLog,
+                "divider1": "divider",
+                "Log me": self._logMe,
+                "Log parameters": self._logParams,
+                "divider2": "divider",
+                "Edit my source": self._editMe,
+                "divider3": "divider",
+                "Delete me": self._closeTile,
+        };
+        let menu_icons = {
+                "Reload from library": "refresh",
+                "Reload and resubmit": "social-media",
+                "Run me": "play",
+                "Stop me": "stop",
+                "Toggle console": "console",
+                "Log me": "clipboard",
+                "Log parameters": "th",
+                "Edit my source": "edit",
+                "Delete me": "trash"
+        };
+
+        let menu_button = (<Button minimal={true}
+                                    small={true}
+                                    icon="more"/>);
+        return (
+            <MenuComponent
+                   option_dict={tile_menu_options}
+                   icon_dict={menu_icons}
+                   item_class="tile-menu-item"
+                   position={PopoverPosition.BOTTOM_RIGHT}
+                   alt_button={()=>(menu_button)}/>)
+     }
+
+
     render () {
         let show_front = (!this.props.show_form) && (!this.props.show_log);
         let front_dict = {__html: this.props.front_content};
@@ -682,28 +730,6 @@ class TileComponent extends React.Component {
         let tile_class = this.props.table_is_shrunk ? "tile-panel tile-panel-float" : "tile-panel";
         let tph_class = this.props.source_changed ? "tile-panel-heading tile-source-changed" : "tile-panel-heading";
         let draghandle_position_dict = {position: "absolute", bottom: 2, right: 1};
-        let tile_menu_options = {
-            "Reload from library": this._reloadTile,
-            "Edit my source": this._editMe,
-            "divider0": "divider",
-            "Toggle console": this._toggleTileLog,
-            "divider1": "divider",
-            "Log me": this._logMe,
-            "Log parameters": this._logParams,
-            "divider2": "divider",
-            "Delete me": this._closeTile,
-        };
-        let menu_icons = {
-            "Reload from library": "refresh",
-            "Edit my source": "edit",
-            "Toggle console": "console",
-            "Log me": "clipboard",
-            "Log parameters": "th",
-            "Delete me": "trash"
-        };
-        let menu_button = <Button minimal={true}
-                                  small={true}
-                                  icon="more"/>;
 
         return (
             <Card ref={this.my_ref} elevation={2} style={this.main_style} className={tile_class} id={this.props.tile_id}>
@@ -731,12 +757,14 @@ class TileComponent extends React.Component {
                              style={{marginRight: 10}}
                              ref={this.right_glyphs_ref}>
                             <ButtonGroup>
-                            {this.props.show_spinner && <Spinner size={17} />}
-                                <MenuComponent option_dict={tile_menu_options}
-                                               icon_dict={menu_icons}
-                                               item_class="tile-menu-item"
-                                               position={PopoverPosition.BOTTOM_RIGHT}
-                                               alt_button={()=>(menu_button)}/>
+                                {this.props.show_log && <GlyphButton intent="primary"
+                                                                         handleClick={this._toggleTileLog}
+                                                                         icon="console"/>}
+                                {this.props.show_spinner && <GlyphButton intent="danger"
+                                                                         handleClick={this._stopMe}
+                                                                         icon="stop"/>}
+                                {this.props.show_spinner && <Spinner size={17} />}
+                                {this.menu_component}
                             </ButtonGroup>
                         </div>
                     </div>
