@@ -537,6 +537,11 @@ class LoadSaveTasksMixin:
         self.mworker.post_task(self.mworker.my_id, "compile_save_dict", {}, got_save_dict)
         return {"success": True}
 
+    @task_worthy
+    def update_reload_dict(self, data_dict):
+        self.tile_reload_dicts[data_dict["tile_id"]] = data_dict["reload_dict"]
+        return {"success": True}
+
     @task_worthy_manual_submit
     def change_collection(self, data_dict, task_packet):
         local_task_packet = task_packet
@@ -625,7 +630,7 @@ class TileCreationTasksMixin:
 
             exports = instantiate_result["exports"]
             self.update_pipe_dict(exports, tile_container_id, tile_name)
-
+            self.tile_reload_dicts[tile_container_id] = instantiate_result["reload_dict"]
             form_data = instantiate_result["form_data"]
             self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task",
                                    {"tile_id": tile_container_id})
@@ -687,6 +692,7 @@ class TileCreationTasksMixin:
             self.mworker.emit_export_viewer_message("update_exports_popup", {})
             self.tile_save_results[new_id[0]] = recreate_response
             self.tile_instances.append(new_id[0])
+            self.tile_reload_dicts[new_id[0]] = recreate_response["reload_dict"]
             self.mworker.submit_response(task_packet, {"old_tile_id": old_tile_id})
             return
 
@@ -742,54 +748,36 @@ class TileCreationTasksMixin:
         print("got tile_id {}".format(str(tile_id)))
         print(str(ddict))
 
-        def got_tile_type(gtp_response):
-            tile_type = gtp_response["val"]
-            module_code = self.get_tile_code(tile_type)
+        reload_dict = self.tile_reload_dicts[tile_id]
+        tile_type = reload_dict["tile_type"]
+        module_code = self.get_tile_code(tile_type)
+        print("tile_id is {}".format(tile_id))
+        print("restarting container from main")
+        docker_functions.restart_container(tile_id)
+        docker_functions.wait_until_running(tile_id)
 
-            def got_reload_attrs(gra_response):
-                reload_dict = copy.copy(gra_response["val"])
+        def reinstantiate_done(reinst_result):
+            if reinst_result["success"]:
+                exports = reinst_result["exports"]  # This is the issue
+                self.tile_reload_dicts[tile_id] = reinst_result["reload_dict"]
+                self.update_pipe_dict(exports, tile_id, ddict["tile_name"])
+                form_info["pipe_dict"] = self._pipe_dict
+                self.rebuild_other_tile_forms(tile_id, form_info)
+                self.mworker.emit_export_viewer_message("update_exports_popup", {})
+                final_result = {"success": True, "form_data": reinst_result["form_data"],
+                                "options_changed": reinst_result["options_changed"]}
+                self.mworker.submit_response(local_task_packet, final_result)
+            else:
+                raise Exception(reinst_result["message"])
 
-                def got_current_options(gco_response):
-                    saved_options = copy.copy(gco_response["val"])
-                    reload_dict.update(saved_options)
-                    reload_dict["old_option_names"] = list(saved_options.keys())
-                    print("tile_id is {}".format(tile_id))
-                    print("tile container status is {}".format(docker_functions.container_status(tile_id)))
-                    self.mworker.post_task(tile_id, "kill_me", {})
-                    docker_functions.wait_until_stopped(tile_id)
-                    print("restarting container from main")
-                    print("tile container status is {}".format(docker_functions.container_status(tile_id)))
-                    docker_functions.restart_container(tile_id)
-                    docker_functions.wait_until_running(tile_id)
-                    # self.mworker.post_task("host", "restart_container", {"tile_id": tile_id})
-
-                    def reinstantiate_done(reinst_result):
-                        if reinst_result["success"]:
-                            exports = reinst_result["exports"]  # This is the issue
-                            self.update_pipe_dict(exports, tile_id, ddict["tile_name"])
-                            form_info["pipe_dict"] = self._pipe_dict
-                            self.rebuild_other_tile_forms(tile_id, form_info)
-                            self.mworker.emit_export_viewer_message("update_exports_popup", {})
-                            final_result = {"success": True, "form_data": reinst_result["form_data"],
-                                            "options_changed": reinst_result["options_changed"]}
-                            self.mworker.submit_response(local_task_packet, final_result)
-                        else:
-                            raise Exception(reinst_result["message"])
-
-                    form_info = self.compile_form_info(tile_id)
-                    reload_dict["form_info"] = form_info
-                    reload_dict["tile_address"] = self.tile_addresses[tile_id]
-                    print("about to load_source")
-                    print("tile container status is {}".format(docker_functions.container_status(tile_id)))
-                    self.mworker.post_task(tile_id, "load_source_and_reinstantiate", {"tile_code": module_code,
-                                                                                      "reload_dict": reload_dict},
-                                           reinstantiate_done)
-
-                self.get_tile_property(tile_id, "_current_options", got_current_options)
-
-            self.get_tile_property(tile_id, "_current_reload_attrs", got_reload_attrs)
-
-        self.get_tile_property(tile_id, "tile_type", got_tile_type)
+        form_info = self.compile_form_info(tile_id)
+        reload_dict["form_info"] = form_info
+        reload_dict["tile_address"] = self.tile_addresses[tile_id]
+        print("about to load_source")
+        print("tile container status is {}".format(docker_functions.container_status(tile_id)))
+        self.mworker.post_task(tile_id, "load_source_and_reinstantiate", {"tile_code": module_code,
+                                                                          "reload_dict": reload_dict},
+                               reinstantiate_done)
 
     @task_worthy
     def RemoveTile(self, data):

@@ -1061,10 +1061,10 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
         "Run me": self._handleSubmitOptions,
         "Stop me": self._stopMe,
         "divider99": "divider",
-        "Reload from library": function ReloadFromLibrary() {
+        "Kill and reload": function KillAndReload() {
           self._reloadTile(false);
         },
-        "Reload and resubmit": function ReloadAndResubmit() {
+        "Kill, reload, and resubmit": function KillReloadAndResubmit() {
           self._reloadTile(true);
         },
         "divider0": "divider",
@@ -1078,8 +1078,8 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
         "Delete me": self._closeTile
       };
       var menu_icons = {
-        "Reload from library": "refresh",
-        "Reload and resubmit": "social-media",
+        "Kill and reload": "refresh",
+        "Kill, reload, and resubmit": "social-media",
         "Run me": "play",
         "Stop me": "stop",
         "Toggle console": "console",

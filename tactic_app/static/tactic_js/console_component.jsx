@@ -690,7 +690,7 @@ const BUTTON_CONSUMED_SPACE = 208;
                    {name_text: "Resource Linkt", icon_name: "link", click_handler: this._insertResourceLink}],
             Edit: [{name_text: "Copy Cell", icon_name: "duplicate", click_handler: () => {self._copyCell()}},
                    {name_text: "Paste Cell", icon_name: "clipboard", click_handler: () => {self._pasteCell()}},
-                   {name_text: "Clear Log", icon_name: "trash", click_handler: this._clear_console}
+                   {name_text: "Clear Log", icon_name: "trash", click_handler: this._clearConsole}
             ],
             Execute: [{name_text: "Stop All", icon_name: "stop", click_handler: this._stopAll},
                       {name_text: "Reset All", icon_name: "reset", click_handler: this._resetConsole}],
