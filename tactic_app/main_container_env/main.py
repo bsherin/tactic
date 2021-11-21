@@ -87,6 +87,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         self.tile_id_dict = {}  # dict with the keys the names of tiles and ids as the values.
         self.tile_addresses = {}
         self.pseudo_tile_address = None
+        self.tile_reload_dicts = {}
 
         self.ppi = data_dict["ppi"]
         self.username = os.environ.get("USERNAME")

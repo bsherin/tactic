@@ -343,6 +343,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     @_task_worthy
     def _update_single_option(self, data):
         setattr(self, data["option_name"], data["value"])
+        self._tworker.send_updated_reload_dict()
         self.post_event("OptionChange", data)
         return self._create_form_data(self._saved_form_data)
 
@@ -757,6 +758,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
             else:
                 setattr(self, opt["name"], form_data[opt["name"]])
         self.configured = True
+        self._tworker.send_updated_reload_dict()
         self._hide_options()
         self.spin_and_refresh()
         return

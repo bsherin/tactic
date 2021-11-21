@@ -199,6 +199,7 @@ class TileWorker(QWorker):
                 "saved_size": self.tile_instance.full_tile_height,
                 "exports": self.tile_instance.get_export_type_info(),
                 "tile_name": self.tile_instance.tile_name,
+                "reload_dict": self.get_reload_dict(),
                 "is_d3": self.tile_instance.is_d3}
 
     @task_worthy
@@ -220,6 +221,25 @@ class TileWorker(QWorker):
         self.connection.close()
         kill_worker.connection.close()
         sys.exit()
+
+    @task_worthy
+    def get_reload_info(self, data):
+        return {"success": True,
+                "reload_dict": self.get_reload_dict()}
+
+    def get_reload_dict(self):
+        tile_type = self.tile_instance.tile_type
+        reload_attrs = self.tile_instance._current_reload_attrs
+        current_options = self.tile_instance._current_options
+        reload_attrs.update(current_options)
+        reload_attrs["old_option_names"] = list(current_options.keys())
+        return reload_attrs
+
+    def send_updated_reload_dict(self):
+        self.post_task(self.tile_instance._main_id, "update_reload_dict",
+                       {"tile_id": self.my_id,
+                        "reload_dict": self.get_reload_dict()})
+        return
 
     @task_worthy
     def reinstantiate_tile(self, reload_dict):
@@ -248,7 +268,9 @@ class TileWorker(QWorker):
                 self.tile_instance.exports = []
             return {"success": True, "form_data": form_data,
                     "exports": self.tile_instance.get_export_type_info(),
-                    "options_changed": options_changed}
+                    "options_changed": options_changed,
+                    "reload_dict": self.get_reload_dict()
+                    }
         except Exception as ex:
             return self.handle_exception(ex, "Error reinstantiating tile")
 
@@ -295,6 +317,7 @@ class TileWorker(QWorker):
         instantiate_result = self.instantiate_tile_class(data)
         form_data = self.tile_instance._create_form_data(data["form_info"])["form_data"]
         instantiate_result["form_data"] = form_data
+        instantiate_result["reload_dict"] = self.get_reload_dict()
         return instantiate_result
 
     @task_worthy

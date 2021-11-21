@@ -1148,7 +1148,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
         }, {
           name_text: "Clear Log",
           icon_name: "trash",
-          click_handler: this._clear_console
+          click_handler: this._clearConsole
         }],
         Execute: [{
           name_text: "Stop All",

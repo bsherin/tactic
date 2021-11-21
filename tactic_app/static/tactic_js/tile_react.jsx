@@ -686,8 +686,8 @@ class TileComponent extends React.Component {
                 "Run me": self._handleSubmitOptions,
                 "Stop me": self._stopMe,
                 "divider99": "divider",
-                "Reload from library": ()=>{self._reloadTile(false)},
-                "Reload and resubmit": ()=>{self._reloadTile(true)},
+                "Kill and reload": ()=>{self._reloadTile(false)},
+                "Kill, reload, and resubmit": ()=>{self._reloadTile(true)},
                 "divider0": "divider",
                 "Toggle console": self._toggleTileLog,
                 "divider1": "divider",
@@ -699,8 +699,8 @@ class TileComponent extends React.Component {
                 "Delete me": self._closeTile,
         };
         let menu_icons = {
-                "Reload from library": "refresh",
-                "Reload and resubmit": "social-media",
+                "Kill and reload": "refresh",
+                "Kill, reload, and resubmit": "social-media",
                 "Run me": "play",
                 "Stop me": "stop",
                 "Toggle console": "console",
