@@ -183,7 +183,7 @@ if ("ANYONE_CAN_REGISTER" in os.environ) and (os.environ.get("ANYONE_CAN_REGISTE
 else:
     ANYONE_CAN_REGISTER = False
 
-# create_mongo()
+create_mongo()
 create_megaplex()
 create_redis()
 success = sleep_until_rabbit_alive()

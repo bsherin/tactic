@@ -156,9 +156,11 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         try:
             environ = {"PPI": data["ppi"], "USE_WAIT_TASKS": "True"}
             user_host_persist_dir = true_host_persist_dir + "/tile_manager/" + self.username
+            transformers_resource_dir = true_host_resources_dir + "/huggingface"
             tile_volume_dict = {}
             tile_volume_dict[user_host_persist_dir] = {"bind": "/code/persist", "mode": "rw"}
             tile_volume_dict[true_host_resources_dir] = {"bind": "/root/resources", "mode": "ro"}
+            tile_volume_dict[transformers_resource_dir] = {"bind": "/root/.cache/huggingface", "mode": "rw"}
             tile_container_id, container_id = docker_functions.create_container("bsherin/tactic:tile",
                                                                                 network_mode="bridge",
                                                                                 owner=data["user_id"],

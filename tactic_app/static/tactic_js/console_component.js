@@ -159,7 +159,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
         if (data.main_id == self.props.main_id) {
           var handlerDict = {
             consoleLog: function consoleLog(data) {
-              return self._addConsoleEntry(data.message, data.force_open);
+              return self._addConsoleEntry(data.message, data.force_open, true);
             },
             createLink: function createLink(data) {
               var unique_id = data.message.unique_id;
@@ -169,13 +169,15 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
               });
             },
             stopConsoleSpinner: function stopConsoleSpinner(data) {
-              return self._stopConsoleSpinner(data);
+              var execution_count = "execution_count" in data ? data.execution_count : null;
+
+              self._stopConsoleSpinner(data.console_id, execution_count);
             },
             consoleCodePrint: function consoleCodePrint(data) {
               return self._appendConsoleItemOutput(data);
             },
             consoleCodeRun: function consoleCodeRun(data) {
-              return self._startSpinner(data);
+              return self._startSpinner(data.console_id);
             },
             updateLog: function updateLog(data) {
               return self._addToLog(data.new_line);
@@ -220,6 +222,10 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
   }, {
     key: "_addBlankText",
     value: function _addBlankText() {
+      if (!this.props.am_selected) {
+        return;
+      }
+
       this._addConsoleText("");
     }
   }, {
@@ -331,6 +337,10 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
   }, {
     key: "_addBlankCode",
     value: function _addBlankCode(e) {
+      if (!this.props.am_selected) {
+        return;
+      }
+
       this._addCodeArea("");
     }
   }, {
@@ -818,23 +828,24 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
     }
   }, {
     key: "_startSpinner",
-    value: function _startSpinner(data) {
-      var new_entry = this.get_console_item_entry(data.console_id);
+    value: function _startSpinner(console_id) {
+      var new_entry = this.get_console_item_entry(console_id);
       new_entry.running = true;
-      this.replace_console_item_entry(data.console_id, new_entry);
+      this.replace_console_item_entry(console_id, new_entry);
     }
   }, {
     key: "_stopConsoleSpinner",
-    value: function _stopConsoleSpinner(data) {
-      var new_entry = this.get_console_item_entry(data.console_id);
+    value: function _stopConsoleSpinner(console_id) {
+      var execution_count = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      var new_entry = this.get_console_item_entry(console_id);
       new_entry.show_spinner = false;
       new_entry.running = false;
 
-      if ("execution_count" in data) {
-        new_entry.execution_count = data.execution_count;
+      if ("execution_count" != null) {
+        new_entry.execution_count = execution_count;
       }
 
-      this.replace_console_item_entry(data.console_id, new_entry);
+      this.replace_console_item_entry(console_id, new_entry);
     }
   }, {
     key: "_appendConsoleItemOutput",
@@ -1123,13 +1134,15 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
         Insert: [{
           name_text: "Text Cell",
           icon_name: "new-text-box",
-          click_handler: this._addBlankText
+          click_handler: this._addBlankText,
+          key_bindings: ["ctrl+t"]
         }, {
           name_text: "Code Cell",
           icon_name: "code",
-          click_handler: this._addBlankCode
+          click_handler: this._addBlankCode,
+          key_bindings: ["ctrl+c"]
         }, {
-          name_text: "Resource Linkt",
+          name_text: "Resource Link",
           icon_name: "link",
           click_handler: this._insertResourceLink
         }],
@@ -1151,6 +1164,11 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
           click_handler: this._clearConsole
         }],
         Execute: [{
+          name_text: "Run Selected",
+          icon_name: "play",
+          click_handler: this._runSelected,
+          key_bindings: ["ctrl+enter", "command+enter"]
+        }, {
           name_text: "Stop All",
           icon_name: "stop",
           click_handler: this._stopAll
@@ -1180,6 +1198,66 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       }
 
       return ms;
+    }
+  }, {
+    key: "disabled_items",
+    get: function get() {
+      var items = [];
+
+      if (!this.state.currently_selected_item) {
+        items.push("Run Selected");
+      }
+
+      return items;
+    }
+  }, {
+    key: "_clearCodeOutput",
+    value: function _clearCodeOutput(unique_id) {
+      var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+
+      this._setConsoleItemValue(unique_id, "output_text", "", callback);
+    }
+  }, {
+    key: "_runSelected",
+    value: function _runSelected() {
+      if (!this.props.am_selected) {
+        return;
+      }
+
+      if (this.state.currently_selected_item) {
+        var entry = this.get_console_item_entry(this.state.currently_selected_item);
+
+        if (entry.type == "code") {
+          this._runCodeItem(this.state.currently_selected_item);
+        } else if (entry.type == "text") {
+          this._showTextItemMarkdown(this.state.currently_selected_item);
+        }
+      }
+    }
+  }, {
+    key: "_runCodeItem",
+    value: function _runCodeItem(unique_id) {
+      var go_to_next = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+      var self = this;
+
+      this._clearCodeOutput(unique_id, function () {
+        self._startSpinner(unique_id);
+
+        var entry = self.get_console_item_entry(unique_id);
+        (0, _communication_react.postWithCallback)(self.props.main_id, "exec_console_code", {
+          "the_code": entry.console_text,
+          "console_id": unique_id
+        }, function () {
+          if (go_to_next) {
+            self._goToNextCell(unique_id);
+          }
+        }, null, self.props.main_id);
+      });
+    }
+  }, {
+    key: "_showTextItemMarkdown",
+    value: function _showTextItemMarkdown(unique_id) {
+      this._setConsoleItemValue(unique_id, "show_markdown", true);
     }
   }, {
     key: "render",
@@ -1262,6 +1340,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
         icon: "chevron-down"
       }), /*#__PURE__*/_react["default"].createElement(_menu_utilities.TacticMenubar, {
         menu_specs: this.menu_specs,
+        disabled_items: this.disabled_items,
         showRefresh: false,
         showClose: false,
         dark_theme: this.props.dark_theme,
@@ -1368,6 +1447,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
         selectConsoleItem: this._selectConsoleItem,
         console_available_width: this._bodyWidth(),
         execution_count: 0,
+        runCodeItem: this._runCodeItem,
         handleDelete: this._closeConsoleItem,
         goToNextCell: this._goToNextCell,
         setFocus: this._setFocusedItem,
@@ -1616,7 +1696,26 @@ var RawLogItem = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_selectMe",
     value: function _selectMe() {
-      this.props.selectConsoleItem(this.props.unique_id);
+      var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      this.props.selectConsoleItem(this.props.unique_id, callback);
+    }
+  }, {
+    key: "_addBlankText",
+    value: function _addBlankText() {
+      var self = this;
+
+      this._selectMe(function () {
+        self.props.addNewTextItem();
+      });
+    }
+  }, {
+    key: "_addBlankCode",
+    value: function _addBlankCode() {
+      var self = this;
+
+      this._selectMe(function () {
+        self.props.addNewCodeItem();
+      });
     }
   }, {
     key: "renderContextMenu",
@@ -1630,6 +1729,14 @@ var RawLogItem = /*#__PURE__*/function (_React$Component) {
         icon: "clipboard",
         onClick: this._pasteCell,
         text: "Paste Cell"
+      }), /*#__PURE__*/_react["default"].createElement(_core.Menu.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+        icon: "new-text-box",
+        onClick: this._addBlankText,
+        text: "New Text Cell"
+      }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+        icon: "code",
+        onClick: this._addBlankCode,
+        text: "New Code Cell"
       }), /*#__PURE__*/_react["default"].createElement(_core.Menu.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "trash",
         onClick: this._deleteMe,
@@ -1791,13 +1898,13 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component2) {
       if (this.props.set_focus) {
         if (this.cmobject != null) {
           this.cmobject.focus();
-          this.cm_object.setCursor({
+          this.cmobject.setCursor({
             line: 0,
             ch: 0
           });
         }
 
-        this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false);
+        this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe);
       }
 
       var self = this;
@@ -1902,25 +2009,6 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component2) {
       }
     }
   }, {
-    key: "_runMe",
-    value: function _runMe() {
-      var go_to_next = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-      var self = this;
-
-      this._clearOutput(function () {
-        self._showMySpinner();
-
-        (0, _communication_react.postWithCallback)(self.props.main_id, "exec_console_code", {
-          "the_code": self.props.console_text,
-          "console_id": self.props.unique_id
-        }, function () {
-          if (go_to_next) {
-            self.props.goToNextCell(self.props.unique_id);
-          }
-        }, null, self.props.main_id);
-      });
-    }
-  }, {
     key: "_stopMe",
     value: function _stopMe() {
       this._stopMySpinner();
@@ -1973,16 +2061,18 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_extraKeys",
     value: function _extraKeys() {
+      var _this17 = this;
+
       var self = this;
       return {
         'Ctrl-Enter': function CtrlEnter() {
-          return self._runMe(true);
+          return self.props.runCodeItem(_this17.props.unique_id, true);
         },
         'Cmd-Enter': function CmdEnter() {
-          return self._runMe(true);
+          return self.props.runCodeItem(_this17.props.unique_id, true);
         },
-        'Ctrl-Alt-C': self.props.addNewCodeItem,
-        'Ctrl-Alt-T': self.props.addNewTextItem
+        'Ctrl-C': self.props.addNewCodeItem,
+        'Ctrl-T': self.props.addNewTextItem
       };
     }
   }, {
@@ -2014,24 +2104,53 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_selectMe",
     value: function _selectMe() {
-      this.props.selectConsoleItem(this.props.unique_id);
+      var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      this.props.selectConsoleItem(this.props.unique_id, callback);
+    }
+  }, {
+    key: "_addBlankText",
+    value: function _addBlankText() {
+      var self = this;
+
+      this._selectMe(function () {
+        self.props.addNewTextItem();
+      });
+    }
+  }, {
+    key: "_addBlankCode",
+    value: function _addBlankCode() {
+      var self = this;
+
+      this._selectMe(function () {
+        self.props.addNewCodeItem();
+      });
     }
   }, {
     key: "renderContextMenu",
     value: function renderContextMenu() {
-      var _this17 = this;
+      var _this18 = this;
 
       // return a single element, or nothing to use default browser behavior
       return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, !this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "play",
         intent: "success",
-        onClick: this._runMe,
+        onClick: function onClick() {
+          _this18.props.runCodeItem(_this18.props.unique_id);
+        },
         text: "Run Cell"
       }), this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "stop",
         intent: "danger",
         onClick: this._stopMe,
         text: "Stop Cell"
+      }), /*#__PURE__*/_react["default"].createElement(_core.Menu.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+        icon: "new-text-box",
+        onClick: this._addBlankText,
+        text: "New Text Cell"
+      }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+        icon: "code",
+        onClick: this._addBlankCode,
+        text: "New Code Cell"
       }), /*#__PURE__*/_react["default"].createElement(_core.Menu.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "duplicate",
         onClick: this._copyMe,
@@ -2049,7 +2168,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component2) {
         icon: "clean",
         intent: "warning",
         onClick: function onClick() {
-          _this17._clearOutput();
+          _this18._clearOutput();
         },
         text: "Clear Output"
       }));
@@ -2064,7 +2183,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "render",
     value: function render() {
-      var _this18 = this;
+      var _this19 = this;
 
       var panel_style = this.props.am_shrunk ? "log-panel log-panel-invisible" : "log-panel log-panel-visible";
 
@@ -2117,7 +2236,9 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component2) {
       }, /*#__PURE__*/_react["default"].createElement("div", {
         className: "button-div d-flex pr-1"
       }, !this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        handleClick: this._runMe,
+        handleClick: function handleClick() {
+          _this19.props.runCodeItem(_this19.props.unique_id);
+        },
         intent: "success",
         tooltip: "Execute this item",
         icon: "play"
@@ -2150,7 +2271,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component2) {
         icon: "trash"
       }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
         handleClick: function handleClick() {
-          _this18._clearOutput();
+          _this19._clearOutput();
         },
         intent: "warning",
         tooltip: "Clear this item's output",
@@ -2197,7 +2318,8 @@ RawConsoleCodeItem.propTypes = {
   addNewTextItem: _propTypes["default"].func,
   addNewCodeItem: _propTypes["default"].func,
   goToNextCell: _propTypes["default"].func,
-  setFocus: _propTypes["default"].func
+  setFocus: _propTypes["default"].func,
+  runCodeItem: _propTypes["default"].func
 };
 var ConsoleCodeItem = (0, _contextMenuTarget.ContextMenuTarget)(RawConsoleCodeItem);
 
@@ -2207,20 +2329,20 @@ var ResourceLinkButton = /*#__PURE__*/function (_React$PureComponent4) {
   var _super6 = _createSuper(ResourceLinkButton);
 
   function ResourceLinkButton(props) {
-    var _this19;
+    var _this20;
 
     _classCallCheck(this, ResourceLinkButton);
 
-    _this19 = _super6.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this19));
-    _this19.my_view = (0, _library_pane.view_views)(false)[props.res_type];
+    _this20 = _super6.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this20));
+    _this20.my_view = (0, _library_pane.view_views)(false)[props.res_type];
 
     if (window.in_context) {
       var re = new RegExp("/$");
-      _this19.my_view = _this19.my_view.replace(re, "_in_context");
+      _this20.my_view = _this20.my_view.replace(re, "_in_context");
     }
 
-    return _this19;
+    return _this20;
   }
 
   _createClass(ResourceLinkButton, [{
@@ -2277,22 +2399,22 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component3) {
   var _super7 = _createSuper(RawConsoleTextItem);
 
   function RawConsoleTextItem(props) {
-    var _this20;
+    var _this21;
 
     _classCallCheck(this, RawConsoleTextItem);
 
-    _this20 = _super7.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this20), "_", RawConsoleTextItem.prototype);
-    _this20.cmobject = null;
-    _this20.elRef = /*#__PURE__*/_react["default"].createRef();
-    _this20.ce_summary_ref = /*#__PURE__*/_react["default"].createRef();
-    _this20.update_props = text_item_update_props;
-    _this20.update_state_vars = ["ce_ref"];
-    _this20.previous_dark_theme = props.dark_theme;
-    _this20.state = {
+    _this21 = _super7.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this21), "_", RawConsoleTextItem.prototype);
+    _this21.cmobject = null;
+    _this21.elRef = /*#__PURE__*/_react["default"].createRef();
+    _this21.ce_summary_ref = /*#__PURE__*/_react["default"].createRef();
+    _this21.update_props = text_item_update_props;
+    _this21.update_state_vars = ["ce_ref"];
+    _this21.previous_dark_theme = props.dark_theme;
+    _this21.state = {
       ce_ref: null
     };
-    return _this20;
+    return _this21;
   }
 
   _createClass(RawConsoleTextItem, [{
@@ -2342,14 +2464,14 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this21 = this;
+      var _this22 = this;
 
       if (this.props.set_focus) {
         if (this.props.show_markdown) {
           this._hideMarkdown();
         } else if (this.cmobject != null) {
           this.cmobject.focus();
-          this.cm_object.setCursor({
+          this.cmobject.setCursor({
             line: 0,
             ch: 0
           });
@@ -2361,7 +2483,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component3) {
 
       if (this.cmobject != null) {
         this.cmobject.on("focus", function () {
-          self.props.setFocus(_this21.props.unique_id, self._selectMe);
+          self.props.setFocus(_this22.props.unique_id, self._selectMe);
         });
         this.cmobject.on("blur", function () {
           self.props.setFocus(null);
@@ -2495,7 +2617,8 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "_selectMe",
     value: function _selectMe() {
-      this.props.selectConsoleItem(this.props.unique_id);
+      var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      this.props.selectConsoleItem(this.props.unique_id, callback);
     }
   }, {
     key: "_insertResourceLink",
@@ -2523,6 +2646,24 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component3) {
       });
     }
   }, {
+    key: "_addBlankText",
+    value: function _addBlankText() {
+      var self = this;
+
+      this._selectMe(function () {
+        self.props.addNewTextItem();
+      });
+    }
+  }, {
+    key: "_addBlankCode",
+    value: function _addBlankCode() {
+      var self = this;
+
+      this._selectMe(function () {
+        self.props.addNewCodeItem();
+      });
+    }
+  }, {
     key: "renderContextMenu",
     value: function renderContextMenu() {
       // return a single element, or nothing to use default browser behavior
@@ -2531,6 +2672,14 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component3) {
         intent: "success",
         onClick: this._showMarkdown,
         text: "Show Markdown"
+      }), /*#__PURE__*/_react["default"].createElement(_core.Menu.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+        icon: "new-text-box",
+        onClick: this._addBlankText,
+        text: "New Text Cell"
+      }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+        icon: "code",
+        onClick: this._addBlankCode,
+        text: "New Code Cell"
       }), /*#__PURE__*/_react["default"].createElement(_core.Menu.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "link",
         onClick: this._insertResourceLink,
@@ -2573,14 +2722,14 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component3) {
         'Cmd-Enter': function CmdEnter() {
           return self._gotEnter();
         },
-        'Ctrl-Alt-C': self.props.addNewCodeItem,
-        'Ctrl-Alt-T': self.props.addNewTextItem
+        'Ctrl-C': self.props.addNewCodeItem,
+        'Ctrl-T': self.props.addNewTextItem
       };
     }
   }, {
     key: "render",
     value: function render() {
-      var _this22 = this;
+      var _this23 = this;
 
       var really_show_markdown = this.hasOnlyWhitespace && this.props.links.length == 0 ? false : this.props.show_markdown;
       var converted_markdown;
@@ -2608,7 +2757,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component3) {
         return /*#__PURE__*/_react["default"].createElement(ResourceLinkButton, {
           key: index,
           my_index: index,
-          handleCreateViewer: _this22.props.handleCreateViewer,
+          handleCreateViewer: _this23.props.handleCreateViewer,
           deleteMe: self._deleteLinkButton,
           res_type: link.res_type,
           res_name: link.res_name

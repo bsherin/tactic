@@ -83,16 +83,19 @@ const BUTTON_CONSUMED_SPACE = 208;
          function _handleConsoleMessage(data) {
              if (data.main_id == self.props.main_id) {
                  let handlerDict = {
-                     consoleLog: (data) => self._addConsoleEntry(data.message, data.force_open),
+                     consoleLog: (data) => self._addConsoleEntry(data.message, data.force_open, true),
                      createLink: (data) => {
                          let unique_id = data.message.unique_id;
                          self._addConsoleEntry(data.message, data.force_open, null, null, ()=>{
                              self._insertLinkInItem(unique_id)
                          })
                      },
-                     stopConsoleSpinner: (data) => self._stopConsoleSpinner(data),
+                     stopConsoleSpinner: (data) => {
+                         let execution_count = "execution_count" in data ? data.execution_count : null;
+                         self._stopConsoleSpinner(data.console_id, execution_count)
+                     },
                      consoleCodePrint: (data) => self._appendConsoleItemOutput(data),
-                     consoleCodeRun: (data) => self._startSpinner(data),
+                     consoleCodeRun: (data) => self._startSpinner(data.console_id),
                      updateLog: (data) => self._addToLog(data.new_line)
                  };
                  handlerDict[data.console_message](data)
@@ -129,6 +132,9 @@ const BUTTON_CONSUMED_SPACE = 208;
      }
 
      _addBlankText() {
+         if (!this.props.am_selected) {
+             return
+         }
          this._addConsoleText("")
      }
 
@@ -204,6 +210,9 @@ const BUTTON_CONSUMED_SPACE = 208;
      }
 
      _addBlankCode(e) {
+         if (!this.props.am_selected) {
+             return
+         }
          this._addCodeArea("");
      }
 
@@ -484,20 +493,20 @@ const BUTTON_CONSUMED_SPACE = 208;
 
      }
 
-     _startSpinner(data) {
-         let new_entry = this.get_console_item_entry(data.console_id);
+     _startSpinner(console_id) {
+         let new_entry = this.get_console_item_entry(console_id);
          new_entry.running = true;
-         this.replace_console_item_entry(data.console_id, new_entry)
+         this.replace_console_item_entry(console_id, new_entry)
      }
 
-     _stopConsoleSpinner(data) {
-         let new_entry = this.get_console_item_entry(data.console_id);
+     _stopConsoleSpinner(console_id, execution_count=null) {
+         let new_entry = this.get_console_item_entry(console_id);
          new_entry.show_spinner = false;
          new_entry.running = false;
-         if ("execution_count" in data) {
-             new_entry.execution_count = data.execution_count
+         if ("execution_count" != null) {
+             new_entry.execution_count = execution_count
          }
-         this.replace_console_item_entry(data.console_id, new_entry)
+         this.replace_console_item_entry(console_id, new_entry)
      }
 
      _appendConsoleItemOutput(data) {
@@ -685,14 +694,17 @@ const BUTTON_CONSUMED_SPACE = 208;
      get menu_specs() {
          let self = this;
         let ms = {
-            Insert :[{name_text: "Text Cell", icon_name: "new-text-box", click_handler: this._addBlankText},
-                   {name_text: "Code Cell", icon_name: "code", click_handler: this._addBlankCode},
-                   {name_text: "Resource Linkt", icon_name: "link", click_handler: this._insertResourceLink}],
+            Insert :[{name_text: "Text Cell", icon_name: "new-text-box", click_handler: this._addBlankText,
+                key_bindings: ["ctrl+t"]},
+                   {name_text: "Code Cell", icon_name: "code", click_handler: this._addBlankCode, key_bindings: ["ctrl+c"]},
+                   {name_text: "Resource Link", icon_name: "link", click_handler: this._insertResourceLink}],
             Edit: [{name_text: "Copy Cell", icon_name: "duplicate", click_handler: () => {self._copyCell()}},
                    {name_text: "Paste Cell", icon_name: "clipboard", click_handler: () => {self._pasteCell()}},
                    {name_text: "Clear Log", icon_name: "trash", click_handler: this._clearConsole}
             ],
-            Execute: [{name_text: "Stop All", icon_name: "stop", click_handler: this._stopAll},
+            Execute: [{name_text: "Run Selected", icon_name: "play", click_handler: this._runSelected,
+                key_bindings: ["ctrl+enter", "command+enter"]},
+                      {name_text: "Stop All", icon_name: "stop", click_handler: this._stopAll},
                       {name_text: "Reset All", icon_name: "reset", click_handler: this._resetConsole}],
         };
 
@@ -706,6 +718,53 @@ const BUTTON_CONSUMED_SPACE = 208;
 
         return ms
 
+    }
+
+    get disabled_items() {
+         let items = [];
+         if (!this.state.currently_selected_item) {
+             items.push("Run Selected")
+         }
+         return items
+    }
+
+    _clearCodeOutput(unique_id, callback=null) {
+         this._setConsoleItemValue(unique_id, "output_text","", callback)
+    }
+
+    _runSelected() {
+         if (!this.props.am_selected) {
+             return
+         }
+         if (this.state.currently_selected_item) {
+             let entry = this.get_console_item_entry(this.state.currently_selected_item);
+             if (entry.type == "code") {
+                 this._runCodeItem(this.state.currently_selected_item)
+             }
+             else if (entry.type == "text") {
+                 this._showTextItemMarkdown(this.state.currently_selected_item)
+             }
+         }
+    }
+
+    _runCodeItem(unique_id, go_to_next = false) {
+        let self = this;
+        this._clearCodeOutput(unique_id,()=> {
+            self._startSpinner(unique_id);
+            let entry = self.get_console_item_entry(unique_id);
+            postWithCallback(self.props.main_id, "exec_console_code", {
+                "the_code": entry.console_text,
+                "console_id": unique_id
+            }, function () {
+                if (go_to_next) {
+                    self._goToNextCell(unique_id)
+                }
+            }, null, self.props.main_id)
+        })
+    }
+
+    _showTextItemMarkdown(unique_id) {
+        this._setConsoleItemValue(unique_id, "show_markdown", true);
     }
 
      render() {
@@ -758,6 +817,7 @@ const BUTTON_CONSUMED_SPACE = 208;
                              }
 
                              <TacticMenubar menu_specs={this.menu_specs}
+                                            disabled_items={this.disabled_items}
                                             showRefresh={false}
                                             showClose={false}
                                             dark_theme={this.props.dark_theme}
@@ -849,6 +909,7 @@ const BUTTON_CONSUMED_SPACE = 208;
                                                 selectConsoleItem={this._selectConsoleItem}
                                                 console_available_width={this._bodyWidth()}
                                                 execution_count={0}
+                                                runCodeItem={this._runCodeItem}
                                                 handleDelete={this._closeConsoleItem}
                                                 goToNextCell={this._goToNextCell}
                                                 setFocus={this._setFocusedItem}
@@ -1009,8 +1070,22 @@ class RawLogItem extends React.Component {
         this.props.pasteCell(this.props.unique_id)
     }
 
-    _selectMe() {
-        this.props.selectConsoleItem(this.props.unique_id)
+    _selectMe(callback=null) {
+        this.props.selectConsoleItem(this.props.unique_id, callback)
+    }
+
+    _addBlankText() {
+        let self = this;
+        this._selectMe(()=>{
+            self.props.addNewTextItem()
+        })
+    }
+
+    _addBlankCode() {
+        let self = this;
+        this._selectMe(()=>{
+            self.props.addNewCodeItem()
+        })
     }
 
     renderContextMenu() {
@@ -1023,6 +1098,13 @@ class RawLogItem extends React.Component {
                 <MenuItem icon="clipboard"
                           onClick={this._pasteCell}
                           text="Paste Cell" />
+                <Menu.Divider/>
+                <MenuItem icon="new-text-box"
+                           onClick={this._addBlankText}
+                           text="New Text Cell"/>
+                 <MenuItem icon="code"
+                           onClick={this._addBlankCode}
+                           text="New Code Cell"/>
                 <Menu.Divider/>
                 <MenuItem icon="trash"
                           onClick={this._deleteMe}
@@ -1139,9 +1221,9 @@ class RawConsoleCodeItem extends React.Component {
         if (this.props.set_focus) {
             if (this.cmobject != null) {
                 this.cmobject.focus();
-                this.cm_object.setCursor({line: 0, ch: 0})
+                this.cmobject.setCursor({line: 0, ch: 0})
             }
-            this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false)
+            this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe)
         }
         let self = this;
         if (this.cmobject != null) {
@@ -1209,20 +1291,6 @@ class RawConsoleCodeItem extends React.Component {
             sorttable.makeSortable(table)
         }
     }
-    _runMe(go_to_next = false) {
-        let self = this;
-        this._clearOutput(()=> {
-            self._showMySpinner();
-            postWithCallback(self.props.main_id, "exec_console_code", {
-                "the_code": self.props.console_text,
-                "console_id": self.props.unique_id
-            }, function () {
-                if (go_to_next) {
-                    self.props.goToNextCell(self.props.unique_id)
-                }
-            }, null, self.props.main_id)
-        })
-    }
 
     _stopMe() {
         this._stopMySpinner();
@@ -1263,10 +1331,10 @@ class RawConsoleCodeItem extends React.Component {
     _extraKeys() {
         let self = this;
         return {
-                'Ctrl-Enter': ()=>self._runMe(true),
-                'Cmd-Enter': ()=>self._runMe(true),
-                'Ctrl-Alt-C': self.props.addNewCodeItem,
-                'Ctrl-Alt-T': self.props.addNewTextItem
+                'Ctrl-Enter': ()=>self.props.runCodeItem(this.props.unique_id, true),
+                'Cmd-Enter': ()=>self.props.runCodeItem(this.props.unique_id, true),
+                'Ctrl-C': self.props.addNewCodeItem,
+                'Ctrl-T': self.props.addNewTextItem
             }
     }
 
@@ -1293,8 +1361,22 @@ class RawConsoleCodeItem extends React.Component {
         this.props.pasteCell(this.props.unique_id)
     }
 
-    _selectMe() {
-        this.props.selectConsoleItem(this.props.unique_id)
+    _selectMe(callback=null) {
+        this.props.selectConsoleItem(this.props.unique_id, callback)
+    }
+    
+    _addBlankText() {
+        let self = this;
+        this._selectMe(()=>{
+            self.props.addNewTextItem()
+        })
+    }
+    
+    _addBlankCode() {
+        let self = this;
+        this._selectMe(()=>{
+            self.props.addNewCodeItem()
+        })
     }
 
     renderContextMenu() {
@@ -1304,7 +1386,7 @@ class RawConsoleCodeItem extends React.Component {
                 {!this.props.show_spinner &&
                     <MenuItem icon="play"
                               intent="success"
-                              onClick={this._runMe}
+                              onClick={()=>{this.props.runCodeItem(this.props.unique_id)}}
                               text="Run Cell" />
                 }
                 {this.props.show_spinner &&
@@ -1313,6 +1395,13 @@ class RawConsoleCodeItem extends React.Component {
                               onClick={this._stopMe}
                               text="Stop Cell" />
                 }
+                <Menu.Divider/>
+                <MenuItem icon="new-text-box"
+                           onClick={this._addBlankText}
+                           text="New Text Cell"/>
+                 <MenuItem icon="code"
+                           onClick={this._addBlankCode}
+                           text="New Code Cell"/>
                 <Menu.Divider/>
                 <MenuItem icon="duplicate"
                           onClick={this._copyMe}
@@ -1382,7 +1471,7 @@ class RawConsoleCodeItem extends React.Component {
                                     <div className="log-panel-body d-flex flex-row console-code">
                                         <div className="button-div d-flex pr-1">
                                             {!this.props.show_spinner &&
-                                                <GlyphButton handleClick={this._runMe}
+                                                <GlyphButton handleClick={()=>{this.props.runCodeItem(this.props.unique_id)}}
                                                              intent="success"
                                                              tooltip="Execute this item"
                                                              icon="play"/>
@@ -1455,7 +1544,8 @@ RawConsoleCodeItem.propTypes = {
     addNewTextItem: PropTypes.func,
     addNewCodeItem: PropTypes.func,
     goToNextCell: PropTypes.func,
-    setFocus: PropTypes.func
+    setFocus: PropTypes.func,
+    runCodeItem: PropTypes.func
 };
 
 const ConsoleCodeItem = ContextMenuTarget(RawConsoleCodeItem);
@@ -1555,7 +1645,7 @@ class RawConsoleTextItem extends React.Component {
             }
             else if (this.cmobject != null) {
                 this.cmobject.focus();
-                this.cm_object.setCursor({line: 0, ch: 0});
+                this.cmobject.setCursor({line: 0, ch: 0});
                 this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe)
             }
         }
@@ -1672,8 +1762,8 @@ class RawConsoleTextItem extends React.Component {
         this.props.pasteCell(this.props.unique_id)
     }
 
-    _selectMe() {
-        this.props.selectConsoleItem(this.props.unique_id)
+    _selectMe(callback=null) {
+        this.props.selectConsoleItem(this.props.unique_id, callback)
     }
 
     _insertResourceLink() {
@@ -1695,6 +1785,20 @@ class RawConsoleTextItem extends React.Component {
 
     }
 
+    _addBlankText() {
+        let self = this;
+        this._selectMe(()=>{
+            self.props.addNewTextItem()
+        })
+    }
+
+    _addBlankCode() {
+        let self = this;
+        this._selectMe(()=>{
+            self.props.addNewCodeItem()
+        })
+    }
+
     renderContextMenu() {
         // return a single element, or nothing to use default browser behavior
         return (
@@ -1703,6 +1807,13 @@ class RawConsoleTextItem extends React.Component {
                           intent="success"
                           onClick={this._showMarkdown}
                           text="Show Markdown" />
+                <Menu.Divider/>
+                <MenuItem icon="new-text-box"
+                           onClick={this._addBlankText}
+                           text="New Text Cell"/>
+                 <MenuItem icon="code"
+                           onClick={this._addBlankCode}
+                           text="New Code Cell"/>
                 <Menu.Divider/>
                 <MenuItem icon="link"
                           onClick={this._insertResourceLink}
@@ -1736,8 +1847,8 @@ class RawConsoleTextItem extends React.Component {
         return {
                 'Ctrl-Enter': ()=>self._gotEnter(),
                 'Cmd-Enter': ()=>self._gotEnter(),
-                'Ctrl-Alt-C': self.props.addNewCodeItem,
-                'Ctrl-Alt-T': self.props.addNewTextItem
+                'Ctrl-C': self.props.addNewCodeItem,
+                'Ctrl-T': self.props.addNewTextItem
             }
     }
 
