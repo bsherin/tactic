@@ -13,7 +13,7 @@ from flask_wtf import Form
 # noinspection PyProtectedMember
 from flask_wtf.csrf import CSRFError
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
-from wtforms.validators import Required, Length, Regexp, EqualTo
+from wtforms.validators import Length, Regexp, EqualTo
 from tactic_app import app, socketio, csrf, db, fs
 from wtforms.validators import ValidationError
 from tactic_app import ANYONE_CAN_REGISTER
