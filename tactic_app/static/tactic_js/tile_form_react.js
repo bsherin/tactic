@@ -283,7 +283,6 @@ var TextOption = /*#__PURE__*/function (_React$Component3) {
 
     _this3 = _super3.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this3));
-    _this3.cursor = null;
     return _this3;
   }
 
@@ -291,6 +290,11 @@ var TextOption = /*#__PURE__*/function (_React$Component3) {
     key: "shouldComponentUpdate",
     value: function shouldComponentUpdate(nextProps, nextState) {
       return !(0, _utilities_react.propsAreEqual)(nextProps, this.props);
+    }
+  }, {
+    key: "_updateMe",
+    value: function _updateMe(event) {
+      this.props.updateValue(this.props.att_name, event.target.value);
     }
   }, {
     key: "render",

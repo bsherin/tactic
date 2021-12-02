@@ -175,12 +175,16 @@ class TextOption extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this);
-        this.cursor = null
     }
 
     shouldComponentUpdate(nextProps, nextState) {
         return !propsAreEqual(nextProps, this.props)
     }
+
+    _updateMe(event) {
+        this.props.updateValue(this.props.att_name, event.target.value)
+    }
+
     render() {
         return (
             <FormGroup label={this.props.att_name}>
