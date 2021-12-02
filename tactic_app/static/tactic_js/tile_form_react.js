@@ -23,6 +23,8 @@ var _utilities_react = require("./utilities_react.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
@@ -281,6 +283,7 @@ var TextOption = /*#__PURE__*/function (_React$Component3) {
 
     _this3 = _super3.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this3));
+    _this3.cursor = null;
     return _this3;
   }
 
@@ -290,16 +293,12 @@ var TextOption = /*#__PURE__*/function (_React$Component3) {
       return !(0, _utilities_react.propsAreEqual)(nextProps, this.props);
     }
   }, {
-    key: "_updateMe",
-    value: function _updateMe(event) {
-      this.props.updateValue(this.props.att_name, event.target.value);
-    }
-  }, {
     key: "render",
     value: function render() {
       return /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
         label: this.props.att_name
       }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
+        asyncControl: true,
         type: "text",
         small: false,
         leftIcon: this.props.leftIcon,
@@ -533,7 +532,16 @@ var TextAreaOption = /*#__PURE__*/function (_React$Component8) {
     _classCallCheck(this, TextAreaOption);
 
     _this8 = _super8.call(this, props);
+
+    _defineProperty(_assertThisInitialized(_this8), "_setCursorPositions", function () {
+      //reset the cursor position for input
+      _this8.inputRef.current.selectionStart = _this8.cursor;
+      _this8.inputRef.current.selectionEnd = _this8.cursor;
+    });
+
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this8));
+    _this8.inputRef = /*#__PURE__*/_react["default"].createRef();
+    _this8.cursor = null;
     return _this8;
   }
 
@@ -543,8 +551,14 @@ var TextAreaOption = /*#__PURE__*/function (_React$Component8) {
       return !(0, _utilities_react.propsAreEqual)(nextProps, this.props);
     }
   }, {
+    key: "componentDidUpdate",
+    value: function componentDidUpdate() {
+      this._setCursorPositions();
+    }
+  }, {
     key: "_updateMe",
     value: function _updateMe(event) {
+      this.cursor = event.target.selectionStart;
       this.props.updateValue(this.props.att_name, event.target.value);
     }
   }, {
@@ -554,6 +568,7 @@ var TextAreaOption = /*#__PURE__*/function (_React$Component8) {
         label: this.props.att_name
       }, /*#__PURE__*/_react["default"].createElement(_core.TextArea, {
         onChange: this._updateMe,
+        inputRef: this.inputRef,
         small: false,
         value: this.props.value
       }));

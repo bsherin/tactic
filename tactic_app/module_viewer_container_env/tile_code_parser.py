@@ -75,7 +75,7 @@ class TileParser(object):
         return new_code
 
     def get_options_dict(self):
-        opt_code = self.methods["options"]["method_code_no_decs"]
+        opt_code = self.methods["options"]["method_code"]
         opt_code = remove_indents(opt_code, 1)
         tdict = {}
         exec(opt_code, tdict)
