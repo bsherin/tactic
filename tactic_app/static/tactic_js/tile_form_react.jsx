@@ -174,21 +174,18 @@ DividerOption.propTypes = {
 class TextOption extends React.Component {
     constructor(props) {
         super(props);
-        doBinding(this)
+        doBinding(this);
+        this.cursor = null
     }
 
     shouldComponentUpdate(nextProps, nextState) {
         return !propsAreEqual(nextProps, this.props)
     }
-
-    _updateMe(event) {
-        this.props.updateValue(this.props.att_name, event.target.value)
-    }
     render() {
         return (
             <FormGroup label={this.props.att_name}>
-                <InputGroup type="text" small={false} leftIcon={this.props.leftIcon}
-                               onChange={this._updateMe} value={this.props.value}/>
+                <InputGroup asyncControl={true} type="text" small={false} leftIcon={this.props.leftIcon}
+                            onChange={this._updateMe} value={this.props.value}/>
             </FormGroup>
         )
     }
@@ -356,20 +353,34 @@ CodeAreaOption.propTypes = {
 class TextAreaOption extends React.Component {
     constructor(props) {
         super(props);
-        doBinding(this)
+        doBinding(this);
+        this.inputRef = React.createRef();
+        this.cursor = null;
     }
 
     shouldComponentUpdate(nextProps, nextState) {
         return !propsAreEqual(nextProps, this.props)
     }
 
+    componentDidUpdate() {
+        this._setCursorPositions();
+      }
+
+      _setCursorPositions = () => {
+        //reset the cursor position for input
+        this.inputRef.current.selectionStart = this.cursor;
+        this.inputRef.current.selectionEnd = this.cursor;
+      };
+
     _updateMe(event) {
+        this.cursor = event.target.selectionStart;
         this.props.updateValue(this.props.att_name, event.target.value)
     }
     render() {
         return (
             <FormGroup label={this.props.att_name}>
-                <TextArea onChange={this._updateMe}
+                <TextArea  onChange={this._updateMe}
+                           inputRef={this.inputRef}
                               small={false} value={this.props.value}/>
             </FormGroup>
         )
