@@ -9,6 +9,7 @@ import { Menu, MenuItem, InputGroup, ButtonGroup, Button} from "@blueprintjs/cor
 import _ from 'lodash';
 
 // The next line is an ugly workaround
+// The next line is an ugly workaround
 // See blueprintjs issue 3891
 import {ContextMenuTarget} from '@blueprintjs/core/lib/esnext/components/context-menu/contextMenuTarget.js';
 import { SortableHandle } from 'react-sortable-hoc';
@@ -48,7 +49,7 @@ const BUTTON_CONSUMED_SPACE = 208;
              console_item_saved_focus: null,
              console_error_log_text: "",
              show_console_error_log: false,
-             currently_selected_item: null,
+             all_selected_items: [],
              search_string: null,
              filter_console_items: false,
              search_helper_text: null
@@ -138,38 +139,47 @@ const BUTTON_CONSUMED_SPACE = 208;
          this._addConsoleText("")
      }
 
-     _insertTextInCell(the_text) {
-         let unique_id = this.state.currently_selected_item;
-         let entry = this.get_console_item_entry(unique_id);
-         let replace_dicts = [];
-         replace_dicts.push({unique_id: unique_id, field:"console_text", value: entry.console_text + the_text});
-         replace_dicts.push({unique_id: unique_id, field: "force_sync_to_prop", value: true});
-         this._multiple_console_item_updates(replace_dicts)
-     }
+     // _insertTextInCell(the_text) {
+     //     let unique_id = this.state.currently_selected_item;
+     //     let entry = this.get_console_item_entry(unique_id);
+     //     let replace_dicts = [];
+     //     replace_dicts.push({unique_id: unique_id, field:"console_text", value: entry.console_text + the_text});
+     //     replace_dicts.push({unique_id: unique_id, field: "force_sync_to_prop", value: true});
+     //     this._multiple_console_item_updates(replace_dicts)
+     // }
 
      _copyCell(unique_id = null) {
+         let id_list;
          if (!unique_id) {
-             unique_id = this.state.currently_selected_item;
-             if (!unique_id) {
-                 return;
-             }
+            id_list = this._sortSelectedItems();
+            if (id_list.length == 0) {
+                return
+            }
          }
-         let entry = this.get_console_item_entry(unique_id);
+         else {
+             id_list = [unique_id]
+         }
+         let entry_list = [];
+         for (let uid of id_list) {
+             let entry = this.get_console_item_entry(uid);
+             entry.am_selected = false;
+             entry_list.push(entry)
+         }
          const result_dict = {
              "main_id": this.props.main_id,
-             "console_item": entry,
+             "console_items": entry_list,
              "user_id": window.user_id,
          };
-         postWithCallback("host", "copy_console_cell", result_dict, null, null, this.props.main_id);
+         postWithCallback("host", "copy_console_cells", result_dict, null, null, this.props.main_id);
      }
 
      _pasteCell(unique_id = null) {
          let self = this;
-         postWithCallback("host", "get_copied_console_cell", {user_id: window.user_id}, (data) => {
+         postWithCallback("host", "get_copied_console_cells", {user_id: window.user_id}, (data) => {
              if (!data.success) {
                  doFlash(data)
              } else {
-                 this._addConsoleEntry(data.console_item, true, false, unique_id)
+                 this._addConsoleEntries(data.console_items, true, false, unique_id)
              }
          }, null, self.props.main_id)
      }
@@ -186,17 +196,26 @@ const BUTTON_CONSUMED_SPACE = 208;
              }, null, this.props.main_id);
      }
 
+     _currently_selected() {
+         if (this.state.all_selected_items.length == 0) {
+             return null
+         }
+         else {
+             return _.last(this.state.all_selected_items)
+         }
+     }
+
      _insertResourceLink() {
-         if (!this.state.currently_selected_item) {
+         if (!this._currently_selected()) {
              this._addConsoleTextLink();
              return
          }
-         let entry = this.get_console_item_entry(this.state.currently_selected_item);
+         let entry = this.get_console_item_entry(this._currently_selected());
          if (!entry || entry.type != "text") {
              this._addConsoleTextLink();
              return;
          }
-         this._insertLinkInItem(this.state.currently_selected_item);
+         this._insertLinkInItem(this._currently_selected());
      }
 
      _insertLinkInItem(unique_id) {
@@ -378,10 +397,27 @@ const BUTTON_CONSUMED_SPACE = 208;
          let self = this;
          let new_console_items = [...this.props.console_items];
          for (let item of new_console_items) {
-             item.am_selected = false
+             item.am_selected = false;
+             item.search_string = null
          }
-         this.setState({currently_selected_item: false}, ()=>{
+         this.setState({all_selected_items: []}, ()=>{
              self.props.setMainStateValue("console_items", new_console_items, callback)
+         })
+     }
+
+     _reduce_to_last_selected(callback=null) {
+         let self = this;
+         if (this.state.all_selected_items.length <=1) {
+             if (callback) {
+                 callback()
+             }
+         }
+         for (let uid of this.state.all_selected_items.slice(0, -1)) {
+             replace_dicts.push({unique_id: uid, field: "am_selected", value: false});
+             replace_dicts.push({unique_id: uid, field: "search_string", value: null})
+         }
+         this._multiple_console_item_updates(replace_dicts, () => {
+             self.setState({all_selected_items: self.state.all_selected_items.slice(-1,)}, callback)
          })
      }
 
@@ -389,31 +425,96 @@ const BUTTON_CONSUMED_SPACE = 208;
          return _.cloneDeep(this.props.console_items[this._consoleItemIndex(unique_id)]);
      }
 
-     _selectConsoleItem(unique_id, callback=null) {
+     _dselectOneItem(unique_id, callback=null) {
          let self = this;
          let replace_dicts = [];
-         if (this.state.currently_selected_item) {
-             replace_dicts.push({unique_id: this.state.currently_selected_item, field: "am_selected", value: false});
-             replace_dicts.push({unique_id: this.state.currently_selected_item, field: "search_string", value: null})
+         if (this.state.all_selected_items.includes(unique_id)) {
+             replace_dicts.push({unique_id: unique_id, field: "am_selected", value: false});
+             replace_dicts.push({unique_id: unique_id, field: "search_string", value: null});
+             this._multiple_console_item_updates(replace_dicts, () => {
+                 let narray = _.cloneDeep(self.state.all_selected_items);
+                 var myIndex = narray.indexOf(unique_id);
+                 if (myIndex !== -1) {
+                     narray.splice(myIndex, 1);
+                 }
+                 self.setState({all_selected_items: narray}, callback)
+             })
          }
-         replace_dicts.push({unique_id: unique_id, field: "am_selected", value: true});
-         replace_dicts.push({unique_id: unique_id, field: "search_string", value: this.state.search_string});
-         this._multiple_console_item_updates(replace_dicts, () => {
-             self.setState({currently_selected_item: unique_id}, callback)
-         })
+         else {
+             if (callback) {
+                 callback()
+             }
+         }
+     }
+
+     _selectConsoleItem(unique_id, event=null, callback=null) {
+         let self = this;
+         let replace_dicts = [];
+         let shift_down = event != null && event.shiftKey;
+         if (!shift_down) {
+             if (this.state.all_selected_items.length > 0) {
+                 for (let uid of this.state.all_selected_items) {
+                     if (uid != unique_id) {
+                         replace_dicts.push({unique_id: uid, field: "am_selected", value: false});
+                         replace_dicts.push({unique_id: uid, field: "search_string", value: null})
+                     }
+                 }
+
+             }
+            if (!this.state.all_selected_items.includes(unique_id)) {
+                 replace_dicts.push({unique_id: unique_id, field: "am_selected", value: true});
+                 replace_dicts.push({unique_id: unique_id,
+                     field: "search_string",
+                     value: this.state.search_string
+                 });
+             }
+
+             this._multiple_console_item_updates(replace_dicts, () => {
+                 self.setState({all_selected_items: [unique_id]}, callback)
+             })
+         }
+         else {
+             if (this.state.all_selected_items.includes(unique_id)) {
+                 this._dselectOneItem(unique_id)
+             }
+             else {
+                 replace_dicts.push({unique_id: unique_id, field: "am_selected", value: true});
+                 replace_dicts.push({
+                     unique_id: unique_id,
+                     field: "search_string",
+                     value: this.state.search_string
+                 });
+                 this._multiple_console_item_updates(replace_dicts, () => {
+                     let narray = _.cloneDeep(self.state.all_selected_items);
+                     narray.push(unique_id);
+                     self.setState({all_selected_items: narray}, callback)
+                 })
+             }
+
+         }
+     }
+
+     _sortSelectedItems() {
+         let self = this;
+         let sitems = _.cloneDeep(this.state.all_selected_items);
+         sitems.sort((firstEl, secondEl) => {
+             return self._consoleItemIndex(firstEl) < self._consoleItemIndex(secondEl) ? -1 : 1;
+         });
+         return sitems
      }
 
      _clearSelectedItem() {
          let self = this;
          let replace_dicts = [];
-         if (this.state.currently_selected_item) {
-             replace_dicts.push({unique_id: this.state.currently_selected_item, field: "am_selected", value: false});
-             replace_dicts.push({unique_id: this.state.currently_selected_item, field: "search_string", value: null});
-             this._multiple_console_item_updates(replace_dicts, () => {
-                 self.setState({currently_selected_item: null, console_item_with_focus: null})
-             })
+         for (let uid of this.state.all_selected_items) {
+             replace_dicts.push({unique_id: uid, field: "am_selected", value: false});
+             replace_dicts.push({unique_id: uid, field: "search_string", value: null});
+
          }
-     }
+         this._multiple_console_item_updates(replace_dicts, () => {
+             self.setState({all_selected_items: [], console_item_with_focus: null})
+         })
+    }
 
      _consoleItemIndex(unique_id) {
          let counter = 0;
@@ -455,42 +556,57 @@ const BUTTON_CONSUMED_SPACE = 208;
          return
      }
 
+     _deleteSelected() {
+         if (this._are_selected()) {
+             let new_console_items = [];
+             for (let entry of this.props.console_items) {
+                 if (!this.state.all_selected_items.includes(entry.unique_id)) {
+                     new_console_items.push(entry)
+                 }
+             }
+             this._clear_all_selected_items(()=>{
+                 this.props.setMainStateValue("console_items", new_console_items);
+             })
+         }
+     }
+
      _closeConsoleItem(unique_id) {
          let cindex = this._consoleItemIndex(unique_id);
          let new_console_items = [...this.props.console_items];
          new_console_items.splice(cindex, 1);
-         if (unique_id == this.state.currently_selected_item) {
-             this.setState({currently_selected_item: null}, ()=>{
-                 this.props.setMainStateValue("console_items", new_console_items);
-             })
-         }
-         else {
-            this.props.setMainStateValue("console_items", new_console_items);
-         }
-
+         this._dselectOneItem(unique_id,()=>{
+             this.props.setMainStateValue("console_items", new_console_items);
+        })
      }
 
-     _addConsoleEntry(new_entry, force_open = true, set_focus = false, unique_id = null, callback=null) {
-         new_entry.set_focus = set_focus;
+     _addConsoleEntries(new_entries, force_open = true, set_focus = false, unique_id = null, callback=null) {
+         let self = this;
+         _.last(new_entries).set_focus = set_focus;
+         let last_id = _.last(new_entries).unique_id;
          let insert_index;
          if (unique_id) {
              insert_index = this._consoleItemIndex(unique_id) + 1
-         } else if (this.state.currently_selected_item == null) {
+         } else if (this.state.all_selected_items.length == 0) {
              insert_index = this.props.console_items.length
          } else {
-             insert_index = this._consoleItemIndex(this.state.currently_selected_item) + 1
+             insert_index = this._consoleItemIndex(this._currently_selected()) + 1
          }
          let new_console_items = [...this.props.console_items];
-         new_console_items.splice(insert_index, 0, new_entry);
+         new_console_items.splice(insert_index, 0, ...new_entries);
          this.props.setMainStateValue("console_items", new_console_items, ()=>{
              if (force_open) {
-                 this.props.setMainStateValue("console_is_shrunk", false)
+                 self.props.setMainStateValue("console_is_shrunk", false, ()=>{
+                     self._selectConsoleItem(last_id, null, callback)
+                 })
              }
-             if (callback) {
-                 callback()
+             else {
+                 self._selectConsoleItem(last_id, null, callback)
              }
          });
+     }
 
+     _addConsoleEntry(new_entry, force_open = true, set_focus = false, unique_id = null, callback=null) {
+         this._addConsoleEntries([new_entry], force_open, set_focus, unique_id, callback);
      }
 
      _startSpinner(console_id) {
@@ -573,7 +689,7 @@ const BUTTON_CONSUMED_SPACE = 208;
      }
 
      _clickConsoleBody(e) {
-         this._clearSelectedItem();
+         this._clear_all_selected_items();
          e.stopPropagation()
      }
 
@@ -587,12 +703,25 @@ const BUTTON_CONSUMED_SPACE = 208;
             this._setSearchString(event.target.value)
          }
      }
+
+     _are_selected() {
+         return this.state.all_selected_items.length > 0
+     }
+
      
      _setSearchString(val) {
+         let self = this;
          let nval = val == "" ? null : val;
-         this.setState({search_string: nval}, ()=>{
-             if (this.state.currently_selected_item) {
-                 this._setConsoleItemValue(this.state.currently_selected_item, "search_string", nval)
+         this.setState({search_string: nval}, ()=> {
+             if (self._are_selected()) {
+                 for (let uid of this.state.all_selected_items) {
+                     replace_dicts.push({
+                         unique_id: unique_id,
+                         field: "search_string",
+                         value: this.state.search_string
+                     });
+                 }
+                 this._multiple_console_item_updates(replace_dicts)
              }
          })
      }
@@ -617,10 +746,10 @@ const BUTTON_CONSUMED_SPACE = 208;
      _searchNext() {
          let current_index;
          let self = this;
-         if (!this.state.currently_selected_item) {
+         if (!this._are_selected()) {
              current_index = 0
          } else {
-             current_index = this._consoleItemIndex(this.state.currently_selected_item) + 1
+             current_index = this._consoleItemIndex(this._currently_selected()) + 1
          }
 
          while (current_index < this.props.console_items.length) {
@@ -645,11 +774,11 @@ const BUTTON_CONSUMED_SPACE = 208;
         if (entry[text_field].toLowerCase().includes(this.state.search_string.toLowerCase())) {
              if (entry.am_shrunk) {
                  this._setConsoleItemValue(entry.unique_id, "am_shrunk", false, ()=>{
-                     self._selectConsoleItem(entry.unique_id, callback)
+                     self._selectConsoleItem(entry.unique_id, null, callback)
                  })
              }
              else {
-                 this._selectConsoleItem(entry.unique_id, callback)
+                 this._selectConsoleItem(entry.unique_id, null, callback)
              }
              return true
          }
@@ -659,11 +788,11 @@ const BUTTON_CONSUMED_SPACE = 208;
      _searchPrevious() {
          let current_index;
          let self = this;
-         if (!this.state.currently_selected_item) {
+         if (!this._are_selected()) {
              current_index = this.props.console_items.length - 1
          }
          else {
-             current_index = this._consoleItemIndex(this.state.currently_selected_item) - 1
+             current_index = this._consoleItemIndex(this._currently_selected()) - 1
          }
          while (current_index >= 0) {
              let entry = this.props.console_items[current_index];
@@ -698,8 +827,9 @@ const BUTTON_CONSUMED_SPACE = 208;
                 key_bindings: ["ctrl+t"]},
                    {name_text: "Code Cell", icon_name: "code", click_handler: this._addBlankCode, key_bindings: ["ctrl+c"]},
                    {name_text: "Resource Link", icon_name: "link", click_handler: this._insertResourceLink}],
-            Edit: [{name_text: "Copy Cell", icon_name: "duplicate", click_handler: () => {self._copyCell()}},
-                   {name_text: "Paste Cell", icon_name: "clipboard", click_handler: () => {self._pasteCell()}},
+            Edit: [{name_text: "Copy Selected", icon_name: "duplicate", click_handler: () => {self._copyCell()}},
+                   {name_text: "Paste Cells", icon_name: "clipboard", click_handler: () => {self._pasteCell()}},
+                    {name_text: "Delete Selected", icon_name: "trash", click_handler: () => {self._deleteSelected()}},
                    {name_text: "Clear Log", icon_name: "trash", click_handler: this._clearConsole}
             ],
             Execute: [{name_text: "Run Selected", icon_name: "play", click_handler: this._runSelected,
@@ -722,8 +852,12 @@ const BUTTON_CONSUMED_SPACE = 208;
 
     get disabled_items() {
          let items = [];
-         if (!this.state.currently_selected_item) {
-             items.push("Run Selected")
+         if (!this._are_selected() || this.state.all_selected_items.length != 1) {
+             items.push("Run Selected");
+         }
+         if (!this._are_selected()) {
+            items.push("Copy Selected");
+            items.push("Delete Selected");
          }
          return items
     }
@@ -736,13 +870,13 @@ const BUTTON_CONSUMED_SPACE = 208;
          if (!this.props.am_selected) {
              return
          }
-         if (this.state.currently_selected_item) {
-             let entry = this.get_console_item_entry(this.state.currently_selected_item);
+         if (this._are_selected() && this.state.all_selected_items.length == 1) {
+             let entry = this.get_console_item_entry(this._currently_selected());
              if (entry.type == "code") {
-                 this._runCodeItem(this.state.currently_selected_item)
+                 this._runCodeItem(this._currently_selected())
              }
              else if (entry.type == "text") {
-                 this._showTextItemMarkdown(this.state.currently_selected_item)
+                 this._showTextItemMarkdown(this._currently_selected())
              }
          }
     }
@@ -783,7 +917,7 @@ const BUTTON_CONSUMED_SPACE = 208;
          if (!this.props.console_is_shrunk) {
              header_style["paddingRight"] = 15
          }
-         let key_bindings = [[["escape"], this._clearSelectedItem]];
+         let key_bindings = [[["escape"], ()=>{this._clear_all_selected_items()}]];
          let filtered_items;
          if (this.state.filter_console_items) {
              filtered_items = [];
@@ -1070,20 +1204,20 @@ class RawLogItem extends React.Component {
         this.props.pasteCell(this.props.unique_id)
     }
 
-    _selectMe(callback=null) {
-        this.props.selectConsoleItem(this.props.unique_id, callback)
+    _selectMe(e=null, callback=null) {
+        this.props.selectConsoleItem(this.props.unique_id, e, callback)
     }
 
     _addBlankText() {
         let self = this;
-        this._selectMe(()=>{
+        this._selectMe(null, ()=>{
             self.props.addNewTextItem()
         })
     }
 
     _addBlankCode() {
         let self = this;
-        this._selectMe(()=>{
+        this._selectMe(null,()=>{
             self.props.addNewCodeItem()
         })
     }
@@ -1115,7 +1249,7 @@ class RawLogItem extends React.Component {
     }
 
     _consoleItemClick(e) {
-        this._selectMe();
+        this._selectMe(e);
         e.stopPropagation()
     }
 
@@ -1361,20 +1495,20 @@ class RawConsoleCodeItem extends React.Component {
         this.props.pasteCell(this.props.unique_id)
     }
 
-    _selectMe(callback=null) {
-        this.props.selectConsoleItem(this.props.unique_id, callback)
+    _selectMe(e=null, callback=null) {
+        this.props.selectConsoleItem(this.props.unique_id, e, callback)
     }
     
     _addBlankText() {
         let self = this;
-        this._selectMe(()=>{
+        this._selectMe(null,()=>{
             self.props.addNewTextItem()
         })
     }
     
     _addBlankCode() {
         let self = this;
-        this._selectMe(()=>{
+        this._selectMe(null,()=>{
             self.props.addNewCodeItem()
         })
     }
@@ -1423,7 +1557,7 @@ class RawConsoleCodeItem extends React.Component {
     }
 
     _consoleItemClick(e) {
-        this._selectMe();
+        this._selectMe(e);
         e.stopPropagation()
     }
 
@@ -1762,8 +1896,8 @@ class RawConsoleTextItem extends React.Component {
         this.props.pasteCell(this.props.unique_id)
     }
 
-    _selectMe(callback=null) {
-        this.props.selectConsoleItem(this.props.unique_id, callback)
+    _selectMe(e=null, callback=null) {
+        this.props.selectConsoleItem(this.props.unique_id, e, callback)
     }
 
     _insertResourceLink() {
@@ -1787,14 +1921,14 @@ class RawConsoleTextItem extends React.Component {
 
     _addBlankText() {
         let self = this;
-        this._selectMe(()=>{
+        this._selectMe(null,()=>{
             self.props.addNewTextItem()
         })
     }
 
     _addBlankCode() {
         let self = this;
-        this._selectMe(()=>{
+        this._selectMe(null,()=>{
             self.props.addNewCodeItem()
         })
     }
@@ -1834,7 +1968,7 @@ class RawConsoleTextItem extends React.Component {
     }
 
     _consoleItemClick(e) {
-        this._selectMe();
+        this._selectMe(e);
         e.stopPropagation()
     }
 
