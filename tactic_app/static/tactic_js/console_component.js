@@ -51,17 +51,17 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "d
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
 function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
 
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+
+function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
@@ -111,7 +111,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       console_item_saved_focus: null,
       console_error_log_text: "",
       show_console_error_log: false,
-      currently_selected_item: null,
+      all_selected_items: [],
       search_string: null,
       filter_console_items: false,
       search_helper_text: null
@@ -227,46 +227,55 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       }
 
       this._addConsoleText("");
-    }
-  }, {
-    key: "_insertTextInCell",
-    value: function _insertTextInCell(the_text) {
-      var unique_id = this.state.currently_selected_item;
-      var entry = this.get_console_item_entry(unique_id);
-      var replace_dicts = [];
-      replace_dicts.push({
-        unique_id: unique_id,
-        field: "console_text",
-        value: entry.console_text + the_text
-      });
-      replace_dicts.push({
-        unique_id: unique_id,
-        field: "force_sync_to_prop",
-        value: true
-      });
+    } // _insertTextInCell(the_text) {
+    //     let unique_id = this.state.currently_selected_item;
+    //     let entry = this.get_console_item_entry(unique_id);
+    //     let replace_dicts = [];
+    //     replace_dicts.push({unique_id: unique_id, field:"console_text", value: entry.console_text + the_text});
+    //     replace_dicts.push({unique_id: unique_id, field: "force_sync_to_prop", value: true});
+    //     this._multiple_console_item_updates(replace_dicts)
+    // }
 
-      this._multiple_console_item_updates(replace_dicts);
-    }
   }, {
     key: "_copyCell",
     value: function _copyCell() {
       var unique_id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      var id_list;
 
       if (!unique_id) {
-        unique_id = this.state.currently_selected_item;
+        id_list = this._sortSelectedItems();
 
-        if (!unique_id) {
+        if (id_list.length == 0) {
           return;
         }
+      } else {
+        id_list = [unique_id];
       }
 
-      var entry = this.get_console_item_entry(unique_id);
+      var entry_list = [];
+
+      var _iterator = _createForOfIteratorHelper(id_list),
+          _step;
+
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var uid = _step.value;
+          var entry = this.get_console_item_entry(uid);
+          entry.am_selected = false;
+          entry_list.push(entry);
+        }
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
+      }
+
       var result_dict = {
         "main_id": this.props.main_id,
-        "console_item": entry,
+        "console_items": entry_list,
         "user_id": window.user_id
       };
-      (0, _communication_react.postWithCallback)("host", "copy_console_cell", result_dict, null, null, this.props.main_id);
+      (0, _communication_react.postWithCallback)("host", "copy_console_cells", result_dict, null, null, this.props.main_id);
     }
   }, {
     key: "_pasteCell",
@@ -275,13 +284,13 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
 
       var unique_id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
       var self = this;
-      (0, _communication_react.postWithCallback)("host", "get_copied_console_cell", {
+      (0, _communication_react.postWithCallback)("host", "get_copied_console_cells", {
         user_id: window.user_id
       }, function (data) {
         if (!data.success) {
           (0, _toaster.doFlash)(data);
         } else {
-          _this3._addConsoleEntry(data.console_item, true, false, unique_id);
+          _this3._addConsoleEntries(data.console_items, true, false, unique_id);
         }
       }, null, self.props.main_id);
     }
@@ -301,15 +310,24 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       }, null, this.props.main_id);
     }
   }, {
+    key: "_currently_selected",
+    value: function _currently_selected() {
+      if (this.state.all_selected_items.length == 0) {
+        return null;
+      } else {
+        return _lodash["default"].last(this.state.all_selected_items);
+      }
+    }
+  }, {
     key: "_insertResourceLink",
     value: function _insertResourceLink() {
-      if (!this.state.currently_selected_item) {
+      if (!this._currently_selected()) {
         this._addConsoleTextLink();
 
         return;
       }
 
-      var entry = this.get_console_item_entry(this.state.currently_selected_item);
+      var entry = this.get_console_item_entry(this._currently_selected());
 
       if (!entry || entry.type != "text") {
         this._addConsoleTextLink();
@@ -317,7 +335,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
         return;
       }
 
-      this._insertLinkInItem(this.state.currently_selected_item);
+      this._insertLinkInItem(this._currently_selected());
     }
   }, {
     key: "_insertLinkInItem",
@@ -364,12 +382,12 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
     value: function _resetConsole() {
       var new_console_items = [];
 
-      var _iterator = _createForOfIteratorHelper(this.props.console_items),
-          _step;
+      var _iterator2 = _createForOfIteratorHelper(this.props.console_items),
+          _step2;
 
       try {
-        for (_iterator.s(); !(_step = _iterator.n()).done;) {
-          var entry = _step.value;
+        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+          var entry = _step2.value;
 
           if (entry.type != "code") {
             new_console_items.push(entry);
@@ -381,9 +399,9 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
           }
         }
       } catch (err) {
-        _iterator.e(err);
+        _iterator2.e(err);
       } finally {
-        _iterator.f();
+        _iterator2.f();
       }
 
       this.props.setMainStateValue("console_items", new_console_items);
@@ -580,21 +598,21 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
 
       var new_console_items = _toConsumableArray(this.props.console_items);
 
-      var _iterator2 = _createForOfIteratorHelper(replace_dicts),
-          _step2;
+      var _iterator3 = _createForOfIteratorHelper(replace_dicts),
+          _step3;
 
       try {
-        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-          var d = _step2.value;
+        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+          var d = _step3.value;
 
           var cindex = this._consoleItemIndex(d["unique_id"]);
 
           new_console_items[cindex][d["field"]] = d["value"];
         }
       } catch (err) {
-        _iterator2.e(err);
+        _iterator3.e(err);
       } finally {
-        _iterator2.f();
+        _iterator3.f();
       }
 
       this.props.setMainStateValue("console_items", new_console_items, callback);
@@ -607,24 +625,66 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
 
       var new_console_items = _toConsumableArray(this.props.console_items);
 
-      var _iterator3 = _createForOfIteratorHelper(new_console_items),
-          _step3;
+      var _iterator4 = _createForOfIteratorHelper(new_console_items),
+          _step4;
 
       try {
-        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-          var item = _step3.value;
+        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+          var item = _step4.value;
           item.am_selected = false;
+          item.search_string = null;
         }
       } catch (err) {
-        _iterator3.e(err);
+        _iterator4.e(err);
       } finally {
-        _iterator3.f();
+        _iterator4.f();
       }
 
       this.setState({
-        currently_selected_item: false
+        all_selected_items: []
       }, function () {
         self.props.setMainStateValue("console_items", new_console_items, callback);
+      });
+    }
+  }, {
+    key: "_reduce_to_last_selected",
+    value: function _reduce_to_last_selected() {
+      var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      var self = this;
+
+      if (this.state.all_selected_items.length <= 1) {
+        if (callback) {
+          callback();
+        }
+      }
+
+      var _iterator5 = _createForOfIteratorHelper(this.state.all_selected_items.slice(0, -1)),
+          _step5;
+
+      try {
+        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+          var uid = _step5.value;
+          replace_dicts.push({
+            unique_id: uid,
+            field: "am_selected",
+            value: false
+          });
+          replace_dicts.push({
+            unique_id: uid,
+            field: "search_string",
+            value: null
+          });
+        }
+      } catch (err) {
+        _iterator5.e(err);
+      } finally {
+        _iterator5.f();
+      }
+
+      this._multiple_console_item_updates(replace_dicts, function () {
+        self.setState({
+          all_selected_items: self.state.all_selected_items.slice(-1)
+        }, callback);
       });
     }
   }, {
@@ -633,41 +693,136 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       return _lodash["default"].cloneDeep(this.props.console_items[this._consoleItemIndex(unique_id)]);
     }
   }, {
-    key: "_selectConsoleItem",
-    value: function _selectConsoleItem(unique_id) {
+    key: "_dselectOneItem",
+    value: function _dselectOneItem(unique_id) {
       var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
       var self = this;
       var replace_dicts = [];
 
-      if (this.state.currently_selected_item) {
+      if (this.state.all_selected_items.includes(unique_id)) {
         replace_dicts.push({
-          unique_id: this.state.currently_selected_item,
+          unique_id: unique_id,
           field: "am_selected",
           value: false
         });
         replace_dicts.push({
-          unique_id: this.state.currently_selected_item,
+          unique_id: unique_id,
           field: "search_string",
           value: null
         });
+
+        this._multiple_console_item_updates(replace_dicts, function () {
+          var narray = _lodash["default"].cloneDeep(self.state.all_selected_items);
+
+          var myIndex = narray.indexOf(unique_id);
+
+          if (myIndex !== -1) {
+            narray.splice(myIndex, 1);
+          }
+
+          self.setState({
+            all_selected_items: narray
+          }, callback);
+        });
+      } else {
+        if (callback) {
+          callback();
+        }
       }
+    }
+  }, {
+    key: "_selectConsoleItem",
+    value: function _selectConsoleItem(unique_id) {
+      var event = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+      var self = this;
+      var replace_dicts = [];
+      var shift_down = event != null && event.shiftKey;
 
-      replace_dicts.push({
-        unique_id: unique_id,
-        field: "am_selected",
-        value: true
-      });
-      replace_dicts.push({
-        unique_id: unique_id,
-        field: "search_string",
-        value: this.state.search_string
-      });
+      if (!shift_down) {
+        if (this.state.all_selected_items.length > 0) {
+          var _iterator6 = _createForOfIteratorHelper(this.state.all_selected_items),
+              _step6;
 
-      this._multiple_console_item_updates(replace_dicts, function () {
-        self.setState({
-          currently_selected_item: unique_id
-        }, callback);
+          try {
+            for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+              var uid = _step6.value;
+
+              if (uid != unique_id) {
+                replace_dicts.push({
+                  unique_id: uid,
+                  field: "am_selected",
+                  value: false
+                });
+                replace_dicts.push({
+                  unique_id: uid,
+                  field: "search_string",
+                  value: null
+                });
+              }
+            }
+          } catch (err) {
+            _iterator6.e(err);
+          } finally {
+            _iterator6.f();
+          }
+        }
+
+        if (!this.state.all_selected_items.includes(unique_id)) {
+          replace_dicts.push({
+            unique_id: unique_id,
+            field: "am_selected",
+            value: true
+          });
+          replace_dicts.push({
+            unique_id: unique_id,
+            field: "search_string",
+            value: this.state.search_string
+          });
+        }
+
+        this._multiple_console_item_updates(replace_dicts, function () {
+          self.setState({
+            all_selected_items: [unique_id]
+          }, callback);
+        });
+      } else {
+        if (this.state.all_selected_items.includes(unique_id)) {
+          this._dselectOneItem(unique_id);
+        } else {
+          replace_dicts.push({
+            unique_id: unique_id,
+            field: "am_selected",
+            value: true
+          });
+          replace_dicts.push({
+            unique_id: unique_id,
+            field: "search_string",
+            value: this.state.search_string
+          });
+
+          this._multiple_console_item_updates(replace_dicts, function () {
+            var narray = _lodash["default"].cloneDeep(self.state.all_selected_items);
+
+            narray.push(unique_id);
+            self.setState({
+              all_selected_items: narray
+            }, callback);
+          });
+        }
+      }
+    }
+  }, {
+    key: "_sortSelectedItems",
+    value: function _sortSelectedItems() {
+      var self = this;
+
+      var sitems = _lodash["default"].cloneDeep(this.state.all_selected_items);
+
+      sitems.sort(function (firstEl, secondEl) {
+        return self._consoleItemIndex(firstEl) < self._consoleItemIndex(secondEl) ? -1 : 1;
       });
+      return sitems;
     }
   }, {
     key: "_clearSelectedItem",
@@ -675,37 +830,47 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       var self = this;
       var replace_dicts = [];
 
-      if (this.state.currently_selected_item) {
-        replace_dicts.push({
-          unique_id: this.state.currently_selected_item,
-          field: "am_selected",
-          value: false
-        });
-        replace_dicts.push({
-          unique_id: this.state.currently_selected_item,
-          field: "search_string",
-          value: null
-        });
+      var _iterator7 = _createForOfIteratorHelper(this.state.all_selected_items),
+          _step7;
 
-        this._multiple_console_item_updates(replace_dicts, function () {
-          self.setState({
-            currently_selected_item: null,
-            console_item_with_focus: null
+      try {
+        for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
+          var uid = _step7.value;
+          replace_dicts.push({
+            unique_id: uid,
+            field: "am_selected",
+            value: false
           });
-        });
+          replace_dicts.push({
+            unique_id: uid,
+            field: "search_string",
+            value: null
+          });
+        }
+      } catch (err) {
+        _iterator7.e(err);
+      } finally {
+        _iterator7.f();
       }
+
+      this._multiple_console_item_updates(replace_dicts, function () {
+        self.setState({
+          all_selected_items: [],
+          console_item_with_focus: null
+        });
+      });
     }
   }, {
     key: "_consoleItemIndex",
     value: function _consoleItemIndex(unique_id) {
       var counter = 0;
 
-      var _iterator4 = _createForOfIteratorHelper(this.props.console_items),
-          _step4;
+      var _iterator8 = _createForOfIteratorHelper(this.props.console_items),
+          _step8;
 
       try {
-        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-          var entry = _step4.value;
+        for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
+          var entry = _step8.value;
 
           if (entry.unique_id == unique_id) {
             return counter;
@@ -714,9 +879,9 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
           ++counter;
         }
       } catch (err) {
-        _iterator4.e(err);
+        _iterator8.e(err);
       } finally {
-        _iterator4.f();
+        _iterator8.f();
       }
 
       return -1;
@@ -773,9 +938,39 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       return;
     }
   }, {
+    key: "_deleteSelected",
+    value: function _deleteSelected() {
+      var _this5 = this;
+
+      if (this._are_selected()) {
+        var new_console_items = [];
+
+        var _iterator9 = _createForOfIteratorHelper(this.props.console_items),
+            _step9;
+
+        try {
+          for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
+            var entry = _step9.value;
+
+            if (!this.state.all_selected_items.includes(entry.unique_id)) {
+              new_console_items.push(entry);
+            }
+          }
+        } catch (err) {
+          _iterator9.e(err);
+        } finally {
+          _iterator9.f();
+        }
+
+        this._clear_all_selected_items(function () {
+          _this5.props.setMainStateValue("console_items", new_console_items);
+        });
+      }
+    }
+  }, {
     key: "_closeConsoleItem",
     value: function _closeConsoleItem(unique_id) {
-      var _this5 = this;
+      var _this6 = this;
 
       var cindex = this._consoleItemIndex(unique_id);
 
@@ -783,48 +978,54 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
 
       new_console_items.splice(cindex, 1);
 
-      if (unique_id == this.state.currently_selected_item) {
-        this.setState({
-          currently_selected_item: null
-        }, function () {
-          _this5.props.setMainStateValue("console_items", new_console_items);
-        });
-      } else {
-        this.props.setMainStateValue("console_items", new_console_items);
-      }
+      this._dselectOneItem(unique_id, function () {
+        _this6.props.setMainStateValue("console_items", new_console_items);
+      });
     }
   }, {
-    key: "_addConsoleEntry",
-    value: function _addConsoleEntry(new_entry) {
-      var _this6 = this;
-
+    key: "_addConsoleEntries",
+    value: function _addConsoleEntries(new_entries) {
       var force_open = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
       var set_focus = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
       var unique_id = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
       var callback = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : null;
-      new_entry.set_focus = set_focus;
+      var self = this;
+      _lodash["default"].last(new_entries).set_focus = set_focus;
+
+      var last_id = _lodash["default"].last(new_entries).unique_id;
+
       var insert_index;
 
       if (unique_id) {
         insert_index = this._consoleItemIndex(unique_id) + 1;
-      } else if (this.state.currently_selected_item == null) {
+      } else if (this.state.all_selected_items.length == 0) {
         insert_index = this.props.console_items.length;
       } else {
-        insert_index = this._consoleItemIndex(this.state.currently_selected_item) + 1;
+        insert_index = this._consoleItemIndex(this._currently_selected()) + 1;
       }
 
       var new_console_items = _toConsumableArray(this.props.console_items);
 
-      new_console_items.splice(insert_index, 0, new_entry);
+      new_console_items.splice.apply(new_console_items, [insert_index, 0].concat(_toConsumableArray(new_entries)));
       this.props.setMainStateValue("console_items", new_console_items, function () {
         if (force_open) {
-          _this6.props.setMainStateValue("console_is_shrunk", false);
-        }
-
-        if (callback) {
-          callback();
+          self.props.setMainStateValue("console_is_shrunk", false, function () {
+            self._selectConsoleItem(last_id, null, callback);
+          });
+        } else {
+          self._selectConsoleItem(last_id, null, callback);
         }
       });
+    }
+  }, {
+    key: "_addConsoleEntry",
+    value: function _addConsoleEntry(new_entry) {
+      var force_open = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+      var set_focus = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+      var unique_id = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
+      var callback = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : null;
+
+      this._addConsoleEntries([new_entry], force_open, set_focus, unique_id, callback);
     }
   }, {
     key: "_startSpinner",
@@ -927,7 +1128,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
   }, {
     key: "_clickConsoleBody",
     value: function _clickConsoleBody(e) {
-      this._clearSelectedItem();
+      this._clear_all_selected_items();
 
       e.stopPropagation();
     }
@@ -947,16 +1148,40 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       }
     }
   }, {
+    key: "_are_selected",
+    value: function _are_selected() {
+      return this.state.all_selected_items.length > 0;
+    }
+  }, {
     key: "_setSearchString",
     value: function _setSearchString(val) {
       var _this9 = this;
 
+      var self = this;
       var nval = val == "" ? null : val;
       this.setState({
         search_string: nval
       }, function () {
-        if (_this9.state.currently_selected_item) {
-          _this9._setConsoleItemValue(_this9.state.currently_selected_item, "search_string", nval);
+        if (self._are_selected()) {
+          var _iterator10 = _createForOfIteratorHelper(_this9.state.all_selected_items),
+              _step10;
+
+          try {
+            for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
+              var uid = _step10.value;
+              replace_dicts.push({
+                unique_id: unique_id,
+                field: "search_string",
+                value: _this9.state.search_string
+              });
+            }
+          } catch (err) {
+            _iterator10.e(err);
+          } finally {
+            _iterator10.f();
+          }
+
+          _this9._multiple_console_item_updates(replace_dicts);
         }
       });
     }
@@ -979,21 +1204,21 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
 
       var new_console_items = _toConsumableArray(this.props.console_items);
 
-      var _iterator5 = _createForOfIteratorHelper(new_console_items),
-          _step5;
+      var _iterator11 = _createForOfIteratorHelper(new_console_items),
+          _step11;
 
       try {
-        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-          var entry = _step5.value;
+        for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
+          var entry = _step11.value;
 
           if (entry.type == "code" || entry.type == "text") {
             entry["show_on_filtered"] = entry.console_text.toLowerCase().includes(this.state.search_string.toLowerCase());
           }
         }
       } catch (err) {
-        _iterator5.e(err);
+        _iterator11.e(err);
       } finally {
-        _iterator5.f();
+        _iterator11.f();
       }
 
       this.props.setMainStateValue("console_items", new_console_items, function () {
@@ -1010,10 +1235,10 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       var current_index;
       var self = this;
 
-      if (!this.state.currently_selected_item) {
+      if (!this._are_selected()) {
         current_index = 0;
       } else {
-        current_index = this._consoleItemIndex(this.state.currently_selected_item) + 1;
+        current_index = this._consoleItemIndex(this._currently_selected()) + 1;
       }
 
       var _loop2 = function _loop2() {
@@ -1057,10 +1282,10 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       if (entry[text_field].toLowerCase().includes(this.state.search_string.toLowerCase())) {
         if (entry.am_shrunk) {
           this._setConsoleItemValue(entry.unique_id, "am_shrunk", false, function () {
-            self._selectConsoleItem(entry.unique_id, callback);
+            self._selectConsoleItem(entry.unique_id, null, callback);
           });
         } else {
-          this._selectConsoleItem(entry.unique_id, callback);
+          this._selectConsoleItem(entry.unique_id, null, callback);
         }
 
         return true;
@@ -1076,10 +1301,10 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       var current_index;
       var self = this;
 
-      if (!this.state.currently_selected_item) {
+      if (!this._are_selected()) {
         current_index = this.props.console_items.length - 1;
       } else {
-        current_index = this._consoleItemIndex(this.state.currently_selected_item) - 1;
+        current_index = this._consoleItemIndex(this._currently_selected()) - 1;
       }
 
       var _loop3 = function _loop3() {
@@ -1147,16 +1372,22 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
           click_handler: this._insertResourceLink
         }],
         Edit: [{
-          name_text: "Copy Cell",
+          name_text: "Copy Selected",
           icon_name: "duplicate",
           click_handler: function click_handler() {
             self._copyCell();
           }
         }, {
-          name_text: "Paste Cell",
+          name_text: "Paste Cells",
           icon_name: "clipboard",
           click_handler: function click_handler() {
             self._pasteCell();
+          }
+        }, {
+          name_text: "Delete Selected",
+          icon_name: "trash",
+          click_handler: function click_handler() {
+            self._deleteSelected();
           }
         }, {
           name_text: "Clear Log",
@@ -1204,8 +1435,13 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
     get: function get() {
       var items = [];
 
-      if (!this.state.currently_selected_item) {
+      if (!this._are_selected() || this.state.all_selected_items.length != 1) {
         items.push("Run Selected");
+      }
+
+      if (!this._are_selected()) {
+        items.push("Copy Selected");
+        items.push("Delete Selected");
       }
 
       return items;
@@ -1224,13 +1460,13 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
         return;
       }
 
-      if (this.state.currently_selected_item) {
-        var entry = this.get_console_item_entry(this.state.currently_selected_item);
+      if (this._are_selected() && this.state.all_selected_items.length == 1) {
+        var entry = this.get_console_item_entry(this._currently_selected());
 
         if (entry.type == "code") {
-          this._runCodeItem(this.state.currently_selected_item);
+          this._runCodeItem(this._currently_selected());
         } else if (entry.type == "text") {
-          this._showTextItemMarkdown(this.state.currently_selected_item);
+          this._showTextItemMarkdown(this._currently_selected());
         }
       }
     }
@@ -1262,6 +1498,8 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
   }, {
     key: "render",
     value: function render() {
+      var _this14 = this;
+
       var gbstyle = {
         marginLeft: 1,
         marginTop: 2
@@ -1285,27 +1523,29 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
         header_style["paddingRight"] = 15;
       }
 
-      var key_bindings = [[["escape"], this._clearSelectedItem]];
+      var key_bindings = [[["escape"], function () {
+        _this14._clear_all_selected_items();
+      }]];
       var filtered_items;
 
       if (this.state.filter_console_items) {
         filtered_items = [];
 
-        var _iterator6 = _createForOfIteratorHelper(this.props.console_items),
-            _step6;
+        var _iterator12 = _createForOfIteratorHelper(this.props.console_items),
+            _step12;
 
         try {
-          for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-            var entry = _step6.value;
+          for (_iterator12.s(); !(_step12 = _iterator12.n()).done;) {
+            var entry = _step12.value;
 
             if (entry.show_on_filtered) {
               filtered_items.push(entry);
             }
           }
         } catch (err) {
-          _iterator6.e(err);
+          _iterator12.e(err);
         } finally {
-          _iterator6.f();
+          _iterator12.f();
         }
       } else {
         filtered_items = this.props.console_items;
@@ -1573,40 +1813,40 @@ var RawLogItem = /*#__PURE__*/function (_React$Component) {
   var _super4 = _createSuper(RawLogItem);
 
   function RawLogItem(props) {
-    var _this14;
+    var _this15;
 
     _classCallCheck(this, RawLogItem);
 
-    _this14 = _super4.call(this, props);
-    _this14.ce_summary0ref = /*#__PURE__*/_react["default"].createRef();
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this14), "_", RawLogItem.prototype);
-    _this14.update_props = log_item_update_props;
-    _this14.update_state_vars = [];
-    _this14.state = {
+    _this15 = _super4.call(this, props);
+    _this15.ce_summary0ref = /*#__PURE__*/_react["default"].createRef();
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this15), "_", RawLogItem.prototype);
+    _this15.update_props = log_item_update_props;
+    _this15.update_state_vars = [];
+    _this15.state = {
       selected: false
     };
-    _this14.last_output_text = "";
-    return _this14;
+    _this15.last_output_text = "";
+    return _this15;
   }
 
   _createClass(RawLogItem, [{
     key: "shouldComponentUpdate",
     value: function shouldComponentUpdate(nextProps, nextState) {
-      var _iterator7 = _createForOfIteratorHelper(this.update_props),
-          _step7;
+      var _iterator13 = _createForOfIteratorHelper(this.update_props),
+          _step13;
 
       try {
-        for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
-          var prop = _step7.value;
+        for (_iterator13.s(); !(_step13 = _iterator13.n()).done;) {
+          var prop = _step13.value;
 
           if (nextProps[prop] != this.props[prop]) {
             return true;
           }
         }
       } catch (err) {
-        _iterator7.e(err);
+        _iterator13.e(err);
       } finally {
-        _iterator7.f();
+        _iterator13.f();
       }
 
       return false;
@@ -1646,21 +1886,21 @@ var RawLogItem = /*#__PURE__*/function (_React$Component) {
         this.last_output_text = this.props.output_text;
         var scripts = $("#" + this.props.unique_id + " .log-code-output script").toArray(); // $("#" + this.props.unique_id + " .bk-root").html(""); // This is a kluge to deal with bokeh double images
 
-        var _iterator8 = _createForOfIteratorHelper(scripts),
-            _step8;
+        var _iterator14 = _createForOfIteratorHelper(scripts),
+            _step14;
 
         try {
-          for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
-            var script = _step8.value;
+          for (_iterator14.s(); !(_step14 = _iterator14.n()).done;) {
+            var script = _step14.value;
 
             try {
               window.eval(script.text);
             } catch (e) {}
           }
         } catch (err) {
-          _iterator8.e(err);
+          _iterator14.e(err);
         } finally {
-          _iterator8.f();
+          _iterator14.f();
         }
       }
     }
@@ -1669,18 +1909,18 @@ var RawLogItem = /*#__PURE__*/function (_React$Component) {
     value: function makeTablesSortable() {
       var tables = $("#" + this.props.unique_id + " table.sortable").toArray();
 
-      var _iterator9 = _createForOfIteratorHelper(tables),
-          _step9;
+      var _iterator15 = _createForOfIteratorHelper(tables),
+          _step15;
 
       try {
-        for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
-          var table = _step9.value;
+        for (_iterator15.s(); !(_step15 = _iterator15.n()).done;) {
+          var table = _step15.value;
           sorttable.makeSortable(table);
         }
       } catch (err) {
-        _iterator9.e(err);
+        _iterator15.e(err);
       } finally {
-        _iterator9.f();
+        _iterator15.f();
       }
     }
   }, {
@@ -1696,15 +1936,16 @@ var RawLogItem = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_selectMe",
     value: function _selectMe() {
-      var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-      this.props.selectConsoleItem(this.props.unique_id, callback);
+      var e = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      this.props.selectConsoleItem(this.props.unique_id, e, callback);
     }
   }, {
     key: "_addBlankText",
     value: function _addBlankText() {
       var self = this;
 
-      this._selectMe(function () {
+      this._selectMe(null, function () {
         self.props.addNewTextItem();
       });
     }
@@ -1713,7 +1954,7 @@ var RawLogItem = /*#__PURE__*/function (_React$Component) {
     value: function _addBlankCode() {
       var self = this;
 
-      this._selectMe(function () {
+      this._selectMe(null, function () {
         self.props.addNewCodeItem();
       });
     }
@@ -1747,7 +1988,7 @@ var RawLogItem = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_consoleItemClick",
     value: function _consoleItemClick(e) {
-      this._selectMe();
+      this._selectMe(e);
 
       e.stopPropagation();
     }
@@ -1853,39 +2094,39 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component2) {
   var _super5 = _createSuper(RawConsoleCodeItem);
 
   function RawConsoleCodeItem(props) {
-    var _this15;
+    var _this16;
 
     _classCallCheck(this, RawConsoleCodeItem);
 
-    _this15 = _super5.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this15), "_", RawConsoleCodeItem.prototype);
-    _this15.cmobject = null;
-    _this15.elRef = /*#__PURE__*/_react["default"].createRef();
-    _this15.update_props = code_item_update_props;
-    _this15.update_state_vars = [];
-    _this15.state = {};
-    _this15.last_output_text = "";
-    return _this15;
+    _this16 = _super5.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this16), "_", RawConsoleCodeItem.prototype);
+    _this16.cmobject = null;
+    _this16.elRef = /*#__PURE__*/_react["default"].createRef();
+    _this16.update_props = code_item_update_props;
+    _this16.update_state_vars = [];
+    _this16.state = {};
+    _this16.last_output_text = "";
+    return _this16;
   }
 
   _createClass(RawConsoleCodeItem, [{
     key: "shouldComponentUpdate",
     value: function shouldComponentUpdate(nextProps, nextState) {
-      var _iterator10 = _createForOfIteratorHelper(this.update_props),
-          _step10;
+      var _iterator16 = _createForOfIteratorHelper(this.update_props),
+          _step16;
 
       try {
-        for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
-          var prop = _step10.value;
+        for (_iterator16.s(); !(_step16 = _iterator16.n()).done;) {
+          var prop = _step16.value;
 
           if (nextProps[prop] != this.props[prop]) {
             return true;
           }
         }
       } catch (err) {
-        _iterator10.e(err);
+        _iterator16.e(err);
       } finally {
-        _iterator10.f();
+        _iterator16.f();
       }
 
       return false;
@@ -1893,7 +2134,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this16 = this;
+      var _this17 = this;
 
       if (this.props.set_focus) {
         if (this.cmobject != null) {
@@ -1911,7 +2152,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component2) {
 
       if (this.cmobject != null) {
         this.cmobject.on("focus", function () {
-          self.props.setFocus(_this16.props.unique_id, self._selectMe);
+          self.props.setFocus(_this17.props.unique_id, self._selectMe);
         });
         this.cmobject.on("blur", function () {
           self.props.setFocus(null);
@@ -1970,12 +2211,12 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component2) {
         this.last_output_text = this.props.output_text;
         var scripts = $("#" + this.props.unique_id + " .log-code-output script").toArray(); // $("#" + this.props.unique_id + " .bk-root").html(""); // This is a kluge to deal with bokeh double images
 
-        var _iterator11 = _createForOfIteratorHelper(scripts),
-            _step11;
+        var _iterator17 = _createForOfIteratorHelper(scripts),
+            _step17;
 
         try {
-          for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
-            var script = _step11.value;
+          for (_iterator17.s(); !(_step17 = _iterator17.n()).done;) {
+            var script = _step17.value;
 
             // noinspection EmptyCatchBlockJS,UnusedCatchParameterJS
             try {
@@ -1983,9 +2224,9 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component2) {
             } catch (e) {}
           }
         } catch (err) {
-          _iterator11.e(err);
+          _iterator17.e(err);
         } finally {
-          _iterator11.f();
+          _iterator17.f();
         }
       }
     }
@@ -1994,18 +2235,18 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component2) {
     value: function makeTablesSortable() {
       var tables = $("#" + this.props.unique_id + " table.sortable").toArray();
 
-      var _iterator12 = _createForOfIteratorHelper(tables),
-          _step12;
+      var _iterator18 = _createForOfIteratorHelper(tables),
+          _step18;
 
       try {
-        for (_iterator12.s(); !(_step12 = _iterator12.n()).done;) {
-          var table = _step12.value;
+        for (_iterator18.s(); !(_step18 = _iterator18.n()).done;) {
+          var table = _step18.value;
           sorttable.makeSortable(table);
         }
       } catch (err) {
-        _iterator12.e(err);
+        _iterator18.e(err);
       } finally {
-        _iterator12.f();
+        _iterator18.f();
       }
     }
   }, {
@@ -2061,15 +2302,15 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_extraKeys",
     value: function _extraKeys() {
-      var _this17 = this;
+      var _this18 = this;
 
       var self = this;
       return {
         'Ctrl-Enter': function CtrlEnter() {
-          return self.props.runCodeItem(_this17.props.unique_id, true);
+          return self.props.runCodeItem(_this18.props.unique_id, true);
         },
         'Cmd-Enter': function CmdEnter() {
-          return self.props.runCodeItem(_this17.props.unique_id, true);
+          return self.props.runCodeItem(_this18.props.unique_id, true);
         },
         'Ctrl-C': self.props.addNewCodeItem,
         'Ctrl-T': self.props.addNewTextItem
@@ -2104,15 +2345,16 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_selectMe",
     value: function _selectMe() {
-      var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-      this.props.selectConsoleItem(this.props.unique_id, callback);
+      var e = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      this.props.selectConsoleItem(this.props.unique_id, e, callback);
     }
   }, {
     key: "_addBlankText",
     value: function _addBlankText() {
       var self = this;
 
-      this._selectMe(function () {
+      this._selectMe(null, function () {
         self.props.addNewTextItem();
       });
     }
@@ -2121,21 +2363,21 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component2) {
     value: function _addBlankCode() {
       var self = this;
 
-      this._selectMe(function () {
+      this._selectMe(null, function () {
         self.props.addNewCodeItem();
       });
     }
   }, {
     key: "renderContextMenu",
     value: function renderContextMenu() {
-      var _this18 = this;
+      var _this19 = this;
 
       // return a single element, or nothing to use default browser behavior
       return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, !this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "play",
         intent: "success",
         onClick: function onClick() {
-          _this18.props.runCodeItem(_this18.props.unique_id);
+          _this19.props.runCodeItem(_this19.props.unique_id);
         },
         text: "Run Cell"
       }), this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
@@ -2168,7 +2410,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component2) {
         icon: "clean",
         intent: "warning",
         onClick: function onClick() {
-          _this18._clearOutput();
+          _this19._clearOutput();
         },
         text: "Clear Output"
       }));
@@ -2176,14 +2418,14 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_consoleItemClick",
     value: function _consoleItemClick(e) {
-      this._selectMe();
+      this._selectMe(e);
 
       e.stopPropagation();
     }
   }, {
     key: "render",
     value: function render() {
-      var _this19 = this;
+      var _this20 = this;
 
       var panel_style = this.props.am_shrunk ? "log-panel log-panel-invisible" : "log-panel log-panel-visible";
 
@@ -2237,7 +2479,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component2) {
         className: "button-div d-flex pr-1"
       }, !this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
         handleClick: function handleClick() {
-          _this19.props.runCodeItem(_this19.props.unique_id);
+          _this20.props.runCodeItem(_this20.props.unique_id);
         },
         intent: "success",
         tooltip: "Execute this item",
@@ -2271,7 +2513,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component2) {
         icon: "trash"
       }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
         handleClick: function handleClick() {
-          _this19._clearOutput();
+          _this20._clearOutput();
         },
         intent: "warning",
         tooltip: "Clear this item's output",
@@ -2329,20 +2571,20 @@ var ResourceLinkButton = /*#__PURE__*/function (_React$PureComponent4) {
   var _super6 = _createSuper(ResourceLinkButton);
 
   function ResourceLinkButton(props) {
-    var _this20;
+    var _this21;
 
     _classCallCheck(this, ResourceLinkButton);
 
-    _this20 = _super6.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this20));
-    _this20.my_view = (0, _library_pane.view_views)(false)[props.res_type];
+    _this21 = _super6.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this21));
+    _this21.my_view = (0, _library_pane.view_views)(false)[props.res_type];
 
     if (window.in_context) {
       var re = new RegExp("/$");
-      _this20.my_view = _this20.my_view.replace(re, "_in_context");
+      _this21.my_view = _this21.my_view.replace(re, "_in_context");
     }
 
-    return _this20;
+    return _this21;
   }
 
   _createClass(ResourceLinkButton, [{
@@ -2399,59 +2641,59 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component3) {
   var _super7 = _createSuper(RawConsoleTextItem);
 
   function RawConsoleTextItem(props) {
-    var _this21;
+    var _this22;
 
     _classCallCheck(this, RawConsoleTextItem);
 
-    _this21 = _super7.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this21), "_", RawConsoleTextItem.prototype);
-    _this21.cmobject = null;
-    _this21.elRef = /*#__PURE__*/_react["default"].createRef();
-    _this21.ce_summary_ref = /*#__PURE__*/_react["default"].createRef();
-    _this21.update_props = text_item_update_props;
-    _this21.update_state_vars = ["ce_ref"];
-    _this21.previous_dark_theme = props.dark_theme;
-    _this21.state = {
+    _this22 = _super7.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this22), "_", RawConsoleTextItem.prototype);
+    _this22.cmobject = null;
+    _this22.elRef = /*#__PURE__*/_react["default"].createRef();
+    _this22.ce_summary_ref = /*#__PURE__*/_react["default"].createRef();
+    _this22.update_props = text_item_update_props;
+    _this22.update_state_vars = ["ce_ref"];
+    _this22.previous_dark_theme = props.dark_theme;
+    _this22.state = {
       ce_ref: null
     };
-    return _this21;
+    return _this22;
   }
 
   _createClass(RawConsoleTextItem, [{
     key: "shouldComponentUpdate",
     value: function shouldComponentUpdate(nextProps, nextState) {
-      var _iterator13 = _createForOfIteratorHelper(this.update_props),
-          _step13;
+      var _iterator19 = _createForOfIteratorHelper(this.update_props),
+          _step19;
 
       try {
-        for (_iterator13.s(); !(_step13 = _iterator13.n()).done;) {
-          var prop = _step13.value;
+        for (_iterator19.s(); !(_step19 = _iterator19.n()).done;) {
+          var prop = _step19.value;
 
           if (nextProps[prop] != this.props[prop]) {
             return true;
           }
         }
       } catch (err) {
-        _iterator13.e(err);
+        _iterator19.e(err);
       } finally {
-        _iterator13.f();
+        _iterator19.f();
       }
 
-      var _iterator14 = _createForOfIteratorHelper(this.update_state_vars),
-          _step14;
+      var _iterator20 = _createForOfIteratorHelper(this.update_state_vars),
+          _step20;
 
       try {
-        for (_iterator14.s(); !(_step14 = _iterator14.n()).done;) {
-          var state_var = _step14.value;
+        for (_iterator20.s(); !(_step20 = _iterator20.n()).done;) {
+          var state_var = _step20.value;
 
           if (nextState[state_var] != this.state[state_var]) {
             return true;
           }
         }
       } catch (err) {
-        _iterator14.e(err);
+        _iterator20.e(err);
       } finally {
-        _iterator14.f();
+        _iterator20.f();
       }
 
       if (this.props.dark_theme != this.previous_dark_theme) {
@@ -2464,7 +2706,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this22 = this;
+      var _this23 = this;
 
       if (this.props.set_focus) {
         if (this.props.show_markdown) {
@@ -2483,7 +2725,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component3) {
 
       if (this.cmobject != null) {
         this.cmobject.on("focus", function () {
-          self.props.setFocus(_this22.props.unique_id, self._selectMe);
+          self.props.setFocus(_this23.props.unique_id, self._selectMe);
         });
         this.cmobject.on("blur", function () {
           self.props.setFocus(null);
@@ -2617,8 +2859,9 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "_selectMe",
     value: function _selectMe() {
-      var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-      this.props.selectConsoleItem(this.props.unique_id, callback);
+      var e = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      this.props.selectConsoleItem(this.props.unique_id, e, callback);
     }
   }, {
     key: "_insertResourceLink",
@@ -2650,7 +2893,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component3) {
     value: function _addBlankText() {
       var self = this;
 
-      this._selectMe(function () {
+      this._selectMe(null, function () {
         self.props.addNewTextItem();
       });
     }
@@ -2659,7 +2902,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component3) {
     value: function _addBlankCode() {
       var self = this;
 
-      this._selectMe(function () {
+      this._selectMe(null, function () {
         self.props.addNewCodeItem();
       });
     }
@@ -2702,7 +2945,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "_consoleItemClick",
     value: function _consoleItemClick(e) {
-      this._selectMe();
+      this._selectMe(e);
 
       e.stopPropagation();
     }
@@ -2729,7 +2972,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "render",
     value: function render() {
-      var _this23 = this;
+      var _this24 = this;
 
       var really_show_markdown = this.hasOnlyWhitespace && this.props.links.length == 0 ? false : this.props.show_markdown;
       var converted_markdown;
@@ -2757,7 +3000,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component3) {
         return /*#__PURE__*/_react["default"].createElement(ResourceLinkButton, {
           key: index,
           my_index: index,
-          handleCreateViewer: _this23.props.handleCreateViewer,
+          handleCreateViewer: _this24.props.handleCreateViewer,
           deleteMe: self._deleteLinkButton,
           res_type: link.res_type,
           res_name: link.res_name

@@ -650,20 +650,20 @@ class HostWorker(QWorker):
         return {"success": True}
 
     @task_worthy
-    def copy_console_cell(self, data):
+    def copy_console_cells(self, data):
         uid = "copied_cell_" + data["user_id"]
         delete_temp_data(db, uid)
-        store_temp_data(db, {"console_item": data["console_item"]}, uid)
+        store_temp_data(db, {"console_items": data["console_items"]}, uid)
         return {"success": True}
 
     @task_worthy
-    def get_copied_console_cell(self, data):
+    def get_copied_console_cells(self, data):
         uid = "copied_cell_" + data["user_id"]
         res_dict = read_temp_data(db, uid)
         if res_dict:
-            citem = res_dict["console_item"]
-            citem["unique_id"] = str(uuid.uuid4())
-            return {"success": True, "console_item": res_dict["console_item"]}
+            for citem in res_dict["console_items"]:
+                citem["unique_id"] = str(uuid.uuid4())
+            return {"success": True, "console_items": res_dict["console_items"]}
         else:
             return {"success": False, "message": "No copied cell found"}
 
