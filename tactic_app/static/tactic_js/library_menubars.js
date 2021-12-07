@@ -601,7 +601,7 @@ var ProjectMenubar = /*#__PURE__*/function (_React$Component3) {
             _this7._project_duplicate();
           }
         }, {
-          name_text: "Delete Projets",
+          name_text: "Delete Projects",
           icon_name: "trash",
           click_handler: function click_handler() {
             _this7._project_delete();

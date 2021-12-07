@@ -112,6 +112,7 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
                     resource_name: module_name,
                     tsocket: tsocket,
                     module_viewer_id: module_viewer_id,
+                    main_id: module_viewer_id,
                     is_mpl: parsed_data.is_mpl,
                     is_d3: parsed_data.is_d3,
                     render_content_code: parsed_data.render_content_code,
@@ -515,7 +516,9 @@ class CreatorApp extends React.Component {
             };
             postAjaxPromise('/create_duplicate_tile', result_dict)
                 .then((data) => {
-                    self._setResourceNameState(new_name)
+                    self._setResourceNameState(new_name, () => {
+                            self._saveMe()
+                        })
                     }
                 )
                 .catch(doFlash)
@@ -809,12 +812,11 @@ class CreatorApp extends React.Component {
         this.setState({"render_content_code": new_code})
     }
 
-    _setResourceNameState(new_name) {
+    _setResourceNameState(new_name, callback=null) {
         if (this.props.controlled) {
-            this.props.changeResourceName(new_name)
-        }
-        else {
-            this.setState({"resource_name": new_name})
+            this.props.changeResourceName(new_name, callback)
+        } else {
+            this.setState({resource_name: new_name}, callback)
         }
     }
 

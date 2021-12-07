@@ -346,7 +346,7 @@ class ProjectMenubar extends React.Component {
             Edit: [
                 {name_text: "Rename Project", icon_name: "edit", click_handler: ()=>{self.props.rename_func()}},
                 {name_text: "Duplicate Project", icon_name: "duplicate", click_handler: ()=>{this._project_duplicate()}},
-                {name_text: "Delete Projets", icon_name: "trash", click_handler: ()=>{this._project_delete()},
+                {name_text: "Delete Projects", icon_name: "trash", click_handler: ()=>{this._project_delete()},
                     multi_select: true},
             ],
             Transfer: [

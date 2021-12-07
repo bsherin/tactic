@@ -54,18 +54,20 @@ class ProjectMenu extends React.Component {
 
             function save_as_success(data_object) {
                 if (data_object["success"]) {
-                    self.props.setProjectName(new_name);
-                    if (!window.in_context) {
-                        document.title = new_name;
-                    }
-                    self.props.clearStatusMessage();
-                    data_object.alert_type = "alert-success";
-                    data_object.timeout = 2000;
-                    postWithCallback("host", "refresh_project_selector_list",
-                        {'user_id': window.user_id}, null, null, self.props.main_id);
-                    self.props.updateLastSave();
-                    self.props.stopSpinner();
-                    doFlash(data_object)
+                    self.props.setProjectName(new_name, ()=>{
+                        if (!window.in_context) {
+                            document.title = new_name;
+                        }
+                        self.props.clearStatusMessage();
+                        data_object.alert_type = "alert-success";
+                        data_object.timeout = 2000;
+                        postWithCallback("host", "refresh_project_selector_list",
+                            {'user_id': window.user_id}, null, null, self.props.main_id);
+                        self.props.updateLastSave();
+                        self.props.stopSpinner();
+                        self._saveProject()
+                    });
+
                 }
                 else {
                     self.props.clearStatusMessage();

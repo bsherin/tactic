@@ -188,6 +188,7 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
         resource_name: module_name,
         tsocket: tsocket,
         module_viewer_id: module_viewer_id,
+        main_id: module_viewer_id,
         is_mpl: parsed_data.is_mpl,
         is_d3: parsed_data.is_d3,
         render_content_code: parsed_data.render_content_code,
@@ -701,7 +702,9 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           "res_to_copy": self._cProp("resource_name")
         };
         (0, _communication_react.postAjaxPromise)('/create_duplicate_tile', result_dict).then(function (data) {
-          self._setResourceNameState(new_name);
+          self._setResourceNameState(new_name, function () {
+            self._saveMe();
+          });
         })["catch"](_toaster.doFlash);
       }
     }
@@ -1086,12 +1089,14 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_setResourceNameState",
     value: function _setResourceNameState(new_name) {
+      var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+
       if (this.props.controlled) {
-        this.props.changeResourceName(new_name);
+        this.props.changeResourceName(new_name, callback);
       } else {
         this.setState({
-          "resource_name": new_name
-        });
+          resource_name: new_name
+        }, callback);
       }
     }
   }, {
