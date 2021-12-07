@@ -658,6 +658,8 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
         }
       }
 
+      var replace_dicts = [];
+
       var _iterator5 = _createForOfIteratorHelper(this.state.all_selected_items.slice(0, -1)),
           _step5;
 
@@ -1159,6 +1161,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
 
       var self = this;
       var nval = val == "" ? null : val;
+      var replace_dicts = [];
       this.setState({
         search_string: nval
       }, function () {
@@ -1170,7 +1173,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
             for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
               var uid = _step10.value;
               replace_dicts.push({
-                unique_id: unique_id,
+                unique_id: uid,
                 field: "search_string",
                 value: _this9.state.search_string
               });
