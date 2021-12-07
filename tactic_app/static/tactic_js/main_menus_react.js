@@ -105,21 +105,22 @@ var ProjectMenu = /*#__PURE__*/function (_React$Component) {
 
         function save_as_success(data_object) {
           if (data_object["success"]) {
-            self.props.setProjectName(new_name);
+            self.props.setProjectName(new_name, function () {
+              if (!window.in_context) {
+                document.title = new_name;
+              }
 
-            if (!window.in_context) {
-              document.title = new_name;
-            }
+              self.props.clearStatusMessage();
+              data_object.alert_type = "alert-success";
+              data_object.timeout = 2000;
+              (0, _communication_react.postWithCallback)("host", "refresh_project_selector_list", {
+                'user_id': window.user_id
+              }, null, null, self.props.main_id);
+              self.props.updateLastSave();
+              self.props.stopSpinner();
 
-            self.props.clearStatusMessage();
-            data_object.alert_type = "alert-success";
-            data_object.timeout = 2000;
-            (0, _communication_react.postWithCallback)("host", "refresh_project_selector_list", {
-              'user_id': window.user_id
-            }, null, null, self.props.main_id);
-            self.props.updateLastSave();
-            self.props.stopSpinner();
-            (0, _toaster.doFlash)(data_object);
+              self._saveProject();
+            });
           } else {
             self.props.clearStatusMessage();
             data_object["message"] = data_object["message"];

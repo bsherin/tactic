@@ -396,13 +396,13 @@ class ContextApp extends React.Component {
          this.setState({tab_panel_dict: new_tab_panel_dict}, ()=>this._update_window_dimensions(callback))
      }
 
-     _changeResourceName(the_id, new_name, change_title=true) {
+     _changeResourceName(the_id, new_name, change_title=true, callback=null) {
          let new_tab_panel_dict = {...this.state.tab_panel_dict};
          if (change_title) {
              new_tab_panel_dict[the_id].title = new_name;
          }
          new_tab_panel_dict[the_id].panel.resource_name = new_name;
-         this.setState({tab_panel_dict: new_tab_panel_dict}, ()=>this._update_window_dimensions(null))
+         this.setState({tab_panel_dict: new_tab_panel_dict}, ()=>this._update_window_dimensions(callback))
      }
 
      _changeResourceTitle(the_id, new_title) {
@@ -424,14 +424,26 @@ class ContextApp extends React.Component {
          })
      }
 
+     _getResourceId(res_name, res_type) {
+         for (let the_id of this.state.tab_ids) {
+             let the_panel = this.state.tab_panel_dict[the_id];
+             if (the_panel.panel.resource_name == res_name && the_panel.res_type == res_type) {
+                 return the_id
+             }
+         }
+         return -1
+     }
+
      _handleCreateViewer(data) {
         let self = this;
 
-         const new_id = `${data.kind}: ${data.resource_name}`;
-         if (this.state.tab_ids.includes(new_id)) {
-            this.setState({selectedTabId: new_id});
+         // const new_id = `${data.kind}: ${data.resource_name}`;
+         let existing_id = this._getResourceId(data.resource_name, data.res_type);
+         if (existing_id != -1) {
+            this.setState({selectedTabId: existing_id});
              return
          }
+         const new_id = guid();
          const drmethod = (dmethod) => {self._registerDirtyMethod(new_id, dmethod)};
          this._addPanel(new_id, data.kind, data.res_type, data.resource_name, "spinner", ()=> {
              let new_panel = self.propDict[data.kind](data, drmethod, (new_panel)=>{
@@ -600,8 +612,8 @@ class ContextApp extends React.Component {
                                           handleCreateViewer={this._handleCreateViewer}
                                           setTheme={this._setTheme}
                                           am_selected={tab_id == this.state.selectedTabId}
-                                          changeResourceName={(new_name, change_title=true)=>{
-                                              this._changeResourceName(tab_id, new_name, change_title)
+                                          changeResourceName={(new_name, callback=null, change_title=true)=>{
+                                              this._changeResourceName(tab_id, new_name, change_title, callback)
                                           }}
                                           changeResourceTitle={(new_title)=>this._changeResourceTitle(tab_id, new_title)}
                                           changeResourceProps={(new_props, callback=null)=>{

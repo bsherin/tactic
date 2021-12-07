@@ -890,15 +890,15 @@ class MainApp extends React.Component {
         })
     }
 
-    _setProjectName(new_project_name) {
+    _setProjectName(new_project_name, callback=null) {
         let self = this;
         if (this.props.controlled) {
             this.props.updatePanel({res_type: "project", title: new_project_name, panel: {resource_name: new_project_name, is_project: true}}, ()=>{
-                self.setState({is_jupyter: false})
+                self.setState({is_jupyter: false}, callback)
             })
         }
         else {
-            this.setState({"resource_name": new_project_name, "is_project": true})
+            this.setState({"resource_name": new_project_name, "is_project": true}, callback)
         }
     }
 

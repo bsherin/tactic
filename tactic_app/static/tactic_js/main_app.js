@@ -1308,6 +1308,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_setProjectName",
     value: function _setProjectName(new_project_name) {
+      var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
       var self = this;
 
       if (this.props.controlled) {
@@ -1321,13 +1322,13 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         }, function () {
           self.setState({
             is_jupyter: false
-          });
+          }, callback);
         });
       } else {
         this.setState({
           "resource_name": new_project_name,
           "is_project": true
-        });
+        }, callback);
       }
     }
   }, {

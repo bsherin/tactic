@@ -113,6 +113,7 @@ function module_viewer_props(data, registerDirtyMethod, finalCallback) {
   var tsocket = new _tactic_socket.TacticSocket("main", 5000, resource_viewer_id);
   finalCallback({
     resource_viewer_id: resource_viewer_id,
+    main_id: resource_viewer_id,
     tsocket: tsocket,
     split_tags: data.mdata.tags == "" ? [] : data.mdata.tags.split(" "),
     created: data.mdata.datestring,
@@ -347,11 +348,14 @@ var ModuleViewerApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_setResourceNameState",
     value: function _setResourceNameState(new_name) {
+      var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+
       if (this.props.controlled) {
-        this.props.changeResourceName(new_name);
+        this.props.changeResourceName(new_name, callback);
       } else {
         this.setState({
-          resource_name: new_name
+          resource_name: new_name,
+          callback: callback
         });
       }
     }
@@ -440,7 +444,9 @@ var ModuleViewerApp = /*#__PURE__*/function (_React$Component) {
           "res_to_copy": self._cProp("resource_name")
         };
         (0, _communication_react.postAjaxPromise)('/create_duplicate_tile', result_dict).then(function (data) {
-          self._setResourceNameState(new_name);
+          self._setResourceNameState(new_name, function () {
+            self._saveMe();
+          });
         })["catch"](_toaster.doFlash);
       }
     }

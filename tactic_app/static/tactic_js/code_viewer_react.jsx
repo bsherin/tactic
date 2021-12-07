@@ -49,6 +49,7 @@ function code_viewer_props(data, registerDirtyMethod, finalCallback) {
 
     finalCallback({
         resource_viewer_id: resource_viewer_id,
+        main_id: resource_viewer_id,
         tsocket: tsocket,
         split_tags: data.mdata.tags == "" ? [] : data.mdata.tags.split(" "),
         created: data.mdata.datestring,
@@ -177,11 +178,11 @@ class CodeViewerApp extends React.Component {
         return ms
     }
 
-    _setResourceNameState(new_name) {
+    _setResourceNameState(new_name, callback=null) {
         if (this.props.controlled) {
-            this.props.changeResourceName(new_name)
+            this.props.changeResourceName(new_name, callback)
         } else {
-            this.setState({resource_name: new_name})
+            this.setState({resource_name: new_name}, callback)
         }
     }
 
@@ -273,7 +274,9 @@ class CodeViewerApp extends React.Component {
             };
             postAjaxPromise('/create_duplicate_code', result_dict)
                 .then((data) => {
-                        self._setResourceNameState(new_name)
+                        self._setResourceNameState(new_name, () => {
+                            self._saveMe()
+                        })
                     }
                 )
                 .catch(doFlash)
