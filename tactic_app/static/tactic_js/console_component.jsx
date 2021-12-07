@@ -412,6 +412,7 @@ const BUTTON_CONSUMED_SPACE = 208;
                  callback()
              }
          }
+         let replace_dicts = [];
          for (let uid of this.state.all_selected_items.slice(0, -1)) {
              replace_dicts.push({unique_id: uid, field: "am_selected", value: false});
              replace_dicts.push({unique_id: uid, field: "search_string", value: null})
@@ -712,11 +713,12 @@ const BUTTON_CONSUMED_SPACE = 208;
      _setSearchString(val) {
          let self = this;
          let nval = val == "" ? null : val;
+         let replace_dicts = [];
          this.setState({search_string: nval}, ()=> {
              if (self._are_selected()) {
                  for (let uid of this.state.all_selected_items) {
                      replace_dicts.push({
-                         unique_id: unique_id,
+                         unique_id: uid,
                          field: "search_string",
                          value: this.state.search_string
                      });
