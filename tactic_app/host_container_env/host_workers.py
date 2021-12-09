@@ -608,6 +608,21 @@ class HostWorker(QWorker):
         return {"success": True, "unique_id": unique_id}
 
     @task_worthy
+    def print_divider_area_to_console(self, data):
+        from tactic_app import socketio
+        user_id = data["user_id"]
+        user_obj = load_user(user_id)
+        unique_id = str(uuid.uuid4())
+        data["message"] = {"unique_id": unique_id,
+                           "type": "divider",
+                           "am_shrunk": False,
+                           "search_string": None,
+                           "header_text": data["header_text"]}
+        data["console_message"] = "consoleLog"
+        self.emit_console_message(data)
+        return {"success": True, "unique_id": unique_id}
+
+    @task_worthy
     def print_link_area_to_console(self, data):
         from tactic_app import socketio
         user_id = data["user_id"]

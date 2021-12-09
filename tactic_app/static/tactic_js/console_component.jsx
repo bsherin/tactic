@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 
 import 'codemirror/mode/markdown/markdown.js'
 
-import { Icon, Card, EditableText, Spinner} from "@blueprintjs/core";
+import { Icon, Card, EditableText, Spinner, Divider} from "@blueprintjs/core";
 import { Menu, MenuItem, InputGroup, ButtonGroup, Button} from "@blueprintjs/core";
 import _ from 'lodash';
 
@@ -137,6 +137,25 @@ const BUTTON_CONSUMED_SPACE = 208;
              return
          }
          this._addConsoleText("")
+     }
+
+     _addConsoleDivider(header_text, callback=null) {
+         postWithCallback("host", "print_divider_area_to_console",
+             {"header_text": header_text, "user_id": window.user_id, "main_id": this.props.main_id}, function (data) {
+                 if (!data.success) {
+                     doFlash(data)
+                 }
+                 else if (callback) {
+                     callback()
+                 }
+             }, null, this.props.main_id);
+     }
+
+     _addBlankDivider() {
+         if (!this.props.am_selected) {
+             return
+         }
+         this._addConsoleDivider("")
      }
 
      // _insertTextInCell(the_text) {
@@ -664,6 +683,9 @@ const BUTTON_CONSUMED_SPACE = 208;
                  <MenuItem icon="code"
                            onClick={this._addBlankCode}
                            text="New Code Cell"/>
+                 <MenuItem icon="header"
+                           onClick={this._addBlankDivider}
+                           text="New Divider"/>
                  <MenuItem icon="clipboard"
                            onClick={() => {
                                this._pasteCell()
@@ -738,6 +760,9 @@ const BUTTON_CONSUMED_SPACE = 208;
          for (let entry of new_console_items) {
              if (entry.type == "code" || entry.type == "text") {
                  entry["show_on_filtered"] = entry.console_text.toLowerCase().includes(this.state.search_string.toLowerCase());
+             }
+             else if (entry.type == "divider") {
+                 entry["show_on_filtered"] = true
              }
          }
          this.props.setMainStateValue("console_items", new_console_items, ()=>{
@@ -828,6 +853,7 @@ const BUTTON_CONSUMED_SPACE = 208;
             Insert :[{name_text: "Text Cell", icon_name: "new-text-box", click_handler: this._addBlankText,
                 key_bindings: ["ctrl+t"]},
                    {name_text: "Code Cell", icon_name: "code", click_handler: this._addBlankCode, key_bindings: ["ctrl+c"]},
+                {name_text: "Add Divider", icon_name: "header", click_handler: this._addBlankDivider},
                    {name_text: "Resource Link", icon_name: "link", click_handler: this._insertResourceLink}],
             Edit: [{name_text: "Copy Selected", icon_name: "duplicate", click_handler: () => {self._copyCell()}},
                    {name_text: "Paste Cells", icon_name: "clipboard", click_handler: () => {self._pasteCell()}},
@@ -920,17 +946,28 @@ const BUTTON_CONSUMED_SPACE = 208;
              header_style["paddingRight"] = 15
          }
          let key_bindings = [[["escape"], ()=>{this._clear_all_selected_items()}]];
-         let filtered_items;
+         let filtered_items = [];
+         let in_closed_section = false;
+         for (let entry of this.props.console_items) {
+             if (entry.type == "divider" && entry.am_shrunk) {
+                 in_closed_section = true;
+                 filtered_items.push(entry)
+             }
+             if (entry.type == "divider" && !entry.am_shrunk) {
+                 in_closed_section = false;
+                 filtered_items.push(entry)
+             }
+             else if (!in_closed_section) {
+                 filtered_items.push(entry)
+             }
+
+         }
          if (this.state.filter_console_items) {
-             filtered_items = [];
-             for (let entry of this.props.console_items) {
+             for (let entry of filtered_items) {
                  if (entry.show_on_filtered) {
                      filtered_items.push(entry)
                  }
              }
-         }
-         else {
-             filtered_items = this.props.console_items
          }
 
          return (
@@ -1051,6 +1088,7 @@ const BUTTON_CONSUMED_SPACE = 208;
                                                 setFocus={this._setFocusedItem}
                                                 addNewTextItem={this._addBlankText}
                                                 addNewCodeItem={this._addBlankCode}
+                                                addNewDividerItem={this._addBlankDivider}
                                                 copyCell={this._copyCell}
                                                 pasteCell={this._pasteCell}
                                                 insertResourceLink={this._insertResourceLink}
@@ -1108,28 +1146,164 @@ const ConsoleComponent = ContextMenuTarget(RawConsoleComponent);
 const Shandle = SortableHandle(RawSortHandle);
 
 class SuperItem extends React.PureComponent {
-    // shouldComponentUpdate(nextProps, nextState) {
-    //     let update_props = all_update_props[this.props.type];
-    //     for (let prop of update_props) {
-    //         if (nextProps[prop] != this.props[prop]) {
-    //             return true
-    //         }
-    //     }
-    //     return false
-    // }
     render() {
-        if (this.props.type == "text") {
-            return <ConsoleTextItem {...this.props}/>
-        } else if (this.props.type == "code") {
-            return <ConsoleCodeItem {...this.props}/>
-        } else if (this.props.type == "fixed") {
-            return <LogItem {...this.props}/>
+        switch (this.props.type) {
+            case "text":
+                return <ConsoleTextItem {...this.props}/>;
+            case "code":
+                return <ConsoleCodeItem {...this.props}/>;
+            case "fixed":
+                return <LogItem {...this.props}/>;
+            case "divider":
+                return <DividerItem {...this.props}/>;
+            default:
+                return null
         }
-        return null
     }
 }
 
 const SSuperItem = MySortableElement(SuperItem);
+
+
+const divider_item_update_props = ["am_shrunk", "am_selected", "header_text", "console_available_width"];
+
+class RawDividerItem extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this, "_", RawDividerItem.prototype);
+        this.update_props = divider_item_update_props;
+        this.update_state_vars = [];
+        this.state = {};
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        for (let prop of this.update_props) {
+            if (nextProps[prop] != this.props[prop]) {
+                return true
+            }
+        }
+        return false
+    }
+
+    _toggleShrink() {
+        this.props.setConsoleItemValue(this.props.unique_id, "am_shrunk", !this.props.am_shrunk);
+    }
+
+    _deleteMe() {
+        this.props.handleDelete(this.props.unique_id)
+    }
+
+    _handleHeaderTextChange(value) {
+        this.props.setConsoleItemValue(this.props.unique_id, "header_text", value)
+    }
+
+    _copyMe() {
+        this.props.copyCell(this.props.unique_id)
+    }
+
+    _pasteCell() {
+        this.props.pasteCell(this.props.unique_id)
+    }
+
+    _selectMe(e=null, callback=null) {
+        this.props.selectConsoleItem(this.props.unique_id, e, callback)
+    }
+
+    _addBlankText() {
+        let self = this;
+        this._selectMe(null, ()=>{
+            self.props.addNewTextItem()
+        })
+    }
+
+    _addBlankDivider() {
+        let self = this;
+        this._selectMe(null, ()=>{
+            self.props.addNewDividerItem()
+        })
+    }
+
+    _addBlankCode() {
+        let self = this;
+        this._selectMe(null,()=>{
+            self.props.addNewCodeItem()
+        })
+    }
+
+    renderContextMenu() {
+        // return a single element, or nothing to use default browser behavior
+        return (
+            <Menu>
+                <MenuItem icon="duplicate"
+                          onClick={this._copyMe}
+                          text="Copy Divider" />
+                <MenuItem icon="clipboard"
+                          onClick={this._pasteCell}
+                          text="Paste Divider" />
+                <Menu.Divider/>
+                <MenuItem icon="new-text-box"
+                           onClick={this._addBlankText}
+                           text="New Text Cell"/>
+                 <MenuItem icon="code"
+                           onClick={this._addBlankCode}
+                           text="New Code Cell"/>
+                <MenuItem icon="header"
+                           onClick={this._addBlankDivider}
+                           text="New Divider"/>
+                <Menu.Divider/>
+                <MenuItem icon="trash"
+                          onClick={this._deleteMe}
+                          intent="danger"
+                          text="Delete Divider" />
+            </Menu>
+        );
+    }
+    
+    _consoleItemClick(e) {
+        this._selectMe(e);
+        e.stopPropagation()
+    }
+
+    render () {
+        let converted_dict = {__html: this.props.console_text};
+        let panel_class = this.props.am_shrunk ? "log-panel log-panel-invisible fixed-log-panel" : "log-panel log-panel-visible fixed-log-panel";
+        if (this.props.am_selected) {
+            panel_class += " selected"
+        }
+        if (this.props.is_error) {
+            panel_class += " error-log-panel"
+        }
+        let body_width = this.props.console_available_width - BUTTON_CONSUMED_SPACE;
+        return (
+            <div className={panel_class + " d-flex flex-row"} onClick={this._consoleItemClick} id={this.props.unique_id} style={{marginBottom: 10}}>
+                <div className="button-div shrink-expand-div d-flex flex-row">
+                    <Shandle/>
+                        {!this.props.am_shrunk &&
+                            <GlyphButton icon="chevron-down"
+                                         handleClick={this._toggleShrink}/>
+                        }
+                        {this.props.am_shrunk &&
+                            <GlyphButton icon="chevron-right"
+                                         style={{marginTop: 5}}
+                                         handleClick={this._toggleShrink}/>
+                        }
+                </div>
+                <EditableText value={this.props.header_text}
+                             onChange={this._handleHeaderTextChange}
+                             className="console-divider-text"/>
+                <div className="button-div d-flex flex-row">
+                     <GlyphButton handleClick={this._deleteMe}
+                                  intent="danger"
+                                  tooltip="Delete this item"
+                                  style={{marginLeft: 10, marginRight: 66, minHeight: 0}}
+                                  icon="trash"/>
+                </div>
+            </div>
+        )
+    }
+}
+
+const DividerItem = ContextMenuTarget(RawDividerItem);
 
 const log_item_update_props = ["is_error", "am_shrunk", "am_selected", "summary_text", "console_text", "console_available_width"];
 
@@ -1217,6 +1391,13 @@ class RawLogItem extends React.Component {
         })
     }
 
+    _addBlankDivider() {
+        let self = this;
+        this._selectMe(null, ()=>{
+            self.props.addNewDividerItem()
+        })
+    }
+
     _addBlankCode() {
         let self = this;
         this._selectMe(null,()=>{
@@ -1241,6 +1422,9 @@ class RawLogItem extends React.Component {
                  <MenuItem icon="code"
                            onClick={this._addBlankCode}
                            text="New Code Cell"/>
+                <MenuItem icon="header"
+                           onClick={this._addBlankDivider}
+                           text="New Divider"/>
                 <Menu.Divider/>
                 <MenuItem icon="trash"
                           onClick={this._deleteMe}
@@ -1507,6 +1691,13 @@ class RawConsoleCodeItem extends React.Component {
             self.props.addNewTextItem()
         })
     }
+
+    _addBlankDivider() {
+        let self = this;
+        this._selectMe(null, ()=>{
+            self.props.addNewDividerItem()
+        })
+    }
     
     _addBlankCode() {
         let self = this;
@@ -1538,6 +1729,9 @@ class RawConsoleCodeItem extends React.Component {
                  <MenuItem icon="code"
                            onClick={this._addBlankCode}
                            text="New Code Cell"/>
+                <MenuItem icon="header"
+                           onClick={this._addBlankDivider}
+                           text="New Divider"/>
                 <Menu.Divider/>
                 <MenuItem icon="duplicate"
                           onClick={this._copyMe}
@@ -1679,6 +1873,7 @@ RawConsoleCodeItem.propTypes = {
     handleDelete: PropTypes.func,
     addNewTextItem: PropTypes.func,
     addNewCodeItem: PropTypes.func,
+    addNewDividerItem: PropTypes.func,
     goToNextCell: PropTypes.func,
     setFocus: PropTypes.func,
     runCodeItem: PropTypes.func
@@ -1928,6 +2123,13 @@ class RawConsoleTextItem extends React.Component {
         })
     }
 
+    _addBlankDivider() {
+        let self = this;
+        this._selectMe(null, ()=>{
+            self.props.addNewDividerItem()
+        })
+    }
+
     _addBlankCode() {
         let self = this;
         this._selectMe(null,()=>{
@@ -1950,6 +2152,9 @@ class RawConsoleTextItem extends React.Component {
                  <MenuItem icon="code"
                            onClick={this._addBlankCode}
                            text="New Code Cell"/>
+                <MenuItem icon="header"
+                           onClick={this._addBlankDivider}
+                           text="New Divider"/>
                 <Menu.Divider/>
                 <MenuItem icon="link"
                           onClick={this._insertResourceLink}

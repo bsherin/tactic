@@ -339,6 +339,18 @@ body {
     }
 }
 
+.console-divider-text {
+    font-size: 18px;
+    margin-left: 15px;
+    margin-top: 7px;
+    margin-bottom: 5px;
+    font-weight: 700
+}
+
+.console-divider-divider {
+    width: 100%
+}
+
 .log-panel-summary {
     padding: 5px 15px;
     border: 1px solid #c7c7c7 !important;

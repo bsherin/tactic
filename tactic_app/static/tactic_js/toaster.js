@@ -61,6 +61,15 @@ var intent_dict = {
 function doFlash(data) {
   var intent;
 
+  if (typeof data == "string") {
+    AppToaster.show({
+      message: data,
+      timeout: DEFAULT_TIMEOUT,
+      intent: null
+    });
+    return;
+  }
+
   if (!("alert_type" in data)) {
     intent = null;
   } else {
