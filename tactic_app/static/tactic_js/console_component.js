@@ -51,17 +51,17 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "d
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
+function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
 function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
 
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
-
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
@@ -262,6 +262,79 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
     // }
 
   }, {
+    key: "_getSectionIds",
+    value: function _getSectionIds(unique_id) {
+      var cindex = this._consoleItemIndex(unique_id);
+
+      var id_list = [unique_id];
+
+      for (var i = cindex + 1; i < this.props.console_items.length; ++i) {
+        var entry = this.props.console_items[i];
+
+        if (entry.type == "divider") {
+          break;
+        } else {
+          id_list.push(entry.unique_id);
+        }
+      }
+
+      return id_list;
+    }
+  }, {
+    key: "_deleteSection",
+    value: function _deleteSection() {
+      var _this3 = this;
+
+      var unique_id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+
+      if (!unique_id) {
+        if (this.state.all_selected_items.length != 1) {
+          return;
+        }
+
+        unique_id = this.state.all_selected_items[0];
+        var entry = this.get_console_item_entry(unique_id);
+
+        if (entry.type != "divider") {
+          return;
+        }
+      }
+
+      var id_list = this._getSectionIds(unique_id);
+
+      var cindex = this._consoleItemIndex(unique_id);
+
+      var new_console_items = _toConsumableArray(this.props.console_items);
+
+      new_console_items.splice(cindex, id_list.length);
+
+      this._clear_all_selected_items(function () {
+        _this3.props.setMainStateValue("console_items", new_console_items);
+      });
+    }
+  }, {
+    key: "_copySection",
+    value: function _copySection() {
+      var unique_id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+
+      if (!unique_id) {
+        if (this.state.all_selected_items.length != 1) {
+          return;
+        }
+
+        unique_id = this.state.all_selected_items[0];
+        var entry = this.get_console_item_entry(unique_id);
+
+        if (entry.type != "divider") {
+          return;
+        }
+      }
+
+      var id_list = this._getSectionIds(unique_id);
+
+      this._copyItems(id_list);
+    }
+  }, {
     key: "_copyCell",
     value: function _copyCell() {
       var unique_id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
@@ -277,6 +350,11 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
         id_list = [unique_id];
       }
 
+      this._copyItems(id_list);
+    }
+  }, {
+    key: "_copyItems",
+    value: function _copyItems(id_list) {
       var entry_list = [];
 
       var _iterator = _createForOfIteratorHelper(id_list),
@@ -305,7 +383,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
   }, {
     key: "_pasteCell",
     value: function _pasteCell() {
-      var _this3 = this;
+      var _this4 = this;
 
       var unique_id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
       var self = this;
@@ -315,7 +393,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
         if (!data.success) {
           (0, _toaster.doFlash)(data);
         } else {
-          _this3._addConsoleEntries(data.console_items, true, false, unique_id);
+          _this4._addConsoleEntries(data.console_items, true, false, unique_id);
         }
       }, null, self.props.main_id);
     }
@@ -927,23 +1005,23 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
   }, {
     key: "_goToNextCell",
     value: function _goToNextCell(unique_id) {
-      var _this4 = this;
+      var _this5 = this;
 
       var next_index = this._consoleItemIndex(unique_id) + 1;
 
       var _loop = function _loop() {
-        var next_id = _this4.props.console_items[next_index].unique_id;
-        var next_item = _this4.props.console_items[next_index];
+        var next_id = _this5.props.console_items[next_index].unique_id;
+        var next_item = _this5.props.console_items[next_index];
 
         if (!next_item.am_shrunk && (next_item.type == "code" || next_item.type == "text" && !next_item.show_markdown)) {
           if (!next_item.show_on_filtered) {
-            _this4.setState({
+            _this5.setState({
               filter_console_items: false
             }, function () {
-              _this4._setConsoleItemValue(next_id, "set_focus", true);
+              _this5._setConsoleItemValue(next_id, "set_focus", true);
             });
           } else {
-            _this4._setConsoleItemValue(next_id, "set_focus", true);
+            _this5._setConsoleItemValue(next_id, "set_focus", true);
           }
 
           return {
@@ -967,7 +1045,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
   }, {
     key: "_deleteSelected",
     value: function _deleteSelected() {
-      var _this5 = this;
+      var _this6 = this;
 
       if (this._are_selected()) {
         var new_console_items = [];
@@ -990,14 +1068,14 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
         }
 
         this._clear_all_selected_items(function () {
-          _this5.props.setMainStateValue("console_items", new_console_items);
+          _this6.props.setMainStateValue("console_items", new_console_items);
         });
       }
     }
   }, {
     key: "_closeConsoleItem",
     value: function _closeConsoleItem(unique_id) {
-      var _this6 = this;
+      var _this7 = this;
 
       var cindex = this._consoleItemIndex(unique_id);
 
@@ -1006,7 +1084,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       new_console_items.splice(cindex, 1);
 
       this._dselectOneItem(unique_id, function () {
-        _this6.props.setMainStateValue("console_items", new_console_items);
+        _this7.props.setMainStateValue("console_items", new_console_items);
       });
     }
   }, {
@@ -1114,7 +1192,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
   }, {
     key: "renderContextMenu",
     value: function renderContextMenu() {
-      var _this7 = this;
+      var _this8 = this;
 
       // return a single element, or nothing to use default browser behavior
       return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
@@ -1128,13 +1206,13 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "header",
         onClick: this._addBlankDivider,
-        text: "New Divider"
+        text: "New Section Divider"
       }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "clipboard",
         onClick: function onClick() {
-          _this7._pasteCell();
+          _this8._pasteCell();
         },
-        text: "Paste Cell"
+        text: "Paste Cells"
       }), /*#__PURE__*/_react["default"].createElement(_core.Menu.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "reset",
         onClick: this._resetConsole,
@@ -1166,13 +1244,13 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
   }, {
     key: "_handleSearchFieldChange",
     value: function _handleSearchFieldChange(event) {
-      var _this8 = this;
+      var _this9 = this;
 
       if (this.state.search_helper_text) {
         this.setState({
           "search_helper_text": null
         }, function () {
-          _this8._setSearchString(event.target.value);
+          _this9._setSearchString(event.target.value);
         });
       } else {
         this._setSearchString(event.target.value);
@@ -1186,7 +1264,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
   }, {
     key: "_setSearchString",
     value: function _setSearchString(val) {
-      var _this9 = this;
+      var _this10 = this;
 
       var self = this;
       var nval = val == "" ? null : val;
@@ -1195,7 +1273,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
         search_string: nval
       }, function () {
         if (self._are_selected()) {
-          var _iterator10 = _createForOfIteratorHelper(_this9.state.all_selected_items),
+          var _iterator10 = _createForOfIteratorHelper(_this10.state.all_selected_items),
               _step10;
 
           try {
@@ -1204,7 +1282,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
               replace_dicts.push({
                 unique_id: uid,
                 field: "search_string",
-                value: _this9.state.search_string
+                value: _this10.state.search_string
               });
             }
           } catch (err) {
@@ -1213,26 +1291,26 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
             _iterator10.f();
           }
 
-          _this9._multiple_console_item_updates(replace_dicts);
+          _this10._multiple_console_item_updates(replace_dicts);
         }
       });
     }
   }, {
     key: "_handleUnFilter",
     value: function _handleUnFilter() {
-      var _this10 = this;
+      var _this11 = this;
 
       this.setState({
         filter_console_items: false,
         search_helper_text: null
       }, function () {
-        _this10._setSearchString(null);
+        _this11._setSearchString(null);
       });
     }
   }, {
     key: "_handleFilter",
     value: function _handleFilter() {
-      var _this11 = this;
+      var _this12 = this;
 
       var new_console_items = _toConsumableArray(this.props.console_items);
 
@@ -1256,7 +1334,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       }
 
       this.props.setMainStateValue("console_items", new_console_items, function () {
-        _this11.setState({
+        _this12.setState({
           filter_console_items: true
         });
       });
@@ -1264,7 +1342,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
   }, {
     key: "_searchNext",
     value: function _searchNext() {
-      var _this12 = this;
+      var _this13 = this;
 
       var current_index;
       var self = this;
@@ -1276,15 +1354,15 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       }
 
       var _loop2 = function _loop2() {
-        var entry = _this12.props.console_items[current_index];
+        var entry = _this13.props.console_items[current_index];
 
         if (entry.type == "code" || entry.type == "text") {
-          if (_this12._selectIfMatching(entry, "console_text", function () {
+          if (_this13._selectIfMatching(entry, "console_text", function () {
             if (entry.type == "text") {
               self._setConsoleItemValue(entry.unique_id, "show_markdown", false);
             }
           })) {
-            _this12.setState({
+            _this13.setState({
               "search_helper_text": null
             });
 
@@ -1330,7 +1408,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
   }, {
     key: "_searchPrevious",
     value: function _searchPrevious() {
-      var _this13 = this;
+      var _this14 = this;
 
       var current_index;
       var self = this;
@@ -1342,15 +1420,15 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       }
 
       var _loop3 = function _loop3() {
-        var entry = _this13.props.console_items[current_index];
+        var entry = _this14.props.console_items[current_index];
 
         if (entry.type == "code" || entry.type == "text") {
-          if (_this13._selectIfMatching(entry, "console_text", function () {
+          if (_this14._selectIfMatching(entry, "console_text", function () {
             if (entry.type == "text") {
               self._setConsoleItemValue(entry.unique_id, "show_markdown", false);
             }
           })) {
-            _this13.setState({
+            _this14.setState({
               "search_helper_text": null
             });
 
@@ -1401,7 +1479,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
           click_handler: this._addBlankCode,
           key_bindings: ["ctrl+c"]
         }, {
-          name_text: "Add Divider",
+          name_text: "Section Divider",
           icon_name: "header",
           click_handler: this._addBlankDivider
         }, {
@@ -1427,6 +1505,26 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
           click_handler: function click_handler() {
             self._deleteSelected();
           }
+        }, {
+          name_text: "divider1",
+          icon_name: null,
+          click_handler: "divider"
+        }, {
+          name_text: "Copy Section",
+          icon_name: "duplicate",
+          click_handler: function click_handler() {
+            self._copySection();
+          }
+        }, {
+          name_text: "Delete Section",
+          icon_name: "trash",
+          click_handler: function click_handler() {
+            self._deleteSection();
+          }
+        }, {
+          name_text: "divider2",
+          icon_name: null,
+          click_handler: "divider"
         }, {
           name_text: "Clear Log",
           icon_name: "trash",
@@ -1475,6 +1573,18 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
 
       if (!this._are_selected() || this.state.all_selected_items.length != 1) {
         items.push("Run Selected");
+        items.push("Copy Section");
+        items.push("Delete Section");
+      }
+
+      if (this.state.all_selected_items.length == 1) {
+        var unique_id = this.state.all_selected_items[0];
+        var entry = this.get_console_item_entry(unique_id);
+
+        if (entry.type != "divider") {
+          items.push("Copy Section");
+          items.push("Delete Section");
+        }
       }
 
       if (!this._are_selected()) {
@@ -1536,7 +1646,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
   }, {
     key: "render",
     value: function render() {
-      var _this14 = this;
+      var _this15 = this;
 
       var gbstyle = {
         marginLeft: 1,
@@ -1562,7 +1672,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       }
 
       var key_bindings = [[["escape"], function () {
-        _this14._clear_all_selected_items();
+        _this15._clear_all_selected_items();
       }]];
       var filtered_items = [];
       var in_closed_section = false;
@@ -1756,6 +1866,8 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
         addNewDividerItem: this._addBlankDivider,
         copyCell: this._copyCell,
         pasteCell: this._pasteCell,
+        copySection: this._copySection,
+        deleteSection: this._deleteSection,
         insertResourceLink: this._insertResourceLink,
         useDragHandle: true,
         dark_theme: this.props.dark_theme,
@@ -1872,16 +1984,16 @@ var RawDividerItem = /*#__PURE__*/function (_React$Component) {
   var _super4 = _createSuper(RawDividerItem);
 
   function RawDividerItem(props) {
-    var _this15;
+    var _this16;
 
     _classCallCheck(this, RawDividerItem);
 
-    _this15 = _super4.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this15), "_", RawDividerItem.prototype);
-    _this15.update_props = divider_item_update_props;
-    _this15.update_state_vars = [];
-    _this15.state = {};
-    return _this15;
+    _this16 = _super4.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this16), "_", RawDividerItem.prototype);
+    _this16.update_props = divider_item_update_props;
+    _this16.update_state_vars = [];
+    _this16.state = {};
+    return _this16;
   }
 
   _createClass(RawDividerItem, [{
@@ -1925,6 +2037,16 @@ var RawDividerItem = /*#__PURE__*/function (_React$Component) {
     key: "_copyMe",
     value: function _copyMe() {
       this.props.copyCell(this.props.unique_id);
+    }
+  }, {
+    key: "_copySection",
+    value: function _copySection() {
+      this.props.copySection(this.props.unique_id);
+    }
+  }, {
+    key: "_deleteSection",
+    value: function _deleteSection() {
+      this.props.deleteSection(this.props.unique_id);
     }
   }, {
     key: "_pasteCell",
@@ -1974,9 +2096,13 @@ var RawDividerItem = /*#__PURE__*/function (_React$Component) {
         onClick: this._copyMe,
         text: "Copy Divider"
       }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+        icon: "duplicate",
+        onClick: this._copySection,
+        text: "Copy Section"
+      }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "clipboard",
         onClick: this._pasteCell,
-        text: "Paste Divider"
+        text: "Paste Cells"
       }), /*#__PURE__*/_react["default"].createElement(_core.Menu.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "new-text-box",
         onClick: this._addBlankText,
@@ -1988,12 +2114,17 @@ var RawDividerItem = /*#__PURE__*/function (_React$Component) {
       }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "header",
         onClick: this._addBlankDivider,
-        text: "New Divider"
+        text: "New Section Divider"
       }), /*#__PURE__*/_react["default"].createElement(_core.Menu.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "trash",
         onClick: this._deleteMe,
         intent: "danger",
         text: "Delete Divider"
+      }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+        icon: "trash",
+        onClick: this._deleteSection,
+        intent: "danger",
+        text: "Delete Whole Section"
       }));
     }
   }, {
@@ -2070,20 +2201,20 @@ var RawLogItem = /*#__PURE__*/function (_React$Component2) {
   var _super5 = _createSuper(RawLogItem);
 
   function RawLogItem(props) {
-    var _this16;
+    var _this17;
 
     _classCallCheck(this, RawLogItem);
 
-    _this16 = _super5.call(this, props);
-    _this16.ce_summary0ref = /*#__PURE__*/_react["default"].createRef();
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this16), "_", RawLogItem.prototype);
-    _this16.update_props = log_item_update_props;
-    _this16.update_state_vars = [];
-    _this16.state = {
+    _this17 = _super5.call(this, props);
+    _this17.ce_summary0ref = /*#__PURE__*/_react["default"].createRef();
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this17), "_", RawLogItem.prototype);
+    _this17.update_props = log_item_update_props;
+    _this17.update_state_vars = [];
+    _this17.state = {
       selected: false
     };
-    _this16.last_output_text = "";
-    return _this16;
+    _this17.last_output_text = "";
+    return _this17;
   }
 
   _createClass(RawLogItem, [{
@@ -2235,7 +2366,7 @@ var RawLogItem = /*#__PURE__*/function (_React$Component2) {
       }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "clipboard",
         onClick: this._pasteCell,
-        text: "Paste Cell"
+        text: "Paste Cells"
       }), /*#__PURE__*/_react["default"].createElement(_core.Menu.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "new-text-box",
         onClick: this._addBlankText,
@@ -2247,7 +2378,7 @@ var RawLogItem = /*#__PURE__*/function (_React$Component2) {
       }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "header",
         onClick: this._addBlankDivider,
-        text: "New Divider"
+        text: "New Section Divider"
       }), /*#__PURE__*/_react["default"].createElement(_core.Menu.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "trash",
         onClick: this._deleteMe,
@@ -2364,19 +2495,19 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component3) {
   var _super6 = _createSuper(RawConsoleCodeItem);
 
   function RawConsoleCodeItem(props) {
-    var _this17;
+    var _this18;
 
     _classCallCheck(this, RawConsoleCodeItem);
 
-    _this17 = _super6.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this17), "_", RawConsoleCodeItem.prototype);
-    _this17.cmobject = null;
-    _this17.elRef = /*#__PURE__*/_react["default"].createRef();
-    _this17.update_props = code_item_update_props;
-    _this17.update_state_vars = [];
-    _this17.state = {};
-    _this17.last_output_text = "";
-    return _this17;
+    _this18 = _super6.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this18), "_", RawConsoleCodeItem.prototype);
+    _this18.cmobject = null;
+    _this18.elRef = /*#__PURE__*/_react["default"].createRef();
+    _this18.update_props = code_item_update_props;
+    _this18.update_state_vars = [];
+    _this18.state = {};
+    _this18.last_output_text = "";
+    return _this18;
   }
 
   _createClass(RawConsoleCodeItem, [{
@@ -2404,7 +2535,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this18 = this;
+      var _this19 = this;
 
       if (this.props.set_focus) {
         if (this.cmobject != null) {
@@ -2422,7 +2553,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component3) {
 
       if (this.cmobject != null) {
         this.cmobject.on("focus", function () {
-          self.props.setFocus(_this18.props.unique_id, self._selectMe);
+          self.props.setFocus(_this19.props.unique_id, self._selectMe);
         });
         this.cmobject.on("blur", function () {
           self.props.setFocus(null);
@@ -2572,15 +2703,15 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "_extraKeys",
     value: function _extraKeys() {
-      var _this19 = this;
+      var _this20 = this;
 
       var self = this;
       return {
         'Ctrl-Enter': function CtrlEnter() {
-          return self.props.runCodeItem(_this19.props.unique_id, true);
+          return self.props.runCodeItem(_this20.props.unique_id, true);
         },
         'Cmd-Enter': function CmdEnter() {
-          return self.props.runCodeItem(_this19.props.unique_id, true);
+          return self.props.runCodeItem(_this20.props.unique_id, true);
         },
         'Ctrl-C': self.props.addNewCodeItem,
         'Ctrl-T': self.props.addNewTextItem
@@ -2649,14 +2780,14 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "renderContextMenu",
     value: function renderContextMenu() {
-      var _this20 = this;
+      var _this21 = this;
 
       // return a single element, or nothing to use default browser behavior
       return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, !this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "play",
         intent: "success",
         onClick: function onClick() {
-          _this20.props.runCodeItem(_this20.props.unique_id);
+          _this21.props.runCodeItem(_this21.props.unique_id);
         },
         text: "Run Cell"
       }), this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
@@ -2675,7 +2806,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component3) {
       }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "header",
         onClick: this._addBlankDivider,
-        text: "New Divider"
+        text: "New Section Divider"
       }), /*#__PURE__*/_react["default"].createElement(_core.Menu.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "duplicate",
         onClick: this._copyMe,
@@ -2683,7 +2814,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component3) {
       }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "clipboard",
         onClick: this._pasteCell,
-        text: "Paste Cell"
+        text: "Paste Cells"
       }), /*#__PURE__*/_react["default"].createElement(_core.Menu.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "trash",
         onClick: this._deleteMe,
@@ -2693,7 +2824,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component3) {
         icon: "clean",
         intent: "warning",
         onClick: function onClick() {
-          _this20._clearOutput();
+          _this21._clearOutput();
         },
         text: "Clear Output"
       }));
@@ -2708,7 +2839,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "render",
     value: function render() {
-      var _this21 = this;
+      var _this22 = this;
 
       var panel_style = this.props.am_shrunk ? "log-panel log-panel-invisible" : "log-panel log-panel-visible";
 
@@ -2762,7 +2893,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component3) {
         className: "button-div d-flex pr-1"
       }, !this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
         handleClick: function handleClick() {
-          _this21.props.runCodeItem(_this21.props.unique_id);
+          _this22.props.runCodeItem(_this22.props.unique_id);
         },
         intent: "success",
         tooltip: "Execute this item",
@@ -2796,7 +2927,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component3) {
         icon: "trash"
       }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
         handleClick: function handleClick() {
-          _this21._clearOutput();
+          _this22._clearOutput();
         },
         intent: "warning",
         tooltip: "Clear this item's output",
@@ -2855,20 +2986,20 @@ var ResourceLinkButton = /*#__PURE__*/function (_React$PureComponent4) {
   var _super7 = _createSuper(ResourceLinkButton);
 
   function ResourceLinkButton(props) {
-    var _this22;
+    var _this23;
 
     _classCallCheck(this, ResourceLinkButton);
 
-    _this22 = _super7.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this22));
-    _this22.my_view = (0, _library_pane.view_views)(false)[props.res_type];
+    _this23 = _super7.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this23));
+    _this23.my_view = (0, _library_pane.view_views)(false)[props.res_type];
 
     if (window.in_context) {
       var re = new RegExp("/$");
-      _this22.my_view = _this22.my_view.replace(re, "_in_context");
+      _this23.my_view = _this23.my_view.replace(re, "_in_context");
     }
 
-    return _this22;
+    return _this23;
   }
 
   _createClass(ResourceLinkButton, [{
@@ -2925,22 +3056,22 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component4) {
   var _super8 = _createSuper(RawConsoleTextItem);
 
   function RawConsoleTextItem(props) {
-    var _this23;
+    var _this24;
 
     _classCallCheck(this, RawConsoleTextItem);
 
-    _this23 = _super8.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this23), "_", RawConsoleTextItem.prototype);
-    _this23.cmobject = null;
-    _this23.elRef = /*#__PURE__*/_react["default"].createRef();
-    _this23.ce_summary_ref = /*#__PURE__*/_react["default"].createRef();
-    _this23.update_props = text_item_update_props;
-    _this23.update_state_vars = ["ce_ref"];
-    _this23.previous_dark_theme = props.dark_theme;
-    _this23.state = {
+    _this24 = _super8.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this24), "_", RawConsoleTextItem.prototype);
+    _this24.cmobject = null;
+    _this24.elRef = /*#__PURE__*/_react["default"].createRef();
+    _this24.ce_summary_ref = /*#__PURE__*/_react["default"].createRef();
+    _this24.update_props = text_item_update_props;
+    _this24.update_state_vars = ["ce_ref"];
+    _this24.previous_dark_theme = props.dark_theme;
+    _this24.state = {
       ce_ref: null
     };
-    return _this23;
+    return _this24;
   }
 
   _createClass(RawConsoleTextItem, [{
@@ -2990,7 +3121,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component4) {
   }, {
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this24 = this;
+      var _this25 = this;
 
       if (this.props.set_focus) {
         if (this.props.show_markdown) {
@@ -3009,7 +3140,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component4) {
 
       if (this.cmobject != null) {
         this.cmobject.on("focus", function () {
-          self.props.setFocus(_this24.props.unique_id, self._selectMe);
+          self.props.setFocus(_this25.props.unique_id, self._selectMe);
         });
         this.cmobject.on("blur", function () {
           self.props.setFocus(null);
@@ -3219,7 +3350,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component4) {
       }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "header",
         onClick: this._addBlankDivider,
-        text: "New Divider"
+        text: "New Section Divider"
       }), /*#__PURE__*/_react["default"].createElement(_core.Menu.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "link",
         onClick: this._insertResourceLink,
@@ -3231,7 +3362,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component4) {
       }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "clipboard",
         onClick: this._pasteCell,
-        text: "Paste Cell"
+        text: "Paste Cells"
       }), /*#__PURE__*/_react["default"].createElement(_core.Menu.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "trash",
         onClick: this._deleteMe,
@@ -3269,7 +3400,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component4) {
   }, {
     key: "render",
     value: function render() {
-      var _this25 = this;
+      var _this26 = this;
 
       var really_show_markdown = this.hasOnlyWhitespace && this.props.links.length == 0 ? false : this.props.show_markdown;
       var converted_markdown;
@@ -3297,7 +3428,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component4) {
         return /*#__PURE__*/_react["default"].createElement(ResourceLinkButton, {
           key: index,
           my_index: index,
-          handleCreateViewer: _this25.props.handleCreateViewer,
+          handleCreateViewer: _this26.props.handleCreateViewer,
           deleteMe: self._deleteLinkButton,
           res_type: link.res_type,
           res_name: link.res_name
