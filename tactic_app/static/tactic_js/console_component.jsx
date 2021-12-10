@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 
 import 'codemirror/mode/markdown/markdown.js'
 
-import { Icon, Card, EditableText, Spinner} from "@blueprintjs/core";
+import { Icon, Card, EditableText, Spinner, Divider} from "@blueprintjs/core";
 import { Menu, MenuItem, InputGroup, ButtonGroup, Button} from "@blueprintjs/core";
 import _ from 'lodash';
 
@@ -167,56 +167,6 @@ const BUTTON_CONSUMED_SPACE = 208;
      //     this._multiple_console_item_updates(replace_dicts)
      // }
 
-     _getSectionIds(unique_id) {
-         let cindex = this._consoleItemIndex(unique_id);
-         let id_list = [unique_id];
-         for (let i=cindex + 1; i < this.props.console_items.length; ++i) {
-             let entry = this.props.console_items[i];
-             if (entry.type == "divider") {
-                 break
-             }
-             else {
-                 id_list.push(entry.unique_id)
-             }
-         }
-         return id_list
-     }
-     
-     _deleteSection(unique_id=null) {
-         if (!unique_id) {
-             if (this.state.all_selected_items.length != 1) {
-                 return
-             }
-             unique_id = this.state.all_selected_items[0];
-             let entry = this.get_console_item_entry(unique_id);
-             if (entry.type != "divider") {
-                 return
-             }
-         }
-         let id_list = this._getSectionIds(unique_id);
-         let cindex = this._consoleItemIndex(unique_id);
-         let new_console_items = [...this.props.console_items];
-         new_console_items.splice(cindex, id_list.length);
-         this._clear_all_selected_items(()=>{
-             this.props.setMainStateValue("console_items", new_console_items);
-         })
-     }
-
-     _copySection(unique_id=null) {
-         if (!unique_id) {
-             if (this.state.all_selected_items.length != 1) {
-                 return
-             }
-             unique_id = this.state.all_selected_items[0];
-             let entry = this.get_console_item_entry(unique_id);
-             if (entry.type != "divider") {
-                 return
-             }
-         }
-         let id_list = this._getSectionIds(unique_id);
-        this._copyItems(id_list)
-     }
-
      _copyCell(unique_id = null) {
          let id_list;
          if (!unique_id) {
@@ -228,10 +178,6 @@ const BUTTON_CONSUMED_SPACE = 208;
          else {
              id_list = [unique_id]
          }
-         this._copyItems(id_list)
-     }
-
-     _copyItems(id_list) {
          let entry_list = [];
          for (let uid of id_list) {
              let entry = this.get_console_item_entry(uid);
@@ -739,12 +685,12 @@ const BUTTON_CONSUMED_SPACE = 208;
                            text="New Code Cell"/>
                  <MenuItem icon="header"
                            onClick={this._addBlankDivider}
-                           text="New Section Divider"/>
+                           text="New Divider"/>
                  <MenuItem icon="clipboard"
                            onClick={() => {
                                this._pasteCell()
                            }}
-                           text="Paste Cells"/>
+                           text="Paste Cell"/>
                  <Menu.Divider/>
                  <MenuItem icon="reset"
                            onClick={this._resetConsole}
@@ -907,15 +853,11 @@ const BUTTON_CONSUMED_SPACE = 208;
             Insert :[{name_text: "Text Cell", icon_name: "new-text-box", click_handler: this._addBlankText,
                 key_bindings: ["ctrl+t"]},
                    {name_text: "Code Cell", icon_name: "code", click_handler: this._addBlankCode, key_bindings: ["ctrl+c"]},
-                {name_text: "Section Divider", icon_name: "header", click_handler: this._addBlankDivider},
+                {name_text: "Add Divider", icon_name: "header", click_handler: this._addBlankDivider},
                    {name_text: "Resource Link", icon_name: "link", click_handler: this._insertResourceLink}],
             Edit: [{name_text: "Copy Selected", icon_name: "duplicate", click_handler: () => {self._copyCell()}},
                    {name_text: "Paste Cells", icon_name: "clipboard", click_handler: () => {self._pasteCell()}},
                     {name_text: "Delete Selected", icon_name: "trash", click_handler: () => {self._deleteSelected()}},
-                    {name_text: "divider1", icon_name: null, click_handler: "divider"},
-                    {name_text: "Copy Section", icon_name: "duplicate", click_handler: () => {self._copySection()}},
-                    {name_text: "Delete Section", icon_name: "trash", click_handler: () => {self._deleteSection()}},
-                    {name_text: "divider2", icon_name: null, click_handler: "divider"},
                    {name_text: "Clear Log", icon_name: "trash", click_handler: this._clearConsole}
             ],
             Execute: [{name_text: "Run Selected", icon_name: "play", click_handler: this._runSelected,
@@ -940,16 +882,6 @@ const BUTTON_CONSUMED_SPACE = 208;
          let items = [];
          if (!this._are_selected() || this.state.all_selected_items.length != 1) {
              items.push("Run Selected");
-             items.push("Copy Section");
-             items.push("Delete Section")
-         }
-         if (this.state.all_selected_items.length == 1) {
-             let unique_id = this.state.all_selected_items[0];
-             let entry = this.get_console_item_entry(unique_id);
-             if (entry.type != "divider") {
-                 items.push("Copy Section");
-                 items.push("Delete Section")
-             }
          }
          if (!this._are_selected()) {
             items.push("Copy Selected");
@@ -1159,8 +1091,6 @@ const BUTTON_CONSUMED_SPACE = 208;
                                                 addNewDividerItem={this._addBlankDivider}
                                                 copyCell={this._copyCell}
                                                 pasteCell={this._pasteCell}
-                                                copySection={this._copySection}
-                                                deleteSection={this._deleteSection}
                                                 insertResourceLink={this._insertResourceLink}
                                                 useDragHandle={true}
                                                 dark_theme={this.props.dark_theme}
@@ -1270,14 +1200,6 @@ class RawDividerItem extends React.Component {
     _copyMe() {
         this.props.copyCell(this.props.unique_id)
     }
-    
-    _copySection() {
-        this.props.copySection(this.props.unique_id)
-    }
-
-    _deleteSection() {
-        this.props.deleteSection(this.props.unique_id)
-    }
 
     _pasteCell() {
         this.props.pasteCell(this.props.unique_id)
@@ -1315,12 +1237,9 @@ class RawDividerItem extends React.Component {
                 <MenuItem icon="duplicate"
                           onClick={this._copyMe}
                           text="Copy Divider" />
-                <MenuItem icon="duplicate"
-                          onClick={this._copySection}
-                          text="Copy Section" />
                 <MenuItem icon="clipboard"
                           onClick={this._pasteCell}
-                          text="Paste Cells" />
+                          text="Paste Divider" />
                 <Menu.Divider/>
                 <MenuItem icon="new-text-box"
                            onClick={this._addBlankText}
@@ -1330,16 +1249,12 @@ class RawDividerItem extends React.Component {
                            text="New Code Cell"/>
                 <MenuItem icon="header"
                            onClick={this._addBlankDivider}
-                           text="New Section Divider"/>
+                           text="New Divider"/>
                 <Menu.Divider/>
                 <MenuItem icon="trash"
                           onClick={this._deleteMe}
                           intent="danger"
                           text="Delete Divider" />
-                <MenuItem icon="trash"
-                          onClick={this._deleteSection}
-                          intent="danger"
-                          text="Delete Whole Section" />
             </Menu>
         );
     }
@@ -1499,7 +1414,7 @@ class RawLogItem extends React.Component {
                           text="Copy Cell" />
                 <MenuItem icon="clipboard"
                           onClick={this._pasteCell}
-                          text="Paste Cells" />
+                          text="Paste Cell" />
                 <Menu.Divider/>
                 <MenuItem icon="new-text-box"
                            onClick={this._addBlankText}
@@ -1509,7 +1424,7 @@ class RawLogItem extends React.Component {
                            text="New Code Cell"/>
                 <MenuItem icon="header"
                            onClick={this._addBlankDivider}
-                           text="New Section Divider"/>
+                           text="New Divider"/>
                 <Menu.Divider/>
                 <MenuItem icon="trash"
                           onClick={this._deleteMe}
@@ -1816,14 +1731,14 @@ class RawConsoleCodeItem extends React.Component {
                            text="New Code Cell"/>
                 <MenuItem icon="header"
                            onClick={this._addBlankDivider}
-                           text="New Section Divider"/>
+                           text="New Divider"/>
                 <Menu.Divider/>
                 <MenuItem icon="duplicate"
                           onClick={this._copyMe}
                           text="Copy Cell" />
                 <MenuItem icon="clipboard"
                           onClick={this._pasteCell}
-                          text="Paste Cells" />
+                          text="Paste Cell" />
                 <Menu.Divider/>
                 <MenuItem icon="trash"
                           onClick={this._deleteMe}
@@ -2239,7 +2154,7 @@ class RawConsoleTextItem extends React.Component {
                            text="New Code Cell"/>
                 <MenuItem icon="header"
                            onClick={this._addBlankDivider}
-                           text="New Section Divider"/>
+                           text="New Divider"/>
                 <Menu.Divider/>
                 <MenuItem icon="link"
                           onClick={this._insertResourceLink}
@@ -2249,7 +2164,7 @@ class RawConsoleTextItem extends React.Component {
                           text="Copy Cell" />
                 <MenuItem icon="clipboard"
                           onClick={this._pasteCell}
-                          text="Paste Cells" />
+                          text="Paste Cell" />
                 <Menu.Divider/>
                 <MenuItem icon="trash"
                           onClick={this._deleteMe}
