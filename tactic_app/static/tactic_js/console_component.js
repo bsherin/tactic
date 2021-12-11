@@ -1703,6 +1703,8 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       }
 
       if (this.state.filter_console_items) {
+        var new_filtered_items = [];
+
         var _iterator13 = _createForOfIteratorHelper(filtered_items),
             _step13;
 
@@ -1711,7 +1713,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
             var entry = _step13.value;
 
             if (entry.show_on_filtered) {
-              filtered_items.push(entry);
+              new_filtered_items.push(entry);
             }
           }
         } catch (err) {
@@ -1719,6 +1721,8 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
         } finally {
           _iterator13.f();
         }
+
+        filtered_items = new_filtered_items;
       }
 
       return /*#__PURE__*/_react["default"].createElement(_core.Card, {
