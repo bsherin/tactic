@@ -1030,12 +1030,15 @@ const BUTTON_CONSUMED_SPACE = 208;
              }
 
          }
+
          if (this.state.filter_console_items) {
+             let new_filtered_items = [];
              for (let entry of filtered_items) {
                  if (entry.show_on_filtered) {
-                     filtered_items.push(entry)
+                     new_filtered_items.push(entry)
                  }
              }
+             filtered_items = new_filtered_items;
          }
 
          return (
