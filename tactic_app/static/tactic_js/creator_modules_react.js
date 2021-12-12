@@ -325,7 +325,7 @@ var OptionModuleForm = /*#__PURE__*/function (_React$Component) {
       }), this.taggable_types.includes(this.props.form_state.type) && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.LabeledFormField, {
         label: "Tag",
         onChange: this.handleTagChange,
-        the_value: this.props.form_state.tag
+        the_value: this.props.form_state.tags
       }), /*#__PURE__*/_react["default"].createElement(_core.Button, {
         style: {
           height: "fit-content",

@@ -179,7 +179,7 @@ class OptionModuleForm extends React.Component {
                                          onChange={this.handleSpecialListChange}
                                          the_value={arrayToTextRows(this.props.form_state.special_list)}/>}
                     {this.taggable_types.includes(this.props.form_state.type) &&
-                        <LabeledFormField label="Tag" onChange={this.handleTagChange} the_value={this.props.form_state.tag}/>
+                        <LabeledFormField label="Tag" onChange={this.handleTagChange} the_value={this.props.form_state.tags}/>
                     }
 
                     <Button style={{height: "fit-content", alignSelf: "start", marginTop: 23, marginLeft: 5}}
