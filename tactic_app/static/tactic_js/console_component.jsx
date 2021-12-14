@@ -231,6 +231,15 @@ const BUTTON_CONSUMED_SPACE = 208;
          this._copyItems(id_list)
      }
 
+     _copyAll() {
+         const result_dict = {
+             "main_id": this.props.main_id,
+             "console_items": this.props.console_items,
+             "user_id": window.user_id,
+         };
+         postWithCallback("host", "copy_console_cells", result_dict, null, null, this.props.main_id);
+     }
+
      _copyItems(id_list) {
          let entry_list = [];
          for (let uid of id_list) {
@@ -344,8 +353,10 @@ const BUTTON_CONSUMED_SPACE = 208;
          const confirm_text = "Are you sure that you want to erase everything in this log?";
          let self = this;
          showConfirmDialogReact("Clear entire log", confirm_text, "do nothing", "clear", function () {
-             self.props.setMainStateValue("console_items", []);
-         });
+             self.setState({all_selected_items: []}, ()=>{
+                 self.props.setMainStateValue("console_items", [])
+             })
+         })
      }
 
      _toggleConsoleLog() {
@@ -590,9 +601,12 @@ const BUTTON_CONSUMED_SPACE = 208;
          })
     }
 
-     _consoleItemIndex(unique_id) {
+     _consoleItemIndex(unique_id, console_items=null) {
          let counter = 0;
-         for (let entry of this.props.console_items) {
+         if (console_items == null) {
+             console_items = this.props.console_items
+         }
+         for (let entry of console_items) {
              if (entry.unique_id == unique_id) {
                  return counter
              }
@@ -601,12 +615,83 @@ const BUTTON_CONSUMED_SPACE = 208;
          return -1
      }
 
-     _resortConsoleItems({oldIndex, newIndex}) {
-         let old_console_items = [...this.props.console_items];
-         let new_console_items = arrayMove(old_console_items, oldIndex, newIndex);
+     _moveSection({oldIndex, newIndex}, filtered_items) {
+         let above_entry;
+         if (newIndex > oldIndex) {
+             above_entry = filtered_items[newIndex]
+         }
+         else {
+             above_entry = filtered_items[newIndex - 1];
+         }
+         let move_entry = filtered_items[oldIndex];
+         let move_index = this._consoleItemIndex(move_entry.unique_id);
+         let section_ids = this._getSectionIds(move_entry.unique_id);
+         let the_section = _.cloneDeep(this.props.console_items.slice(move_index, move_index + section_ids.length));
+         let new_console_items = [...this.props.console_items];
+        new_console_items.splice(move_index, section_ids.length);
+
+        let new_index;
+        if (newIndex == 0) {
+            new_index = 0
+        }
+        else if (above_entry.type == "divider" && above_entry.am_shrunk) {
+            let uid = above_entry.unique_id;
+            new_index = this._consoleItemIndex(uid, new_console_items) + this._getSectionIds(uid).length;
+        }
+        else {
+            new_index = this._consoleItemIndex(above_entry.unique_id, new_console_items) + 1;
+        }
+        new_console_items.splice(new_index, 0, ...the_section);
+        this.props.setMainStateValue("console_items", new_console_items)
+     }
+
+     _moveEntryAfterEntry(move_id, above_id) {
+         let new_console_items = [...this.props.console_items];
+         let move_entry = _.cloneDeep(this.get_console_item_entry(move_id));
+         new_console_items.splice(this._consoleItemIndex(move_id), 1);
+         let target_index;
+         if (above_id == null) {
+            target_index = 0
+         }
+         else {
+             target_index = this._consoleItemIndex(above_id, new_console_items) + 1;
+         }
+         new_console_items.splice(target_index, 0, move_entry);
          this.props.setMainStateValue("console_items", new_console_items)
      }
 
+     _resortConsoleItems({oldIndex, newIndex}, filtered_items) {
+         let self = this;
+         if (oldIndex == newIndex) return;
+         let move_entry = filtered_items[oldIndex];
+         if (move_entry.type == "divider" && move_entry.am_shrunk) {
+             this._moveSection({oldIndex, newIndex}, filtered_items);
+             return
+         }
+         let trueOldIndex = this._consoleItemIndex(move_entry.unique_id);
+         let trueNewIndex;
+         let above_entry;
+         if (newIndex == 0) {
+            above_entry = null
+         }
+         else {
+             if (newIndex > oldIndex) {
+                 above_entry = filtered_items[newIndex]
+             }
+             else {
+                 above_entry = filtered_items[newIndex - 1];
+             }
+             if (above_entry.type == "divider" && above_entry.am_shrunk) {
+                this._setConsoleItemValue(above_entry.unique_id, "am_shrunk", false, ()=>{
+                    let lastIdInSection = _.last(this._getSectionIds(above_entry.unique_id));
+                    self._moveEntryAfterEntry(move_entry.unique_id, lastIdInSection)
+                });
+                return
+             }
+         }
+         let target_id = above_entry == null ? null : above_entry.unique_id;
+         this._moveEntryAfterEntry(move_entry.unique_id, target_id)
+     }
 
      _goToNextCell(unique_id) {
          let next_index = this._consoleItemIndex(unique_id) + 1;
@@ -644,12 +729,12 @@ const BUTTON_CONSUMED_SPACE = 208;
          }
      }
 
-     _closeConsoleItem(unique_id) {
+     _closeConsoleItem(unique_id, callback=null) {
          let cindex = this._consoleItemIndex(unique_id);
          let new_console_items = [...this.props.console_items];
          new_console_items.splice(cindex, 1);
          this._dselectOneItem(unique_id,()=>{
-             this.props.setMainStateValue("console_items", new_console_items);
+             this.props.setMainStateValue("console_items", new_console_items, callback);
         })
      }
 
@@ -909,7 +994,8 @@ const BUTTON_CONSUMED_SPACE = 208;
                    {name_text: "Code Cell", icon_name: "code", click_handler: this._addBlankCode, key_bindings: ["ctrl+c"]},
                 {name_text: "Section Divider", icon_name: "header", click_handler: this._addBlankDivider},
                    {name_text: "Resource Link", icon_name: "link", click_handler: this._insertResourceLink}],
-            Edit: [{name_text: "Copy Selected", icon_name: "duplicate", click_handler: () => {self._copyCell()}},
+            Edit: [{name_text: "Copy All", icon_name: "duplicate", click_handler: () => {self._copyAll()}},
+                    {name_text: "Copy Selected", icon_name: "duplicate", click_handler: () => {self._copyCell()}},
                    {name_text: "Paste Cells", icon_name: "clipboard", click_handler: () => {self._pasteCell()}},
                     {name_text: "Delete Selected", icon_name: "trash", click_handler: () => {self._deleteSelected()}},
                     {name_text: "divider1", icon_name: null, click_handler: "divider"},
@@ -1147,7 +1233,7 @@ const BUTTON_CONSUMED_SPACE = 208;
                                                 helperClass={this.props.dark_theme ? "bp3-dark" : "light-theme"}
                                                 handle=".console-sorter"
                                                 onSortStart={(_, event) => event.preventDefault()} // This prevents Safari weirdness
-                                                onSortEnd={this._resortConsoleItems}
+                                                onSortEnd={(indices)=>{this._resortConsoleItems(indices, filtered_items)}}
                                                 shouldCancelStart={this._shouldCancelSortStart}
                                                 setConsoleItemValue={this._setConsoleItemValue}
                                                 selectConsoleItem={this._selectConsoleItem}

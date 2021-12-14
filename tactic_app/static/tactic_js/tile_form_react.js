@@ -250,17 +250,17 @@ var DividerOption = /*#__PURE__*/function (_React$Component2) {
     key: "render",
     value: function render() {
       return /*#__PURE__*/_react["default"].createElement("div", {
+        className: "tile-form-divider",
         style: {
           marginTop: 25,
           marginBottom: 15
         }
-      }, /*#__PURE__*/_react["default"].createElement(_core.Divider, null), /*#__PURE__*/_react["default"].createElement("div", {
+      }, /*#__PURE__*/_react["default"].createElement("div", {
         style: {
           paddingLeft: 20,
-          fontSize: "large",
-          fontStyle: "italic"
+          fontSize: 25
         }
-      }, this.props.att_name));
+      }, this.props.att_name), /*#__PURE__*/_react["default"].createElement(_core.Divider, null));
     }
   }]);
 
