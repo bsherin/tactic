@@ -944,6 +944,10 @@ pre code {
     background-color: #d1f26d !important; }
 .light-theme .tile-panel {
   background-color: white !important; }
+.light-theme .tile-form-divider .bp3-divider {
+  border-bottom: 2px solid #5c7080;
+  width: 50%;
+  min-width: 200px; }
 .light-theme #console, .light-theme #exports-panel {
   background-color: white; }
 .light-theme .console-text {
@@ -1023,6 +1027,10 @@ pre code {
     background-color: #728c23 !important; }
 .bp3-dark .tile-panel {
   background-color: #30404d !important; }
+.bp3-dark .tile-form-divider .bp3-divider {
+  border-color: white;
+  width: 50%;
+  min-width: 200px; }
 .bp3-dark #console, .bp3-dark #exports {
   background-color: #30404d; }
 .bp3-dark #console-heading, .bp3-dark #exports-heading, .bp3-dark #exports-footing {

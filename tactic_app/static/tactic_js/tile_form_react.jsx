@@ -157,11 +157,12 @@ class DividerOption extends React.Component {
 
     render() {
         return (
-            <div style={{marginTop: 25, marginBottom: 15}}>
-                <Divider/>
-                <div style={{paddingLeft: 20, fontSize: "large", fontStyle: "italic"}}>
+            <div className="tile-form-divider" style={{marginTop: 25, marginBottom: 15}}>
+
+                <div style={{paddingLeft: 20, fontSize: 25}}>
                     {this.props.att_name}
                 </div>
+                <Divider/>
             </div>
         )
     }

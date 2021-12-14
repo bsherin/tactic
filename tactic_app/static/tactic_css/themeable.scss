@@ -104,10 +104,14 @@ $log-panel-font-color-dark: white;
     }
     .tile-panel {
         background-color: white !important;
-        //&.tile-source-changed {
-        //    background-color: #f7d66b80;
-        //    border: 2px solid #f7d66b80 !important;
-        //}
+    }
+
+    .tile-form-divider {
+        .bp3-divider {
+            border-bottom: 2px solid #5c7080;
+            width: 50%;
+            min-width: 200px
+        }
     }
 
     #console, #exports-panel {
@@ -267,6 +271,14 @@ $log-panel-font-color-dark: white;
         //    background-color: #f7d66b80;
         //    border: 2px solid #f7d66b80 !important;
         //}
+    }
+
+    .tile-form-divider {
+        .bp3-divider {
+            border-color: white;
+            width: 50%;
+            min-width: 200px
+        }
     }
 
     #console, #exports {
