@@ -1056,6 +1056,30 @@ var ListMenubar = /*#__PURE__*/function (_React$Component5) {
   }
 
   _createClass(ListMenubar, [{
+    key: "_new_code",
+    value: function _new_code(template_name) {
+      $.getJSON("".concat($SCRIPT_ROOT, "/get_resource_names/list"), function (data) {
+        (0, _modal_react.showModalReact)("New List Resource", "New List Resource Name", CreateNewListResource, "NewListResource", data["resource_names"]);
+      });
+      var self = this;
+
+      function CreateNewListResource(new_name) {
+        var result_dict = {
+          "template_name": template_name,
+          "new_res_name": new_name
+        };
+        (0, _communication_react.postAjaxPromise)("/create_list", result_dict).then(function (data) {
+          self.props.refresh_func();
+          self.props.view_resource(String(new_name), "/view_list/");
+        })["catch"](function (data) {
+          self.props.addErrorDrawerEntry({
+            title: "Error creating new list resource",
+            content: data.message
+          });
+        });
+      }
+    }
+  }, {
     key: "_list_duplicate",
     value: function _list_duplicate() {
       var resource_name = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
@@ -1129,6 +1153,12 @@ var ListMenubar = /*#__PURE__*/function (_React$Component5) {
       var self = this;
       var ms = {
         Open: [{
+          name_text: "New",
+          icon_name: "new-text-box",
+          click_handler: function click_handler() {
+            _this13._new_code("nltk-english");
+          }
+        }, {
           name_text: "Open",
           icon_name: "document-open",
           click_handler: function click_handler() {
@@ -1331,6 +1361,12 @@ var CodeMenubar = /*#__PURE__*/function (_React$Component6) {
       var self = this;
       var ms = {
         Open: [{
+          name_text: "New",
+          icon_name: "new-text-box",
+          click_handler: function click_handler() {
+            _this17._new_code("BasicCodeTemplate");
+          }
+        }, {
           name_text: "Open",
           icon_name: "document-open",
           click_handler: function click_handler() {
