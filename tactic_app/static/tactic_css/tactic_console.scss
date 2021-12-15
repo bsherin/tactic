@@ -101,7 +101,11 @@ body {
         font-size: 1.125rem
     }
 
-    border: 1px solid #c7c7c7
+    p, ul, h1, h2, h3, h4 {
+        margin-bottom: 0
+    }
+
+    //border: 1px solid #c7c7c7
 
 
 }
