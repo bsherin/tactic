@@ -38,7 +38,9 @@ class ListManager(LibraryResourceManager):
                          login_required(self.import_list), methods=['get', "post"])
         app.add_url_rule('/delete_list', "delete_list", login_required(self.delete_list), methods=['post'])
         app.add_url_rule('/create_duplicate_list', "create_duplicate_list",
-                         login_required(self.create_duplicate_list), methods=['get', 'post'])
+                         login_required(self.create_duplicate_list), methods=['get', 'post']),
+        app.add_url_rule('/create_list', "create_list",
+                         login_required(self.create_list), methods=['get', 'post'])
         app.add_url_rule('/update_list', "update_list",
                          login_required(self.update_list), methods=['get', 'post'])
         app.add_url_rule('/grab_list_list_chunk', "grab_list_list_chunk",
@@ -274,6 +276,20 @@ class ListManager(LibraryResourceManager):
             return jsonify({"success": False, "alert_type": "alert-warning",
                             "message": "A list with that name already exists"})
         old_list_dict = db[user_obj.list_collection_name].find_one({"list_name": list_to_copy})
+        metadata = copy.copy(old_list_dict["metadata"])
+        new_list_dict = {"list_name": new_list_name, "the_list": old_list_dict["the_list"], "metadata": metadata}
+        db[user_obj.list_collection_name].insert_one(new_list_dict)
+        new_row = self.build_res_dict(new_list_name, metadata, user_obj)
+        return jsonify({"success": True, "new_row": new_row})
+
+    def create_list(self):
+        user_obj = current_user
+        new_list_name = request.json['new_res_name']
+        template_name = request.json["template_name"]
+        if db[user_obj.list_collection_name].find_one({"list_name": new_list_name}) is not None:
+            return jsonify({"success": False, "alert_type": "alert-warning",
+                            "message": "A list with that name already exists"})
+        old_list_dict = db[repository_user.list_collection_name].find_one({"list_name": template_name})
         metadata = copy.copy(old_list_dict["metadata"])
         new_list_dict = {"list_name": new_list_name, "the_list": old_list_dict["the_list"], "metadata": metadata}
         db[user_obj.list_collection_name].insert_one(new_list_dict)

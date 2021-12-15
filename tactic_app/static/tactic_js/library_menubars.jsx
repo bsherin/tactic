@@ -600,6 +600,27 @@ class ListMenubar extends React.Component {
         doBinding(this);
     }
 
+    _new_code (template_name) {
+        $.getJSON(`${$SCRIPT_ROOT}/get_resource_names/list`, function (data) {
+                showModalReact("New List Resource", "New List Resource Name", CreateNewListResource, "NewListResource", data["resource_names"])
+            }
+        );
+        let self = this;
+
+        function CreateNewListResource(new_name) {
+            const result_dict = {
+                "template_name": template_name,
+                "new_res_name": new_name
+            };
+            postAjaxPromise("/create_list", result_dict)
+                .then((data) => {
+                    self.props.refresh_func();
+                    self.props.view_resource(String(new_name), "/view_list/")
+                })
+                .catch((data)=>{self.props.addErrorDrawerEntry({title: "Error creating new list resource", content: data.message})})
+        }
+    }
+
     _list_duplicate(resource_name=null) {
         this.props.duplicate_func('/create_duplicate_list', resource_name)
     }
@@ -643,6 +664,8 @@ class ListMenubar extends React.Component {
         let self = this;
         let ms = {
             Open: [
+                {name_text: "New", icon_name: "new-text-box",
+                    click_handler: ()=>{this._new_code("nltk-english")}},
                 {name_text: "Open", icon_name: "document-open",
                     click_handler: ()=>{self.props.view_func()},  key_bindings: ["space", "return", "ctrl+o"]},
                 {name_text: "Open In Separate Tab", icon_name: "document-share",
@@ -758,6 +781,8 @@ class CodeMenubar extends React.Component {
         let self = this;
         let ms = {
             Open: [
+                {name_text: "New", icon_name: "new-text-box",
+                    click_handler: ()=>{this._new_code("BasicCodeTemplate")}},
                 {name_text: "Open", icon_name: "document-open",
                     click_handler: ()=>{self.props.view_func()},  key_bindings: ["space", "return", "ctrl+o"]},
                 {name_text: "Open In Separate Tab", icon_name: "document-share",
