@@ -101,8 +101,8 @@ body {
         font-size: 1.125rem
     }
 
-    p, ul, h1, h2, h3, h4 {
-        margin-bottom: 0
+    p:last-child, ul:last-child, h1:last-child, h2:last-child, h3:last-child, h4:last-child {
+        margin-bottom: 4px
     }
 
     //border: 1px solid #c7c7c7
