@@ -183,6 +183,7 @@ class ReactCodemirror extends React.Component {
 
     _scrollToLine(lnumber) {
         this.cmobject.scrollIntoView({line: lnumber, char: 0}, 50);
+        window.scrollTo(0, 0)  // A kludge. Without it whole window can move when switching contexts
     }
 
     _addOverlay(query, hasBoundary=false, style="searchhighlight", focus_style="focussearchhighlight") {
