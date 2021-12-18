@@ -282,6 +282,7 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
         line: lnumber,
         "char": 0
       }, 50);
+      window.scrollTo(0, 0); // A kludge. Without it whole window can move when switching contexts
     }
   }, {
     key: "_addOverlay",
