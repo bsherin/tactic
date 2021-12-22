@@ -163,17 +163,21 @@ $light-context-highlight-color: $orange4;
                     width: 46px
                 }
             }
-
-
         }
 
         .context-tab-button-content {
             padding-left: 5px;
             font-size: small;
+
+            &.hovering {
+                margin-top: 40px;
+            }
+            &.currently-dragging {
+                opacity: .25;
+            }
         }
     }
 }
-
 
 .context-tab.bp3-tab-panel {
     width: 100%

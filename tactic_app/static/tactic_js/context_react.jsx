@@ -64,6 +64,7 @@ function _context_main() {
     ReactDOM.render(<ContextAppPlus initial_theme={window.theme} tsocket={tsocket}/>, domContainer);
 }
 
+// noinspection JSValidateTypes
 class ContextApp extends React.Component {
 
     constructor(props) {
@@ -92,6 +93,8 @@ class ContextApp extends React.Component {
             usable_height: aheight,
             tabWidth: 150,
             show_repository: false,
+            dragging_over: null,
+            currently_dragging: null
         };
         this.libraryTabChange = null;
         // this.repositoryTabChange = null;
@@ -523,6 +526,62 @@ class ContextApp extends React.Component {
          this._updatePanel(tab_id, {line_setter: rfunc})
     }
 
+    _onDragStart(event, tab_id) {
+         this.setState({currently_dragging: tab_id});
+         event.stopPropagation()
+    }
+
+    _onDragEnd(event) {
+         this.setState({dragging_over: null, currently_dragging: null});
+         event.stopPropagation()
+    }
+
+    _nextTab(tab_id) {
+         let tidx = this.state.tab_ids.indexOf(tab_id);
+         if (tidx == -1) return null;
+         if (tidx == this.state.tab_ids.length - 1) return "dummy";
+         return this.state.tab_ids[tidx + 1]
+    }
+
+    _onDrop(event, target_id) {
+        if (this.state.currently_dragging == null || this.state.currently_dragging == target_id) return;
+        let current_index = this.state.tab_ids.indexOf(this.state.currently_dragging);
+        let new_tab_ids = [...this.state.tab_ids];
+        new_tab_ids.splice(current_index, 1);
+        if (target_id == "dummy") {
+            new_tab_ids.push(this.state.currently_dragging)
+        }
+        else {
+            let target_index = new_tab_ids.indexOf(target_id);
+            new_tab_ids.splice(target_index, 0, this.state.currently_dragging);
+        }
+        this.setState({"tab_ids": new_tab_ids, dragging_over: null});
+        event.stopPropagation()
+    }
+
+    _onDragOver(event, target_id) {
+         // this.setState({"dragging_over": target_id});
+        event.stopPropagation();
+        event.preventDefault();
+    }
+
+    _onDragEnter(event, target_id) {
+         if (target_id == this.state.currently_dragging || target_id == this._nextTab(this.state.currently_dragging)) {
+            this.setState({"dragging_over": null});
+        }
+         else {
+             this.setState({"dragging_over": target_id});
+         }
+        event.stopPropagation();
+        event.preventDefault();
+    }
+
+    _onDragLeave(event, target_id) {
+         // this.setState({"dragging_over": null});
+        event.stopPropagation();
+        event.preventDefault();
+    }
+
     render() {
       let bstyle = {paddingTop: 0, paddingBotton: 0};
         let lib_buttons = [];
@@ -592,6 +651,7 @@ class ContextApp extends React.Component {
                 </div>
             </Tab>
         );
+        
         let all_tabs = [ltab];
         for (let tab_id of this.state.tab_ids) {
             let tab_entry = this.state.tab_panel_dict[tab_id];
@@ -639,8 +699,21 @@ class ContextApp extends React.Component {
                  );
             }
             let icon_style = {verticalAlign: "middle", paddingLeft: 4};
+            if (tab_id == this.state.dragging_over) {
+                bclass += " hovering";
+            }
+            if (tab_id == this.state.currently_dragging) {
+                bclass += " currently-dragging"
+            }
             let new_tab = (
-                <Tab id={tab_id} tabIndex={-1} key={tab_id} panelClassName="context-tab" title="" panel={wrapped_panel}>
+                <Tab id={tab_id} draggable="true"
+                     onDragStart={(e)=>{this._onDragStart(e, tab_id)}}
+                     onDrop={(e)=>{this._onDrop(e, tab_id)}}
+                     onDragEnter={(e)=>{this._onDragEnter(e, tab_id)}}
+                     onDragOver={(e)=>{this._onDragOver(e, tab_id)}}
+                     onDragLeave={(e)=>{this._onDragLeave(e, tab_id)}}
+                     onDragEnd={(e)=>{this._onDragEnd(e)}}
+                     tabIndex={-1} key={tab_id} panelClassName="context-tab" title="" panel={wrapped_panel}>
                     <div className={bclass} style={{display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
                         <div style={{display: "table-cell", flexDirection: "row", justifyContent: "flex-start"}}>
                             <Icon icon={this.iconDict[tab_entry.kind]}
@@ -661,6 +734,25 @@ class ContextApp extends React.Component {
             );
             all_tabs.push(new_tab)
         }
+
+        // The purpose of the dummy tab is to make it possible to drag a tab to the bottom of the list
+        bclass = "context-tab-button-content";
+        if (this.state.dragging_over == "dummy") {
+            bclass += " hovering";
+        }
+        let dummy_tab = (
+            <Tab id="dummy" draggable="false"
+                 disabled={true}
+                 onDrop={(e)=>{this._onDrop(e, "dummy")}}
+                 onDragEnter={(e)=>{this._onDragEnter(e, "dummy")}}
+                 onDragOver={(e)=>{this._onDragOver(e, "dummy")}}
+                 onDragLeave={(e)=>{this._onDragLeave(e, "dummy")}}
+                 tabIndex={-1} key="dummy" panelClassName="context-tab" title="" panel={null}>
+                    <div className={bclass} style={{height: 30, display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
+                    </div>
+                </Tab>
+        );
+        all_tabs.push(dummy_tab);
 
         let outer_class = "pane-holder ";
         if (this.state.dark_theme) {
@@ -704,6 +796,5 @@ class ContextApp extends React.Component {
     }
 
 }
-
 
 _context_main();
