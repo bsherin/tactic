@@ -194,6 +194,7 @@ class TileContainer extends React.Component {
             <SortableComponent id="tile-div"
                                main_id={this.props.main_id}
                                style={outer_style}
+                               dark_theme={this.props.dark_theme}
                                helperClass={this.props.dark_theme ? "bp3-dark" : "light-theme"}
                                container_ref={this.props.tile_div_ref}
                                goToModule={this.props.goToModule}
@@ -774,6 +775,7 @@ class TileComponent extends React.Component {
                                 {state => (
                                     <div className="back" style={composeObjs(this.back_style, this.transitionStylesAltUp[state])}>
                                         <TileForm options={_.cloneDeep(this.props.form_data)}
+                                                  dark_theme={this.props.dark_theme}
                                                   tile_id={this.props.tile_id}
                                                   updateValue={this._updateOptionValue}
                                                   handleSubmit={this._handleSubmitOptions}/>

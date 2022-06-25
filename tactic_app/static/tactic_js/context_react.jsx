@@ -533,7 +533,8 @@ class ContextApp extends React.Component {
 
     _onDragEnd(event) {
          this.setState({dragging_over: null, currently_dragging: null});
-         event.stopPropagation()
+         event.stopPropagation();
+         event.preventDefault();
     }
 
     _nextTab(tab_id) {

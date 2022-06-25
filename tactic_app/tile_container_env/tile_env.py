@@ -30,8 +30,9 @@ from remote_tile_object import Pipes
 from settings_object import Settings
 
 
-def global_import(imp):
-    globals()[imp] = __import__(imp, globals(), locals(), [], 0)
+def global_import(*argv):
+    for imp in argv:
+        globals()[imp] = __import__(imp, globals(), locals(), [], 0)
     return
 
 

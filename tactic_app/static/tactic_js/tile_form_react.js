@@ -153,6 +153,7 @@ var TileForm = /*#__PURE__*/function (_React$Component) {
             case "codearea":
               option_items.push( /*#__PURE__*/_react["default"].createElement(CodeAreaOption, {
                 att_name: att_name,
+                dark_theme: this.props.dark_theme,
                 key: att_name,
                 value: option.starting_value,
                 updateValue: this._updateValue
@@ -221,6 +222,7 @@ var TileForm = /*#__PURE__*/function (_React$Component) {
 exports.TileForm = TileForm;
 TileForm.propTypes = {
   tile_id: _propTypes["default"].string,
+  dark_theme: _propTypes["default"].bool,
   options: _propTypes["default"].array,
   handleSubmit: _propTypes["default"].func,
   updateValue: _propTypes["default"].func
@@ -509,6 +511,7 @@ var CodeAreaOption = /*#__PURE__*/function (_React$Component7) {
         label: this.props.att_name
       }, /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
         handleChange: this._updateMe,
+        dark_theme: this.props.dark_theme,
         code_content: this.props.value,
         saveMe: null,
         code_container_height: 100
@@ -521,6 +524,7 @@ var CodeAreaOption = /*#__PURE__*/function (_React$Component7) {
 
 CodeAreaOption.propTypes = {
   att_name: _propTypes["default"].string,
+  dark_theme: _propTypes["default"].bool,
   value: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
   updateValue: _propTypes["default"].func
 };
