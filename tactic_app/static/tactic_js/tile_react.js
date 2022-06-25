@@ -350,6 +350,7 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
         id: "tile-div",
         main_id: this.props.main_id,
         style: outer_style,
+        dark_theme: this.props.dark_theme,
         helperClass: this.props.dark_theme ? "bp3-dark" : "light-theme",
         container_ref: this.props.tile_div_ref,
         goToModule: this.props.goToModule,
@@ -1175,6 +1176,7 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
           style: composeObjs(_this4.back_style, _this4.transitionStylesAltUp[state])
         }, /*#__PURE__*/_react["default"].createElement(_tile_form_react.TileForm, {
           options: _lodash["default"].cloneDeep(_this4.props.form_data),
+          dark_theme: _this4.props.dark_theme,
           tile_id: _this4.props.tile_id,
           updateValue: _this4._updateOptionValue,
           handleSubmit: _this4._handleSubmitOptions

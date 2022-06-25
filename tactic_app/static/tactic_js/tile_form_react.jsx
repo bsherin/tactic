@@ -89,6 +89,7 @@ class TileForm extends React.Component {
                     break;
                 case "codearea":
                     option_items.push(<CodeAreaOption att_name={att_name}
+                                                      dark_theme={this.props.dark_theme}
                                                       key={att_name}
                                                       value={option.starting_value}
                                                       updateValue={this._updateValue}
@@ -140,6 +141,7 @@ class TileForm extends React.Component {
 
 TileForm.propTypes = {
     tile_id: PropTypes.string,
+    dark_theme: PropTypes.bool,
     options: PropTypes.array,
     handleSubmit: PropTypes.func,
     updateValue: PropTypes.func
@@ -338,6 +340,7 @@ class CodeAreaOption extends React.Component {
         return (
             <FormGroup label={this.props.att_name}>
                 <ReactCodemirror handleChange={this._updateMe}
+                                 dark_theme={this.props.dark_theme}
                                  code_content={this.props.value}
                                  saveMe={null}
                                  code_container_height={100}
@@ -349,6 +352,7 @@ class CodeAreaOption extends React.Component {
 
 CodeAreaOption.propTypes = {
     att_name: PropTypes.string,
+    dark_theme: PropTypes.bool,
     value:  PropTypes.oneOfType([
         PropTypes.string,
         PropTypes.number]),

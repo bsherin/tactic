@@ -25,7 +25,7 @@ window as well as the user settings.
 
 Here is a sample of what the dark theme looks like, in all of its glory:
 
-.. image:: images/dark_theme_sample.png
+.. image:: images/dark_theme_sample_new.png
    :scale: 25 %
    :align: center
 

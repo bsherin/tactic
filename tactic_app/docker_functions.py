@@ -53,11 +53,12 @@ else:
     # ip_info is only used as a step to getting the host_ip
     if ("ON_MAC" in os.environ) and (os.environ.get("ON_MAC") == "True"):  # This means we're working on the mac
         # I used to have en0 here. Now it seems to need to be en3
-        ip_info = subprocess.check_output(['/usr/local/bin/ip', '-4', 'addr', 'show', 'en0'])
+        # ip_info = subprocess.check_output(['/usr/local/bin/ip', '-4', 'addr', 'show', 'en0'])
+        ip_info = str(subprocess.check_output(['ifconfig']))
+        host_ip = re.findall("inet (.*?) ", ip_info)[1]
     else:
         ip_info = subprocess.check_output(['ip', '-4', 'addr', 'show', 'scope', 'global', 'dev', 'docker0'])
-
-    host_ip = re.search("inet (.*?)/", ip_info).group(1)
+        host_ip = re.search("inet (.*?)/", ip_info).group(1)
     mongo_uri = "mongodb://{}:27017/{}".format(host_ip, db_name)
 
 _develop = ("DEVELOP" in os.environ) and (os.environ.get("DEVELOP") == "True")
