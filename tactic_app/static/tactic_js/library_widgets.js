@@ -576,6 +576,7 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
         numRows: this.props.num_rows // key={this.props.num_rows}
         ,
         ref: this.table_ref,
+        cellRendererDependencies: [self.props.data_dict],
         bodyContextMenuRenderer: function bodyContextMenuRenderer(mcontext) {
           return _this8.props.renderBodyContextMenu(mcontext);
         },
