@@ -699,6 +699,7 @@ var BpOrderableTable = /*#__PURE__*/function (_React$Component10) {
       return /*#__PURE__*/_react["default"].createElement(_core.HotkeysProvider, null, /*#__PURE__*/_react["default"].createElement(_table.Table2, {
         enableFocusedCell: false,
         ref: this.table_ref,
+        cellRendererDependencies: [self.props.data_array],
         onCompleteRender: this._onCompleteRender,
         numRows: this.props.data_array.length,
         enableColumnReordering: false,

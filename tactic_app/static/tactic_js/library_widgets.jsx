@@ -392,6 +392,7 @@ class BpSelectorTable extends React.Component {
             <Table2 numRows={this.props.num_rows}
                    // key={this.props.num_rows}
                    ref={this.table_ref}
+                    cellRendererDependencies={[self.props.data_dict]}
                    bodyContextMenuRenderer={(mcontext)=>this.props.renderBodyContextMenu(mcontext)}
                    enableColumnReordering={false}
                    enableColumnResizing={this.props.enableColumnResizing}
