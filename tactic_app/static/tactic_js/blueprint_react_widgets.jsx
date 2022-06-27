@@ -461,6 +461,7 @@ class BpOrderableTable extends React.Component {
             <HotkeysProvider>
                 <Table2 enableFocusedCell={false}
                         ref={this.table_ref}
+                        cellRendererDependencies={[self.props.data_array]}
                         onCompleteRender={this._onCompleteRender}
                         numRows={this.props.data_array.length}
                         enableColumnReordering={false}
