@@ -78,7 +78,7 @@ var TacticMenubar = /*#__PURE__*/function (_React$Component) {
         }
       }
 
-      var theme_class = this.props.dark_theme ? "bp3-dark" : "light-theme";
+      var theme_class = this.props.dark_theme ? "bp4-dark" : "light-theme";
       var name_style = {
         marginButton: 0,
         marginLeft: 10,
@@ -93,7 +93,7 @@ var TacticMenubar = /*#__PURE__*/function (_React$Component) {
           height: 30,
           display: "flex"
         },
-        className: theme_class
+        className: theme_class + " menu-bar"
       }, (this.props.showClose || this.props.showRefresh) && /*#__PURE__*/_react["default"].createElement(TopLeftButtons, {
         showRefresh: this.props.showRefresh,
         showClose: this.props.showClose,
@@ -106,7 +106,7 @@ var TacticMenubar = /*#__PURE__*/function (_React$Component) {
         style: {
           height: 30
         },
-        className: "bp3-navbar-group bp3-align-left"
+        className: "bp4-navbar-group bp4-align-left"
       }, /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, menus)), this.props.showErrorDrawerButton && /*#__PURE__*/_react["default"].createElement(ErrorDrawerButton, {
         toggleErrorDrawer: this.props.toggleErrorDrawer
       }));

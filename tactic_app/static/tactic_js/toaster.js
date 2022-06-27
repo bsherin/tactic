@@ -285,7 +285,7 @@ var Status = /*#__PURE__*/function (_React$Component2) {
       var outer_cname;
 
       if (this.props.dark_theme) {
-        outer_cname = "status-holder bp3-dark";
+        outer_cname = "status-holder bp4-dark";
       } else {
         outer_cname = "status-holder light-theme";
       }
@@ -324,7 +324,7 @@ var Status = /*#__PURE__*/function (_React$Component2) {
         }
       }, /*#__PURE__*/_react["default"].createElement("div", {
         id: "status-msg-area",
-        className: "bp3-ui-text"
+        className: "bp4-ui-text"
       }, this.props.status_message))));
     }
   }]);

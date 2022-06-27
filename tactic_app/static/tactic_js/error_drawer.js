@@ -338,7 +338,7 @@ var ErrorDrawer = /*#__PURE__*/function (_React$Component3) {
       });
       return /*#__PURE__*/_react["default"].createElement(_core.Drawer, {
         icon: "console",
-        className: this.props.dark_theme ? "bp3-dark" : "light-theme",
+        className: this.props.dark_theme ? "bp4-dark" : "light-theme",
         title: this.props.title,
         isOpen: this.props.show_drawer,
         position: this.props.position,

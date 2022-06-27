@@ -5,6 +5,9 @@ import "../tactic_css/tactic_table.scss";
 import "../tactic_css/library_home.scss";
 import "../tactic_css/tile_creator.scss";
 
+const blip = "blah";
+const tstr = `some text ${blip}`;
+
 import React from "react";
 import * as ReactDOM from 'react-dom';
 
@@ -99,7 +102,6 @@ class ContextApp extends React.Component {
         this.libraryTabChange = null;
         // this.repositoryTabChange = null;
         this.top_ref = React.createRef();
-        this.ref_dict = {};
         this.key_bindings = [
             [["tab"], this._goToNextPane],
             [["shift+tab"], this._goToPreviousPane],
@@ -113,7 +115,7 @@ class ContextApp extends React.Component {
     }
 
     get_tab_list_elem() {
-        return document.querySelector("#context-container .context-tab-list > .bp3-tab-list");
+        return document.querySelector("#context-container .context-tab-list > .bp4-tab-list");
     }
 
     _handleTabResize(e, ui, lastX, lastY, dx, dy) {
@@ -186,7 +188,7 @@ class ContextApp extends React.Component {
         });
         
         this._update_window_dimensions(null);
-        const tab_list_elem =  document.querySelector("#context-container .context-tab-list > .bp3-tab-list");
+        const tab_list_elem =  document.querySelector("#context-container .context-tab-list > .bp4-tab-list");
         let self = this;
         const resizeObserver = new ResizeObserver(entries => {
           self._update_window_dimensions(null)
@@ -757,7 +759,7 @@ class ContextApp extends React.Component {
 
         let outer_class = "pane-holder ";
         if (this.state.dark_theme) {
-            outer_class = `${outer_class} bp3-dark`;
+            outer_class = `${outer_class} bp4-dark`;
         }
         else {
             outer_class = `${outer_class} light-theme`;

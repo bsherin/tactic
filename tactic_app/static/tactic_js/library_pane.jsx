@@ -2,7 +2,7 @@
 import React from "react";
 import PropTypes from 'prop-types';
 
-import { Menu, MenuItem } from "@blueprintjs/core";
+import { Menu, MenuItem, MenuDivider } from "@blueprintjs/core";
 import {Regions} from "@blueprintjs/table";
 import _ from 'lodash';
 
@@ -53,7 +53,7 @@ class BodyMenu extends React.Component {
         let disabled = false;
         let menu_items = this.props.items.map((item, index)=> {
                 if (item.text == "__divider__") {
-                    return <Menu.Divider key={index}/>
+                    return <MenuDivider key={index}/>
                 } else {
                     return (<MenuItem icon={item.icon} disabled={disabled}
                                          onClick={() => item.onClick(this.props.selected_rows[0].name)}
@@ -65,7 +65,7 @@ class BodyMenu extends React.Component {
         );
         return (
             <Menu>
-                <Menu.Divider title={this.props.selected_rows[0].name} className="context-menu-header"/>
+                <MenuDivider title={this.props.selected_rows[0].name} className="context-menu-header"/>
                 {menu_items}
             </Menu>
         )
@@ -956,7 +956,7 @@ class LibraryPane extends React.Component {
                                  right_pane={right_pane}
                                  right_pane_overflow="auto"
                                  initial_width_fraction={.75}
-                                 scrollAdjustSelectors={[".bp3-table-quadrant-scroll-container"]}
+                                 scrollAdjustSelectors={[".bp4-table-quadrant-scroll-container"]}
                                  handleSplitUpdate={this._handleSplitResize}
                                  handleResizeStart={this._handleSplitResizeStart}
                                  handleResizeEnd={this._handleSplitResizeEnd}

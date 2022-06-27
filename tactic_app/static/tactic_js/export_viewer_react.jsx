@@ -14,7 +14,7 @@ class TextIcon extends React.Component {
     render() {
         return(
             <React.Fragment>
-                <span className="bp3-icon" style={{fontWeight: 500}}>
+                <span className="bp4-icon" style={{fontWeight: 500}}>
                     {this.props.the_text}
                 </span>
             </React.Fragment>

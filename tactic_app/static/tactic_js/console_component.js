@@ -15,8 +15,6 @@ var _core = require("@blueprintjs/core");
 
 var _lodash = _interopRequireDefault(require("lodash"));
 
-var _contextMenuTarget = require("@blueprintjs/core/lib/esnext/components/context-menu/contextMenuTarget.js");
-
 var _reactSortableHoc = require("react-sortable-hoc");
 
 var _markdownIt = _interopRequireDefault(require("markdown-it"));
@@ -1329,7 +1327,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
           _this9._pasteCell();
         },
         text: "Paste Cells"
-      }), /*#__PURE__*/_react["default"].createElement(_core.Menu.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "reset",
         onClick: this._resetConsole,
         intent: "warning",
@@ -1909,7 +1907,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       })))), !this.props.console_is_shrunk && /*#__PURE__*/_react["default"].createElement("form", {
         onSubmit: this._handleSubmit,
         id: "console-search-form",
-        className: "d-flex flex-row bp3-form-group",
+        className: "d-flex flex-row bp4-form-group",
         style: {
           justifyContent: "flex-end",
           marginRight: 116,
@@ -1947,7 +1945,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
         text: undefined,
         small: true
       }))), /*#__PURE__*/_react["default"].createElement("div", {
-        className: "bp3-form-helper-text",
+        className: "bp4-form-helper-text",
         style: {
           marginLeft: 10
         }
@@ -1971,7 +1969,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
         ElementComponent: SSuperItem,
         key_field_name: "unique_id",
         item_list: filtered_items,
-        helperClass: this.props.dark_theme ? "bp3-dark" : "light-theme",
+        helperClass: this.props.dark_theme ? "bp4-dark" : "light-theme",
         handle: ".console-sorter",
         onSortStart: function onSortStart(_, event) {
           return event.preventDefault();
@@ -2033,7 +2031,7 @@ RawConsoleComponent.defaultProps = {
   shrinkable: true,
   zoomable: true
 };
-var ConsoleComponent = (0, _contextMenuTarget.ContextMenuTarget)(RawConsoleComponent);
+var ConsoleComponent = (0, _core.ContextMenuTarget)(RawConsoleComponent);
 exports.ConsoleComponent = ConsoleComponent;
 
 var RawSortHandle = /*#__PURE__*/function (_React$PureComponent2) {
@@ -2231,7 +2229,7 @@ var RawDividerItem = /*#__PURE__*/function (_React$Component) {
         icon: "clipboard",
         onClick: this._pasteCell,
         text: "Paste Cells"
-      }), /*#__PURE__*/_react["default"].createElement(_core.Menu.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "new-text-box",
         onClick: this._addBlankText,
         text: "New Text Cell"
@@ -2243,7 +2241,7 @@ var RawDividerItem = /*#__PURE__*/function (_React$Component) {
         icon: "header",
         onClick: this._addBlankDivider,
         text: "New Section Divider"
-      }), /*#__PURE__*/_react["default"].createElement(_core.Menu.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "trash",
         onClick: this._deleteMe,
         intent: "danger",
@@ -2320,7 +2318,7 @@ var RawDividerItem = /*#__PURE__*/function (_React$Component) {
   return RawDividerItem;
 }(_react["default"].Component);
 
-var DividerItem = (0, _contextMenuTarget.ContextMenuTarget)(RawDividerItem);
+var DividerItem = (0, _core.ContextMenuTarget)(RawDividerItem);
 var log_item_update_props = ["is_error", "am_shrunk", "am_selected", "summary_text", "console_text", "console_available_width"];
 
 var RawLogItem = /*#__PURE__*/function (_React$Component2) {
@@ -2495,7 +2493,7 @@ var RawLogItem = /*#__PURE__*/function (_React$Component2) {
         icon: "clipboard",
         onClick: this._pasteCell,
         text: "Paste Cells"
-      }), /*#__PURE__*/_react["default"].createElement(_core.Menu.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "new-text-box",
         onClick: this._addBlankText,
         text: "New Text Cell"
@@ -2507,7 +2505,7 @@ var RawLogItem = /*#__PURE__*/function (_React$Component2) {
         icon: "header",
         onClick: this._addBlankDivider,
         text: "New Section Divider"
-      }), /*#__PURE__*/_react["default"].createElement(_core.Menu.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "trash",
         onClick: this._deleteMe,
         intent: "danger",
@@ -2614,7 +2612,7 @@ RawLogItem.propTypes = {
   handleDelete: _propTypes["default"].func,
   console_available_width: _propTypes["default"].number
 };
-var LogItem = (0, _contextMenuTarget.ContextMenuTarget)(RawLogItem);
+var LogItem = (0, _core.ContextMenuTarget)(RawLogItem);
 var code_item_update_props = ["am_shrunk", "set_focus", "am_selected", "search_string", "summary_text", "console_text", "show_spinner", "execution_count", "output_text", "console_available_width", "dark_theme"];
 
 var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component3) {
@@ -2923,7 +2921,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component3) {
         intent: "danger",
         onClick: this._stopMe,
         text: "Stop Cell"
-      }), /*#__PURE__*/_react["default"].createElement(_core.Menu.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "new-text-box",
         onClick: this._addBlankText,
         text: "New Text Cell"
@@ -2935,7 +2933,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component3) {
         icon: "header",
         onClick: this._addBlankDivider,
         text: "New Section Divider"
-      }), /*#__PURE__*/_react["default"].createElement(_core.Menu.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "duplicate",
         onClick: this._copyMe,
         text: "Copy Cell"
@@ -2943,7 +2941,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component3) {
         icon: "clipboard",
         onClick: this._pasteCell,
         text: "Paste Cells"
-      }), /*#__PURE__*/_react["default"].createElement(_core.Menu.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "trash",
         onClick: this._deleteMe,
         intent: "danger",
@@ -3106,7 +3104,7 @@ RawConsoleCodeItem.propTypes = {
   setFocus: _propTypes["default"].func,
   runCodeItem: _propTypes["default"].func
 };
-var ConsoleCodeItem = (0, _contextMenuTarget.ContextMenuTarget)(RawConsoleCodeItem);
+var ConsoleCodeItem = (0, _core.ContextMenuTarget)(RawConsoleCodeItem);
 
 var ResourceLinkButton = /*#__PURE__*/function (_React$PureComponent4) {
   _inherits(ResourceLinkButton, _React$PureComponent4);
@@ -3467,7 +3465,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component4) {
         intent: "success",
         onClick: this._showMarkdown,
         text: "Show Markdown"
-      }), /*#__PURE__*/_react["default"].createElement(_core.Menu.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "new-text-box",
         onClick: this._addBlankText,
         text: "New Text Cell"
@@ -3479,7 +3477,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component4) {
         icon: "header",
         onClick: this._addBlankDivider,
         text: "New Section Divider"
-      }), /*#__PURE__*/_react["default"].createElement(_core.Menu.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "link",
         onClick: this._insertResourceLink,
         text: "Insert ResourceLink"
@@ -3491,7 +3489,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component4) {
         icon: "clipboard",
         onClick: this._pasteCell,
         text: "Paste Cells"
-      }), /*#__PURE__*/_react["default"].createElement(_core.Menu.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "trash",
         onClick: this._deleteMe,
         intent: "danger",
@@ -3673,7 +3671,7 @@ RawConsoleTextItem.defaultProps = {
   force_sync_to_prop: false,
   links: []
 };
-var ConsoleTextItem = (0, _contextMenuTarget.ContextMenuTarget)(RawConsoleTextItem);
+var ConsoleTextItem = (0, _core.ContextMenuTarget)(RawConsoleTextItem);
 var all_update_props = {
   "text": text_item_update_props,
   "code": code_item_update_props,

@@ -320,7 +320,7 @@ class ListViewerApp extends React.Component {
         let outer_class = "resource-viewer-holder";
         if (!this.props.controlled) {
             if (dark_theme) {
-                outer_class = outer_class + " bp3-dark";
+                outer_class = outer_class + " bp4-dark";
             } else {
                 outer_class = outer_class + " light-theme"
             }

@@ -103,7 +103,7 @@ class ModalDialog extends React.Component {
         }
         return (
             <Dialog isOpen={this.state.show}
-                    className={window.dark_theme ? "bp3-dark" : ""}
+                    className={window.dark_theme ? "bp4-dark" : ""}
                        title={this.props.title}
                        onClose={this._cancelHandler}
                        onOpened={()=>{$(this.input_ref).focus()}}
@@ -200,7 +200,7 @@ class SelectDialog extends React.Component {
     render() {
         return (
             <Dialog isOpen={this.state.show}
-                    className={window.dark_theme ? "bp3-dark" : ""}
+                    className={window.dark_theme ? "bp4-dark" : ""}
                        title={this.props.title}
                        onClose={this._cancelHandler}
                        canEscapeKeyClose={true}>
@@ -299,7 +299,7 @@ class SelectResourceDialog extends React.Component {
     render() {
         return (
             <Dialog isOpen={this.state.show}
-                    className={window.dark_theme ? "bp3-dark" : ""}
+                    className={window.dark_theme ? "bp4-dark" : ""}
                        title="Select a library resource"
                        onClose={this._cancelHandler}
                        canEscapeKeyClose={true}>
@@ -384,7 +384,7 @@ class ConfirmDialog extends React.Component {
     render() {
         return (
             <Dialog isOpen={this.state.show}
-                    className={window.dark_theme ? "bp3-dark" : ""}
+                    className={window.dark_theme ? "bp4-dark" : ""}
                        title={this.props.title}
                        onClose={this._cancelHandler}
                        canEscapeKeyClose={true}>
@@ -458,7 +458,7 @@ class InformDialog extends React.Component {
     render() {
         return (
             <Dialog isOpen={this.state.show}
-                    className={window.dark_theme ? "bp3-dark" : ""}
+                    className={window.dark_theme ? "bp4-dark" : ""}
                        title={this.props.title}
                        onClose={this._closeHandler}
                        canEscapeKeyClose={true}>
