@@ -182,7 +182,7 @@ class OtherAPIMIxin:
                                         header_style=None, body_style=None, outer_border=False):
         self._save_stdout()
         # base_class_string = "tile-table table table-striped table-bordered table-sm"
-        base_class_string = "bp3-html-table bp3-html-table-bordered bp3-html-table-condensed bp3-html-table-striped bp3-small html-table"
+        base_class_string = "bp4-html-table bp4-html-table-bordered bp4-html-table-condensed bp4-html-table-striped bp4-small html-table"
         if outer_border:
             base_class_string += " html-table-bordered"
         if header_style is None:

@@ -868,7 +868,7 @@ class CreatorApp extends React.Component {
             tc_item = (
                 <div key="dpcode" style={ch_style} className="d-flex flex-column align-items-baseline code-holder">
                     <div style={{display: "flex", flexDirection: "row", justifyContent: "space-between", width: "100%"}}>
-                        <span className="bp3-ui-text"
+                        <span className="bp4-ui-text"
                               ref={this.tc_span_ref}
                               style={{display: "flex", alignItems: "self-end"}}>{title_label}</span>
                         <SearchForm update_search_state={this._updateSearchState}
@@ -910,7 +910,7 @@ class CreatorApp extends React.Component {
         let bc_item = (
             <div key="rccode" id="rccode" style={ch_style} className="d-flex flex-column align-items-baseline code-holder">
                 <div style={{display: "flex", flexDirection: "row", justifyContent: "space-between", width: "100%"}}>
-                    <span className="bp3-ui-text"
+                    <span className="bp4-ui-text"
                           style={{display: "flex", alignItems: "self-end"}}
                           ref={this.rc_span_ref}>render_content</span>
                     {!my_props.is_mpl && !my_props.is_d3 &&
@@ -1048,7 +1048,7 @@ class CreatorApp extends React.Component {
         let outer_class = "resource-viewer-holder pane-holder";
         if (!window.in_context) {
             if (dark_theme) {
-                outer_class = outer_class + " bp3-dark";
+                outer_class = outer_class + " bp4-dark";
             } else {
                 outer_class = outer_class + " light-theme"
             }

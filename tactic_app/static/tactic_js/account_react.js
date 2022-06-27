@@ -412,7 +412,7 @@ var AccountApp = /*#__PURE__*/function (_React$Component3) {
       var outer_class = "account-settings";
 
       if (this.state.dark_theme) {
-        outer_class = outer_class + " bp3-dark";
+        outer_class = outer_class + " bp4-dark";
       } else {
         outer_class = outer_class + " light-theme";
       }
@@ -434,11 +434,11 @@ var AccountApp = /*#__PURE__*/function (_React$Component3) {
           "flex-direction": "column"
         }
       }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: "account-pane bp3-card"
+        className: "account-pane bp4-card"
       }, /*#__PURE__*/_react["default"].createElement("h6", null, "User Info"), field_items[0]), /*#__PURE__*/_react["default"].createElement("div", {
-        className: "account-pane bp3-card"
+        className: "account-pane bp4-card"
       }, /*#__PURE__*/_react["default"].createElement("h6", null, "User Settings"), field_items[1])), /*#__PURE__*/_react["default"].createElement("div", {
-        className: "account-pane bp3-card"
+        className: "account-pane bp4-card"
       }, /*#__PURE__*/_react["default"].createElement("h6", null, "Change Password"), /*#__PURE__*/_react["default"].createElement(AccountTextField, {
         name: "password",
         value: this.state.password,

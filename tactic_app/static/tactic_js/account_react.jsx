@@ -240,7 +240,7 @@ class AccountApp extends React.Component {
         let field_items = this._getFieldItems();
         let outer_class = "account-settings";
         if (this.state.dark_theme) {
-            outer_class = outer_class + " bp3-dark";
+            outer_class = outer_class + " bp4-dark";
         }
         else {
             outer_class = outer_class + " light-theme"
@@ -258,16 +258,16 @@ class AccountApp extends React.Component {
                               user_name={window.username}/>
                 <div className={outer_class}>
                     <div style={{display: "flex", "flex-direction": "column"}}>
-                        <div className="account-pane bp3-card">
+                        <div className="account-pane bp4-card">
                             <h6>User Info</h6>
                             {field_items[0]}
                         </div>
-                        <div className="account-pane bp3-card">
+                        <div className="account-pane bp4-card">
                             <h6>User Settings</h6>
                             {field_items[1]}
                         </div>
                     </div>
-                    <div className="account-pane bp3-card">
+                    <div className="account-pane bp4-card">
                         <h6>Change Password</h6>
                         <AccountTextField name="password"
                                       value={this.state.password}

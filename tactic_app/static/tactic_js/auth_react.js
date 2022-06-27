@@ -164,7 +164,7 @@ var LoginApp = /*#__PURE__*/function (_React$Component) {
       var outer_class = "login-body d-flex flex-column justify-content-center";
 
       if (this.state.dark_theme) {
-        outer_class = outer_class + " bp3-dark";
+        outer_class = outer_class + " bp4-dark";
       } else {
         outer_class = outer_class + " light-theme";
       }

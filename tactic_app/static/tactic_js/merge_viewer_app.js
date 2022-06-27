@@ -185,7 +185,7 @@ var MergeViewerApp = /*#__PURE__*/function (_React$Component) {
       var outer_class = "merge-viewer-outer";
 
       if (this.props.dark_theme) {
-        outer_class = outer_class + " bp3-dark";
+        outer_class = outer_class + " bp4-dark";
       } else {
         outer_class = outer_class + " light-theme";
       }

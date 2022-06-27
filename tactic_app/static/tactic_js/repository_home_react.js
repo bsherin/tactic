@@ -358,7 +358,7 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
         outer_class = "library-pane-holder  ";
 
         if (dark_theme) {
-          outer_class = "".concat(outer_class, " bp3-dark");
+          outer_class = "".concat(outer_class, " bp4-dark");
         } else {
           outer_class = "".concat(outer_class, " light-theme");
         }

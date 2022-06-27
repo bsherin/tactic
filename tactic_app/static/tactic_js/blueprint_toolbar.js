@@ -84,7 +84,7 @@ var ToolbarButton = /*#__PURE__*/function (_React$Component) {
           minimal: false,
           onClick: function onClick() {
             return _this.props.click_handler();
-          } // className="bp-toolbar-button bp3-elevation-0"
+          } // className="bp-toolbar-button bp4-elevation-0"
 
         });
       } else {
@@ -96,7 +96,7 @@ var ToolbarButton = /*#__PURE__*/function (_React$Component) {
           onClick: function onClick() {
             return _this.props.click_handler();
           },
-          className: "bp-toolbar-button bp3-elevation-0"
+          className: "bp-toolbar-button bp4-elevation-0"
         });
       }
     }

@@ -409,7 +409,7 @@ class EnhancedEditableCell extends React.Component {
 
 function compute_added_column_width(header_text) {
     const max_field_width = MAX_INITIAL_CELL_WIDTH;
-    let header_font = $($(".bp3-table-truncated-text")[0]).css("font");
+    let header_font = $($(".bp4-table-truncated-text")[0]).css("font");
     let canvas_element = document.getElementById("measure-canvas");
     let ctx = canvas_element.getContext("2d");
     let added_header_width = 40;
@@ -424,7 +424,7 @@ function compute_initial_column_widths(header_list, data_row_dict) {
     // Get sample header and body cells
 
     // set up a canvas so that we can use it to compute the width of text
-    let body_font = $($(".bp3-table-truncated-text")[0]).css("font");
+    let body_font = $($(".bp4-table-truncated-text")[0]).css("font");
     let header_font = body_font;
     let canvas_element = document.getElementById("measure-canvas");
     let ctx = canvas_element.getContext("2d");

@@ -30,7 +30,7 @@ class TacticMenubar extends React.Component {
         }
 
 
-        const theme_class = this.props.dark_theme ? "bp3-dark" : "light-theme";
+        const theme_class = this.props.dark_theme ? "bp4-dark" : "light-theme";
         const name_style = {
             marginButton: 0,
             marginLeft: 10,
@@ -40,7 +40,7 @@ class TacticMenubar extends React.Component {
             fontWeight: "bold"
         };
         return (
-            <Navbar style={{paddingLeft: 3, height: 30, display: "flex"}} className={theme_class}>
+            <Navbar style={{paddingLeft: 3, height: 30, display: "flex"}} className={theme_class + " menu-bar"}>
                 {(this.props.showClose || this.props.showRefresh) &&
                     <TopLeftButtons showRefresh={this.props.showRefresh}
                                     showClose={this.props.showClose}
@@ -52,7 +52,7 @@ class TacticMenubar extends React.Component {
                 {this.props.resource_name &&
                     <div style={name_style}>{this.props.resource_name}</div>
                 }
-                <div style={{height: 30}} className="bp3-navbar-group bp3-align-left">
+                <div style={{height: 30}} className="bp4-navbar-group bp4-align-left">
                             <React.Fragment>
                                 {menus}
                             </React.Fragment>

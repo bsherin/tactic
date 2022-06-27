@@ -33,7 +33,7 @@ import {ErrorBoundary} from "./error_boundary";
 
 export {main_props, MainApp}
 
-const MARGIN_SIZE = 0;
+const MARGIN_SIZE = 0;  // a test comment
 const BOTTOM_MARGIN = 30;  // includes space for status messages at bottom
 const MARGIN_ADJUSTMENT = 8; // This is the amount at the top of both the table and the console
 const CONSOLE_HEADER_HEIGHT = 35;
@@ -42,6 +42,7 @@ const USUAL_TOOLBAR_HEIGHT = 50;
 const MENU_BAR_HEIGHT = 30; // will only appear when in context
 
 let ppi;
+const tstr = `some text ${MARGIN_SIZE}`;
 
 function main_main() {
     function gotProps(the_props) {
@@ -1175,7 +1176,7 @@ class MainApp extends React.Component {
                                      right_pane={tile_pane}
                                      available_height={hp_height}
                                      show_handle={true}
-                                     scrollAdjustSelectors={[".bp3-table-quadrant-scroll-container", "#tile-div"]}
+                                     scrollAdjustSelectors={[".bp4-table-quadrant-scroll-container", "#tile-div"]}
                                      available_width={true_usable_width}
                                      initial_width_fraction={this.state.horizontal_fraction}
                                      dragIconSize={15}
@@ -1191,7 +1192,7 @@ class MainApp extends React.Component {
         }
         let outer_class = "main-outer";
         if (dark_theme) {
-            outer_class = outer_class + " bp3-dark";
+            outer_class = outer_class + " bp4-dark";
         }
         else {
             outer_class = outer_class + " light-theme"
@@ -1242,7 +1243,7 @@ class MainApp extends React.Component {
                                            available_height={vp_height}
                                            initial_height_fraction={this.state.height_fraction}
                                            dragIconSize={15}
-                                           scrollAdjustSelectors={[".bp3-table-quadrant-scroll-container", "#tile-div"]}
+                                           scrollAdjustSelectors={[".bp4-table-quadrant-scroll-container", "#tile-div"]}
                                            handleSplitUpdate={this._handleVerticalSplitUpdate}
                                            handleResizeStart={this._handleResizeStart}
                                            handleResizeEnd={this._handleResizeEnd}

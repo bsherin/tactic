@@ -231,7 +231,7 @@ class RepositoryHomeApp extends React.Component {
         if (!this.props.controlled) {
             outer_class = "library-pane-holder  ";
             if (dark_theme) {
-                outer_class = `${outer_class} bp3-dark`;
+                outer_class = `${outer_class} bp4-dark`;
             }
             else {
                 outer_class = `${outer_class} light-theme`;
