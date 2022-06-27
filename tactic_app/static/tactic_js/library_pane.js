@@ -122,7 +122,7 @@ var BodyMenu = /*#__PURE__*/function (_React$Component) {
       var disabled = false;
       var menu_items = this.props.items.map(function (item, index) {
         if (item.text == "__divider__") {
-          return /*#__PURE__*/_react["default"].createElement(_core.Menu.Divider, {
+          return /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, {
             key: index
           });
         } else {
@@ -138,7 +138,7 @@ var BodyMenu = /*#__PURE__*/function (_React$Component) {
           });
         }
       });
-      return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, /*#__PURE__*/_react["default"].createElement(_core.Menu.Divider, {
+      return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, {
         title: this.props.selected_rows[0].name,
         className: "context-menu-header"
       }), menu_items);
@@ -1310,7 +1310,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         right_pane: right_pane,
         right_pane_overflow: "auto",
         initial_width_fraction: .75,
-        scrollAdjustSelectors: [".bp3-table-quadrant-scroll-container"],
+        scrollAdjustSelectors: [".bp4-table-quadrant-scroll-container"],
         handleSplitUpdate: this._handleSplitResize,
         handleResizeStart: this._handleSplitResizeStart,
         handleResizeEnd: this._handleSplitResizeEnd

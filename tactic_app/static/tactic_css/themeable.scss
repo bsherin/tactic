@@ -9,6 +9,10 @@ $dark-table-border-style: $table-border-thickness none;
 $log-panel-font-color: #616161;
 $log-panel-font-color-dark: white;
 
+
+$darkest-bg: $dark-gray3;
+$dark-medium: $dark-gray4;
+
 .option-row-highlight {
     color: $orange3 !important;
     font-weight: bold !important
@@ -50,14 +54,14 @@ $log-panel-font-color-dark: white;
     }
 
     .tactic-tag-button-list {
-        .bp3-tree-node-selected {
-            .bp3-tree-node-content {
+        .bp4-tree-node-selected {
+            .bp4-tree-node-content {
                 background-color: white;
                 color: $blue3;
                 font-weight: 900
             }
 
-            .bp3-icon {
+            .bp4-icon {
                 background-color: white;
                 color: $blue3 !important;
                 font-weight: 900
@@ -107,7 +111,7 @@ $log-panel-font-color-dark: white;
     }
 
     .tile-form-divider {
-        .bp3-divider {
+        .bp4-divider {
             border-bottom: 2px solid #5c7080;
             width: 50%;
             min-width: 200px
@@ -173,9 +177,13 @@ $log-panel-font-color-dark: white;
 }
 
 
-.bp3-dark {
+.bp4-dark {
     &.resource-viewer-holder, &.merge-viewer-outer, &.login-body {
-      background-color: $dark-gray4
+      background-color: $darkest-bg
+    }
+
+    &.menu-bar {
+        box-shadow: inset 0 0 0 1px #ffffff33, 0 1px 1px 0 #11141866;
     }
 
     .cm-matchhighlight {
@@ -194,41 +202,41 @@ $log-panel-font-color-dark: white;
     }
 
     &.account-settings {
-        background-color: $dark-gray4
+        background-color: $darkest-bg
     }
 
     &.pane-holder{
-      background-color: #475562
+      background-color: $dark-medium
     }
 
     &.library-pane-holder {
-      background-color: $dark-gray4
+      background-color: $darkest-bg
     }
 
     .combined-metadata, div.filepicker, #options-pane, #exports-pane {
-      background-color: $dark-gray5;
+      background-color: $darkest-bg;
     }
 
     div.filepicker {
-      background-color: $dark-gray5
+      background-color: $dark-medium
 
     }
 
     .notes-field-markdown-output {
-        background-color: $dark-gray4;
+        background-color: $darkest-bg;
         color: $light-gray5
     }
 
     .tactic-tag-button-list {
-        .bp3-tree-node-selected {
-            .bp3-tree-node-content {
-                background-color: $dark-gray4;
+        .bp4-tree-node-selected {
+            .bp4-tree-node-content {
+                background-color: $darkest-bg;
                 color: $blue5;
                 font-weight: 900
             }
 
-            .bp3-icon {
-                background-color: $dark-gray4;
+            .bp4-icon {
+                background-color: $darkest-bg;
                 color: $blue5 !important;
                 font-weight: 900
             }
@@ -260,13 +268,15 @@ $log-panel-font-color-dark: white;
     .tile-panel-heading {
         background-color: $dark-gray3;
         border-bottom: 1px solid #10161a26;
+        margin-right: 2px;
+        margin-left: 2px;
         &.tile-source-changed {
             background-color: $lime1 !important
         }
     }
 
     .tile-panel {
-        background-color: $dark-gray4 !important;
+        background-color: $dark-medium !important;
         //&.tile-source-changed {
         //    background-color: #f7d66b80;
         //    border: 2px solid #f7d66b80 !important;
@@ -274,7 +284,7 @@ $log-panel-font-color-dark: white;
     }
 
     .tile-form-divider {
-        .bp3-divider {
+        .bp4-divider {
             border-color: white;
             width: 50%;
             min-width: 200px
@@ -282,11 +292,15 @@ $log-panel-font-color-dark: white;
     }
 
     #console, #exports {
-        background-color: $dark-gray4;
+        background-color: $darkest-bg;
+        margin-left: 2px;
+        margin-right: 2px;
     }
 
     #console-heading, #exports-heading, #exports-footing {
-       background-color: $dark-gray5 !important;
+        background-color: $dark-medium !important;
+        margin-left: 2px;
+        margin-right: 2px;
     }
 
     .export-header-text {
@@ -305,16 +319,16 @@ $log-panel-font-color-dark: white;
       color: $light-gray1;
     }
     .account-pane {
-        background-color: $dark-gray5;
+        background-color: $dark-medium;
     }
     .CodeMirror-merge-gap {
         background: $gray1;
     }
     .CodeMirror-merge-r-chunk {
-        background: $dark-gray4;
+        background: $darkest-bg;
     }
     .CodeMirror-merge-r-connect {
-        fill: $dark-gray4;
+        fill: $darkest-bg;
     }
 }
 
@@ -324,7 +338,7 @@ $log-panel-font-color-dark: white;
         background-color: transparent;
       }
 
-    &.bp3-dark {
+    &.bp4-dark {
         background-color: transparent;
         &.light-dark{
             background-color: $gray1;

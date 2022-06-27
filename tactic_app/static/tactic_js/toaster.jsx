@@ -202,7 +202,7 @@ class Status extends React.Component {
         let cname = "d-flex flex-row";
         let outer_cname;
         if (this.props.dark_theme) {
-            outer_cname = "status-holder bp3-dark";
+            outer_cname = "status-holder bp4-dark";
         }
         else {
             outer_cname = "status-holder light-theme"
@@ -225,7 +225,7 @@ class Status extends React.Component {
                         <Spinner size={20} />}
                     {this.props.status_message &&
                         <div className="d-flex flex-column justify-content-around" style={{marginLeft: 50}}>
-                            <div id="status-msg-area" className="bp3-ui-text">{this.props.status_message}</div>
+                            <div id="status-msg-area" className="bp4-ui-text">{this.props.status_message}</div>
                         </div>
                     }
                 </div>

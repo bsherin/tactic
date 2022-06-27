@@ -39,7 +39,7 @@ class ToolbarButton extends React.Component {
                            large={false}
                            minimal={false}
                            onClick={()=>this.props.click_handler()}
-                           // className="bp-toolbar-button bp3-elevation-0"
+                           // className="bp-toolbar-button bp4-elevation-0"
                 />
             )
         }
@@ -51,7 +51,7 @@ class ToolbarButton extends React.Component {
                            large={false}
                            minimal={false}
                            onClick={()=>this.props.click_handler()}
-                           className="bp-toolbar-button bp3-elevation-0"
+                           className="bp-toolbar-button bp4-elevation-0"
                 />
             )
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Palantir Technologies, Inc. All rights reserved.
+ * Copyright 2022 Palantir Technologies, Inc. All rights reserved.
  */
 @import url(~@blueprintjs/table/lib/css/table.css);
 #doc-selector {
@@ -34,9 +34,9 @@
     white-space: pre-wrap; }
   #table-area .hidden-row {
     display: none !important; }
-  #table-area .bp3-table-quadrant-scroll-container {
+  #table-area .bp4-table-quadrant-scroll-container {
     overflow: hidden; }
-    #table-area .bp3-table-quadrant-scroll-container:hover {
+    #table-area .bp4-table-quadrant-scroll-container:hover {
       overflow: auto; }
 
 .ui-resizable-e, .ui-resizable-w {

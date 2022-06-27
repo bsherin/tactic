@@ -152,7 +152,7 @@ var LibraryOmnibar = /*#__PURE__*/function (_React$Component2) {
     value: function render() {
       return /*#__PURE__*/_react["default"].createElement(_select.Omnibar, {
         items: this.state.items,
-        className: window.dark_theme ? "bp3-dark" : "",
+        className: window.dark_theme ? "bp4-dark" : "",
         isOpen: this.props.showOmnibar,
         onItemSelect: this.props.onItemSelect,
         itemRenderer: this._itemRenderer,
@@ -533,7 +533,7 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
         });
       } else {
         the_body = /*#__PURE__*/_react["default"].createElement("div", {
-          className: "bp3-table-truncated-text"
+          className: "bp4-table-truncated-text"
         }, the_text);
       }
 
@@ -652,8 +652,8 @@ function compute_initial_column_widths(header_list, data_list) {
   var max_field_width = MAX_INITIAL_CELL_WIDTH; // Get sample header and body cells
   // set up a canvas so that we can use it to compute the width of text
 
-  var body_font = $($(".bp3-table-truncated-text")[0]).css("font");
-  var header_font = $($(".bp3-table-column-name-text")[0]).css("font");
+  var body_font = $($(".bp4-table-truncated-text")[0]).css("font");
+  var header_font = $($(".bp4-table-column-name-text")[0]).css("font");
   var canvas_element = document.getElementById("measure-canvas");
   var ctx = canvas_element.getContext("2d");
   var added_body_width = 20;

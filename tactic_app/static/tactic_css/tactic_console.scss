@@ -52,14 +52,14 @@ body {
     border-bottom: 1px solid #10161a26;
     height: 32px;
 
-    .bp3-icon {
+    .bp4-icon {
         margin-right: 3px
     }
 }
 
-#console-header-left .bp3-navbar {
+#console-header-left .bp4-navbar {
     box-shadow: none;
-    &.light-theme {
+    &.light-theme, &.bp4-dark {
         background-color: transparent;
     }
 }
@@ -110,7 +110,7 @@ body {
 
 }
 
-//.bp3-dark {
+//.bp4-dark {
 //    .text-panel-output {
 //        background-color: $dark-de-accent-bg-color;
 //        color: $dark-text-color
@@ -126,9 +126,9 @@ body {
         white-space: nowrap
     }
 
-.bp3-dark {
+.bp4-dark {
     .link-button-group {
-        .bp3-button-text {
+        .bp4-button-text {
             color: $gray4
         }
     }
@@ -255,7 +255,7 @@ body {
             margin-top: 5px;
             padding-left: 6px;
 
-            .bp3-button {
+            .bp4-button {
                 margin-top: 6px;
                 padding-left: 0;
                 padding-right: 0;
@@ -323,7 +323,7 @@ body {
 }
 
 .log-panel {
-    .bp3-editable-text:hover::before {
+    .bp4-editable-text:hover::before {
         outline: none;
         box-shadow: none;
     }
@@ -332,7 +332,7 @@ body {
 .log-panel-body {
     padding: 0;
 
-    .bp3-input:focus {
+    .bp4-input:focus {
         outline: none;
         box-shadow: none;
     }
@@ -385,7 +385,7 @@ body {
     border-bottom: 1px solid #10161a26;
     height: 32px;
 
-    .bp3-icon {
+    .bp4-icon {
         margin-right: 3px
     }
 }
@@ -407,7 +407,7 @@ body {
         font-size: 11px
     }
 
-    .bp3-icon {
+    .bp4-icon {
         margin-right: 3px;
         height: 20px;
         top: 2px
@@ -438,7 +438,7 @@ body {
 }
 
 
-#exports-button-list .bp3-button-group.bp3-vertical {
+#exports-button-list .bp4-button-group.bp4-vertical {
     max-width: 100%
 }
 
@@ -458,7 +458,7 @@ body {
     span {
         margin-right: 3px
     }
-    .bp3-button-text {
+    .bp4-button-text {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -476,7 +476,7 @@ body {
     white-space: nowrap;
 }
 
-.show-exports-but .bp3-icon{
+.show-exports-but .bp4-icon{
     margin-top: 2px
 }
 

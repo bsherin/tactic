@@ -200,7 +200,7 @@ class TacticNavbar extends React.Component {
             icon_dict[item.text] = item.icon;
         }
         return (
-            <MenuComponent alt_button={()=>(<span className="bp3-breadcrumbs-collapsed" style={{marginTop: 5}}></span>)}
+            <MenuComponent alt_button={()=>(<span className="bp4-breadcrumbs-collapsed" style={{marginTop: 5}}></span>)}
                            option_dict={opt_dict}
                            binding_dict={{}}
                            icon_dict={icon_dict}/>
@@ -231,10 +231,10 @@ class TacticNavbar extends React.Component {
         let right_width = this._getRightWidth();
         let right_style = {width: right_width};
         right_style.justifyContent = "flex-end";
-        let theme_class = this.props.dark_theme ? "bp3-dark" : "light-theme";
+        let theme_class = this.props.dark_theme ? "bp4-dark" : "light-theme";
         return (
             <Navbar style={{paddingLeft: 10}} className={theme_class}>
-                <div className="bp3-navbar-group bp3-align-left" ref={this.lg_ref}>
+                <div className="bp4-navbar-group bp4-align-left" ref={this.lg_ref}>
                     <Navbar.Heading className="d-flex align-items-center">
                         <img className="mr-2" src={window.tactic_img_url} alt="" width="32 " height="32"/>
                          Tactic

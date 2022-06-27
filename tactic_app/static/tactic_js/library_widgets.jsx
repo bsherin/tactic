@@ -79,7 +79,7 @@ class LibraryOmnibar extends React.Component {
     render () {
         return (
             <Omnibar items={this.state.items}
-                     className={window.dark_theme ? "bp3-dark" : ""}
+                     className={window.dark_theme ? "bp4-dark" : ""}
                      isOpen={this.props.showOmnibar}
                      onItemSelect={this.props.onItemSelect}
                      itemRenderer={this._itemRenderer}
@@ -364,7 +364,7 @@ class BpSelectorTable extends React.Component {
             the_body = <Icon icon={the_text} size={14}/>
         }
         else {
-            the_body = <div className="bp3-table-truncated-text">{the_text}</div>
+            the_body = <div className="bp4-table-truncated-text">{the_text}</div>
         }
         return the_body
     }
@@ -454,8 +454,8 @@ function compute_initial_column_widths(header_list, data_list) {
     // Get sample header and body cells
 
     // set up a canvas so that we can use it to compute the width of text
-    let body_font = $($(".bp3-table-truncated-text")[0]).css("font");
-    let header_font = $($(".bp3-table-column-name-text")[0]).css("font");
+    let body_font = $($(".bp4-table-truncated-text")[0]).css("font");
+    let header_font = $($(".bp4-table-column-name-text")[0]).css("font");
     let canvas_element = document.getElementById("measure-canvas");
     let ctx = canvas_element.getContext("2d");
     let added_body_width = 20;

@@ -66,7 +66,7 @@ var TextIcon = /*#__PURE__*/function (_React$Component) {
     key: "render",
     value: function render() {
       return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("span", {
-        className: "bp3-icon",
+        className: "bp4-icon",
         style: {
           fontWeight: 500
         }

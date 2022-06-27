@@ -1180,7 +1180,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
             width: "100%"
           }
         }, /*#__PURE__*/_react["default"].createElement("span", {
-          className: "bp3-ui-text",
+          className: "bp4-ui-text",
           ref: this.tc_span_ref,
           style: {
             display: "flex",
@@ -1236,7 +1236,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           width: "100%"
         }
       }, /*#__PURE__*/_react["default"].createElement("span", {
-        className: "bp3-ui-text",
+        className: "bp4-ui-text",
         style: {
           display: "flex",
           alignItems: "self-end"
@@ -1393,7 +1393,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
 
       if (!window.in_context) {
         if (dark_theme) {
-          outer_class = outer_class + " bp3-dark";
+          outer_class = outer_class + " bp4-dark";
         } else {
           outer_class = outer_class + " light-theme";
         }

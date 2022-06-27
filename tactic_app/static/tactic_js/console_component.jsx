@@ -4,21 +4,16 @@ import PropTypes from 'prop-types';
 
 import 'codemirror/mode/markdown/markdown.js'
 
-import { Icon, Card, EditableText, Spinner} from "@blueprintjs/core";
+import { Icon, Card, EditableText, Spinner, ContextMenuTarget, MenuDivider} from "@blueprintjs/core";
 import { Menu, MenuItem, InputGroup, ButtonGroup, Button} from "@blueprintjs/core";
 import _ from 'lodash';
 
-// The next line is an ugly workaround
-// The next line is an ugly workaround
-// See blueprintjs issue 3891
-import {ContextMenuTarget} from '@blueprintjs/core/lib/esnext/components/context-menu/contextMenuTarget.js';
 import { SortableHandle } from 'react-sortable-hoc';
 import markdownIt from 'markdown-it'
 import 'markdown-it-latex/dist/index.css'
 import markdownItLatex from 'markdown-it-latex'
 const mdi = markdownIt({html: true});
 mdi.use(markdownItLatex);
-
 
 import {GlyphButton} from "./blueprint_react_widgets.js";
 import {ReactCodemirror} from "./react-codemirror.js";
@@ -27,7 +22,7 @@ import {MySortableElement} from "./sortable_container.js";
 import {KeyTrap} from "./key_trap.js";
 import {postAjaxPromise, postWithCallback} from "./communication_react.js"
 import {doFlash} from "./toaster.js"
-import {doBinding, arrayMove} from "./utilities_react.js";
+import {doBinding} from "./utilities_react.js";
 import {showConfirmDialogReact, showSelectResourceDialog} from "./modal_react.js";
 import {icon_dict} from "./blueprint_mdata_fields.js";
 import {view_views} from "./library_pane.js";
@@ -830,7 +825,7 @@ const BUTTON_CONSUMED_SPACE = 208;
                                this._pasteCell()
                            }}
                            text="Paste Cells"/>
-                 <Menu.Divider/>
+                 <MenuDivider/>
                  <MenuItem icon="reset"
                            onClick={this._resetConsole}
                            intent="warning"
@@ -1182,7 +1177,7 @@ const BUTTON_CONSUMED_SPACE = 208;
                  </div>
                  {!this.props.console_is_shrunk &&
                      <form onSubmit={this._handleSubmit} id="console-search-form" 
-                           className="d-flex flex-row bp3-form-group" style={{
+                           className="d-flex flex-row bp4-form-group" style={{
                                            justifyContent: "flex-end", marginRight: 116,
                                            marginBottom: 6, marginTop: 12
                            }}>
@@ -1208,7 +1203,7 @@ const BUTTON_CONSUMED_SPACE = 208;
                                      <Button onClick={this._searchPrevious} icon="caret-up" text={undefined} small={true}/>
                                  </ButtonGroup>
                              </div>
-                             <div className="bp3-form-helper-text" style={{marginLeft: 10}}>{this.state.search_helper_text}</div>
+                             <div className="bp4-form-helper-text" style={{marginLeft: 10}}>{this.state.search_helper_text}</div>
                          </div>
                      </form>
                  }
@@ -1230,7 +1225,7 @@ const BUTTON_CONSUMED_SPACE = 208;
                                                 ElementComponent={SSuperItem}
                                                 key_field_name="unique_id"
                                                 item_list={filtered_items}
-                                                helperClass={this.props.dark_theme ? "bp3-dark" : "light-theme"}
+                                                helperClass={this.props.dark_theme ? "bp4-dark" : "light-theme"}
                                                 handle=".console-sorter"
                                                 onSortStart={(_, event) => event.preventDefault()} // This prevents Safari weirdness
                                                 onSortEnd={(indices)=>{this._resortConsoleItems(indices, filtered_items)}}
@@ -1410,7 +1405,7 @@ class RawDividerItem extends React.Component {
                 <MenuItem icon="clipboard"
                           onClick={this._pasteCell}
                           text="Paste Cells" />
-                <Menu.Divider/>
+                <MenuDivider/>
                 <MenuItem icon="new-text-box"
                            onClick={this._addBlankText}
                            text="New Text Cell"/>
@@ -1420,7 +1415,7 @@ class RawDividerItem extends React.Component {
                 <MenuItem icon="header"
                            onClick={this._addBlankDivider}
                            text="New Section Divider"/>
-                <Menu.Divider/>
+                <MenuDivider/>
                 <MenuItem icon="trash"
                           onClick={this._deleteMe}
                           intent="danger"
@@ -1589,7 +1584,7 @@ class RawLogItem extends React.Component {
                 <MenuItem icon="clipboard"
                           onClick={this._pasteCell}
                           text="Paste Cells" />
-                <Menu.Divider/>
+                <MenuDivider/>
                 <MenuItem icon="new-text-box"
                            onClick={this._addBlankText}
                            text="New Text Cell"/>
@@ -1599,7 +1594,7 @@ class RawLogItem extends React.Component {
                 <MenuItem icon="header"
                            onClick={this._addBlankDivider}
                            text="New Section Divider"/>
-                <Menu.Divider/>
+                <MenuDivider/>
                 <MenuItem icon="trash"
                           onClick={this._deleteMe}
                           intent="danger"
@@ -1896,7 +1891,7 @@ class RawConsoleCodeItem extends React.Component {
                               onClick={this._stopMe}
                               text="Stop Cell" />
                 }
-                <Menu.Divider/>
+                <MenuDivider/>
                 <MenuItem icon="new-text-box"
                            onClick={this._addBlankText}
                            text="New Text Cell"/>
@@ -1906,14 +1901,14 @@ class RawConsoleCodeItem extends React.Component {
                 <MenuItem icon="header"
                            onClick={this._addBlankDivider}
                            text="New Section Divider"/>
-                <Menu.Divider/>
+                <MenuDivider/>
                 <MenuItem icon="duplicate"
                           onClick={this._copyMe}
                           text="Copy Cell" />
                 <MenuItem icon="clipboard"
                           onClick={this._pasteCell}
                           text="Paste Cells" />
-                <Menu.Divider/>
+                <MenuDivider/>
                 <MenuItem icon="trash"
                           onClick={this._deleteMe}
                           intent="danger"
@@ -2319,7 +2314,7 @@ class RawConsoleTextItem extends React.Component {
                           intent="success"
                           onClick={this._showMarkdown}
                           text="Show Markdown" />
-                <Menu.Divider/>
+                <MenuDivider/>
                 <MenuItem icon="new-text-box"
                            onClick={this._addBlankText}
                            text="New Text Cell"/>
@@ -2329,7 +2324,7 @@ class RawConsoleTextItem extends React.Component {
                 <MenuItem icon="header"
                            onClick={this._addBlankDivider}
                            text="New Section Divider"/>
-                <Menu.Divider/>
+                <MenuDivider/>
                 <MenuItem icon="link"
                           onClick={this._insertResourceLink}
                           text="Insert ResourceLink" />
@@ -2339,7 +2334,7 @@ class RawConsoleTextItem extends React.Component {
                 <MenuItem icon="clipboard"
                           onClick={this._pasteCell}
                           text="Paste Cells" />
-                <Menu.Divider/>
+                <MenuDivider/>
                 <MenuItem icon="trash"
                           onClick={this._deleteMe}
                           intent="danger"
