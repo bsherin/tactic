@@ -1343,7 +1343,7 @@ var CommandEntry = /*#__PURE__*/function (_React$Component8) {
       return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.Button, {
         minimal: true,
         outlined: this.state.isOpen,
-        className: "bp3-monospace-text",
+        className: "bp4-monospace-text",
         onClick: this._handleClick
       }, this.props.signature), /*#__PURE__*/_react["default"].createElement(_core.Collapse, {
         isOpen: this.state.isOpen
@@ -1364,7 +1364,7 @@ var CommandEntry = /*#__PURE__*/function (_React$Component8) {
         handleClick: this._doCopy
       }), /*#__PURE__*/_react["default"].createElement("div", {
         style: md_style,
-        className: "notes-field-markdown-output bp3-button bp3-outlined",
+        className: "notes-field-markdown-output bp4-button bp4-outlined",
         dangerouslySetInnerHTML: {
           __html: this.props.body
         }

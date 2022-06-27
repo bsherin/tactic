@@ -326,7 +326,7 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
       return /*#__PURE__*/_react["default"].createElement(_main_menus_react.MenuComponent, {
         alt_button: function alt_button() {
           return /*#__PURE__*/_react["default"].createElement("span", {
-            className: "bp3-breadcrumbs-collapsed",
+            className: "bp4-breadcrumbs-collapsed",
             style: {
               marginTop: 5
             }
@@ -382,14 +382,14 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
         width: right_width
       };
       right_style.justifyContent = "flex-end";
-      var theme_class = this.props.dark_theme ? "bp3-dark" : "light-theme";
+      var theme_class = this.props.dark_theme ? "bp4-dark" : "light-theme";
       return /*#__PURE__*/_react["default"].createElement(_core.Navbar, {
         style: {
           paddingLeft: 10
         },
         className: theme_class
       }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: "bp3-navbar-group bp3-align-left",
+        className: "bp4-navbar-group bp4-align-left",
         ref: this.lg_ref
       }, /*#__PURE__*/_react["default"].createElement(_core.Navbar.Heading, {
         className: "d-flex align-items-center"

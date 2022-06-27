@@ -213,7 +213,7 @@ var ModalDialog = /*#__PURE__*/function (_React$Component) {
 
       return /*#__PURE__*/_react["default"].createElement(_core.Dialog, {
         isOpen: this.state.show,
-        className: window.dark_theme ? "bp3-dark" : "",
+        className: window.dark_theme ? "bp4-dark" : "",
         title: this.props.title,
         onClose: this._cancelHandler,
         onOpened: function onOpened() {
@@ -344,7 +344,7 @@ var SelectDialog = /*#__PURE__*/function (_React$Component2) {
     value: function render() {
       return /*#__PURE__*/_react["default"].createElement(_core.Dialog, {
         isOpen: this.state.show,
-        className: window.dark_theme ? "bp3-dark" : "",
+        className: window.dark_theme ? "bp4-dark" : "",
         title: this.props.title,
         onClose: this._cancelHandler,
         canEscapeKeyClose: true
@@ -485,7 +485,7 @@ var SelectResourceDialog = /*#__PURE__*/function (_React$Component3) {
     value: function render() {
       return /*#__PURE__*/_react["default"].createElement(_core.Dialog, {
         isOpen: this.state.show,
-        className: window.dark_theme ? "bp3-dark" : "",
+        className: window.dark_theme ? "bp4-dark" : "",
         title: "Select a library resource",
         onClose: this._cancelHandler,
         canEscapeKeyClose: true
@@ -603,7 +603,7 @@ var ConfirmDialog = /*#__PURE__*/function (_React$Component4) {
     value: function render() {
       return /*#__PURE__*/_react["default"].createElement(_core.Dialog, {
         isOpen: this.state.show,
-        className: window.dark_theme ? "bp3-dark" : "",
+        className: window.dark_theme ? "bp4-dark" : "",
         title: this.props.title,
         onClose: this._cancelHandler,
         canEscapeKeyClose: true
@@ -697,7 +697,7 @@ var InformDialog = /*#__PURE__*/function (_React$Component5) {
     value: function render() {
       return /*#__PURE__*/_react["default"].createElement(_core.Dialog, {
         isOpen: this.state.show,
-        className: window.dark_theme ? "bp3-dark" : "",
+        className: window.dark_theme ? "bp4-dark" : "",
         title: this.props.title,
         onClose: this._closeHandler,
         canEscapeKeyClose: true

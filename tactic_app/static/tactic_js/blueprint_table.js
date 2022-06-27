@@ -616,7 +616,7 @@ var EnhancedEditableCell = /*#__PURE__*/function (_React$Component3) {
 
 function compute_added_column_width(header_text) {
   var max_field_width = MAX_INITIAL_CELL_WIDTH;
-  var header_font = $($(".bp3-table-truncated-text")[0]).css("font");
+  var header_font = $($(".bp4-table-truncated-text")[0]).css("font");
   var canvas_element = document.getElementById("measure-canvas");
   var ctx = canvas_element.getContext("2d");
   var added_header_width = 40;
@@ -629,7 +629,7 @@ function compute_initial_column_widths(header_list, data_row_dict) {
   var max_field_width = MAX_INITIAL_CELL_WIDTH; // Get sample header and body cells
   // set up a canvas so that we can use it to compute the width of text
 
-  var body_font = $($(".bp3-table-truncated-text")[0]).css("font");
+  var body_font = $($(".bp4-table-truncated-text")[0]).css("font");
   var header_font = body_font;
   var canvas_element = document.getElementById("measure-canvas");
   var ctx = canvas_element.getContext("2d");

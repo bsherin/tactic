@@ -9,11 +9,11 @@
 
   }
 
-  .bp3-tab:focus {
+  .bp4-tab:focus {
     outline: none
   }
 
-  .bp3-large > .bp3-tab {
+  .bp4-large > .bp4-tab {
     font-size: 18px;
     margin-top: 10px;
     margin-left: 30px;
@@ -28,7 +28,7 @@
 }
 
   #creator-root, .creator-root {
-    .bp3-large > .bp3-tab {
+    .bp4-large > .bp4-tab {
       margin-top: 0px
     }
   }
@@ -45,11 +45,11 @@
     height: 100%
   }
 
-  .bp3-tab-panel {
+  .bp4-tab-panel {
     margin-top: 10px
   }
 
-  .bp3-tab-list {
+  .bp4-tab-list {
     margin-left: 25px
   }
 

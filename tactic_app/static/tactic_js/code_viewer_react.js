@@ -442,7 +442,7 @@ var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
 
       if (!this.props.controlled) {
         if (dark_theme) {
-          outer_class = outer_class + " bp3-dark";
+          outer_class = outer_class + " bp4-dark";
         } else {
           outer_class = outer_class + " light-theme";
         }
