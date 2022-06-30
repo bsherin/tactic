@@ -161,8 +161,11 @@ class ProjectManager(LibraryResourceManager):
             short_collection_name = ""
         else:
             viewer = "main-viewer"
-            full_collection_name = mdata["collection_name"]
-            short_collection_name = re.sub(r"^.*?\.data_collection\.", "", full_collection_name)
+            if "collection_name" in mdata:
+                full_collection_name = mdata["collection_name"]
+                short_collection_name = re.sub(r"^.*?\.data_collection\.", "", full_collection_name)
+            else:
+                short_collection_name = "no name"
         data_dict = {"success": True,
                      "kind": viewer,
                      "res_type": "project",
