@@ -231,7 +231,7 @@ class ProjectManager(LibraryResourceManager):
         new_save_dict["file_id"] = fs.put(pdict)
         db[user_obj.project_collection_name].insert_one(new_save_dict)
 
-        new_row = self.build_res_dict(new_project_name, mdata, user_obj)
+        new_row = self.build_res_dict(new_project_name, mdata, user_obj, save_dict["file_id"])
         return jsonify({"success": True, "new_row": new_row})
 
     def grab_project_list_chunk(self):

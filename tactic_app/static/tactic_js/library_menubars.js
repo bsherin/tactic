@@ -242,6 +242,23 @@ var CollectionMenubar = /*#__PURE__*/function (_React$Component2) {
       }, res_name + ".xlsx");
     }
   }, {
+    key: "_recalculate_size",
+    value: function _recalculate_size() {
+      var resource_name = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      var res_name = resource_name ? resource_name : this.props.selected_resource.name;
+      var target = "".concat($SCRIPT_ROOT, "/update_collection_size/").concat(res_name);
+      $.post(target, function (data) {
+        if (!data.success) {
+          self.props.addErrorDrawerEntry({
+            title: "Error calculating size",
+            content: data.message
+          });
+        } else {
+          (0, _toaster.doFlash)(data);
+        }
+      });
+    }
+  }, {
     key: "_displayImportResults",
     value: function _displayImportResults(data) {
       var title = "Collection Created";
@@ -346,6 +363,13 @@ var CollectionMenubar = /*#__PURE__*/function (_React$Component2) {
             _this3._collection_delete();
           },
           multi_select: true
+        }, {
+          name_text: "Recalculate Size",
+          icon_name: "refresh",
+          click_handler: function click_handler() {
+            _this3._recalculate_size();
+          },
+          multi_select: false
         }],
         Transfer: [{
           name_text: "Import Data",
