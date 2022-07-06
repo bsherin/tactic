@@ -94,6 +94,7 @@ class TagButtonList extends React.Component {
             label: name,
             icon: "tag",
             hasCaret: false,
+            className: name == "hidden" && prelist.length == 0 ? "hidden-tag" : "",
             isSelected: tag_string == this.props.active_tag,
             isExpanded: this.props.expanded_tags.includes(tag_string),
             nodeData: {tag_string: tag_string}
@@ -166,7 +167,7 @@ class TagButtonList extends React.Component {
         let tree = {childNodes: [all_node]};
         for (let tag of tag_list) {
             let tlist = tag_to_list(tag);
-            this._digNode(tree, tlist, []);
+            this._digNode(tree, tlist, [], true);
         }
         return tree.childNodes
     }

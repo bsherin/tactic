@@ -129,8 +129,9 @@ function withErrorDrawer(WrappedComponent) {
       key: "_addEntry",
       value: function _addEntry(data) {
         var open = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+        var local_id = this.props.main_id ? this.props.main_id : this.props.library_id;
 
-        if (data == null || !("main_id" in data) || data.main_id == this.props.main_id) {
+        if (data == null || !("main_id" in data) || data.main_id == local_id) {
           this.setState({
             contents: [data].concat(_toConsumableArray(this.state.contents)),
             show_drawer: open
