@@ -53,6 +53,10 @@ class ResourceManager(ExceptionMixin):
         socketio.emit("refresh-{}-selector".format(self.res_type), {},
                       namespace='/main', room=user_obj.get_id())
 
+    def add_error_drawer_entry(self, title, content, library_id):
+        data = {"title": title, "content": content, "main_id": library_id}
+        socketio.emit("add-error-drawer-entry", data, namespace='/main', room=library_id)
+
     def get_resource_list(self):
         if self.is_repository:
             user_obj = repository_user
@@ -86,7 +90,8 @@ class ResourceManager(ExceptionMixin):
         full_tags = tag_string.split()
         complete_list = []
         for full_tag in full_tags:
-            full_tag = "/" + full_tag
+            if full_tag[0] is not "/":
+                full_tag = "/" + full_tag
             parts = re.findall("/[^/]*", full_tag)
             current = ""
             for k in parts:
@@ -94,8 +99,7 @@ class ResourceManager(ExceptionMixin):
                 complete_list.append(current)
         return complete_list
 
-    @staticmethod
-    def build_res_dict(name, mdata, user_obj=None):
+    def build_res_dict(self, name, mdata, user_obj=None, file_id=None):
         if user_obj is None:
             user_obj = current_user
         if mdata is None:
@@ -132,6 +136,10 @@ class ResourceManager(ExceptionMixin):
                 if field not in skip_fields:
                     return_data[field] = val
 
+        if file_id is not None:
+            size_text, size = self.get_fs_file_siz_info(file_id)
+            return_data["size_for_sort"] = size
+            return_data["size"] = size_text
         return return_data
 
     def build_data_list(self, res_list, user_obj=None):
@@ -145,7 +153,7 @@ class ResourceManager(ExceptionMixin):
 
     def show_um_message(self, message, library_id, timeout=3):
         data = {"message": message, "timeout": timeout, "main_id": library_id}
-        socketio.emit('show-status-msg', data, namespace='/main', room=library_id)
+        socketio.emit('show-status-msg', data, namespace='/library', room=library_id)
 
     def clear_um_message(self, library_id):
         socketio.emit('clear-status-msg', {"main_id": library_id}, namespace='/main', room=library_id)
@@ -184,6 +192,40 @@ class LibraryResourceManager(ResourceManager):
     def __init__(self, res_type):
         ResourceManager.__init__(self, res_type)
 
+    def get_fs_file_siz_info(self, file_id):
+        fsize = db["fs.files"].find_one({"_id": file_id})["length"]
+        if fsize < 100000:
+            ltext = "{}kb".format(round(fsize / 1000, 1))
+        else:
+            ltext = "{}mb".format(round(fsize / 1000000, 1))
+        return ltext, fsize
+
+    def has_hidden(self, tag_string):
+        return "/hidden" in self.get_all_subtags(tag_string)
+
+    def add_hidden_to_all_subtags(self, tag_string):
+        all_subtags = self.get_all_subtags(tag_string)
+        edited_tags = []
+        for subtag in all_subtags:
+            if re.findall("^/[^/]*", subtag)[0] == "/hidden":
+                edited_tags.append(subtag)
+            else:
+                edited_tags.append("/hidden" + subtag)
+        return edited_tags
+
+    def add_hidden_to_tags(self, tag_string):
+        tag_list = tag_string.split()
+        tags = []
+        for tag in tag_list:
+            if tag.startswith("hidden"):
+                tags.append(tag)
+            else:
+                if not tag[0] == "/":
+                    tag = "/" + tag
+                tag = "hidden" + tag
+                tags.append(tag)
+        return tags
+
     def grab_resource_list_chunk(self, collection_name, name_field, content_field, additional_mdata_fields=None,
                                  do_jsonify=True):
         #  search_spec has active_tag, search_string, search_inside, search_metadata, sort_field, sort_direction
@@ -198,6 +240,9 @@ class LibraryResourceManager(ResourceManager):
         def sort_updated_key(item):
             return item["updated_for_sort"]
 
+        def sort_size_key(item):
+            return item["size_for_sort"]
+
         search_spec = request.json["search_spec"]
         row_number = request.json["row_number"]
         search_text = search_spec['search_string']
@@ -210,36 +255,59 @@ class LibraryResourceManager(ResourceManager):
                     or_list.append({"metadata." + fld: reg})
         if content_field and search_spec["search_inside"]:
             or_list += [{content_field: reg}]
-        res = db[collection_name].find({"$or": or_list}, projection=[name_field, "metadata"])
+        res = db[collection_name].find({"$or": or_list}, projection=[name_field, "metadata", "file_id"])
         filtered_res = []
         all_tags = []
         if search_spec["active_tag"]:
             for doc in res:
                 if "metadata" in doc:
                     mdata = doc["metadata"]
-                    all_tags += mdata["tags"].split()
-                    if search_spec["active_tag"] in self.get_all_subtags(mdata["tags"]):
-                        filtered_res.append(self.build_res_dict(doc[name_field], mdata))
+                    if self.has_hidden(mdata["tags"]):
+                        all_subtags = self.add_hidden_to_all_subtags(mdata["tags"])
+                        all_tags += self.add_hidden_to_tags(mdata["tags"])
+                        if not self.has_hidden(search_spec["active_tag"]):
+                            continue
+                    else:
+                        all_subtags = self.get_all_subtags(mdata["tags"])
+                        all_tags += mdata["tags"].split()
+                    if search_spec["active_tag"] in all_subtags:
+                        if "file_id" in doc:
+                            rdict = self.build_res_dict(doc[name_field], mdata, None, doc["file_id"])
+                        else:
+                            rdict = self.build_res_dict(doc[name_field], mdata)
+                        filtered_res.append(rdict)
         else:
             for doc in res:
                 if "metadata" in doc:
                     mdata = doc["metadata"]
-                    all_tags += mdata["tags"].split()
+
+                    if self.has_hidden(mdata["tags"]):
+                        all_tags += self.add_hidden_to_tags(mdata["tags"])
+                        continue
+                    else:
+                        all_tags += mdata["tags"].split()
                 else:
                     mdata = None
-                filtered_res.append(self.build_res_dict(doc[name_field], mdata))
+                if "file_id" in doc:
+                    rdict = self.build_res_dict(doc[name_field], mdata, None, doc["file_id"])
+                else:
+                    rdict = self.build_res_dict(doc[name_field], mdata)
+                filtered_res.append(rdict)
 
         if search_spec["sort_direction"] == "ascending":
             reverse = False
         else:
             reverse = True
 
-        all_tags = list(sorted(all_tags))
+        all_tags = sorted(list(set(all_tags)))
         sort_field = search_spec["sort_field"]
+
         if sort_field == "created":
             sort_key_func = sort_created_key
         elif sort_field == "updated":
             sort_key_func = sort_updated_key
+        elif sort_field == "size":
+            sort_key_func = sort_size_key
         else:
             sort_key_func = sort_mdata_key
 

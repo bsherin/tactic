@@ -148,8 +148,8 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
             active_tag: "all",
             tree: []
           },
-          sorting_column: "updated",
-          sorting_direction: "descending",
+          sort_field: "updated",
+          sort_direction: "descending",
           multi_select: false,
           list_of_selected: [],
           search_string: "",
@@ -359,6 +359,10 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
           "tags": {
             "sort_field": "tags",
             "first_sort": "ascending"
+          },
+          "size": {
+            "sort_field": "size_for_sort",
+            "first_sort": "descending"
           }
         },
         res_type: "collection",
@@ -394,6 +398,10 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
           "tags": {
             "sort_field": "tags",
             "first_sort": "ascending"
+          },
+          "size": {
+            "sort_field": "size_for_sort",
+            "first_sort": "descending"
           }
         },
         res_type: "project",

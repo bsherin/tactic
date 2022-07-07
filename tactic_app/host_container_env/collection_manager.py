@@ -67,6 +67,8 @@ class CollectionManager(LibraryResourceManager):
                          login_required(self.duplicate_collection), methods=['post', 'get'])
         app.add_url_rule('/download_collection/<collection_name>/<new_name>', "download_collection",
                          login_required(self.download_collection), methods=['post', 'get'])
+        app.add_url_rule('/update_collection_size/<base_collection_name>', "update_collection_size",
+                         login_required(self.update_collection_size), methods=['post', 'get'])
         app.add_url_rule('/combine_collections/<base_collection_name>/<collection_to_add>', "combine_collections",
                          login_required(self.combine_collections), methods=['post', 'get'])
         app.add_url_rule('/combine_to_new_collection', "combine_to_new_collection",
@@ -243,6 +245,32 @@ class CollectionManager(LibraryResourceManager):
                          attachment_filename=new_name,
                          as_attachment=True)
 
+    def get_collection_size(self, short_cname):
+        total = 0
+        for doc in db[current_user.full_collection_name(short_cname)].find():
+            if "file_id" in doc:
+                total += db["fs.files"].find_one({"_id": doc["file_id"]})["length"]
+        return total
+
+    def get_collection_size_info(self, short_name, mdata):
+        if "size" not in mdata:
+            col_size = self.get_collection_size(short_name)
+            current_user.set_collection_size(short_name, col_size)
+        else:
+            col_size = mdata["size"]
+        if col_size < 100000:
+            size_text = "{}kb".format(round(col_size / 1000, 1))
+        else:
+            size_text = "{}mb".format(round(col_size / 1000000, 1))
+        return col_size, size_text
+
+    def build_res_dict(self, short_name, mdata, user_object=None):
+        entry = super().build_res_dict(short_name, mdata, user_object)
+        col_size, size_text = self.get_collection_size_info(short_name, mdata)
+        entry["size_for_sort"] = col_size
+        entry["size"] = size_text
+        return entry
+
     def grab_collection_list_chunk(self):
 
         def sort_mdata_key(item):
@@ -255,6 +283,9 @@ class CollectionManager(LibraryResourceManager):
 
         def sort_updated_key(item):
             return item["updated_for_sort"]
+
+        def sort_size_key(item):
+            return item["size_for_sort"]
 
         try:
             if request.json["is_repository"]:
@@ -273,10 +304,12 @@ class CollectionManager(LibraryResourceManager):
             found_collections = []
             all_tags = []
             icon_dict = {"table": "icon:th", "freeform": "icon:align-left"}
+            print("got cnames")
             for cname in cnames:
                 m = re.search(string_start + "(.*)", cname)
                 if m:
                     mdata = db[cname].find_one({"name": "__metadata__"})
+
                     entry = self.build_res_dict(m.group(1), mdata, user_obj)
                     if "type" in mdata:
                         entry["doc_type"] = icon_dict[mdata["type"]]
@@ -286,14 +319,25 @@ class CollectionManager(LibraryResourceManager):
                         entry["icon:th"] = entry["doc_type"]
                     if re.match(search_text, m.group(1)):
                         if search_spec["active_tag"]:
-                            if search_spec["active_tag"] in self.get_all_subtags(entry["tags"]):
-                                found_collections.append(entry)
+                            if self.has_hidden(entry["tags"]):
+                                all_subtags = self.add_hidden_to_all_subtags(entry["tags"])
+                                all_tags += self.add_hidden_to_tags(mdata["tags"])
+                                if not self.has_hidden(search_spec["active_tag"]):
+                                    continue
+                            else:
+                                all_subtags = self.get_all_subtags(entry["tags"])
                                 all_tags += entry["tags"].split()
+                            if search_spec["active_tag"] in all_subtags:
+                                found_collections.append(entry)
                         else:
+                            if self.has_hidden(entry["tags"]):
+                                all_tags += self.add_hidden_to_tags(entry["tags"])
+                                continue
+                            else:
+                                all_tags += entry["tags"].split()
                             found_collections.append(entry)
-                            all_tags += entry["tags"].split()
 
-            all_tags = list(set(all_tags))
+            all_tags = sorted(list(set(all_tags)))
             if search_spec["sort_direction"] == "ascending":
                 reverse = False
             else:
@@ -304,6 +348,8 @@ class CollectionManager(LibraryResourceManager):
                 sort_key_func = sort_created_key
             elif sort_field == "updated":
                 sort_key_func = sort_updated_key
+            elif sort_field == "size":
+                sort_key_func = sort_size_key
             else:
                 sort_key_func = sort_mdata_key
 
@@ -389,6 +435,20 @@ class CollectionManager(LibraryResourceManager):
             doc_type = "table"
         return doc_type
 
+    def update_collection_size(self, base_collection_name):
+        user_obj = current_user
+
+        if base_collection_name not in user_obj.data_collections:
+            error_string = base_collection_name + " doesn't exist"
+            return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
+
+        user_obj.remove_collection_size(base_collection_name)
+        coll_mdata = user_obj.get_collection_metadata(base_collection_name)
+        self.update_selector_row(self.build_res_dict(base_collection_name, coll_mdata))
+        return jsonify({"success": True,
+                        "message": "Size Updated",
+                        "alert_type": "alert-success"})
+
     def combine_collections(self, base_collection_name, collection_to_add):
         try:
             user_obj = current_user
@@ -406,15 +466,18 @@ class CollectionManager(LibraryResourceManager):
                 error_string = "Cannot combine freeform and table collections"
                 return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
             for dname, doc in coll_dict.items():
-                print("about to append doc " + dname)
                 if doc_type == "freeform":
                     hlist = None
                 else:
                     hlist = hl_dict[dname]
-                print("got hlist")
                 user_obj.append_document_to_collection(base_collection_name, dname, doc, coll_mdata["type"],
                                                        hlist, dm_dict[dname])
             user_obj.update_collection_time(base_collection_name)
+            print("collection metatdata is " + str(user_obj.get_collection_metadata(base_collection_name)))
+            if "size" in coll_mdata:
+                print("deleting size")
+                del coll_mdata["size"]
+            print("coll_mdata " + str(coll_mdata))
             self.update_selector_row(self.build_res_dict(base_collection_name, coll_mdata))
             return jsonify({"success": True,
                             "message": "Collections successfull combined",
@@ -596,6 +659,8 @@ class CollectionManager(LibraryResourceManager):
             new_name = request.json["new_name"]
             coll_dict, dm_dict, hl_dict, coll_mdata = user_obj.get_all_collection_info(original_collections[0])
             doc_type = coll_mdata["type"]
+            if "size" in coll_mdata:
+                del coll_mdata["size"]
             user_obj.create_complete_collection(new_name,
                                                 coll_dict,
                                                 coll_mdata["type"],
@@ -625,25 +690,36 @@ class CollectionManager(LibraryResourceManager):
             return self.get_exception_for_ajax(ex, "Error combining collections")
 
     def duplicate_collection(self):
-        user_obj = current_user
-        new_res_name = request.json["new_res_name"]
-        coll_dict, dm_dict, hl_dict, coll_mdata = user_obj.get_all_collection_info(request.json['res_to_copy'])
+        try:
+            user_obj = current_user
+            new_res_name = request.json["new_res_name"]
+            coll_dict, dm_dict, hl_dict, coll_mdata = user_obj.get_all_collection_info(request.json['res_to_copy'])
+            if "size" in coll_mdata and coll_mdata["size"] == 0:
+                del coll_mdata["size"]
+            if "type" in coll_mdata:
+                ctype = coll_mdata["type"]
+            else:
+                ctype = "table"    # For old collections
+            result = user_obj.create_complete_collection(new_res_name,
+                                                         coll_dict,
+                                                         "table",
+                                                         dm_dict,
+                                                         hl_dict,
+                                                         coll_mdata)
 
-        result = user_obj.create_complete_collection(new_res_name,
-                                                     coll_dict,
-                                                     coll_mdata["type"],
-                                                     dm_dict,
-                                                     hl_dict,
-                                                     coll_mdata)
+            if not result["success"]:
+                result["message"] = result["message"]
+                result["alert_type"] = "alert-warning"
+                return jsonify(result)
 
-        if not result["success"]:
-            result["message"] = result["message"]
-            result["alert_type"] = "alert-warning"
-            return jsonify(result)
-
-        metadata = user_obj.get_collection_metadata(new_res_name)
-        new_row = self.build_res_dict(new_res_name, metadata, user_obj)
-        return jsonify({"success": True, "new_row": new_row})
+            metadata = user_obj.get_collection_metadata(new_res_name)
+            new_row = self.build_res_dict(new_res_name, metadata, user_obj)
+            return jsonify({"success": True, "new_row": new_row})
+        except Exception as ex:
+            msg = self.get_traceback_message(ex)
+            self.add_error_drawer_entry("Error duplicating collection", msg, request.json["library_id"])
+            # return self.get_exception_for_ajax(ex, "Error duplicating collection")
+            return jsonify({"success": False})
 
 
 class RepositoryCollectionManager(CollectionManager):
