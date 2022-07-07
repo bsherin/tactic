@@ -48,4 +48,6 @@ Finally:
 
 # also if I just want to pull over the source code from git, can do
 > ansible-playbook -i staging deploy_pull_github_only.yml
+# or just pull new docker images and relaunch server
+> ansible-playbook -i staging deploy_pull_images_only.yml
 ```

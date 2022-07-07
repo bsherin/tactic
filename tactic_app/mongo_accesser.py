@@ -103,6 +103,12 @@ class MongoAccess(object):
         self.db[full_collection_name].update_one({"name": "__metadata__"},
                                                  {'$set': {"updated": datetime.datetime.utcnow()}})
 
+    def remove_collection_size(self, collection_name):
+        full_collection_name = self.build_data_collection_name(collection_name)
+        self.db[full_collection_name].update_one({"name": "__metadata__"},
+                                                 {'$unset': {"size": ""}})
+        return
+
     def create_empty_collection(self, new_name, doc_type, collection_metadata=None):
         return self.create_complete_collection(new_name, {}, doc_type, None, None, collection_metadata)
 
@@ -214,6 +220,19 @@ class MongoAccess(object):
         else:
             self.db[full_collection_name].update_one({"name": "__metadata__"},
                                                      {'$set': {"tags": tags, "notes": notes}})
+        return
+
+    def set_collection_size(self, short_collection_name, size):
+        name_exists = short_collection_name in self.data_collections
+        if not name_exists:
+            return None
+        full_collection_name = self.build_data_collection_name(short_collection_name)
+        mdata = self.get_collection_metadata(short_collection_name)
+        if mdata is None:
+            return
+        print("setting collection size for " + full_collection_name)
+        self.db[full_collection_name].update_one({"name": "__metadata__"},
+                                                 {'$set': {"size": size}})
         return
 
     def get_collection_docnames(self, short_collection_name):

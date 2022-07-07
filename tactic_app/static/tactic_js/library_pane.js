@@ -217,8 +217,8 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         search_string: this.props.search_string,
         search_inside: this.props.search_inside,
         search_metadata: this.props.search_metadata,
-        sort_field: this.props.sorting_column,
-        sort_direction: this.props.sorting_direction
+        sort_field: this.props.sort_field,
+        sort_direction: this.props.sort_direction
       };
     }
   }, {
@@ -749,14 +749,14 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
                 if (common_tags.includes(tag)) {
                   new_common_tags.push(tag);
                 }
-
-                common_tags = new_common_tags;
               }
             } catch (err) {
               _iterator6.e(err);
             } finally {
               _iterator6.f();
             }
+
+            common_tags = new_common_tags;
           }
         } catch (err) {
           _iterator5.e(err);
@@ -952,11 +952,12 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       function DuplicateResource(new_name) {
         var result_dict = {
           "new_res_name": new_name,
-          "res_to_copy": res_name
+          "res_to_copy": res_name,
+          "library_id": self.props.library_id
         };
         (0, _communication_react.postAjaxPromise)(duplicate_view, result_dict).then(function (data) {
           self._grabNewChunkWithRow(0, true, null, false, new_name);
-        })["catch"](_toaster.doFlash);
+        }); // .catch(doFlash)
       }
     }
   }, {
@@ -1006,7 +1007,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
           }
 
           self._grabNewChunkWithRow(new_index, true, null, true);
-        })["catch"](_toaster.doFlash);
+        }); // .catch(doFlash);
       });
     }
   }, {
@@ -1342,9 +1343,9 @@ LibraryPane.propTypes = {
   aux_pane: _propTypes["default"].object,
   left_width_fraction: _propTypes["default"].number,
   selected_resource: _propTypes["default"].object,
-  sorting_column: _propTypes["default"].string,
+  sort_field: _propTypes["default"].string,
   sorting_field: _propTypes["default"].string,
-  sorting_direction: _propTypes["default"].string,
+  sort_direction: _propTypes["default"].string,
   multi_select: _propTypes["default"].bool,
   list_of_selected: _propTypes["default"].array,
   search_string: _propTypes["default"].string,

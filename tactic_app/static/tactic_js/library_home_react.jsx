@@ -68,8 +68,8 @@ class LibraryHomeApp extends React.Component {
                     active_tag: "all",
                     tree: []
                 },
-                sorting_column: "updated",
-                sorting_direction: "descending",
+                sort_field: "updated",
+                sort_direction: "descending",
                 multi_select: false,
                 list_of_selected: [],
                 search_string: "",
@@ -198,9 +198,10 @@ class LibraryHomeApp extends React.Component {
                         <LibraryPane {...lib_props}
                                     columns={{"icon:th": {"sort_field": "type", "first_sort": "ascending"},
                                               "name": {"sort_field": "name", "first_sort": "ascending"},
-                                             "created": {"sort_field": "created_for_sort", "first_sort": "descending"},
+                                              "created": {"sort_field": "created_for_sort", "first_sort": "descending"},
                                               "updated": {"sort_field": "updated_for_sort", "first_sort": "ascending"},
-                                             "tags": {"sort_field": "tags", "first_sort": "ascending"}
+                                              "tags": {"sort_field": "tags", "first_sort": "ascending"},
+                                              "size": {"sort_field": "size_for_sort", "first_sort": "descending"}
                                              }}
                                      res_type="collection"
                                      handleCreateViewer={this.props.handleCreateViewer}
@@ -220,7 +221,8 @@ class LibraryHomeApp extends React.Component {
                                               "name": {"sort_field": "name", "first_sort": "ascending"},
                                              "created": {"sort_field": "created_for_sort", "first_sort": "descending"},
                                               "updated": {"sort_field": "updated_for_sort", "first_sort": "ascending"},
-                                             "tags": {"sort_field": "tags", "first_sort": "ascending"}
+                                             "tags": {"sort_field": "tags", "first_sort": "ascending"},
+                                            "size": {"sort_field": "size_for_sort", "first_sort": "descending"}
                                              }}
                                           res_type="project"
                                           handleCreateViewer={this.props.handleCreateViewer}

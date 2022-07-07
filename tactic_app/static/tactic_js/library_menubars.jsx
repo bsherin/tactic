@@ -146,6 +146,19 @@ class CollectionMenubar extends React.Component {
         }, res_name + ".xlsx")
     };
 
+    _recalculate_size (resource_name=null) {
+        let res_name = resource_name ? resource_name : this.props.selected_resource.name;
+        const target = `${$SCRIPT_ROOT}/update_collection_size/${res_name}`;
+        $.post(target, (data)=>{
+            if (!data.success) {
+                self.props.addErrorDrawerEntry({title: "Error calculating size", content: data.message})
+            }
+            else {
+                doFlash(data);
+            }
+        });
+    };
+
     _displayImportResults(data) {
         let title = "Collection Created";
         let message = "";
@@ -210,6 +223,8 @@ class CollectionMenubar extends React.Component {
                     multi_select: true},
                 {name_text: "Delete Collections", icon_name: "trash", click_handler: ()=>{this._collection_delete()},
                     multi_select: true},
+                {name_text: "Recalculate Size", icon_name: "refresh", click_handler: ()=>{this._recalculate_size()},
+                    multi_select: false},
             ],
             Transfer: [
                 {name_text: "Import Data", icon_name: "cloud-upload", click_handler: this._showImport},

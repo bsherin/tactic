@@ -125,8 +125,8 @@ class LibraryPane extends React.Component {
             search_string: this.props.search_string,
             search_inside: this.props.search_inside,
             search_metadata: this.props.search_metadata,
-            sort_field: this.props.sorting_column,
-            sort_direction: this.props.sorting_direction
+            sort_field: this.props.sort_field,
+            sort_direction: this.props.sort_direction
         }
     }
 
@@ -499,8 +499,8 @@ class LibraryPane extends React.Component {
                     if (common_tags.includes(tag)) {
                         new_common_tags.push(tag)
                     }
-                     common_tags = new_common_tags
                 }
+                common_tags = new_common_tags
             }
 
             let multi_select_list = selected_rows.map((row_dict)=>row_dict.name);
@@ -660,14 +660,15 @@ class LibraryPane extends React.Component {
         function DuplicateResource(new_name) {
             const result_dict = {
                 "new_res_name": new_name,
-                "res_to_copy": res_name
+                "res_to_copy": res_name,
+                "library_id": self.props.library_id
             };
             postAjaxPromise(duplicate_view, result_dict)
                 .then((data) => {
                         self._grabNewChunkWithRow(0, true, null, false, new_name)
                     }
                 )
-                .catch(doFlash)
+                // .catch(doFlash)
         }
     }
 
@@ -699,7 +700,7 @@ class LibraryPane extends React.Component {
                     }
                     self._grabNewChunkWithRow(new_index, true, null, true)
                 })
-                .catch(doFlash);
+                // .catch(doFlash);
         })
     }
 
@@ -985,9 +986,9 @@ LibraryPane.propTypes = {
     aux_pane: PropTypes.object,
     left_width_fraction: PropTypes.number,
     selected_resource: PropTypes.object,
-    sorting_column: PropTypes.string,
+    sort_field: PropTypes.string,
     sorting_field: PropTypes.string,
-    sorting_direction: PropTypes.string,
+    sort_direction: PropTypes.string,
     multi_select: PropTypes.bool,
     list_of_selected: PropTypes.array,
     search_string: PropTypes.string,

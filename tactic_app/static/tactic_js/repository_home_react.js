@@ -143,8 +143,8 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
             active_tag: "all",
             tree: []
           },
-          sorting_column: "updated",
-          sorting_direction: "descending",
+          sort_field: "updated",
+          sort_direction: "descending",
           multi_select: false,
           list_of_selected: [],
           search_string: "",

@@ -57,7 +57,8 @@ function withErrorDrawer(WrappedComponent, title=null, position="right", size="3
         }
 
         _addEntry(data, open=true) {
-            if (data == null || !("main_id" in data) || (data.main_id == this.props.main_id)) {
+            let local_id = this.props.main_id ? this.props.main_id : this.props.library_id;
+            if (data == null || !("main_id" in data) || (data.main_id == local_id)) {
                 this.setState({contents: [data, ...this.state.contents], show_drawer: open})
             }
         }

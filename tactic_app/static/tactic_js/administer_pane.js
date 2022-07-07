@@ -114,8 +114,8 @@ var AdminPane = /*#__PURE__*/function (_React$Component) {
     value: function _getSearchSpec() {
       return {
         search_string: this.props.search_string,
-        sort_field: this.props.sorting_column,
-        sort_direction: this.props.sorting_direction
+        sort_field: this.props.sort_field,
+        sort_direction: this.props.sort_direction
       };
     }
   }, {
