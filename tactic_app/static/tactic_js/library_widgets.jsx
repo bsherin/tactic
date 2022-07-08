@@ -110,10 +110,25 @@ class SearchForm extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this);
+        this.current_timer = null;
+        this.state = {
+            temp_text: null
+        };
+        this.temp_text = null;
     }
 
     _handleSearchFieldChange(event) {
-        this.props.update_search_state({"search_string": event.target.value});
+        if (this.current_timer) {
+            clearTimeout(this.current_timer);
+            this.current_timer = null;
+        }
+        let self = this;
+        let newval = event.target.value;
+        this.current_timer = setTimeout(()=> {
+                self.current_timer = null;
+                self.props.update_search_state({"search_string": newval})
+            }, self.props.update_delay);
+        this.setState({temp_text: newval});
     }
 
     _handleClearSearch() {
@@ -151,6 +166,7 @@ class SearchForm extends React.Component {
         else {
             match_text = null
         }
+        let current_text = this.current_timer ? this.state.temp_text : this.props.search_string;
         return (
             <React.Fragment>
                 <FormGroup helperText={match_text} style={{marginBottom: 0}}>
@@ -158,7 +174,7 @@ class SearchForm extends React.Component {
                         <InputGroup type="search"
                                     placeholder="Search"
                                     leftIcon="search"
-                                    value={this.props.search_string}
+                                    value={current_text}
                                     onChange={this._handleSearchFieldChange}
                                     style={{"width": this.props.field_width}}
                                     autoCapitalize="none"
@@ -209,7 +225,8 @@ SearchForm.propTypes = {
     searchNext: PropTypes.func,
     searchPrev: PropTypes.func,
     search_ref: PropTypes.object,
-    number_matches: PropTypes.number
+    number_matches: PropTypes.number,
+    update_delay: PropTypes.number
 };
 
 SearchForm.defaultProps = {
@@ -223,7 +240,8 @@ SearchForm.defaultProps = {
     searchNext: null,
     searchPrev: null,
     search_ref: null,
-    number_matches: null
+    number_matches: null,
+    update_delay: 500
 };
 
 class BpSelectorTable extends React.Component {
