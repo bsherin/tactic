@@ -190,14 +190,32 @@ var SearchForm = /*#__PURE__*/function (_React$Component3) {
 
     _this3 = _super3.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this3));
+    _this3.current_timer = null;
+    _this3.state = {
+      temp_text: null
+    };
+    _this3.temp_text = null;
     return _this3;
   }
 
   _createClass(SearchForm, [{
     key: "_handleSearchFieldChange",
     value: function _handleSearchFieldChange(event) {
-      this.props.update_search_state({
-        "search_string": event.target.value
+      if (this.current_timer) {
+        clearTimeout(this.current_timer);
+        this.current_timer = null;
+      }
+
+      var self = this;
+      var newval = event.target.value;
+      this.current_timer = setTimeout(function () {
+        self.current_timer = null;
+        self.props.update_search_state({
+          "search_string": newval
+        });
+      }, self.props.update_delay);
+      this.setState({
+        temp_text: newval
       });
     }
   }, {
@@ -249,6 +267,7 @@ var SearchForm = /*#__PURE__*/function (_React$Component3) {
         match_text = null;
       }
 
+      var current_text = this.current_timer ? this.state.temp_text : this.props.search_string;
       return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
         helperText: match_text,
         style: {
@@ -264,7 +283,7 @@ var SearchForm = /*#__PURE__*/function (_React$Component3) {
         type: "search",
         placeholder: "Search",
         leftIcon: "search",
-        value: this.props.search_string,
+        value: current_text,
         onChange: this._handleSearchFieldChange,
         style: {
           "width": this.props.field_width
@@ -320,7 +339,8 @@ SearchForm.propTypes = {
   searchNext: _propTypes["default"].func,
   searchPrev: _propTypes["default"].func,
   search_ref: _propTypes["default"].object,
-  number_matches: _propTypes["default"].number
+  number_matches: _propTypes["default"].number,
+  update_delay: _propTypes["default"].number
 };
 SearchForm.defaultProps = {
   allow_search_inside: false,
@@ -333,7 +353,8 @@ SearchForm.defaultProps = {
   searchNext: null,
   searchPrev: null,
   search_ref: null,
-  number_matches: null
+  number_matches: null,
+  update_delay: 500
 };
 
 var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
