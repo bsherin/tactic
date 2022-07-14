@@ -57,10 +57,6 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -81,7 +77,73 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
 var DARK_THEME = window.dark_theme_name;
+var EXTRAWORDS = ["global_import"];
+var WORD = /[\w$]+/;
+var RANGE = 500;
+
+_codemirror["default"].registerHelper("hint", "anyword", function (editor, options) {
+  var word = options && options.word || WORD;
+  var range = options && options.range || RANGE;
+  var extraWords = options && options.extraWords || EXTRAWORDS;
+  var commands = options && options.commands || [];
+  var cur = editor.getCursor(),
+      curLine = editor.getLine(cur.line);
+  var end = cur.ch,
+      start = end;
+
+  while (start && word.test(curLine.charAt(start - 1))) {
+    --start;
+  }
+
+  var curWord = start != end && curLine.slice(start, end);
+  var list = options && options.list || [],
+      seen = {};
+  var re = new RegExp(word.source, "g");
+
+  for (var dir = -1; dir <= 1; dir += 2) {
+    var line = cur.line,
+        endLine = Math.min(Math.max(line + dir * range, editor.firstLine()), editor.lastLine()) + dir;
+
+    for (; line != endLine; line += dir) {
+      var text = editor.getLine(line),
+          m;
+
+      while (m = re.exec(text)) {
+        if (line == cur.line && m[0] === curWord) continue;
+
+        if ((!curWord || m[0].lastIndexOf(curWord, 0) == 0) && !Object.prototype.hasOwnProperty.call(seen, m[0])) {
+          seen[m[0]] = true;
+          list.push(m[0]);
+        }
+      }
+    }
+  }
+
+  list.push.apply(list, _toConsumableArray(extraWords.filter(function (el) {
+    return el.startsWith(curWord || '');
+  })));
+  list.push.apply(list, _toConsumableArray(commands.filter(function (el) {
+    return el.startsWith(curWord || '');
+  })));
+  return {
+    list: list,
+    from: _codemirror["default"].Pos(cur.line, start),
+    to: _codemirror["default"].Pos(cur.line, end)
+  };
+});
 
 var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
   _inherits(ReactCodemirror, _React$Component);
@@ -369,7 +431,7 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
         self.api_dict_by_category = data.api_dict_by_category;
         self.api_dict_by_name = data.api_dict_by_name;
         self.ordered_api_categories = data.ordered_api_categories;
-        self.api_list = [];
+        self.commands = [];
 
         var _iterator2 = _createForOfIteratorHelper(self.ordered_api_categories),
             _step2;
@@ -384,7 +446,7 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
             try {
               for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
                 var entry = _step3.value;
-                self.api_list.push(entry["name"]);
+                self.commands.push(entry["name"]);
               }
             } catch (err) {
               _iterator3.e(err);
@@ -403,8 +465,7 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
           //noinspection JSUnresolvedFunction
           cm.showHint({
             hint: _codemirror["default"].hint.anyword,
-            api_list: self.api_list,
-            extra_autocomplete_list: self.extra_autocomplete_list
+            commands: self.commands
           });
         };
       });

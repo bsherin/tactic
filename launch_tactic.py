@@ -99,12 +99,16 @@ def create_mongo():
             print("mongo doesn't yet exist so I'm making it")
         if restart_rabbit or not mongo_exists:
             print("creating tactic-mongo")
-            mongo_volume_dict = {"/Users/bls910/mongo/data": {"bind": "/data/db", "mode": "rw"}}
-            _unique_id, _mongo_id = create_container("mongo:4.2",
+            if ("ON_MAC" in os.environ) and (os.environ.get("ON_MAC") == "True"):
+                mongo_volume_dict = {"/Users/bls910/mongo/data": {"bind": "/data/db", "mode": "rw"}}
+            else:
+                mongo_volume_dict = {"/var/lib/mongo2": {"bind": "/data/db", "mode": "rw"}}
+            _unique_id, _mongo_id = create_container("mongo:latest",
                                                      container_name="tactic-mongo",
                                                      host_name="tactic-mongo",
                                                      volume_dict=mongo_volume_dict,
                                                      port_bindings={27017: 27017},
+                                                     restart_policy=restart_policy,
                                                      register_container=False)
         else:
             print("no need to recreate tactic-mongo")
@@ -142,7 +146,7 @@ def create_host(port=5000, debug=False):
         host_volume_dict = {"/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "rw"}}
         host_volume_dict[host_persist_dir] = {"bind": "/code/persist", "mode": "rw"}
         host_volume_dict[host_static_dir] = {"bind": "/code/static", "mode": "ro"}
-        host_volume_dict[host_docs_dir] = {"bind": "/code/docs", "mode": "ro"}
+        # host_volume_dict[host_docs_dir] = {"bind": "/code/docs", "mode": "ro"}
         env_vars = {"AM_TACTIC_HOST": True, "MYPORT": port, "USE_WAIT_TASKS": True}
         if debug:
             env_vars["DEBUG_CONTAINER"] = True
@@ -183,7 +187,7 @@ if ("ANYONE_CAN_REGISTER" in os.environ) and (os.environ.get("ANYONE_CAN_REGISTE
 else:
     ANYONE_CAN_REGISTER = False
 
-# create_mongo()
+create_mongo()
 create_megaplex()
 create_redis()
 success = sleep_until_rabbit_alive()
