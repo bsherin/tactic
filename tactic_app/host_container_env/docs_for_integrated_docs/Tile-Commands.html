@@ -1,0 +1,977 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>The Tile API &#8212; Tactic .1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Object-Oriented API" href="Object-Oriented-API.html" />
+    <link rel="prev" title="Tile Structure" href="Tile-Structure.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="the-tile-api">
+<h1>The Tile API<a class="headerlink" href="#the-tile-api" title="Permalink to this headline">¶</a></h1>
+<p>Here I explain the Tile API. By that, I mean the special commands and constructs that
+are available within the context of a tile. Where they make sense, they can also
+be used in <a class="reference external" href="Log-And-Notebook.html">Logs and Notebooks</a>.</p>
+<p>To save typing, many of the commmands in this API have shorter equivalents.</p>
+<p>Note that there is an alternate, <a class="reference external" href="Object-Oriented-API.html">object-oriented API</a> which
+has functionality that overlaps with this API. Where the object-oriented API applies, it generally
+allows for code that is easier to read and write.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>All of the commands here are methods of the tile base class, <code class="docutils literal notranslate"><span class="pre">TileBase</span></code>.
+And you will always be calling them, essentially, from within another
+method of <a class="reference external" href="Tile-Structure.html">TileBase</a>. That means that when you invoke these functions you will
+almost always be writing <code class="docutils literal notranslate"><span class="pre">self.function()</span></code>.  In the case of properties, you’ll
+write <code class="docutils literal notranslate"><span class="pre">self.property</span></code>.</p>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="TileBase">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">TileBase</span></span><a class="headerlink" href="#TileBase" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<section id="refreshing">
+<h2>Refreshing<a class="headerlink" href="#refreshing" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><dl class="py method">
+<dt class="sig sig-object py" id="start_spinner">
+<span class="sig-name descname"><span class="pre">start_spinner</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#start_spinner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the spinning animation on the tile</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="stop_spinner">
+<span class="sig-name descname"><span class="pre">stop_spinner</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#stop_spinner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop the spinning animation on the tile.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="refresh_tile_now">
+<span class="sig-name descname"><span class="pre">refresh_tile_now</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_html</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#refresh_tile_now" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the front of the tile using the passed html. If new_html is None
+then <code class="docutils literal notranslate"><span class="pre">render_content</span></code> is called to generate the html to be displayed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>new_html</strong> (<em>str</em>) – The html to display on the front of the tile.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spin_and_refresh">
+<span class="sig-name descname"><span class="pre">spin_and_refresh</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spin_and_refresh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Starts the spinner, refreshes the tile, then stops the spinner.</p>
+</dd></dl>
+
+</div></blockquote>
+</section>
+<section id="data-access">
+<h2>Data Access<a class="headerlink" href="#data-access" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><p>The following methods provide access to the data. Note that much of the same functionality is provided by the
+<a class="reference external" href="Object-Oriented-API.html#Accessingandmanipulatingthecollection">object-oriented api</a>.
+The object-oriented interface is a bit more intuitive.
+However, the commands listed here will often produce tiles that run more quickly.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="get_document_names">
+<span class="sig-name descname"><span class="pre">get_document_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#get_document_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all document names in the current collection.</p>
+<p>Synonym: <code class="docutils literal notranslate"><span class="pre">gdn</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="get_current_document_name">
+<span class="sig-name descname"><span class="pre">get_current_document_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#get_current_document_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the name of the current document.</p>
+<p>Synonym: <code class="docutils literal notranslate"><span class="pre">gcdn</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="get_document_data">
+<span class="sig-name descname"><span class="pre">get_document_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#get_document_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>For table-based documents,returns all of the data in the document
+represented as a dictionary. The keys of the dictionary are the values
+of the __id__ field for each row, represented as strings.</p>
+<p>For freeform documents, the document is returned as a string.</p>
+<p>Synonym: <code class="docutils literal notranslate"><span class="pre">gdd</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="get_document_data_as_list">
+<span class="sig-name descname"><span class="pre">get_document_data_as_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#get_document_data_as_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all of the data in the document represented as a list.</p>
+<p>For table documents, each item corresponds to a row. For freeform
+documents, each item corresponds to a line.</p>
+<p>Synonym: <code class="docutils literal notranslate"><span class="pre">gddl</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="get_column_names">
+<span class="sig-name descname"><span class="pre">get_column_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#get_column_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list containing the column names of the specified document. (Table documents only.)</p>
+<p>Synonym: <code class="docutils literal notranslate"><span class="pre">gcn</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="get_number_rows">
+<span class="sig-name descname"><span class="pre">get_number_rows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#get_number_rows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the number of rows in the specified document for table
+documents. For freeform documents, returns the number of lines.</p>
+<p>Synonym: <code class="docutils literal notranslate"><span class="pre">gnr</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="get_row">
+<span class="sig-name descname"><span class="pre">get_row</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#get_row" title="Permalink to this definition">¶</a></dt>
+<dd><p>For table documents, the specified row is returned. For freeform
+documents, the specified line is returned. <code class="docutils literal notranslate"><span class="pre">self.get_line</span></code> is a
+synonym.</p>
+<p>Synonym: <code class="docutils literal notranslate"><span class="pre">gr</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="get_cell">
+<span class="sig-name descname"><span class="pre">get_cell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#get_cell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the text in the specified cell.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>row_id</strong> (<em>int</em>) – should be the same as the value in __id__. Right now we are also assuming that is the same as the row number in the table. (Table documents only.)</p>
+</dd>
+</dl>
+<p>Synonym: <code class="docutils literal notranslate"><span class="pre">gc</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="get_column_data">
+<span class="sig-name descname"><span class="pre">get_column_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">document_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#get_column_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all contents of a column as a list. If document_name is not provided or is
+None then the content of the column from all documents is returned as one long list. (Table documents only.)</p>
+<p>Synonym: <code class="docutils literal notranslate"><span class="pre">gcd</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="get_column_data_dict">
+<span class="sig-name descname"><span class="pre">get_column_data_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#get_column_data_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary. The keys of the dictionary are the document names.
+Each value is a list corresponding to the values in column_name for the
+document. (Table documents only.)</p>
+<p>Synonym: <code class="docutils literal notranslate"><span class="pre">gcdd</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="get_document_metadata">
+<span class="sig-name descname"><span class="pre">get_document_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#get_document_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a the document-level metadata for the given document. Returns a dict.</p>
+<p>Synonym: <code class="docutils literal notranslate"><span class="pre">gdm</span></code></p>
+</dd></dl>
+
+</div></blockquote>
+</section>
+<section id="data-setting">
+<h2>Data Setting<a class="headerlink" href="#data-setting" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><p>The following methods make it possible to set the data. Note that much of the same functionality is provided by the
+<a class="reference external" href="Object-Oriented-API.html#Accessingandmanipulatingthecollection">object-oriented API</a>.
+The object-oriented interface is a bit more intuitive. However, the commands listed here will often produce tiles that run more quickly.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="set_cell">
+<span class="sig-name descname"><span class="pre">set_cell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cellchange</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#set_cell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the text in the specified cell. By default generates a CellChange
+event.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>row_id</strong> (<em>int</em>) – Should be the same as the value in __id__.</p>
+</dd>
+</dl>
+<p>(Table documents only.)</p>
+<p>Synonym: <code class="docutils literal notranslate"><span class="pre">sc</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="add_document">
+<span class="sig-name descname"><span class="pre">add_document</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list_of_dicts</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#add_document" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a new table document to the collection. Note that if the name of an existing
+document is given that document is overwritten.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>list_of_dicts</strong> (<em>list</em>) – A list of dictionaries corresponding to the rows in the new document.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="remove_document">
+<span class="sig-name descname"><span class="pre">remove_document</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#remove_document" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes a document from the collection.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="add_freeform_document">
+<span class="sig-name descname"><span class="pre">add_freeform_document</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc_text</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#add_freeform_document" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a new freeform document to the collection. Note that if the name of an existing
+document is given that document is overwritten.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="insert_row">
+<span class="sig-name descname"><span class="pre">insert_row</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_as_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#insert_row" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert a new row in a document at the specified index.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="delete_row">
+<span class="sig-name descname"><span class="pre">delete_row</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#delete_row" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a row from a document.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rename_document">
+<span class="sig-name descname"><span class="pre">rename_document</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">old</span> <span class="pre">name</span></em>, <em class="sig-param"><span class="pre">newname</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rename_document" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rename a document in the collection.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="set_document">
+<span class="sig-name descname"><span class="pre">set_document</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cellchange</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#set_document" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is a general utility for setting document data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>new_data</strong> (<em>dictorstring</em>) – For table documents this should be a dictionary where the keys are row ids and the values are row dictionaries.
+These row dictionaries should have keys that correspond to columns in the data table.
+If only some data is specified then only those values will be changed.
+For freeform documents, this should be a string.</p>
+</dd>
+</dl>
+<p>Synonym: <code class="docutils literal notranslate"><span class="pre">sd</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="set_column_data">
+<span class="sig-name descname"><span class="pre">set_column_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cellchange</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#set_column_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the column in a document.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>column_data</strong> (<em>dictorlist</em>) – This can be either a dict or a list. If it’s a dict, then the keys are interpreted
+as the row_id. If it’s a list, then the ordinal position in the list is
+interpreted as the row_id.</p>
+</dd>
+</dl>
+<p>(Table documents only.)</p>
+<p>Synonym: <code class="docutils literal notranslate"><span class="pre">scd</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="set_document_metadata">
+<span class="sig-name descname"><span class="pre">set_document_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#set_document_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the document_level metadata for the given document.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>metadata_dict</strong> (<em>dict</em>) – Should be a dictionary. Note that certain keys are reserved and cannot appear as keys in
+the metadata dict: “_id”, “file_id”, “name”,
+“my_class_for_recreate”, “table_spec”, “data_text”, “length”, “data_rows”,”header_list”, “number_of_rows”.</p>
+</dd>
+</dl>
+<p>Synonym: <code class="docutils literal notranslate"><span class="pre">sdm</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="set_cell_background">
+<span class="sig-name descname"><span class="pre">set_cell_background</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#set_cell_background" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the the background color of the specified cell to the given color.
+The color is used in an expression of the form: <code class="docutils literal notranslate"><span class="pre">$(el).css(&quot;background-color&quot;,</span> <span class="pre">color)</span></code>.
+So color has to be something that can appear in that expression.
+<code class="docutils literal notranslate"><span class="pre">ColorMapper.color_from_val()</span></code> generates the right sort of thing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>row_id</strong> (<em>int</em>) – Should be the same as the value in __id__.
+Right now we are also assuming that is the same as the row number in the table.</p>
+</dd>
+</dl>
+<p>(Table documents only.)</p>
+<p>Synonym: <code class="docutils literal notranslate"><span class="pre">scb</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="color_cell_text">
+<span class="sig-name descname"><span class="pre">color_cell_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokenized_text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#color_cell_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Highlights the words in the target cell.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>color_dict</strong> (<em>dict</em>) – A dictionary that maps words to colors.</p>
+</dd>
+</dl>
+<p>(Table documents only.)</p>
+<p>Synonym: <code class="docutils literal notranslate"><span class="pre">cct</span></code></p>
+</dd></dl>
+
+</div></blockquote>
+</section>
+<section id="filter-and-iterate">
+<h2>Filter-And-Iterate<a class="headerlink" href="#filter-and-iterate" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><dl class="py method">
+<dt class="sig sig-object py" id="get_matching_documents">
+<span class="sig-name descname"><span class="pre">get_matching_documents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter_function</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#get_matching_documents" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filter_function</strong> (<em>func</em>) – Should take a dict, corresponding to a document’s metadata, as an argument,
+and should output a boolean.  Returns a list of the matching documents.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="get_matching_rows">
+<span class="sig-name descname"><span class="pre">get_matching_rows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">document_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#get_matching_rows" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filter_function</strong> (<em>func</em>) – For table docs, this should take a dict (corresponding to a row) as an argument,
+and should output a boolean. For freeform docs, this functin should take a string (corresponding to a line)
+as an argument, and should return a boolean.</p></li>
+<li><p><strong>document_name</strong> (<em>str</em>) – If this is missing or <code class="docutils literal notranslate"><span class="pre">None</span></code> then this will look across all documents
+in the collection.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns a list of the matching rows or lines.</p>
+<p>Synonym: <code class="docutils literal notranslate"><span class="pre">gmr</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="display_matching_rows">
+<span class="sig-name descname"><span class="pre">display_matching_rows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">document_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#display_matching_rows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will cause the table to only display rows matching the filter_function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>document_name</strong> (<em>str</em>) – If this is missing or <code class="docutils literal notranslate"><span class="pre">None</span></code> then this will apply to all documents in the collection.</p>
+</dd>
+</dl>
+<p>(Table documents only.)</p>
+<p>Synonym: <code class="docutils literal notranslate"><span class="pre">dmr</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="clear_table_highlighting">
+<span class="sig-name descname"><span class="pre">clear_table_highlighting</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#clear_table_highlighting" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clears a main table highlighting.</p>
+<p>Synonym: <code class="docutils literal notranslate"><span class="pre">cth</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="highlight_matching_text">
+<span class="sig-name descname"><span class="pre">highlight_matching_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#highlight_matching_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Highlights matching text in the main table.</p>
+<p>Synonym: <code class="docutils literal notranslate"><span class="pre">hmt</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="display_all_rows">
+<span class="sig-name descname"><span class="pre">display_all_rows</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#display_all_rows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will cause the table to display all rows. (Table documents only.)</p>
+<p>Synonym: <code class="docutils literal notranslate"><span class="pre">dar</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apply_to_rows">
+<span class="sig-name descname"><span class="pre">apply_to_rows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">document_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cellchange</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apply_to_rows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies the specified func to each row.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>func</strong> (<em>func</em>) – This should expect a dict corresponding to the row as an input and
+it should return a dict corresponding to the modified row as output.</p></li>
+<li><p><strong>document_name</strong> (<em>str</em>) – If this is missing or <code class="docutils literal notranslate"><span class="pre">None</span></code> then this will apply to all documents in the collection.</p></li>
+</ul>
+</dd>
+</dl>
+<p>(Table documents only.)</p>
+<p>Synonym: <code class="docutils literal notranslate"><span class="pre">atr</span></code></p>
+</dd></dl>
+
+</div></blockquote>
+</section>
+<section id="object-api-related">
+<h2>Object API-related<a class="headerlink" href="#object-api-related" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><p>The commands <code class="docutils literal notranslate"><span class="pre">Library</span></code>, <code class="docutils literal notranslate"><span class="pre">Collection</span></code>, <code class="docutils literal notranslate"><span class="pre">Tiles</span></code>, and <code class="docutils literal notranslate"><span class="pre">Pipes</span></code> return objects that provide direct access
+to elements of the object-oriented API. Note that you do not type <code class="docutils literal notranslate"><span class="pre">self</span></code> before these commands. This is documented
+in the <a class="reference external" href="Object-Oriented-API.html#accessing-and-manipulating-the-collection">object-oriented interface</a></p>
+<p>In addition, there are a few tile methods (which are preceded by <code class="docutils literal notranslate"><span class="pre">self.</span></code>) that pertain to the object API.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="collection">
+<span class="sig-name descname"><span class="pre">collection</span></span><a class="headerlink" href="#collection" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">self.collection</span></code> returns a TacticCollection object corresponding to the collection in the current project.
+It is equivalent to typing <code class="docutils literal notranslate"><span class="pre">Collection</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="create_collection_object">
+<span class="sig-name descname"><span class="pre">create_collection_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#create_collection_object" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new <a class="reference internal" href="Object-Oriented-API.html#DetachedTacticCollection" title="DetachedTacticCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">DetachedTacticCollection</span></code></a> object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>doc_list</strong> (<em>list</em>) – If provided, this must be a list of <a class="reference internal" href="Object-Oriented-API.html#DetachedTacticDocument" title="DetachedTacticDocument"><code class="xref py py-class docutils literal notranslate"><span class="pre">DetachedTacticDocument</span></code></a> objects.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="create_document">
+<span class="sig-name descname"><span class="pre">create_document</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">docname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'document1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#create_document" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new <a class="reference internal" href="Object-Oriented-API.html#DetachedTacticDocument" title="DetachedTacticDocument"><code class="xref py py-class docutils literal notranslate"><span class="pre">DetachedTacticDocument</span></code></a> object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>doc_data</strong> (<em>dforlist</em>) – This can be either pandas DataFrame, a list of <a class="reference internal" href="Object-Oriented-API.html#TacticRow" title="TacticRow"><code class="xref py py-class docutils literal notranslate"><span class="pre">TacticRow</span></code></a> objects, or a list of dicts.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="create_freeform_document">
+<span class="sig-name descname"><span class="pre">create_freeform_document</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">docname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'document1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lines</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#create_freeform_document" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new <code class="xref py py-class docutils literal notranslate"><span class="pre">DetachedFreeformTacticCollection</span></code> object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="create_row">
+<span class="sig-name descname"><span class="pre">create_row</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">row_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#create_row" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new <a class="reference internal" href="Object-Oriented-API.html#DetachedTacticRow" title="DetachedTacticRow"><code class="xref py py-class docutils literal notranslate"><span class="pre">DetachedTacticRow</span></code></a> object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>row_dict</strong> (<em>dfordict</em>) – This be a dict or a pandas Series.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="create_line">
+<span class="sig-name descname"><span class="pre">create_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#create_line" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new <code class="xref py py-class docutils literal notranslate"><span class="pre">DetachedTacticLIne</span></code> object.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tiles">
+<span class="sig-name descname"><span class="pre">tiles</span></span><a class="headerlink" href="#tiles" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">self.tiles</span></code> returns a RemoteTiles object corresponding to the tiles in the current project. This is
+equivalent to typing <cite>Tiles.</cite></p>
+</dd></dl>
+
+</div></blockquote>
+</section>
+<section id="other-tilebase">
+<h2>Other TileBase<a class="headerlink" href="#other-tilebase" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><dl class="py method">
+<dt class="sig sig-object py" id="create_collection">
+<span class="sig-name descname"><span class="pre">create_collection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'table'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc_metadata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header_list_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collection_metadata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#create_collection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new collection in the user’s resource library.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Name for the new collection.</p></li>
+<li><p><strong>doc_type</strong> (<em>str</em>) – Specifies whether the type of the document is table or freeform.</p></li>
+<li><p><strong>doc_dict</strong> (<em>dict</em>) – A dictionary in which the keys are names for the individual documents that will comprise the
+new collection. For freeform documents, the values of this dictionary
+are strings. For tables, the values are a list of rows, with each row
+being a dict.</p></li>
+<li><p><strong>doc_metadata</strong> (<em>dict</em>) – is a dictionary that holds any document-level metadata
+you’d like to add. The keys are document names and the values are
+dictionaries of keys and values.</p></li>
+<li><p><strong>header_list_dict</strong> (<em>dict</em>) – is a dictionary of lists. The keys are document names and each value is a list
+of column names. This allows you to specify the order in which columns will appear in a table.</p></li>
+<li><p><strong>collection_metadata</strong> (<em>dict</em>) – is a dictionary of metadata to be associated with the collection as a whole.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Synonym: <code class="docutils literal notranslate"><span class="pre">cc</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="go_to_document">
+<span class="sig-name descname"><span class="pre">go_to_document</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#go_to_document" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shows the named document in the table.</p>
+<p>Synonym: <code class="docutils literal notranslate"><span class="pre">gtd</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="go_to_row_in_document">
+<span class="sig-name descname"><span class="pre">go_to_row_in_document</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#go_to_row_in_document" title="Permalink to this definition">¶</a></dt>
+<dd><p>For table documents, this shows the named document and selects the named
+row. For freeform documents, the corresponding line is scrolled into
+view.</p>
+<p>Synonym: <code class="docutils literal notranslate"><span class="pre">gtrid</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="get_selected_text">
+<span class="sig-name descname"><span class="pre">get_selected_text</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#get_selected_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the text currently highlighted by the user</p>
+<p>Synonym: <code class="docutils literal notranslate"><span class="pre">gst</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="log_it">
+<span class="sig-name descname"><span class="pre">log_it</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">html_string</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_open</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">summary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#log_it" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds the given html to the log (formerly called the console).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>force_open</strong> (<em>bool</em>) – If True then the Log will be opened if it was closed.</p></li>
+<li><p><strong>is_error</strong> (<em>bool</em>) – If True then the new panel that is created in the Log
+will be an error panel. This means it will have a red header. It also
+means that, if the user resets the log, then the panel will be deleted.</p></li>
+<li><p><strong>summary</strong> (<em>str</em>) – If provided a line of text to be displayed when the log item is shrunk.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Synonyms: <code class="docutils literal notranslate"><span class="pre">dm</span></code>, <code class="docutils literal notranslate"><span class="pre">display_message</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="get_container_log">
+<span class="sig-name descname"><span class="pre">get_container_log</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#get_container_log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns, as a string, the current contents of the container log file.
+This is the log file of the container that holds the tile. All error
+messages go to this file. Also and print statements.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="send_tile_message">
+<span class="sig-name descname"><span class="pre">send_tile_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tile_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#send_tile_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends a message to a tile with the given name. The event_name and data
+are passed to the named tile, which it can capture by defining a
+handle_tile_message method. (See <a class="reference external" href="Tile-Structure.html#events-and-default-handlers">Events and
+handlers</a>)</p>
+<p>Synonym: <code class="docutils literal notranslate"><span class="pre">stm</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="get_function_names">
+<span class="sig-name descname"><span class="pre">get_function_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">tag=None);</span> <span class="pre">self.get_class_names(tag=None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#get_function_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of the available user function names or class names. This
+list can be restricted to those with the specified tag. These names can
+then be used to access the associated function or class with
+<code class="docutils literal notranslate"><span class="pre">get_user_function()</span></code> or <code class="docutils literal notranslate"><span class="pre">get_user_class()</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="get_user_list">
+<span class="sig-name descname"><span class="pre">get_user_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">list_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#get_user_list" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="get_pipe_value">
+<span class="sig-name descname"><span class="pre">get_pipe_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pipe_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#get_pipe_value" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="get_user_function">
+<span class="sig-name descname"><span class="pre">get_user_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">function_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#get_user_function" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="get_user_class">
+<span class="sig-name descname"><span class="pre">get_user_class</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">class_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#get_user_class" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="get_user_collection">
+<span class="sig-name descname"><span class="pre">get_user_collection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">collection_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#get_user_collection" title="Permalink to this definition">¶</a></dt>
+<dd><p>When a tile includes a list, pipe, function, class, collection as one of
+the options that appears on the back of a tile, then update_options
+places the name of the relevant resource in the attribute made available
+to the tile. These commands return the object associated with the name.</p>
+<p>You can also use these commands on their own if you happen to know, in
+advance, the name of one of your resources.</p>
+<p>Finally, there are alternatives to all of these command in the object-oriented interface. For example
+<code class="docutils literal notranslate"><span class="pre">Library.lists[list_name]</span></code> returns the corresponding list from the users library.</p>
+<p>Synonyms: <code class="docutils literal notranslate"><span class="pre">gulist</span></code>, <code class="docutils literal notranslate"><span class="pre">gufunc</span></code>, <code class="docutils literal notranslate"><span class="pre">guclass</span></code>, <code class="docutils literal notranslate"><span class="pre">gucol</span></code> for <code class="docutils literal notranslate"><span class="pre">get_user_list</span></code>, <code class="docutils literal notranslate"><span class="pre">get_user_function</span></code>,
+<code class="docutils literal notranslate"><span class="pre">get_user_class</span></code>, and <code class="docutils literal notranslate"><span class="pre">get_user_collection</span></code> respectively.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="html_table">
+<span class="sig-name descname"><span class="pre">html_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">click_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'word-clickable'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sortable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sidebyside</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_header</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">body_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_row_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#html_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns html for a table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>many</em>) – Can be given in a number of forms. It can be a a pandas DataFrame, a list of
+dicts, an nltk FreqDist, a list of lists, a dict, or a pandas Series.
+If the data is a dict or a Series, the table produced has two columns, one corresponding to the keys, the other
+to the values.</p></li>
+<li><p><strong>title</strong> (<em>str</em>) – An optional title.</p></li>
+<li><p><strong>click_type</strong> (<em>str</em>) – Can be <code class="docutils literal notranslate"><span class="pre">&quot;word-clickable&quot;</span></code>,
+<code class="docutils literal notranslate"><span class="pre">&quot;element-clickable&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;row-clickable&quot;</span></code>. If it’s word-clickable
+or element-clickable, then every cell in the table is assigned the
+corresponding class, and hence will lead to generating a TileWordClick
+or TileElementClick event when clicked. If the click_type is
+row-clickable, then the row is assigned a row-clickable class (and will
+lead to the generation of TileRowClick events.) These various events can
+then be handled by the appropriate handlers in a tile:
+<code class="docutils literal notranslate"><span class="pre">handled_tile_word_click</span></code>, <code class="docutils literal notranslate"><span class="pre">handle_tile_element_click</span></code>, or
+<code class="docutils literal notranslate"><span class="pre">handle_tile_row_click</span></code>.</p></li>
+<li><p><strong>sortable</strong> (<em>bool</em>) – If True, then the header can be clicked to sort by a column.</p></li>
+<li><p><strong>sidebyside</strong> (<em>bool</em>) – If False, then the table will expand to take up the entire width available.</p></li>
+<li><p><strong>has_header</strong> (<em>bool</em>) – This only matters if data is in the form of a list of lists. If it is True, and the data is in the
+form of a list of lists, then the first list is treates as headers.</p></li>
+<li><p><strong>max_rows</strong> (<em>bool</em>) – Specifies the max number of rows to be included in the table. It only matters if the data is
+a dataframe, a list of dicts or a FreqDist.</p></li>
+<li><p><strong>header_style</strong> (<em>str</em>) – </p></li>
+<li><p><strong>body_style</strong> (<em>str</em>) – Optional styles that will be applied to header cells and body cells respectively.</p></li>
+<li><p><strong>column_order</strong> (<em>list</em>) – If not None, then it specifies an order for the columns. It only matters if <em>data</em> is
+a DataFrame or a list of dicts.</p></li>
+<li><p><strong>include_row_labels</strong> (<em>bool</em>) – Only matters if <em>data</em> is a DataFrame or a list of dicts. If <em>data</em> is a DataFrame, then
+the row labels will be included as the first column in the table. If it is a list of dicts, then the rows will
+be numbered.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="build_html_table_from_data_list">
+<span class="sig-name descname"><span class="pre">build_html_table_from_data_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">data_list</span></em>, <em class="sig-param"><span class="pre">title=None</span></em>, <em class="sig-param"><span class="pre">click_type=&quot;word-clickable&quot;</span></em>, <em class="sig-param"><span class="pre">sortable=True</span></em>, <em class="sig-param"><span class="pre">sidebyside=False</span></em>, <em class="sig-param"><span class="pre">has_header=True</span> <span class="pre">header_style=None</span></em>, <em class="sig-param"><span class="pre">body_style=None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#build_html_table_from_data_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns html for table. <em>data_list</em> must be in the form of a list of lists. The
+first row is treated as the heading row. A title can optionally be
+given. If <em>has_header</em> is True, then the first list is treated as headers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>click_type</strong> (<em>str</em>) – Can be <code class="docutils literal notranslate"><span class="pre">&quot;word-clickable&quot;</span></code>,
+<code class="docutils literal notranslate"><span class="pre">&quot;element-clickable&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;row-clickable&quot;</span></code>. If it’s word-clickable
+or element-clickable, then every cell in the table is assigned the
+corresponding class, and hence will lead to generating a TileWordClick
+or TileElementClick event when clicked. If the click_type is
+row-clickable, then the row is assigned a row-clickable class (and will
+lead to the generation of TileRowClick events.) These various events can
+then be handled by the appropriate handlers in a tile:
+<code class="docutils literal notranslate"><span class="pre">handled_tile_word_click</span></code>, <code class="docutils literal notranslate"><span class="pre">handle_tile_element_click</span></code>, or
+<code class="docutils literal notranslate"><span class="pre">handle_tile_row_click</span></code>.</p></li>
+<li><p><strong>sortable</strong> (<em>bool</em>) – If true, then the header can be clicked to sort by a column.</p></li>
+<li><p><strong>sidebyside</strong> (<em>bool</em>) – If False, then the table will expand to take up the entire width available.</p></li>
+<li><p><strong>header_style</strong> (<em>str</em>) – </p></li>
+<li><p><strong>body_style</strong> (<em>str</em>) – Optional styles that will be applied to header cells and body cells respectively.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Synonym: <code class="docutils literal notranslate"><span class="pre">bht</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="get_user_settings">
+<span class="sig-name descname"><span class="pre">get_user_settings</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#get_user_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary with the current value of user’s account-level settings. There’s not
+much there at this point. The same functionality is available from the
+<a class="reference external" href="Object-Oriented-API.html#the-settings-object">object-oriented API</a>.</p>
+</dd></dl>
+
+</div></blockquote>
+</section>
+<section id="plots">
+<h2>Plots<a class="headerlink" href="#plots" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="MplFigure">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">MplFigure</span></span><a class="headerlink" href="#MplFigure" title="Permalink to this definition">¶</a></dt>
+<dd><div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The Matplotlib-realted commands are only available in <a class="reference external" href="Matplotlib-Tiles.html">Matplotlib
+Tiles</a> (i.e., those that subclass <code class="docutils literal notranslate"><span class="pre">MplFigure</span></code>).</p>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="MplFigure.init_mpl_figure">
+<span class="sig-name descname"><span class="pre">init_mpl_figure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(self.width</span> <span class="pre">/</span> <span class="pre">PPI,</span> <span class="pre">self.height</span> <span class="pre">/</span> <span class="pre">PPI)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dpi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">80</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facecolor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edgecolor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linewidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frameon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subplotpars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tight_layout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#MplFigure.init_mpl_figure" title="Permalink to this definition">¶</a></dt>
+<dd><p>This reinitializes the figure contained in a MatplotlibTile. It’s
+equivalent to calling <code class="docutils literal notranslate"><span class="pre">MplFigure.__init__(self,</span> <span class="pre">kwargs).</span></code> The kwargs
+are the same as for <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.figure.Figure.html">Matplotlib’s Figure
+class</a>.
+But the default values are different for <code class="docutils literal notranslate"><span class="pre">figsize</span></code> and <code class="docutils literal notranslate"><span class="pre">dpi</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="MplFigure.create_figure_html">
+<span class="sig-name descname"><span class="pre">create_figure_html</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_svg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#MplFigure.create_figure_html" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a MplFigure instance this generates html that can be included in a
+tile to display the figure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>use_svg</strong> (<em>bool</em>) – If  True, then this produces an svg element that is embedded directly.
+in the page. If it’s false, then the html produced contains a link that references a png file hosted on the server.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="MplFigure.create_pyplot_html">
+<span class="sig-name descname"><span class="pre">create_pyplot_html</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_svg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#MplFigure.create_pyplot_html" title="Permalink to this definition">¶</a></dt>
+<dd><p>When using matplotlib.pyplot to work in interactive mode, use this alternative
+command to generate html to display the figure.
+:param bool use_svg: If  True, then this produces an svg element that is embedded directly.
+in the page. If it’s false, then the html produced contains a link that references a png file hosted on the server.</p>
+<p>The following code will work in the log or a notebook:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mi">7</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">create_pyplot_html</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="MplFigure.create_bokeh_html">
+<span class="sig-name descname"><span class="pre">create_bokeh_html</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#MplFigure.create_bokeh_html" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>Given a bokeh plot, this returns html to display the plot. The entirety of what this method is below,
+in case you want to do something slightly different. However, doing something other than Resources(“inline”)
+can cause problems, especially when loading a saved project.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">create_bokeh_html</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">the_plot</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">bokeh.embed</span> <span class="kn">import</span> <span class="n">file_html</span>
+    <span class="kn">from</span> <span class="nn">bokeh.resources</span> <span class="kn">import</span> <span class="n">Resources</span>
+    <span class="k">return</span> <span class="n">file_html</span><span class="p">(</span><span class="n">the_plot</span><span class="p">,</span> <span class="n">Resources</span><span class="p">(</span><span class="s2">&quot;inline&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>And here’s some complete code that produces a bokeh plot:</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bokeh.plotting</span> <span class="kn">import</span> <span class="n">figure</span>
+<span class="kn">from</span> <span class="nn">bokeh.resources</span> <span class="kn">import</span> <span class="n">CDN</span>
+<span class="kn">from</span> <span class="nn">bokeh.embed</span> <span class="kn">import</span> <span class="n">file_html</span>
+<span class="kn">from</span> <span class="nn">bokeh.resources</span> <span class="kn">import</span> <span class="n">JSResources</span><span class="p">,</span> <span class="n">CSSResources</span><span class="p">,</span> <span class="n">Resources</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">figure</span><span class="p">(</span><span class="n">plot_width</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">plot_height</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">tools</span><span class="o">=</span><span class="s2">&quot;pan,wheel_zoom,box_zoom,hover,reset&quot;</span><span class="p">,</span>
+           <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">toolbar_location</span><span class="o">=</span><span class="s2">&quot;below&quot;</span><span class="p">,</span>
+           <span class="n">toolbar_sticky</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">circle</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">html</span> <span class="o">=</span> <span class="n">file_html</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">Resources</span><span class="p">(</span><span class="s2">&quot;inline&quot;</span><span class="p">),</span> <span class="s2">&quot;my plot&quot;</span><span class="p">)</span>
+<span class="n">html</span>
+</pre></div>
+</div>
+</div></blockquote>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="global">
+<h2>Global<a class="headerlink" href="#global" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The following commands are not called with <code class="docutils literal notranslate"><span class="pre">self</span></code>.</p>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="ColorMapper">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">ColorMapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bottom_val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top_val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color_palette_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ColorMapper" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ColorMapper.color_from_val">
+<span class="sig-prename descclassname"><span class="pre">ColorMapper.</span></span><span class="sig-name descname"><span class="pre">color_from_val</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ColorMapper.color_from_val" title="Permalink to this definition">¶</a></dt>
+<dd><p>ColorMapper is a class for creating mappings between values and colors.
+ColorMapper() creates the class instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bottom_val</strong> (<em>float</em>) – </p></li>
+<li><p><strong>top_val</strong> (<em>float</em>) – Specify the value range.</p></li>
+<li><p><strong>color_palette_name</strong> (<em>str</em>) – iT name of the matplotlib
+color_palette. These can be selected by the user using the
+palette_select option type.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="global_import">
+<span class="sig-name descname"><span class="pre">global_import</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#global_import" title="Permalink to this definition">¶</a></dt>
+<dd><p>This command imports a module into the global namespace. So, for example, <code class="docutils literal notranslate"><span class="pre">global_import(&quot;nltk&quot;)</span></code>
+within <code class="docutils literal notranslate"><span class="pre">render_content</span></code> would make <code class="docutils literal notranslate"><span class="pre">nltk</span></code> available within all method calls in your tile.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>module_name</strong> (<em>str</em>) – The name of the module to import as a string.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="scientific-libraries">
+<h2>Scientific libraries<a class="headerlink" href="#scientific-libraries" title="Permalink to this headline">¶</a></h2>
+<p>It is assumed that tiles will make heavy use of scientific libraries.
+The libraries listed below are currently available for import from tiles.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>There is one subtlety to be aware of when importing libraries.
+The code that you write for a tile is always executed within a method.
+If you all of the code you for your tile is in the <cite>render_content</cite>, then
+you can just import your the library there, and everything is fine.
+However, if your tile includes other methods, then each method would have to separately
+import the library.</p>
+<p>The <cite>global_import</cite> function, described above, can simplify things. If you write <cite>global_import(“nltk”)</cite>, for example, then
+nltk will be available to all methods.</p>
+</div>
+<ul class="simple">
+<li><p><a class="reference external" href="https://www.crummy.com/software/BeautifulSoup/">beautifulsoup4</a> (from bs4 import BeautifulSoup)</p></li>
+<li><p><a class="reference external" href="https://docs.bokeh.org/en/latest/index.html">bokeh</a></p></li>
+<li><p><a class="reference external" href="https://github.com/seatgeek/fuzzywuzzy">fuzzywuzzy</a></p></li>
+<li><p><a class="reference external" href="https://radimrehurek.com/gensim/">gensim</a></p></li>
+<li><p><a class="reference external" href="https://github.com/Python-Markdown/markdown">markdown</a></p></li>
+<li><p><a class="reference external" href="https://networkx.github.io">networkx</a></p></li>
+<li><p><a class="reference external" href="http://www.nltk.org">nltk</a></p></li>
+<li><p><a class="reference external" href="http://www.numpy.org">numpy</a></p></li>
+<li><p><a class="reference external" href="https://matplotlib.org">matplotlib</a></p></li>
+<li><p><a class="reference external" href="https://pypi.org/project/regex/">regex</a></p></li>
+<li><p><a class="reference external" href="https://requests.kennethreitz.org/en/master/">requests</a></p></li>
+<li><p><a class="reference external" href="http://pandas.pydata.org">pandas</a></p></li>
+<li><p><a class="reference external" href="httsp://scipy.org">scipy</a></p></li>
+<li><p><a class="reference external" href="http://scikit-learn.org/stable/index.html">sklearn</a></p></li>
+<li><p><a class="reference external" href="https://www.tweepy.org/">tweepy</a></p></li>
+<li><p><a class="reference external" href="https://github.com/amueller/word_cloud">wordcloud</a></p></li>
+<li><p><a class="reference external" href="https://www.scikit-yb.org/en/latest/">yellowbrick</a></p></li>
+</ul>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Tactic</a></h1>
+
+
+
+<p class="blurb">A text mining environment for qualitative researchers</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=bsherin&repo=tactic&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Using Tactic</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Getting-Started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Account-Interface.html">Settings and Themes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Library-Interface.html">Library Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Uploading-Data.html">Uploading Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Main-interface.html">The Main Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Log-And-Notebook.html">The Log and Notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Working-With-Tags.html">Working With Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Which-tiles-are-available-when.html">Tile Availability and Loading</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tile Creation Tools</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Making-Tiles.html">Intro to the tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Tile-Creator.html">The Tile Creator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Module-Viewer.html">The Module Viewer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Module-Viewer-Keyboard-Shortcuts.html">Keyboard Shortcuts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Tile-Version-History-And-Compare.html">History and Compare</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tile Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Tile-Structure.html">Tile Structure</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">The Tile API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#refreshing">Refreshing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#data-access">Data Access</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#data-setting">Data Setting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#filter-and-iterate">Filter-And-Iterate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#object-api-related">Object API-related</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#other-tilebase">Other TileBase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#plots">Plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#global">Global</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#scientific-libraries">Scientific libraries</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Object-Oriented-API.html">Object-Oriented API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Matplotlib-Tiles.html">Matplotlib Tiles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="D3-Tiles.html">D3 Tiles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Handler-Methods.html">Handler Methods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Working-With-Code-Resources.html">Code Resources</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">How To</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Use-Existing-Tiles.html">Use Existing Tiles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Create-Simple-Tile.html">Create A Simple Tile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WordFreqDist-Explained.html">WordFreqDist Explained</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Classifying-With-NLTK.html">Classifying with NLTK</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Getting-Data-From-APIs.html">Getting Data From APIs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Other</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Running-your-own-Tactic-server.html">Running a Tactic Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="open-source-resources.html">Open Source Resources</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="genindex.html">Index</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="Tile-Structure.html" title="previous chapter">Tile Structure</a></li>
+      <li>Next: <a href="Object-Oriented-API.html" title="next chapter">Object-Oriented API</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Bruce Sherin.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/Tile-Commands.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
