@@ -321,7 +321,7 @@ var TextOption = /*#__PURE__*/function (_React$Component3) {
     value: function render() {
       var label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
       return /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
-        label: this.props.label
+        label: label
       }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
         asyncControl: true,
         type: "text",
