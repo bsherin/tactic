@@ -56,8 +56,16 @@ class TileForm extends React.Component {
         for (let option of this.props.options) {
             if ("visible" in option && !option["visible"]) continue;
             let att_name = option["name"];
+            let display_text;
+            if ("display_text" in option) {
+                display_text = option["display_text"]
+            }
+            else {
+                display_text = null
+            }
             if (selector_types.includes(option["type"])) {
                 option_items.push(<SelectOption att_name={att_name}
+                                                display_text={display_text}
                                                 key={att_name}
                                                 choice_list={option["option_list"]}
                                                 value={option.starting_value}
@@ -67,6 +75,7 @@ class TileForm extends React.Component {
             else switch (option["type"]) {
                 case "pipe_select":
                     option_items.push(<PipeOption att_name={att_name}
+                                                  display_text={display_text}
                                                   key={att_name}
                                                   value={_.cloneDeep(option.starting_value)}
                                                   pipe_dict={_.cloneDeep(option["pipe_dict"])}
@@ -75,6 +84,7 @@ class TileForm extends React.Component {
                     break;
                 case "boolean":
                     option_items.push(<BoolOption att_name={att_name}
+                                                  display_text={display_text}
                                                   key={att_name}
                                                   value={option.starting_value}
                                                   updateValue={this._updateValue}
@@ -82,6 +92,7 @@ class TileForm extends React.Component {
                     break;
                 case "textarea":
                     option_items.push(<TextAreaOption att_name={att_name}
+                                                      display_text={display_text}
                                                       key={att_name}
                                                       value={option.starting_value}
                                                       updateValue={this._updateValue}
@@ -89,6 +100,7 @@ class TileForm extends React.Component {
                     break;
                 case "codearea":
                     option_items.push(<CodeAreaOption att_name={att_name}
+                                                      display_text={display_text}
                                                       dark_theme={this.props.dark_theme}
                                                       key={att_name}
                                                       value={option.starting_value}
@@ -97,6 +109,7 @@ class TileForm extends React.Component {
                     break;
                 case "text":
                     option_items.push(<TextOption att_name={att_name}
+                                                  display_text={display_text}
                                                   key={att_name}
                                                   value={option.starting_value}
                                                   leftIcon="paragraph"
@@ -105,6 +118,7 @@ class TileForm extends React.Component {
                     break;
                 case "int":
                     option_items.push(<IntOption att_name={att_name}
+                                                 display_text={display_text}
                                                  key={att_name}
                                                  value={option.starting_value}
                                                  updateValue={this._updateValue}
@@ -113,6 +127,7 @@ class TileForm extends React.Component {
 
                 case "float":
                     option_items.push(<FloatOption att_name={att_name}
+                                                   display_text={display_text}
                                                    key={att_name}
                                                    value={option.starting_value}
                                                    updateValue={this._updateValue}
@@ -120,6 +135,7 @@ class TileForm extends React.Component {
                     break;
                 case "divider":
                     option_items.push(<DividerOption att_name={att_name}
+                                                     display_text={display_text}
                                                    key={att_name}
                     />);
                     break;
@@ -158,11 +174,12 @@ class DividerOption extends React.Component {
     }
 
     render() {
+        let label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
         return (
             <div className="tile-form-divider" style={{marginTop: 25, marginBottom: 15}}>
 
                 <div style={{paddingLeft: 20, fontSize: 25}}>
-                    {this.props.att_name}
+                    {label}
                 </div>
                 <Divider/>
             </div>
@@ -171,7 +188,11 @@ class DividerOption extends React.Component {
 }
 
 DividerOption.propTypes = {
-    att_name: PropTypes.string
+    att_name: PropTypes.string,
+    display_text: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number
+    ]),
 };
 
 class TextOption extends React.Component {
@@ -189,8 +210,9 @@ class TextOption extends React.Component {
     }
 
     render() {
+        let label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
         return (
-            <FormGroup label={this.props.att_name}>
+            <FormGroup label={this.props.label}>
                 <InputGroup asyncControl={true} type="text" small={false} leftIcon={this.props.leftIcon}
                             onChange={this._updateMe} value={this.props.value}/>
             </FormGroup>
@@ -200,6 +222,10 @@ class TextOption extends React.Component {
 
 TextOption.propTypes = {
     att_name: PropTypes.string,
+    display_text: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number
+    ]),
     value:  PropTypes.oneOfType([
         PropTypes.string,
         PropTypes.number]),
@@ -225,8 +251,9 @@ class IntOption extends React.Component {
     }
 
     render () {
+        let label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
         return (
-            <TextOption att_name={this.props.att_name} leftIcon="numerical"
+            <TextOption att_name={label} leftIcon="numerical"
                                   key={this.props.att_name}
                                   value={this.props.value}
                                   updateValue={this._updateMe}
@@ -237,6 +264,10 @@ class IntOption extends React.Component {
 
 IntOption.propTypes = {
     att_name: PropTypes.string,
+    display_text: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number
+    ]),
     value:  PropTypes.oneOfType([
         PropTypes.string,
         PropTypes.number]),
@@ -263,6 +294,7 @@ class FloatOption extends React.Component {
     render () {
         return (
             <TextOption att_name={this.props.att_name} leftIcon="numerical"
+                        display_text={this.props.display_text}
                                   key={this.props.att_name}
                                   value={this.props.value}
                                   updateValue={this._updateMe}
@@ -273,6 +305,10 @@ class FloatOption extends React.Component {
 
 FloatOption.propTypes = {
     att_name: PropTypes.string,
+    display_text: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number
+    ]),
     value:  PropTypes.oneOfType([
         PropTypes.string,
         PropTypes.number]),
@@ -302,8 +338,9 @@ class BoolOption extends React.Component {
     }
 
     render() {
+        let label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
         return (
-            <Switch label={this.props.att_name}
+            <Switch label={label}
                        checked={this.boolify(this.props.value)}
                        onChange={this._updateMe}
                        innerLabel="False"
@@ -316,6 +353,10 @@ class BoolOption extends React.Component {
 
 BoolOption.propTypes = {
     att_name: PropTypes.string,
+    display_text: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number
+    ]),
     value: PropTypes.oneOfType([
         PropTypes.bool,
         PropTypes.string]),
@@ -337,8 +378,9 @@ class CodeAreaOption extends React.Component {
     }
 
     render() {
+        let label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
         return (
-            <FormGroup label={this.props.att_name}>
+            <FormGroup label={label}>
                 <ReactCodemirror handleChange={this._updateMe}
                                  dark_theme={this.props.dark_theme}
                                  code_content={this.props.value}
@@ -352,6 +394,10 @@ class CodeAreaOption extends React.Component {
 
 CodeAreaOption.propTypes = {
     att_name: PropTypes.string,
+    display_text: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number
+    ]),
     dark_theme: PropTypes.bool,
     value:  PropTypes.oneOfType([
         PropTypes.string,
@@ -386,8 +432,9 @@ class TextAreaOption extends React.Component {
         this.props.updateValue(this.props.att_name, event.target.value)
     }
     render() {
+        let label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
         return (
-            <FormGroup label={this.props.att_name}>
+            <FormGroup label={label}>
                 <TextArea  onChange={this._updateMe}
                            inputRef={this.inputRef}
                               small={false} value={this.props.value}/>
@@ -398,6 +445,10 @@ class TextAreaOption extends React.Component {
 
 TextAreaOption.propTypes = {
     att_name: PropTypes.string,
+    display_text: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number
+    ]),
     value:  PropTypes.oneOfType([
         PropTypes.string,
         PropTypes.number]),
@@ -420,8 +471,9 @@ class SelectOption extends React.Component {
     }
 
     render() {
+        let label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
         return (
-            <FormGroup label={this.props.att_name}>
+            <FormGroup label={label}>
                 <BpSelect  onChange={this._updateMe}
                           value={this.props.value}
                            buttonIcon={this.props.buttonIcon}
@@ -433,6 +485,10 @@ class SelectOption extends React.Component {
 
 SelectOption.propTypes = {
     att_name: PropTypes.string,
+    display_text: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number
+    ]),
     choice_list: PropTypes.array,
     buttonIcon: PropTypes.string,
     value:  PropTypes.oneOfType([
@@ -479,8 +535,9 @@ class PipeOption extends React.Component {
     render() {
         let vdict = this._value_dict();
         let full_value = {text: vdict[this.props.value], value: this.props.value, isgroup: false};
+        let label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
         return (
-            <FormGroup label={this.props.att_name}>
+            <FormGroup label={label}>
                 <BpSelectAdvanced  onChange={this._updateMe}
                                    value={full_value}
                                    buttonIcon="flow-end"
@@ -492,6 +549,10 @@ class PipeOption extends React.Component {
 
 PipeOption.propTypes = {
     att_name: PropTypes.string,
+    display_text: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number
+    ]),
     pipe_dict: PropTypes.object,
     value: PropTypes.oneOfType([
         PropTypes.string,
