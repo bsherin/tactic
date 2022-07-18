@@ -212,7 +212,7 @@ class TextOption extends React.Component {
     render() {
         let label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
         return (
-            <FormGroup label={this.props.label}>
+            <FormGroup label={label}>
                 <InputGroup asyncControl={true} type="text" small={false} leftIcon={this.props.leftIcon}
                             onChange={this._updateMe} value={this.props.value}/>
             </FormGroup>
