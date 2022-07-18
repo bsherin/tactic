@@ -361,6 +361,8 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
             for option in moptions:
                 form_item = {}
                 att_name = option["name"]
+                if "display_text" in option:
+                    form_item["display_text"] = option["display_text"]
                 form_item["name"] = att_name
                 form_item["type"] = option["type"]
                 if option["type"] == "divider":
