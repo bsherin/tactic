@@ -35,6 +35,9 @@ This command will create a **bind-mount** persistent volumne
 
 `docker run -p 27017:27017 -v ~/mongo/data:/data/db --name tactic-mongo --restart always -d mongo:latest`
 
+The command for creating the mongodb container on the server
+`sudo docker run -p 27017:27017 -v /var/lib/mongo2:/data/db --name tactic-mongo --restart always -d mongo:latest`
+
 ### Site on dump and restore
 
 [site](https://dominicmotuka.com/posts/mongodump-and-mongorestore-mongodb-database/)

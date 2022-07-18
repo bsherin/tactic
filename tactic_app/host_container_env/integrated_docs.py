@@ -4,7 +4,7 @@ from docutils.core import publish_string
 
 
 def get_api_from_rst():
-    f = open("./docs/Tile-Commands.rst")
+    f = open("./docs_for_integrated_docs/Tile-Commands.rst")
     txt = f.read()
     categories = re.findall(r".. category_start([\s\S]*?).. category_end", txt)
     newres = []
@@ -22,7 +22,7 @@ def get_api_from_rst():
 
 
 def get_object_api_from_rst():
-    f = open("./docs/Object-Oriented-API.rst")
+    f = open("./docs_for_integrated_docs/Object-Oriented-API.rst")
     txt = f.read()
     categories = re.findall(r".. category_start([\s\S]*?).. category_end", txt)
     newres = {}
@@ -61,7 +61,7 @@ def get_api_html(ar):
 
 
 def get_tile_command_html():
-    f = open("./docs/_build/html/Tile-Commands.html")
+    f = open("./docs_for_integrated_docs/Tile-Commands.html")
     txt = f.read()
     return txt
 

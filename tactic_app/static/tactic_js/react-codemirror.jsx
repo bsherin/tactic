@@ -15,6 +15,7 @@ import 'codemirror/addon/merge/merge.js'
 import 'codemirror/addon/merge/merge.css'
 import 'codemirror/addon/hint/show-hint.js'
 import 'codemirror/addon/hint/show-hint.css'
+// import 'codemirror/addon/hint/anyword-hint.js'
 
 import 'codemirror/addon/dialog/dialog.js'
 import 'codemirror/addon/dialog/dialog.css'
@@ -33,6 +34,40 @@ import {propsAreEqual} from "./utilities_react";
 export {ReactCodemirror}
 
 const DARK_THEME = window.dark_theme_name;
+
+const EXTRAWORDS = ["global_import"];
+
+const WORD = /[\w$]+/;
+const RANGE = 500;
+CodeMirror.registerHelper("hint", "anyword", function(editor, options) {
+    var word = options && options.word || WORD;
+    var range = options && options.range || RANGE;
+    var extraWords = options && options.extraWords || EXTRAWORDS;
+    var commands = options && options.commands || [];
+    var cur = editor.getCursor(), curLine = editor.getLine(cur.line);
+    var end = cur.ch, start = end;
+    while (start && word.test(curLine.charAt(start - 1))) --start;
+    var curWord = start != end && curLine.slice(start, end);
+
+    var list = options && options.list || [], seen = {};
+    var re = new RegExp(word.source, "g");
+    for (var dir = -1; dir <= 1; dir += 2) {
+      var line = cur.line, endLine = Math.min(Math.max(line + dir * range, editor.firstLine()), editor.lastLine()) + dir;
+      for (; line != endLine; line += dir) {
+        var text = editor.getLine(line), m;
+        while (m = re.exec(text)) {
+          if (line == cur.line && m[0] === curWord) continue;
+          if ((!curWord || m[0].lastIndexOf(curWord, 0) == 0) && !Object.prototype.hasOwnProperty.call(seen, m[0])) {
+            seen[m[0]] = true;
+            list.push(m[0]);
+          }
+        }
+      }
+    }
+    list.push(...(extraWords.filter(el => el.startsWith(curWord || ''))));
+    list.push(...(commands.filter(el => el.startsWith(curWord || ''))));
+    return {list: list, from: CodeMirror.Pos(cur.line, start), to: CodeMirror.Pos(cur.line, end)};
+  });
 
 class ReactCodemirror extends React.Component {
 
@@ -261,18 +296,17 @@ class ReactCodemirror extends React.Component {
             self.api_dict_by_name = data.api_dict_by_name;
             self.ordered_api_categories = data.ordered_api_categories;
 
-            self.api_list = [];
+            self.commands = [];
             for (let cat of self.ordered_api_categories) {
                 for (let entry of self.api_dict_by_category[cat]) {
-                    self.api_list.push(entry["name"])
+                    self.commands.push(entry["name"])
                 }
             }
             //noinspection JSUnresolvedVariable
             CodeMirror.commands.autocomplete = function (cm) {
                 //noinspection JSUnresolvedFunction
                 cm.showHint({
-                    hint: CodeMirror.hint.anyword, api_list: self.api_list,
-                    extra_autocomplete_list: self.extra_autocomplete_list
+                    hint: CodeMirror.hint.anyword, commands: self.commands
                 });
             };
         })

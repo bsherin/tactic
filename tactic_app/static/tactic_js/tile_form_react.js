@@ -111,10 +111,18 @@ var TileForm = /*#__PURE__*/function (_React$Component) {
           var option = _step.value;
           if ("visible" in option && !option["visible"]) continue;
           var att_name = option["name"];
+          var display_text = void 0;
+
+          if ("display_text" in option) {
+            display_text = option["display_text"];
+          } else {
+            display_text = null;
+          }
 
           if (selector_types.includes(option["type"])) {
             option_items.push( /*#__PURE__*/_react["default"].createElement(SelectOption, {
               att_name: att_name,
+              display_text: display_text,
               key: att_name,
               choice_list: option["option_list"],
               value: option.starting_value,
@@ -125,6 +133,7 @@ var TileForm = /*#__PURE__*/function (_React$Component) {
             case "pipe_select":
               option_items.push( /*#__PURE__*/_react["default"].createElement(PipeOption, {
                 att_name: att_name,
+                display_text: display_text,
                 key: att_name,
                 value: _lodash["default"].cloneDeep(option.starting_value),
                 pipe_dict: _lodash["default"].cloneDeep(option["pipe_dict"]),
@@ -135,6 +144,7 @@ var TileForm = /*#__PURE__*/function (_React$Component) {
             case "boolean":
               option_items.push( /*#__PURE__*/_react["default"].createElement(BoolOption, {
                 att_name: att_name,
+                display_text: display_text,
                 key: att_name,
                 value: option.starting_value,
                 updateValue: this._updateValue
@@ -144,6 +154,7 @@ var TileForm = /*#__PURE__*/function (_React$Component) {
             case "textarea":
               option_items.push( /*#__PURE__*/_react["default"].createElement(TextAreaOption, {
                 att_name: att_name,
+                display_text: display_text,
                 key: att_name,
                 value: option.starting_value,
                 updateValue: this._updateValue
@@ -153,6 +164,7 @@ var TileForm = /*#__PURE__*/function (_React$Component) {
             case "codearea":
               option_items.push( /*#__PURE__*/_react["default"].createElement(CodeAreaOption, {
                 att_name: att_name,
+                display_text: display_text,
                 dark_theme: this.props.dark_theme,
                 key: att_name,
                 value: option.starting_value,
@@ -163,6 +175,7 @@ var TileForm = /*#__PURE__*/function (_React$Component) {
             case "text":
               option_items.push( /*#__PURE__*/_react["default"].createElement(TextOption, {
                 att_name: att_name,
+                display_text: display_text,
                 key: att_name,
                 value: option.starting_value,
                 leftIcon: "paragraph",
@@ -173,6 +186,7 @@ var TileForm = /*#__PURE__*/function (_React$Component) {
             case "int":
               option_items.push( /*#__PURE__*/_react["default"].createElement(IntOption, {
                 att_name: att_name,
+                display_text: display_text,
                 key: att_name,
                 value: option.starting_value,
                 updateValue: this._updateValue
@@ -182,6 +196,7 @@ var TileForm = /*#__PURE__*/function (_React$Component) {
             case "float":
               option_items.push( /*#__PURE__*/_react["default"].createElement(FloatOption, {
                 att_name: att_name,
+                display_text: display_text,
                 key: att_name,
                 value: option.starting_value,
                 updateValue: this._updateValue
@@ -191,6 +206,7 @@ var TileForm = /*#__PURE__*/function (_React$Component) {
             case "divider":
               option_items.push( /*#__PURE__*/_react["default"].createElement(DividerOption, {
                 att_name: att_name,
+                display_text: display_text,
                 key: att_name
               }));
               break;
@@ -251,6 +267,7 @@ var DividerOption = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "render",
     value: function render() {
+      var label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
       return /*#__PURE__*/_react["default"].createElement("div", {
         className: "tile-form-divider",
         style: {
@@ -262,7 +279,7 @@ var DividerOption = /*#__PURE__*/function (_React$Component2) {
           paddingLeft: 20,
           fontSize: 25
         }
-      }, this.props.att_name), /*#__PURE__*/_react["default"].createElement(_core.Divider, null));
+      }, label), /*#__PURE__*/_react["default"].createElement(_core.Divider, null));
     }
   }]);
 
@@ -270,7 +287,8 @@ var DividerOption = /*#__PURE__*/function (_React$Component2) {
 }(_react["default"].Component);
 
 DividerOption.propTypes = {
-  att_name: _propTypes["default"].string
+  att_name: _propTypes["default"].string,
+  display_text: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number])
 };
 
 var TextOption = /*#__PURE__*/function (_React$Component3) {
@@ -301,8 +319,9 @@ var TextOption = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "render",
     value: function render() {
+      var label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
       return /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
-        label: this.props.att_name
+        label: this.props.label
       }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
         asyncControl: true,
         type: "text",
@@ -319,6 +338,7 @@ var TextOption = /*#__PURE__*/function (_React$Component3) {
 
 TextOption.propTypes = {
   att_name: _propTypes["default"].string,
+  display_text: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
   value: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
   updateValue: _propTypes["default"].func,
   leftIcon: _propTypes["default"].string
@@ -354,8 +374,9 @@ var IntOption = /*#__PURE__*/function (_React$Component4) {
   }, {
     key: "render",
     value: function render() {
+      var label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
       return /*#__PURE__*/_react["default"].createElement(TextOption, {
-        att_name: this.props.att_name,
+        att_name: label,
         leftIcon: "numerical",
         key: this.props.att_name,
         value: this.props.value,
@@ -369,6 +390,7 @@ var IntOption = /*#__PURE__*/function (_React$Component4) {
 
 IntOption.propTypes = {
   att_name: _propTypes["default"].string,
+  display_text: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
   value: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
   updateValue: _propTypes["default"].func
 };
@@ -406,6 +428,7 @@ var FloatOption = /*#__PURE__*/function (_React$Component5) {
       return /*#__PURE__*/_react["default"].createElement(TextOption, {
         att_name: this.props.att_name,
         leftIcon: "numerical",
+        display_text: this.props.display_text,
         key: this.props.att_name,
         value: this.props.value,
         updateValue: this._updateMe
@@ -418,6 +441,7 @@ var FloatOption = /*#__PURE__*/function (_React$Component5) {
 
 FloatOption.propTypes = {
   att_name: _propTypes["default"].string,
+  display_text: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
   value: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
   updateValue: _propTypes["default"].func
 };
@@ -459,8 +483,9 @@ var BoolOption = /*#__PURE__*/function (_React$Component6) {
   }, {
     key: "render",
     value: function render() {
+      var label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
       return /*#__PURE__*/_react["default"].createElement(_core.Switch, {
-        label: this.props.att_name,
+        label: label,
         checked: this.boolify(this.props.value),
         onChange: this._updateMe,
         innerLabel: "False",
@@ -475,6 +500,7 @@ var BoolOption = /*#__PURE__*/function (_React$Component6) {
 
 BoolOption.propTypes = {
   att_name: _propTypes["default"].string,
+  display_text: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
   value: _propTypes["default"].oneOfType([_propTypes["default"].bool, _propTypes["default"].string]),
   updateValue: _propTypes["default"].func
 };
@@ -507,8 +533,9 @@ var CodeAreaOption = /*#__PURE__*/function (_React$Component7) {
   }, {
     key: "render",
     value: function render() {
+      var label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
       return /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
-        label: this.props.att_name
+        label: label
       }, /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
         handleChange: this._updateMe,
         dark_theme: this.props.dark_theme,
@@ -524,6 +551,7 @@ var CodeAreaOption = /*#__PURE__*/function (_React$Component7) {
 
 CodeAreaOption.propTypes = {
   att_name: _propTypes["default"].string,
+  display_text: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
   dark_theme: _propTypes["default"].bool,
   value: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
   updateValue: _propTypes["default"].func
@@ -572,8 +600,9 @@ var TextAreaOption = /*#__PURE__*/function (_React$Component8) {
   }, {
     key: "render",
     value: function render() {
+      var label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
       return /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
-        label: this.props.att_name
+        label: label
       }, /*#__PURE__*/_react["default"].createElement(_core.TextArea, {
         onChange: this._updateMe,
         inputRef: this.inputRef,
@@ -588,6 +617,7 @@ var TextAreaOption = /*#__PURE__*/function (_React$Component8) {
 
 TextAreaOption.propTypes = {
   att_name: _propTypes["default"].string,
+  display_text: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
   value: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
   updateValue: _propTypes["default"].func
 };
@@ -620,8 +650,9 @@ var SelectOption = /*#__PURE__*/function (_React$Component9) {
   }, {
     key: "render",
     value: function render() {
+      var label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
       return /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
-        label: this.props.att_name
+        label: label
       }, /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.BpSelect, {
         onChange: this._updateMe,
         value: this.props.value,
@@ -636,6 +667,7 @@ var SelectOption = /*#__PURE__*/function (_React$Component9) {
 
 SelectOption.propTypes = {
   att_name: _propTypes["default"].string,
+  display_text: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
   choice_list: _propTypes["default"].array,
   buttonIcon: _propTypes["default"].string,
   value: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
@@ -733,8 +765,9 @@ var PipeOption = /*#__PURE__*/function (_React$Component10) {
         value: this.props.value,
         isgroup: false
       };
+      var label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
       return /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
-        label: this.props.att_name
+        label: label
       }, /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.BpSelectAdvanced, {
         onChange: this._updateMe,
         value: full_value,
@@ -749,6 +782,7 @@ var PipeOption = /*#__PURE__*/function (_React$Component10) {
 
 PipeOption.propTypes = {
   att_name: _propTypes["default"].string,
+  display_text: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
   pipe_dict: _propTypes["default"].object,
   value: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
   updateValue: _propTypes["default"].func
