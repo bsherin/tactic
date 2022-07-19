@@ -1001,6 +1001,7 @@ class CreatorApp extends React.Component {
         let methods_panel = (
             <div>
                 <ReactCodemirror handleChange={this.handleMethodsChange}
+                                 show_fold_button={true}
                                  current_search_number={this.state.current_search_cm == "em" ? this.state.current_search_number : null}
                                  dark_theme={dark_theme}
                                  extraKeys={this._extraKeys()}
