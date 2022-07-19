@@ -2,6 +2,8 @@
 import React from "react";
 import PropTypes from 'prop-types';
 
+import { Button, ButtonGroup } from "@blueprintjs/core";
+
 import {postAjax} from "./communication_react.js"
 // import { CodeMirror } from "./codemirror/src/edit/main.js"
 // import "./codemirror/mode/python/python.js"
@@ -15,6 +17,10 @@ import 'codemirror/addon/merge/merge.js'
 import 'codemirror/addon/merge/merge.css'
 import 'codemirror/addon/hint/show-hint.js'
 import 'codemirror/addon/hint/show-hint.css'
+import 'codemirror/addon/fold/foldcode.js'
+import 'codemirror/addon/fold/foldgutter.js'
+import 'codemirror/addon/fold/indent-fold.js'
+import 'codemirror/addon/fold/foldgutter.css'
 // import 'codemirror/addon/hint/anyword-hint.js'
 
 import 'codemirror/addon/dialog/dialog.js'
@@ -82,12 +88,15 @@ class ReactCodemirror extends React.Component {
 
         this.handleChange = this.handleChange.bind(this);
         this.handleBlur = this.handleBlur.bind(this);
+        this._foldAll = this._foldAll.bind(this);
+        this._unfoldAll = this._unfoldAll.bind(this);
         this.mousetrap = new Mousetrap();
         this.create_api();
         this.saved_theme = null;
         this.overlay = null;
         this.matches = null;
-        this.search_focus_info = null
+        this.search_focus_info = null;
+        this.first_render = true;
     }
 
     createCMArea(codearea, first_line_number = 1) {
@@ -100,7 +109,12 @@ class ReactCodemirror extends React.Component {
             indentUnit: 4,
             theme: this.props.dark_theme ? DARK_THEME : "default",
             mode: this.props.mode,
-            readOnly: this.props.readOnly
+            readOnly: this.props.readOnly,
+            foldGutter: true,
+            gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+            foldOptions: {
+                minFoldSize: 6
+            }
         });
         if (first_line_number != 1) {
             cmobject.setOption("firstLineNumber", first_line_number)
@@ -284,6 +298,13 @@ class ReactCodemirror extends React.Component {
         CodeMirror.commands.find(this.cmobject)
     }
 
+    _foldAll() {
+        CodeMirror.commands.foldAll(this.cmobject)
+    }
+    _unfoldAll() {
+        CodeMirror.commands.unfoldAll(this.cmobject)
+    }
+
     clearSelections() {
         // CodeMirror.commands.clearSearch(this.cmobject);
         CodeMirror.commands.singleSelection(this.cmobject);
@@ -330,10 +351,36 @@ class ReactCodemirror extends React.Component {
             "width": this.props.code_container_width,
             lineHeight: "21px",
         };
-        return (
-            <div className="code-container" style={ccstyle} ref={this.code_container_ref}>
+        let bgstyle = null;
+        if (this.props.show_fold_button && this.code_container_ref && this.code_container_ref.current) {
+            let cc_rect = this.code_container_ref.current.getBoundingClientRect();
+            if (cc_rect.width > 175) {
+                bgstyle = {
+                    position: "absolute",
+                    left: cc_rect.left + cc_rect.width - 135 - 15,
+                    top: cc_rect.top + cc_rect.height - 35
+                };
+                if (this.first_render) {
+                    bgstyle.top -= 10;
+                    this.first_render = false
+                }
+            }
 
-            </div>
+
+        }
+        return (
+             <React.Fragment>
+                 {this.props.show_fold_button && bgstyle &&
+                     <ButtonGroup minimal={false} style={bgstyle}>
+                        <Button small={true} icon="collapse-all" text="fold" onClick={this._foldAll}/>
+                         <Button small={true}  icon="expand-all"  text="unfold" onClick={this._unfoldAll}/>
+                    </ButtonGroup>
+
+                 }
+                <div className="code-container" style={ccstyle} ref={this.code_container_ref}>
+
+                </div>
+             </React.Fragment>
         )
 
     }
@@ -343,6 +390,7 @@ class ReactCodemirror extends React.Component {
 ReactCodemirror.propTypes = {
     handleChange: PropTypes.func,
     show_line_numbers: PropTypes.bool,
+    show_fold_button: PropTypes.bool,
     soft_wrap: PropTypes.bool,
     handleBlur: PropTypes.func,
     code_content: PropTypes.string,
@@ -369,6 +417,7 @@ ReactCodemirror.propTypes = {
 ReactCodemirror.defaultProps = {
     first_line_number: 1,
     show_line_numbers: true,
+    show_fold_button: false,
     soft_wrap: false,
     code_container_height: "100%",
     searchTerm: null,
