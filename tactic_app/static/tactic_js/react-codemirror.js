@@ -11,6 +11,8 @@ var _react = _interopRequireDefault(require("react"));
 
 var _propTypes = _interopRequireDefault(require("prop-types"));
 
+var _core = require("@blueprintjs/core");
+
 var _communication_react = require("./communication_react.js");
 
 var _codemirror = _interopRequireDefault(require("codemirror/lib/codemirror.js"));
@@ -26,6 +28,14 @@ require("codemirror/addon/merge/merge.css");
 require("codemirror/addon/hint/show-hint.js");
 
 require("codemirror/addon/hint/show-hint.css");
+
+require("codemirror/addon/fold/foldcode.js");
+
+require("codemirror/addon/fold/foldgutter.js");
+
+require("codemirror/addon/fold/indent-fold.js");
+
+require("codemirror/addon/fold/foldgutter.css");
 
 require("codemirror/addon/dialog/dialog.js");
 
@@ -165,6 +175,8 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
 
     _this.handleChange = _this.handleChange.bind(_assertThisInitialized(_this));
     _this.handleBlur = _this.handleBlur.bind(_assertThisInitialized(_this));
+    _this._foldAll = _this._foldAll.bind(_assertThisInitialized(_this));
+    _this._unfoldAll = _this._unfoldAll.bind(_assertThisInitialized(_this));
     _this.mousetrap = new Mousetrap();
 
     _this.create_api();
@@ -173,6 +185,7 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
     _this.overlay = null;
     _this.matches = null;
     _this.search_focus_info = null;
+    _this.first_render = true;
     return _this;
   }
 
@@ -189,7 +202,12 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
         indentUnit: 4,
         theme: this.props.dark_theme ? DARK_THEME : "default",
         mode: this.props.mode,
-        readOnly: this.props.readOnly
+        readOnly: this.props.readOnly,
+        foldGutter: true,
+        gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+        foldOptions: {
+          minFoldSize: 6
+        }
       });
 
       if (first_line_number != 1) {
@@ -418,6 +436,16 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
       _codemirror["default"].commands.find(this.cmobject);
     }
   }, {
+    key: "_foldAll",
+    value: function _foldAll() {
+      _codemirror["default"].commands.foldAll(this.cmobject);
+    }
+  }, {
+    key: "_unfoldAll",
+    value: function _unfoldAll() {
+      _codemirror["default"].commands.unfoldAll(this.cmobject);
+    }
+  }, {
     key: "clearSelections",
     value: function clearSelections() {
       // CodeMirror.commands.clearSearch(this.cmobject);
@@ -494,11 +522,43 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
         "width": this.props.code_container_width,
         lineHeight: "21px"
       };
-      return /*#__PURE__*/_react["default"].createElement("div", {
+      var bgstyle = null;
+
+      if (this.props.show_fold_button && this.code_container_ref && this.code_container_ref.current) {
+        var cc_rect = this.code_container_ref.current.getBoundingClientRect();
+
+        if (cc_rect.width > 175) {
+          bgstyle = {
+            position: "absolute",
+            left: cc_rect.left + cc_rect.width - 135 - 15,
+            top: cc_rect.top + cc_rect.height - 35
+          };
+
+          if (this.first_render) {
+            bgstyle.top -= 10;
+            this.first_render = false;
+          }
+        }
+      }
+
+      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, this.props.show_fold_button && bgstyle && /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, {
+        minimal: false,
+        style: bgstyle
+      }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
+        small: true,
+        icon: "collapse-all",
+        text: "fold",
+        onClick: this._foldAll
+      }), /*#__PURE__*/_react["default"].createElement(_core.Button, {
+        small: true,
+        icon: "expand-all",
+        text: "unfold",
+        onClick: this._unfoldAll
+      })), /*#__PURE__*/_react["default"].createElement("div", {
         className: "code-container",
         style: ccstyle,
         ref: this.code_container_ref
-      });
+      }));
     }
   }]);
 
@@ -509,6 +569,7 @@ exports.ReactCodemirror = ReactCodemirror;
 ReactCodemirror.propTypes = {
   handleChange: _propTypes["default"].func,
   show_line_numbers: _propTypes["default"].bool,
+  show_fold_button: _propTypes["default"].bool,
   soft_wrap: _propTypes["default"].bool,
   handleBlur: _propTypes["default"].func,
   code_content: _propTypes["default"].string,
@@ -530,6 +591,7 @@ ReactCodemirror.propTypes = {
 ReactCodemirror.defaultProps = {
   first_line_number: 1,
   show_line_numbers: true,
+  show_fold_button: false,
   soft_wrap: false,
   code_container_height: "100%",
   searchTerm: null,
