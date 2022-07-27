@@ -22,7 +22,7 @@ class {{class_name}}({% if is_d3 %}D3Tile{% else %}TileBase{% if is_mpl %}, MplF
     def options(self):
         return  [
         {% for option in options -%}
-        {"name": "{{option.name|e}}", "type": "{{option.type|e}}"{% if option.special_list %}, "special_list": {{option.special_list|safe}}{% endif %}{% if option.tags %}, "tags":"{{option.tags|safe}}"{% endif %}}{% if not loop.last %},{% endif %}
+        {"name": "{{option.name|e}}", "type": "{{option.type|e}}"{% if option.display_text %}, "display_text": "{{option.display_text|safe}}"{% endif %}{% if option.special_list %}, "special_list": {{option.special_list|safe}}{% endif %}{% if option.tags %}, "tags":"{{option.tags|safe}}"{% endif %}}{% if not loop.last %},{% endif %}
         {% endfor -%}
     ]
 {{extra_methods|safe -}}

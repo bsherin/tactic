@@ -535,6 +535,7 @@ class CombinedMetadata extends React.Component {
                                     show_markdown_initial={true}
                                     handleBlur={this.props.handleNotesBlur}
                         />
+                        {this.props.notes_buttons && this.props.notes_buttons()}
                     </FormGroup>
                     <FormGroup label="Created " inline={true}>
                         <InputGroup disabled={true} value={this.props.created}/>
@@ -581,7 +582,10 @@ CombinedMetadata.propTypes = {
     handleChange: PropTypes.func,
     handleNotesBlur: PropTypes.func,
     additional_metadata: PropTypes.object,
-    aux_pane: PropTypes.object
+    aux_pane: PropTypes.object,
+    notes_buttons: PropTypes.oneOfType([
+        PropTypes.number,
+        PropTypes.func])
 };
 
 CombinedMetadata.defaultProps = {
@@ -592,5 +596,6 @@ CombinedMetadata.defaultProps = {
     name: null,
     updated: null,
     additional_metadata: null,
-    aux_pane: null
+    aux_pane: null,
+    notes_buttons: null
 };
