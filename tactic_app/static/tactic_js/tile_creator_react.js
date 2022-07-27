@@ -988,6 +988,88 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       });
     }
   }, {
+    key: "_appendOptionText",
+    value: function _appendOptionText() {
+      var res_string = "\n\noptions: \n\n";
+
+      var _iterator4 = _createForOfIteratorHelper(this.state.option_list),
+          _step4;
+
+      try {
+        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+          var opt = _step4.value;
+          res_string += " * `".concat(opt.name, "` (").concat(opt.type, "): \n");
+        }
+      } catch (err) {
+        _iterator4.e(err);
+      } finally {
+        _iterator4.f();
+      }
+
+      this._handleNotesAppend(res_string);
+    }
+  }, {
+    key: "_appendExportText",
+    value: function _appendExportText() {
+      var res_string = "\n\nexports: \n\n";
+
+      var _iterator5 = _createForOfIteratorHelper(this.state.export_list),
+          _step5;
+
+      try {
+        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+          var exp = _step5.value;
+          res_string += " * `".concat(exp.name, "` : \n");
+        }
+      } catch (err) {
+        _iterator5.e(err);
+      } finally {
+        _iterator5.f();
+      }
+
+      this._handleNotesAppend(res_string);
+    }
+  }, {
+    key: "_metadataNotesButtons",
+    value: function _metadataNotesButtons() {
+      var self = this;
+      return /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, null, /*#__PURE__*/_react["default"].createElement(_core.Button, {
+        style: {
+          height: "fit-content",
+          alignSelf: "start",
+          marginTop: 10,
+          fontSize: 12
+        },
+        text: "Add Options",
+        small: true,
+        minimal: true,
+        intent: "primary",
+        icon: "select",
+        onClick: function onClick(e) {
+          e.preventDefault();
+
+          self._appendOptionText();
+        }
+      }), /*#__PURE__*/_react["default"].createElement(_core.Button, {
+        style: {
+          height: "fit-content",
+          alignSelf: "start",
+          marginTop: 10,
+          fontSize: 12
+        },
+        text: "Add Exports",
+        small: true,
+        minimal: true,
+        intent: "primary",
+        icon: "export",
+        onClick: function onClick(e) {
+          e.preventDefault();
+
+          self._appendExportText();
+        }
+      }));
+    }
+  }, {
     key: "handleStateChange",
     value: function handleStateChange(state_stuff) {
       this.setState(state_stuff);
@@ -1003,9 +1085,10 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "handleExportsChange",
     value: function handleExportsChange(new_export_list) {
+      var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
       this.setState({
         "export_list": new_export_list
-      });
+      }, callback);
     }
   }, {
     key: "handleMethodsChange",
@@ -1138,18 +1221,18 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       var my_props = _objectSpread({}, this.props);
 
       if (!this.props.controlled) {
-        var _iterator4 = _createForOfIteratorHelper(controllable_props),
-            _step4;
+        var _iterator6 = _createForOfIteratorHelper(controllable_props),
+            _step6;
 
         try {
-          for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-            var prop_name = _step4.value;
+          for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+            var prop_name = _step6.value;
             my_props[prop_name] = this.state[prop_name];
           }
         } catch (err) {
-          _iterator4.e(err);
+          _iterator6.e(err);
         } finally {
-          _iterator4.f();
+          _iterator6.f();
         }
       }
 
@@ -1303,8 +1386,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         created: my_props.created,
         category: this.state.category,
         res_type: "tile",
-        handleChange: this.handleStateChange,
-        outer_style: mdata_style
+        notes_buttons: this._metadataNotesButtons,
+        handleChange: this.handleStateChange
       });
 
       var option_panel = /*#__PURE__*/_react["default"].createElement(_creator_modules_react.OptionModule, {
@@ -1364,23 +1447,38 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         onChange: this._handleTabSelect
       }, /*#__PURE__*/_react["default"].createElement(_core.Tab, {
         id: "metadata",
-        title: "metadata",
+        title: /*#__PURE__*/_react["default"].createElement("span", null, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+          size: 12,
+          icon: "manually-entered-data"
+        }), " metadata"),
         panel: mdata_panel
       }), /*#__PURE__*/_react["default"].createElement(_core.Tab, {
         id: "options",
-        title: "options",
+        title: /*#__PURE__*/_react["default"].createElement("span", null, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+          size: 12,
+          icon: "select"
+        }), " options"),
         panel: option_panel
       }), /*#__PURE__*/_react["default"].createElement(_core.Tab, {
         id: "exports",
-        title: "exports",
+        title: /*#__PURE__*/_react["default"].createElement("span", null, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+          size: 12,
+          icon: "export"
+        }), " exports"),
         panel: export_panel
       }), /*#__PURE__*/_react["default"].createElement(_core.Tab, {
         id: "methods",
-        title: "methods",
+        title: /*#__PURE__*/_react["default"].createElement("span", null, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+          size: 12,
+          icon: "code"
+        }), " methods"),
         panel: methods_panel
       }), /*#__PURE__*/_react["default"].createElement(_core.Tab, {
         id: "commands",
-        title: "tactic api",
+        title: /*#__PURE__*/_react["default"].createElement("span", null, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+          size: 12,
+          icon: "manual"
+        }), " documentation"),
         panel: commands_panel
       }))));
 

@@ -113,7 +113,7 @@ var TileForm = /*#__PURE__*/function (_React$Component) {
           var att_name = option["name"];
           var display_text = void 0;
 
-          if ("display_text" in option) {
+          if ("display_text" in option && option.display_text != null && option.display_text != "") {
             display_text = option["display_text"];
           } else {
             display_text = null;

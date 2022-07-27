@@ -365,6 +365,10 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                     form_item["display_text"] = option["display_text"]
                 form_item["name"] = att_name
                 form_item["type"] = option["type"]
+                if "display_text" in option:
+                    form_item["display_text"] = option["display_text"]
+                else:
+                    form_item["display_text"] = None
                 if option["type"] == "divider":
                     form_data.append(form_item)
                     continue

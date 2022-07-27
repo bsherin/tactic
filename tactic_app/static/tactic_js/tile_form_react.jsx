@@ -57,7 +57,7 @@ class TileForm extends React.Component {
             if ("visible" in option && !option["visible"]) continue;
             let att_name = option["name"];
             let display_text;
-            if ("display_text" in option) {
+            if ("display_text" in option && option.display_text != null && option.display_text != "") {
                 display_text = option["display_text"]
             }
             else {
