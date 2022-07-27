@@ -772,7 +772,7 @@ var CombinedMetadata = /*#__PURE__*/function (_React$Component7) {
         handleChange: this._handleNotesChange,
         show_markdown_initial: true,
         handleBlur: this.props.handleNotesBlur
-      })), /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+      }), this.props.notes_buttons && this.props.notes_buttons()), /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
         label: "Created ",
         inline: true
       }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
@@ -822,7 +822,8 @@ CombinedMetadata.propTypes = {
   handleChange: _propTypes["default"].func,
   handleNotesBlur: _propTypes["default"].func,
   additional_metadata: _propTypes["default"].object,
-  aux_pane: _propTypes["default"].object
+  aux_pane: _propTypes["default"].object,
+  notes_buttons: _propTypes["default"].oneOfType([_propTypes["default"].number, _propTypes["default"].func])
 };
 CombinedMetadata.defaultProps = {
   outer_style: {
@@ -836,5 +837,6 @@ CombinedMetadata.defaultProps = {
   name: null,
   updated: null,
   additional_metadata: null,
-  aux_pane: null
+  aux_pane: null,
+  notes_buttons: null
 };

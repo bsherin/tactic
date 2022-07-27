@@ -81,6 +81,7 @@ class OptionModuleForm extends React.Component {
         this.state = {
         };
         this.handleNameChange = this.handleNameChange.bind(this);
+        this.handleDisplayTextChange = this.handleDisplayTextChange.bind(this);
         this.handleDefaultChange = this.handleDefaultChange.bind(this);
         this.handleTagChange = this.handleTagChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -95,6 +96,10 @@ class OptionModuleForm extends React.Component {
 
     handleNameChange(event) {
         this._setFormState({ "name": event.target.value });
+    }
+
+    handleDisplayTextChange(event) {
+        this._setFormState({ "display_text": event.target.value });
     }
 
     handleDefaultChange(event) {
@@ -150,30 +155,50 @@ class OptionModuleForm extends React.Component {
         let self = this;
         return (
             <form>
-                <div style={{display: "flex", flexDirection: "row", padding: 25}}>
-                    <Button type="submit"
-                            style={{height: "fit-content", alignSelf: "start", marginTop: 23, marginRight: 5}}
-                            text="create"
-                            onClick={e =>{
-                                e.preventDefault();
-                                self.handleSubmit(false)}} />
-                    <Button type="submit"
-                            style={{height: "fit-content", alignSelf: "start", marginTop: 23, marginRight: 5}}
-                            disabled={this.props.active_row == null}
-                            text="update"
-                            onClick={e =>{
-                                e.preventDefault();
-                                self.handleSubmit(true)}} />
-                    <LabeledFormField label="Name" onChange={this.handleNameChange} the_value={this.props.form_state.name}
-                                      helperText={this.props.form_state.name_warning_text}
-                    />
-                    <LabeledSelectList label="Type" option_list={this.option_types} onChange={this.handleTypeChange} the_value={this.props.form_state.type}/>
-                    {this.props.form_state.type != "divider" &&
-                        <LabeledFormField label="Default" onChange={this.handleDefaultChange} the_value={this.props.form_state.default}
-                                          isBool={this.props.form_state.type == "boolean"}
-                                          helperText={this.props.form_state.default_warning_text}
+                <div style={{display: "flex", flexDirection: "column", padding: 25}}>
+                    <div style={{display: "flex", flexWrap: "wrap", flexDirection: "row", marginBottom: 20}}>
+                        <Button type="submit"
+                                style={{height: "fit-content", alignSelf: "start", marginTop: 23, marginRight: 5}}
+                                text="create"
+                                intent="primary"
+                                onClick={e =>{
+                                    e.preventDefault();
+                                    self.handleSubmit(false)}} />
+                        <Button type="submit"
+                                style={{height: "fit-content", alignSelf: "start", marginTop: 23, marginRight: 5}}
+                                disabled={this.props.active_row == null}
+                                text="update"
+                                intent="warning"
+                                onClick={e =>{
+                                    e.preventDefault();
+                                    self.handleSubmit(true)}}/>
+                        <Button style={{height: "fit-content", alignSelf: "start", marginTop: 23, marginRight: 5}}
+                                disabled={this.props.active_row == null}
+                                text="delete"
+                                intent="danger"
+                                onClick={e =>{
+                                    e.preventDefault();
+                                    self.props.deleteOption()}} />
+                        <Button style={{height: "fit-content", alignSelf: "start", marginTop: 23, marginRight: 5}}
+                                text="clear"
+                                onClick={e =>{
+                                    e.preventDefault();
+                                    self.props.clearForm()}} />
+                    </div>
+                    <div style={{display: "flex", flexWrap: "wrap", flexDirection: "row"}}>
+                        <LabeledFormField label="Name" onChange={this.handleNameChange} the_value={this.props.form_state.name}
+                                          helperText={this.props.form_state.name_warning_text}
                         />
-                    }
+                        <LabeledSelectList label="Type" option_list={this.option_types} onChange={this.handleTypeChange} the_value={this.props.form_state.type}/>
+                        <LabeledFormField label="Display Text" onChange={this.handleDisplayTextChange} the_value={this.props.form_state.display_text}
+                                          helperText={this.props.form_state.display_warning_text}
+                        />
+                        {this.props.form_state.type != "divider" &&
+                            <LabeledFormField label="Default" onChange={this.handleDefaultChange} the_value={this.props.form_state.default}
+                                              isBool={this.props.form_state.type == "boolean"}
+                                              helperText={this.props.form_state.default_warning_text}
+                            />
+                        }
                     {this.props.form_state.type == "custom_list" &&
                         <LabeledTextArea label="Special List"
                                          onChange={this.handleSpecialListChange}
@@ -181,13 +206,9 @@ class OptionModuleForm extends React.Component {
                     {this.taggable_types.includes(this.props.form_state.type) &&
                         <LabeledFormField label="Tag" onChange={this.handleTagChange} the_value={this.props.form_state.tags}/>
                     }
-
-                    <Button style={{height: "fit-content", alignSelf: "start", marginTop: 23, marginLeft: 5}}
-                            icon="eraser"
-                            onClick={e =>{
-                                e.preventDefault();
-                                self.props.clearForm()}} />
                     </div>
+                </div>
+
             </form>
         )
     }
@@ -195,6 +216,7 @@ class OptionModuleForm extends React.Component {
 
 OptionModuleForm.propTypes = {
     handleCreate: PropTypes.func,
+    deleteOption: PropTypes.func,
     nameExists: PropTypes.func,
     setFormState: PropTypes.func,
     clearForm: PropTypes.func,
@@ -247,6 +269,7 @@ class OptionModule extends React.Component {
         this.table_ref = React.createRef();
         this.blank_form = {
             name: "",
+            display_text: "",
             type: "text",
             default: "",
             special_list: "",
@@ -262,7 +285,7 @@ class OptionModule extends React.Component {
         this.handleCreate = this.handleCreate.bind(this)
     }
 
-    delete_option() {
+    _delete_option() {
         let new_data_list = _.cloneDeep(this.props.data_list);
         new_data_list.splice(this.state.active_row, 1);
         let old_active_row = this.state.active_row;
@@ -274,14 +297,6 @@ class OptionModule extends React.Component {
                 this.handleActiveRowChange(old_active_row)
             }
         });
-    }
-
-    send_doc_text() {
-        let res_string = "\n\noptions: \n\n";
-        for (let opt of this.props.data_list) {
-            res_string += ` * \`${opt.name}\` (${opt.type}): \n`
-        }
-        this.props.handleNotesAppend(res_string);
     }
 
     _clearHighlights() {
@@ -338,6 +353,7 @@ class OptionModule extends React.Component {
     _clearForm() {
         this._setFormState({
             name: "",
+            display_text: "",
             default: "",
             special_list: "",
             tags: "",
@@ -349,30 +365,15 @@ class OptionModule extends React.Component {
     _handleRowDeSelect() {
         this.setState({active_row: null}, this._clearForm)
     }
-    
-    get button_groups() {
-        let bgs = [[{"name_text": "delete", "icon_name": "trash", "click_handler": this.delete_option, tooltip: "Delete option"},
-                    {"name_text": "toMeta", "icon_name": "properties", "click_handler": this.send_doc_text, tooltip: "Append info to notes field"}
-                    ]];
-        for (let bg of bgs) {
-            for (let but of bg) {
-                but.click_handler = but.click_handler.bind(this)
-            }
-        }
-        return bgs
-    }
 
     render () {
-        var cols = ["name", "type", "default", "special_list", "tags"];
+        var cols = ["name", "type", "display_text", "default", "special_list", "tags"];
         let options_pane_style = {
             "marginTop": 10,
             "marginLeft": 10,
             "marginRight": 10,
             "height": this.props.available_height
         };
-        if (this.state.active_row >= this.props.data_list.length) {
-            this.state.active_row = this.props.data_list.length - 1
-        }
         let copied_dlist = _.cloneDeep(this.props.data_list);
         for (let option of copied_dlist) {
             if (typeof option.default == "boolean") {
@@ -386,9 +387,6 @@ class OptionModule extends React.Component {
         }
         return (
             <Card elevation={1} id="options-pane" className="d-flex flex-column" style={options_pane_style}>
-                <div className="d-flex flex-row mb-2">
-                    <Toolbar button_groups={this.button_groups}/>
-                </div>
                 {this.props.foregrounded &&
                     <BpOrderableTable columns={cols}
                                       ref={this.table_ref}
@@ -403,6 +401,7 @@ class OptionModule extends React.Component {
                 }
 
                 <OptionModuleForm handleCreate={this.handleCreate}
+                                  deleteOption={this._delete_option}
                                   active_row={this.state.active_row}
                                   setFormState={this._setFormState}
                                   clearForm={this._clearForm}
@@ -449,22 +448,41 @@ class ExportModuleForm extends React.Component {
     }
 
     render () {
+        let self = this;
         return (
             <form>
-                <div style={{display: "flex", flexDirection: "row", padding: 25}}>
+                <div style={{display: "flex", flexDirection: "column", padding: 25}}>
+                    <div style={{display: "flex", flexWrap: "wrap", flexDirection: "row", marginBottom: 20}}>
+                        <Button style={{height: "fit-content", alignSelf: "start", marginTop: 23, marginRight: 5}}
+                                text="Create"
+                                type="submit"
+                                intent="primary"
+                                onClick={e => {
+                                    e.preventDefault();
+                                    self.handleSubmit()}}/>
+                        <Button style={{height: "fit-content", alignSelf: "start", marginTop: 23, marginRight: 5}}
+                                disabled={this.props.active_row == null}
+                                text="delete"
+                                intent="danger"
+                                onClick={e =>{
+                                    e.preventDefault();
+                                    self.props.deleteExport()}} />
+                    </div>
+                <div style={{display: "flex", flexWrap: "wrap", flexDirection: "row"}}>
                     <LabeledFormField label="Name" onChange={this.handleNameChange} the_value={this.state.name} />
-                    <LabeledFormField label="Tag" onChange={this.handleTagChange} the_value={this.state.tag}/>
+                    <LabeledFormField label="Tags" onChange={this.handleTagChange} the_value={this.state.tags}/>
                 </div>
-                <Button text="Create" type="submit" onClick={e => {
-                    e.preventDefault();
-                    this.handleSubmit()}}/>
+
+                </div>
             </form>
         )
     }
 }
 
 ExportModuleForm.propTypes = {
-    handleCreate: PropTypes.func
+    handleCreate: PropTypes.func,
+    deleteExport: PropTypes.func,
+    active_row: PropTypes.number
 };
 
 class ExportModule extends React.Component {
@@ -475,21 +493,22 @@ class ExportModule extends React.Component {
             "active_row": 0
         };
         this.handleActiveRowChange = this.handleActiveRowChange.bind(this);
-        this.handleCreate = this.handleCreate.bind(this)
+        this.handleCreate = this.handleCreate.bind(this);
+        this.delete_export = this.delete_export.bind(this)
     }
 
     delete_export() {
         let new_data_list = this.props.data_list;
         new_data_list.splice(this.state.active_row, 1);
-        this.props.handleChange(new_data_list)
-    }
-
-    send_doc_text() {
-        let res_string = "\n\nexports: \n\n";
-        for (let exp of this.props.data_list) {
-            res_string += ` * \`${exp.name}\` : \n`
-        }
-        this.props.handleNotesAppend(res_string);
+        let old_active_row = this.state.active_row;
+        this.props.handleChange(new_data_list, ()=>{
+            if (old_active_row >= this.props.data_list.length) {
+                this.setState({active_row: null})
+            }
+            else {
+                this.handleActiveRowChange(old_active_row)
+            }
+        })
     }
 
     handleCreate(new_row) {
@@ -498,21 +517,8 @@ class ExportModule extends React.Component {
         this.props.handleChange(new_data_list)
     }
 
-
     handleActiveRowChange(row_index) {
         this.setState({"active_row": row_index})
-    }
-
-    get button_groups() {
-        let bgs = [[{"name_text": "delete", "icon_name": "trash", "click_handler": this.delete_export, tooltip: "Delete export"},
-                    {"name_text": "toMeta", "icon_name": "properties", "click_handler": this.send_doc_text, tooltip: "Append info to notes field"}
-                    ]];
-        for (let bg of bgs) {
-            for (let but of bg) {
-                but.click_handler = but.click_handler.bind(this)
-            }
-        }
-        return bgs
     }
 
     render () {
@@ -523,15 +529,9 @@ class ExportModule extends React.Component {
             "marginRight": 10,
             "height": this.props.available_height
         };
-        if (this.state.active_row >= this.props.data_list.length) {
-            this.state.active_row = this.props.data_list.length - 1
-        }
         return (
 
             <Card elevation={1} id="exports-pane" className="d-flex flex-column" style={exports_pane_style}>
-                <div className="d-flex flex-row mb-2">
-                    <Toolbar button_groups={this.button_groups}/>
-                </div>
                 {this.props.foregrounded &&
                     <BpOrderableTable columns={cols}
                                       data_array={this.props.data_list}
@@ -540,7 +540,11 @@ class ExportModule extends React.Component {
                                       handleChange={this.props.handleChange}
                                       content_editable={true}/>
                 }
-                <ExportModuleForm handleCreate={this.handleCreate}/>
+                <ExportModuleForm handleCreate={this.handleCreate}
+                                  deleteExport={this.delete_export}
+                                  active_row={this.state.active_row}
+
+                />
             </Card>
         )
     }
