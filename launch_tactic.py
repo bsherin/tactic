@@ -95,9 +95,7 @@ def clear_ready_db():
 def create_mongo():
     try:
         mongo_exists = tactic_app.docker_functions.container_exists("tactic-mongo")
-        if not restart_rabbit and not mongo_exists:
-            print("mongo doesn't yet exist so I'm making it")
-        if restart_rabbit or not mongo_exists:
+        if not mongo_exists:
             print("creating tactic-mongo")
             if ("ON_MAC" in os.environ) and (os.environ.get("ON_MAC") == "True"):
                 mongo_volume_dict = {"/Users/bls910/mongo/data": {"bind": "/data/db", "mode": "rw"}}
