@@ -101,7 +101,14 @@ var TileForm = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
+      var all_items = [];
       var option_items = [];
+      var section_items = null;
+      var in_section = false;
+      option_items = all_items;
+      var current_section_att_name = "";
+      var current_section_display_text = "";
+      var current_section_start_open = false;
 
       var _iterator = _createForOfIteratorHelper(this.props.options),
           _step;
@@ -117,6 +124,31 @@ var TileForm = /*#__PURE__*/function (_React$Component) {
             display_text = option["display_text"];
           } else {
             display_text = null;
+          }
+
+          if (option["type"] == "divider") {
+            if (in_section) {
+              all_items.push( /*#__PURE__*/_react["default"].createElement(FormSection, {
+                att_name: current_section_att_name,
+                display_text: current_section_display_text,
+                section_items: section_items,
+                start_open: current_section_start_open
+              }));
+            }
+
+            section_items = [];
+            option_items = section_items;
+            in_section = true;
+            current_section_att_name = att_name;
+            current_section_display_text = display_text;
+
+            if ("start_open" in option) {
+              current_section_start_open = option["start_open"];
+            } else {
+              current_section_start_open = false;
+            }
+
+            continue;
           }
 
           if (selector_types.includes(option["type"])) {
@@ -221,10 +253,19 @@ var TileForm = /*#__PURE__*/function (_React$Component) {
         _iterator.f();
       }
 
+      if (in_section == true) {
+        all_items.push( /*#__PURE__*/_react["default"].createElement(FormSection, {
+          att_name: current_section_att_name,
+          display_text: current_section_display_text,
+          section_items: section_items,
+          start_open: current_section_start_open
+        }));
+      }
+
       return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("form", {
         className: "form-display-area",
         onSubmit: this._submitOptions
-      }, option_items), /*#__PURE__*/_react["default"].createElement(_core.Button, {
+      }, all_items), /*#__PURE__*/_react["default"].createElement(_core.Button, {
         text: "Submit",
         intent: "primary",
         onClick: this._submitOptions
@@ -244,19 +285,87 @@ TileForm.propTypes = {
   updateValue: _propTypes["default"].func
 };
 
-var DividerOption = /*#__PURE__*/function (_React$Component2) {
-  _inherits(DividerOption, _React$Component2);
+var FormSection = /*#__PURE__*/function (_React$Component2) {
+  _inherits(FormSection, _React$Component2);
 
-  var _super2 = _createSuper(DividerOption);
+  var _super2 = _createSuper(FormSection);
 
-  function DividerOption(props) {
+  function FormSection(props) {
     var _this2;
 
-    _classCallCheck(this, DividerOption);
+    _classCallCheck(this, FormSection);
 
     _this2 = _super2.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this2));
+    _this2.state = {
+      isOpen: _this2.props.start_open
+    };
     return _this2;
+  }
+
+  _createClass(FormSection, [{
+    key: "_handleClick",
+    value: function _handleClick() {
+      this.setState({
+        isOpen: !this.state.isOpen
+      });
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
+      var but_bottom_margin = this.state.isOpen ? 10 : 20;
+      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.Button, {
+        onClick: this._handleClick,
+        text: label,
+        large: false,
+        outlined: true,
+        intent: "primary",
+        style: {
+          width: "fit-content",
+          marginBottom: but_bottom_margin,
+          marginTop: 10
+        }
+      }), /*#__PURE__*/_react["default"].createElement(_core.Collapse, {
+        isOpen: this.state.isOpen
+      }, /*#__PURE__*/_react["default"].createElement(_core.Card, {
+        interactive: false,
+        elevation: _core.Elevation.TWO,
+        style: {
+          boxShadow: "none",
+          marginBottom: 10,
+          borderRadius: 10
+        }
+      }, this.props.section_items)));
+    }
+  }]);
+
+  return FormSection;
+}(_react["default"].Component);
+
+FormSection.propTypes = {
+  att_name: _propTypes["default"].string,
+  section_items: _propTypes["default"].array,
+  start_open: _propTypes["default"].bool,
+  display_text: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number])
+};
+FormSection.defaultProps = {
+  start_open: true
+};
+
+var DividerOption = /*#__PURE__*/function (_React$Component3) {
+  _inherits(DividerOption, _React$Component3);
+
+  var _super3 = _createSuper(DividerOption);
+
+  function DividerOption(props) {
+    var _this3;
+
+    _classCallCheck(this, DividerOption);
+
+    _this3 = _super3.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this3));
+    return _this3;
   }
 
   _createClass(DividerOption, [{
@@ -291,19 +400,19 @@ DividerOption.propTypes = {
   display_text: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number])
 };
 
-var TextOption = /*#__PURE__*/function (_React$Component3) {
-  _inherits(TextOption, _React$Component3);
+var TextOption = /*#__PURE__*/function (_React$Component4) {
+  _inherits(TextOption, _React$Component4);
 
-  var _super3 = _createSuper(TextOption);
+  var _super4 = _createSuper(TextOption);
 
   function TextOption(props) {
-    var _this3;
+    var _this4;
 
     _classCallCheck(this, TextOption);
 
-    _this3 = _super3.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this3));
-    return _this3;
+    _this4 = _super4.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this4));
+    return _this4;
   }
 
   _createClass(TextOption, [{
@@ -344,19 +453,19 @@ TextOption.propTypes = {
   leftIcon: _propTypes["default"].string
 };
 
-var IntOption = /*#__PURE__*/function (_React$Component4) {
-  _inherits(IntOption, _React$Component4);
+var IntOption = /*#__PURE__*/function (_React$Component5) {
+  _inherits(IntOption, _React$Component5);
 
-  var _super4 = _createSuper(IntOption);
+  var _super5 = _createSuper(IntOption);
 
   function IntOption(props) {
-    var _this4;
+    var _this5;
 
     _classCallCheck(this, IntOption);
 
-    _this4 = _super4.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this4));
-    return _this4;
+    _this5 = _super5.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this5));
+    return _this5;
   }
 
   _createClass(IntOption, [{
@@ -395,19 +504,19 @@ IntOption.propTypes = {
   updateValue: _propTypes["default"].func
 };
 
-var FloatOption = /*#__PURE__*/function (_React$Component5) {
-  _inherits(FloatOption, _React$Component5);
+var FloatOption = /*#__PURE__*/function (_React$Component6) {
+  _inherits(FloatOption, _React$Component6);
 
-  var _super5 = _createSuper(FloatOption);
+  var _super6 = _createSuper(FloatOption);
 
   function FloatOption(props) {
-    var _this5;
+    var _this6;
 
     _classCallCheck(this, FloatOption);
 
-    _this5 = _super5.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this5));
-    return _this5;
+    _this6 = _super6.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this6));
+    return _this6;
   }
 
   _createClass(FloatOption, [{
@@ -446,19 +555,19 @@ FloatOption.propTypes = {
   updateValue: _propTypes["default"].func
 };
 
-var BoolOption = /*#__PURE__*/function (_React$Component6) {
-  _inherits(BoolOption, _React$Component6);
+var BoolOption = /*#__PURE__*/function (_React$Component7) {
+  _inherits(BoolOption, _React$Component7);
 
-  var _super6 = _createSuper(BoolOption);
+  var _super7 = _createSuper(BoolOption);
 
   function BoolOption(props) {
-    var _this6;
+    var _this7;
 
     _classCallCheck(this, BoolOption);
 
-    _this6 = _super6.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this6));
-    return _this6;
+    _this7 = _super7.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this7));
+    return _this7;
   }
 
   _createClass(BoolOption, [{
@@ -505,19 +614,19 @@ BoolOption.propTypes = {
   updateValue: _propTypes["default"].func
 };
 
-var CodeAreaOption = /*#__PURE__*/function (_React$Component7) {
-  _inherits(CodeAreaOption, _React$Component7);
+var CodeAreaOption = /*#__PURE__*/function (_React$Component8) {
+  _inherits(CodeAreaOption, _React$Component8);
 
-  var _super7 = _createSuper(CodeAreaOption);
+  var _super8 = _createSuper(CodeAreaOption);
 
   function CodeAreaOption(props) {
-    var _this7;
+    var _this8;
 
     _classCallCheck(this, CodeAreaOption);
 
-    _this7 = _super7.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this7));
-    return _this7;
+    _this8 = _super8.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this8));
+    return _this8;
   }
 
   _createClass(CodeAreaOption, [{
@@ -557,28 +666,28 @@ CodeAreaOption.propTypes = {
   updateValue: _propTypes["default"].func
 };
 
-var TextAreaOption = /*#__PURE__*/function (_React$Component8) {
-  _inherits(TextAreaOption, _React$Component8);
+var TextAreaOption = /*#__PURE__*/function (_React$Component9) {
+  _inherits(TextAreaOption, _React$Component9);
 
-  var _super8 = _createSuper(TextAreaOption);
+  var _super9 = _createSuper(TextAreaOption);
 
   function TextAreaOption(props) {
-    var _this8;
+    var _this9;
 
     _classCallCheck(this, TextAreaOption);
 
-    _this8 = _super8.call(this, props);
+    _this9 = _super9.call(this, props);
 
-    _defineProperty(_assertThisInitialized(_this8), "_setCursorPositions", function () {
+    _defineProperty(_assertThisInitialized(_this9), "_setCursorPositions", function () {
       //reset the cursor position for input
-      _this8.inputRef.current.selectionStart = _this8.cursor;
-      _this8.inputRef.current.selectionEnd = _this8.cursor;
+      _this9.inputRef.current.selectionStart = _this9.cursor;
+      _this9.inputRef.current.selectionEnd = _this9.cursor;
     });
 
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this8));
-    _this8.inputRef = /*#__PURE__*/_react["default"].createRef();
-    _this8.cursor = null;
-    return _this8;
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this9));
+    _this9.inputRef = /*#__PURE__*/_react["default"].createRef();
+    _this9.cursor = null;
+    return _this9;
   }
 
   _createClass(TextAreaOption, [{
@@ -622,19 +731,19 @@ TextAreaOption.propTypes = {
   updateValue: _propTypes["default"].func
 };
 
-var SelectOption = /*#__PURE__*/function (_React$Component9) {
-  _inherits(SelectOption, _React$Component9);
+var SelectOption = /*#__PURE__*/function (_React$Component10) {
+  _inherits(SelectOption, _React$Component10);
 
-  var _super9 = _createSuper(SelectOption);
+  var _super10 = _createSuper(SelectOption);
 
   function SelectOption(props) {
-    var _this9;
+    var _this10;
 
     _classCallCheck(this, SelectOption);
 
-    _this9 = _super9.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this9));
-    return _this9;
+    _this10 = _super10.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this10));
+    return _this10;
   }
 
   _createClass(SelectOption, [{
@@ -674,19 +783,19 @@ SelectOption.propTypes = {
   updateValue: _propTypes["default"].func
 };
 
-var PipeOption = /*#__PURE__*/function (_React$Component10) {
-  _inherits(PipeOption, _React$Component10);
+var PipeOption = /*#__PURE__*/function (_React$Component11) {
+  _inherits(PipeOption, _React$Component11);
 
-  var _super10 = _createSuper(PipeOption);
+  var _super11 = _createSuper(PipeOption);
 
   function PipeOption(props) {
-    var _this10;
+    var _this11;
 
     _classCallCheck(this, PipeOption);
 
-    _this10 = _super10.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this10));
-    return _this10;
+    _this11 = _super11.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this11));
+    return _this11;
   }
 
   _createClass(PipeOption, [{
@@ -788,19 +897,19 @@ PipeOption.propTypes = {
   updateValue: _propTypes["default"].func
 };
 
-var PipeOptionOld = /*#__PURE__*/function (_React$Component11) {
-  _inherits(PipeOptionOld, _React$Component11);
+var PipeOptionOld = /*#__PURE__*/function (_React$Component12) {
+  _inherits(PipeOptionOld, _React$Component12);
 
-  var _super11 = _createSuper(PipeOptionOld);
+  var _super12 = _createSuper(PipeOptionOld);
 
   function PipeOptionOld(props) {
-    var _this11;
+    var _this12;
 
     _classCallCheck(this, PipeOptionOld);
 
-    _this11 = _super11.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this11));
-    return _this11;
+    _this12 = _super12.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this12));
+    return _this12;
   }
 
   _createClass(PipeOptionOld, [{
