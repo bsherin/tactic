@@ -10,7 +10,7 @@ import React from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
-import { Tab, Tabs } from "@blueprintjs/core";
+import { Tab, Tabs, Button, ButtonGroup, Icon } from "@blueprintjs/core";
 
 import {TacticSocket} from "./tactic_socket.js";
 import {TacticMenubar} from "./menu_utilities.js"
@@ -744,6 +744,48 @@ class CreatorApp extends React.Component {
         this.setState({"notes": this.state.notes + new_text});
     }
 
+    _appendOptionText() {
+        let res_string = "\n\noptions: \n\n";
+        for (let opt of this.state.option_list) {
+            res_string += ` * \`${opt.name}\` (${opt.type}): \n`
+        }
+        this._handleNotesAppend(res_string);
+    }
+
+    _appendExportText() {
+        let res_string = "\n\nexports: \n\n";
+        for (let exp of this.state.export_list) {
+            res_string += ` * \`${exp.name}\` : \n`
+        }
+        this._handleNotesAppend(res_string);
+    }
+
+    _metadataNotesButtons() {
+        let self = this;
+        return (
+            <ButtonGroup>
+                <Button style={{height: "fit-content", alignSelf: "start", marginTop: 10, fontSize: 12}}
+                        text="Add Options"
+                        small={true}
+                        minimal={true}
+                        intent="primary"
+                        icon="select"
+                        onClick={e =>{
+                            e.preventDefault();
+                            self._appendOptionText()}} />
+                <Button style={{height: "fit-content", alignSelf: "start", marginTop: 10, fontSize: 12}}
+                        text="Add Exports"
+                        small={true}
+                        minimal={true}
+                        intent="primary"
+                        icon="export"
+                        onClick={e =>{
+                            e.preventDefault();
+                            self._appendExportText()}} />
+            </ButtonGroup>
+        )
+    }
+
     handleStateChange(state_stuff) {
         this.setState(state_stuff)
     }
@@ -752,8 +794,8 @@ class CreatorApp extends React.Component {
         this.setState({"option_list": new_option_list}, callback)
     }
     
-    handleExportsChange(new_export_list) {
-        this.setState({"export_list": new_export_list})
+    handleExportsChange(new_export_list, callback=null) {
+        this.setState({"export_list": new_export_list}, callback)
     }
 
     handleMethodsChange(new_methods) {
@@ -976,8 +1018,8 @@ class CreatorApp extends React.Component {
                                               created={my_props.created}
                                               category={this.state.category}
                                               res_type="tile"
+                                              notes_buttons={this._metadataNotesButtons}
                                               handleChange={this.handleStateChange}
-                                             outer_style={mdata_style}
                                                 />);
 
         let option_panel = (
@@ -1031,11 +1073,11 @@ class CreatorApp extends React.Component {
                     <div id="creator-resources" className="d-block">
                         <Tabs id="resource_tabs" selectedTabId={this.state.selectedTabId}
                                  large={false} onChange={this._handleTabSelect}>
-                            <Tab id="metadata" title="metadata" panel={mdata_panel}/>
-                            <Tab id="options" title="options" panel={option_panel}/>
-                            <Tab id="exports" title="exports" panel={export_panel}/>
-                            <Tab id="methods" title="methods" panel={methods_panel}/>
-                            <Tab id="commands" title="tactic api" panel={commands_panel}/>
+                            <Tab id="metadata" title={<span><Icon size={12} icon="manually-entered-data"/> metadata</span>} panel={mdata_panel}/>
+                            <Tab id="options" title={<span><Icon size={12} icon="select"/> options</span>} panel={option_panel}/>
+                            <Tab id="exports" title={<span><Icon size={12} icon="export"/> exports</span>} panel={export_panel}/>
+                            <Tab id="methods" title={<span><Icon size={12} icon="code"/> methods</span>} panel={methods_panel}/>
+                            <Tab id="commands" title={<span><Icon size={12} icon="manual"/> documentation</span>} panel={commands_panel}/>
                         </Tabs>
                     </div>
                 </React.Fragment>

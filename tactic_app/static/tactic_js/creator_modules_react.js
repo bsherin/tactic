@@ -163,6 +163,7 @@ var OptionModuleForm = /*#__PURE__*/function (_React$Component) {
     _this.taggable_types = ["class_select", "function_select", "pipe_select", "list_select", "collection_select"];
     _this.state = {};
     _this.handleNameChange = _this.handleNameChange.bind(_assertThisInitialized(_this));
+    _this.handleDisplayTextChange = _this.handleDisplayTextChange.bind(_assertThisInitialized(_this));
     _this.handleDefaultChange = _this.handleDefaultChange.bind(_assertThisInitialized(_this));
     _this.handleTagChange = _this.handleTagChange.bind(_assertThisInitialized(_this));
     _this.handleSubmit = _this.handleSubmit.bind(_assertThisInitialized(_this));
@@ -182,6 +183,13 @@ var OptionModuleForm = /*#__PURE__*/function (_React$Component) {
     value: function handleNameChange(event) {
       this._setFormState({
         "name": event.target.value
+      });
+    }
+  }, {
+    key: "handleDisplayTextChange",
+    value: function handleDisplayTextChange(event) {
+      this._setFormState({
+        "display_text": event.target.value
       });
     }
   }, {
@@ -272,8 +280,15 @@ var OptionModuleForm = /*#__PURE__*/function (_React$Component) {
       return /*#__PURE__*/_react["default"].createElement("form", null, /*#__PURE__*/_react["default"].createElement("div", {
         style: {
           display: "flex",
-          flexDirection: "row",
+          flexDirection: "column",
           padding: 25
+        }
+      }, /*#__PURE__*/_react["default"].createElement("div", {
+        style: {
+          display: "flex",
+          flexWrap: "wrap",
+          flexDirection: "row",
+          marginBottom: 20
         }
       }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
         type: "submit",
@@ -284,6 +299,7 @@ var OptionModuleForm = /*#__PURE__*/function (_React$Component) {
           marginRight: 5
         },
         text: "create",
+        intent: "primary",
         onClick: function onClick(e) {
           e.preventDefault();
           self.handleSubmit(false);
@@ -298,11 +314,44 @@ var OptionModuleForm = /*#__PURE__*/function (_React$Component) {
         },
         disabled: this.props.active_row == null,
         text: "update",
+        intent: "warning",
         onClick: function onClick(e) {
           e.preventDefault();
           self.handleSubmit(true);
         }
-      }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.LabeledFormField, {
+      }), /*#__PURE__*/_react["default"].createElement(_core.Button, {
+        style: {
+          height: "fit-content",
+          alignSelf: "start",
+          marginTop: 23,
+          marginRight: 5
+        },
+        disabled: this.props.active_row == null,
+        text: "delete",
+        intent: "danger",
+        onClick: function onClick(e) {
+          e.preventDefault();
+          self.props.deleteOption();
+        }
+      }), /*#__PURE__*/_react["default"].createElement(_core.Button, {
+        style: {
+          height: "fit-content",
+          alignSelf: "start",
+          marginTop: 23,
+          marginRight: 5
+        },
+        text: "clear",
+        onClick: function onClick(e) {
+          e.preventDefault();
+          self.props.clearForm();
+        }
+      })), /*#__PURE__*/_react["default"].createElement("div", {
+        style: {
+          display: "flex",
+          flexWrap: "wrap",
+          flexDirection: "row"
+        }
+      }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.LabeledFormField, {
         label: "Name",
         onChange: this.handleNameChange,
         the_value: this.props.form_state.name,
@@ -312,6 +361,11 @@ var OptionModuleForm = /*#__PURE__*/function (_React$Component) {
         option_list: this.option_types,
         onChange: this.handleTypeChange,
         the_value: this.props.form_state.type
+      }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.LabeledFormField, {
+        label: "Display Text",
+        onChange: this.handleDisplayTextChange,
+        the_value: this.props.form_state.display_text,
+        helperText: this.props.form_state.display_warning_text
       }), this.props.form_state.type != "divider" && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.LabeledFormField, {
         label: "Default",
         onChange: this.handleDefaultChange,
@@ -326,19 +380,7 @@ var OptionModuleForm = /*#__PURE__*/function (_React$Component) {
         label: "Tag",
         onChange: this.handleTagChange,
         the_value: this.props.form_state.tags
-      }), /*#__PURE__*/_react["default"].createElement(_core.Button, {
-        style: {
-          height: "fit-content",
-          alignSelf: "start",
-          marginTop: 23,
-          marginLeft: 5
-        },
-        icon: "eraser",
-        onClick: function onClick(e) {
-          e.preventDefault();
-          self.props.clearForm();
-        }
-      })));
+      }))));
     }
   }]);
 
@@ -347,6 +389,7 @@ var OptionModuleForm = /*#__PURE__*/function (_React$Component) {
 
 OptionModuleForm.propTypes = {
   handleCreate: _propTypes["default"].func,
+  deleteOption: _propTypes["default"].func,
   nameExists: _propTypes["default"].func,
   setFormState: _propTypes["default"].func,
   clearForm: _propTypes["default"].func,
@@ -446,6 +489,7 @@ var OptionModule = /*#__PURE__*/function (_React$Component2) {
     _this2.table_ref = /*#__PURE__*/_react["default"].createRef();
     _this2.blank_form = {
       name: "",
+      display_text: "",
       type: "text",
       "default": "",
       special_list: "",
@@ -463,8 +507,8 @@ var OptionModule = /*#__PURE__*/function (_React$Component2) {
   }
 
   _createClass(OptionModule, [{
-    key: "delete_option",
-    value: function delete_option() {
+    key: "_delete_option",
+    value: function _delete_option() {
       var _this3 = this;
 
       var new_data_list = _lodash["default"].cloneDeep(this.props.data_list);
@@ -480,37 +524,16 @@ var OptionModule = /*#__PURE__*/function (_React$Component2) {
       });
     }
   }, {
-    key: "send_doc_text",
-    value: function send_doc_text() {
-      var res_string = "\n\noptions: \n\n";
+    key: "_clearHighlights",
+    value: function _clearHighlights() {
+      var new_data_list = [];
 
       var _iterator5 = _createForOfIteratorHelper(this.props.data_list),
           _step5;
 
       try {
         for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-          var opt = _step5.value;
-          res_string += " * `".concat(opt.name, "` (").concat(opt.type, "): \n");
-        }
-      } catch (err) {
-        _iterator5.e(err);
-      } finally {
-        _iterator5.f();
-      }
-
-      this.props.handleNotesAppend(res_string);
-    }
-  }, {
-    key: "_clearHighlights",
-    value: function _clearHighlights() {
-      var new_data_list = [];
-
-      var _iterator6 = _createForOfIteratorHelper(this.props.data_list),
-          _step6;
-
-      try {
-        for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-          var option = _step6.value;
+          var option = _step5.value;
 
           if ("className" in option && option.className) {
             var new_option = _objectSpread({}, option);
@@ -522,9 +545,9 @@ var OptionModule = /*#__PURE__*/function (_React$Component2) {
           }
         }
       } catch (err) {
-        _iterator6.e(err);
+        _iterator5.e(err);
       } finally {
-        _iterator6.f();
+        _iterator5.f();
       }
 
       var self = this; // The forceUpdate below is necessary to consistently make the change appear
@@ -563,12 +586,12 @@ var OptionModule = /*#__PURE__*/function (_React$Component2) {
     value: function _nameExists(name, update) {
       var rnum = 0;
 
-      var _iterator7 = _createForOfIteratorHelper(this.props.data_list),
-          _step7;
+      var _iterator6 = _createForOfIteratorHelper(this.props.data_list),
+          _step6;
 
       try {
-        for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
-          var option = _step7.value;
+        for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+          var option = _step6.value;
 
           if (option.name == name) {
             return !(update && rnum == this.state.active_row);
@@ -577,9 +600,9 @@ var OptionModule = /*#__PURE__*/function (_React$Component2) {
           rnum += 1;
         }
       } catch (err) {
-        _iterator7.e(err);
+        _iterator6.e(err);
       } finally {
-        _iterator7.f();
+        _iterator6.f();
       }
 
       return false;
@@ -598,6 +621,7 @@ var OptionModule = /*#__PURE__*/function (_React$Component2) {
     value: function _clearForm() {
       this._setFormState({
         name: "",
+        display_text: "",
         "default": "",
         special_list: "",
         tags: "",
@@ -613,46 +637,11 @@ var OptionModule = /*#__PURE__*/function (_React$Component2) {
       }, this._clearForm);
     }
   }, {
-    key: "button_groups",
-    get: function get() {
-      var bgs = [[{
-        "name_text": "delete",
-        "icon_name": "trash",
-        "click_handler": this.delete_option,
-        tooltip: "Delete option"
-      }, {
-        "name_text": "toMeta",
-        "icon_name": "properties",
-        "click_handler": this.send_doc_text,
-        tooltip: "Append info to notes field"
-      }]];
-
-      for (var _i = 0, _bgs = bgs; _i < _bgs.length; _i++) {
-        var bg = _bgs[_i];
-
-        var _iterator8 = _createForOfIteratorHelper(bg),
-            _step8;
-
-        try {
-          for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
-            var but = _step8.value;
-            but.click_handler = but.click_handler.bind(this);
-          }
-        } catch (err) {
-          _iterator8.e(err);
-        } finally {
-          _iterator8.f();
-        }
-      }
-
-      return bgs;
-    }
-  }, {
     key: "render",
     value: function render() {
       var _this4 = this;
 
-      var cols = ["name", "type", "default", "special_list", "tags"];
+      var cols = ["name", "type", "display_text", "default", "special_list", "tags"];
       var options_pane_style = {
         "marginTop": 10,
         "marginLeft": 10,
@@ -660,18 +649,14 @@ var OptionModule = /*#__PURE__*/function (_React$Component2) {
         "height": this.props.available_height
       };
 
-      if (this.state.active_row >= this.props.data_list.length) {
-        this.state.active_row = this.props.data_list.length - 1;
-      }
-
       var copied_dlist = _lodash["default"].cloneDeep(this.props.data_list);
 
-      var _iterator9 = _createForOfIteratorHelper(copied_dlist),
-          _step9;
+      var _iterator7 = _createForOfIteratorHelper(copied_dlist),
+          _step7;
 
       try {
-        for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
-          var option = _step9.value;
+        for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
+          var option = _step7.value;
 
           if (typeof option["default"] == "boolean") {
             option["default"] = option["default"] ? "True" : "False";
@@ -684,9 +669,9 @@ var OptionModule = /*#__PURE__*/function (_React$Component2) {
           }
         }
       } catch (err) {
-        _iterator9.e(err);
+        _iterator7.e(err);
       } finally {
-        _iterator9.f();
+        _iterator7.f();
       }
 
       return /*#__PURE__*/_react["default"].createElement(_core.Card, {
@@ -694,11 +679,7 @@ var OptionModule = /*#__PURE__*/function (_React$Component2) {
         id: "options-pane",
         className: "d-flex flex-column",
         style: options_pane_style
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: "d-flex flex-row mb-2"
-      }, /*#__PURE__*/_react["default"].createElement(_blueprint_toolbar.Toolbar, {
-        button_groups: this.button_groups
-      })), this.props.foregrounded && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.BpOrderableTable, {
+      }, this.props.foregrounded && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.BpOrderableTable, {
         columns: cols,
         ref: this.table_ref,
         data_array: copied_dlist,
@@ -712,6 +693,7 @@ var OptionModule = /*#__PURE__*/function (_React$Component2) {
         content_editable: false
       }), /*#__PURE__*/_react["default"].createElement(OptionModuleForm, {
         handleCreate: this.handleCreate,
+        deleteOption: this._delete_option,
         active_row: this.state.active_row,
         setFormState: this._setFormState,
         clearForm: this._clearForm,
@@ -776,31 +758,63 @@ var ExportModuleForm = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "render",
     value: function render() {
-      var _this6 = this;
-
+      var self = this;
       return /*#__PURE__*/_react["default"].createElement("form", null, /*#__PURE__*/_react["default"].createElement("div", {
         style: {
           display: "flex",
-          flexDirection: "row",
+          flexDirection: "column",
           padding: 25
+        }
+      }, /*#__PURE__*/_react["default"].createElement("div", {
+        style: {
+          display: "flex",
+          flexWrap: "wrap",
+          flexDirection: "row",
+          marginBottom: 20
+        }
+      }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
+        style: {
+          height: "fit-content",
+          alignSelf: "start",
+          marginTop: 23,
+          marginRight: 5
+        },
+        text: "Create",
+        type: "submit",
+        intent: "primary",
+        onClick: function onClick(e) {
+          e.preventDefault();
+          self.handleSubmit();
+        }
+      }), /*#__PURE__*/_react["default"].createElement(_core.Button, {
+        style: {
+          height: "fit-content",
+          alignSelf: "start",
+          marginTop: 23,
+          marginRight: 5
+        },
+        disabled: this.props.active_row == null,
+        text: "delete",
+        intent: "danger",
+        onClick: function onClick(e) {
+          e.preventDefault();
+          self.props.deleteExport();
+        }
+      })), /*#__PURE__*/_react["default"].createElement("div", {
+        style: {
+          display: "flex",
+          flexWrap: "wrap",
+          flexDirection: "row"
         }
       }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.LabeledFormField, {
         label: "Name",
         onChange: this.handleNameChange,
         the_value: this.state.name
       }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.LabeledFormField, {
-        label: "Tag",
+        label: "Tags",
         onChange: this.handleTagChange,
-        the_value: this.state.tag
-      })), /*#__PURE__*/_react["default"].createElement(_core.Button, {
-        text: "Create",
-        type: "submit",
-        onClick: function onClick(e) {
-          e.preventDefault();
-
-          _this6.handleSubmit();
-        }
-      }));
+        the_value: this.state.tags
+      }))));
     }
   }]);
 
@@ -808,7 +822,9 @@ var ExportModuleForm = /*#__PURE__*/function (_React$Component3) {
 }(_react["default"].Component);
 
 ExportModuleForm.propTypes = {
-  handleCreate: _propTypes["default"].func
+  handleCreate: _propTypes["default"].func,
+  deleteExport: _propTypes["default"].func,
+  active_row: _propTypes["default"].number
 };
 
 var ExportModule = /*#__PURE__*/function (_React$Component4) {
@@ -817,46 +833,37 @@ var ExportModule = /*#__PURE__*/function (_React$Component4) {
   var _super4 = _createSuper(ExportModule);
 
   function ExportModule(props) {
-    var _this7;
+    var _this6;
 
     _classCallCheck(this, ExportModule);
 
-    _this7 = _super4.call(this, props);
-    _this7.state = {
+    _this6 = _super4.call(this, props);
+    _this6.state = {
       "active_row": 0
     };
-    _this7.handleActiveRowChange = _this7.handleActiveRowChange.bind(_assertThisInitialized(_this7));
-    _this7.handleCreate = _this7.handleCreate.bind(_assertThisInitialized(_this7));
-    return _this7;
+    _this6.handleActiveRowChange = _this6.handleActiveRowChange.bind(_assertThisInitialized(_this6));
+    _this6.handleCreate = _this6.handleCreate.bind(_assertThisInitialized(_this6));
+    _this6.delete_export = _this6.delete_export.bind(_assertThisInitialized(_this6));
+    return _this6;
   }
 
   _createClass(ExportModule, [{
     key: "delete_export",
     value: function delete_export() {
+      var _this7 = this;
+
       var new_data_list = this.props.data_list;
       new_data_list.splice(this.state.active_row, 1);
-      this.props.handleChange(new_data_list);
-    }
-  }, {
-    key: "send_doc_text",
-    value: function send_doc_text() {
-      var res_string = "\n\nexports: \n\n";
-
-      var _iterator10 = _createForOfIteratorHelper(this.props.data_list),
-          _step10;
-
-      try {
-        for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
-          var exp = _step10.value;
-          res_string += " * `".concat(exp.name, "` : \n");
+      var old_active_row = this.state.active_row;
+      this.props.handleChange(new_data_list, function () {
+        if (old_active_row >= _this7.props.data_list.length) {
+          _this7.setState({
+            active_row: null
+          });
+        } else {
+          _this7.handleActiveRowChange(old_active_row);
         }
-      } catch (err) {
-        _iterator10.e(err);
-      } finally {
-        _iterator10.f();
-      }
-
-      this.props.handleNotesAppend(res_string);
+      });
     }
   }, {
     key: "handleCreate",
@@ -873,41 +880,6 @@ var ExportModule = /*#__PURE__*/function (_React$Component4) {
       });
     }
   }, {
-    key: "button_groups",
-    get: function get() {
-      var bgs = [[{
-        "name_text": "delete",
-        "icon_name": "trash",
-        "click_handler": this.delete_export,
-        tooltip: "Delete export"
-      }, {
-        "name_text": "toMeta",
-        "icon_name": "properties",
-        "click_handler": this.send_doc_text,
-        tooltip: "Append info to notes field"
-      }]];
-
-      for (var _i2 = 0, _bgs2 = bgs; _i2 < _bgs2.length; _i2++) {
-        var bg = _bgs2[_i2];
-
-        var _iterator11 = _createForOfIteratorHelper(bg),
-            _step11;
-
-        try {
-          for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
-            var but = _step11.value;
-            but.click_handler = but.click_handler.bind(this);
-          }
-        } catch (err) {
-          _iterator11.e(err);
-        } finally {
-          _iterator11.f();
-        }
-      }
-
-      return bgs;
-    }
-  }, {
     key: "render",
     value: function render() {
       var cols = ["name", "tags"];
@@ -917,21 +889,12 @@ var ExportModule = /*#__PURE__*/function (_React$Component4) {
         "marginRight": 10,
         "height": this.props.available_height
       };
-
-      if (this.state.active_row >= this.props.data_list.length) {
-        this.state.active_row = this.props.data_list.length - 1;
-      }
-
       return /*#__PURE__*/_react["default"].createElement(_core.Card, {
         elevation: 1,
         id: "exports-pane",
         className: "d-flex flex-column",
         style: exports_pane_style
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: "d-flex flex-row mb-2"
-      }, /*#__PURE__*/_react["default"].createElement(_blueprint_toolbar.Toolbar, {
-        button_groups: this.button_groups
-      })), this.props.foregrounded && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.BpOrderableTable, {
+      }, this.props.foregrounded && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.BpOrderableTable, {
         columns: cols,
         data_array: this.props.data_list,
         active_row: this.state.active_row,
@@ -939,7 +902,9 @@ var ExportModule = /*#__PURE__*/function (_React$Component4) {
         handleChange: this.props.handleChange,
         content_editable: true
       }), /*#__PURE__*/_react["default"].createElement(ExportModuleForm, {
-        handleCreate: this.handleCreate
+        handleCreate: this.handleCreate,
+        deleteExport: this.delete_export,
+        active_row: this.state.active_row
       }));
     }
   }]);
@@ -1008,12 +973,12 @@ var CommandsModule = /*#__PURE__*/function (_React$Component5) {
       var menu_items = [];
       var object_items = [];
 
-      var _iterator12 = _createForOfIteratorHelper(this.state.ordered_object_categories),
-          _step12;
+      var _iterator8 = _createForOfIteratorHelper(this.state.ordered_object_categories),
+          _step8;
 
       try {
-        for (_iterator12.s(); !(_step12 = _iterator12.n()).done;) {
-          var category = _step12.value;
+        for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
+          var category = _step8.value;
 
           var res = /*#__PURE__*/_react["default"].createElement(ObjectCategoryEntry, {
             category_name: category,
@@ -1025,19 +990,19 @@ var CommandsModule = /*#__PURE__*/function (_React$Component5) {
           object_items.push(res);
         }
       } catch (err) {
-        _iterator12.e(err);
+        _iterator8.e(err);
       } finally {
-        _iterator12.f();
+        _iterator8.f();
       }
 
       var command_items = [];
 
-      var _iterator13 = _createForOfIteratorHelper(this.state.ordered_categories),
-          _step13;
+      var _iterator9 = _createForOfIteratorHelper(this.state.ordered_categories),
+          _step9;
 
       try {
-        for (_iterator13.s(); !(_step13 = _iterator13.n()).done;) {
-          var _category = _step13.value;
+        for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
+          var _category = _step9.value;
 
           var _res = /*#__PURE__*/_react["default"].createElement(CategoryEntry, {
             category_name: _category,
@@ -1049,9 +1014,9 @@ var CommandsModule = /*#__PURE__*/function (_React$Component5) {
           command_items.push(_res);
         }
       } catch (err) {
-        _iterator13.e(err);
+        _iterator9.e(err);
       } finally {
-        _iterator13.f();
+        _iterator9.f();
       }
 
       return /*#__PURE__*/_react["default"].createElement(_core.Card, {
@@ -1125,12 +1090,12 @@ var ObjectCategoryEntry = /*#__PURE__*/function (_React$Component6) {
 
       var index = 0;
 
-      var _iterator14 = _createForOfIteratorHelper(this.props.class_list),
-          _step14;
+      var _iterator10 = _createForOfIteratorHelper(this.props.class_list),
+          _step10;
 
       try {
-        for (_iterator14.s(); !(_step14 = _iterator14.n()).done;) {
-          var class_entry = _step14.value;
+        for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
+          var class_entry = _step10.value;
           var entries = [];
           var show_class = false;
 
@@ -1143,12 +1108,12 @@ var ObjectCategoryEntry = /*#__PURE__*/function (_React$Component6) {
               show_class = true;
             }
 
-            var _iterator15 = _createForOfIteratorHelper(class_entry[1]),
-                _step15;
+            var _iterator11 = _createForOfIteratorHelper(class_entry[1]),
+                _step11;
 
             try {
-              for (_iterator15.s(); !(_step15 = _iterator15.n()).done;) {
-                var entry = _step15.value;
+              for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
+                var entry = _step11.value;
                 entry["kind"] = "class_" + entry["kind"];
                 var show_entry = false;
 
@@ -1162,9 +1127,9 @@ var ObjectCategoryEntry = /*#__PURE__*/function (_React$Component6) {
                 }
               }
             } catch (err) {
-              _iterator15.e(err);
+              _iterator11.e(err);
             } finally {
-              _iterator15.f();
+              _iterator11.f();
             }
 
             if (show_class) {
@@ -1191,9 +1156,9 @@ var ObjectCategoryEntry = /*#__PURE__*/function (_React$Component6) {
           }
         }
       } catch (err) {
-        _iterator14.e(err);
+        _iterator10.e(err);
       } finally {
-        _iterator14.f();
+        _iterator10.f();
       }
 
       if (show_category) {
@@ -1248,12 +1213,12 @@ var CategoryEntry = /*#__PURE__*/function (_React$Component7) {
       var entries = [];
       var index = 0;
 
-      var _iterator16 = _createForOfIteratorHelper(this.props.command_list),
-          _step16;
+      var _iterator12 = _createForOfIteratorHelper(this.props.command_list),
+          _step12;
 
       try {
-        for (_iterator16.s(); !(_step16 = _iterator16.n()).done;) {
-          var entry = _step16.value;
+        for (_iterator12.s(); !(_step12 = _iterator12.n()).done;) {
+          var entry = _step12.value;
 
           if (show_whole_category || stringIncludes(entry.signature, this.props.search_string)) {
             show_category = true;
@@ -1264,9 +1229,9 @@ var CategoryEntry = /*#__PURE__*/function (_React$Component7) {
           }
         }
       } catch (err) {
-        _iterator16.e(err);
+        _iterator12.e(err);
       } finally {
-        _iterator16.f();
+        _iterator12.f();
       }
 
       if (show_category) {
@@ -1426,12 +1391,12 @@ var ApiMenu = /*#__PURE__*/function (_React$Component9) {
     value: function _buildMenu() {
       var choices = [];
 
-      var _iterator17 = _createForOfIteratorHelper(this.props.item_list),
-          _step17;
+      var _iterator13 = _createForOfIteratorHelper(this.props.item_list),
+          _step13;
 
       try {
-        for (_iterator17.s(); !(_step17 = _iterator17.n()).done;) {
-          var item = _step17.value;
+        for (_iterator13.s(); !(_step13 = _iterator13.n()).done;) {
+          var item = _step13.value;
 
           if (item.kind == "header") {
             choices.push( /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, {
@@ -1444,9 +1409,9 @@ var ApiMenu = /*#__PURE__*/function (_React$Component9) {
           }
         }
       } catch (err) {
-        _iterator17.e(err);
+        _iterator13.e(err);
       } finally {
-        _iterator17.f();
+        _iterator13.f();
       }
 
       return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, choices);
@@ -1463,18 +1428,18 @@ var ApiMenu = /*#__PURE__*/function (_React$Component9) {
     value: function render() {
       var option_list = [];
 
-      var _iterator18 = _createForOfIteratorHelper(this.props.item_list),
-          _step18;
+      var _iterator14 = _createForOfIteratorHelper(this.props.item_list),
+          _step14;
 
       try {
-        for (_iterator18.s(); !(_step18 = _iterator18.n()).done;) {
-          var item = _step18.value;
+        for (_iterator14.s(); !(_step14 = _iterator14.n()).done;) {
+          var item = _step14.value;
           option_list.push(item.name);
         }
       } catch (err) {
-        _iterator18.e(err);
+        _iterator14.e(err);
       } finally {
-        _iterator18.f();
+        _iterator14.f();
       }
 
       return (
