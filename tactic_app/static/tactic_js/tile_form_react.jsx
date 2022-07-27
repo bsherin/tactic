@@ -3,7 +3,7 @@
 import React from "react";
 import PropTypes from 'prop-types';
 
-import { FormGroup, InputGroup, Button, Divider, Switch, HTMLSelect, TextArea } from "@blueprintjs/core";
+import { FormGroup, InputGroup, Button, Divider, Switch, HTMLSelect, TextArea, Collapse, Card, Elevation } from "@blueprintjs/core";
 import _ from 'lodash';
 
 import {ReactCodemirror} from "./react-codemirror.js";
@@ -52,7 +52,14 @@ class TileForm extends React.Component {
     }
 
     render() {
+        var all_items = [];
         var option_items = [];
+        var section_items = null;
+        var in_section = false;
+        option_items = all_items;
+        var current_section_att_name = "";
+        var current_section_display_text = "";
+        var current_section_start_open = false;
         for (let option of this.props.options) {
             if ("visible" in option && !option["visible"]) continue;
             let att_name = option["name"];
@@ -62,6 +69,28 @@ class TileForm extends React.Component {
             }
             else {
                 display_text = null
+            }
+            if (option["type"] == "divider") {
+                if (in_section) {
+                    all_items.push(
+                        <FormSection att_name={current_section_att_name}
+                                     display_text={current_section_display_text}
+                                     section_items={section_items}
+                                     start_open={current_section_start_open}/>
+                    )
+                }
+                section_items = [];
+                option_items = section_items;
+                in_section = true;
+                current_section_att_name = att_name;
+                current_section_display_text = display_text;
+                if ("start_open" in option) {
+                    current_section_start_open = option["start_open"]
+                }
+                else {
+                    current_section_start_open = false
+                }
+                continue;
             }
             if (selector_types.includes(option["type"])) {
                 option_items.push(<SelectOption att_name={att_name}
@@ -143,10 +172,18 @@ class TileForm extends React.Component {
                     break;
             }
         }
+        if (in_section == true) {
+            all_items.push(
+                <FormSection att_name={current_section_att_name}
+                             display_text={current_section_display_text}
+                             section_items={section_items}
+                             start_open={current_section_start_open}/>
+            )
+        }
         return (
             <React.Fragment>
                 <form className="form-display-area" onSubmit={this._submitOptions}>
-                    {option_items}
+                    {all_items}
                 </form>
                 <Button text="Submit" intent="primary" onClick={this._submitOptions}/>
             </React.Fragment>
@@ -162,6 +199,59 @@ TileForm.propTypes = {
     handleSubmit: PropTypes.func,
     updateValue: PropTypes.func
 };
+
+class FormSection extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this);
+        this.state = {
+            isOpen: this.props.start_open
+        }
+    }
+
+    _handleClick() {
+        this.setState({ isOpen: !this.state.isOpen });
+    }
+
+    render() {
+        let label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
+        let but_bottom_margin = this.state.isOpen ? 10 : 20;
+        return (
+            <React.Fragment>
+                <Button onClick={this._handleClick}
+                        text={label}
+                        large={false}
+                        outlined={true}
+                        intent="primary"
+                        style={{width: "fit-content", marginBottom: but_bottom_margin, marginTop: 10}}
+                    />
+                <Collapse isOpen={this.state.isOpen}>
+                    <Card interactive={false}
+                          elevation={Elevation.TWO}
+                          style={{boxShadow: "none", marginBottom: 10, borderRadius: 10}}
+                    >
+                        {this.props.section_items}
+                    </Card>
+                </Collapse>
+            </React.Fragment>
+        )
+    }
+}
+
+FormSection.propTypes = {
+    att_name: PropTypes.string,
+    section_items: PropTypes.array,
+    start_open: PropTypes.bool,
+    display_text: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number
+    ]),
+};
+
+FormSection.defaultProps = {
+    start_open: true
+};
+
 
 class DividerOption extends React.Component {
     constructor(props) {
