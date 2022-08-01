@@ -100,8 +100,8 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToAr
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
 var DARK_THEME = window.dark_theme_name;
-var EXTRAWORDS = ["global_import"];
-var WORD = /[\w$]+/;
+var EXTRAWORDS = ["global_import", "Collection", "Collection", "Collection.document_names", "Collection.current_docment", "Collection.column", "Collection.tokenize", "Collection.detach", "Collection.rewind", "Library", "Library.collections", "Library.lists", "Library.functions", "Library.classes", "Settings", "Settings.names", "Tiles", "Pipes"];
+var WORD = /[\w\.$]+/;
 var RANGE = 500;
 
 _codemirror["default"].registerHelper("hint", "anyword", function (editor, options) {
@@ -259,7 +259,7 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "shouldComponentUpdate",
     value: function shouldComponentUpdate(nextProps, nextState) {
-      return !(0, _utilities_react.propsAreEqual)(nextProps, this.props);
+      return !(0, _utilities_react.propsAreEqual)(nextProps, this.props, ["extraKeys"]);
     }
   }, {
     key: "componentDidUpdate",
@@ -459,7 +459,7 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
         self.api_dict_by_category = data.api_dict_by_category;
         self.api_dict_by_name = data.api_dict_by_name;
         self.ordered_api_categories = data.ordered_api_categories;
-        self.commands = [];
+        self.commands = self.props.extra_autocomplete_list;
 
         var _iterator2 = _createForOfIteratorHelper(self.ordered_api_categories),
             _step2;
@@ -474,20 +474,21 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
             try {
               for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
                 var entry = _step3.value;
-                self.commands.push(entry["name"]);
+                self.commands.push("self." + entry["name"]);
               }
             } catch (err) {
               _iterator3.e(err);
             } finally {
               _iterator3.f();
             }
-          } //noinspection JSUnresolvedVariable
-
+          }
         } catch (err) {
           _iterator2.e(err);
         } finally {
           _iterator2.f();
         }
+
+        self.commands = _toConsumableArray(new Set(self.commands)); //noinspection JSUnresolvedVariable
 
         _codemirror["default"].commands.autocomplete = function (cm) {
           //noinspection JSUnresolvedFunction
@@ -586,7 +587,8 @@ ReactCodemirror.propTypes = {
   code_container_width: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
   code_container_height: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
   setSearchMatches: _propTypes["default"].func,
-  current_search_number: _propTypes["default"].number
+  current_search_number: _propTypes["default"].number,
+  extra_autocomplete_list: _propTypes["default"].array
 };
 ReactCodemirror.defaultProps = {
   first_line_number: 1,
@@ -607,5 +609,6 @@ ReactCodemirror.defaultProps = {
   code_container_ref: null,
   code_container_width: "100%",
   setSearchMatches: null,
-  current_search_number: null
+  current_search_number: null,
+  extra_autocomplete_list: []
 };
