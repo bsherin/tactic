@@ -884,7 +884,19 @@ class CreatorApp extends React.Component {
         this.setState({search_matches: current_matches})
     }
 
+    _getOptionNames() {
+        let onames = [];
+        for (let entry of this.state.option_list) {
+            onames.push(entry.name)
+        }
+        return onames
+    }
+
     render() {
+        let onames_for_autocomplete = [];
+        for (let oname of this._getOptionNames()) {
+            onames_for_autocomplete.push("self." + oname)
+        }
         let dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme;
         //let hp_height = this.get_height_minus_top_offset(this.hp_ref);
         let my_props = {...this.props};
@@ -936,6 +948,7 @@ class CreatorApp extends React.Component {
                                      dark_theme={dark_theme}
                                      readOnly={this.props.read_only}
                                      setSearchMatches={(num)=>this._setSearchMatches("tc", num)}
+                                     extra_autocomplete_list={mode == "python" ? onames_for_autocomplete : []}
                     />
                 </div>
              );
@@ -979,6 +992,7 @@ class CreatorApp extends React.Component {
                                  dark_theme={dark_theme}
                                  readOnly={this.props.read_only}
                                  setSearchMatches={(num)=>this._setSearchMatches("rc", num)}
+                                 extra_autocomplete_list={onames_for_autocomplete}
 
                 />
             </div>
@@ -1057,6 +1071,7 @@ class CreatorApp extends React.Component {
                                  first_line_number={this.state.extra_methods_line_number}
                                  refresh_required={this.state.methodsTabRefreshRequired}
                                  setSearchMatches={(num)=>this._setSearchMatches("em", num)}
+                                 extra_autocomplete_list={onames_for_autocomplete}
                 />
              </div>
 

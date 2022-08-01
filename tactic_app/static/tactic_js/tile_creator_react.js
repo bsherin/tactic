@@ -1212,27 +1212,64 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       });
     }
   }, {
+    key: "_getOptionNames",
+    value: function _getOptionNames() {
+      var onames = [];
+
+      var _iterator6 = _createForOfIteratorHelper(this.state.option_list),
+          _step6;
+
+      try {
+        for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+          var entry = _step6.value;
+          onames.push(entry.name);
+        }
+      } catch (err) {
+        _iterator6.e(err);
+      } finally {
+        _iterator6.f();
+      }
+
+      return onames;
+    }
+  }, {
     key: "render",
     value: function render() {
       var _this5 = this;
+
+      var onames_for_autocomplete = [];
+
+      var _iterator7 = _createForOfIteratorHelper(this._getOptionNames()),
+          _step7;
+
+      try {
+        for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
+          var oname = _step7.value;
+          onames_for_autocomplete.push("self." + oname);
+        }
+      } catch (err) {
+        _iterator7.e(err);
+      } finally {
+        _iterator7.f();
+      }
 
       var dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme; //let hp_height = this.get_height_minus_top_offset(this.hp_ref);
 
       var my_props = _objectSpread({}, this.props);
 
       if (!this.props.controlled) {
-        var _iterator6 = _createForOfIteratorHelper(controllable_props),
-            _step6;
+        var _iterator8 = _createForOfIteratorHelper(controllable_props),
+            _step8;
 
         try {
-          for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-            var prop_name = _step6.value;
+          for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
+            var prop_name = _step8.value;
             my_props[prop_name] = this.state[prop_name];
           }
         } catch (err) {
-          _iterator6.e(err);
+          _iterator8.e(err);
         } finally {
-          _iterator6.f();
+          _iterator8.f();
         }
       }
 
@@ -1293,7 +1330,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           readOnly: this.props.read_only,
           setSearchMatches: function setSearchMatches(num) {
             return _this5._setSearchMatches("tc", num);
-          }
+          },
+          extra_autocomplete_list: mode == "python" ? onames_for_autocomplete : []
         }));
       }
 
@@ -1348,7 +1386,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         readOnly: this.props.read_only,
         setSearchMatches: function setSearchMatches(num) {
           return _this5._setSearchMatches("rc", num);
-        }
+        },
+        extra_autocomplete_list: onames_for_autocomplete
       }));
 
       var left_pane;
@@ -1426,7 +1465,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         refresh_required: this.state.methodsTabRefreshRequired,
         setSearchMatches: function setSearchMatches(num) {
           return _this5._setSearchMatches("em", num);
-        }
+        },
+        extra_autocomplete_list: onames_for_autocomplete
       }));
 
       var commands_height = this.get_height_minus_top_offset(this.commands_ref, 128, 128);
