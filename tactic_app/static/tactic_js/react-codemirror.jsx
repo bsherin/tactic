@@ -41,9 +41,14 @@ export {ReactCodemirror}
 
 const DARK_THEME = window.dark_theme_name;
 
-const EXTRAWORDS = ["global_import"];
+const EXTRAWORDS = ["global_import", "Collection",
+    "Collection", "Collection.document_names", "Collection.current_docment", "Collection.column",
+    "Collection.tokenize", "Collection.detach", "Collection.rewind",
+    "Library", "Library.collections", "Library.lists", "Library.functions", "Library.classes",
+    "Settings", "Settings.names",
+    "Tiles", "Pipes"];
 
-const WORD = /[\w$]+/;
+const WORD = /[\w\.$]+/;
 const RANGE = 500;
 CodeMirror.registerHelper("hint", "anyword", function(editor, options) {
     var word = options && options.word || WORD;
@@ -135,7 +140,7 @@ class ReactCodemirror extends React.Component {
         cmobject.on("blur", this.handleBlur);
         return cmobject
     }
-    
+
     handleChange(cm, changeObject) {
         if (this.props.handleChange) {
             this.props.handleChange(cm.getDoc().getValue())
@@ -161,7 +166,7 @@ class ReactCodemirror extends React.Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        return !propsAreEqual(nextProps, this.props)
+        return !propsAreEqual(nextProps, this.props, ["extraKeys"])
     }
 
     componentDidUpdate(prevProps) {
@@ -317,12 +322,13 @@ class ReactCodemirror extends React.Component {
             self.api_dict_by_name = data.api_dict_by_name;
             self.ordered_api_categories = data.ordered_api_categories;
 
-            self.commands = [];
+            self.commands = self.props.extra_autocomplete_list;
             for (let cat of self.ordered_api_categories) {
                 for (let entry of self.api_dict_by_category[cat]) {
-                    self.commands.push(entry["name"])
+                    self.commands.push("self." + entry["name"])
                 }
             }
+            self.commands = [...new Set(self.commands)];
             //noinspection JSUnresolvedVariable
             CodeMirror.commands.autocomplete = function (cm) {
                 //noinspection JSUnresolvedFunction
@@ -411,7 +417,8 @@ ReactCodemirror.propTypes = {
         PropTypes.string,
         PropTypes.number]),
     setSearchMatches: PropTypes.func,
-    current_search_number: PropTypes.number
+    current_search_number: PropTypes.number,
+    extra_autocomplete_list: PropTypes.array
 };
 
 ReactCodemirror.defaultProps = {
@@ -433,5 +440,6 @@ ReactCodemirror.defaultProps = {
     code_container_ref: null,
     code_container_width: "100%",
     setSearchMatches: null,
-    current_search_number: null
+    current_search_number: null,
+    extra_autocomplete_list: []
 };

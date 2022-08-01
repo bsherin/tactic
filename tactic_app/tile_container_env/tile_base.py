@@ -310,7 +310,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     @_task_worthy
     def LogParams(self, data):
         parray = [["name", "value"]]
-        for opt in self.options:
+        for opt in self.modify_options():
             if opt["type"] == "divider":
                 continue
             parray.append([opt["name"], getattr(self, opt["name"])])
@@ -591,7 +591,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     @property
     def _current_options(self):
         result = {}
-        for option in self.options:
+        for option in self.modify_options():
             attr = option["name"]
             if hasattr(self, attr):
                 result[attr] = getattr(self, attr)
@@ -746,7 +746,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     # <editor-fold desc="Default Handlers">
 
     def update_options(self, form_data):
-        for opt in self.options:
+        for opt in self.modify_options():
             if opt["type"] == "divider":
                 continue
             if opt["type"] == "int":
