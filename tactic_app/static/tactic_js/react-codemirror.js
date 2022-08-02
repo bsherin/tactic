@@ -37,6 +37,8 @@ require("codemirror/addon/fold/indent-fold.js");
 
 require("codemirror/addon/fold/foldgutter.css");
 
+require("codemirror/addon/display/autorefresh.js");
+
 require("codemirror/addon/dialog/dialog.js");
 
 require("codemirror/addon/dialog/dialog.css");
@@ -207,7 +209,8 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
         gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
         foldOptions: {
           minFoldSize: 6
-        }
+        },
+        autoRefresh: true
       });
 
       if (first_line_number != 1) {
@@ -289,8 +292,6 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
       if (this.props.first_line_number != 1) {
         this.cmobject.setOption("firstLineNumber", this.props.first_line_number);
       }
-
-      this.cmobject.refresh();
 
       this._doHighlight(this.props.search_term);
     }

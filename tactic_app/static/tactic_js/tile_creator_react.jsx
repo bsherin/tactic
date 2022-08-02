@@ -230,7 +230,6 @@ class CreatorApp extends React.Component {
             old_usable_width: 0,
             current_search_number: null,
             current_search_cm: this.cm_list[0],
-            methodsTabRefreshRequired: true, // This is toggled back and forth to force refresh
             search_matches: 0
         };
         let self = this;
@@ -723,16 +722,7 @@ class CreatorApp extends React.Component {
         postAjax("/delete_container_on_unload", {"container_id": this.props.module_viewer_id, "notify": false});
     }
 
-    // This toggles methodsTabRefreshRequired back and forth to force a refresh
-    _refreshMethodsIfNecessary(newTabId){
-        if (newTabId == "methods") {
-            this.setState({methodsTabRefreshRequired: !this.state.methodsTabRefreshRequired})
-        }
-    }
-
     _handleTabSelect(newTabId, prevTabid, event) {
-        this._refreshMethodsIfNecessary(newTabId);
-        // if (this.state.foregrounded_panes[newTabId]) return;
         let new_fg = Object.assign({}, this.state.foregrounded_panes);
         new_fg[newTabId] = true;
         this.setState({selectedTabId: newTabId, foregrounded_panes: new_fg}, ()=>{
@@ -1069,7 +1059,6 @@ class CreatorApp extends React.Component {
                                  code_container_height={methods_height}
                                  search_term={this.state.search_string}
                                  first_line_number={this.state.extra_methods_line_number}
-                                 refresh_required={this.state.methodsTabRefreshRequired}
                                  setSearchMatches={(num)=>this._setSearchMatches("em", num)}
                                  extra_autocomplete_list={onames_for_autocomplete}
                 />
