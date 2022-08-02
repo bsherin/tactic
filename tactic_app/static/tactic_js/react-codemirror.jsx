@@ -21,6 +21,7 @@ import 'codemirror/addon/fold/foldcode.js'
 import 'codemirror/addon/fold/foldgutter.js'
 import 'codemirror/addon/fold/indent-fold.js'
 import 'codemirror/addon/fold/foldgutter.css'
+import 'codemirror/addon/display/autorefresh.js'
 // import 'codemirror/addon/hint/anyword-hint.js'
 
 import 'codemirror/addon/dialog/dialog.js'
@@ -119,7 +120,8 @@ class ReactCodemirror extends React.Component {
             gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
             foldOptions: {
                 minFoldSize: 6
-            }
+            },
+            autoRefresh: true
         });
         if (first_line_number != 1) {
             cmobject.setOption("firstLineNumber", first_line_number)
@@ -191,7 +193,6 @@ class ReactCodemirror extends React.Component {
         if (this.props.first_line_number != 1) {
             this.cmobject.setOption("firstLineNumber", this.props.first_line_number);
         }
-        this.cmobject.refresh();
         this._doHighlight(this.props.search_term)
     }
 
@@ -441,5 +442,5 @@ ReactCodemirror.defaultProps = {
     code_container_width: "100%",
     setSearchMatches: null,
     current_search_number: null,
-    extra_autocomplete_list: []
+    extra_autocomplete_list: [],
 };

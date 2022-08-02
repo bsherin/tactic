@@ -313,8 +313,6 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       old_usable_width: 0,
       current_search_number: null,
       current_search_cm: _this.cm_list[0],
-      methodsTabRefreshRequired: true,
-      // This is toggled back and forth to force refresh
       search_matches: 0
     };
 
@@ -952,24 +950,11 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         "container_id": this.props.module_viewer_id,
         "notify": false
       });
-    } // This toggles methodsTabRefreshRequired back and forth to force a refresh
-
-  }, {
-    key: "_refreshMethodsIfNecessary",
-    value: function _refreshMethodsIfNecessary(newTabId) {
-      if (newTabId == "methods") {
-        this.setState({
-          methodsTabRefreshRequired: !this.state.methodsTabRefreshRequired
-        });
-      }
     }
   }, {
     key: "_handleTabSelect",
     value: function _handleTabSelect(newTabId, prevTabid, event) {
       var _this4 = this;
-
-      this._refreshMethodsIfNecessary(newTabId); // if (this.state.foregrounded_panes[newTabId]) return;
-
 
       var new_fg = Object.assign({}, this.state.foregrounded_panes);
       new_fg[newTabId] = true;
@@ -1462,7 +1447,6 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         code_container_height: methods_height,
         search_term: this.state.search_string,
         first_line_number: this.state.extra_methods_line_number,
-        refresh_required: this.state.methodsTabRefreshRequired,
         setSearchMatches: function setSearchMatches(num) {
           return _this5._setSearchMatches("em", num);
         },
