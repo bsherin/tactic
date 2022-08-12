@@ -649,7 +649,7 @@ class ContextApp extends React.Component {
                         </Button>
                     <div style={{display: "flex", flexDirection: "column"}}>
                         {lib_buttons}
-                        <Divider/>
+                        {/*<Divider/>*/}
                     </div>
                 </div>
             </Tab>
