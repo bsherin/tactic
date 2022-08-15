@@ -31,7 +31,6 @@
         window.tactic_img_url = "{{url_for('static', filename='tactic_css/icons/favicon-256.png', v=version_string)}}";
         window.is_authenticated = "{{current_user.is_authenticated}}";
         window.username = "{{current_user.username}}";
-        window.dark_theme_name = "{{dark_theme_name}}";
         {% if current_user.is_authenticated %}
         window.is_authenticated = true;
         {% else %}

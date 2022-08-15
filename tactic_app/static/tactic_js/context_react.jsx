@@ -647,7 +647,7 @@ class ContextApp extends React.Component {
                                 onClick={()=>{this._select_repository(false)}}>
                             <span className="context-library-title">Library</span>
                         </Button>
-                    <div style={{display: "flex", flexDirection: "column"}}>
+                    <div style={{display: "flex", flexDirection: "column", marginBottom: 5}}>
                         {lib_buttons}
                         {/*<Divider/>*/}
                     </div>
@@ -717,12 +717,12 @@ class ContextApp extends React.Component {
                      onDragLeave={(e)=>{this._onDragLeave(e, tab_id)}}
                      onDragEnd={(e)=>{this._onDragEnd(e)}}
                      tabIndex={-1} key={tab_id} panelClassName="context-tab" title="" panel={wrapped_panel}>
-                    <div className={bclass} style={{display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
+                    <div className={bclass + " open-resource-tab"} style={{display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
                         <div style={{display: "table-cell", flexDirection: "row", justifyContent: "flex-start"}}>
                             <Icon icon={this.iconDict[tab_entry.kind]}
                                   style={{verticalAlign: "middle", marginRight: 5}}
                                   iconSize={13} tabIndex={-1}/>
-                            {visible_title}
+                            <span >{visible_title}</span>
                         </div>
                         <div>
                             <Icon icon="reset" style={icon_style} iconSize={13} className="context-close-button" tabIndex={-1} onClick={() => {

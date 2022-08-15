@@ -127,7 +127,6 @@ class CodeManager(LibraryResourceManager):
                                theme=user_obj.get_theme(),
                                develop=str(_develop),
                                javascript_source=javascript_source,
-                               dark_theme_name=user_obj.get_preferred_dark_theme(),
                                css_source=css_source("code_viewer_react"),
                                version_string=tstring)
 
@@ -251,7 +250,6 @@ class RepositoryCodeManager(CodeManager):
                                javascript_source=javascript_source,
                                css_source=css_source("code_viewer_react"),
                                uses_codemirror="True",
-                               dark_theme_name=user_obj.get_preferred_dark_theme(),
                                version_string=tstring)
 
     def repository_get_code_code(self, code_name):

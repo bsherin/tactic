@@ -221,6 +221,16 @@ def get_account_info():
     return jsonify({"field_list": field_list})
 
 
+@app.route('/get_preferred_codemirror_themes', methods=['GET', 'POST'])
+@fresh_login_required
+def get_preferred_codemirror_themes():
+    user_data = current_user.user_data_dict
+    return jsonify({
+        "preferred_dark_theme": user_data["preferred_dark_theme"],
+        "preferred_light_theme": user_data["preferred_light_theme"]
+    })
+
+
 @app.route('/update_account_info', methods=['GET', 'POST'])
 @fresh_login_required
 def update_account_info():

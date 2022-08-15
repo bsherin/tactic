@@ -49,6 +49,9 @@ class TacticMenubar extends React.Component {
                                     extraButtons={this.props.extraButtons}
                     />
                 }
+                {this.props.resource_icon &&
+                    <Icon style={{marginTop: 6}} icon={this.props.resource_icon} iconSize={16} tabIndex={-1}/>
+                }
                 {this.props.resource_name &&
                     <div style={name_style}>{this.props.resource_name}</div>
                 }
@@ -75,6 +78,7 @@ TacticMenubar.propTypes = {
     menu_specs: PropTypes.object,
     dark_theme: PropTypes.bool,
     resource_name: PropTypes.string,
+    resource_icon: PropTypes.string,
     controlled: PropTypes.bool,
     am_selected: PropTypes.bool,
     diabled_items: PropTypes.array,
@@ -91,6 +95,7 @@ TacticMenubar.defaultProps = {
     showErrorDrawerButton: false,
     toggleErrorDrawer: null,
     resource_name: null,
+    resource_icon: null,
     disabled_items: [],
     extraButtons: null
 };

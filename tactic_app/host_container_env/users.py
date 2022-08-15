@@ -180,6 +180,9 @@ class User(UserMixin, MongoAccess):
     def get_preferred_dark_theme(self):
         return self.user_data_dict["preferred_dark_theme"]
 
+    def get_preferred_light_theme(self):
+        return self.user_data_dict["preferred_light_theme"]
+
     def get_preferred_interface(self):
         return self.user_data_dict["preferred_interface"]
 
