@@ -119,6 +119,7 @@ var LibraryMenubar = /*#__PURE__*/function (_React$Component) {
         closeTab: null,
         disabled_items: disabled_items,
         resource_name: "",
+        resource_icon: this.props.resource_icon,
         showErrorDrawerButton: this.props.showErrorDrawerButton,
         toggleErrorDrawer: this.props.toggleErrorDrawer
       });
@@ -136,10 +137,12 @@ LibraryMenubar.propTypes = {
   dark_theme: _propTypes["default"].bool,
   refreshTab: _propTypes["default"].func,
   showErrorDrawerButton: _propTypes["default"].bool,
-  toggleErrorDrawer: _propTypes["default"].func
+  toggleErrorDrawer: _propTypes["default"].func,
+  resource_icon: _propTypes["default"].string
 };
 LibraryMenubar.defaultProps = {
-  toggleErrorDrawer: null
+  toggleErrorDrawer: null,
+  resource_icon: null
 };
 var specializedMenubarPropTypes = {
   sendContextMenuItems: _propTypes["default"].func,
@@ -463,6 +466,7 @@ var CollectionMenubar = /*#__PURE__*/function (_React$Component2) {
       return /*#__PURE__*/_react["default"].createElement(LibraryMenubar, {
         sendContextMenuItems: this.props.sendContextMenuItems,
         menu_specs: this.menu_specs,
+        resource_icon: "database",
         context_menu_items: this.context_menu_items,
         multi_select: this.props.multi_select,
         dark_theme: this.props.dark_theme,
@@ -675,6 +679,7 @@ var ProjectMenubar = /*#__PURE__*/function (_React$Component3) {
       return /*#__PURE__*/_react["default"].createElement(LibraryMenubar, {
         sendContextMenuItems: this.props.sendContextMenuItems,
         context_menu_items: this.context_menu_items,
+        resource_icon: "projects",
         menu_specs: this.menu_specs,
         multi_select: this.props.multi_select,
         dark_theme: this.props.dark_theme,
@@ -1043,6 +1048,7 @@ var TileMenubar = /*#__PURE__*/function (_React$Component4) {
       return /*#__PURE__*/_react["default"].createElement(LibraryMenubar, {
         sendContextMenuItems: this.props.sendContextMenuItems,
         context_menu_items: this.context_menu_items,
+        resource_icon: "application",
         menu_specs: this.menu_specs,
         multi_select: this.props.multi_select,
         dark_theme: this.props.dark_theme,
@@ -1255,6 +1261,7 @@ var ListMenubar = /*#__PURE__*/function (_React$Component5) {
       return /*#__PURE__*/_react["default"].createElement(LibraryMenubar, {
         sendContextMenuItems: this.props.sendContextMenuItems,
         context_menu_items: this.context_menu_items,
+        resource_icon: "list",
         menu_specs: this.menu_specs,
         multi_select: this.props.multi_select,
         dark_theme: this.props.dark_theme,
@@ -1459,6 +1466,7 @@ var CodeMenubar = /*#__PURE__*/function (_React$Component6) {
       return /*#__PURE__*/_react["default"].createElement(LibraryMenubar, {
         sendContextMenuItems: this.props.sendContextMenuItems,
         context_menu_items: this.context_menu_items,
+        resource_icon: "code",
         menu_specs: this.menu_specs,
         multi_select: this.props.multi_select,
         dark_theme: this.props.dark_theme,

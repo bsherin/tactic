@@ -75,7 +75,6 @@ def show_history_viewer(module_name):
                            javascript_source=javascript_source,
                            uses_codemirror="True",
                            theme=user_obj.get_theme(),
-                           dark_theme_name=user_obj.get_preferred_dark_theme(),
                            version_string=tstring)
 
 
@@ -105,7 +104,6 @@ def show_tile_differ(module_name, second_module_name):
                            css_source=css_source("tile_differ_react"),
                            uses_codemirror="True",
                            theme=user_obj.get_theme(),
-                           dark_theme_name=user_obj.get_preferred_dark_theme(),
                            version_string=tstring)
 
 

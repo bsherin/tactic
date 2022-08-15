@@ -43,6 +43,16 @@ require("codemirror/theme/oceanic-next.css");
 
 require("codemirror/theme/pastel-on-dark.css");
 
+require("codemirror/theme/elegant.css");
+
+require("codemirror/theme/neat.css");
+
+require("codemirror/theme/solarized.css");
+
+require("codemirror/theme/juejin.css");
+
+var _communication_react = require("./communication_react");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
@@ -71,8 +81,6 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
-var DARK_THEME = window.dark_theme_name;
-
 var ReactCodemirrorMergeView = /*#__PURE__*/function (_React$Component) {
   _inherits(ReactCodemirrorMergeView, _React$Component);
 
@@ -86,12 +94,18 @@ var ReactCodemirrorMergeView = /*#__PURE__*/function (_React$Component) {
     _this = _super.call(this, props);
     _this.code_container_ref = /*#__PURE__*/_react["default"].createRef();
     _this.handleChange = _this.handleChange.bind(_assertThisInitialized(_this));
+    _this._current_codemirror_theme = _this._current_codemirror_theme.bind(_assertThisInitialized(_this));
     _this.mousetrap = new Mousetrap();
     _this.saved_theme = null;
     return _this;
   }
 
   _createClass(ReactCodemirrorMergeView, [{
+    key: "_current_codemirror_theme",
+    value: function _current_codemirror_theme() {
+      return this.props.dark_theme ? this.preferred_themes.preferred_dark_theme : this.preferred_themes.preferred_light_theme;
+    }
+  }, {
     key: "createMergeArea",
     value: function createMergeArea(codearea) {
       var cmobject = _codemirror["default"].MergeView(codearea, {
@@ -101,7 +115,7 @@ var ReactCodemirrorMergeView = /*#__PURE__*/function (_React$Component) {
         highlightSelectionMatches: true,
         autoCloseBrackets: true,
         indentUnit: 4,
-        theme: this.props.dark_theme ? DARK_THEME : "default",
+        theme: this._current_codemirror_theme(),
         origRight: this.props.right_content
       });
 
@@ -139,16 +153,20 @@ var ReactCodemirrorMergeView = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate() {
-      if (this.props.dark_theme != this.saved_theme) {
-        if (this.props.dark_theme) {
-          this.cmobject.editor().setOption("theme", DARK_THEME);
-          this.cmobject.rightOriginal().setOption("theme", DARK_THEME);
-        } else {
-          this.cmobject.editor().setOption("theme", "default");
-          this.cmobject.rightOriginal().setOption("theme", "default");
-        }
+      var _this2 = this;
 
-        this.saved_theme = this.props.dark_theme;
+      if (!this.cmobject) {
+        return;
+      }
+
+      if (this.props.dark_theme != this.saved_theme) {
+        var self = this;
+        (0, _communication_react.postAjax)("get_preferred_codemirror_themes", {}, function (data) {
+          self.preferred_themes = data;
+          self.cmobject.editor().setOption("theme", self._current_codemirror_theme());
+          self.cmobject.rightOriginal().setOption("theme", self._current_codemirror_theme());
+          self.saved_theme = _this2.props.dark_theme;
+        });
       }
 
       if (this.cmobject.editor().getValue() != this.props.editor_content) {
@@ -161,11 +179,17 @@ var ReactCodemirrorMergeView = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "componentDidMount",
     value: function componentDidMount() {
-      this.cmobject = this.createMergeArea(this.code_container_ref.current);
-      this.resizeHeights(this.props.max_height);
-      this.refreshAreas();
-      this.create_keymap();
-      this.saved_theme = this.props.dark_theme;
+      var _this3 = this;
+
+      var self = this;
+      (0, _communication_react.postAjax)("get_preferred_codemirror_themes", {}, function (data) {
+        self.preferred_themes = data;
+        self.cmobject = _this3.createMergeArea(_this3.code_container_ref.current);
+        self.resizeHeights(_this3.props.max_height);
+        self.refreshAreas();
+        self.create_keymap();
+        self.saved_theme = _this3.props.dark_theme;
+      });
     }
   }, {
     key: "handleChange",
@@ -183,7 +207,7 @@ var ReactCodemirrorMergeView = /*#__PURE__*/function (_React$Component) {
     key: "create_api",
     value: function create_api() {
       var self = this;
-      postAjax("get_api_dict", {}, function (data) {
+      (0, _communication_react.postAjax)("get_api_dict", {}, function (data) {
         self.api_dict_by_category = data.api_dict_by_category;
         self.api_dict_by_name = data.api_dict_by_name;
         self.ordered_api_categories = data.ordered_api_categories;

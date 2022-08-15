@@ -13,6 +13,99 @@ $log-panel-font-color-dark: white;
 $darkest-bg: $dark-gray3;
 $dark-medium: $dark-gray4;
 
+.light-theme {
+    .lib-tab-button, .context-tab-button-content, .menu-bar, .combined-metadata {
+        .bp4-icon-database {
+            color: $blue3 !important;
+        }
+
+        .bp4-icon-projects, {
+            color: $green3 !important;
+        }
+
+        .bp4-icon-application {
+            color: $indigo3 !important;
+        }
+
+        .bp4-icon-list {
+            color: $rose3 !important;
+        }
+
+        .bp4-icon-code {
+            color: $lime2 !important;
+        }
+    }
+
+    .lib-tab-button.selected-lib-tab-button, .context-tab-button-content.selected-tab-button {
+        .bp4-icon-database + span {
+            color: $blue3 !important;
+        }
+
+        .bp4-icon-projects + span {
+            color: $green3 !important;
+        }
+
+        .bp4-icon-application + span {
+            color: $indigo3 !important;
+        }
+
+        .bp4-icon-list + span {
+            color: $rose3 !important;
+        }
+
+        .bp4-icon-code + span {
+            color: $lime2 !important;
+        }
+    }
+}
+
+.bp4-dark {
+    .lib-tab-button, .context-tab-button-content, .menu-bar, .combined-metadata {
+        .bp4-icon-database {
+            color: $blue5 !important;
+        }
+
+        .bp4-icon-projects, {
+            color: $green5!important;
+        }
+
+        .bp4-icon-application {
+            color: $indigo5 !important;
+        }
+
+        .bp4-icon-list {
+            color: $rose5 !important;
+        }
+
+        .bp4-icon-code {
+            color: $lime5 !important;
+        }
+    }
+
+    .lib-tab-button.selected-lib-tab-button, .open-resource-tab.selected-tab-button {
+        .bp4-icon-database + span {
+            color: $blue5 !important;
+        }
+
+        .bp4-icon-projects + span {
+            color: $green5 !important;
+        }
+
+        .bp4-icon-application + span {
+            color: $indigo5 !important;
+        }
+
+        .bp4-icon-list + span {
+            color: $rose5 !important;
+        }
+
+        .bp4-icon-code + span {
+            color: $lime5 !important;
+        }
+    }
+}
+
+
 .option-row-highlight {
     color: $orange3 !important;
     font-weight: bold !important
@@ -21,6 +114,12 @@ $dark-medium: $dark-gray4;
 .light-theme {
     &.resource-viewer-holder, &.merge-viewer-outer &.login-body {
       background-color: white
+    }
+
+    &.menu-bar {
+        box-shadow: none;
+        border-top: 0.75px solid #c5cbd3;
+        border-bottom: 0.75px solid #c5cbd3;
     }
 
     .cm-matchhighlight {

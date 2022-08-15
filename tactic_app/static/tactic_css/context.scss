@@ -14,36 +14,8 @@ $context-repository-highlight-color: $orange3;
 $light-context-highlight-color: $cerulean2;
 $light-highlight-weight: 600;
 
-//.light-theme {
-//    #context-container {
-//        .context-tab-list {
-//            > .bp4-tab-list {
-//                background-color: $light-gray3;
-//                border-right: 1px solid $light-gray3;
-//            }
-//            .lib-tab-button {
-//                color: rgb(24, 32, 38);
-//            }
-//
-//            .lib-tab-button.selected-lib-tab-button {
-//                color: $light-context-highlight-color;
-//            }
-//        }
-//        .context-tab-button-content {
-//            color: rgb(24, 32, 38);
-//            &.selected-tab-button {
-//                color: $light-context-highlight-color;
-//                border-top: .5px solid $light-context-highlight-color;
-//                border-bottom: .5px solid $light-context-highlight-color;
-//
-//                .context-close-button .bp4-icon {
-//                    color: $light-context-highlight-color;
-//                }
-//            }
-//        }
-//
-//    }
-//}
+
+
 
 .bp4-dark {
     #context-container {
@@ -73,7 +45,8 @@ $light-highlight-weight: 600;
 
             .context-library-title {
                 color: white;
-                font-size: 500
+                font-size: 20px;
+                font-weight: bold;
             }
 
             .bp4-icon {
@@ -110,7 +83,9 @@ $light-highlight-weight: 600;
             > .bp4-tab-list {
                 background-color: $light-gray5;
                 color: white;
-                border-right: 1px solid $dark-gray5;
+                //box-shadow:  1px 0 0 #11141826;
+                -webkit-box-shadow:0 0 0 1px rgba(17, 20, 24, 0.1), 0 1px 1px rgba(17, 20, 24, 0.2), 0 2px 6px rgba(17, 20, 24, 0.2);
+                box-shadow:0 0 0 1px rgba(17, 20, 24, 0.1), 0 1px 1px rgba(17, 20, 24, 0.2), 0 2px 6px rgba(17, 20, 24, 0.2);
             }
             .lib-tab-button {
                 color: $dark-gray1;
@@ -133,7 +108,8 @@ $light-highlight-weight: 600;
 
             .context-library-title {
                 color: $dark-gray1;
-                font-size: medium
+                font-size: 20px;
+                font-weight: bold;
             }
 
             .bp4-icon {
@@ -145,8 +121,8 @@ $light-highlight-weight: 600;
             }
             &.selected-tab-button {
                 color: $light-context-highlight-color !important;
-                border-top: 1px solid $light-context-highlight-color;
-                border-bottom: 1px solid $light-context-highlight-color;
+                border-top: 1.75px solid $light-context-highlight-color;
+                border-bottom: 1.75px solid $light-context-highlight-color;
                 font-weight: $light-highlight-weight;
 
                 .repository-highlight {
@@ -188,12 +164,15 @@ $light-highlight-weight: 600;
         .bp4-tab-indicator-wrapper {
 
         }
+        [data-tab-id="library"] {
+            margin-bottom: 10px
+        }
 
         .lib-tab-button {
             padding: 0;
             margin-left: 10px;
-            font-size: 13px;
-            line-height: 28px;
+            font-size: 16px;
+            line-height: 30px;
         }
 
         > .bp4-tab-panel {
@@ -229,7 +208,7 @@ $light-highlight-weight: 600;
 
         .context-tab-button-content {
             padding-left: 5px;
-            font-size: small;
+            font-size: 14px;
 
             &.hovering {
                 margin-top: 40px;
