@@ -107,7 +107,6 @@ class CollectionManager(LibraryResourceManager):
                      "is_freeform": False,
                      "is_jupyter": False,
                      "is_project": False,
-                     "dark_theme_name": user_obj.get_preferred_dark_theme(),
                      "base_figure_url": url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1]}
         return jsonify(data_dict)
 
@@ -122,7 +121,6 @@ class CollectionManager(LibraryResourceManager):
                                temp_data_id=temp_data_id,
                                develop=str(_develop),
                                theme=current_user.get_theme(),
-                               dark_theme_name=current_user.get_preferred_dark_theme(),
                                is_jupyter="False",
                                version_string=tstring,
                                css_source=css_source("notebook_app"),
@@ -173,7 +171,6 @@ class CollectionManager(LibraryResourceManager):
                                project_name="",
                                is_new_notebook="False",
                                theme=current_user.get_theme(),
-                               dark_theme_name=current_user.get_preferred_dark_theme(),
                                develop=str(_develop),
                                version_string=tstring,
                                css_source=css_source("main_app"),

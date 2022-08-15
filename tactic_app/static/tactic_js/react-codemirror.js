@@ -57,6 +57,14 @@ require("codemirror/theme/oceanic-next.css");
 
 require("codemirror/theme/pastel-on-dark.css");
 
+require("codemirror/theme/elegant.css");
+
+require("codemirror/theme/neat.css");
+
+require("codemirror/theme/solarized.css");
+
+require("codemirror/theme/juejin.css");
+
 var _utilities_react = require("./utilities_react");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
@@ -101,7 +109,6 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToAr
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
-var DARK_THEME = window.dark_theme_name;
 var EXTRAWORDS = ["global_import", "Collection", "Collection", "Collection.document_names", "Collection.current_docment", "Collection.column", "Collection.tokenize", "Collection.detach", "Collection.rewind", "Library", "Library.collections", "Library.lists", "Library.functions", "Library.classes", "Settings", "Settings.names", "Tiles", "Pipes"];
 var WORD = /[\w\.$]+/;
 var RANGE = 500;
@@ -177,6 +184,7 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
 
     _this.handleChange = _this.handleChange.bind(_assertThisInitialized(_this));
     _this.handleBlur = _this.handleBlur.bind(_assertThisInitialized(_this));
+    _this._current_codemirror_theme = _this._current_codemirror_theme.bind(_assertThisInitialized(_this));
     _this._foldAll = _this._foldAll.bind(_assertThisInitialized(_this));
     _this._unfoldAll = _this._unfoldAll.bind(_assertThisInitialized(_this));
     _this.mousetrap = new Mousetrap();
@@ -192,6 +200,11 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
   }
 
   _createClass(ReactCodemirror, [{
+    key: "_current_codemirror_theme",
+    value: function _current_codemirror_theme() {
+      return this.props.dark_theme ? this.preferred_themes.preferred_dark_theme : this.preferred_themes.preferred_light_theme;
+    }
+  }, {
     key: "createCMArea",
     value: function createCMArea(codearea) {
       var first_line_number = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
@@ -202,7 +215,7 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
         highlightSelectionMatches: true,
         autoCloseBrackets: true,
         indentUnit: 4,
-        theme: this.props.dark_theme ? DARK_THEME : "default",
+        theme: this._current_codemirror_theme(),
         mode: this.props.mode,
         readOnly: this.props.readOnly,
         foldGutter: true,
@@ -247,17 +260,23 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "componentDidMount",
     value: function componentDidMount() {
-      this.cmobject = this.createCMArea(this.code_container_ref.current, this.props.first_line_number);
-      this.cmobject.setValue(this.props.code_content);
-      this.create_keymap();
+      var _this2 = this;
 
-      if (this.props.setCMObject != null) {
-        this.props.setCMObject(this.cmobject);
-      }
+      var self = this;
+      (0, _communication_react.postAjax)("get_preferred_codemirror_themes", {}, function (data) {
+        self.preferred_themes = data;
+        self.cmobject = self.createCMArea(_this2.code_container_ref.current, _this2.props.first_line_number);
+        self.cmobject.setValue(_this2.props.code_content);
+        self.create_keymap();
 
-      this.saved_theme = this.props.dark_theme;
+        if (self.props.setCMObject != null) {
+          self.props.setCMObject(self.cmobject);
+        }
 
-      this._doHighlight(this.props.search_term);
+        self.saved_theme = self.props.dark_theme;
+
+        self._doHighlight(self.props.search_term);
+      });
     }
   }, {
     key: "shouldComponentUpdate",
@@ -267,14 +286,20 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate(prevProps) {
-      if (this.props.dark_theme != this.saved_theme) {
-        if (this.props.dark_theme) {
-          this.cmobject.setOption("theme", DARK_THEME);
-        } else {
-          this.cmobject.setOption("theme", "default");
-        }
+      var _this3 = this;
 
-        this.saved_theme = this.props.dark_theme;
+      if (!this.cmobject) {
+        return;
+      }
+
+      var self = this;
+
+      if (this.props.dark_theme != this.saved_theme) {
+        (0, _communication_react.postAjax)("get_preferred_codemirror_themes", {}, function (data) {
+          self.preferred_themes = data;
+          self.cmobject.setOption("theme", self._current_codemirror_theme());
+          self.saved_theme = _this3.props.dark_theme;
+        });
       }
 
       if (this.props.soft_wrap != prevProps.soft_wrap) {

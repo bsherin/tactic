@@ -100,6 +100,13 @@ var TacticMenubar = /*#__PURE__*/function (_React$Component) {
         refreshTab: this.props.refreshTab,
         closeTab: this.props.closeTab,
         extraButtons: this.props.extraButtons
+      }), this.props.resource_icon && /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+        style: {
+          marginTop: 6
+        },
+        icon: this.props.resource_icon,
+        iconSize: 16,
+        tabIndex: -1
       }), this.props.resource_name && /*#__PURE__*/_react["default"].createElement("div", {
         style: name_style
       }, this.props.resource_name), /*#__PURE__*/_react["default"].createElement("div", {
@@ -127,6 +134,7 @@ TacticMenubar.propTypes = {
   menu_specs: _propTypes["default"].object,
   dark_theme: _propTypes["default"].bool,
   resource_name: _propTypes["default"].string,
+  resource_icon: _propTypes["default"].string,
   controlled: _propTypes["default"].bool,
   am_selected: _propTypes["default"].bool,
   diabled_items: _propTypes["default"].array,
@@ -142,6 +150,7 @@ TacticMenubar.defaultProps = {
   showErrorDrawerButton: false,
   toggleErrorDrawer: null,
   resource_name: null,
+  resource_icon: null,
   disabled_items: [],
   extraButtons: null
 };
