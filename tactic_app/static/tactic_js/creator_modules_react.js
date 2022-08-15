@@ -1137,6 +1137,7 @@ var ObjectCategoryEntry = /*#__PURE__*/function (_React$Component6) {
                 key: "class_".concat(index)
               }, /*#__PURE__*/_react["default"].createElement("h6", {
                 style: {
+                  fontStyle: "italic",
                   marginTop: 20,
                   fontFamily: "monospace"
                 }

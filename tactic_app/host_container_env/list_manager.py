@@ -54,7 +54,6 @@ class ListManager(LibraryResourceManager):
                                theme=user_obj.get_theme(),
                                develop=str(_develop),
                                javascript_source=javascript_source,
-                               dark_theme_name=user_obj.get_preferred_dark_theme(),
                                css_source=css_source("list_viewer_react"),
                                version_string=tstring)
 

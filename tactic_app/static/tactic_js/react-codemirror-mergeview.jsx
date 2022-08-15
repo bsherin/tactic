@@ -25,11 +25,14 @@ import 'codemirror/theme/material.css'
 import 'codemirror/theme/nord.css'
 import 'codemirror/theme/oceanic-next.css'
 import 'codemirror/theme/pastel-on-dark.css'
+import 'codemirror/theme/elegant.css'
+import 'codemirror/theme/neat.css'
+import 'codemirror/theme/solarized.css'
+import 'codemirror/theme/juejin.css'
+import {postAjax} from "./communication_react";
 
 
 export {ReactCodemirrorMergeView}
-
-const DARK_THEME = window.dark_theme_name;
 
 class ReactCodemirrorMergeView extends React.Component {
 
@@ -37,8 +40,14 @@ class ReactCodemirrorMergeView extends React.Component {
         super(props);
         this.code_container_ref = React.createRef();
         this.handleChange = this.handleChange.bind(this);
+        this._current_codemirror_theme = this._current_codemirror_theme.bind(this);
         this.mousetrap = new Mousetrap();
         this.saved_theme = null;
+    }
+
+    _current_codemirror_theme() {
+        return this.props.dark_theme ? this.preferred_themes.preferred_dark_theme :
+                this.preferred_themes.preferred_light_theme;
     }
 
     createMergeArea(codearea) {
@@ -49,7 +58,7 @@ class ReactCodemirrorMergeView extends React.Component {
             highlightSelectionMatches: true,
             autoCloseBrackets: true,
             indentUnit: 4,
-            theme: this.props.dark_theme ? DARK_THEME : "default",
+            theme: this._current_codemirror_theme(),
             origRight: this.props.right_content
         });
 
@@ -82,16 +91,17 @@ class ReactCodemirrorMergeView extends React.Component {
     }
 
     componentDidUpdate() {
+        if (!this.cmobject) {
+            return
+        }
         if (this.props.dark_theme != this.saved_theme) {
-            if (this.props.dark_theme) {
-                this.cmobject.editor().setOption("theme", DARK_THEME);
-                this.cmobject.rightOriginal().setOption("theme", DARK_THEME)
-            }
-            else {
-                this.cmobject.editor().setOption("theme", "default");
-                this.cmobject.rightOriginal().setOption("theme", "default")
-            }
-            this.saved_theme = this.props.dark_theme
+            let self = this;
+            postAjax("get_preferred_codemirror_themes", {}, (data) => {
+                self.preferred_themes = data;
+                self.cmobject.editor().setOption("theme", self._current_codemirror_theme());
+                self.cmobject.rightOriginal().setOption("theme", self._current_codemirror_theme());
+                self.saved_theme = this.props.dark_theme
+            })
         }
         if (this.cmobject.editor().getValue() != this.props.editor_content) {
             this.cmobject.editor().setValue(this.props.editor_content)
@@ -101,11 +111,15 @@ class ReactCodemirrorMergeView extends React.Component {
     }
 
     componentDidMount() {
-        this.cmobject = this.createMergeArea(this.code_container_ref.current);
-        this.resizeHeights(this.props.max_height);
-        this.refreshAreas();
-        this.create_keymap();
-        this.saved_theme = this.props.dark_theme
+        let self = this;
+        postAjax("get_preferred_codemirror_themes", {}, (data)=> {
+            self.preferred_themes = data;
+            self.cmobject = this.createMergeArea(this.code_container_ref.current);
+            self.resizeHeights(this.props.max_height);
+            self.refreshAreas();
+            self.create_keymap();
+            self.saved_theme = this.props.dark_theme
+        })
     }
 
     handleChange(cm, changeObject) {

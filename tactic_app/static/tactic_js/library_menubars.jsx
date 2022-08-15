@@ -48,6 +48,7 @@ class LibraryMenubar extends React.Component {
                               closeTab={null}
                               disabled_items={disabled_items}
                               resource_name=""
+                              resource_icon={this.props.resource_icon}
                               showErrorDrawerButton={this.props.showErrorDrawerButton}
                               toggleErrorDrawer={this.props.toggleErrorDrawer}
                 />
@@ -61,11 +62,13 @@ LibraryMenubar.propTypes = {
     dark_theme: PropTypes.bool,
     refreshTab: PropTypes.func,
     showErrorDrawerButton: PropTypes.bool,
-    toggleErrorDrawer: PropTypes.func
+    toggleErrorDrawer: PropTypes.func,
+    resource_icon: PropTypes.string
 };
 
 LibraryMenubar.defaultProps = {
-    toggleErrorDrawer: null
+    toggleErrorDrawer: null,
+    resource_icon: null
 };
 
 let specializedMenubarPropTypes = {
@@ -265,6 +268,7 @@ class CollectionMenubar extends React.Component {
      render () {
         return <LibraryMenubar sendContextMenuItems={this.props.sendContextMenuItems}
                                menu_specs={this.menu_specs}
+                               resource_icon="database"
                                context_menu_items={this.context_menu_items}
                                multi_select={this.props.multi_select}
                                dark_theme={this.props.dark_theme}
@@ -381,6 +385,7 @@ class ProjectMenubar extends React.Component {
      render () {
         return <LibraryMenubar sendContextMenuItems={this.props.sendContextMenuItems}
                                context_menu_items={this.context_menu_items}
+                               resource_icon="projects"
                                menu_specs={this.menu_specs}
                                multi_select={this.props.multi_select}
                                dark_theme={this.props.dark_theme}
@@ -592,6 +597,7 @@ class TileMenubar extends React.Component {
      render () {
         return <LibraryMenubar sendContextMenuItems={this.props.sendContextMenuItems}
                                context_menu_items={this.context_menu_items}
+                               resource_icon="application"
                                menu_specs={this.menu_specs}
                                multi_select={this.props.multi_select}
                                dark_theme={this.props.dark_theme}
@@ -710,6 +716,7 @@ class ListMenubar extends React.Component {
      render () {
         return <LibraryMenubar sendContextMenuItems={this.props.sendContextMenuItems}
                                context_menu_items={this.context_menu_items}
+                               resource_icon="list"
                                menu_specs={this.menu_specs}
                                multi_select={this.props.multi_select}
                                dark_theme={this.props.dark_theme}
@@ -826,6 +833,7 @@ class CodeMenubar extends React.Component {
      render () {
         return <LibraryMenubar sendContextMenuItems={this.props.sendContextMenuItems}
                                context_menu_items={this.context_menu_items}
+                               resource_icon="code"
                                menu_specs={this.menu_specs}
                                multi_select={this.props.multi_select}
                                dark_theme={this.props.dark_theme}

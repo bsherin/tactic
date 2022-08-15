@@ -35,12 +35,13 @@ import 'codemirror/theme/material.css'
 import 'codemirror/theme/nord.css'
 import 'codemirror/theme/oceanic-next.css'
 import 'codemirror/theme/pastel-on-dark.css'
+import 'codemirror/theme/elegant.css'
+import 'codemirror/theme/neat.css'
+import 'codemirror/theme/solarized.css'
+import 'codemirror/theme/juejin.css'
 import {propsAreEqual} from "./utilities_react";
 
-
 export {ReactCodemirror}
-
-const DARK_THEME = window.dark_theme_name;
 
 const EXTRAWORDS = ["global_import", "Collection",
     "Collection", "Collection.document_names", "Collection.current_docment", "Collection.column",
@@ -94,6 +95,7 @@ class ReactCodemirror extends React.Component {
 
         this.handleChange = this.handleChange.bind(this);
         this.handleBlur = this.handleBlur.bind(this);
+        this._current_codemirror_theme = this._current_codemirror_theme.bind(this);
         this._foldAll = this._foldAll.bind(this);
         this._unfoldAll = this._unfoldAll.bind(this);
         this.mousetrap = new Mousetrap();
@@ -105,7 +107,13 @@ class ReactCodemirror extends React.Component {
         this.first_render = true;
     }
 
+    _current_codemirror_theme() {
+        return this.props.dark_theme ? this.preferred_themes.preferred_dark_theme :
+                this.preferred_themes.preferred_light_theme;
+    }
+
     createCMArea(codearea, first_line_number = 1) {
+
         let cmobject = CodeMirror(codearea, {
             lineNumbers: this.props.show_line_numbers,
             lineWrapping: this.props.soft_wrap,
@@ -113,7 +121,7 @@ class ReactCodemirror extends React.Component {
             highlightSelectionMatches: true,
             autoCloseBrackets: true,
             indentUnit: 4,
-            theme: this.props.dark_theme ? DARK_THEME : "default",
+            theme: this._current_codemirror_theme(),
             mode: this.props.mode,
             readOnly: this.props.readOnly,
             foldGutter: true,
@@ -157,14 +165,20 @@ class ReactCodemirror extends React.Component {
     }
 
     componentDidMount() {
-        this.cmobject = this.createCMArea(this.code_container_ref.current, this.props.first_line_number);
-        this.cmobject.setValue(this.props.code_content);
-        this.create_keymap();
-        if (this.props.setCMObject != null) {
-            this.props.setCMObject(this.cmobject)
-        }
-        this.saved_theme = this.props.dark_theme;
-        this._doHighlight(this.props.search_term)
+        let self = this;
+        postAjax("get_preferred_codemirror_themes", {}, (data)=> {
+            self.preferred_themes = data;
+            self.cmobject = self.createCMArea(this.code_container_ref.current, this.props.first_line_number);
+            self.cmobject.setValue(this.props.code_content);
+            self.create_keymap();
+            if (self.props.setCMObject != null) {
+                self.props.setCMObject(self.cmobject)
+            }
+            self.saved_theme = self.props.dark_theme;
+            self._doHighlight(self.props.search_term)
+            }
+        )
+
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -172,14 +186,16 @@ class ReactCodemirror extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
+        if (!this.cmobject) {
+            return
+        }
+        let self = this;
         if (this.props.dark_theme != this.saved_theme) {
-            if (this.props.dark_theme) {
-                this.cmobject.setOption("theme", DARK_THEME)
-            }
-            else {
-                this.cmobject.setOption("theme", "default")
-            }
-            this.saved_theme = this.props.dark_theme
+            postAjax("get_preferred_codemirror_themes", {}, (data)=> {
+                self.preferred_themes = data;
+                self.cmobject.setOption("theme", self._current_codemirror_theme());
+                self.saved_theme = this.props.dark_theme
+            })
         }
         if (this.props.soft_wrap != prevProps.soft_wrap) {
             this.cmobject.setOption("lineWrapping", this.props.soft_wrap)

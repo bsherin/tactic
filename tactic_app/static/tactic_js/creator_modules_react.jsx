@@ -678,7 +678,7 @@ class ObjectCategoryEntry extends React.Component {
                 if (show_class) {
                     classes.push(
                         <React.Fragment key={`class_${index}`}>
-                            <h6 style={{marginTop: 20, fontFamily: "monospace"}}>{"class" + class_entry[0]}</h6>
+                            <h6 style={{fontStyle: "italic", marginTop: 20, fontFamily: "monospace"}}>{"class" + class_entry[0]}</h6>
                             {entries}
                         </React.Fragment>
                     );

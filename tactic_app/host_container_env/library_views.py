@@ -151,8 +151,7 @@ def context():
                            theme=current_user.get_theme(),
                            page_title="context",
                            css_source=css_source("context_react"),
-                           module_source=js_source_dict["context_react"],
-                           dark_theme_name=current_user.get_preferred_dark_theme())
+                           module_source=js_source_dict["context_react"])
 
 
 @app.route('/repository')

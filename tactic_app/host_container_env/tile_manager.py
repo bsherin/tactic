@@ -185,7 +185,6 @@ class TileManager(LibraryResourceManager):
                                develop=str(_develop),
                                css_source=css_source("module_viewer_react"),
                                javascript_source=javascript_source,
-                               dark_theme_name=user_obj.get_preferred_dark_theme(),
                                version_string=tstring)
 
     def view_module_in_context(self):
@@ -255,7 +254,6 @@ class TileManager(LibraryResourceManager):
                                module_source=js_source_dict["tile_creator_react"],
                                develop=str(_develop),
                                theme=current_user.get_theme(),
-                               dark_theme_name=current_user.get_preferred_dark_theme(),
                                version_string=tstring,)
 
     def view_in_creator_in_context(self):
@@ -447,7 +445,6 @@ class RepositoryTileManager(TileManager):
                                develop=str(_develop),
                                css_source=css_source("module_viewer_react"),
                                javascript_source=javascript_source,
-                               dark_theme_name=user_obj.get_preferred_dark_theme(),
                                version_string=tstring)
 
     def repository_get_module_code(self, module_name):

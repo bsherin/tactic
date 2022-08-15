@@ -194,7 +194,6 @@ class ProjectManager(LibraryResourceManager):
                      "develop": str(_develop),
                      "collection_name": "",
                      "theme": current_user.get_theme(),
-                     "dark_theme_name": current_user.get_preferred_dark_theme(),
                      "version_string": tstring}
 
         save_dict = db[current_user.project_collection_name].find_one({"project_name": project_name})
