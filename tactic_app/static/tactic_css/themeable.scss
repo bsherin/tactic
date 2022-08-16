@@ -36,7 +36,7 @@ $dark-medium: $dark-gray4;
         }
     }
 
-    .lib-tab-button.selected-lib-tab-button, .context-tab-button-content.selected-tab-button {
+    .lib-tab-button.selected-lib-tab-button, .open-resource-tab.selected-tab-button {
         .bp4-icon-database + span {
             color: $blue3 !important;
         }
