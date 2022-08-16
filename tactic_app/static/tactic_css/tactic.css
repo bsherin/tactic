@@ -905,15 +905,15 @@ pre code {
   color: #db2c6f !important; }
 .light-theme .lib-tab-button .bp4-icon-code, .light-theme .context-tab-button-content .bp4-icon-code, .light-theme .menu-bar .bp4-icon-code, .light-theme .combined-metadata .bp4-icon-code {
   color: #5a701a !important; }
-.light-theme .lib-tab-button.selected-lib-tab-button .bp4-icon-database + span, .light-theme .context-tab-button-content.selected-tab-button .bp4-icon-database + span {
+.light-theme .lib-tab-button.selected-lib-tab-button .bp4-icon-database + span, .light-theme .open-resource-tab.selected-tab-button .bp4-icon-database + span {
   color: #2d72d2 !important; }
-.light-theme .lib-tab-button.selected-lib-tab-button .bp4-icon-projects + span, .light-theme .context-tab-button-content.selected-tab-button .bp4-icon-projects + span {
+.light-theme .lib-tab-button.selected-lib-tab-button .bp4-icon-projects + span, .light-theme .open-resource-tab.selected-tab-button .bp4-icon-projects + span {
   color: #238551 !important; }
-.light-theme .lib-tab-button.selected-lib-tab-button .bp4-icon-application + span, .light-theme .context-tab-button-content.selected-tab-button .bp4-icon-application + span {
+.light-theme .lib-tab-button.selected-lib-tab-button .bp4-icon-application + span, .light-theme .open-resource-tab.selected-tab-button .bp4-icon-application + span {
   color: #7961db !important; }
-.light-theme .lib-tab-button.selected-lib-tab-button .bp4-icon-list + span, .light-theme .context-tab-button-content.selected-tab-button .bp4-icon-list + span {
+.light-theme .lib-tab-button.selected-lib-tab-button .bp4-icon-list + span, .light-theme .open-resource-tab.selected-tab-button .bp4-icon-list + span {
   color: #db2c6f !important; }
-.light-theme .lib-tab-button.selected-lib-tab-button .bp4-icon-code + span, .light-theme .context-tab-button-content.selected-tab-button .bp4-icon-code + span {
+.light-theme .lib-tab-button.selected-lib-tab-button .bp4-icon-code + span, .light-theme .open-resource-tab.selected-tab-button .bp4-icon-code + span {
   color: #5a701a !important; }
 
 .bp4-dark .lib-tab-button .bp4-icon-database, .bp4-dark .context-tab-button-content .bp4-icon-database, .bp4-dark .menu-bar .bp4-icon-database, .bp4-dark .combined-metadata .bp4-icon-database {
