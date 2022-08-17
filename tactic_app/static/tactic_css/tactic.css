@@ -982,6 +982,8 @@ pre code {
   border-right: 1px solid #ddd; }
   .light-theme #table-area mark {
     background-color: #cebde6; }
+.light-theme .searchable-console mark {
+  background-color: #cebde6; }
 .light-theme .tile-panel-heading {
   color: #5f6b7c;
   background-color: #f6f8fa;
@@ -1068,6 +1070,8 @@ pre code {
   border-right: 1px none; }
   .bp4-dark #table-area mark {
     background-color: #cebde6; }
+.bp4-dark .searchable-console mark {
+  background-color: #cebde6; }
 .bp4-dark .tile-panel-heading {
   background-color: #2f343c;
   border-bottom: 1px solid #10161a26;
