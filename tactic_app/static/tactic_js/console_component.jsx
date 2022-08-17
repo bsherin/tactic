@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import 'codemirror/mode/markdown/markdown.js'
 
 import { Icon, Card, EditableText, Spinner, ContextMenuTarget, MenuDivider} from "@blueprintjs/core";
-import { Menu, MenuItem, InputGroup, ButtonGroup, Button} from "@blueprintjs/core";
+import { Menu, MenuItem, ButtonGroup, Button} from "@blueprintjs/core";
 import _ from 'lodash';
 
 import { SortableHandle } from 'react-sortable-hoc';
@@ -27,6 +27,8 @@ import {showConfirmDialogReact, showSelectResourceDialog} from "./modal_react.js
 import {icon_dict} from "./blueprint_mdata_fields.js";
 import {view_views} from "./library_pane.js";
 import {TacticMenubar} from "./menu_utilities.js";
+import {FilterSearchForm} from "./search_form";
+import {SearchableConsole} from "./searchable_console";
 
 export {ConsoleComponent}
 
@@ -792,7 +794,7 @@ const BUTTON_CONSUMED_SPACE = 208;
      }
 
      _bodyHeight() {
-         if (this.state.mounted) {
+         if (this.state.mounted && this.body_ref && this.body_ref.current) {
              return this.props.console_available_height - (this.body_ref.current.offsetTop - this.header_ref.current.offsetTop) - 2
          } else {
              return this.props.console_available_height - 75
@@ -1175,37 +1177,26 @@ const BUTTON_CONSUMED_SPACE = 208;
                          </div>
                      </div>
                  </div>
-                 {!this.props.console_is_shrunk &&
-                     <form onSubmit={this._handleSubmit} id="console-search-form" 
-                           className="d-flex flex-row bp4-form-group" style={{
-                                           justifyContent: "flex-end", marginRight: 116,
-                                           marginBottom: 6, marginTop: 12
-                           }}>
-                         <div className="d-flex flex-column">
-                             <div className="d-flex flex-row">
-                                 <InputGroup type="search"
-                                             leftIcon="search"
-                                             placeholder="Search"
-                                             small={true}
-                                             value={!this.state.search_string ? "" : this.state.search_string}
-                                             onChange={this._handleSearchFieldChange}
-                                             autoCapitalize="none"
-                                             autoCorrect="off"
-                                             className="mr-2"/>
-                                 <ButtonGroup>
-                                     <Button onClick={this._handleFilter} small={true}>
-                                         Filter
-                                     </Button>
-                                     <Button onClick={this._handleUnFilter} small={true}>
-                                         Clear
-                                     </Button>
-                                     <Button onClick={this._searchNext} icon="caret-down" text={undefined} small={true}/>
-                                     <Button onClick={this._searchPrevious} icon="caret-up" text={undefined} small={true}/>
-                                 </ButtonGroup>
-                             </div>
-                             <div className="bp4-form-helper-text" style={{marginLeft: 10}}>{this.state.search_helper_text}</div>
-                         </div>
-                     </form>
+                 {!this.props.console_is_shrunk && !this.state.show_console_error_log &&
+                     <FilterSearchForm 
+                         search_string={this.state.search_string}
+                         handleSearchFieldChange={this._handleSearchFieldChange}
+                         handleFilter={this._handleFilter}
+                         handleUnFilter={this._handleUnFilter}
+                         searchNext={this._searchNext}
+                         searchPrevious={this._searchPrevious}
+                         search_helper_text={this.state.search_helper_text}
+                         />
+                 }
+                 {!this.props.console_is_shrunk && this.state.show_console_error_log &&
+                         <SearchableConsole log_content={this.state.console_error_log_text}
+                                            inner_ref={this.body_ref}
+                                            outer_style={{
+                                                overflowX: "auto",
+                                                overflowY: "auto",
+                                                height: this._bodyHeight() - 30,
+                                                margin: 20}}
+                         />
                  }
                  {!this.props.console_is_shrunk &&
                      <div id="console"
@@ -1213,11 +1204,6 @@ const BUTTON_CONSUMED_SPACE = 208;
                           className="contingent-scroll"
                           onClick={this._clickConsoleBody}
                           style={{height: this._bodyHeight()}}>
-                         {this.state.show_console_error_log &&
-                            <pre style={{overflowX: "auto", whiteSpace: "pre-wrap", margin: 20}}>
-                                {this.state.console_error_log_text}
-                            </pre>
-                         }
                          {!this.state.show_console_error_log &&
                              <React.Fragment>
                              <SortableComponent id="console-items-div"

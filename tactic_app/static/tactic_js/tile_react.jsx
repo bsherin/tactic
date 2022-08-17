@@ -18,6 +18,7 @@ import {doBinding, propsAreEqual, arrayMove} from "./utilities_react.js";
 import {ErrorBoundary} from "./error_boundary.js";
 import {MenuComponent} from "./menu_utilities.js"
 import {showConfirmDialogReact} from "./modal_react";
+import {SearchableConsole} from "./searchable_console";
 
 export {TileContainer}
 
@@ -594,7 +595,14 @@ class TileComponent extends React.Component {
         }
 
         this.back_style = Object.assign({}, this.front_style);
-        this.tile_log_style = Object.assign({}, this.front_style);
+        this.tile_log_style = {
+            overflow: "auto",
+            marginLeft: 20,
+            marginRight: 20,
+            marginTop: 10,
+            marginBottom: 10,
+            width: this.props.tile_width - 40,
+            height: tile_height - this.state.header_height - 50};
         this.panel_body_style = {"width": this.props.tile_width};
         this.main_style = {width: this.props.tile_width + this.state.dwidth,
                 height: tile_height + this.state.dheight,
@@ -785,9 +793,11 @@ class TileComponent extends React.Component {
                             <Transition in={this.props.show_log} timeout={ANI_DURATION}>
                                 {state => (
                                     <div className="tile-log" ref={this.log_ref}
-                                         style={composeObjs(this.tile_log_style, this.transitionFadeStyles[state])}>
+                                         style={this.transitionFadeStyles[state]}>
                                         <div className="tile-log-area">
-                                            <pre style={{fontSize: 12}}>{this.props.log_content}</pre>
+                                            <SearchableConsole log_content={this.props.log_content}
+                                                               outer_style={this.tile_log_style}
+                                            />
                                         </div>
                                     </div>
                                 )}
