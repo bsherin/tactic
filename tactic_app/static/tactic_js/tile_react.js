@@ -39,6 +39,8 @@ var _menu_utilities = require("./menu_utilities.js");
 
 var _modal_react = require("./modal_react");
 
+var _searchable_console = require("./searchable_console");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
@@ -910,7 +912,15 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
       }
 
       this.back_style = Object.assign({}, this.front_style);
-      this.tile_log_style = Object.assign({}, this.front_style);
+      this.tile_log_style = {
+        overflow: "auto",
+        marginLeft: 20,
+        marginRight: 20,
+        marginTop: 10,
+        marginBottom: 10,
+        width: this.props.tile_width - 40,
+        height: tile_height - this.state.header_height - 50
+      };
       this.panel_body_style = {
         "width": this.props.tile_width
       };
@@ -1188,14 +1198,13 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
         return /*#__PURE__*/_react["default"].createElement("div", {
           className: "tile-log",
           ref: _this4.log_ref,
-          style: composeObjs(_this4.tile_log_style, _this4.transitionFadeStyles[state])
+          style: _this4.transitionFadeStyles[state]
         }, /*#__PURE__*/_react["default"].createElement("div", {
           className: "tile-log-area"
-        }, /*#__PURE__*/_react["default"].createElement("pre", {
-          style: {
-            fontSize: 12
-          }
-        }, _this4.props.log_content)));
+        }, /*#__PURE__*/_react["default"].createElement(_searchable_console.SearchableConsole, {
+          log_content: _this4.props.log_content,
+          outer_style: _this4.tile_log_style
+        })));
       }), /*#__PURE__*/_react["default"].createElement(_reactTransitionGroup.Transition, {
         "in": show_front,
         timeout: ANI_DURATION
