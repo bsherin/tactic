@@ -197,6 +197,12 @@ $dark-medium: $dark-gray4;
         }
     }
 
+    .searchable-console {
+        mark {
+            background-color: #cebde6
+        }
+    }
+
     .tile-panel-heading {
         color: $gray1;
         background-color: #f6f8fa;
@@ -359,6 +365,12 @@ $dark-medium: $dark-gray4;
 
     #table-area {
         border-right: $dark-table-border-style;
+        mark {
+            background-color: #cebde6
+        }
+    }
+
+    .searchable-console {
         mark {
             background-color: #cebde6
         }

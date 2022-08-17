@@ -45,6 +45,10 @@ var _library_pane = require("./library_pane.js");
 
 var _menu_utilities = require("./menu_utilities.js");
 
+var _search_form = require("./search_form");
+
+var _searchable_console = require("./searchable_console");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -1288,7 +1292,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
   }, {
     key: "_bodyHeight",
     value: function _bodyHeight() {
-      if (this.state.mounted) {
+      if (this.state.mounted && this.body_ref && this.body_ref.current) {
         return this.props.console_available_height - (this.body_ref.current.offsetTop - this.header_ref.current.offsetTop) - 2;
       } else {
         return this.props.console_available_height - 75;
@@ -1904,52 +1908,24 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       }), this.props.console_is_zoomed && this.props.zoomable && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
         handleClick: this._unzoomConsole,
         icon: "minimize"
-      })))), !this.props.console_is_shrunk && /*#__PURE__*/_react["default"].createElement("form", {
-        onSubmit: this._handleSubmit,
-        id: "console-search-form",
-        className: "d-flex flex-row bp4-form-group",
-        style: {
-          justifyContent: "flex-end",
-          marginRight: 116,
-          marginBottom: 6,
-          marginTop: 12
+      })))), !this.props.console_is_shrunk && !this.state.show_console_error_log && /*#__PURE__*/_react["default"].createElement(_search_form.FilterSearchForm, {
+        search_string: this.state.search_string,
+        handleSearchFieldChange: this._handleSearchFieldChange,
+        handleFilter: this._handleFilter,
+        handleUnFilter: this._handleUnFilter,
+        searchNext: this._searchNext,
+        searchPrevious: this._searchPrevious,
+        search_helper_text: this.state.search_helper_text
+      }), !this.props.console_is_shrunk && this.state.show_console_error_log && /*#__PURE__*/_react["default"].createElement(_searchable_console.SearchableConsole, {
+        log_content: this.state.console_error_log_text,
+        inner_ref: this.body_ref,
+        outer_style: {
+          overflowX: "auto",
+          overflowY: "auto",
+          height: this._bodyHeight() - 30,
+          margin: 20
         }
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: "d-flex flex-column"
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: "d-flex flex-row"
-      }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
-        type: "search",
-        leftIcon: "search",
-        placeholder: "Search",
-        small: true,
-        value: !this.state.search_string ? "" : this.state.search_string,
-        onChange: this._handleSearchFieldChange,
-        autoCapitalize: "none",
-        autoCorrect: "off",
-        className: "mr-2"
-      }), /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, null, /*#__PURE__*/_react["default"].createElement(_core.Button, {
-        onClick: this._handleFilter,
-        small: true
-      }, "Filter"), /*#__PURE__*/_react["default"].createElement(_core.Button, {
-        onClick: this._handleUnFilter,
-        small: true
-      }, "Clear"), /*#__PURE__*/_react["default"].createElement(_core.Button, {
-        onClick: this._searchNext,
-        icon: "caret-down",
-        text: undefined,
-        small: true
-      }), /*#__PURE__*/_react["default"].createElement(_core.Button, {
-        onClick: this._searchPrevious,
-        icon: "caret-up",
-        text: undefined,
-        small: true
-      }))), /*#__PURE__*/_react["default"].createElement("div", {
-        className: "bp4-form-helper-text",
-        style: {
-          marginLeft: 10
-        }
-      }, this.state.search_helper_text))), !this.props.console_is_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
+      }), !this.props.console_is_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
         id: "console",
         ref: this.body_ref,
         className: "contingent-scroll",
@@ -1957,13 +1933,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
         style: {
           height: this._bodyHeight()
         }
-      }, this.state.show_console_error_log && /*#__PURE__*/_react["default"].createElement("pre", {
-        style: {
-          overflowX: "auto",
-          whiteSpace: "pre-wrap",
-          margin: 20
-        }
-      }, this.state.console_error_log_text), !this.state.show_console_error_log && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_sortable_container.SortableComponent, {
+      }, !this.state.show_console_error_log && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_sortable_container.SortableComponent, {
         id: "console-items-div",
         main_id: this.props.main_id,
         ElementComponent: SSuperItem,
