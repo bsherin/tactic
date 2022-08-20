@@ -13,8 +13,7 @@ module.exports = (env, argv) => {
 
     if (devmode) {
         console.log("got devmode")
-    }
-    else {
+    } else {
         console.log("got production mode")
     }
 
@@ -43,8 +42,8 @@ module.exports = (env, argv) => {
                 chunkFilename: '[id].css',
             }),
             new webpack.DefinePlugin({
-            "process.env": "{}",
-          })
+                "process.env": "{}",
+            })
         ],
         module: {
             rules: [
@@ -61,26 +60,26 @@ module.exports = (env, argv) => {
                     test: /\.(eot|ttf|woff|woff2|svg|png|gif|jpe?g)$/,
                     loader: require.resolve("file-loader"),
                 }
-            //     {
-            //         test: /\.(jsx|js)$/,
-            //         include: path.resolve(__dirname, 'src'),
-            //         exclude: /node_modules/,
-            //         use: [{
-            //           loader: 'babel-loader',
-            //           options: {
-            //             presets: [
-            //               ['@babel/preset-env', {
-            //                 "targets": "defaults"
-            //               }],
-            //               '@babel/preset-react'
-            //             ],
-            //               plugins: [
-            //                   '@babel/plugin-proposal-class-properties'
-            //
-            //               ]
-            //           }
-            //         }]
-            //     }
+                //     {
+                //         test: /\.(jsx|js)$/,
+                //         include: path.resolve(__dirname, 'src'),
+                //         exclude: /node_modules/,
+                //         use: [{
+                //           loader: 'babel-loader',
+                //           options: {
+                //             presets: [
+                //               ['@babel/preset-env', {
+                //                 "targets": "defaults"
+                //               }],
+                //               '@babel/preset-react'
+                //             ],
+                //               plugins: [
+                //                   '@babel/plugin-proposal-class-properties'
+                //
+                //               ]
+                //           }
+                //         }]
+                //     }
             ],
         },
         mode: argv.mode,
@@ -94,8 +93,7 @@ module.exports = (env, argv) => {
             filename: '[name].production.bundle.js',
             path: path.resolve(__dirname, 'tactic_app/static/tactic_js_dist')
         }
-    }
-    else {
+    } else {
         result.mode = "development";
         result.output = {
             filename: '[name].bundle.js',

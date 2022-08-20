@@ -798,11 +798,16 @@ class CommandEntry extends React.Component {
             // "maxHeight": this.state.md_height,
             "fontSize": 13
         };
+        let re = new RegExp("^([^(]*)");
+        let bolded_command = this.props.signature.replace(re, function (matched) {
+            return "<span class='command-name'>" + matched + "</span>"}
+        );
+
         return (
             <React.Fragment>
                 <Button minimal={true} outlined={this.state.isOpen} className="bp4-monospace-text"
                         onClick={this._handleClick}>
-                        {this.props.signature}
+                    <span dangerouslySetInnerHTML={{__html: bolded_command}}/>
                 </Button>
                 <Collapse isOpen={this.state.isOpen}>
                     <div style={{maxWidth: 700, position: "relative"}}>
