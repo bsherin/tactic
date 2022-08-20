@@ -67,6 +67,8 @@ require("codemirror/theme/juejin.css");
 
 var _utilities_react = require("./utilities_react");
 
+var _toaster = require("./toaster");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
@@ -263,7 +265,7 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
       var _this2 = this;
 
       var self = this;
-      (0, _communication_react.postAjax)("get_preferred_codemirror_themes", {}, function (data) {
+      (0, _communication_react.postAjaxPromise)('get_preferred_codemirror_themes', {}).then(function (data) {
         self.preferred_themes = data;
         self.cmobject = self.createCMArea(_this2.code_container_ref.current, _this2.props.first_line_number);
         self.cmobject.setValue(_this2.props.code_content);
@@ -276,6 +278,8 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
         self.saved_theme = self.props.dark_theme;
 
         self._doHighlight(self.props.search_term);
+      })["catch"](function (data) {
+        (0, _toaster.doFlash)(data);
       });
     }
   }, {
@@ -416,7 +420,7 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
       var line_counter = -1;
       return {
         token: function token(stream) {
-          if (stream.match(query) && (!hasBoundary || self._boundariesAround(stream, hasBoundary))) {
+          if (stream.match(query) && (!hasBoundary || ReactCodemirror._boundariesAround(stream, hasBoundary))) {
             var lnum = stream.lineOracle.line;
 
             if (self.search_focus_info && lnum == self.search_focus_info.line) {
@@ -442,11 +446,6 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
           stream.skipTo(query.charAt(0)) || stream.skipToEnd();
         }
       };
-    }
-  }, {
-    key: "_boundariesAround",
-    value: function _boundariesAround(stream, re) {
-      return (!stream.start || !re.test(stream.string.charAt(stream.start - 1))) && (stream.pos == stream.string.length || !re.test(stream.string.charAt(stream.pos)));
     }
   }, {
     key: "_removeOverlay",
@@ -586,6 +585,11 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
         style: ccstyle,
         ref: this.code_container_ref
       }));
+    }
+  }], [{
+    key: "_boundariesAround",
+    value: function _boundariesAround(stream, re) {
+      return (!stream.start || !re.test(stream.string.charAt(stream.start - 1))) && (stream.pos == stream.string.length || !re.test(stream.string.charAt(stream.pos)));
     }
   }]);
 

@@ -226,6 +226,7 @@ def get_account_info():
 def get_preferred_codemirror_themes():
     user_data = current_user.user_data_dict
     return jsonify({
+        "success": True,
         "preferred_dark_theme": user_data["preferred_dark_theme"],
         "preferred_light_theme": user_data["preferred_light_theme"]
     })
