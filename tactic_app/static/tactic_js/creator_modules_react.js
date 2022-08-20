@@ -1306,12 +1306,20 @@ var CommandEntry = /*#__PURE__*/function (_React$Component8) {
         // "maxHeight": this.state.md_height,
         "fontSize": 13
       };
+      var re = new RegExp("^([^(]*)");
+      var bolded_command = this.props.signature.replace(re, function (matched) {
+        return "<span class='command-name'>" + matched + "</span>";
+      });
       return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.Button, {
         minimal: true,
         outlined: this.state.isOpen,
         className: "bp4-monospace-text",
         onClick: this._handleClick
-      }, this.props.signature), /*#__PURE__*/_react["default"].createElement(_core.Collapse, {
+      }, /*#__PURE__*/_react["default"].createElement("span", {
+        dangerouslySetInnerHTML: {
+          __html: bolded_command
+        }
+      })), /*#__PURE__*/_react["default"].createElement(_core.Collapse, {
         isOpen: this.state.isOpen
       }, /*#__PURE__*/_react["default"].createElement("div", {
         style: {

@@ -16,6 +16,8 @@ The webpack configuration is in webpack.config.js
 
 run either:
 `webpack —env.mode=development`, or `npm run build`
+Note: I need to type `export NODE_OPTIONS=--openssl-legacy-provider` for executing the webpack commands.
+It's discussed in `webpack and npm.md`
 
 #### production
 run either:
