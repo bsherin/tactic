@@ -4,13 +4,12 @@ import PropTypes from 'prop-types';
 
 import { Button, ButtonGroup } from "@blueprintjs/core";
 
-import {postAjax} from "./communication_react.js"
+import {postAjax, postAjaxPromise} from "./communication_react.js"
 // import { CodeMirror } from "./codemirror/src/edit/main.js"
 // import "./codemirror/mode/python/python.js"
 
-import CodeMirror from 'codemirror/lib/codemirror.js'
-import 'codemirror/mode/python/python.js'
-
+import CodeMirror from 'codemirror/lib/codemirror.js';
+import 'codemirror/mode/python/python.js';
 import 'codemirror/lib/codemirror.css'
 
 import 'codemirror/addon/merge/merge.js'
@@ -40,6 +39,7 @@ import 'codemirror/theme/neat.css'
 import 'codemirror/theme/solarized.css'
 import 'codemirror/theme/juejin.css'
 import {propsAreEqual} from "./utilities_react";
+import {doFlash} from "./toaster";
 
 export {ReactCodemirror}
 
@@ -166,19 +166,20 @@ class ReactCodemirror extends React.Component {
 
     componentDidMount() {
         let self = this;
-        postAjax("get_preferred_codemirror_themes", {}, (data)=> {
-            self.preferred_themes = data;
-            self.cmobject = self.createCMArea(this.code_container_ref.current, this.props.first_line_number);
-            self.cmobject.setValue(this.props.code_content);
-            self.create_keymap();
-            if (self.props.setCMObject != null) {
-                self.props.setCMObject(self.cmobject)
-            }
-            self.saved_theme = self.props.dark_theme;
-            self._doHighlight(self.props.search_term)
-            }
-        )
-
+        postAjaxPromise('get_preferred_codemirror_themes', {})
+                .then((data) => {
+                        self.preferred_themes = data;
+                        self.cmobject = self.createCMArea(this.code_container_ref.current, this.props.first_line_number);
+                        self.cmobject.setValue(this.props.code_content);
+                        self.create_keymap();
+                        if (self.props.setCMObject != null) {
+                            self.props.setCMObject(self.cmobject)
+                        }
+                        self.saved_theme = self.props.dark_theme;
+                        self._doHighlight(self.props.search_term)
+                    }
+                )
+                .catch((data) => {doFlash(data)});
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -276,7 +277,7 @@ class ReactCodemirror extends React.Component {
         let line_counter = -1;
         return {token: function(stream) {
           if (stream.match(query) &&
-              (!hasBoundary || self._boundariesAround(stream, hasBoundary))) {
+              (!hasBoundary || ReactCodemirror._boundariesAround(stream, hasBoundary))) {
               let lnum = stream.lineOracle.line;
 
               if (self.search_focus_info && lnum == self.search_focus_info.line) {
@@ -303,7 +304,7 @@ class ReactCodemirror extends React.Component {
         }};
     }
 
-    _boundariesAround(stream, re) {
+    static _boundariesAround(stream, re) {
         return (!stream.start || !re.test(stream.string.charAt(stream.start - 1))) &&
           (stream.pos == stream.string.length || !re.test(stream.string.charAt(stream.pos)));
     }

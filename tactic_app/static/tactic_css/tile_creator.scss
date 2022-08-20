@@ -108,7 +108,32 @@
       font-family: monospace;
       font-style: normal
     }
-
+    h4 {
+      color: $blue3;
+    }
+    h5 {
+      color: $orange3
+    }
+    h6 {
+      color: $forest2
+    }
   }
+}
 
+.bp4-dark {
+  #commands-pane {
+    .command-name {
+      font-weight: bold;
+      color: $gray3
+    }
+  }
+}
+
+.light-theme {
+  #commands-pane {
+    .command-name {
+      font-weight: 900;
+      color: $dark-gray5
+    }
+  }
 }

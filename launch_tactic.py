@@ -94,11 +94,13 @@ def clear_ready_db():
 
 def create_mongo():
     try:
+        print("entering create_mongo")
         mongo_exists = tactic_app.docker_functions.container_exists("tactic-mongo")
+        print("** got mongo_exists " + str(mongo_exists))
         if not mongo_exists:
             print("creating tactic-mongo")
             if ("ON_MAC" in os.environ) and (os.environ.get("ON_MAC") == "True"):
-                mongo_volume_dict = {"/Users/bls910/mongo/data": {"bind": "/data/db", "mode": "rw"}}
+                mongo_volume_dict = {"/Users/brucesherin/mongo/data": {"bind": "/data/db", "mode": "rw"}}
             else:
                 mongo_volume_dict = {"/var/lib/mongo2": {"bind": "/data/db", "mode": "rw"}}
             _unique_id, _mongo_id = create_container("mongo:latest",
