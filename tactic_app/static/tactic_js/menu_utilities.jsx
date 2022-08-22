@@ -1,7 +1,8 @@
 import React from "react";
 import PropTypes from 'prop-types';
 
-import { Icon, MenuItem, MenuDivider, Menu, Navbar, Popover, PopoverPosition, Button } from "@blueprintjs/core";
+import { Icon, MenuDivider, Menu, Navbar, Button, PopoverPosition, Classes } from "@blueprintjs/core";
+import {Popover2, MenuItem2} from "@blueprintjs/popover2";
 
 import {doBinding} from "./utilities_react.js";
 import {KeyTrap} from "./key_trap";
@@ -234,13 +235,16 @@ class MenuComponent extends React.Component {
                 if (opt_name.startsWith("divider")) {
                     return <MenuDivider key={index}/>
                 }
-                let icon = this.props.icon_dict.hasOwnProperty(opt_name) ? this.props.icon_dict[opt_name] : null;
+                let icon = null;
+                if (this.props.icon_dict.hasOwnProperty(opt_name)) {
+                    icon = <Icon icon={this.props.icon_dict[opt_name]} size={14} />
+                }
                 let label = null;
                 if (opt_name in this.props.binding_dict) {
                     label = this._bindingsToString(this.props.binding_dict[opt_name])
                 }
                 return (
-                    <MenuItem disabled={this.props.disable_all || this.props.disabled_items.includes(opt_name)}
+                    <MenuItem2 disabled={this.props.disable_all || this.props.disabled_items.includes(opt_name)}
                               onClick={this.props.option_dict[opt_name]}
                               icon={icon}
                               labelElement={label}
@@ -248,25 +252,31 @@ class MenuComponent extends React.Component {
                               text={opt_name}
                               className={this.props.item_class}
                     >
-                    </MenuItem>
+                    </MenuItem2>
                 )
             }
         );
         let the_menu = (
-            <Menu>
+            <Menu className={Classes.ELEVATION_1} >
                 {choices}
             </Menu>
         );
         if (this.props.alt_button) {
             let AltButton = this.props.alt_button;
-            return (<Popover minimal={true} content={the_menu} position={this.props.position}>
+            return (<Popover2 minimal={true}
+                              content={the_menu}
+                              transitionDuration={150}
+                              position={this.props.position}>
                 <AltButton/>
-            </Popover>)
+            </Popover2>)
         } else {
             return (
-                <Popover minimal={true} content={the_menu} position={this.props.position}>
+                <Popover2 minimal={true}
+                          content={the_menu}
+                          transitionDuration={150}
+                          position={this.props.position}>
                     <Button text={this.props.menu_name} small={true} minimal={true}/>
-                </Popover>
+                </Popover2>
             )
         }
     }
