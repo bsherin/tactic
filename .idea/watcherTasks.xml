@@ -88,7 +88,7 @@
       <envs />
     </TaskOptions>
     <TaskOptions isEnabled="true">
-      <option name="arguments" value="babel $FilePathRelativeToProjectRoot$ --out-dir $FileDir$ --presets=@babel/preset-env,@babel/preset-react --plugins=@babel/plugin-proposal-class-properties" />
+      <option name="arguments" value="babel $FilePath$ --out-dir $FileDir$ --presets=@babel/preset-env,@babel/preset-react --plugins=@babel/plugin-proposal-class-properties" />
       <option name="checkSyntaxErrors" value="true" />
       <option name="description" />
       <option name="exitCodeBehavior" value="ERROR" />
@@ -100,7 +100,7 @@
         <array />
       </option>
       <option name="outputFromStdout" value="false" />
-      <option name="program" value="npx" />
+      <option name="program" value="$USER_HOME$/.nvm/versions/node/v18.7.0/bin/npx" />
       <option name="runOnExternalChanges" value="true" />
       <option name="scopeName" value="tactic_jsx" />
       <option name="trackOnlyRoot" value="false" />
