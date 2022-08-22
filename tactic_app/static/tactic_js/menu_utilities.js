@@ -13,6 +13,8 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 
 var _core = require("@blueprintjs/core");
 
+var _popover = require("@blueprintjs/popover2");
+
 var _utilities_react = require("./utilities_react.js");
 
 var _key_trap = require("./key_trap");
@@ -354,14 +356,22 @@ var MenuComponent = /*#__PURE__*/function (_React$Component3) {
           });
         }
 
-        var icon = _this4.props.icon_dict.hasOwnProperty(opt_name) ? _this4.props.icon_dict[opt_name] : null;
+        var icon = null;
+
+        if (_this4.props.icon_dict.hasOwnProperty(opt_name)) {
+          icon = /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+            icon: _this4.props.icon_dict[opt_name],
+            size: 14
+          });
+        }
+
         var label = null;
 
         if (opt_name in _this4.props.binding_dict) {
           label = _this4._bindingsToString(_this4.props.binding_dict[opt_name]);
         }
 
-        return /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+        return /*#__PURE__*/_react["default"].createElement(_popover.MenuItem2, {
           disabled: _this4.props.disable_all || _this4.props.disabled_items.includes(opt_name),
           onClick: _this4.props.option_dict[opt_name],
           icon: icon,
@@ -372,19 +382,23 @@ var MenuComponent = /*#__PURE__*/function (_React$Component3) {
         });
       });
 
-      var the_menu = /*#__PURE__*/_react["default"].createElement(_core.Menu, null, choices);
+      var the_menu = /*#__PURE__*/_react["default"].createElement(_core.Menu, {
+        className: _core.Classes.ELEVATION_1
+      }, choices);
 
       if (this.props.alt_button) {
         var AltButton = this.props.alt_button;
-        return /*#__PURE__*/_react["default"].createElement(_core.Popover, {
+        return /*#__PURE__*/_react["default"].createElement(_popover.Popover2, {
           minimal: true,
           content: the_menu,
+          transitionDuration: 150,
           position: this.props.position
         }, /*#__PURE__*/_react["default"].createElement(AltButton, null));
       } else {
-        return /*#__PURE__*/_react["default"].createElement(_core.Popover, {
+        return /*#__PURE__*/_react["default"].createElement(_popover.Popover2, {
           minimal: true,
           content: the_menu,
+          transitionDuration: 150,
           position: this.props.position
         }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
           text: this.props.menu_name,
