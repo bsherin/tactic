@@ -1,58 +1,73 @@
 /*
  * Copyright 2022 Palantir Technologies, Inc. All rights reserved.
  */
-@import url(~@blueprintjs/table/lib/css/table.css);
+@import "~@blueprintjs/table/lib/css/table.css";
 #doc-selector {
-  z-index: 500; }
+  z-index: 500;
+}
 
 #project-label {
   font-weight: bold;
-  padding-left: 5px; }
+  padding-left: 5px;
+}
 
 #project-name {
-  font-weight: normal; }
+  font-weight: normal;
+}
 
 #table-spin-place {
-  margin: 7px; }
+  margin: 7px;
+}
 
 #main-root .res-viewer-resizer .ui-resizable-e {
-  z-index: 0 !important; }
+  z-index: 0 !important;
+}
 
 #table-wrapper {
   overflow-x: auto;
   margin: 0;
-  padding: 0; }
+  padding: 0;
+}
 
 #table-area {
   display: block;
   border-left: none;
-  border-top: none; }
-  #table-area #freebody {
-    display: block;
-    overflow-y: auto;
-    overflow-x: hidden;
-    white-space: pre-wrap; }
-  #table-area .hidden-row {
-    display: none !important; }
-  #table-area .bp4-table-quadrant-scroll-container {
-    overflow: hidden; }
-    #table-area .bp4-table-quadrant-scroll-container:hover {
-      overflow: auto; }
+  border-top: none;
+}
+#table-area #freebody {
+  display: block;
+  overflow-y: auto;
+  overflow-x: hidden;
+  white-space: pre-wrap;
+}
+#table-area .hidden-row {
+  display: none !important;
+}
+#table-area .bp4-table-quadrant-scroll-container {
+  overflow: hidden;
+}
+#table-area .bp4-table-quadrant-scroll-container:hover {
+  overflow: auto;
+}
 
 .ui-resizable-e, .ui-resizable-w {
-  width: 10px !important; }
+  width: 10px !important;
+}
 
 .ui-resizable-s, .ui-resizable-n {
-  height: 20px !important; }
+  height: 20px !important;
+}
 
 #table-icon {
   -webkit-appearance: none;
   display: none;
   margin: 5px;
-  opacity: .5;
+  opacity: 0.5;
   cursor: pointer;
-  border-color: #ddd; }
-  #table-icon .glyphicon {
-    font-size: 15px; }
+  border-color: #ddd;
+}
+#table-icon .glyphicon {
+  font-size: 15px;
+}
 
 /*# sourceMappingURL=tactic_table.css.map */
