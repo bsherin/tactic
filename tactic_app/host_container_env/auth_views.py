@@ -222,7 +222,6 @@ def get_account_info():
 
 
 @app.route('/get_preferred_codemirror_themes', methods=['GET', 'POST'])
-@fresh_login_required
 def get_preferred_codemirror_themes():
     user_data = current_user.user_data_dict
     return jsonify({
