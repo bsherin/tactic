@@ -52,6 +52,33 @@ const EXTRAWORDS = ["global_import", "Collection",
 
 const WORD = /[\w\.$]+/;
 const RANGE = 500;
+
+const REGEXTYPE = Object.getPrototypeOf(new RegExp("that"));
+
+function isRegex(ob) {
+    return Object.getPrototypeOf(ob) == REGEXTYPE
+}
+
+
+function countOccurrences(query, the_text) {
+    if (isRegex(query)) {
+        const split_text = the_text.split(/\r?\n/);
+        let total = 0;
+        for (let str of split_text) {
+            total += (str.match(query) || []).length
+        }
+        return total
+    }
+    else {
+        return the_text.split(query).length - 1
+    }
+}
+
+// console.log("*** Checking fonts")
+// const DEFAULT_FONT_FAMILY = document.fonts.check("14px Courier") ? "Courier" : "Courier New";
+// console.log("*** DEFAULT_FONT_FAMILY is " + DEFAULT_FONT_FAMILY);
+// const DEFAULT_FONT_FAMILY = "Courier New";
+
 CodeMirror.registerHelper("hint", "anyword", function(editor, options) {
     var word = options && options.word || WORD;
     var range = options && options.range || RANGE;
@@ -176,7 +203,7 @@ class ReactCodemirror extends React.Component {
                             self.props.setCMObject(self.cmobject)
                         }
                         self.saved_theme = self.props.dark_theme;
-                        self._doHighlight(self.props.search_term)
+                        self._doHighlight()
                     }
                 )
                 .catch((data) => {doFlash(data)});
@@ -210,16 +237,32 @@ class ReactCodemirror extends React.Component {
         if (this.props.first_line_number != 1) {
             this.cmobject.setOption("firstLineNumber", this.props.first_line_number);
         }
-        this._doHighlight(this.props.search_term)
+        this._doHighlight()
+    }
+
+    _searchMatcher(term, global=false) {
+        let matcher;
+        if (this.props.regex_search) {
+            try {
+                matcher = global ? new RegExp(term, "g"): new RegExp(term)
+            }
+            catch(e) {
+                matcher = term
+            }
+        }
+        else {
+            matcher = term
+        }
+        return matcher
     }
 
     _lineNumberFromSearchNumber() {
         let lines = this.props.code_content.split("\n");
         let lnum = 0;
         let mnum = 0;
-        let reg = new RegExp(this.props.search_term, "g");
+        let matcher = this._searchMatcher(this.props.search_term);
         for (let line of lines) {
-            let new_matches = (line.match(reg) || []).length;
+            let new_matches = (line.match(matcher) || []).length;
             if (new_matches + mnum - 1 >= this.props.current_search_number) {
                 return {line: lnum, match: this.props.current_search_number - mnum};
             }
@@ -231,25 +274,30 @@ class ReactCodemirror extends React.Component {
 
     _doHighlight() {
         let self = this;
-        if (this.props.search_term == null || this.props.search_term == "") {
-            this.cmobject.operation(function() {
-                self._removeOverlay()
-            })
-        }
-        else{
-            if (this.props.current_search_number != null) {
-                this.search_focus_info = {...this._lineNumberFromSearchNumber()};
-                if (this.search_focus_info) {
-                    this._scrollToLine(this.search_focus_info.line)
+        try {
+            if (this.props.search_term == null || this.props.search_term == "") {
+                this.cmobject.operation(function() {
+                    self._removeOverlay()
+                })
+            }
+            else{
+                if (this.props.current_search_number != null) {
+                    this.search_focus_info = {...this._lineNumberFromSearchNumber()};
+                    if (this.search_focus_info) {
+                        this._scrollToLine(this.search_focus_info.line)
+                    }
                 }
+                else {
+                    this.search_focus_info = null;
+                }
+                this.cmobject.operation(function() {
+                    self._removeOverlay();
+                    self._addOverlay(self.props.search_term);
+                });
             }
-            else {
-                this.search_focus_info = null;
-            }
-            this.cmobject.operation(function() {
-                self._removeOverlay();
-                self._addOverlay(self.props.search_term);
-            });
+        }
+        catch(e) {
+            console.log(e.message)
         }
     }
 
@@ -261,8 +309,8 @@ class ReactCodemirror extends React.Component {
     _addOverlay(query, hasBoundary=false, style="searchhighlight", focus_style="focussearchhighlight") {
         // var state = cm.state.matchHighlighter;
         let prev_matches = this.matches;
-        var reg = new RegExp(query, "g");
-        this.matches = (this.props.code_content.match(reg) || []).length;
+        var reg = this._searchMatcher(query, true);
+        this.matches = countOccurrences(reg, this.props.code_content);
         if (this.props.setSearchMatches && this.matches != prev_matches) {
             this.props.setSearchMatches(this.matches)
         }
@@ -275,8 +323,9 @@ class ReactCodemirror extends React.Component {
         let self = this;
         let last_line = -1;
         let line_counter = -1;
+        let matcher = this._searchMatcher(query);
         return {token: function(stream) {
-          if (stream.match(query) &&
+          if (stream.match(matcher) &&
               (!hasBoundary || ReactCodemirror._boundariesAround(stream, hasBoundary))) {
               let lnum = stream.lineOracle.line;
 
@@ -300,7 +349,9 @@ class ReactCodemirror extends React.Component {
           }
 
           stream.next();
-          stream.skipTo(query.charAt(0)) || stream.skipToEnd();
+          if (!isRegex(matcher)) {
+              stream.skipTo(query.charAt(0)) || stream.skipToEnd();
+          }
         }};
     }
 
@@ -374,6 +425,8 @@ class ReactCodemirror extends React.Component {
             "height": this.props.code_container_height,
             "width": this.props.code_container_width,
             lineHeight: "21px",
+            // fontSize: "14",
+            // fontFamily: DEFAULT_FONT_FAMILY
         };
         let bgstyle = null;
         if (this.props.show_fold_button && this.code_container_ref && this.code_container_ref.current) {
@@ -427,6 +480,7 @@ ReactCodemirror.propTypes = {
     extraKeys: PropTypes.object,
     setCMObject: PropTypes.func,
     searchTerm: PropTypes.string,
+    regex_search: PropTypes.bool,
     code_container_ref: PropTypes.object,
     code_container_width: PropTypes.oneOfType([
         PropTypes.string,
@@ -446,6 +500,7 @@ ReactCodemirror.defaultProps = {
     soft_wrap: false,
     code_container_height: "100%",
     searchTerm: null,
+    regex_search: false,
     handleChange: null,
     handleBlur: null,
     sync_to_prop: false,

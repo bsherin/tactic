@@ -85,6 +85,8 @@ class ModuleViewerApp extends React.Component {
             notes: props.notes,
             tags: props.split_tags,
             search_string: "",
+            regex: false,
+            search_matches: null
         };
 
         if (props.controlled) {
@@ -387,6 +389,10 @@ class ModuleViewerApp extends React.Component {
         return !((current_content == this.savedContent) && (tags == this.savedTags) && (notes == this.savedNotes))
     }
 
+    _setSearchMatches(nmatches) {
+        this.setState({search_matches: nmatches})
+    }
+
      render() {
         let dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme;
         let the_context = {"readOnly": this.props.readOnly};
@@ -439,6 +445,10 @@ class ModuleViewerApp extends React.Component {
                                            saveMe={this._saveMe}
                                            show_search={true}
                                            update_search_state={this._update_search_state}
+                                           search_string={this.state.search_string}
+                                           search_matches={this.state.search_matches}
+                                           regex={this.state.regex}
+                                           allow_regex_search={true}
                                            search_ref={this.search_ref}
                                            meta_outer={this.props.meta_outer}
                                            showErrorDrawerButton={true}
@@ -451,6 +461,8 @@ class ModuleViewerApp extends React.Component {
                                              handleChange={this._handleCodeChange}
                                              saveMe={this._saveMe}
                                              search_term={this.state.search_string}
+                                             regex_search={this.state.regex}
+                                             setSearchMatches={this._setSearchMatches}
                                              code_container_ref={this.cc_ref}
                                              code_container_height={cc_height}
                               />

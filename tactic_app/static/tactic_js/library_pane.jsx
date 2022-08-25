@@ -177,8 +177,8 @@ class LibraryPane extends React.Component {
         let self = this;
         this.setState({"mounted": true});
         let path;
-
-        this._grabNewChunkWithRow(0, true, null, true, null)
+        this.setState({data_dict: {}, num_rows: 100, tag_list: []})
+        // this._grabNewChunkWithRow(0, true, null, true, null)
     }
 
     _grabNewChunkWithRow(row_index, flush=false, spec_update=null, select=false, select_by_name=null, callback=null) {

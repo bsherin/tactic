@@ -184,6 +184,7 @@ class MainTableCardHeader extends React.Component {
         let heading_right_opacity = this.state.hide_right_element ? 0 : 100;
         let select_style = {height: 30, maxWidth: 250};
         let doc_button_text = <Text ellipsize={true}>{this.props.current_doc_name}</Text>;
+        let self = this;
         return (
             <div className="d-flex pl-2 pr-2 justify-content-between align-baseline main-heading" style={{height: 50}}>
                 <div id="heading-left" ref={this.heading_left_ref} className="d-flex flex-column justify-content-around">
@@ -208,7 +209,7 @@ class MainTableCardHeader extends React.Component {
 
                 </div>
                 <div id="heading-right" ref={this.heading_right_ref} style={{opacity: heading_right_opacity}} className="d-flex flex-column justify-content-around">
-                    <form onSubmit={this._handleSubmit} style={{alignItems: "center"}} className="d-flex flex-row">
+                    <form onSubmit={self._handleSubmit} style={{alignItems: "center"}} className="d-flex flex-row">
                         {this.props.is_freeform &&
                             <Switch label="soft wrap"
                                      className="mr-2 mb-0"

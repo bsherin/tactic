@@ -230,6 +230,7 @@ class CreatorApp extends React.Component {
             old_usable_width: 0,
             current_search_number: null,
             current_search_cm: this.cm_list[0],
+            regex: false,
             search_matches: 0
         };
         let self = this;
@@ -916,13 +917,15 @@ class CreatorApp extends React.Component {
                               ref={this.tc_span_ref}
                               style={{display: "flex", alignItems: "self-end"}}>{title_label}</span>
                         <SearchForm update_search_state={this._updateSearchState}
-                            search_string={this.state.search_string}
-                            field_width={200}
-                            include_search_jumper={true}
-                            searchPrev={this._searchPrev}
-                            searchNext={this._searchNext}
-                            search_ref={this.search_ref}
-                            number_matches={this.state.search_matches}
+                                    search_string={this.state.search_string}
+                                    regex={this.state.regex}
+                                    allow_regex={true}
+                                    field_width={200}
+                                    include_search_jumper={true}
+                                    searchPrev={this._searchPrev}
+                                    searchNext={this._searchNext}
+                                    search_ref={this.search_ref}
+                                    number_matches={this.state.search_matches}
                         />
                     </div>
                     <ReactCodemirror code_content={code_content}
@@ -937,6 +940,7 @@ class CreatorApp extends React.Component {
                                      code_container_height={tc_height}
                                      dark_theme={dark_theme}
                                      readOnly={this.props.read_only}
+                                     regex_search={this.state.regex}
                                      setSearchMatches={(num)=>this._setSearchMatches("tc", num)}
                                      extra_autocomplete_list={mode == "python" ? onames_for_autocomplete : []}
                     />
@@ -961,6 +965,8 @@ class CreatorApp extends React.Component {
                     {!my_props.is_mpl && !my_props.is_d3 &&
                         <SearchForm update_search_state={this._updateSearchState}
                             search_string={this.state.search_string}
+                            regex={this.state.regex}
+                            allow_regex={true}
                             field_width={200}
                             include_search_jumper={true}
                             searchPrev={this._searchPrev}
@@ -981,6 +987,7 @@ class CreatorApp extends React.Component {
                                  code_container_height={rc_height}
                                  dark_theme={dark_theme}
                                  readOnly={this.props.read_only}
+                                 regex_search={this.state.regex}
                                  setSearchMatches={(num)=>this._setSearchMatches("rc", num)}
                                  extra_autocomplete_list={onames_for_autocomplete}
 
@@ -1058,6 +1065,7 @@ class CreatorApp extends React.Component {
                                  code_container_ref={this.methods_ref}
                                  code_container_height={methods_height}
                                  search_term={this.state.search_string}
+                                 regex_search={this.state.regex}
                                  first_line_number={this.state.extra_methods_line_number}
                                  setSearchMatches={(num)=>this._setSearchMatches("em", num)}
                                  extra_autocomplete_list={onames_for_autocomplete}

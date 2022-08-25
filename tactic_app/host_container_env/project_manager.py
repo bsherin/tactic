@@ -47,7 +47,7 @@ class ProjectManager(LibraryResourceManager):
                          login_required(self.import_jupyter), methods=['get', "post"])
         app.add_url_rule('/download_jupyter/<project_name>/<new_name>', "download_jupyter",
                          login_required(self.download_jupyter), methods=['get', "post"])
-        app.add_url_rule('/grab_project_list_chunk', "grab_projec_list_chunk",
+        app.add_url_rule('/grab_project_list_chunk', "grab_project_list_chunk",
                          login_required(self.grab_project_list_chunk), methods=['get', 'post'])
 
     def download_jupyter(self, project_name, new_name):

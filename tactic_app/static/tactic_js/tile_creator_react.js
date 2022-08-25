@@ -313,6 +313,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       old_usable_width: 0,
       current_search_number: null,
       current_search_cm: _this.cm_list[0],
+      regex: false,
       search_matches: 0
     };
 
@@ -1294,6 +1295,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         }, title_label), /*#__PURE__*/_react["default"].createElement(_library_widgets.SearchForm, {
           update_search_state: this._updateSearchState,
           search_string: this.state.search_string,
+          regex: this.state.regex,
+          allow_regex: true,
           field_width: 200,
           include_search_jumper: true,
           searchPrev: this._searchPrev,
@@ -1313,6 +1316,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           code_container_height: tc_height,
           dark_theme: dark_theme,
           readOnly: this.props.read_only,
+          regex_search: this.state.regex,
           setSearchMatches: function setSearchMatches(num) {
             return _this5._setSearchMatches("tc", num);
           },
@@ -1351,6 +1355,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       }, "render_content"), !my_props.is_mpl && !my_props.is_d3 && /*#__PURE__*/_react["default"].createElement(_library_widgets.SearchForm, {
         update_search_state: this._updateSearchState,
         search_string: this.state.search_string,
+        regex: this.state.regex,
+        allow_regex: true,
         field_width: 200,
         include_search_jumper: true,
         searchPrev: this._searchPrev,
@@ -1369,6 +1375,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         code_container_height: rc_height,
         dark_theme: dark_theme,
         readOnly: this.props.read_only,
+        regex_search: this.state.regex,
         setSearchMatches: function setSearchMatches(num) {
           return _this5._setSearchMatches("rc", num);
         },
@@ -1446,6 +1453,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         code_container_ref: this.methods_ref,
         code_container_height: methods_height,
         search_term: this.state.search_string,
+        regex_search: this.state.regex,
         first_line_number: this.state.extra_methods_line_number,
         setSearchMatches: function setSearchMatches(num) {
           return _this5._setSearchMatches("em", num);
