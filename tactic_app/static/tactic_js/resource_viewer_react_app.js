@@ -154,7 +154,10 @@ var ResourceViewerApp = /*#__PURE__*/function (_React$Component) {
       }, /*#__PURE__*/_react["default"].createElement(_library_widgets.SearchForm, {
         update_search_state: this.props.update_search_state,
         search_string: this.props.search_string,
-        search_ref: this.props.search_ref
+        regex: this.props.regex,
+        search_ref: this.props.search_ref,
+        allow_regex: this.props.allow_regex_search,
+        number_matches: this.props.search_matches
       })), this.props.children); //let available_height = this.get_new_hp_height(this.hp_ref);
 
 
@@ -214,6 +217,8 @@ var ResourceViewerApp = /*#__PURE__*/function (_React$Component) {
 exports.ResourceViewerApp = ResourceViewerApp;
 ResourceViewerApp.propTypes = {
   resource_name: _propTypes["default"].string,
+  search_string: _propTypes["default"].string,
+  search_matches: _propTypes["default"].number,
   setResourceNameState: _propTypes["default"].func,
   refreshTab: _propTypes["default"].func,
   closeTab: _propTypes["default"].func,
@@ -232,9 +237,13 @@ ResourceViewerApp.propTypes = {
   update_search_state: _propTypes["default"].func,
   search_ref: _propTypes["default"].object,
   showErrorDrawerButton: _propTypes["default"].bool,
-  toggleErrorDrawer: _propTypes["default"].func
+  toggleErrorDrawer: _propTypes["default"].func,
+  allow_regex_search: _propTypes["default"].bool,
+  regex: _propTypes["default"].bool
 };
 ResourceViewerApp.defaultProps = {
+  search_string: "",
+  search_matches: null,
   showErrorDrawerButton: false,
   toggleErrorDrawer: null,
   dark_theme: false,
@@ -242,5 +251,7 @@ ResourceViewerApp.defaultProps = {
   controlled: false,
   refreshTab: null,
   closeTab: null,
-  search_ref: null
+  search_ref: null,
+  allow_regex_search: false,
+  regex: false
 };

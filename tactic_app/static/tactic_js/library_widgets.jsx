@@ -62,11 +62,11 @@ class LibraryOmnibar extends React.Component {
         }
     }
 
-    _itemRenderer(item, { modifiers, handleClick}) {
+    static _itemRenderer(item, { modifiers, handleClick}) {
          return <OmnibarItem modifiers={modifiers} item={item} handleClick={handleClick}/>
     }
 
-    _itemPredicate(query, item) {
+    static _itemPredicate(query, item) {
         if (query.length == 0) {
             return false
         }
@@ -82,7 +82,7 @@ class LibraryOmnibar extends React.Component {
                      className={window.dark_theme ? "bp4-dark" : ""}
                      isOpen={this.props.showOmnibar}
                      onItemSelect={this.props.onItemSelect}
-                     itemRenderer={this._itemRenderer}
+                     itemRenderer={LibraryOmnibar._itemRenderer}
                      itemPredicate={this._itemPredicate}
                      resetOnSelect={true}
                      onClose={this.props.handleClose}
@@ -144,7 +144,11 @@ class SearchForm extends React.Component {
 
     }
 
-    _handleSubmit(event) {
+    _handleRegexChange(event) {
+        this.props.update_search_state({"regex": event.target.checked});
+    }
+
+    static _handleSubmit(event) {
         event.preventDefault()
     }
 
@@ -182,7 +186,14 @@ class SearchForm extends React.Component {
                                     small={true}
                                     inputRef={this.props.search_ref}
                         />
-
+                    {this.props.allow_regex &&
+                        <Switch label="regexp"
+                                   className="ml-2 mb-0 mt-1"
+                                   large={false}
+                                   checked={this.props.regex}
+                                   onChange={this._handleRegexChange}
+                        />
+                    }
                     {this.props.allow_search_metadata &&
                         <Switch label="metadata"
                                      className="ml-2 mb-0 mt-1"
@@ -216,6 +227,8 @@ class SearchForm extends React.Component {
 SearchForm.propTypes = {
     allow_search_inside: PropTypes.bool,
     allow_search_metadata: PropTypes.bool,
+    allow_regex: PropTypes.bool,
+    regex: PropTypes.bool,
     update_search_state: PropTypes.func,
     search_string: PropTypes.string,
     search_inside: PropTypes.bool,
@@ -232,6 +245,8 @@ SearchForm.propTypes = {
 SearchForm.defaultProps = {
     allow_search_inside: false,
     allow_search_metadata: false,
+    allow_regex: false,
+    regex: false,
     search_inside: false,
     search_metadata: false,
     field_width: 265,
@@ -323,7 +338,7 @@ class BpSelectorTable extends React.Component {
             }
             let the_body;
             if (Object.keys(self.props.data_dict[rowIndex]).includes(column_name)) {
-                let the_text = self.props.data_dict[rowIndex][column_name];
+                let the_text = String(self.props.data_dict[rowIndex][column_name]);
                 if (the_text.startsWith("icon:")) {
                     the_text = the_text.replace(/(^icon:)/gi, "");
                     the_body = <Icon icon={the_text} size={14}/>
@@ -375,8 +390,9 @@ class BpSelectorTable extends React.Component {
         );
     }
 
-    _columnHeaderNameRenderer(the_text) {
+    static _columnHeaderNameRenderer(the_text) {
         let the_body;
+        the_text = String(the_text);
         if (the_text.startsWith("icon:")) {
             the_text = the_text.replace(/(^icon:)/gi, "");
             the_body = <Icon icon={the_text} size={14}/>
@@ -393,7 +409,7 @@ class BpSelectorTable extends React.Component {
         let columns = column_names.map((column_name)=> {
             const cellRenderer = self._cellRendererCreator(column_name);
             const columnHeaderCellRenderer = () => <ColumnHeaderCell name={column_name}
-                                                                     nameRenderer={this._columnHeaderNameRenderer}
+                                                                     nameRenderer={BpSelectorTable._columnHeaderNameRenderer}
                         menuRenderer={()=>{return(self._renderMenu(column_name))}}/>;
 
             return <Column cellRenderer={cellRenderer}
@@ -484,13 +500,14 @@ function compute_initial_column_widths(header_list, data_list) {
     let columns_remaining = [];
     ctx.font = header_font;
     for (let c of header_list) {
-        if (c.startsWith("icon:")) {
-            column_widths[c] = ICON_WIDTH
+        let cstr = String(c);
+        if (cstr.startsWith("icon:")) {
+            column_widths[cstr] = ICON_WIDTH
         }
         else {
-            column_widths[c] = ctx.measureText(c).width + added_header_width;
+            column_widths[cstr] = ctx.measureText(cstr).width + added_header_width;
         }
-        columns_remaining.push(c)
+        columns_remaining.push(cstr)
     }
     let the_row;
     let the_width;
@@ -508,7 +525,7 @@ function compute_initial_column_widths(header_list, data_list) {
         the_row = item;
         let cols_to_remove = [];
         for (let c of columns_remaining) {
-            the_text = the_row[c];
+            the_text = String(the_row[c]);
             if (the_text.startsWith("icon:")) {
                 the_width = ICON_WIDTH
             }

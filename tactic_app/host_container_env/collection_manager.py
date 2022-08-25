@@ -261,8 +261,8 @@ class CollectionManager(LibraryResourceManager):
             size_text = "{}mb".format(round(col_size / 1000000, 1))
         return col_size, size_text
 
-    def build_res_dict(self, short_name, mdata, user_object=None):
-        entry = super().build_res_dict(short_name, mdata, user_object)
+    def build_res_dict(self, short_name, mdata, user_object=None, file_id=None):
+        entry = super().build_res_dict(short_name, mdata, user_object, file_id)
         col_size, size_text = self.get_collection_size_info(short_name, mdata)
         entry["size_for_sort"] = col_size
         entry["size"] = size_text

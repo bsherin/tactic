@@ -77,8 +77,6 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -103,17 +101,53 @@ function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableTo
 
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
 function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
 
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+
+function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
 var EXTRAWORDS = ["global_import", "Collection", "Collection", "Collection.document_names", "Collection.current_docment", "Collection.column", "Collection.tokenize", "Collection.detach", "Collection.rewind", "Library", "Library.collections", "Library.lists", "Library.functions", "Library.classes", "Settings", "Settings.names", "Tiles", "Pipes"];
 var WORD = /[\w\.$]+/;
 var RANGE = 500;
+var REGEXTYPE = Object.getPrototypeOf(new RegExp("that"));
+
+function isRegex(ob) {
+  return Object.getPrototypeOf(ob) == REGEXTYPE;
+}
+
+function countOccurrences(query, the_text) {
+  if (isRegex(query)) {
+    var split_text = the_text.split(/\r?\n/);
+    var total = 0;
+
+    var _iterator = _createForOfIteratorHelper(split_text),
+        _step;
+
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var str = _step.value;
+        total += (str.match(query) || []).length;
+      }
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
+    }
+
+    return total;
+  } else {
+    return the_text.split(query).length - 1;
+  }
+} // console.log("*** Checking fonts")
+// const DEFAULT_FONT_FAMILY = document.fonts.check("14px Courier") ? "Courier" : "Courier New";
+// console.log("*** DEFAULT_FONT_FAMILY is " + DEFAULT_FONT_FAMILY);
+// const DEFAULT_FONT_FAMILY = "Courier New";
+
 
 _codemirror["default"].registerHelper("hint", "anyword", function (editor, options) {
   var word = options && options.word || WORD;
@@ -277,7 +311,7 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
 
         self.saved_theme = self.props.dark_theme;
 
-        self._doHighlight(self.props.search_term);
+        self._doHighlight();
       })["catch"](function (data) {
         (0, _toaster.doFlash)(data);
       });
@@ -322,7 +356,25 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
         this.cmobject.setOption("firstLineNumber", this.props.first_line_number);
       }
 
-      this._doHighlight(this.props.search_term);
+      this._doHighlight();
+    }
+  }, {
+    key: "_searchMatcher",
+    value: function _searchMatcher(term) {
+      var global = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+      var matcher;
+
+      if (this.props.regex_search) {
+        try {
+          matcher = global ? new RegExp(term, "g") : new RegExp(term);
+        } catch (e) {
+          matcher = term;
+        }
+      } else {
+        matcher = term;
+      }
+
+      return matcher;
     }
   }, {
     key: "_lineNumberFromSearchNumber",
@@ -330,15 +382,16 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
       var lines = this.props.code_content.split("\n");
       var lnum = 0;
       var mnum = 0;
-      var reg = new RegExp(this.props.search_term, "g");
 
-      var _iterator = _createForOfIteratorHelper(lines),
-          _step;
+      var matcher = this._searchMatcher(this.props.search_term);
+
+      var _iterator2 = _createForOfIteratorHelper(lines),
+          _step2;
 
       try {
-        for (_iterator.s(); !(_step = _iterator.n()).done;) {
-          var line = _step.value;
-          var new_matches = (line.match(reg) || []).length;
+        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+          var line = _step2.value;
+          var new_matches = (line.match(matcher) || []).length;
 
           if (new_matches + mnum - 1 >= this.props.current_search_number) {
             return {
@@ -351,9 +404,9 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
           lnum += 1;
         }
       } catch (err) {
-        _iterator.e(err);
+        _iterator2.e(err);
       } finally {
-        _iterator.f();
+        _iterator2.f();
       }
 
       return null;
@@ -363,26 +416,30 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
     value: function _doHighlight() {
       var self = this;
 
-      if (this.props.search_term == null || this.props.search_term == "") {
-        this.cmobject.operation(function () {
-          self._removeOverlay();
-        });
-      } else {
-        if (this.props.current_search_number != null) {
-          this.search_focus_info = _objectSpread({}, this._lineNumberFromSearchNumber());
-
-          if (this.search_focus_info) {
-            this._scrollToLine(this.search_focus_info.line);
-          }
+      try {
+        if (this.props.search_term == null || this.props.search_term == "") {
+          this.cmobject.operation(function () {
+            self._removeOverlay();
+          });
         } else {
-          this.search_focus_info = null;
+          if (this.props.current_search_number != null) {
+            this.search_focus_info = _objectSpread({}, this._lineNumberFromSearchNumber());
+
+            if (this.search_focus_info) {
+              this._scrollToLine(this.search_focus_info.line);
+            }
+          } else {
+            this.search_focus_info = null;
+          }
+
+          this.cmobject.operation(function () {
+            self._removeOverlay();
+
+            self._addOverlay(self.props.search_term);
+          });
         }
-
-        this.cmobject.operation(function () {
-          self._removeOverlay();
-
-          self._addOverlay(self.props.search_term);
-        });
+      } catch (e) {
+        console.log(e.message);
       }
     }
   }, {
@@ -402,8 +459,10 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
       var focus_style = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "focussearchhighlight";
       // var state = cm.state.matchHighlighter;
       var prev_matches = this.matches;
-      var reg = new RegExp(query, "g");
-      this.matches = (this.props.code_content.match(reg) || []).length;
+
+      var reg = this._searchMatcher(query, true);
+
+      this.matches = countOccurrences(reg, this.props.code_content);
 
       if (this.props.setSearchMatches && this.matches != prev_matches) {
         this.props.setSearchMatches(this.matches);
@@ -418,9 +477,12 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
       var self = this;
       var last_line = -1;
       var line_counter = -1;
+
+      var matcher = this._searchMatcher(query);
+
       return {
         token: function token(stream) {
-          if (stream.match(query) && (!hasBoundary || ReactCodemirror._boundariesAround(stream, hasBoundary))) {
+          if (stream.match(matcher) && (!hasBoundary || ReactCodemirror._boundariesAround(stream, hasBoundary))) {
             var lnum = stream.lineOracle.line;
 
             if (self.search_focus_info && lnum == self.search_focus_info.line) {
@@ -443,7 +505,10 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
           }
 
           stream.next();
-          stream.skipTo(query.charAt(0)) || stream.skipToEnd();
+
+          if (!isRegex(matcher)) {
+            stream.skipTo(query.charAt(0)) || stream.skipToEnd();
+          }
         }
       };
     }
@@ -486,31 +551,31 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
         self.ordered_api_categories = data.ordered_api_categories;
         self.commands = self.props.extra_autocomplete_list;
 
-        var _iterator2 = _createForOfIteratorHelper(self.ordered_api_categories),
-            _step2;
+        var _iterator3 = _createForOfIteratorHelper(self.ordered_api_categories),
+            _step3;
 
         try {
-          for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-            var cat = _step2.value;
+          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+            var cat = _step3.value;
 
-            var _iterator3 = _createForOfIteratorHelper(self.api_dict_by_category[cat]),
-                _step3;
+            var _iterator4 = _createForOfIteratorHelper(self.api_dict_by_category[cat]),
+                _step4;
 
             try {
-              for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-                var entry = _step3.value;
+              for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+                var entry = _step4.value;
                 self.commands.push("self." + entry["name"]);
               }
             } catch (err) {
-              _iterator3.e(err);
+              _iterator4.e(err);
             } finally {
-              _iterator3.f();
+              _iterator4.f();
             }
           }
         } catch (err) {
-          _iterator2.e(err);
+          _iterator3.e(err);
         } finally {
-          _iterator2.f();
+          _iterator3.f();
         }
 
         self.commands = _toConsumableArray(new Set(self.commands)); //noinspection JSUnresolvedVariable
@@ -546,7 +611,9 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
       var ccstyle = {
         "height": this.props.code_container_height,
         "width": this.props.code_container_width,
-        lineHeight: "21px"
+        lineHeight: "21px" // fontSize: "14",
+        // fontFamily: DEFAULT_FONT_FAMILY
+
       };
       var bgstyle = null;
 
@@ -613,6 +680,7 @@ ReactCodemirror.propTypes = {
   extraKeys: _propTypes["default"].object,
   setCMObject: _propTypes["default"].func,
   searchTerm: _propTypes["default"].string,
+  regex_search: _propTypes["default"].bool,
   code_container_ref: _propTypes["default"].object,
   code_container_width: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
   code_container_height: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
@@ -627,6 +695,7 @@ ReactCodemirror.defaultProps = {
   soft_wrap: false,
   code_container_height: "100%",
   searchTerm: null,
+  regex_search: false,
   handleChange: null,
   handleBlur: null,
   sync_to_prop: false,

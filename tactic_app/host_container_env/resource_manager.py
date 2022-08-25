@@ -135,7 +135,6 @@ class ResourceManager(ExceptionMixin):
             for field, val in mdata.items():
                 if field not in skip_fields:
                     return_data[field] = val
-
         if file_id is not None:
             size_text, size = self.get_fs_file_siz_info(file_id)
             return_data["size_for_sort"] = size

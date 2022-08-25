@@ -154,7 +154,9 @@ var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
       code_content: props.the_content,
       notes: props.notes,
       tags: props.split_tags,
-      search_string: ""
+      search_string: "",
+      regex: false,
+      search_matches: null
     };
 
     if (props.controlled) {
@@ -325,6 +327,13 @@ var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
       }
     }
   }, {
+    key: "_setSearchMatches",
+    value: function _setSearchMatches(nmatches) {
+      this.setState({
+        search_matches: nmatches
+      });
+    }
+  }, {
     key: "_extraKeys",
     value: function _extraKeys() {
       var self = this;
@@ -477,6 +486,10 @@ var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
         search_ref: this.search_ref,
         show_search: true,
         update_search_state: this._update_search_state,
+        search_string: this.state.search_string,
+        search_matches: this.state.search_matches,
+        regex: this.state.regex,
+        allow_regex_search: true,
         showErrorDrawerButton: true,
         toggleErrorDrawer: this.props.toggleErrorDrawer
       }), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
@@ -487,6 +500,8 @@ var CodeViewerApp = /*#__PURE__*/function (_React$Component) {
         handleChange: this._handleCodeChange,
         saveMe: this._saveMe,
         search_term: this.state.search_string,
+        regex_search: this.state.regex,
+        setSearchMatches: this._setSearchMatches,
         code_container_ref: this.cc_ref,
         code_container_height: cc_height
       }))));

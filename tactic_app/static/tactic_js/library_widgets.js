@@ -126,6 +126,20 @@ var LibraryOmnibar = /*#__PURE__*/function (_React$Component2) {
       }
     }
   }, {
+    key: "render",
+    value: function render() {
+      return /*#__PURE__*/_react["default"].createElement(_select.Omnibar, {
+        items: this.state.items,
+        className: window.dark_theme ? "bp4-dark" : "",
+        isOpen: this.props.showOmnibar,
+        onItemSelect: this.props.onItemSelect,
+        itemRenderer: LibraryOmnibar._itemRenderer,
+        itemPredicate: this._itemPredicate,
+        resetOnSelect: true,
+        onClose: this.props.handleClose
+      });
+    }
+  }], [{
     key: "_itemRenderer",
     value: function _itemRenderer(item, _ref) {
       var modifiers = _ref.modifiers,
@@ -146,20 +160,6 @@ var LibraryOmnibar = /*#__PURE__*/function (_React$Component2) {
       var lquery = query.toLowerCase();
       var re = new RegExp(query);
       return re.test(item.toLowerCase());
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      return /*#__PURE__*/_react["default"].createElement(_select.Omnibar, {
-        items: this.state.items,
-        className: window.dark_theme ? "bp4-dark" : "",
-        isOpen: this.props.showOmnibar,
-        onItemSelect: this.props.onItemSelect,
-        itemRenderer: this._itemRenderer,
-        itemPredicate: this._itemPredicate,
-        resetOnSelect: true,
-        onClose: this.props.handleClose
-      });
     }
   }]);
 
@@ -240,9 +240,11 @@ var SearchForm = /*#__PURE__*/function (_React$Component3) {
       });
     }
   }, {
-    key: "_handleSubmit",
-    value: function _handleSubmit(event) {
-      event.preventDefault();
+    key: "_handleRegexChange",
+    value: function _handleRegexChange(event) {
+      this.props.update_search_state({
+        "regex": event.target.checked
+      });
     }
   }, {
     key: "render",
@@ -292,6 +294,12 @@ var SearchForm = /*#__PURE__*/function (_React$Component3) {
         autoCorrect: "off",
         small: true,
         inputRef: this.props.search_ref
+      }), this.props.allow_regex && /*#__PURE__*/_react["default"].createElement(_core.Switch, {
+        label: "regexp",
+        className: "ml-2 mb-0 mt-1",
+        large: false,
+        checked: this.props.regex,
+        onChange: this._handleRegexChange
       }), this.props.allow_search_metadata && /*#__PURE__*/_react["default"].createElement(_core.Switch, {
         label: "metadata",
         className: "ml-2 mb-0 mt-1",
@@ -321,6 +329,11 @@ var SearchForm = /*#__PURE__*/function (_React$Component3) {
         small: true
       })))));
     }
+  }], [{
+    key: "_handleSubmit",
+    value: function _handleSubmit(event) {
+      event.preventDefault();
+    }
   }]);
 
   return SearchForm;
@@ -330,6 +343,8 @@ exports.SearchForm = SearchForm;
 SearchForm.propTypes = {
   allow_search_inside: _propTypes["default"].bool,
   allow_search_metadata: _propTypes["default"].bool,
+  allow_regex: _propTypes["default"].bool,
+  regex: _propTypes["default"].bool,
   update_search_state: _propTypes["default"].func,
   search_string: _propTypes["default"].string,
   search_inside: _propTypes["default"].bool,
@@ -345,6 +360,8 @@ SearchForm.propTypes = {
 SearchForm.defaultProps = {
   allow_search_inside: false,
   allow_search_metadata: false,
+  allow_regex: false,
+  regex: false,
   search_inside: false,
   search_metadata: false,
   field_width: 265,
@@ -478,7 +495,7 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
         var the_body;
 
         if (Object.keys(self.props.data_dict[rowIndex]).includes(column_name)) {
-          var the_text = self.props.data_dict[rowIndex][column_name];
+          var the_text = String(self.props.data_dict[rowIndex][column_name]);
 
           if (the_text.startsWith("icon:")) {
             the_text = the_text.replace(/(^icon:)/gi, "");
@@ -542,25 +559,6 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
       }));
     }
   }, {
-    key: "_columnHeaderNameRenderer",
-    value: function _columnHeaderNameRenderer(the_text) {
-      var the_body;
-
-      if (the_text.startsWith("icon:")) {
-        the_text = the_text.replace(/(^icon:)/gi, "");
-        the_body = /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-          icon: the_text,
-          size: 14
-        });
-      } else {
-        the_body = /*#__PURE__*/_react["default"].createElement("div", {
-          className: "bp4-table-truncated-text"
-        }, the_text);
-      }
-
-      return the_body;
-    }
-  }, {
     key: "render",
     value: function render() {
       var _this8 = this;
@@ -573,7 +571,7 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
         var columnHeaderCellRenderer = function columnHeaderCellRenderer() {
           return /*#__PURE__*/_react["default"].createElement(_table.ColumnHeaderCell, {
             name: column_name,
-            nameRenderer: _this8._columnHeaderNameRenderer,
+            nameRenderer: BpSelectorTable._columnHeaderNameRenderer,
             menuRenderer: function menuRenderer() {
               return self._renderMenu(column_name);
             }
@@ -615,6 +613,26 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
           return _this8.props.onSelection(regions);
         }
       }, columns));
+    }
+  }], [{
+    key: "_columnHeaderNameRenderer",
+    value: function _columnHeaderNameRenderer(the_text) {
+      var the_body;
+      the_text = String(the_text);
+
+      if (the_text.startsWith("icon:")) {
+        the_text = the_text.replace(/(^icon:)/gi, "");
+        the_body = /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+          icon: the_text,
+          size: 14
+        });
+      } else {
+        the_body = /*#__PURE__*/_react["default"].createElement("div", {
+          className: "bp4-table-truncated-text"
+        }, the_text);
+      }
+
+      return the_body;
     }
   }]);
 
@@ -690,14 +708,15 @@ function compute_initial_column_widths(header_list, data_list) {
   try {
     for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
       var c = _step2.value;
+      var cstr = String(c);
 
-      if (c.startsWith("icon:")) {
-        column_widths[c] = ICON_WIDTH;
+      if (cstr.startsWith("icon:")) {
+        column_widths[cstr] = ICON_WIDTH;
       } else {
-        column_widths[c] = ctx.measureText(c).width + added_header_width;
+        column_widths[cstr] = ctx.measureText(cstr).width + added_header_width;
       }
 
-      columns_remaining.push(c);
+      columns_remaining.push(cstr);
     }
   } catch (err) {
     _iterator2.e(err);
@@ -734,7 +753,7 @@ function compute_initial_column_widths(header_list, data_list) {
       try {
         for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
           var _c2 = _step5.value;
-          the_text = the_row[_c2];
+          the_text = String(the_row[_c2]);
 
           if (the_text.startsWith("icon:")) {
             the_width = ICON_WIDTH;

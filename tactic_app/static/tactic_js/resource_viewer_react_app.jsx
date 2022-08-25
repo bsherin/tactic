@@ -93,7 +93,10 @@ class ResourceViewerApp extends React.Component {
                         <SearchForm
                             update_search_state={this.props.update_search_state}
                             search_string={this.props.search_string}
+                            regex={this.props.regex}
                             search_ref={this.props.search_ref}
+                            allow_regex={this.props.allow_regex_search}
+                            number_matches={this.props.search_matches}
                         />
                     </div>
                     }
@@ -146,6 +149,8 @@ class ResourceViewerApp extends React.Component {
 
 ResourceViewerApp.propTypes = {
     resource_name: PropTypes.string,
+    search_string: PropTypes.string,
+    search_matches: PropTypes.number,
     setResourceNameState: PropTypes.func,
     refreshTab: PropTypes.func,
     closeTab: PropTypes.func,
@@ -165,9 +170,13 @@ ResourceViewerApp.propTypes = {
     search_ref: PropTypes.object,
     showErrorDrawerButton: PropTypes.bool,
     toggleErrorDrawer: PropTypes.func,
+    allow_regex_search: PropTypes.bool,
+    regex: PropTypes.bool
 };
 
 ResourceViewerApp.defaultProps ={
+    search_string: "",
+    search_matches: null,
     showErrorDrawerButton: false,
     toggleErrorDrawer: null,
     dark_theme: false,
@@ -175,5 +184,7 @@ ResourceViewerApp.defaultProps ={
     controlled: false,
     refreshTab: null,
     closeTab: null,
-    search_ref: null
+    search_ref: null,
+    allow_regex_search: false,
+    regex: false
 };

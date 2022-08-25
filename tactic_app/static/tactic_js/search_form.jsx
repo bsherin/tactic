@@ -20,9 +20,9 @@ class FilterSearchForm extends React.PureComponent {
      }
 
     render() {
-
+        let self = this;
         return (
-            <form onSubmit={this._handleSubmit} id="console-search-form"
+            <form onSubmit={self._handleSubmit} id="console-search-form"
                   className="d-flex flex-row bp4-form-group" style={{
                 justifyContent: "flex-end", marginRight: 116,
                 marginBottom: 6, marginTop: 12

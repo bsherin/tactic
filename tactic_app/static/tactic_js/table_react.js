@@ -282,6 +282,7 @@ var MainTableCardHeader = /*#__PURE__*/function (_React$Component2) {
         ellipsize: true
       }, this.props.current_doc_name);
 
+      var self = this;
       return /*#__PURE__*/_react["default"].createElement("div", {
         className: "d-flex pl-2 pr-2 justify-content-between align-baseline main-heading",
         style: {
@@ -324,7 +325,7 @@ var MainTableCardHeader = /*#__PURE__*/function (_React$Component2) {
         },
         className: "d-flex flex-column justify-content-around"
       }, /*#__PURE__*/_react["default"].createElement("form", {
-        onSubmit: this._handleSubmit,
+        onSubmit: self._handleSubmit,
         style: {
           alignItems: "center"
         },

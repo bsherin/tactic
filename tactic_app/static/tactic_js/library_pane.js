@@ -308,8 +308,11 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         "mounted": true
       });
       var path;
-
-      this._grabNewChunkWithRow(0, true, null, true, null);
+      this.setState({
+        data_dict: {},
+        num_rows: 100,
+        tag_list: []
+      }); // this._grabNewChunkWithRow(0, true, null, true, null)
     }
   }, {
     key: "_grabNewChunkWithRow",
