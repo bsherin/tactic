@@ -137,7 +137,14 @@ function correctOptionListTypes(option_list) {
   try {
     for (_iterator.s(); !(_step = _iterator.n()).done;) {
       var option = _step.value;
-      option["default"] = correctType(option.type, option["default"], null);
+      option["default"] = correctType(option.type, option["default"], null); // The following is needed because when reordering rows BpOrderableTable return the special_list
+      // as a string
+
+      if (option.type == "custom_list") {
+        if (typeof option.special_list == 'string') {
+          option.special_list = eval(option.special_list);
+        }
+      }
     }
   } catch (err) {
     _iterator.e(err);

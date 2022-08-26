@@ -65,7 +65,14 @@ function correctType(type, val, error_flag="__ERROR__") {
 function correctOptionListTypes(option_list) {
     let copied_olist = _.cloneDeep(option_list);
     for (let option of copied_olist) {
-        option.default = correctType(option.type, option.default, null)
+        option.default = correctType(option.type, option.default, null);
+        // The following is needed because when reordering rows BpOrderableTable return the special_list
+        // as a string
+        if (option.type == "custom_list") {
+            if (typeof option.special_list == 'string') {
+                option.special_list = eval(option.special_list)
+            }
+        }
     }
     return copied_olist
 }
