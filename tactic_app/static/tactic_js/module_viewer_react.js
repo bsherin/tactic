@@ -182,7 +182,8 @@ var ModuleViewerApp = /*#__PURE__*/function (_React$Component) {
   _createClass(ModuleViewerApp, [{
     key: "_update_search_state",
     value: function _update_search_state(nstate) {
-      this.setState(nstate);
+      var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      this.setState(nstate, callback);
     }
   }, {
     key: "componentDidMount",
@@ -630,11 +631,13 @@ var ModuleViewerApp = /*#__PURE__*/function (_React$Component) {
       }), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
         code_content: this.state.code_content,
         dark_theme: dark_theme,
+        am_selected: this.props.am_selected,
         extraKeys: this._extraKeys(),
         readOnly: this.props.readOnly,
         handleChange: this._handleCodeChange,
         saveMe: this._saveMe,
         search_term: this.state.search_string,
+        update_search_state: this._update_search_state,
         regex_search: this.state.regex,
         setSearchMatches: this._setSearchMatches,
         code_container_ref: this.cc_ref,

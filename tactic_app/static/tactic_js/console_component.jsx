@@ -1970,6 +1970,7 @@ class RawConsoleCodeItem extends React.Component {
                                         </div>
                                         <ReactCodemirror handleChange={this._handleChange}
                                                          dark_theme={this.props.dark_theme}
+                                                         am_selected={this.props.am_selected}
                                                          readOnly={false}
                                                          show_line_numbers={true}
                                                          code_content={this.props.console_text}
@@ -2412,6 +2413,7 @@ class RawConsoleTextItem extends React.Component {
                                     <React.Fragment>
                                     <ReactCodemirror handleChange={this._handleChange}
                                                      dark_theme={this.props.dark_theme}
+                                                     am_selected={this.props.am_selected}
                                                      readOnly={false}
                                                      show_line_numbers={false}
                                                      soft_wrap={true}

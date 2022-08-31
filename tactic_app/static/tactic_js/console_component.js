@@ -3002,6 +3002,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component3) {
       })), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
         handleChange: this._handleChange,
         dark_theme: this.props.dark_theme,
+        am_selected: this.props.am_selected,
         readOnly: false,
         show_line_numbers: true,
         code_content: this.props.console_text,
@@ -3581,6 +3582,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component4) {
       }, !really_show_markdown && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
         handleChange: this._handleChange,
         dark_theme: this.props.dark_theme,
+        am_selected: this.props.am_selected,
         readOnly: false,
         show_line_numbers: false,
         soft_wrap: true,

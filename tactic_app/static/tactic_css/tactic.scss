@@ -25,6 +25,68 @@ body {
     font-family: Courier, Courier New !important
 }
 
+.CodeMirror-hints {
+    background: $light-gray2 !important;
+    max-width: 500px;
+    overflow-x: hidden;
+}
+
+.CodeMirror-hint {
+    white-space: pre-wrap !important;
+    text-indent: -20px;
+    padding-left: 20px !important;
+
+    &.CodeMirror-hint-active {
+        background: $gray2;
+    }
+
+    &.CodeMirror-hint-active .option-hint{
+        background: $green2;
+        color: white;
+    }
+
+    .option-hint {
+        //font-style: italic;
+    }
+    .api-option-icon {
+        font-size: 10px !important;
+        text-indent: 0px !important;
+    }
+
+    &.CodeMirror-hint-active .api-hint-name {
+        color: white;
+        background: $dark-gray5;
+        font-weight: 900;
+    }
+
+    &.CodeMirror-hint-active.library-hint {
+        color: white;
+        background: $dark-gray5;
+        font-weight: 900;
+    }
+
+    &.CodeMirror-hint-active .api-hint-args {
+        color: white;
+        background: $dark-gray5;
+        font-weight: normal;
+    }
+
+    .api-hint-name {
+        color: $dark-gray5;
+        font-weight: 900;
+    }
+
+    &.library-hint {
+        color: $dark-gray5;
+        font-weight: 900;
+    }
+
+    .api-hint-args {
+        color: $dark-gray5;
+        font-weight: normal;
+    }
+}
+
 table {
     caption {
         caption-side: top;
