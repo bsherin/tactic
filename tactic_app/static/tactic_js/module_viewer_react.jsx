@@ -110,8 +110,8 @@ class ModuleViewerApp extends React.Component {
     }
 
 
-    _update_search_state(nstate) {
-        this.setState(nstate)
+    _update_search_state(nstate, callback=null) {
+        this.setState(nstate, callback)
     }
 
     componentDidMount() {
@@ -456,11 +456,13 @@ class ModuleViewerApp extends React.Component {
                         >
                             <ReactCodemirror code_content={this.state.code_content}
                                              dark_theme={dark_theme}
+                                             am_selected={this.props.am_selected}
                                              extraKeys={this._extraKeys()}
                                              readOnly={this.props.readOnly}
                                              handleChange={this._handleCodeChange}
                                              saveMe={this._saveMe}
                                              search_term={this.state.search_string}
+                                             update_search_state={this._update_search_state}
                                              regex_search={this.state.regex}
                                              setSearchMatches={this._setSearchMatches}
                                              code_container_ref={this.cc_ref}

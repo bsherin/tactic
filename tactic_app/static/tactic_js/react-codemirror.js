@@ -77,6 +77,14 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -97,21 +105,53 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
-
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
-
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
-
 function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
-var EXTRAWORDS = ["global_import", "Collection", "Collection", "Collection.document_names", "Collection.current_docment", "Collection.column", "Collection.tokenize", "Collection.detach", "Collection.rewind", "Library", "Library.collections", "Library.lists", "Library.functions", "Library.classes", "Settings", "Settings.names", "Tiles", "Pipes"];
+var EXTRAWORDS_LIST = ["global_import", "Collection", "Collection", "Collection.document_names", "Collection.current_docment", "Collection.column", "Collection.tokenize", "Collection.detach", "Collection.rewind", "Library", "Library.collections", "Library.lists", "Library.functions", "Library.classes", "Settings", "Settings.names", "Tiles", "Pipes"];
+
+function renderAutoCompleteApiElement(elt, data, cur) {
+  var img = document.createElement("img");
+  img.src = window.tactic_img_url;
+  img.className = "mr-1";
+  img.width = 10;
+  img.height = 10;
+  elt.appendChild(img);
+  var s1 = document.createElement("span");
+  s1.appendChild(document.createTextNode(cur.text));
+  s1.className = "api-hint-name";
+  elt.appendChild(s1);
+
+  if (cur.argString) {
+    var s2 = document.createElement("span");
+    s2.appendChild(document.createTextNode(cur.argString));
+    elt.appendChild(s2);
+    s2.className = "api-hint-args";
+  }
+}
+
+function renderAutoCompleteDefaultElement(elt, data, cur) {
+  var s0 = document.createElement("span");
+  s0.className = "bp4-icon bp4-icon-symbol-circle mr-1 api-option-icon";
+  elt.appendChild(s0);
+  var s1 = document.createElement("span");
+  s1.appendChild(document.createTextNode(cur.text));
+  elt.appendChild(s1);
+}
+
+var EXTRAWORDS = [];
+
+for (var _i = 0, _EXTRAWORDS_LIST = EXTRAWORDS_LIST; _i < _EXTRAWORDS_LIST.length; _i++) {
+  var w = _EXTRAWORDS_LIST[_i];
+  EXTRAWORDS.push({
+    text: w,
+    render: renderAutoCompleteApiElement
+  });
+}
+
 var WORD = /[\w\.$]+/;
 var RANGE = 500;
 var REGEXTYPE = Object.getPrototypeOf(new RegExp("that"));
@@ -143,62 +183,7 @@ function countOccurrences(query, the_text) {
   } else {
     return the_text.split(query).length - 1;
   }
-} // console.log("*** Checking fonts")
-// const DEFAULT_FONT_FAMILY = document.fonts.check("14px Courier") ? "Courier" : "Courier New";
-// console.log("*** DEFAULT_FONT_FAMILY is " + DEFAULT_FONT_FAMILY);
-// const DEFAULT_FONT_FAMILY = "Courier New";
-
-
-_codemirror["default"].registerHelper("hint", "anyword", function (editor, options) {
-  var word = options && options.word || WORD;
-  var range = options && options.range || RANGE;
-  var extraWords = options && options.extraWords || EXTRAWORDS;
-  var commands = options && options.commands || [];
-  var cur = editor.getCursor(),
-      curLine = editor.getLine(cur.line);
-  var end = cur.ch,
-      start = end;
-
-  while (start && word.test(curLine.charAt(start - 1))) {
-    --start;
-  }
-
-  var curWord = start != end && curLine.slice(start, end);
-  var list = options && options.list || [],
-      seen = {};
-  var re = new RegExp(word.source, "g");
-
-  for (var dir = -1; dir <= 1; dir += 2) {
-    var line = cur.line,
-        endLine = Math.min(Math.max(line + dir * range, editor.firstLine()), editor.lastLine()) + dir;
-
-    for (; line != endLine; line += dir) {
-      var text = editor.getLine(line),
-          m;
-
-      while (m = re.exec(text)) {
-        if (line == cur.line && m[0] === curWord) continue;
-
-        if ((!curWord || m[0].lastIndexOf(curWord, 0) == 0) && !Object.prototype.hasOwnProperty.call(seen, m[0])) {
-          seen[m[0]] = true;
-          list.push(m[0]);
-        }
-      }
-    }
-  }
-
-  list.push.apply(list, _toConsumableArray(extraWords.filter(function (el) {
-    return el.startsWith(curWord || '');
-  })));
-  list.push.apply(list, _toConsumableArray(commands.filter(function (el) {
-    return el.startsWith(curWord || '');
-  })));
-  return {
-    list: list,
-    from: _codemirror["default"].Pos(cur.line, start),
-    to: _codemirror["default"].Pos(cur.line, end)
-  };
-});
+}
 
 var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
   _inherits(ReactCodemirror, _React$Component);
@@ -223,6 +208,7 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
     _this._current_codemirror_theme = _this._current_codemirror_theme.bind(_assertThisInitialized(_this));
     _this._foldAll = _this._foldAll.bind(_assertThisInitialized(_this));
     _this._unfoldAll = _this._unfoldAll.bind(_assertThisInitialized(_this));
+    _this.clearSelections = _this.clearSelections.bind(_assertThisInitialized(_this));
     _this.mousetrap = new Mousetrap();
 
     _this.create_api();
@@ -294,9 +280,74 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
       }
     }
   }, {
+    key: "_anyWord",
+    value: function _anyWord(editor, options) {
+      function ffunc(el, curWord) {
+        return typeof el == "string" ? el.startsWith(curWord || '') : el.text.startsWith(curWord || '');
+      }
+
+      var word = options && options.word || WORD;
+      var range = options && options.range || RANGE;
+      var extraWords = options && options.extraWords || EXTRAWORDS;
+      var commands = options && options.commands || [];
+      var self = options.self;
+      var cur = editor.getCursor(),
+          curLine = editor.getLine(cur.line);
+      var end = cur.ch,
+          start = end;
+
+      while (start && word.test(curLine.charAt(start - 1))) {
+        --start;
+      }
+
+      var curWord = start != end && curLine.slice(start, end);
+      var list = options && options.list || [],
+          seen = {};
+      var re = new RegExp(word.source, "g");
+
+      for (var dir = -1; dir <= 1; dir += 2) {
+        var line = cur.line,
+            endLine = Math.min(Math.max(line + dir * range, editor.firstLine()), editor.lastLine()) + dir;
+
+        for (; line != endLine; line += dir) {
+          var text = editor.getLine(line),
+              m; // noinspection AssignmentResultUsedJS
+
+          while (m = re.exec(text)) {
+            if (line == cur.line && m[0] === curWord) continue;
+
+            if ((!curWord || m[0].lastIndexOf(curWord, 0) == 0) && !Object.prototype.hasOwnProperty.call(seen, m[0])) {
+              seen[m[0]] = true;
+              list.push({
+                text: m[0],
+                render: renderAutoCompleteDefaultElement
+              });
+            }
+          }
+        }
+      }
+
+      list.push.apply(list, _toConsumableArray(extraWords.filter(function (el) {
+        return ffunc(el, curWord);
+      })));
+      list.push.apply(list, _toConsumableArray(self.props.extra_autocomplete_list.filter(function (el) {
+        return ffunc(el, curWord);
+      })));
+      list.push.apply(list, _toConsumableArray(commands.filter(function (el) {
+        return ffunc(el, curWord);
+      })));
+      return {
+        list: list,
+        from: _codemirror["default"].Pos(cur.line, start),
+        to: _codemirror["default"].Pos(cur.line, end)
+      };
+    }
+  }, {
     key: "componentDidMount",
     value: function componentDidMount() {
       var _this2 = this;
+
+      _codemirror["default"].registerHelper("hint", "anyword", this._anyWord);
 
       var self = this;
       (0, _communication_react.postAjaxPromise)('get_preferred_codemirror_themes', {}).then(function (data) {
@@ -357,6 +408,8 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
       }
 
       this._doHighlight();
+
+      this.set_keymap();
     }
   }, {
     key: "_searchMatcher",
@@ -538,18 +591,31 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "clearSelections",
     value: function clearSelections() {
-      // CodeMirror.commands.clearSearch(this.cmobject);
-      _codemirror["default"].commands.singleSelection(this.cmobject);
+      if (this.props.alt_clear_selections) {
+        this.props.alt_clear_selections();
+      } else {
+        var self = this;
+        var to = this.cmobject.getCursor("to");
+        this.cmobject.setCursor(to);
+      }
+
+      if (this.props.update_search_state) {
+        // this.props.update_search_state({search_string: ""}, ()=>{self.cmobject.setCursor(self.cmobject.getCursor())})
+        this.props.update_search_state({
+          search_string: ""
+        });
+      }
     }
   }, {
     key: "create_api",
     value: function create_api() {
       var self = this;
+      var re = /\([^\)]*?\)/g;
       (0, _communication_react.postAjax)("get_api_dict", {}, function (data) {
         self.api_dict_by_category = data.api_dict_by_category;
         self.api_dict_by_name = data.api_dict_by_name;
         self.ordered_api_categories = data.ordered_api_categories;
-        self.commands = self.props.extra_autocomplete_list;
+        self.commands = [];
 
         var _iterator3 = _createForOfIteratorHelper(self.ordered_api_categories),
             _step3;
@@ -564,7 +630,14 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
             try {
               for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
                 var entry = _step4.value;
-                self.commands.push("self." + entry["name"]);
+                var the_name = "self." + entry["name"];
+                var arg_string = (entry["signature"].match(re) || [null])[0]; // let the_sig = "self." + entry["signature"];
+
+                self.commands.push({
+                  text: the_name,
+                  argString: arg_string,
+                  render: renderAutoCompleteApiElement
+                });
               }
             } catch (err) {
               _iterator4.e(err);
@@ -584,23 +657,40 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
           //noinspection JSUnresolvedFunction
           cm.showHint({
             hint: _codemirror["default"].hint.anyword,
-            commands: self.commands
+            commands: self.commands,
+            self: self,
+            completeSingle: false,
+            closeOnUnfocus: false
           });
         };
       });
     }
   }, {
+    key: "set_keymap",
+    value: function set_keymap() {
+      var self = this;
+
+      if (self.props.am_selected) {
+        _codemirror["default"].keyMap["default"]["Esc"] = function () {
+          self.clearSelections();
+        };
+      } else {
+        delete _codemirror["default"].keyMap["default"].esc;
+      }
+    }
+  }, {
     key: "create_keymap",
     value: function create_keymap() {
       var self = this;
-
-      _codemirror["default"].keyMap["default"]["Esc"] = function () {
-        self.clearSelections();
-      };
+      this.set_keymap();
 
       var is_mac = _codemirror["default"].keyMap["default"].hasOwnProperty("Cmd-S");
 
       this.mousetrap.bind(['escape'], function (e) {
+        if (!self.props.am_selected) {
+          return false;
+        }
+
         self.clearSelections();
         e.preventDefault();
       });
@@ -665,6 +755,7 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
 
 exports.ReactCodemirror = ReactCodemirror;
 ReactCodemirror.propTypes = {
+  am_selected: _propTypes["default"].bool,
   handleChange: _propTypes["default"].func,
   show_line_numbers: _propTypes["default"].bool,
   show_fold_button: _propTypes["default"].bool,
@@ -680,6 +771,8 @@ ReactCodemirror.propTypes = {
   extraKeys: _propTypes["default"].object,
   setCMObject: _propTypes["default"].func,
   searchTerm: _propTypes["default"].string,
+  update_search_state: _propTypes["default"].func,
+  alt_clear_selections: _propTypes["default"].func,
   regex_search: _propTypes["default"].bool,
   code_container_ref: _propTypes["default"].object,
   code_container_width: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
@@ -689,12 +782,15 @@ ReactCodemirror.propTypes = {
   extra_autocomplete_list: _propTypes["default"].array
 };
 ReactCodemirror.defaultProps = {
+  am_selected: true,
   first_line_number: 1,
   show_line_numbers: true,
   show_fold_button: false,
   soft_wrap: false,
   code_container_height: "100%",
   searchTerm: null,
+  update_search_state: null,
+  alt_clear_selections: null,
   regex_search: false,
   handleChange: null,
   handleBlur: null,

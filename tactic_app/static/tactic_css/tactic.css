@@ -1450,6 +1450,56 @@ body {
   font-family: Courier, Courier New !important;
 }
 
+.CodeMirror-hints {
+  background: #dce0e5 !important;
+  max-width: 500px;
+  overflow-x: hidden;
+}
+
+.CodeMirror-hint {
+  white-space: pre-wrap !important;
+  text-indent: -20px;
+  padding-left: 20px !important;
+}
+.CodeMirror-hint.CodeMirror-hint-active {
+  background: #738091;
+}
+.CodeMirror-hint.CodeMirror-hint-active .option-hint {
+  background: #1c6e42;
+  color: white;
+}
+.CodeMirror-hint .api-option-icon {
+  font-size: 10px !important;
+  text-indent: 0px !important;
+}
+.CodeMirror-hint.CodeMirror-hint-active .api-hint-name {
+  color: white;
+  background: #47505c;
+  font-weight: 900;
+}
+.CodeMirror-hint.CodeMirror-hint-active.library-hint {
+  color: white;
+  background: #47505c;
+  font-weight: 900;
+}
+.CodeMirror-hint.CodeMirror-hint-active .api-hint-args {
+  color: white;
+  background: #47505c;
+  font-weight: normal;
+}
+.CodeMirror-hint .api-hint-name {
+  color: #47505c;
+  font-weight: 900;
+}
+.CodeMirror-hint.library-hint {
+  color: #47505c;
+  font-weight: 900;
+}
+.CodeMirror-hint .api-hint-args {
+  color: #47505c;
+  font-weight: normal;
+}
+
 table caption {
   caption-side: top;
 }

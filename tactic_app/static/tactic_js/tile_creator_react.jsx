@@ -384,10 +384,10 @@ class CreatorApp extends React.Component {
          }
     }
 
-    _updateSearchState(new_state) {
+    _updateSearchState(new_state, callback=null) {
         new_state.current_search_cm = this.cm_list[0];
         new_state.current_search_number = 0;
-        this.setState(new_state)
+        this.setState(new_state, callback)
     }
 
     _noSearchResults() {
@@ -636,7 +636,7 @@ class CreatorApp extends React.Component {
         this.last_save = this._getSaveDict();
     }
 
-    _selectLine(cm, lnumber) {
+    static _selectLine(cm, lnumber) {
         let doc = cm.getDoc();
         if (doc.getLine(lnumber)) {
             doc.setSelection(
@@ -654,7 +654,7 @@ class CreatorApp extends React.Component {
                 if (this.line_number < this.state.draw_plot_line_number) {
                     if (this.emObject) {
                         this._handleTabSelect("methods");
-                        this._selectLine(this.emObject, this.line_number - this.state.extra_methods_line_number);
+                        CreatorApp._selectLine(this.emObject, this.line_number - this.state.extra_methods_line_number);
                         this.line_number = null
 
                     } else {
@@ -663,13 +663,13 @@ class CreatorApp extends React.Component {
                 }
                 else if (this.line_number < this.state.render_content_line_number) {
                     if (this.dpObject) {
-                        this._selectLine(this.dpObject, this.line_number - this.state.draw_plot_line_number - 1);
+                        CreatorApp._selectLine(this.dpObject, this.line_number - this.state.draw_plot_line_number - 1);
                         this.line_number = null
                     } else {
                         return
                     }
                 } else if (this.rcObject) {
-                    this._selectLine(this.rcObject, this.line_number - this.state.render_content_line_number - 1);
+                    CreatorApp._selectLine(this.rcObject, this.line_number - this.state.render_content_line_number - 1);
                     this.line_number = null
                 }
             }
@@ -677,14 +677,14 @@ class CreatorApp extends React.Component {
                 if (this.line_number < this.props.render_content_line_number) {
                     if (this.emObject) {
                         this._handleTabSelect("methods");
-                        this._selectLine(this.emObject, this.line_number - this.state.extra_methods_line_number);
+                        CreatorApp._selectLine(this.emObject, this.line_number - this.state.extra_methods_line_number);
                         this.line_number = null
                     } else {
                         return
                     }
                 } else {
                     if (this.rcObject) {
-                        this._selectLine(this.rcObject, this.line_number - this.state.render_content_line_number - 1);
+                        CreatorApp._selectLine(this.rcObject, this.line_number - this.state.render_content_line_number - 1);
                         this.line_number = null
                     }
                 }
@@ -853,6 +853,15 @@ class CreatorApp extends React.Component {
         }
     }
 
+    _clearAllSelections() {
+        for (let cm of [this.rcObject, this.dpObject, this.emObject]) {
+            if (cm) {
+                let to = cm.getCursor("to");
+                cm.setCursor(to);
+            }
+        }
+    }
+
     _setDpObject(cmobject){
         this.dpObject = cmobject
     }
@@ -883,10 +892,21 @@ class CreatorApp extends React.Component {
         return onames
     }
 
+    renderOptionElement(elt, data, cur) {
+        let s0 = document.createElement("span");
+        s0.className = "bp4-icon bp4-icon-select mr-1 api-option-icon";
+        elt.appendChild(s0);
+        let s1 = document.createElement("span");
+        s1.appendChild(document.createTextNode(cur.text));
+        s1.className = "option-hint";
+        elt.appendChild(s1);
+    }
+
     render() {
         let onames_for_autocomplete = [];
         for (let oname of this._getOptionNames()) {
-            onames_for_autocomplete.push("self." + oname)
+            let the_text = "self." + oname;
+            onames_for_autocomplete.push({text: the_text, render: this.renderOptionElement});
         }
         let dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme;
         //let hp_height = this.get_height_minus_top_offset(this.hp_ref);
@@ -930,12 +950,15 @@ class CreatorApp extends React.Component {
                     </div>
                     <ReactCodemirror code_content={code_content}
                                      mode={mode}
+                                     am_selected={this.props.am_selected}
                                      extraKeys={this._extraKeys()}
                                      current_search_number={this.state.current_search_cm == "tc" ? this.state.current_search_number : null}
                                      handleChange={this.handleTopCodeChange}
                                      saveMe={this._saveAndCheckpoint}
                                      setCMObject={this._setDpObject}
                                      search_term={this.state.search_string}
+                                     update_search_state={this._updateSearchState}
+                                     alt_clear_selections={this._clearAllSelections}
                                      first_line_number={first_line_number}
                                      code_container_height={tc_height}
                                      dark_theme={dark_theme}
@@ -978,11 +1001,14 @@ class CreatorApp extends React.Component {
                 </div>
                 <ReactCodemirror code_content={this.state.render_content_code}
                                  current_search_number={this.state.current_search_cm == "rc" ? this.state.current_search_number : null}
+                                 am_selected={this.props.am_selected}
                                  handleChange={this.handleRenderContentChange}
                                  extraKeys={this._extraKeys()}
                                  saveMe={this._saveAndCheckpoint}
                                  setCMObject={this._setRcObject}
                                  search_term={this.state.search_string}
+                                 update_search_state={this._updateSearchState}
+                                 alt_clear_selections={this._clearAllSelections}
                                  first_line_number={this.state.render_content_line_number + 1}
                                  code_container_height={rc_height}
                                  dark_theme={dark_theme}
@@ -1055,6 +1081,7 @@ class CreatorApp extends React.Component {
             <div>
                 <ReactCodemirror handleChange={this.handleMethodsChange}
                                  show_fold_button={true}
+                                 am_selected={this.props.am_selected}
                                  current_search_number={this.state.current_search_cm == "em" ? this.state.current_search_number : null}
                                  dark_theme={dark_theme}
                                  extraKeys={this._extraKeys()}
@@ -1065,6 +1092,8 @@ class CreatorApp extends React.Component {
                                  code_container_ref={this.methods_ref}
                                  code_container_height={methods_height}
                                  search_term={this.state.search_string}
+                                 update_search_state={this._updateSearchState}
+                                 alt_clear_selections={this._clearAllSelections}
                                  regex_search={this.state.regex}
                                  first_line_number={this.state.extra_methods_line_number}
                                  setSearchMatches={(num)=>this._setSearchMatches("em", num)}

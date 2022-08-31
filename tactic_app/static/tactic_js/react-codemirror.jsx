@@ -5,8 +5,6 @@ import PropTypes from 'prop-types';
 import { Button, ButtonGroup } from "@blueprintjs/core";
 
 import {postAjax, postAjaxPromise} from "./communication_react.js"
-// import { CodeMirror } from "./codemirror/src/edit/main.js"
-// import "./codemirror/mode/python/python.js"
 
 import CodeMirror from 'codemirror/lib/codemirror.js';
 import 'codemirror/mode/python/python.js';
@@ -43,12 +41,45 @@ import {doFlash} from "./toaster";
 
 export {ReactCodemirror}
 
-const EXTRAWORDS = ["global_import", "Collection",
+const EXTRAWORDS_LIST = ["global_import", "Collection",
     "Collection", "Collection.document_names", "Collection.current_docment", "Collection.column",
     "Collection.tokenize", "Collection.detach", "Collection.rewind",
     "Library", "Library.collections", "Library.lists", "Library.functions", "Library.classes",
     "Settings", "Settings.names",
     "Tiles", "Pipes"];
+
+function renderAutoCompleteApiElement(elt, data, cur) {
+    let img = document.createElement("img");
+    img.src = window.tactic_img_url;
+    img.className = "mr-1";
+    img.width = 10;
+    img.height = 10;
+    elt.appendChild(img);
+    let s1 = document.createElement("span");
+    s1.appendChild(document.createTextNode(cur.text));
+    s1.className = "api-hint-name";
+    elt.appendChild(s1);
+    if (cur.argString) {
+        let s2 = document.createElement("span");
+        s2.appendChild(document.createTextNode(cur.argString));
+        elt.appendChild(s2);
+        s2.className = "api-hint-args";
+    }
+}
+
+function renderAutoCompleteDefaultElement(elt, data, cur) {
+    let s0 = document.createElement("span");
+    s0.className = "bp4-icon bp4-icon-symbol-circle mr-1 api-option-icon";
+    elt.appendChild(s0);
+    let s1 = document.createElement("span");
+    s1.appendChild(document.createTextNode(cur.text));
+    elt.appendChild(s1);
+}
+
+var EXTRAWORDS = [];
+for (let w of EXTRAWORDS_LIST) {
+    EXTRAWORDS.push({text: w, render: renderAutoCompleteApiElement})
+}
 
 const WORD = /[\w\.$]+/;
 const RANGE = 500;
@@ -74,41 +105,6 @@ function countOccurrences(query, the_text) {
     }
 }
 
-// console.log("*** Checking fonts")
-// const DEFAULT_FONT_FAMILY = document.fonts.check("14px Courier") ? "Courier" : "Courier New";
-// console.log("*** DEFAULT_FONT_FAMILY is " + DEFAULT_FONT_FAMILY);
-// const DEFAULT_FONT_FAMILY = "Courier New";
-
-CodeMirror.registerHelper("hint", "anyword", function(editor, options) {
-    var word = options && options.word || WORD;
-    var range = options && options.range || RANGE;
-    var extraWords = options && options.extraWords || EXTRAWORDS;
-    var commands = options && options.commands || [];
-    var cur = editor.getCursor(), curLine = editor.getLine(cur.line);
-    var end = cur.ch, start = end;
-    while (start && word.test(curLine.charAt(start - 1))) --start;
-    var curWord = start != end && curLine.slice(start, end);
-
-    var list = options && options.list || [], seen = {};
-    var re = new RegExp(word.source, "g");
-    for (var dir = -1; dir <= 1; dir += 2) {
-      var line = cur.line, endLine = Math.min(Math.max(line + dir * range, editor.firstLine()), editor.lastLine()) + dir;
-      for (; line != endLine; line += dir) {
-        var text = editor.getLine(line), m;
-        while (m = re.exec(text)) {
-          if (line == cur.line && m[0] === curWord) continue;
-          if ((!curWord || m[0].lastIndexOf(curWord, 0) == 0) && !Object.prototype.hasOwnProperty.call(seen, m[0])) {
-            seen[m[0]] = true;
-            list.push(m[0]);
-          }
-        }
-      }
-    }
-    list.push(...(extraWords.filter(el => el.startsWith(curWord || ''))));
-    list.push(...(commands.filter(el => el.startsWith(curWord || ''))));
-    return {list: list, from: CodeMirror.Pos(cur.line, start), to: CodeMirror.Pos(cur.line, end)};
-  });
-
 class ReactCodemirror extends React.Component {
 
     constructor(props) {
@@ -125,6 +121,7 @@ class ReactCodemirror extends React.Component {
         this._current_codemirror_theme = this._current_codemirror_theme.bind(this);
         this._foldAll = this._foldAll.bind(this);
         this._unfoldAll = this._unfoldAll.bind(this);
+        this.clearSelections = this.clearSelections.bind(this);
         this.mousetrap = new Mousetrap();
         this.create_api();
         this.saved_theme = null;
@@ -188,10 +185,46 @@ class ReactCodemirror extends React.Component {
         if (this.props.handleBlur) {
             this.props.handleBlur(cm.getDoc().getValue())
         }
-
     }
 
+    _anyWord(editor, options) {
+        function ffunc(el, curWord) {
+            return typeof(el) == "string" ? el.startsWith(curWord || '') : el.text.startsWith(curWord || '');
+        }
+        var word = options && options.word || WORD;
+        var range = options && options.range || RANGE;
+        var extraWords = options && options.extraWords || EXTRAWORDS;
+        var commands = options && options.commands || [];
+        var self = options.self;
+        var cur = editor.getCursor(), curLine = editor.getLine(cur.line);
+        var end = cur.ch, start = end;
+        while (start && word.test(curLine.charAt(start - 1))) --start;
+        var curWord = start != end && curLine.slice(start, end);
+
+        var list = options && options.list || [], seen = {};
+        var re = new RegExp(word.source, "g");
+        for (var dir = -1; dir <= 1; dir += 2) {
+          var line = cur.line, endLine = Math.min(Math.max(line + dir * range, editor.firstLine()), editor.lastLine()) + dir;
+          for (; line != endLine; line += dir) {
+            var text = editor.getLine(line), m;
+            // noinspection AssignmentResultUsedJS
+              while (m = re.exec(text)) {
+              if (line == cur.line && m[0] === curWord) continue;
+              if ((!curWord || m[0].lastIndexOf(curWord, 0) == 0) && !Object.prototype.hasOwnProperty.call(seen, m[0])) {
+                seen[m[0]] = true;
+                list.push({text: m[0], render: renderAutoCompleteDefaultElement});
+              }
+            }
+          }
+        }
+        list.push(...(extraWords.filter(el => ffunc(el, curWord))));
+        list.push(...(self.props.extra_autocomplete_list.filter(el => ffunc(el, curWord))));
+        list.push(...(commands.filter(el => ffunc(el, curWord))));
+        return {list: list, from: CodeMirror.Pos(cur.line, start), to: CodeMirror.Pos(cur.line, end)};
+      };
+
     componentDidMount() {
+        CodeMirror.registerHelper("hint", "anyword", this._anyWord);
         let self = this;
         postAjaxPromise('get_preferred_codemirror_themes', {})
                 .then((data) => {
@@ -237,7 +270,8 @@ class ReactCodemirror extends React.Component {
         if (this.props.first_line_number != 1) {
             this.cmobject.setOption("firstLineNumber", this.props.first_line_number);
         }
-        this._doHighlight()
+        this._doHighlight();
+        this.set_keymap()
     }
 
     _searchMatcher(term, global=false) {
@@ -316,7 +350,6 @@ class ReactCodemirror extends React.Component {
         }
         this.overlay = this._makeOverlay(query, hasBoundary, style, focus_style);
         this.cmobject.addOverlay(this.overlay);
-
       }
 
     _makeOverlay(query, hasBoundary, style, focus_style) {
@@ -380,21 +413,35 @@ class ReactCodemirror extends React.Component {
     }
 
     clearSelections() {
-        // CodeMirror.commands.clearSearch(this.cmobject);
-        CodeMirror.commands.singleSelection(this.cmobject);
+        if (this.props.alt_clear_selections) {
+            this.props.alt_clear_selections()
+        }
+        else {
+            let self = this;
+            let to = this.cmobject.getCursor("to");
+            this.cmobject.setCursor(to);
+        }
+        if (this.props.update_search_state) {
+            // this.props.update_search_state({search_string: ""}, ()=>{self.cmobject.setCursor(self.cmobject.getCursor())})
+            this.props.update_search_state({search_string: ""})
+        }
     }
 
     create_api() {
         let self = this;
+        let re = /\([^\)]*?\)/g;
         postAjax("get_api_dict", {}, function (data) {
             self.api_dict_by_category = data.api_dict_by_category;
             self.api_dict_by_name = data.api_dict_by_name;
             self.ordered_api_categories = data.ordered_api_categories;
 
-            self.commands = self.props.extra_autocomplete_list;
+            self.commands = [];
             for (let cat of self.ordered_api_categories) {
                 for (let entry of self.api_dict_by_category[cat]) {
-                    self.commands.push("self." + entry["name"])
+                    let the_name = "self." + entry["name"];
+                    let arg_string = (entry["signature"].match(re) || [null])[0];
+                    // let the_sig = "self." + entry["signature"];
+                    self.commands.push({text: the_name, argString: arg_string, render: renderAutoCompleteApiElement})
                 }
             }
             self.commands = [...new Set(self.commands)];
@@ -402,18 +449,36 @@ class ReactCodemirror extends React.Component {
             CodeMirror.commands.autocomplete = function (cm) {
                 //noinspection JSUnresolvedFunction
                 cm.showHint({
-                    hint: CodeMirror.hint.anyword, commands: self.commands
+                    hint: CodeMirror.hint.anyword, commands: self.commands,
+                    self: self,
+                    completeSingle: false,
+                    closeOnUnfocus: false
                 });
             };
         })
     }
 
+    set_keymap() {
+        let self = this;
+        if (self.props.am_selected) {
+            CodeMirror.keyMap["default"]["Esc"] = function () {
+                self.clearSelections()
+            }
+        }
+        else {
+            delete CodeMirror.keyMap["default"].esc
+        }
+    }
+
     create_keymap() {
         let self = this;
-        CodeMirror.keyMap["default"]["Esc"] = function () {self.clearSelections()};
+        this.set_keymap();
         let is_mac = CodeMirror.keyMap["default"].hasOwnProperty("Cmd-S");
 
         this.mousetrap.bind(['escape'], function (e) {
+            if (!self.props.am_selected) {
+                return false;
+            }
             self.clearSelections();
             e.preventDefault()
         });
@@ -465,6 +530,7 @@ class ReactCodemirror extends React.Component {
 
 
 ReactCodemirror.propTypes = {
+    am_selected: PropTypes.bool,
     handleChange: PropTypes.func,
     show_line_numbers: PropTypes.bool,
     show_fold_button: PropTypes.bool,
@@ -480,6 +546,8 @@ ReactCodemirror.propTypes = {
     extraKeys: PropTypes.object,
     setCMObject: PropTypes.func,
     searchTerm: PropTypes.string,
+    update_search_state: PropTypes.func,
+    alt_clear_selections: PropTypes.func,
     regex_search: PropTypes.bool,
     code_container_ref: PropTypes.object,
     code_container_width: PropTypes.oneOfType([
@@ -494,12 +562,15 @@ ReactCodemirror.propTypes = {
 };
 
 ReactCodemirror.defaultProps = {
+    am_selected: true,
     first_line_number: 1,
     show_line_numbers: true,
     show_fold_button: false,
     soft_wrap: false,
     code_container_height: "100%",
     searchTerm: null,
+    update_search_state: null,
+    alt_clear_selections: null,
     regex_search: false,
     handleChange: null,
     handleBlur: null,

@@ -539,9 +539,10 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_updateSearchState",
     value: function _updateSearchState(new_state) {
+      var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
       new_state.current_search_cm = this.cm_list[0];
       new_state.current_search_number = 0;
-      this.setState(new_state);
+      this.setState(new_state, callback);
     }
   }, {
     key: "_noSearchResults",
@@ -840,23 +841,6 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       this.last_save = this._getSaveDict();
     }
   }, {
-    key: "_selectLine",
-    value: function _selectLine(cm, lnumber) {
-      var doc = cm.getDoc();
-
-      if (doc.getLine(lnumber)) {
-        doc.setSelection({
-          line: lnumber,
-          ch: 0
-        }, {
-          line: lnumber,
-          ch: doc.getLine(lnumber).length
-        }, {
-          scroll: true
-        });
-      }
-    }
-  }, {
     key: "_goToLineNumber",
     value: function _goToLineNumber() {
       if (this.line_number) {
@@ -867,7 +851,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
             if (this.emObject) {
               this._handleTabSelect("methods");
 
-              this._selectLine(this.emObject, this.line_number - this.state.extra_methods_line_number);
+              CreatorApp._selectLine(this.emObject, this.line_number - this.state.extra_methods_line_number);
 
               this.line_number = null;
             } else {
@@ -875,14 +859,14 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
             }
           } else if (this.line_number < this.state.render_content_line_number) {
             if (this.dpObject) {
-              this._selectLine(this.dpObject, this.line_number - this.state.draw_plot_line_number - 1);
+              CreatorApp._selectLine(this.dpObject, this.line_number - this.state.draw_plot_line_number - 1);
 
               this.line_number = null;
             } else {
               return;
             }
           } else if (this.rcObject) {
-            this._selectLine(this.rcObject, this.line_number - this.state.render_content_line_number - 1);
+            CreatorApp._selectLine(this.rcObject, this.line_number - this.state.render_content_line_number - 1);
 
             this.line_number = null;
           }
@@ -891,7 +875,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
             if (this.emObject) {
               this._handleTabSelect("methods");
 
-              this._selectLine(this.emObject, this.line_number - this.state.extra_methods_line_number);
+              CreatorApp._selectLine(this.emObject, this.line_number - this.state.extra_methods_line_number);
 
               this.line_number = null;
             } else {
@@ -899,7 +883,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
             }
           } else {
             if (this.rcObject) {
-              this._selectLine(this.rcObject, this.line_number - this.state.render_content_line_number - 1);
+              CreatorApp._selectLine(this.rcObject, this.line_number - this.state.render_content_line_number - 1);
 
               this.line_number = null;
             }
@@ -1169,6 +1153,18 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       }
     }
   }, {
+    key: "_clearAllSelections",
+    value: function _clearAllSelections() {
+      for (var _i = 0, _arr = [this.rcObject, this.dpObject, this.emObject]; _i < _arr.length; _i++) {
+        var cm = _arr[_i];
+
+        if (cm) {
+          var to = cm.getCursor("to");
+          cm.setCursor(to);
+        }
+      }
+    }
+  }, {
     key: "_setDpObject",
     value: function _setDpObject(cmobject) {
       this.dpObject = cmobject;
@@ -1219,6 +1215,17 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       return onames;
     }
   }, {
+    key: "renderOptionElement",
+    value: function renderOptionElement(elt, data, cur) {
+      var s0 = document.createElement("span");
+      s0.className = "bp4-icon bp4-icon-select mr-1 api-option-icon";
+      elt.appendChild(s0);
+      var s1 = document.createElement("span");
+      s1.appendChild(document.createTextNode(cur.text));
+      s1.className = "option-hint";
+      elt.appendChild(s1);
+    }
+  }, {
     key: "render",
     value: function render() {
       var _this5 = this;
@@ -1231,7 +1238,11 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       try {
         for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
           var oname = _step7.value;
-          onames_for_autocomplete.push("self." + oname);
+          var the_text = "self." + oname;
+          onames_for_autocomplete.push({
+            text: the_text,
+            render: this.renderOptionElement
+          });
         }
       } catch (err) {
         _iterator7.e(err);
@@ -1306,12 +1317,15 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         })), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
           code_content: code_content,
           mode: mode,
+          am_selected: this.props.am_selected,
           extraKeys: this._extraKeys(),
           current_search_number: this.state.current_search_cm == "tc" ? this.state.current_search_number : null,
           handleChange: this.handleTopCodeChange,
           saveMe: this._saveAndCheckpoint,
           setCMObject: this._setDpObject,
           search_term: this.state.search_string,
+          update_search_state: this._updateSearchState,
+          alt_clear_selections: this._clearAllSelections,
           first_line_number: first_line_number,
           code_container_height: tc_height,
           dark_theme: dark_theme,
@@ -1366,11 +1380,14 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       })), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
         code_content: this.state.render_content_code,
         current_search_number: this.state.current_search_cm == "rc" ? this.state.current_search_number : null,
+        am_selected: this.props.am_selected,
         handleChange: this.handleRenderContentChange,
         extraKeys: this._extraKeys(),
         saveMe: this._saveAndCheckpoint,
         setCMObject: this._setRcObject,
         search_term: this.state.search_string,
+        update_search_state: this._updateSearchState,
+        alt_clear_selections: this._clearAllSelections,
         first_line_number: this.state.render_content_line_number + 1,
         code_container_height: rc_height,
         dark_theme: dark_theme,
@@ -1443,6 +1460,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       var methods_panel = /*#__PURE__*/_react["default"].createElement("div", null, /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
         handleChange: this.handleMethodsChange,
         show_fold_button: true,
+        am_selected: this.props.am_selected,
         current_search_number: this.state.current_search_cm == "em" ? this.state.current_search_number : null,
         dark_theme: dark_theme,
         extraKeys: this._extraKeys(),
@@ -1453,6 +1471,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         code_container_ref: this.methods_ref,
         code_container_height: methods_height,
         search_term: this.state.search_string,
+        update_search_state: this._updateSearchState,
+        alt_clear_selections: this._clearAllSelections,
         regex_search: this.state.regex,
         first_line_number: this.state.extra_methods_line_number,
         setSearchMatches: function setSearchMatches(num) {
@@ -1562,6 +1582,23 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         available_width: uwidth,
         handleSplitUpdate: this.handleLeftPaneResize
       }))));
+    }
+  }], [{
+    key: "_selectLine",
+    value: function _selectLine(cm, lnumber) {
+      var doc = cm.getDoc();
+
+      if (doc.getLine(lnumber)) {
+        doc.setSelection({
+          line: lnumber,
+          ch: 0
+        }, {
+          line: lnumber,
+          ch: doc.getLine(lnumber).length
+        }, {
+          scroll: true
+        });
+      }
     }
   }]);
 
