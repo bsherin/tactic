@@ -56,6 +56,8 @@ var _modal_react = require("./modal_react");
 
 var _error_boundary = require("./error_boundary");
 
+var _autocomplete = require("./autocomplete");
+
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -1215,17 +1217,6 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       return onames;
     }
   }, {
-    key: "renderOptionElement",
-    value: function renderOptionElement(elt, data, cur) {
-      var s0 = document.createElement("span");
-      s0.className = "bp4-icon bp4-icon-select mr-1 api-option-icon";
-      elt.appendChild(s0);
-      var s1 = document.createElement("span");
-      s1.appendChild(document.createTextNode(cur.text));
-      s1.className = "option-hint";
-      elt.appendChild(s1);
-    }
-  }, {
     key: "render",
     value: function render() {
       var _this5 = this;
@@ -1241,7 +1232,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           var the_text = "self." + oname;
           onames_for_autocomplete.push({
             text: the_text,
-            render: this.renderOptionElement
+            icon: "select",
+            render: _autocomplete.renderAutoCompleteElement
           });
         }
       } catch (err) {

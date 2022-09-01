@@ -69,6 +69,8 @@ var _utilities_react = require("./utilities_react");
 
 var _toaster = require("./toaster");
 
+require("./autocomplete");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
@@ -76,14 +78,6 @@ function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (O
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
-
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
-
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -111,49 +105,6 @@ function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o =
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
-var EXTRAWORDS_LIST = ["global_import", "Collection", "Collection", "Collection.document_names", "Collection.current_docment", "Collection.column", "Collection.tokenize", "Collection.detach", "Collection.rewind", "Library", "Library.collections", "Library.lists", "Library.functions", "Library.classes", "Settings", "Settings.names", "Tiles", "Pipes"];
-
-function renderAutoCompleteApiElement(elt, data, cur) {
-  var img = document.createElement("img");
-  img.src = window.tactic_img_url;
-  img.className = "mr-1";
-  img.width = 10;
-  img.height = 10;
-  elt.appendChild(img);
-  var s1 = document.createElement("span");
-  s1.appendChild(document.createTextNode(cur.text));
-  s1.className = "api-hint-name";
-  elt.appendChild(s1);
-
-  if (cur.argString) {
-    var s2 = document.createElement("span");
-    s2.appendChild(document.createTextNode(cur.argString));
-    elt.appendChild(s2);
-    s2.className = "api-hint-args";
-  }
-}
-
-function renderAutoCompleteDefaultElement(elt, data, cur) {
-  var s0 = document.createElement("span");
-  s0.className = "bp4-icon bp4-icon-symbol-circle mr-1 api-option-icon";
-  elt.appendChild(s0);
-  var s1 = document.createElement("span");
-  s1.appendChild(document.createTextNode(cur.text));
-  elt.appendChild(s1);
-}
-
-var EXTRAWORDS = [];
-
-for (var _i = 0, _EXTRAWORDS_LIST = EXTRAWORDS_LIST; _i < _EXTRAWORDS_LIST.length; _i++) {
-  var w = _EXTRAWORDS_LIST[_i];
-  EXTRAWORDS.push({
-    text: w,
-    render: renderAutoCompleteApiElement
-  });
-}
-
-var WORD = /[\w\.$]+/;
-var RANGE = 500;
 var REGEXTYPE = Object.getPrototypeOf(new RegExp("that"));
 
 function isRegex(ob) {
@@ -210,9 +161,6 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
     _this._unfoldAll = _this._unfoldAll.bind(_assertThisInitialized(_this));
     _this.clearSelections = _this.clearSelections.bind(_assertThisInitialized(_this));
     _this.mousetrap = new Mousetrap();
-
-    _this.create_api();
-
     _this.saved_theme = null;
     _this.overlay = null;
     _this.matches = null;
@@ -280,80 +228,16 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
       }
     }
   }, {
-    key: "_anyWord",
-    value: function _anyWord(editor, options) {
-      function ffunc(el, curWord) {
-        return typeof el == "string" ? el.startsWith(curWord || '') : el.text.startsWith(curWord || '');
-      }
-
-      var word = options && options.word || WORD;
-      var range = options && options.range || RANGE;
-      var extraWords = options && options.extraWords || EXTRAWORDS;
-      var commands = options && options.commands || [];
-      var self = options.self;
-      var cur = editor.getCursor(),
-          curLine = editor.getLine(cur.line);
-      var end = cur.ch,
-          start = end;
-
-      while (start && word.test(curLine.charAt(start - 1))) {
-        --start;
-      }
-
-      var curWord = start != end && curLine.slice(start, end);
-      var list = options && options.list || [],
-          seen = {};
-      var re = new RegExp(word.source, "g");
-
-      for (var dir = -1; dir <= 1; dir += 2) {
-        var line = cur.line,
-            endLine = Math.min(Math.max(line + dir * range, editor.firstLine()), editor.lastLine()) + dir;
-
-        for (; line != endLine; line += dir) {
-          var text = editor.getLine(line),
-              m; // noinspection AssignmentResultUsedJS
-
-          while (m = re.exec(text)) {
-            if (line == cur.line && m[0] === curWord) continue;
-
-            if ((!curWord || m[0].lastIndexOf(curWord, 0) == 0) && !Object.prototype.hasOwnProperty.call(seen, m[0])) {
-              seen[m[0]] = true;
-              list.push({
-                text: m[0],
-                render: renderAutoCompleteDefaultElement
-              });
-            }
-          }
-        }
-      }
-
-      list.push.apply(list, _toConsumableArray(extraWords.filter(function (el) {
-        return ffunc(el, curWord);
-      })));
-      list.push.apply(list, _toConsumableArray(self.props.extra_autocomplete_list.filter(function (el) {
-        return ffunc(el, curWord);
-      })));
-      list.push.apply(list, _toConsumableArray(commands.filter(function (el) {
-        return ffunc(el, curWord);
-      })));
-      return {
-        list: list,
-        from: _codemirror["default"].Pos(cur.line, start),
-        to: _codemirror["default"].Pos(cur.line, end)
-      };
-    }
-  }, {
     key: "componentDidMount",
     value: function componentDidMount() {
       var _this2 = this;
-
-      _codemirror["default"].registerHelper("hint", "anyword", this._anyWord);
 
       var self = this;
       (0, _communication_react.postAjaxPromise)('get_preferred_codemirror_themes', {}).then(function (data) {
         self.preferred_themes = data;
         self.cmobject = self.createCMArea(_this2.code_container_ref.current, _this2.props.first_line_number);
         self.cmobject.setValue(_this2.props.code_content);
+        self.cmobject.setOption("extra_autocomplete_list", self.props.extra_autocomplete_list);
         self.create_keymap();
 
         if (self.props.setCMObject != null) {
@@ -406,6 +290,8 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
       if (this.props.first_line_number != 1) {
         this.cmobject.setOption("firstLineNumber", this.props.first_line_number);
       }
+
+      this.cmobject.setOption("extra_autocomplete_list", self.props.extra_autocomplete_list);
 
       this._doHighlight();
 
@@ -605,65 +491,6 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
           search_string: ""
         });
       }
-    }
-  }, {
-    key: "create_api",
-    value: function create_api() {
-      var self = this;
-      var re = /\([^\)]*?\)/g;
-      (0, _communication_react.postAjax)("get_api_dict", {}, function (data) {
-        self.api_dict_by_category = data.api_dict_by_category;
-        self.api_dict_by_name = data.api_dict_by_name;
-        self.ordered_api_categories = data.ordered_api_categories;
-        self.commands = [];
-
-        var _iterator3 = _createForOfIteratorHelper(self.ordered_api_categories),
-            _step3;
-
-        try {
-          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-            var cat = _step3.value;
-
-            var _iterator4 = _createForOfIteratorHelper(self.api_dict_by_category[cat]),
-                _step4;
-
-            try {
-              for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-                var entry = _step4.value;
-                var the_name = "self." + entry["name"];
-                var arg_string = (entry["signature"].match(re) || [null])[0]; // let the_sig = "self." + entry["signature"];
-
-                self.commands.push({
-                  text: the_name,
-                  argString: arg_string,
-                  render: renderAutoCompleteApiElement
-                });
-              }
-            } catch (err) {
-              _iterator4.e(err);
-            } finally {
-              _iterator4.f();
-            }
-          }
-        } catch (err) {
-          _iterator3.e(err);
-        } finally {
-          _iterator3.f();
-        }
-
-        self.commands = _toConsumableArray(new Set(self.commands)); //noinspection JSUnresolvedVariable
-
-        _codemirror["default"].commands.autocomplete = function (cm) {
-          //noinspection JSUnresolvedFunction
-          cm.showHint({
-            hint: _codemirror["default"].hint.anyword,
-            commands: self.commands,
-            self: self,
-            completeSingle: false,
-            closeOnUnfocus: false
-          });
-        };
-      });
     }
   }, {
     key: "set_keymap",

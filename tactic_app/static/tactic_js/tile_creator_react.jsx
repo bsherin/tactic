@@ -28,6 +28,7 @@ import {TacticNavbar} from "./blueprint_navbar.js";
 import {SearchForm} from "./library_widgets";
 import {showModalReact} from "./modal_react";
 import {ErrorBoundary} from "./error_boundary";
+import {renderAutoCompleteElement} from "./autocomplete";
 
 export {creator_props, CreatorApp}
 
@@ -891,22 +892,11 @@ class CreatorApp extends React.Component {
         }
         return onames
     }
-
-    renderOptionElement(elt, data, cur) {
-        let s0 = document.createElement("span");
-        s0.className = "bp4-icon bp4-icon-select mr-1 api-option-icon";
-        elt.appendChild(s0);
-        let s1 = document.createElement("span");
-        s1.appendChild(document.createTextNode(cur.text));
-        s1.className = "option-hint";
-        elt.appendChild(s1);
-    }
-
     render() {
         let onames_for_autocomplete = [];
         for (let oname of this._getOptionNames()) {
             let the_text = "self." + oname;
-            onames_for_autocomplete.push({text: the_text, render: this.renderOptionElement});
+            onames_for_autocomplete.push({text: the_text, icon: "select", render: renderAutoCompleteElement});
         }
         let dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme;
         //let hp_height = this.get_height_minus_top_offset(this.hp_ref);
