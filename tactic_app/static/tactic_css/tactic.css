@@ -1448,6 +1448,7 @@ body {
 .CodeMirror {
   font-size: 14px;
   font-family: Courier, Courier New !important;
+  box-shadow: none !important;
 }
 
 .CodeMirror-hints {
