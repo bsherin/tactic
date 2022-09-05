@@ -1,5 +1,5 @@
 
-These are some things that came up when I moved to the Mac Studio
+### These are some things that came up when I moved to the Mac Studio
 
 When I install packages with npm now I seem to have to include (at least sometimes) `--legacy-peer-deps`
 

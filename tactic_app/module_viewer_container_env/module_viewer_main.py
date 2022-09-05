@@ -86,6 +86,8 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
 
     def build_code(self, data_dict):
         export_list = data_dict["exports"]
+        additional_save_attrs = [sattr["name"] for sattr in data_dict["additional_save_attrs"]]
+        couple_save_attrs_and_exports = data_dict["couple_save_attrs_and_exports"]
         export_list_of_dicts = [{"name": exp["name"], "tags": exp["tags"]} for exp in
                                 export_list]  # tactic_todo what does this accomplish?
         extra_methods = insert_indents(data_dict["extra_methods"], 1)
@@ -108,6 +110,8 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
                                         class_name=data_dict["module_name"],
                                         category=data_dict["category"],
                                         exports=export_list_of_dicts,
+                                        couple_save_attrs_and_exports=couple_save_attrs_and_exports,
+                                        additional_save_attrs=additional_save_attrs,
                                         options=data_dict["options"],
                                         is_mpl=data_dict["is_mpl"],
                                         is_d3=data_dict["is_d3"],
@@ -154,6 +158,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
             mdata["notes"] = data_dict["notes"]
             mdata["updated"] = datetime.datetime.utcnow()
             mdata["last_viewer"] = data_dict["last_saved"]
+            mdata["couple_save_attrs_and_exports"] = data_dict["couple_save_attrs_and_exports"]
             if data_dict["is_mpl"]:
                 mdata["type"] = "matplotlib"
             elif data_dict["is_d3"]:
@@ -215,6 +220,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
             extra_methods_line_number = self.tp.get_starting_line(list(self.tp.extra_methods)[0])
 
         parsed_data = {"option_dict": self.tp.options, "export_list": self.tp.exports,
+                       "additional_save_attrs": self.tp.additional_save_attrs,
                        "render_content_code": render_content_code,
                        "extra_functions": extra_functions,
                        "category": self.tp.category,

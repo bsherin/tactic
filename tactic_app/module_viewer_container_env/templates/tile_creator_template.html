@@ -9,7 +9,11 @@ class {{class_name}}({% if is_d3 %}D3Tile{% else %}TileBase{% if is_mpl %}, MplF
         {% else -%}
         TileBase.__init__(self, main_id, tile_id, tile_name)
         {% endif -%}
+        {% if couple_save_attrs_and_exports -%}
         self.save_attrs += [exp["name"] for exp in self.exports]
+        {% else %}
+        self.save_attrs += [{% for sattr in additional_save_attrs %}"{{sattr}}"{{ ", " if not loop.last else "" }}{% endfor %}]
+        {% endif -%}
         {% for option in options -%}
         self.{{option.name|e}} = {{option.default|safe}}
         {% endfor -%}

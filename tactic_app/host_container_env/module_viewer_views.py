@@ -128,6 +128,7 @@ def update_module():
         mdata["updated"] = datetime.datetime.utcnow()
         mdata["last_viewer"] = last_saved
         mdata["type"] = ""
+        mdata["couple_save_attrs_and_exports"] = data_dict["couple_save_attrs_and_exports"]
         db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
                                                          {'$set': {"tile_module": module_code, "metadata": mdata,
                                                                    "last_saved": last_saved}})

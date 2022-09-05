@@ -107,6 +107,8 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
             let result_dict = {"res_type": "tile", "res_name": module_name, "is_repository": false};
             let odict = parsed_data.option_dict;
             let initial_line_number = !window.in_context && window.line_number ? window.line_number : null;
+            let couple_save_attrs_and_exports =
+                !("couple_save_attrs_and_exports" in mdata.additional_mdata) || mdata.additional_mdata.couple_save_attrs_and_exports;
 
             finalCallback(
                 {
@@ -130,6 +132,8 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
                     initial_theme: window.theme,
                     option_list: correctOptionListTypes(parsed_data.option_dict),
                     export_list: parsed_data.export_list,
+                    additional_save_attrs: parsed_data.additional_save_attrs,
+                    couple_save_attrs_and_exports: couple_save_attrs_and_exports,
                     created: mdata.datestring,
                     registerDirtyMethod: registerDirtyMethod
                 }
@@ -226,6 +230,8 @@ class CreatorApp extends React.Component {
             notes: this.props.notes,
             option_list: this.props.option_list,
             export_list: this.props.export_list,
+            additional_save_attrs: this.props.additional_save_attrs || [],
+            couple_save_attrs_and_exports: this.props.couple_save_attrs_and_exports,
             category: this.props.category,
             selectedTabId: "metadata",
             old_usable_width: 0,
@@ -572,6 +578,8 @@ class CreatorApp extends React.Component {
                 "tags": this.get_tags_string(),
                 "notes": this.state.notes,
                 "exports": this.state.export_list,
+                "additional_save_attrs": this.state.additional_save_attrs,
+                "couple_save_attrs_and_exports": this.state.couple_save_attrs_and_exports,
                 "options": this.state.option_list,
                 "extra_methods": this.state.extra_functions,
                 "render_content_body": this.state.render_content_code,
@@ -1059,9 +1067,11 @@ class CreatorApp extends React.Component {
                                 />
         );
         let export_panel = (
-            <ExportModule data_list={this.state.export_list}
+            <ExportModule export_list={this.state.export_list}
+                          save_list={this.state.additional_save_attrs}
+                          couple_save_attrs_and_exports={this.state.couple_save_attrs_and_exports}
                           foregrounded={this.state.foregrounded_panes["exports"]}
-                          handleChange={this.handleExportsChange}
+                          handleChange={this.handleStateChange}
                           handleNotesAppend={this._handleNotesAppend}
                           available_height={default_module_height}
                                 />

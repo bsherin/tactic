@@ -16,8 +16,6 @@ var _core = require("@blueprintjs/core");
 
 var _table = require("@blueprintjs/table");
 
-var _blueprint_toolbar = require("./blueprint_toolbar.js");
-
 var _communication_react = require("./communication_react.js");
 
 var _library_widgets = require("./library_widgets.js");
@@ -770,7 +768,7 @@ var ExportModuleForm = /*#__PURE__*/function (_React$Component3) {
         style: {
           display: "flex",
           flexDirection: "column",
-          padding: 25
+          padding: 10
         }
       }, /*#__PURE__*/_react["default"].createElement("div", {
         style: {
@@ -805,7 +803,7 @@ var ExportModuleForm = /*#__PURE__*/function (_React$Component3) {
         intent: "danger",
         onClick: function onClick(e) {
           e.preventDefault();
-          self.props.deleteExport();
+          self.props.handleDelete();
         }
       })), /*#__PURE__*/_react["default"].createElement("div", {
         style: {
@@ -817,7 +815,7 @@ var ExportModuleForm = /*#__PURE__*/function (_React$Component3) {
         label: "Name",
         onChange: this.handleNameChange,
         the_value: this.state.name
-      }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.LabeledFormField, {
+      }), this.props.include_tags && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.LabeledFormField, {
         label: "Tags",
         onChange: this.handleTagChange,
         the_value: this.state.tags
@@ -830,8 +828,9 @@ var ExportModuleForm = /*#__PURE__*/function (_React$Component3) {
 
 ExportModuleForm.propTypes = {
   handleCreate: _propTypes["default"].func,
-  deleteExport: _propTypes["default"].func,
-  active_row: _propTypes["default"].number
+  handleDelete: _propTypes["default"].func,
+  active_row: _propTypes["default"].number,
+  include_tags: _propTypes["default"].bool
 };
 
 var ExportModule = /*#__PURE__*/function (_React$Component4) {
@@ -845,45 +844,101 @@ var ExportModule = /*#__PURE__*/function (_React$Component4) {
     _classCallCheck(this, ExportModule);
 
     _this6 = _super4.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this6));
     _this6.state = {
-      "active_row": 0
+      "active_export_row": 0,
+      "active_save_row": 0
     };
-    _this6.handleActiveRowChange = _this6.handleActiveRowChange.bind(_assertThisInitialized(_this6));
-    _this6.handleCreate = _this6.handleCreate.bind(_assertThisInitialized(_this6));
-    _this6.delete_export = _this6.delete_export.bind(_assertThisInitialized(_this6));
     return _this6;
   }
 
   _createClass(ExportModule, [{
-    key: "delete_export",
-    value: function delete_export() {
+    key: "_delete_export",
+    value: function _delete_export() {
       var _this7 = this;
 
-      var new_data_list = this.props.data_list;
-      new_data_list.splice(this.state.active_row, 1);
-      var old_active_row = this.state.active_row;
+      var new_data_list = this.props.export_list;
+      new_data_list.splice(this.state.active_export_row, 1);
+      var old_active_row = this.state.active_export_row;
       this.props.handleChange(new_data_list, function () {
-        if (old_active_row >= _this7.props.data_list.length) {
+        if (old_active_row >= _this7.props.export_list.length) {
           _this7.setState({
-            active_row: null
+            active_export_row: null
           });
         } else {
-          _this7.handleActiveRowChange(old_active_row);
+          _this7._handleActiveExportRowChange(old_active_row);
         }
       });
     }
   }, {
-    key: "handleCreate",
-    value: function handleCreate(new_row) {
-      var new_data_list = this.props.data_list;
-      new_data_list.push(new_row);
-      this.props.handleChange(new_data_list);
+    key: "_delete_save",
+    value: function _delete_save() {
+      var _this8 = this;
+
+      var new_data_list = this.props.save_list;
+      new_data_list.splice(this.state.active_save_row, 1);
+      var old_active_row = this.state.active_save_row;
+      this.props.handleChange(new_data_list, function () {
+        if (old_active_row >= _this8.props.save_list.length) {
+          _this8.setState({
+            active_save_row: null
+          });
+        } else {
+          _this8._handleActiveSaveRowChange(old_active_row);
+        }
+      });
     }
   }, {
-    key: "handleActiveRowChange",
-    value: function handleActiveRowChange(row_index) {
+    key: "_handleCreateExport",
+    value: function _handleCreateExport(new_row) {
+      var new_data_list = this.props.export_list;
+      new_data_list.push(new_row);
+      this.props.handleChange({
+        export_list: new_data_list
+      });
+    }
+  }, {
+    key: "_handleCreateSave",
+    value: function _handleCreateSave(new_row) {
+      var new_data_list = this.props.save_list;
+      new_data_list.push(new_row);
+      this.props.handleChange({
+        additional_save_attrs: new_data_list
+      });
+    }
+  }, {
+    key: "_handleActiveExportRowChange",
+    value: function _handleActiveExportRowChange(row_index) {
       this.setState({
-        "active_row": row_index
+        "active_export_row": row_index
+      });
+    }
+  }, {
+    key: "_handleActiveSaveRowChange",
+    value: function _handleActiveSaveRowChange(row_index) {
+      this.setState({
+        "active_save_row": row_index
+      });
+    }
+  }, {
+    key: "_handleCoupleChange",
+    value: function _handleCoupleChange(event) {
+      this.props.handleChange({
+        "couple_save_attrs_and_exports": event.target.checked
+      });
+    }
+  }, {
+    key: "_handleExportChange",
+    value: function _handleExportChange(new_export_list) {
+      this.props.handleChange({
+        export_list: new_export_list
+      });
+    }
+  }, {
+    key: "_handleSaveChange",
+    value: function _handleSaveChange(new_export_list) {
+      this.props.handleChange({
+        additional_save_attrs: new_export_list
       });
     }
   }, {
@@ -901,18 +956,47 @@ var ExportModule = /*#__PURE__*/function (_React$Component4) {
         id: "exports-pane",
         className: "d-flex flex-column",
         style: exports_pane_style
-      }, this.props.foregrounded && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.BpOrderableTable, {
+      }, this.props.foregrounded && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("h4", {
+        className: "bp4-heading"
+      }, "Exports"), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.BpOrderableTable, {
         columns: cols,
-        data_array: this.props.data_list,
-        active_row: this.state.active_row,
-        handleActiveRowChange: this.handleActiveRowChange,
-        handleChange: this.props.handleChange,
+        data_array: this.props.export_list,
+        active_row: this.state.active_export_row,
+        handleActiveRowChange: this._handleActiveExportRowChange,
+        handleChange: this._handleExportChange,
+        content_editable: true
+      })), /*#__PURE__*/_react["default"].createElement(ExportModuleForm, {
+        handleCreate: this._handleCreateExport,
+        handleDelete: this._delete_export,
+        include_tags: true,
+        active_row: this.state.active_export_row
+      }), /*#__PURE__*/_react["default"].createElement(_core.Divider, null), /*#__PURE__*/_react["default"].createElement("div", {
+        style: {
+          display: "flex",
+          justifyContent: "space-between",
+          marginTop: 15
+        }
+      }, /*#__PURE__*/_react["default"].createElement("h4", {
+        className: "bp4-heading"
+      }, "Save Attrs"), /*#__PURE__*/_react["default"].createElement(_core.Switch, {
+        label: "Couple save_attrs and exports",
+        className: "ml-2 mb-0 mt-1",
+        large: false,
+        checked: this.props.couple_save_attrs_and_exports,
+        onChange: this._handleCoupleChange
+      })), this.props.foregrounded && !this.props.couple_save_attrs_and_exports && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.BpOrderableTable, {
+        columns: ["name"],
+        data_array: this.props.save_list,
+        active_row: this.state.active_save_row,
+        handleActiveRowChange: this._handleActiveSaveRowChange,
+        handleChange: this._handleSaveChange,
         content_editable: true
       }), /*#__PURE__*/_react["default"].createElement(ExportModuleForm, {
-        handleCreate: this.handleCreate,
-        deleteExport: this.delete_export,
-        active_row: this.state.active_row
-      }));
+        handleCreate: this._handleCreateSave,
+        handleDelete: this._delete_save,
+        include_tags: false,
+        active_row: this.state.active_save_row
+      })));
     }
   }]);
 
@@ -921,7 +1005,9 @@ var ExportModule = /*#__PURE__*/function (_React$Component4) {
 
 exports.ExportModule = ExportModule;
 ExportModule.propTypes = {
-  data_list: _propTypes["default"].array,
+  export_list: _propTypes["default"].array,
+  save_list: _propTypes["default"].array,
+  couple_save_attrs_and_exports: _propTypes["default"].bool,
   foregrounded: _propTypes["default"].bool,
   handleChange: _propTypes["default"].func,
   handleNotesAppend: _propTypes["default"].func,
@@ -934,20 +1020,20 @@ var CommandsModule = /*#__PURE__*/function (_React$Component5) {
   var _super5 = _createSuper(CommandsModule);
 
   function CommandsModule(props) {
-    var _this8;
+    var _this9;
 
     _classCallCheck(this, CommandsModule);
 
-    _this8 = _super5.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this8));
-    _this8.state = {
+    _this9 = _super5.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this9));
+    _this9.state = {
       search_string: "",
       api_dict: {},
       ordered_categories: [],
       object_api_dict: {},
       ordered_object_categories: []
     };
-    return _this8;
+    return _this9;
   }
 
   _createClass(CommandsModule, [{
@@ -1074,13 +1160,13 @@ var ObjectCategoryEntry = /*#__PURE__*/function (_React$Component6) {
   var _super6 = _createSuper(ObjectCategoryEntry);
 
   function ObjectCategoryEntry(props) {
-    var _this9;
+    var _this10;
 
     _classCallCheck(this, ObjectCategoryEntry);
 
-    _this9 = _super6.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this9));
-    return _this9;
+    _this10 = _super6.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this10));
+    return _this10;
   }
 
   _createClass(ObjectCategoryEntry, [{
@@ -1198,13 +1284,13 @@ var CategoryEntry = /*#__PURE__*/function (_React$Component7) {
   var _super7 = _createSuper(CategoryEntry);
 
   function CategoryEntry(props) {
-    var _this10;
+    var _this11;
 
     _classCallCheck(this, CategoryEntry);
 
-    _this10 = _super7.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this10));
-    return _this10;
+    _this11 = _super7.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this11));
+    return _this11;
   }
 
   _createClass(CategoryEntry, [{
@@ -1269,16 +1355,16 @@ var CommandEntry = /*#__PURE__*/function (_React$Component8) {
   var _super8 = _createSuper(CommandEntry);
 
   function CommandEntry(props) {
-    var _this11;
+    var _this12;
 
     _classCallCheck(this, CommandEntry);
 
-    _this11 = _super8.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this11));
-    _this11.state = {
+    _this12 = _super8.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this12));
+    _this12.state = {
       isOpen: false
     };
-    return _this11;
+    return _this12;
   }
 
   _createClass(CommandEntry, [{
@@ -1369,17 +1455,17 @@ var ApiMenu = /*#__PURE__*/function (_React$Component9) {
   var _super9 = _createSuper(ApiMenu);
 
   function ApiMenu(props) {
-    var _this12;
+    var _this13;
 
     _classCallCheck(this, ApiMenu);
 
-    _this12 = _super9.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this12));
-    _this12.state = {
+    _this13 = _super9.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this13));
+    _this13.state = {
       currently_selected: null,
       menu_created: false
     };
-    return _this12;
+    return _this13;
   }
 
   _createClass(ApiMenu, [{

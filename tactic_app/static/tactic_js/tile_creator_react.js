@@ -186,6 +186,7 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
       };
       var odict = parsed_data.option_dict;
       var initial_line_number = !window.in_context && window.line_number ? window.line_number : null;
+      var couple_save_attrs_and_exports = !("couple_save_attrs_and_exports" in mdata.additional_mdata) || mdata.additional_mdata.couple_save_attrs_and_exports;
       finalCallback({
         resource_name: module_name,
         tsocket: tsocket,
@@ -207,6 +208,8 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
         initial_theme: window.theme,
         option_list: (0, _creator_modules_react.correctOptionListTypes)(parsed_data.option_dict),
         export_list: parsed_data.export_list,
+        additional_save_attrs: parsed_data.additional_save_attrs,
+        couple_save_attrs_and_exports: couple_save_attrs_and_exports,
         created: mdata.datestring,
         registerDirtyMethod: registerDirtyMethod
       });
@@ -310,6 +313,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       notes: _this.props.notes,
       option_list: _this.props.option_list,
       export_list: _this.props.export_list,
+      additional_save_attrs: _this.props.additional_save_attrs || [],
+      couple_save_attrs_and_exports: _this.props.couple_save_attrs_and_exports,
       category: _this.props.category,
       selectedTabId: "metadata",
       old_usable_width: 0,
@@ -772,6 +777,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         "tags": this.get_tags_string(),
         "notes": this.state.notes,
         "exports": this.state.export_list,
+        "additional_save_attrs": this.state.additional_save_attrs,
+        "couple_save_attrs_and_exports": this.state.couple_save_attrs_and_exports,
         "options": this.state.option_list,
         "extra_methods": this.state.extra_functions,
         "render_content_body": this.state.render_content_code,
@@ -1440,9 +1447,11 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       });
 
       var export_panel = /*#__PURE__*/_react["default"].createElement(_creator_modules_react.ExportModule, {
-        data_list: this.state.export_list,
+        export_list: this.state.export_list,
+        save_list: this.state.additional_save_attrs,
+        couple_save_attrs_and_exports: this.state.couple_save_attrs_and_exports,
         foregrounded: this.state.foregrounded_panes["exports"],
-        handleChange: this.handleExportsChange,
+        handleChange: this.handleStateChange,
         handleNotesAppend: this._handleNotesAppend,
         available_height: default_module_height
       });
