@@ -21,6 +21,7 @@ def insert_indents(the_str, number_indents):
     return result
 
 
+# noinspection PyTypeChecker
 class TileParser(object):
     def __init__(self, module_code):
         self.module_code = module_code
@@ -33,6 +34,7 @@ class TileParser(object):
         self.methods = self.get_methods()
         self.assignments = self.get_assignments()
         self.defaults = self.extract_defaults()
+        self.additional_save_attrs = self.extract_save_attrs()
         self.exports = self.get_exports()
         self.type = self.extract_type()
         self.options = self.get_options_dict()
@@ -49,6 +51,7 @@ class TileParser(object):
         self.methods = self.get_methods()
         self.assignments = self.get_assignments()
         self.defaults = self.extract_defaults()
+        self.additional_save_attrs = self.extract_save_attrs()
         self.exports = self.get_exports()
         self.type = self.extract_type()
         self.extra_methods = self.get_extra_methods()
@@ -186,6 +189,20 @@ class TileParser(object):
                     adict[target.id] = None
             adict[target.id]["assign_code"] = "\n".join(module_lines[adict[target.id]["start_line"]:adict[target.id]["last_line"] + 1])
         return adict
+
+    def extract_save_attrs(self):
+        print("** in extract_save_attributes")
+        inode = self.methods["__init__"]["node"]
+        for al in inode.body:
+            if hasattr(al, "target") and al.target.attr == "save_attrs":
+                print("** found save_attrs")
+                if hasattr(al, "value") and isinstance(al.value, ast.List):
+                    val_list = [{"name": e.value} for e in al.value.elts]
+                    print("got val_list " + str(val_list))
+                    return val_list
+                print("**save attrs weren't right")
+        print("didn't find save_attrs")
+        return None
 
     def extract_defaults(self):
         inode = self.methods["__init__"]["node"]

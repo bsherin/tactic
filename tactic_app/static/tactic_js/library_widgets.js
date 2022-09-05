@@ -134,7 +134,7 @@ var LibraryOmnibar = /*#__PURE__*/function (_React$Component2) {
         isOpen: this.props.showOmnibar,
         onItemSelect: this.props.onItemSelect,
         itemRenderer: LibraryOmnibar._itemRenderer,
-        itemPredicate: this._itemPredicate,
+        itemPredicate: LibraryOmnibar._itemPredicate,
         resetOnSelect: true,
         onClose: this.props.handleClose
       });

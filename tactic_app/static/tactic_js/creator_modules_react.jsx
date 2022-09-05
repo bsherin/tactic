@@ -3,10 +3,9 @@
 import React from "react";
 import PropTypes from 'prop-types';
 
-import { Button, Card, Collapse, Divider, Menu, MenuItem, MenuDivider } from "@blueprintjs/core";
+import { Button, Card, Collapse, Divider, Menu, MenuItem, MenuDivider, Switch } from "@blueprintjs/core";
 import {RegionCardinality} from "@blueprintjs/table";
 
-import {Toolbar} from "./blueprint_toolbar.js";
 import {postAjax} from "./communication_react.js";
 import {SearchForm} from "./library_widgets.js";
 import {LabeledSelectList, LabeledFormField, LabeledTextArea, BpOrderableTable, GlyphButton} from "./blueprint_react_widgets.js";
@@ -458,7 +457,7 @@ class ExportModuleForm extends React.Component {
         let self = this;
         return (
             <form>
-                <div style={{display: "flex", flexDirection: "column", padding: 25}}>
+                <div style={{display: "flex", flexDirection: "column", padding: 10}}>
                     <div style={{display: "flex", flexWrap: "wrap", flexDirection: "row", marginBottom: 20}}>
                         <Button style={{height: "fit-content", alignSelf: "start", marginTop: 23, marginRight: 5}}
                                 text="Create"
@@ -473,11 +472,13 @@ class ExportModuleForm extends React.Component {
                                 intent="danger"
                                 onClick={e =>{
                                     e.preventDefault();
-                                    self.props.deleteExport()}} />
+                                    self.props.handleDelete()}} />
                     </div>
                 <div style={{display: "flex", flexWrap: "wrap", flexDirection: "row"}}>
                     <LabeledFormField label="Name" onChange={this.handleNameChange} the_value={this.state.name} />
-                    <LabeledFormField label="Tags" onChange={this.handleTagChange} the_value={this.state.tags}/>
+                    {this.props.include_tags &&
+                        <LabeledFormField label="Tags" onChange={this.handleTagChange} the_value={this.state.tags}/>
+                    }
                 </div>
 
                 </div>
@@ -488,44 +489,80 @@ class ExportModuleForm extends React.Component {
 
 ExportModuleForm.propTypes = {
     handleCreate: PropTypes.func,
-    deleteExport: PropTypes.func,
-    active_row: PropTypes.number
+    handleDelete: PropTypes.func,
+    active_row: PropTypes.number,
+    include_tags: PropTypes.bool,
 };
 
 class ExportModule extends React.Component {
 
     constructor(props) {
         super(props);
+        doBinding(this);
         this.state = {
-            "active_row": 0
+            "active_export_row": 0,
+            "active_save_row": 0
         };
-        this.handleActiveRowChange = this.handleActiveRowChange.bind(this);
-        this.handleCreate = this.handleCreate.bind(this);
-        this.delete_export = this.delete_export.bind(this)
     }
 
-    delete_export() {
-        let new_data_list = this.props.data_list;
-        new_data_list.splice(this.state.active_row, 1);
-        let old_active_row = this.state.active_row;
+    _delete_export() {
+        let new_data_list = this.props.export_list;
+        new_data_list.splice(this.state.active_export_row, 1);
+        let old_active_row = this.state.active_export_row;
         this.props.handleChange(new_data_list, ()=>{
-            if (old_active_row >= this.props.data_list.length) {
-                this.setState({active_row: null})
+            if (old_active_row >= this.props.export_list.length) {
+                this.setState({active_export_row: null})
             }
             else {
-                this.handleActiveRowChange(old_active_row)
+                this._handleActiveExportRowChange(old_active_row)
             }
         })
     }
 
-    handleCreate(new_row) {
-        let new_data_list = this.props.data_list;
-        new_data_list.push(new_row);
-        this.props.handleChange(new_data_list)
+    _delete_save() {
+        let new_data_list = this.props.save_list;
+        new_data_list.splice(this.state.active_save_row, 1);
+        let old_active_row = this.state.active_save_row;
+        this.props.handleChange(new_data_list, ()=>{
+            if (old_active_row >= this.props.save_list.length) {
+                this.setState({active_save_row: null})
+            }
+            else {
+                this._handleActiveSaveRowChange(old_active_row)
+            }
+        })
     }
 
-    handleActiveRowChange(row_index) {
-        this.setState({"active_row": row_index})
+    _handleCreateExport(new_row) {
+        let new_data_list = this.props.export_list;
+        new_data_list.push(new_row);
+        this.props.handleChange({export_list: new_data_list})
+    }
+
+    _handleCreateSave(new_row) {
+        let new_data_list = this.props.save_list;
+        new_data_list.push(new_row);
+        this.props.handleChange({additional_save_attrs: new_data_list})
+    }
+
+    _handleActiveExportRowChange(row_index) {
+        this.setState({"active_export_row": row_index})
+    }
+
+    _handleActiveSaveRowChange(row_index) {
+        this.setState({"active_save_row": row_index})
+    }
+
+    _handleCoupleChange(event) {
+        this.props.handleChange({"couple_save_attrs_and_exports": event.target.checked});
+    }
+
+    _handleExportChange(new_export_list) {
+        this.props.handleChange({export_list: new_export_list})
+    }
+
+    _handleSaveChange(new_export_list) {
+        this.props.handleChange({additional_save_attrs: new_export_list})
     }
 
     render () {
@@ -540,18 +577,44 @@ class ExportModule extends React.Component {
 
             <Card elevation={1} id="exports-pane" className="d-flex flex-column" style={exports_pane_style}>
                 {this.props.foregrounded &&
-                    <BpOrderableTable columns={cols}
-                                      data_array={this.props.data_list}
-                                      active_row={this.state.active_row}
-                                      handleActiveRowChange={this.handleActiveRowChange}
-                                      handleChange={this.props.handleChange}
-                                      content_editable={true}/>
+                    <React.Fragment>
+                        <h4 className="bp4-heading">Exports</h4>
+                        <BpOrderableTable columns={cols}
+                                          data_array={this.props.export_list}
+                                          active_row={this.state.active_export_row}
+                                          handleActiveRowChange={this._handleActiveExportRowChange}
+                                          handleChange={this._handleExportChange}
+                                          content_editable={true}/>
+                    </React.Fragment>
                 }
-                <ExportModuleForm handleCreate={this.handleCreate}
-                                  deleteExport={this.delete_export}
-                                  active_row={this.state.active_row}
+                <ExportModuleForm handleCreate={this._handleCreateExport}
+                                  handleDelete={this._delete_export}
+                                  include_tags={true}
+                                  active_row={this.state.active_export_row}
 
                 />
+                <Divider/>
+                <div style={{display: "flex", justifyContent: "space-between", marginTop: 15}}>
+                    <h4 className="bp4-heading">Save Attrs</h4>
+                    <Switch label="Couple save_attrs and exports"
+                        className="ml-2 mb-0 mt-1"
+                         large={false}
+                         checked={this.props.couple_save_attrs_and_exports}
+                         onChange={this._handleCoupleChange}/>
+                </div>
+                {this.props.foregrounded && !this.props.couple_save_attrs_and_exports &&
+                    <React.Fragment>
+                        <BpOrderableTable columns={["name"]}
+                                          data_array={this.props.save_list}
+                                          active_row={this.state.active_save_row}
+                                          handleActiveRowChange={this._handleActiveSaveRowChange}
+                                          handleChange={this._handleSaveChange}
+                                          content_editable={true}/>
+                        <ExportModuleForm handleCreate={this._handleCreateSave}
+                                          handleDelete={this._delete_save}
+                                          include_tags={false}
+                                          active_row={this.state.active_save_row}/>
+                    </React.Fragment>}
             </Card>
         )
     }
@@ -559,7 +622,9 @@ class ExportModule extends React.Component {
 }
 
 ExportModule.propTypes = {
-    data_list: PropTypes.array,
+    export_list: PropTypes.array,
+    save_list: PropTypes.array,
+    couple_save_attrs_and_exports: PropTypes.bool,
     foregrounded: PropTypes.bool,
     handleChange: PropTypes.func,
     handleNotesAppend: PropTypes.func,
