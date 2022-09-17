@@ -61,21 +61,31 @@ echo "*** removing old containers ***"
 
 for image in "tile" "host" "module_viewer" "main"
   do
-    echo "removing bsherin/tactic:$image$arm_string"
-    docker ps --filter ancestor="bsherin/tactic:$image$arm_string" -aq | xargs docker stop | xargs docker rm
+    num=$(docker ps --filter ancestor="bsherin/tactic:$image$arm_string" -aq | wc -l)
+    echo "$num containers of type bsherin/tactic:$image$arm_string to remove"
+    if [ $num != "0" ] ; then
+      docker ps --filter ancestor="bsherin/tactic:$image$arm_string" -aq | xargs docker stop | xargs docker rm
+    fi
   done
 
 for image in "rabbitmq:3-management" "rabbitmq" "redis:alpine"
   do
     echo "removing $image"
-    docker ps --filter ancestor=$image -aq | xargs docker stop | xargs docker rm
+    num=$(docker ps --filter ancestor=$image -aq | wc -l)
+    echo "$num containers of type $image to remove"
+    if [ $num != "0" ] ; then
+      docker ps --filter ancestor=$image -aq | xargs docker stop | xargs docker rm
+    fi
   done
 
 echo "double checking that containers are removed"
 for cname in "tile_test_container" "tactic_host5000" "tactic_host5001"
   do
-    echo "removing $cname"
-    docker ps --filter name=$cname -aq | xargs docker stop | xargs docker rm
+    num=$(docker ps --filter name=$cname -aq | wc -l)
+    if [ $num != "0" ] ; then
+      echo "removing $cname"
+      docker ps --filter name=$cname -aq | xargs docker stop | xargs docker rm
+    fi
   done
 
 echo "*** checking mongo ***"
