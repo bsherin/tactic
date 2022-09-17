@@ -26,7 +26,7 @@ from document_object import ROWS_TO_PRINT, DetachedTacticCollection
 from qworker import debug_log
 import copy
 
-RETRIES = 60
+RETRIES = os.environ.get("RETRIES")
 
 # noinspection PyUnresolvedReferences
 from qworker import task_worthy_methods

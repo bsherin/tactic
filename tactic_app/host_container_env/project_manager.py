@@ -9,12 +9,11 @@ from flask_login import login_required, current_user
 import tactic_app
 from tactic_app import app, db, fs
 from docker_functions import create_container, main_container_info
-from resource_manager import ResourceManager, LibraryResourceManager
+from resource_manager import ResourceManager, LibraryResourceManager, repository_user
 from users import User
 from communication_utils import make_jsonizable_and_compress, read_project_dict
 import loaded_tile_management
 from mongo_accesser import make_name_unique
-repository_user = User.get_user_by_username("repository")
 from file_handling import read_freeform_file
 from redis_tools import create_ready_block
 
@@ -52,14 +51,14 @@ class ProjectManager(LibraryResourceManager):
 
     def download_jupyter(self, project_name, new_name):
         user_obj = current_user
-        save_dict = db[user_obj.project_collection_name].find_one({"project_name": project_name})
+        save_dict = self.db[user_obj.project_collection_name].find_one({"project_name": project_name})
         mdata = save_dict["metadata"]
 
         print("in download_jupyter with mdata " + str(mdata))
         if not mdata["type"] == "jupyter":
             return NotImplementedError
 
-        project_dict = read_project_dict(fs, mdata, save_dict["file_id"])
+        project_dict = read_project_dict(self.fs, mdata, save_dict["file_id"])
         # str_io = io.StringIO()
         # str_io.write(project_dict["jupyter_text"])
         # str_io.seek(0)
@@ -113,8 +112,8 @@ class ProjectManager(LibraryResourceManager):
             project_dict = {"jupyter_text": result_txt}
 
             pdict = make_jsonizable_and_compress(project_dict)
-            save_dict["file_id"] = fs.put(pdict)
-            db[current_user.project_collection_name].insert_one(save_dict)
+            save_dict["file_id"] = self.fs.put(pdict)
+            self.db[current_user.project_collection_name].insert_one(save_dict)
             if len(decoding_problems) > 0:
                 file_decoding_errors[filename] = decoding_problems
             successful_reads.append(filename)
@@ -147,7 +146,7 @@ class ProjectManager(LibraryResourceManager):
         # noinspection PyTypeChecker
         main_id, rb_id = main_container_info.create_main_container(project_name, user_id, user_obj.username)
 
-        save_dict = db[user_obj.project_collection_name].find_one({"project_name": project_name})
+        save_dict = self.db[user_obj.project_collection_name].find_one({"project_name": project_name})
         mdata = save_dict["metadata"]
         if "type" in mdata:
             doc_type = mdata["type"]
@@ -196,7 +195,7 @@ class ProjectManager(LibraryResourceManager):
                      "theme": current_user.get_theme(),
                      "version_string": tstring}
 
-        save_dict = db[current_user.project_collection_name].find_one({"project_name": project_name})
+        save_dict = self.db[current_user.project_collection_name].find_one({"project_name": project_name})
         mdata = save_dict["metadata"]
         if "type" in mdata:
             doc_type = mdata["type"]
@@ -216,7 +215,7 @@ class ProjectManager(LibraryResourceManager):
         user_obj = current_user
         project_to_copy = request.json['res_to_copy']
         new_project_name = request.json['new_res_name']
-        save_dict = db[user_obj.project_collection_name].find_one({"project_name": project_to_copy})
+        save_dict = self.db[user_obj.project_collection_name].find_one({"project_name": project_to_copy})
         mdata = save_dict["metadata"]
         new_save_dict = {"metadata": mdata,
                          "project_name": new_project_name}
@@ -224,11 +223,11 @@ class ProjectManager(LibraryResourceManager):
         # uncompressing and compressing below is necessary because we need to change the project_name inside
         # the project dict. so, essentially, the project_name is stored in two places which is non-optimal
         # tactic_todo fix project_name being stored in two places in project saves
-        project_dict = read_project_dict(fs, mdata, save_dict["file_id"])
+        project_dict = read_project_dict(self.fs, mdata, save_dict["file_id"])
         project_dict["project_name"] = new_project_name
         pdict = make_jsonizable_and_compress(project_dict)
-        new_save_dict["file_id"] = fs.put(pdict)
-        db[user_obj.project_collection_name].insert_one(new_save_dict)
+        new_save_dict["file_id"] = self.fs.put(pdict)
+        self.db[user_obj.project_collection_name].insert_one(new_save_dict)
 
         new_row = self.build_res_dict(new_project_name, mdata, user_obj, save_dict["file_id"])
         return jsonify({"success": True, "new_row": new_row})
@@ -257,7 +256,7 @@ class ProjectManager(LibraryResourceManager):
     def rename_me(self, old_name):
         try:
             new_name = request.json["new_name"]
-            db[current_user.project_collection_name].update_one({"project_name": old_name},
+            self.db[current_user.project_collection_name].update_one({"project_name": old_name},
                                                                 {'$set': {"project_name": new_name}})
             # self.update_selector_list()
             return jsonify({"success": True, "message": "project name changed", "alert_type": "alert-success"})
@@ -275,11 +274,8 @@ class ProjectManager(LibraryResourceManager):
             return self.get_exception_for_ajax(ex, "Error deleting collections")
 
     def grab_metadata(self, res_name):
-        if self.is_repository:
-            user_obj = repository_user
-        else:
-            user_obj = current_user
-        doc = db[user_obj.project_collection_name].find_one({self.name_field: res_name})
+        user_obj = current_user
+        doc = self.db[user_obj.project_collection_name].find_one({self.name_field: res_name})
         if "metadata" in doc:
             mdata = doc["metadata"]
         else:
@@ -287,17 +283,17 @@ class ProjectManager(LibraryResourceManager):
         return mdata
 
     def save_metadata(self, res_name, tags, notes):
-        doc = db[current_user.project_collection_name].find_one({"project_name": res_name})
+        doc = self.db[current_user.project_collection_name].find_one({"project_name": res_name})
         if "metadata" in doc:
             mdata = doc["metadata"]
         else:
             mdata = {}
         mdata["tags"] = tags
         mdata["notes"] = notes
-        db[current_user.project_collection_name].update_one({"project_name": res_name}, {'$set': {"metadata": mdata}})
+        self.db[current_user.project_collection_name].update_one({"project_name": res_name}, {'$set': {"metadata": mdata}})
 
     def delete_tag(self, tag):
-        doclist = db[current_user.project_collection_name].find()
+        doclist = self.db[current_user.project_collection_name].find()
         for doc in doclist:
             if "metadata" not in doc:
                 continue
@@ -308,12 +304,12 @@ class ProjectManager(LibraryResourceManager):
                 taglist.remove(tag)
                 mdata["tags"] = " ".join(taglist)
                 res_name = doc["project_name"]
-                db[current_user.project_collection_name].update_one({"project_name": res_name},
+                self.db[current_user.project_collection_name].update_one({"project_name": res_name},
                                                                     {'$set': {"metadata": mdata}})
         return
 
     def rename_tag(self, tag_changes):
-        doclist = db[current_user.project_collection_name].find()
+        doclist = self.db[current_user.project_collection_name].find()
         for doc in doclist:
             if "metadata" not in doc:
                 continue
@@ -327,7 +323,7 @@ class ProjectManager(LibraryResourceManager):
                         taglist.append(new_tag)
                     mdata["tags"] = " ".join(taglist)
                     res_name = doc["project_name"]
-                    db[current_user.project_collection_name].update_one({"project_name": res_name},
+                    self.db[current_user.project_collection_name].update_one({"project_name": res_name},
                                                                         {'$set': {"metadata": mdata}})
         return
 
@@ -338,3 +334,12 @@ class RepositoryProjectManager(ProjectManager):
 
     def add_rules(self):
         pass
+
+    def grab_metadata(self, res_name):
+        user_obj = repository_user
+        doc = self.repository_db[user_obj.project_collection_name].find_one({self.name_field: res_name})
+        if "metadata" in doc:
+            mdata = doc["metadata"]
+        else:
+            mdata = None
+        return mdata

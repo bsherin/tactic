@@ -33,10 +33,10 @@ When I did this and then removed the container with portainer it seems the data 
 
 This command will create a **bind-mount** persistent volumne
 
-`docker run -p 27017:27017 -v ~/mongo/data:/data/db --name tactic-mongo --restart always -d mongo:latest`
+`docker run -p 27017:27017 -v ~/mongo/data:/data/db --name tactic-mongo --network=tactic-net --restart always -d mongo:latest`
 
 The command for creating the mongodb container on the server
-`sudo docker run -p 27017:27017 -v /var/lib/mongo2:/data/db --name tactic-mongo --restart always -d mongo:latest`
+`sudo docker run -p 27017:27017 -v /var/lib/mongo2:/data/db --name tactic-mongo --network=tactic-net --restart always -d mongo:latest`
 
 ### Site on dump and restore
 

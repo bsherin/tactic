@@ -7,8 +7,12 @@
 import os
 from gevent import monkey; monkey.patch_all()
 import time
-print("entering host main")
+print("entering host main revised")
 print("monkey patching")
+from rabbit_manage import sleep_until_rabbit_alive
+print("Waiting for rabbit")
+success = sleep_until_rabbit_alive()
+print("Done waiting")
 
 from tactic_app import app, socketio
 print("back in host_main")

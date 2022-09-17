@@ -2,3 +2,4 @@ gevent
 pymongo
 requests
 cloudpickle
+pika

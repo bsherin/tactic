@@ -1,4 +1,4 @@
-FROM bsherin/tactic:base
+FROM bsherin/tactic:base-arm64
 WORKDIR /code
 ADD ./tile_container_env/requirements.txt /code/requirements.txt
 RUN pip3 install --no-cache-dir -r requirements.txt

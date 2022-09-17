@@ -39,7 +39,7 @@ if "USE_WAIT_TASKS" in os.environ:
 else:
     use_wait_tasks = False
 
-RETRIES = 60
+RETRIES = os.environ.get("RETRIES")
 
 
 task_worthy_methods = {}
@@ -71,7 +71,7 @@ def debug_log(msg):
     timestring = datetime.datetime.utcnow().strftime("%b %d, %Y, %H:%M:%S")
     save_stdout = sys.stdout
     sys.stdout = base_stdout
-    print(timestring + ": " + msg)
+    print(timestring + ": " + str(msg))
     sys.stdout = save_stdout
     return
 
@@ -107,9 +107,10 @@ class QWorker(ExceptionMixin):
             self.ready()
             self.channel.start_consuming()
         except Exception as ex:
-            debug_log(self.handle_exception(ex, "Got a pika error"))
+            debug_log("Couldn't connect to pika")
             if retries > max_pika_retries:
                 debug_log("giving up. No more processing of tasks by this qworker")
+                debug_log(self.handle_exception(ex, "Here's the error"))
             else:
                 debug_log("sleeping ...")
                 gevent.sleep(3)
@@ -345,26 +346,37 @@ class BlockingWaitWorker(ExceptionMixin):
         self.current_callback_id = None
         self.initialize_me()
 
-    def initialize_me(self):
-        params = pika.ConnectionParameters(
-            heartbeat=600,
-            blocked_connection_timeout=300,
-            host="megaplex",
-            port=5672,
-            virtual_host='/'
-        )
-        self.my_id = self.queue_name
-        self.connection = pika.BlockingConnection(params)
+    def initialize_me(self, retries=0):
+        try:
+            params = pika.ConnectionParameters(
+                heartbeat=600,
+                blocked_connection_timeout=300,
+                host="megaplex",
+                port=5672,
+                virtual_host='/'
+            )
+            self.my_id = self.queue_name
+            self.connection = pika.BlockingConnection(params)
 
-        self.channel = self.connection.channel()
+            self.channel = self.connection.channel()
 
-        self.channel.queue_declare(queue=self.queue_name, durable=False, exclusive=False)
-        self.callback_queue = self.queue_name
+            self.channel.queue_declare(queue=self.queue_name, durable=False, exclusive=False)
+            self.callback_queue = self.queue_name
 
-        self.channel.basic_consume(
-            queue=self.callback_queue,
-            on_message_callback=self.on_response,
-            auto_ack=True)
+            self.channel.basic_consume(
+                queue=self.callback_queue,
+                on_message_callback=self.on_response,
+                auto_ack=True)
+        except Exception as ex:
+            debug_log("Couldn't connect to pika in Blocking worker")
+            if retries > max_pika_retries:
+                debug_log("giving up. No more processing of tasks by this qworker")
+                debug_log(self.handle_exception(ex, "Here's the error"))
+            else:
+                debug_log("sleeping ...")
+                gevent.sleep(3)
+                new_retries = retries + 1
+                self.initialize_me(retries=new_retries)
 
     def reset_me(self):
         self.connection.close()

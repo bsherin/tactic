@@ -15,8 +15,11 @@ def do_docker_cleanup():
 
     tactic_image_names = ["bsherin/tactic:tile", "bsherin/tactic:main",
                           "bsherin/tactic:module_viewer", "bsherin/tactic:host"]
+
+    additional_image_names = [img + "-arm64" for img in tactic_image_names]
+    tactic_image_names += additional_image_names
     if restart_rabbit:
-        tactic_image_names += ["rabbitmq:3-management", "rabbitmq", "bsherin/tactic:host", "redis:alpine", "mongo"]
+        tactic_image_names += ["rabbitmq:3-management", "rabbitmq", "bsherin/tactic:host", "redis:alpine"]
     for cont in all_containers:
         if cont.attrs["Config"]["Image"] in tactic_image_names:
             cont.remove(force=True)

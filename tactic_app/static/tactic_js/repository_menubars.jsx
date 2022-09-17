@@ -22,6 +22,7 @@ let specializedMenubarPropTypes = {
     add_new_row: PropTypes.func
 };
 
+const resource_icon = window.is_remote ? "globe-network" : "map-marker";
 
 class RepositoryCollectionMenubar extends React.Component {
 
@@ -58,6 +59,7 @@ class RepositoryCollectionMenubar extends React.Component {
                                refreshTab={this.props.refresh_func}
                                closeTab={null}
                                resource_name=""
+                               resource_icon={resource_icon}
                                showErrorDrawerButton={false}
                                toggleErrorDrawer={null}
 
@@ -102,6 +104,7 @@ class RepositoryProjectMenubar extends React.Component {
                                refreshTab={this.props.refresh_func}
                                closeTab={null}
                                resource_name=""
+                               resource_icon={resource_icon}
                                showErrorDrawerButton={false}
                                toggleErrorDrawer={null}
 
@@ -153,6 +156,7 @@ class RepositoryTileMenubar extends React.Component {
                                refreshTab={this.props.refresh_func}
                                closeTab={null}
                                resource_name=""
+                               resource_icon={resource_icon}
                                showErrorDrawerButton={false}
                                toggleErrorDrawer={null}
 
@@ -204,6 +208,7 @@ class RepositoryListMenubar extends React.Component {
                                refreshTab={this.props.refresh_func}
                                closeTab={null}
                                resource_name=""
+                               resource_icon={resource_icon}
                                showErrorDrawerButton={false}
                                toggleErrorDrawer={null}
 
@@ -255,6 +260,7 @@ class RepositoryCodeMenubar extends React.Component {
                                refreshTab={this.props.refresh_func}
                                closeTab={null}
                                resource_name=""
+                               resource_icon={resource_icon}
                                showErrorDrawerButton={false}
                                toggleErrorDrawer={null}
 

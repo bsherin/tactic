@@ -9,18 +9,18 @@ import subprocess
 import re
 import pika
 import json
-from rabbit_manage import get_queues
 forwarder_address = None
 forwarder_id = None
 sys.stdout = sys.stderr
 
 print(os.environ)
-MAX_QUEUE_LENGTH = 5000
-# CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
-# STEP_SIZE = int(os.environ.get("STEP_SIZE"))
 
-CHUNK_SIZE = 100
-STEP_SIZE = 50
+CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
+mongo_uri = os.environ.get("MONGO_URI")
+_develop = ("DEVELOP" in os.environ) and (os.environ.get("DEVELOP") == "True")
+RETRIES = os.environ.get("RETRIES")
+tactic_image_names = ["bsherin/tactic:tile", "bsherin/tactic:main",
+                      "bsherin/tactic:module_viewer", "bsherin/tactic:host"]
 
 if "DEBUG_MAIN_CONTAINER" in os.environ:
     DEBUG_MAIN_CONTAINER = os.environ.get("DEBUG_MAIN_CONTAINER")
@@ -38,6 +38,14 @@ if "DB_NAME" in os.environ:
 else:
     db_name = "tacticdb"
 
+print("in docker_functions with use_arm64 " + str(os.environ.get("USE_ARM64")))
+if "USE_ARM64" in os.environ:
+    USE_ARM64 = os.environ.get("USE_ARM64") == "True" or os.environ.get("USE_ARM64") is True
+else:
+    USE_ARM64 = False
+
+print("got use_arm64 is " + str(USE_ARM64))
+
 cli = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
 
@@ -47,23 +55,7 @@ def get_address(container_identifier, network_name):
     return cli.containers.get(container_identifier).attrs["NetworkSettings"]["Networks"][new_network_name]["IPAddress"]
 
 
-if "MONGO_URI" in os.environ:  # This should be true except in launch_tactic
-    mongo_uri = os.environ.get("MONGO_URI")
-else:
-    # ip_info is only used as a step to getting the host_ip
-    if ("ON_MAC" in os.environ) and (os.environ.get("ON_MAC") == "True"):  # This means we're working on the mac
-        # I used to have en0 here. Now it seems to need to be en3
-        # ip_info = subprocess.check_output(['/usr/local/bin/ip', '-4', 'addr', 'show', 'en0'])
-        ip_info = str(subprocess.check_output(['ifconfig']))
-        host_ip = re.findall("inet (.*?) ", ip_info)[1]
-    else:
-        ip_info = subprocess.check_output(['ip', '-4', 'addr', 'show', 'scope', 'global', 'dev', 'docker0'])
-        host_ip = re.search("inet (.*?)/", ip_info).group(1)
-    mongo_uri = "mongodb://{}:27017/{}".format(host_ip, db_name)
-
-_develop = ("DEVELOP" in os.environ) and (os.environ.get("DEVELOP") == "True")
-
-RETRIES = 60
+from rabbit_manage import get_queues
 
 
 # noinspection PyTypeChecker
@@ -158,10 +150,8 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
         unique_id = special_unique_id
     else:
         unique_id = str(uuid.uuid4())
-    environ = {"MAX_QUEUE_LENGTH": MAX_QUEUE_LENGTH,
-               "RETRIES": RETRIES,
+    environ = {"RETRIES": RETRIES,
                "CHUNK_SIZE": CHUNK_SIZE,
-               "STEP_SIZE": STEP_SIZE,
                "MY_ID": unique_id,
                "OWNER": owner,
                "PARENT": parent,
@@ -172,9 +162,9 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
                "DEBUG_MAIN_CONTAINER": DEBUG_MAIN_CONTAINER,
                "DEBUG_TILE_CONTAINER": DEBUG_TILE_CONTAINER,
                "PYTHONUNBUFFERED": "Yes",
+               "USE_ARM64": USE_ARM64,
                "TRUE_HOST_PERSIST_DIR": local_true_host_persist_dir,
                "TRUE_HOST_RESOURCES_DIR": local_true_host_resources_dir
-
                }
 
     if username is not None:
@@ -191,6 +181,12 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
 
     if image_name == "bsherin/tactic:tile":  # We don't want people to be able to see the mongo_uri
         del environ["MONGO_URI"]
+
+    print("in create container with image_name " + image_name)
+    print("USE_ARM64 is " + str(USE_ARM64))
+    if USE_ARM64 and image_name in tactic_image_names:
+        image_name += "-arm64"
+        print("changed image name to " + image_name)
 
     run_args = {
         "image": image_name,
@@ -428,7 +424,7 @@ def connect_to_network(container, network):
 
 
 def delete_all_queues(use_localhost=False):
-    delete_list_of_queues(get_queues(), use_localhost)
+    delete_list_of_queues(get_queues(use_localhost), use_localhost)
     return
 
 

@@ -1,2 +1,5 @@
 torch
 torchtext
+pmaw
+praw
+rabbitmq-admin

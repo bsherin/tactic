@@ -20,3 +20,4 @@ requests
 rabbitmq-admin
 WTForms
 xmltodict
+ssh-pymongo

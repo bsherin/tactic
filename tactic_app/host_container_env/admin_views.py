@@ -35,6 +35,7 @@ def admin_interface():
     if current_user.get_id() == admin_user.get_id():
         return render_template("library/library_home_react.html",
                                develop=str(_develop),
+                               is_remote="no",
                                version_string=tstring,
                                page_title="tactic admin",
                                css_source=css_source("admin_home_react"),

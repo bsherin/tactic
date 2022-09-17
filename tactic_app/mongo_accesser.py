@@ -65,7 +65,7 @@ class MongoAccess(object):
 
     @property
     def data_collections(self):
-        cnames = self.db.collection_names()
+        cnames = self.db.list_collection_names()
         string_start = self.username + ".data_collection."
         my_collection_names = []
         for cname in cnames:
@@ -76,7 +76,7 @@ class MongoAccess(object):
 
     @property
     def data_collection_names_with_metadata(self):
-        cnames = self.db.collection_names()
+        cnames = self.db.list_collection_names()
         string_start = self.username + ".data_collection."
         my_collection_names = []
         for cname in cnames:
@@ -311,7 +311,7 @@ class MongoAccess(object):
 
     @property
     def data_collection_tags_dict(self):
-        cnames = self.db.collection_names()
+        cnames = self.db.list_collection_names()
         string_start = self.username + ".data_collection."
         data_collection_names = {}
         for cname in cnames:
@@ -361,7 +361,7 @@ class MongoAccess(object):
 
     @property
     def project_names(self):
-        if self.project_collection_name not in self.db.collection_names():
+        if self.project_collection_name not in self.db.list_collection_names():
             self.db.create_collection(self.project_collection_name)
             return []
         my_project_names = []
@@ -371,7 +371,7 @@ class MongoAccess(object):
 
     @property
     def list_names(self):
-        if self.list_collection_name not in self.db.collection_names():
+        if self.list_collection_name not in self.db.list_collection_names():
             self.db.create_collection(self.list_collection_name)
             return []
         my_list_names = []
@@ -384,7 +384,7 @@ class MongoAccess(object):
 
     @property
     def list_names_with_metadata(self):
-        if self.list_collection_name not in self.db.collection_names():
+        if self.list_collection_name not in self.db.list_collection_names():
             self.db.create_collection(self.list_collection_name)
             return []
         my_list_names = []
@@ -397,7 +397,7 @@ class MongoAccess(object):
 
     @property
     def list_tags_dict(self):
-        if self.list_collection_name not in self.db.collection_names():
+        if self.list_collection_name not in self.db.list_collection_names():
             self.db.create_collection(self.list_collection_name)
             return {}
         lists = {}
@@ -410,7 +410,7 @@ class MongoAccess(object):
 
     @property
     def project_names_with_metadata(self):
-        if self.project_collection_name not in self.db.collection_names():
+        if self.project_collection_name not in self.db.list_collection_names():
             self.db.create_collection(self.project_collection_name)
             return []
         my_project_names = []
@@ -423,7 +423,7 @@ class MongoAccess(object):
 
     @property
     def tile_module_names_with_metadata(self):
-        if self.tile_collection_name not in self.db.collection_names():
+        if self.tile_collection_name not in self.db.list_collection_names():
             self.db.create_collection(self.tile_collection_name)
             return []
         my_tile_names = []
@@ -436,7 +436,7 @@ class MongoAccess(object):
 
     @property
     def tile_module_names(self, ):
-        if self.tile_collection_name not in self.db.collection_names():
+        if self.tile_collection_name not in self.db.list_collection_names():
             self.db.create_collection(self.tile_collection_name)
             return []
         my_tile_names = []
@@ -446,7 +446,7 @@ class MongoAccess(object):
 
     @property
     def code_names(self, ):
-        if self.code_collection_name not in self.db.collection_names():
+        if self.code_collection_name not in self.db.list_collection_names():
             self.db.create_collection(self.code_collection_name)
             return []
         my_code_names = []
@@ -456,7 +456,7 @@ class MongoAccess(object):
 
     @property
     def code_names_with_metadata(self):
-        if self.code_collection_name not in self.db.collection_names():
+        if self.code_collection_name not in self.db.list_collection_names():
             self.db.create_collection(self.code_collection_name)
             return []
         my_code_names = []
@@ -469,7 +469,7 @@ class MongoAccess(object):
 
     @property
     def class_tags_dict(self):
-        if self.code_collection_name not in self.db.collection_names():
+        if self.code_collection_name not in self.db.list_collection_names():
             self.db.create_collection(self.code_collection_name)
             return {}
         classes = {}
@@ -481,7 +481,7 @@ class MongoAccess(object):
 
     @property
     def all_names(self):
-        names = self.collection_names + self.project_names + self.tile_module_names + self.list_names + self.code_names
+        names = self.list_collection_names + self.project_names + self.tile_module_names + self.list_names + self.code_names
         return sorted(names, key=str.lower)
 
     @property
@@ -497,7 +497,7 @@ class MongoAccess(object):
 
     @property
     def function_tags_dict(self):
-        if self.code_collection_name not in self.db.collection_names():
+        if self.code_collection_name not in self.db.list_collection_names():
             self.db.create_collection(self.code_collection_name)
             return {}
         functions = {}
@@ -535,7 +535,7 @@ class MongoAccess(object):
         else:
             cname = self.resource_collection_name(res_type)
             name_key = name_keys[res_type]
-            if cname not in self.db.collection_names():
+            if cname not in self.db.list_collection_names():
                 self.db.create_collection(cname)
                 return []
             res_names = []
@@ -575,7 +575,7 @@ class MongoAccess(object):
         return code_dict["the_code"]
 
     def get_code_with_class(self, class_name):
-        if self.code_collection_name not in self.db.collection_names():
+        if self.code_collection_name not in self.db.list_collection_names():
             self.db.create_collection(self.code_collection_name)
         for doc in self.db[self.code_collection_name].find():
             if class_name in doc["metadata"]["classes"]:
@@ -583,7 +583,7 @@ class MongoAccess(object):
         return None
 
     def get_code_with_function(self, function_name):
-        if self.code_collection_name not in self.db.collection_names():
+        if self.code_collection_name not in self.db.list_collection_names():
             self.db.create_collection(self.code_collection_name)
         for doc in self.db[self.code_collection_name].find():
             if function_name in doc["metadata"]["functions"]:

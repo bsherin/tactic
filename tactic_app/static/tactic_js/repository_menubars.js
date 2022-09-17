@@ -65,6 +65,7 @@ var specializedMenubarPropTypes = {
   muti_select: _propTypes["default"].bool,
   add_new_row: _propTypes["default"].func
 };
+var resource_icon = window.is_remote ? "globe-network" : "map-marker";
 
 var RepositoryCollectionMenubar = /*#__PURE__*/function (_React$Component) {
   _inherits(RepositoryCollectionMenubar, _React$Component);
@@ -128,6 +129,7 @@ var RepositoryCollectionMenubar = /*#__PURE__*/function (_React$Component) {
         refreshTab: this.props.refresh_func,
         closeTab: null,
         resource_name: "",
+        resource_icon: resource_icon,
         showErrorDrawerButton: false,
         toggleErrorDrawer: null
       });
@@ -202,6 +204,7 @@ var RepositoryProjectMenubar = /*#__PURE__*/function (_React$Component2) {
         refreshTab: this.props.refresh_func,
         closeTab: null,
         resource_name: "",
+        resource_icon: resource_icon,
         showErrorDrawerButton: false,
         toggleErrorDrawer: null
       });
@@ -286,6 +289,7 @@ var RepositoryTileMenubar = /*#__PURE__*/function (_React$Component3) {
         refreshTab: this.props.refresh_func,
         closeTab: null,
         resource_name: "",
+        resource_icon: resource_icon,
         showErrorDrawerButton: false,
         toggleErrorDrawer: null
       });
@@ -370,6 +374,7 @@ var RepositoryListMenubar = /*#__PURE__*/function (_React$Component4) {
         refreshTab: this.props.refresh_func,
         closeTab: null,
         resource_name: "",
+        resource_icon: resource_icon,
         showErrorDrawerButton: false,
         toggleErrorDrawer: null
       });
@@ -454,6 +459,7 @@ var RepositoryCodeMenubar = /*#__PURE__*/function (_React$Component5) {
         refreshTab: this.props.refresh_func,
         closeTab: null,
         resource_name: "",
+        resource_icon: resource_icon,
         showErrorDrawerButton: false,
         toggleErrorDrawer: null
       });

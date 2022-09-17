@@ -1,0 +1,10 @@
+#!/bin/bash
+if [ "$1" == "all" ] ; then
+	docker-compose build "tactic_base"
+	docker-compose build "tactic_host"
+	docker-compose build "tactic_main"
+	docker-compose build "tactic_module_viewer"
+	docker-compose build "tactic_tile"
+else
+	docker-compose build "tactic_$1"
+fi

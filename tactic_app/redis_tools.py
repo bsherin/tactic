@@ -1,7 +1,6 @@
 
 import redis
 
-# redis_address = get_address("tactic-redis", "bridge")
 print("getting redis client")
 redis_tm = redis.StrictRedis(host="tactic-redis",
                              port=6379,

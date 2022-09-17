@@ -1,5 +1,4 @@
 gensim
-git+https://github.com/jacksonllee/pylangacq.git
 beautifulsoup4
 eli5
 bokeh==2.0.2

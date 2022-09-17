@@ -5,8 +5,6 @@ from mongo_accesser import PROTECTED_METADATA_KEYS
 
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
 
-STEP_SIZE = int(os.environ.get("STEP_SIZE"))
-
 
 class TableSpec(object):
     def __init__(self, doc_name=None, header_list=None, table_width=None, column_widths=None,
