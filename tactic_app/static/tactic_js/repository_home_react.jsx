@@ -33,7 +33,7 @@ let tsocket;
 function _repository_home_main () {
     window.library_id = guid();
     tsocket = new TacticSocket(
-        "library",
+        "main",
         5000,
         window.library_id
     );

@@ -1,4 +1,4 @@
-from qworker import QWorker, task_worthy, task_worthy_manual_submit, current_timestamp
+from qworker import QWorker, task_worthy, task_worthy_manual_submit, current_timestamp, debug_log
 from flask import render_template, url_for
 from flask_login import current_user
 import json
@@ -7,7 +7,7 @@ import gevent
 import pika
 from communication_utils import make_python_object_jsonizable, store_temp_data, read_temp_data, delete_temp_data
 from docker_functions import create_container, destroy_container, destroy_child_containers, destroy_user_containers
-from docker_functions import get_log, ContainerCreateError, container_exec, restart_container, get_address
+from docker_functions import get_log, restart_container
 from docker_functions import get_matching_user_containers
 from tactic_app import app, socketio, db
 from library_views import tile_manager, project_manager, collection_manager, list_manager
@@ -40,11 +40,6 @@ import os
 
 from js_source_management import _develop
 
-if "RESTART_RABBIT" in os.environ:
-    restart_rabbit = os.environ.get("RESTART_RABBIT") == "True"
-else:
-    restart_rabbit = True
-
 myport = os.environ.get("MYPORT")
 
 from qworker import max_pika_retries
@@ -74,9 +69,10 @@ class HostWorker(QWorker):
             print(' [*] Waiting for messages:')
             self.channel.start_consuming()
         except Exception as ex:
-            print(self.handle_exception(ex, "Got a pika error"))
+            debug_log("Couldn't connect to pika")
             if retries > max_pika_retries:
                 print("giving up. No more processing of tasks by this qworker")
+                debug_log(self.handle_exception(ex, "Here's the error"))
             else:
                 print("sleeping ...")
                 gevent.sleep(3)

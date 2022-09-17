@@ -33,6 +33,10 @@ import settings_object
 import gevent
 from communication_utils import make_python_object_jsonizable, emit_direct
 import uuid
+from rabbit_manage import sleep_until_rabbit_alive
+print("Waiting for rabbit")
+success = sleep_until_rabbit_alive()
+print("Done waiting")
 
 import sys, os
 sys.stdout = sys.stderr

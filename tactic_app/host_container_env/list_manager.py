@@ -10,10 +10,9 @@ from tactic_app import app, db
 import tactic_app
 from mongo_accesser import make_name_unique
 from file_handling import load_a_list
-from resource_manager import ResourceManager, LibraryResourceManager
+from resource_manager import ResourceManager, LibraryResourceManager, repository_user
 from users import User
 import loaded_tile_management
-repository_user = User.get_user_by_username("repository")
 from file_handling import read_freeform_file
 
 import datetime
@@ -83,7 +82,7 @@ class ListManager(LibraryResourceManager):
             list_name = data_dict["list_name"]
             new_list_as_string = data_dict["new_list_as_string"]
             new_list = new_list_as_string.split("\n")
-            doc = db[current_user.list_collection_name].find_one({"list_name": list_name})
+            doc = self.db[current_user.list_collection_name].find_one({"list_name": list_name})
             if "metadata" in doc:
                 mdata = doc["metadata"]
             else:
@@ -92,7 +91,7 @@ class ListManager(LibraryResourceManager):
             mdata["notes"] = data_dict["notes"]
             mdata["updated"] = datetime.datetime.utcnow()
 
-            db[current_user.list_collection_name].update_one({"list_name": list_name},
+            self.db[current_user.list_collection_name].update_one({"list_name": list_name},
                                                              {'$set': {"the_list": new_list, "metadata": mdata}})
 
             self.update_selector_row(self.build_res_dict(list_name, mdata))
@@ -104,11 +103,11 @@ class ListManager(LibraryResourceManager):
         try:
             new_name = request.json["new_name"]
             update_selector = "update_selector" in request.json and request.json["update_selector"] == "True"
-            db[current_user.list_collection_name].update_one({"list_name": old_name},
+            self.db[current_user.list_collection_name].update_one({"list_name": old_name},
                                                              {'$set': {"list_name": new_name}})
             # self.update_selector_list()
             if update_selector:
-                doc = db[current_user.list_collection_name].find_one({"list_name": new_name})
+                doc = self.db[current_user.list_collection_name].find_one({"list_name": new_name})
                 if "metadata" in doc:
                     mdata = doc["metadata"]
                 else:
@@ -128,11 +127,8 @@ class ListManager(LibraryResourceManager):
         return jsonify({"success": True, "the_content": lstring})
 
     def grab_metadata(self, res_name):
-        if self.is_repository:
-            user_obj = repository_user
-        else:
-            user_obj = current_user
-        doc = db[user_obj.list_collection_name].find_one({self.name_field: res_name})
+        user_obj = current_user
+        doc = self.db[user_obj.list_collection_name].find_one({self.name_field: res_name})
         if "metadata" in doc:
             mdata = doc["metadata"]
         else:
@@ -140,17 +136,17 @@ class ListManager(LibraryResourceManager):
         return mdata
 
     def save_metadata(self, res_name, tags, notes):
-        doc = db[current_user.list_collection_name].find_one({"list_name": res_name})
+        doc = self.db[current_user.list_collection_name].find_one({"list_name": res_name})
         if "metadata" in doc:
             mdata = doc["metadata"]
         else:
             mdata = {}
         mdata["tags"] = tags
         mdata["notes"] = notes
-        db[current_user.list_collection_name].update_one({"list_name": res_name}, {'$set': {"metadata": mdata}})
+        self.db[current_user.list_collection_name].update_one({"list_name": res_name}, {'$set': {"metadata": mdata}})
 
     def delete_tag(self, tag):
-        doclist = db[current_user.list_collection_name].find()
+        doclist = self.db[current_user.list_collection_name].find()
         for doc in doclist:
             if "metadata" not in doc:
                 continue
@@ -161,11 +157,11 @@ class ListManager(LibraryResourceManager):
                 taglist.remove(tag)
                 mdata["tags"] = " ".join(taglist)
                 res_name = doc["list_name"]
-                db[current_user.list_collection_name].update_one({"list_name": res_name}, {'$set': {"metadata": mdata}})
+                self.db[current_user.list_collection_name].update_one({"list_name": res_name}, {'$set': {"metadata": mdata}})
         return
 
     def rename_tag(self, tag_changes):
-        doclist = db[current_user.list_collection_name].find()
+        doclist = self.db[current_user.list_collection_name].find()
         for doc in doclist:
             if "metadata" not in doc:
                 continue
@@ -179,7 +175,7 @@ class ListManager(LibraryResourceManager):
                         taglist.append(new_tag)
                     mdata["tags"] = " ".join(taglist)
                     res_name = doc["list_name"]
-                    db[current_user.list_collection_name].update_one({"list_name": res_name},
+                    self.db[current_user.list_collection_name].update_one({"list_name": res_name},
                                                                      {'$set': {"metadata": mdata}})
         return
 
@@ -230,7 +226,7 @@ class ListManager(LibraryResourceManager):
             mdata = loaded_tile_management.create_initial_metadata()
             data_dict = {"list_name": list_name, "the_list": the_list, "metadata": mdata}
 
-            db[user_obj.list_collection_name].insert_one(data_dict)
+            self.db[user_obj.list_collection_name].insert_one(data_dict)
             if len(decoding_problems) > 0:
                 file_decoding_errors[filename] = decoding_problems
             successful_reads.append(filename)
@@ -260,7 +256,7 @@ class ListManager(LibraryResourceManager):
             user_obj = current_user
             list_names = request.json["resource_names"]
             for list_name in list_names:
-                db[user_obj.list_collection_name].delete_one({"list_name": list_name})
+                self.db[user_obj.list_collection_name].delete_one({"list_name": list_name})
             return jsonify({"success": True, "message": "Lists(s) successfully deleted",
                             "alert_type": "alert-success"})
 
@@ -271,13 +267,13 @@ class ListManager(LibraryResourceManager):
         user_obj = current_user
         list_to_copy = request.json['res_to_copy']
         new_list_name = request.json['new_res_name']
-        if db[user_obj.list_collection_name].find_one({"list_name": new_list_name}) is not None:
+        if self.db[user_obj.list_collection_name].find_one({"list_name": new_list_name}) is not None:
             return jsonify({"success": False, "alert_type": "alert-warning",
                             "message": "A list with that name already exists"})
-        old_list_dict = db[user_obj.list_collection_name].find_one({"list_name": list_to_copy})
+        old_list_dict = self.db[user_obj.list_collection_name].find_one({"list_name": list_to_copy})
         metadata = copy.copy(old_list_dict["metadata"])
         new_list_dict = {"list_name": new_list_name, "the_list": old_list_dict["the_list"], "metadata": metadata}
-        db[user_obj.list_collection_name].insert_one(new_list_dict)
+        self.db[user_obj.list_collection_name].insert_one(new_list_dict)
         new_row = self.build_res_dict(new_list_name, metadata, user_obj)
         return jsonify({"success": True, "new_row": new_row})
 
@@ -285,13 +281,13 @@ class ListManager(LibraryResourceManager):
         user_obj = current_user
         new_list_name = request.json['new_res_name']
         template_name = request.json["template_name"]
-        if db[user_obj.list_collection_name].find_one({"list_name": new_list_name}) is not None:
+        if self.db[user_obj.list_collection_name].find_one({"list_name": new_list_name}) is not None:
             return jsonify({"success": False, "alert_type": "alert-warning",
                             "message": "A list with that name already exists"})
-        old_list_dict = db[repository_user.list_collection_name].find_one({"list_name": template_name})
+        old_list_dict = self.db[repository_user.list_collection_name].find_one({"list_name": template_name})
         metadata = copy.copy(old_list_dict["metadata"])
         new_list_dict = {"list_name": new_list_name, "the_list": old_list_dict["the_list"], "metadata": metadata}
-        db[user_obj.list_collection_name].insert_one(new_list_dict)
+        self.db[user_obj.list_collection_name].insert_one(new_list_dict)
         new_row = self.build_res_dict(new_list_name, metadata, user_obj)
         return jsonify({"success": True, "new_row": new_row})
 
@@ -299,7 +295,7 @@ class ListManager(LibraryResourceManager):
         user_obj = current_user
         search_text = request.json['search_text']
         reg = re.compile(".*" + search_text + ".*", re.IGNORECASE)
-        res = db[user_obj.list_collection_name].find({"the_list": reg})
+        res = self.db[user_obj.list_collection_name].find({"the_list": reg})
         res_list = []
         for t in res:
             res_list.append(t["list_name"])
@@ -309,7 +305,7 @@ class ListManager(LibraryResourceManager):
         user_obj = current_user
         search_text = request.json['search_text']
         reg = re.compile(".*" + search_text + ".*", re.IGNORECASE)
-        res = db[user_obj.list_collection_name].find({"$or": [{"list_name": reg}, {"metadata.notes": reg},
+        res = self.db[user_obj.list_collection_name].find({"$or": [{"list_name": reg}, {"metadata.notes": reg},
                                                      {"metadata.tags": reg}]})
         res_list = []
         for t in res:
@@ -367,3 +363,12 @@ class RepositoryListManager(ListManager):
         for w in the_list:
             lstring += w + "\n"
         return jsonify({"success": True, "the_content": lstring})
+
+    def grab_metadata(self, res_name):
+        user_obj = repository_user
+        doc = self.repository_db[user_obj.list_collection_name].find_one({self.name_field: res_name})
+        if "metadata" in doc:
+            mdata = doc["metadata"]
+        else:
+            mdata = None
+        return mdata

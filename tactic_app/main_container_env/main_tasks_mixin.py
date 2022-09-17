@@ -14,8 +14,6 @@ from doc_info import docInfo, FreeformDocInfo
 from qworker import debug_log
 
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
-STEP_SIZE = int(os.environ.get("STEP_SIZE"))
-
 
 def task_worthy(m):
     task_worthy_methods[m.__name__] = "mainwindow"
@@ -902,7 +900,7 @@ class APISupportTasksMixin:
             tag_filter = tag_filter.lower()
         if search_filter is not None:
             search_filter = search_filter.lower()
-        if self.code_collection_name not in self.db.collection_names():
+        if self.code_collection_name not in self.db.list_collection_names():
             self.db.create_collection(self.code_collection_name)
             return {}
         function_names = []
@@ -928,7 +926,7 @@ class APISupportTasksMixin:
             tag_filter = tag_filter.lower()
         if search_filter is not None:
             search_filter = search_filter.lower()
-        if self.code_collection_name not in self.db.collection_names():
+        if self.code_collection_name not in self.db.list_collection_names():
             self.db.create_collection(self.code_collection_name)
             return {}
         class_names = []
@@ -949,7 +947,7 @@ class APISupportTasksMixin:
     @task_worthy
     def get_function_with_metadata(self, data):
         function_name = data["function_name"]
-        if self.code_collection_name not in self.db.collection_names():
+        if self.code_collection_name not in self.db.list_collection_names():
             self.db.create_collection(self.code_collection_name)
         found = False
         doc = None
@@ -968,7 +966,7 @@ class APISupportTasksMixin:
     @task_worthy
     def get_class_with_metadata(self, data):
         class_name = data["class_name"]
-        if self.code_collection_name not in self.db.collection_names():
+        if self.code_collection_name not in self.db.list_collection_names():
             self.db.create_collection(self.code_collection_name)
         found = False
         doc = None

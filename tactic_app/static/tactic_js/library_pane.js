@@ -357,8 +357,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         }, function () {
           if (callback) {
             callback();
-          } else if (select) {
-            self._selectRow(row_index);
           } else if (select_by_name) {
             var ind = self.get_data_dict_index(select_by_name);
 
@@ -367,6 +365,8 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
             }
 
             self._selectRow(ind);
+          } else if (select || self.props.selected_resource.name == "") {
+            self._selectRow(row_index);
           }
         });
       });
@@ -1192,7 +1192,8 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         handleNotesBlur: this.props.multi_select ? null : this._saveFromSelectedResource,
         additional_metadata: additional_metadata,
         aux_pane: this.props.aux_pane,
-        aux_pane_title: this.props.aux_pane_title
+        aux_pane_title: this.props.aux_pane_title,
+        readOnly: this.props.is_repository
       });
 
       var th_style = {

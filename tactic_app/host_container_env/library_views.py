@@ -7,13 +7,13 @@ from flask_socketio import join_room
 import markdown
 
 import tactic_app
-from tactic_app import app, socketio, db, fs
+from tactic_app import app, socketio, db, fs, repository_db, repository_fs, USE_REMOTE_REPOSITORY
 from mongo_accesser import name_keys
 from communication_utils import make_jsonizable_and_compress, read_project_dict
 from exception_mixin import generic_exception_handler
 from docker_functions import ContainerCreateError
 
-from resource_manager import ResourceManager
+from resource_manager import ResourceManager, repository_user
 from list_manager import ListManager, RepositoryListManager
 from collection_manager import CollectionManager, RepositoryCollectionManager
 from project_manager import ProjectManager, RepositoryProjectManager
@@ -25,9 +25,7 @@ from js_source_management import js_source_dict, _develop, css_source
 
 
 import loaded_tile_management
-repository_user = User.get_user_by_username("repository")
 admin_user = User.get_user_by_username("admin")
-
 
 code_manager = CodeManager("code")
 repository_code_manager = RepositoryCodeManager("code")
@@ -53,24 +51,29 @@ managers = {
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
 
-def copy_between_accounts(source_user, dest_user, res_type, new_res_name, res_name):
+def copy_between_accounts(source_user, dest_user, res_type, new_res_name, res_name,
+                          source_db=None, dest_db=None, source_fs=None, dest_fs=None):
     try:
+        sdb = db if source_db is None else source_db
+        ddb = db if dest_db is None else dest_db
+        sfs = fs if source_fs is None else source_fs
+        dfs = fs if dest_fs is None else dest_fs
         if res_type == "collection":
             collection_to_copy = source_user.full_collection_name(res_name)
             new_collection_name = dest_user.full_collection_name(new_res_name)
-            for doc in db[collection_to_copy].find():
+            for doc in sdb[collection_to_copy].find():
                 del doc["_id"]
                 if "file_id" in doc:
-                    doc_text = fs.get(doc["file_id"]).read()
-                    doc["file_id"] = fs.put(doc_text)
-                db[new_collection_name].insert_one(doc)
-            db[new_collection_name].update_one({"name": "__metadata__"},
+                    doc_text = sfs.get(doc["file_id"]).read()
+                    doc["file_id"] = dfs.put(doc_text)
+                ddb[new_collection_name].insert_one(doc)
+            ddb[new_collection_name].update_one({"name": "__metadata__"},
                                                {'$set': {"datetime": datetime.datetime.utcnow()}})
-            metadata = db[new_collection_name].find_one({"name": "__metadata__"})
+            metadata = ddb[new_collection_name].find_one({"name": "__metadata__"})
         else:
             name_field = name_keys[res_type]
             collection_name = source_user.resource_collection_name(res_type)
-            old_dict = db[collection_name].find_one({name_field: res_name})
+            old_dict = sdb[collection_name].find_one({name_field: res_name})
             new_res_dict = {name_field: new_res_name}
             for (key, val) in old_dict.items():
                 if (key == "_id") or (key == name_field):
@@ -85,14 +88,14 @@ def copy_between_accounts(source_user, dest_user, res_type, new_res_name, res_na
             else:
                 new_res_dict["metadata"]["datetime"] = datetime.datetime.utcnow()
             if res_type == "project":
-                project_dict = read_project_dict(fs, new_res_dict["metadata"], old_dict["file_id"])
+                project_dict = read_project_dict(sfs, new_res_dict["metadata"], old_dict["file_id"])
                 pdict = make_jsonizable_and_compress(project_dict)
-                new_res_dict["file_id"] = fs.put(pdict)
+                new_res_dict["file_id"] = dfs.put(pdict)
             elif "file_id" in new_res_dict:
-                doc_text = fs.get(new_res_dict["file_id"]).read()
-                new_res_dict["file_id"] = fs.put(doc_text)
+                doc_text = sfs.get(new_res_dict["file_id"]).read()
+                new_res_dict["file_id"] = dfs.put(doc_text)
             new_collection_name = dest_user.resource_collection_name(res_type)
-            db[new_collection_name].insert_one(new_res_dict)
+            ddb[new_collection_name].insert_one(new_res_dict)
             metadata = new_res_dict["metadata"]
         overall_res = [metadata, jsonify({"success": True, "message": "Resource Successfully Copied", "alert_type": "alert-success"})]
         return overall_res
@@ -126,6 +129,7 @@ def library():
     print("*** in library ***")
     if current_user.get_id() == admin_user.get_id():
         return render_template("library/library_home_react.html",
+                               is_remote="no",
                                version_string=tstring,
                                develop=str(_develop),
                                page_title="tactic admin",
@@ -135,6 +139,7 @@ def library():
     else:
         return render_template('library/library_home_react.html',
                                develop=str(_develop),
+                               is_remote="no",
                                version_string=tstring,
                                theme=current_user.get_theme(),
                                page_title="tactic resources",
@@ -157,8 +162,10 @@ def context():
 @app.route('/repository')
 @login_required
 def repository():
+    is_remote = "yes" if USE_REMOTE_REPOSITORY else "no"
     return render_template('library/library_home_react.html',
                            version_string=tstring,
+                           is_remote=is_remote,
                            develop=str(_develop),
                            theme=current_user.get_theme(),
                            page_title="tactic repository",
@@ -218,7 +225,9 @@ def copy_from_repository():
     res_type = request.json["res_type"]
     new_res_name = request.json['new_res_name']
     res_name = request.json['res_name']
-    metadata, result = copy_between_accounts(repository_user, current_user, res_type, new_res_name, res_name)
+    metadata, result = copy_between_accounts(repository_user, current_user,
+                                             res_type, new_res_name, res_name,
+                                             source_db=repository_db, source_fs=repository_fs)
     if metadata is not None:
         manager = get_manager_for_type(res_type)
         manager.refresh_selector_list()
@@ -232,7 +241,8 @@ def send_to_repository():
     res_type = request.json['res_type']
     new_res_name = request.json['new_res_name']
     res_name = request.json['res_name']
-    metadata, result = copy_between_accounts(current_user, repository_user, res_type, new_res_name, res_name)
+    metadata, result = copy_between_accounts(current_user, repository_user, res_type, new_res_name, res_name,
+                                             dest_db=repository_db, dest_fs=repository_fs)
     return result
 
 

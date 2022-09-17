@@ -6,6 +6,15 @@ In `tactic_app` directory:
 
 `docker-compose build` or `docker-compose build tactic_main`
 
+Now there are x86 and arm64 images that are built. To build the arm64 images (which is what I want on apple silicon)
+then I do: `docker-compose build tactic_main_arm64`
+
+I made bash scripts. so now can do:
+
+`dbuild_arm host` or `dbuild host`
+or
+`dbuild_arm all` or `dbuild all`
+
 ### build javascript bundles and css using webpack
 from the `tactic` directory
 
@@ -34,8 +43,9 @@ note that the `npm run …` commands run a named script from package.json
     * note that the flask config file in `tactic_app/config.py` is no longer part of the repository.
     I think this shouldn't matter because I build my images locally.
 * On github, pull changes onto master if necessary
-* Push images to docker hub: `docker push bsherin/tactic -a` is all it takes, I think
-* On github, Pull onto main branch, if necessary
+* Push images to docker hub: 
+  * run the script `push_images.sh` to push just the x86 images.
+    * `docker push bsherin/tactic -a` to push all images
 
 Finally:
 * run these scripts (They require a vpn connection

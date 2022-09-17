@@ -5,7 +5,7 @@ from flask_login import login_required, current_user
 from flask import jsonify, render_template, url_for, request, send_file
 from users import User
 from docker_functions import create_container, main_container_info
-from tactic_app import app, db
+from tactic_app import app, db, repository_db
 from communication_utils import make_python_object_jsonizable, debinarize_python_object
 from communication_utils import read_temp_data, delete_temp_data
 from mongo_accesser import MongoAccessException
@@ -23,9 +23,8 @@ from redis_tools import create_ready_block
 
 from js_source_management import js_source_dict, _develop, css_source
 
-from resource_manager import ResourceManager, LibraryResourceManager
+from resource_manager import ResourceManager, LibraryResourceManager, repository_user
 import loaded_tile_management
-repository_user = User.get_user_by_username("repository")
 
 ILLEGAL_CHARACTERS_RE = re.compile(r'[\000-\010]|[\013-\014]|[\016-\037]')
 
@@ -80,7 +79,7 @@ class CollectionManager(LibraryResourceManager):
         user_obj = current_user
         if "temp_data_id" in request.json:
             temp_data_id = request.json["temp_data_id"]
-            the_data = read_temp_data(db, temp_data_id)
+            the_data = read_temp_data(self.db, temp_data_id)
             main_id, rb_id = main_container_info.create_main_container("new_notebook",
                                                                        user_obj.get_id(),
                                                                        user_obj.username)
@@ -244,9 +243,9 @@ class CollectionManager(LibraryResourceManager):
 
     def get_collection_size(self, short_cname):
         total = 0
-        for doc in db[current_user.full_collection_name(short_cname)].find():
+        for doc in self.db[current_user.full_collection_name(short_cname)].find():
             if "file_id" in doc:
-                total += db["fs.files"].find_one({"_id": doc["file_id"]})["length"]
+                total += self.db["fs.files"].find_one({"_id": doc["file_id"]})["length"]
         return total
 
     def get_collection_size_info(self, short_name, mdata):
@@ -287,8 +286,10 @@ class CollectionManager(LibraryResourceManager):
         try:
             if request.json["is_repository"]:
                 user_obj = repository_user
+                db_to_use = self.repository_db
             else:
                 user_obj = current_user
+                db_to_use = self.db
             search_spec = request.json["search_spec"]
             row_number = request.json["row_number"]
             search_text = search_spec['search_string']
@@ -296,7 +297,7 @@ class CollectionManager(LibraryResourceManager):
                 search_text = ".*"
             else:
                 search_text = ".*" + search_text
-            cnames = db.collection_names()
+            cnames = db_to_use.list_collection_names()
             string_start = user_obj.username + ".data_collection."
             found_collections = []
             all_tags = []
@@ -305,7 +306,7 @@ class CollectionManager(LibraryResourceManager):
             for cname in cnames:
                 m = re.search(string_start + "(.*)", cname)
                 if m:
-                    mdata = db[cname].find_one({"name": "__metadata__"})
+                    mdata = db_to_use[cname].find_one({"name": "__metadata__"})
 
                     entry = self.build_res_dict(m.group(1), mdata, user_obj)
                     if "type" in mdata:
@@ -362,10 +363,7 @@ class CollectionManager(LibraryResourceManager):
             return self.get_exception_for_ajax(ex, "Error getting chunk")
 
     def grab_metadata(self, res_name):
-        if self.is_repository:
-            user_obj = repository_user
-        else:
-            user_obj = current_user
+        user_obj = current_user
         return user_obj.get_collection_metadata(res_name)
 
     def save_metadata(self, res_name, tags, notes):
@@ -722,6 +720,10 @@ class CollectionManager(LibraryResourceManager):
 class RepositoryCollectionManager(CollectionManager):
     rep_string = "repository-"
     is_repository = True
+
+    def grab_metadata(self, res_name):
+        user_obj = repository_user
+        return user_obj.get_collection_metadata(res_name)
 
     def add_rules(self):
         pass

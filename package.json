@@ -5,7 +5,7 @@
     "build": "NODE_OPTIONS=--openssl-legacy-provider webpack --mode=development",
     "build-production": "NODE_OPTIONS=--openssl-legacy-provider webpack --mode=production",
     "convertjsx": "/usr/local/bin/npx babel --presets=@babel/preset-env,@babel/preset-react --plugins=@babel/plugin-proposal-class-properties",
-    "push-images": "docker push bsherin/tactic -a",
+    "push-images": "push_images.sh",
     "dc": "docker-compose -f ./tactic_app/docker-compose.yml build"
   },
   "dependencies": {

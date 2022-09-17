@@ -4,20 +4,15 @@ from flask_login import current_user
 import re, os
 
 import tactic_app
-from tactic_app import socketio, db
+from tactic_app import socketio, db, repository_db, USE_REMOTE_REPOSITORY
 from users import User
 from exception_mixin import ExceptionMixin
 
-repository_user = User.get_user_by_username("repository")
+print("in resource_manager with repository_db " + str(repository_db))
+
+repository_user = User.get_user_by_username("repository", USE_REMOTE_REPOSITORY)
 
 CHUNK_SIZE = int(int(os.environ.get("CHUNK_SIZE")) / 2)
-
-#
-# def doflash(message, alert_type='alert-info', user_id=None):
-#     if user_id is None:
-#         user_id = current_user.get_id()
-#     data = {"message": message, "alert_type": alert_type}
-#     socketio.emit('stop-spinner', data, namespace='/library', room=user_id)
 
 
 # noinspection PyMethodMayBeStatic,PyMissingConstructor
@@ -35,6 +30,8 @@ class ResourceManager(ExceptionMixin):
             self.module_id = "repository_" + self.res_type + "_module"
         else:
             self.module_id = self.res_type + "_module"
+        self.db = db
+        self.repository_db = repository_db
         self.add_rules()
         self.tag_list = []
 
@@ -192,7 +189,8 @@ class LibraryResourceManager(ResourceManager):
         ResourceManager.__init__(self, res_type)
 
     def get_fs_file_siz_info(self, file_id):
-        fsize = db["fs.files"].find_one({"_id": file_id})["length"]
+        db_to_use = self.repository_db if request.json["is_repository"] else self.db
+        fsize = db_to_use["fs.files"].find_one({"_id": file_id})["length"]
         if fsize < 100000:
             ltext = "{}kb".format(round(fsize / 1000, 1))
         else:
@@ -228,6 +226,8 @@ class LibraryResourceManager(ResourceManager):
     def grab_resource_list_chunk(self, collection_name, name_field, content_field, additional_mdata_fields=None,
                                  do_jsonify=True):
         #  search_spec has active_tag, search_string, search_inside, search_metadata, sort_field, sort_direction
+        db_to_use = self.repository_db if request.json["is_repository"] else self.db
+
         def sort_mdata_key(item):
             if sort_field not in item:
                 return ""
@@ -254,7 +254,7 @@ class LibraryResourceManager(ResourceManager):
                     or_list.append({"metadata." + fld: reg})
         if content_field and search_spec["search_inside"]:
             or_list += [{content_field: reg}]
-        res = db[collection_name].find({"$or": or_list}, projection=[name_field, "metadata", "file_id"])
+        res = db_to_use[collection_name].find({"$or": or_list}, projection=[name_field, "metadata", "file_id"])
         filtered_res = []
         all_tags = []
         if search_spec["active_tag"]:

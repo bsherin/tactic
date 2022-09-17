@@ -14,12 +14,22 @@ if "RESTART_RABBIT" in os.environ:
 else:
     restart_rabbit = True
 
+use_remote_repo = "USE_REMOTE_REPOSITORY" in os.environ and os.environ.get("USE_REMOTE_REPOSITORY") == "True"
+if use_remote_repo:
+    remote_username = os.environ.get("REMOTE_USERNAME")
+    remote_password = os.environ.get("REMOTE_PASSWORD")
+else:
+    remote_username = ""
+    remote_password = ""
+
 print("entering launch_tactic")
 import docker_cleanup
 import tactic_app
 from tactic_app.docker_functions import create_container, get_address, ContainerCreateError
 from tactic_app.docker_functions import db_name, mongo_uri, delete_all_queues
-from tactic_app.rabbit_manage import sleep_until_rabbit_alive
+from rabbit_manage import sleep_until_rabbit_alive
+
+
 docker_cleanup.do_docker_cleanup()
 
 
@@ -147,7 +157,10 @@ def create_host(port=5000, debug=False):
         host_volume_dict[host_persist_dir] = {"bind": "/code/persist", "mode": "rw"}
         host_volume_dict[host_static_dir] = {"bind": "/code/static", "mode": "ro"}
         # host_volume_dict[host_docs_dir] = {"bind": "/code/docs", "mode": "ro"}
-        env_vars = {"AM_TACTIC_HOST": True, "MYPORT": port, "USE_WAIT_TASKS": True}
+        env_vars = {"AM_TACTIC_HOST": True, "MYPORT": port,
+                    "USE_WAIT_TASKS": True, "USE_REMOTE_REPOSITORY": use_remote_repo,
+                    "REMOTE_USERNAME": remote_username, "REMOTE_PASSWORD": remote_password
+                    }
         if debug:
             env_vars["DEBUG_CONTAINER"] = True
         _unique_id, _tactic_host_id = create_container("bsherin/tactic:host",
@@ -187,10 +200,11 @@ if ("ANYONE_CAN_REGISTER" in os.environ) and (os.environ.get("ANYONE_CAN_REGISTE
 else:
     ANYONE_CAN_REGISTER = False
 
+print("about to create_mongo")
 create_mongo()
 create_megaplex()
 create_redis()
-success = sleep_until_rabbit_alive()
+success = sleep_until_rabbit_alive(megaplex_address="0.0.0.0")
 create_tile_test_container()
 if not success:
     print("seems like the rabbitmq server isn't answering")

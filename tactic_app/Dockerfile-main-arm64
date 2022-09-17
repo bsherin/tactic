@@ -1,0 +1,9 @@
+FROM bsherin/tactic:base-arm64
+WORKDIR /code
+ADD ./main_container_env /code
+RUN pip install -r requirements.txt
+MAINTAINER "Bruce L Sherin"
+ADD  ./volume_manager.py ./exception_mixin.py ./redis_tools.py ./qworker.py ./communication_utils.py \
+./docker_functions.py ./mongo_accesser.py ./loaded_tile_management.py  ./rabbit_manage.py /code/
+# RUN pip install pydevd-pycharm~=201.6668.115
+CMD ["python", "-u", "main_main.py"]

@@ -18,7 +18,7 @@ from flask_socketio import SocketIO
 
 print("in communication utils")
 
-RETRIES = 60
+RETRIES = os.environ.get("RETRIES")
 
 megaplex = None
 

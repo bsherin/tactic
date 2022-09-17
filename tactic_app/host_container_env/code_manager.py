@@ -7,12 +7,11 @@ import re
 import tactic_app
 from tactic_app import app, db  # global_stuff
 
-from resource_manager import ResourceManager, LibraryResourceManager
+from resource_manager import ResourceManager, LibraryResourceManager, repository_user
 from flask import render_template, jsonify, url_for, request
 from flask_login import login_required, current_user
 
 from users import User
-repository_user = User.get_user_by_username("repository")
 import loaded_tile_management
 
 from js_source_management import js_source_dict, _develop, css_source
@@ -48,10 +47,10 @@ class CodeManager(LibraryResourceManager):
         try:
             new_name = request.json["new_name"]
             update_selector = "update_selector" in request.json and request.json["update_selector"] == "True"
-            db[current_user.code_collection_name].update_one({"code_name": old_name},
-                                                             {'$set': {"code_name": new_name}})
+            self.db[current_user.code_collection_name].update_one({"code_name": old_name},
+                                                                  {'$set': {"code_name": new_name}})
             if update_selector:
-                doc = db[current_user.code_collection_name].find_one({"code_name": new_name})
+                doc = self.db[current_user.code_collection_name].find_one({"code_name": new_name})
                 if "metadata" in doc:
                     mdata = doc["metadata"]
                 else:
@@ -64,11 +63,8 @@ class CodeManager(LibraryResourceManager):
             return self.get_exception_for_ajax(ex, "Error renaming module")
 
     def grab_metadata(self, res_name):
-        if self.is_repository:
-            user_obj = repository_user
-        else:
-            user_obj = current_user
-        doc = db[user_obj.code_collection_name].find_one({self.name_field: res_name})
+        user_obj = current_user
+        doc = self.db[user_obj.code_collection_name].find_one({self.name_field: res_name})
         if "metadata" in doc:
             mdata = doc["metadata"]
         else:
@@ -76,17 +72,17 @@ class CodeManager(LibraryResourceManager):
         return mdata
 
     def save_metadata(self, res_name, tags, notes):
-        doc = db[current_user.code_collection_name].find_one({"code_name": res_name})
+        doc = self.db[current_user.code_collection_name].find_one({"code_name": res_name})
         if "metadata" in doc:
             mdata = doc["metadata"]
         else:
             mdata = {}
         mdata["tags"] = tags
         mdata["notes"] = notes
-        db[current_user.code_collection_name].update_one({"code_name": res_name}, {'$set': {"metadata": mdata}})
+        self.db[current_user.code_collection_name].update_one({"code_name": res_name}, {'$set': {"metadata": mdata}})
 
     def delete_tag(self, tag):
-        doclist = db[current_user.code_collection_name].find()
+        doclist = self.db[current_user.code_collection_name].find()
         for doc in doclist:
             if "metadata" not in doc:
                 continue
@@ -97,11 +93,12 @@ class CodeManager(LibraryResourceManager):
                 taglist.remove(tag)
                 mdata["tags"] = " ".join(taglist)
                 res_name = doc["code_name"]
-                db[current_user.code_collection_name].update_one({"code_name": res_name}, {'$set': {"metadata": mdata}})
+                self.db[current_user.code_collection_name].update_one({"code_name": res_name},
+                                                                      {'$set': {"metadata": mdata}})
         return
 
     def rename_tag(self, tag_changes):
-        doclist = db[current_user.code_collection_name].find()
+        doclist = self.db[current_user.code_collection_name].find()
         for doc in doclist:
             if "metadata" not in doc:
                 continue
@@ -115,8 +112,8 @@ class CodeManager(LibraryResourceManager):
                         taglist.append(new_tag)
                     mdata["tags"] = " ".join(taglist)
                     res_name = doc["code_name"]
-                    db[current_user.code_collection_name].update_one({"code_name": res_name},
-                                                                     {'$set': {"metadata": mdata}})
+                    self.db[current_user.code_collection_name].update_one({"code_name": res_name},
+                                                                          {'$set': {"metadata": mdata}})
         return
 
     def view_code(self, code_name):
@@ -157,13 +154,13 @@ class CodeManager(LibraryResourceManager):
         user_obj = current_user
         code_to_copy = request.json['res_to_copy']
         new_code_name = request.json['new_res_name']
-        if db[user_obj.code_collection_name].find_one({"code_name": new_code_name}) is not None:
+        if self.db[user_obj.code_collection_name].find_one({"code_name": new_code_name}) is not None:
             return jsonify({"success": False, "alert_type": "alert-warning",
                             "message": "A code resource with that name already exists"})
-        old_code_dict = db[user_obj.code_collection_name].find_one({"code_name": code_to_copy})
+        old_code_dict = self.db[user_obj.code_collection_name].find_one({"code_name": code_to_copy})
         metadata = copy.copy(old_code_dict["metadata"])
         new_code_dict = {"code_name": new_code_name, "the_code": old_code_dict["the_code"], "metadata": metadata}
-        db[user_obj.code_collection_name].insert_one(new_code_dict)
+        self.db[user_obj.code_collection_name].insert_one(new_code_dict)
         new_row = self.build_res_dict(new_code_name, metadata, user_obj)
         return jsonify({"success": True, "new_row": new_row})
 
@@ -171,17 +168,17 @@ class CodeManager(LibraryResourceManager):
         user_obj = current_user
         new_code_name = request.json['new_res_name']
         template_name = request.json["template_name"]
-        if db[user_obj.code_collection_name].find_one({"code_name": new_code_name}) is not None:
+        if self.db[user_obj.code_collection_name].find_one({"code_name": new_code_name}) is not None:
             return jsonify({"success": False, "alert_type": "alert-warning",
                             "message": "A module with that name already exists"})
-        mongo_dict = db[repository_user.code_collection_name].find_one({"code_name": template_name})
+        mongo_dict = self.db[repository_user.code_collection_name].find_one({"code_name": template_name})
         template = mongo_dict["the_code"]
 
         metadata = loaded_tile_management.create_initial_metadata()
         metadata["functions"] = []
         metadata["classes"] = []
         data_dict = {"code_name": new_code_name, "the_code": template, "metadata": metadata}
-        db[current_user.code_collection_name].insert_one(data_dict)
+        self.db[current_user.code_collection_name].insert_one(data_dict)
         new_row = self.build_res_dict(new_code_name, metadata, user_obj)
         return jsonify({"success": True, "new_row": new_row})
 
@@ -190,7 +187,7 @@ class CodeManager(LibraryResourceManager):
             user_obj = current_user
             code_names = request.json["resource_names"]
             for code_name in code_names:
-                db[user_obj.code_collection_name].delete_one({"code_name": code_name})
+                self.db[user_obj.code_collection_name].delete_one({"code_name": code_name})
             return jsonify({"success": True, "message": "Tiles(s) successfully deleted",
                             "alert_type": "alert-success"})
 
@@ -198,7 +195,6 @@ class CodeManager(LibraryResourceManager):
             return self.get_exception_for_ajax(ex, "Error deleting tiles")
 
     def grab_code_list_chunk(self):
-
         if request.json["is_repository"]:
             colname = repository_user.code_collection_name
         else:
@@ -218,6 +214,15 @@ class RepositoryCodeManager(CodeManager):
                          login_required(self.repository_view_code_in_context), methods=['get', 'post'])
         app.add_url_rule('/repository_get_code_code/<code_name>', "repository_get_code_code",
                          login_required(self.repository_get_code_code), methods=['get', 'post'])
+
+    def grab_metadata(self, res_name):
+        user_obj = repository_user
+        doc = self.repository_db[user_obj.code_collection_name].find_one({self.name_field: res_name})
+        if "metadata" in doc:
+            mdata = doc["metadata"]
+        else:
+            mdata = None
+        return mdata
 
     def repository_view_code_in_context(self):
         code_name = request.json["resource_name"]

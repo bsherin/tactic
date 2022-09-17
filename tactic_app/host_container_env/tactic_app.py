@@ -15,7 +15,6 @@ import gridfs
 from flask_login import LoginManager
 from flask_socketio import SocketIO
 from flask_wtf import CSRFProtect
-from docker_functions import create_container, get_address, ContainerCreateError
 import docker_functions as docker_functions
 import communication_utils
 from communication_utils import send_request_to_container
@@ -29,26 +28,12 @@ csrf = CSRFProtect()
 # global_stuff
 # these variables are imported by other modules
 
-if "RESTART_RABBIT" in os.environ:
-    restart_rabbit = os.environ.get("RESTART_RABBIT") == "True"
-else:
-    restart_rabbit = True
-
-
 app = None
 db = None
 fs = None
 socketio = None
 host_worker = None
 health_tracker = None
-
-# The purpose of this function is that db.collection_names doesn't work in on Azure
-def list_collections(self):
-    dictlist = self.command("listCollections")["cursor"]["firstBatch"]
-    return [d["name"] for d in dictlist]
-
-
-Database.collection_names = list_collections
 
 
 def create_collection(self, collection_name):
@@ -62,7 +47,6 @@ Database.create_collection = create_collection
 try:
     print("getting client")
     CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
-    STEP_SIZE = int(os.environ.get("STEP_SIZE"))
 
     # Now the local server branch is what executes on the remote server
     print("getting mongo client mongo_uri = " + str(mongo_uri))
@@ -77,23 +61,50 @@ try:
     # noinspection PyUnresolvedReferences
     db = client[db_name]
     print("got db")
+    fs = gridfs.GridFS(db)
+    print("got fs")
+
+    print("Got USE_REMOTE_REPOSITORY " + str(os.environ.get("USE_REMOTE_REPOSITORY")))
+    if ("USE_REMOTE_REPOSITORY" in os.environ) and (os.environ.get("USE_REMOTE_REPOSITORY") == "True"):
+        try:
+            print("*** using remote repository ***")
+            USE_REMOTE_REPOSITORY = True
+            remote_username = os.environ.get("REMOTE_USERNAME")
+            remote_password = os.environ.get("REMOTE_PASSWORD")
+
+            from ssh_pymongo import MongoSession
+            print("getting session")
+            session = MongoSession(host="tactic.northwestern.edu", port=22, user=remote_username, password=remote_password,
+                                   to_port=27017)
+            print("connecting to session")
+            repository_db = session.connection["tacticdb"]
+            repository_fs = gridfs.GridFS(repository_db)
+            print("*** created repository_db " + str(repository_db))
+        except Exception as ex:
+            ermsg = exception_mixin.generic_exception_handler.extract_short_error_message(ex, "Error connecting to remote repository")
+            print(errmsg)
+            print("*** failed to connect to remote repository, using local ***")
+            USE_REMOTE_REPOSITORY = False
+            repository_db = db
+            repository_fs = fs
+    else:
+        USE_REMOTE_REPOSITORY = False
+        repository_db = db
+        repository_fs = fs
 
     if ("ANYONE_CAN_REGISTER" in os.environ) and (os.environ.get("ANYONE_CAN_REGISTER") == "True"):
         ANYONE_CAN_REGISTER = True
     else:
         ANYONE_CAN_REGISTER = False
 
-    fs = gridfs.GridFS(db)
-    print("got fs")
-
     print("creating, clearning temp_data")
-    if "temp_data" not in db.collection_names():
+    if "temp_data" not in db.list_collection_names():
         db.create_collection("temp_data")
     else:
         for rec in db["temp_data"].find():
             if "file_id" in rec:
                 fs.delete(rec["file_id"])
-        db["temp_data"].remove()
+        db["temp_data"].drop()
 
     login_manager = LoginManager()
     login_manager.session_protection = 'basic'

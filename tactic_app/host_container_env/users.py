@@ -9,7 +9,7 @@ import uuid
 from collections import OrderedDict
 from flask import jsonify, request
 from flask_login import UserMixin
-from tactic_app import login_manager, db, fs, list_collections  # global_stuff db
+from tactic_app import login_manager, db, fs, repository_db, repository_fs  # global_stuff db
 from communication_utils import read_project_dict, make_jsonizable_and_compress
 from bson.objectid import ObjectId
 from exception_mixin import generic_exception_handler
@@ -86,10 +86,14 @@ def get_username_true_id(userid):
 
 class User(UserMixin, MongoAccess):
 
-    def __init__(self, user_dict):
+    def __init__(self, user_dict, use_remote=False):
         self.username = ""  # This is just to be make introspection happy
-        self.db = db  # This is to make mongoaccesser work
-        self.fs = fs  # This is to make mongoaccesser work
+        if use_remote:
+            self.db = repository_db
+            self.fs = repository_fs
+        else:
+            self.db = db  # This is to make mongoaccesser work
+            self.fs = fs  # This is to make mongoaccesser work
         for fdict in user_data_fields:
             key = fdict["name"]
             if key in user_dict:
@@ -102,7 +106,7 @@ class User(UserMixin, MongoAccess):
         update_dict = {"alt_id": str(ObjectId())}
         if username is None:
             username = self.username
-        db["user_collection"].update_one({"username": username},
+        self.db["user_collection"].update_one({"username": username},
                                          {'$set': update_dict})
         return update_dict
 
@@ -120,13 +124,13 @@ class User(UserMixin, MongoAccess):
         return self.status == "active"
 
     def set_user_timezone_offset(self, tzoffset):
-        db["user_collection"].update_one({"username": self.username},
+        self.db["user_collection"].update_one({"username": self.username},
                                          {'$set': {"tzoffset": tzoffset}})
         return
 
     def set_last_login(self):
         current_time = datetime.datetime.utcnow()
-        db["user_collection"].update_one({"username": self.username},
+        self.db["user_collection"].update_one({"username": self.username},
                                          {'$set': {"last_login": current_time}})
         return
 
@@ -165,14 +169,19 @@ class User(UserMixin, MongoAccess):
         return dt - datetime.timedelta(hours=tzoffset)
 
     @staticmethod
-    def get_user_by_username(username):
-        result = db.user_collection.find_one({"username": username})
+    def get_user_by_username(username, use_remote=False):
+        print("in get_user_by_username")
+        print("db has collections " + str(db.list_collection_names()[:10]))
+        if use_remote:
+            result = repository_db.user_collection.find_one({"username": username})
+        else:
+            result = db.user_collection.find_one({"username": username})
         if result is None:
             return None
         else:
             if USE_ALT_IDS and "alt_id" not in result:
                 create_new_alt_id(username)
-            return User(result)
+            return User(result, use_remote)
 
     def get_theme(self):
         return self.user_data_dict["theme"]
@@ -201,7 +210,7 @@ class User(UserMixin, MongoAccess):
         return result
 
     def get_true_id(self):
-        return str(db.user_collection.find_one({"username": self.username})["_id"])
+        return str(self.db.user_collection.find_one({"username": self.username})["_id"])
 
     def update_account(self, data_dict):
         update_dict = {}
@@ -213,7 +222,7 @@ class User(UserMixin, MongoAccess):
             if "password" not in key:
                 update_dict[key] = val
         try:
-            db["user_collection"].update_one({"username": self.username},
+            self.db["user_collection"].update_one({"username": self.username},
                                              {'$set': update_dict})
             return {"success": True, "message": "Information successfully updated."}
         except:
@@ -229,19 +238,19 @@ class User(UserMixin, MongoAccess):
         password = user_dict["password"]
         if len(password) < 4:
             return {"success": False, "message": "Passwords must be at least 4 characters.", "username": username}
-        if db.user_collection.find_one({"username": username}) is not None:
+        if self.db.user_collection.find_one({"username": username}) is not None:
             return {"success": False, "message": "That username is taken.", "username": username}
         password_hash = generate_password_hash(password)
         new_user_dict = {"username": username,
                          "password_hash": password_hash,
                          "email": ""}
-        db.user_collection.insert_one(new_user_dict)
+        self.db.user_collection.insert_one(new_user_dict)
         return {"success": True, "message": "", "username": username}
 
     # get_id is required by login_manager
     def get_id(self):
         # Note that I have to convert this to a string for login_manager to be happy.
-        return str(db.user_collection.find_one({"username": self.username})[ID_FIELD])
+        return str(self.db.user_collection.find_one({"username": self.username})[ID_FIELD])
 
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
@@ -251,7 +260,7 @@ class User(UserMixin, MongoAccess):
 
     @property
     def my_record(self):
-        return db.user_collection.find_one({"username": self.username})
+        return self.db.user_collection.find_one({"username": self.username})
 
 
 def load_remote_user(userid, the_db):
@@ -267,7 +276,7 @@ def load_remote_user(userid, the_db):
 
 # noinspection PyMethodOverriding,PyMissingConstructor
 class RemoteUser(User):
-    def __init__(self, user_dict, remote_db):
+    def __init__(self, user_dict, repository_db):
         self.username = ""  # This is just to be make introspection happy
         for key in user_data_fields:
             if key in user_dict:
@@ -275,23 +284,23 @@ class RemoteUser(User):
             else:
                 setattr(self, key, "")
         self.password_hash = user_dict["password_hash"]
-        self.remote_db = remote_db
+        self.repository_db = repository_db
 
     @staticmethod
-    def get_user_by_username(username, remote_db):
-        result = remote_db.user_collection.find_one({"username": username})
+    def get_user_by_username(username, repository_db):
+        result = repository_db.user_collection.find_one({"username": username})
         if result is None:
             return None
         else:
-            return RemoteUser(result, remote_db)
+            return RemoteUser(result, repository_db)
 
     @property
     def tile_module_names_with_metadata(self):
-        if self.tile_collection_name not in self.remote_db.collection_names():
-            self.remote_db.create_collection(self.tile_collection_name)
+        if self.tile_collection_name not in self.repository_db.list_collection_names():
+            self.repository_db.create_collection(self.tile_collection_name)
             return []
         my_tile_names = []
-        for doc in self.remote_db[self.tile_collection_name].find(projection=["tile_module_name", "metadata"]):
+        for doc in self.repository_db[self.tile_collection_name].find(projection=["tile_module_name", "metadata"]):
             if "metadata" in doc:
                 my_tile_names.append([doc["tile_module_name"], doc["metadata"]])
             else:
@@ -299,5 +308,5 @@ class RemoteUser(User):
         return sorted(my_tile_names, key=self.sort_data_list_key)
 
     def get_tile_module(self, tile_module_name):
-        tile_dict = self.remote_db[self.tile_collection_name].find_one({"tile_module_name": tile_module_name})
+        tile_dict = self.repository_db[self.tile_collection_name].find_one({"tile_module_name": tile_module_name})
         return tile_dict["tile_module"]

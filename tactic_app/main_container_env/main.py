@@ -25,8 +25,6 @@ from qworker import debug_log
 # getting environment variables
 INITIAL_LEFT_FRACTION = .69
 
-RETRIES = 60
-
 
 if "DB_NAME" in os.environ:
     db_name = os.environ.get("DB_NAME")

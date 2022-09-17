@@ -3,10 +3,28 @@ version: '3.7'
 services:
 
   tactic_base:
+    build:
+      context: .
+      dockerfile: Dockerfile-base
+    image: bsherin/tactic:base
+    platform: x86_64
+
+
+  tactic_base_arm64:
       build:
         context: .
         dockerfile: Dockerfile-base
-      image: bsherin/tactic:base
+      image: bsherin/tactic:base-arm64
+      platform: arm64
+
+  tactic_launch_arm64:
+    build:
+      context: .
+      dockerfile: Dockerfile-launch-arm64
+    platform: arm64
+    depends_on:
+      - tactic_base_arm64
+    image: bsherin/tactic:launch-arm64
 
   tactic_host:
     build:
@@ -15,6 +33,18 @@ services:
     depends_on:
       - tactic_base
     image: bsherin/tactic:host
+    platform: x86_64
+    environment:
+      PYTHONUNBUFFERED: 1
+
+  tactic_host_arm64:
+    build:
+      context: .
+      dockerfile: Dockerfile-host-arm64
+    depends_on:
+      - tactic_base_arm64
+    image: bsherin/tactic:host-arm64
+    platform: arm64
     environment:
       PYTHONUNBUFFERED: 1
 
@@ -22,9 +52,19 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-main
+    platform: x86_64
     depends_on:
       - tactic_base
     image: bsherin/tactic:main
+
+  tactic_main_arm64:
+    build:
+      context: .
+      dockerfile: Dockerfile-main-arm64
+    depends_on:
+      - tactic_base_arm64
+    image: bsherin/tactic:main-arm64
+    platform: arm64
 
   tactic_module_viewer:
     build:
@@ -32,7 +72,17 @@ services:
       dockerfile: Dockerfile-module-viewer
     depends_on:
       - tactic_base
+    platform: x86_64
     image: bsherin/tactic:module_viewer
+
+  tactic_module_viewer_arm64:
+    build:
+      context: .
+      dockerfile: Dockerfile-module-viewer-arm64
+    depends_on:
+      - tactic_base_arm64
+    platform: arm64
+    image: bsherin/tactic:module_viewer-arm64
 
   tactic_tile:
     build:
@@ -41,6 +91,18 @@ services:
     depends_on:
       - tactic_base
     image: bsherin/tactic:tile
+    platform: x86_64
+    environment:
+      PYTHONUNBUFFERED: 0
+
+  tactic_tile_arm64:
+    build:
+      context: .
+      dockerfile: Dockerfile-tile-arm64
+    depends_on:
+      - tactic_base
+    image: bsherin/tactic:tile-arm64
+    platform: arm64
     environment:
       PYTHONUNBUFFERED: 0
 
