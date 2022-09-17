@@ -59,7 +59,7 @@ fi
 
 echo "*** removing old containers ***"
 
-for image in "tile" "host"
+for image in "tile" "host" "module_viewer" "main"
   do
     echo "removing bsherin/tactic:$image$arm_string"
     docker ps --filter ancestor="bsherin/tactic:$image$arm_string" -aq | xargs docker stop | xargs docker rm
