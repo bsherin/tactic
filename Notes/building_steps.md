@@ -44,6 +44,8 @@ note that the `npm run …` commands run a named script from package.json
     I think this shouldn't matter because I build my images locally.
 * On github, pull changes onto master if necessary
 * Push images to docker hub: 
+  * might have to do "docker login" first
+    * `docker login -u bsherin -p geeb%%`
   * run the script `push_images.sh` to push just the x86 images.
     * `docker push bsherin/tactic -a` to push all images
 
@@ -62,4 +64,9 @@ Finally:
 > ansible-playbook -i staging deploy_pull_github_only.yml
 # or just pull new docker images and relaunch server
 > ansible-playbook -i staging deploy_pull_images_only.yml
+```
+
+to launch with new shell scripts
+```
+> ansible-playbook -i staging deploy_shell_scripts.yml
 ```
