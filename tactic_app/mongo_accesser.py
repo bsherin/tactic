@@ -94,7 +94,7 @@ class MongoAccess(object):
         return
 
     def update_number_of_docs(self, collection_name):
-        number_of_docs = self.db[collection_name].count() - 1
+        number_of_docs = self.db[collection_name].count_documents({}) - 1
         self.db[collection_name].update_one({"name": "__metadata__"},
                                             {'$set': {"number_of_docs": number_of_docs}})
 

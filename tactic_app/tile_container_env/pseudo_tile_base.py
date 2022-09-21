@@ -35,6 +35,10 @@ Tiles = None
 Pipes = None
 
 
+def display(txt):
+    sys.stdout.overwrite(txt)
+    return
+
 # noinspection PyTypeChecker
 class ConsoleStringIO(StringIO):
     def __init__(self, tile, data, old_stdout):
@@ -56,6 +60,12 @@ class ConsoleStringIO(StringIO):
             self.my_tile.emit_console_message("consoleCodePrint", self.data)
         sys.stdout = sv_stdout
         return
+
+    def overwrite(self, s):
+        self.data["force_open"] = True
+        self.data["message"] = s
+        self.data["console_message"] = "consoleCodeOverwrite"
+        self.my_tile.emit_console_message("consoleCodeOverwrite", self.data)
 
 
 # noinspection PyUnusedLocal
