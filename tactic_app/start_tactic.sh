@@ -155,7 +155,7 @@ for port in 5000 5001
       --label my_id=host$port \
       --label owner=host \
       --label parent=host \
-      --label other_name=test_container \
+      --label other_name=none \
       --network=tactic-net \
       --init \
       --env-file $root_dir/tactic_app/env.list \

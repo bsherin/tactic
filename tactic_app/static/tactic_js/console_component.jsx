@@ -93,6 +93,7 @@ const BUTTON_CONSUMED_SPACE = 208;
                          self._stopConsoleSpinner(data.console_id, execution_count)
                      },
                      consoleCodePrint: (data) => self._appendConsoleItemOutput(data),
+                     consoleCodeOverwrite: (data) => self._setConsoleItemOutput(data),
                      consoleCodeRun: (data) => self._startSpinner(data.console_id),
                      updateLog: (data) => self._addToLog(data.new_line)
                  };
@@ -787,6 +788,10 @@ const BUTTON_CONSUMED_SPACE = 208;
              current += "<br>"
          }
          this._setConsoleItemValue(data.console_id, "output_text", current + data.message)
+     }
+
+     _setConsoleItemOutput(data) {
+         this._setConsoleItemValue(data.console_id, "output_text",  data.message)
      }
 
      _addToLog(new_line) {

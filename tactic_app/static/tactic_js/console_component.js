@@ -178,6 +178,9 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
             consoleCodePrint: function consoleCodePrint(data) {
               return self._appendConsoleItemOutput(data);
             },
+            consoleCodeOverwrite: function consoleCodeOverwrite(data) {
+              return self._setConsoleItemOutput(data);
+            },
             consoleCodeRun: function consoleCodeRun(data) {
               return self._startSpinner(data.console_id);
             },
@@ -1281,6 +1284,11 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       }
 
       this._setConsoleItemValue(data.console_id, "output_text", current + data.message);
+    }
+  }, {
+    key: "_setConsoleItemOutput",
+    value: function _setConsoleItemOutput(data) {
+      this._setConsoleItemValue(data.console_id, "output_text", data.message);
     }
   }, {
     key: "_addToLog",
