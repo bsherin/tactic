@@ -66,7 +66,7 @@ class ProjectManager(LibraryResourceManager):
         mem.write(project_dict["jupyter_text"].encode())
         mem.seek(0)
         return send_file(mem,
-                         attachment_filename=new_name,
+                         download_name=new_name,
                          as_attachment=True)
 
     def import_jupyter(self, library_id):
