@@ -238,7 +238,7 @@ class CollectionManager(LibraryResourceManager):
         str_io.write(virtual_notebook)
         str_io.seek(0)
         return send_file(str_io,
-                         attachment_filename=new_name,
+                         download_name=new_name,
                          as_attachment=True)
 
     def get_collection_size(self, short_cname):
