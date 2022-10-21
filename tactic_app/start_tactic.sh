@@ -59,46 +59,49 @@ fi
 
 echo "*** removing old containers ***"
 
-for image in "tile" "host" "module_viewer" "main"
+for image in "tile" "host" "module_viewer" "main" "nginx"
   do
-    num=$(docker ps --filter ancestor="bsherin/tactic:$image$arm_string" -aq | wc -l)
+    num=$(sudo docker ps --filter ancestor="bsherin/tactic:$image$arm_string" -aq | wc -l)
     echo "$num containers of type bsherin/tactic:$image$arm_string to remove"
     if [ $num != "0" ] ; then
-      docker ps --filter ancestor="bsherin/tactic:$image$arm_string" -aq | xargs docker stop | xargs docker rm
+      sudo docker ps --filter ancestor="bsherin/tactic:$image$arm_string" -aq | xargs sudo docker stop | xargs sudo docker rm
     fi
   done
 
 for image in "rabbitmq:3-management" "rabbitmq" "redis:alpine"
   do
     echo "removing $image"
-    num=$(docker ps --filter ancestor=$image -aq | wc -l)
+    num=$(sudo docker ps --filter ancestor=$image -aq | wc -l)
     echo "$num containers of type $image to remove"
     if [ $num != "0" ] ; then
-      docker ps --filter ancestor=$image -aq | xargs docker stop | xargs docker rm
+      sudo docker ps --filter ancestor=$image -aq | xargs sudo docker stop | xargs sudo docker rm
     fi
   done
 
 echo "double checking that containers are removed"
 for cname in "tile_test_container" "tactic_host5000" "tactic_host5001"
   do
-    num=$(docker ps --filter name=$cname -aq | wc -l)
+    num=$(sudo docker ps --filter name=$cname -aq | wc -l)
     if [ $num != "0" ] ; then
       echo "removing $cname"
-      docker ps --filter name=$cname -aq | xargs docker stop | xargs docker rm
+      sudo docker ps --filter name=$cname -aq | xargs sudo docker stop | xargs sudo docker rm
     fi
   done
 
+echo "***creating network***"
+sudo docker network create tactic-net
+
 echo "*** checking mongo ***"
 
-if [ $(docker ps -f "name=$mongo_uri" --format '{{.Names}}') == "$mongo_uri" ] ; then
+if [ $(sudo docker ps -f "name=$mongo_uri" --format '{{.Names}}') == "$mongo_uri" ] ; then
   echo "mongo container exists"
 else
   echo "mongo container doesn't exist, creating ..."
-  docker run -p 27017:27017 -v $mongo_dir:/data/db --name $mongo_uri --network=tactic-net --restart always -d mongo:latest
+  sudo docker run -p 27017:27017 -v $mongo_dir:/data/db --name $mongo_uri --network=tactic-net --restart always -d mongo:latest
 fi
 
 echo "*** creating megaplex *** "
-docker run -d \
+sudo docker run -d \
   --name megaplex \
   --restart $restart_policy \
   --hostname megaplex \
@@ -110,7 +113,7 @@ docker run -d \
   rabbitmq:3-management
 
 echo "*** creating redis ***"
-docker run -d \
+sudo docker run -d \
   --name tactic-redis \
   --restart $restart_policy \
   --hostname tactic-redis \
@@ -121,7 +124,7 @@ docker run -d \
   redis:alpine
 
 echo "*** creating tile-test-container ***"
-docker run -d \
+sudo docker run -d \
   --name tile_test_container \
   --restart $restart_policy \
   --label my_id=tile_test_container \
@@ -144,7 +147,7 @@ docker run -d \
 echo "*** creating the host containers ***"
 for port in 5000 5001
   do
-    docker run -d \
+    sudo docker run -d \
       --name "tactic_host$port" \
       --restart $restart_policy \
       --hostname none \
@@ -178,3 +181,14 @@ for port in 5000 5001
       bsherin/tactic:host$arm_string
   done
 
+echo "*** creating tactic_nginx ***"
+sudo docker run -d \
+  -p 80:80 \
+  --name tactic_nginx \
+  --restart $restart_policy \
+  --label my_id=tactic_nginx \
+  --label owner=host \
+  --label parent=host \
+  --network=tactic-net \
+  --init \
+  bsherin/tactic:nginx$arm_string

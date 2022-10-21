@@ -1,0 +1,9 @@
+FROM python:3.9
+EXPOSE 5000/tcp
+WORKDIR /app
+ARG debug=False
+COPY ./test_container_env/requirements.txt .
+RUN pip install -r requirements.txt
+COPY ./test_container_env/app.py .
+EXPOSE 5000
+CMD ["python", "-u", "app.py"]
