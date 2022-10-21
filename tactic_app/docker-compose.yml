@@ -9,6 +9,26 @@ services:
     image: bsherin/tactic:base
     platform: x86_64
 
+  test_container:
+      build:
+        context: .
+        dockerfile: Dockerfile-test
+      image: bsherin/test-container
+      platform: x86_64
+
+  tactic_nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile-nginx
+    image: bsherin/tactic:nginx
+    platform: x86_64
+
+  tactic_nginx_arm64:
+    build:
+      context: .
+      dockerfile: Dockerfile-nginx
+    image: bsherin/tactic:nginx-arm64
+    platform: arm64
 
   tactic_base_arm64:
       build:

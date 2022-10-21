@@ -1,7 +1,6 @@
-gensim
 beautifulsoup4
-eli5
-bokeh==2.0.2
+# eli5
+# bokeh
 fuzzywuzzy
 Flask
 markdown
@@ -11,12 +10,11 @@ nltk
 numpy
 pandas
 pika
-plotly==4.7.1
+plotly
 pyldavis
 redis
 regex
 scipy
-scikit-learn
 tweepy
 wordcloud
 yellowbrick
@@ -27,4 +25,5 @@ wikipedia-api
 docutils
 lime
 mpld3
-# torch
+scikit-learn
+gensim

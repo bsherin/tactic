@@ -1,0 +1,3 @@
+FROM nginx
+ENV _OUTPUT_DIR=/etc/nginx
+COPY ./nginx_container_env/nginx.conf /etc/nginx/nginx.conf
