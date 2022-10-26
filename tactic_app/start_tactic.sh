@@ -181,14 +181,14 @@ for port in 5000 5001
       bsherin/tactic:host$arm_string
   done
 
-echo "*** creating tactic_nginx ***"
-sudo docker run -d \
-  -p 80:80 \
-  --name tactic_nginx \
-  --restart $restart_policy \
-  --label my_id=tactic_nginx \
-  --label owner=host \
-  --label parent=host \
-  --network=tactic-net \
-  --init \
-  bsherin/tactic:nginx$arm_string
+#echo "*** creating tactic_nginx ***"
+#sudo docker run -d \
+#  -p 80:80 \
+#  --name tactic_nginx \
+#  --restart $restart_policy \
+#  --label my_id=tactic_nginx \
+#  --label owner=host \
+#  --label parent=host \
+#  --network=tactic-net \
+#  --init \
+#  bsherin/tactic:nginx$arm_string
