@@ -93,9 +93,13 @@ sudo docker network create tactic-net
 
 echo "*** checking mongo ***"
 
-if [ $(sudo docker ps -f "name=$mongo_uri" --format '{{.Names}}') == "$mongo_uri" ] ; then
-  echo "mongo container exists"
+if [ $(sudo docker ps -q -f name=$mongo_uri) ]; then
+  echo "running mongo container exists"
 else
+  if [ $(sudo docker ps -aq -f status=exited -f name=$mongo_uri) ] ; then
+    echo "stopped container exists, removing"
+    sudo docker rm $mongo_uri
+  fi
   echo "mongo container doesn't exist, creating ..."
   sudo docker run -p 27017:27017 -v $mongo_dir:/data/db --name $mongo_uri --network=tactic-net --restart always -d mongo:latest
 fi
