@@ -1,6 +1,4 @@
 beautifulsoup4
-# eli5
-# bokeh
 fuzzywuzzy
 Flask
 markdown

@@ -3,3 +3,5 @@ torchtext
 pmaw
 praw
 rabbitmq-admin
+eli5
+bokeh
