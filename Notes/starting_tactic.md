@@ -14,11 +14,20 @@ start_tactic.sh \
 	--dev \
 	--remote-repo bls910 "geeb----"
 
+
+# starting with remote repository
+start_tactic.sh \
+	--root /Users/brucesherin/PycharmProjects/tactic \
+	--mdir ~/mongo/data \
+	--arm64 \
+	--dev \
+	--remote-repo-key centos "/Users/brucesherin/PycharmProjects/tactic/LightsailDefaultKey-us-east-2.pem"
+
 ```
 
 ### run on server
 ```
-start_tactic.sh \
+sudo /srv/tactic/tactic_app/start_tactic.sh \
 	--root /srv/tactic \
-	--mdir /var/lib/mongo2 \
+	--mdir /var/lib/mongo2
 ```

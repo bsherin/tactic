@@ -2,8 +2,10 @@
 use_arm64="False"
 develop="False"
 use_remote_repo="False"
+use_remote_repo_key="False"
 remote_username=
 remote_password=
+remote_key_file=
 
 # process arguments
 while :; do
@@ -26,6 +28,12 @@ while :; do
       use_remote_repo="True"
       remote_username="$2"
       remote_password="$3"
+      shift 2
+      ;;
+    --remote-repo-key)
+      use_remote_repo_key="True"
+      remote_username="$2"
+      remote_key_file="$3"
       shift 2
       ;;
     *)
@@ -51,10 +59,10 @@ else
   echo "using x86"
   arm_string=""
 fi
-if [ $use_remote_repo == "True" ] ; then
-  echo "using remote repository"
-else
-  echo "using local repository"
+
+# if dont have remote_key_file make it something safe that will work in container mount
+if [ $use_remote_repo_key == "False" ] ; then
+  remote_key_file="$root_dir/tactic_app/env.list"
 fi
 
 echo "*** removing old containers ***"
@@ -149,6 +157,7 @@ sudo docker run -d \
   bsherin/tactic:tile$arm_string
 
 echo "*** creating the host containers ***"
+
 for port in 5000 5001
   do
     sudo docker run -d \
@@ -159,6 +168,7 @@ for port in 5000 5001
       --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock \
       --mount type=bind,source=$host_persist_dir,target=/code/persist \
       --mount type=bind,source=$host_static_dir,target=/code/static \
+      --mount type=bind,source=$remote_key_file,target=$remote_key_file \
       --label my_id=host$port \
       --label owner=host \
       --label parent=host \
@@ -168,20 +178,16 @@ for port in 5000 5001
       --env-file $root_dir/tactic_app/env.list \
       -e MY_ID=host$port \
       -e MONGO_URI=$mongo_uri \
-      -e AM_TACTIC_HOST=True \
       -e MYPORT=$port \
-      -e USE_WAIT_TASKS=True \
-      -e USE_REMOTE_REPOSITORY=False \
-      -e OWNER=host \
-      -e PARENT=host \
       -e TRUE_HOST_PERSIST_DIR=$host_persist_dir \
       -e TRUE_HOST_RESOURCES_DIR=$host_resources_dir \
-      -e USERNAME= \
       -e USE_ARM64=$use_arm64 \
       -e DEVELOP=$develop \
       -e USE_REMOTE_REPOSITORY=$use_remote_repo \
+      -e USE_REMOTE_REPOSITORY_KEY=$use_remote_repo_key \
       -e REMOTE_USERNAME=$remote_username \
       -e REMOTE_PASSWORD=$remote_password \
+      -e REMOTE_KEY_FILE=$remote_key_file \
       bsherin/tactic:host$arm_string
   done
 

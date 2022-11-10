@@ -47,10 +47,13 @@ note that the `npm run …` commands run a named script from package.json
   * might have to do "docker login" first
     * `docker login -u bsherin -p geeb%%`
   * run the script `push_images.sh` to push just the x86 images.
-    * `docker push bsherin/tactic -a` to push all images
 
-Finally:
-* run these scripts (They require a vpn connection
+## to push out new version to AWS server
+* ssh into server and run `/srv/tactic/tactic_app/update_server_and_relaunch.sh`
+* can run the apple shortcut that does this in one step
+
+## To push out to old northwestern server
+* run these scripts (They require a vpn connection)
 
 ```
 >/az_resdocker/  # actually I haven't been doing this lately

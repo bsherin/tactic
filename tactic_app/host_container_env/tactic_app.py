@@ -45,7 +45,6 @@ Database.create_collection = create_collection
 
 # noinspection PyUnresolvedReferences
 try:
-    print("getting client")
     CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
 
     # Now the local server branch is what executes on the remote server
@@ -76,6 +75,33 @@ try:
             print("getting session")
             session = MongoSession(host="tactic.northwestern.edu", port=22, user=remote_username, password=remote_password,
                                    to_port=27017)
+            print("connecting to session")
+            repository_db = session.connection["tacticdb"]
+            repository_fs = gridfs.GridFS(repository_db)
+            print("*** created repository_db " + str(repository_db))
+        except Exception as ex:
+            ermsg = exception_mixin.generic_exception_handler.extract_short_error_message(ex, "Error connecting to remote repository")
+            print(errmsg)
+            print("*** failed to connect to remote repository, using local ***")
+            USE_REMOTE_REPOSITORY = False
+            repository_db = db
+            repository_fs = fs
+    elif ("USE_REMOTE_REPOSITORY_KEY" in os.environ) and (os.environ.get("USE_REMOTE_REPOSITORY_KEY") == "True"):
+        try:
+            print("*** using remote repository key with file ***")
+            USE_REMOTE_REPOSITORY = True
+            remote_username = os.environ.get("REMOTE_USERNAME")
+            remote_key_file = os.environ.get("REMOTE_KEY_FILE")
+
+            from ssh_pymongo import MongoSession
+            print("getting session")
+            session = MongoSession(
+                host='tactictext.net',
+                port=22,
+                user=remote_username,
+                key=remote_key_file,
+                to_port=27017
+            )
             print("connecting to session")
             repository_db = session.connection["tacticdb"]
             repository_fs = gridfs.GridFS(repository_db)
