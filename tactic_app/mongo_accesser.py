@@ -52,6 +52,10 @@ class MongoAccess(object):
         return '{}.projects'.format(self.username)
 
     @property
+    def collection_collection_name(self):
+        return '{}.data_collections'.format(self.username)
+
+    @property
     def list_collection_name(self):
         return '{}.lists'.format(self.username)
 
@@ -358,6 +362,16 @@ class MongoAccess(object):
             self.fs.delete(save_dict["file_id"])
         self.db[self.project_collection_name].delete_one({"project_name": project_name})
         return
+
+    @property
+    def data_collection_names_new(self):
+        if self.collection_collection_name not in self.db.list_collection_names():
+            self.db.create_collection(self.collection_collection_name)
+            return []
+        my_collection_names = []
+        for doc in self.db[self.collection_collection_name].find(projection=["collection_name"]):
+            my_collection_names.append(doc["collection_name"])
+        return sorted([str(t) for t in my_collection_names], key=str.lower)
 
     @property
     def project_names(self):
