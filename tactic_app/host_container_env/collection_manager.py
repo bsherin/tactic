@@ -74,6 +74,8 @@ class CollectionManager(LibraryResourceManager):
                          login_required(self.combine_to_new_collection), methods=['post'])
         app.add_url_rule('/grab_collection_list_chunk', "grab_collection_list_chunk",
                          login_required(self.grab_collection_list_chunk), methods=['get', 'post'])
+        app.add_url_rule('/upgrade_user_collections', "upgrade_user_collections",
+                         login_required(self.upgrade_user_collections), methods=['get', 'post'])
 
     def new_notebook_in_context(self):
         user_obj = current_user
@@ -270,6 +272,25 @@ class CollectionManager(LibraryResourceManager):
         entry["size_for_sort"] = col_size
         entry["size"] = size_text
         return entry
+
+    def upgrade_user_collections(self):
+        user_obj = current_user
+        string_start = user_obj.username + ".data_collection."
+        cfilter = {"name": {"$regex": string_start + "(.*)"}}
+        old_cnames = self.db.list_collection_names(filter=cfilter)
+        for old_cname in old_cnames:
+            short_name = re.search(string_start + "(.*)", old_cname).group(1)
+            if short_name not in user_object.data_collection_names_new:
+                doc_dict, dm_dict, hl_dict, coll_mdata = user_obj.get_all_collection_info(short_name)
+                new_save_dict = {"metadata": coll_mdata,
+                                 "collection_name": short_name}
+                collection_dict = {"doc_dict": doc_dict,
+                                   "doc_mdata_dict": dm_dict,
+                                   "header_list_dic": hl_dict}
+                cdict = make_jsonizable_and_compress(collection_dict)
+                new_save_dict["file_id"] = self.fs.put(pdict)
+                self.db[user_obj.collection_collection_name].insert_one(new_save_dict)
+            user_obj.remove_collection(short_name)
 
     def grab_collection_list_chunk(self):
 

@@ -102,6 +102,10 @@ class CollectionMenubar extends React.Component {
         this.props.delete_func("/delete_collection", resource_name)
     }
 
+    _upgrade_collections() {
+        $.postJSON(`${$SCRIPT_ROOT}/upgrade_user_collections`)
+    }
+
     _combineCollections () {
         var res_name = this.props.selected_resource.name;
         let self = this;
@@ -227,6 +231,8 @@ class CollectionMenubar extends React.Component {
                 {name_text: "Delete Collections", icon_name: "trash", click_handler: ()=>{this._collection_delete()},
                     multi_select: true},
                 {name_text: "Recalculate Size", icon_name: "refresh", click_handler: ()=>{this._recalculate_size()},
+                    multi_select: false},
+                {name_text: "Upgrade All Collections", icon_name: "refresh", click_handler: ()=>{this._upgrade_collections()},
                     multi_select: false},
             ],
             Transfer: [
