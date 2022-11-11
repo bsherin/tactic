@@ -66,18 +66,20 @@ function get_immediate_tag_parent(the_tag) {
 function get_all_parent_tags(tag_list) {
   var ptags = [];
 
-  var _iterator = _createForOfIteratorHelper(tag_list),
-      _step;
+  if (tag_list != undefined) {
+    var _iterator = _createForOfIteratorHelper(tag_list),
+        _step;
 
-  try {
-    for (_iterator.s(); !(_step = _iterator.n()).done;) {
-      var the_tag = _step.value;
-      ptags = ptags.concat(get_parent_tags(the_tag));
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var the_tag = _step.value;
+        ptags = ptags.concat(get_parent_tags(the_tag));
+      }
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
     }
-  } catch (err) {
-    _iterator.e(err);
-  } finally {
-    _iterator.f();
   }
 
   ptags = (0, _utilities_react.remove_duplicates)(ptags);
@@ -380,9 +382,10 @@ var TagButtonList = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "render",
     value: function render() {
-      var parent_tags = get_all_parent_tags(this.props.tag_list);
+      var tlist = this.props.tag_list == undefined ? [] : this.props.tag_list;
+      var parent_tags = get_all_parent_tags(tlist);
 
-      var tag_list = _toConsumableArray(this.props.tag_list);
+      var tag_list = _toConsumableArray(tlist);
 
       tag_list = tag_list.concat(parent_tags);
       tag_list = (0, _utilities_react.remove_duplicates)(tag_list);

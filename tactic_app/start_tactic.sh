@@ -5,7 +5,8 @@ use_remote_repo="False"
 use_remote_repo_key="False"
 remote_username=
 remote_password=
-remote_key_file=
+remote_key_file="None"
+mongo_dir=
 
 # process arguments
 while :; do
@@ -36,6 +37,12 @@ while :; do
       remote_key_file="$3"
       shift 2
       ;;
+    --remote-db)
+      use_remote_db="True"
+      remote_username="$2"
+      remote_key_file="$3"
+      shift 2
+      ;;
     *)
       break
       ;;
@@ -61,7 +68,7 @@ else
 fi
 
 # if dont have remote_key_file make it something safe that will work in container mount
-if [ $use_remote_repo_key == "False" ] ; then
+if [ $remote_key_file == "None" ] ; then
   remote_key_file="$root_dir/tactic_app/env.list"
 fi
 
@@ -101,8 +108,8 @@ sudo docker network create tactic-net
 
 echo "*** checking mongo ***"
 
-if [ $(sudo docker ps -q -f name=$mongo_uri) ]; then
-  echo "running mongo container exists"
+if [ $use_remote_db == "True" ] || [ $(sudo docker ps -q -f name=$mongo_uri) ]; then
+  echo "no need to create mongo container"
 else
   if [ $(sudo docker ps -aq -f status=exited -f name=$mongo_uri) ] ; then
     echo "stopped container exists, removing"
@@ -183,6 +190,7 @@ for port in 5000 5001
       -e TRUE_HOST_RESOURCES_DIR=$host_resources_dir \
       -e USE_ARM64=$use_arm64 \
       -e DEVELOP=$develop \
+      -e USE_REMOTE_DATABASE=$use_remote_db \
       -e USE_REMOTE_REPOSITORY=$use_remote_repo \
       -e USE_REMOTE_REPOSITORY_KEY=$use_remote_repo_key \
       -e REMOTE_USERNAME=$remote_username \

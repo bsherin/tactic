@@ -21,8 +21,10 @@ function get_immediate_tag_parent(the_tag) {
 
 function get_all_parent_tags(tag_list) {
     var ptags = [];
-    for (let the_tag of tag_list){
-        ptags = ptags.concat(get_parent_tags(the_tag))
+    if (tag_list != undefined) {
+        for (let the_tag of tag_list) {
+            ptags = ptags.concat(get_parent_tags(the_tag))
+        }
     }
     ptags = remove_duplicates(ptags);
     return ptags
@@ -210,8 +212,9 @@ class TagButtonList extends React.Component {
     }
 
     render() {
-        let parent_tags = get_all_parent_tags(this.props.tag_list);
-        let tag_list = [...this.props.tag_list];
+        let tlist = this.props.tag_list == undefined ? [] : this.props.tag_list;
+        let parent_tags = get_all_parent_tags(tlist);
+        let tag_list = [...tlist];
         tag_list = tag_list.concat(parent_tags);
         tag_list = remove_duplicates(tag_list);
         tag_list.sort();

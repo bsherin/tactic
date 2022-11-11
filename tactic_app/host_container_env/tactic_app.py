@@ -16,6 +16,7 @@ from flask_login import LoginManager
 from flask_socketio import SocketIO
 from flask_wtf import CSRFProtect
 import docker_functions as docker_functions
+from mongo_db_fs import get_dbs
 import communication_utils
 from communication_utils import send_request_to_container
 # from integrated_docs import api_array
@@ -47,76 +48,7 @@ Database.create_collection = create_collection
 try:
     CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
 
-    # Now the local server branch is what executes on the remote server
-    print("getting mongo client mongo_uri = " + str(mongo_uri))
-
-    client = MongoClient(mongo_uri, serverSelectionTimeoutMS=30000)
-    print("got the client")
-    # force connection on a request as the
-    # connect=True parameter of MongoClient seems
-    # to be useless here
-    client.server_info()
-    print("did server info")
-    # noinspection PyUnresolvedReferences
-    db = client[db_name]
-    print("got db")
-    fs = gridfs.GridFS(db)
-    print("got fs")
-
-    print("Got USE_REMOTE_REPOSITORY " + str(os.environ.get("USE_REMOTE_REPOSITORY")))
-    if ("USE_REMOTE_REPOSITORY" in os.environ) and (os.environ.get("USE_REMOTE_REPOSITORY") == "True"):
-        try:
-            print("*** using remote repository ***")
-            USE_REMOTE_REPOSITORY = True
-            remote_username = os.environ.get("REMOTE_USERNAME")
-            remote_password = os.environ.get("REMOTE_PASSWORD")
-
-            from ssh_pymongo import MongoSession
-            print("getting session")
-            session = MongoSession(host="tactic.northwestern.edu", port=22, user=remote_username, password=remote_password,
-                                   to_port=27017)
-            print("connecting to session")
-            repository_db = session.connection["tacticdb"]
-            repository_fs = gridfs.GridFS(repository_db)
-            print("*** created repository_db " + str(repository_db))
-        except Exception as ex:
-            ermsg = exception_mixin.generic_exception_handler.extract_short_error_message(ex, "Error connecting to remote repository")
-            print(errmsg)
-            print("*** failed to connect to remote repository, using local ***")
-            USE_REMOTE_REPOSITORY = False
-            repository_db = db
-            repository_fs = fs
-    elif ("USE_REMOTE_REPOSITORY_KEY" in os.environ) and (os.environ.get("USE_REMOTE_REPOSITORY_KEY") == "True"):
-        try:
-            print("*** using remote repository key with file ***")
-            USE_REMOTE_REPOSITORY = True
-            remote_username = os.environ.get("REMOTE_USERNAME")
-            remote_key_file = os.environ.get("REMOTE_KEY_FILE")
-
-            from ssh_pymongo import MongoSession
-            print("getting session")
-            session = MongoSession(
-                host='tactictext.net',
-                port=22,
-                user=remote_username,
-                key=remote_key_file,
-                to_port=27017
-            )
-            print("connecting to session")
-            repository_db = session.connection["tacticdb"]
-            repository_fs = gridfs.GridFS(repository_db)
-            print("*** created repository_db " + str(repository_db))
-        except Exception as ex:
-            ermsg = exception_mixin.generic_exception_handler.extract_short_error_message(ex, "Error connecting to remote repository")
-            print(errmsg)
-            print("*** failed to connect to remote repository, using local ***")
-            USE_REMOTE_REPOSITORY = False
-            repository_db = db
-            repository_fs = fs
-    else:
-        USE_REMOTE_REPOSITORY = False
-        repository_db = db
-        repository_fs = fs
+    db, fs, repository_db, repository_fs, use_remote_repository, use_remote_database = get_dbs()
 
     if ("ANYONE_CAN_REGISTER" in os.environ) and (os.environ.get("ANYONE_CAN_REGISTER") == "True"):
         ANYONE_CAN_REGISTER = True

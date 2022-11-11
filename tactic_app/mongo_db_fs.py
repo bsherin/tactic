@@ -1,4 +1,6 @@
+import os
 from pymongo import MongoClient
+import gridfs
 from docker_functions import db_name, mongo_uri
 
 
@@ -25,6 +27,7 @@ def get_dbs():
         print("*** got remote db " + str(db))
 
     else:
+        use_remote_database = False
         client = MongoClient(mongo_uri, serverSelectionTimeoutMS=30000)
         print("got the client")
         # force connection on a request as the
@@ -94,4 +97,4 @@ def get_dbs():
         use_remote_repository = False
         repository_db = db
         repository_fs = fs
-    return db, fs, repository_db, repository_fs, use_remote_repository
+    return db, fs, repository_db, repository_fs, use_remote_repository, use_remote_database

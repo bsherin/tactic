@@ -4,13 +4,14 @@ from flask_login import current_user
 import re, os
 
 import tactic_app
-from tactic_app import socketio, db, repository_db, USE_REMOTE_REPOSITORY
+from tactic_app import socketio, db, repository_db, use_remote_repository, use_remote_database
 from users import User
 from exception_mixin import ExceptionMixin
 
 print("in resource_manager with repository_db " + str(repository_db))
+print("in resource_manager with use_remote_database " + str(use_remote_database))
 
-repository_user = User.get_user_by_username("repository", USE_REMOTE_REPOSITORY)
+repository_user = User.get_user_by_username("repository", use_remote_repository)
 
 CHUNK_SIZE = int(int(os.environ.get("CHUNK_SIZE")) / 2)
 
@@ -132,7 +133,7 @@ class ResourceManager(ExceptionMixin):
             for field, val in mdata.items():
                 if field not in skip_fields:
                     return_data[field] = val
-        if file_id is not None:
+        if not use_remote_database and file_id is not None:
             size_text, size = self.get_fs_file_siz_info(file_id)
             return_data["size_for_sort"] = size
             return_data["size"] = size_text
