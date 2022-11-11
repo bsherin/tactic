@@ -6,6 +6,11 @@ start_tactic.sh \
 	--mdir ~/mongo/data \
 	--arm64 \
 	--dev
+	
+./start_tactic.sh \
+	--root /Users/bls910/PycharmProjects/tactic \
+	--mdir ~/mongo/data \
+	--dev
 
 start_tactic.sh \
 	--root /Users/brucesherin/PycharmProjects/tactic \
