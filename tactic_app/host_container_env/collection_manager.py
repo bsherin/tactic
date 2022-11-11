@@ -76,6 +76,8 @@ class CollectionManager(LibraryResourceManager):
                          login_required(self.grab_collection_list_chunk), methods=['get', 'post'])
         app.add_url_rule('/upgrade_user_collections', "upgrade_user_collections",
                          login_required(self.upgrade_user_collections), methods=['get', 'post'])
+        app.add_url_rule('/grab_collection_list_chunk_new', "grab_collection_list_chunk_new",
+                         login_required(self.grab_collection_list_chunk_new), methods=['get', 'post'])
 
     def new_notebook_in_context(self):
         user_obj = current_user
@@ -291,6 +293,28 @@ class CollectionManager(LibraryResourceManager):
                 new_save_dict["file_id"] = self.fs.put(pdict)
                 self.db[user_obj.collection_collection_name].insert_one(new_save_dict)
             user_obj.remove_collection(short_name)
+        return {"success": True}
+
+    def grab_collection_list_chunk_new(self):
+        if request.json["is_repository"]:
+            colname = repository_user.collection_collection_name
+        else:
+            colname = current_user.collection_collection_name
+
+        result = self.grab_resource_list_chunk(colname, "collection_name", None,
+                                               ["type", "number_of_docs"], False)
+
+        chunk_dict = result["chunk_dict"]
+        icon_dict = {"table": "icon:th", "freeform": "icon:align-left"}
+
+        for ckey, val in chunk_dict.items():
+            if "type" in val:
+                val["doc_type"] = icon_dict[val["type"]]
+                val["icon:th"] = icon_dict[val["type"]]
+            else:
+                val["doc_type"] = icon_dict["table"]
+                val["icon:th"] = val["doc_type"]
+        return jsonify(result)
 
     def grab_collection_list_chunk(self):
 
@@ -315,6 +339,11 @@ class CollectionManager(LibraryResourceManager):
             else:
                 user_obj = current_user
                 db_to_use = self.db
+
+            if user_obj.collection_collection_name in db_to_use.list_collection_names():
+                print("*** using new grab_collection_list_chunk ***")
+                return self.grab_collection_list_chunk_new()
+
             search_spec = request.json["search_spec"]
             row_number = request.json["row_number"]
             search_text = search_spec['search_string']

@@ -188,6 +188,11 @@ var CollectionMenubar = /*#__PURE__*/function (_React$Component2) {
       this.props.delete_func("/delete_collection", resource_name);
     }
   }, {
+    key: "_upgrade_collections",
+    value: function _upgrade_collections() {
+      $.postJSON("".concat($SCRIPT_ROOT, "/upgrade_user_collections"));
+    }
+  }, {
     key: "_combineCollections",
     value: function _combineCollections() {
       var res_name = this.props.selected_resource.name;
@@ -371,6 +376,13 @@ var CollectionMenubar = /*#__PURE__*/function (_React$Component2) {
           icon_name: "refresh",
           click_handler: function click_handler() {
             _this3._recalculate_size();
+          },
+          multi_select: false
+        }, {
+          name_text: "Upgrade All Collections",
+          icon_name: "refresh",
+          click_handler: function click_handler() {
+            _this3._upgrade_collections();
           },
           multi_select: false
         }],
