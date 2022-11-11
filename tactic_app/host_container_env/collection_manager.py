@@ -5,7 +5,7 @@ from flask_login import login_required, current_user
 from flask import jsonify, render_template, url_for, request, send_file
 from users import User
 from docker_functions import create_container, main_container_info
-from tactic_app import app, db, repository_db
+from tactic_app import app, db, repository_db, use_remote_database
 from communication_utils import make_python_object_jsonizable, debinarize_python_object
 from communication_utils import read_temp_data, delete_temp_data
 from mongo_accesser import MongoAccessException
@@ -262,7 +262,11 @@ class CollectionManager(LibraryResourceManager):
 
     def build_res_dict(self, short_name, mdata, user_object=None, file_id=None):
         entry = super().build_res_dict(short_name, mdata, user_object, file_id)
-        col_size, size_text = self.get_collection_size_info(short_name, mdata)
+        if use_remote_database:
+            col_size = 0
+            size_text = ""
+        else:
+            col_size, size_text = self.get_collection_size_info(short_name, mdata)
         entry["size_for_sort"] = col_size
         entry["size"] = size_text
         return entry
@@ -297,43 +301,43 @@ class CollectionManager(LibraryResourceManager):
                 search_text = ".*"
             else:
                 search_text = ".*" + search_text
-            cnames = db_to_use.list_collection_names()
             string_start = user_obj.username + ".data_collection."
+            cfilter = {"name": {"$regex": string_start + "(.*)"}}
+            cnames = db_to_use.list_collection_names(filter=cfilter)
+
             found_collections = []
             all_tags = []
             icon_dict = {"table": "icon:th", "freeform": "icon:align-left"}
-            print("got cnames")
             for cname in cnames:
+                mdata = db_to_use[cname].find_one({"name": "__metadata__"})
                 m = re.search(string_start + "(.*)", cname)
-                if m:
-                    mdata = db_to_use[cname].find_one({"name": "__metadata__"})
+                entry = self.build_res_dict(m.group(1), mdata, user_obj)
 
-                    entry = self.build_res_dict(m.group(1), mdata, user_obj)
-                    if "type" in mdata:
-                        entry["doc_type"] = icon_dict[mdata["type"]]
-                        entry["icon:th"] = entry["doc_type"]
-                    else:
-                        entry["doc_type"] = icon_dict["table"]
-                        entry["icon:th"] = entry["doc_type"]
-                    if re.match(search_text, m.group(1)):
-                        if search_spec["active_tag"]:
-                            if self.has_hidden(entry["tags"]):
-                                all_subtags = self.add_hidden_to_all_subtags(entry["tags"])
-                                all_tags += self.add_hidden_to_tags(mdata["tags"])
-                                if not self.has_hidden(search_spec["active_tag"]):
-                                    continue
-                            else:
-                                all_subtags = self.get_all_subtags(entry["tags"])
-                                all_tags += entry["tags"].split()
-                            if search_spec["active_tag"] in all_subtags:
-                                found_collections.append(entry)
-                        else:
-                            if self.has_hidden(entry["tags"]):
-                                all_tags += self.add_hidden_to_tags(entry["tags"])
+                if "type" in mdata:
+                    entry["doc_type"] = icon_dict[mdata["type"]]
+                    entry["icon:th"] = entry["doc_type"]
+                else:
+                    entry["doc_type"] = icon_dict["table"]
+                    entry["icon:th"] = entry["doc_type"]
+                if re.match(search_text, m.group(1)):
+                    if search_spec["active_tag"]:
+                        if self.has_hidden(entry["tags"]):
+                            all_subtags = self.add_hidden_to_all_subtags(entry["tags"])
+                            all_tags += self.add_hidden_to_tags(mdata["tags"])
+                            if not self.has_hidden(search_spec["active_tag"]):
                                 continue
-                            else:
-                                all_tags += entry["tags"].split()
+                        else:
+                            all_subtags = self.get_all_subtags(entry["tags"])
+                            all_tags += entry["tags"].split()
+                        if search_spec["active_tag"] in all_subtags:
                             found_collections.append(entry)
+                    else:
+                        if self.has_hidden(entry["tags"]):
+                            all_tags += self.add_hidden_to_tags(entry["tags"])
+                            continue
+                        else:
+                            all_tags += entry["tags"].split()
+                        found_collections.append(entry)
 
             all_tags = sorted(list(set(all_tags)))
             if search_spec["sort_direction"] == "ascending":

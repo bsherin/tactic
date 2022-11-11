@@ -7,7 +7,7 @@ from flask_socketio import join_room
 import markdown
 
 import tactic_app
-from tactic_app import app, socketio, db, fs, repository_db, repository_fs, USE_REMOTE_REPOSITORY
+from tactic_app import app, socketio, db, fs, repository_db, repository_fs, use_remote_repository
 from mongo_accesser import name_keys
 from communication_utils import make_jsonizable_and_compress, read_project_dict
 from exception_mixin import generic_exception_handler
@@ -162,7 +162,7 @@ def context():
 @app.route('/repository')
 @login_required
 def repository():
-    is_remote = "yes" if USE_REMOTE_REPOSITORY else "no"
+    is_remote = "yes" if use_remote_repository else "no"
     return render_template('library/library_home_react.html',
                            version_string=tstring,
                            is_remote=is_remote,
