@@ -4,7 +4,7 @@ from flask_login import current_user
 import re, os
 
 import tactic_app
-from tactic_app import socketio, db, repository_db, use_remote_repository, use_remote_database
+from tactic_app import socketio, db, fs, repository_db, use_remote_repository, use_remote_database
 from users import User
 from exception_mixin import ExceptionMixin
 
@@ -32,6 +32,7 @@ class ResourceManager(ExceptionMixin):
         else:
             self.module_id = self.res_type + "_module"
         self.db = db
+        self.fs = fs
         self.repository_db = repository_db
         self.add_rules()
         self.tag_list = []

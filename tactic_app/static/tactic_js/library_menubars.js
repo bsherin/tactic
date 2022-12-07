@@ -190,7 +190,7 @@ var CollectionMenubar = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_upgrade_collections",
     value: function _upgrade_collections() {
-      $.postJSON("".concat($SCRIPT_ROOT, "/upgrade_user_collections"));
+      $.getJSON("".concat($SCRIPT_ROOT, "/upgrade_user_collections"));
     }
   }, {
     key: "_combineCollections",
@@ -248,23 +248,6 @@ var CollectionMenubar = /*#__PURE__*/function (_React$Component2) {
       (0, _modal_react.showModalReact)("Download Collection as Excel Notebook", "New File Name", function (new_name) {
         window.open("".concat($SCRIPT_ROOT, "/download_collection/") + res_name + "/" + new_name);
       }, res_name + ".xlsx");
-    }
-  }, {
-    key: "_recalculate_size",
-    value: function _recalculate_size() {
-      var resource_name = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-      var res_name = resource_name ? resource_name : this.props.selected_resource.name;
-      var target = "".concat($SCRIPT_ROOT, "/update_collection_size/").concat(res_name);
-      $.post(target, function (data) {
-        if (!data.success) {
-          self.props.addErrorDrawerEntry({
-            title: "Error calculating size",
-            content: data.message
-          });
-        } else {
-          (0, _toaster.doFlash)(data);
-        }
-      });
     }
   }, {
     key: "_displayImportResults",
@@ -371,13 +354,6 @@ var CollectionMenubar = /*#__PURE__*/function (_React$Component2) {
             _this3._collection_delete();
           },
           multi_select: true
-        }, {
-          name_text: "Recalculate Size",
-          icon_name: "refresh",
-          click_handler: function click_handler() {
-            _this3._recalculate_size();
-          },
-          multi_select: false
         }, {
           name_text: "Upgrade All Collections",
           icon_name: "refresh",

@@ -103,7 +103,7 @@ class CollectionMenubar extends React.Component {
     }
 
     _upgrade_collections() {
-        $.postJSON(`${$SCRIPT_ROOT}/upgrade_user_collections`)
+        $.getJSON(`${$SCRIPT_ROOT}/upgrade_user_collections`)
     }
 
     _combineCollections () {
@@ -151,19 +151,6 @@ class CollectionMenubar extends React.Component {
         showModalReact("Download Collection as Excel Notebook", "New File Name", function (new_name) {
             window.open(`${$SCRIPT_ROOT}/download_collection/` + res_name  + "/" + new_name)
         }, res_name + ".xlsx")
-    };
-
-    _recalculate_size (resource_name=null) {
-        let res_name = resource_name ? resource_name : this.props.selected_resource.name;
-        const target = `${$SCRIPT_ROOT}/update_collection_size/${res_name}`;
-        $.post(target, (data)=>{
-            if (!data.success) {
-                self.props.addErrorDrawerEntry({title: "Error calculating size", content: data.message})
-            }
-            else {
-                doFlash(data);
-            }
-        });
     };
 
     _displayImportResults(data) {
@@ -230,8 +217,6 @@ class CollectionMenubar extends React.Component {
                     multi_select: true},
                 {name_text: "Delete Collections", icon_name: "trash", click_handler: ()=>{this._collection_delete()},
                     multi_select: true},
-                {name_text: "Recalculate Size", icon_name: "refresh", click_handler: ()=>{this._recalculate_size()},
-                    multi_select: false},
                 {name_text: "Upgrade All Collections", icon_name: "refresh", click_handler: ()=>{this._upgrade_collections()},
                     multi_select: false},
             ],

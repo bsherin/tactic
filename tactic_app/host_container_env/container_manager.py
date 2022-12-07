@@ -9,7 +9,7 @@ from users import User, load_user
 from resource_manager import ResourceManager
 from docker_functions import cli, destroy_container, container_owner, get_log
 from docker_functions import container_id, container_memory_usage, restart_container
-from docker_functions import container_other_name
+from docker_functions import container_other_name, tactic_image_names
 from exception_mixin import generic_exception_handler
 # from docker_cleanup import do_docker_cleanup
 import tactic_app
@@ -119,11 +119,12 @@ class ContainerManager(ResourceManager):
         return jsonify({"success": True, "message": "Got Logs", "log_text": log_text, "alert_type": "alert-success"})
 
     def build_res_dict(self, cont):
-        tactic_image_names = ["bsherin/tactic:tile", "bsherin/tactic:main",
-                              "bsherin/tactic:module_viewer", "bsherin/tactic:host"]
         image_id_names = {}
         for iname in tactic_image_names:
-            image_id_names[cli.images.get(iname).id] = iname
+            try:
+                image_id_names[cli.images.get(iname).id] = iname
+            except:
+                print("no image " + iname)
         owner_id = container_owner(cont)
         if owner_id == "host":
             owner_name = "host"

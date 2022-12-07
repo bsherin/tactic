@@ -157,14 +157,18 @@ class MainWorker(QWorker, ExceptionMixin):
                          "collection_name": self.mwindow.collection_name,
                          "doc_names": self.mwindow.doc_names,
                          "console_html": ""}
+            print("ready to grab chunk")
             if data_dict["doc_type"] == "table":
                 task_data.update(self.mwindow.grab_chunk_by_row_index({"doc_name": self.mwindow.doc_names[0], "row_index": 0, "set_visible_doc": True}))
             else:
                 task_data.update(self.mwindow.grab_freeform_data({"doc_name": self.mwindow.doc_names[0], "set_visible_doc": True}))
             # self.ask_host("emit_to_client", task_data)
+            print("got the chunk")
             return task_data
         except Exception as Ex:
-            return self.handle_exception(Ex, "Error initializing mainwindow")
+            emsg = self.handle_exception(Ex, "Error initializing mainwindow")
+            print(str(emsg))
+            return emsg
 
     @task_worthy
     def initialize_project_mainwindow(self, data_dict):

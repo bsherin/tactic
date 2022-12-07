@@ -317,16 +317,6 @@ class HostWorker(QWorker):
         return {"success": True, "log_text": bytes_to_string(get_log(container_id))}
 
     @task_worthy
-    def get_full_collection_name(self, data):
-        user_id = data["user_id"]
-        collection_name = data["collection_name"]
-        the_user = load_user(user_id)
-        name_exists = collection_name in the_user.data_collections
-        full_collection_name = the_user.build_data_collection_name(collection_name)
-        return {"full_collection_name": full_collection_name,
-                "name_exists": name_exists}
-
-    @task_worthy
     def get_lists_classes_functions(self, data):
         user_id = data["user_id"]
         the_user = load_user(user_id)
@@ -359,7 +349,7 @@ class HostWorker(QWorker):
     def get_collection_names(self, data):
         user_id = data["user_id"]
         the_user = load_user(user_id)
-        return {"collection_names": the_user.data_collections}
+        return {"collection_names": the_user.data_collection_names_new}
 
     @task_worthy
     def get_collection_tags_dict(self, data):
@@ -606,8 +596,6 @@ class HostWorker(QWorker):
     @task_worthy
     def print_divider_area_to_console(self, data):
         from tactic_app import socketio
-        user_id = data["user_id"]
-        user_obj = load_user(user_id)
         unique_id = str(uuid.uuid4())
         data["message"] = {"unique_id": unique_id,
                            "type": "divider",
