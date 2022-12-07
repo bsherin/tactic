@@ -7,7 +7,9 @@ In `tactic_app` directory:
 `docker-compose build` or `docker-compose build tactic_main`
 
 Now there are x86 and arm64 images that are built. To build the arm64 images (which is what I want on apple silicon)
-then I do: `docker-compose build tactic_main_arm64`
+then I do: `DOCKER_BUILDKIT=0 docker-compose build tactic_main_arm64`
+(The DOCKER_BUILDKIT stuff became necessary after an update to the mac docker engine, which happened
+to coincide with the getting of the new ultra machine. )
 
 I made bash scripts. so now can do:
 
@@ -19,7 +21,7 @@ or
 from the `tactic` directory
 
 note that scripts that can be run with `npm run`, as below are specified in package.json
-The webpack configuration is in webpack.config.js
+The webpack configuration is in webpack.config.jsa
 
 #### Develop
 

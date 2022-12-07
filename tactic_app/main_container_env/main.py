@@ -107,7 +107,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                 self.visible_doc_name = ""
             else:
                 self.collection_name = data_dict["collection_name"]
-                self.short_collection_name = self.get_short_collection_name(self.collection_name)
+                self.short_collection_name = self.collection_name
                 self.doc_dict = self._build_doc_dict()
                 self.visible_doc_name = list(self.doc_dict)[0]
 
@@ -348,10 +348,11 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
     # utility methods
 
     def _build_doc_dict(self):
-        print("in _build_doc_dict")
+        print("*** in _build_doc_dict **")
         result = {}
-        coll_dict, dm_dict, hl_dict, coll_mdata = self.get_all_collection_info(self.short_collection_name,
-                                                                               return_lists=False)
+        coll_dict, dm_dict, hl_dict, coll_mdata = self.get_all_collection_info_new(self.short_collection_name,
+                                                                                   return_lists=False)
+        print("*** got all collection info ***")
         for fname in coll_dict.keys():
             if self.doc_type == "table":
                 result[fname] = docInfo(fname, hl_dict[fname], dm_dict[fname], coll_dict[fname])

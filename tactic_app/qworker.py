@@ -336,7 +336,7 @@ class QWorker(ExceptionMixin):
         return
 
     def handle_exception(self, ex, special_string=None):
-        return self.extract_short_error_message(ex, special_string)
+        return self.get_traceback_message(ex, special_string)
 
 
 # noinspection PyUnusedLocal

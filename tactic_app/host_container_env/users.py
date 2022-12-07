@@ -57,6 +57,7 @@ def remove_user(trueid):
         db.drop_collection(user.tile_collection_name)
         db.drop_collection(user.code_collection_name)
         user.delete_all_data_collections()  # have to do this because of gridfs pointers
+        user.drop_collection(user.collection_collection_name)
         user.delete_all_projects()  # have to do this because of gridfs pointers
         db.drop_collection(user.project_collection_name)
         db.user_collection.delete_one({"_id": ObjectId(trueid)})
@@ -170,8 +171,6 @@ class User(UserMixin, MongoAccess):
 
     @staticmethod
     def get_user_by_username(username, use_remote=False):
-        print("in get_user_by_username")
-        print("db has collections " + str(db.list_collection_names()[:10]))
         if use_remote:
             result = repository_db.user_collection.find_one({"username": username})
         else:

@@ -15,6 +15,7 @@ from qworker import debug_log
 
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
 
+
 def task_worthy(m):
     task_worthy_methods[m.__name__] = "mainwindow"
     return m
@@ -543,46 +544,29 @@ class LoadSaveTasksMixin:
     @task_worthy_manual_submit
     def change_collection(self, data_dict, task_packet):
         local_task_packet = task_packet
-
-        def got_full_collection_name(fcn_result):
-            full_collection_name = fcn_result["full_collection_name"]
-            the_collection = self.db[full_collection_name]
-            mdata = the_collection.find_one({"name": "__metadata__"})
-            if "type" in mdata and mdata["type"] == "freeform":
-                doc_type = "freeform"
-            else:
-                doc_type = "table"
-            if not doc_type == self.doc_type:
-                error_string = "Cannot replace a collection with a different type"
-                return_data = {"success": False, "message": error_string}
-                return return_data
-            doc_names = []
-            self.short_collection_name = short_collection_name
-            self.collection_name = full_collection_name
-            for f in the_collection.find():
-                fname = bytes_to_string(f["name"])
-                if fname == "__metadata__":
-                    continue
-                else:
-                    doc_names.append(fname)
-            self.doc_dict = self._build_doc_dict()
-            self.visible_doc_name = list(self.doc_dict)[0]
-            self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
-            print("type of collection name is {}".format(type(self.collection_name)))
-            print(type(self.collection_name))
-            print("type of short collection name is {}".format(type(self.short_collection_name)))
-            return_data = {"success": True,
-                           "collection_name": self.collection_name,
-                           "short_collection_name": self.short_collection_name,
-                           "doc_names": doc_names}
-            print("in revised main_tasks_mixin")
-            self.mworker.submit_response(local_task_packet, return_data)
-
         short_collection_name = data_dict["new_collection_name"]
-        data = {"user_id": self.user_id, "collection_name": short_collection_name}
+        new_collection_dict, dmdict, hldict, mdata = self.get_all_collection_info_new(short_collection_name)
 
-        self.mworker.post_task("host", "get_full_collection_name", data, got_full_collection_name)
-
+        if "type" in mdata and mdata["type"] == "freeform":
+            doc_type = "freeform"
+        else:
+            doc_type = "table"
+        if not doc_type == self.doc_type:
+            error_string = "Cannot replace a collection with a different type"
+            return_data = {"success": False, "message": error_string}
+            return return_data
+        doc_names = list(new_collection_dict.keys())
+        self.short_collection_name = short_collection_name
+        self.collection_name = short_collection_name
+        self.doc_dict = self._build_doc_dict()
+        self.visible_doc_name = list(self.doc_dict)[0]
+        self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
+        return_data = {"success": True,
+                       "collection_name": self.collection_name,
+                       "short_collection_name": self.short_collection_name,
+                       "doc_names": doc_names}
+        print("in revised main_tasks_mixin")
+        self.mworker.submit_response(local_task_packet, return_data)
         return
 
 
@@ -851,7 +835,7 @@ class APISupportTasksMixin:
 
     @task_worthy
     def get_collection_names(self, data):
-        return {"success": True, "collection_names": self.data_collections}
+        return {"success": True, "collection_names": self.data_collection_names_new}
 
     @task_worthy
     def get_list_names(self, data):
@@ -865,7 +849,7 @@ class APISupportTasksMixin:
 
     @task_worthy
     def get_user_collection(self, task_data):
-        new_collection_dict, dmdict, hldict, cm = self.get_all_collection_info(task_data["collection_name"])
+        new_collection_dict, dmdict, hldict, cm = self.get_all_collection_info_new(task_data["collection_name"])
         if new_collection_dict is None:
             result = {"success": False, "message": "Collection doesn't exist."}
         else:
@@ -874,7 +858,7 @@ class APISupportTasksMixin:
 
     @task_worthy
     def get_user_collection_with_metadata(self, task_data):
-        new_collection_dict, dmdict, hldict, cm = self.get_all_collection_info(task_data["collection_name"])
+        new_collection_dict, dmdict, hldict, cm = self.get_all_collection_info_new(task_data["collection_name"])
         if new_collection_dict is None:
             result = {"success": False, "message": "Collection doesn't exist."}
         else:
@@ -1734,13 +1718,14 @@ class DataSupportTasksMixin:
             return {"success": False, "message": error_string}
 
     def grab_chunk(self, doc_name, row_index):
+        print("in grab_chunk")
         chunk_number = int(int(row_index) / CHUNK_SIZE)
         chunk_start = chunk_number * CHUNK_SIZE
         data_to_send = self.doc_dict[doc_name].sorted_data_rows[chunk_start:chunk_start + CHUNK_SIZE]
         data_row_dict = {}
         for n, row in enumerate(data_to_send):
             data_row_dict[chunk_start + n] = row
-
+        print("leaving grab_chunk")
         return {"doc_name": doc_name,
                 "total_rows": len(self.doc_dict[doc_name].current_data_rows),
                 "data_row_dict": data_row_dict,
@@ -1748,6 +1733,7 @@ class DataSupportTasksMixin:
 
     @task_worthy
     def grab_chunk_by_row_index(self, data):
+        print("in grab_chunk_by_row_index")
         if "set_visible_doc" in data and data["set_visible_doc"]:
             self.set_visible_doc(data)
         return self.grab_chunk(data["doc_name"], data["row_index"])

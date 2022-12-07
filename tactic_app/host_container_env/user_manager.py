@@ -7,6 +7,7 @@ from tactic_app import app, db, fs
 import loaded_tile_management
 from users import get_all_users, remove_user, load_user, User, create_new_alt_id, get_username_true_id, ID_FIELD
 from communication_utils import make_python_object_jsonizable
+from library_views import collection_manager
 from resource_manager import ResourceManager
 from pymongo import MongoClient
 from bson.objectid import ObjectId
@@ -41,6 +42,8 @@ class UserManager(ResourceManager):
                          login_required(self.update_user_starter_tiles), methods=['get', "post"])
         app.add_url_rule('/grab_user_list_chunk', "grab_user_list_chunk",
                          login_required(self.grab_user_list_chunk), methods=['get', 'post'])
+        app.add_url_rule('/upgrade_all_users', "upgrade_all_users",
+                         login_required(self.upgrade_all_users), methods=['get', "post"])
 
     def bump_user_alt_id(self, userid):
         username = get_username_true_id(userid)
@@ -65,6 +68,29 @@ class UserManager(ResourceManager):
             return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
         result = self.bump_user_alt_id(userid)
         return jsonify(result)
+
+    def upgrade_all_users(self):
+        def get_traceback_message(e, special_string=None):
+            if special_string is None:
+                template = "<pre>An exception of type {0} occured. Arguments:\n{1!r}\n"
+            else:
+                template = special_string + "<pre>\n" + "An exception of type {0} occurred. Arguments:\n{1!r}\n"
+            error_string = template.format(type(e).__name__, e.args)
+            error_string += traceback.format_exc() + "</pre>"
+            return error_string
+        if not (current_user.username == "admin"):
+            return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
+        res = db["user_collection"].find({})
+        for doc in res:
+            username = get_username_true_id(doc["_id"])
+            user_obj = User.get_user_by_username(username)
+            print(f"*** upgrading user {username} ***")
+            try:
+                collection_manager.upgrade_user_collections(user_obj)
+            except Exception as ex:
+                print(get_traceback_message(ex), "Uncaught error upgrading user " + username)
+        print("done upgrading")
+        return jsonify({"success": True})
 
     def bump_all_alt_ids(self):
         if not (current_user.username == "admin"):
@@ -155,7 +181,7 @@ class UserManager(ResourceManager):
         reg = re.compile(".*" + search_text + ".*", re.IGNORECASE)
         or_list = [{"full_name": reg}, {"username": reg}]
 
-        db.user_collection.find()
+        # db.user_collection.find()
         res = db["user_collection"].find({"$or": or_list})
         filtered_res = []
         for doc in res:

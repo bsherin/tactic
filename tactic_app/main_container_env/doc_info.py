@@ -120,6 +120,8 @@ class FreeformDocInfo(DocInfoAbstract):
 # noinspection PyPep8Naming
 class docInfo(DocInfoAbstract):
     def __init__(self, name=None, header_list=None, metadata=None, data_rows=None, table_spec=None):
+        print("*** in docInfo with data_rows of type " + str(type(data_rows)))
+
         DocInfoAbstract.__init__(self, name, metadata)
         if table_spec is not None:  # This will be the case if we are recreating
             self.table_spec = TableSpec(**table_spec)
@@ -128,6 +130,7 @@ class docInfo(DocInfoAbstract):
         self.data_rows = copy.deepcopy(data_rows)  # All the data rows in the doc
         self.current_data_rows = self.data_rows  # The current filtered set of data rows
         self.metadata["number_of_rows"] = len(data_rows.keys())
+        print("** leaving docInfo")
         return
 
     def set_background_color(self, row, column_header, color):
@@ -154,10 +157,12 @@ class docInfo(DocInfoAbstract):
 
     @property
     def sorted_data_rows(self):
+        print("entering sorted_data_rows")
         result = []
         sorted_int_keys = sorted([int(key) for key in self.current_data_rows.keys()])
         for r in sorted_int_keys:
             result.append(self.data_rows[str(r)])
+        print("leaving sorted_data_rows")
         return result
 
     @property

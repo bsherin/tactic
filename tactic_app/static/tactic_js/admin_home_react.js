@@ -498,6 +498,14 @@ var UserMenubar = /*#__PURE__*/function (_React$Component3) {
       });
     }
   }, {
+    key: "_upgrade_all_users",
+    value: function _upgrade_all_users() {
+      var confirm_text = "Are you sure that you want to upgrade all users?";
+      (0, _modal_react.showConfirmDialogReact)("Bump all", confirm_text, "do nothing", "upgrade", function () {
+        $.getJSON($SCRIPT_ROOT + '/upgrade_all_users', _toaster.doFlash);
+      });
+    }
+  }, {
     key: "_update_user_starters",
     value: function _update_user_starters(event) {
       var user_id = this.props.selected_resource._id;
@@ -563,6 +571,10 @@ var UserMenubar = /*#__PURE__*/function (_React$Component3) {
           name_text: "Bump All Alt Ids",
           icon_name: "reset",
           click_handler: this._bump_all_alt_ids
+        }, {
+          name_text: "Upgrade all users",
+          icon_name: "reset",
+          click_handler: this._upgrade_all_users
         }]
       };
 

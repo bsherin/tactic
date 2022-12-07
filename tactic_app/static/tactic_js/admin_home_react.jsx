@@ -325,6 +325,14 @@ class UserMenubar extends React.Component {
             $.getJSON($SCRIPT_ROOT + '/bump_all_alt_ids', doFlash);
         });
     }
+
+    _upgrade_all_users () {
+        const confirm_text = "Are you sure that you want to upgrade all users?";
+        showConfirmDialogReact("Bump all", confirm_text, "do nothing", "upgrade", function () {
+            $.getJSON($SCRIPT_ROOT + '/upgrade_all_users', doFlash);
+        });
+    }
+
     _update_user_starters (event) {
         let user_id = this.props.selected_resource._id;
         const confirm_text = "Are you sure that you want to update starter tiles for user " + String(user_id) + "?";
@@ -380,6 +388,8 @@ class UserMenubar extends React.Component {
                     click_handler: this._bump_user_alt_id},
                 {name_text: "Bump All Alt Ids", icon_name: "reset",
                     click_handler: this._bump_all_alt_ids},
+                {name_text: "Upgrade all users", icon_name: "reset",
+                    click_handler: this._upgrade_all_users},
             ]
         };
         for (const [menu_name, menu] of Object.entries(ms)) {
