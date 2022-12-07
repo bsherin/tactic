@@ -74,6 +74,8 @@ class CollectionManager(LibraryResourceManager):
                          login_required(self.grab_collection_list_chunk), methods=['get', 'post'])
         app.add_url_rule('/upgrade_user_collections', "upgrade_user_collections",
                          login_required(self.upgrade_user_collections), methods=['get', 'post'])
+        app.add_url_rule('/remove_duplicate_collections', "remove_duplicate_collections",
+                         login_required(self.remove_duplicate_collections), methods=['get', 'post'])
         app.add_url_rule('/grab_collection_list_chunk_new', "grab_collection_list_chunk_new",
                          login_required(self.grab_collection_list_chunk_new), methods=['get', 'post'])
 
@@ -310,6 +312,21 @@ class CollectionManager(LibraryResourceManager):
         entry["size_for_sort"] = col_size
         entry["size"] = size_text
         return entry
+
+    def remove_duplicate_collections(self, user_obj=None):
+        print("entering remove duplicate collections")
+        if user_obj is None:
+            user_obj = current_user
+
+        cnames = user_obj.data_collection_names_new
+        already_deleted = []
+        for cname in cnames:
+            if cnames.count(cname) > 1 and cname not in already_deleted:
+                print("removing duplicate collection " + cname)
+                user_obj.remove_collection_new(cname)
+                already_deleted.append(cname)
+
+        return {"success": True}
 
     def upgrade_user_collections(self, user_obj=None):
         print("*** entering upgrade_user_collections ***")

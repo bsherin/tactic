@@ -506,6 +506,14 @@ var UserMenubar = /*#__PURE__*/function (_React$Component3) {
       });
     }
   }, {
+    key: "_remove_all_duplicates",
+    value: function _remove_all_duplicates() {
+      var confirm_text = "Are you sure that you want to remove all duplicates?";
+      (0, _modal_react.showConfirmDialogReact)("Bump all", confirm_text, "do nothing", "remove", function () {
+        $.getJSON($SCRIPT_ROOT + '/remove_all_duplicate_collections', _toaster.doFlash);
+      });
+    }
+  }, {
     key: "_update_user_starters",
     value: function _update_user_starters(event) {
       var user_id = this.props.selected_resource._id;
@@ -575,6 +583,10 @@ var UserMenubar = /*#__PURE__*/function (_React$Component3) {
           name_text: "Upgrade all users",
           icon_name: "reset",
           click_handler: this._upgrade_all_users
+        }, {
+          name_text: "Remove All Duplicates",
+          icon_name: "reset",
+          click_handler: this._remove_all_duplicates
         }]
       };
 
