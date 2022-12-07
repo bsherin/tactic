@@ -333,6 +333,13 @@ class UserMenubar extends React.Component {
         });
     }
 
+    _remove_all_duplicates () {
+        const confirm_text = "Are you sure that you want to remove all duplicates?";
+        showConfirmDialogReact("Bump all", confirm_text, "do nothing", "remove", function () {
+            $.getJSON($SCRIPT_ROOT + '/remove_all_duplicate_collections', doFlash);
+        });
+    }
+
     _update_user_starters (event) {
         let user_id = this.props.selected_resource._id;
         const confirm_text = "Are you sure that you want to update starter tiles for user " + String(user_id) + "?";
@@ -390,6 +397,8 @@ class UserMenubar extends React.Component {
                     click_handler: this._bump_all_alt_ids},
                 {name_text: "Upgrade all users", icon_name: "reset",
                     click_handler: this._upgrade_all_users},
+                {name_text: "Remove All Duplicates", icon_name: "reset",
+                    click_handler: this._remove_all_duplicates},
             ]
         };
         for (const [menu_name, menu] of Object.entries(ms)) {

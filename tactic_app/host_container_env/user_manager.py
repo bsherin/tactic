@@ -44,6 +44,8 @@ class UserManager(ResourceManager):
                          login_required(self.grab_user_list_chunk), methods=['get', 'post'])
         app.add_url_rule('/upgrade_all_users', "upgrade_all_users",
                          login_required(self.upgrade_all_users), methods=['get', "post"])
+        app.add_url_rule('/remove_all_duplicate_collections', "remove_all_duplicate_collections",
+                         login_required(self.remove_all_duplicate_collections), methods=['get', "post"])
 
     def bump_user_alt_id(self, userid):
         username = get_username_true_id(userid)
@@ -68,6 +70,31 @@ class UserManager(ResourceManager):
             return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
         result = self.bump_user_alt_id(userid)
         return jsonify(result)
+
+    def remove_all_duplicate_collections(self):
+        def get_traceback_message(e, special_string=None):
+            if special_string is None:
+                template = "<pre>An exception of type {0} occured. Arguments:\n{1!r}\n"
+            else:
+                template = special_string + "<pre>\n" + "An exception of type {0} occurred. Arguments:\n{1!r}\n"
+            error_string = template.format(type(e).__name__, e.args)
+            error_string += traceback.format_exc() + "</pre>"
+            return error_string
+        print("entering remove_all_duplicate_collections")
+        if not (current_user.username == "admin"):
+            return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
+
+        res = db["user_collection"].find({})
+        for doc in res:
+            username = get_username_true_id(doc["_id"])
+            user_obj = User.get_user_by_username(username)
+            print(f"*** removing duplicates for user {username} ***")
+            try:
+                collection_manager.remove_duplicate_collections(user_obj)
+            except Exception as ex:
+                print(get_traceback_message(ex), "Uncaught error removing dupes for user " + username)
+        print("done removing ducpliates")
+        return jsonify({"success": True})
 
     def upgrade_all_users(self):
         def get_traceback_message(e, special_string=None):
