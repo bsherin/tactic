@@ -102,14 +102,6 @@ class CollectionMenubar extends React.Component {
         this.props.delete_func("/delete_collection", resource_name)
     }
 
-    _upgrade_collections() {
-        $.getJSON(`${$SCRIPT_ROOT}/upgrade_user_collections`)
-    }
-
-    _remove_duplicates() {
-        $.getJSON(`${$SCRIPT_ROOT}/remove_duplicate_collections`)
-    }
-
     _combineCollections () {
         var res_name = this.props.selected_resource.name;
         let self = this;
@@ -220,11 +212,7 @@ class CollectionMenubar extends React.Component {
                 {name_text: "Combine Collections", icon_name: "merge-columns", click_handler: this._combineCollections,
                     multi_select: true},
                 {name_text: "Delete Collections", icon_name: "trash", click_handler: ()=>{this._collection_delete()},
-                    multi_select: true},
-                {name_text: "Upgrade All Collections", icon_name: "refresh", click_handler: ()=>{this._upgrade_collections()},
-                    multi_select: false},
-                {name_text: "Remove Duplicate Collections", icon_name: "refresh", click_handler: ()=>{this._remove_duplicates()},
-                    multi_select: false},
+                    multi_select: true}
             ],
             Transfer: [
                 {name_text: "Import Data", icon_name: "cloud-upload", click_handler: this._showImport},

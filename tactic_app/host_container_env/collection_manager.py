@@ -39,7 +39,7 @@ tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
 # noinspection PyMethodMayBeStatic,PyBroadException,RegExpRedundantEscape
 class CollectionManager(LibraryResourceManager):
-    collection_list = "data_collection_names_new"
+    collection_list = "data_collection_names"
     collection_list_with_metadata = "data_collection_names_with_metadata"
     collection_name = ""
     name_field = ""
@@ -72,12 +72,6 @@ class CollectionManager(LibraryResourceManager):
                          login_required(self.combine_to_new_collection), methods=['post'])
         app.add_url_rule('/grab_collection_list_chunk', "grab_collection_list_chunk",
                          login_required(self.grab_collection_list_chunk), methods=['get', 'post'])
-        app.add_url_rule('/upgrade_user_collections', "upgrade_user_collections",
-                         login_required(self.upgrade_user_collections), methods=['get', 'post'])
-        app.add_url_rule('/remove_duplicate_collections', "remove_duplicate_collections",
-                         login_required(self.remove_duplicate_collections), methods=['get', 'post'])
-        app.add_url_rule('/grab_collection_list_chunk_new', "grab_collection_list_chunk_new",
-                         login_required(self.grab_collection_list_chunk_new), methods=['get', 'post'])
 
     def new_notebook_in_context(self):
         user_obj = current_user
@@ -136,7 +130,7 @@ class CollectionManager(LibraryResourceManager):
         main_id, rb_id = main_container_info.create_main_container(short_collection_name, user_obj.get_id(),
                                                                    user_obj.username)
         create_ready_block(rb_id, user_obj.username, [main_id, "client"], main_id)
-        doc_dict, doc_mddict, hl_dict, mdata = user_obj.get_all_collection_info_new(short_collection_name)
+        doc_dict, doc_mddict, hl_dict, mdata = user_obj.get_all_collection_info(short_collection_name)
         if "_id" in mdata:
             del(mdata["_id"])
         if "type" in mdata and mdata["type"] == "freeform":
@@ -151,43 +145,6 @@ class CollectionManager(LibraryResourceManager):
             "short_collection_name": short_collection_name,
             "resource_name": short_collection_name,
             "collection_name": short_collection_name,
-            "main_id": str(main_id),
-            "ready_block_id": str(rb_id),
-            "mdata": mdata,
-            "is_project": False,
-            "project_name": "",
-            "doc_names": doc_names,
-            "base_figure_url": url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
-            "temp_data_id": "",
-            "console_html": "",
-            "doc_type": doc_type,
-            "is_table": doc_type == "table",
-            "is_freeform": doc_type == "freeform"
-        }
-        return jsonify(data)
-
-    def main_collection_in_context_Old(self):
-        user_obj = current_user
-        # context_id = request.json["context_id"]
-        short_collection_name = request.json["resource_name"]
-        cname = user_obj.build_data_collection_name(short_collection_name)
-        main_id, rb_id = main_container_info.create_main_container(short_collection_name, user_obj.get_id(),
-                                                                   user_obj.username)
-        create_ready_block(rb_id, user_obj.username, [main_id, "client"], main_id)
-        mdata = user_obj.get_collection_metadata(short_collection_name)
-        del(mdata["_id"])
-        if "type" in mdata and mdata["type"] == "freeform":
-            doc_type = "freeform"
-        else:
-            doc_type = "table"
-        doc_names = user_obj.get_collection_docnames(short_collection_name)
-        data = {
-            "success": True,
-            "kind": "main-viewer",
-            "res_type": "collection",
-            "short_collection_name": short_collection_name,
-            "resource_name": short_collection_name,
-            "collection_name": cname,
             "main_id": str(main_id),
             "ready_block_id": str(rb_id),
             "mdata": mdata,
@@ -247,7 +204,7 @@ class CollectionManager(LibraryResourceManager):
     # noinspection PyTypeChecker
     def download_collection(self, collection_name, new_name, max_col_width=50):
         user_obj = current_user
-        coll_dict, doc_mdata_dict, header_list_dict, coll_mdata = user_obj.get_all_collection_info_new(collection_name,
+        coll_dict, doc_mdata_dict, header_list_dict, coll_mdata = user_obj.get_all_collection_info(collection_name,
                                                                                                        return_lists=False)
         wb = openpyxl.Workbook()
         first = True
@@ -283,89 +240,38 @@ class CollectionManager(LibraryResourceManager):
                          download_name=new_name,
                          as_attachment=True)
 
-    def get_collection_size(self, short_cname):
-        total = 0
-        for doc in self.db[current_user.full_collection_name(short_cname)].find():
-            if "file_id" in doc:
-                total += self.db["fs.files"].find_one({"_id": doc["file_id"]})["length"]
-        return total
-
-    def get_collection_size_info(self, short_name, mdata):
-        if "size" not in mdata:
-            col_size = self.get_collection_size(short_name)
-            current_user.set_collection_size(short_name, col_size)
-        else:
-            col_size = mdata["size"]
-        if col_size < 100000:
-            size_text = "{}kb".format(round(col_size / 1000, 1))
-        else:
-            size_text = "{}mb".format(round(col_size / 1000000, 1))
-        return col_size, size_text
-
-    def build_res_dict_old(self, short_name, mdata, user_object=None, file_id=None):
-        entry = super().build_res_dict(short_name, mdata, user_object, file_id)
-        if use_remote_database:
-            col_size = 0
-            size_text = ""
-        else:
-            col_size, size_text = self.get_collection_size_info(short_name, mdata)
-        entry["size_for_sort"] = col_size
-        entry["size"] = size_text
-        return entry
-
     def remove_duplicate_collections(self, user_obj=None):
         print("entering remove duplicate collections")
         if user_obj is None:
             user_obj = current_user
 
-        cnames = user_obj.data_collection_names_new
+        cnames = user_obj.data_collection_names
         already_deleted = []
         for cname in cnames:
             if cnames.count(cname) > 1 and cname not in already_deleted:
                 print("removing duplicate collection " + cname)
-                user_obj.remove_collection_new(cname)
+                user_obj.remove_collection(cname)
                 already_deleted.append(cname)
 
         return {"success": True}
 
-    def upgrade_user_collections(self, user_obj=None):
-        print("*** entering upgrade_user_collections ***")
-        if user_obj is None:
-            user_obj = current_user
-        string_start = user_obj.username + ".data_collection."
-        cfilter = {"name": {"$regex": string_start + "(.*)"}}
-        old_cnames = self.db.list_collection_names(filter=cfilter)
-        failed_conversions = []
-        for old_cname in old_cnames:
-            try:
-                print("converting " + old_cname)
-                if old_cname == user_obj.username + ".data_collections":
-                    continue
-                short_name = re.search(string_start + "(.*)", old_cname).group(1)
-                if short_name not in user_obj.data_collection_names_new:
-                    print("converting " + short_name)
-                    doc_dict, dm_dict, hl_dict, coll_mdata = user_obj.get_all_collection_info(short_name)
-                    new_save_dict = {"metadata": coll_mdata,
-                                     "collection_name": short_name}
-                    collection_dict = {"doc_dict": doc_dict,
-                                       "doc_mdata_dict": dm_dict,
-                                       "header_list_dic": hl_dict}
-                    cdict = make_jsonizable_and_compress(collection_dict)
-                    new_save_dict["file_id"] = self.fs.put(cdict)
-                    self.db[user_obj.collection_collection_name].insert_one(new_save_dict)
-                    print("removing " + short_name)
-                    user_obj.remove_collection(short_name)
-            except Exception as ex:
-                failed_conversions.append(old_cname)
-                print(self.get_traceback_message(ex))
-        print("failed conversions " + str(failed_conversions))
-        return {"success": True}
-
-    def grab_collection_list_chunk_new(self):
-        if request.json["is_repository"]:
-            colname = repository_user.collection_collection_name
+    def db_is_updated(self, is_repo):
+        if is_repo:
+            user_obj = repository_user
+            db_to_use = self.repository_db
         else:
-            colname = current_user.collection_collection_name
+            user_obj = current_user
+            db_to_use = self.db
+
+        return user_obj.collection_collection_name in db_to_use.list_collection_names() and \
+                db_to_use[user_obj.collection_collection_name].count_documents({}) > 0
+
+    def grab_collection_list_chunk(self):
+        if not self.db_is_updated(request.json["is_repository"]):
+            return self.grab_collection_list_chunk_legacy()
+
+        colname = repository_user.collection_collection_name if request.json["is_repository"] else \
+            current_user.collection_collection_name
 
         result = self.grab_resource_list_chunk(colname, "collection_name", None,
                                                ["type", "number_of_docs"], False)
@@ -382,114 +288,12 @@ class CollectionManager(LibraryResourceManager):
                 val["icon:th"] = val["doc_type"]
         return jsonify(result)
 
-    def grab_collection_list_chunk(self):
-
-        def sort_mdata_key(item):
-            if sort_field not in item:
-                return ""
-            return item[sort_field]
-
-        def sort_created_key(item):
-            return item["created_for_sort"]
-
-        def sort_updated_key(item):
-            return item["updated_for_sort"]
-
-        def sort_size_key(item):
-            return item["size_for_sort"]
-
-        try:
-            if request.json["is_repository"]:
-                user_obj = repository_user
-                db_to_use = self.repository_db
-            else:
-                user_obj = current_user
-                db_to_use = self.db
-
-            if user_obj.collection_collection_name in db_to_use.list_collection_names() and \
-                    db_to_use[user_obj.collection_collection_name].count_documents({}) > 0:
-                return self.grab_collection_list_chunk_new()
-
-            search_spec = request.json["search_spec"]
-            row_number = request.json["row_number"]
-            search_text = search_spec['search_string']
-            if search_text == "":
-                search_text = ".*"
-            else:
-                search_text = ".*" + search_text
-            string_start = user_obj.username + ".data_collection."
-            cfilter = {"name": {"$regex": string_start + "(.*)"}}
-
-            cnames = db_to_use.list_collection_names(filter=cfilter)
-            found_collections = []
-            all_tags = []
-            icon_dict = {"table": "icon:th", "freeform": "icon:align-left"}
-            for cname in cnames:
-                if cname == user_obj.username + ".data_collections":
-                    continue
-                mdata = db_to_use[cname].find_one({"name": "__metadata__"})
-                m = re.search(string_start + "(.*)", cname)
-                entry = self.build_res_dict_old(m.group(1), mdata, user_obj)
-
-                if "type" in mdata:
-                    entry["doc_type"] = icon_dict[mdata["type"]]
-                    entry["icon:th"] = entry["doc_type"]
-                else:
-                    entry["doc_type"] = icon_dict["table"]
-                    entry["icon:th"] = entry["doc_type"]
-                if re.match(search_text, m.group(1)):
-                    if search_spec["active_tag"]:
-                        if self.has_hidden(entry["tags"]):
-                            all_subtags = self.add_hidden_to_all_subtags(entry["tags"])
-                            all_tags += self.add_hidden_to_tags(mdata["tags"])
-                            if not self.has_hidden(search_spec["active_tag"]):
-                                continue
-                        else:
-                            all_subtags = self.get_all_subtags(entry["tags"])
-                            all_tags += entry["tags"].split()
-                        if search_spec["active_tag"] in all_subtags:
-                            found_collections.append(entry)
-                    else:
-                        if self.has_hidden(entry["tags"]):
-                            all_tags += self.add_hidden_to_tags(entry["tags"])
-                            continue
-                        else:
-                            all_tags += entry["tags"].split()
-                        found_collections.append(entry)
-
-            all_tags = sorted(list(set(all_tags)))
-            if search_spec["sort_direction"] == "ascending":
-                reverse = False
-            else:
-                reverse = True
-
-            sort_field = search_spec["sort_field"]
-            if sort_field == "created":
-                sort_key_func = sort_created_key
-            elif sort_field == "updated":
-                sort_key_func = sort_updated_key
-            elif sort_field == "size":
-                sort_key_func = sort_size_key
-            else:
-                sort_key_func = sort_mdata_key
-
-            sorted_results = sorted(found_collections, key=sort_key_func, reverse=reverse)
-            chunk_start = int(row_number / CHUNK_SIZE) * CHUNK_SIZE
-            chunk_list = sorted_results[chunk_start: chunk_start + CHUNK_SIZE]
-            chunk_dict = {}
-            for n, r in enumerate(chunk_list):
-                chunk_dict[n + chunk_start] = r
-            return jsonify({"success": True, "chunk_dict": chunk_dict, "all_tags": all_tags, "num_rows": len(sorted_results)})
-
-        except Exception as ex:
-            return self.get_exception_for_ajax(ex, "Error getting chunk")
-
     def grab_metadata(self, res_name):
         user_obj = current_user
         return user_obj.get_collection_metadata(res_name)
 
     def save_metadata(self, res_name, tags, notes):
-        current_user.set_collection_metadata_new(res_name, tags, notes)
+        current_user.set_collection_metadata(res_name, tags, notes)
         return
 
     def delete_tag(self, tag):
@@ -502,7 +306,7 @@ class CollectionManager(LibraryResourceManager):
             if tag in taglist:
                 taglist.remove(tag)
                 mdata["tags"] = " ".join(taglist)
-                current_user.set_collection_metadata_new(res_name, mdata["tags"], mdata["notes"])
+                current_user.set_collection_metadata(res_name, mdata["tags"], mdata["notes"])
         return
 
     def rename_tag(self, tag_changes):
@@ -516,7 +320,7 @@ class CollectionManager(LibraryResourceManager):
                     if new_tag not in taglist:
                         taglist.append(new_tag)
                     mdata["tags"] = " ".join(taglist)
-                    current_user.set_collection_metadata_new(res_name, mdata["tags"], mdata["notes"])
+                    current_user.set_collection_metadata(res_name, mdata["tags"], mdata["notes"])
         return
 
     def autosplit_doc(self, filename, full_dict):
@@ -545,7 +349,7 @@ class CollectionManager(LibraryResourceManager):
 
     def get_doc_type(self, coll_name):
         user_obj = current_user
-        coll_mdata = user_obj.get_collection_metadata_new(coll_name)
+        coll_mdata = user_obj.get_collection_metadata(coll_name)
         if "type" in coll_mdata and coll_mdata["type"] == "freeform":
             doc_type = "freeform"
         else:
@@ -556,21 +360,21 @@ class CollectionManager(LibraryResourceManager):
         try:
             user_obj = current_user
 
-            if base_collection_name not in user_obj.data_collection_names_new:
+            if base_collection_name not in user_obj.data_collection_names:
                 error_string = base_collection_name + " doesn't exist"
                 return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
-            if collection_to_add not in user_obj.data_collection_names_new:
+            if collection_to_add not in user_obj.data_collection_names:
                 error_string = base_collection_name + " doesn't exist"
                 return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
             doc_type = self.get_doc_type(base_collection_name)
-            coll_dict, dm_dict, hl_dict, coll_mdata = user_obj.get_all_collection_info_new(collection_to_add)
+            coll_dict, dm_dict, hl_dict, coll_mdata = user_obj.get_all_collection_info(collection_to_add)
             if not coll_mdata["type"] == doc_type:
                 error_string = "Cannot combine freeform and table collections"
                 return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
             user_obj.append_documents_to_collection(base_collection_name, coll_dict, doc_type, hl_dict, dm_dict)
             user_obj.update_collection_time(base_collection_name)
-            coll_mdata = user_obj.get_collection_metadata_new(base_collection_name)
+            coll_mdata = user_obj.get_collection_metadata(base_collection_name)
             self.update_selector_row(self.build_res_dict(base_collection_name, coll_mdata))
             return jsonify({"success": True,
                             "message": "Collections successfull combined",
@@ -661,7 +465,7 @@ class CollectionManager(LibraryResourceManager):
         successful_reads = []
         failed_reads = OrderedDict()
         known_extensions = [".xlsx", ".csv", ".tsv", ".txt"]
-        collection_mdata = user_obj.get_collection_metadata_new(collection_name)
+        collection_mdata = user_obj.get_collection_metadata(collection_name)
         if "csv_options" in collection_mdata:
             csv_options = collection_mdata["csv_options"]
         else:
@@ -738,7 +542,7 @@ class CollectionManager(LibraryResourceManager):
             user_obj = current_user
             collection_names = request.json["resource_names"]
             for collection_name in collection_names:
-                user_obj.remove_collection_new(collection_name)
+                user_obj.remove_collection(collection_name)
             return jsonify({"success": True, "message": "Collection(s) successfully deleted",
                             "alert_type": "alert-success"})
 
@@ -750,7 +554,7 @@ class CollectionManager(LibraryResourceManager):
             user_obj = current_user
             original_collections = request.json["original_collections"]
             new_name = request.json["new_name"]
-            coll_dict, dm_dict, hl_dict, coll_mdata = user_obj.get_all_collection_info_new(original_collections[0])
+            coll_dict, dm_dict, hl_dict, coll_mdata = user_obj.get_all_collection_info(original_collections[0])
             doc_type = coll_mdata["type"]
             if "size" in coll_mdata:
                 del coll_mdata["size"]
@@ -766,11 +570,11 @@ class CollectionManager(LibraryResourceManager):
                     return jsonify({"success": False, "message": error_string, "alert_type": "alert-warning"})
 
             for col in original_collections[1:]:
-                coll_dict, dm_dict, hl_dict, coll_mdata = user_obj.get_all_collection_info_new(col)
+                coll_dict, dm_dict, hl_dict, coll_mdata = user_obj.get_all_collection_info(col)
                 user_obj.append_documents_to_collection(new_name, coll_dict, doc_type, hl_dict, dm_dict)
 
             user_obj.update_collection_time(new_name)
-            metadata = user_obj.get_collection_metadata_new(new_name)
+            metadata = user_obj.get_collection_metadata(new_name)
             new_row = self.build_res_dict(new_name, metadata, user_obj)
             return jsonify({"success": True, "new_row": new_row})
 
@@ -781,7 +585,7 @@ class CollectionManager(LibraryResourceManager):
         try:
             user_obj = current_user
             new_res_name = request.json["new_res_name"]
-            coll_dict, dm_dict, hl_dict, coll_mdata = user_obj.get_all_collection_info_new(request.json['res_to_copy'])
+            coll_dict, dm_dict, hl_dict, coll_mdata = user_obj.get_all_collection_info(request.json['res_to_copy'])
             if "size" in coll_mdata and coll_mdata["size"] == 0:
                 del coll_mdata["size"]
             if "type" in coll_mdata:
@@ -800,7 +604,7 @@ class CollectionManager(LibraryResourceManager):
                 result["alert_type"] = "alert-warning"
                 return jsonify(result)
 
-            metadata = user_obj.get_collection_metadata_new(new_res_name)
+            metadata = user_obj.get_collection_metadata(new_res_name)
             new_row = self.build_res_dict(new_res_name, metadata, user_obj)
             return jsonify({"success": True, "new_row": new_row})
         except Exception as ex:
@@ -808,6 +612,191 @@ class CollectionManager(LibraryResourceManager):
             self.add_error_drawer_entry("Error duplicating collection", msg, request.json["library_id"])
             # return self.get_exception_for_ajax(ex, "Error duplicating collection")
             return jsonify({"success": False})
+
+    ### Stuff below here is needed if I mount a Mongo database that hasn't yet
+    ### Had data collections updated to the new compact format where they all live in a single collection
+    ### This is just what is needed for the minimal thing of running the update
+    ### There's also some stuff in mongo_accesser
+
+    def upgrade_user_collections(self, user_obj=None):
+        print("*** entering upgrade_user_collections ***")
+        if user_obj is None:
+            user_obj = current_user
+        string_start = user_obj.username + ".data_collection."
+        cfilter = {"name": {"$regex": string_start + "(.*)"}}
+        old_cnames = self.db.list_collection_names(filter=cfilter)
+        failed_conversions = []
+        for old_cname in old_cnames:
+            try:
+                print("converting " + old_cname)
+                if old_cname == user_obj.username + ".data_collections":
+                    continue
+                short_name = re.search(string_start + "(.*)", old_cname).group(1)
+                if short_name not in user_obj.data_collection_names:
+                    print("converting " + short_name)
+                    doc_dict, dm_dict, hl_dict, coll_mdata = user_obj.get_all_collection_info_legacy(short_name)
+                    new_save_dict = {"metadata": coll_mdata,
+                                     "collection_name": short_name}
+                    collection_dict = {"doc_dict": doc_dict,
+                                       "doc_mdata_dict": dm_dict,
+                                       "header_list_dic": hl_dict}
+                    cdict = make_jsonizable_and_compress(collection_dict)
+                    new_save_dict["file_id"] = self.fs.put(cdict)
+                    self.db[user_obj.collection_collection_name].insert_one(new_save_dict)
+                    print("removing " + short_name)
+                    user_obj.remove_collection_legacy(short_name)
+            except Exception as ex:
+                failed_conversions.append(old_cname)
+                print(self.get_traceback_message(ex))
+        print("failed conversions " + str(failed_conversions))
+        return {"success": True}
+
+    # legacy
+    def build_res_dict_legacy(self, short_name, mdata, user_object=None, file_id=None):
+        entry = super().build_res_dict(short_name, mdata, user_object, file_id)
+        if use_remote_database:
+            col_size = 0
+            size_text = ""
+        else:
+            col_size, size_text = self.get_collection_size_info(short_name, mdata)
+        entry["size_for_sort"] = col_size
+        entry["size"] = size_text
+        return entry
+
+    # legacy
+    def get_collection_size(self, short_cname):
+        total = 0
+        for doc in self.db[current_user.full_collection_name(short_cname)].find():
+            if "file_id" in doc:
+                total += self.db["fs.files"].find_one({"_id": doc["file_id"]})["length"]
+        return total
+
+    # legacy
+    def set_collection_size(self, short_collection_name, size):
+        name_exists = short_collection_name in self.data_collections
+        if not name_exists:
+            return None
+        full_collection_name = self.build_data_collection_name(short_collection_name)
+        mdata = self.get_collection_metadata_legacy(short_collection_name)
+        if mdata is None:
+            return
+        print("setting collection size for " + full_collection_name)
+        self.db[full_collection_name].update_one({"name": "__metadata__"},
+                                                 {'$set': {"size": size}})
+        return
+
+    # legacy
+    def get_collection_size_info(self, short_name, mdata):
+        if "size" not in mdata:
+            col_size = self.get_collection_size(short_name)
+            current_user.set_collection_size(short_name, col_size)
+        else:
+            col_size = mdata["size"]
+        if col_size < 100000:
+            size_text = "{}kb".format(round(col_size / 1000, 1))
+        else:
+            size_text = "{}mb".format(round(col_size / 1000000, 1))
+        return col_size, size_text
+
+    # legacy
+    def grab_collection_list_chunk_legacy(self):
+
+        def sort_mdata_key(item):
+            if sort_field not in item:
+                return ""
+            return item[sort_field]
+
+        def sort_created_key(item):
+            return item["created_for_sort"]
+
+        def sort_updated_key(item):
+            return item["updated_for_sort"]
+
+        def sort_size_key(item):
+            return item["size_for_sort"]
+
+        try:
+            if request.json["is_repository"]:
+                user_obj = repository_user
+                db_to_use = self.repository_db
+            else:
+                user_obj = current_user
+                db_to_use = self.db
+
+            search_spec = request.json["search_spec"]
+            row_number = request.json["row_number"]
+            search_text = search_spec['search_string']
+            if search_text == "":
+                search_text = ".*"
+            else:
+                search_text = ".*" + search_text
+            string_start = user_obj.username + ".data_collection."
+            cfilter = {"name": {"$regex": string_start + "(.*)"}}
+
+            cnames = db_to_use.list_collection_names(filter=cfilter)
+            found_collections = []
+            all_tags = []
+            icon_dict = {"table": "icon:th", "freeform": "icon:align-left"}
+            for cname in cnames:
+                if cname == user_obj.username + ".data_collections":
+                    continue
+                mdata = db_to_use[cname].find_one({"name": "__metadata__"})
+                m = re.search(string_start + "(.*)", cname)
+                entry = self.build_res_dict_legacy(m.group(1), mdata, user_obj)
+
+                if "type" in mdata:
+                    entry["doc_type"] = icon_dict[mdata["type"]]
+                    entry["icon:th"] = entry["doc_type"]
+                else:
+                    entry["doc_type"] = icon_dict["table"]
+                    entry["icon:th"] = entry["doc_type"]
+                if re.match(search_text, m.group(1)):
+                    if search_spec["active_tag"]:
+                        if self.has_hidden(entry["tags"]):
+                            all_subtags = self.add_hidden_to_all_subtags(entry["tags"])
+                            all_tags += self.add_hidden_to_tags(mdata["tags"])
+                            if not self.has_hidden(search_spec["active_tag"]):
+                                continue
+                        else:
+                            all_subtags = self.get_all_subtags(entry["tags"])
+                            all_tags += entry["tags"].split()
+                        if search_spec["active_tag"] in all_subtags:
+                            found_collections.append(entry)
+                    else:
+                        if self.has_hidden(entry["tags"]):
+                            all_tags += self.add_hidden_to_tags(entry["tags"])
+                            continue
+                        else:
+                            all_tags += entry["tags"].split()
+                        found_collections.append(entry)
+
+            all_tags = sorted(list(set(all_tags)))
+            if search_spec["sort_direction"] == "ascending":
+                reverse = False
+            else:
+                reverse = True
+
+            sort_field = search_spec["sort_field"]
+            if sort_field == "created":
+                sort_key_func = sort_created_key
+            elif sort_field == "updated":
+                sort_key_func = sort_updated_key
+            elif sort_field == "size":
+                sort_key_func = sort_size_key
+            else:
+                sort_key_func = sort_mdata_key
+
+            sorted_results = sorted(found_collections, key=sort_key_func, reverse=reverse)
+            chunk_start = int(row_number / CHUNK_SIZE) * CHUNK_SIZE
+            chunk_list = sorted_results[chunk_start: chunk_start + CHUNK_SIZE]
+            chunk_dict = {}
+            for n, r in enumerate(chunk_list):
+                chunk_dict[n + chunk_start] = r
+            return jsonify(
+                {"success": True, "chunk_dict": chunk_dict, "all_tags": all_tags, "num_rows": len(sorted_results)})
+
+        except Exception as ex:
+            return self.get_exception_for_ajax(ex, "Error getting chunk")
 
 
 class RepositoryCollectionManager(CollectionManager):

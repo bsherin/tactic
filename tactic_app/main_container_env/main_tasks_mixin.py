@@ -545,7 +545,7 @@ class LoadSaveTasksMixin:
     def change_collection(self, data_dict, task_packet):
         local_task_packet = task_packet
         short_collection_name = data_dict["new_collection_name"]
-        new_collection_dict, dmdict, hldict, mdata = self.get_all_collection_info_new(short_collection_name)
+        new_collection_dict, dmdict, hldict, mdata = self.get_all_collection_info(short_collection_name)
 
         if "type" in mdata and mdata["type"] == "freeform":
             doc_type = "freeform"
@@ -835,7 +835,7 @@ class APISupportTasksMixin:
 
     @task_worthy
     def get_collection_names(self, data):
-        return {"success": True, "collection_names": self.data_collection_names_new}
+        return {"success": True, "collection_names": self.data_collection_names}
 
     @task_worthy
     def get_list_names(self, data):
@@ -849,7 +849,7 @@ class APISupportTasksMixin:
 
     @task_worthy
     def get_user_collection(self, task_data):
-        new_collection_dict, dmdict, hldict, cm = self.get_all_collection_info_new(task_data["collection_name"])
+        new_collection_dict, dmdict, hldict, cm = self.get_all_collection_info(task_data["collection_name"])
         if new_collection_dict is None:
             result = {"success": False, "message": "Collection doesn't exist."}
         else:
@@ -858,7 +858,7 @@ class APISupportTasksMixin:
 
     @task_worthy
     def get_user_collection_with_metadata(self, task_data):
-        new_collection_dict, dmdict, hldict, cm = self.get_all_collection_info_new(task_data["collection_name"])
+        new_collection_dict, dmdict, hldict, cm = self.get_all_collection_info(task_data["collection_name"])
         if new_collection_dict is None:
             result = {"success": False, "message": "Collection doesn't exist."}
         else:

@@ -85,6 +85,11 @@ class MainContainerTracker(object):
         main_volume_dict[user_host_persist_dir] = {"bind": "/code/persist", "mode": "ro"}
         rb_id = str(uuid.uuid4())
         environ = {"USE_WAIT_TASKS": "True", "RB_ID": rb_id}
+        if "USE_REMOTE_DATABASE" in os.environ:
+            environ["USE_REMOTE_DATABASE"] = os.environ.get("USE_REMOTE_DATABASE")
+            environ["REMOTE_KEY_FILE"] = os.environ.get("REMOTE_KEY_FILE")
+            environ["REMOTE_USERNAME"] = os.environ.get("REMOTE_USERNAME")
+            main_volume_dict[environ["REMOTE_KEY_FILE"]] = {"bind": environ["REMOTE_KEY_FILE"], "mode": "ro"}
         main_id, _container_id = create_container("bsherin/tactic:main", network_mode="bridge",
                                                   env_vars=environ,
                                                   owner=user_id, other_name=other_name, username=username,

@@ -134,10 +134,14 @@ class ResourceManager(ExceptionMixin):
             for field, val in mdata.items():
                 if field not in skip_fields:
                     return_data[field] = val
-        if not use_remote_database and file_id is not None:
-            size_text, size = self.get_fs_file_siz_info(file_id)
-            return_data["size_for_sort"] = size
-            return_data["size"] = size_text
+        if file_id is not None:
+            if use_remote_database:
+                return_data["size_for_sort"] = ""
+                return_data["size"] = ""
+            else:
+                size_text, size = self.get_fs_file_siz_info(file_id)
+                return_data["size_for_sort"] = size
+                return_data["size"] = size_text
         return return_data
 
     def build_data_list(self, res_list, user_obj=None):
