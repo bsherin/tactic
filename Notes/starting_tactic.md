@@ -12,6 +12,7 @@ start_tactic.sh \
 	--mdir ~/mongo/data \
 	--dev
 
+# starting with old remote repo on NU server
 start_tactic.sh \
 	--root /Users/brucesherin/PycharmProjects/tactic \
 	--mdir ~/mongo/data \
@@ -37,9 +38,20 @@ start_tactic.sh \
 
 ```
 
-### run on server
+### run on NU server
 ```
 sudo /srv/tactic/tactic_app/start_tactic.sh \
 	--root /srv/tactic \
 	--mdir /var/lib/mongo2
+```
+
+### run on AWS server
+```
+# from remote
+sudo systemctl start docker
+sudo /srv/tactic/tactic_app/start_tactic.sh --root /srv/tactic --mdir /tacticdata/mongo/data
+
+# from local mac
+ssh -i /Users/brucesherin/PycharmProjects/tactic/LightsailDefaultKey-us-east-2.pem centos@tactictext.net \
+"sudo /srv/tactic/tactic_app/start_tactic.sh --root /srv/tactic --mdir /tacticdata/mongo/data"
 ```

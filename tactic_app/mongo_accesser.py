@@ -71,18 +71,7 @@ class MongoAccess(object):
         return '{}.code'.format(self.username)
 
     @property
-    def data_collections(self):
-        cnames = self.db.list_collection_names()
-        string_start = self.username + ".data_collection."
-        my_collection_names = []
-        for cname in cnames:
-            m = re.search(string_start + "(.*)", cname)
-            if m:
-                my_collection_names.append(m.group(1))
-        return sorted([str(t) for t in my_collection_names], key=str.lower)
-
-    @property
-    def data_collection_names_new(self):
+    def data_collection_names(self):
         if self.collection_collection_name not in self.db.list_collection_names():
             self.db.create_collection(self.collection_collection_name)
             return []
@@ -101,32 +90,13 @@ class MongoAccess(object):
             my_collection_names.append([doc["collection_name"], doc["metadata"]])
         return sorted(my_collection_names, key=self.sort_data_list_key)
 
-    @property
-    def data_collection_names_with_metadata_old(self):
-        cnames = self.db.list_collection_names()
-        string_start = self.username + ".data_collection."
-        my_collection_names = []
-        for cname in cnames:
-            m = re.search(string_start + "(.*)", cname)
-            if m:
-                mdata = self.db[cname].find_one({"name": "__metadata__"})
-                my_collection_names.append([m.group(1), mdata])
-
-        return sorted(my_collection_names, key=self.sort_data_list_key)
-
-    def rename_collection(self, old_name, new_name):
-        full_old_name = self.build_data_collection_name(old_name)
-        full_new_name = self.build_data_collection_name(new_name)
-        self.db[full_old_name].rename(full_new_name)
-        return
-
     def update_number_of_docs(self, collection_name):
         number_of_docs = self.db[collection_name].count_documents({}) - 1
         self.db[collection_name].update_one({"name": "__metadata__"},
                                             {'$set': {"number_of_docs": number_of_docs}})
 
     def update_collection_time(self, collection_name):
-        mdata = self.get_collection_metadata_new(collection_name)
+        mdata = self.get_collection_metadata(collection_name)
         mdata["updated"] = datetime.datetime.utcnow()
         self.db[self.collection_collection_name].update_one({"collection_name": collection_name},
                                                             {'$set': {"metadata": mdata}})
@@ -136,13 +106,12 @@ class MongoAccess(object):
 
     def create_complete_collection(self, new_name, doc_dict, doc_type, document_metadata=None,
                                    header_list_dict=None, collection_metadata=None):
-        name_exists = new_name in self.data_collections
+        name_exists = new_name in self.data_collection_names
         if name_exists:
             raise NameExistsError("Collection name {} already exists".format(new_name))
         mdata = self.create_initial_metadata()
         mdata["number_of_docs"] = len(list(doc_dict.keys()))
         mdata["type"] = doc_type
-        print("after setting number of docs mdata is " + str(mdata))
         if collection_metadata is not None:
             for k, v in collection_metadata.items():
                 mdata[k] = v
@@ -167,18 +136,16 @@ class MongoAccess(object):
         new_save_dict["file_id"] = self.fs.put(cdict)
         self.db[self.collection_collection_name].insert_one(new_save_dict)
 
-        print("cone with create_complete_collection, about to return")
         if "_id" in mdata:
             del mdata["_id"]  # without this can get an error submitting the result
-        print(str(mdata))
         return {"success": True, "message": "Collection created", "metadata": mdata}
 
     def append_documents_to_collection(self, collection_name, doc_dict, doc_type,
                                        header_list_dict=None, doc_mddict=None):
-        name_exists = collection_name in self.data_collection_names_new
+        name_exists = collection_name in self.data_collection_names
         if not name_exists:
             raise NonexistentNameError("Base collection name {} doesn't exists".format(collection_name))
-        old_doc_dict, old_doc_mddict, old_hl_dict, old_mdata = self.get_all_collection_info_new(collection_name)
+        old_doc_dict, old_doc_mddict, old_hl_dict, old_mdata = self.get_all_collection_info(collection_name)
 
         ndoc_mddict = {}
         if doc_mddict is not None:
@@ -228,41 +195,19 @@ class MongoAccess(object):
                                                             {'$set': new_save_dict})
         return {"success": True}
 
-    def get_collection_metadata_new(self, short_collection_name):
-        name_exists = short_collection_name in self.data_collection_names_new
+    def get_collection_metadata(self, short_collection_name):
+        name_exists = short_collection_name in self.data_collection_names
         if not name_exists:
             return None
         mdata = self.db[self.collection_collection_name].find_one({"collection_name": short_collection_name},
                                                                   projection=["metadata"])["metadata"]
         return mdata
 
-    def get_collection_metadata(self, short_collection_name):
-        name_exists = short_collection_name in self.data_collections
-        if not name_exists:
-            return None
-
-        full_collection_name = self.build_data_collection_name(short_collection_name)
-        the_collection = self.db[full_collection_name]
-        return the_collection.find_one({"name": "__metadata__"})
-
     def set_collection_metadata(self, short_collection_name, tags, notes):
-        name_exists = short_collection_name in self.data_collections
+        name_exists = short_collection_name in self.data_collection_names
         if not name_exists:
             return None
-        full_collection_name = self.build_data_collection_name(short_collection_name)
         mdata = self.get_collection_metadata(short_collection_name)
-        if mdata is None:
-            self.db[full_collection_name].insert_one({"name": "__metadata__", "tags": tags, "notes": notes})
-        else:
-            self.db[full_collection_name].update_one({"name": "__metadata__"},
-                                                     {'$set': {"tags": tags, "notes": notes}})
-        return
-
-    def set_collection_metadata_new(self, short_collection_name, tags, notes):
-        name_exists = short_collection_name in self.data_collection_names_new
-        if not name_exists:
-            return None
-        mdata = self.get_collection_metadata_new(short_collection_name)
 
         if mdata is None:
             mdata = self.create_initial_metadata()
@@ -272,38 +217,6 @@ class MongoAccess(object):
                                                              {'$set': {"metadata": mdata}})
         return
 
-    def set_collection_size(self, short_collection_name, size):
-        name_exists = short_collection_name in self.data_collections
-        if not name_exists:
-            return None
-        full_collection_name = self.build_data_collection_name(short_collection_name)
-        mdata = self.get_collection_metadata(short_collection_name)
-        if mdata is None:
-            return
-        print("setting collection size for " + full_collection_name)
-        self.db[full_collection_name].update_one({"name": "__metadata__"},
-                                                 {'$set': {"size": size}})
-        return
-
-    def get_collection_docnames(self, short_collection_name):
-        name_exists = short_collection_name in self.data_collections
-        if not name_exists:
-            return None
-        full_collection_name = self.build_data_collection_name(short_collection_name)
-        the_collection = self.db[full_collection_name]
-        doc_names = []
-
-        for f in the_collection.find():
-            # fname = f["name"].encode("ascii", "ignore")
-            fname = bytes_to_string(f["name"])
-            if fname == "__metadata__":
-                continue
-            else:
-                doc_names.append(fname)
-
-        doc_names.sort()
-        return doc_names
-
     def sort_rows(self, row_dict):
         result = []
         sorted_int_keys = sorted([int(key) for key in row_dict.keys()])
@@ -311,8 +224,8 @@ class MongoAccess(object):
             result.append(row_dict[str(r)])
         return result
 
-    def get_all_collection_info_new(self, short_collection_name, return_lists=True):
-        name_exists = short_collection_name in self.data_collection_names_new
+    def get_all_collection_info(self, short_collection_name, return_lists=True):
+        name_exists = short_collection_name in self.data_collection_names
         if not name_exists:
             return False, None, None, None
         else:
@@ -331,72 +244,11 @@ class MongoAccess(object):
                 new_doc_dict = {}
                 for fname, dlist in cdict["doc_dict"].items():
                     ndoc = {}
-                    print(f"got dlist {str(dlist[:10])}")
                     for r in dlist:
                         ndoc[str(r["__id__"])] = r
                     new_doc_dict[fname] = ndoc
             hld = cdict["header_list_dic"] if "header_list_dic" in cdict else {}
             return new_doc_dict, cdict["doc_mdata_dict"], hld, collection_metadata
-
-    def get_all_collection_info(self, short_collection_name, return_lists=True):
-        def get_traceback_message(e, special_string=None):
-            if special_string is None:
-                template = "<pre>An exception of type {0} occured. Arguments:\n{1!r}\n"
-            else:
-                template = special_string + "<pre>\n" + "An exception of type {0} occurred. Arguments:\n{1!r}\n"
-            error_string = template.format(type(e).__name__, e.args)
-            error_string += traceback.format_exc() + "</pre>"
-            return error_string
-        name_exists = short_collection_name in self.data_collections
-
-        if not name_exists:
-            return False, None, None, None
-        else:
-            full_collection_name = self.build_data_collection_name(short_collection_name)
-            the_collection = self.db[full_collection_name]
-            new_collection_dict = {}
-            header_list_dict = {}
-            doc_metadata_dict = {}
-            collection_metadata = the_collection.find_one({"name": "__metadata__"})
-            if "type" in collection_metadata and collection_metadata["type"] == "freeform":
-                doc_type = "freeform"
-            else:
-                doc_type = "table"
-            for f in the_collection.find():
-                fname = bytes_to_string(f["name"])
-
-                if fname == "__metadata__":
-                    continue
-                try:
-                    if doc_type == "table":
-                        if "file_id" in f:
-                            new_collection_dict[fname] = debinarize_python_object(self.fs.get(f["file_id"]).read())
-                        else:
-                            new_collection_dict[fname] = f["data_rows"]
-                        if return_lists:
-                            new_collection_dict[fname] = self.sort_rows(new_collection_dict[fname])
-                        if "header_list" in f:
-                            header_list_dict[fname] = f["header_list"]
-                        elif "table_spec" in f:
-                            header_list_dict[fname] = f["table_spec"]["header_list"]
-                        else:
-                            header_list_dict[fname] = None
-                    else:
-                        if "is_binarized" in f and f["is_binarized"]:
-                            new_collection_dict[fname] = debinarize_python_object(self.fs.get(f["file_id"]).read())
-                        elif "encoding" in f:  # legacy
-                            new_collection_dict[fname] = self.fs.get(f["file_id"]).read().decode(f["encoding"])
-                        else:
-                            new_collection_dict[fname] = self.fs.get(f["file_id"]).read()
-                    if "metadata" in f:
-                        doc_metadata_dict[fname] = f["metadata"]
-                    else:
-                        doc_metadata_dict[fname] = {}
-                except Exception as ex:
-                    print(f"Couldn't read document {fname}")
-                    print(get_traceback_message(ex))
-
-        return new_collection_dict, doc_metadata_dict, header_list_dict, collection_metadata
 
     @property
     def data_collection_tags_dict(self):
@@ -412,40 +264,11 @@ class MongoAccess(object):
         return data_collections
 
     def delete_all_data_collections(self):
-        for dcol in self.data_collection_names_new:
-            self.remove_collection_new(dcol)
+        for dcol in self.data_collection_names:
+            self.remove_collection(dcol)
         return
 
-    def full_collection_name(self, cname):
-        return self.username + ".data_collection." + cname
-
-    def build_data_collection_name(self, collection_name):
-        return '{}.data_collection.{}'.format(self.username, collection_name)
-
-    def get_short_collection_name(self, full_collection_name):
-        return re.sub(r"^.*?\.data_collection\.", "", full_collection_name)
-
     def remove_collection(self, collection_name):
-        def get_traceback_message(e, special_string=None):
-            if special_string is None:
-                template = "<pre>An exception of type {0} occured. Arguments:\n{1!r}\n"
-            else:
-                template = special_string + "<pre>\n" + "An exception of type {0} occurred. Arguments:\n{1!r}\n"
-            error_string = template.format(type(e).__name__, e.args)
-            error_string += traceback.format_exc() + "</pre>"
-            return error_string
-        fcname = self.full_collection_name(collection_name)
-        for doc in self.db[fcname].find():
-            if "file_id" in doc:
-                try:
-                    self.fs.delete(doc["file_id"])
-                except Exception as ex:
-                    print("couldn't delete a gridfs entry")
-                    self.get_traceback_message(ex)
-        self.db.drop_collection(fcname)
-        return True
-
-    def remove_collection_new(self, collection_name):
         save_dict = self.db[self.collection_collection_name].find_one({"collection_name": collection_name})
         if "file_id" in save_dict:
             self.fs.delete(save_dict["file_id"])
@@ -642,46 +465,6 @@ class MongoAccess(object):
                 res_names.append(doc[name_key])
         return sorted([str(t) for t in res_names], key=str.lower)
 
-    def get_resource_names_old(self, res_type, tag_filter=None, search_filter=None):
-        if tag_filter is not None:
-            tag_filter = tag_filter.lower()
-        if search_filter is not None:
-            search_filter = search_filter.lower()
-        if res_type == "collection":
-            dcollections = self.data_collections
-            res_names = []
-            for dcol in dcollections:
-                cname = self.build_data_collection_name(dcol)
-                mdata = self.db[cname].find_one({"name": "__metadata__"})
-                if tag_filter is not None:
-                    if mdata is not None and "tags" in mdata:
-                        if tag_filter in mdata["tags"].lower():
-                            res_names.append(dcol)
-                elif search_filter is not None:
-                    if search_filter in dcol.lower():
-                        res_names.append(dcol)
-                else:
-                    res_names.append(dcol)
-        else:
-            cname = self.resource_collection_name(res_type)
-            name_key = name_keys[res_type]
-            if cname not in self.db.list_collection_names():
-                self.db.create_collection(cname)
-                return []
-            res_names = []
-            for doc in self.db[cname].find():
-                if tag_filter is not None:
-                    if "metadata" in doc:
-                        if "tags" in doc["metadata"]:
-                            if tag_filter in doc["metadata"]["tags"].lower():
-                                res_names.append(doc[name_key])
-                elif search_filter is not None:
-                    if search_filter in doc[name_key].lower():
-                        res_names.append(doc[name_key])
-                else:
-                    res_names.append(doc[name_key])
-        return sorted([str(t) for t in res_names], key=str.lower)
-
     def get_list(self, list_name):
         list_dict = self.db[self.list_collection_name].find_one({"list_name": list_name})
         return list_dict["the_list"]
@@ -719,3 +502,124 @@ class MongoAccess(object):
             if function_name in doc["metadata"]["functions"]:
                 return doc["the_code"]
         return None
+
+    ### Stuff below here is needed if I mount a Mongo database that hasn't yet
+    ### Had data collections updated to the new compact format where they all live in a single collection
+    ### This is just what is needed for the minimal thing of running the update
+    ### More stuff is in colleciton_manager
+
+    #legacy
+    @property
+    def data_collections(self):
+        cnames = self.db.list_collection_names()
+        string_start = self.username + ".data_collection."
+        my_collection_names = []
+        for cname in cnames:
+            m = re.search(string_start + "(.*)", cname)
+            if m:
+                my_collection_names.append(m.group(1))
+        return sorted([str(t) for t in my_collection_names], key=str.lower)
+
+    # legacy
+    def full_collection_name(self, cname):
+        return self.username + ".data_collection." + cname
+
+    # legacy
+    def build_data_collection_name(self, collection_name):
+        return '{}.data_collection.{}'.format(self.username, collection_name)
+
+    #legacy
+    def get_short_collection_name(self, full_collection_name):
+        return re.sub(r"^.*?\.data_collection\.", "", full_collection_name)
+
+    #legacy
+    def remove_collection_legacy(self, collection_name):
+        def get_traceback_message(e, special_string=None):
+            if special_string is None:
+                template = "<pre>An exception of type {0} occured. Arguments:\n{1!r}\n"
+            else:
+                template = special_string + "<pre>\n" + "An exception of type {0} occurred. Arguments:\n{1!r}\n"
+            error_string = template.format(type(e).__name__, e.args)
+            error_string += traceback.format_exc() + "</pre>"
+            return error_string
+        fcname = self.full_collection_name(collection_name)
+        for doc in self.db[fcname].find():
+            if "file_id" in doc:
+                try:
+                    self.fs.delete(doc["file_id"])
+                except Exception as ex:
+                    print("couldn't delete a gridfs entry")
+                    self.get_traceback_message(ex)
+        self.db.drop_collection(fcname)
+        return True
+
+    # legacy
+    def get_collection_metadata_legacy(self, short_collection_name):
+        name_exists = short_collection_name in self.data_collections
+        if not name_exists:
+            return None
+
+        full_collection_name = self.build_data_collection_name(short_collection_name)
+        the_collection = self.db[full_collection_name]
+        return the_collection.find_one({"name": "__metadata__"})
+
+    # legacy
+    def get_all_collection_info_legacy(self, short_collection_name, return_lists=True):
+        def get_traceback_message(e, special_string=None):
+            if special_string is None:
+                template = "<pre>An exception of type {0} occured. Arguments:\n{1!r}\n"
+            else:
+                template = special_string + "<pre>\n" + "An exception of type {0} occurred. Arguments:\n{1!r}\n"
+            error_string = template.format(type(e).__name__, e.args)
+            error_string += traceback.format_exc() + "</pre>"
+            return error_string
+        name_exists = short_collection_name in self.data_collections
+
+        if not name_exists:
+            return False, None, None, None
+        else:
+            full_collection_name = self.build_data_collection_name(short_collection_name)
+            the_collection = self.db[full_collection_name]
+            new_collection_dict = {}
+            header_list_dict = {}
+            doc_metadata_dict = {}
+            collection_metadata = the_collection.find_one({"name": "__metadata__"})
+            if "type" in collection_metadata and collection_metadata["type"] == "freeform":
+                doc_type = "freeform"
+            else:
+                doc_type = "table"
+            for f in the_collection.find():
+                fname = bytes_to_string(f["name"])
+
+                if fname == "__metadata__":
+                    continue
+                try:
+                    if doc_type == "table":
+                        if "file_id" in f:
+                            new_collection_dict[fname] = debinarize_python_object(self.fs.get(f["file_id"]).read())
+                        else:
+                            new_collection_dict[fname] = f["data_rows"]
+                        if return_lists:
+                            new_collection_dict[fname] = self.sort_rows(new_collection_dict[fname])
+                        if "header_list" in f:
+                            header_list_dict[fname] = f["header_list"]
+                        elif "table_spec" in f:
+                            header_list_dict[fname] = f["table_spec"]["header_list"]
+                        else:
+                            header_list_dict[fname] = None
+                    else:
+                        if "is_binarized" in f and f["is_binarized"]:
+                            new_collection_dict[fname] = debinarize_python_object(self.fs.get(f["file_id"]).read())
+                        elif "encoding" in f:  # legacy
+                            new_collection_dict[fname] = self.fs.get(f["file_id"]).read().decode(f["encoding"])
+                        else:
+                            new_collection_dict[fname] = self.fs.get(f["file_id"]).read()
+                    if "metadata" in f:
+                        doc_metadata_dict[fname] = f["metadata"]
+                    else:
+                        doc_metadata_dict[fname] = {}
+                except Exception as ex:
+                    print(f"Couldn't read document {fname}")
+                    print(get_traceback_message(ex))
+
+        return new_collection_dict, doc_metadata_dict, header_list_dict, collection_metadata

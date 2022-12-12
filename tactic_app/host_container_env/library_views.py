@@ -54,49 +54,57 @@ tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 def copy_between_accounts(source_user, dest_user, res_type, new_res_name, res_name,
                           source_db=None, dest_db=None, source_fs=None, dest_fs=None):
     try:
+        if res_type == "collection":
+            coll_dict, dm_dict, hl_dict, coll_mdata = source_user.get_all_collection_info(res_name)
+            if "size" in coll_mdata and coll_mdata["size"] == 0:
+                del coll_mdata["size"]
+            if "type" in coll_mdata:
+                ctype = coll_mdata["type"]
+            else:
+                ctype = "table"  # For old collections
+            result = dest_user.create_complete_collection(new_res_name,
+                                                          coll_dict,
+                                                          ctype,
+                                                          dm_dict,
+                                                          hl_dict,
+                                                          coll_mdata)
+            overall_res = [coll_mdata, jsonify({"success": result["success"],
+                                                "message": "Resource Successfully Copied",
+                                                "alert_type": "alert-success"})]
+            return overall_res
+
         sdb = db if source_db is None else source_db
         ddb = db if dest_db is None else dest_db
         sfs = fs if source_fs is None else source_fs
         dfs = fs if dest_fs is None else dest_fs
-        if res_type == "collection":
-            collection_to_copy = source_user.full_collection_name(res_name)
-            new_collection_name = dest_user.full_collection_name(new_res_name)
-            for doc in sdb[collection_to_copy].find():
-                del doc["_id"]
-                if "file_id" in doc:
-                    doc_text = sfs.get(doc["file_id"]).read()
-                    doc["file_id"] = dfs.put(doc_text)
-                ddb[new_collection_name].insert_one(doc)
-            ddb[new_collection_name].update_one({"name": "__metadata__"},
-                                               {'$set': {"datetime": datetime.datetime.utcnow()}})
-            metadata = ddb[new_collection_name].find_one({"name": "__metadata__"})
+        name_field = name_keys[res_type]
+        collection_name = source_user.resource_collection_name(res_type)
+        old_dict = sdb[collection_name].find_one({name_field: res_name})
+        new_res_dict = {name_field: new_res_name}
+        for (key, val) in old_dict.items():
+            if (key == "_id") or (key == name_field):
+                continue
+            new_res_dict[key] = val
+        if "metadata" not in new_res_dict:
+            mdata = {"datetime": datetime.datetime.utcnow(),
+                     "updated": datetime.datetime.utcnow(),
+                     "tags": "",
+                     "notes": ""}
+            new_res_dict["metadata"] = mdata
         else:
-            name_field = name_keys[res_type]
-            collection_name = source_user.resource_collection_name(res_type)
-            old_dict = sdb[collection_name].find_one({name_field: res_name})
-            new_res_dict = {name_field: new_res_name}
-            for (key, val) in old_dict.items():
-                if (key == "_id") or (key == name_field):
-                    continue
-                new_res_dict[key] = val
-            if "metadata" not in new_res_dict:
-                mdata = {"datetime": datetime.datetime.utcnow(),
-                         "updated": datetime.datetime.utcnow(),
-                         "tags": "",
-                         "notes": ""}
-                new_res_dict["metadata"] = mdata
-            else:
-                new_res_dict["metadata"]["datetime"] = datetime.datetime.utcnow()
-            if res_type == "project":
-                project_dict = read_project_dict(sfs, new_res_dict["metadata"], old_dict["file_id"])
-                pdict = make_jsonizable_and_compress(project_dict)
-                new_res_dict["file_id"] = dfs.put(pdict)
-            elif "file_id" in new_res_dict:
-                doc_text = sfs.get(new_res_dict["file_id"]).read()
-                new_res_dict["file_id"] = dfs.put(doc_text)
-            new_collection_name = dest_user.resource_collection_name(res_type)
-            ddb[new_collection_name].insert_one(new_res_dict)
-            metadata = new_res_dict["metadata"]
+            new_res_dict["metadata"]["datetime"] = datetime.datetime.utcnow()
+        if res_type == "project":
+            project_dict = read_project_dict(sfs, new_res_dict["metadata"], old_dict["file_id"])
+            pdict = make_jsonizable_and_compress(project_dict)
+            new_res_dict["file_id"] = dfs.put(pdict)
+
+
+        elif "file_id" in new_res_dict:
+            doc_text = sfs.get(new_res_dict["file_id"]).read()
+            new_res_dict["file_id"] = dfs.put(doc_text)
+        new_collection_name = dest_user.resource_collection_name(res_type)
+        ddb[new_collection_name].insert_one(new_res_dict)
+        metadata = new_res_dict["metadata"]
         overall_res = [metadata, jsonify({"success": True, "message": "Resource Successfully Copied", "alert_type": "alert-success"})]
         return overall_res
     except Exception as ex:
@@ -350,8 +358,6 @@ def grab_m_mdata(res_type, res_name_list, is_repository=False):
                     del additional_mdata[field]
             if "updated" in additional_mdata:
                 additional_mdata["updated"] = current_user.get_timestrings(additional_mdata["updated"])[0]
-            if "collection_name" in additional_mdata:
-                additional_mdata["collection_name"] = current_user.get_short_collection_name(additional_mdata["collection_name"])
             one_result = {"res_name": res_name, "datestring": datestring, "tags": mdata["tags"],
                           "notes": mdata["notes"], "additional_mdata": additional_mdata}
             mdata_list.append(one_result)

@@ -52,7 +52,12 @@ note that the `npm run …` commands run a named script from package.json
 
 ## to push out new version to AWS server
 * ssh into server and run `/srv/tactic/tactic_app/update_server_and_relaunch.sh`
-* can run the apple shortcut that does this in one step
+* can run the apple shortcut that does this in one step using this
+
+```
+ssh -i /Users/brucesherin/PycharmProjects/tactic/LightsailDefaultKey-us-east-2.pem centos@tactictext.net \ 
+'/srv/tactic/tactic_app/update_server_and_relaunch.sh'
+```
 
 ## To push out to old northwestern server
 * run these scripts (They require a vpn connection)

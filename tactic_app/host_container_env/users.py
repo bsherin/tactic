@@ -57,7 +57,7 @@ def remove_user(trueid):
         db.drop_collection(user.tile_collection_name)
         db.drop_collection(user.code_collection_name)
         user.delete_all_data_collections()  # have to do this because of gridfs pointers
-        user.drop_collection(user.collection_collection_name)
+        db.drop_collection(user.collection_collection_name)
         user.delete_all_projects()  # have to do this because of gridfs pointers
         db.drop_collection(user.project_collection_name)
         db.user_collection.delete_one({"_id": ObjectId(trueid)})
@@ -237,13 +237,13 @@ class User(UserMixin, MongoAccess):
         password = user_dict["password"]
         if len(password) < 4:
             return {"success": False, "message": "Passwords must be at least 4 characters.", "username": username}
-        if self.db.user_collection.find_one({"username": username}) is not None:
+        if db.user_collection.find_one({"username": username}) is not None:
             return {"success": False, "message": "That username is taken.", "username": username}
         password_hash = generate_password_hash(password)
         new_user_dict = {"username": username,
                          "password_hash": password_hash,
                          "email": ""}
-        self.db.user_collection.insert_one(new_user_dict)
+        db.user_collection.insert_one(new_user_dict)
         return {"success": True, "message": "", "username": username}
 
     # get_id is required by login_manager

@@ -188,16 +188,6 @@ var CollectionMenubar = /*#__PURE__*/function (_React$Component2) {
       this.props.delete_func("/delete_collection", resource_name);
     }
   }, {
-    key: "_upgrade_collections",
-    value: function _upgrade_collections() {
-      $.getJSON("".concat($SCRIPT_ROOT, "/upgrade_user_collections"));
-    }
-  }, {
-    key: "_remove_duplicates",
-    value: function _remove_duplicates() {
-      $.getJSON("".concat($SCRIPT_ROOT, "/remove_duplicate_collections"));
-    }
-  }, {
     key: "_combineCollections",
     value: function _combineCollections() {
       var res_name = this.props.selected_resource.name;
@@ -359,20 +349,6 @@ var CollectionMenubar = /*#__PURE__*/function (_React$Component2) {
             _this3._collection_delete();
           },
           multi_select: true
-        }, {
-          name_text: "Upgrade All Collections",
-          icon_name: "refresh",
-          click_handler: function click_handler() {
-            _this3._upgrade_collections();
-          },
-          multi_select: false
-        }, {
-          name_text: "Remove Duplicate Collections",
-          icon_name: "refresh",
-          click_handler: function click_handler() {
-            _this3._remove_duplicates();
-          },
-          multi_select: false
         }],
         Transfer: [{
           name_text: "Import Data",

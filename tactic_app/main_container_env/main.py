@@ -18,6 +18,7 @@ from mongo_accesser import MongoAccess
 from main_tasks_mixin import StateTasksMixin, LoadSaveTasksMixin, TileCreationTasksMixin, APISupportTasksMixin
 from main_tasks_mixin import ExportsTasksMixin, ConsoleTasksMixin, DataSupportTasksMixin
 from exception_mixin import ExceptionMixin
+from mongo_db_fs import get_dbs
 
 from doc_info import docInfo, FreeformDocInfo
 from qworker import debug_log
@@ -32,7 +33,6 @@ else:
     db_name = "tacticdb"
 
 
-mongo_uri = os.environ.get("MONGO_URI")
 true_host_persist_dir = os.environ.get("TRUE_HOST_PERSIST_DIR")
 true_host_resources_dir = os.environ.get("TRUE_HOST_RESOURCES_DIR")
 
@@ -56,11 +56,9 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         print("entering mainwindow_init")
         self.mworker = mworker
         try:
-            client = pymongo.MongoClient(mongo_uri, serverSelectionTimeoutMS=30000)
-            client.server_info()
-            # noinspection PyUnresolvedReferences
-            self.db = client[db_name]
-            self.fs = gridfs.GridFS(self.db)
+            db, fs, repository_db, repository_fs, use_remote_repository, use_remote_database = get_dbs()
+            self.db = db
+            self.fs = fs
         except Exception as ex:
             debug_log(self.extract_short_error_message(ex, "error getting pymongo client"))
             sys.exit()
@@ -350,7 +348,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
     def _build_doc_dict(self):
         print("*** in _build_doc_dict **")
         result = {}
-        coll_dict, dm_dict, hl_dict, coll_mdata = self.get_all_collection_info_new(self.short_collection_name,
+        coll_dict, dm_dict, hl_dict, coll_mdata = self.get_all_collection_info(self.short_collection_name,
                                                                                    return_lists=False)
         print("*** got all collection info ***")
         for fname in coll_dict.keys():

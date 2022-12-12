@@ -4,7 +4,7 @@ import gridfs
 from docker_functions import db_name, mongo_uri
 
 
-def get_dbs():
+def get_dbs(get_repo=True):
     print("getting mongo client")
     if ("USE_REMOTE_DATABASE" in os.environ) and (os.environ.get("USE_REMOTE_DATABASE") == "True"):
         from ssh_pymongo import MongoSession
@@ -40,61 +40,65 @@ def get_dbs():
         print("got db")
         fs = gridfs.GridFS(db)
         print("got fs")
+    if get_repo:
+        if ("USE_REMOTE_REPOSITORY" in os.environ) and (os.environ.get("USE_REMOTE_REPOSITORY") == "True"):
+            try:
+                print("*** using remote repository ***")
+                use_remote_repository = True
+                remote_username = os.environ.get("REMOTE_USERNAME")
+                remote_password = os.environ.get("REMOTE_PASSWORD")
 
-    if ("USE_REMOTE_REPOSITORY" in os.environ) and (os.environ.get("USE_REMOTE_REPOSITORY") == "True"):
-        try:
-            print("*** using remote repository ***")
-            use_remote_repository = True
-            remote_username = os.environ.get("REMOTE_USERNAME")
-            remote_password = os.environ.get("REMOTE_PASSWORD")
+                from ssh_pymongo import MongoSession
+                print("getting session")
+                session = MongoSession(host="tactic.northwestern.edu", port=22, user=remote_username,
+                                       password=remote_password,
+                                       to_port=27017)
+                print("connecting to session")
+                repository_db = session.connection[db_name]
+                repository_fs = gridfs.GridFS(repository_db)
+                print("*** created repository_db " + str(repository_db))
+            except Exception as ex:
+                ermsg = exception_mixin.generic_exception_handler.extract_short_error_message(ex,
+                                                                                              "Error connecting to remote repository")
+                print(errmsg)
+                print("*** failed to connect to remote repository, using local ***")
+                use_remote_repository = False
+                repository_db = db
+                repository_fs = fs
+        elif ("USE_REMOTE_REPOSITORY_KEY" in os.environ) and (os.environ.get("USE_REMOTE_REPOSITORY_KEY") == "True"):
+            try:
+                print("*** using remote repository key with file ***")
+                use_remote_repository = True
+                remote_username = os.environ.get("REMOTE_USERNAME")
+                remote_key_file = os.environ.get("REMOTE_KEY_FILE")
 
-            from ssh_pymongo import MongoSession
-            print("getting session")
-            session = MongoSession(host="tactic.northwestern.edu", port=22, user=remote_username,
-                                   password=remote_password,
-                                   to_port=27017)
-            print("connecting to session")
-            repository_db = session.connection[db_name]
-            repository_fs = gridfs.GridFS(repository_db)
-            print("*** created repository_db " + str(repository_db))
-        except Exception as ex:
-            ermsg = exception_mixin.generic_exception_handler.extract_short_error_message(ex,
-                                                                                          "Error connecting to remote repository")
-            print(errmsg)
-            print("*** failed to connect to remote repository, using local ***")
-            use_remote_repository = False
-            repository_db = db
-            repository_fs = fs
-    elif ("USE_REMOTE_REPOSITORY_KEY" in os.environ) and (os.environ.get("USE_REMOTE_REPOSITORY_KEY") == "True"):
-        try:
-            print("*** using remote repository key with file ***")
-            use_remote_repository = True
-            remote_username = os.environ.get("REMOTE_USERNAME")
-            remote_key_file = os.environ.get("REMOTE_KEY_FILE")
-
-            from ssh_pymongo import MongoSession
-            print("getting session")
-            session = MongoSession(
-                host='tactictext.net',
-                port=22,
-                user=remote_username,
-                key=remote_key_file,
-                to_port=27017
-            )
-            print("connecting to session")
-            repository_db = session.connection[db_name]
-            repository_fs = gridfs.GridFS(repository_db)
-            print("*** created repository_db " + str(repository_db))
-        except Exception as ex:
-            ermsg = exception_mixin.generic_exception_handler.extract_short_error_message(ex,
-                                                                                          "Error connecting to remote repository")
-            print(errmsg)
-            print("*** failed to connect to remote repository, using local ***")
+                from ssh_pymongo import MongoSession
+                print("getting session")
+                session = MongoSession(
+                    host='tactictext.net',
+                    port=22,
+                    user=remote_username,
+                    key=remote_key_file,
+                    to_port=27017
+                )
+                print("connecting to session")
+                repository_db = session.connection[db_name]
+                repository_fs = gridfs.GridFS(repository_db)
+                print("*** created repository_db " + str(repository_db))
+            except Exception as ex:
+                ermsg = exception_mixin.generic_exception_handler.extract_short_error_message(ex,
+                                                                                              "Error connecting to remote repository")
+                print(errmsg)
+                print("*** failed to connect to remote repository, using local ***")
+                use_remote_repository = False
+                repository_db = db
+                repository_fs = fs
+        else:
             use_remote_repository = False
             repository_db = db
             repository_fs = fs
     else:
         use_remote_repository = False
-        repository_db = db
-        repository_fs = fs
+        repository_db = None
+        repository_fs = None
     return db, fs, repository_db, repository_fs, use_remote_repository, use_remote_database

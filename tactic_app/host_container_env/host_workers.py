@@ -349,7 +349,7 @@ class HostWorker(QWorker):
     def get_collection_names(self, data):
         user_id = data["user_id"]
         the_user = load_user(user_id)
-        return {"collection_names": the_user.data_collection_names_new}
+        return {"collection_names": the_user.data_collection_names}
 
     @task_worthy
     def get_collection_tags_dict(self, data):
