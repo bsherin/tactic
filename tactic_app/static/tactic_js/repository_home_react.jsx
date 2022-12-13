@@ -246,6 +246,7 @@ class RepositoryHomeApp extends React.Component {
                                   selected={null}
                                   page_id={this.props.library_id}
                                   show_api_links={false}
+                                  extra_text={window.repository_type}
                                   user_name={window.username}/>
                 }
                 <div id="repository_container" className={outer_class} ref={this.top_ref} style={outer_style}>

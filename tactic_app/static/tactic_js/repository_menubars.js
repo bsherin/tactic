@@ -90,7 +90,8 @@ var RepositoryCollectionMenubar = /*#__PURE__*/function (_React$Component) {
         Transfer: [{
           name_text: "Copy To Library",
           icon_name: "import",
-          click_handler: this.props.repository_copy_func
+          click_handler: this.props.repository_copy_func,
+          multi_select: true
         }]
       };
 
@@ -165,7 +166,8 @@ var RepositoryProjectMenubar = /*#__PURE__*/function (_React$Component2) {
         Transfer: [{
           name_text: "Copy To Library",
           icon_name: "import",
-          click_handler: this.props.repository_copy_func
+          click_handler: this.props.repository_copy_func,
+          multi_select: true
         }]
       };
 
@@ -250,7 +252,8 @@ var RepositoryTileMenubar = /*#__PURE__*/function (_React$Component3) {
         Transfer: [{
           name_text: "Copy To Library",
           icon_name: "import",
-          click_handler: this.props.repository_copy_func
+          click_handler: this.props.repository_copy_func,
+          multi_select: true
         }]
       };
 
@@ -335,7 +338,8 @@ var RepositoryListMenubar = /*#__PURE__*/function (_React$Component4) {
         Transfer: [{
           name_text: "Copy To Library",
           icon_name: "import",
-          click_handler: this.props.repository_copy_func
+          click_handler: this.props.repository_copy_func,
+          multi_select: true
         }]
       };
 
@@ -420,7 +424,8 @@ var RepositoryCodeMenubar = /*#__PURE__*/function (_React$Component5) {
         Transfer: [{
           name_text: "Copy To Library",
           icon_name: "import",
-          click_handler: this.props.repository_copy_func
+          click_handler: this.props.repository_copy_func,
+          multi_select: true
         }]
       };
 

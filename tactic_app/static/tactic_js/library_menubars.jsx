@@ -217,7 +217,8 @@ class CollectionMenubar extends React.Component {
             Transfer: [
                 {name_text: "Import Data", icon_name: "cloud-upload", click_handler: this._showImport},
                 {name_text: "Download Collection", icon_name: "download", click_handler: ()=>{this._downloadCollection()}},
-                {name_text: "Share to repository", icon_name: "share", click_handler: this.props.send_repository_func}
+                {name_text: "Share to repository", icon_name: "share", click_handler: this.props.send_repository_func,
+                multi_select: true}
             ]
 
 
@@ -356,7 +357,8 @@ class ProjectMenubar extends React.Component {
             Transfer: [
                 {name_text: "Import Jupyter Notebook", icon_name: "cloud-upload", click_handler: this._showImport},
                 {name_text: "Download As Jupyter Notebook", icon_name: "download", click_handler: this._downloadJupyter},
-                {name_text: "Share To Repository", icon_name: "share", click_handler: this.props.send_repository_func}
+                {name_text: "Share To Repository", icon_name: "share", click_handler: this.props.send_repository_func,
+                multi_select: true}
             ]
         };
         for (const [menu_name, menu] of Object.entries(ms)) {
@@ -568,7 +570,8 @@ class TileMenubar extends React.Component {
                       {name_text: "Compare to Other Modules", icon_name: "comparison", click_handler: this._compare_tiles,
                           multi_select: true, tooltip: "Compare to another tile"}],
             Transfer: [
-                {name_text: "Share To Repository", icon_name: "share", click_handler: this.props.send_repository_func}
+                {name_text: "Share To Repository", icon_name: "share", click_handler: this.props.send_repository_func,
+                multi_select: true}
             ]
         };
         for (const [menu_name, menu] of Object.entries(ms)) {
@@ -685,7 +688,8 @@ class ListMenubar extends React.Component {
             ],
             Transfer: [
                 {name_text: "Import List", icon_name: "cloud-upload", click_handler: this._showImport},
-                {name_text: "Share to repository", icon_name: "share", click_handler: this.props.send_repository_func}
+                {name_text: "Share to repository", icon_name: "share", click_handler: this.props.send_repository_func,
+                multi_select: true}
             ]
 
 
@@ -802,7 +806,8 @@ class CodeMenubar extends React.Component {
                     multi_select: true},
             ],
             Transfer: [
-                {name_text: "Share to repository", icon_name: "share", click_handler: this.props.send_repository_func}
+                {name_text: "Share to repository", icon_name: "share", click_handler: this.props.send_repository_func,
+                multi_select: true}
             ]
 
 

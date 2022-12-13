@@ -265,39 +265,45 @@ class LibraryResourceManager(ResourceManager):
         all_tags = []
         if search_spec["active_tag"]:
             for doc in res:
-                if "metadata" in doc:
-                    mdata = doc["metadata"]
-                    if self.has_hidden(mdata["tags"]):
-                        all_subtags = self.add_hidden_to_all_subtags(mdata["tags"])
-                        all_tags += self.add_hidden_to_tags(mdata["tags"])
-                        if not self.has_hidden(search_spec["active_tag"]):
-                            continue
-                    else:
-                        all_subtags = self.get_all_subtags(mdata["tags"])
-                        all_tags += mdata["tags"].split()
-                    if search_spec["active_tag"] in all_subtags:
-                        if "file_id" in doc:
-                            rdict = self.build_res_dict(doc[name_field], mdata, None, doc["file_id"])
+                try:
+                    if "metadata" in doc and doc["metadata"] is not None:
+                        mdata = doc["metadata"]
+                        if self.has_hidden(mdata["tags"]):
+                            all_subtags = self.add_hidden_to_all_subtags(mdata["tags"])
+                            all_tags += self.add_hidden_to_tags(mdata["tags"])
+                            if not self.has_hidden(search_spec["active_tag"]):
+                                continue
                         else:
-                            rdict = self.build_res_dict(doc[name_field], mdata)
-                        filtered_res.append(rdict)
+                            all_subtags = self.get_all_subtags(mdata["tags"])
+                            all_tags += mdata["tags"].split()
+                        if search_spec["active_tag"] in all_subtags:
+                            if "file_id" in doc:
+                                rdict = self.build_res_dict(doc[name_field], mdata, None, doc["file_id"])
+                            else:
+                                rdict = self.build_res_dict(doc[name_field], mdata)
+                            filtered_res.append(rdict)
+                except Exception as ex:
+                    print("Got problem with doc " + str(doc[name_field]))
         else:
             for doc in res:
-                if "metadata" in doc:
-                    mdata = doc["metadata"]
+                try:
+                    if "metadata" in doc and doc["metadata"] is not None:
+                        mdata = doc["metadata"]
 
-                    if self.has_hidden(mdata["tags"]):
-                        all_tags += self.add_hidden_to_tags(mdata["tags"])
-                        continue
+                        if self.has_hidden(mdata["tags"]):
+                            all_tags += self.add_hidden_to_tags(mdata["tags"])
+                            continue
+                        else:
+                            all_tags += mdata["tags"].split()
                     else:
-                        all_tags += mdata["tags"].split()
-                else:
-                    mdata = None
-                if "file_id" in doc:
-                    rdict = self.build_res_dict(doc[name_field], mdata, None, doc["file_id"])
-                else:
-                    rdict = self.build_res_dict(doc[name_field], mdata)
-                filtered_res.append(rdict)
+                        mdata = None
+                    if "file_id" in doc:
+                        rdict = self.build_res_dict(doc[name_field], mdata, None, doc["file_id"])
+                    else:
+                        rdict = self.build_res_dict(doc[name_field], mdata)
+                    filtered_res.append(rdict)
+                except Exception as ex:
+                    print("Got problem with doc " + str(doc[name_field]))
 
         if search_spec["sort_direction"] == "ascending":
             reverse = False

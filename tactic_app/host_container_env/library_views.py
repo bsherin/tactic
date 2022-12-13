@@ -8,10 +8,11 @@ import markdown
 
 import tactic_app
 from tactic_app import app, socketio, db, fs, repository_db, repository_fs, use_remote_repository
-from mongo_accesser import name_keys
+from mongo_accesser import name_keys, make_name_unique
 from communication_utils import make_jsonizable_and_compress, read_project_dict
 from exception_mixin import generic_exception_handler
 from docker_functions import ContainerCreateError
+from mongo_db_fs import repository_type
 
 from resource_manager import ResourceManager, repository_user
 from list_manager import ListManager, RepositoryListManager
@@ -91,8 +92,6 @@ def copy_between_accounts(source_user, dest_user, res_type, new_res_name, res_na
                      "tags": "",
                      "notes": ""}
             new_res_dict["metadata"] = mdata
-        else:
-            new_res_dict["metadata"]["datetime"] = datetime.datetime.utcnow()
         if res_type == "project":
             project_dict = read_project_dict(sfs, new_res_dict["metadata"], old_dict["file_id"])
             pdict = make_jsonizable_and_compress(project_dict)
@@ -174,6 +173,7 @@ def repository():
     return render_template('library/library_home_react.html',
                            version_string=tstring,
                            is_remote=is_remote,
+                           repository_type=repository_type,
                            develop=str(_develop),
                            theme=current_user.get_theme(),
                            page_title="tactic repository",
@@ -231,27 +231,55 @@ def get_repository_resource_names(res_type):
 @login_required
 def copy_from_repository():
     res_type = request.json["res_type"]
-    new_res_name = request.json['new_res_name']
-    res_name = request.json['res_name']
-    metadata, result = copy_between_accounts(repository_user, current_user,
-                                             res_type, new_res_name, res_name,
-                                             source_db=repository_db, source_fs=repository_fs)
-    if metadata is not None:
+    if "res_name" in request.json:
+        new_res_name = request.json['new_res_name']
+        res_name = request.json['res_name']
+        metadata, result = copy_between_accounts(repository_user, current_user,
+                                                 res_type, new_res_name, res_name,
+                                                 source_db=repository_db, source_fs=repository_fs)
+        if metadata is not None:
+            manager = get_manager_for_type(res_type)
+            manager.refresh_selector_list()
+        return result
+    else:
+        list_of_selected = request.json["res_names"]
+        successful_copies = 0
         manager = get_manager_for_type(res_type)
-        manager.refresh_selector_list()
-    return result
-
+        for res_name in list_of_selected:
+            resource_names = manager.get_resource_list()
+            new_res_name = make_name_unique(res_name, resource_names)
+            metadata, result = copy_between_accounts(repository_user, current_user,
+                                                     res_type, new_res_name, res_name,
+                                                     source_db=repository_db, source_fs=repository_fs)
+            if result.json["success"]:
+                successful_copies +=1
+        if successful_copies > 0:
+            manager.refresh_selector_list()
+        return jsonify({"success": True, "message": f"{str(successful_copies)} resources copied"})
 
 # noinspection PyBroadException
 @app.route('/send_to_repository', methods=['GET', 'POST'])
 @login_required
 def send_to_repository():
     res_type = request.json['res_type']
-    new_res_name = request.json['new_res_name']
-    res_name = request.json['res_name']
-    metadata, result = copy_between_accounts(current_user, repository_user, res_type, new_res_name, res_name,
-                                             dest_db=repository_db, dest_fs=repository_fs)
-    return result
+    if "res_name" in request.json:
+        new_res_name = request.json['new_res_name']
+        res_name = request.json['res_name']
+        metadata, result = copy_between_accounts(current_user, repository_user, res_type, new_res_name, res_name,
+                                                 dest_db=repository_db, dest_fs=repository_fs)
+        return result
+    else:
+        list_of_selected = request.json["res_names"]
+        successful_copies = 0
+        manager = get_manager_for_type(res_type, is_repository=True)
+        for res_name in list_of_selected:
+            resource_names = manager.get_resource_list()
+            new_res_name = make_name_unique(res_name, resource_names)
+            metadata, result = copy_between_accounts(current_user, repository_user, res_type, new_res_name, res_name,
+                                                     dest_db=repository_db, dest_fs=repository_fs)
+            if result.json["success"]:
+                successful_copies +=1
+        return jsonify({"success": True, "message": f"{str(successful_copies)} resources copied"})
 
 
 @app.route('/resource_list_with_metadata/<res_type>', methods=['GET', 'POST'])

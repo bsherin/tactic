@@ -738,43 +738,70 @@ class LibraryPane extends React.Component {
 
     _repository_copy_func () {
         let res_type = this.props.res_type;
-        let res_name = this.props.selected_resource.name;
-        $.getJSON($SCRIPT_ROOT + "get_resource_names/" + res_type, function (data) {
-                showModalReact("Import " + res_type, "New Name", ImportResource, res_name, data["resource_names"])
+        if (!this.props.multi_select) {
+            let res_name = this.props.selected_resource.name;
+            $.getJSON($SCRIPT_ROOT + "get_resource_names/" + res_type, function (data) {
+                    showModalReact("Import " + res_type, "New Name", ImportResource, res_name, data["resource_names"])
+                }
+            );
+
+            function ImportResource(new_name) {
+                const result_dict = {
+                    "res_type": res_type,
+                    "res_name": res_name,
+                    "new_res_name": new_name
+                };
+                postAjaxPromise("/copy_from_repository", result_dict)
+                    .then(doFlash)
+                    .catch(doFlash);
             }
-        );
-        function ImportResource(new_name) {
+
+            return res_name
+        }
+        else {
             const result_dict = {
                 "res_type": res_type,
-                "res_name": res_name,
-                "new_res_name": new_name
+                "res_names": this.props.list_of_selected,
             };
             postAjaxPromise("/copy_from_repository", result_dict)
                 .then(doFlash)
                 .catch(doFlash);
+            return ""
         }
-
-        return res_name
     }
 
     _send_repository_func () {
         let res_type = this.props.res_type;
-        let res_name = this.props.selected_resource.name;
-        $.getJSON($SCRIPT_ROOT + "get_repository_resource_names/" + res_type, function(data) {
-            showModalReact(`Share ${res_type}`, `New ${res_type} Name`, ShareResource, res_name, data["resource_names"])
+        if (!this.props.multi_select) {
+            let res_name = this.props.selected_resource.name;
+            $.getJSON($SCRIPT_ROOT + "get_repository_resource_names/" + res_type, function (data) {
+                    showModalReact(`Share ${res_type}`, `New ${res_type} Name`, ShareResource, res_name, data["resource_names"])
+                }
+            );
+
+            function ShareResource(new_name) {
+                const result_dict = {
+                    "res_type": res_type,
+                    "res_name": res_name,
+                    "new_res_name": new_name
+                };
+                postAjaxPromise('/send_to_repository', result_dict)
+                    .then(doFlash)
+                    .catch(doFlash);
             }
-        );
-        function ShareResource(new_name) {
+
+            return res_name
+        }
+        else {
             const result_dict = {
                 "res_type": res_type,
-                "res_name": res_name,
-                "new_res_name": new_name
+                "res_names": this.props.list_of_selected,
             };
             postAjaxPromise('/send_to_repository', result_dict)
-                .then(doFlash)
-                .catch(doFlash);
+                    .then(doFlash)
+                    .catch(doFlash);
+            return ""
         }
-        return res_name
     }
 
     _refresh_func(callback=null) {
