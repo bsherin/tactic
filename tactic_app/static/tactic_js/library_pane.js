@@ -1061,41 +1061,59 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "_repository_copy_func",
     value: function _repository_copy_func() {
       var res_type = this.props.res_type;
-      var res_name = this.props.selected_resource.name;
-      $.getJSON($SCRIPT_ROOT + "get_resource_names/" + res_type, function (data) {
-        (0, _modal_react.showModalReact)("Import " + res_type, "New Name", ImportResource, res_name, data["resource_names"]);
-      });
 
-      function ImportResource(new_name) {
+      if (!this.props.multi_select) {
+        var ImportResource = function ImportResource(new_name) {
+          var result_dict = {
+            "res_type": res_type,
+            "res_name": res_name,
+            "new_res_name": new_name
+          };
+          (0, _communication_react.postAjaxPromise)("/copy_from_repository", result_dict).then(_toaster.doFlash)["catch"](_toaster.doFlash);
+        };
+
+        var res_name = this.props.selected_resource.name;
+        $.getJSON($SCRIPT_ROOT + "get_resource_names/" + res_type, function (data) {
+          (0, _modal_react.showModalReact)("Import " + res_type, "New Name", ImportResource, res_name, data["resource_names"]);
+        });
+        return res_name;
+      } else {
         var result_dict = {
           "res_type": res_type,
-          "res_name": res_name,
-          "new_res_name": new_name
+          "res_names": this.props.list_of_selected
         };
         (0, _communication_react.postAjaxPromise)("/copy_from_repository", result_dict).then(_toaster.doFlash)["catch"](_toaster.doFlash);
+        return "";
       }
-
-      return res_name;
     }
   }, {
     key: "_send_repository_func",
     value: function _send_repository_func() {
       var res_type = this.props.res_type;
-      var res_name = this.props.selected_resource.name;
-      $.getJSON($SCRIPT_ROOT + "get_repository_resource_names/" + res_type, function (data) {
-        (0, _modal_react.showModalReact)("Share ".concat(res_type), "New ".concat(res_type, " Name"), ShareResource, res_name, data["resource_names"]);
-      });
 
-      function ShareResource(new_name) {
+      if (!this.props.multi_select) {
+        var ShareResource = function ShareResource(new_name) {
+          var result_dict = {
+            "res_type": res_type,
+            "res_name": res_name,
+            "new_res_name": new_name
+          };
+          (0, _communication_react.postAjaxPromise)('/send_to_repository', result_dict).then(_toaster.doFlash)["catch"](_toaster.doFlash);
+        };
+
+        var res_name = this.props.selected_resource.name;
+        $.getJSON($SCRIPT_ROOT + "get_repository_resource_names/" + res_type, function (data) {
+          (0, _modal_react.showModalReact)("Share ".concat(res_type), "New ".concat(res_type, " Name"), ShareResource, res_name, data["resource_names"]);
+        });
+        return res_name;
+      } else {
         var result_dict = {
           "res_type": res_type,
-          "res_name": res_name,
-          "new_res_name": new_name
+          "res_names": this.props.list_of_selected
         };
         (0, _communication_react.postAjaxPromise)('/send_to_repository', result_dict).then(_toaster.doFlash)["catch"](_toaster.doFlash);
+        return "";
       }
-
-      return res_name;
     }
   }, {
     key: "_refresh_func",

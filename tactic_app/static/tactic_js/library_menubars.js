@@ -363,7 +363,8 @@ var CollectionMenubar = /*#__PURE__*/function (_React$Component2) {
         }, {
           name_text: "Share to repository",
           icon_name: "share",
-          click_handler: this.props.send_repository_func
+          click_handler: this.props.send_repository_func,
+          multi_select: true
         }]
       };
 
@@ -623,7 +624,8 @@ var ProjectMenubar = /*#__PURE__*/function (_React$Component3) {
         }, {
           name_text: "Share To Repository",
           icon_name: "share",
-          click_handler: this.props.send_repository_func
+          click_handler: this.props.send_repository_func,
+          multi_select: true
         }]
       };
 
@@ -992,7 +994,8 @@ var TileMenubar = /*#__PURE__*/function (_React$Component4) {
         Transfer: [{
           name_text: "Share To Repository",
           icon_name: "share",
-          click_handler: this.props.send_repository_func
+          click_handler: this.props.send_repository_func,
+          multi_select: true
         }]
       };
 
@@ -1205,7 +1208,8 @@ var ListMenubar = /*#__PURE__*/function (_React$Component5) {
         }, {
           name_text: "Share to repository",
           icon_name: "share",
-          click_handler: this.props.send_repository_func
+          click_handler: this.props.send_repository_func,
+          multi_select: true
         }]
       };
 
@@ -1410,7 +1414,8 @@ var CodeMenubar = /*#__PURE__*/function (_React$Component6) {
         Transfer: [{
           name_text: "Share to repository",
           icon_name: "share",
-          click_handler: this.props.send_repository_func
+          click_handler: this.props.send_repository_func,
+          multi_select: true
         }]
       };
 

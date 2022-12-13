@@ -232,12 +232,17 @@ class TacticNavbar extends React.Component {
         let right_style = {width: right_width};
         right_style.justifyContent = "flex-end";
         let theme_class = this.props.dark_theme ? "bp4-dark" : "light-theme";
+        let name_string = "Tactic"
+        if (this.props.extra_text != null) {
+            name_string += " " + this.props.extra_text
+        }
+
         return (
             <Navbar style={{paddingLeft: 10}} className={theme_class}>
                 <div className="bp4-navbar-group bp4-align-left" ref={this.lg_ref}>
                     <Navbar.Heading className="d-flex align-items-center">
                         <img className="mr-2" src={window.tactic_img_url} alt="" width="32 " height="32"/>
-                         Tactic
+                        {name_string}
                     </Navbar.Heading>
                         {this.props.menus != null && (
                             <React.Fragment>
@@ -247,23 +252,23 @@ class TacticNavbar extends React.Component {
 
 
                 <Navbar.Group align={Alignment.RIGHT} style={right_style}>
-                <NavbarDivider />
-                    <OverflowList items={right_nav_items}
-                                     overflowRenderer={this._overflowRenderer}
-                                     visibleItemRenderer={this.renderNav}
-                                     onOverflow={this._onOverflow}
-                                     />
+                    <NavbarDivider />
+                        <OverflowList items={right_nav_items}
+                                         overflowRenderer={this._overflowRenderer}
+                                         visibleItemRenderer={this.renderNav}
+                                         onOverflow={this._onOverflow}
+                                         />
 
-                <NavbarDivider />
-                <Switch
-                       checked={this.props.dark_theme}
-                       onChange={this._setTheme}
-                       large={false}
-                       style={{marginBottom: 0}}
-                       innerLabel="Light"
-                       innerLabelChecked="Dark"
-                       alignIndicator="center"
-                />
+                    <NavbarDivider />
+                    <Switch
+                           checked={this.props.dark_theme}
+                           onChange={this._setTheme}
+                           large={false}
+                           style={{marginBottom: 0}}
+                           innerLabel="Light"
+                           innerLabelChecked="Dark"
+                           alignIndicator="center"
+                    />
                 </Navbar.Group>
             </Navbar>
         )
@@ -278,9 +283,11 @@ TacticNavbar.propTypes = {
     menus: PropTypes.object,
     selected: PropTypes.string,
     page_id: PropTypes.string,
+    extra_text: PropTypes.string
 };
 
 TacticNavbar.defaultProps = {
+    extra_text: null,
     refreshTab: null,
     closeTab: null,
     menus: null,

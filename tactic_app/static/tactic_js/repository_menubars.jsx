@@ -35,7 +35,8 @@ class RepositoryCollectionMenubar extends React.Component {
         let self = this;
         let ms = {
             Transfer: [
-                {name_text: "Copy To Library", icon_name: "import", click_handler: this.props.repository_copy_func}
+                {name_text: "Copy To Library", icon_name: "import", click_handler: this.props.repository_copy_func,
+                multi_select: true}
             ]
 
 
@@ -80,7 +81,8 @@ class RepositoryProjectMenubar extends React.Component {
         let self = this;
         let ms = {
             Transfer: [
-                {name_text: "Copy To Library", icon_name: "import", click_handler: this.props.repository_copy_func},
+                {name_text: "Copy To Library", icon_name: "import", click_handler: this.props.repository_copy_func,
+                    multi_select: true},
             ]
 
 
@@ -132,7 +134,8 @@ class RepositoryTileMenubar extends React.Component {
                 {name_text: "View Tile", icon_name: "eye-open", click_handler: this._tile_view},
             ],
             Transfer: [
-                {name_text: "Copy To Library", icon_name: "import", click_handler: this.props.repository_copy_func},
+                {name_text: "Copy To Library", icon_name: "import", click_handler: this.props.repository_copy_func,
+                    multi_select: true},
             ]
 
 
@@ -184,7 +187,8 @@ class RepositoryListMenubar extends React.Component {
                 {name_text: "View List", icon_name: "eye-open", click_handler: this._list_view},
             ],
             Transfer: [
-                {name_text: "Copy To Library", icon_name: "import", click_handler: this.props.repository_copy_func},
+                {name_text: "Copy To Library", icon_name: "import", click_handler: this.props.repository_copy_func,
+                multi_select: true},
             ]
 
 
@@ -236,7 +240,8 @@ class RepositoryCodeMenubar extends React.Component {
                 {name_text: "View Code", icon_name: "eye-open", click_handler: this._code_view},
             ],
             Transfer: [
-                {name_text: "Copy To Library", icon_name: "import", click_handler: this.props.repository_copy_func},
+                {name_text: "Copy To Library", icon_name: "import", click_handler: this.props.repository_copy_func,
+                multi_select: true},
             ]
 
 

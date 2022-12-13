@@ -3,8 +3,10 @@ from pymongo import MongoClient
 import gridfs
 from docker_functions import db_name, mongo_uri
 
+repository_type = "not set"
 
 def get_dbs(get_repo=True):
+    global repository_type
     print("getting mongo client")
     if ("USE_REMOTE_DATABASE" in os.environ) and (os.environ.get("USE_REMOTE_DATABASE") == "True"):
         from ssh_pymongo import MongoSession
@@ -57,6 +59,7 @@ def get_dbs(get_repo=True):
                 repository_db = session.connection[db_name]
                 repository_fs = gridfs.GridFS(repository_db)
                 print("*** created repository_db " + str(repository_db))
+                repository_type = "Northwestern"
             except Exception as ex:
                 ermsg = exception_mixin.generic_exception_handler.extract_short_error_message(ex,
                                                                                               "Error connecting to remote repository")
@@ -85,6 +88,7 @@ def get_dbs(get_repo=True):
                 repository_db = session.connection[db_name]
                 repository_fs = gridfs.GridFS(repository_db)
                 print("*** created repository_db " + str(repository_db))
+                repository_type = "AWS"
             except Exception as ex:
                 ermsg = exception_mixin.generic_exception_handler.extract_short_error_message(ex,
                                                                                               "Error connecting to remote repository")
@@ -97,6 +101,7 @@ def get_dbs(get_repo=True):
             use_remote_repository = False
             repository_db = db
             repository_fs = fs
+            repository_type = "Local"
     else:
         use_remote_repository = False
         repository_db = None

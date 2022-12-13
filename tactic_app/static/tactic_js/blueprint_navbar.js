@@ -383,6 +383,12 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
       };
       right_style.justifyContent = "flex-end";
       var theme_class = this.props.dark_theme ? "bp4-dark" : "light-theme";
+      var name_string = "Tactic";
+
+      if (this.props.extra_text != null) {
+        name_string += " " + this.props.extra_text;
+      }
+
       return /*#__PURE__*/_react["default"].createElement(_core.Navbar, {
         style: {
           paddingLeft: 10
@@ -399,7 +405,7 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
         alt: "",
         width: "32 ",
         height: "32"
-      }), "Tactic"), this.props.menus != null && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, this.props.menus)), /*#__PURE__*/_react["default"].createElement(_core.Navbar.Group, {
+      }), name_string), this.props.menus != null && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, this.props.menus)), /*#__PURE__*/_react["default"].createElement(_core.Navbar.Group, {
         align: _core.Alignment.RIGHT,
         style: right_style
       }, /*#__PURE__*/_react["default"].createElement(_core.NavbarDivider, null), /*#__PURE__*/_react["default"].createElement(_core.OverflowList, {
@@ -432,9 +438,11 @@ TacticNavbar.propTypes = {
   user_name: _propTypes["default"].string,
   menus: _propTypes["default"].object,
   selected: _propTypes["default"].string,
-  page_id: _propTypes["default"].string
+  page_id: _propTypes["default"].string,
+  extra_text: _propTypes["default"].string
 };
 TacticNavbar.defaultProps = {
+  extra_text: null,
   refreshTab: null,
   closeTab: null,
   menus: null,
