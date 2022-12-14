@@ -183,6 +183,11 @@ class HostWorker(QWorker):
         socketio.emit('update-loaded-tile-list', {"tile_load_dict": tile_manager.loaded_tile_lists(user_obj)},
                       namespace='/main', room=user_obj.get_id())
 
+    @task_worthy
+    def load_user_default_tiles_task(self, data):
+        error_list = loaded_tile_management.load_user_default_tiles(data["username"])
+        return {"success": True, "tile_loading_errors": error_list}
+
     @task_worthy_manual_submit
     def load_tile_module_task(self, data, task_packet):
         def loaded_source(res_dict):

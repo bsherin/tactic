@@ -21,6 +21,7 @@
     <script src="{{url_for('static', filename='js/d3.min.js')}}"></script>
     <script>
         window.user_id = "{{current_user.get_id()}}";
+        window.database_type = "{{database_type}}";
         window.theme="{{theme}}";
         window.in_context = true;
         window.version_string="{{version_string}}"

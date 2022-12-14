@@ -1,12 +1,20 @@
 import os
 from pymongo import MongoClient
 import gridfs
-from docker_functions import db_name, mongo_uri
+
+if "DB_NAME" in os.environ:
+    db_name = os.environ.get("DB_NAME")
+else:
+    db_name = "tacticdb"
+
+mongo_uri = os.environ.get("MONGO_URI")
 
 repository_type = "not set"
+database_type = "not set"
 
 def get_dbs(get_repo=True):
     global repository_type
+    global database_type
     print("getting mongo client")
     if ("USE_REMOTE_DATABASE" in os.environ) and (os.environ.get("USE_REMOTE_DATABASE") == "True"):
         from ssh_pymongo import MongoSession
@@ -27,6 +35,7 @@ def get_dbs(get_repo=True):
         db = session.connection[db_name]
         fs = gridfs.GridFS(db)
         print("*** got remote db " + str(db))
+        database_type = "AWS"
 
     else:
         use_remote_database = False
@@ -42,6 +51,7 @@ def get_dbs(get_repo=True):
         print("got db")
         fs = gridfs.GridFS(db)
         print("got fs")
+        database_type = "Local"
     if get_repo:
         if ("USE_REMOTE_REPOSITORY" in os.environ) and (os.environ.get("USE_REMOTE_REPOSITORY") == "True"):
             try:

@@ -371,7 +371,7 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
         selected: null,
         page_id: this.props.library_id,
         show_api_links: false,
-        extra_text: window.repository_type,
+        extra_text: window.repository_type == "Local" ? "" : window.repository_type,
         user_name: window.username
       }), /*#__PURE__*/_react["default"].createElement("div", {
         id: "repository_container",

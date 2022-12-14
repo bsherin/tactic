@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from tactic_app import app
 from users import User
 import tactic_app
+from mongo_db_fs import repository_type, database_type
 
 from container_manager import ContainerManager
 from user_manager import UserManager
@@ -34,6 +35,8 @@ def admin_list_with_metadata(res_type):
 def admin_interface():
     if current_user.get_id() == admin_user.get_id():
         return render_template("library/library_home_react.html",
+                               database_type=database_type,
+                               repository_type="",
                                develop=str(_develop),
                                is_remote="no",
                                version_string=tstring,
