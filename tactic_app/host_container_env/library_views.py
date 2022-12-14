@@ -12,7 +12,7 @@ from mongo_accesser import name_keys, make_name_unique
 from communication_utils import make_jsonizable_and_compress, read_project_dict
 from exception_mixin import generic_exception_handler
 from docker_functions import ContainerCreateError
-from mongo_db_fs import repository_type
+from mongo_db_fs import repository_type, database_type
 
 from resource_manager import ResourceManager, repository_user
 from list_manager import ListManager, RepositoryListManager
@@ -137,6 +137,8 @@ def library():
     if current_user.get_id() == admin_user.get_id():
         return render_template("library/library_home_react.html",
                                is_remote="no",
+                               database_type=database_type,
+                               repository_type="",
                                version_string=tstring,
                                develop=str(_develop),
                                page_title="tactic admin",
@@ -147,6 +149,8 @@ def library():
         return render_template('library/library_home_react.html',
                                develop=str(_develop),
                                is_remote="no",
+                               repository_type="",
+                               database_type=database_type,
                                version_string=tstring,
                                theme=current_user.get_theme(),
                                page_title="tactic resources",
@@ -158,6 +162,7 @@ def library():
 @login_required
 def context():
     return render_template('context_react.html',
+                           database_type=database_type,
                            develop=str(_develop),
                            version_string=tstring,
                            theme=current_user.get_theme(),

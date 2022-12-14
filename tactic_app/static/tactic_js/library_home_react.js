@@ -502,6 +502,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
         set_theme: this.props.controlled ? this.props.setTheme : this._setTheme,
         selected: null,
         show_api_links: false,
+        extra_text: window.database_type == "Local" ? "" : window.database_type,
         page_id: this.props.library_id,
         user_name: window.username
       }), /*#__PURE__*/_react["default"].createElement("div", {

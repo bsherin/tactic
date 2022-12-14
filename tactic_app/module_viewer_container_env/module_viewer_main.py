@@ -11,6 +11,7 @@ from tile_code_parser import TileParser, remove_indents, insert_indents
 import exception_mixin
 from exception_mixin import ExceptionMixin
 from communication_utils import emit_direct
+from mongo_db_fs import get_dbs
 
 import sys, os
 sys.stdout = sys.stderr
@@ -54,10 +55,12 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
         self.module_name = data_dict["module_name"]
         self.user_id = data_dict["user_id"]
         try:
-            client = pymongo.MongoClient(mongo_uri, serverSelectionTimeoutMS=30000)
-            client.server_info()
+            db, fs, repository_db, repository_fs, use_remote_repository, use_remote_database = get_dbs(get_repo=False)
+            self.db = db
+            # client = pymongo.MongoClient(mongo_uri, serverSelectionTimeoutMS=30000)
+            # client.server_info()
             # noinspection PyUnresolvedReferences
-            self.db = client[db_name]
+            # self.db = client[db_name]
         except Exception as ex:
             error_string = self.extract_short_error_message(ex, "error getting pymongo client")
             print(error_string)

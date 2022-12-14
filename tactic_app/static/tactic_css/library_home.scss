@@ -197,12 +197,12 @@ $regular: #5c7080;
 .import-dialog {
     width: 700px;
     .filepicker.dropzone.dz-clickable {
-        //font-size: 12px;
-        ////min-height: fit-content;
         display: flex;
         flex-direction: column;
         max-height: 350px;
         overflow: auto;
+        min-height: 100px;
+        padding: 10px;
     }
 
     .dropzone .dz-preview {

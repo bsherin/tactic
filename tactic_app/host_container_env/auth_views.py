@@ -96,10 +96,13 @@ def attempt_login():
         else:
             user.set_user_timezone_offset(data["tzOffset"])
             user.set_last_login()
-            print("about to call load_user_default_tiles")
-            error_list = loaded_tile_management.load_user_default_tiles(current_user.username)
+            print("*** about to post load_user_default_tile_task")
+            tactic_app.host_worker.post_task("host", "load_user_default_tiles_task",
+                                             {"username": current_user.username})
+            print("*** return from posting task")
+            # error_list = loaded_tile_management.load_user_default_tiles(current_user.username)
             result_dict["logged_in"] = True
-            result_dict["tile_loading_errors"] = error_list
+            # result_dict["tile_loading_errors"] = error_list
     else:
         result_dict["logged_in"] = False
     return jsonify(result_dict)

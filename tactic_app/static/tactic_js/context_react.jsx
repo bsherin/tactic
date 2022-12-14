@@ -775,6 +775,7 @@ class ContextApp extends React.Component {
                               setTheme={this._setTheme}
                               selected={null}
                               show_api_links={false}
+                              extra_text={window.database_type == "Local" ? "" : window.database_type}
                               page_id={window.context_id}
                               user_name={window.username}/>
                     <div className={outer_class} style={outer_style} ref={this.top_ref}>

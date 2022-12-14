@@ -1,6 +1,6 @@
 #!/bin/bash
-docker push bsherin/tactic:base
-docker push bsherin/tactic:host
-docker push bsherin/tactic:main
-docker push bsherin/tactic:module_viewer
-docker push bsherin/tactic:tile
+docker push -q bsherin/tactic:base
+docker push -q bsherin/tactic:host
+docker push -q bsherin/tactic:main
+docker push -q bsherin/tactic:module_viewer
+docker push -q bsherin/tactic:tile

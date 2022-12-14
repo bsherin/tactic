@@ -228,8 +228,15 @@ class TileManager(LibraryResourceManager):
         user_obj = current_user
         rb_id = str(uuid.uuid4())
         environ = {"RB_ID": rb_id}
+        vol_dict = {}
+        if "USE_REMOTE_DATABASE" in os.environ:
+            environ["USE_REMOTE_DATABASE"] = os.environ.get("USE_REMOTE_DATABASE")
+            environ["REMOTE_KEY_FILE"] = os.environ.get("REMOTE_KEY_FILE")
+            environ["REMOTE_USERNAME"] = os.environ.get("REMOTE_USERNAME")
+            vol_dict[environ["REMOTE_KEY_FILE"]] = {"bind": environ["REMOTE_KEY_FILE"], "mode": "ro"}
         module_viewer_id, container_id = create_container("bsherin/tactic:module_viewer",
                                                           env_vars=environ,
+                                                          volume_dict=vol_dict,
                                                           owner=user_obj.get_id(),
                                                           other_name=module_name, register_container=True)
 
