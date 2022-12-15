@@ -1,5 +1,6 @@
 cd /srv/tactic && sudo git pull
 # sudo docker pull bsherin/tactic -a
+cd /srv/tactic/tactic_app
 sudo /usr/local/bin/docker-compose build tactic_base
 sudo /usr/local/bin/docker-compose build tactic_host
 sudo /usr/local/bin/docker-compose build tactic_main
