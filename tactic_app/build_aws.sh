@@ -26,7 +26,7 @@ fi
 if [ $do_git == "True" ] ; then
   echo "*** doing git ***"
   git commit -a
-  git push https://bsherin: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@github.com/bsherin/tactic
+  git push https://bsherin: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@github.com/bsherin/tactic
 fi
 
 ssh -i /Users/brucesherin/PycharmProjects/tactic/LightsailDefaultKey-us-east-2.pem centos@tactictext.net \
