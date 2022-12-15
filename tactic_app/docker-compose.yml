@@ -36,7 +36,7 @@ services:
   tactic_base_arm64:
       build:
         context: .
-        dockerfile: Dockerfile-base
+        dockerfile: Dockerfile-base-arm64
       image: bsherin/tactic:base-arm64
       platform: arm64
 
