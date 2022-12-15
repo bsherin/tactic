@@ -58,7 +58,13 @@ note that the `npm run …` commands run a named script from package.json
 ## to push out new version to AWS server
 * ssh into server and run `/srv/tactic/tactic_app/update_server_and_relaunch.sh`
 * can run the apple shortcut that does this in one step using this
-
+* Note that the script now builds the x86 images on the server
+* I also made a new script `build_aws.sh`
+  * This, by default, builds production javascript bundles and pushing changes to github
+  * Then it executes the above script on the server
+  * Note that the `build_aws.sh` script cannot be added to version control because it has the access token
+  * Also if `update_server_and_relaunch.sh` is modified then the git pull on the server won't work
+  * This is because the permissions of the script on the server had to be modified.
 
 ```
 ssh -i /Users/brucesherin/PycharmProjects/tactic/LightsailDefaultKey-us-east-2.pem centos@tactictext.net \ 

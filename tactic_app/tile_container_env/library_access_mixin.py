@@ -75,6 +75,28 @@ class LibraryAccessMixin:
     def create_collection(self, name, doc_dict, doc_type="table", doc_metadata=None,
                           header_list_dict=None, collection_metadata=None):
         self._save_stdout()
+        if header_list_dict is None:
+            header_list_dict = {}
+        if doc_type == "table":
+            for fname, dlist in doc_dict.items():
+                if fname not in header_list_dict:
+                    header_list = list(dlist[0].keys())
+                else:
+                    header_list = header_list_dict[fname]
+                ndlist = []
+                for r, the_row in enumerate(dlist):
+                    the_row.pop("__id__", None)
+                    the_row.pop("__filename__", None)
+                    the_row["__id__"] = r
+                    the_row["__filename__"] = fname
+                    ndlist.append(the_row)
+                if "__filename__" not in header_list:
+                    header_list = ["__filename__"] + header_list
+                if "__id__" not in header_list:
+                    header_list = ["__id__"] + header_list
+                header_list_dict[fname] = header_list
+                doc_dict[fname] = ndlist
+
         data = {"name": name,
                 "doc_dict": doc_dict,
                 "doc_type": doc_type,
