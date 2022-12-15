@@ -1,4 +1,4 @@
-FROM --platform=x86_64 python:3.9
+FROM --platform=arm64 python:3.9
 WORKDIR /code
 ADD  ./base_container_env /code
 RUN pip install -r requirements.txt
