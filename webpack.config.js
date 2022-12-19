@@ -49,6 +49,12 @@ module.exports = (env, argv) => {
             rules: [
                 {
                     test: /\.(sa|sc|c)ss$/i,
+                    include: [
+                        path.resolve(__dirname, 'tactic_app/static/css'),
+                        path.resolve(__dirname, 'tactic_app/static/tactic_css'),
+                        path.resolve(__dirname, 'node_modules/codemirror'),
+                        path.resolve(__dirname, 'node_modules/markdown-it-latex')
+                        ],
                     use: [
                         MiniCssExtractPlugin.loader,
                         'css-loader',
@@ -58,6 +64,12 @@ module.exports = (env, argv) => {
                 },
                 {
                     test: /\.(eot|ttf|woff|woff2|svg|png|gif|jpe?g)$/,
+                    include: [
+                        path.resolve(__dirname, 'tactic_app/static'),
+                        path.resolve(__dirname, 'node_modules/@blueprintjs'),
+                        path.resolve(__dirname, 'node_modules/katex'),
+                        path.resolve(__dirname, 'node_modules/markdown-it-latex')
+                        ],
                     loader: require.resolve("file-loader"),
                 }
                 //     {
