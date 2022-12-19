@@ -205,9 +205,11 @@ class CollectionManager(LibraryResourceManager):
     def download_collection(self, collection_name, new_name, max_col_width=50):
         user_obj = current_user
         coll_dict, doc_mdata_dict, header_list_dict, coll_mdata = user_obj.get_all_collection_info(collection_name,
-                                                                                                       return_lists=False)
+                                                                                                    return_lists=False)
         wb = openpyxl.Workbook()
         first = True
+        doc_type = "freeform" if coll_mdata["type"] == "freeform" else "table"
+
         for doc_name in coll_dict.keys():
             sheet_name = re.sub(r"[\[\]\*\/\\ \?\:]", r"-", doc_name)[:25]
             if first:
@@ -216,8 +218,15 @@ class CollectionManager(LibraryResourceManager):
                 first = False
             else:
                 ws = wb.create_sheet(title=sheet_name)
-            data_rows = coll_dict[doc_name]
-            header_list = header_list_dict[doc_name]
+            if doc_type == "table":
+                data_rows = coll_dict[doc_name]
+                header_list = header_list_dict[doc_name]
+            else:
+                header_list = ["text"]
+                data_text = coll_dict[doc_name].splitlines()
+                data_rows = {}
+                for r, txt in enumerate(data_text):
+                    data_rows[str(r)] = {"text": txt}
             for c, header in enumerate(header_list, start=1):
                 _ = ws.cell(row=1, column=c, value=header)
                 ws.cell(1, c).font = Font(bold=True)
