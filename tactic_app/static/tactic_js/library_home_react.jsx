@@ -41,7 +41,8 @@ function _library_home_main () {
 function library_props() {
     let library_id = guid();
     let tsocket = new TacticSocket("main", 5000, library_id);
-    return {library_id: library_id, tsocket: tsocket}
+    // main_id is needed below for withStatus
+    return {library_id: library_id, tsocket: tsocket, main_id: library_id}
 }
 
 const res_types = ["collection", "project", "tile", "list", "code"];

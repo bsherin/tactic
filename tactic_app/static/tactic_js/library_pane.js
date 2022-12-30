@@ -1190,7 +1190,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       var split_tags = this.props.selected_resource.tags == "" ? [] : this.props.selected_resource.tags.split(" ");
       var outer_style = {
         marginTop: 0,
-        marginLeft: 20,
+        marginLeft: 5,
         overflow: "auto",
         padding: 15,
         marginRight: 0,

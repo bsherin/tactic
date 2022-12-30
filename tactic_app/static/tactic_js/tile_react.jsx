@@ -188,9 +188,6 @@ class TileContainer extends React.Component {
 
     render() {
         let outer_style = {height: this.props.height};
-        if (this.props.table_is_shrunk) {
-            outer_style.marginLeft = "0.5rem"
-        }
         return (
             <SortableComponent id="tile-div"
                                main_id={this.props.main_id}

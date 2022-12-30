@@ -343,11 +343,6 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
       var outer_style = {
         height: this.props.height
       };
-
-      if (this.props.table_is_shrunk) {
-        outer_style.marginLeft = "0.5rem";
-      }
-
       return /*#__PURE__*/_react["default"].createElement(_sortable_container.SortableComponent, {
         id: "tile-div",
         main_id: this.props.main_id,
