@@ -120,8 +120,12 @@ class DragHandle extends React.Component {
             style.transform = "rotate(45deg)"
         }
         let wrappedElement;
-        if (this.props.useVerticalBar) {
-            wrappedElement = <div className="resize-border" style={style}/>
+        if (this.props.useThinBar) {
+            let the_class = this.props.direction == "x" ? "resize-border" : "horizontal-resize-border";
+            if (this.props.barHeight != null) {
+                style.height = this.props.barHeight;
+            }
+            wrappedElement = <div className={the_class} style={style}/>
         }
         else {
             wrappedElement = <Icon icon={this.icon_dict[this.props.direction]}
@@ -149,8 +153,10 @@ DragHandle.propTypes = {
     dragEnd: PropTypes.func,
     direction: PropTypes.string,
     iconSize: PropTypes.number,
-    useVerticalBar: PropTypes.bool,
-
+    useThinBar: PropTypes.bool,
+    barheight: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number])
 };
 DragHandle.defaultProps = {
     direction: "x",
@@ -158,7 +164,8 @@ DragHandle.defaultProps = {
     onDrag: null,
     dragStart: null,
     dragEnd: null,
-    useVerticalBar: false
+    useThinBar: false,
+    barHeight: null
 };
 
 class HorizontalPanes extends React.Component {
@@ -199,14 +206,14 @@ class HorizontalPanes extends React.Component {
         if (this.props.show_handle) {
             return (this.props.available_width - HANDLE_WIDTH) * this.state.current_width_fraction
         }
-        return this.props.available_width * this.state.current_width_fraction
+        return this.props.available_width * this.state.current_width_fraction - 2.5
     }
 
     get right_width() {
         if (this.props.show_handle) {
             return (1 - this.state.current_width_fraction) * (this.props.available_width - HANDLE_WIDTH)
         }
-        return (1 - this.state.current_width_fraction) * this.props.available_width
+        return (1 - this.state.current_width_fraction) * this.props.available_width - 2.5
     }
 
     update_width_fraction(new_width_fraction) {
@@ -274,6 +281,17 @@ class HorizontalPanes extends React.Component {
     }
 
     render () {
+        let handle_left;
+        if (this.right_pane_ref && this.right_pane_ref.current) {
+            handle_left = this.right_pane_ref.current.offsetLeft - 10
+        }
+        else {
+            handle_left = this.left_width + 75
+        }
+        let position_dict = {
+            position: "absolute",
+            left: handle_left
+        };
         let left_div_style = {
             width: this.left_width,
             height: this.props.available_height - this.props.bottom_margin,
@@ -286,6 +304,7 @@ class HorizontalPanes extends React.Component {
             width: this.right_width,
             height: this.props.available_height - this.props.bottom_margin,
             flexDirection: "column",
+            marginLeft: 10
         };
         let cname = "";
         if (this.props.right_pane_overflow == "auto") {
@@ -296,7 +315,8 @@ class HorizontalPanes extends React.Component {
         }
 
         let dstyle = this.props.hide_me ? {display: "none"} : {};
-        let position_dict = {position: "relative", left: 0, top: (this.props.available_height - this.props.bottom_margin) / 2};
+        // let position_dict = {position: "relative", left: 0, top: (this.props.available_height - this.props.bottom_margin) / 2};
+
         let outer_style = {width: "100%"};
         if (this.props.left_margin) {
             outer_style["marginLeft"] = this.props.left_margin
@@ -313,6 +333,8 @@ class HorizontalPanes extends React.Component {
                                 dragEnd={this._handleDragEnd}
                                 direction="x"
                                 iconSize={this.props.dragIconSize}
+                                useThinBar={true}
+                                barHeight={this.props.available_height - this.props.bottom_margin}
 
                     />
                 }
@@ -386,11 +408,11 @@ class VerticalPanes extends React.Component {
     }
 
     get top_height() {
-        return this.props.available_height * this.state.current_height_fraction
+        return this.props.available_height * this.state.current_height_fraction - 2.5
     }
 
     get bottom_height() {
-        return (1 - this.state.current_height_fraction) * this.props.available_height
+        return (1 - this.state.current_height_fraction) * this.props.available_height - 2.5
     }
 
     notifySplitUpate() {
@@ -457,6 +479,17 @@ class VerticalPanes extends React.Component {
 
 
     render () {
+        let handle_top;
+        if (this.bottom_pane_ref && this.bottom_pane_ref.current) {
+            handle_top = this.bottom_pane_ref.current.offsetTop - 10
+        }
+        else {
+            handle_top = this.top_height + 75
+        }
+        let position_dict = {
+            position: "absolute",
+            top: handle_top
+        };
         let top_div_style = {
             "width": this.props.available_width,
             "height": this.top_height,
@@ -469,9 +502,11 @@ class VerticalPanes extends React.Component {
         let bottom_div_style = {
             "width": this.props.available_width,
             "height": this.bottom_height,
-            overflowY: this.props.overflow
+            overflowY: this.props.overflow,
+            marginTop: 10
+
         };
-        let position_dict = {position: "relative", left: this.props.available_width / 2, top: 0};
+
         return (
             <div id={this.unique_id} className="d-flex flex-column" ref={this.top_ref}>
                 <div ref={this.top_pane_ref} style={top_div_style}>
@@ -484,6 +519,7 @@ class VerticalPanes extends React.Component {
                                 iconSize={this.props.dragIconSize}
                                 dragStart={this._handleDragStart}
                                 dragEnd={this._handleDragEnd}
+                                useThinBar={true}
                     />
                 }
                 <div ref={this.bottom_pane_ref} style={bottom_div_style}>

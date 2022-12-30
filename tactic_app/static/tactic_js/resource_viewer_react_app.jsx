@@ -108,7 +108,7 @@ class ResourceViewerApp extends React.Component {
         let right_pane = (
             <React.Fragment>
                 <CombinedMetadata tags={this.props.tags}
-                                  outer_style={{marginTop: 0, marginLeft: 20, overflow: "auto", padding: 15,
+                                  outer_style={{marginTop: 0, marginLeft: 10, overflow: "auto", padding: 15,
                                                 marginRight: 0, height: "100%"}}
                                   created={this.props.created}
                                   notes={this.props.notes}

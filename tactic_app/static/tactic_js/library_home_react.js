@@ -99,10 +99,12 @@ function _library_home_main() {
 
 function library_props() {
   var library_id = (0, _utilities_react.guid)();
-  var tsocket = new _tactic_socket.TacticSocket("main", 5000, library_id);
+  var tsocket = new _tactic_socket.TacticSocket("main", 5000, library_id); // main_id is needed below for withStatus
+
   return {
     library_id: library_id,
-    tsocket: tsocket
+    tsocket: tsocket,
+    main_id: library_id
   };
 }
 

@@ -853,7 +853,7 @@ class LibraryPane extends React.Component {
 
         // let right_pane;
         let split_tags = this.props.selected_resource.tags == "" ? [] : this.props.selected_resource.tags.split(" ");
-        let outer_style = {marginTop: 0, marginLeft: 20, overflow: "auto", padding: 15, marginRight: 0, height: "100%"};
+        let outer_style = {marginTop: 0, marginLeft: 5, overflow: "auto", padding: 15, marginRight: 0, height: "100%"};
         let right_pane = (
                 <CombinedMetadata tags={split_tags}
                                   elevation={2}

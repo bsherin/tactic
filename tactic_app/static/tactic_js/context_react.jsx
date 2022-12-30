@@ -781,11 +781,12 @@ class ContextApp extends React.Component {
                     <div className={outer_class} style={outer_style} ref={this.top_ref}>
                         <div id="context-container" style={outer_style}>
                             <DragHandle position_dict={{position: "absolute", left: this.state.tabWidth - 5}}
-                                    onDrag={this._handleTabResize}
-                                    dragStart={null}
-                                    dragEnd={null}
-                                    direction="x"
-                                    useVerticalBar={true}/>
+                                        onDrag={this._handleTabResize}
+                                        dragStart={null}
+                                        dragEnd={null}
+                                        direction="x"
+                                        barHeight="100%"
+                                        useThinBar={true}/>
                             <Tabs id="context-tabs" selectedTabId={this.state.selectedTabId}
                                   className="context-tab-list"
                                   vertical={true}

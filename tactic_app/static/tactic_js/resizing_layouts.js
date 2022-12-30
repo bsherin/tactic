@@ -182,9 +182,15 @@ var DragHandle = /*#__PURE__*/function (_React$Component) {
 
       var wrappedElement;
 
-      if (this.props.useVerticalBar) {
+      if (this.props.useThinBar) {
+        var the_class = this.props.direction == "x" ? "resize-border" : "horizontal-resize-border";
+
+        if (this.props.barHeight != null) {
+          style.height = this.props.barHeight;
+        }
+
         wrappedElement = /*#__PURE__*/_react["default"].createElement("div", {
-          className: "resize-border",
+          className: the_class,
           style: style
         });
       } else {
@@ -216,7 +222,8 @@ DragHandle.propTypes = {
   dragEnd: _propTypes["default"].func,
   direction: _propTypes["default"].string,
   iconSize: _propTypes["default"].number,
-  useVerticalBar: _propTypes["default"].bool
+  useThinBar: _propTypes["default"].bool,
+  barheight: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number])
 };
 DragHandle.defaultProps = {
   direction: "x",
@@ -224,7 +231,8 @@ DragHandle.defaultProps = {
   onDrag: null,
   dragStart: null,
   dragEnd: null,
-  useVerticalBar: false
+  useThinBar: false,
+  barHeight: null
 };
 
 var HorizontalPanes = /*#__PURE__*/function (_React$Component2) {
@@ -284,7 +292,7 @@ var HorizontalPanes = /*#__PURE__*/function (_React$Component2) {
         return (this.props.available_width - HANDLE_WIDTH) * this.state.current_width_fraction;
       }
 
-      return this.props.available_width * this.state.current_width_fraction;
+      return this.props.available_width * this.state.current_width_fraction - 2.5;
     }
   }, {
     key: "right_width",
@@ -293,7 +301,7 @@ var HorizontalPanes = /*#__PURE__*/function (_React$Component2) {
         return (1 - this.state.current_width_fraction) * (this.props.available_width - HANDLE_WIDTH);
       }
 
-      return (1 - this.state.current_width_fraction) * this.props.available_width;
+      return (1 - this.state.current_width_fraction) * this.props.available_width - 2.5;
     }
   }, {
     key: "update_width_fraction",
@@ -393,6 +401,18 @@ var HorizontalPanes = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "render",
     value: function render() {
+      var handle_left;
+
+      if (this.right_pane_ref && this.right_pane_ref.current) {
+        handle_left = this.right_pane_ref.current.offsetLeft - 10;
+      } else {
+        handle_left = this.left_width + 75;
+      }
+
+      var position_dict = {
+        position: "absolute",
+        left: handle_left
+      };
       var left_div_style = {
         width: this.left_width,
         height: this.props.available_height - this.props.bottom_margin,
@@ -404,7 +424,8 @@ var HorizontalPanes = /*#__PURE__*/function (_React$Component2) {
       var right_div_style = {
         width: this.right_width,
         height: this.props.available_height - this.props.bottom_margin,
-        flexDirection: "column"
+        flexDirection: "column",
+        marginLeft: 10
       };
       var cname = "";
 
@@ -416,12 +437,8 @@ var HorizontalPanes = /*#__PURE__*/function (_React$Component2) {
 
       var dstyle = this.props.hide_me ? {
         display: "none"
-      } : {};
-      var position_dict = {
-        position: "relative",
-        left: 0,
-        top: (this.props.available_height - this.props.bottom_margin) / 2
-      };
+      } : {}; // let position_dict = {position: "relative", left: 0, top: (this.props.available_height - this.props.bottom_margin) / 2};
+
       var outer_style = {
         width: "100%"
       };
@@ -445,7 +462,9 @@ var HorizontalPanes = /*#__PURE__*/function (_React$Component2) {
         dragStart: this._handleDragStart,
         dragEnd: this._handleDragEnd,
         direction: "x",
-        iconSize: this.props.dragIconSize
+        iconSize: this.props.dragIconSize,
+        useThinBar: true,
+        barHeight: this.props.available_height - this.props.bottom_margin
       }), /*#__PURE__*/_react["default"].createElement("div", {
         ref: this.right_pane_ref,
         className: cname,
@@ -532,12 +551,12 @@ var VerticalPanes = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "top_height",
     get: function get() {
-      return this.props.available_height * this.state.current_height_fraction;
+      return this.props.available_height * this.state.current_height_fraction - 2.5;
     }
   }, {
     key: "bottom_height",
     get: function get() {
-      return (1 - this.state.current_height_fraction) * this.props.available_height;
+      return (1 - this.state.current_height_fraction) * this.props.available_height - 2.5;
     }
   }, {
     key: "notifySplitUpate",
@@ -635,6 +654,18 @@ var VerticalPanes = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "render",
     value: function render() {
+      var handle_top;
+
+      if (this.bottom_pane_ref && this.bottom_pane_ref.current) {
+        handle_top = this.bottom_pane_ref.current.offsetTop - 10;
+      } else {
+        handle_top = this.top_height + 75;
+      }
+
+      var position_dict = {
+        position: "absolute",
+        top: handle_top
+      };
       var top_div_style = {
         "width": this.props.available_width,
         "height": this.top_height,
@@ -649,12 +680,8 @@ var VerticalPanes = /*#__PURE__*/function (_React$Component3) {
       var bottom_div_style = {
         "width": this.props.available_width,
         "height": this.bottom_height,
-        overflowY: this.props.overflow
-      };
-      var position_dict = {
-        position: "relative",
-        left: this.props.available_width / 2,
-        top: 0
+        overflowY: this.props.overflow,
+        marginTop: 10
       };
       return /*#__PURE__*/_react["default"].createElement("div", {
         id: this.unique_id,
@@ -669,7 +696,8 @@ var VerticalPanes = /*#__PURE__*/function (_React$Component3) {
         direction: "y",
         iconSize: this.props.dragIconSize,
         dragStart: this._handleDragStart,
-        dragEnd: this._handleDragEnd
+        dragEnd: this._handleDragEnd,
+        useThinBar: true
       }), /*#__PURE__*/_react["default"].createElement("div", {
         ref: this.bottom_pane_ref,
         style: bottom_div_style

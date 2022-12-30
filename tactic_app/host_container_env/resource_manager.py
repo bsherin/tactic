@@ -155,7 +155,7 @@ class ResourceManager(ExceptionMixin):
 
     def show_um_message(self, message, library_id, timeout=3):
         data = {"message": message, "timeout": timeout, "main_id": library_id}
-        socketio.emit('show-status-msg', data, namespace='/library', room=library_id)
+        socketio.emit('show-status-msg', data, namespace='/main', room=library_id)
 
     def clear_um_message(self, library_id):
         socketio.emit('clear-status-msg', {"main_id": library_id}, namespace='/main', room=library_id)
