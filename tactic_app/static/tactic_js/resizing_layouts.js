@@ -189,6 +189,10 @@ var DragHandle = /*#__PURE__*/function (_React$Component) {
           style.height = this.props.barHeight;
         }
 
+        if (this.props.barWidth != null) {
+          style.width = this.props.barWidth;
+        }
+
         wrappedElement = /*#__PURE__*/_react["default"].createElement("div", {
           className: the_class,
           style: style
@@ -223,7 +227,8 @@ DragHandle.propTypes = {
   direction: _propTypes["default"].string,
   iconSize: _propTypes["default"].number,
   useThinBar: _propTypes["default"].bool,
-  barheight: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number])
+  barheight: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
+  barWidth: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number])
 };
 DragHandle.defaultProps = {
   direction: "x",
@@ -232,7 +237,8 @@ DragHandle.defaultProps = {
   dragStart: null,
   dragEnd: null,
   useThinBar: false,
-  barHeight: null
+  barHeight: null,
+  barWidth: null
 };
 
 var HorizontalPanes = /*#__PURE__*/function (_React$Component2) {
@@ -697,7 +703,8 @@ var VerticalPanes = /*#__PURE__*/function (_React$Component3) {
         iconSize: this.props.dragIconSize,
         dragStart: this._handleDragStart,
         dragEnd: this._handleDragEnd,
-        useThinBar: true
+        useThinBar: true,
+        barWidth: this.props.available_width
       }), /*#__PURE__*/_react["default"].createElement("div", {
         ref: this.bottom_pane_ref,
         style: bottom_div_style

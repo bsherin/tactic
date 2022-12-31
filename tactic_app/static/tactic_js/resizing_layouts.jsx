@@ -125,6 +125,9 @@ class DragHandle extends React.Component {
             if (this.props.barHeight != null) {
                 style.height = this.props.barHeight;
             }
+            if (this.props.barWidth != null) {
+                style.width = this.props.barWidth
+            }
             wrappedElement = <div className={the_class} style={style}/>
         }
         else {
@@ -156,6 +159,9 @@ DragHandle.propTypes = {
     useThinBar: PropTypes.bool,
     barheight: PropTypes.oneOfType([
         PropTypes.string,
+        PropTypes.number]),
+    barWidth: PropTypes.oneOfType([
+        PropTypes.string,
         PropTypes.number])
 };
 DragHandle.defaultProps = {
@@ -165,7 +171,8 @@ DragHandle.defaultProps = {
     dragStart: null,
     dragEnd: null,
     useThinBar: false,
-    barHeight: null
+    barHeight: null,
+    barWidth: null
 };
 
 class HorizontalPanes extends React.Component {
@@ -520,6 +527,7 @@ class VerticalPanes extends React.Component {
                                 dragStart={this._handleDragStart}
                                 dragEnd={this._handleDragEnd}
                                 useThinBar={true}
+                                barWidth={this.props.available_width}
                     />
                 }
                 <div ref={this.bottom_pane_ref} style={bottom_div_style}>

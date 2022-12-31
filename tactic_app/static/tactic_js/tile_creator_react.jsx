@@ -1027,7 +1027,7 @@ class CreatorApp extends React.Component {
                                    bottom_pane={bc_item}
                                    show_handle={true}
                                    available_height={vp_height}
-                                   available_width={this.state.left_pane_fraction * uwidth - 25}
+                                   available_width={this.state.left_pane_fraction * uwidth - 20}
                                    handleSplitUpdate={this.handleTopPaneResize}
                                    id="creator-left"
                                    />
@@ -1078,7 +1078,7 @@ class CreatorApp extends React.Component {
         );
         let methods_height = this.get_height_minus_top_offset(this.methods_ref, 128, 128);
         let methods_panel = (
-            <div>
+            <div style={{marginLeft: 5}}>
                 <ReactCodemirror handleChange={this.handleMethodsChange}
                                  show_fold_button={true}
                                  am_selected={this.props.am_selected}

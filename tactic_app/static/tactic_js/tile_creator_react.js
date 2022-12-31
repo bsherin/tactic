@@ -1408,7 +1408,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           bottom_pane: bc_item,
           show_handle: true,
           available_height: vp_height,
-          available_width: this.state.left_pane_fraction * uwidth - 25,
+          available_width: this.state.left_pane_fraction * uwidth - 20,
           handleSplitUpdate: this.handleTopPaneResize,
           id: "creator-left"
         }));
@@ -1458,7 +1458,11 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
 
       var methods_height = this.get_height_minus_top_offset(this.methods_ref, 128, 128);
 
-      var methods_panel = /*#__PURE__*/_react["default"].createElement("div", null, /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
+      var methods_panel = /*#__PURE__*/_react["default"].createElement("div", {
+        style: {
+          marginLeft: 5
+        }
+      }, /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
         handleChange: this.handleMethodsChange,
         show_fold_button: true,
         am_selected: this.props.am_selected,
