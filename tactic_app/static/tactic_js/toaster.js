@@ -16,6 +16,8 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 
 var _core = require("@blueprintjs/core");
 
+var _blueprint_react_widgets = require("./blueprint_react_widgets");
+
 var _utilities_react = require("./utilities_react.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
@@ -244,6 +246,8 @@ function withStatus(WrappedComponent) {
     }, {
       key: "render",
       value: function render() {
+        var _this2 = this;
+
         return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(WrappedComponent, _extends({}, this.props, {
           statusSocket: this.props.tsocket,
           statusFuncs: this._statusFuncs(),
@@ -254,6 +258,10 @@ function withStatus(WrappedComponent) {
           statusMessage: this._statusMessage,
           setStatus: this._setStatus
         })), /*#__PURE__*/_react["default"].createElement(Status, _extends({}, this.state, {
+          show_close: true,
+          handleClose: function handleClose() {
+            _this2._clearStatus(null);
+          },
           dark_theme: this.props.controlled ? this.props.dark_theme : window.theme == "dark"
         })));
       }
@@ -269,13 +277,13 @@ var Status = /*#__PURE__*/function (_React$Component2) {
   var _super2 = _createSuper(Status);
 
   function Status(props) {
-    var _this2;
+    var _this3;
 
     _classCallCheck(this, Status);
 
-    _this2 = _super2.call(this, props);
-    _this2.elRef = /*#__PURE__*/_react["default"].createRef();
-    return _this2;
+    _this3 = _super2.call(this, props);
+    _this3.elRef = /*#__PURE__*/_react["default"].createRef();
+    return _this3;
   }
 
   _createClass(Status, [{
@@ -293,7 +301,7 @@ var Status = /*#__PURE__*/function (_React$Component2) {
       var left;
 
       if (this.elRef && this.elRef.current) {
-        left = this.elRef.current.parentNode.offsetLeft + 25;
+        left = this.elRef.current.parentNode.offsetLeft;
       } else {
         left = 25;
       }
@@ -317,10 +325,13 @@ var Status = /*#__PURE__*/function (_React$Component2) {
         }
       }, this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_core.Spinner, {
         size: 20
+      }), this.props.show_close && (this.props.show_spiner || this.props.status_message) && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+        handleClick: this.props.handleClose,
+        icon: "cross"
       }), this.props.status_message && /*#__PURE__*/_react["default"].createElement("div", {
         className: "d-flex flex-column justify-content-around",
         style: {
-          marginLeft: 50
+          marginLeft: 8
         }
       }, /*#__PURE__*/_react["default"].createElement("div", {
         id: "status-msg-area",
@@ -335,12 +346,16 @@ var Status = /*#__PURE__*/function (_React$Component2) {
 exports.Status = Status;
 Status.propTypes = {
   show_spinner: _propTypes["default"].bool,
+  show_close: _propTypes["default"].bool,
+  handleClose: _propTypes["default"].func,
   status_message: _propTypes["default"].string,
   spinner_size: _propTypes["default"].number,
   dark_theme: _propTypes["default"].bool
 };
 Status.defaultProps = {
   show_spinner: false,
+  show_close: true,
+  handleClose: null,
   status_message: null,
   spinner_size: 25,
   dark_theme: false

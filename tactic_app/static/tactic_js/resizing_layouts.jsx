@@ -241,6 +241,8 @@ class HorizontalPanes extends React.Component {
 
     _handleDrag (e, ui, x, y, dx, dy){
         let new_width_fraction = (x - this.left_pane_ref.current.getBoundingClientRect().left) / this.props.available_width;
+        new_width_fraction = new_width_fraction > 1 ? 1 : new_width_fraction;
+        new_width_fraction = new_width_fraction < 0 ? 0 : new_width_fraction;
         this.update_width_fraction(new_width_fraction);
         this._resetScrolls();
      };
@@ -280,6 +282,8 @@ class HorizontalPanes extends React.Component {
 
     _handleDragEnd(e, ui, x, y, dx, dy) {
         let new_width_fraction = (x - this.left_pane_ref.current.getBoundingClientRect().left) / this.props.available_width;
+        new_width_fraction = new_width_fraction > 1 ? 1 : new_width_fraction;
+        new_width_fraction = new_width_fraction < 0 ? 0 : new_width_fraction;
         if (this.props.handleResizeEnd) {
             this.props.handleResizeEnd(new_width_fraction);
         }
@@ -440,6 +444,8 @@ class VerticalPanes extends React.Component {
 
     _handleDrag (e, ui, x, y, dx, dy){
         let new_height_fraction = (y - this.top_pane_ref.current.offsetTop) / this.props.available_height;
+        new_height_fraction = new_height_fraction > 1 ? 1 : new_height_fraction;
+        new_height_fraction = new_height_fraction < 0 ? 0 : new_height_fraction;
         this.update_height_fraction(new_height_fraction)
      };
 
@@ -478,6 +484,8 @@ class VerticalPanes extends React.Component {
 
     _handleDragEnd(e, ui, x, y, dx, dy) {
         let new_height_fraction = (y - this.top_pane_ref.current.offsetTop) / this.props.available_height;
+        new_height_fraction = new_height_fraction > 1 ? 1 : new_height_fraction;
+        new_height_fraction = new_height_fraction < 0 ? 0 : new_height_fraction;
         if (this.props.handleResizeEnd) {
             this.props.handleResizeEnd(new_height_fraction);
         }

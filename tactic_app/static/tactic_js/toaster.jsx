@@ -4,6 +4,7 @@ import React from "react";
 import PropTypes from 'prop-types';
 
 import { Toaster, Position, Spinner } from "@blueprintjs/core";
+import {GlyphButton} from "./blueprint_react_widgets";
 
 import {doBinding} from "./utilities_react.js";
 
@@ -184,6 +185,8 @@ function withStatus(WrappedComponent) {
                                       setStatus={this._setStatus}
                     />
                     <Status {...this.state}
+                            show_close={true}
+                            handleClose={()=>{this._clearStatus(null)}}
                             dark_theme={this.props.controlled ? this.props.dark_theme : window.theme == "dark"}/>
                 </React.Fragment>
             )
@@ -209,7 +212,7 @@ class Status extends React.Component {
         }
         let left;
         if (this.elRef && this.elRef.current) {
-            left = this.elRef.current.parentNode.offsetLeft + 25;
+            left = this.elRef.current.parentNode.offsetLeft;
         }
         else {
             left = 25;
@@ -223,8 +226,11 @@ class Status extends React.Component {
                 <div className={cname} style={{position: "absolute", bottom: 7, marginLeft: 15}}>
                     {this.props.show_spinner &&
                         <Spinner size={20} />}
+                    {this.props.show_close && (this.props.show_spiner || this.props.status_message) &&
+                        <GlyphButton handleClick={this.props.handleClose}
+                                     icon="cross" />}
                     {this.props.status_message &&
-                        <div className="d-flex flex-column justify-content-around" style={{marginLeft: 50}}>
+                        <div className="d-flex flex-column justify-content-around" style={{marginLeft: 8}}>
                             <div id="status-msg-area" className="bp4-ui-text">{this.props.status_message}</div>
                         </div>
                     }
@@ -235,6 +241,8 @@ class Status extends React.Component {
 }
 Status.propTypes = {
     show_spinner: PropTypes.bool,
+    show_close: PropTypes.bool,
+    handleClose: PropTypes.func,
     status_message: PropTypes.string,
     spinner_size: PropTypes.number,
     dark_theme: PropTypes.bool
@@ -242,6 +250,8 @@ Status.propTypes = {
 
 Status.defaultProps = {
     show_spinner: false,
+    show_close: true,
+    handleClose: null,
     status_message: null,
     spinner_size: 25,
     dark_theme: false
