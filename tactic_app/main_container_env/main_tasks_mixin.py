@@ -1473,14 +1473,14 @@ class ConsoleTasksMixin:
                 else:
                     instantiate_result["globals_changed"] = True
                     self.updated_globals(instantiate_result)
-                self.show_main_message("Notebook reset", 7)
+                self.show_main_message("Notebook reset", 21)
 
             data_dict = {"base_figure_url": self.base_figure_url.replace("tile_id", self.pseudo_tile_id),
                          "doc_type": self.doc_type, "globals_dict": {}, "img_dict": {},
                          "tile_address": self.pseudo_tile_address}
             self.mworker.post_task(self.pseudo_tile_id, "instantiate_as_pseudo_tile", data_dict, instantiate_done)
 
-        self.show_main_message("Notebook reset", 7)
+        self.show_main_message("Notebook reset", 21)
         return {"success": True}
 
     @task_worthy
