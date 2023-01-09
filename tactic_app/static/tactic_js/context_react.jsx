@@ -11,7 +11,7 @@ const tstr = `some text ${blip}`;
 import React from "react";
 import * as ReactDOM from 'react-dom';
 
-import { Tab, Tabs, Button, Icon, Divider, Spinner } from "@blueprintjs/core";
+import { Tab, Tabs, Button, Icon, Spinner } from "@blueprintjs/core";
 import { FocusStyleManager } from "@blueprintjs/core";
 
 FocusStyleManager.onlyShowFocusOnTabs();
@@ -120,7 +120,8 @@ class ContextApp extends React.Component {
 
     _handleTabResize(e, ui, lastX, lastY, dx, dy) {
         let tab_elem = this.get_tab_list_elem();
-        tab_elem.setAttribute("style",`width:${lastX}px`);
+        let w = lastX > window.innerWidth / 2 ? window.innerWidth / 2 : lastX;
+        tab_elem.setAttribute("style",`width:${w}px`);
     }
 
     _update_window_dimensions(callback=null) {
@@ -649,7 +650,6 @@ class ContextApp extends React.Component {
                         </Button>
                     <div style={{display: "flex", flexDirection: "column", marginBottom: 5}}>
                         {lib_buttons}
-                        {/*<Divider/>*/}
                     </div>
                 </div>
             </Tab>

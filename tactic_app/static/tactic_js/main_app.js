@@ -1607,7 +1607,11 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
       var top_pane;
 
       if (this.state.table_is_shrunk) {
-        top_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, tile_pane, this.state.console_is_shrunk && bottom_pane);
+        top_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
+          style: {
+            paddingLeft: 10
+          }
+        }, tile_pane), this.state.console_is_shrunk && bottom_pane);
       } else {
         top_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_resizing_layouts.HorizontalPanes, {
           left_pane: table_pane,

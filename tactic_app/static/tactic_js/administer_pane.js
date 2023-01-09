@@ -527,10 +527,12 @@ var AdminPane = /*#__PURE__*/function (_React$Component) {
         style: {
           overflow: "auto",
           verticalAlign: "top",
-          marginTop: 120,
+          marginTop: 12,
           marginLeft: 10,
           width: "100%",
-          height: 412
+          height: "100%",
+          border: "1px solid black",
+          padding: 10
         }
       }, /*#__PURE__*/_react["default"].createElement("pre", null, /*#__PURE__*/_react["default"].createElement("small", null, this.props.console_text)));
 

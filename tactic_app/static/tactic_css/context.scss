@@ -139,29 +139,6 @@ $light-highlight-weight: 600;
     }
 }
 
-
-.resize-border {
-    content: '';
-    background-color: transparent;
-    width: 10px;
-    z-index: 100;
-    &:hover {
-        background-color: $gray3;
-        opacity: 50%;
-    }
-}
-.horizontal-resize-border {
-    content: '';
-    background-color: transparent;
-    width: 100%;
-    height: 10px;
-    z-index: 100;
-    &:hover {
-        background-color: $gray3;
-        opacity: 50%;
-    }
-}
-
 #context-container {
     height: 100%;
 

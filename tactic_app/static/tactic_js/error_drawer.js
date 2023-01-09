@@ -20,9 +20,9 @@ var _utilities_react = require("./utilities_react.js");
 
 var _communication_react = require("./communication_react.js");
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+var _blueprint_react_widgets = require("./blueprint_react_widgets");
 
-function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 
@@ -35,6 +35,14 @@ function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.it
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -60,6 +68,7 @@ function withErrorDrawer(WrappedComponent) {
   var title = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
   var position = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "right";
   var size = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "30%";
+  // noinspection JSPotentiallyInvalidUsageOfThis
   return /*#__PURE__*/function (_React$Component) {
     _inherits(_class, _React$Component);
 
@@ -74,12 +83,14 @@ function withErrorDrawer(WrappedComponent) {
       (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
       _this.state = {
         show_drawer: false,
-        contents: [],
+        contents: {},
         error_drawer_size: size,
         position: position,
         goToLineNumber: null
       };
       _this.socket_counter = null;
+      _this.ucounter = 0;
+      _this.local_id = _this.props.main_id ? _this.props.main_id : _this.props.library_id;
       return _this;
     }
 
@@ -101,7 +112,7 @@ function withErrorDrawer(WrappedComponent) {
     }, {
       key: "_close",
       value: function _close(data) {
-        if (data == null || !("main_id" in data) || data.main_id == this.props.main_id) {
+        if (data == null || !("main_id" in data) || data.main_id == this.local_id) {
           this.setState({
             show_drawer: false
           });
@@ -110,7 +121,7 @@ function withErrorDrawer(WrappedComponent) {
     }, {
       key: "_open",
       value: function _open(data) {
-        if (data == null || !("main_id" in data) || data.main_id == this.props.main_id) {
+        if (data == null || !("main_id" in data) || data.main_id == this.local_id) {
           this.setState({
             show_drawer: true
           });
@@ -119,7 +130,7 @@ function withErrorDrawer(WrappedComponent) {
     }, {
       key: "_toggle",
       value: function _toggle(data) {
-        if (data == null || !("main_id" in data) || data.main_id == this.props.main_id) {
+        if (data == null || !("main_id" in data) || data.main_id == this.local_id) {
           this.setState({
             show_drawer: !this.state.show_drawer
           });
@@ -129,14 +140,29 @@ function withErrorDrawer(WrappedComponent) {
       key: "_addEntry",
       value: function _addEntry(data) {
         var open = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-        var local_id = this.props.main_id ? this.props.main_id : this.props.library_id;
 
-        if (data == null || !("main_id" in data) || data.main_id == local_id) {
+        if (data == null || !("main_id" in data) || data.main_id == this.local_id) {
+          this.ucounter = this.ucounter + 1;
+
+          var newcontents = _objectSpread({}, this.state.contents);
+
+          newcontents[String(this.ucounter)] = data;
           this.setState({
-            contents: [data].concat(_toConsumableArray(this.state.contents)),
+            contents: newcontents,
             show_drawer: open
           });
         }
+      }
+    }, {
+      key: "_closeEntry",
+      value: function _closeEntry(ukey) {
+        var newcontents = _objectSpread({}, this.state.contents);
+
+        delete newcontents[ukey];
+        this.setState({
+          contents: newcontents,
+          show_drawer: open
+        });
       }
     }, {
       key: "_postAjaxFailure",
@@ -185,7 +211,8 @@ function withErrorDrawer(WrappedComponent) {
         return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(WrappedComponent, _extends({}, this.props, errorDrawerFuncs, {
           errorDrawerFuncs: errorDrawerFuncs
         })), /*#__PURE__*/_react["default"].createElement(ErrorDrawer, _extends({}, this.state, {
-          main_id: this.props.main_id,
+          local_id: this.local_id,
+          handleCloseItem: this._closeEntry,
           goToLineNumberFunc: this.state.goToLineNumber,
           goToModule: this.props.goToModule,
           closeErrorDrawer: this._close,
@@ -238,7 +265,7 @@ var ErrorItem = /*#__PURE__*/function (_React$Component2) {
             } else {
               window.open("", data.window_name);
             }
-          }, null, this.props.main_id);
+          }, null, this.props.local_id);
         } else {
           this.props.closeErrorDrawer();
           this.props.goToModule(this.props.tile_type, this.props.line_number);
@@ -248,6 +275,8 @@ var ErrorItem = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "render",
     value: function render() {
+      var _this4 = this;
+
       var content_dict = {
         __html: this.props.content
       };
@@ -255,7 +284,8 @@ var ErrorItem = /*#__PURE__*/function (_React$Component2) {
         interactive: true,
         elevation: _core.Elevation.TWO,
         style: {
-          marginBottom: 5
+          marginBottom: 5,
+          position: "relative"
         }
       }, this.props.title && /*#__PURE__*/_react["default"].createElement("h6", {
         style: {
@@ -263,7 +293,17 @@ var ErrorItem = /*#__PURE__*/function (_React$Component2) {
         }
       }, /*#__PURE__*/_react["default"].createElement("a", {
         href: "#"
-      }, this.props.title)), /*#__PURE__*/_react["default"].createElement("div", {
+      }, this.props.title)), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+        handleClick: function handleClick() {
+          _this4.props.handleCloseItem(_this4.props.ukey);
+        },
+        style: {
+          position: "absolute",
+          right: 5,
+          top: 5
+        },
+        icon: "cross"
+      }), /*#__PURE__*/_react["default"].createElement("div", {
         style: {
           fontSize: 13,
           overflow: "auto"
@@ -283,12 +323,14 @@ var ErrorItem = /*#__PURE__*/function (_React$Component2) {
 
 exports.ErrorItem = ErrorItem;
 ErrorItem.propTypes = {
+  ukey: _propTypes["default"].string,
   title: _propTypes["default"].string,
   content: _propTypes["default"].string,
   has_link: _propTypes["default"].bool,
   line_number: _propTypes["default"].number,
   goToLineNumberFunc: _propTypes["default"].func,
-  tile_type: _propTypes["default"].string
+  tile_type: _propTypes["default"].string,
+  handleCloseItem: _propTypes["default"].func
 };
 ErrorItem.defaultProps = {
   title: null,
@@ -312,9 +354,15 @@ var ErrorDrawer = /*#__PURE__*/function (_React$Component3) {
   _createClass(ErrorDrawer, [{
     key: "render",
     value: function render() {
-      var _this4 = this;
+      var _this5 = this;
 
-      var items = this.props.contents.map(function (entry, index) {
+      var sorted_keys = _toConsumableArray(Object.keys(this.props.contents));
+
+      sorted_keys.sort(function (a, b) {
+        return parseInt(b) - parseInt(a);
+      });
+      var items = sorted_keys.map(function (ukey, index) {
+        var entry = _this5.props.contents[ukey];
         var content_dict = {
           __html: entry.content
         };
@@ -325,14 +373,15 @@ var ErrorDrawer = /*#__PURE__*/function (_React$Component3) {
         }
 
         return /*#__PURE__*/_react["default"].createElement(ErrorItem, {
-          key: index,
+          ukey: ukey,
           title: entry.title,
           content: entry.content,
           has_link: has_link,
-          main_id: _this4.props.main_id,
-          goToLineNumberFunc: _this4.props.goToLineNumberFunc,
-          closeErrorDrawer: _this4.props.closeErrorDrawer,
-          goToModule: _this4.props.goToModule,
+          local_id: _this5.props.local_id,
+          handleCloseItem: _this5.props.handleCloseItem,
+          goToLineNumberFunc: _this5.props.goToLineNumberFunc,
+          closeErrorDrawer: _this5.props.closeErrorDrawer,
+          goToModule: _this5.props.goToModule,
           line_number: entry.line_number,
           tile_type: entry.tile_type
         });
@@ -368,6 +417,7 @@ _toaster.Status.propTypes = {
   contents: _propTypes["default"].array,
   title: _propTypes["default"].string,
   onClose: _propTypes["default"].func,
+  handleCloseItem: _propTypes["default"].func,
   position: _propTypes["default"].string,
   clearAll: _propTypes["default"].func,
   goToLineNumberFunc: _propTypes["default"].func,
