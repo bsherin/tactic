@@ -1617,6 +1617,29 @@ table caption {
   transform: translate(-50%, -50%);
 }
 
+.resize-border {
+  content: "";
+  background-color: transparent;
+  width: 10px;
+  z-index: 100;
+}
+.resize-border:hover {
+  background-color: #8f99a8;
+  opacity: 50%;
+}
+
+.horizontal-resize-border {
+  content: "";
+  background-color: transparent;
+  width: 100%;
+  height: 10px;
+  z-index: 100;
+}
+.horizontal-resize-border:hover {
+  background-color: #8f99a8;
+  opacity: 50%;
+}
+
 .bp4-icon path {
   fill: inherit;
 }

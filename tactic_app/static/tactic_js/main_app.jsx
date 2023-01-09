@@ -1162,7 +1162,9 @@ class MainApp extends React.Component {
         if (this.state.table_is_shrunk) {
             top_pane = (
                 <React.Fragment>
-                    {tile_pane}
+                    <div style={{paddingLeft: 10}}>
+                        {tile_pane}
+                    </div>
                     {this.state.console_is_shrunk &&
                         bottom_pane
                     }

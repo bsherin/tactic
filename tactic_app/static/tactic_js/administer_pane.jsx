@@ -338,7 +338,9 @@ class AdminPane extends React.Component {
 
         let right_pane = (
                 <div className="d-flex d-inline" ref={this.console_text_ref}
-                     style={{overflow: "auto", verticalAlign: "top", marginTop: 120, marginLeft: 10, width: "100%", height: 412}}>
+                     style={{
+                         overflow: "auto", verticalAlign: "top", marginTop: 12, marginLeft: 10,
+                         width: "100%", height: "100%", border: "1px solid black", padding: 10}}>
                     <pre><small>{this.props.console_text}</small></pre>
                 </div>
         );

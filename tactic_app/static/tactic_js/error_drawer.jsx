@@ -7,22 +7,26 @@ import { Card, Elevation, Drawer, Classes, Button} from "@blueprintjs/core";
 import {Status} from "./toaster.js";
 import {doBinding} from "./utilities_react.js";
 import {postWithCallback} from "./communication_react.js";
+import {GlyphButton} from "./blueprint_react_widgets";
 
 export {withErrorDrawer, ErrorItem}
 
 function withErrorDrawer(WrappedComponent, title=null, position="right", size="30%") {
+    // noinspection JSPotentiallyInvalidUsageOfThis
     return class extends React.Component {
         constructor(props) {
             super(props);
             doBinding(this);
             this.state = {
                 show_drawer: false,
-                contents: [],
+                contents: {},
                 error_drawer_size: size,
                 position: position,
-                goToLineNumber: null
+                goToLineNumber: null,
             };
             this.socket_counter = null;
+            this.ucounter = 0;
+            this.local_id = this.props.main_id ? this.props.main_id : this.props.library_id;
         }
 
         componentDidMount() {
@@ -39,28 +43,36 @@ function withErrorDrawer(WrappedComponent, title=null, position="right", size="3
         }
 
         _close(data) {
-            if (data == null || !("main_id" in data) || (data.main_id == this.props.main_id)) {
+            if (data == null || !("main_id" in data) || (data.main_id == this.local_id)) {
                 this.setState({show_drawer: false})
             }
         }
 
         _open(data) {
-            if (data == null || !("main_id" in data) || (data.main_id == this.props.main_id)) {
+            if (data == null || !("main_id" in data) || (data.main_id == this.local_id)) {
                 this.setState({show_drawer: true})
             }
         }
 
         _toggle(data) {
-            if (data == null || !("main_id" in data) || (data.main_id == this.props.main_id)) {
+            if (data == null || !("main_id" in data) || (data.main_id == this.local_id)) {
                 this.setState({show_drawer: !this.state.show_drawer})
             }
         }
 
         _addEntry(data, open=true) {
-            let local_id = this.props.main_id ? this.props.main_id : this.props.library_id;
-            if (data == null || !("main_id" in data) || (data.main_id == local_id)) {
-                this.setState({contents: [data, ...this.state.contents], show_drawer: open})
+            if (data == null || !("main_id" in data) || (data.main_id == this.local_id)) {
+                this.ucounter = this.ucounter + 1;
+                const newcontents = {... this.state.contents};
+                newcontents[String(this.ucounter)] = data;
+                this.setState({contents: newcontents, show_drawer: open})
             }
+        }
+
+        _closeEntry(ukey) {
+            const newcontents = {... this.state.contents};
+            delete newcontents[ukey];
+            this.setState({contents: newcontents, show_drawer: open})
         }
 
         _postAjaxFailure(qXHR, textStatus, errorThrown) {
@@ -100,7 +112,8 @@ function withErrorDrawer(WrappedComponent, title=null, position="right", size="3
                                       errorDrawerFuncs={errorDrawerFuncs}
                     />
                     <ErrorDrawer {...this.state}
-                                 main_id={this.props.main_id}
+                                 local_id={this.local_id}
+                                 handleCloseItem={this._closeEntry}
                                  goToLineNumberFunc={this.state.goToLineNumber}
                                  goToModule={this.props.goToModule}
                                  closeErrorDrawer={this._close}
@@ -140,7 +153,7 @@ class ErrorItem extends React.Component {
                         } else {
                             window.open("", data.window_name)
                         }
-                    }, null, this.props.main_id)
+                    }, null, this.props.local_id)
             }
             else {
                 this.props.closeErrorDrawer();
@@ -152,10 +165,13 @@ class ErrorItem extends React.Component {
     render () {
         let content_dict = {__html: this.props.content};
         return(
-            <Card interactive={true} elevation={Elevation.TWO} style={{marginBottom: 5}}>
+            <Card interactive={true} elevation={Elevation.TWO} style={{marginBottom: 5, position: "relative"}}>
                 {this.props.title &&
                     <h6 style={{overflow: "auto"}}><a href="#">{this.props.title}</a></h6>
                 }
+                <GlyphButton handleClick={()=>{this.props.handleCloseItem(this.props.ukey)}}
+                             style={{position: "absolute", right: 5, top: 5}}
+                             icon="cross" />
                 <div style={{fontSize: 13, overflow: "auto"}} dangerouslySetInnerHTML={content_dict}/>
                 {this.props.has_link && <Button text="show" icon="eye-open" small={true} onClick={this._openError}/>
                 }
@@ -166,12 +182,14 @@ class ErrorItem extends React.Component {
 }
 
 ErrorItem.propTypes = {
+    ukey: PropTypes.string,
     title: PropTypes.string,
     content: PropTypes.string,
     has_link: PropTypes.bool,
     line_number: PropTypes.number,
     goToLineNumberFunc: PropTypes.func,
-    tile_type: PropTypes.string
+    tile_type: PropTypes.string,
+    handleCloseItem: PropTypes.func
 };
 
 ErrorItem.defaultProps = {
@@ -184,16 +202,21 @@ ErrorItem.defaultProps = {
 
 class ErrorDrawer extends React.Component {
     render () {
-
-        let items = this.props.contents.map((entry, index)=>{
+        let sorted_keys = [...Object.keys(this.props.contents)];
+        sorted_keys.sort(function(a, b) {
+            return parseInt(b) - parseInt(a);
+        });
+        let items = sorted_keys.map((ukey, index)=>{
+            let entry = this.props.contents[ukey];
             let content_dict = {__html: entry.content};
             let has_link = false;
             if (entry.hasOwnProperty("line_number")) {
                 has_link = true;
             }
             return(
-                <ErrorItem key={index} title={entry.title} content={entry.content} has_link={has_link}
-                           main_id={this.props.main_id}
+                <ErrorItem ukey={ukey} title={entry.title} content={entry.content} has_link={has_link}
+                           local_id={this.props.local_id}
+                           handleCloseItem={this.props.handleCloseItem}
                            goToLineNumberFunc={this.props.goToLineNumberFunc}
                            closeErrorDrawer={this.props.closeErrorDrawer}
                            goToModule={this.props.goToModule}
@@ -230,6 +253,7 @@ Status.propTypes = {
     contents: PropTypes.array,
     title: PropTypes.string,
     onClose: PropTypes.func,
+    handleCloseItem: PropTypes.func,
     position: PropTypes.string,
     clearAll: PropTypes.func,
     goToLineNumberFunc: PropTypes.func,
