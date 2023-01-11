@@ -18,6 +18,8 @@ html,body {
 body {
     font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
     overflow: hidden;
+    position: fixed;
+    width: 100%;
 }
 
 .CodeMirror {
