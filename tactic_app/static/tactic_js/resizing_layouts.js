@@ -46,7 +46,7 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
 var MARGIN_SIZE = 17;
-var HANDLE_WIDTH = 20;
+var HANDLE_WIDTH = 10;
 exports.HANDLE_WIDTH = HANDLE_WIDTH;
 
 var DragHandle = /*#__PURE__*/function (_React$Component) {

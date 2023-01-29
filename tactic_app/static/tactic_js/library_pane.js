@@ -1245,12 +1245,14 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       var left_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
         className: "d-flex flex-row",
         style: {
-          "maxHeight": "100%"
+          maxHeight: "100%",
+          position: "relative"
         }
       }, /*#__PURE__*/_react["default"].createElement("div", {
         className: "d-flex justify-content-around",
         style: {
-          paddingRight: 10
+          paddingRight: 10,
+          maxHeight: left_pane_height
         }
       }, /*#__PURE__*/_react["default"].createElement(_tag_buttons_react.TagButtonList, _extends({
         res_type: this.props.res_type,
@@ -1266,7 +1268,9 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         style: {
           width: table_width,
           maxWidth: this.state.total_width,
-          maxHeight: left_pane_height,
+          maxHeight: left_pane_height - 20,
+          // The 20 is for the marginTop and padding
+          overflowY: "clip",
           marginTop: 15,
           padding: 5
         }

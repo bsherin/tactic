@@ -9,7 +9,7 @@ import {doBinding, guid} from "./utilities_react.js";
 export {HorizontalPanes, VerticalPanes, HANDLE_WIDTH, DragHandle}
 
 const MARGIN_SIZE = 17;
-const HANDLE_WIDTH = 20;
+const HANDLE_WIDTH = 10;
 
 class DragHandle extends React.Component {
     constructor(props) {
