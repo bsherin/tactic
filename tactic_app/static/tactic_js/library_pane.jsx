@@ -904,8 +904,11 @@ class LibraryPane extends React.Component {
 
         let left_pane = (
             <React.Fragment>
-                <div className="d-flex flex-row" style={{"maxHeight": "100%"}}>
-                    <div className="d-flex justify-content-around" style={{paddingRight: 10}}>
+                <div className="d-flex flex-row" style={{maxHeight: "100%", position: "relative"}}>
+                    <div className="d-flex justify-content-around"
+                         style={{paddingRight: 10,
+                             maxHeight: left_pane_height
+                         }}>
                         <TagButtonList res_type={this.props.res_type}
                                        tag_list={this.state.tag_list}
                                        {...this.props.tag_button_state}
@@ -919,7 +922,8 @@ class LibraryPane extends React.Component {
                          // className="d-flex flex-column"
                          style={{width: table_width,
                              maxWidth: this.state.total_width,
-                             maxHeight: left_pane_height,
+                             maxHeight: left_pane_height - 20, // The 20 is for the marginTop and padding
+                             overflowY: "clip",
                              marginTop: 15,
                              padding: 5}}>
                         <SearchForm allow_search_inside={this.props.allow_search_inside}
