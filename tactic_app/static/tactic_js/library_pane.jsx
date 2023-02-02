@@ -17,6 +17,7 @@ import {BOTTOM_MARGIN} from "./sizing_tools.js";
 import {doFlash} from "./toaster.js"
 import {KeyTrap} from "./key_trap.js";
 import {doBinding} from "./utilities_react.js";
+import {CollectionMenubar} from "./library_menubars";
 
 export {LibraryPane, view_views}
 
@@ -84,7 +85,12 @@ class LibraryPane extends React.Component {
         this.top_ref = React.createRef();
         this.table_ref = React.createRef();
         this.resizing = false;
-        this.get_url = `grab_${props.res_type}_list_chunk`;
+        if (props.res_type == "all") {
+            this.get_url = "grab_all_list_chunk"
+        }
+        else {
+            this.get_url = `grab_${props.res_type}_list_chunk`;
+        }
         this.state = {
             data_dict: {},
             num_rows: 0,
@@ -1043,4 +1049,5 @@ LibraryPane.defaultProps = {
     aux_pane: null,
     dark_theme: false
 };
+
 

@@ -38,6 +38,8 @@ var _key_trap = require("./key_trap.js");
 
 var _utilities_react = require("./utilities_react.js");
 
+var _library_menubars = require("./library_menubars");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
@@ -167,7 +169,13 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     _this2.top_ref = /*#__PURE__*/_react["default"].createRef();
     _this2.table_ref = /*#__PURE__*/_react["default"].createRef();
     _this2.resizing = false;
-    _this2.get_url = "grab_".concat(props.res_type, "_list_chunk");
+
+    if (props.res_type == "all") {
+      _this2.get_url = "grab_all_list_chunk";
+    } else {
+      _this2.get_url = "grab_".concat(props.res_type, "_list_chunk");
+    }
+
     _this2.state = {
       data_dict: {},
       num_rows: 0,
