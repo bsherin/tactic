@@ -72,6 +72,8 @@ class CollectionManager(LibraryResourceManager):
                          login_required(self.combine_to_new_collection), methods=['post'])
         app.add_url_rule('/grab_collection_list_chunk', "grab_collection_list_chunk",
                          login_required(self.grab_collection_list_chunk), methods=['get', 'post'])
+        app.add_url_rule('/grab_all_list_chunk', "grab_all_list_chunk",
+                         login_required(self.grab_all_list_chunk), methods=['get', 'post'])
 
     def new_notebook_in_context(self):
         user_obj = current_user

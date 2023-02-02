@@ -46,7 +46,7 @@ function library_props() {
 }
 
 const res_types = ["collection", "project", "tile", "list", "code"];
-const tab_panes = ["collections-pane", "projects-pane", "tiles-pane", "lists-pane", "code-pane"];
+const tab_panes = ["all-pane", "collections-pane", "projects-pane", "tiles-pane", "lists-pane", "code-pane"];
 const controllable_props = ["usable_width", "usable_height"];
 
 // noinspection JSUnusedLocalSymbols,JSRemoveUnnecessaryParentheses
@@ -60,7 +60,7 @@ class LibraryHomeApp extends React.Component {
             selected_tab_id: "collections-pane",
             pane_states: {},
         };
-        for (let res_type of res_types) {
+        for (let res_type of res_types.concat("all")) {
             this.state.pane_states[res_type] = {
                 left_width_fraction: .65,
                 selected_resource: {"name": "", "tags": "", "notes": "", "updated": "", "created": ""},
@@ -195,6 +195,37 @@ class LibraryHomeApp extends React.Component {
             }
             lib_props.usable_width -= TAB_BAR_WIDTH;
         }
+        let mbar_classes = {
+            collection: CollectionMenubar,
+            project: ProjectMenubar,
+            tile: TileMenubar,
+            list: ListMenubar,
+            code: CodeMenubar
+        };
+        let all_pane = (
+                        <LibraryPane {...lib_props}
+                                    columns={{"icon:th": {"sort_field": "type", "first_sort": "ascending"},
+                                              "name": {"sort_field": "name", "first_sort": "ascending"},
+                                              "icon:upload": {"sort_field": null, "first_sort": "ascending"},
+                                              "created": {"sort_field": "created_for_sort", "first_sort": "descending"},
+                                              "updated": {"sort_field": "updated_for_sort", "first_sort": "ascending"},
+                                              "tags": {"sort_field": "tags", "first_sort": "ascending"},
+                                              "size": {"sort_field": "size_for_sort", "first_sort": "descending"}
+                                            }}
+                                     menu_bar_classes={mbar_classes}
+                                     res_type="all"
+                                     handleCreateViewer={this.props.handleCreateViewer}
+                                     open_resources={null}
+                                     allow_search_inside={false}
+                                     allow_search_metadata={false}
+                                     MenubarClass={CollectionMenubar}
+                                     updatePaneState={this._updatePaneState}
+                                     {...this.state.pane_states["all"]}
+                                     {...this.props.errorDrawerFuncs}
+                                     errorDrawerFuncs={this.props.errorDrawerFuncs}
+                                     library_id={this.props.library_id}
+                        />
+        );
         let collection_pane = (
                         <LibraryPane {...lib_props}
                                     columns={{"icon:th": {"sort_field": "type", "first_sort": "ascending"},
@@ -206,7 +237,7 @@ class LibraryHomeApp extends React.Component {
                                              }}
                                      res_type="collection"
                                      handleCreateViewer={this.props.handleCreateViewer}
-                                     open_resources={this.props.open_resources ? this.props.open_resources["collection"] : null}
+                                     open_resources={null}
                                      allow_search_inside={false}
                                      allow_search_metadata={false}
                                      MenubarClass={CollectionMenubar}
@@ -316,6 +347,11 @@ class LibraryHomeApp extends React.Component {
                              selectedTabId={this.state.selected_tab_id}
                              renderActiveTabPanelOnly={true}
                              vertical={true} large={true} onChange={this._handleTabChange}>
+                        <Tab id="all-pane" panel={all_pane}>
+                            <Tooltip content="All" position={Position.RIGHT} intent="warning">
+                                <Icon icon="database" iconSize={20} tabIndex={-1} color={this.getIconColor("all-pane")}/>
+                            </Tooltip>
+                        </Tab>
                         <Tab id="collections-pane" panel={collection_pane}>
                             <Tooltip content="Collections" position={Position.RIGHT} intent="warning">
                                 <Icon icon="database" iconSize={20} tabIndex={-1} color={this.getIconColor("collections-pane")}/>

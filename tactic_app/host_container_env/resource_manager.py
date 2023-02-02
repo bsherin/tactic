@@ -7,6 +7,7 @@ import tactic_app
 from tactic_app import socketio, db, fs, repository_db, use_remote_repository, use_remote_database
 from users import User
 from exception_mixin import ExceptionMixin
+import loaded_tile_management
 
 print("in resource_manager with repository_db " + str(repository_db))
 print("in resource_manager with use_remote_database " + str(use_remote_database))
@@ -289,7 +290,80 @@ class LibraryResourceManager(ResourceManager):
             "do_jsonify": False
         }
 
-    def grab_all_list_chunk(self):
+    def prep_collection_results(self, chunk_dict):
+        icon_dict = {"table": "icon:th", "freeform": "icon:align-left"}
+
+        for ckey, val in chunk_dict.items():
+            if val["res_type"] == "collection":
+                if "type" in val:
+                    val["doc_type"] = icon_dict[val["type"]]
+                    val["icon:th"] = icon_dict[val["type"]]
+                else:
+                    val["doc_type"] = icon_dict["table"]
+                    val["icon:th"] = val["doc_type"]
+                val["icon:upload"] = ""
+        return chunk_dict
+
+    def prep_project_results(self, chunk_dict):
+        icon_dict = {"table": "icon:projects",
+                     "freeform": "icon:projects",
+                     "notebook": "icon:console",
+                     "jupyter": "icon:globe-network"}
+        for ckey, val in chunk_dict.items():
+            if val["res_type"] == "project":
+                if "type" in val:
+                    val["icon:th"] = icon_dict[val["type"]]
+                else:
+                    val["icon:th"] = icon_dict["table"]
+                val["icon:upload"] = ""
+        return chunk_dict
+
+    def prep_list_results(self, chunk_dict):
+        for ckey, val in chunk_dict.items():
+            if val["res_type"] == "list":
+                val["icon:th"] = "icon:list"
+                val["icon:upload"] = ""
+                val["size"] = ""
+                val["size_for_sort"] = 0
+        return chunk_dict
+
+    def prep_code_results(self, chunk_dict):
+        for ckey, val in chunk_dict.items():
+            if val["res_type"] == "code":
+                val["icon:th"] = "icon:code"
+                val["icon:upload"] = ""
+                val["size"] = ""
+                val["size_for_sort"] = 0
+        return chunk_dict
+
+    def prep_tile_results(self, chunk_dict):
+        type_dict = {"standard": "icon:code",
+                     "matplotlib": "icon:timeline-line-chart",
+                     "d3": "icon:timeline-area-chart"}
+
+        if not request.json["is_repository"]:
+            failed_loads = set(loaded_tile_management.get_failed_loads_list(current_user.username))
+            successful_loads = set(loaded_tile_management.get_loaded_user_modules(current_user.username))
+        else:
+            failed_loads = []
+            successful_loads = []
+        for ckey, val in chunk_dict.items():
+            if val["res_type"] == "tile":
+                if val["name"] in failed_loads:
+                    val["icon:upload"] = "icon:error"
+                elif val["name"] in successful_loads:
+                    val["icon:upload"] = "icon:upload"
+                else:
+                    val["icon:upload"] = ""
+                if "type" in val and val["type"] in type_dict:
+                    val["icon:th"] = type_dict[val["type"]]
+                else:
+                    val["icon:th"] = type_dict["standard"]
+                val["size"] = ""
+                val["size_for_sort"] = 0
+        return chunk_dict
+
+    def grab_all_list_chunk(self, do_jsonify=True):
         specs = {"collection": self.collection_spec,
                  "project": self.project_spec,
                  "tile": self.tile_spec,
@@ -334,8 +408,6 @@ class LibraryResourceManager(ResourceManager):
             if content_field and search_spec["search_inside"]:
                 or_list += [{content_field: reg}]
             res = db_to_use[collection_name].find({"$or": or_list}, projection=[name_field, "metadata", "file_id"])
-            for doc in res:
-                res["res_type"] = res_type
 
             if search_spec["active_tag"]:
                 filtered_res = []
@@ -356,6 +428,7 @@ class LibraryResourceManager(ResourceManager):
                                     rdict = self.build_res_dict(doc[name_field], mdata, None, doc["file_id"])
                                 else:
                                     rdict = self.build_res_dict(doc[name_field], mdata)
+                                rdict["res_type"] = res_type
                                 filtered_res.append(rdict)
                     except Exception as ex:
                         print("Got problem with doc " + str(doc[name_field]))
@@ -376,9 +449,16 @@ class LibraryResourceManager(ResourceManager):
                             rdict = self.build_res_dict(doc[name_field], mdata, None, doc["file_id"])
                         else:
                             rdict = self.build_res_dict(doc[name_field], mdata)
+                        rdict["res_type"] = res_type
                         filtered_res.append(rdict)
                     except Exception as ex:
                         print("Got problem with doc " + str(doc[name_field]))
+
+        if search_spec["sort_direction"] == "ascending":
+            reverse = False
+        else:
+            reverse = True
+
         all_tags = sorted(list(set(all_tags)))
         sort_field = search_spec["sort_field"]
 
@@ -399,7 +479,9 @@ class LibraryResourceManager(ResourceManager):
         for n, r in enumerate(chunk_list):
             chunk_dict[n + chunk_start] = r
 
-        ## Left off here. Need to post-processing
+        for prepper in [self.prep_collection_results, self.prep_project_results, self.prep_tile_results,
+                        self.prep_list_results, self.prep_code_results]:
+            chunk_dict = prepper(chunk_dict)
 
         result = {"success": True, "chunk_dict": chunk_dict, "all_tags": all_tags, "num_rows": len(sorted_results)}
         if do_jsonify:

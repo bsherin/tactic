@@ -110,7 +110,7 @@ function library_props() {
 
 var res_types = ["collection", "project", "tile", "list", "code"];
 exports.res_types = res_types;
-var tab_panes = ["collections-pane", "projects-pane", "tiles-pane", "lists-pane", "code-pane"];
+var tab_panes = ["all-pane", "collections-pane", "projects-pane", "tiles-pane", "lists-pane", "code-pane"];
 var controllable_props = ["usable_width", "usable_height"]; // noinspection JSUnusedLocalSymbols,JSRemoveUnnecessaryParentheses
 
 var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
@@ -130,7 +130,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
       pane_states: {}
     };
 
-    var _iterator = _createForOfIteratorHelper(res_types),
+    var _iterator = _createForOfIteratorHelper(res_types.concat("all")),
         _step;
 
     try {
@@ -340,6 +340,58 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
         lib_props.usable_width -= TAB_BAR_WIDTH;
       }
 
+      var mbar_classes = {
+        collection: _library_menubars.CollectionMenubar,
+        project: _library_menubars.ProjectMenubar,
+        tile: _library_menubars.TileMenubar,
+        list: _library_menubars.ListMenubar,
+        code: _library_menubars.CodeMenubar
+      };
+
+      var all_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
+        columns: {
+          "icon:th": {
+            "sort_field": "type",
+            "first_sort": "ascending"
+          },
+          "name": {
+            "sort_field": "name",
+            "first_sort": "ascending"
+          },
+          "icon:upload": {
+            "sort_field": null,
+            "first_sort": "ascending"
+          },
+          "created": {
+            "sort_field": "created_for_sort",
+            "first_sort": "descending"
+          },
+          "updated": {
+            "sort_field": "updated_for_sort",
+            "first_sort": "ascending"
+          },
+          "tags": {
+            "sort_field": "tags",
+            "first_sort": "ascending"
+          },
+          "size": {
+            "sort_field": "size_for_sort",
+            "first_sort": "descending"
+          }
+        },
+        menu_bar_classes: mbar_classes,
+        res_type: "all",
+        handleCreateViewer: this.props.handleCreateViewer,
+        open_resources: null,
+        allow_search_inside: false,
+        allow_search_metadata: false,
+        MenubarClass: _library_menubars.CollectionMenubar,
+        updatePaneState: this._updatePaneState
+      }, this.state.pane_states["all"], this.props.errorDrawerFuncs, {
+        errorDrawerFuncs: this.props.errorDrawerFuncs,
+        library_id: this.props.library_id
+      }));
+
       var collection_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
         columns: {
           "icon:th": {
@@ -369,7 +421,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
         },
         res_type: "collection",
         handleCreateViewer: this.props.handleCreateViewer,
-        open_resources: this.props.open_resources ? this.props.open_resources["collection"] : null,
+        open_resources: null,
         allow_search_inside: false,
         allow_search_metadata: false,
         MenubarClass: _library_menubars.CollectionMenubar,
@@ -523,6 +575,18 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
         large: true,
         onChange: this._handleTabChange
       }, /*#__PURE__*/_react["default"].createElement(_core.Tab, {
+        id: "all-pane",
+        panel: all_pane
+      }, /*#__PURE__*/_react["default"].createElement(_core.Tooltip, {
+        content: "All",
+        position: _core.Position.RIGHT,
+        intent: "warning"
+      }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+        icon: "database",
+        iconSize: 20,
+        tabIndex: -1,
+        color: this.getIconColor("all-pane")
+      }))), /*#__PURE__*/_react["default"].createElement(_core.Tab, {
         id: "collections-pane",
         panel: collection_pane
       }, /*#__PURE__*/_react["default"].createElement(_core.Tooltip, {
