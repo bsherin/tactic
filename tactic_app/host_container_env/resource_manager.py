@@ -229,6 +229,184 @@ class LibraryResourceManager(ResourceManager):
                 tags.append(tag)
         return tags
 
+    @property
+    def collection_spec(self, is_repository=False):
+        colname = repository_user.collection_collection_name if is_repository else \
+            current_user.collection_collection_name
+        return {
+            "collection_name": colname,
+            "name_field": "collection_name",
+            "content_field": None,
+            "additional_mdata_fields": ["type", "number_of_docs"],
+            "do_jsonify": False
+        }
+
+    @property
+    def project_spec(self, is_repository=False):
+        colname = repository_user.project_collection_name if is_repository else \
+            current_user.project_collection_name
+        return {
+            "collection_name": colname,
+            "name_field": "project_name",
+            "content_field": None,
+            "additional_mdata_fields": ["collection_name", "loaded_tiles", "type"],
+            "do_jsonify": False
+        }
+
+    @property
+    def tile_spec(self, is_repository=False):
+        colname = repository_user.tile_collection_name if is_repository else \
+            current_user.tile_collection_name
+        return {
+            "collection_name": colname,
+            "name_field": "tile_module_name",
+            "content_field": "tile_module",
+            "additional_mdata_fields": None,
+            "do_jsonify": False
+        }
+
+    @property
+    def list_spec(self, is_repository=False):
+        colname = repository_user.list_collection_name if is_repository else \
+            current_user.list_collection_name
+        return {
+            "collection_name": colname,
+            "name_field": "list_name",
+            "content_field": "the_list",
+            "additional_mdata_fields": None,
+            "do_jsonify": False
+        }
+
+    @property
+    def code_spec(self, is_repository=False):
+        colname = repository_user.code_collection_name if is_repository else \
+            current_user.code_collection_name
+        return {
+            "collection_name": colname,
+            "name_field": "code_name",
+            "content_field": "the_code",
+            "additional_mdata_fields": ["functions", "classes"],
+            "do_jsonify": False
+        }
+
+    def grab_all_list_chunk(self):
+        specs = {"collection": self.collection_spec,
+                 "project": self.project_spec,
+                 "tile": self.tile_spec,
+                 "list": self.list_spec,
+                 "code": self.code_spec}
+        db_to_use = self.repository_db if request.json["is_repository"] else self.db
+
+        def sort_mdata_key(item):
+            if sort_field not in item:
+                return ""
+            return item[sort_field]
+
+        def sort_created_key(item):
+            return item["created_for_sort"]
+
+        def sort_updated_key(item):
+            return item["updated_for_sort"]
+
+        def sort_size_key(item):
+            return item["size_for_sort"]
+
+        search_spec = request.json["search_spec"]
+        row_number = request.json["row_number"]
+        search_text = search_spec['search_string']
+
+        filtered_res = []
+        all_tags = []
+        for res_type, spec in specs.items():
+            collection_name = spec["collection_name"]
+            name_field = spec["name_field"]
+            content_field = spec["content_field"]
+            additional_mdata_fields = spec["additional_mdata_fields"]
+            if search_spec["search_inside"] and content_field is None:
+                continue
+            reg = re.compile(".*" + search_text + ".*", re.IGNORECASE)
+            or_list = [{name_field: reg}]
+            if search_spec["search_metadata"]:
+                or_list += [{"metadata.notes": reg}, {"metadata.tags": reg}, {"metadata.type": reg}]
+                if additional_mdata_fields:
+                    for fld in additional_mdata_fields:
+                        or_list.append({"metadata." + fld: reg})
+            if content_field and search_spec["search_inside"]:
+                or_list += [{content_field: reg}]
+            res = db_to_use[collection_name].find({"$or": or_list}, projection=[name_field, "metadata", "file_id"])
+            for doc in res:
+                res["res_type"] = res_type
+
+            if search_spec["active_tag"]:
+                filtered_res = []
+                for doc in res:
+                    try:
+                        if "metadata" in doc and doc["metadata"] is not None:
+                            mdata = doc["metadata"]
+                            if self.has_hidden(mdata["tags"]):
+                                all_subtags = self.add_hidden_to_all_subtags(mdata["tags"])
+                                all_tags += self.add_hidden_to_tags(mdata["tags"])
+                                if not self.has_hidden(search_spec["active_tag"]):
+                                    continue
+                            else:
+                                all_subtags = self.get_all_subtags(mdata["tags"])
+                                all_tags += mdata["tags"].split()
+                            if search_spec["active_tag"] in all_subtags:
+                                if "file_id" in doc:
+                                    rdict = self.build_res_dict(doc[name_field], mdata, None, doc["file_id"])
+                                else:
+                                    rdict = self.build_res_dict(doc[name_field], mdata)
+                                filtered_res.append(rdict)
+                    except Exception as ex:
+                        print("Got problem with doc " + str(doc[name_field]))
+            else:
+                for doc in res:
+                    try:
+                        if "metadata" in doc and doc["metadata"] is not None:
+                            mdata = doc["metadata"]
+
+                            if self.has_hidden(mdata["tags"]):
+                                all_tags += self.add_hidden_to_tags(mdata["tags"])
+                                continue
+                            else:
+                                all_tags += mdata["tags"].split()
+                        else:
+                            mdata = None
+                        if "file_id" in doc:
+                            rdict = self.build_res_dict(doc[name_field], mdata, None, doc["file_id"])
+                        else:
+                            rdict = self.build_res_dict(doc[name_field], mdata)
+                        filtered_res.append(rdict)
+                    except Exception as ex:
+                        print("Got problem with doc " + str(doc[name_field]))
+        all_tags = sorted(list(set(all_tags)))
+        sort_field = search_spec["sort_field"]
+
+        if sort_field == "created":
+            sort_key_func = sort_created_key
+        elif sort_field == "updated":
+            sort_key_func = sort_updated_key
+        elif sort_field == "size":
+            sort_key_func = sort_size_key
+        else:
+            sort_key_func = sort_mdata_key
+
+        sorted_results = sorted(filtered_res, key=sort_key_func, reverse=reverse)
+
+        chunk_start = int(row_number / CHUNK_SIZE) * CHUNK_SIZE
+        chunk_list = sorted_results[chunk_start: chunk_start + CHUNK_SIZE]
+        chunk_dict = {}
+        for n, r in enumerate(chunk_list):
+            chunk_dict[n + chunk_start] = r
+
+        ## Left off here. Need to post-processing
+
+        result = {"success": True, "chunk_dict": chunk_dict, "all_tags": all_tags, "num_rows": len(sorted_results)}
+        if do_jsonify:
+            return jsonify(result)
+        else:
+            return result
+
     def grab_resource_list_chunk(self, collection_name, name_field, content_field, additional_mdata_fields=None,
                                  do_jsonify=True):
         #  search_spec has active_tag, search_string, search_inside, search_metadata, sort_field, sort_direction
