@@ -173,7 +173,7 @@ class ContextApp extends React.Component {
     }
     
     get resTypes() {
-        return ["collections", "projects", "tiles", "lists", "code"]
+        return ["all", "collections", "projects", "tiles", "lists", "code"]
     }
 
     componentWillUnmount() {
@@ -326,6 +326,7 @@ class ContextApp extends React.Component {
 
     get libIconDict() {
         return {
+            all: "cube",
             collections: "database",
             projects: "projects",
             tiles: "application",

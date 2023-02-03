@@ -582,7 +582,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
         position: _core.Position.RIGHT,
         intent: "warning"
       }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-        icon: "database",
+        icon: "cube",
         iconSize: 20,
         tabIndex: -1,
         color: this.getIconColor("all-pane")

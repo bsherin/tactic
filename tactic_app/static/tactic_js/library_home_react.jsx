@@ -349,7 +349,7 @@ class LibraryHomeApp extends React.Component {
                              vertical={true} large={true} onChange={this._handleTabChange}>
                         <Tab id="all-pane" panel={all_pane}>
                             <Tooltip content="All" position={Position.RIGHT} intent="warning">
-                                <Icon icon="database" iconSize={20} tabIndex={-1} color={this.getIconColor("all-pane")}/>
+                                <Icon icon="cube" iconSize={20} tabIndex={-1} color={this.getIconColor("all-pane")}/>
                             </Tooltip>
                         </Tab>
                         <Tab id="collections-pane" panel={collection_pane}>
