@@ -290,10 +290,10 @@ class LibraryResourceManager(ResourceManager):
             "do_jsonify": False
         }
 
-    def prep_collection_results(self, chunk_dict):
+    def prep_collection_results(self, filtered_list):
         icon_dict = {"table": "icon:th", "freeform": "icon:align-left"}
 
-        for ckey, val in chunk_dict.items():
+        for val in filtered_list:
             if val["res_type"] == "collection":
                 if "type" in val:
                     val["doc_type"] = icon_dict[val["type"]]
@@ -302,42 +302,42 @@ class LibraryResourceManager(ResourceManager):
                     val["doc_type"] = icon_dict["table"]
                     val["icon:th"] = val["doc_type"]
                 val["icon:upload"] = ""
-        return chunk_dict
+        return filtered_list
 
-    def prep_project_results(self, chunk_dict):
+    def prep_project_results(self, filtered_list):
         icon_dict = {"table": "icon:projects",
                      "freeform": "icon:projects",
                      "notebook": "icon:console",
                      "jupyter": "icon:globe-network"}
-        for ckey, val in chunk_dict.items():
+        for val in filtered_list:
             if val["res_type"] == "project":
                 if "type" in val:
                     val["icon:th"] = icon_dict[val["type"]]
                 else:
                     val["icon:th"] = icon_dict["table"]
                 val["icon:upload"] = ""
-        return chunk_dict
+        return filtered_list
 
-    def prep_list_results(self, chunk_dict):
-        for ckey, val in chunk_dict.items():
+    def prep_list_results(self, filtered_list):
+        for val in filtered_list:
             if val["res_type"] == "list":
                 val["icon:th"] = "icon:list"
                 val["icon:upload"] = ""
                 val["size"] = ""
                 val["size_for_sort"] = 0
-        return chunk_dict
+        return filtered_list
 
-    def prep_code_results(self, chunk_dict):
-        for ckey, val in chunk_dict.items():
+    def prep_code_results(self, filtered_list):
+        for val in filtered_list:
             if val["res_type"] == "code":
                 val["icon:th"] = "icon:code"
                 val["icon:upload"] = ""
                 val["size"] = ""
                 val["size_for_sort"] = 0
-        return chunk_dict
+        return filtered_list
 
-    def prep_tile_results(self, chunk_dict):
-        type_dict = {"standard": "icon:code",
+    def prep_tile_results(self, filtered_list):
+        type_dict = {"standard": "icon:application",
                      "matplotlib": "icon:timeline-line-chart",
                      "d3": "icon:timeline-area-chart"}
 
@@ -347,7 +347,7 @@ class LibraryResourceManager(ResourceManager):
         else:
             failed_loads = []
             successful_loads = []
-        for ckey, val in chunk_dict.items():
+        for val in filtered_list:
             if val["res_type"] == "tile":
                 if val["name"] in failed_loads:
                     val["icon:upload"] = "icon:error"
@@ -361,7 +361,7 @@ class LibraryResourceManager(ResourceManager):
                     val["icon:th"] = type_dict["standard"]
                 val["size"] = ""
                 val["size_for_sort"] = 0
-        return chunk_dict
+        return filtered_list
 
     def grab_all_list_chunk(self, do_jsonify=True):
         specs = {"collection": self.collection_spec,
@@ -392,6 +392,7 @@ class LibraryResourceManager(ResourceManager):
         filtered_res = []
         all_tags = []
         for res_type, spec in specs.items():
+            print(f"*** getting res_type {res_type}")
             collection_name = spec["collection_name"]
             name_field = spec["name_field"]
             content_field = spec["content_field"]
@@ -407,10 +408,9 @@ class LibraryResourceManager(ResourceManager):
                         or_list.append({"metadata." + fld: reg})
             if content_field and search_spec["search_inside"]:
                 or_list += [{content_field: reg}]
+            print(f"about to get results with collection_name {collection_name} and name_field {name_field}")
             res = db_to_use[collection_name].find({"$or": or_list}, projection=[name_field, "metadata", "file_id"])
-
             if search_spec["active_tag"]:
-                filtered_res = []
                 for doc in res:
                     try:
                         if "metadata" in doc and doc["metadata"] is not None:
@@ -432,6 +432,7 @@ class LibraryResourceManager(ResourceManager):
                                 filtered_res.append(rdict)
                     except Exception as ex:
                         print("Got problem with doc " + str(doc[name_field]))
+                print(f"got filtered_res of len {len(filtered_res)}")
             else:
                 for doc in res:
                     try:
@@ -453,6 +454,10 @@ class LibraryResourceManager(ResourceManager):
                         filtered_res.append(rdict)
                     except Exception as ex:
                         print("Got problem with doc " + str(doc[name_field]))
+
+        for prepper in [self.prep_collection_results, self.prep_project_results, self.prep_tile_results,
+                        self.prep_list_results, self.prep_code_results]:
+            filtered_res = prepper(filtered_res)
 
         if search_spec["sort_direction"] == "ascending":
             reverse = False
@@ -478,10 +483,6 @@ class LibraryResourceManager(ResourceManager):
         chunk_dict = {}
         for n, r in enumerate(chunk_list):
             chunk_dict[n + chunk_start] = r
-
-        for prepper in [self.prep_collection_results, self.prep_project_results, self.prep_tile_results,
-                        self.prep_list_results, self.prep_code_results]:
-            chunk_dict = prepper(chunk_dict)
 
         result = {"success": True, "chunk_dict": chunk_dict, "all_tags": all_tags, "num_rows": len(sorted_results)}
         if do_jsonify:
