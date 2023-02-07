@@ -126,7 +126,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
     _this = _super.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
     _this.state = {
-      selected_tab_id: "collections-pane",
+      selected_tab_id: "all-pane",
       pane_states: {}
     };
 
@@ -145,6 +145,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
             "updated": "",
             "created": ""
           },
+          selected_rows: [],
           tag_button_state: {
             expanded_tags: [],
             active_tag: "all",
@@ -340,14 +341,6 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
         lib_props.usable_width -= TAB_BAR_WIDTH;
       }
 
-      var mbar_classes = {
-        collection: _library_menubars.CollectionMenubar,
-        project: _library_menubars.ProjectMenubar,
-        tile: _library_menubars.TileMenubar,
-        list: _library_menubars.ListMenubar,
-        code: _library_menubars.CodeMenubar
-      };
-
       var all_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
         columns: {
           "icon:th": {
@@ -379,13 +372,12 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
             "first_sort": "descending"
           }
         },
-        menu_bar_classes: mbar_classes,
         res_type: "all",
         handleCreateViewer: this.props.handleCreateViewer,
-        open_resources: null,
-        allow_search_inside: false,
-        allow_search_metadata: false,
-        MenubarClass: _library_menubars.CollectionMenubar,
+        open_resources: this.props.open_resources ? this.props.open_resources["all"] : null,
+        allow_search_inside: true,
+        allow_search_metadata: true,
+        MenubarClass: _library_menubars.AllMenubar,
         updatePaneState: this._updatePaneState
       }, this.state.pane_states["all"], this.props.errorDrawerFuncs, {
         errorDrawerFuncs: this.props.errorDrawerFuncs,
@@ -421,7 +413,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
         },
         res_type: "collection",
         handleCreateViewer: this.props.handleCreateViewer,
-        open_resources: null,
+        open_resources: this.props.open_resources ? this.props.open_resources["collection"] : null,
         allow_search_inside: false,
         allow_search_metadata: false,
         MenubarClass: _library_menubars.CollectionMenubar,
@@ -433,7 +425,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
 
       var projects_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
         columns: {
-          "icon:projects": {
+          "icon:th": {
             "sort_field": "type",
             "first_sort": "ascending"
           },
@@ -471,7 +463,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
 
       var tiles_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
         columns: {
-          "icon:code": {
+          "icon:th": {
             "sort_field": "type",
             "first_sort": "ascending"
           },
@@ -508,6 +500,28 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
       }));
 
       var lists_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
+        columns: {
+          "icon:th": {
+            "sort_field": "type",
+            "first_sort": "ascending"
+          },
+          "name": {
+            "sort_field": "name",
+            "first_sort": "ascending"
+          },
+          "created": {
+            "sort_field": "created_for_sort",
+            "first_sort": "descending"
+          },
+          "updated": {
+            "sort_field": "updated_for_sort",
+            "first_sort": "ascending"
+          },
+          "tags": {
+            "sort_field": "tags",
+            "first_sort": "ascending"
+          }
+        },
         res_type: "list",
         open_resources: this.props.open_resources ? this.props.open_resources["list"] : null,
         allow_search_inside: true,
@@ -520,6 +534,28 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
       }));
 
       var code_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
+        columns: {
+          "icon:th": {
+            "sort_field": "type",
+            "first_sort": "ascending"
+          },
+          "name": {
+            "sort_field": "name",
+            "first_sort": "ascending"
+          },
+          "created": {
+            "sort_field": "created_for_sort",
+            "first_sort": "descending"
+          },
+          "updated": {
+            "sort_field": "updated_for_sort",
+            "first_sort": "ascending"
+          },
+          "tags": {
+            "sort_field": "tags",
+            "first_sort": "ascending"
+          }
+        },
         res_type: "code",
         handleCreateViewer: this.props.handleCreateViewer,
         open_resources: this.props.open_resources ? this.props.open_resources["code"] : null,

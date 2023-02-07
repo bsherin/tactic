@@ -63,8 +63,6 @@ class TileManager(LibraryResourceManager):
                          login_required(self.create_tile_module), methods=['get', 'post'])
         app.add_url_rule('/create_duplicate_tile', "create_duplicate_tile",
                          login_required(self.create_duplicate_tile), methods=['get', 'post'])
-        app.add_url_rule('/grab_tile_list_chunk', "grab_tile_list_chunk",
-                         login_required(self.grab_tile_list_chunk), methods=['get', 'post'])
 
     def rename_me(self, old_name):
         try:
@@ -78,7 +76,7 @@ class TileManager(LibraryResourceManager):
                     mdata = doc["metadata"]
                 else:
                     mdata = {}
-                res_dict = self.build_res_dict(old_name, mdata)
+                res_dict = self.build_res_dict(old_name, mdata, res_type="tile")
                 res_dict["new_name"] = new_name
                 self.update_selector_row(res_dict)
             return jsonify({"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"})
@@ -293,7 +291,7 @@ class TileManager(LibraryResourceManager):
     def unload_one_module(self, module_name):
         user_obj = current_user
         loaded_tile_management.unload_one_module(user_obj.username, module_name)
-        self.update_selector_row({"name": module_name, "icon:upload": ""}, user_obj)
+        self.update_selector_row({"name": module_name, "icon:upload": "", "res_type": "tile"}, user_obj)
         socketio.emit('update-menus', {}, namespace='/main', room=current_user.get_id())
         return jsonify({"success": True, "message": "Tile unloaded"})
 
@@ -330,35 +328,6 @@ class TileManager(LibraryResourceManager):
         new_row = self.build_res_dict(new_tile_name, metadata, user_obj)
 
         return jsonify({"success": True, "new_row": new_row})
-
-    def grab_tile_list_chunk(self):
-        #  search_spec has active_tag, search_string, search_inside, search_metadata, sort_field, sort_direction
-        if request.json["is_repository"]:
-            colname = repository_user.tile_collection_name
-        else:
-            colname = current_user.tile_collection_name
-        result = self.grab_resource_list_chunk(colname, "tile_module_name", "tile_module", None, False)
-
-        type_dict = {"standard": "icon:code",
-                     "matplotlib": "icon:timeline-line-chart",
-                     "d3": "icon:timeline-area-chart"}
-        if not request.json["is_repository"]:
-            failed_loads = set(loaded_tile_management.get_failed_loads_list(current_user.username))
-            successful_loads = set(loaded_tile_management.get_loaded_user_modules(current_user.username))
-            chunk_dict = result["chunk_dict"]
-            for ckey, val in chunk_dict.items():
-                if val["name"] in failed_loads:
-                    val["icon:upload"] = "icon:error"
-                elif val["name"] in successful_loads:
-                    val["icon:upload"] = "icon:upload"
-                else:
-                    val["icon:upload"] = ""
-                if "type" in val and val["type"] in type_dict:
-                    val["icon:code"] = type_dict[val["type"]]
-                else:
-                    val["icon:code"] = type_dict["standard"]
-
-        return jsonify(result)
 
     def create_tile_module(self):
         user_obj = current_user

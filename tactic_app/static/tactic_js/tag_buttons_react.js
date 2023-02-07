@@ -410,10 +410,8 @@ var TagButtonList = /*#__PURE__*/function (_React$Component2) {
 
 exports.TagButtonList = TagButtonList;
 TagButtonList.propTypes = {
-  res_type: _propTypes["default"].string,
   tag_list: _propTypes["default"].array,
   updateTagState: _propTypes["default"].func,
   doTagDelete: _propTypes["default"].func,
-  doTagRename: _propTypes["default"].func,
-  handleAddTag: _propTypes["default"].func
+  doTagRename: _propTypes["default"].func
 };

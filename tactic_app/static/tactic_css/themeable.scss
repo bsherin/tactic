@@ -14,16 +14,16 @@ $darkest-bg: $dark-gray3;
 $dark-medium: $dark-gray4;
 
 .light-theme {
-    .lib-tab-button, .context-tab-button-content, .menu-bar, .combined-metadata {
-        .bp4-icon-database {
+    .lib-tab-button, .context-tab-button-content, .menu-bar, .combined-metadata, .all-pane {
+        .bp4-icon-database, .bp4-icon-th, .bp4-icon-freeform, .bp4-icon-align-left {
             color: $blue3 !important;
         }
 
-        .bp4-icon-projects, {
+        .bp4-icon-projects, .bp4-icon-console, .bp4-icon-globe-network{
             color: $green3 !important;
         }
 
-        .bp4-icon-application {
+        .bp4-icon-application, .bp4-icon-timeline-line-chart, .bp4-icon-timeline-area-chart {
             color: $indigo3 !important;
         }
 
@@ -60,16 +60,16 @@ $dark-medium: $dark-gray4;
 }
 
 .bp4-dark {
-    .lib-tab-button, .context-tab-button-content, .menu-bar, .combined-metadata {
-        .bp4-icon-database {
+    .lib-tab-button, .context-tab-button-content, .menu-bar, .combined-metadata, .all-pane {
+        .bp4-icon-database, .bp4-icon-th, .bp4-icon-freeform, .bp4-icon-align-left  {
             color: $blue5 !important;
         }
 
-        .bp4-icon-projects, {
+        .bp4-icon-projects, .bp4-icon-console, .bp4-icon-globe-network {
             color: $green5!important;
         }
 
-        .bp4-icon-application {
+        .bp4-icon-application, .bp4-icon-timeline-line-chart, .bp4-icon-timeline-area-chart {
             color: $indigo5 !important;
         }
 

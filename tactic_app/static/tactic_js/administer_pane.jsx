@@ -295,7 +295,7 @@ class AdminPane extends React.Component {
     }
 
     _refresh_func(callback=null) {
-        this._grabNewChunkWithRow(0, true, null, true, callback)
+        this._grabNewChunkWithRow(0, true, null, true, callback=callback)
     }
 
     _setConsoleText(the_text) {

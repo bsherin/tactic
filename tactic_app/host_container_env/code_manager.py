@@ -40,8 +40,6 @@ class CodeManager(LibraryResourceManager):
                          login_required(self.create_code), methods=['get', 'post'])
         app.add_url_rule('/create_duplicate_code', "create_duplicate_code",
                          login_required(self.create_duplicate_code), methods=['get', 'post'])
-        app.add_url_rule('/grab_code_list_chunk', "grab_code_list_chunk",
-                         login_required(self.grab_code_list_chunk), methods=['get', 'post'])
 
     def rename_me(self, old_name):
         try:
@@ -55,7 +53,7 @@ class CodeManager(LibraryResourceManager):
                     mdata = doc["metadata"]
                 else:
                     mdata = {}
-                res_dict = self.build_res_dict(old_name, mdata)
+                res_dict = self.build_res_dict(old_name, mdata, res_type="code")
                 res_dict["new_name"] = new_name
                 self.update_selector_row(res_dict)
             return jsonify({"success": True, "message": "Code Successfully Saved", "alert_type": "alert-success"})
@@ -193,15 +191,6 @@ class CodeManager(LibraryResourceManager):
 
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error deleting tiles")
-
-    def grab_code_list_chunk(self):
-        if request.json["is_repository"]:
-            colname = repository_user.code_collection_name
-        else:
-            colname = current_user.code_collection_name
-
-        return self.grab_resource_list_chunk(colname, "code_name", "the_code", ["functions", "classes"])
-
 
 class RepositoryCodeManager(CodeManager):
     rep_string = "repository-"

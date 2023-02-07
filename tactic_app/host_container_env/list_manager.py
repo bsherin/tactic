@@ -42,8 +42,6 @@ class ListManager(LibraryResourceManager):
                          login_required(self.create_list), methods=['get', 'post'])
         app.add_url_rule('/update_list', "update_list",
                          login_required(self.update_list), methods=['get', 'post'])
-        app.add_url_rule('/grab_list_list_chunk', "grab_list_list_chunk",
-                         login_required(self.grab_list_list_chunk), methods=['get', 'post'])
 
     def view_list(self, list_name):
         user_obj = current_user
@@ -94,7 +92,7 @@ class ListManager(LibraryResourceManager):
             self.db[current_user.list_collection_name].update_one({"list_name": list_name},
                                                              {'$set': {"the_list": new_list, "metadata": mdata}})
 
-            self.update_selector_row(self.build_res_dict(list_name, mdata))
+            self.update_selector_row(self.build_res_dict(list_name, mdata, res_type="list"))
             return jsonify({"success": True, "message": "List Successfully Saved", "alert_type": "alert-success"})
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error saving list")
@@ -112,7 +110,7 @@ class ListManager(LibraryResourceManager):
                     mdata = doc["metadata"]
                 else:
                     mdata = {}
-                res_dict = self.build_res_dict(old_name, mdata)
+                res_dict = self.build_res_dict(old_name, mdata, res_type="list")
                 res_dict["new_name"] = new_name
                 self.update_selector_row(res_dict)
             return jsonify({"success": True, "message": "List name changed", "alert_type": "alert-success"})
@@ -178,14 +176,6 @@ class ListManager(LibraryResourceManager):
                     self.db[current_user.list_collection_name].update_one({"list_name": res_name},
                                                                      {'$set': {"metadata": mdata}})
         return
-
-    def grab_list_list_chunk(self):
-        if request.json["is_repository"]:
-            colname = repository_user.list_collection_name
-        else:
-            colname = current_user.list_collection_name
-
-        return self.grab_resource_list_chunk(colname, "list_name", "the_list")
 
     def import_list(self, library_id):
         file_list = []

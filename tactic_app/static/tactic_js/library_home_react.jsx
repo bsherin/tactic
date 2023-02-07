@@ -21,7 +21,7 @@ import {withErrorDrawer} from "./error_drawer.js";
 import {KeyTrap} from "./key_trap.js";
 import {doBinding, guid} from "./utilities_react.js";
 import {TacticNavbar} from "./blueprint_navbar";
-import {CollectionMenubar, ProjectMenubar, TileMenubar, ListMenubar, CodeMenubar} from "./library_menubars.js"
+import {AllMenubar, CollectionMenubar, ProjectMenubar, TileMenubar, ListMenubar, CodeMenubar} from "./library_menubars.js"
 
 const TAB_BAR_WIDTH = 50;
 
@@ -57,13 +57,14 @@ class LibraryHomeApp extends React.Component {
         doBinding(this);
 
         this.state = {
-            selected_tab_id: "collections-pane",
+            selected_tab_id: "all-pane",
             pane_states: {},
         };
         for (let res_type of res_types.concat("all")) {
             this.state.pane_states[res_type] = {
                 left_width_fraction: .65,
                 selected_resource: {"name": "", "tags": "", "notes": "", "updated": "", "created": ""},
+                selected_rows: [],
                 tag_button_state:{
                     expanded_tags: [],
                     active_tag: "all",
@@ -195,13 +196,6 @@ class LibraryHomeApp extends React.Component {
             }
             lib_props.usable_width -= TAB_BAR_WIDTH;
         }
-        let mbar_classes = {
-            collection: CollectionMenubar,
-            project: ProjectMenubar,
-            tile: TileMenubar,
-            list: ListMenubar,
-            code: CodeMenubar
-        };
         let all_pane = (
                         <LibraryPane {...lib_props}
                                     columns={{"icon:th": {"sort_field": "type", "first_sort": "ascending"},
@@ -212,13 +206,12 @@ class LibraryHomeApp extends React.Component {
                                               "tags": {"sort_field": "tags", "first_sort": "ascending"},
                                               "size": {"sort_field": "size_for_sort", "first_sort": "descending"}
                                             }}
-                                     menu_bar_classes={mbar_classes}
                                      res_type="all"
                                      handleCreateViewer={this.props.handleCreateViewer}
-                                     open_resources={null}
-                                     allow_search_inside={false}
-                                     allow_search_metadata={false}
-                                     MenubarClass={CollectionMenubar}
+                                     open_resources={this.props.open_resources ? this.props.open_resources["all"] : null}
+                                     allow_search_inside={true}
+                                     allow_search_metadata={true}
+                                     MenubarClass={AllMenubar}
                                      updatePaneState={this._updatePaneState}
                                      {...this.state.pane_states["all"]}
                                      {...this.props.errorDrawerFuncs}
@@ -237,7 +230,7 @@ class LibraryHomeApp extends React.Component {
                                              }}
                                      res_type="collection"
                                      handleCreateViewer={this.props.handleCreateViewer}
-                                     open_resources={null}
+                                     open_resources={this.props.open_resources ? this.props.open_resources["collection"] : null}
                                      allow_search_inside={false}
                                      allow_search_metadata={false}
                                      MenubarClass={CollectionMenubar}
@@ -249,7 +242,7 @@ class LibraryHomeApp extends React.Component {
                         />
         );
         let projects_pane = (<LibraryPane {...lib_props}
-                                            columns={{"icon:projects": {"sort_field": "type", "first_sort": "ascending"},
+                                            columns={{"icon:th": {"sort_field": "type", "first_sort": "ascending"},
                                               "name": {"sort_field": "name", "first_sort": "ascending"},
                                              "created": {"sort_field": "created_for_sort", "first_sort": "descending"},
                                               "updated": {"sort_field": "updated_for_sort", "first_sort": "ascending"},
@@ -269,7 +262,7 @@ class LibraryHomeApp extends React.Component {
             />
         );
         let tiles_pane = (<LibraryPane {...lib_props}
-                                    columns={{"icon:code": {"sort_field": "type", "first_sort": "ascending"},
+                                    columns={{"icon:th": {"sort_field": "type", "first_sort": "ascending"},
                                               "name": {"sort_field": "name", "first_sort": "ascending"},
                                               "icon:upload": {"sort_field": null, "first_sort": "ascending"},
                                               "created": {"sort_field": "created_for_sort", "first_sort": "descending"},
@@ -289,6 +282,12 @@ class LibraryHomeApp extends React.Component {
             />
         );
         let lists_pane = (<LibraryPane {...lib_props}
+                                        columns={{"icon:th": {"sort_field": "type", "first_sort": "ascending"},
+                                              "name": {"sort_field": "name", "first_sort": "ascending"},
+                                              "created": {"sort_field": "created_for_sort", "first_sort": "descending"},
+                                              "updated": {"sort_field": "updated_for_sort", "first_sort": "ascending"},
+                                              "tags": {"sort_field": "tags", "first_sort": "ascending"},
+                                            }}
                                        res_type="list"
                                        open_resources={this.props.open_resources ? this.props.open_resources["list"] : null}
                                        allow_search_inside={true}
@@ -301,6 +300,12 @@ class LibraryHomeApp extends React.Component {
             />
         );
         let code_pane = (<LibraryPane {...lib_props}
+                                      columns={{"icon:th": {"sort_field": "type", "first_sort": "ascending"},
+                                              "name": {"sort_field": "name", "first_sort": "ascending"},
+                                              "created": {"sort_field": "created_for_sort", "first_sort": "descending"},
+                                              "updated": {"sort_field": "updated_for_sort", "first_sort": "ascending"},
+                                              "tags": {"sort_field": "tags", "first_sort": "ascending"},
+                                            }}
                                       res_type="code"
                                       handleCreateViewer={this.props.handleCreateViewer}
                                       open_resources={this.props.open_resources ? this.props.open_resources["code"] : null}

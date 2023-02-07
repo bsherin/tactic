@@ -457,7 +457,7 @@ var AdminPane = /*#__PURE__*/function (_React$Component) {
     value: function _refresh_func() {
       var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
-      this._grabNewChunkWithRow(0, true, null, true, callback);
+      this._grabNewChunkWithRow(0, true, null, true, callback = callback);
     }
   }, {
     key: "_setConsoleText",

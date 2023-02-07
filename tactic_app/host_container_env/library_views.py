@@ -8,7 +8,7 @@ import markdown
 
 import tactic_app
 from tactic_app import app, socketio, db, fs, repository_db, repository_fs, use_remote_repository
-from mongo_accesser import name_keys, make_name_unique
+from mongo_accesser import name_keys, make_name_unique, res_types
 from communication_utils import make_jsonizable_and_compress, read_project_dict
 from exception_mixin import generic_exception_handler
 from docker_functions import ContainerCreateError
@@ -235,9 +235,10 @@ def get_repository_resource_names(res_type):
 @app.route('/copy_from_repository', methods=['GET', 'POST'])
 @login_required
 def copy_from_repository():
-    res_type = request.json["res_type"]
+    pane_type = request.json["pane_type"]
     if "res_name" in request.json:
         new_res_name = request.json['new_res_name']
+        res_type = request.json["res_type"]
         res_name = request.json['res_name']
         metadata, result = copy_between_accounts(repository_user, current_user,
                                                  res_type, new_res_name, res_name,
@@ -247,10 +248,13 @@ def copy_from_repository():
             manager.refresh_selector_list()
         return result
     else:
-        list_of_selected = request.json["res_names"]
+        selected_rows = request.json["selected_rows"]
         successful_copies = 0
-        manager = get_manager_for_type(res_type)
-        for res_name in list_of_selected:
+
+        for row in selected_rows:
+            res_type = row["res_type"]
+            res_name = row["res_name"]
+            manager = get_manager_for_type(res_type)
             resource_names = manager.get_resource_list()
             new_res_name = make_name_unique(res_name, resource_names)
             metadata, result = copy_between_accounts(repository_user, current_user,
@@ -259,6 +263,7 @@ def copy_from_repository():
             if result.json["success"]:
                 successful_copies +=1
         if successful_copies > 0:
+            manager = get_manager_for_type(pane_type)
             manager.refresh_selector_list()
         return jsonify({"success": True, "message": f"{str(successful_copies)} resources copied"})
 
@@ -266,18 +271,21 @@ def copy_from_repository():
 @app.route('/send_to_repository', methods=['GET', 'POST'])
 @login_required
 def send_to_repository():
-    res_type = request.json['res_type']
     if "res_name" in request.json:
+        res_type = request.json['res_type']
         new_res_name = request.json['new_res_name']
         res_name = request.json['res_name']
         metadata, result = copy_between_accounts(current_user, repository_user, res_type, new_res_name, res_name,
                                                  dest_db=repository_db, dest_fs=repository_fs)
         return result
     else:
-        list_of_selected = request.json["res_names"]
+        selected_rows = request.json["selected_rows"]
         successful_copies = 0
-        manager = get_manager_for_type(res_type, is_repository=True)
-        for res_name in list_of_selected:
+
+        for row in list_of_selected:
+            res_type = row["res_type"]
+            res_name = row["res_name"]
+            manager = get_manager_for_type(res_type, is_repository=True)
             resource_names = manager.get_resource_list()
             new_res_name = make_name_unique(res_name, resource_names)
             metadata, result = copy_between_accounts(current_user, repository_user, res_type, new_res_name, res_name,
@@ -347,13 +355,14 @@ def add_tags():
 @login_required
 def overwrite_common_tags():
     try:
-        res_type = request.json["res_type"]
-        res_names = request.json["res_names"]
+        selected_rows = request.json["selected_rows"]
         tags = request.json["tags"].split()
-        manager = get_manager_for_type(res_type)
-        common_tags = grab_m_mdata(res_type, res_names)["common_tags"].split()
-        updated_tags = {}
-        for res_name in res_names:
+        common_tags = grab_m_mdata(selected_rows)["common_tags"].split()
+        updated_tags = []
+        for row in selected_rows:
+            res_type = row["res_type"]
+            res_name = row["name"]
+            manager = get_manager_for_type(res_type)
             mdata = manager.grab_metadata(res_name)
             old_tags = mdata["tags"].split()
             new_tags = []
@@ -362,20 +371,21 @@ def overwrite_common_tags():
                     new_tags.append(tag)
             new_tags += tags
             new_tags_string = " ".join(new_tags)
-            updated_tags[res_name] = new_tags_string
+            updated_tags.append({"name": res_name, "res_type": res_type, "tags": new_tags_string})
             manager.save_metadata(res_name, new_tags_string, mdata["notes"])
-        res_tags = manager.get_tag_list()
 
-        return jsonify({"success": True, "res_tags": res_tags, "updated_tags": updated_tags,
+        return jsonify({"success": True, "updated_tags": updated_tags,
                         "message": "Saved metadata", "alert_type": "alert-success"})
     except Exception as ex:
-        return generic_exception_handler.get_exception_for_ajax(ex, "Error saving metadata")
+        return generic_exception_handler.get_traceback_exception_for_ajax(ex, "Error saving metadata")
 
 
-def grab_m_mdata(res_type, res_name_list, is_repository=False):
-    manager = get_manager_for_type(res_type, is_repository=is_repository)
+def grab_m_mdata(rows, is_repository=False):
     mdata_list = []
-    for res_name in res_name_list:
+    for row in rows:
+        res_type = row["res_type"]
+        res_name = row["name"]
+        manager = get_manager_for_type(row["res_type"], is_repository=is_repository)
         mdata = manager.grab_metadata(res_name)
         if mdata is None:
             return jsonify({"success": False, "message": "No metadata found", "alert_type": "alert-warning"})
@@ -391,7 +401,8 @@ def grab_m_mdata(res_type, res_name_list, is_repository=False):
                     del additional_mdata[field]
             if "updated" in additional_mdata:
                 additional_mdata["updated"] = current_user.get_timestrings(additional_mdata["updated"])[0]
-            one_result = {"res_name": res_name, "datestring": datestring, "tags": mdata["tags"],
+            one_result = {"res_name": res_name, "res_type": res_type,
+                          "datestring": datestring, "tags": mdata["tags"],
                           "notes": mdata["notes"], "additional_mdata": additional_mdata}
             mdata_list.append(one_result)
     common_tags = mdata_list[0]["tags"].split()
@@ -404,20 +415,6 @@ def grab_m_mdata(res_type, res_name_list, is_repository=False):
         common_tags = new_common_tags
     common_tags = " ".join(common_tags)
     return {"success": True, "metadata_list": mdata_list, "common_tags": common_tags}
-
-
-@app.route('/grab_multi_metadata', methods=['POST'])
-@login_required
-def grab_multi_metadata():
-    try:
-        res_type = request.json["res_type"]
-        res_name_list = request.json["res_name_list"]
-        is_repository = request.json["is_repository"]
-        result_dict = grab_m_mdata(res_type, res_name_list, is_repository)
-        return jsonify(result_dict)
-    except Exception as ex:
-        return generic_exception_handler.get_exception_for_ajax(ex, "Error getting metadata")
-
 
 @app.route('/grab_repository_metadata', methods=['POST'])
 @login_required
@@ -436,7 +433,7 @@ def grab_repository_metadata():
                 datestring = ""
             return jsonify({"success": True, "res_name": res_name, "datestring": datestring, "tags": mdata["tags"], "notes": mdata["notes"]})
     except Exception as ex:
-        return generic_exception_handler.get_exception_for_ajax(ex, "Error getting repository metadata")
+        return generic_exception_handler.get_traceback_exception_for_ajax(ex, "Error getting repository metadata")
 
 
 @app.route('/get_tag_list', methods=['POST'])
@@ -445,8 +442,14 @@ def get_tag_list():
     try:
         res_type = request.json["res_type"]
         is_repository = request.json["is_repository"]
-        manager = get_manager_for_type(res_type, is_repository=is_repository)
-        tag_list = manager.get_tag_list()
+        if res_type == "all":
+            tag_list = []
+            for rtype in res_types:
+                manager = get_manager_for_type(rtype, is_repository=is_repository)
+                tag_list += manager.get_tag_list()
+        else:
+            manager = get_manager_for_type(res_type, is_repository=is_repository)
+            tag_list = manager.get_tag_list()
         return jsonify({"success": True, "tag_list": tag_list})
     except Exception as ex:
         return generic_exception_handler.get_exception_for_ajax(ex, "Error getting tag list")
@@ -468,7 +471,7 @@ def save_metadata():
         return jsonify({"success": True, "res_tags": res_tags,
                         "message": "Saved metadata", "alert_type": "alert-success"})
     except Exception as ex:
-        return generic_exception_handler.get_exception_for_ajax(ex, "Error saving metadata")
+        return generic_exception_handler.get_traceback_exception_for_ajax(ex, "Error saving metadata")
 
 
 @app.route('/delete_tag', methods=['POST'])
@@ -477,8 +480,13 @@ def delete_tag():
     try:
         res_type = request.json["res_type"]
         tag = request.json["tag"]
-        manager = get_manager_for_type(res_type)
-        manager.delete_tag(tag)
+        if res_type == "all":
+            rtypes = res_types
+        else:
+            rtypes = [res_type]
+        for rtype in rtypes:
+            manager = get_manager_for_type(rtype)
+            manager.delete_tag(tag)
         return jsonify({"success": True,
                         "message": "Deleted tag", "alert_type": "alert-success"})
     except Exception as ex:
@@ -491,10 +499,14 @@ def rename_tag():
     try:
         res_type = request.json["res_type"]
         tag_changes = request.json["tag_changes"]
-        manager = get_manager_for_type(res_type)
-        manager.rename_tag(tag_changes)
-        res_tags = manager.get_tag_list()
-        return jsonify({"success": True, "res_tags": res_tags,
+        if res_type == "all":
+            rtypes = res_types
+        else:
+            rtypes = [res_type]
+        for rtype in rtypes:
+            manager = get_manager_for_type(res_type)
+            manager.rename_tag(tag_changes)
+        return jsonify({"success": True,
                         "message": "renamed tag tag", "alert_type": "alert-success"})
     except Exception as ex:
         return generic_exception_handler.get_exception_for_ajax(ex, "Error renaming a tag")
