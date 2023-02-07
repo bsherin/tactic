@@ -269,8 +269,8 @@ class NativeTags extends React.Component {
 
      componentDidMount() {
         let self = this;
-        let data_dict = {"res_type": this.props.res_type, "is_repository": false};
-        if (!this.props.res_type) {
+        let data_dict = {"pane_type": this.props.pane_type, "is_repository": false};
+        if (!this.props.pane_type) {
             self.setState({"suggestions": []});
             return
         }
@@ -338,7 +338,7 @@ class NativeTags extends React.Component {
 NativeTags.proptypes = {
     tags: PropTypes.array,
     handleChange: PropTypes.func,
-    res_type: PropTypes.string
+    pane_type: PropTypes.string
 };
 
 class NotesField extends React.Component {
@@ -524,7 +524,7 @@ class CombinedMetadata extends React.Component {
                         <NativeTags tags={this.props.tags}
                                     readOnly={this.props.readOnly}
                                     handleChange={this._handleTagsChange}
-                                    res_type={this.props.res_type}/>
+                                    pane_type={this.props.pane_type}/>
                     </FormGroup>
                     {this.props.category != null &&
                         <FormGroup label="Category">
@@ -577,6 +577,7 @@ CombinedMetadata.propTypes = {
     outer_style: PropTypes.object,
     elevation: PropTypes.number,
     res_type: PropTypes.string,
+    pane_type: PropTypes.string,
     name: PropTypes.string,
     created: PropTypes.string,
     updated: PropTypes.string,

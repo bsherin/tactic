@@ -440,15 +440,16 @@ def grab_repository_metadata():
 @login_required
 def get_tag_list():
     try:
-        res_type = request.json["res_type"]
+        pane_type = request.json["pane_type"]
         is_repository = request.json["is_repository"]
-        if res_type == "all":
+        if pane_type == "all":
             tag_list = []
             for rtype in res_types:
                 manager = get_manager_for_type(rtype, is_repository=is_repository)
                 tag_list += manager.get_tag_list()
+            tag_list = list(set(tag_list))
         else:
-            manager = get_manager_for_type(res_type, is_repository=is_repository)
+            manager = get_manager_for_type(pane_type, is_repository=is_repository)
             tag_list = manager.get_tag_list()
         return jsonify({"success": True, "tag_list": tag_list})
     except Exception as ex:
@@ -478,12 +479,12 @@ def save_metadata():
 @login_required
 def delete_tag():
     try:
-        res_type = request.json["res_type"]
+        pane_type = request.json["pane_type"]
         tag = request.json["tag"]
-        if res_type == "all":
+        if pane_type == "all":
             rtypes = res_types
         else:
-            rtypes = [res_type]
+            rtypes = [pane_type]
         for rtype in rtypes:
             manager = get_manager_for_type(rtype)
             manager.delete_tag(tag)
@@ -497,14 +498,14 @@ def delete_tag():
 @login_required
 def rename_tag():
     try:
-        res_type = request.json["res_type"]
+        pane_type = request.json["pane_type"]
         tag_changes = request.json["tag_changes"]
-        if res_type == "all":
+        if pane_type == "all":
             rtypes = res_types
         else:
-            rtypes = [res_type]
+            rtypes = [pane_type]
         for rtype in rtypes:
-            manager = get_manager_for_type(res_type)
+            manager = get_manager_for_type(rtype)
             manager.rename_tag(tag_changes)
         return jsonify({"success": True,
                         "message": "renamed tag tag", "alert_type": "alert-success"})

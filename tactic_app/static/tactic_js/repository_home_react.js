@@ -293,7 +293,7 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
       }
 
       var collection_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
-        res_type: "collection",
+        pane_type: "collection",
         allow_search_inside: false,
         allow_search_metadata: false,
         MenubarClass: _repository_menubars.RepositoryCollectionMenubar,
@@ -304,7 +304,7 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
       }));
 
       var projects_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
-        res_type: "project",
+        pane_type: "project",
         allow_search_inside: false,
         allow_search_metadata: true,
         MenubarClass: _repository_menubars.RepositoryProjectMenubar,
@@ -315,7 +315,7 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
       }));
 
       var tiles_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
-        res_type: "tile",
+        pane_type: "tile",
         allow_search_inside: true,
         allow_search_metadata: true,
         MenubarClass: _repository_menubars.RepositoryTileMenubar,
@@ -326,7 +326,7 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
       }));
 
       var lists_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
-        res_type: "list",
+        pane_type: "list",
         allow_search_inside: true,
         allow_search_metadata: true,
         MenubarClass: _repository_menubars.RepositoryListMenubar,
@@ -337,7 +337,7 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
       }));
 
       var code_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
-        res_type: "code",
+        pane_type: "code",
         allow_search_inside: true,
         allow_search_metadata: true,
         MenubarClass: _repository_menubars.RepositoryCodeMenubar,
