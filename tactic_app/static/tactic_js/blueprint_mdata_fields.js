@@ -429,6 +429,14 @@ var NativeTags = /*#__PURE__*/function (_React$Component5) {
         "res_type": this.props.res_type,
         "is_repository": false
       };
+
+      if (!this.props.res_type) {
+        self.setState({
+          "suggestions": []
+        });
+        return;
+      }
+
       (0, _communication_react.postAjaxPromise)("get_tag_list", data_dict).then(function (data) {
         var all_tags = data.tag_list;
         self.setState({

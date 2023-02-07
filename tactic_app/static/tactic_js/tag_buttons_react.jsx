@@ -233,10 +233,8 @@ class TagButtonList extends React.Component {
 }
 
 TagButtonList.propTypes = {
-    res_type: PropTypes.string,
     tag_list: PropTypes.array,
     updateTagState: PropTypes.func,
     doTagDelete: PropTypes.func,
     doTagRename: PropTypes.func,
-    handleAddTag: PropTypes.func
 };

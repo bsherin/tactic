@@ -461,7 +461,6 @@ BpSelectorTable.propTypes = {
     onSelection: PropTypes.func,
     handleRowDoubleClick: PropTypes.func,
     identifier_field: PropTypes.string,
-    handleAddTag: PropTypes.func
 };
 
 BpSelectorTable.defaultProps = {

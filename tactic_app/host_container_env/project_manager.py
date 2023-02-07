@@ -46,8 +46,6 @@ class ProjectManager(LibraryResourceManager):
                          login_required(self.import_jupyter), methods=['get', "post"])
         app.add_url_rule('/download_jupyter/<project_name>/<new_name>', "download_jupyter",
                          login_required(self.download_jupyter), methods=['get', "post"])
-        app.add_url_rule('/grab_project_list_chunk', "grab_project_list_chunk",
-                         login_required(self.grab_project_list_chunk), methods=['get', 'post'])
 
     def download_jupyter(self, project_name, new_name):
         user_obj = current_user
@@ -231,27 +229,6 @@ class ProjectManager(LibraryResourceManager):
 
         new_row = self.build_res_dict(new_project_name, mdata, user_obj, save_dict["file_id"])
         return jsonify({"success": True, "new_row": new_row})
-
-    def grab_project_list_chunk(self):
-        if request.json["is_repository"]:
-            colname = repository_user.project_collection_name
-        else:
-            colname = current_user.project_collection_name
-
-        result = self.grab_resource_list_chunk(colname, "project_name", None,
-                                               ["collection_name", "loaded_tiles", "type"], False)
-        chunk_dict = result["chunk_dict"]
-        icon_dict = {"table": "icon:projects",
-                     "freeform": "icon:projects",
-                     "notebook": "icon:console",
-                     "jupyter": "icon:globe-network"}
-
-        for ckey, val in chunk_dict.items():
-            if "type" in val:
-                val["icon:projects"] = icon_dict[val["type"]]
-            else:
-                val["icon:projects"] = icon_dict["table"]
-        return jsonify(result)
 
     def rename_me(self, old_name):
         try:

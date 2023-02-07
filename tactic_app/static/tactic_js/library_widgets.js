@@ -653,8 +653,7 @@ BpSelectorTable.propTypes = {
   sortColumn: _propTypes["default"].func,
   onSelection: _propTypes["default"].func,
   handleRowDoubleClick: _propTypes["default"].func,
-  identifier_field: _propTypes["default"].string,
-  handleAddTag: _propTypes["default"].func
+  identifier_field: _propTypes["default"].string
 };
 BpSelectorTable.defaultProps = {
   columns: {

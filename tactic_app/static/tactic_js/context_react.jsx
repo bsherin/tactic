@@ -90,7 +90,7 @@ class ContextApp extends React.Component {
             selectedTabId: "library",
             theme_setters: [],
             lastSelectedTabId: null,
-            selectedLibraryTab: "collections",
+            selectedLibraryTab: "all",
             // selectedRepositoryTab: "collections",
             usable_width: awidth,
             usable_height: aheight,
@@ -623,6 +623,10 @@ class ContextApp extends React.Component {
                 open_resources[entry.res_type].push(entry.panel.resource_name);
             }
 
+        }
+        open_resources["all"] = [];
+        for (let rtype in open_resources) {
+            open_resources["all"] = open_resources["all"].concat(open_resources[rtype])
         }
         let library_panel;
         library_panel = (

@@ -62,6 +62,8 @@ class CollectionManager(LibraryResourceManager):
                          login_required(self.append_documents_to_collection), methods=['get', "post"])
         app.add_url_rule('/delete_collection', "delete_collection",
                          login_required(self.delete_collection), methods=['post'])
+        app.add_url_rule('/delete_resource_list', "delete_resource_list",
+                         login_required(self.delete_resource_list), methods=['post'])
         app.add_url_rule('/duplicate_collection', "duplicate_collection",
                          login_required(self.duplicate_collection), methods=['post', 'get'])
         app.add_url_rule('/download_collection/<collection_name>/<new_name>', "download_collection",
@@ -70,8 +72,6 @@ class CollectionManager(LibraryResourceManager):
                          login_required(self.combine_collections), methods=['post', 'get'])
         app.add_url_rule('/combine_to_new_collection', "combine_to_new_collection",
                          login_required(self.combine_to_new_collection), methods=['post'])
-        app.add_url_rule('/grab_collection_list_chunk', "grab_collection_list_chunk",
-                         login_required(self.grab_collection_list_chunk), methods=['get', 'post'])
         app.add_url_rule('/grab_all_list_chunk', "grab_all_list_chunk",
                          login_required(self.grab_all_list_chunk), methods=['get', 'post'])
 
@@ -277,28 +277,6 @@ class CollectionManager(LibraryResourceManager):
         return user_obj.collection_collection_name in db_to_use.list_collection_names() and \
                 db_to_use[user_obj.collection_collection_name].count_documents({}) > 0
 
-    def grab_collection_list_chunk(self):
-        if not self.db_is_updated(request.json["is_repository"]):
-            return self.grab_collection_list_chunk_legacy()
-
-        colname = repository_user.collection_collection_name if request.json["is_repository"] else \
-            current_user.collection_collection_name
-
-        result = self.grab_resource_list_chunk(colname, "collection_name", None,
-                                               ["type", "number_of_docs"], False)
-
-        chunk_dict = result["chunk_dict"]
-        icon_dict = {"table": "icon:th", "freeform": "icon:align-left"}
-
-        for ckey, val in chunk_dict.items():
-            if "type" in val:
-                val["doc_type"] = icon_dict[val["type"]]
-                val["icon:th"] = icon_dict[val["type"]]
-            else:
-                val["doc_type"] = icon_dict["table"]
-                val["icon:th"] = val["doc_type"]
-        return jsonify(result)
-
     def grab_metadata(self, res_name):
         user_obj = current_user
         return user_obj.get_collection_metadata(res_name)
@@ -386,7 +364,7 @@ class CollectionManager(LibraryResourceManager):
             user_obj.append_documents_to_collection(base_collection_name, coll_dict, doc_type, hl_dict, dm_dict)
             user_obj.update_collection_time(base_collection_name)
             coll_mdata = user_obj.get_collection_metadata(base_collection_name)
-            self.update_selector_row(self.build_res_dict(base_collection_name, coll_mdata))
+            self.update_selector_row(self.build_res_dict(base_collection_name, coll_mdata, res_type="collection"))
             return jsonify({"success": True,
                             "message": "Collections successfull combined",
                             "alert_type": "alert-success"})
@@ -547,6 +525,28 @@ class CollectionManager(LibraryResourceManager):
                 "file_decoding_errors": file_decoding_errors,
                 "successful_reads": successful_reads,
                 "failed_reads": failed_reads}
+
+    def delete_resource_list(self):
+        try:
+            user_obj = current_user
+            res_list = request.json["resource_list"]
+            for row in res_list:
+                res_name = row["name"]
+                if row["res_type"] == "collection":
+                    user_obj.remove_collection(res_name)
+                elif row["res_type"] == "project":
+                    user_obj.remove_project(res_name)
+                elif row["res_type"] == "tile":
+                    self.db[user_obj.tile_collection_name].delete_one({"tile_module_name": res_name})
+                elif row["res_type"] == "list":
+                    self.db[user_obj.list_collection_name].delete_one({"list_name": res_name})
+                elif row["res_type"] == "code":
+                    self.db[user_obj.code_collection_name].delete_one({"code_name": res_name})
+            return jsonify({"success": True, "message": "Resource(s) successfully deleted",
+                            "alert_type": "alert-success"})
+
+        except Exception as ex:
+            return self.get_exception_for_ajax(ex, "Error deleting collections")
 
     def delete_collection(self):
         try:

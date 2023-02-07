@@ -270,6 +270,10 @@ class NativeTags extends React.Component {
      componentDidMount() {
         let self = this;
         let data_dict = {"res_type": this.props.res_type, "is_repository": false};
+        if (!this.props.res_type) {
+            self.setState({"suggestions": []});
+            return
+        }
         postAjaxPromise("get_tag_list", data_dict)
             .then(data => {
                 let all_tags = data.tag_list;
@@ -519,7 +523,7 @@ class CombinedMetadata extends React.Component {
                     <FormGroup label="Tags">
                         <NativeTags tags={this.props.tags}
                                     readOnly={this.props.readOnly}
-                                     handleChange={this._handleTagsChange}
+                                    handleChange={this._handleTagsChange}
                                     res_type={this.props.res_type}/>
                     </FormGroup>
                     {this.props.category != null &&

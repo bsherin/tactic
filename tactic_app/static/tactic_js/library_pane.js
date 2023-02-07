@@ -38,7 +38,9 @@ var _key_trap = require("./key_trap.js");
 
 var _utilities_react = require("./utilities_react.js");
 
-var _library_menubars = require("./library_menubars");
+var _import_dialog = require("./import_dialog");
+
+var _modal_react2 = require("./modal_react");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -78,6 +80,8 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
+var res_types = ["collection", "project", "tile", "list", "code"];
+
 function view_views() {
   var is_repository = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
 
@@ -98,6 +102,17 @@ function view_views() {
       code: "/view_code/"
     };
   }
+}
+
+function duplicate_views() {
+  var is_repository = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+  return {
+    collection: "/duplicate_collection",
+    project: "/duplicate_project",
+    tile: "/create_duplicate_tile",
+    list: "/create_duplicate_list",
+    code: "/create_duplicate_code"
+  };
 }
 
 var BodyMenu = /*#__PURE__*/function (_React$Component) {
@@ -121,18 +136,19 @@ var BodyMenu = /*#__PURE__*/function (_React$Component) {
     value: function render() {
       var _this = this;
 
-      var disabled = false;
       var menu_items = this.props.items.map(function (item, index) {
         if (item.text == "__divider__") {
           return /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, {
             key: index
           });
         } else {
+          var the_row = _this.props.selected_rows[0];
+          var disabled = item.res_type && the_row.res_type != item.res_type;
           return /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
             icon: item.icon,
             disabled: disabled,
             onClick: function onClick() {
-              return item.onClick(_this.props.selected_rows[0].name);
+              return item.onClick(the_row);
             },
             intent: _this.getIntent(item),
             key: item.text,
@@ -169,13 +185,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     _this2.top_ref = /*#__PURE__*/_react["default"].createRef();
     _this2.table_ref = /*#__PURE__*/_react["default"].createRef();
     _this2.resizing = false;
-
-    if (props.res_type == "all") {
-      _this2.get_url = "grab_all_list_chunk";
-    } else {
-      _this2.get_url = "grab_".concat(props.res_type, "_list_chunk");
-    }
-
     _this2.state = {
       data_dict: {},
       num_rows: 0,
@@ -206,8 +215,25 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "initSocket",
     value: function initSocket() {
       if (this.props.tsocket != null && !this.props.is_repository) {
-        this.props.tsocket.attachListener("update-".concat(this.props.res_type, "-selector-row"), this._handleRowUpdate);
-        this.props.tsocket.attachListener("refresh-".concat(this.props.res_type, "-selector"), this._refresh_func);
+        if (this.props.res_type == "all") {
+          var _iterator = _createForOfIteratorHelper(res_types),
+              _step;
+
+          try {
+            for (_iterator.s(); !(_step = _iterator.n()).done;) {
+              var res_type = _step.value;
+              this.props.tsocket.attachListener("update-".concat(res_type, "-selector-row"), this._handleRowUpdate);
+              this.props.tsocket.attachListener("refresh-".concat(res_type, "-selector"), this._refresh_func);
+            }
+          } catch (err) {
+            _iterator.e(err);
+          } finally {
+            _iterator.f();
+          }
+        } else {
+          this.props.tsocket.attachListener("update-".concat(this.props.res_type, "-selector-row"), this._handleRowUpdate);
+          this.props.tsocket.attachListener("refresh-".concat(this.props.res_type, "-selector"), this._refresh_func);
+        }
       }
     }
   }, {
@@ -237,12 +263,12 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
 
       var selected_rows = [];
 
-      var _iterator = _createForOfIteratorHelper(regions),
-          _step;
+      var _iterator2 = _createForOfIteratorHelper(regions),
+          _step2;
 
       try {
-        for (_iterator.s(); !(_step = _iterator.n()).done;) {
-          var region = _step.value;
+        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+          var region = _step2.value;
 
           if (region.hasOwnProperty("rows")) {
             var first_row = region["rows"][0];
@@ -256,9 +282,9 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
           }
         }
       } catch (err) {
-        _iterator.e(err);
+        _iterator2.e(err);
       } finally {
-        _iterator.f();
+        _iterator2.f();
       }
 
       return /*#__PURE__*/_react["default"].createElement(BodyMenu, {
@@ -275,12 +301,12 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       var selected_row_indices = [];
       var revised_regions = [];
 
-      var _iterator2 = _createForOfIteratorHelper(regions),
-          _step2;
+      var _iterator3 = _createForOfIteratorHelper(regions),
+          _step3;
 
       try {
-        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-          var region = _step2.value;
+        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+          var region = _step3.value;
 
           if (region.hasOwnProperty("rows")) {
             var first_row = region["rows"][0];
@@ -297,9 +323,9 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
           }
         }
       } catch (err) {
-        _iterator2.e(err);
+        _iterator3.e(err);
       } finally {
-        _iterator2.f();
+        _iterator3.f();
       }
 
       this._handleRowSelection(selected_rows);
@@ -342,12 +368,13 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       }
 
       var data = {
+        res_type: this.props.res_type,
         search_spec: search_spec,
         row_number: row_index,
         is_repository: this.props.is_repository
       };
       var self = this;
-      (0, _communication_react.postAjax)(this.get_url, data, function (data) {
+      (0, _communication_react.postAjax)("grab_all_list_chunk", data, function (data) {
         var new_data_dict;
 
         if (flush) {
@@ -365,14 +392,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         }, function () {
           if (callback) {
             callback();
-          } else if (select_by_name) {
-            var ind = self.get_data_dict_index(select_by_name);
-
-            if (!ind) {
-              ind = 0;
-            }
-
-            self._selectRow(ind);
           } else if (select || self.props.selected_resource.name == "") {
             self._selectRow(row_index);
           }
@@ -388,7 +407,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "_handleRowUpdate",
     value: function _handleRowUpdate(res_dict) {
       var res_name = res_dict.name;
-      var ind = this.get_data_dict_index(res_name);
+      var ind = this.get_data_dict_index(res_name, res_dict.res_type);
       if (!ind) return;
 
       var new_data_dict = _lodash["default"].cloneDeep(this.state.data_dict);
@@ -420,12 +439,12 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
 
         var new_tag_found = false;
 
-        var _iterator3 = _createForOfIteratorHelper(res_tags),
-            _step3;
+        var _iterator4 = _createForOfIteratorHelper(res_tags),
+            _step4;
 
         try {
-          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-            var tag = _step3.value;
+          for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+            var tag = _step4.value;
 
             if (!new_tag_list.includes(tag)) {
               new_tag_list.push(tag);
@@ -433,9 +452,9 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
             }
           }
         } catch (err) {
-          _iterator3.e(err);
+          _iterator4.e(err);
         } finally {
-          _iterator3.f();
+          _iterator4.f();
         }
 
         if (new_tag_found) {
@@ -462,6 +481,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         this._updatePaneState({
           list_of_selected: [],
           multi_select: false,
+          selected_rows: [],
           selected_resource: self.blank_selected_resource
         });
       }
@@ -472,9 +492,11 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     }
   }, {
     key: "get_data_dict_entry",
-    value: function get_data_dict_entry(name) {
+    value: function get_data_dict_entry(name, res_type) {
       for (var index in this.state.data_dict) {
-        if (this.state.data_dict[index].name == name) {
+        var the_row = this.state.data_dict[index];
+
+        if (the_row.name == name && the_row.res_type == res_type) {
           return this.state.data_dict[index];
         }
       }
@@ -482,14 +504,41 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       return null;
     }
   }, {
+    key: "_match_row",
+    value: function _match_row(row1, row2) {
+      return row1.name == row2.name && row1.res_type == row2.res_type;
+    }
+  }, {
+    key: "_match_any_row",
+    value: function _match_any_row(row1, row_list) {
+      var _iterator5 = _createForOfIteratorHelper(row_list),
+          _step5;
+
+      try {
+        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+          var row2 = _step5.value;
+
+          if (this._match_row(row1, row2)) {
+            return true;
+          }
+        }
+      } catch (err) {
+        _iterator5.e(err);
+      } finally {
+        _iterator5.f();
+      }
+
+      return false;
+    }
+  }, {
     key: "set_in_data_dict",
-    value: function set_in_data_dict(names, new_val_dict, data_dict) {
+    value: function set_in_data_dict(old_rows, new_val_dict, data_dict) {
       var new_data_dict = {};
 
       for (var index in data_dict) {
         var entry = data_dict[index];
 
-        if (names.includes(data_dict[index].name)) {
+        if (this._match_any_row(entry, old_rows)) {
           for (var k in new_val_dict) {
             entry[k] = new_val_dict[k];
           }
@@ -502,9 +551,17 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     }
   }, {
     key: "get_data_dict_index",
-    value: function get_data_dict_index(name) {
+    value: function get_data_dict_index(name, res_type) {
+      var target = {
+        name: name,
+        res_type: res_type
+      };
+
       for (var index in this.state.data_dict) {
-        if (this.state.data_dict[index].name == name) {
+        if (this._match_row(this.state.data_dict[index], {
+          name: name,
+          res_type: res_type
+        })) {
           return index;
         }
       }
@@ -514,19 +571,20 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_saveFromSelectedResource",
     value: function _saveFromSelectedResource() {
+      // This will only be called when there is a single row selected
       var result_dict = {
-        "res_type": this.props.res_type,
+        "res_type": this.props.selected_rows[0].res_type,
         "res_name": this.props.list_of_selected[0],
         "tags": this.props.selected_resource.tags,
         "notes": this.props.selected_resource.notes
       };
-      var saved_selected_resource = Object.assign({}, this.props.selected_resource);
+      var saved_selected_resource = Object.assign({}, this.props.selected_resource); // let saved_list_of_selected = [...this.props.list_of_selected];
 
-      var saved_list_of_selected = _toConsumableArray(this.props.list_of_selected);
+      var saved_selected_rows = _toConsumableArray(this.props.selected_rows);
 
       var self = this;
       (0, _communication_react.postAjaxPromise)("save_metadata", result_dict).then(function (data) {
-        var new_data_list = self.set_in_data_dict(saved_list_of_selected, saved_selected_resource, self.state.data_dict);
+        var new_data_list = self.set_in_data_dict(saved_selected_rows, saved_selected_resource, self.state.data_dict);
         self.setState({
           "data_dict": new_data_list
         });
@@ -536,8 +594,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "_overwriteCommonTags",
     value: function _overwriteCommonTags() {
       var result_dict = {
-        "res_type": this.props.res_type,
-        "res_names": this.props.list_of_selected,
+        "selected_rows": this.props.selected_rows,
         "tags": this.props.selected_resource.tags
       };
       var self = this;
@@ -546,10 +603,20 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
 
         var new_data_dict = _lodash["default"].cloneDeep(self.state.data_dict);
 
-        for (var res_name in utags) {
-          new_data_dict = self.set_in_data_dict([res_name], {
-            tags: utags[res_name]
-          }, new_data_dict);
+        var _iterator6 = _createForOfIteratorHelper(utags),
+            _step6;
+
+        try {
+          for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+            var urow = _step6.value;
+            new_data_dict = self.set_in_data_dict([urow], {
+              tags: urow.tags
+            }, new_data_dict);
+          }
+        } catch (err) {
+          _iterator6.e(err);
+        } finally {
+          _iterator6.f();
         }
 
         self.setState({
@@ -589,27 +656,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       }
     }
   }, {
-    key: "addOneTag",
-    value: function addOneTag(res_name, the_tag) {
-      var dl_entry = this.get_data_dict_entry(res_name);
-      if (dl_entry.tags.split(' ').includes(the_tag)) return;
-      var new_tags = dl_entry.tags + " " + the_tag;
-      new_tags = new_tags.trim();
-      var result_dict = {
-        "res_type": this.props.res_type,
-        "res_name": res_name,
-        "tags": new_tags,
-        "notes": dl_entry.notes
-      };
-      var self = this;
-      (0, _communication_react.postAjaxPromise)("save_metadata", result_dict).then(function () {
-        self._handleRowUpdate({
-          "name": res_name,
-          "tags": new_tags
-        });
-      })["catch"](_toaster.doFlash);
-    }
-  }, {
     key: "_updatePaneState",
     value: function _updatePaneState(new_state, callback) {
       this.props.updatePaneState(this.props.res_type, new_state, callback);
@@ -624,40 +670,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       };
 
       this._update_search_state(new_pane_state);
-    }
-  }, {
-    key: "_handleAddTag",
-    value: function _handleAddTag(res_name, the_tag) {
-      if (this.props.list_of_selected.includes(res_name) && this.props.multi_select) {
-        var _iterator4 = _createForOfIteratorHelper(this.props.list_of_selected),
-            _step4;
-
-        try {
-          for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-            var the_name = _step4.value;
-            this.addOneTag(the_name, the_tag);
-          }
-        } catch (err) {
-          _iterator4.e(err);
-        } finally {
-          _iterator4.f();
-        }
-
-        var selected_tags = this.props.selected_resource.tags;
-
-        if (!selected_tags.includes(the_tag)) {
-          selected_tags = selected_tags + " " + the_tag;
-          selected_tags = selected_tags.trim();
-          var new_selected_resource = this.props.selected_resource;
-          new_selected_resource["tags"] = selected_tags;
-
-          this._updatePaneState({
-            "selected_resource": new_selected_resource
-          });
-        }
-      } else {
-        this.addOneTag(res_name, the_tag);
-      }
     }
   }, {
     key: "_handleSplitResize",
@@ -710,13 +722,14 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "_handleRowDoubleClick",
     value: function _handleRowDoubleClick(row_dict) {
       var self = this;
-      var view_view = view_views(this.props.is_repository)[this.props.res_type];
+      var view_view = view_views(this.props.is_repository)[row_dict.res_type];
       if (view_view == null) return;
 
       this._updatePaneState({
         selected_resource: row_dict,
         multi_select: false,
-        list_of_selected: [row_dict.name]
+        list_of_selected: [row_dict.name],
+        seleced_rows: [row_dict]
       });
 
       if (window.in_context) {
@@ -731,48 +744,61 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       }
     }
   }, {
+    key: "_selectedTypes",
+    value: function _selectedTypes() {
+      var the_types = this.props.selected_rows.map(function (row) {
+        return row.res_type;
+      });
+      the_types = _toConsumableArray(new Set(the_types));
+      return the_types;
+    }
+  }, {
     key: "_handleRowSelection",
     value: function _handleRowSelection(selected_rows) {
-      if (!this.props.multi_select && this.props.selected_resource.name != "" && this.props.selected_resource.notes != this.get_data_dict_entry(this.props.selected_resource.name).notes) {
-        this._saveFromSelectedResource();
+      if (!this.props.multi_select) {
+        var sres = this.props.selected_resource;
+
+        if (sres.name != "" && sres.notes != this.get_data_dict_entry(sres.name, sres.res_type).notes) {
+          this._saveFromSelectedResource();
+        }
       }
 
       if (selected_rows.length > 1) {
         var common_tags = selected_rows[0].tags.split(" ");
         var other_rows = selected_rows.slice(1, selected_rows.length);
 
-        var _iterator5 = _createForOfIteratorHelper(other_rows),
-            _step5;
+        var _iterator7 = _createForOfIteratorHelper(other_rows),
+            _step7;
 
         try {
-          for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-            var row_dict = _step5.value;
+          for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
+            var row_dict = _step7.value;
             var new_common_tags = [];
             var new_tag_list = row_dict.tags.split(" ");
 
-            var _iterator6 = _createForOfIteratorHelper(new_tag_list),
-                _step6;
+            var _iterator8 = _createForOfIteratorHelper(new_tag_list),
+                _step8;
 
             try {
-              for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-                var tag = _step6.value;
+              for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
+                var tag = _step8.value;
 
                 if (common_tags.includes(tag)) {
                   new_common_tags.push(tag);
                 }
               }
             } catch (err) {
-              _iterator6.e(err);
+              _iterator8.e(err);
             } finally {
-              _iterator6.f();
+              _iterator8.f();
             }
 
             common_tags = new_common_tags;
           }
         } catch (err) {
-          _iterator5.e(err);
+          _iterator7.e(err);
         } finally {
-          _iterator5.f();
+          _iterator7.f();
         }
 
         var multi_select_list = selected_rows.map(function (row_dict) {
@@ -787,7 +813,8 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         this._updatePaneState({
           multi_select: true,
           selected_resource: new_selected_resource,
-          list_of_selected: multi_select_list
+          list_of_selected: multi_select_list,
+          selected_rows: selected_rows
         });
       } else {
         var _row_dict = selected_rows[0];
@@ -795,7 +822,8 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         this._updatePaneState({
           selected_resource: _row_dict,
           multi_select: false,
-          list_of_selected: [_row_dict.name]
+          list_of_selected: [_row_dict.name],
+          selected_rows: selected_rows
         });
       }
     }
@@ -901,6 +929,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         this._updatePaneState({
           selected_resource: this.state.data_dict[new_index],
           list_of_selected: [this.state.data_dict[new_index].name],
+          selected_rows: [this.state.data_dict[new_index]],
           multi_select: false,
           selectedRegions: new_regions
         });
@@ -913,7 +942,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       var self = this;
 
       if (the_view == null) {
-        the_view = view_views(this.props.is_repository)[this.props.res_type];
+        the_view = view_views(this.props.is_repository)[this.props.selected_resource.res_type];
       }
 
       if (window.in_context) {
@@ -923,19 +952,20 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
           context_id: context_id,
           resource_name: this.props.selected_resource.name
         }).then(self.props.handleCreateViewer)["catch"](_toaster.doFlash);
-      } else if (!this.state.multi_select) {
+      } else {
         window.open($SCRIPT_ROOT + the_view + this.props.selected_resource.name);
       }
     }
   }, {
     key: "_view_resource",
-    value: function _view_resource(resource_name) {
+    value: function _view_resource(selected_resource) {
       var the_view = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
       var force_new_tab = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
       var self = this;
+      var resource_name = selected_resource.name;
 
       if (the_view == null) {
-        the_view = view_views(this.props.is_repository)[this.props.res_type];
+        the_view = view_views(this.props.is_repository)[selected_resource.res_type];
       }
 
       if (window.in_context && !force_new_tab) {
@@ -951,14 +981,16 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     }
   }, {
     key: "_duplicate_func",
-    value: function _duplicate_func(duplicate_view) {
-      var resource_name = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-      var res_type = this.props.res_type;
-      var res_name = resource_name ? resource_name : this.props.selected_resource.name;
+    value: function _duplicate_func() {
+      var row = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      var the_row = row ? row : this.props.selected_resource;
+      var res_name = the_row.name;
+      var res_type = the_row.res_type;
       $.getJSON($SCRIPT_ROOT + "get_resource_names/" + res_type, function (data) {
         (0, _modal_react.showModalReact)("Duplicate ".concat(res_type), "New Name", DuplicateResource, res_name, data.resource_names);
       });
       var self = this;
+      var duplicate_view = duplicate_views()[res_type];
 
       function DuplicateResource(new_name) {
         var result_dict = {
@@ -973,14 +1005,12 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     }
   }, {
     key: "_delete_func",
-    value: function _delete_func(delete_view) {
-      var resource_name = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-      var res_type = this.props.res_type;
-      var res_names = resource_name ? [resource_name] : this.props.list_of_selected;
+    value: function _delete_func(resource) {
+      var res_list = resource ? [resource] : this.props.selected_rows;
       var confirm_text;
 
-      if (res_names.length == 1) {
-        var res_name = res_names[0];
+      if (res_list.length == 1) {
+        var res_name = res_list[0].name;
         confirm_text = "Are you sure that you want to delete ".concat(res_name, "?");
       } else {
         confirm_text = "Are you sure that you want to delete multiple items?";
@@ -989,27 +1019,27 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       var self = this;
       var first_index = 99999;
 
-      var _iterator7 = _createForOfIteratorHelper(res_names),
-          _step7;
+      var _iterator9 = _createForOfIteratorHelper(this.props.selected_rows),
+          _step9;
 
       try {
-        for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
-          var res = _step7.value;
-          var ind = parseInt(this.get_data_dict_index(res));
+        for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
+          var row = _step9.value;
+          var ind = parseInt(this.get_data_dict_index(row.name, row.res_type));
 
           if (ind < first_index) {
             first_index = ind;
           }
         }
       } catch (err) {
-        _iterator7.e(err);
+        _iterator9.e(err);
       } finally {
-        _iterator7.f();
+        _iterator9.f();
       }
 
-      (0, _modal_react.showConfirmDialogReact)("Delete ".concat(res_type), confirm_text, "do nothing", "delete", function () {
-        (0, _communication_react.postAjaxPromise)(delete_view, {
-          "resource_names": res_names
+      (0, _modal_react.showConfirmDialogReact)("Delete resources", confirm_text, "do nothing", "delete", function () {
+        (0, _communication_react.postAjaxPromise)("delete_resource_list", {
+          "resource_list": res_list
         }).then(function () {
           var new_index = 0;
 
@@ -1024,9 +1054,18 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_rename_func",
     value: function _rename_func() {
-      var resource_name = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-      var res_type = this.props.res_type;
-      var res_name = resource_name ? resource_name : this.props.selected_resource.name;
+      var row = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      var res_type;
+      var res_name;
+
+      if (!row) {
+        res_type = this.props.selected_resource.res_type;
+        res_name = this.props.selected_resource.name;
+      } else {
+        res_type = row.res_type;
+        res_name = row.name;
+      }
+
       var self = this;
       $.getJSON($SCRIPT_ROOT + "get_resource_names/" + res_type, function (data) {
         var res_names = data["resource_names"];
@@ -1050,7 +1089,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
             (0, _toaster.doFlash)(data);
             return false;
           } else {
-            var ind = self.get_data_dict_index(res_name);
+            var ind = self.get_data_dict_index(res_name, res_type);
 
             var new_data_dict = _lodash["default"].cloneDeep(self.state.data_dict);
 
@@ -1068,8 +1107,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_repository_copy_func",
     value: function _repository_copy_func() {
-      var res_type = this.props.res_type;
-
       if (!this.props.multi_select) {
         var ImportResource = function ImportResource(new_name) {
           var result_dict = {
@@ -1080,6 +1117,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
           (0, _communication_react.postAjaxPromise)("/copy_from_repository", result_dict).then(_toaster.doFlash)["catch"](_toaster.doFlash);
         };
 
+        var res_type = this.props.selected_resource.res_type;
         var res_name = this.props.selected_resource.name;
         $.getJSON($SCRIPT_ROOT + "get_resource_names/" + res_type, function (data) {
           (0, _modal_react.showModalReact)("Import " + res_type, "New Name", ImportResource, res_name, data["resource_names"]);
@@ -1087,8 +1125,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         return res_name;
       } else {
         var result_dict = {
-          "res_type": res_type,
-          "res_names": this.props.list_of_selected
+          "selected_rows": this.props.selected_rows
         };
         (0, _communication_react.postAjaxPromise)("/copy_from_repository", result_dict).then(_toaster.doFlash)["catch"](_toaster.doFlash);
         return "";
@@ -1097,11 +1134,12 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_send_repository_func",
     value: function _send_repository_func() {
-      var res_type = this.props.res_type;
+      var pane_type = this.props.res_type;
 
       if (!this.props.multi_select) {
         var ShareResource = function ShareResource(new_name) {
           var result_dict = {
+            "pane_type": pane_type,
             "res_type": res_type,
             "res_name": res_name,
             "new_res_name": new_name
@@ -1109,6 +1147,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
           (0, _communication_react.postAjaxPromise)('/send_to_repository', result_dict).then(_toaster.doFlash)["catch"](_toaster.doFlash);
         };
 
+        var res_type = this.props.selected_resource.res_type;
         var res_name = this.props.selected_resource.name;
         $.getJSON($SCRIPT_ROOT + "get_repository_resource_names/" + res_type, function (data) {
           (0, _modal_react.showModalReact)("Share ".concat(res_type), "New ".concat(res_type, " Name"), ShareResource, res_name, data["resource_names"]);
@@ -1116,8 +1155,8 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         return res_name;
       } else {
         var result_dict = {
-          "res_type": res_type,
-          "res_names": this.props.list_of_selected
+          "pane_type": pane_type,
+          "selected_rows": this.props.selected_rows
         };
         (0, _communication_react.postAjaxPromise)('/send_to_repository', result_dict).then(_toaster.doFlash)["catch"](_toaster.doFlash);
         return "";
@@ -1174,18 +1213,415 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       });
     }
   }, {
+    key: "_new_notebook",
+    value: function _new_notebook() {
+      var self = this;
+
+      if (window.in_context) {
+        var the_view = "".concat($SCRIPT_ROOT, "/new_notebook_in_context");
+        (0, _communication_react.postAjaxPromise)(the_view, {
+          resource_name: ""
+        }).then(self.props.handleCreateViewer)["catch"](_toaster.doFlash);
+      } else {
+        window.open("".concat($SCRIPT_ROOT, "/new_notebook"));
+      }
+    }
+  }, {
+    key: "_downloadJupyter",
+    value: function _downloadJupyter() {
+      var res_name = this.props.selected_resource.name;
+      (0, _modal_react.showModalReact)("Download Notebook as Jupyter Notebook", "New File Name", function (new_name) {
+        window.open("".concat($SCRIPT_ROOT, "/download_jupyter/") + res_name + "/" + new_name);
+      }, res_name + ".ipynb");
+    }
+  }, {
+    key: "_showJupyterImport",
+    value: function _showJupyterImport() {
+      (0, _import_dialog.showFileImportDialog)("project", ".ipynb", [], this._import_jupyter, this.props.tsocket, this.props.dark_theme, false, false);
+    }
+  }, {
+    key: "_import_jupyter",
+    value: function _import_jupyter(myDropZone, setCurrentUrl) {
+      var new_url = "import_jupyter/".concat(this.props.library_id);
+      myDropZone.options.url = new_url;
+      setCurrentUrl(new_url);
+      myDropZone.processQueue();
+    }
+  }, {
+    key: "_combineCollections",
+    value: function _combineCollections() {
+      var res_name = this.props.selected_resource.name;
+      var self = this;
+
+      if (!this.props.multi_select) {
+        var doTheCombine = function doTheCombine(other_name) {
+          self.props.startSpinner(true);
+          var target = "".concat($SCRIPT_ROOT, "/combine_collections/").concat(res_name, "/").concat(other_name);
+          $.post(target, function (data) {
+            self.props.stopSpinner();
+
+            if (!data.success) {
+              self.props.addErrorDrawerEntry({
+                title: "Error combining collections",
+                content: data.message
+              });
+            } else {
+              (0, _toaster.doFlash)(data);
+            }
+          });
+        };
+
+        $.getJSON("".concat($SCRIPT_ROOT, "get_resource_names/collection"), function (data) {
+          (0, _modal_react2.showSelectDialog)("Select a new collection to combine with " + res_name, "Collection to Combine", "Cancel", "Combine", doTheCombine, data["resource_names"]);
+        });
+      } else {
+        $.getJSON("".concat($SCRIPT_ROOT, "get_resource_names/collection"), function (data) {
+          (0, _modal_react.showModalReact)("Combine Collections", "Name for combined collection", CreateCombinedCollection, "NewCollection", data["resource_names"]);
+        });
+      }
+
+      function CreateCombinedCollection(new_name) {
+        (0, _communication_react.postAjaxPromise)("combine_to_new_collection", {
+          "original_collections": self.props.list_of_selected,
+          "new_name": new_name
+        }).then(function (data) {
+          self._refresh_func();
+
+          data.new_row;
+        })["catch"](function (data) {
+          self.props.addErrorDrawerEntry({
+            title: "Error combining collections",
+            content: data.message
+          });
+        });
+      }
+    }
+  }, {
+    key: "_downloadCollection",
+    value: function _downloadCollection() {
+      var resource_name = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      var res_name = resource_name ? resource_name : this.props.selected_resource.name;
+      (0, _modal_react.showModalReact)("Download Collection as Excel Notebook", "New File Name", function (new_name) {
+        window.open("".concat($SCRIPT_ROOT, "/download_collection/") + res_name + "/" + new_name);
+      }, res_name + ".xlsx");
+    }
+  }, {
+    key: "_displayImportResults",
+    value: function _displayImportResults(data) {
+      var title = "Collection Created";
+      var message = "";
+      var number_of_errors;
+
+      if (data.file_decoding_errors == null) {
+        data.message = "No decoding errors were encounters";
+        data.alert_type = "Success";
+        (0, _toaster.doFlash)(data);
+      } else {
+        message = "<b>Decoding errors were enountered</b>";
+
+        for (var filename in data.file_decoding_errors) {
+          number_of_errors = String(data.file_decoding_errors[filename].length);
+          message = message + "<br>".concat(filename, ": ").concat(number_of_errors, " errors");
+        }
+
+        this.props.addErrorDrawerEntry({
+          title: title,
+          content: message
+        });
+      }
+    }
+  }, {
+    key: "_showCollectionImport",
+    value: function _showCollectionImport() {
+      (0, _import_dialog.showFileImportDialog)("collection", ".csv,.tsv,.txt,.xls,.xlsx,.html", [{
+        "checkname": "import_as_freeform",
+        "checktext": "Import as freeform"
+      }], this._import_collection, this.props.tsocket, this.props.dark_theme, true, true);
+    }
+  }, {
+    key: "_import_collection",
+    value: function _import_collection(myDropZone, setCurrentUrl, new_name, check_results) {
+      var _this6 = this;
+
+      var csv_options = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : null;
+      var doc_type;
+
+      if (check_results["import_as_freeform"]) {
+        doc_type = "freeform";
+      } else {
+        doc_type = "table";
+      }
+
+      (0, _communication_react.postAjaxPromise)("create_empty_collection", {
+        "collection_name": new_name,
+        "doc_type": doc_type,
+        "library_id": this.props.library_id,
+        "csv_options": csv_options
+      }).then(function (data) {
+        var new_url = "append_documents_to_collection/".concat(new_name, "/").concat(doc_type, "/").concat(_this6.props.library_id);
+        myDropZone.options.url = new_url;
+        setCurrentUrl(new_url);
+        _this6.upload_name = new_name;
+        myDropZone.processQueue();
+      })["catch"](function (data) {});
+    }
+  }, {
+    key: "_tile_view",
+    value: function _tile_view() {
+      this._view_func("/view_module/");
+    }
+  }, {
+    key: "_view_named_tile",
+    value: function _view_named_tile(res) {
+      var in_new_tab = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+      this._view_resource({
+        name: res.name,
+        res_type: "tile"
+      }, "/view_module/", in_new_tab);
+    }
+  }, {
+    key: "_creator_view_named_tile",
+    value: function _creator_view_named_tile(res) {
+      var in_new_tab = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+      this._view_resource({
+        name: res.tile,
+        res_type: "tile"
+      }, "/view_in_creator/", in_new_tab);
+    }
+  }, {
+    key: "_creator_view",
+    value: function _creator_view() {
+      this._view_func("/view_in_creator/");
+    }
+  }, {
+    key: "_showHistoryViewer",
+    value: function _showHistoryViewer() {
+      window.open("".concat($SCRIPT_ROOT, "/show_history_viewer/").concat(this.props.selected_resource.name));
+    }
+  }, {
+    key: "_compare_tiles",
+    value: function _compare_tiles() {
+      var res_names = this.props.list_of_selected;
+      if (res_names.length == 0) return;
+
+      if (res_names.length == 1) {
+        window.open("".concat($SCRIPT_ROOT, "/show_tile_differ/").concat(res_names[0]));
+      } else if (res_names.length == 2) {
+        window.open("".concat($SCRIPT_ROOT, "/show_tile_differ/both_names/").concat(res_names[0], "/").concat(res_names[1]));
+      } else {
+        (0, _toaster.doFlash)({
+          "alert-type": "alert-warning",
+          "message": "Select only one or two tiles before launching compare"
+        });
+      }
+    }
+  }, {
+    key: "_load_tile",
+    value: function _load_tile() {
+      var resource = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      var self = this;
+      var res_name = resource ? resource.name : this.props.selected_resource.name;
+      (0, _communication_react.postWithCallback)("host", "load_tile_module_task", {
+        "tile_module_name": res_name,
+        "user_id": window.user_id
+      }, function (data) {
+        if (!data.success) {
+          self.props.addErrorDrawerEntry({
+            title: "Error loading tile",
+            content: data.message
+          });
+        } else {
+          (0, _toaster.doFlash)(data);
+        }
+      }, null, this.props.library_id);
+    }
+  }, {
+    key: "_unload_all_tiles",
+    value: function _unload_all_tiles() {
+      $.getJSON("".concat($SCRIPT_ROOT, "/unload_all_tiles"), _toaster.doFlash);
+    }
+  }, {
+    key: "_unload_module",
+    value: function _unload_module() {
+      var resource = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      var res_name = resource ? resource.name : this.props.selected_resource.name;
+      $.getJSON("".concat($SCRIPT_ROOT, "/unload_one_module/").concat(res_name), _toaster.doFlash);
+    }
+  }, {
+    key: "_new_tile",
+    value: function _new_tile(template_name) {
+      $.getJSON($SCRIPT_ROOT + "get_resource_names/tile", function (data) {
+        (0, _modal_react.showModalReact)("New Tile", "New Tile Name", CreateNewTileModule, "NewTileModule", data["resource_names"]);
+      });
+      var self = this;
+
+      function CreateNewTileModule(new_name) {
+        var result_dict = {
+          "template_name": template_name,
+          "new_res_name": new_name,
+          "last_saved": "viewer"
+        };
+        (0, _communication_react.postAjaxPromise)("/create_tile_module", result_dict).then(function (data) {
+          self._refresh_func();
+
+          self._.view_resource({
+            name: new_name,
+            res_type: "tile"
+          }, "/view_module/");
+        })["catch"](function (data) {
+          self.props.addErrorDrawerEntry({
+            title: "Error creating new tile",
+            content: data.message
+          });
+        });
+      }
+    }
+  }, {
+    key: "_new_in_creator",
+    value: function _new_in_creator(template_name) {
+      $.getJSON("".concat($SCRIPT_ROOT, "/get_resource_names/tile"), function (data) {
+        (0, _modal_react.showModalReact)("New Tile", "New Tile Name", CreateNewTileModule, "NewTileModule", data["resource_names"]);
+      });
+      var self = this;
+
+      function CreateNewTileModule(new_name) {
+        var result_dict = {
+          "template_name": template_name,
+          "new_res_name": new_name,
+          "last_saved": "creator"
+        };
+        (0, _communication_react.postAjaxPromise)("/create_tile_module", result_dict).then(function (data) {
+          self._refresh_func();
+
+          self._view_resource({
+            name: String(new_name),
+            res_type: "tile"
+          }, "/view_in_creator/");
+        })["catch"](function (data) {
+          self.props.addErrorDrawerEntry({
+            title: "Error creating new tile",
+            content: data.message
+          });
+        });
+      }
+    }
+  }, {
+    key: "_new_list",
+    value: function _new_list(template_name) {
+      $.getJSON("".concat($SCRIPT_ROOT, "/get_resource_names/list"), function (data) {
+        (0, _modal_react.showModalReact)("New List Resource", "New List Resource Name", CreateNewListResource, "NewListResource", data["resource_names"]);
+      });
+      var self = this;
+
+      function CreateNewListResource(new_name) {
+        var result_dict = {
+          "template_name": template_name,
+          "new_res_name": new_name
+        };
+        (0, _communication_react.postAjaxPromise)("/create_list", result_dict).then(function (data) {
+          self._refresh_func();
+
+          self._view_resource({
+            name: String(new_name),
+            res_type: "list"
+          }, "/view_list/");
+        })["catch"](function (data) {
+          self.props.addErrorDrawerEntry({
+            title: "Error creating new list resource",
+            content: data.message
+          });
+        });
+      }
+    }
+  }, {
+    key: "_add_list",
+    value: function _add_list(myDropZone, setCurrentUrl) {
+      var new_url = "import_list/".concat(this.props.library_id);
+      myDropZone.options.url = new_url;
+      setCurrentUrl(new_url);
+      myDropZone.processQueue();
+    }
+  }, {
+    key: "_showListImport",
+    value: function _showListImport() {
+      (0, _import_dialog.showFileImportDialog)("list", "text/*", [], this._add_list, this.props.tsocket, this.props.dark_theme, false, false);
+    }
+  }, {
+    key: "_new_code",
+    value: function _new_code(template_name) {
+      $.getJSON("".concat($SCRIPT_ROOT, "/get_resource_names/code"), function (data) {
+        (0, _modal_react.showModalReact)("New Code Resource", "New Code Resource Name", CreateNewCodeResource, "NewCodeResource", data["resource_names"]);
+      });
+      var self = this;
+
+      function CreateNewCodeResource(new_name) {
+        var result_dict = {
+          "template_name": template_name,
+          "new_res_name": new_name
+        };
+        (0, _communication_react.postAjaxPromise)("/create_code", result_dict).then(function (data) {
+          self._refresh_func();
+
+          self._view_resource({
+            name: String(new_name),
+            res_type: "code"
+          }, "/view_code/");
+        })["catch"](function (data) {
+          self.props.addErrorDrawerEntry({
+            title: "Error creating new code resource",
+            content: data.message
+          });
+        });
+      }
+    }
+  }, {
+    key: "_menu_funcs",
+    value: function _menu_funcs() {
+      return {
+        view_func: this._view_func,
+        send_repository_func: this._send_repository_func,
+        repository_copy_func: this._repository_copy_func,
+        duplicate_func: this._duplicate_func,
+        refresh_func: this._refresh_func,
+        delete_func: this._delete_func,
+        rename_func: this._rename_func,
+        new_notebook: this._new_notebook,
+        downloadJupyter: this._downloadJupyter,
+        showJupyterImport: this._showJupyterImport,
+        combineCollections: this._combineCollections,
+        showCollectionImport: this._showCollectionImport,
+        downloadCollection: this._downloadCollection,
+        new_in_creator: this._new_in_creator,
+        creator_view: this._creator_view,
+        tile_view: this._tile_view,
+        creator_view_named_tile: this._creator_view_named_tile,
+        view_named_tile: this._view_named_tile,
+        load_tile: this._load_tile,
+        unload_module: this._unload_module,
+        unload_all_tiles: this._unload_all_tiles,
+        showHistoryViewer: this._showHistoryViewer,
+        compare_tiles: this._compare_tiles,
+        new_list: this._new_list,
+        showListImport: this._showListImport,
+        new_code: this._new_code
+      };
+    }
+  }, {
     key: "render",
     value: function render() {
-      var _this6 = this;
+      var _this7 = this;
 
       var new_button_groups;
       var uwidth = this.props.usable_width;
       var left_width = uwidth * this.props.left_width_fraction;
       var primary_mdata_fields = ["name", "created", "created_for_sort", "updated", "updated_for_sort", "tags", "notes"];
+      var ignore_fields = ["doc_type", "size_for_sort", "res_type"];
       var additional_metadata = {};
 
       for (var field in this.props.selected_resource) {
-        if (!primary_mdata_fields.includes(field)) {
+        if (!primary_mdata_fields.includes(field) && !ignore_fields.includes(field) && !field.startsWith("icon")) {
           additional_metadata[field] = this.props.selected_resource[field];
         }
       }
@@ -1245,9 +1681,9 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       }
 
       var key_bindings = [[["up"], function () {
-        return _this6._handleArrowKeyPress("ArrowUp");
+        return _this7._handleArrowKeyPress("ArrowUp");
       }], [["down"], function () {
-        return _this6._handleArrowKeyPress("ArrowDown");
+        return _this7._handleArrowKeyPress("ArrowDown");
       }], [["ctrl+space"], this._showOmnibar]];
 
       var left_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
@@ -1263,16 +1699,14 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
           maxHeight: left_pane_height
         }
       }, /*#__PURE__*/_react["default"].createElement(_tag_buttons_react.TagButtonList, _extends({
-        res_type: this.props.res_type,
         tag_list: this.state.tag_list
       }, this.props.tag_button_state, {
         updateTagState: this._updateTagState,
-        handleAddTag: this._handleAddTag,
         doTagDelete: this._doTagDelete,
         doTagRename: this._doTagRename
       }))), /*#__PURE__*/_react["default"].createElement("div", {
-        ref: this.table_ref // className="d-flex flex-column"
-        ,
+        ref: this.table_ref,
+        className: this.props.res_type + "-pane",
         style: {
           width: table_width,
           maxWidth: this.state.total_width,
@@ -1301,21 +1735,19 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         keyHandler: this._handleTableKeyPress,
         initiateDataGrab: this._initiateDataGrab,
         renderBodyContextMenu: this._renderBodyContextMenu,
-        handleRowDoubleClick: this._handleRowDoubleClick,
-        handleAddTag: this._handleAddTag
+        handleRowDoubleClick: this._handleRowDoubleClick
       }))));
 
+      var selected_types = this._selectedTypes();
+
+      var selected_type = selected_types.length == 1 ? this.props.selected_resource.res_type : "multi";
       return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(MenubarClass, _extends({
         selected_resource: this.props.selected_resource,
         multi_select: this.props.multi_select,
         list_of_selected: this.props.list_of_selected,
-        view_func: this._view_func,
-        send_repository_func: this._send_repository_func,
-        repository_copy_func: this._repository_copy_func,
-        duplicate_func: this._duplicate_func,
-        refresh_func: this._refresh_func,
-        delete_func: this._delete_func,
-        rename_func: this._rename_func,
+        selected_rows: this.props.selected_rows,
+        selected_type: selected_type
+      }, this._menu_funcs(), {
         startSpinner: this.props.startSpinner,
         stopSpinner: this.props.stopSpinner,
         clearStatusMessage: this.props.clearStatusMessage,
@@ -1377,6 +1809,7 @@ LibraryPane.propTypes = {
   aux_pane: _propTypes["default"].object,
   left_width_fraction: _propTypes["default"].number,
   selected_resource: _propTypes["default"].object,
+  selected_rows: _propTypes["default"].array,
   sort_field: _propTypes["default"].string,
   sorting_field: _propTypes["default"].string,
   sort_direction: _propTypes["default"].string,

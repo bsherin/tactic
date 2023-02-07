@@ -195,7 +195,7 @@ class HostWorker(QWorker):
             if not res_dict["success"]:
                 if "show_failed_loads" in data and data["show_failed_loads"]:
                     loaded_tile_management.add_failed_load(tile_module_name, user_obj.username)
-                    tile_manager.update_selector_row({"name": tile_module_name, "icon:upload": "icon:error"}, user_obj)
+                    tile_manager.update_selector_row({"name": tile_module_name, "icon:upload": "icon:error", "res_type": "tile"}, user_obj)
                 if "main_id" not in task_packet:
                     task_packet["room"] = user_id
                 if not task_packet["callback_type"] == "no_callback":
@@ -218,7 +218,7 @@ class HostWorker(QWorker):
                                                         tile_module_name,
                                                         is_default)
             print("about to emit update_selector_row with tile_module_name " + tile_module_name)
-            tile_manager.update_selector_row({"name": tile_module_name, "icon:upload": "icon:upload"}, user_obj)
+            tile_manager.update_selector_row({"name": tile_module_name, "icon:upload": "icon:upload", "res_type": "tile"}, user_obj)
             if "main_id" in task_packet:
                 umdata = {"main_id": task_packet["main_id"]}
             else:
