@@ -153,6 +153,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
           },
           sort_field: "updated",
           sort_direction: "descending",
+          filterType: res_type,
           multi_select: false,
           list_of_selected: [],
           search_string: "",
@@ -372,7 +373,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
             "first_sort": "descending"
           }
         },
-        res_type: "all",
+        pane_type: "all",
         handleCreateViewer: this.props.handleCreateViewer,
         open_resources: this.props.open_resources ? this.props.open_resources["all"] : null,
         allow_search_inside: true,
@@ -411,7 +412,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
             "first_sort": "descending"
           }
         },
-        res_type: "collection",
+        pane_type: "collection",
         handleCreateViewer: this.props.handleCreateViewer,
         open_resources: this.props.open_resources ? this.props.open_resources["collection"] : null,
         allow_search_inside: false,
@@ -450,7 +451,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
             "first_sort": "descending"
           }
         },
-        res_type: "project",
+        pane_type: "project",
         handleCreateViewer: this.props.handleCreateViewer,
         open_resources: this.props.open_resources ? this.props.open_resources["project"] : null,
         allow_search_inside: false,
@@ -488,7 +489,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
             "first_sort": "ascending"
           }
         },
-        res_type: "tile",
+        pane_type: "tile",
         handleCreateViewer: this.props.handleCreateViewer,
         open_resources: this.props.open_resources ? this.props.open_resources["tile"] : null,
         allow_search_inside: true,
@@ -522,7 +523,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
             "first_sort": "ascending"
           }
         },
-        res_type: "list",
+        pane_type: "list",
         open_resources: this.props.open_resources ? this.props.open_resources["list"] : null,
         allow_search_inside: true,
         allow_search_metadata: true,
@@ -556,7 +557,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
             "first_sort": "ascending"
           }
         },
-        res_type: "code",
+        pane_type: "code",
         handleCreateViewer: this.props.handleCreateViewer,
         open_resources: this.props.open_resources ? this.props.open_resources["code"] : null,
         allow_search_inside: true,

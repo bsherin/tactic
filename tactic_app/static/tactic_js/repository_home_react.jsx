@@ -169,7 +169,7 @@ class RepositoryHomeApp extends React.Component {
         }
         let collection_pane = (
                         <LibraryPane {...lib_props}
-                                     res_type="collection"
+                                     pane_type="collection"
                                      allow_search_inside={false}
                                      allow_search_metadata={false}
                                      MenubarClass={RepositoryCollectionMenubar}
@@ -180,7 +180,7 @@ class RepositoryHomeApp extends React.Component {
                                      is_repository={true}/>
         );
         let projects_pane = (<LibraryPane {...lib_props}
-                                          res_type="project"
+                                          pane_type="project"
                                           allow_search_inside={false}
                                           allow_search_metadata={true}
                                           MenubarClass={RepositoryProjectMenubar}
@@ -191,7 +191,7 @@ class RepositoryHomeApp extends React.Component {
                                           is_repository={true}/>
         );
         let tiles_pane = (<LibraryPane {...lib_props}
-                                       res_type="tile"
+                                       pane_type="tile"
                                        allow_search_inside={true}
                                        allow_search_metadata={true}
                                        MenubarClass={RepositoryTileMenubar}
@@ -202,7 +202,7 @@ class RepositoryHomeApp extends React.Component {
                                        is_repository={true}/>
         );
         let lists_pane = (<LibraryPane {...lib_props}
-                                       res_type="list"
+                                       pane_type="list"
                                        allow_search_inside={true}
                                        allow_search_metadata={true}
                                        MenubarClass={RepositoryListMenubar}
@@ -213,7 +213,7 @@ class RepositoryHomeApp extends React.Component {
                                        is_repository={true}/>
         );
         let code_pane = (<LibraryPane {...lib_props}
-                                      res_type="code"
+                                      pane_type="code"
                                       allow_search_inside={true}
                                       allow_search_metadata={true}
                                       MenubarClass={RepositoryCodeMenubar}

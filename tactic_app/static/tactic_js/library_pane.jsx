@@ -2,7 +2,7 @@
 import React from "react";
 import PropTypes from 'prop-types';
 
-import { Menu, MenuItem, MenuDivider } from "@blueprintjs/core";
+import { Menu, MenuItem, MenuDivider, RadioGroup, Radio } from "@blueprintjs/core";
 import {Regions} from "@blueprintjs/table";
 import _ from 'lodash';
 
@@ -123,15 +123,15 @@ class LibraryPane extends React.Component {
 
     initSocket() {
         if ((this.props.tsocket != null) && (!this.props.is_repository)) {
-            if (this.props.res_type == "all") {
+            if (this.props.pane_type == "all") {
                 for (let res_type of res_types) {
                     this.props.tsocket.attachListener(`update-${res_type}-selector-row`, this._handleRowUpdate);
                     this.props.tsocket.attachListener(`refresh-${res_type}-selector`, this._refresh_func);
                 }
             }
             else {
-                this.props.tsocket.attachListener(`update-${this.props.res_type}-selector-row`, this._handleRowUpdate);
-                this.props.tsocket.attachListener(`refresh-${this.props.res_type}-selector`, this._refresh_func);
+                this.props.tsocket.attachListener(`update-${this.props.pane_type}-selector-row`, this._handleRowUpdate);
+                this.props.tsocket.attachListener(`refresh-${this.props.pane_type}-selector`, this._refresh_func);
             }
 
         }
@@ -173,6 +173,13 @@ class LibraryPane extends React.Component {
         )
     }
 
+    _handleTypeFilterChange(event) {
+        if (event.currentTarget.value == this.props.filterType) return;
+        this._updatePaneState({"filterType": event.currentTarget.value }, ()=>{
+            this._grabNewChunkWithRow(0, true, null, true)
+        })
+    }
+
     _onTableSelection(regions) {
         if (regions.length == 0) return;  // Without this get an error when clicking on a body cell
         let selected_rows = [];
@@ -212,7 +219,7 @@ class LibraryPane extends React.Component {
         if (search_spec.active_tag && search_spec.active_tag[0] != "/") {
             search_spec.active_tag = "/" + search_spec.active_tag
         }
-        let data = {res_type: this.props.res_type,
+        let data = {pane_type: this.props.filterType,
             search_spec: search_spec,
             row_number: row_index,
             is_repository: this.props.is_repository};
@@ -411,7 +418,7 @@ class LibraryPane extends React.Component {
     }
 
     _updatePaneState(new_state, callback) {
-        this.props.updatePaneState(this.props.res_type, new_state, callback)
+        this.props.updatePaneState(this.props.pane_type, new_state, callback)
     }
 
     _updateTagState(new_state) {
@@ -438,7 +445,7 @@ class LibraryPane extends React.Component {
     }
 
     _doTagDelete(tag) {
-        const result_dict = {"res_type": this.props.res_type, "tag": tag};
+        const result_dict = {"pane_type": this.props.pane_type, "tag": tag};
         let self = this;
         postAjaxPromise("delete_tag", result_dict)
             .then(function(data) {
@@ -448,7 +455,7 @@ class LibraryPane extends React.Component {
     }
 
       _doTagRename(tag_changes) {
-        const result_dict = {"res_type": this.props.res_type, "tag_changes": tag_changes};
+        const result_dict = {"pane_type": this.props.pane_type, "tag_changes": tag_changes};
         let self = this;
         postAjaxPromise("rename_tag", result_dict)
             .then(function (data) {
@@ -787,7 +794,7 @@ class LibraryPane extends React.Component {
     }
 
     _send_repository_func () {
-        let pane_type = this.props.res_type;
+        let pane_type = this.props.pane_type;
         if (!this.props.multi_select) {
             let res_type = this.props.selected_resource.res_type;
             let res_name = this.props.selected_resource.name;
@@ -835,7 +842,7 @@ class LibraryPane extends React.Component {
     }
 
     _omnibarSelect(item) {
-        let the_view = view_views(this.props.is_repository)[this.props.res_type];
+        let the_view = view_views(this.props.is_repository)[item.res_type];
         window.open($SCRIPT_ROOT + the_view + item);
         this._closeOmnibar()
     }
@@ -1198,7 +1205,8 @@ class LibraryPane extends React.Component {
                                   updated={this.props.selected_resource.updated}
                                   notes={this.props.selected_resource.notes}
                                   handleChange={this._handleMetadataChange}
-                                  res_type={this.props.res_type}
+                                  res_type={this.props.selected_resource.res_type}
+                                  pane_type={this.props.pane_type}
                                   outer_style={outer_style}
                                   handleNotesBlur={this.props.multi_select ? null : this._saveFromSelectedResource}
                                   additional_metadata={additional_metadata}
@@ -1253,7 +1261,7 @@ class LibraryPane extends React.Component {
                         />
                     </div>
                     <div ref={this.table_ref}
-                         className={this.props.res_type + "-pane"}
+                         className={this.props.pane_type + "-pane"}
                          style={{width: table_width,
                              maxWidth: this.state.total_width,
                              maxHeight: left_pane_height - 20, // The 20 is for the marginTop and padding
@@ -1267,7 +1275,19 @@ class LibraryPane extends React.Component {
                                     search_inside={this.props.search_inside}
                                     search_metadata={this.props.search_metadata}
                         />
-                        {/*<div style={th_style} id={`${this.props.res_type}-table`}>*/}
+                        {this.props.pane_type == "all" &&
+                            <RadioGroup
+                                inline={true}
+                                onChange={this._handleTypeFilterChange}
+                                selectedValue={this.props.filterType}>
+                                <Radio label="All" value="all" />
+                                <Radio label="Collections" value="collection" />
+                                <Radio label="Projects" value="project" />
+                                <Radio label="Tiles" value="tile" />
+                                <Radio label="Lists" value="list" />
+                                <Radio label="Code" value="code" />
+                            </RadioGroup>
+                        }
                         <BpSelectorTable data_dict={this.state.data_dict}
                                          columns={this.props.columns}
                                          num_rows={this.state.num_rows}
@@ -1327,7 +1347,7 @@ class LibraryPane extends React.Component {
                             />
                         </div>
                     <KeyTrap global={true} bindings={key_bindings} />
-                    <LibraryOmnibar res_type={this.props.res_type}
+                    <LibraryOmnibar res_type={this.props.pane_type}
                                     onItemSelect={this._omnibarSelect}
                                     handleClose={this._closeOmnibar}
                                     showOmnibar={this.state.showOmnibar}/>
@@ -1339,7 +1359,7 @@ class LibraryPane extends React.Component {
 
 LibraryPane.propTypes = {
     columns: PropTypes.object,
-    res_type: PropTypes.string,
+    pane_type: PropTypes.string,
     open_resources: PropTypes.array,
     allow_search_inside: PropTypes.bool,
     allow_search_metadata: PropTypes.bool,
@@ -1353,6 +1373,7 @@ LibraryPane.propTypes = {
     sort_field: PropTypes.string,
     sorting_field: PropTypes.string,
     sort_direction: PropTypes.string,
+    filterType: PropTypes.string,
     multi_select: PropTypes.bool,
     list_of_selected: PropTypes.array,
     search_string: PropTypes.string,

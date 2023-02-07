@@ -215,7 +215,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "initSocket",
     value: function initSocket() {
       if (this.props.tsocket != null && !this.props.is_repository) {
-        if (this.props.res_type == "all") {
+        if (this.props.pane_type == "all") {
           var _iterator = _createForOfIteratorHelper(res_types),
               _step;
 
@@ -231,8 +231,8 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
             _iterator.f();
           }
         } else {
-          this.props.tsocket.attachListener("update-".concat(this.props.res_type, "-selector-row"), this._handleRowUpdate);
-          this.props.tsocket.attachListener("refresh-".concat(this.props.res_type, "-selector"), this._refresh_func);
+          this.props.tsocket.attachListener("update-".concat(this.props.pane_type, "-selector-row"), this._handleRowUpdate);
+          this.props.tsocket.attachListener("refresh-".concat(this.props.pane_type, "-selector"), this._refresh_func);
         }
       }
     }
@@ -290,6 +290,19 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       return /*#__PURE__*/_react["default"].createElement(BodyMenu, {
         items: this.state.contextMenuItems,
         selected_rows: selected_rows
+      });
+    }
+  }, {
+    key: "_handleTypeFilterChange",
+    value: function _handleTypeFilterChange(event) {
+      var _this3 = this;
+
+      if (event.currentTarget.value == this.props.filterType) return;
+
+      this._updatePaneState({
+        "filterType": event.currentTarget.value
+      }, function () {
+        _this3._grabNewChunkWithRow(0, true, null, true);
       });
     }
   }, {
@@ -368,7 +381,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       }
 
       var data = {
-        res_type: this.props.res_type,
+        pane_type: this.props.filterType,
         search_spec: search_spec,
         row_number: row_index,
         is_repository: this.props.is_repository
@@ -658,7 +671,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_updatePaneState",
     value: function _updatePaneState(new_state, callback) {
-      this.props.updatePaneState(this.props.res_type, new_state, callback);
+      this.props.updatePaneState(this.props.pane_type, new_state, callback);
     }
   }, {
     key: "_updateTagState",
@@ -698,7 +711,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "_doTagDelete",
     value: function _doTagDelete(tag) {
       var result_dict = {
-        "res_type": this.props.res_type,
+        "pane_type": this.props.pane_type,
         "tag": tag
       };
       var self = this;
@@ -710,7 +723,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "_doTagRename",
     value: function _doTagRename(tag_changes) {
       var result_dict = {
-        "res_type": this.props.res_type,
+        "pane_type": this.props.pane_type,
         "tag_changes": tag_changes
       };
       var self = this;
@@ -839,12 +852,12 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_update_search_state",
     value: function _update_search_state(new_state) {
-      var _this3 = this;
+      var _this4 = this;
 
       //new_state.search_from_tags = false;
       this._updatePaneState(new_state, function () {
-        if (_this3.search_spec_changed(new_state)) {
-          _this3._grabNewChunkWithRow(0, true, new_state, true);
+        if (_this4.search_spec_changed(new_state)) {
+          _this4._grabNewChunkWithRow(0, true, new_state, true);
         }
       });
     }
@@ -875,7 +888,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_set_sort_state",
     value: function _set_sort_state(column_name, sort_field, direction) {
-      var _this4 = this;
+      var _this5 = this;
 
       var spec_update = {
         sort_field: column_name,
@@ -883,8 +896,8 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       };
 
       this._updatePaneState(spec_update, function () {
-        if (_this4.search_spec_changed(spec_update)) {
-          _this4._grabNewChunkWithRow(0, true, spec_update, true);
+        if (_this5.search_spec_changed(spec_update)) {
+          _this5._grabNewChunkWithRow(0, true, spec_update, true);
         }
       });
     }
@@ -917,11 +930,11 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_selectRow",
     value: function _selectRow(new_index) {
-      var _this5 = this;
+      var _this6 = this;
 
       if (!Object.keys(this.state.data_dict).includes(String(new_index))) {
         this._grabNewChunkWithRow(new_index, false, null, false, null, function () {
-          _this5._selectRow(new_index);
+          _this6._selectRow(new_index);
         });
       } else {
         var new_regions = [_table.Regions.row(new_index)];
@@ -1134,7 +1147,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_send_repository_func",
     value: function _send_repository_func() {
-      var pane_type = this.props.res_type;
+      var pane_type = this.props.pane_type;
 
       if (!this.props.multi_select) {
         var ShareResource = function ShareResource(new_name) {
@@ -1186,7 +1199,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_omnibarSelect",
     value: function _omnibarSelect(item) {
-      var the_view = view_views(this.props.is_repository)[this.props.res_type];
+      var the_view = view_views(this.props.is_repository)[item.res_type];
       window.open($SCRIPT_ROOT + the_view + item);
 
       this._closeOmnibar();
@@ -1341,7 +1354,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_import_collection",
     value: function _import_collection(myDropZone, setCurrentUrl, new_name, check_results) {
-      var _this6 = this;
+      var _this7 = this;
 
       var csv_options = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : null;
       var doc_type;
@@ -1358,10 +1371,10 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         "library_id": this.props.library_id,
         "csv_options": csv_options
       }).then(function (data) {
-        var new_url = "append_documents_to_collection/".concat(new_name, "/").concat(doc_type, "/").concat(_this6.props.library_id);
+        var new_url = "append_documents_to_collection/".concat(new_name, "/").concat(doc_type, "/").concat(_this7.props.library_id);
         myDropZone.options.url = new_url;
         setCurrentUrl(new_url);
-        _this6.upload_name = new_name;
+        _this7.upload_name = new_name;
         myDropZone.processQueue();
       })["catch"](function (data) {});
     }
@@ -1611,7 +1624,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "render",
     value: function render() {
-      var _this7 = this;
+      var _this8 = this;
 
       var new_button_groups;
       var uwidth = this.props.usable_width;
@@ -1649,7 +1662,8 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         updated: this.props.selected_resource.updated,
         notes: this.props.selected_resource.notes,
         handleChange: this._handleMetadataChange,
-        res_type: this.props.res_type,
+        res_type: this.props.selected_resource.res_type,
+        pane_type: this.props.pane_type,
         outer_style: outer_style,
         handleNotesBlur: this.props.multi_select ? null : this._saveFromSelectedResource,
         additional_metadata: additional_metadata,
@@ -1681,9 +1695,9 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       }
 
       var key_bindings = [[["up"], function () {
-        return _this7._handleArrowKeyPress("ArrowUp");
+        return _this8._handleArrowKeyPress("ArrowUp");
       }], [["down"], function () {
-        return _this7._handleArrowKeyPress("ArrowDown");
+        return _this8._handleArrowKeyPress("ArrowDown");
       }], [["ctrl+space"], this._showOmnibar]];
 
       var left_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
@@ -1706,7 +1720,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         doTagRename: this._doTagRename
       }))), /*#__PURE__*/_react["default"].createElement("div", {
         ref: this.table_ref,
-        className: this.props.res_type + "-pane",
+        className: this.props.pane_type + "-pane",
         style: {
           width: table_width,
           maxWidth: this.state.total_width,
@@ -1723,7 +1737,29 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         search_string: this.props.search_string,
         search_inside: this.props.search_inside,
         search_metadata: this.props.search_metadata
-      }), /*#__PURE__*/_react["default"].createElement(_library_widgets.BpSelectorTable, {
+      }), this.props.pane_type == "all" && /*#__PURE__*/_react["default"].createElement(_core.RadioGroup, {
+        inline: true,
+        onChange: this._handleTypeFilterChange,
+        selectedValue: this.props.filterType
+      }, /*#__PURE__*/_react["default"].createElement(_core.Radio, {
+        label: "All",
+        value: "all"
+      }), /*#__PURE__*/_react["default"].createElement(_core.Radio, {
+        label: "Collections",
+        value: "collection"
+      }), /*#__PURE__*/_react["default"].createElement(_core.Radio, {
+        label: "Projects",
+        value: "project"
+      }), /*#__PURE__*/_react["default"].createElement(_core.Radio, {
+        label: "Tiles",
+        value: "tile"
+      }), /*#__PURE__*/_react["default"].createElement(_core.Radio, {
+        label: "Lists",
+        value: "list"
+      }), /*#__PURE__*/_react["default"].createElement(_core.Radio, {
+        label: "Code",
+        value: "code"
+      })), /*#__PURE__*/_react["default"].createElement(_library_widgets.BpSelectorTable, {
         data_dict: this.state.data_dict,
         columns: this.props.columns,
         num_rows: this.state.num_rows,
@@ -1785,7 +1821,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         global: true,
         bindings: key_bindings
       }), /*#__PURE__*/_react["default"].createElement(_library_widgets.LibraryOmnibar, {
-        res_type: this.props.res_type,
+        res_type: this.props.pane_type,
         onItemSelect: this._omnibarSelect,
         handleClose: this._closeOmnibar,
         showOmnibar: this.state.showOmnibar
@@ -1799,7 +1835,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
 exports.LibraryPane = LibraryPane;
 LibraryPane.propTypes = {
   columns: _propTypes["default"].object,
-  res_type: _propTypes["default"].string,
+  pane_type: _propTypes["default"].string,
   open_resources: _propTypes["default"].array,
   allow_search_inside: _propTypes["default"].bool,
   allow_search_metadata: _propTypes["default"].bool,
@@ -1813,6 +1849,7 @@ LibraryPane.propTypes = {
   sort_field: _propTypes["default"].string,
   sorting_field: _propTypes["default"].string,
   sort_direction: _propTypes["default"].string,
+  filterType: _propTypes["default"].string,
   multi_select: _propTypes["default"].bool,
   list_of_selected: _propTypes["default"].array,
   search_string: _propTypes["default"].string,

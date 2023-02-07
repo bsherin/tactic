@@ -426,11 +426,11 @@ var NativeTags = /*#__PURE__*/function (_React$Component5) {
     value: function componentDidMount() {
       var self = this;
       var data_dict = {
-        "res_type": this.props.res_type,
+        "pane_type": this.props.pane_type,
         "is_repository": false
       };
 
-      if (!this.props.res_type) {
+      if (!this.props.pane_type) {
         self.setState({
           "suggestions": []
         });
@@ -516,7 +516,7 @@ var NativeTags = /*#__PURE__*/function (_React$Component5) {
 NativeTags.proptypes = {
   tags: _propTypes["default"].array,
   handleChange: _propTypes["default"].func,
-  res_type: _propTypes["default"].string
+  pane_type: _propTypes["default"].string
 };
 
 var NotesField = /*#__PURE__*/function (_React$Component6) {
@@ -766,7 +766,7 @@ var CombinedMetadata = /*#__PURE__*/function (_React$Component7) {
         tags: this.props.tags,
         readOnly: this.props.readOnly,
         handleChange: this._handleTagsChange,
-        res_type: this.props.res_type
+        pane_type: this.props.pane_type
       })), this.props.category != null && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
         label: "Category"
       }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
@@ -821,6 +821,7 @@ CombinedMetadata.propTypes = {
   outer_style: _propTypes["default"].object,
   elevation: _propTypes["default"].number,
   res_type: _propTypes["default"].string,
+  pane_type: _propTypes["default"].string,
   name: _propTypes["default"].string,
   created: _propTypes["default"].string,
   updated: _propTypes["default"].string,

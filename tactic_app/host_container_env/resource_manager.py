@@ -391,11 +391,11 @@ class LibraryResourceManager(ResourceManager):
                     "tile": self.prep_tile_results,
                     "list": self.prep_list_results,
                     "code": self.prep_code_results}
-        res_type = request.json["res_type"]
-        if res_type == "all":
+        pane_type = request.json["pane_type"]
+        if pane_type == "all":
             types_to_grab = res_types
         else:
-            types_to_grab = [res_type]
+            types_to_grab = [pane_type]
         db_to_use = self.repository_db if request.json["is_repository"] else self.db
 
         def sort_mdata_key(item):
@@ -480,7 +480,7 @@ class LibraryResourceManager(ResourceManager):
                     except Exception as ex:
                         print("Got problem with doc " + str(doc[name_field]))
 
-        is_all = res_type == "all"
+        is_all = pane_type == "all"
         for rtype in types_to_grab:
             prepper = preppers[rtype]
             filtered_res = prepper(filtered_res, is_all)
