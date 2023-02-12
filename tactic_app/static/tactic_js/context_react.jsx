@@ -21,7 +21,7 @@ import {handleCallback} from "./communication_react.js";
 import {doFlash, withStatus} from "./toaster.js";
 import {TacticNavbar} from "./blueprint_navbar";
 import {ErrorBoundary} from "./error_boundary.js";
-
+import {icon_dict} from "./blueprint_mdata_fields.js";
 import {library_props, LibraryHomeApp} from "./library_home_react.js";
 import {view_views} from "./library_pane.js";
 import {doBinding, guid} from "./utilities_react.js";
@@ -37,7 +37,7 @@ import {showConfirmDialogReact} from "./modal_react.js";
 import {postAjaxPromise} from "./communication_react.js";
 import {KeyTrap} from "./key_trap";
 import {DragHandle} from "./resizing_layouts.js";
-import {res_types} from "./library_home_react.js";
+import {res_types} from "./library_pane";
 
 const spinner_panel = (
      <div style={{height: "100%", position: "absolute", top: "50%", left: "50%"}}>
@@ -85,6 +85,7 @@ class ContextApp extends React.Component {
             library_panel_props: library_panel_props,
             // repository_panel_props: repository_panel_props,
             tab_panel_dict: {},
+            open_resources: {},
             dirty_methods: {},
             dark_theme: props.initial_theme === "dark",
             selectedTabId: "library",
@@ -161,11 +162,6 @@ class ContextApp extends React.Component {
     _registerLibraryTabChanger(handleTabChange) {
         this.libraryTabChange = handleTabChange
     }
-
-    _registerRepositoryTabChanger(handleTabChange) {
-        this.repositoryTabChange = handleTabChange
-    }
-
 
     _changeLibTab(res_type) {
         this.libraryTabChange(res_type + "-pane");
@@ -259,40 +255,42 @@ class ContextApp extends React.Component {
      }
 
      _closeATab(the_id, callback=null){
-         let idx = this.state.tab_ids.indexOf(the_id);
-            let copied_tab_panel_dict = {...this.state.tab_panel_dict};
-            let copied_tab_ids = [...this.state.tab_ids];
-            let copied_dirty_methods = {...this.state.dirty_methods};
-            if (idx > -1) {
-                copied_tab_ids.splice(idx, 1);
-                delete copied_tab_panel_dict[the_id];
-                delete copied_dirty_methods[the_id];
-            }
-            let new_state = {
-                tab_panel_dict: copied_tab_panel_dict,
-                tab_ids: copied_tab_ids,
-                dirty_methods: copied_dirty_methods
-            };
-            let currentlySelected = this.state.selectedTabId;
-            let stateUpdate;
-            if (the_id == this.state.selectedTabId) {
-                let newSelectedId;
-                if (this.state.lastSelectedTabId && copied_tab_ids.includes(this.state.lastSelectedTabId)) {
-                    newSelectedId = this.state.lastSelectedTabId;
-                } else {
-                    newSelectedId = "library"
-                }
-                stateUpdate = {selectedTabId: newSelectedId, lastSelectedTabId: "library"}
+        let idx = this.state.tab_ids.indexOf(the_id);
+        let copied_tab_panel_dict = {...this.state.tab_panel_dict};
+        let copied_tab_ids = [...this.state.tab_ids];
+        let copied_dirty_methods = {...this.state.dirty_methods};
+        if (idx > -1) {
+            copied_tab_ids.splice(idx, 1);
+            delete copied_tab_panel_dict[the_id];
+            delete copied_dirty_methods[the_id];
+        }
+        let new_state = {
+            tab_panel_dict: copied_tab_panel_dict,
+            tab_ids: copied_tab_ids,
+            dirty_methods: copied_dirty_methods
+        };
+        let currentlySelected = this.state.selectedTabId;
+        let stateUpdate;
+        if (the_id == this.state.selectedTabId) {
+            let newSelectedId;
+            if (this.state.lastSelectedTabId && copied_tab_ids.includes(this.state.lastSelectedTabId)) {
+                newSelectedId = this.state.lastSelectedTabId;
             } else {
-                stateUpdate = {selectedTabId: currentlySelected};
-                if (this.state.lastSelectedTabId == the_id) {
-                    stateUpdate.lastSelectedTabId = "library"
-                }
+                newSelectedId = "library"
             }
-
-            this.setState(new_state, () => {
-                this.setState(stateUpdate, ()=>this._update_window_dimensions(callback))
+            stateUpdate = {selectedTabId: newSelectedId, lastSelectedTabId: "library"}
+        } else {
+            stateUpdate = {selectedTabId: currentlySelected};
+            if (this.state.lastSelectedTabId == the_id) {
+                stateUpdate.lastSelectedTabId = "library"
+            }
+        }
+        let self = this;
+        self.setState(new_state, () => {
+            self.setState(stateUpdate, ()=>{
+                self._updateOpenResources(()=>self._update_window_dimensions(callback))
             })
+        })
      }
 
      _closeTab(the_id) {
@@ -326,12 +324,12 @@ class ContextApp extends React.Component {
 
     get libIconDict() {
         return {
-            all: "cube",
-            collections: "database",
-            projects: "projects",
-            tiles: "application",
-            lists: "list",
-            code: "code"
+            all: icon_dict["all"],
+            collections: icon_dict["collection"],
+            projects: icon_dict["project"],
+            tiles: icon_dict["tile"],
+            lists: icon_dict["list"],
+            code: icon_dict["code"]
         }
     }
 
@@ -372,11 +370,14 @@ class ContextApp extends React.Component {
      _addPanel(new_id, viewer_kind, res_type, title, new_panel, callback=null) {
          let new_tab_panel_dict = {...this.state.tab_panel_dict};
          new_tab_panel_dict[new_id] = {kind: viewer_kind, res_type: res_type, title: title, panel: new_panel};
+         let self = this;
          this.setState({
                  tab_panel_dict: new_tab_panel_dict,
                  tab_ids: [...this.state.tab_ids, new_id],
                  lastSelectedTabId: this.state.selectedTabId,
-                 selectedTabId: new_id}, callback)
+                 selectedTabId: new_id}, ()=>{
+             self._updateOpenResources(callback);
+         })
      }
 
      _updatePanel(the_id, new_panel, callback=null) {
@@ -400,7 +401,10 @@ class ContextApp extends React.Component {
                   new_tab_panel_dict[the_id].panel = new_panel.panel
               }
          }
-         this.setState({tab_panel_dict: new_tab_panel_dict}, ()=>this._update_window_dimensions(callback))
+         let self = this;
+         this.setState({tab_panel_dict: new_tab_panel_dict}, ()=>{
+             self._updateOpenResources(()=>self._update_window_dimensions(callback))
+         })
      }
 
      _changeResourceName(the_id, new_name, change_title=true, callback=null) {
@@ -409,13 +413,19 @@ class ContextApp extends React.Component {
              new_tab_panel_dict[the_id].title = new_name;
          }
          new_tab_panel_dict[the_id].panel.resource_name = new_name;
-         this.setState({tab_panel_dict: new_tab_panel_dict}, ()=>this._update_window_dimensions(callback))
+         let self = this;
+         this.setState({tab_panel_dict: new_tab_panel_dict}, ()=>{
+             self._updateOpenResources(()=>self._update_window_dimensions(callback))
+         })
      }
 
      _changeResourceTitle(the_id, new_title) {
          let new_tab_panel_dict = {...this.state.tab_panel_dict};
          new_tab_panel_dict[the_id].title = new_title;
-         this.setState({tab_panel_dict: new_tab_panel_dict}, ()=>this._update_window_dimensions(null))
+         let self = this;
+         this.setState({tab_panel_dict: new_tab_panel_dict}, ()=>{
+             self._updateOpenResources(()=>self._update_window_dimensions(null))
+         })
      }
 
      _changeResourceProps(the_id, new_props, callback=null) {
@@ -424,10 +434,7 @@ class ContextApp extends React.Component {
              new_tab_panel_dict[the_id].panel[prop] = new_props[prop]
          }
          this.setState({tab_panel_dict: new_tab_panel_dict},()=>{
-             this._update_window_dimensions(null);
-             if (callback) {
-                 callback()
-             }
+             self._updateOpenResources(()=>self._update_window_dimensions(callback))
          })
      }
 
@@ -587,32 +594,7 @@ class ContextApp extends React.Component {
         event.preventDefault();
     }
 
-    render() {
-      let bstyle = {paddingTop: 0, paddingBotton: 0};
-        let lib_buttons = [];
-        let selected_lib_button;
-        let selected_bclass;
-        selected_lib_button = this.state.selectedLibraryTab;
-        selected_bclass = " selected-lib-tab-button";
-        // }
-        for (let rt of this.resTypes) {
-            let cname = "lib-tab-button";
-            if (rt == selected_lib_button) {
-                cname += selected_bclass
-            }
-            lib_buttons.push(
-                <Button key={rt} icon={this.libIconDict[rt]} className={cname} alignText="left"
-                        small={true} minimal={true} onClick={() => {
-                    this._changeLibTab(rt)
-                }}>
-                    {rt}
-                </Button>
-            )
-        }
-        let bclass = "context-tab-button-content";
-        if (this.state.selectedTabId == "library") {
-            bclass += " selected-tab-button"
-        }
+    _getOpenResources() {
         let open_resources = {};
         for (let res_type of res_types) {
             open_resources[res_type] = [];
@@ -628,13 +610,60 @@ class ContextApp extends React.Component {
         for (let rtype in open_resources) {
             open_resources["all"] = open_resources["all"].concat(open_resources[rtype])
         }
+        return open_resources
+    }
+    _updateOpenResources(callback=null) {
+         this.setState({open_resources: this._getOpenResources()}, callback)
+    }
+
+    render() {
+     let unified = window.library_style == "unified";
+      let bstyle = {paddingTop: 0, paddingBotton: 0};
+        let lib_buttons = [];
+        let selected_lib_button;
+        let selected_bclass;
+        selected_lib_button = this.state.selectedLibraryTab;
+        selected_bclass = " selected-lib-tab-button";
+        // }
+        if (!unified) {
+            for (let rt of this.resTypes) {
+                let cname = "lib-tab-button";
+                if (rt == selected_lib_button) {
+                    cname += selected_bclass
+                }
+                lib_buttons.push(
+                    <Button key={rt} icon={this.libIconDict[rt]} className={cname} alignText="left"
+                            small={true} minimal={true} onClick={() => {
+                        this._changeLibTab(rt)
+                    }}>
+                        {rt}
+                    </Button>
+                )
+            }
+        }
+        else {
+            let cname = "lib-tab-button selected-lib-tab-butto";
+            lib_buttons.push(
+                <Button key="all" icon={this.libIconDict["all"]} className={cname} alignText="left"
+                        small={true} minimal={true} onClick={() => {
+                    this._changeLibTab("all")
+                }}>
+                    Library
+                </Button>
+            )
+        }
+        let bclass = "context-tab-button-content";
+        if (this.state.selectedTabId == "library") {
+            bclass += " selected-tab-button"
+        }
         let library_panel;
         library_panel = (
             <div id="library-home-root">
                 <LibraryHomeAppPlus {...this.state.library_panel_props}
+                                    library_style={window.library_style}
                                     controlled={true}
                                     am_selected={this.state.selectedTabId == "library"}
-                                    open_resources={open_resources}
+                                    open_resources={this.state.open_resources}
                                     registerLibraryTabChanger={this._registerLibraryTabChanger}
                                     dark_theme={this.state.dark_theme}
                                     setTheme={this._setTheme}
@@ -645,15 +674,16 @@ class ContextApp extends React.Component {
             </div>
         );
         // }
-
+        let mbot = unified ? 0 : 5;
         let ltab = (
             <Tab id="library" tabIndex={-1} key="library" className="context-tab" panel={library_panel}>
                 <div className={bclass}>
-                        <Button minimal={true}
-                                onClick={()=>{this._select_repository(false)}}>
+                    {window.library_style == "tabbed" &&
+                        <Button minimal={true}>
                             <span className="context-library-title">Library</span>
                         </Button>
-                    <div style={{display: "flex", flexDirection: "column", marginBottom: 5}}>
+                    }
+                    <div style={{display: "flex", flexDirection: "column", marginBottom: {mbot}}}>
                         {lib_buttons}
                     </div>
                 </div>
@@ -661,6 +691,7 @@ class ContextApp extends React.Component {
         );
         
         let all_tabs = [ltab];
+
         for (let tab_id of this.state.tab_ids) {
             let tab_entry = this.state.tab_panel_dict[tab_id];
             let bclass = "context-tab-button-content";
@@ -773,6 +804,10 @@ class ContextApp extends React.Component {
             height: this.state.usable_height,
             paddingLeft: 0
         };
+        let tlclass = "context-tab-list";
+        if (unified) {
+            tlclass += " unified"
+        }
         return (
             <React.Fragment>
                 <TacticNavbar is_authenticated={window.is_authenticated}
@@ -793,7 +828,7 @@ class ContextApp extends React.Component {
                                         barHeight="100%"
                                         useThinBar={true}/>
                             <Tabs id="context-tabs" selectedTabId={this.state.selectedTabId}
-                                  className="context-tab-list"
+                                  className={tlclass}
                                   vertical={true}
                                   onChange={this._handleTabSelect}>
                                 {all_tabs}

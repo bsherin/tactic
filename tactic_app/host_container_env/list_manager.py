@@ -262,6 +262,8 @@ class ListManager(LibraryResourceManager):
                             "message": "A list with that name already exists"})
         old_list_dict = self.db[user_obj.list_collection_name].find_one({"list_name": list_to_copy})
         metadata = copy.copy(old_list_dict["metadata"])
+        metadata["updated"] = datetime.datetime.utcnow()
+        metadata["datetime"] = metadata["updated"]
         new_list_dict = {"list_name": new_list_name, "the_list": old_list_dict["the_list"], "metadata": metadata}
         self.db[user_obj.list_collection_name].insert_one(new_list_dict)
         new_row = self.build_res_dict(new_list_name, metadata, user_obj)
@@ -276,6 +278,8 @@ class ListManager(LibraryResourceManager):
                             "message": "A list with that name already exists"})
         old_list_dict = self.db[repository_user.list_collection_name].find_one({"list_name": template_name})
         metadata = copy.copy(old_list_dict["metadata"])
+        metadata["updated"] = datetime.datetime.utcnow()
+        metadata["datetime"] = metadata["updated"]
         new_list_dict = {"list_name": new_list_name, "the_list": old_list_dict["the_list"], "metadata": metadata}
         self.db[user_obj.list_collection_name].insert_one(new_list_dict)
         new_row = self.build_res_dict(new_list_name, metadata, user_obj)

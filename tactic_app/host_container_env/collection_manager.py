@@ -617,6 +617,8 @@ class CollectionManager(LibraryResourceManager):
                 return jsonify(result)
 
             metadata = user_obj.get_collection_metadata(new_res_name)
+            metadata["updated"] = datetime.datetime.utcnow()
+            metadata["datetime"] = metadata["updated"]
             new_row = self.build_res_dict(new_res_name, metadata, user_obj)
             return jsonify({"success": True, "new_row": new_row})
         except Exception as ex:

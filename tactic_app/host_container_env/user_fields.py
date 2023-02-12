@@ -15,5 +15,7 @@ user_data_fields = [
     {"name": "preferred_light_theme", "editable": True, "display_text": "codemirror light theme",
      "type": "select", "default": "default", "options": ["default", "elegant", "juejin", "neat", "solarized"], "info_type": "setting"},
     {"name": "preferred_interface", "editable": True, "display_text": "preferred interface",
-     "type": "select", "default": "single-window", "options": ["separate-tabs", "single-window"], "info_type": "setting"}
+     "type": "select", "default": "single-window", "options": ["separate-tabs", "single-window"], "info_type": "setting"},
+    {"name": "library_style", "editable": True, "display_text": "library style",
+     "type": "select", "default": "tabbed", "options": ["tabbed", "unified"], "info_type": "setting"}
 ]

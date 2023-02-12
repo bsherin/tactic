@@ -1,13 +1,16 @@
 
+// noinspection JSValidateTypes
+
 import React from "react";
 import PropTypes from 'prop-types';
 
-import { Menu, MenuItem, MenuDivider, RadioGroup, Radio } from "@blueprintjs/core";
+import { Menu, MenuItem, MenuDivider, FormGroup, Button } from "@blueprintjs/core";
+import { Tooltip2 } from "@blueprintjs/popover2"
 import {Regions} from "@blueprintjs/table";
 import _ from 'lodash';
 
 import {TagButtonList} from "./tag_buttons_react.js";
-import {CombinedMetadata} from "./blueprint_mdata_fields.js";
+import {CombinedMetadata, icon_dict} from "./blueprint_mdata_fields.js";
 import {SearchForm, BpSelectorTable, LibraryOmnibar} from "./library_widgets.js";
 import {HorizontalPanes} from "./resizing_layouts.js";
 import {showModalReact, showConfirmDialogReact} from "./modal_react.js";
@@ -20,7 +23,7 @@ import {doBinding} from "./utilities_react.js";
 import {showFileImportDialog} from "./import_dialog";
 import {showSelectDialog} from "./modal_react";
 
-export {LibraryPane, view_views}
+export {LibraryPane, view_views, res_types}
 
 const res_types = ["collection", "project", "tile", "list", "code"];
 
@@ -180,6 +183,13 @@ class LibraryPane extends React.Component {
         })
     }
 
+    _setFilterType(rtype) {
+        if (rtype == this.props.filterType) return;
+        this._updatePaneState({"filterType": rtype }, ()=>{
+            this._grabNewChunkWithRow(0, true, null, true)
+        })
+    }
+
     _onTableSelection(regions) {
         if (regions.length == 0) return;  // Without this get an error when clicking on a body cell
         let selected_rows = [];
@@ -289,10 +299,6 @@ class LibraryPane extends React.Component {
         this.setState(new_state);
     }
 
-    update_tag_list() {
-
-    }
-
     delete_row(name) {
         let ind = this.get_data_list_index(name);
         let new_data_list = [...this.state.data_list];
@@ -354,6 +360,16 @@ class LibraryPane extends React.Component {
         return null
     }
 
+    _extractNewTags(tstring) {
+        let tlist = tstring.split(" ");
+        let new_tags = [];
+        for (let tag of tlist) {
+            if (!(tag.length == 0) && !(tag in this.state.tag_list)) {
+                new_tags.push(tag)
+            }
+        }
+        return new_tags
+    }
     _saveFromSelectedResource() {
         // This will only be called when there is a single row selected
         const result_dict = {
@@ -364,14 +380,20 @@ class LibraryPane extends React.Component {
         let saved_selected_resource = Object.assign({}, this.props.selected_resource);
         // let saved_list_of_selected = [...this.props.list_of_selected];
         let saved_selected_rows = [...this.props.selected_rows];
-
+        let new_tags = this._extractNewTags(this.props.selected_resource.tags);
         let self = this;
         postAjaxPromise("save_metadata", result_dict)
             .then(function (data) {
                 let new_data_list = self.set_in_data_dict(saved_selected_rows,
                     saved_selected_resource,
                     self.state.data_dict);
-                self.setState({"data_dict": new_data_list})
+                if (new_tags.length > 0) {
+                    let new_tag_list = [...self.state.tag_list, ...new_tags];
+                    self.setState({data_dict: new_data_list, tag_list: new_tag_list})
+                }
+                else {
+                    self.setState({data_dict: new_data_list})
+                }
             })
         .catch(doFlash)
     }
@@ -380,6 +402,7 @@ class LibraryPane extends React.Component {
         const result_dict = {"selected_rows": this.props.selected_rows,
                              "tags": this.props.selected_resource.tags,};
         const self = this;
+        let new_tags = this._extractNewTags(this.props.selected_resource.tags);
         postAjaxPromise("overwrite_common_tags", result_dict)
             .then(function(data) {
                 let utags = data.updated_tags;
@@ -388,9 +411,13 @@ class LibraryPane extends React.Component {
                     new_data_dict = self.set_in_data_dict([urow],
                         {tags: urow.tags}, new_data_dict);
                 }
-                self.setState({data_dict: new_data_dict}, () => {
-                    self.update_tag_list();
-                })
+                if (new_tags.length > 0) {
+                    let new_tag_list = [...self.state.tag_list, ...new_tags];
+                    self.setState({data_dict: new_data_dict, tag_list: new_tag_list})
+                }
+                else {
+                    self.setState({data_dict: new_data_dict})
+                }
             })
             .catch(doFlash)
     }
@@ -587,7 +614,8 @@ class LibraryPane extends React.Component {
 
     _handleArrowKeyPress(key) {
         if (this.props.multi_select) return;
-        let current_index = parseInt(this.get_data_dict_index(this.props.selected_resource.name));
+        let the_res = this.props.selected_resource;
+        let current_index = parseInt(this.get_data_dict_index(the_res.name, the_res.res_type));
         let new_index;
         let new_selected_res;
         if (key == "ArrowDown") {
@@ -678,7 +706,8 @@ class LibraryPane extends React.Component {
             const result_dict = {
                 "new_res_name": new_name,
                 "res_to_copy": res_name,
-                "library_id": self.props.library_id
+                "library_id": self.props.library_id,
+                "is_repository": false
             };
             postAjaxPromise(duplicate_view, result_dict)
                 .then((data) => {
@@ -1246,6 +1275,23 @@ class LibraryPane extends React.Component {
             [["ctrl+space"], this._showOmnibar]
         ];
 
+        let filter_buttons = [];
+        let self = this;
+        for (let rtype of ["all"].concat(res_types)) {
+            filter_buttons.push(
+                <Tooltip2 content={rtype}
+                          key={rtype}
+                          placement="top"
+                          hoverOpenDelay={700}
+                          intent="warning">
+                    <Button icon={icon_dict[rtype]}
+                            minimal={true}
+                            active={rtype == self.props.filterType}
+                            onClick={()=>{self._setFilterType(rtype)}}/>
+                </Tooltip2>
+            )
+        }
+
         let left_pane = (
             <React.Fragment>
                 <div className="d-flex flex-row" style={{maxHeight: "100%", position: "relative"}}>
@@ -1268,26 +1314,20 @@ class LibraryPane extends React.Component {
                              overflowY: "clip",
                              marginTop: 15,
                              padding: 5}}>
-                        <SearchForm allow_search_inside={this.props.allow_search_inside}
-                                    allow_search_metadata={this.props.allow_search_metadata}
-                                    update_search_state={this._update_search_state}
-                                    search_string={this.props.search_string}
-                                    search_inside={this.props.search_inside}
-                                    search_metadata={this.props.search_metadata}
-                        />
-                        {this.props.pane_type == "all" &&
-                            <RadioGroup
-                                inline={true}
-                                onChange={this._handleTypeFilterChange}
-                                selectedValue={this.props.filterType}>
-                                <Radio label="All" value="all" />
-                                <Radio label="Collections" value="collection" />
-                                <Radio label="Projects" value="project" />
-                                <Radio label="Tiles" value="tile" />
-                                <Radio label="Lists" value="list" />
-                                <Radio label="Code" value="code" />
-                            </RadioGroup>
-                        }
+                        <div style = {{display: "flex", flexDirection: "column"}}>
+                                {this.props.pane_type == "all" &&
+                                    <FormGroup label="Filter:" inline={true} style={{marginBottom: 0}}>
+                                        {filter_buttons}
+                                    </FormGroup>
+                            }
+                            <SearchForm allow_search_inside={this.props.allow_search_inside}
+                                        allow_search_metadata={this.props.allow_search_metadata}
+                                        update_search_state={this._update_search_state}
+                                        search_string={this.props.search_string}
+                                        search_inside={this.props.search_inside}
+                                        search_metadata={this.props.search_metadata}
+                            />
+                        </div>
                         <BpSelectorTable data_dict={this.state.data_dict}
                                          columns={this.props.columns}
                                          num_rows={this.state.num_rows}

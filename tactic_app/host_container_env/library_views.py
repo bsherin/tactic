@@ -107,7 +107,7 @@ def copy_between_accounts(source_user, dest_user, res_type, new_res_name, res_na
         overall_res = [metadata, jsonify({"success": True, "message": "Resource Successfully Copied", "alert_type": "alert-success"})]
         return overall_res
     except Exception as ex:
-        overall_res = [None, generic_exception_handler.get_exception_for_ajax(ex, "Error copying resource")]
+        overall_res = [None, generic_exception_handler.get_traceback_exception_for_ajax(ex, "Error copying resource")]
         return overall_res
 
 
@@ -152,6 +152,7 @@ def library():
                                repository_type="",
                                database_type=database_type,
                                version_string=tstring,
+                               library_style=current_user.get_library_style(),
                                theme=current_user.get_theme(),
                                page_title="tactic resources",
                                css_source=css_source("library_home_react"),
@@ -166,6 +167,7 @@ def context():
                            develop=str(_develop),
                            version_string=tstring,
                            theme=current_user.get_theme(),
+                           library_style=current_user.get_library_style(),
                            page_title="context",
                            css_source=css_source("context_react"),
                            module_source=js_source_dict["context_react"])
@@ -175,11 +177,13 @@ def context():
 @login_required
 def repository():
     is_remote = "yes" if use_remote_repository else "no"
+    print("*** in /repository with is_remote " + is_remote)
     return render_template('library/library_home_react.html',
                            version_string=tstring,
                            is_remote=is_remote,
                            repository_type=repository_type,
                            develop=str(_develop),
+                           library_style="tabbed",
                            theme=current_user.get_theme(),
                            page_title="tactic repository",
                            css_source=css_source("repository_home_react"),
@@ -235,7 +239,6 @@ def get_repository_resource_names(res_type):
 @app.route('/copy_from_repository', methods=['GET', 'POST'])
 @login_required
 def copy_from_repository():
-    pane_type = request.json["pane_type"]
     if "res_name" in request.json:
         new_res_name = request.json['new_res_name']
         res_type = request.json["res_type"]
@@ -250,9 +253,10 @@ def copy_from_repository():
     else:
         selected_rows = request.json["selected_rows"]
         successful_copies = 0
-
+        rtypes = []
         for row in selected_rows:
             res_type = row["res_type"]
+            rtypes.append(res_type)
             res_name = row["res_name"]
             manager = get_manager_for_type(res_type)
             resource_names = manager.get_resource_list()
@@ -263,8 +267,11 @@ def copy_from_repository():
             if result.json["success"]:
                 successful_copies +=1
         if successful_copies > 0:
-            manager = get_manager_for_type(pane_type)
-            manager.refresh_selector_list()
+            rtypes.push("all")
+            rtypes = list(set(rtypes))
+            for res_type in rtypes:
+                manager = get_manager_for_type(res_type)
+                manager.refresh_selector_list()
         return jsonify({"success": True, "message": f"{str(successful_copies)} resources copied"})
 
 # noinspection PyBroadException
@@ -279,7 +286,6 @@ def send_to_repository():
                                                  dest_db=repository_db, dest_fs=repository_fs)
         return result
     else:
-        selected_rows = request.json["selected_rows"]
         successful_copies = 0
 
         for row in list_of_selected:

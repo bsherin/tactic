@@ -87,7 +87,7 @@ var AccountTextField = /*#__PURE__*/function (_React$Component) {
         key: this.props.name,
         inline: false,
         style: {
-          padding: 10
+          padding: 5
         },
         label: this.props.display_text,
         helperText: this.props.helper_text
@@ -102,7 +102,7 @@ var AccountTextField = /*#__PURE__*/function (_React$Component) {
         style: {
           width: 250
         },
-        large: true,
+        large: false,
         fill: false,
         placeholder: this.props.name,
         value: this.props.value
@@ -137,7 +137,7 @@ var AccountSelectField = /*#__PURE__*/function (_React$Component2) {
         key: this.props.name,
         inline: false,
         style: {
-          padding: 10
+          padding: 5
         },
         label: this.props.display_text,
         helperText: this.props.helper_text
@@ -431,7 +431,8 @@ var AccountApp = /*#__PURE__*/function (_React$Component3) {
       }, /*#__PURE__*/_react["default"].createElement("div", {
         style: {
           display: "flex",
-          "flex-direction": "column"
+          flexDirection: "column",
+          overflowY: "scroll"
         }
       }, /*#__PURE__*/_react["default"].createElement("div", {
         className: "account-pane bp4-card"

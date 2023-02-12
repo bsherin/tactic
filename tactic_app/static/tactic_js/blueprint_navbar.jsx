@@ -4,7 +4,7 @@ import React from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
-import { Button, Navbar, NavbarDivider, OverflowList, Alignment, Switch} from "@blueprintjs/core";
+import { Button, Navbar, NavbarGroup, NavbarHeading, NavbarDivider, OverflowList, Alignment, Switch} from "@blueprintjs/core";
 
 import {MenuComponent} from "./main_menus_react.js";
 import {doBinding} from "./utilities_react.js";
@@ -232,7 +232,7 @@ class TacticNavbar extends React.Component {
         let right_style = {width: right_width};
         right_style.justifyContent = "flex-end";
         let theme_class = this.props.dark_theme ? "bp4-dark" : "light-theme";
-        let name_string = "Tactic"
+        let name_string = "Tactic";
         if (this.props.extra_text != null) {
             name_string += " " + this.props.extra_text
         }
@@ -240,10 +240,10 @@ class TacticNavbar extends React.Component {
         return (
             <Navbar style={{paddingLeft: 10}} className={theme_class}>
                 <div className="bp4-navbar-group bp4-align-left" ref={this.lg_ref}>
-                    <Navbar.Heading className="d-flex align-items-center">
+                    <NavbarHeading className="d-flex align-items-center">
                         <img className="mr-2" src={window.tactic_img_url} alt="" width="32 " height="32"/>
                         {name_string}
-                    </Navbar.Heading>
+                    </NavbarHeading>
                         {this.props.menus != null && (
                             <React.Fragment>
                                 {this.props.menus}
@@ -251,7 +251,7 @@ class TacticNavbar extends React.Component {
                 </div>
 
 
-                <Navbar.Group align={Alignment.RIGHT} style={right_style}>
+                <NavbarGroup align={Alignment.RIGHT} style={right_style}>
                     <NavbarDivider />
                         <OverflowList items={right_nav_items}
                                          overflowRenderer={this._overflowRenderer}
@@ -269,7 +269,7 @@ class TacticNavbar extends React.Component {
                            innerLabelChecked="Dark"
                            alignIndicator="center"
                     />
-                </Navbar.Group>
+                </NavbarGroup>
             </Navbar>
         )
     }
@@ -281,7 +281,9 @@ TacticNavbar.propTypes = {
     is_authenticated: PropTypes.bool,
     user_name: PropTypes.string,
     menus: PropTypes.object,
-    selected: PropTypes.string,
+    selected: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number]),
     page_id: PropTypes.string,
     extra_text: PropTypes.string
 };

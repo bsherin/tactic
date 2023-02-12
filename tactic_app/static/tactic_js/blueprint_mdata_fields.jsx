@@ -22,6 +22,7 @@ import {doBinding, propsAreEqual} from "./utilities_react.js";
 export {NotesField, CombinedMetadata, BpSelect, BpSelectAdvanced}
 
 let icon_dict = {
+    all: "cube",
     collection: "database",
     project: "projects",
     tile: "application",

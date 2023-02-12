@@ -6,13 +6,15 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.view_views = view_views;
-exports.LibraryPane = void 0;
+exports.res_types = exports.LibraryPane = void 0;
 
 var _react = _interopRequireDefault(require("react"));
 
 var _propTypes = _interopRequireDefault(require("prop-types"));
 
 var _core = require("@blueprintjs/core");
+
+var _popover = require("@blueprintjs/popover2");
 
 var _table = require("@blueprintjs/table");
 
@@ -81,6 +83,7 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
 var res_types = ["collection", "project", "tile", "list", "code"];
+exports.res_types = res_types;
 
 function view_views() {
   var is_repository = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
@@ -306,6 +309,19 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       });
     }
   }, {
+    key: "_setFilterType",
+    value: function _setFilterType(rtype) {
+      var _this4 = this;
+
+      if (rtype == this.props.filterType) return;
+
+      this._updatePaneState({
+        "filterType": rtype
+      }, function () {
+        _this4._grabNewChunkWithRow(0, true, null, true);
+      });
+    }
+  }, {
     key: "_onTableSelection",
     value: function _onTableSelection(regions) {
       if (regions.length == 0) return; // Without this get an error when clicking on a body cell
@@ -478,9 +494,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       this.setState(new_state);
     }
   }, {
-    key: "update_tag_list",
-    value: function update_tag_list() {}
-  }, {
     key: "delete_row",
     value: function delete_row(name) {
       var ind = this.get_data_list_index(name);
@@ -582,6 +595,31 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       return null;
     }
   }, {
+    key: "_extractNewTags",
+    value: function _extractNewTags(tstring) {
+      var tlist = tstring.split(" ");
+      var new_tags = [];
+
+      var _iterator6 = _createForOfIteratorHelper(tlist),
+          _step6;
+
+      try {
+        for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+          var tag = _step6.value;
+
+          if (!(tag.length == 0) && !(tag in this.state.tag_list)) {
+            new_tags.push(tag);
+          }
+        }
+      } catch (err) {
+        _iterator6.e(err);
+      } finally {
+        _iterator6.f();
+      }
+
+      return new_tags;
+    }
+  }, {
     key: "_saveFromSelectedResource",
     value: function _saveFromSelectedResource() {
       // This will only be called when there is a single row selected
@@ -595,12 +633,23 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
 
       var saved_selected_rows = _toConsumableArray(this.props.selected_rows);
 
+      var new_tags = this._extractNewTags(this.props.selected_resource.tags);
+
       var self = this;
       (0, _communication_react.postAjaxPromise)("save_metadata", result_dict).then(function (data) {
         var new_data_list = self.set_in_data_dict(saved_selected_rows, saved_selected_resource, self.state.data_dict);
-        self.setState({
-          "data_dict": new_data_list
-        });
+
+        if (new_tags.length > 0) {
+          var new_tag_list = [].concat(_toConsumableArray(self.state.tag_list), _toConsumableArray(new_tags));
+          self.setState({
+            data_dict: new_data_list,
+            tag_list: new_tag_list
+          });
+        } else {
+          self.setState({
+            data_dict: new_data_list
+          });
+        }
       })["catch"](_toaster.doFlash);
     }
   }, {
@@ -611,32 +660,41 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         "tags": this.props.selected_resource.tags
       };
       var self = this;
+
+      var new_tags = this._extractNewTags(this.props.selected_resource.tags);
+
       (0, _communication_react.postAjaxPromise)("overwrite_common_tags", result_dict).then(function (data) {
         var utags = data.updated_tags;
 
         var new_data_dict = _lodash["default"].cloneDeep(self.state.data_dict);
 
-        var _iterator6 = _createForOfIteratorHelper(utags),
-            _step6;
+        var _iterator7 = _createForOfIteratorHelper(utags),
+            _step7;
 
         try {
-          for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-            var urow = _step6.value;
+          for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
+            var urow = _step7.value;
             new_data_dict = self.set_in_data_dict([urow], {
               tags: urow.tags
             }, new_data_dict);
           }
         } catch (err) {
-          _iterator6.e(err);
+          _iterator7.e(err);
         } finally {
-          _iterator6.f();
+          _iterator7.f();
         }
 
-        self.setState({
-          data_dict: new_data_dict
-        }, function () {
-          self.update_tag_list();
-        });
+        if (new_tags.length > 0) {
+          var new_tag_list = [].concat(_toConsumableArray(self.state.tag_list), _toConsumableArray(new_tags));
+          self.setState({
+            data_dict: new_data_dict,
+            tag_list: new_tag_list
+          });
+        } else {
+          self.setState({
+            data_dict: new_data_dict
+          });
+        }
       })["catch"](_toaster.doFlash);
     }
   }, {
@@ -780,38 +838,38 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         var common_tags = selected_rows[0].tags.split(" ");
         var other_rows = selected_rows.slice(1, selected_rows.length);
 
-        var _iterator7 = _createForOfIteratorHelper(other_rows),
-            _step7;
+        var _iterator8 = _createForOfIteratorHelper(other_rows),
+            _step8;
 
         try {
-          for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
-            var row_dict = _step7.value;
+          for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
+            var row_dict = _step8.value;
             var new_common_tags = [];
             var new_tag_list = row_dict.tags.split(" ");
 
-            var _iterator8 = _createForOfIteratorHelper(new_tag_list),
-                _step8;
+            var _iterator9 = _createForOfIteratorHelper(new_tag_list),
+                _step9;
 
             try {
-              for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
-                var tag = _step8.value;
+              for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
+                var tag = _step9.value;
 
                 if (common_tags.includes(tag)) {
                   new_common_tags.push(tag);
                 }
               }
             } catch (err) {
-              _iterator8.e(err);
+              _iterator9.e(err);
             } finally {
-              _iterator8.f();
+              _iterator9.f();
             }
 
             common_tags = new_common_tags;
           }
         } catch (err) {
-          _iterator7.e(err);
+          _iterator8.e(err);
         } finally {
-          _iterator7.f();
+          _iterator8.f();
         }
 
         var multi_select_list = selected_rows.map(function (row_dict) {
@@ -852,12 +910,12 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_update_search_state",
     value: function _update_search_state(new_state) {
-      var _this4 = this;
+      var _this5 = this;
 
       //new_state.search_from_tags = false;
       this._updatePaneState(new_state, function () {
-        if (_this4.search_spec_changed(new_state)) {
-          _this4._grabNewChunkWithRow(0, true, new_state, true);
+        if (_this5.search_spec_changed(new_state)) {
+          _this5._grabNewChunkWithRow(0, true, new_state, true);
         }
       });
     }
@@ -888,7 +946,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_set_sort_state",
     value: function _set_sort_state(column_name, sort_field, direction) {
-      var _this5 = this;
+      var _this6 = this;
 
       var spec_update = {
         sort_field: column_name,
@@ -896,8 +954,8 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       };
 
       this._updatePaneState(spec_update, function () {
-        if (_this5.search_spec_changed(spec_update)) {
-          _this5._grabNewChunkWithRow(0, true, spec_update, true);
+        if (_this6.search_spec_changed(spec_update)) {
+          _this6._grabNewChunkWithRow(0, true, spec_update, true);
         }
       });
     }
@@ -905,7 +963,8 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "_handleArrowKeyPress",
     value: function _handleArrowKeyPress(key) {
       if (this.props.multi_select) return;
-      var current_index = parseInt(this.get_data_dict_index(this.props.selected_resource.name));
+      var the_res = this.props.selected_resource;
+      var current_index = parseInt(this.get_data_dict_index(the_res.name, the_res.res_type));
       var new_index;
       var new_selected_res;
 
@@ -930,11 +989,11 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_selectRow",
     value: function _selectRow(new_index) {
-      var _this6 = this;
+      var _this7 = this;
 
       if (!Object.keys(this.state.data_dict).includes(String(new_index))) {
         this._grabNewChunkWithRow(new_index, false, null, false, null, function () {
-          _this6._selectRow(new_index);
+          _this7._selectRow(new_index);
         });
       } else {
         var new_regions = [_table.Regions.row(new_index)];
@@ -1009,7 +1068,8 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         var result_dict = {
           "new_res_name": new_name,
           "res_to_copy": res_name,
-          "library_id": self.props.library_id
+          "library_id": self.props.library_id,
+          "is_repository": false
         };
         (0, _communication_react.postAjaxPromise)(duplicate_view, result_dict).then(function (data) {
           self._grabNewChunkWithRow(0, true, null, false, new_name);
@@ -1032,12 +1092,12 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       var self = this;
       var first_index = 99999;
 
-      var _iterator9 = _createForOfIteratorHelper(this.props.selected_rows),
-          _step9;
+      var _iterator10 = _createForOfIteratorHelper(this.props.selected_rows),
+          _step10;
 
       try {
-        for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
-          var row = _step9.value;
+        for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
+          var row = _step10.value;
           var ind = parseInt(this.get_data_dict_index(row.name, row.res_type));
 
           if (ind < first_index) {
@@ -1045,9 +1105,9 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
           }
         }
       } catch (err) {
-        _iterator9.e(err);
+        _iterator10.e(err);
       } finally {
-        _iterator9.f();
+        _iterator10.f();
       }
 
       (0, _modal_react.showConfirmDialogReact)("Delete resources", confirm_text, "do nothing", "delete", function () {
@@ -1354,7 +1414,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_import_collection",
     value: function _import_collection(myDropZone, setCurrentUrl, new_name, check_results) {
-      var _this7 = this;
+      var _this8 = this;
 
       var csv_options = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : null;
       var doc_type;
@@ -1371,10 +1431,10 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         "library_id": this.props.library_id,
         "csv_options": csv_options
       }).then(function (data) {
-        var new_url = "append_documents_to_collection/".concat(new_name, "/").concat(doc_type, "/").concat(_this7.props.library_id);
+        var new_url = "append_documents_to_collection/".concat(new_name, "/").concat(doc_type, "/").concat(_this8.props.library_id);
         myDropZone.options.url = new_url;
         setCurrentUrl(new_url);
-        _this7.upload_name = new_name;
+        _this8.upload_name = new_name;
         myDropZone.processQueue();
       })["catch"](function (data) {});
     }
@@ -1624,7 +1684,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "render",
     value: function render() {
-      var _this8 = this;
+      var _this9 = this;
 
       var new_button_groups;
       var uwidth = this.props.usable_width;
@@ -1695,10 +1755,43 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       }
 
       var key_bindings = [[["up"], function () {
-        return _this8._handleArrowKeyPress("ArrowUp");
+        return _this9._handleArrowKeyPress("ArrowUp");
       }], [["down"], function () {
-        return _this8._handleArrowKeyPress("ArrowDown");
+        return _this9._handleArrowKeyPress("ArrowDown");
       }], [["ctrl+space"], this._showOmnibar]];
+      var filter_buttons = [];
+      var self = this;
+
+      var _iterator11 = _createForOfIteratorHelper(["all"].concat(res_types)),
+          _step11;
+
+      try {
+        var _loop = function _loop() {
+          var rtype = _step11.value;
+          filter_buttons.push( /*#__PURE__*/_react["default"].createElement(_popover.Tooltip2, {
+            content: rtype,
+            key: rtype,
+            placement: "top",
+            hoverOpenDelay: 700,
+            intent: "warning"
+          }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
+            icon: _blueprint_mdata_fields.icon_dict[rtype],
+            minimal: true,
+            active: rtype == self.props.filterType,
+            onClick: function onClick() {
+              self._setFilterType(rtype);
+            }
+          })));
+        };
+
+        for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
+          _loop();
+        }
+      } catch (err) {
+        _iterator11.e(err);
+      } finally {
+        _iterator11.f();
+      }
 
       var left_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
         className: "d-flex flex-row",
@@ -1730,35 +1823,24 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
           marginTop: 15,
           padding: 5
         }
-      }, /*#__PURE__*/_react["default"].createElement(_library_widgets.SearchForm, {
+      }, /*#__PURE__*/_react["default"].createElement("div", {
+        style: {
+          display: "flex",
+          flexDirection: "column"
+        }
+      }, this.props.pane_type == "all" && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+        label: "Filter:",
+        inline: true,
+        style: {
+          marginBottom: 0
+        }
+      }, filter_buttons), /*#__PURE__*/_react["default"].createElement(_library_widgets.SearchForm, {
         allow_search_inside: this.props.allow_search_inside,
         allow_search_metadata: this.props.allow_search_metadata,
         update_search_state: this._update_search_state,
         search_string: this.props.search_string,
         search_inside: this.props.search_inside,
         search_metadata: this.props.search_metadata
-      }), this.props.pane_type == "all" && /*#__PURE__*/_react["default"].createElement(_core.RadioGroup, {
-        inline: true,
-        onChange: this._handleTypeFilterChange,
-        selectedValue: this.props.filterType
-      }, /*#__PURE__*/_react["default"].createElement(_core.Radio, {
-        label: "All",
-        value: "all"
-      }), /*#__PURE__*/_react["default"].createElement(_core.Radio, {
-        label: "Collections",
-        value: "collection"
-      }), /*#__PURE__*/_react["default"].createElement(_core.Radio, {
-        label: "Projects",
-        value: "project"
-      }), /*#__PURE__*/_react["default"].createElement(_core.Radio, {
-        label: "Tiles",
-        value: "tile"
-      }), /*#__PURE__*/_react["default"].createElement(_core.Radio, {
-        label: "Lists",
-        value: "list"
-      }), /*#__PURE__*/_react["default"].createElement(_core.Radio, {
-        label: "Code",
-        value: "code"
       })), /*#__PURE__*/_react["default"].createElement(_library_widgets.BpSelectorTable, {
         data_dict: this.state.data_dict,
         columns: this.props.columns,

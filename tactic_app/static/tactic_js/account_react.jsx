@@ -32,14 +32,14 @@ class AccountTextField extends React.Component {
         return (
             <FormGroup key={this.props.name}
                           inline={false}
-                          style={{padding: 10}}
+                          style={{padding: 5}}
                           label={this.props.display_text}
                           helperText={this.props.helper_text}>
                             <InputGroup type="text"
                                            onChange={(event)=>this.props.onFieldChange(this.props.name, event.target.value, false)}
                                            onBlur={()=>this.props.onBlur(this.props.name, this.props.value)}
                                            style={{width: 250}}
-                                           large={true}
+                                           large={false}
                                            fill={false}
                                            placeholder={this.props.name}
                                            value={this.props.value}
@@ -60,7 +60,7 @@ class AccountSelectField extends React.Component {
         return (
             <FormGroup key={this.props.name}
                        inline={false}
-                       style={{padding: 10}}
+                       style={{padding: 5}}
                        label={this.props.display_text}
                        helperText={this.props.helper_text}>
                 <HTMLSelect options={this.props.options}
@@ -257,7 +257,7 @@ class AccountApp extends React.Component {
                               page_id={window.main_id}
                               user_name={window.username}/>
                 <div className={outer_class}>
-                    <div style={{display: "flex", "flex-direction": "column"}}>
+                    <div style={{display: "flex", flexDirection: "column", overflowY: "scroll"}}>
                         <div className="account-pane bp4-card">
                             <h6>User Info</h6>
                             {field_items[0]}

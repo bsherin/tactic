@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.library_props = library_props;
-exports.res_types = exports.LibraryHomeApp = void 0;
+exports.LibraryHomeApp = void 0;
 
 require("../tactic_css/tactic.scss");
 
@@ -32,6 +32,8 @@ var _toaster = require("./toaster.js");
 
 var _library_pane = require("./library_pane.js");
 
+var _blueprint_mdata_fields = require("./blueprint_mdata_fields.js");
+
 var _sizing_tools = require("./sizing_tools.js");
 
 var _error_drawer = require("./error_drawer.js");
@@ -43,6 +45,8 @@ var _utilities_react = require("./utilities_react.js");
 var _blueprint_navbar = require("./blueprint_navbar");
 
 var _library_menubars = require("./library_menubars.js");
+
+var _library_pane2 = require("./library_pane");
 
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
@@ -87,7 +91,6 @@ function _extends() { _extends = Object.assign || function (target) { for (var i
 var TAB_BAR_WIDTH = 50;
 
 function _library_home_main() {
-  // window.main_id = library_id;
   var LibraryHomeAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(LibraryHomeApp));
   var domContainer = document.querySelector('#library-home-root');
   ReactDOM.render( /*#__PURE__*/_react["default"].createElement(LibraryHomeAppPlus, _extends({}, library_props(), {
@@ -108,8 +111,6 @@ function library_props() {
   };
 }
 
-var res_types = ["collection", "project", "tile", "list", "code"];
-exports.res_types = res_types;
 var tab_panes = ["all-pane", "collections-pane", "projects-pane", "tiles-pane", "lists-pane", "code-pane"];
 var controllable_props = ["usable_width", "usable_height"]; // noinspection JSUnusedLocalSymbols,JSRemoveUnnecessaryParentheses
 
@@ -130,7 +131,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
       pane_states: {}
     };
 
-    var _iterator = _createForOfIteratorHelper(res_types.concat("all")),
+    var _iterator = _createForOfIteratorHelper(_library_pane2.res_types.concat("all")),
         _step;
 
     try {
@@ -342,6 +343,8 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
         lib_props.usable_width -= TAB_BAR_WIDTH;
       }
 
+      var get_all_panes = !window.in_context || window.library_style == "tabbed";
+
       var all_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
         columns: {
           "icon:th": {
@@ -385,189 +388,191 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
         library_id: this.props.library_id
       }));
 
-      var collection_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
-        columns: {
-          "icon:th": {
-            "sort_field": "type",
-            "first_sort": "ascending"
+      if (get_all_panes) {
+        var collection_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
+          columns: {
+            "icon:th": {
+              "sort_field": "type",
+              "first_sort": "ascending"
+            },
+            "name": {
+              "sort_field": "name",
+              "first_sort": "ascending"
+            },
+            "created": {
+              "sort_field": "created_for_sort",
+              "first_sort": "descending"
+            },
+            "updated": {
+              "sort_field": "updated_for_sort",
+              "first_sort": "ascending"
+            },
+            "tags": {
+              "sort_field": "tags",
+              "first_sort": "ascending"
+            },
+            "size": {
+              "sort_field": "size_for_sort",
+              "first_sort": "descending"
+            }
           },
-          "name": {
-            "sort_field": "name",
-            "first_sort": "ascending"
-          },
-          "created": {
-            "sort_field": "created_for_sort",
-            "first_sort": "descending"
-          },
-          "updated": {
-            "sort_field": "updated_for_sort",
-            "first_sort": "ascending"
-          },
-          "tags": {
-            "sort_field": "tags",
-            "first_sort": "ascending"
-          },
-          "size": {
-            "sort_field": "size_for_sort",
-            "first_sort": "descending"
-          }
-        },
-        pane_type: "collection",
-        handleCreateViewer: this.props.handleCreateViewer,
-        open_resources: this.props.open_resources ? this.props.open_resources["collection"] : null,
-        allow_search_inside: false,
-        allow_search_metadata: false,
-        MenubarClass: _library_menubars.CollectionMenubar,
-        updatePaneState: this._updatePaneState
-      }, this.state.pane_states["collection"], this.props.errorDrawerFuncs, {
-        errorDrawerFuncs: this.props.errorDrawerFuncs,
-        library_id: this.props.library_id
-      }));
+          pane_type: "collection",
+          handleCreateViewer: this.props.handleCreateViewer,
+          open_resources: this.props.open_resources ? this.props.open_resources["collection"] : null,
+          allow_search_inside: false,
+          allow_search_metadata: false,
+          MenubarClass: _library_menubars.CollectionMenubar,
+          updatePaneState: this._updatePaneState
+        }, this.state.pane_states["collection"], this.props.errorDrawerFuncs, {
+          errorDrawerFuncs: this.props.errorDrawerFuncs,
+          library_id: this.props.library_id
+        }));
 
-      var projects_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
-        columns: {
-          "icon:th": {
-            "sort_field": "type",
-            "first_sort": "ascending"
+        var projects_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
+          columns: {
+            "icon:th": {
+              "sort_field": "type",
+              "first_sort": "ascending"
+            },
+            "name": {
+              "sort_field": "name",
+              "first_sort": "ascending"
+            },
+            "created": {
+              "sort_field": "created_for_sort",
+              "first_sort": "descending"
+            },
+            "updated": {
+              "sort_field": "updated_for_sort",
+              "first_sort": "ascending"
+            },
+            "tags": {
+              "sort_field": "tags",
+              "first_sort": "ascending"
+            },
+            "size": {
+              "sort_field": "size_for_sort",
+              "first_sort": "descending"
+            }
           },
-          "name": {
-            "sort_field": "name",
-            "first_sort": "ascending"
-          },
-          "created": {
-            "sort_field": "created_for_sort",
-            "first_sort": "descending"
-          },
-          "updated": {
-            "sort_field": "updated_for_sort",
-            "first_sort": "ascending"
-          },
-          "tags": {
-            "sort_field": "tags",
-            "first_sort": "ascending"
-          },
-          "size": {
-            "sort_field": "size_for_sort",
-            "first_sort": "descending"
-          }
-        },
-        pane_type: "project",
-        handleCreateViewer: this.props.handleCreateViewer,
-        open_resources: this.props.open_resources ? this.props.open_resources["project"] : null,
-        allow_search_inside: false,
-        allow_search_metadata: true,
-        MenubarClass: _library_menubars.ProjectMenubar,
-        updatePaneState: this._updatePaneState
-      }, this.props.errorDrawerFuncs, this.state.pane_states["project"], {
-        library_id: this.props.library_id
-      }));
+          pane_type: "project",
+          handleCreateViewer: this.props.handleCreateViewer,
+          open_resources: this.props.open_resources ? this.props.open_resources["project"] : null,
+          allow_search_inside: false,
+          allow_search_metadata: true,
+          MenubarClass: _library_menubars.ProjectMenubar,
+          updatePaneState: this._updatePaneState
+        }, this.props.errorDrawerFuncs, this.state.pane_states["project"], {
+          library_id: this.props.library_id
+        }));
 
-      var tiles_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
-        columns: {
-          "icon:th": {
-            "sort_field": "type",
-            "first_sort": "ascending"
+        var tiles_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
+          columns: {
+            "icon:th": {
+              "sort_field": "type",
+              "first_sort": "ascending"
+            },
+            "name": {
+              "sort_field": "name",
+              "first_sort": "ascending"
+            },
+            "icon:upload": {
+              "sort_field": null,
+              "first_sort": "ascending"
+            },
+            "created": {
+              "sort_field": "created_for_sort",
+              "first_sort": "descending"
+            },
+            "updated": {
+              "sort_field": "updated_for_sort",
+              "first_sort": "ascending"
+            },
+            "tags": {
+              "sort_field": "tags",
+              "first_sort": "ascending"
+            }
           },
-          "name": {
-            "sort_field": "name",
-            "first_sort": "ascending"
-          },
-          "icon:upload": {
-            "sort_field": null,
-            "first_sort": "ascending"
-          },
-          "created": {
-            "sort_field": "created_for_sort",
-            "first_sort": "descending"
-          },
-          "updated": {
-            "sort_field": "updated_for_sort",
-            "first_sort": "ascending"
-          },
-          "tags": {
-            "sort_field": "tags",
-            "first_sort": "ascending"
-          }
-        },
-        pane_type: "tile",
-        handleCreateViewer: this.props.handleCreateViewer,
-        open_resources: this.props.open_resources ? this.props.open_resources["tile"] : null,
-        allow_search_inside: true,
-        allow_search_metadata: true,
-        MenubarClass: _library_menubars.TileMenubar,
-        updatePaneState: this._updatePaneState
-      }, this.props.errorDrawerFuncs, this.state.pane_states["tile"], {
-        library_id: this.props.library_id
-      }));
+          pane_type: "tile",
+          handleCreateViewer: this.props.handleCreateViewer,
+          open_resources: this.props.open_resources ? this.props.open_resources["tile"] : null,
+          allow_search_inside: true,
+          allow_search_metadata: true,
+          MenubarClass: _library_menubars.TileMenubar,
+          updatePaneState: this._updatePaneState
+        }, this.props.errorDrawerFuncs, this.state.pane_states["tile"], {
+          library_id: this.props.library_id
+        }));
 
-      var lists_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
-        columns: {
-          "icon:th": {
-            "sort_field": "type",
-            "first_sort": "ascending"
+        var lists_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
+          columns: {
+            "icon:th": {
+              "sort_field": "type",
+              "first_sort": "ascending"
+            },
+            "name": {
+              "sort_field": "name",
+              "first_sort": "ascending"
+            },
+            "created": {
+              "sort_field": "created_for_sort",
+              "first_sort": "descending"
+            },
+            "updated": {
+              "sort_field": "updated_for_sort",
+              "first_sort": "ascending"
+            },
+            "tags": {
+              "sort_field": "tags",
+              "first_sort": "ascending"
+            }
           },
-          "name": {
-            "sort_field": "name",
-            "first_sort": "ascending"
-          },
-          "created": {
-            "sort_field": "created_for_sort",
-            "first_sort": "descending"
-          },
-          "updated": {
-            "sort_field": "updated_for_sort",
-            "first_sort": "ascending"
-          },
-          "tags": {
-            "sort_field": "tags",
-            "first_sort": "ascending"
-          }
-        },
-        pane_type: "list",
-        open_resources: this.props.open_resources ? this.props.open_resources["list"] : null,
-        allow_search_inside: true,
-        allow_search_metadata: true,
-        MenubarClass: _library_menubars.ListMenubar
-      }, this.props.errorDrawerFuncs, {
-        updatePaneState: this._updatePaneState
-      }, this.state.pane_states["list"], {
-        library_id: this.props.library_id
-      }));
+          pane_type: "list",
+          open_resources: this.props.open_resources ? this.props.open_resources["list"] : null,
+          allow_search_inside: true,
+          allow_search_metadata: true,
+          MenubarClass: _library_menubars.ListMenubar
+        }, this.props.errorDrawerFuncs, {
+          updatePaneState: this._updatePaneState
+        }, this.state.pane_states["list"], {
+          library_id: this.props.library_id
+        }));
 
-      var code_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
-        columns: {
-          "icon:th": {
-            "sort_field": "type",
-            "first_sort": "ascending"
+        var code_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
+          columns: {
+            "icon:th": {
+              "sort_field": "type",
+              "first_sort": "ascending"
+            },
+            "name": {
+              "sort_field": "name",
+              "first_sort": "ascending"
+            },
+            "created": {
+              "sort_field": "created_for_sort",
+              "first_sort": "descending"
+            },
+            "updated": {
+              "sort_field": "updated_for_sort",
+              "first_sort": "ascending"
+            },
+            "tags": {
+              "sort_field": "tags",
+              "first_sort": "ascending"
+            }
           },
-          "name": {
-            "sort_field": "name",
-            "first_sort": "ascending"
-          },
-          "created": {
-            "sort_field": "created_for_sort",
-            "first_sort": "descending"
-          },
-          "updated": {
-            "sort_field": "updated_for_sort",
-            "first_sort": "ascending"
-          },
-          "tags": {
-            "sort_field": "tags",
-            "first_sort": "ascending"
-          }
-        },
-        pane_type: "code",
-        handleCreateViewer: this.props.handleCreateViewer,
-        open_resources: this.props.open_resources ? this.props.open_resources["code"] : null,
-        allow_search_inside: true,
-        allow_search_metadata: true,
-        MenubarClass: _library_menubars.CodeMenubar
-      }, this.props.errorDrawerFuncs, {
-        updatePaneState: this._updatePaneState
-      }, this.state.pane_states["code"], {
-        library_id: this.props.library_id
-      }));
+          pane_type: "code",
+          handleCreateViewer: this.props.handleCreateViewer,
+          open_resources: this.props.open_resources ? this.props.open_resources["code"] : null,
+          allow_search_inside: true,
+          allow_search_metadata: true,
+          MenubarClass: _library_menubars.CodeMenubar
+        }, this.props.errorDrawerFuncs, {
+          updatePaneState: this._updatePaneState
+        }, this.state.pane_states["code"], {
+          library_id: this.props.library_id
+        }));
+      }
 
       var outer_style = {
         height: this.state.available_height,
@@ -587,6 +592,32 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
       }
 
       var key_bindings = [[["tab"], this._goToNextPane], [["shift+tab"], this._goToPreviousPane]];
+      var extra_tabs = [];
+
+      if (get_all_panes) {
+        var tab_specs = [["collections", "collection", collection_pane], ["projects", "project", projects_pane], ["tiles", "tile", tiles_pane], ["lists", "list", lists_pane], ["code", "code", code_pane]];
+
+        for (var _i = 0, _tab_specs = tab_specs; _i < _tab_specs.length; _i++) {
+          var tlist = _tab_specs[_i];
+
+          var new_tab = /*#__PURE__*/_react["default"].createElement(_core.Tab, {
+            id: tlist[0] + "-pane",
+            panel: tlist[2]
+          }, /*#__PURE__*/_react["default"].createElement(_core.Tooltip, {
+            content: tlist[0],
+            position: _core.Position.RIGHT,
+            intent: "warning"
+          }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+            icon: _blueprint_mdata_fields.icon_dict[tlist[1]],
+            iconSize: 20,
+            tabIndex: -1,
+            color: this.getIconColor(tlist[0] + "-pane")
+          })));
+
+          extra_tabs.push(new_tab);
+        }
+      }
+
       return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, !this.props.controlled && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
         is_authenticated: window.is_authenticated,
         dark_theme: dark_theme,
@@ -619,71 +650,11 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
         position: _core.Position.RIGHT,
         intent: "warning"
       }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-        icon: "cube",
+        icon: _blueprint_mdata_fields.icon_dict["all"],
         iconSize: 20,
         tabIndex: -1,
         color: this.getIconColor("all-pane")
-      }))), /*#__PURE__*/_react["default"].createElement(_core.Tab, {
-        id: "collections-pane",
-        panel: collection_pane
-      }, /*#__PURE__*/_react["default"].createElement(_core.Tooltip, {
-        content: "Collections",
-        position: _core.Position.RIGHT,
-        intent: "warning"
-      }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-        icon: "database",
-        iconSize: 20,
-        tabIndex: -1,
-        color: this.getIconColor("collections-pane")
-      }))), /*#__PURE__*/_react["default"].createElement(_core.Tab, {
-        id: "projects-pane",
-        panel: projects_pane
-      }, /*#__PURE__*/_react["default"].createElement(_core.Tooltip, {
-        content: "Projects",
-        position: _core.Position.RIGHT,
-        intent: "warning"
-      }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-        icon: "projects",
-        iconSize: 20,
-        tabIndex: -1,
-        color: this.getIconColor("projects-pane")
-      }))), /*#__PURE__*/_react["default"].createElement(_core.Tab, {
-        id: "tiles-pane",
-        panel: tiles_pane
-      }, /*#__PURE__*/_react["default"].createElement(_core.Tooltip, {
-        content: "Tiles",
-        position: _core.Position.RIGHT,
-        intent: "warning"
-      }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-        icon: "application",
-        iconSize: 20,
-        tabIndex: -1,
-        color: this.getIconColor("tiles-pane")
-      }))), /*#__PURE__*/_react["default"].createElement(_core.Tab, {
-        id: "lists-pane",
-        panel: lists_pane
-      }, /*#__PURE__*/_react["default"].createElement(_core.Tooltip, {
-        content: "Lists",
-        position: _core.Position.RIGHT,
-        intent: "warning"
-      }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-        icon: "list",
-        iconSize: 20,
-        tabIndex: -1,
-        color: this.getIconColor("lists-pane")
-      }))), /*#__PURE__*/_react["default"].createElement(_core.Tab, {
-        id: "code-pane",
-        panel: code_pane
-      }, /*#__PURE__*/_react["default"].createElement(_core.Tooltip, {
-        content: "Code",
-        position: _core.Position.RIGHT,
-        intent: "warning"
-      }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-        icon: "code",
-        iconSize: 20,
-        tabIndex: -1,
-        color: this.getIconColor("code-pane")
-      }))))), !this.props.controlled && /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
+      }))), extra_tabs)), !this.props.controlled && /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
         global: true,
         bindings: key_bindings
       }));

@@ -63,6 +63,7 @@ class ProjectManager(LibraryResourceManager):
         mem = io.BytesIO()
         mem.write(project_dict["jupyter_text"].encode())
         mem.seek(0)
+        print("mem is ready supposedly")
         return send_file(mem,
                          download_name=new_name,
                          as_attachment=True)
@@ -215,6 +216,8 @@ class ProjectManager(LibraryResourceManager):
         new_project_name = request.json['new_res_name']
         save_dict = self.db[user_obj.project_collection_name].find_one({"project_name": project_to_copy})
         mdata = save_dict["metadata"]
+        mdata["updated"] = datetime.datetime.utcnow()
+        mdata["datetime"] = mdata["updated"]
         new_save_dict = {"metadata": mdata,
                          "project_name": new_project_name}
 
