@@ -267,6 +267,16 @@ $regular: #5c7080;
     &:hover {
         overflow-y: auto;
     }
+    .bp4-tree-node-content {
+        font-size: 12px;
+        height: 25px;
+        .bp4-tree-node-icon {
+            svg {
+                width: 14px;
+                height: 14px
+            }
+        }
+    }
     .hidden-tag {
         opacity: .5;
         .bp4-tree-node-label {

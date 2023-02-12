@@ -322,6 +322,8 @@ class TileManager(LibraryResourceManager):
                             "message": "A tile with that name already exists"})
         old_tile_dict = self.db[user_obj.tile_collection_name].find_one({"tile_module_name": tile_to_copy})
         metadata = copy.copy(old_tile_dict["metadata"])
+        metadata["updated"] = datetime.datetime.utcnow()
+        metadata["datetime"] = metadata["updated"]
         new_tile_dict = {"tile_module_name": new_tile_name, "tile_module": old_tile_dict["tile_module"],
                          "metadata": metadata, "last_saved": old_tile_dict["last_saved"]}
         self.db[user_obj.tile_collection_name].insert_one(new_tile_dict)

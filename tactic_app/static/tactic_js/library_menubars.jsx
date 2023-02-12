@@ -1,16 +1,11 @@
 // noinspection JSCheckFunctionSignatures
 
 import React from "react";
-
 import PropTypes from 'prop-types';
-
 
 import {TacticMenubar} from "./menu_utilities.js";
 import {doBinding} from "./utilities_react";
-import {showModalReact, showSelectDialog} from "./modal_react";
-import {doFlash} from "./toaster";
-import {postAjaxPromise, postWithCallback} from "./communication_react";
-import {showFileImportDialog} from "./import_dialog";
+import {icon_dict} from "./blueprint_mdata_fields";
 
 export {AllMenubar, CollectionMenubar, ProjectMenubar, TileMenubar, ListMenubar, CodeMenubar, LibraryMenubar}
 
@@ -55,6 +50,14 @@ class LibraryMenubar extends React.Component {
                 for (let menu_item of this.props.menu_specs[menu_name]) {
                     if (menu_item.res_type && menu_item.res_type != this.props.selected_type) {
                         disabled_items.push(menu_item.name_text)
+                    }
+                    else if (menu_item.reqs) {
+                        for (let param in menu_item.reqs) {
+                            if (!(param in this.props.selected_resource) ||
+                                !(this.props.selected_resource[param] == menu_item.reqs[param])) {
+                                disabled_items.push(menu_item.name_text)
+                            }
+                        }
                     }
                 }
             }
@@ -113,7 +116,7 @@ class AllMenubar extends React.Component {
     }
 
      get context_menu_items() {
-        let menu_items = [ {text: "edit", icon: "document-open", onClick: this.props.view_resource}];
+        let menu_items = [ {text: "open", icon: "document-open", onClick: this.props.view_resource}];
         if (window.in_context) {
             menu_items.push({text: "open in separate tab", icon: "document-open", onClick: (resource)=>{
                 this.props.view_resource(resource, null, true)
@@ -138,10 +141,10 @@ class AllMenubar extends React.Component {
         let ms = {
             New: [
                 {name_text: "New Notebook", icon_name: "new-text-box",
-                    click_handler: this.props.new_notebook, key_bindings: ["ctrl+n"]},
+                    click_handler: this.props.new_notebook},
                 {name_text: "divider1", icon_name: null, click_handler: "divider"},
                 {name_text: "Standard Tile", icon_name: "code",
-                    click_handler: ()=>{this.props.new_in_creator("BasicTileTemplate")},  key_bindings: ["ctrl+n"]},
+                    click_handler: ()=>{this.props.new_in_creator("BasicTileTemplate")}},
                 {name_text: "Matplotlib Tile", icon_name: "timeline-line-chart",
                     click_handler: ()=>{this.props.new_in_creator("MatplotlibTileTemplate")}},
                 {name_text: "D3Tile Tile", icon_name: "timeline-area-chart",
@@ -154,7 +157,7 @@ class AllMenubar extends React.Component {
             ],
             Open: [
                 {name_text: "Open", icon_name: "document-open",
-                    click_handler: ()=>{self.props.view_func()}, key_bindings: ["space", "return", "ctrl+o"]},
+                    click_handler: ()=>{self.props.view_func()}, key_bindings: ["ctrl+o", "return"]},
                 {name_text: "Open In Separate Tab", icon_name: "document-share",
                     click_handler: ()=>{self.props.view_resource(self.props.selected_resource, null, true)}},
                 {name_text: "divider1", icon_name: null, click_handler: "divider"},
@@ -193,7 +196,7 @@ class AllMenubar extends React.Component {
                 {name_text: "Import Jupyter Notebook", icon_name: "cloud-upload", click_handler: self.props.showJupyterImport},
                 {name_text: "Import List", icon_name: "cloud-upload", click_handler: this.props.showListImport},
                 {name_text: "Download As Jupyter Notebook", icon_name: "download",
-                    click_handler: self.props.downloadJupyter, res_type: "project"},
+                    click_handler: self.props.downloadJupyter, res_type: "project", reqs: {type: "jupyter"}},
                 {name_text: "divider2", icon_name: null, click_handler: "divider"},
                 {name_text: "Share to repository", icon_name: "share", click_handler: this.props.send_repository_func,
                     multi_select: true},
@@ -214,7 +217,8 @@ class AllMenubar extends React.Component {
                                context_menu_items={this.context_menu_items}
                                selected_rows={this.props.selected_rows}
                                selected_type={this.props.selected_type}
-                               resource_icon="cube"
+                               selected_resource={this.props.selected_resource}
+                               resource_icon={icon_dict["all"]}
                                menu_specs={this.menu_specs}
                                multi_select={this.props.multi_select}
                                dark_theme={this.props.dark_theme}
@@ -246,7 +250,7 @@ class CollectionMenubar extends React.Component {
         let ms = {
             Open: [
                 {name_text: "Open", icon_name: "document-open",
-                    click_handler: ()=>{self.props.view_func()},  key_bindings: ["space", "return", "ctrl+o"]},
+                    click_handler: ()=>{self.props.view_func()},  key_bindings: ["ctrl+o", "return"]},
                 {name_text: "Open In Separate Tab", icon_name: "document-share",
                     click_handler: ()=>{self.props.view_resource(self.props.selected_resource, null, true)}},
             ],
@@ -299,7 +303,7 @@ class CollectionMenubar extends React.Component {
      render () {
         return <LibraryMenubar sendContextMenuItems={this.props.sendContextMenuItems}
                                menu_specs={this.menu_specs}
-                               resource_icon="database"
+                               resource_icon={icon_dict["collection"]}
                                context_menu_items={this.context_menu_items}
                                multi_select={this.props.multi_select}
                                selected_rows={this.props.selected_rows}
@@ -346,7 +350,7 @@ class ProjectMenubar extends React.Component {
         let ms = {
             Open: [
                 {name_text: "Open", icon_name: "document-open",
-                    click_handler: ()=>{self.props.view_func()},  key_bindings: ["space", "return", "ctrl+o"]},
+                    click_handler: ()=>{self.props.view_func()},  key_bindings: ["ctrl+o", "return"]},
                 {name_text: "Open In Separate Tab", icon_name: "document-share",
                     click_handler: ()=>{self.props.view_resource(self.props.selected_resource, null, true)}},
                 {name_text: "New Notebook", icon_name: "new-text-box",
@@ -376,7 +380,7 @@ class ProjectMenubar extends React.Component {
      render () {
         return <LibraryMenubar sendContextMenuItems={this.props.sendContextMenuItems}
                                context_menu_items={this.context_menu_items}
-                               resource_icon="projects"
+                               resource_icon={icon_dict["project"]}
                                menu_specs={this.menu_specs}
                                selected_rows={this.props.selected_rows}
                                selected_type={this.props.selected_type}
@@ -442,7 +446,7 @@ class TileMenubar extends React.Component {
             ],
             Open: [
                 {name_text: "Open In Creator", icon_name: "document-open",
-                    click_handler: this.props.creator_view,  key_bindings: ["space", "return", "ctrl+o"]},
+                    click_handler: this.props.creator_view,  key_bindings: ["ctrl+o", "return"]},
                 {name_text: "Open In Viewer", icon_name: "document-open",
                     click_handler: this.props.tile_view},
                 {name_text: "Open In Creator in New Tab", icon_name: "document-share",
@@ -479,7 +483,7 @@ class TileMenubar extends React.Component {
      render () {
         return <LibraryMenubar sendContextMenuItems={this.props.sendContextMenuItems}
                                context_menu_items={this.context_menu_items}
-                               resource_icon="application"
+                               resource_icon={icon_dict["tile"]}
                                menu_specs={this.menu_specs}
                                selected_rows={this.props.selected_rows}
                                selected_type={this.props.selected_type}
@@ -530,7 +534,7 @@ class ListMenubar extends React.Component {
                 {name_text: "New", icon_name: "new-text-box",
                     click_handler: ()=>{this.props.new_list("nltk-english")}},
                 {name_text: "Open", icon_name: "document-open",
-                    click_handler: ()=>{self.props.view_func()},  key_bindings: ["space", "return", "ctrl+o"]},
+                    click_handler: ()=>{self.props.view_func()},  key_bindings: ["ctrl+o", "return"]},
                 {name_text: "Open In Separate Tab", icon_name: "document-share",
                     click_handler: ()=>{self.props.view_resource(self.props.selected_resource, null, true)}},
             ],
@@ -561,7 +565,7 @@ class ListMenubar extends React.Component {
                                context_menu_items={this.context_menu_items}
                                selected_rows={this.props.selected_rows}
                                selected_type={this.props.selected_type}
-                               resource_icon="list"
+                               resource_icon={icon_dict["list"]}
                                menu_specs={this.menu_specs}
                                multi_select={this.props.multi_select}
                                dark_theme={this.props.dark_theme}
@@ -613,7 +617,7 @@ class CodeMenubar extends React.Component {
                 {name_text: "New", icon_name: "new-text-box",
                     click_handler: ()=>{this.props.new_code("BasicCodeTemplate")}},
                 {name_text: "Open", icon_name: "document-open",
-                    click_handler: ()=>{self.props.view_func()},  key_bindings: ["space", "return", "ctrl+o"]},
+                    click_handler: ()=>{self.props.view_func()},  key_bindings: ["ctrl+o", "return"]},
                 {name_text: "Open In Separate Tab", icon_name: "document-share",
                     click_handler: ()=>{self.props.view_resource(self.props.selected_resource, null, true)}},
             ],
@@ -641,7 +645,7 @@ class CodeMenubar extends React.Component {
      render () {
         return <LibraryMenubar sendContextMenuItems={this.props.sendContextMenuItems}
                                context_menu_items={this.context_menu_items}
-                               resource_icon="code"
+                               resource_icon={icon_dict["code"]}
                                selected_rows={this.props.selected_rows}
                                selected_type={this.props.selected_type}
                                menu_specs={this.menu_specs}

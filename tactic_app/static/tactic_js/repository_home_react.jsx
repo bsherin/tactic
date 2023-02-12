@@ -20,6 +20,7 @@ import {withErrorDrawer} from "./error_drawer.js";
 import {doBinding} from "./utilities_react.js";
 import {guid} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
+import {res_types} from "./library_pane";
 
 import {RepositoryCollectionMenubar, RepositoryProjectMenubar, RepositoryTileMenubar,
     RepositoryListMenubar, RepositoryCodeMenubar} from "./repository_menubars.js"
@@ -50,7 +51,6 @@ function repository_props() {
     return {library_id: guid()}
 }
 
-var res_types = ["collection", "project", "tile", "list", "code"];
 const controllable_props = ["usable_height", "usable_width"];
 
 class RepositoryHomeApp extends React.Component {
@@ -66,6 +66,7 @@ class RepositoryHomeApp extends React.Component {
             this.state.pane_states[res_type] = {
                 left_width_fraction: .65,
                 selected_resource: {"name": "", "tags": "", "notes": "", "updated": "", "created": ""},
+                selected_rows: [],
                 tag_button_state:{
                     expanded_tags: [],
                     active_tag: "all",
@@ -73,6 +74,7 @@ class RepositoryHomeApp extends React.Component {
                 },
                 sort_field: "updated",
                 sort_direction: "descending",
+                filterType: res_type,
                 multi_select: false,
                 list_of_selected: [],
                 search_string: "",

@@ -397,7 +397,7 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
       }, /*#__PURE__*/_react["default"].createElement("div", {
         className: "bp4-navbar-group bp4-align-left",
         ref: this.lg_ref
-      }, /*#__PURE__*/_react["default"].createElement(_core.Navbar.Heading, {
+      }, /*#__PURE__*/_react["default"].createElement(_core.NavbarHeading, {
         className: "d-flex align-items-center"
       }, /*#__PURE__*/_react["default"].createElement("img", {
         className: "mr-2",
@@ -405,7 +405,7 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
         alt: "",
         width: "32 ",
         height: "32"
-      }), name_string), this.props.menus != null && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, this.props.menus)), /*#__PURE__*/_react["default"].createElement(_core.Navbar.Group, {
+      }), name_string), this.props.menus != null && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, this.props.menus)), /*#__PURE__*/_react["default"].createElement(_core.NavbarGroup, {
         align: _core.Alignment.RIGHT,
         style: right_style
       }, /*#__PURE__*/_react["default"].createElement(_core.NavbarDivider, null), /*#__PURE__*/_react["default"].createElement(_core.OverflowList, {
@@ -437,7 +437,7 @@ TacticNavbar.propTypes = {
   is_authenticated: _propTypes["default"].bool,
   user_name: _propTypes["default"].string,
   menus: _propTypes["default"].object,
-  selected: _propTypes["default"].string,
+  selected: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
   page_id: _propTypes["default"].string,
   extra_text: _propTypes["default"].string
 };

@@ -233,7 +233,6 @@ class LibraryResourceManager(ResourceManager):
                 tags.append(tag)
         return tags
 
-    @property
     def collection_spec(self, is_repository=False):
         colname = repository_user.collection_collection_name if is_repository else \
             current_user.collection_collection_name
@@ -245,7 +244,6 @@ class LibraryResourceManager(ResourceManager):
             "do_jsonify": False
         }
 
-    @property
     def project_spec(self, is_repository=False):
         colname = repository_user.project_collection_name if is_repository else \
             current_user.project_collection_name
@@ -257,7 +255,6 @@ class LibraryResourceManager(ResourceManager):
             "do_jsonify": False
         }
 
-    @property
     def tile_spec(self, is_repository=False):
         colname = repository_user.tile_collection_name if is_repository else \
             current_user.tile_collection_name
@@ -269,7 +266,6 @@ class LibraryResourceManager(ResourceManager):
             "do_jsonify": False
         }
 
-    @property
     def list_spec(self, is_repository=False):
         colname = repository_user.list_collection_name if is_repository else \
             current_user.list_collection_name
@@ -281,7 +277,6 @@ class LibraryResourceManager(ResourceManager):
             "do_jsonify": False
         }
 
-    @property
     def code_spec(self, is_repository=False):
         colname = repository_user.code_collection_name if is_repository else \
             current_user.code_collection_name
@@ -381,11 +376,12 @@ class LibraryResourceManager(ResourceManager):
         return filtered_list
 
     def grab_all_list_chunk(self):
-        specs = {"collection": self.collection_spec,
-                 "project": self.project_spec,
-                 "tile": self.tile_spec,
-                 "list": self.list_spec,
-                 "code": self.code_spec}
+        is_repo = request.json["is_repository"]
+        specs = {"collection": self.collection_spec(is_repo),
+                 "project": self.project_spec(is_repo),
+                 "tile": self.tile_spec(is_repo),
+                 "list": self.list_spec(is_repo),
+                 "code": self.code_spec(is_repo)}
         preppers = {"collection": self.prep_collection_results,
                     "project": self.prep_project_results,
                     "tile": self.prep_tile_results,
@@ -396,7 +392,7 @@ class LibraryResourceManager(ResourceManager):
             types_to_grab = res_types
         else:
             types_to_grab = [pane_type]
-        db_to_use = self.repository_db if request.json["is_repository"] else self.db
+        db_to_use = self.repository_db if is_repo else self.db
 
         def sort_mdata_key(item):
             if sort_field not in item:

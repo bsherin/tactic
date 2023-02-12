@@ -157,6 +157,8 @@ class CodeManager(LibraryResourceManager):
                             "message": "A code resource with that name already exists"})
         old_code_dict = self.db[user_obj.code_collection_name].find_one({"code_name": code_to_copy})
         metadata = copy.copy(old_code_dict["metadata"])
+        metadata["updated"] = datetime.datetime.utcnow()
+        metadata["datetime"] = metadata["updated"]
         new_code_dict = {"code_name": new_code_name, "the_code": old_code_dict["the_code"], "metadata": metadata}
         self.db[user_obj.code_collection_name].insert_one(new_code_dict)
         new_row = self.build_res_dict(new_code_name, metadata, user_obj)

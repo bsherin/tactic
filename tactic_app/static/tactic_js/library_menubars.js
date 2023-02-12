@@ -15,13 +15,7 @@ var _menu_utilities = require("./menu_utilities.js");
 
 var _utilities_react = require("./utilities_react");
 
-var _modal_react = require("./modal_react");
-
-var _toaster = require("./toaster");
-
-var _communication_react = require("./communication_react");
-
-var _import_dialog = require("./import_dialog");
+var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -140,6 +134,12 @@ var LibraryMenubar = /*#__PURE__*/function (_React$Component) {
 
               if (_menu_item2.res_type && _menu_item2.res_type != this.props.selected_type) {
                 disabled_items.push(_menu_item2.name_text);
+              } else if (_menu_item2.reqs) {
+                for (var param in _menu_item2.reqs) {
+                  if (!(param in this.props.selected_resource) || !(this.props.selected_resource[param] == _menu_item2.reqs[param])) {
+                    disabled_items.push(_menu_item2.name_text);
+                  }
+                }
               }
             }
           } catch (err) {
@@ -221,7 +221,7 @@ var AllMenubar = /*#__PURE__*/function (_React$Component2) {
       var _this2 = this;
 
       var menu_items = [{
-        text: "edit",
+        text: "open",
         icon: "document-open",
         onClick: this.props.view_resource
       }];
@@ -278,8 +278,7 @@ var AllMenubar = /*#__PURE__*/function (_React$Component2) {
         New: [{
           name_text: "New Notebook",
           icon_name: "new-text-box",
-          click_handler: this.props.new_notebook,
-          key_bindings: ["ctrl+n"]
+          click_handler: this.props.new_notebook
         }, {
           name_text: "divider1",
           icon_name: null,
@@ -289,8 +288,7 @@ var AllMenubar = /*#__PURE__*/function (_React$Component2) {
           icon_name: "code",
           click_handler: function click_handler() {
             _this3.props.new_in_creator("BasicTileTemplate");
-          },
-          key_bindings: ["ctrl+n"]
+          }
         }, {
           name_text: "Matplotlib Tile",
           icon_name: "timeline-line-chart",
@@ -326,7 +324,7 @@ var AllMenubar = /*#__PURE__*/function (_React$Component2) {
           click_handler: function click_handler() {
             self.props.view_func();
           },
-          key_bindings: ["space", "return", "ctrl+o"]
+          key_bindings: ["ctrl+o", "return"]
         }, {
           name_text: "Open In Separate Tab",
           icon_name: "document-share",
@@ -437,7 +435,10 @@ var AllMenubar = /*#__PURE__*/function (_React$Component2) {
           name_text: "Download As Jupyter Notebook",
           icon_name: "download",
           click_handler: self.props.downloadJupyter,
-          res_type: "project"
+          res_type: "project",
+          reqs: {
+            type: "jupyter"
+          }
         }, {
           name_text: "divider2",
           icon_name: null,
@@ -483,7 +484,8 @@ var AllMenubar = /*#__PURE__*/function (_React$Component2) {
         context_menu_items: this.context_menu_items,
         selected_rows: this.props.selected_rows,
         selected_type: this.props.selected_type,
-        resource_icon: "cube",
+        selected_resource: this.props.selected_resource,
+        resource_icon: _blueprint_mdata_fields.icon_dict["all"],
         menu_specs: this.menu_specs,
         multi_select: this.props.multi_select,
         dark_theme: this.props.dark_theme,
@@ -534,7 +536,7 @@ var CollectionMenubar = /*#__PURE__*/function (_React$Component3) {
           click_handler: function click_handler() {
             self.props.view_func();
           },
-          key_bindings: ["space", "return", "ctrl+o"]
+          key_bindings: ["ctrl+o", "return"]
         }, {
           name_text: "Open In Separate Tab",
           icon_name: "document-share",
@@ -660,7 +662,7 @@ var CollectionMenubar = /*#__PURE__*/function (_React$Component3) {
       return /*#__PURE__*/_react["default"].createElement(LibraryMenubar, {
         sendContextMenuItems: this.props.sendContextMenuItems,
         menu_specs: this.menu_specs,
-        resource_icon: "database",
+        resource_icon: _blueprint_mdata_fields.icon_dict["collection"],
         context_menu_items: this.context_menu_items,
         multi_select: this.props.multi_select,
         selected_rows: this.props.selected_rows,
@@ -750,7 +752,7 @@ var ProjectMenubar = /*#__PURE__*/function (_React$Component4) {
           click_handler: function click_handler() {
             self.props.view_func();
           },
-          key_bindings: ["space", "return", "ctrl+o"]
+          key_bindings: ["ctrl+o", "return"]
         }, {
           name_text: "Open In Separate Tab",
           icon_name: "document-share",
@@ -827,7 +829,7 @@ var ProjectMenubar = /*#__PURE__*/function (_React$Component4) {
       return /*#__PURE__*/_react["default"].createElement(LibraryMenubar, {
         sendContextMenuItems: this.props.sendContextMenuItems,
         context_menu_items: this.context_menu_items,
-        resource_icon: "projects",
+        resource_icon: _blueprint_mdata_fields.icon_dict["project"],
         menu_specs: this.menu_specs,
         selected_rows: this.props.selected_rows,
         selected_type: this.props.selected_type,
@@ -958,7 +960,7 @@ var TileMenubar = /*#__PURE__*/function (_React$Component5) {
           name_text: "Open In Creator",
           icon_name: "document-open",
           click_handler: this.props.creator_view,
-          key_bindings: ["space", "return", "ctrl+o"]
+          key_bindings: ["ctrl+o", "return"]
         }, {
           name_text: "Open In Viewer",
           icon_name: "document-open",
@@ -1061,7 +1063,7 @@ var TileMenubar = /*#__PURE__*/function (_React$Component5) {
       return /*#__PURE__*/_react["default"].createElement(LibraryMenubar, {
         sendContextMenuItems: this.props.sendContextMenuItems,
         context_menu_items: this.context_menu_items,
-        resource_icon: "application",
+        resource_icon: _blueprint_mdata_fields.icon_dict["tile"],
         menu_specs: this.menu_specs,
         selected_rows: this.props.selected_rows,
         selected_type: this.props.selected_type,
@@ -1160,7 +1162,7 @@ var ListMenubar = /*#__PURE__*/function (_React$Component6) {
           click_handler: function click_handler() {
             self.props.view_func();
           },
-          key_bindings: ["space", "return", "ctrl+o"]
+          key_bindings: ["ctrl+o", "return"]
         }, {
           name_text: "Open In Separate Tab",
           icon_name: "document-share",
@@ -1230,7 +1232,7 @@ var ListMenubar = /*#__PURE__*/function (_React$Component6) {
         context_menu_items: this.context_menu_items,
         selected_rows: this.props.selected_rows,
         selected_type: this.props.selected_type,
-        resource_icon: "list",
+        resource_icon: _blueprint_mdata_fields.icon_dict["list"],
         menu_specs: this.menu_specs,
         multi_select: this.props.multi_select,
         dark_theme: this.props.dark_theme,
@@ -1327,7 +1329,7 @@ var CodeMenubar = /*#__PURE__*/function (_React$Component7) {
           click_handler: function click_handler() {
             self.props.view_func();
           },
-          key_bindings: ["space", "return", "ctrl+o"]
+          key_bindings: ["ctrl+o", "return"]
         }, {
           name_text: "Open In Separate Tab",
           icon_name: "document-share",
@@ -1391,7 +1393,7 @@ var CodeMenubar = /*#__PURE__*/function (_React$Component7) {
       return /*#__PURE__*/_react["default"].createElement(LibraryMenubar, {
         sendContextMenuItems: this.props.sendContextMenuItems,
         context_menu_items: this.context_menu_items,
-        resource_icon: "code",
+        resource_icon: _blueprint_mdata_fields.icon_dict["code"],
         selected_rows: this.props.selected_rows,
         selected_type: this.props.selected_type,
         menu_specs: this.menu_specs,

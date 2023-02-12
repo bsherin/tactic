@@ -156,7 +156,15 @@ $light-highlight-weight: 600;
 
         }
         [data-tab-id="library"] {
-            margin-bottom: 10px
+            margin-bottom: 10px;
+            padding: 0
+        }
+        &.unified {
+            [data-tab-id="library"] {
+                margin-bottom: 0;
+                padding-left: 10px;
+                padding-right: 10px
+            }
         }
 
         .lib-tab-button {
@@ -164,6 +172,12 @@ $light-highlight-weight: 600;
             margin-left: 10px;
             font-size: 16px;
             line-height: 30px;
+        }
+        &.unified {
+            .lib-tab-button {
+                font-size: 18px;
+                margin-left: 0;
+            }
         }
 
         > .bp4-tab-panel {

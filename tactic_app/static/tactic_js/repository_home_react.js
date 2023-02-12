@@ -40,6 +40,8 @@ var _utilities_react2 = require("./utilities_react");
 
 var _blueprint_navbar = require("./blueprint_navbar");
 
+var _library_pane2 = require("./library_pane");
+
 var _repository_menubars = require("./repository_menubars.js");
 
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
@@ -104,7 +106,6 @@ function repository_props() {
   };
 }
 
-var res_types = ["collection", "project", "tile", "list", "code"];
 var controllable_props = ["usable_height", "usable_width"];
 
 var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
@@ -123,7 +124,7 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
       pane_states: {}
     };
 
-    var _iterator = _createForOfIteratorHelper(res_types),
+    var _iterator = _createForOfIteratorHelper(_library_pane2.res_types),
         _step;
 
     try {
@@ -138,6 +139,7 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
             "updated": "",
             "created": ""
           },
+          selected_rows: [],
           tag_button_state: {
             expanded_tags: [],
             active_tag: "all",
@@ -145,6 +147,7 @@ var RepositoryHomeApp = /*#__PURE__*/function (_React$Component) {
           },
           sort_field: "updated",
           sort_direction: "descending",
+          filterType: res_type,
           multi_select: false,
           list_of_selected: [],
           search_string: "",

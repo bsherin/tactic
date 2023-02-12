@@ -70,6 +70,7 @@ var mdi = (0, _markdownIt["default"])({
 });
 mdi.use(_markdownItLatex["default"]);
 var icon_dict = {
+  all: "cube",
   collection: "database",
   project: "projects",
   tile: "application",
