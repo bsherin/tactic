@@ -717,6 +717,8 @@ class TileCreationTasksMixin:
                     form_info["other_tile_names"] = self.get_other_tile_names(tid)
                     the_id = tid
                     self.mworker.post_task(the_id, "RebuildTileForms", form_info)
+            if self.pseudo_tile_id is not None:
+                self.mworker.post_task(self.pseudo_tile_id, "RebuildTileForms", {})
         except Exception as ex:
             error_string = self.handle_exception(ex, "Error rebuilding the forms")
             print(error_string)
