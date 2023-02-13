@@ -552,6 +552,8 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             if tile_id is None or not tid == tile_id:
                 form_info["other_tile_names"] = self.get_other_tile_names(tid)
                 self.mworker.post_task(tid, "RebuildTileForms", form_info)
+        if self.pseudo_tile_id is not None:
+            self.mworker.post_task(self.pseudo_tile_id, "RebuildTileForms", {})
 
     def compile_form_info(self, tile_id):
         if tile_id is None:

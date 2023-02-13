@@ -232,6 +232,11 @@ class PseudoTileClass(TileBase, MplFigure):
         return user_globals
 
     @_task_worthy
+    def RebuildTileForms(self, data):
+        self.tiles._other_tile_data = None
+        return None
+
+    @_task_worthy
     def _transfer_pipe_value(self, data):
         print("in _transfer_pipe_value in pseudo_tile_base")
         self._save_stdout()
