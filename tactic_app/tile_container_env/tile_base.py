@@ -323,6 +323,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     @_task_worthy
     def RebuildTileForms(self, data):
         form_data = self._create_form_data(data)["form_data"]
+        self._remote_tiles._other_tile_data = None
         self._tworker.emit_tile_message("displayFormContent", {"form_data": form_data})
         return None
 

@@ -1,7 +1,7 @@
 from document_object import TacticDocument, FreeformTacticDocument
 from document_object import DetachedTacticCollection, DetachedTacticRow, DetachedTacticDocument
 from document_object import DetachedFreeformTacticDocument, DetachedTacticLine
-from remote_tile_object import RemoteTiles
+from remote_tile_object import RemoteTiles, Tiles
 import document_object
 
 
@@ -51,7 +51,7 @@ class ObjectAPIMixin:
     @property
     def tiles(self):
         if self._remote_tiles is None:
-            self._remote_tiles = RemoteTiles()
+            self._remote_tiles = Tiles
         return self._remote_tiles
 
     def force_client_disconnect(self):
