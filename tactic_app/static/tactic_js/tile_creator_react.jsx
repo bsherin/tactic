@@ -1052,7 +1052,7 @@ class CreatorApp extends React.Component {
                                               notes={this.state.notes}
                                               created={my_props.created}
                                               category={this.state.category}
-                                              res_type="tile"
+                                              pane_type="tile"
                                               notes_buttons={this._metadataNotesButtons}
                                               handleChange={this.handleStateChange}
                                                 />);

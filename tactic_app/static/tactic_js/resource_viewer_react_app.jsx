@@ -114,7 +114,7 @@ class ResourceViewerApp extends React.Component {
                                   notes={this.props.notes}
                                   readOnly={this.props.readOnly}
                                   handleChange={this.props.handleStateChange}
-                                  res_type={this.props.res_type} />
+                                  pane_type={this.props.res_type} />
                 </React.Fragment>
         );
 
