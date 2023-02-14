@@ -175,7 +175,7 @@ var ResourceViewerApp = /*#__PURE__*/function (_React$Component) {
         notes: this.props.notes,
         readOnly: this.props.readOnly,
         handleChange: this.props.handleStateChange,
-        res_type: this.props.res_type
+        pane_type: this.props.res_type
       }));
 
       return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_menu_utilities.TacticMenubar, {
