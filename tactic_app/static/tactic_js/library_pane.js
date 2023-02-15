@@ -254,6 +254,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         search_string: this.props.search_string,
         search_inside: this.props.search_inside,
         search_metadata: this.props.search_metadata,
+        show_hidden: this.props.show_hidden,
         sort_field: this.props.sort_field,
         sort_direction: this.props.sort_direction
       };
@@ -1837,9 +1838,11 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       }, filter_buttons), /*#__PURE__*/_react["default"].createElement(_library_widgets.SearchForm, {
         allow_search_inside: this.props.allow_search_inside,
         allow_search_metadata: this.props.allow_search_metadata,
+        allow_show_hidden: true,
         update_search_state: this._update_search_state,
         search_string: this.props.search_string,
         search_inside: this.props.search_inside,
+        show_hidden: this.props.show_hidden,
         search_metadata: this.props.search_metadata
       })), /*#__PURE__*/_react["default"].createElement(_library_widgets.BpSelectorTable, {
         data_dict: this.state.data_dict,
@@ -1937,6 +1940,7 @@ LibraryPane.propTypes = {
   search_string: _propTypes["default"].string,
   search_inside: _propTypes["default"].bool,
   search_metadata: _propTypes["default"].bool,
+  show_hidden: _propTypes["default"].bool,
   search_tag: _propTypes["default"].string,
   tag_button_state: _propTypes["default"].object,
   contextItems: _propTypes["default"].array,

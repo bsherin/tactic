@@ -78,6 +78,7 @@ class LibraryHomeApp extends React.Component {
                 search_string: "",
                 search_inside: false,
                 search_metadata: false,
+                show_hidden: false,
                 selectedRegions: [Regions.row(0)]
             }
         }

@@ -144,6 +144,10 @@ class SearchForm extends React.Component {
 
     }
 
+    _handleShowHiddenChange(event) {
+        this.props.update_search_state({"show_hidden": event.target.checked});
+    }
+
     _handleRegexChange(event) {
         this.props.update_search_state({"regex": event.target.checked});
     }
@@ -188,7 +192,7 @@ class SearchForm extends React.Component {
                         />
                     {this.props.allow_regex &&
                         <Switch label="regexp"
-                                   className="ml-2 mb-0 mt-1"
+                                   className="ml-3 mb-0 mt-1"
                                    large={false}
                                    checked={this.props.regex}
                                    onChange={this._handleRegexChange}
@@ -196,7 +200,7 @@ class SearchForm extends React.Component {
                     }
                     {this.props.allow_search_metadata &&
                         <Switch label="metadata"
-                                     className="ml-2 mb-0 mt-1"
+                                     className="ml-3 mb-0 mt-1"
                                     large={false}
                                     checked={this.props.search_metadata}
                                     onChange={this._handleSearchMetadataChange}
@@ -204,10 +208,18 @@ class SearchForm extends React.Component {
                     }
                     {this.props.allow_search_inside &&
                         <Switch label="inside"
-                                   className="ml-2 mb-0 mt-1"
+                                   className="ml-3 mb-0 mt-1"
                                    large={false}
                                    checked={this.props.search_inside}
                                    onChange={this._handleSearchInsideChange}
+                        />
+                    }
+                    {this.props.allow_show_hidden &&
+                        <Switch label="show hidden"
+                                   className="ml-3 mb-0 mt-1"
+                                   large={false}
+                                   checked={this.props.show_hidden}
+                                   onChange={this._handleShowHiddenChange}
                         />
                     }
                         {this.props.include_search_jumper &&
@@ -227,12 +239,14 @@ class SearchForm extends React.Component {
 SearchForm.propTypes = {
     allow_search_inside: PropTypes.bool,
     allow_search_metadata: PropTypes.bool,
+    allow_show_hidden: PropTypes.bool,
     allow_regex: PropTypes.bool,
     regex: PropTypes.bool,
     update_search_state: PropTypes.func,
     search_string: PropTypes.string,
     search_inside: PropTypes.bool,
     search_metadata: PropTypes.bool,
+    show_hidden: PropTypes.bool,
     field_with: PropTypes.number,
     include_search_jumper: PropTypes.bool,
     searchNext: PropTypes.func,
@@ -245,10 +259,12 @@ SearchForm.propTypes = {
 SearchForm.defaultProps = {
     allow_search_inside: false,
     allow_search_metadata: false,
+    allow_show_hidden: false,
     allow_regex: false,
     regex: false,
     search_inside: false,
     search_metadata: false,
+    show_hidden: false,
     field_width: 265,
     include_search_jumper: false,
     current_search_number: null,

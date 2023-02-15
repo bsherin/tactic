@@ -96,7 +96,7 @@ class TagButtonList extends React.Component {
             label: name,
             icon: "tag",
             hasCaret: false,
-            className: name == "hidden" && prelist.length == 0 ? "hidden-tag" : "",
+            className: name == "hidden" ? "hidden-tag" : "",
             isSelected: tag_string == this.props.active_tag,
             isExpanded: this.props.expanded_tags.includes(tag_string),
             nodeData: {tag_string: tag_string}
