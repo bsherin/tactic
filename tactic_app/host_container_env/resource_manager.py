@@ -208,7 +208,9 @@ class LibraryResourceManager(ResourceManager):
         return ltext, fsize
 
     def has_hidden(self, tag_string):
-        return "/hidden" in self.get_all_subtags(tag_string)
+        if re.search("(^|/| )hidden($|/| )", tag_string):
+            return True
+        return False
 
     def add_hidden_to_all_subtags(self, tag_string):
         all_subtags = self.get_all_subtags(tag_string)
