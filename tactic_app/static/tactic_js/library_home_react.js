@@ -160,6 +160,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
           search_string: "",
           search_inside: false,
           search_metadata: false,
+          show_hidden: false,
           selectedRegions: [_table.Regions.row(0)]
         };
       }

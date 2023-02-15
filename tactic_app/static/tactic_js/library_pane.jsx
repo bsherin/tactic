@@ -151,6 +151,7 @@ class LibraryPane extends React.Component {
             search_string: this.props.search_string,
             search_inside: this.props.search_inside,
             search_metadata: this.props.search_metadata,
+            show_hidden: this.props.show_hidden,
             sort_field: this.props.sort_field,
             sort_direction: this.props.sort_direction
         }
@@ -1322,9 +1323,11 @@ class LibraryPane extends React.Component {
                             }
                             <SearchForm allow_search_inside={this.props.allow_search_inside}
                                         allow_search_metadata={this.props.allow_search_metadata}
+                                        allow_show_hidden={true}
                                         update_search_state={this._update_search_state}
                                         search_string={this.props.search_string}
                                         search_inside={this.props.search_inside}
+                                        show_hidden={this.props.show_hidden}
                                         search_metadata={this.props.search_metadata}
                             />
                         </div>
@@ -1419,6 +1422,7 @@ LibraryPane.propTypes = {
     search_string: PropTypes.string,
     search_inside: PropTypes.bool,
     search_metadata: PropTypes.bool,
+    show_hidden: PropTypes.bool,
     search_tag: PropTypes.string,
     tag_button_state: PropTypes.object,
     contextItems: PropTypes.array,

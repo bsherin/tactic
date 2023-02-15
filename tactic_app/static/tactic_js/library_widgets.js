@@ -240,6 +240,13 @@ var SearchForm = /*#__PURE__*/function (_React$Component3) {
       });
     }
   }, {
+    key: "_handleShowHiddenChange",
+    value: function _handleShowHiddenChange(event) {
+      this.props.update_search_state({
+        "show_hidden": event.target.checked
+      });
+    }
+  }, {
     key: "_handleRegexChange",
     value: function _handleRegexChange(event) {
       this.props.update_search_state({
@@ -296,22 +303,28 @@ var SearchForm = /*#__PURE__*/function (_React$Component3) {
         inputRef: this.props.search_ref
       }), this.props.allow_regex && /*#__PURE__*/_react["default"].createElement(_core.Switch, {
         label: "regexp",
-        className: "ml-2 mb-0 mt-1",
+        className: "ml-3 mb-0 mt-1",
         large: false,
         checked: this.props.regex,
         onChange: this._handleRegexChange
       }), this.props.allow_search_metadata && /*#__PURE__*/_react["default"].createElement(_core.Switch, {
         label: "metadata",
-        className: "ml-2 mb-0 mt-1",
+        className: "ml-3 mb-0 mt-1",
         large: false,
         checked: this.props.search_metadata,
         onChange: this._handleSearchMetadataChange
       }), this.props.allow_search_inside && /*#__PURE__*/_react["default"].createElement(_core.Switch, {
         label: "inside",
-        className: "ml-2 mb-0 mt-1",
+        className: "ml-3 mb-0 mt-1",
         large: false,
         checked: this.props.search_inside,
         onChange: this._handleSearchInsideChange
+      }), this.props.allow_show_hidden && /*#__PURE__*/_react["default"].createElement(_core.Switch, {
+        label: "show hidden",
+        className: "ml-3 mb-0 mt-1",
+        large: false,
+        checked: this.props.show_hidden,
+        onChange: this._handleShowHiddenChange
       }), this.props.include_search_jumper && /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, {
         style: {
           marginLeft: 5,
@@ -343,12 +356,14 @@ exports.SearchForm = SearchForm;
 SearchForm.propTypes = {
   allow_search_inside: _propTypes["default"].bool,
   allow_search_metadata: _propTypes["default"].bool,
+  allow_show_hidden: _propTypes["default"].bool,
   allow_regex: _propTypes["default"].bool,
   regex: _propTypes["default"].bool,
   update_search_state: _propTypes["default"].func,
   search_string: _propTypes["default"].string,
   search_inside: _propTypes["default"].bool,
   search_metadata: _propTypes["default"].bool,
+  show_hidden: _propTypes["default"].bool,
   field_with: _propTypes["default"].number,
   include_search_jumper: _propTypes["default"].bool,
   searchNext: _propTypes["default"].func,
@@ -360,10 +375,12 @@ SearchForm.propTypes = {
 SearchForm.defaultProps = {
   allow_search_inside: false,
   allow_search_metadata: false,
+  allow_show_hidden: false,
   allow_regex: false,
   regex: false,
   search_inside: false,
   search_metadata: false,
+  show_hidden: false,
   field_width: 265,
   include_search_jumper: false,
   current_search_number: null,

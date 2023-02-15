@@ -437,10 +437,7 @@ class LibraryResourceManager(ResourceManager):
                     try:
                         if "metadata" in doc and doc["metadata"] is not None:
                             mdata = doc["metadata"]
-                            if self.has_hidden(mdata["tags"]):
-                                all_subtags = self.add_hidden_to_all_subtags(mdata["tags"])
-                                all_tags += self.add_hidden_to_tags(mdata["tags"])
-                                if not self.has_hidden(search_spec["active_tag"]):
+                            if self.has_hidden(mdata["tags"]) and not search_spec["show_hidden"]:
                                     continue
                             else:
                                 all_subtags = self.get_all_subtags(mdata["tags"])
@@ -459,9 +456,7 @@ class LibraryResourceManager(ResourceManager):
                     try:
                         if "metadata" in doc and doc["metadata"] is not None:
                             mdata = doc["metadata"]
-
-                            if self.has_hidden(mdata["tags"]):
-                                all_tags += self.add_hidden_to_tags(mdata["tags"])
+                            if self.has_hidden(mdata["tags"]) and not search_spec["show_hidden"]:
                                 continue
                             else:
                                 all_tags += mdata["tags"].split()
