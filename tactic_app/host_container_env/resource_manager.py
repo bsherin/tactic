@@ -450,6 +450,7 @@ class LibraryResourceManager(ResourceManager):
                                                                 doc["file_id"], res_type=rtype)
                                 else:
                                     rdict = self.build_res_dict(doc[name_field], mdata, res_type=rtype)
+                                rdict["hidden"] = self.has_hidden(mdata["tags"])
                                 filtered_res.append(rdict)
                     except Exception as ex:
                         print("Got problem with doc " + str(doc[name_field]))
@@ -469,6 +470,7 @@ class LibraryResourceManager(ResourceManager):
                                                         doc["file_id"], res_type=rtype)
                         else:
                             rdict = self.build_res_dict(doc[name_field], mdata, res_type=rtype)
+                        rdict["hidden"] = self.has_hidden(mdata["tags"])
                         filtered_res.append(rdict)
                     except Exception as ex:
                         print("Got problem with doc " + str(doc[name_field]))
