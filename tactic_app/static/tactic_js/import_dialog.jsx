@@ -158,6 +158,9 @@ class FileImportDialog extends React.Component {
             this.myDropzone.options.url = this.current_url;
             this.myDropzone.processQueue()
         }
+        if (this.props.after_upload) {
+            this.props.after_upload()
+        }
     }
 
     _onSending(f) {
@@ -379,6 +382,7 @@ FileImportDialog.propTypes = {
     title: PropTypes.string,
     existing_names: PropTypes.array,
     process_handler: PropTypes.func,
+    after_upload: PropTypes.func,
     allowed_file_types: PropTypes.string,
     combine: PropTypes.bool,
     checkboxes: PropTypes.array,
@@ -389,14 +393,15 @@ FileImportDialog.propTypes = {
     dark_theme: PropTypes.bool
 };
 
-FileImportDialog.cefaultProps = {
+FileImportDialog.defaultProps = {
     checkboxes: null,
     textoptions: null,
-    popupoptions: null
+    popupoptions: null,
+    after_upload: null
 };
 
 function showFileImportDialog(res_type, allowed_file_types, checkboxes, process_handler, tsocket, dark_theme,
-                              combine=false, show_csv_options=false ) {
+                              combine=false, show_csv_options=false, after_upload=null ) {
 
 
     $.getJSON(`${$SCRIPT_ROOT}get_resource_names/${res_type}`, function (data) {
@@ -421,6 +426,7 @@ function showFileImportDialog(res_type, allowed_file_types, checkboxes, process_
                                           combine={combine}
                                           show_csv_options={show_csv_options}
                                           dark_theme={dark_theme}
+                                          after_upload={after_upload}
                                           handleClose={handle_close}/>, domContainer);
     }
 
