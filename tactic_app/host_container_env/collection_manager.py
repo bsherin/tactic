@@ -9,6 +9,7 @@ from tactic_app import app, db, repository_db, use_remote_database
 from communication_utils import make_python_object_jsonizable, debinarize_python_object, make_jsonizable_and_compress
 from communication_utils import read_temp_data, delete_temp_data
 from mongo_accesser import MongoAccessException
+import tempfile
 # noinspection PyPackageRequirements
 import openpyxl
 from openpyxl.styles import Alignment, Font
@@ -242,12 +243,11 @@ class CollectionManager(LibraryResourceManager):
                         val = None
                     _ = ws.cell(row=r, column=c, value=val)
             self.adjust_ws_col_widths(ws, max_col_width)
-            # noinspection PyUnresolvedReferences
-        virtual_notebook = openpyxl.writer.excel.save_virtual_workbook(wb)
-        str_io = io.BytesIO()
-        str_io.write(virtual_notebook)
-        str_io.seek(0)
-        return send_file(str_io,
+
+        tmp = tempfile.NamedTemporaryFile()
+        wb.save(tmp.name)
+        tmp.seek(0)
+        return send_file(tmp,
                          download_name=new_name,
                          as_attachment=True)
 
