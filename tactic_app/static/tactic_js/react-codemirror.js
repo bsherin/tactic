@@ -208,7 +208,7 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
         "Ctrl-Space": "autocomplete"
       });
       cmobject.setOption("extraKeys", all_extra_keys);
-      cmobject.setSize(null, this.props.code_container_width);
+      cmobject.setSize("100%", "100%");
       cmobject.on("change", this.handleChange);
       cmobject.on("blur", this.handleBlur);
       return cmobject;
