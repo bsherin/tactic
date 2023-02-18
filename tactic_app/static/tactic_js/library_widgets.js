@@ -510,8 +510,13 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
         }
 
         var the_body;
+        var the_class = "";
 
         if (Object.keys(self.props.data_dict[rowIndex]).includes(column_name)) {
+          if ("hidden" in self.props.data_dict[rowIndex] && self.props.data_dict[rowIndex]["hidden"]) {
+            the_class = "hidden_cell";
+          }
+
           var the_text = String(self.props.data_dict[rowIndex][column_name]);
 
           if (the_text.startsWith("icon:")) {
@@ -521,7 +526,9 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
               size: 14
             });
           } else {
-            the_body = /*#__PURE__*/_react["default"].createElement(_table.TruncatedFormat, null, the_text);
+            the_body = /*#__PURE__*/_react["default"].createElement(_table.TruncatedFormat, {
+              className: the_class
+            }, the_text);
           }
         } else {
           the_body = "";

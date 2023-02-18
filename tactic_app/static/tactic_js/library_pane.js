@@ -1410,7 +1410,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       (0, _import_dialog.showFileImportDialog)("collection", ".csv,.tsv,.txt,.xls,.xlsx,.html", [{
         "checkname": "import_as_freeform",
         "checktext": "Import as freeform"
-      }], this._import_collection, this.props.tsocket, this.props.dark_theme, true, true);
+      }], this._import_collection, this.props.tsocket, this.props.dark_theme, true, true, this._refresh_func);
     }
   }, {
     key: "_import_collection",
