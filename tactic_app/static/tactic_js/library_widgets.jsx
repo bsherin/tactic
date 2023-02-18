@@ -353,14 +353,19 @@ class BpSelectorTable extends React.Component {
                 )
             }
             let the_body;
+            let the_class = "";
             if (Object.keys(self.props.data_dict[rowIndex]).includes(column_name)) {
+
+                if ("hidden" in self.props.data_dict[rowIndex] && self.props.data_dict[rowIndex]["hidden"]) {
+                    the_class = "hidden_cell"
+                }
                 let the_text = String(self.props.data_dict[rowIndex][column_name]);
                 if (the_text.startsWith("icon:")) {
                     the_text = the_text.replace(/(^icon:)/gi, "");
                     the_body = <Icon icon={the_text} size={14}/>
                 }
                 else {
-                    the_body = (<TruncatedFormat>
+                    the_body = (<TruncatedFormat className={the_class}>
                                 {the_text}
                             </TruncatedFormat>)
                 }
