@@ -674,6 +674,7 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "_updateOptionValue",
     value: function _updateOptionValue(option_name, value) {
+      var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
       var self = this;
       var data_dict = {
         tile_id: this.props.tile_id,
@@ -682,7 +683,7 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
       };
       (0, _communication_react.postWithCallback)(this.props.tile_id, "_update_single_option", data_dict, function (data) {
         if (data && "form_data" in data) {
-          self.props.setTileValue(self.props.tile_id, "form_data", data.form_data);
+          self.props.setTileValue(self.props.tile_id, "form_data", data.form_data, callback);
         }
       });
     }
