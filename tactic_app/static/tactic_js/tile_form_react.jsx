@@ -8,7 +8,7 @@ import _ from 'lodash';
 
 import {ReactCodemirror} from "./react-codemirror.js";
 import {BpSelect, BpSelectAdvanced} from "./blueprint_mdata_fields.js"
-import {doBinding, propsAreEqual} from "./utilities_react.js";
+import {doBinding, propsAreEqual, isInt} from "./utilities_react.js";
 
 export {TileForm}
 
@@ -42,8 +42,8 @@ class TileForm extends React.Component {
         return !propsAreEqual(nextProps, this.props)
     }
 
-    _updateValue(att_name, new_value) {
-        this.props.updateValue(att_name, new_value)
+    _updateValue(att_name, new_value, callback) {
+        this.props.updateValue(att_name, new_value, callback)
     }
 
     _submitOptions(e) {
@@ -53,10 +53,9 @@ class TileForm extends React.Component {
 
     render() {
         var all_items = [];
-        var option_items = [];
         var section_items = null;
         var in_section = false;
-        option_items = all_items;
+        var option_items = all_items;
         var current_section_att_name = "";
         var current_section_display_text = "";
         var current_section_start_open = false;
@@ -289,22 +288,36 @@ class TextOption extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this);
+        this.current_timer = null;
+        this.state = {
+            temp_text: null
+        }
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        return !propsAreEqual(nextProps, this.props)
+        return !propsAreEqual(nextProps, this.props) || nextState.temp_text != this.state.temp_text
     }
 
     _updateMe(event) {
-        this.props.updateValue(this.props.att_name, event.target.value)
+        if (this.current_timer) {
+            clearTimeout(this.current_timer);
+            this.current_timer = null;
+        }
+        let self = this;
+        this.current_timer = setTimeout(() => {
+            self.current_timer = null;
+            self.props.updateValue(this.props.att_name, event.target.value)
+        }, 500);
+        this.setState({temp_text: event.target.value})
     }
 
     render() {
         let label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
+        let val_to_show = this.current_timer ? this.state.temp_text : this.props.value;
         return (
             <FormGroup label={label}>
-                <InputGroup asyncControl={true} type="text" small={false} leftIcon={this.props.leftIcon}
-                            onChange={this._updateMe} value={this.props.value}/>
+                <InputGroup asyncControl={false} type="text" small={false} leftIcon={this.props.leftIcon}
+                            onChange={this._updateMe} value={val_to_show}/>
             </FormGroup>
         )
     }
@@ -326,26 +339,35 @@ TextOption.propTypes = {
 class IntOption extends React.Component {
     constructor(props) {
         super(props);
-        doBinding(this)
+        doBinding(this);
+        this.state = {
+            am_empty: props.value == "",
+        }
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        return !propsAreEqual(nextProps, this.props)
+        return !propsAreEqual(nextProps, this.props) || nextState.am_empty != this.state.am_empty;
     }
 
     _updateMe(att_name, val) {
-        if ((val.length == 0) || ((!isNaN(Number(val))) && (!isNaN(parseInt(val))))) {
-            this.props.updateValue(this.props.att_name, val)
+        let self = this;
+        if (val.length == 0) {
+            this.setState({am_empty: true})
         }
-
+        else if (isInt(val)) {
+            self.props.updateValue(this.props.att_name, val, ()=>{
+                this.setState({am_empty: false})
+            })
+        }
     }
 
     render () {
         let label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
+        let val_to_show = this.state.am_empty ? "" : this.props.value;
         return (
             <TextOption att_name={label} leftIcon="numerical"
                                   key={this.props.att_name}
-                                  value={this.props.value}
+                                  value={val_to_show}
                                   updateValue={this._updateMe}
                 />
         )
@@ -367,26 +389,38 @@ IntOption.propTypes = {
 class FloatOption extends React.Component {
     constructor(props) {
         super(props);
-        doBinding(this)
+        doBinding(this);
+        this.state = {
+            temp_val: null
+        }
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        return !propsAreEqual(nextProps, this.props)
+        return !propsAreEqual(nextProps, this.props) || nextState.temp_val != this.state.temp_val
     }
 
     _updateMe(att_name, val) {
-        if ((val.length == 0) || (val == ".") || ((!isNaN(Number(val))) && (!isNaN(parseFloat(val))))) {
-            this.props.updateValue(this.props.att_name, val)
+        let self = this;
+        if (val.length == 0) {
+            this.setState({temp_val: ""})
         }
-
+        else if (val == ".") {
+            this.setState({temp_val: "."})
+        }
+        else if (!isNaN(val)) {
+            self.props.updateValue(this.props.att_name, val, ()=> {
+                this.setState({temp_val: null})
+            })
+        }
     }
 
     render () {
+        let val_to_show = this.state.temp_val == null ? this.props.value : this.state.temp_val;
         return (
             <TextOption att_name={this.props.att_name} leftIcon="numerical"
                         display_text={this.props.display_text}
                                   key={this.props.att_name}
-                                  value={this.props.value}
+                                  value={val_to_show}
                                   updateValue={this._updateMe}
                 />
         )

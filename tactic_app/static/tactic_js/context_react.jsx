@@ -122,6 +122,7 @@ class ContextApp extends React.Component {
     _handleTabResize(e, ui, lastX, lastY, dx, dy) {
         let tab_elem = this.get_tab_list_elem();
         let w = lastX > window.innerWidth / 2 ? window.innerWidth / 2 : lastX;
+        w = w < 0 ? 0 : w;
         tab_elem.setAttribute("style",`width:${w}px`);
     }
 
@@ -677,7 +678,7 @@ class ContextApp extends React.Component {
         let mbot = unified ? 0 : 5;
         let ltab = (
             <Tab id="library" tabIndex={-1} key="library" className="context-tab" panel={library_panel}>
-                <div className={bclass}>
+                <div className={bclass} style={{display: "flex", flexDirection: "row"}}>
                     {window.library_style == "tabbed" &&
                         <Button minimal={true}>
                             <span className="context-library-title">Library</span>

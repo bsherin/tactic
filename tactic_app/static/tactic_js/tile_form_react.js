@@ -89,8 +89,8 @@ var TileForm = /*#__PURE__*/function (_React$Component) {
     }
   }, {
     key: "_updateValue",
-    value: function _updateValue(att_name, new_value) {
-      this.props.updateValue(att_name, new_value);
+    value: function _updateValue(att_name, new_value, callback) {
+      this.props.updateValue(att_name, new_value, callback);
     }
   }, {
     key: "_submitOptions",
@@ -102,10 +102,9 @@ var TileForm = /*#__PURE__*/function (_React$Component) {
     key: "render",
     value: function render() {
       var all_items = [];
-      var option_items = [];
       var section_items = null;
       var in_section = false;
-      option_items = all_items;
+      var option_items = all_items;
       var current_section_att_name = "";
       var current_section_display_text = "";
       var current_section_start_open = false;
@@ -412,32 +411,51 @@ var TextOption = /*#__PURE__*/function (_React$Component4) {
 
     _this4 = _super4.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this4));
+    _this4.current_timer = null;
+    _this4.state = {
+      temp_text: null
+    };
     return _this4;
   }
 
   _createClass(TextOption, [{
     key: "shouldComponentUpdate",
     value: function shouldComponentUpdate(nextProps, nextState) {
-      return !(0, _utilities_react.propsAreEqual)(nextProps, this.props);
+      return !(0, _utilities_react.propsAreEqual)(nextProps, this.props) || nextState.temp_text != this.state.temp_text;
     }
   }, {
     key: "_updateMe",
     value: function _updateMe(event) {
-      this.props.updateValue(this.props.att_name, event.target.value);
+      var _this5 = this;
+
+      if (this.current_timer) {
+        clearTimeout(this.current_timer);
+        this.current_timer = null;
+      }
+
+      var self = this;
+      this.current_timer = setTimeout(function () {
+        self.current_timer = null;
+        self.props.updateValue(_this5.props.att_name, event.target.value);
+      }, 500);
+      this.setState({
+        temp_text: event.target.value
+      });
     }
   }, {
     key: "render",
     value: function render() {
       var label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
+      var val_to_show = this.current_timer ? this.state.temp_text : this.props.value;
       return /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
         label: label
       }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
-        asyncControl: true,
+        asyncControl: false,
         type: "text",
         small: false,
         leftIcon: this.props.leftIcon,
         onChange: this._updateMe,
-        value: this.props.value
+        value: val_to_show
       }));
     }
   }]);
@@ -459,36 +477,52 @@ var IntOption = /*#__PURE__*/function (_React$Component5) {
   var _super5 = _createSuper(IntOption);
 
   function IntOption(props) {
-    var _this5;
+    var _this6;
 
     _classCallCheck(this, IntOption);
 
-    _this5 = _super5.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this5));
-    return _this5;
+    _this6 = _super5.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this6));
+    _this6.state = {
+      am_empty: props.value == ""
+    };
+    return _this6;
   }
 
   _createClass(IntOption, [{
     key: "shouldComponentUpdate",
     value: function shouldComponentUpdate(nextProps, nextState) {
-      return !(0, _utilities_react.propsAreEqual)(nextProps, this.props);
+      return !(0, _utilities_react.propsAreEqual)(nextProps, this.props) || nextState.am_empty != this.state.am_empty;
     }
   }, {
     key: "_updateMe",
     value: function _updateMe(att_name, val) {
-      if (val.length == 0 || !isNaN(Number(val)) && !isNaN(parseInt(val))) {
-        this.props.updateValue(this.props.att_name, val);
+      var _this7 = this;
+
+      var self = this;
+
+      if (val.length == 0) {
+        this.setState({
+          am_empty: true
+        });
+      } else if ((0, _utilities_react.isInt)(val)) {
+        self.props.updateValue(this.props.att_name, val, function () {
+          _this7.setState({
+            am_empty: false
+          });
+        });
       }
     }
   }, {
     key: "render",
     value: function render() {
       var label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
+      var val_to_show = this.state.am_empty ? "" : this.props.value;
       return /*#__PURE__*/_react["default"].createElement(TextOption, {
         att_name: label,
         leftIcon: "numerical",
         key: this.props.att_name,
-        value: this.props.value,
+        value: val_to_show,
         updateValue: this._updateMe
       });
     }
@@ -510,36 +544,56 @@ var FloatOption = /*#__PURE__*/function (_React$Component6) {
   var _super6 = _createSuper(FloatOption);
 
   function FloatOption(props) {
-    var _this6;
+    var _this8;
 
     _classCallCheck(this, FloatOption);
 
-    _this6 = _super6.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this6));
-    return _this6;
+    _this8 = _super6.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this8));
+    _this8.state = {
+      temp_val: null
+    };
+    return _this8;
   }
 
   _createClass(FloatOption, [{
     key: "shouldComponentUpdate",
     value: function shouldComponentUpdate(nextProps, nextState) {
-      return !(0, _utilities_react.propsAreEqual)(nextProps, this.props);
+      return !(0, _utilities_react.propsAreEqual)(nextProps, this.props) || nextState.temp_val != this.state.temp_val;
     }
   }, {
     key: "_updateMe",
     value: function _updateMe(att_name, val) {
-      if (val.length == 0 || val == "." || !isNaN(Number(val)) && !isNaN(parseFloat(val))) {
-        this.props.updateValue(this.props.att_name, val);
+      var _this9 = this;
+
+      var self = this;
+
+      if (val.length == 0) {
+        this.setState({
+          temp_val: ""
+        });
+      } else if (val == ".") {
+        this.setState({
+          temp_val: "."
+        });
+      } else if (!isNaN(val)) {
+        self.props.updateValue(this.props.att_name, val, function () {
+          _this9.setState({
+            temp_val: null
+          });
+        });
       }
     }
   }, {
     key: "render",
     value: function render() {
+      var val_to_show = this.state.temp_val == null ? this.props.value : this.state.temp_val;
       return /*#__PURE__*/_react["default"].createElement(TextOption, {
         att_name: this.props.att_name,
         leftIcon: "numerical",
         display_text: this.props.display_text,
         key: this.props.att_name,
-        value: this.props.value,
+        value: val_to_show,
         updateValue: this._updateMe
       });
     }
@@ -561,13 +615,13 @@ var BoolOption = /*#__PURE__*/function (_React$Component7) {
   var _super7 = _createSuper(BoolOption);
 
   function BoolOption(props) {
-    var _this7;
+    var _this10;
 
     _classCallCheck(this, BoolOption);
 
-    _this7 = _super7.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this7));
-    return _this7;
+    _this10 = _super7.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this10));
+    return _this10;
   }
 
   _createClass(BoolOption, [{
@@ -620,13 +674,13 @@ var CodeAreaOption = /*#__PURE__*/function (_React$Component8) {
   var _super8 = _createSuper(CodeAreaOption);
 
   function CodeAreaOption(props) {
-    var _this8;
+    var _this11;
 
     _classCallCheck(this, CodeAreaOption);
 
-    _this8 = _super8.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this8));
-    return _this8;
+    _this11 = _super8.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this11));
+    return _this11;
   }
 
   _createClass(CodeAreaOption, [{
@@ -672,22 +726,22 @@ var TextAreaOption = /*#__PURE__*/function (_React$Component9) {
   var _super9 = _createSuper(TextAreaOption);
 
   function TextAreaOption(props) {
-    var _this9;
+    var _this12;
 
     _classCallCheck(this, TextAreaOption);
 
-    _this9 = _super9.call(this, props);
+    _this12 = _super9.call(this, props);
 
-    _defineProperty(_assertThisInitialized(_this9), "_setCursorPositions", function () {
+    _defineProperty(_assertThisInitialized(_this12), "_setCursorPositions", function () {
       //reset the cursor position for input
-      _this9.inputRef.current.selectionStart = _this9.cursor;
-      _this9.inputRef.current.selectionEnd = _this9.cursor;
+      _this12.inputRef.current.selectionStart = _this12.cursor;
+      _this12.inputRef.current.selectionEnd = _this12.cursor;
     });
 
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this9));
-    _this9.inputRef = /*#__PURE__*/_react["default"].createRef();
-    _this9.cursor = null;
-    return _this9;
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this12));
+    _this12.inputRef = /*#__PURE__*/_react["default"].createRef();
+    _this12.cursor = null;
+    return _this12;
   }
 
   _createClass(TextAreaOption, [{
@@ -737,13 +791,13 @@ var SelectOption = /*#__PURE__*/function (_React$Component10) {
   var _super10 = _createSuper(SelectOption);
 
   function SelectOption(props) {
-    var _this10;
+    var _this13;
 
     _classCallCheck(this, SelectOption);
 
-    _this10 = _super10.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this10));
-    return _this10;
+    _this13 = _super10.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this13));
+    return _this13;
   }
 
   _createClass(SelectOption, [{
@@ -789,13 +843,13 @@ var PipeOption = /*#__PURE__*/function (_React$Component11) {
   var _super11 = _createSuper(PipeOption);
 
   function PipeOption(props) {
-    var _this11;
+    var _this14;
 
     _classCallCheck(this, PipeOption);
 
-    _this11 = _super11.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this11));
-    return _this11;
+    _this14 = _super11.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this14));
+    return _this14;
   }
 
   _createClass(PipeOption, [{
@@ -903,13 +957,13 @@ var PipeOptionOld = /*#__PURE__*/function (_React$Component12) {
   var _super12 = _createSuper(PipeOptionOld);
 
   function PipeOptionOld(props) {
-    var _this12;
+    var _this15;
 
     _classCallCheck(this, PipeOptionOld);
 
-    _this12 = _super12.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this12));
-    return _this12;
+    _this15 = _super12.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this15));
+    return _this15;
   }
 
   _createClass(PipeOptionOld, [{
