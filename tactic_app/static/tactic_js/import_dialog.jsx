@@ -158,7 +158,7 @@ class FileImportDialog extends React.Component {
             this.myDropzone.options.url = this.current_url;
             this.myDropzone.processQueue()
         }
-        if (this.props.after_upload) {
+        else if (this.props.after_upload) {
             this.props.after_upload()
         }
     }
