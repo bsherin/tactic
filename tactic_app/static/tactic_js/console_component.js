@@ -166,7 +166,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
             createLink: function createLink(data) {
               var unique_id = data.message.unique_id;
 
-              self._addConsoleEntry(data.message, data.force_open, null, null, function () {
+              self._addConsoleEntry(data.message, data.force_open, false, null, function () {
                 self._insertLinkInItem(unique_id);
               });
             },
@@ -641,7 +641,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
   }, {
     key: "_startMainLogStreaming",
     value: function _startMainLogStreaming() {
-      (0, _communication_react.postWithCallback)(this.props.main_id, "StartMainLogStreaming", {}), null, null, this.props.main_id;
+      (0, _communication_react.postWithCallback)(this.props.main_id, "StartMainLogStreaming", {}, null, null, this.props.main_id);
     }
   }, {
     key: "_stopMainPseudoLogStreaming",
@@ -3071,7 +3071,7 @@ RawConsoleCodeItem.propTypes = {
   summary_text: _propTypes["default"].string,
   console_text: _propTypes["default"].string,
   output_text: _propTypes["default"].string,
-  execution_count: _propTypes["default"].number,
+  execution_count: _propTypes["default"].oneOfType([_propTypes["default"].number, _propTypes["default"].string]),
   console_available_width: _propTypes["default"].number,
   setConsoleItemValue: _propTypes["default"].func,
   selectConsoleItem: _propTypes["default"].func,

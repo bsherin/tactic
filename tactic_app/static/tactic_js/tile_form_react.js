@@ -129,6 +129,7 @@ var TileForm = /*#__PURE__*/function (_React$Component) {
             if (in_section) {
               all_items.push( /*#__PURE__*/_react["default"].createElement(FormSection, {
                 att_name: current_section_att_name,
+                key: current_section_att_name,
                 display_text: current_section_display_text,
                 section_items: section_items,
                 start_open: current_section_start_open
@@ -255,6 +256,7 @@ var TileForm = /*#__PURE__*/function (_React$Component) {
       if (in_section == true) {
         all_items.push( /*#__PURE__*/_react["default"].createElement(FormSection, {
           att_name: current_section_att_name,
+          key: current_section_att_name,
           display_text: current_section_display_text,
           section_items: section_items,
           start_open: current_section_start_open

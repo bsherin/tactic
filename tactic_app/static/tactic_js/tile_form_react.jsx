@@ -73,6 +73,7 @@ class TileForm extends React.Component {
                 if (in_section) {
                     all_items.push(
                         <FormSection att_name={current_section_att_name}
+                                     key={current_section_att_name}
                                      display_text={current_section_display_text}
                                      section_items={section_items}
                                      start_open={current_section_start_open}/>
@@ -174,6 +175,7 @@ class TileForm extends React.Component {
         if (in_section == true) {
             all_items.push(
                 <FormSection att_name={current_section_att_name}
+                             key={current_section_att_name}
                              display_text={current_section_display_text}
                              section_items={section_items}
                              start_open={current_section_start_open}/>

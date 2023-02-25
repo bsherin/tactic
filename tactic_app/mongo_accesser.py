@@ -227,7 +227,7 @@ class MongoAccess(object):
     def get_all_collection_info(self, short_collection_name, return_lists=True):
         name_exists = short_collection_name in self.data_collection_names
         if not name_exists:
-            return False, None, None, None
+            return None, None, None, None
         else:
             save_dict = self.db[self.collection_collection_name].find_one({"collection_name": short_collection_name})
             collection_metadata = save_dict["metadata"]
