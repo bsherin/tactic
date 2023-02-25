@@ -852,17 +852,14 @@ class APISupportTasksMixin:
     @task_worthy
     def get_user_collection(self, task_data):
         new_collection_dict, dmdict, hldict, cm = self.get_all_collection_info(task_data["collection_name"])
-        if new_collection_dict is None:
-            result = {"success": False, "message": "Collection doesn't exist."}
-        else:
-            result = {"success": True, "the_collection": new_collection_dict}
+        result = {"success": True, "the_collection": new_collection_dict}
         return result
 
     @task_worthy
     def get_user_collection_with_metadata(self, task_data):
         new_collection_dict, dmdict, hldict, cm = self.get_all_collection_info(task_data["collection_name"])
         if new_collection_dict is None:
-            result = {"success": False, "message": "Collection doesn't exist."}
+            result = None
         else:
             result = {"the_collection": new_collection_dict,
                       "doc_metadata": dmdict,
@@ -872,10 +869,12 @@ class APISupportTasksMixin:
     @task_worthy
     def get_list_with_metadata(self, data):
         result = self.db[self.list_collection_name].find_one({"list_name": data["list_name"]})
-        list_dict = {"the_list": result["the_list"],
-                     "list_name": result["list_name"],
-                     "metadata": result["metadata"]}
-        print("returning")
+        if result is None:
+            list_dict = None
+        else:
+            list_dict = {"the_list": result["the_list"],
+                         "list_name": result["list_name"],
+                         "metadata": result["metadata"]}
         return {"list_data": make_python_object_jsonizable(list_dict)}
 
     @task_worthy

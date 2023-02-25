@@ -17,7 +17,7 @@ from tile_o_plex import app
 from flask import render_template
 from data_access_mixin import DataAccessMixin
 from filtering_mixin import FilteringMixin
-from library_access_mixin import LibraryAccessMixin
+from library_access_mixin import LibraryAccessMixin, FunctionNotFound, ClassNotFound
 from object_api_mixin import ObjectAPIMixin
 from other_api_mixin import OtherAPIMIxin
 from refreshing_mixin import RefreshingMixin
@@ -87,10 +87,6 @@ def clear_and_exec_user_code(the_code):
     _code_names["classes"] = {}
     _code_names["functions"] = {}
     return exec_user_code(the_code)
-
-
-class CollectionNotFound(Exception):
-    pass
 
 
 # noinspection PyMiss
@@ -860,6 +856,10 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
 
         result = debinarize_python_object(raw_result["function_data"])
 
+        if result is None:
+            self._restore_stdout()
+            raise FunctionNotFound(f"Couldn't find function {function_name}")
+
         the_code = result["the_code"]
         _ = exec_user_code(the_code)
         result["the_function"] = _code_names["functions"][function_name]
@@ -872,7 +872,9 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                                                  {"class_name": class_name})
 
         result = debinarize_python_object(raw_result["class_data"])
-
+        if result is None:
+            self._restore_stdout()
+            raise ClassNotFound(f"Couldn't find class {class_name}")
         the_code = result["the_code"]
         _ = exec_user_code(the_code)
         result["the_class"] = _code_names["classes"][class_name]

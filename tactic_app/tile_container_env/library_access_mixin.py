@@ -1,7 +1,26 @@
 
 from communication_utils import debinarize_python_object
 
+class CollectionNotFound(Exception):
+    pass
 
+class ListNotFound(Exception):
+    pass
+
+class TileNotFound(Exception):
+    pass
+
+class ProjectNotFound(Exception):
+    pass
+
+class FunctionNotFound(Exception):
+    pass
+
+class ClassNotFound(Exception):
+    pass
+
+
+# noinspection PyClassHasNoInit
 class LibraryAccessMixin:
     def gulist(self, the_list):
         return self.get_user_list(the_list)
@@ -12,6 +31,8 @@ class LibraryAccessMixin:
         raw_result = self._tworker.post_and_wait(self._main_id, "get_list_with_metadata", {"list_name": the_list})
         result = debinarize_python_object(raw_result["list_data"])
         self._restore_stdout()
+        if result is None:
+            raise ListNotFound(f"Couldn't find list {the_list}")
         return result["the_list"]
 
     def gufunction(self, function_name):
@@ -36,8 +57,8 @@ class LibraryAccessMixin:
         result = self._tworker.post_and_wait(self._main_id, "get_user_collection",
                                              {"user_id": self.user_id, "collection_name": collection_name})
         self._restore_stdout()
-        if not result["success"]:
-            raise CollectionNotFound("Couldn't find collection with name {}".format(collection_name))
+        if result["the_collection"] is None:
+            raise CollectionNotFound(f"Couldn't find collection {collection_name}")
         return result["the_collection"]
 
     def get_collection_names(self):

@@ -1,5 +1,6 @@
 from communication_utils import debinarize_python_object
 from document_object import DetachedTacticCollection, DetachedTacticDocument, DetachedFreeformTacticDocument
+from library_access_mixin import ListNotFound, CollectionNotFound
 
 _tworker = None
 
@@ -64,8 +65,9 @@ class TacticListSet(TacticResourceSet):
                                             {"list_name": the_list})
 
         result = debinarize_python_object(raw_result["list_data"])
-
         self._tinst._restore_stdout()
+        if result is None:
+            raise ListNotFound(f"Couldnt't find list {the_list}")
         return result
 
 
@@ -97,8 +99,11 @@ class TacticCollectionSet(TacticResourceSet):
         self._tinst._save_stdout()
         raw_result = _tworker.post_and_wait(self._tinst._main_id, "get_user_collection_with_metadata",
                                             {"collection_name": the_collection, "user_id": self._tinst.user_id})
+
         result = debinarize_python_object(raw_result["collection_data"])
         self._tinst._restore_stdout()
+        if result is None:
+            raise CollectionNotFound(f"Couldn't find collection {the_collection}")
         return result
 
 

@@ -84,7 +84,7 @@ const BUTTON_CONSUMED_SPACE = 208;
                      consoleLog: (data) => self._addConsoleEntry(data.message, data.force_open, true),
                      createLink: (data) => {
                          let unique_id = data.message.unique_id;
-                         self._addConsoleEntry(data.message, data.force_open, null, null, ()=>{
+                         self._addConsoleEntry(data.message, data.force_open, false, null, ()=>{
                              self._insertLinkInItem(unique_id)
                          })
                      },
@@ -125,7 +125,7 @@ const BUTTON_CONSUMED_SPACE = 208;
                      doFlash(data)
                  }
                  else if (callback) {
-                     callback()
+                     callback();
                  }
              }, null, this.props.main_id);
      }
@@ -415,7 +415,7 @@ const BUTTON_CONSUMED_SPACE = 208;
      }
 
      _startMainLogStreaming() {
-        postWithCallback(this.props.main_id, "StartMainLogStreaming", {}), null, null, this.props.main_id;
+        postWithCallback(this.props.main_id, "StartMainLogStreaming", {}, null, null, this.props.main_id);
     }
 
     _stopMainPseudoLogStreaming() {
@@ -2027,7 +2027,9 @@ RawConsoleCodeItem.propTypes = {
     summary_text: PropTypes.string,
     console_text: PropTypes.string,
     output_text: PropTypes.string,
-    execution_count: PropTypes.number,
+    execution_count: PropTypes.oneOfType([
+            PropTypes.number,
+            PropTypes.string]),
     console_available_width: PropTypes.number,
     setConsoleItemValue: PropTypes.func,
     selectConsoleItem: PropTypes.func,
