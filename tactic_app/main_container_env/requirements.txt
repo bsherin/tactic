@@ -3,7 +3,7 @@ markdown
 Flask
 Flask-SocketIO
 kombu
-beautifulsoup4==4.5.1
+beautifulsoup4
 pika
 redis
 rabbitmq-admin

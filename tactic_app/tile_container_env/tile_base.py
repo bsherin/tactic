@@ -382,53 +382,57 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                     form_item["visible"] = False
                 else:
                     form_item["visible"] = True
-                if option["type"] == "column_select":
-                    form_item["option_list"] = data["current_header_list"]
-                elif option["type"] == "tokenizer_select":  # for backward compatibility
-                    form_item["option_list"] = self._get_sorted_match_list(["tokenizer"], data["function_names"])
-                elif option["type"] == "weight_function_select":  # for backward compatibility
-                    form_item["option_list"] = self._get_sorted_match_list(["weight_function"], data["function_names"])
-                elif option["type"] == "cluster_metric":  # for backward comptibility
-                    form_item["option_list"] = self._get_sorted_match_list(["cluster_metric"], data["function_names"])
-                elif option["type"] == "pipe_select":
-                    form_item["starting_value"] = self._find_best_pipe_match(starting_value, att_name, option_tags)
-                    form_item["pipe_dict"] = {}
-                    for tile_id, tile_entry in self._pipe_dict.items():
-                        if tile_id == self._tworker.my_id:
-                            continue
-                        first_full_name = list(tile_entry)[0]
-                        first_short_name = list(tile_entry.values())[0]["export_name"]
-                        tile_name = re.sub("_" + first_short_name, "", first_full_name)
-                        form_item["pipe_dict"][tile_name] = []
 
-                        for full_export_name, edict in tile_entry.items():
-                            if self._check_for_tag_match(option_tags, edict["export_tags"].split()):
-                                form_item["pipe_dict"][tile_name].append([full_export_name, edict["export_name"]])
+                match option["type"]:
+                    case "column_select":
+                         form_item["option_list"] = data["current_header_list"]
+                    case "column_select":
+                        form_item["option_list"] = data["current_header_list"]
+                    case "tokenizer_select":  # for backward compatibility
+                        form_item["option_list"] = self._get_sorted_match_list(["tokenizer"], data["function_names"])
+                    case "weight_function_select":  # for backward compatibility
+                        form_item["option_list"] = self._get_sorted_match_list(["weight_function"], data["function_names"])
+                    case  "cluster_metric":  # for backward comptibility
+                        form_item["option_list"] = self._get_sorted_match_list(["cluster_metric"], data["function_names"])
+                    case "pipe_select":
+                        form_item["starting_value"] = self._find_best_pipe_match(starting_value, att_name, option_tags)
+                        form_item["pipe_dict"] = {}
+                        for tile_id, tile_entry in self._pipe_dict.items():
+                            if tile_id == self._tworker.my_id:
+                                continue
+                            first_full_name = list(tile_entry)[0]
+                            first_short_name = list(tile_entry.values())[0]["export_name"]
+                            tile_name = re.sub("_" + first_short_name, "", first_full_name)
+                            form_item["pipe_dict"][tile_name] = []
 
-                elif option["type"] == "tile_select":
-                    form_item["option_list"] = data["other_tile_names"]
-                elif option["type"] == "document_select":
-                    form_item["option_list"] = data["doc_names"]
-                elif option["type"] == "list_select":
-                    form_item["option_list"] = self._get_sorted_match_list(option_tags, data["list_names"])
-                elif option["type"] == "collection_select":
-                    form_item["option_list"] = self._get_sorted_match_list(option_tags, data["collection_names"])
-                elif option["type"] == "function_select":
-                    form_item["option_list"] = self._get_sorted_match_list(option_tags, data["function_names"])
-                elif option["type"] == "class_select":
-                    form_item["option_list"] = self._get_sorted_match_list(option_tags, data["class_names"])
-                elif option["type"] == "palette_select":
-                    form_item["option_list"] = color_palette_names
-                elif option["type"] == "custom_list":
-                    form_item["option_list"] = option["special_list"]
-                elif option["type"] == "int":
-                    if starting_value is None:
-                        starting_value = 0
-                    form_item["starting_value"] = str(starting_value)
-                elif option["type"] == "float":
-                    if starting_value is None:
-                        starting_value = 0
-                    form_item["starting_value"] = str(starting_value)
+                            for full_export_name, edict in tile_entry.items():
+                                if self._check_for_tag_match(option_tags, edict["export_tags"].split()):
+                                    form_item["pipe_dict"][tile_name].append([full_export_name, edict["export_name"]])
+
+                    case "tile_select":
+                        form_item["option_list"] = data["other_tile_names"]
+                    case "document_select":
+                        form_item["option_list"] = data["doc_names"]
+                    case "list_select":
+                        form_item["option_list"] = self._get_sorted_match_list(option_tags, data["list_names"])
+                    case"collection_select":
+                        form_item["option_list"] = self._get_sorted_match_list(option_tags, data["collection_names"])
+                    case "function_select":
+                        form_item["option_list"] = self._get_sorted_match_list(option_tags, data["function_names"])
+                    case "class_select":
+                        form_item["option_list"] = self._get_sorted_match_list(option_tags, data["class_names"])
+                    case "palette_select":
+                        form_item["option_list"] = color_palette_names
+                    case "custom_list":
+                        form_item["option_list"] = option["special_list"]
+                    case "int":
+                        if starting_value is None:
+                            starting_value = 0
+                        form_item["starting_value"] = str(starting_value)
+                    case "float":
+                        if starting_value is None:
+                            starting_value = 0
+                        form_item["starting_value"] = str(starting_value)
                 if form_item["starting_value"] is None:
                     if option["type"] in self._selector_types and len(form_item["option_list"]) > 0:
                         form_item["starting_value"] = form_item["option_list"][0]
