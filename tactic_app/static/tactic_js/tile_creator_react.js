@@ -928,7 +928,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     }
   }, {
     key: "componentDidUpdate",
-    value: function componentDidUpdate() {
+    value: function componentDidUpdate(prevProps) {
       this._goToLineNumber();
     }
   }, {

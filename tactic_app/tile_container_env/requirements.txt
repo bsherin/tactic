@@ -14,7 +14,6 @@ redis
 regex
 scipy
 tweepy
-wordcloud
 yellowbrick
 Flask-SocketIO
 kombu
@@ -24,4 +23,5 @@ docutils
 lime
 mpld3
 scikit-learn
+wordcloud
 gensim

@@ -718,7 +718,7 @@ class CreatorApp extends React.Component {
         }
     }
 
-    componentDidUpdate() {
+    componentDidUpdate(prevProps) {
 
         this._goToLineNumber();
     }

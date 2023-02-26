@@ -524,7 +524,7 @@ class ContextApp extends React.Component {
                      let new_panel = self.propDict[data.kind](data, drmethod, (new_panel)=>{
                         this._updatePanel(new_id, {panel: new_panel}, ()=>{
                             let pdict = self.state.tab_panel_dict[new_id];
-                            pdict.line_setter(line_number)
+                            // pdict.line_setter(line_number)  // gives maximum depth exceeded error
                         });
                      });
                  })
