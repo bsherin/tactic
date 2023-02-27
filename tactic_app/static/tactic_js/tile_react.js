@@ -1163,6 +1163,12 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
         intent: "primary",
         handleClick: this._toggleTileLog,
         icon: "console"
+      }), this.props.source_changed && !this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+        intent: "danger",
+        handleClick: function handleClick() {
+          _this4._reloadTile(true);
+        },
+        icon: "social-media"
       }), this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
         intent: "danger",
         handleClick: this._stopMe,

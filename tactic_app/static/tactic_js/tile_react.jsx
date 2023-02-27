@@ -766,6 +766,10 @@ class TileComponent extends React.Component {
                                 {this.props.show_log && <GlyphButton intent="primary"
                                                                          handleClick={this._toggleTileLog}
                                                                          icon="console"/>}
+                                {this.props.source_changed && !this.props.show_spinner &&
+                                                            <GlyphButton intent="danger"
+                                                                         handleClick={()=>{this._reloadTile(true)}}
+                                                                         icon="social-media"/>}
                                 {this.props.show_spinner && <GlyphButton intent="danger"
                                                                          handleClick={this._stopMe}
                                                                          icon="stop"/>}

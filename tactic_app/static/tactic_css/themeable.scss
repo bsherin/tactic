@@ -207,9 +207,9 @@ $dark-medium: $dark-gray4;
         color: $gray1;
         background-color: #f6f8fa;
         border-bottom: 1px solid #10161a26;
-        &.tile-source-changed {
-            background-color: $lime5 !important
-        }
+        //&.tile-source-changed {
+        //    background-color: $lime5 !important
+        //}
     }
     .tile-panel {
         background-color: white !important;
@@ -381,9 +381,9 @@ $dark-medium: $dark-gray4;
         border-bottom: 1px solid #10161a26;
         margin-right: 2px;
         margin-left: 2px;
-        &.tile-source-changed {
-            background-color: $lime1 !important
-        }
+        //&.tile-source-changed {
+        //    background-color: $lime1 !important
+        //}
     }
 
     .tile-panel {
