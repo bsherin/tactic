@@ -124,7 +124,7 @@ const BUTTON_CONSUMED_SPACE = 208;
                  if (!data.success) {
                      doFlash(data)
                  }
-                 else if (callback) {
+                 else if (callback != null) {
                      callback();
                  }
              }, null, this.props.main_id);
@@ -1128,6 +1128,10 @@ const BUTTON_CONSUMED_SPACE = 208;
              }
              filtered_items = new_filtered_items;
          }
+         let suggestionGlyphs = [];
+         if (this.state.show_console_error_log) {
+             suggestionGlyphs.push({intent: "primary", handleClick: this._toggleMainLog, icon: "console"})
+         }
 
          return (
              <Card id="console-panel" className={console_class} elevation={2} style={outer_style}>
@@ -1150,6 +1154,7 @@ const BUTTON_CONSUMED_SPACE = 208;
 
                              <TacticMenubar menu_specs={this.menu_specs}
                                             disabled_items={this.disabled_items}
+                                            suggestionGlyphs={suggestionGlyphs}
                                             showRefresh={false}
                                             showClose={false}
                                             dark_theme={this.props.dark_theme}

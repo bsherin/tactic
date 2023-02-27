@@ -19,6 +19,8 @@ var _utilities_react = require("./utilities_react.js");
 
 var _key_trap = require("./key_trap");
 
+var _blueprint_react_widgets = require("./blueprint_react_widgets.js");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
@@ -80,6 +82,26 @@ var TacticMenubar = /*#__PURE__*/function (_React$Component) {
         }
       }
 
+      var sug_glyphs = [];
+
+      var _iterator = _createForOfIteratorHelper(this.props.suggestionGlyphs),
+          _step;
+
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var sg = _step.value;
+          sug_glyphs.push( /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+            intent: sg.intent,
+            handleClick: sg.handleClick,
+            icon: sg.icon
+          }));
+        }
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
+      }
+
       var theme_class = this.props.dark_theme ? "bp4-dark" : "light-theme";
       var name_style = {
         marginButton: 0,
@@ -116,7 +138,7 @@ var TacticMenubar = /*#__PURE__*/function (_React$Component) {
           height: 30
         },
         className: "bp4-navbar-group bp4-align-left"
-      }, /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, menus)), this.props.showErrorDrawerButton && /*#__PURE__*/_react["default"].createElement(ErrorDrawerButton, {
+      }, /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, menus, sug_glyphs)), this.props.showErrorDrawerButton && /*#__PURE__*/_react["default"].createElement(ErrorDrawerButton, {
         toggleErrorDrawer: this.props.toggleErrorDrawer
       }));
     }
@@ -140,7 +162,8 @@ TacticMenubar.propTypes = {
   controlled: _propTypes["default"].bool,
   am_selected: _propTypes["default"].bool,
   diabled_items: _propTypes["default"].array,
-  extraButtons: _propTypes["default"].array
+  extraButtons: _propTypes["default"].array,
+  suggestionGlyphs: _propTypes["default"].array
 };
 TacticMenubar.defaultProps = {
   showClose: window.in_context,
@@ -154,7 +177,8 @@ TacticMenubar.defaultProps = {
   resource_name: null,
   resource_icon: null,
   disabled_items: [],
-  extraButtons: null
+  extraButtons: null,
+  suggestionGlyphs: []
 };
 
 function ErrorDrawerButton(props) {
@@ -323,18 +347,18 @@ var MenuComponent = /*#__PURE__*/function (_React$Component3) {
 
       var new_binding = binding_list[0];
 
-      var _iterator = _createForOfIteratorHelper(this.replacers),
-          _step;
+      var _iterator2 = _createForOfIteratorHelper(this.replacers),
+          _step2;
 
       try {
-        for (_iterator.s(); !(_step = _iterator.n()).done;) {
-          var rep = _step.value;
+        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+          var rep = _step2.value;
           new_binding = new_binding.toUpperCase().replace(rep[0], rep[1]);
         }
       } catch (err) {
-        _iterator.e(err);
+        _iterator2.e(err);
       } finally {
-        _iterator.f();
+        _iterator2.f();
       }
 
       return /*#__PURE__*/_react["default"].createElement("span", {
@@ -457,18 +481,18 @@ var ToolMenu = /*#__PURE__*/function (_React$Component4) {
     get: function get() {
       var opt_dict = {};
 
-      var _iterator2 = _createForOfIteratorHelper(this.props.menu_items),
-          _step2;
+      var _iterator3 = _createForOfIteratorHelper(this.props.menu_items),
+          _step3;
 
       try {
-        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-          var but = _step2.value;
+        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+          var but = _step3.value;
           opt_dict[but.name_text] = but.click_handler;
         }
       } catch (err) {
-        _iterator2.e(err);
+        _iterator3.e(err);
       } finally {
-        _iterator2.f();
+        _iterator3.f();
       }
 
       return opt_dict;
@@ -478,18 +502,18 @@ var ToolMenu = /*#__PURE__*/function (_React$Component4) {
     get: function get() {
       var icon_dict = {};
 
-      var _iterator3 = _createForOfIteratorHelper(this.props.menu_items),
-          _step3;
+      var _iterator4 = _createForOfIteratorHelper(this.props.menu_items),
+          _step4;
 
       try {
-        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-          var but = _step3.value;
+        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+          var but = _step4.value;
           icon_dict[but.name_text] = but.icon_name;
         }
       } catch (err) {
-        _iterator3.e(err);
+        _iterator4.e(err);
       } finally {
-        _iterator3.f();
+        _iterator4.f();
       }
 
       return icon_dict;
@@ -499,12 +523,12 @@ var ToolMenu = /*#__PURE__*/function (_React$Component4) {
     get: function get() {
       var binding_dict = {};
 
-      var _iterator4 = _createForOfIteratorHelper(this.props.menu_items),
-          _step4;
+      var _iterator5 = _createForOfIteratorHelper(this.props.menu_items),
+          _step5;
 
       try {
-        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-          var but = _step4.value;
+        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+          var but = _step5.value;
 
           if ("key_bindings" in but) {
             binding_dict[but.name_text] = but.key_bindings;
@@ -513,9 +537,9 @@ var ToolMenu = /*#__PURE__*/function (_React$Component4) {
           }
         }
       } catch (err) {
-        _iterator4.e(err);
+        _iterator5.e(err);
       } finally {
-        _iterator4.f();
+        _iterator5.f();
       }
 
       return binding_dict;
@@ -525,24 +549,24 @@ var ToolMenu = /*#__PURE__*/function (_React$Component4) {
     value: function render() {
       var key_bindings = [];
 
-      var _iterator5 = _createForOfIteratorHelper(this.props.menu_items),
-          _step5;
+      var _iterator6 = _createForOfIteratorHelper(this.props.menu_items),
+          _step6;
 
       try {
         var _loop = function _loop() {
-          var button = _step5.value;
+          var button = _step6.value;
           if (button.hasOwnProperty("key_bindings")) key_bindings.push([button.key_bindings, function () {
             return button.click_handler();
           }]);
         };
 
-        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+        for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
           _loop();
         }
       } catch (err) {
-        _iterator5.e(err);
+        _iterator6.e(err);
       } finally {
-        _iterator5.f();
+        _iterator6.f();
       }
 
       return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(MenuComponent, {

@@ -1254,9 +1254,6 @@ pre code {
   background-color: #f6f8fa;
   border-bottom: 1px solid rgba(16, 22, 26, 0.1490196078);
 }
-.light-theme .tile-panel-heading.tile-source-changed {
-  background-color: #d4f17e !important;
-}
 .light-theme .tile-panel {
   background-color: white !important;
 }
@@ -1378,9 +1375,6 @@ pre code {
   border-bottom: 1px solid rgba(16, 22, 26, 0.1490196078);
   margin-right: 2px;
   margin-left: 2px;
-}
-.bp4-dark .tile-panel-heading.tile-source-changed {
-  background-color: #43501b !important;
 }
 .bp4-dark .tile-panel {
   background-color: #383e47 !important;

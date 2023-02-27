@@ -219,7 +219,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       }, function (data) {
         if (!data.success) {
           (0, _toaster.doFlash)(data);
-        } else if (callback) {
+        } else if (callback != null) {
           callback();
         }
       }, null, this.props.main_id);
@@ -1857,6 +1857,16 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
         filtered_items = new_filtered_items;
       }
 
+      var suggestionGlyphs = [];
+
+      if (this.state.show_console_error_log) {
+        suggestionGlyphs.push({
+          intent: "primary",
+          handleClick: this._toggleMainLog,
+          icon: "console"
+        });
+      }
+
       return /*#__PURE__*/_react["default"].createElement(_core.Card, {
         id: "console-panel",
         className: console_class,
@@ -1887,6 +1897,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       }), /*#__PURE__*/_react["default"].createElement(_menu_utilities.TacticMenubar, {
         menu_specs: this.menu_specs,
         disabled_items: this.disabled_items,
+        suggestionGlyphs: suggestionGlyphs,
         showRefresh: false,
         showClose: false,
         dark_theme: this.props.dark_theme,

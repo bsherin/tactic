@@ -8,7 +8,7 @@ import {doBinding} from "./utilities_react.js";
 import {KeyTrap} from "./key_trap";
 
 export {MenuComponent, ToolMenu, TacticMenubar, TopLeftButtons}
-
+import {GlyphButton} from "./blueprint_react_widgets.js";
 
 class TacticMenubar extends React.Component {
 
@@ -29,8 +29,12 @@ class TacticMenubar extends React.Component {
                 />)
             }
         }
-
-
+        let sug_glyphs = [];
+        for (let sg of this.props.suggestionGlyphs) {
+            sug_glyphs.push(<GlyphButton intent={sg.intent}
+                                         handleClick={sg.handleClick}
+                                         icon={sg.icon}/>)
+        }
         const theme_class = this.props.dark_theme ? "bp4-dark" : "light-theme";
         const name_style = {
             marginButton: 0,
@@ -59,6 +63,7 @@ class TacticMenubar extends React.Component {
                 <div style={{height: 30}} className="bp4-navbar-group bp4-align-left">
                             <React.Fragment>
                                 {menus}
+                                {sug_glyphs}
                             </React.Fragment>
                 </div>
                 {this.props.showErrorDrawerButton &&
@@ -83,7 +88,8 @@ TacticMenubar.propTypes = {
     controlled: PropTypes.bool,
     am_selected: PropTypes.bool,
     diabled_items: PropTypes.array,
-    extraButtons: PropTypes.array
+    extraButtons: PropTypes.array,
+    suggestionGlyphs: PropTypes.array,
 };
 
 TacticMenubar.defaultProps = {
@@ -98,7 +104,8 @@ TacticMenubar.defaultProps = {
     resource_name: null,
     resource_icon: null,
     disabled_items: [],
-    extraButtons: null
+    extraButtons: null,
+    suggestionGlyphs: []
 };
 
 function ErrorDrawerButton (props) {
