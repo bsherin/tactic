@@ -563,6 +563,14 @@ var NotesField = /*#__PURE__*/function (_React$Component6) {
       if (this.awaiting_focus) {
         this.focusNotes();
         this.awaiting_focus = false;
+      } else if (this.hasOnlyWhitespace) {
+        if (this.state.show_markdown) {
+          // If we are here, then we are reusing a notes field that previously showed markdown
+          // and now is empty. We want to prevent markdown being shown when a character is typed.
+          this.setState({
+            "show_markdown": false
+          });
+        }
       } else if (!this.state.show_markdown && this.notes_ref !== document.activeElement) {
         // If we are here it means the change was initiated externally
         this._showMarkdown();
