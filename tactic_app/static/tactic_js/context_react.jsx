@@ -449,7 +449,7 @@ class ContextApp extends React.Component {
          return -1
      }
 
-     _handleCreateViewer(data) {
+     _handleCreateViewer(data, callback=null) {
         let self = this;
 
          // const new_id = `${data.kind}: ${data.resource_name}`;
@@ -462,7 +462,7 @@ class ContextApp extends React.Component {
          const drmethod = (dmethod) => {self._registerDirtyMethod(new_id, dmethod)};
          this._addPanel(new_id, data.kind, data.res_type, data.resource_name, "spinner", ()=> {
              let new_panel = self.propDict[data.kind](data, drmethod, (new_panel)=>{
-                this._updatePanel(new_id, {panel: new_panel});
+                this._updatePanel(new_id, {panel: new_panel}, callback);
              });
          })
 

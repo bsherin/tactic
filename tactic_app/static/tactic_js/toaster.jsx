@@ -131,9 +131,9 @@ function withStatus(WrappedComponent) {
             }
         }
 
-        _clearStatus(data) {
+        _clearStatus(data, callback=null) {
             if (data == null || (data.main_id == this.props.main_id)) {
-                this.setState({show_spinner: false, status_message: null});
+                this.setState({show_spinner: false, status_message: null}, callback);
             }
         }
 
@@ -146,7 +146,7 @@ function withStatus(WrappedComponent) {
         }
 
         _statusMessageFromData(data) {
-            if (data == null || (data.main_id == this.props.main_id)) {
+            if (data.main_id == this.props.main_id) {
                 let self = this;
                 this.setState({status_message: data.message}, () => {
                     if (data.hasOwnProperty("timeout") && data.timeout != null) {
@@ -156,8 +156,8 @@ function withStatus(WrappedComponent) {
             }
         }
 
-        _setStatus(sstate) {
-            this.setState(sstate)
+        _setStatus(sstate, callback=null) {
+            this.setState(sstate, callback)
         }
 
         _statusFuncs() {
