@@ -796,24 +796,34 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       var self = this;
       var view_view = view_views(this.props.is_repository)[row_dict.res_type];
       if (view_view == null) return;
+      this.props.setStatus({
+        show_spinner: true,
+        status_message: "Opening ..."
+      });
 
       this._updatePaneState({
         selected_resource: row_dict,
         multi_select: false,
         list_of_selected: [row_dict.name],
         seleced_rows: [row_dict]
+      }, function () {
+        if (window.in_context) {
+          var re = new RegExp("/$");
+          view_view = view_view.replace(re, "_in_context");
+          (0, _communication_react.postAjaxPromise)($SCRIPT_ROOT + view_view, {
+            context_id: context_id,
+            resource_name: row_dict.name
+          }).then(function (data) {
+            self.props.handleCreateViewer(data, self.props.clearStatus);
+          })["catch"](function (data) {
+            (0, _toaster.doFlash)(data);
+            self.props.clearstatus();
+          });
+        } else {
+          self.props.clearStatus();
+          window.open($SCRIPT_ROOT + view_view + row_dict.name);
+        }
       });
-
-      if (window.in_context) {
-        var re = new RegExp("/$");
-        view_view = view_view.replace(re, "_in_context");
-        (0, _communication_react.postAjaxPromise)($SCRIPT_ROOT + view_view, {
-          context_id: context_id,
-          resource_name: row_dict.name
-        }).then(self.props.handleCreateViewer)["catch"](_toaster.doFlash);
-      } else {
-        window.open($SCRIPT_ROOT + view_view + row_dict.name);
-      }
     }
   }, {
     key: "_selectedTypes",
@@ -1018,14 +1028,25 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         the_view = view_views(this.props.is_repository)[this.props.selected_resource.res_type];
       }
 
+      this.props.setStatus({
+        show_spinner: true,
+        status_message: "Opening ..."
+      });
+
       if (window.in_context) {
         var re = new RegExp("/$");
         the_view = the_view.replace(re, "_in_context");
         (0, _communication_react.postAjaxPromise)($SCRIPT_ROOT + the_view, {
           context_id: context_id,
           resource_name: this.props.selected_resource.name
-        }).then(self.props.handleCreateViewer)["catch"](_toaster.doFlash);
+        }).then(function (data) {
+          self.props.handleCreateViewer(data, self.props.clearStatus);
+        })["catch"](function (data) {
+          (0, _toaster.doFlash)(data);
+          self.props.clearstatus();
+        });
       } else {
+        self.props.clearStatus();
         window.open($SCRIPT_ROOT + the_view + this.props.selected_resource.name);
       }
     }
@@ -1041,14 +1062,25 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         the_view = view_views(this.props.is_repository)[selected_resource.res_type];
       }
 
+      this.props.setStatus({
+        show_spinner: true,
+        status_message: "Opening ..."
+      });
+
       if (window.in_context && !force_new_tab) {
         var re = new RegExp("/$");
         the_view = the_view.replace(re, "_in_context");
         (0, _communication_react.postAjaxPromise)($SCRIPT_ROOT + the_view, {
           context_id: context_id,
           resource_name: resource_name
-        }).then(self.props.handleCreateViewer)["catch"](_toaster.doFlash);
+        }).then(function (data) {
+          self.props.handleCreateViewer(data, self.props.clearStatus);
+        })["catch"](function (data) {
+          (0, _toaster.doFlash)(data);
+          self.props.clearstatus();
+        });
       } else {
+        self.props.clearStatus();
         window.open($SCRIPT_ROOT + the_view + resource_name);
       }
     }
@@ -1749,7 +1781,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
 
       if (this.table_ref && this.table_ref.current) {
         table_width = left_width - this.table_ref.current.offsetLeft + this.top_ref.current.offsetLeft;
-        left_pane_height = this.props.usable_height - this.table_ref.current.offsetTop - _sizing_tools.BOTTOM_MARGIN;
+        left_pane_height = window.innerHeight - this.table_ref.current.getBoundingClientRect().top - _sizing_tools.BOTTOM_MARGIN;
       } else {
         table_width = left_width - 150;
         left_pane_height = this.props.usable_height - 100;

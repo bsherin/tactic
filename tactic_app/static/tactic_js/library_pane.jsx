@@ -496,24 +496,32 @@ class LibraryPane extends React.Component {
         let self = this;
         let view_view = view_views(this.props.is_repository)[row_dict.res_type];
         if (view_view == null) return;
+        this.props.setStatus({show_spinner: true, status_message: "Opening ..."});
         this._updatePaneState({
                 selected_resource: row_dict,
                 multi_select: false,
                 list_of_selected: [row_dict.name],
                 seleced_rows: [row_dict]
+        }, ()=>{
+                    if (window.in_context) {
+                        const re = new RegExp("/$");
+                        view_view = view_view.replace(re, "_in_context");
+                        postAjaxPromise($SCRIPT_ROOT + view_view, {context_id: context_id,
+                            resource_name: row_dict.name})
+                            .then((data)=> {
+                                self.props.handleCreateViewer(data, self.props.clearStatus);
+                            })
+                            .catch((data)=> {
+                                    doFlash(data);
+                                    self.props.clearstatus()
+                                }
+                            );
+                    }
+                    else {
+                        self.props.clearStatus();
+                        window.open($SCRIPT_ROOT + view_view + row_dict.name)
+                    }
         });
-        if (window.in_context) {
-            const re = new RegExp("/$");
-            view_view = view_view.replace(re, "_in_context");
-            postAjaxPromise($SCRIPT_ROOT + view_view, {context_id: context_id,
-                resource_name: row_dict.name})
-                .then(self.props.handleCreateViewer)
-                .catch(doFlash);
-        }
-        else {
-            window.open($SCRIPT_ROOT + view_view + row_dict.name)
-        }
-
     }
 
     _selectedTypes() {
@@ -661,14 +669,22 @@ class LibraryPane extends React.Component {
         if (the_view == null) {
             the_view = view_views(this.props.is_repository)[this.props.selected_resource.res_type]
         }
+        this.props.setStatus({show_spinner: true, status_message: "Opening ..."});
         if (window.in_context) {
             const re = new RegExp("/$");
             the_view = the_view.replace(re, "_in_context");
             postAjaxPromise($SCRIPT_ROOT + the_view, {context_id: context_id, resource_name: this.props.selected_resource.name})
-                .then(self.props.handleCreateViewer)
-                .catch(doFlash);
+                .then((data)=> {
+                    self.props.handleCreateViewer(data, self.props.clearStatus);
+                 })
+                .catch((data)=>{
+                    doFlash(data);
+                    self.props.clearstatus()
+                    }
+                 );
         }
         else {
+            self.props.clearStatus();
             window.open($SCRIPT_ROOT + the_view + this.props.selected_resource.name)
         }
     }
@@ -679,14 +695,22 @@ class LibraryPane extends React.Component {
         if (the_view == null) {
             the_view = view_views(this.props.is_repository)[selected_resource.res_type]
         }
+        this.props.setStatus({show_spinner: true, status_message: "Opening ..."});
         if (window.in_context && !force_new_tab) {
             const re = new RegExp("/$");
             the_view = the_view.replace(re, "_in_context");
             postAjaxPromise($SCRIPT_ROOT + the_view, {context_id: context_id, resource_name: resource_name})
-                .then(self.props.handleCreateViewer)
-                .catch(doFlash);
+                .then((data)=> {
+                    self.props.handleCreateViewer(data, self.props.clearStatus);
+                 })
+                .catch((data)=>{
+                    doFlash(data);
+                    self.props.clearstatus()
+                    }
+                 );
         }
         else {
+            self.props.clearStatus();
             window.open($SCRIPT_ROOT + the_view + resource_name)
         }
 
@@ -1263,7 +1287,7 @@ class LibraryPane extends React.Component {
         let left_pane_height;
         if (this.table_ref && this.table_ref.current) {
             table_width = left_width - this.table_ref.current.offsetLeft + this.top_ref.current.offsetLeft;
-            left_pane_height = this.props.usable_height - this.table_ref.current.offsetTop - BOTTOM_MARGIN
+            left_pane_height = window.innerHeight - this.table_ref.current.getBoundingClientRect().top - BOTTOM_MARGIN
         }
         else {
             table_width = left_width - 150;

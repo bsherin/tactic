@@ -192,11 +192,13 @@ function withStatus(WrappedComponent) {
     }, {
       key: "_clearStatus",
       value: function _clearStatus(data) {
+        var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+
         if (data == null || data.main_id == this.props.main_id) {
           this.setState({
             show_spinner: false,
             status_message: null
-          });
+          }, callback);
         }
       }
     }, {
@@ -214,7 +216,7 @@ function withStatus(WrappedComponent) {
     }, {
       key: "_statusMessageFromData",
       value: function _statusMessageFromData(data) {
-        if (data == null || data.main_id == this.props.main_id) {
+        if (data.main_id == this.props.main_id) {
           var _self = this;
 
           this.setState({
@@ -229,7 +231,8 @@ function withStatus(WrappedComponent) {
     }, {
       key: "_setStatus",
       value: function _setStatus(sstate) {
-        this.setState(sstate);
+        var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+        this.setState(sstate, callback);
       }
     }, {
       key: "_statusFuncs",
