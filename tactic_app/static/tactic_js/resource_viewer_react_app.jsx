@@ -112,6 +112,7 @@ class ResourceViewerApp extends React.Component {
                                                 marginRight: 0, height: "100%"}}
                                   created={this.props.created}
                                   notes={this.props.notes}
+                                  icon={this.props.mdata_icon}
                                   readOnly={this.props.readOnly}
                                   handleChange={this.props.handleStateChange}
                                   pane_type={this.props.res_type} />
@@ -159,6 +160,7 @@ ResourceViewerApp.propTypes = {
     created: PropTypes.string,
     tags: PropTypes.array,
     notes: PropTypes.string,
+    mdata_icon: PropTypes.string,
     handleStateChange: PropTypes.func,
     meta_outer: PropTypes.string,
     dark_theme: PropTypes.bool,
@@ -186,5 +188,6 @@ ResourceViewerApp.defaultProps ={
     closeTab: null,
     search_ref: null,
     allow_regex_search: false,
-    regex: false
+    regex: false,
+    mdata_icon: null
 };

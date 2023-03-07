@@ -159,6 +159,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
                 mdata = {}
             mdata["tags"] = data_dict["tags"]
             mdata["notes"] = data_dict["notes"]
+            mdata["icon"] = data_dict["icon"]
             mdata["updated"] = datetime.datetime.utcnow()
             mdata["last_viewer"] = data_dict["last_saved"]
             mdata["couple_save_attrs_and_exports"] = data_dict["couple_save_attrs_and_exports"]

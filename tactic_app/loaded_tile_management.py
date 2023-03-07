@@ -137,6 +137,7 @@ def get_module_from_type(username, tile_type):
     if hexists(username, "tile_module_index"):
         the_types = hkeys(username, "tile_module_index")
         if tile_type not in the_types:
+            print("** couldn't get module **")
             return None
         else:
             return hget(username, "tile_module_index", tile_type)

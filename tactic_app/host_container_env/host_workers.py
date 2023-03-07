@@ -496,7 +496,13 @@ class HostWorker(QWorker):
     def get_tile_types(self, data):
         user_id = data["user_id"]
         the_user = load_user(user_id)
-        result = {"tile_types": loaded_tile_management.get_user_available_tile_types(the_user.username)}
+        tile_types = loaded_tile_management.get_user_available_tile_types(the_user.username)
+        icon_dict = {}
+        for cat_types in tile_types.values():
+            for ttype in cat_types:
+                icon_dict[ttype] = tile_manager.get_tile_icon(ttype, the_user)
+        result = {"tile_types": tile_types,
+                  "icon_dict": icon_dict}
         return result
 
     # tactic_todo I'm in the middle of figuring out how to do this send_file_to_client

@@ -269,6 +269,9 @@ var TileForm = /*#__PURE__*/function (_React$Component) {
       }, all_items), /*#__PURE__*/_react["default"].createElement(_core.Button, {
         text: "Submit",
         intent: "primary",
+        style: {
+          width: "100%"
+        },
         onClick: this._submitOptions
       }));
     }

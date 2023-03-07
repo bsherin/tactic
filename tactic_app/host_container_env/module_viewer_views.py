@@ -121,10 +121,13 @@ def update_module():
             mdata = doc["metadata"]
         else:
             mdata = {}
+        print("got mdata " + str(mdata))
         if "tags" in data_dict:
             mdata["tags"] = data_dict["tags"]
         if "notes" in data_dict:
             mdata["notes"] = data_dict["notes"]
+        if "icon" in data_dict:
+            mdata["icon"] = data_dict["icon"]
         mdata["updated"] = datetime.datetime.utcnow()
         mdata["last_viewer"] = last_saved
         mdata["type"] = ""

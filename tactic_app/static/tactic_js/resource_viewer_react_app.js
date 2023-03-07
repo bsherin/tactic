@@ -173,6 +173,7 @@ var ResourceViewerApp = /*#__PURE__*/function (_React$Component) {
         },
         created: this.props.created,
         notes: this.props.notes,
+        icon: this.props.mdata_icon,
         readOnly: this.props.readOnly,
         handleChange: this.props.handleStateChange,
         pane_type: this.props.res_type
@@ -227,6 +228,7 @@ ResourceViewerApp.propTypes = {
   created: _propTypes["default"].string,
   tags: _propTypes["default"].array,
   notes: _propTypes["default"].string,
+  mdata_icon: _propTypes["default"].string,
   handleStateChange: _propTypes["default"].func,
   meta_outer: _propTypes["default"].string,
   dark_theme: _propTypes["default"].bool,
@@ -253,5 +255,6 @@ ResourceViewerApp.defaultProps = {
   closeTab: null,
   search_ref: null,
   allow_regex_search: false,
-  regex: false
+  regex: false,
+  mdata_icon: null
 };

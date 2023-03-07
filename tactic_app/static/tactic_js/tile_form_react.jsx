@@ -186,7 +186,7 @@ class TileForm extends React.Component {
                 <form className="form-display-area" onSubmit={this._submitOptions}>
                     {all_items}
                 </form>
-                <Button text="Submit" intent="primary" onClick={this._submitOptions}/>
+                <Button text="Submit" intent="primary" style={{width: "100%"}} onClick={this._submitOptions}/>
             </React.Fragment>
         )
     }
