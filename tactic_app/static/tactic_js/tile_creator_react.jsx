@@ -129,6 +129,7 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
                     jscript_code: parsed_data.jscript_code,
                     tags: split_tags,
                     notes: mdata.notes,
+                    icon: mdata.additional_mdata.icon,
                     initial_theme: window.theme,
                     option_list: correctOptionListTypes(parsed_data.option_dict),
                     export_list: parsed_data.export_list,
@@ -228,6 +229,7 @@ class CreatorApp extends React.Component {
             extra_methods_line_number: this.props.extra_methods_line_number,
             tags: this.props.tags,
             notes: this.props.notes,
+            icon: this.props.icon,
             option_list: this.props.option_list,
             export_list: this.props.export_list,
             additional_save_attrs: this.props.additional_save_attrs || [],
@@ -577,6 +579,7 @@ class CreatorApp extends React.Component {
                 "category": this.state.category.length == 0 ? "basic" : this.state.category,
                 "tags": this.get_tags_string(),
                 "notes": this.state.notes,
+                "icon": this.state.icon,
                 "exports": this.state.export_list,
                 "additional_save_attrs": this.state.additional_save_attrs,
                 "couple_save_attrs_and_exports": this.state.couple_save_attrs_and_exports,
@@ -1050,6 +1053,7 @@ class CreatorApp extends React.Component {
         let mdata_panel = (<CombinedMetadata tags={this.state.tags}
                                              readOnly={this.props.readOnly}
                                               notes={this.state.notes}
+                                             icon={this.state.icon}
                                               created={my_props.created}
                                               category={this.state.category}
                                               pane_type="tile"
@@ -1197,6 +1201,7 @@ CreatorApp.propTypes = {
     jscript_code: PropTypes.string,
     tags: PropTypes.array,
     notes: PropTypes.string,
+    icon: PropTypes.string,
     option_list: PropTypes.array,
     export_list: PropTypes.array,
     created: PropTypes.string,

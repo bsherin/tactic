@@ -1,7 +1,5 @@
 "use strict";
 
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -44,6 +42,8 @@ function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symb
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -110,7 +110,15 @@ var BpSelectAdvanced = /*#__PURE__*/function (_React$Component) {
       }
 
       var re = new RegExp(query.toLowerCase());
-      return re.test(item["text"].toLowerCase());
+      var the_text;
+
+      if (_typeof(item) == "object") {
+        the_text = item["text"];
+      } else {
+        the_text = item;
+      }
+
+      return re.test(the_text.toLowerCase());
     }
   }, {
     key: "_handleActiveItemChange",
@@ -141,7 +149,7 @@ var BpSelectAdvanced = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
-      return /*#__PURE__*/_react["default"].createElement(_select.Select, {
+      return /*#__PURE__*/_react["default"].createElement(_select.Select2, {
         activeItem: this._getActiveItem(this.props.value),
         onActiveItemChange: this._handleActiveItemChange,
         itemRenderer: renderSuggestionAdvanced,
@@ -267,24 +275,40 @@ var BpSelect = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "_filterSuggestion",
     value: function _filterSuggestion(query, item) {
-      if (query.length === 0) {
+      if (query.length === 0 || item["isgroup"]) {
         return true;
       }
 
       var re = new RegExp(query.toLowerCase());
-      return re.test(item.toLowerCase());
+      var the_text;
+
+      if (_typeof(item) == "object") {
+        the_text = item["text"];
+      } else {
+        the_text = item;
+      }
+
+      return re.test(the_text.toLowerCase());
     }
   }, {
     key: "_handleActiveItemChange",
     value: function _handleActiveItemChange(newActiveItem) {
+      var the_text;
+
+      if ((typeof item === "undefined" ? "undefined" : _typeof(item)) == "object") {
+        the_text = newActiveItem["text"];
+      } else {
+        the_text = newActiveItem;
+      }
+
       this.setState({
-        activeItem: newActiveItem
+        activeItem: the_text
       });
     }
   }, {
     key: "render",
     value: function render() {
-      return /*#__PURE__*/_react["default"].createElement(_select.Select, {
+      return /*#__PURE__*/_react["default"].createElement(_select.Select2, {
         className: "tile-form-menu-item",
         activeItem: this.state.activeItem,
         filterable: this.props.filterable,
@@ -359,11 +383,27 @@ var SuggestionItem = /*#__PURE__*/function (_React$Component4) {
   }, {
     key: "render",
     value: function render() {
+      var _this5 = this;
+
+      var the_text;
+      var the_icon;
+
+      if (_typeof(this.props.item) == "object") {
+        the_text = this.props.item["text"];
+        the_icon = this.props.item["icon"];
+      } else {
+        the_text = this.props.item;
+        the_icon = null;
+      }
+
       return /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         className: "tile-form-menu-item",
-        text: this.props.item,
+        text: the_text,
+        icon: the_icon,
         active: this.props.modifiers.active,
-        onClick: this.props.handleClick,
+        onClick: function onClick() {
+          return _this5.props.handleClick(the_text);
+        },
         shouldDismissPopover: true
       });
     }
@@ -373,7 +413,7 @@ var SuggestionItem = /*#__PURE__*/function (_React$Component4) {
 }(_react["default"].Component);
 
 SuggestionItem.propTypes = {
-  item: _propTypes["default"].string,
+  item: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].object]),
   index: _propTypes["default"].number,
   modifiers: _propTypes["default"].object,
   handleClick: _propTypes["default"].func
@@ -409,17 +449,17 @@ var NativeTags = /*#__PURE__*/function (_React$Component5) {
   var _super5 = _createSuper(NativeTags);
 
   function NativeTags(props) {
-    var _this5;
+    var _this6;
 
     _classCallCheck(this, NativeTags);
 
-    _this5 = _super5.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this5));
-    _this5.state = {
+    _this6 = _super5.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this6));
+    _this6.state = {
       query: "",
       suggestions: []
     };
-    return _this5;
+    return _this6;
   }
 
   _createClass(NativeTags, [{
@@ -526,20 +566,20 @@ var NotesField = /*#__PURE__*/function (_React$Component6) {
   var _super6 = _createSuper(NotesField);
 
   function NotesField(props) {
-    var _this6;
+    var _this7;
 
     _classCallCheck(this, NotesField);
 
-    _this6 = _super6.call(this, props);
-    _this6.state = {
+    _this7 = _super6.call(this, props);
+    _this7.state = {
       "md_height": 500,
-      "show_markdown": _this6.hasOnlyWhitespace ? false : _this6.props.show_markdown_initial
+      "show_markdown": _this7.hasOnlyWhitespace ? false : _this7.props.show_markdown_initial
     };
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this6)); // this.notes_ref = React.createRef();
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this7)); // this.notes_ref = React.createRef();
 
-    _this6.md_ref = /*#__PURE__*/_react["default"].createRef();
-    _this6.awaiting_focus = false;
-    return _this6;
+    _this7.md_ref = /*#__PURE__*/_react["default"].createRef();
+    _this7.awaiting_focus = false;
+    return _this7;
   }
 
   _createClass(NotesField, [{
@@ -672,23 +712,84 @@ NotesField.propTypes = {
 NotesField.defaultProps = {
   handleBlur: null
 };
+var icon_list = ["application", "code", "timeline-line-chart", "heatmap", "graph", "heat-grid", "chart", "pie-chart", "regression-chart", "grid", "numerical", "font", "array", "array-numeric", "array-string", "data-lineage", "function", "variable", "build", "group-objects", "ungroup-objects", "inner-join", "filter", "sort-asc", "sort-alphabetical", "sort-numerical", "random", "layout", "layout-auto", "layout-balloon", "changes", "comparison", "exchange", "derive_column", "list-columns", "delta", "edit", "fork", "numbered-list", "path-search", "search", "plus", "repeat", "reset", "resolve", "widget-button", "star", "time", "settings", "properties", "cog", "key-command", "ip-address", "download", "cloud", "globe", "tag", "label", "history", "predictive-analysis", "calculator", "pulse", "warning-sign", "cube", "wrench"];
 
-var CombinedMetadata = /*#__PURE__*/function (_React$Component7) {
-  _inherits(CombinedMetadata, _React$Component7);
+var IconSelector = /*#__PURE__*/function (_React$Component7) {
+  _inherits(IconSelector, _React$Component7);
 
-  var _super7 = _createSuper(CombinedMetadata);
+  var _super7 = _createSuper(IconSelector);
+
+  function IconSelector(props) {
+    var _this8;
+
+    _classCallCheck(this, IconSelector);
+
+    _this8 = _super7.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this8));
+    _this8.icon_dlist = [];
+
+    var _iterator2 = _createForOfIteratorHelper(icon_list),
+        _step2;
+
+    try {
+      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+        var name = _step2.value;
+
+        _this8.icon_dlist.push({
+          text: name,
+          icon: name
+        });
+      }
+    } catch (err) {
+      _iterator2.e(err);
+    } finally {
+      _iterator2.f();
+    }
+
+    return _this8;
+  }
+
+  _createClass(IconSelector, [{
+    key: "render",
+    value: function render() {
+      var _this9 = this;
+
+      return /*#__PURE__*/_react["default"].createElement(BpSelect, {
+        options: this.icon_dlist,
+        onChange: function onChange(item) {
+          _this9.props.handleSelectChange(item["text"]);
+        },
+        buttonIcon: this.props.icon_val,
+        popoverPosition: _core.PopoverPosition.BOTTOM_LEFT,
+        value: this.props.icon_val
+      });
+    }
+  }]);
+
+  return IconSelector;
+}(_react["default"].Component);
+
+IconSelector.propTypes = {
+  handleSelectChange: _propTypes["default"].func,
+  icon_val: _propTypes["default"].string
+};
+
+var CombinedMetadata = /*#__PURE__*/function (_React$Component8) {
+  _inherits(CombinedMetadata, _React$Component8);
+
+  var _super8 = _createSuper(CombinedMetadata);
 
   function CombinedMetadata(props) {
-    var _this7;
+    var _this10;
 
     _classCallCheck(this, CombinedMetadata);
 
-    _this7 = _super7.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this7));
-    _this7.state = {
+    _this10 = _super8.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this10));
+    _this10.state = {
       auxIsOpen: false
     };
-    return _this7;
+    return _this10;
   }
 
   _createClass(CombinedMetadata, [{
@@ -717,6 +818,13 @@ var CombinedMetadata = /*#__PURE__*/function (_React$Component7) {
     value: function _handleCategoryChange(event) {
       this.props.handleChange({
         "category": event.target.value
+      });
+    }
+  }, {
+    key: "_handleIconChange",
+    value: function _handleIconChange(icon) {
+      this.props.handleChange({
+        "icon": icon
       });
     }
   }, {
@@ -781,6 +889,11 @@ var CombinedMetadata = /*#__PURE__*/function (_React$Component7) {
       }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
         onChange: this._handleCategoryChange,
         value: this.props.category
+      })), this.props.icon != null && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+        label: "Icon"
+      }, /*#__PURE__*/_react["default"].createElement(IconSelector, {
+        icon_val: this.props.icon,
+        handleSelectChange: this._handleIconChange
       })), /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
         label: "Notes"
       }, /*#__PURE__*/_react["default"].createElement(NotesField, {
@@ -837,6 +950,7 @@ CombinedMetadata.propTypes = {
   tags: _propTypes["default"].array,
   notes: _propTypes["default"].string,
   category: _propTypes["default"].string,
+  icon: _propTypes["default"].string,
   handleChange: _propTypes["default"].func,
   handleNotesBlur: _propTypes["default"].func,
   additional_metadata: _propTypes["default"].object,
@@ -852,6 +966,7 @@ CombinedMetadata.defaultProps = {
   elevation: 0,
   handleNotesBlur: null,
   category: null,
+  icon: null,
   name: null,
   updated: null,
   additional_metadata: null,

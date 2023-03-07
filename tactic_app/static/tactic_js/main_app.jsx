@@ -75,10 +75,12 @@ function main_props(data, registerDirtyMethod, finalCallback) {
         window.main_id = main_id;
     }
     let initial_tile_types;
+    let initial_tile_icon_dict;
 
     var tsocket = new TacticSocket("main", 5000, main_id, function(response) {
             tsocket.socket.on("remove-ready-block", readyListener);
             initial_tile_types = response.tile_types;
+            initial_tile_icon_dict = response.icon_dict;
             tsocket.socket.emit('client-ready', {"room": main_id, "user_id": window.user_id,
                 "participant": "client", "rb_id": data.ready_block_id, "main_id": main_id})
     });
@@ -146,6 +148,7 @@ function main_props(data, registerDirtyMethod, finalCallback) {
                            tsocket: tsocket,
                            short_collection_name: data.short_collection_name,
                            initial_tile_types: initial_tile_types,
+                           initial_tile_icon_dict: initial_tile_icon_dict,
                            interface_state: interface_state,
                            initial_data_text: fdata.data_text,
                            initial_theme: window.theme,
@@ -164,6 +167,7 @@ function main_props(data, registerDirtyMethod, finalCallback) {
                            resource_name: data.is_project ? data.project_name : data.short_collection_name,
                            short_collection_name: data.short_collection_name,
                            initial_tile_types: initial_tile_types,
+                           initial_tile_icon_dict: initial_tile_icon_dict,
                            interface_state: interface_state,
                            total_rows: fdata.total_rows,
                            initial_theme: window.theme,
@@ -209,6 +213,7 @@ class MainApp extends React.Component {
                 show_console_pane: true,
                 console_is_zoomed: false,
                 tile_types: this.props.initial_tile_types,
+                tile_icon_dict: this.props.initial_tile_icon_dict,
                 tile_list: [],
                 search_text: "",
                 height_fraction: .85,
@@ -337,7 +342,7 @@ class MainApp extends React.Component {
     _update_menus_listener(data) {
         let self = this;
         postWithCallback("host", "get_tile_types", {"user_id": window.user_id}, function (data) {
-            self.setState({tile_types: data.tile_types});
+            self.setState({tile_types: data.tile_types, tile_icon_dict: data.icon_dict});
         }), null, self.props.main_id;
     }
 
@@ -547,15 +552,17 @@ class MainApp extends React.Component {
         sorted_categories.sort();
         for (let category of sorted_categories) {
             let option_dict = {};
+            let icon_dict = {};
             let sorted_types = [...this.state.tile_types[category]];
             sorted_types.sort();
             for (let ttype of sorted_types) {
                 option_dict[ttype] = () => this._tile_command(ttype);
+                icon_dict[ttype] = this.state.tile_icon_dict[ttype]
             }
             menu_items.push(<MenuComponent menu_name={category}
                                            option_dict={option_dict}
                                            binding_dict={{}}
-                                           icon_dict={{}}
+                                           icon_dict={icon_dict}
                                            disabled_items={[]}
                                            key={category}
             />)
@@ -726,7 +733,7 @@ class MainApp extends React.Component {
         postWithCallback(this.props.main_id, "delete_row",
             {"document_name": this.state.table_spec.current_doc_name,
                 "index": this.state.selected_row
-            })
+            }, null)
     }
 
     _insertRow(index) {

@@ -22,6 +22,11 @@ import loaded_tile_management
 import datetime
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
+default_tile_icons = {
+    "standard": "application",
+    "matplotlib": "timeline-line-chart",
+    "d3": "code"
+}
 
 # noinspection PyMethodMayBeStatic,PyBroadException
 class TileManager(LibraryResourceManager):
@@ -83,14 +88,40 @@ class TileManager(LibraryResourceManager):
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error renaming collection")
 
-    def grab_metadata(self, res_name):
-        user_obj = current_user
+    def grab_metadata(self, res_name, user_obj=None):
+        if user_obj is None:
+            user_obj = current_user
         doc = self.db[user_obj.tile_collection_name].find_one({self.name_field: res_name})
+        if doc is None:
+            print("couldn't grab metadata for tile module " + str(res_name))
+            return None
         if "metadata" in doc:
             mdata = doc["metadata"]
         else:
             mdata = None
         return mdata
+
+    def get_tile_icon(self, tile_type, user_obj):
+        module_name = loaded_tile_management.get_module_from_type(user_obj.username, tile_type)
+        mdata = self.grab_metadata(module_name, user_obj)
+        return self.get_tile_icon_from_mdata(mdata)
+
+    def get_tile_icon_from_mdata(self, mdata):
+        tag_match_dict = {
+            "cluster": "group-objects",
+            "classify": "label",
+            "network": "layout",
+            "utility": "cog"
+        }
+        if mdata is not None:
+            if "icon" in mdata:
+                return mdata["icon"]
+            for tagstr, icon in tag_match_dict.items():
+                if tagstr in mdata["tags"]:
+                    return icon
+            if "type" in mdata and mdata["type"] in ["matplotlib", "d3"]:
+                return default_tile_icons[mdata["type"]]
+        return default_tile_icons["standard"]
 
     def save_metadata(self, res_name, tags, notes):
         doc = self.db[current_user.tile_collection_name].find_one({"tile_module_name": res_name})
@@ -100,7 +131,8 @@ class TileManager(LibraryResourceManager):
             mdata = {}
         mdata["tags"] = tags
         mdata["notes"] = notes
-        self.db[current_user.tile_collection_name].update_one({"tile_module_name": res_name}, {'$set': {"metadata": mdata}})
+        self.db[current_user.tile_collection_name].update_one({"tile_module_name": res_name},
+                                                              {'$set': {"metadata": mdata}})
 
     def delete_tag(self, tag):
         doclist = self.db[current_user.tile_collection_name].find()
@@ -115,7 +147,7 @@ class TileManager(LibraryResourceManager):
                 mdata["tags"] = " ".join(taglist)
                 res_name = doc["tile_module_name"]
                 self.db[current_user.tile_collection_name].update_one({"tile_module_name": res_name},
-                                                                 {'$set': {"metadata": mdata}})
+                                                                      {'$set': {"metadata": mdata}})
         return
 
     def rename_tag(self, tag_changes):
@@ -186,7 +218,9 @@ class TileManager(LibraryResourceManager):
         module_name = request.json["resource_name"]
         self.clear_old_recent_history(module_name)
         module_code = user_obj.get_tile_module(module_name)
-        mdata = user_obj.process_metadata(self.grab_metadata(module_name))
+        mdata = self.grab_metadata(module_name)
+        mdata["icon"] = self.get_tile_icon_from_mdata(mdata)
+        mdata = user_obj.process_metadata(mdata)
         data = {
             "success": True,
             "kind": "module-viewer",
@@ -258,6 +292,7 @@ class TileManager(LibraryResourceManager):
                                version_string=tstring,)
 
     def view_in_creator_in_context(self):
+        print("** in view_in_creator_in_context **")
         user_obj = current_user
         # context_id = request.json["context_id"]
         module_name = request.json["resource_name"]
@@ -265,7 +300,9 @@ class TileManager(LibraryResourceManager):
         id_info = self.initialize_module_viewer_container(module_name)
         create_ready_block(id_info["rb_id"], user_obj.username, [id_info["module_viewer_id"], "client"],
                            id_info["module_viewer_id"])
-        mdata = user_obj.process_metadata(self.grab_metadata(module_name))
+        mdata = self.grab_metadata(module_name)
+        mdata["icon"] = self.get_tile_icon_from_mdata(mdata)
+        mdata = user_obj.process_metadata(mdata)
         data = {
             "success": True,
             "kind": "creator-viewer",

@@ -157,9 +157,11 @@ function main_props(data, registerDirtyMethod, finalCallback) {
   }
 
   var initial_tile_types;
+  var initial_tile_icon_dict;
   var tsocket = new _tactic_socket.TacticSocket("main", 5000, main_id, function (response) {
     tsocket.socket.on("remove-ready-block", readyListener);
     initial_tile_types = response.tile_types;
+    initial_tile_icon_dict = response.icon_dict;
     tsocket.socket.emit('client-ready', {
       "room": main_id,
       "user_id": window.user_id,
@@ -242,6 +244,7 @@ function main_props(data, registerDirtyMethod, finalCallback) {
         tsocket: tsocket,
         short_collection_name: data.short_collection_name,
         initial_tile_types: initial_tile_types,
+        initial_tile_icon_dict: initial_tile_icon_dict,
         interface_state: interface_state,
         initial_data_text: fdata.data_text,
         initial_theme: window.theme,
@@ -259,6 +262,7 @@ function main_props(data, registerDirtyMethod, finalCallback) {
         resource_name: data.is_project ? data.project_name : data.short_collection_name,
         short_collection_name: data.short_collection_name,
         initial_tile_types: initial_tile_types,
+        initial_tile_icon_dict: initial_tile_icon_dict,
         interface_state: interface_state,
         total_rows: fdata.total_rows,
         initial_theme: window.theme,
@@ -310,6 +314,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
       show_console_pane: true,
       console_is_zoomed: false,
       tile_types: _this.props.initial_tile_types,
+      tile_icon_dict: _this.props.initial_tile_icon_dict,
       tile_list: [],
       search_text: "",
       height_fraction: .85,
@@ -486,7 +491,8 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         "user_id": window.user_id
       }, function (data) {
         self.setState({
-          tile_types: data.tile_types
+          tile_types: data.tile_types,
+          tile_icon_dict: data.icon_dict
         });
       }), null, self.props.main_id;
     }
@@ -796,6 +802,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
           var category = _step4.value;
           var option_dict = {};
+          var icon_dict = {};
 
           var sorted_types = _toConsumableArray(this.state.tile_types[category]);
 
@@ -811,6 +818,8 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
               option_dict[ttype] = function () {
                 return _this4._tile_command(ttype);
               };
+
+              icon_dict[ttype] = _this4.state.tile_icon_dict[ttype];
             };
 
             for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
@@ -826,7 +835,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
             menu_name: category,
             option_dict: option_dict,
             binding_dict: {},
-            icon_dict: {},
+            icon_dict: icon_dict,
             disabled_items: [],
             key: category
           }));
@@ -1085,7 +1094,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
       (0, _communication_react.postWithCallback)(this.props.main_id, "delete_row", {
         "document_name": this.state.table_spec.current_doc_name,
         "index": this.state.selected_row
-      });
+      }, null);
     }
   }, {
     key: "_insertRow",

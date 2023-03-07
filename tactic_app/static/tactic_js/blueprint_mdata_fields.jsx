@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 
 import { PopoverPosition, Button, MenuDivider, MenuItem, TagInput, TextArea, FormGroup, InputGroup,
     Card, Icon, Collapse} from "@blueprintjs/core";
-import {Select, MultiSelect} from "@blueprintjs/select";
+import {Select2, MultiSelect} from "@blueprintjs/select";
 
 import markdownIt from 'markdown-it'
 import 'markdown-it-latex/dist/index.css'
@@ -49,7 +49,14 @@ class BpSelectAdvanced extends React.Component {
         }
         let re = new RegExp(query.toLowerCase());
 
-        return re.test(item["text"].toLowerCase())
+        let the_text;
+        if (typeof item == "object") {
+            the_text = item["text"]
+        }
+        else {
+            the_text = item
+        }
+        return re.test(the_text.toLowerCase())
     }
 
     _handleActiveItemChange(newActiveItem) {
@@ -67,7 +74,7 @@ class BpSelectAdvanced extends React.Component {
 
     render () {
         return (
-            <Select
+            <Select2
                 activeItem={this._getActiveItem(this.props.value)}
                 onActiveItemChange={this._handleActiveItemChange}
                 itemRenderer={renderSuggestionAdvanced}
@@ -79,7 +86,7 @@ class BpSelectAdvanced extends React.Component {
                     modifiers: {flip: false, preventOverflow: true},
                     position: PopoverPosition.BOTTOM_LEFT}}>
                 <Button text={this.props.value["text"]} className="button-in-select" icon={this.props.buttonIcon}  />
-            </Select>
+            </Select2>
         )
     }
 }
@@ -149,21 +156,35 @@ class BpSelect extends React.Component {
     }
 
     _filterSuggestion(query, item) {
-        if (query.length === 0) {
+        if ((query.length === 0) || (item["isgroup"])) {
             return true
         }
         let re = new RegExp(query.toLowerCase());
 
-        return re.test(item.toLowerCase())
+        let the_text;
+        if (typeof item == "object") {
+            the_text = item["text"]
+        }
+        else {
+            the_text = item
+        }
+        return re.test(the_text.toLowerCase())
     }
 
     _handleActiveItemChange(newActiveItem) {
-        this.setState({activeItem: newActiveItem})
+        let the_text;
+        if (typeof item == "object") {
+            the_text = newActiveItem["text"]
+        }
+        else {
+            the_text = newActiveItem
+        }
+        this.setState({activeItem: the_text})
     }
 
     render () {
         return (
-            <Select
+            <Select2
                 className="tile-form-menu-item"
                 activeItem={this.state.activeItem}
                 filterable={this.props.filterable}
@@ -181,7 +202,7 @@ class BpSelect extends React.Component {
                            small={this.props.small}
                            text={this.props.buttonTextObject ? this.props.buttonTextObject : this.props.value}
                            icon={this.props.buttonIcon} />
-            </Select>
+            </Select2>
         )
     }
 }
@@ -219,19 +240,32 @@ class SuggestionItem extends React.Component{
     }
 
     render() {
+        let the_text;
+        let the_icon;
+        if (typeof this.props.item == "object") {
+            the_text = this.props.item["text"];
+            the_icon = this.props.item["icon"]
+        }
+        else {
+            the_text = this.props.item;
+            the_icon = null
+        }
         return (
             <MenuItem
                 className="tile-form-menu-item"
-                text={this.props.item}
+                text={the_text}
+                icon={the_icon}
                 active={this.props.modifiers.active}
-                onClick={this.props.handleClick}
+                onClick={()=>this.props.handleClick(the_text)}
                 shouldDismissPopover={true}
             />
         );
     }
 }
 SuggestionItem.propTypes = {
-    item: PropTypes.string,
+    item: PropTypes.oneOfType([
+            PropTypes.string,
+            PropTypes.object]),
     index: PropTypes.number,
     modifiers: PropTypes.object,
     handleClick: PropTypes.func,
@@ -468,6 +502,50 @@ NotesField.defaultProps = {
     handleBlur: null
 };
 
+const icon_list = ["application", "code",
+    "timeline-line-chart", "heatmap", "graph", "heat-grid", "chart", "pie-chart", "regression-chart",
+    "grid", "numerical", "font", "array", "array-numeric", "array-string", "data-lineage", "function", "variable",
+    "build", "group-objects", "ungroup-objects", "inner-join", "filter",
+    "sort-asc", "sort-alphabetical", "sort-numerical", "random",
+    "layout", "layout-auto", "layout-balloon",
+    "changes", "comparison",
+    "exchange", "derive_column",
+    "list-columns", "delta",
+    "edit", "fork", "numbered-list", "path-search", "search",
+    "plus", "repeat", "reset", "resolve",
+    "widget-button", 
+    "star", "time", "settings", "properties", "cog", "key-command",
+    "ip-address", "download", "cloud", "globe",
+    "tag", "label",
+    "history", "predictive-analysis", "calculator", "pulse", "warning-sign", "cube", "wrench"
+];
+
+class IconSelector extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this);
+        this.icon_dlist = [];
+        for (let name of icon_list) {
+            this.icon_dlist.push({text: name, icon: name})
+        }
+    }
+
+    render() {
+        return (
+            <BpSelect options={this.icon_dlist}
+                      onChange={(item)=>{this.props.handleSelectChange(item["text"])}}
+                      buttonIcon={this.props.icon_val}
+                      popoverPosition={PopoverPosition.BOTTOM_LEFT}
+                      value={this.props.icon_val}/>
+        )
+    }
+}
+
+IconSelector.propTypes = {
+    handleSelectChange: PropTypes.func,
+    icon_val: PropTypes.string
+};
+
 
 class CombinedMetadata extends React.Component {
 
@@ -494,7 +572,9 @@ class CombinedMetadata extends React.Component {
     _handleCategoryChange(event) {
         this.props.handleChange({"category": event.target.value})
     }
-
+    _handleIconChange(icon) {
+        this.props.handleChange({"icon": icon})
+    }
 
     _toggleAuxVisibility() {
         this.setState({auxIsOpen: !this.state.auxIsOpen})
@@ -538,6 +618,12 @@ class CombinedMetadata extends React.Component {
                         <FormGroup label="Category">
                             <InputGroup  onChange={this._handleCategoryChange}
                                             value={this.props.category} />
+                        </FormGroup>
+                    }
+                    {this.props.icon != null &&
+                        <FormGroup label="Icon">
+                            <IconSelector icon_val={this.props.icon}
+                                          handleSelectChange={this._handleIconChange}/>
                         </FormGroup>
                     }
                     <FormGroup label="Notes">
@@ -592,6 +678,7 @@ CombinedMetadata.propTypes = {
     tags: PropTypes.array,
     notes: PropTypes.string,
     category: PropTypes.string,
+    icon: PropTypes.string,
     handleChange: PropTypes.func,
     handleNotesBlur: PropTypes.func,
     additional_metadata: PropTypes.object,
@@ -606,6 +693,7 @@ CombinedMetadata.defaultProps = {
     elevation: 0,
     handleNotesBlur: null,
     category: null,
+    icon: null,
     name: null,
     updated: null,
     additional_metadata: null,

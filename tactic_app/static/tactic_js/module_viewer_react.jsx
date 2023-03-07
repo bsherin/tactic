@@ -59,6 +59,7 @@ function module_viewer_props(data, registerDirtyMethod, finalCallback) {
         resource_name: data.resource_name,
         the_content: data.the_content,
         notes: data.mdata.notes,
+        icon: data.mdata.additional_mdata.icon,
         readOnly: data.read_only,
         is_repository: data.is_repository,
         meta_outer: "#right-div",
@@ -83,6 +84,7 @@ class ModuleViewerApp extends React.Component {
         this.state = {
             code_content: props.the_content,
             notes: props.notes,
+            icon: this.props.icon,
             tags: props.split_tags,
             search_string: "",
             regex: false,
@@ -244,6 +246,7 @@ class ModuleViewerApp extends React.Component {
             const tagstring = self.state.tags.join(" ");
             const tags = self.state.tags;  // In case it's modified while saving
             const notes = self.state.notes;
+            const icon = self.state.icon;
             let result_dict;
             let category;
             category = null;
@@ -252,6 +255,7 @@ class ModuleViewerApp extends React.Component {
                 "category": category,
                 "tags": tagstring,
                 "notes": notes,
+                "icon": icon,
                 "new_code": new_code,
                 "last_saved": "viewer"
             };
@@ -442,6 +446,7 @@ class ModuleViewerApp extends React.Component {
                                            created={this.props.created}
                                            notes={this.state.notes}
                                            tags={this.state.tags}
+                                           mdata_icon={this.state.icon}
                                            saveMe={this._saveMe}
                                            show_search={true}
                                            update_search_state={this._update_search_state}
