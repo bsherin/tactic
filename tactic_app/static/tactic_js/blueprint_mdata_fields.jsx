@@ -14,11 +14,12 @@ import markdownItLatex from 'markdown-it-latex'
 const mdi = markdownIt({html: true});
 mdi.use(markdownItLatex);
 import _ from 'lodash';
-export {icon_dict};
+
 import {postAjaxPromise} from "./communication_react.js"
-
 import {doBinding, propsAreEqual} from "./utilities_react.js";
+import {tile_icon_dict} from "./icon_info.js";
 
+export {icon_dict};
 export {NotesField, CombinedMetadata, BpSelect, BpSelectAdvanced}
 
 let icon_dict = {
@@ -29,6 +30,50 @@ let icon_dict = {
     list: "list",
     code: "code"
 };
+
+class SuggestionItemAdvanced extends React.Component{
+    constructor(props) {
+        super(props);
+        doBinding(this)
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        return !propsAreEqual(nextProps, this.props)
+    }
+
+    render() {
+        let item = this.props.item;
+        let display_text = "display_text" in item ? item.display_text : item.text;
+        let the_icon = "icon" in item ? item.icon : null
+        if (item.isgroup) {
+            return (
+                <MenuDivider className="tile-form-menu-item" title={display_text}/>
+            )
+        }
+        else {
+            return (
+                <MenuItem
+                    className="tile-form-menu-item"
+                    text={display_text}
+                    key={display_text}
+                    icon={the_icon}
+                    onClick={this.props.handleClick}
+                    active={this.props.modifiers.active}
+                    shouldDismissPopover={true}
+                />
+            );
+        }
+    }
+}
+SuggestionItemAdvanced.propTypes = {
+    item: PropTypes.object,
+    modifiers: PropTypes.object,
+    handleClick: PropTypes.func
+};
+
+function renderSuggestionAdvanced (item, {modifiers, handleClick, index}) {
+    return <SuggestionItemAdvanced item={item} key={index} modifiers={modifiers} handleClick={handleClick}/>
+}
 
 class BpSelectAdvanced extends React.Component {
     constructor(props) {
@@ -44,7 +89,7 @@ class BpSelectAdvanced extends React.Component {
     }
 
     _filterSuggestion(query, item) {
-        if ((query.length === 0) || (item["isgroup"])) {
+        if (query.length === 0) {
             return true
         }
         let re = new RegExp(query.toLowerCase());
@@ -73,9 +118,11 @@ class BpSelectAdvanced extends React.Component {
     }
 
     render () {
+        let value = this.props.value;
+        let display_text = "display_text" in value ? value.display_text : value.text;
         return (
             <Select2
-                activeItem={this._getActiveItem(this.props.value)}
+                activeItem={this._getActiveItem(value)}
                 onActiveItemChange={this._handleActiveItemChange}
                 itemRenderer={renderSuggestionAdvanced}
                 itemPredicate={this._filterSuggestion}
@@ -85,7 +132,7 @@ class BpSelectAdvanced extends React.Component {
                     boundary: "window",
                     modifiers: {flip: false, preventOverflow: true},
                     position: PopoverPosition.BOTTOM_LEFT}}>
-                <Button text={this.props.value["text"]} className="button-in-select" icon={this.props.buttonIcon}  />
+                <Button text={display_text} className="button-in-select" icon={this.props.buttonIcon}  />
             </Select2>
         )
     }
@@ -95,52 +142,13 @@ BpSelectAdvanced.propTypes = {
     options: PropTypes.array,
     onChange: PropTypes.func,
     value: PropTypes.object,
-    buttonIcon: PropTypes.string
+    buttonIcon: PropTypes.string,
 };
 
 BpSelectAdvanced.defaultProps = {
-    buttonIcon: null
+    buttonIcon: null,
 };
 
-class SuggestionItemAdvanced extends React.Component{
-    constructor(props) {
-        super(props);
-        doBinding(this)
-    }
-
-    shouldComponentUpdate(nextProps, nextState) {
-        return !propsAreEqual(nextProps, this.props)
-    }
-
-    render() {
-        if (this.props.item["isgroup"]) {
-            return (
-                <MenuDivider className="tile-form-menu-item" title={this.props.item["text"]}/>
-            )
-        }
-        else {
-            return (
-                <MenuItem
-                    className="tile-form-menu-item"
-                    text={this.props.item["text"]}
-                    key={this.props.item}
-                    onClick={this.props.handleClick}
-                    active={this.props.modifiers.active}
-                    shouldDismissPopover={true}
-                />
-            );
-        }
-    }
-}
-SuggestionItemAdvanced.propTypes = {
-    item: PropTypes.object,
-    modifiers: PropTypes.object,
-    handleClick: PropTypes.func
-};
-
-function renderSuggestionAdvanced (item, {modifiers, handleClick, index}) {
-    return <SuggestionItemAdvanced item={item} key={index} modifiers={modifiers} handleClick={handleClick}/>
-}
 
 class BpSelect extends React.Component {
     constructor(props) {
@@ -520,23 +528,40 @@ const icon_list = ["application", "code",
     "history", "predictive-analysis", "calculator", "pulse", "warning-sign", "cube", "wrench"
 ];
 
+var icon_dlist = [];
+var icon_entry_dict = {};
+
+const cat_order = ['data', 'action', 'table', 'interface', 'editor', 'file', 'media', 'miscellaneous'];
+
+for (let category of cat_order) {
+    var cat_entry = {text: category, display_text: category, isgroup: true}
+    icon_dlist.push(cat_entry);
+    for (let entry of tile_icon_dict[category]) {
+        let new_entry = {
+            text: entry.tags + ", " + category + ", " + entry.iconName,
+            val: entry.iconName,
+            icon: entry.iconName,
+            display_text: entry.displayName,
+            isgroup: false
+        };
+        cat_entry.text = cat_entry.text + ", " + entry.tags + ", " + entry.iconName;
+        icon_dlist.push(new_entry);
+        icon_entry_dict[new_entry.val] = new_entry;
+    }
+}
+
 class IconSelector extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this);
-        this.icon_dlist = [];
-        for (let name of icon_list) {
-            this.icon_dlist.push({text: name, icon: name})
-        }
     }
 
     render() {
         return (
-            <BpSelect options={this.icon_dlist}
-                      onChange={(item)=>{this.props.handleSelectChange(item["text"])}}
-                      buttonIcon={this.props.icon_val}
-                      popoverPosition={PopoverPosition.BOTTOM_LEFT}
-                      value={this.props.icon_val}/>
+            <BpSelectAdvanced options={icon_dlist}
+                              onChange={(item)=>{this.props.handleSelectChange(item.val)}}
+                              buttonIcon={this.props.icon_val}
+                              value={icon_entry_dict[this.props.icon_val]}/>
         )
     }
 }

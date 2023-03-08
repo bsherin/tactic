@@ -27,6 +27,8 @@ var _communication_react = require("./communication_react.js");
 
 var _utilities_react = require("./utilities_react.js");
 
+var _icon_info = require("./icon_info.js");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
@@ -79,22 +81,89 @@ var icon_dict = {
 };
 exports.icon_dict = icon_dict;
 
-var BpSelectAdvanced = /*#__PURE__*/function (_React$Component) {
-  _inherits(BpSelectAdvanced, _React$Component);
+var SuggestionItemAdvanced = /*#__PURE__*/function (_React$Component) {
+  _inherits(SuggestionItemAdvanced, _React$Component);
 
-  var _super = _createSuper(BpSelectAdvanced);
+  var _super = _createSuper(SuggestionItemAdvanced);
 
-  function BpSelectAdvanced(props) {
+  function SuggestionItemAdvanced(props) {
     var _this;
 
-    _classCallCheck(this, BpSelectAdvanced);
+    _classCallCheck(this, SuggestionItemAdvanced);
 
     _this = _super.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
-    _this.state = {
-      activeItem: _this.props.value
-    };
     return _this;
+  }
+
+  _createClass(SuggestionItemAdvanced, [{
+    key: "shouldComponentUpdate",
+    value: function shouldComponentUpdate(nextProps, nextState) {
+      return !(0, _utilities_react.propsAreEqual)(nextProps, this.props);
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var item = this.props.item;
+      var display_text = "display_text" in item ? item.display_text : item.text;
+      var the_icon = "icon" in item ? item.icon : null;
+
+      if (item.isgroup) {
+        return /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, {
+          className: "tile-form-menu-item",
+          title: display_text
+        });
+      } else {
+        return /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+          className: "tile-form-menu-item",
+          text: display_text,
+          key: display_text,
+          icon: the_icon,
+          onClick: this.props.handleClick,
+          active: this.props.modifiers.active,
+          shouldDismissPopover: true
+        });
+      }
+    }
+  }]);
+
+  return SuggestionItemAdvanced;
+}(_react["default"].Component);
+
+SuggestionItemAdvanced.propTypes = {
+  item: _propTypes["default"].object,
+  modifiers: _propTypes["default"].object,
+  handleClick: _propTypes["default"].func
+};
+
+function renderSuggestionAdvanced(item, _ref) {
+  var modifiers = _ref.modifiers,
+      handleClick = _ref.handleClick,
+      index = _ref.index;
+  return /*#__PURE__*/_react["default"].createElement(SuggestionItemAdvanced, {
+    item: item,
+    key: index,
+    modifiers: modifiers,
+    handleClick: handleClick
+  });
+}
+
+var BpSelectAdvanced = /*#__PURE__*/function (_React$Component2) {
+  _inherits(BpSelectAdvanced, _React$Component2);
+
+  var _super2 = _createSuper(BpSelectAdvanced);
+
+  function BpSelectAdvanced(props) {
+    var _this2;
+
+    _classCallCheck(this, BpSelectAdvanced);
+
+    _this2 = _super2.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this2));
+    _this2.state = {
+      activeItem: _this2.props.value
+    };
+    return _this2;
   }
 
   _createClass(BpSelectAdvanced, [{
@@ -105,7 +174,7 @@ var BpSelectAdvanced = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_filterSuggestion",
     value: function _filterSuggestion(query, item) {
-      if (query.length === 0 || item["isgroup"]) {
+      if (query.length === 0) {
         return true;
       }
 
@@ -149,8 +218,10 @@ var BpSelectAdvanced = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
+      var value = this.props.value;
+      var display_text = "display_text" in value ? value.display_text : value.text;
       return /*#__PURE__*/_react["default"].createElement(_select.Select2, {
-        activeItem: this._getActiveItem(this.props.value),
+        activeItem: this._getActiveItem(value),
         onActiveItemChange: this._handleActiveItemChange,
         itemRenderer: renderSuggestionAdvanced,
         itemPredicate: this._filterSuggestion,
@@ -166,7 +237,7 @@ var BpSelectAdvanced = /*#__PURE__*/function (_React$Component) {
           position: _core.PopoverPosition.BOTTOM_LEFT
         }
       }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
-        text: this.props.value["text"],
+        text: display_text,
         className: "button-in-select",
         icon: this.props.buttonIcon
       }));
@@ -186,68 +257,6 @@ BpSelectAdvanced.propTypes = {
 BpSelectAdvanced.defaultProps = {
   buttonIcon: null
 };
-
-var SuggestionItemAdvanced = /*#__PURE__*/function (_React$Component2) {
-  _inherits(SuggestionItemAdvanced, _React$Component2);
-
-  var _super2 = _createSuper(SuggestionItemAdvanced);
-
-  function SuggestionItemAdvanced(props) {
-    var _this2;
-
-    _classCallCheck(this, SuggestionItemAdvanced);
-
-    _this2 = _super2.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this2));
-    return _this2;
-  }
-
-  _createClass(SuggestionItemAdvanced, [{
-    key: "shouldComponentUpdate",
-    value: function shouldComponentUpdate(nextProps, nextState) {
-      return !(0, _utilities_react.propsAreEqual)(nextProps, this.props);
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      if (this.props.item["isgroup"]) {
-        return /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, {
-          className: "tile-form-menu-item",
-          title: this.props.item["text"]
-        });
-      } else {
-        return /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-          className: "tile-form-menu-item",
-          text: this.props.item["text"],
-          key: this.props.item,
-          onClick: this.props.handleClick,
-          active: this.props.modifiers.active,
-          shouldDismissPopover: true
-        });
-      }
-    }
-  }]);
-
-  return SuggestionItemAdvanced;
-}(_react["default"].Component);
-
-SuggestionItemAdvanced.propTypes = {
-  item: _propTypes["default"].object,
-  modifiers: _propTypes["default"].object,
-  handleClick: _propTypes["default"].func
-};
-
-function renderSuggestionAdvanced(item, _ref) {
-  var modifiers = _ref.modifiers,
-      handleClick = _ref.handleClick,
-      index = _ref.index;
-  return /*#__PURE__*/_react["default"].createElement(SuggestionItemAdvanced, {
-    item: item,
-    key: index,
-    modifiers: modifiers,
-    handleClick: handleClick
-  });
-}
 
 var BpSelect = /*#__PURE__*/function (_React$Component3) {
   _inherits(BpSelect, _React$Component3);
@@ -713,6 +722,42 @@ NotesField.defaultProps = {
   handleBlur: null
 };
 var icon_list = ["application", "code", "timeline-line-chart", "heatmap", "graph", "heat-grid", "chart", "pie-chart", "regression-chart", "grid", "numerical", "font", "array", "array-numeric", "array-string", "data-lineage", "function", "variable", "build", "group-objects", "ungroup-objects", "inner-join", "filter", "sort-asc", "sort-alphabetical", "sort-numerical", "random", "layout", "layout-auto", "layout-balloon", "changes", "comparison", "exchange", "derive_column", "list-columns", "delta", "edit", "fork", "numbered-list", "path-search", "search", "plus", "repeat", "reset", "resolve", "widget-button", "star", "time", "settings", "properties", "cog", "key-command", "ip-address", "download", "cloud", "globe", "tag", "label", "history", "predictive-analysis", "calculator", "pulse", "warning-sign", "cube", "wrench"];
+var icon_dlist = [];
+var icon_entry_dict = {};
+var cat_order = ['data', 'action', 'table', 'interface', 'editor', 'file', 'media', 'miscellaneous'];
+
+for (var _i = 0, _cat_order = cat_order; _i < _cat_order.length; _i++) {
+  var category = _cat_order[_i];
+  var cat_entry = {
+    text: category,
+    display_text: category,
+    isgroup: true
+  };
+  icon_dlist.push(cat_entry);
+
+  var _iterator2 = _createForOfIteratorHelper(_icon_info.tile_icon_dict[category]),
+      _step2;
+
+  try {
+    for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+      var entry = _step2.value;
+      var new_entry = {
+        text: entry.tags + ", " + category + ", " + entry.iconName,
+        val: entry.iconName,
+        icon: entry.iconName,
+        display_text: entry.displayName,
+        isgroup: false
+      };
+      cat_entry.text = cat_entry.text + ", " + entry.tags + ", " + entry.iconName;
+      icon_dlist.push(new_entry);
+      icon_entry_dict[new_entry.val] = new_entry;
+    }
+  } catch (err) {
+    _iterator2.e(err);
+  } finally {
+    _iterator2.f();
+  }
+}
 
 var IconSelector = /*#__PURE__*/function (_React$Component7) {
   _inherits(IconSelector, _React$Component7);
@@ -726,26 +771,6 @@ var IconSelector = /*#__PURE__*/function (_React$Component7) {
 
     _this8 = _super7.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this8));
-    _this8.icon_dlist = [];
-
-    var _iterator2 = _createForOfIteratorHelper(icon_list),
-        _step2;
-
-    try {
-      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-        var name = _step2.value;
-
-        _this8.icon_dlist.push({
-          text: name,
-          icon: name
-        });
-      }
-    } catch (err) {
-      _iterator2.e(err);
-    } finally {
-      _iterator2.f();
-    }
-
     return _this8;
   }
 
@@ -754,14 +779,13 @@ var IconSelector = /*#__PURE__*/function (_React$Component7) {
     value: function render() {
       var _this9 = this;
 
-      return /*#__PURE__*/_react["default"].createElement(BpSelect, {
-        options: this.icon_dlist,
+      return /*#__PURE__*/_react["default"].createElement(BpSelectAdvanced, {
+        options: icon_dlist,
         onChange: function onChange(item) {
-          _this9.props.handleSelectChange(item["text"]);
+          _this9.props.handleSelectChange(item.val);
         },
         buttonIcon: this.props.icon_val,
-        popoverPosition: _core.PopoverPosition.BOTTOM_LEFT,
-        value: this.props.icon_val
+        value: icon_entry_dict[this.props.icon_val]
       });
     }
   }]);
