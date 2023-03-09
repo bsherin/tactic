@@ -630,6 +630,11 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         "tags": this.props.selected_resource.tags,
         "notes": this.props.selected_resource.notes
       };
+
+      if (this.props.selected_rows[0].res_type == "tile" && "icon" in this.props.selected_resource) {
+        result_dict["icon"] = this.props.selected_resource["icon"];
+      }
+
       var saved_selected_resource = Object.assign({}, this.props.selected_resource); // let saved_list_of_selected = [...this.props.list_of_selected];
 
       var saved_selected_rows = _toConsumableArray(this.props.selected_rows);
@@ -714,7 +719,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         } else {
           this._updatePaneState({
             selected_resource: revised_selected_resource
-          });
+          }, this._saveFromSelectedResource);
         }
       } else {
         var _revised_selected_resource = Object.assign({}, this.props.selected_resource);
@@ -1725,8 +1730,13 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       var primary_mdata_fields = ["name", "created", "created_for_sort", "updated", "updated_for_sort", "tags", "notes"];
       var ignore_fields = ["doc_type", "size_for_sort", "res_type"];
       var additional_metadata = {};
+      var selected_resource_icon = null;
 
       for (var field in this.props.selected_resource) {
+        if (this.props.selected_rows.length == 1 && this.props.selected_resource.res_type == "tile" && field == "icon") {
+          selected_resource_icon = this.props.selected_resource["icon"];
+        }
+
         if (!primary_mdata_fields.includes(field) && !ignore_fields.includes(field) && !field.startsWith("icon:")) {
           additional_metadata[field] = this.props.selected_resource[field];
         }
@@ -1754,11 +1764,12 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         created: this.props.selected_resource.created,
         updated: this.props.selected_resource.updated,
         notes: this.props.selected_resource.notes,
+        icon: selected_resource_icon,
         handleChange: this._handleMetadataChange,
         res_type: this.props.selected_resource.res_type,
         pane_type: this.props.pane_type,
         outer_style: outer_style,
-        handleNotesBlur: this.props.multi_select ? null : this._saveFromSelectedResource,
+        handleNotesBlur: null,
         additional_metadata: additional_metadata,
         aux_pane: this.props.aux_pane,
         aux_pane_title: this.props.aux_pane_title,
