@@ -177,8 +177,12 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
             # self.post_task("host", "update_tile_selector_list", {'user_id': self.user_id})
             data = {'tile_type': self.module_name}
             emit_direct("tile-source-change", data, namespace='/main', room=self.user_id)
-            # self.post_task("host", "send_tile_source_changed_message", {'user_id': self.user_id,
-            #                                                             'tile_type': self.module_name})
+            row_dict = {
+                "res_type": "tile",
+                "name": module_name
+            }
+            row_dict.update(mdata)
+            emit_direct("update-tile-selector-row", row_dict, namespace='/main', room=self.user_id)
             return {"success": True, "message": "Module Successfully Saved",
                     "alert_type": "alert-success", "render_content_line_number": render_content_line_number,
                     "draw_plot_line_number": draw_plot_line_number,
