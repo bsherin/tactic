@@ -1240,7 +1240,7 @@ class LibraryPane extends React.Component {
         let additional_metadata = {};
         for (let field in this.props.selected_resource) {
             if (!primary_mdata_fields.includes(field) && !ignore_fields.includes(field)
-                && !field.startsWith("icon")) {
+                && !field.startsWith("icon:")) {
                 additional_metadata[field] = this.props.selected_resource[field]
             }
         }

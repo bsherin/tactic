@@ -1727,7 +1727,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       var additional_metadata = {};
 
       for (var field in this.props.selected_resource) {
-        if (!primary_mdata_fields.includes(field) && !ignore_fields.includes(field) && !field.startsWith("icon")) {
+        if (!primary_mdata_fields.includes(field) && !ignore_fields.includes(field) && !field.startsWith("icon:")) {
           additional_metadata[field] = this.props.selected_resource[field];
         }
       }
