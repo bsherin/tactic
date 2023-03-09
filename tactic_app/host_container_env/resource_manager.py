@@ -17,6 +17,11 @@ repository_user = User.get_user_by_username("repository", use_remote_repository)
 
 CHUNK_SIZE = int(int(os.environ.get("CHUNK_SIZE")) / 2)
 
+default_tile_icons = {
+    "standard": "application",
+    "matplotlib": "timeline-line-chart",
+    "d3": "code"
+}
 
 # noinspection PyMethodMayBeStatic,PyMissingConstructor
 class ResourceManager(ExceptionMixin):
@@ -100,6 +105,23 @@ class ResourceManager(ExceptionMixin):
                 complete_list.append(current)
         return complete_list
 
+    def get_tile_icon_from_mdata(self, mdata):
+        tag_match_dict = {
+            "cluster": "group-objects",
+            "classify": "label",
+            "network": "layout",
+            "utility": "cog"
+        }
+        if mdata is not None:
+            if "icon" in mdata:
+                return mdata["icon"]
+            for tagstr, icon in tag_match_dict.items():
+                if tagstr in mdata["tags"]:
+                    return icon
+            if "type" in mdata and mdata["type"] in ["matplotlib", "d3"]:
+                return default_tile_icons[mdata["type"]]
+        return default_tile_icons["standard"]
+
     def build_res_dict(self, name, mdata, user_obj=None, file_id=None, res_type=None):
         if user_obj is None:
             user_obj = current_user
@@ -138,6 +160,8 @@ class ResourceManager(ExceptionMixin):
             for field, val in mdata.items():
                 if field not in skip_fields:
                     return_data[field] = val
+        if res_type == "tile" and "icon" not in return_data:
+            return_data["icon"] = self.get_tile_icon_from_mdata(mdata)
         if file_id is not None:
             if use_remote_database:
                 return_data["size_for_sort"] = ""
@@ -453,7 +477,8 @@ class LibraryResourceManager(ResourceManager):
                                 rdict["hidden"] = self.has_hidden(mdata["tags"])
                                 filtered_res.append(rdict)
                     except Exception as ex:
-                        print("Got problem with doc " + str(doc[name_field]))
+                        msg = self.get_traceback_message(ex, f"Got problem with doc {str(doc[name_field])}")
+                        print(msg)
             else:
                 for doc in res:
                     try:
@@ -473,7 +498,8 @@ class LibraryResourceManager(ResourceManager):
                         rdict["hidden"] = self.has_hidden(mdata["tags"])
                         filtered_res.append(rdict)
                     except Exception as ex:
-                        print("Got problem with doc " + str(doc[name_field]))
+                        msg = self.get_traceback_message(ex, f"Got problem with doc {str(doc[name_field])}")
+                        print(msg)
 
         is_all = pane_type == "all"
         for rtype in types_to_grab:

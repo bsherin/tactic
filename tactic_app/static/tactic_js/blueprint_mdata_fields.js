@@ -810,17 +810,33 @@ var CombinedMetadata = /*#__PURE__*/function (_React$Component8) {
 
     _this10 = _super8.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this10));
+    _this10.notes_timer = null;
     _this10.state = {
-      auxIsOpen: false
+      auxIsOpen: false,
+      temp_notes: null
     };
+    _this10.update_delay = 500;
     return _this10;
   }
 
   _createClass(CombinedMetadata, [{
     key: "_handleNotesChange",
     value: function _handleNotesChange(event) {
-      this.props.handleChange({
-        "notes": event.target.value
+      if (this.notes_timer) {
+        clearTimeout(this.notes_timer);
+        this.notes_timer = null;
+      }
+
+      var self = this;
+      var new_val = event.target.value;
+      this.notes_timer = setTimeout(function () {
+        self.notes_timer = null;
+        self.props.handleChange({
+          "notes": new_val
+        });
+      }, self.update_delay);
+      this.setState({
+        temp_notes: new_val
       });
     }
   }, {
@@ -865,6 +881,7 @@ var CombinedMetadata = /*#__PURE__*/function (_React$Component8) {
         fontSize: 14
       };
       var additional_items;
+      var current_notes = this.notes_timer ? this.state.temp_notes : this.props.notes;
 
       if (this.props.additional_metadata != null) {
         additional_items = [];
@@ -921,7 +938,7 @@ var CombinedMetadata = /*#__PURE__*/function (_React$Component8) {
       })), /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
         label: "Notes"
       }, /*#__PURE__*/_react["default"].createElement(NotesField, {
-        notes: this.props.notes,
+        notes: current_notes,
         readOnly: this.props.readOnly,
         handleChange: this._handleNotesChange,
         show_markdown_initial: true,

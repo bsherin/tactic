@@ -22,12 +22,6 @@ import loaded_tile_management
 import datetime
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
-default_tile_icons = {
-    "standard": "application",
-    "matplotlib": "timeline-line-chart",
-    "d3": "code"
-}
-
 # noinspection PyMethodMayBeStatic,PyBroadException
 class TileManager(LibraryResourceManager):
     collection_list = "tile_module_names"
@@ -97,6 +91,7 @@ class TileManager(LibraryResourceManager):
             return None
         if "metadata" in doc:
             mdata = doc["metadata"]
+            mdata["icon"] = self.get_tile_icon_from_mdata(mdata)
         else:
             mdata = None
         return mdata
@@ -106,24 +101,7 @@ class TileManager(LibraryResourceManager):
         mdata = self.grab_metadata(module_name, user_obj)
         return self.get_tile_icon_from_mdata(mdata)
 
-    def get_tile_icon_from_mdata(self, mdata):
-        tag_match_dict = {
-            "cluster": "group-objects",
-            "classify": "label",
-            "network": "layout",
-            "utility": "cog"
-        }
-        if mdata is not None:
-            if "icon" in mdata:
-                return mdata["icon"]
-            for tagstr, icon in tag_match_dict.items():
-                if tagstr in mdata["tags"]:
-                    return icon
-            if "type" in mdata and mdata["type"] in ["matplotlib", "d3"]:
-                return default_tile_icons[mdata["type"]]
-        return default_tile_icons["standard"]
-
-    def save_metadata(self, res_name, tags, notes):
+    def save_metadata(self, res_name, tags, notes, icon=None):
         doc = self.db[current_user.tile_collection_name].find_one({"tile_module_name": res_name})
         if "metadata" in doc:
             mdata = doc["metadata"]
@@ -131,6 +109,8 @@ class TileManager(LibraryResourceManager):
             mdata = {}
         mdata["tags"] = tags
         mdata["notes"] = notes
+        if icon is not None:
+            mdata["icon"] = icon
         self.db[current_user.tile_collection_name].update_one({"tile_module_name": res_name},
                                                               {'$set': {"metadata": mdata}})
 
@@ -301,7 +281,7 @@ class TileManager(LibraryResourceManager):
         create_ready_block(id_info["rb_id"], user_obj.username, [id_info["module_viewer_id"], "client"],
                            id_info["module_viewer_id"])
         mdata = self.grab_metadata(module_name)
-        mdata["icon"] = self.get_tile_icon_from_mdata(mdata)
+
         mdata = user_obj.process_metadata(mdata)
         data = {
             "success": True,

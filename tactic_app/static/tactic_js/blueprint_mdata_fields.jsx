@@ -577,13 +577,26 @@ class CombinedMetadata extends React.Component {
     constructor(props) {
         super(props);
         doBinding(this);
+        this.notes_timer = null;
         this.state = {
-            auxIsOpen: false
-        }
+            auxIsOpen: false,
+            temp_notes: null,
+        };
+        this.update_delay = 500
     }
 
     _handleNotesChange(event) {
-        this.props.handleChange({"notes": event.target.value})
+        if (this.notes_timer) {
+            clearTimeout(this.notes_timer);
+            this.notes_timer = null;
+        }
+        let self = this;
+        let new_val = event.target.value;
+        this.notes_timer = setTimeout(()=> {
+                self.notes_timer = null;
+                self.props.handleChange({"notes": new_val})
+            }, self.update_delay);
+        this.setState({temp_notes: new_val});
     }
 
     _handleTagsChange(tags) {
@@ -608,6 +621,7 @@ class CombinedMetadata extends React.Component {
     render () {
         let addition_field_style = {fontSize: 14};
         let additional_items;
+        let current_notes = this.notes_timer ? this.state.temp_notes : this.props.notes;
         if (this.props.additional_metadata != null) {
             additional_items = [];
             for (let field in this.props.additional_metadata) {
@@ -652,7 +666,7 @@ class CombinedMetadata extends React.Component {
                         </FormGroup>
                     }
                     <FormGroup label="Notes">
-                        <NotesField notes={this.props.notes}
+                        <NotesField notes={current_notes}
                                     readOnly={this.props.readOnly}
                                     handleChange={this._handleNotesChange}
                                     show_markdown_initial={true}
