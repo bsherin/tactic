@@ -208,17 +208,6 @@ def on_join(data):
     print("user joined room " + room)
 
 
-@socketio.on('join', namespace='/library')
-@login_required
-def on_join(data):
-    room = data["user_id"]
-    join_room(room)
-    print("user joined room " + room)
-    room = data["library_id"]
-    join_room(room)
-    print("user joined room " + room)
-
-
 @app.route('/get_resource_names/<res_type>', methods=['get', 'post'])
 @login_required
 def get_resource_names(res_type):

@@ -182,6 +182,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
                 "name": module_name
             }
             row_dict.update(mdata)
+            print("** about to emit direct update-tile-selector-row")
             emit_direct("update-tile-selector-row", row_dict, namespace='/main', room=self.user_id)
             return {"success": True, "message": "Module Successfully Saved",
                     "alert_type": "alert-success", "render_content_line_number": render_content_line_number,
