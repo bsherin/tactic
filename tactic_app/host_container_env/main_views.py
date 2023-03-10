@@ -53,6 +53,10 @@ def on_join(data):
     room = data["room"]
     join_room(room)
     print("user joined room " + room)
+    if "user_id" in data:
+        room = data["user_id"]
+        join_room(room)
+        print("user joined room " + room)
     if "return_tile_types" in data and data["return_tile_types"]:
         tile_types = tactic_app.host_worker.get_tile_types({"user_id": data["user_id"]})
         return tile_types
