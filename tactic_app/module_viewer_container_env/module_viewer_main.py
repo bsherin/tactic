@@ -174,16 +174,14 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
                                                           {'$set': {"tile_module": module_code, "metadata": mdata,
                                                                     "last_saved": "creator"}})
             self.create_recent_checkpoint(module_name)
-            # self.post_task("host", "update_tile_selector_list", {'user_id': self.user_id})
             data = {'tile_type': self.module_name}
             emit_direct("tile-source-change", data, namespace='/main', room=self.user_id)
             row_dict = {
                 "res_type": "tile",
-                "name": module_name
+                "name": module_name,
+                "user_id": self.user_id
             }
-            row_dict.update(mdata)
-            print("** about to emit direct update-tile-selector-row")
-            emit_direct("update-tile-selector-row", row_dict, namespace='/main', room=self.user_id)
+            self.ask_host("update_selector_row_task", row_dict)
             return {"success": True, "message": "Module Successfully Saved",
                     "alert_type": "alert-success", "render_content_line_number": render_content_line_number,
                     "draw_plot_line_number": draw_plot_line_number,

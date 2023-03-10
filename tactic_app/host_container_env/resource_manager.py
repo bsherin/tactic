@@ -23,6 +23,7 @@ default_tile_icons = {
     "d3": "code"
 }
 
+
 # noinspection PyMethodMayBeStatic,PyMissingConstructor
 class ResourceManager(ExceptionMixin):
     is_repository = False
