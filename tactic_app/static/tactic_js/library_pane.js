@@ -436,6 +436,8 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_handleRowUpdate",
     value: function _handleRowUpdate(res_dict) {
+      var _this5 = this;
+
       var res_name = res_dict.name;
       var ind = this.get_data_dict_index(res_name, res_dict.res_type);
       if (!ind) return;
@@ -450,12 +452,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         } else {
           the_row[field] = res_dict[field];
         }
-      }
-
-      if (res_name == this.props.selected_resource.name) {
-        this.props.updatePaneState({
-          "selected_resource": the_row
-        });
       }
 
       var new_state = {
@@ -492,7 +488,15 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         }
       }
 
-      this.setState(new_state);
+      if (res_name == this.props.selected_resource.name) {
+        this._updatePaneState({
+          "selected_resource": the_row
+        }, function () {
+          return _this5.setState(new_state);
+        });
+      } else {
+        this.setState(new_state);
+      }
     }
   }, {
     key: "delete_row",
@@ -926,12 +930,12 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_update_search_state",
     value: function _update_search_state(new_state) {
-      var _this5 = this;
+      var _this6 = this;
 
       //new_state.search_from_tags = false;
       this._updatePaneState(new_state, function () {
-        if (_this5.search_spec_changed(new_state)) {
-          _this5._grabNewChunkWithRow(0, true, new_state, true);
+        if (_this6.search_spec_changed(new_state)) {
+          _this6._grabNewChunkWithRow(0, true, new_state, true);
         }
       });
     }
@@ -962,7 +966,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_set_sort_state",
     value: function _set_sort_state(column_name, sort_field, direction) {
-      var _this6 = this;
+      var _this7 = this;
 
       var spec_update = {
         sort_field: column_name,
@@ -970,8 +974,8 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       };
 
       this._updatePaneState(spec_update, function () {
-        if (_this6.search_spec_changed(spec_update)) {
-          _this6._grabNewChunkWithRow(0, true, spec_update, true);
+        if (_this7.search_spec_changed(spec_update)) {
+          _this7._grabNewChunkWithRow(0, true, spec_update, true);
         }
       });
     }
@@ -1005,11 +1009,11 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_selectRow",
     value: function _selectRow(new_index) {
-      var _this7 = this;
+      var _this8 = this;
 
       if (!Object.keys(this.state.data_dict).includes(String(new_index))) {
         this._grabNewChunkWithRow(new_index, false, null, false, null, function () {
-          _this7._selectRow(new_index);
+          _this8._selectRow(new_index);
         });
       } else {
         var new_regions = [_table.Regions.row(new_index)];
@@ -1452,7 +1456,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_import_collection",
     value: function _import_collection(myDropZone, setCurrentUrl, new_name, check_results) {
-      var _this8 = this;
+      var _this9 = this;
 
       var csv_options = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : null;
       var doc_type;
@@ -1469,10 +1473,10 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         "library_id": this.props.library_id,
         "csv_options": csv_options
       }).then(function (data) {
-        var new_url = "append_documents_to_collection/".concat(new_name, "/").concat(doc_type, "/").concat(_this8.props.library_id);
+        var new_url = "append_documents_to_collection/".concat(new_name, "/").concat(doc_type, "/").concat(_this9.props.library_id);
         myDropZone.options.url = new_url;
         setCurrentUrl(new_url);
-        _this8.upload_name = new_name;
+        _this9.upload_name = new_name;
         myDropZone.processQueue();
       })["catch"](function (data) {});
     }
@@ -1722,7 +1726,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "render",
     value: function render() {
-      var _this9 = this;
+      var _this10 = this;
 
       var new_button_groups;
       var uwidth = this.props.usable_width;
@@ -1799,9 +1803,9 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       }
 
       var key_bindings = [[["up"], function () {
-        return _this9._handleArrowKeyPress("ArrowUp");
+        return _this10._handleArrowKeyPress("ArrowUp");
       }], [["down"], function () {
-        return _this9._handleArrowKeyPress("ArrowDown");
+        return _this10._handleArrowKeyPress("ArrowDown");
       }], [["ctrl+space"], this._showOmnibar]];
       var filter_buttons = [];
       var self = this;

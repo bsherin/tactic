@@ -278,9 +278,7 @@ class LibraryPane extends React.Component {
             }
 
         }
-        if (res_name == this.props.selected_resource.name) {
-            this.props.updatePaneState({"selected_resource": the_row})
-        }
+
         let new_state = {"data_dict": new_data_dict };
         if ("tags" in res_dict) {
             let res_tags = res_dict.tags.split(" ");
@@ -296,8 +294,13 @@ class LibraryPane extends React.Component {
                 new_state["tag_list"] = new_tag_list;
             }
         }
-
-        this.setState(new_state);
+        if (res_name == this.props.selected_resource.name) {
+            this._updatePaneState({"selected_resource": the_row},
+                ()=>this.setState(new_state))
+        }
+        else {
+            this.setState(new_state);
+        }
     }
 
     delete_row(name) {

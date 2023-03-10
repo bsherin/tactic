@@ -10,7 +10,7 @@ from docker_functions import create_container, destroy_container, destroy_child_
 from docker_functions import get_log, restart_container
 from docker_functions import get_matching_user_containers
 from tactic_app import app, socketio, db
-from library_views import tile_manager, project_manager, collection_manager, list_manager
+from library_views import tile_manager, project_manager, collection_manager, list_manager, get_manager_for_type
 from library_views import code_manager
 from redis_tools import redis_ht, delete_ready_block_participant
 import datetime
@@ -165,7 +165,12 @@ class HostWorker(QWorker):
 
                 db[user_obj.code_collection_name].update_one({"code_name": code_name},
                                                              {'$set': {"the_code": the_code, "metadata": mdata}})
-                # self.update_selector_row(self.build_res_dict(code_name, mdata))
+                print("*** about to try to update_selector_row in update_code_task ***")
+                try:
+                    code_manager.update_selector_row(code_manager.build_res_dict(code_name, mdata, user_obj=user_obj,
+                                                                                 res_type="code"), user_obj=user_obj)
+                except Exception as ex:
+                    print(self.handle_exception(ex, "Here's the error"))
                 result = {"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"}
                 self.submit_response(local_task_packet, result)
                 return
@@ -187,6 +192,30 @@ class HostWorker(QWorker):
     def load_user_default_tiles_task(self, data):
         error_list = loaded_tile_management.load_user_default_tiles(data["username"])
         return {"success": True, "tile_loading_errors": error_list}
+
+    @task_worthy
+    def update_selector_row_task(self, data):
+        try:
+            print("*** in update_selector_row_task **")
+            manager = get_manager_for_type(data["res_type"])
+            print("** got manager **")
+            user_obj = load_user(data["user_id"])
+            print("** get user **")
+            cname = getattr(user_obj, manager.collection_name)
+            print(" ** got cname **")
+            nfield = manager.name_field
+            print(f"got cname {cname} and nfield {nfield}")
+            doc = db[cname].find_one({nfield: data["name"]})
+            if "metadata" in doc:
+                mdata = doc["metadata"]
+            else:
+                mdata = {}
+            rdict = manager.build_res_dict(data["name"], mdata, res_type=data["res_type"], user_obj=user_obj)
+            print("** about to call update_selector_row with rdict " + str(rdict))
+            manager.update_selector_row(rdict, user_obj)
+        except Exception as ex:
+            print(self.handle_exception(ex, "Here's the error"))
+        return {"success": True}
 
     @task_worthy_manual_submit
     def load_tile_module_task(self, data, task_packet):
@@ -217,7 +246,6 @@ class HostWorker(QWorker):
                                                         tile_module,
                                                         tile_module_name,
                                                         is_default)
-            print("about to emit update_selector_row with tile_module_name " + tile_module_name)
             tile_manager.update_selector_row({"name": tile_module_name, "icon:upload": "icon:upload", "res_type": "tile"}, user_obj)
             if "main_id" in task_packet:
                 umdata = {"main_id": task_packet["main_id"]}
