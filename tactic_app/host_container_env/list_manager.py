@@ -103,7 +103,6 @@ class ListManager(LibraryResourceManager):
             update_selector = "update_selector" in request.json and request.json["update_selector"] == "True"
             self.db[current_user.list_collection_name].update_one({"list_name": old_name},
                                                              {'$set': {"list_name": new_name}})
-            # self.update_selector_list()
             if update_selector:
                 doc = self.db[current_user.list_collection_name].find_one({"list_name": new_name})
                 if "metadata" in doc:

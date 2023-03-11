@@ -51,7 +51,6 @@ class ResourceManager(ExceptionMixin):
     def update_selector_row(self, res_dict, user_obj=None):
         if user_obj is None:
             user_obj = current_user
-        print(f"*** in update_selector_row with res_type {self.res_type} and res_dict {str(res_dict)}")
         socketio.emit("update-{}-selector-row".format(self.res_type), res_dict,
                       namespace='/main', room=user_obj.get_id())
 

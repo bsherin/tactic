@@ -165,7 +165,6 @@ class HostWorker(QWorker):
 
                 db[user_obj.code_collection_name].update_one({"code_name": code_name},
                                                              {'$set': {"the_code": the_code, "metadata": mdata}})
-                print("*** about to try to update_selector_row in update_code_task ***")
                 try:
                     code_manager.update_selector_row(code_manager.build_res_dict(code_name, mdata, user_obj=user_obj,
                                                                                  res_type="code"), user_obj=user_obj)
@@ -196,22 +195,16 @@ class HostWorker(QWorker):
     @task_worthy
     def update_selector_row_task(self, data):
         try:
-            print("*** in update_selector_row_task **")
             manager = get_manager_for_type(data["res_type"])
-            print("** got manager **")
             user_obj = load_user(data["user_id"])
-            print("** get user **")
             cname = getattr(user_obj, manager.collection_name)
-            print(" ** got cname **")
             nfield = manager.name_field
-            print(f"got cname {cname} and nfield {nfield}")
             doc = db[cname].find_one({nfield: data["name"]})
             if "metadata" in doc:
                 mdata = doc["metadata"]
             else:
                 mdata = {}
             rdict = manager.build_res_dict(data["name"], mdata, res_type=data["res_type"], user_obj=user_obj)
-            print("** about to call update_selector_row with rdict " + str(rdict))
             manager.update_selector_row(rdict, user_obj)
         except Exception as ex:
             print(self.handle_exception(ex, "Here's the error"))
@@ -220,7 +213,6 @@ class HostWorker(QWorker):
     @task_worthy_manual_submit
     def load_tile_module_task(self, data, task_packet):
         def loaded_source(res_dict):
-            print("in loaded_source")
             if not res_dict["success"]:
                 if "show_failed_loads" in data and data["show_failed_loads"]:
                     loaded_tile_management.add_failed_load(tile_module_name, user_obj.username)
@@ -239,7 +231,6 @@ class HostWorker(QWorker):
                 is_default = data["is_default"]
             else:
                 is_default = False
-            print("about to call add_user_tile_module")
             loaded_tile_management.add_user_tile_module(user_obj.username,
                                                         category,
                                                         res_dict["tile_name"],
