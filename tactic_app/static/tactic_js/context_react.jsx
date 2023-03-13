@@ -11,7 +11,7 @@ const tstr = `some text ${blip}`;
 import React from "react";
 import * as ReactDOM from 'react-dom';
 
-import { Tab, Tabs, Button, Icon, Spinner, Alignment } from "@blueprintjs/core";
+import { Tab, Tabs, Button, Icon, Spinner } from "@blueprintjs/core";
 import { FocusStyleManager } from "@blueprintjs/core";
 
 FocusStyleManager.onlyShowFocusOnTabs();
@@ -634,6 +634,7 @@ class ContextApp extends React.Component {
                 }
                 lib_buttons.push(
                     <Button key={rt} icon={this.libIconDict[rt]} className={cname} alignText="left"
+                            style={{display:"flex"}}
                             small={true} minimal={true} onClick={() => {
                         this._changeLibTab(rt)
                     }}>
@@ -683,11 +684,12 @@ class ContextApp extends React.Component {
             <Tab id="library" tabIndex={-1} key="library" className="context-tab" panel={library_panel}>
                 <div className={bclass} style={{display: "flex", flexDirection: "column"}}>
                     {window.library_style == "tabbed" &&
-                        <Button minimal={true} alignText="left">
+                        <Button minimal={true} alignText="left" style={{display:"table-cell", overflow: "hidden"}}>
                             <span className="context-library-title">Library</span>
                         </Button>
                     }
-                    <div style={{display: "flex", flexDirection: "column", marginBottom: {mbot}}}>
+                    <div style={{display: "table-cell", flexDirection: "column", marginBottom: {mbot},
+                    textOverflow: "ellipsis", overflow: "hidden"}}>
                         {lib_buttons}
                     </div>
                 </div>
@@ -759,7 +761,8 @@ class ContextApp extends React.Component {
                      tabIndex={-1} key={tab_id} panelClassName="context-tab" title="" panel={wrapped_panel}>
 
                     <div className={bclass + " open-resource-tab"} style={{display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
-                        <div style={{display: "table-cell", flexDirection: "row", justifyContent: "flex-start"}}>
+                        <div style={{display: "table-cell", flexDirection: "row", justifyContent: "flex-start",
+                            textOverflow: "ellipsis", overflow: "hidden"}}>
                             <Icon icon={this.iconDict[tab_entry.kind]}
                                   style={{verticalAlign: "middle", marginRight: 5}}
                                   iconSize={16} tabIndex={-1}/>
