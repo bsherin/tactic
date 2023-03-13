@@ -34,14 +34,15 @@ $light-highlight-weight: 600;
                 }
             }
             .lib-tab-button.selected-lib-tab-button {
-                color: $context-highlight-color;
+                color: white;
             }
             .lib-tab-button.selected-rep-tab-button {
-                color: $context-repository-highlight-color;
+                color: white
             }
         }
         .context-tab-button-content {
             color: white;
+            opacity: .5;
 
             .context-library-title {
                 color: white;
@@ -58,9 +59,10 @@ $light-highlight-weight: 600;
                 color: $red5;
             }
             &.selected-tab-button {
+                opacity: 1;
                 color: $context-highlight-color !important;
-                border-top: 1px solid $context-highlight-color;
-                border-bottom: 1px solid $context-highlight-color;
+                //border-top: 1px solid $context-highlight-color;
+                //border-bottom: 1px solid $context-highlight-color;
 
                 .repository-highlight {
                     color: $context-repository-highlight-color
@@ -95,16 +97,17 @@ $light-highlight-weight: 600;
                 }
             }
             .lib-tab-button.selected-lib-tab-button {
-                color: $light-context-highlight-color;
+                color: $pt-text-color;
                 font-weight: $light-highlight-weight;
             }
             .lib-tab-button.selected-rep-tab-button {
-                color: $context-repository-highlight-color;
+                color: $pt-text-color;
                 font-weight: $light-highlight-weight;
             }
         }
         .context-tab-button-content {
             color: $dark-gray1;
+            opacity: .5;
 
             .context-library-title {
                 color: $dark-gray1;
@@ -120,9 +123,10 @@ $light-highlight-weight: 600;
                 color: $red5;
             }
             &.selected-tab-button {
+                opacity: 1;
                 color: $light-context-highlight-color !important;
-                border-top: 1.75px solid $light-context-highlight-color;
-                border-bottom: 1.75px solid $light-context-highlight-color;
+                //border-top: 2px solid $gray1;
+                //border-bottom: 2px solid $gray1;
                 font-weight: $light-highlight-weight;
 
                 .repository-highlight {
@@ -169,13 +173,13 @@ $light-highlight-weight: 600;
 
         .lib-tab-button {
             padding: 0;
-            margin-left: 10px;
-            font-size: 16px;
+            margin-left: 20px;
+            font-size: 14px;
             line-height: 30px;
         }
         &.unified {
             .lib-tab-button {
-                font-size: 18px;
+                font-size: 14px;
                 margin-left: 0;
             }
         }
