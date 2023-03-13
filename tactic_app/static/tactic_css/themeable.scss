@@ -15,6 +15,9 @@ $dark-medium: $dark-gray4;
 
 .light-theme {
     .lib-tab-button, .context-tab-button-content, .menu-bar, .combined-metadata, .all-pane {
+        .bp4-icon-cube {
+            color: $orange3 ! important
+        }
         .bp4-icon-database, .bp4-icon-th, .bp4-icon-freeform, .bp4-icon-align-left {
             color: $blue3 !important;
         }
@@ -38,29 +41,32 @@ $dark-medium: $dark-gray4;
 
     .lib-tab-button.selected-lib-tab-button, .open-resource-tab.selected-tab-button {
         .bp4-icon-database + span {
-            color: $blue3 !important;
+            color: $pt-text-color !important;
         }
 
         .bp4-icon-projects + span {
-            color: $green3 !important;
+            color: $pt-text-color !important;
         }
 
         .bp4-icon-application + span {
-            color: $indigo3 !important;
+            color: $pt-text-color !important;
         }
 
         .bp4-icon-list + span {
-            color: $rose3 !important;
+            color: $pt-text-color !important;
         }
 
         .bp4-icon-code + span {
-            color: $lime2 !important;
+            color: $pt-text-color !important;
         }
     }
 }
 
 .bp4-dark {
     .lib-tab-button, .context-tab-button-content, .menu-bar, .combined-metadata, .all-pane {
+        .bp4-icon-cube {
+            color: $orange5 ! important
+        }
         .bp4-icon-database, .bp4-icon-th, .bp4-icon-freeform, .bp4-icon-align-left  {
             color: $blue5 !important;
         }
@@ -84,23 +90,23 @@ $dark-medium: $dark-gray4;
 
     .lib-tab-button.selected-lib-tab-button, .open-resource-tab.selected-tab-button {
         .bp4-icon-database + span {
-            color: $blue5 !important;
+            color: white !important;
         }
 
         .bp4-icon-projects + span {
-            color: $green5 !important;
+            color: white !important;
         }
 
         .bp4-icon-application + span {
-            color: $indigo5 !important;
+            color: white!important;
         }
 
         .bp4-icon-list + span {
-            color: $rose5 !important;
+            color: white!important;
         }
 
         .bp4-icon-code + span {
-            color: $lime5 !important;
+            color: white !important;
         }
     }
 }

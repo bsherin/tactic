@@ -1122,6 +1122,9 @@ pre code {
 /*
  * Copyright 2022 Palantir Technologies, Inc. All rights reserved.
  */
+.light-theme .lib-tab-button .bp4-icon-cube, .light-theme .context-tab-button-content .bp4-icon-cube, .light-theme .menu-bar .bp4-icon-cube, .light-theme .combined-metadata .bp4-icon-cube, .light-theme .all-pane .bp4-icon-cube {
+  color: #c87619 !important;
+}
 .light-theme .lib-tab-button .bp4-icon-database, .light-theme .lib-tab-button .bp4-icon-th, .light-theme .lib-tab-button .bp4-icon-freeform, .light-theme .lib-tab-button .bp4-icon-align-left, .light-theme .context-tab-button-content .bp4-icon-database, .light-theme .context-tab-button-content .bp4-icon-th, .light-theme .context-tab-button-content .bp4-icon-freeform, .light-theme .context-tab-button-content .bp4-icon-align-left, .light-theme .menu-bar .bp4-icon-database, .light-theme .menu-bar .bp4-icon-th, .light-theme .menu-bar .bp4-icon-freeform, .light-theme .menu-bar .bp4-icon-align-left, .light-theme .combined-metadata .bp4-icon-database, .light-theme .combined-metadata .bp4-icon-th, .light-theme .combined-metadata .bp4-icon-freeform, .light-theme .combined-metadata .bp4-icon-align-left, .light-theme .all-pane .bp4-icon-database, .light-theme .all-pane .bp4-icon-th, .light-theme .all-pane .bp4-icon-freeform, .light-theme .all-pane .bp4-icon-align-left {
   color: #2d72d2 !important;
 }
@@ -1138,21 +1141,24 @@ pre code {
   color: #5a701a !important;
 }
 .light-theme .lib-tab-button.selected-lib-tab-button .bp4-icon-database + span, .light-theme .open-resource-tab.selected-tab-button .bp4-icon-database + span {
-  color: #2d72d2 !important;
+  color: #1c2127 !important;
 }
 .light-theme .lib-tab-button.selected-lib-tab-button .bp4-icon-projects + span, .light-theme .open-resource-tab.selected-tab-button .bp4-icon-projects + span {
-  color: #238551 !important;
+  color: #1c2127 !important;
 }
 .light-theme .lib-tab-button.selected-lib-tab-button .bp4-icon-application + span, .light-theme .open-resource-tab.selected-tab-button .bp4-icon-application + span {
-  color: #7961db !important;
+  color: #1c2127 !important;
 }
 .light-theme .lib-tab-button.selected-lib-tab-button .bp4-icon-list + span, .light-theme .open-resource-tab.selected-tab-button .bp4-icon-list + span {
-  color: #db2c6f !important;
+  color: #1c2127 !important;
 }
 .light-theme .lib-tab-button.selected-lib-tab-button .bp4-icon-code + span, .light-theme .open-resource-tab.selected-tab-button .bp4-icon-code + span {
-  color: #5a701a !important;
+  color: #1c2127 !important;
 }
 
+.bp4-dark .lib-tab-button .bp4-icon-cube, .bp4-dark .context-tab-button-content .bp4-icon-cube, .bp4-dark .menu-bar .bp4-icon-cube, .bp4-dark .combined-metadata .bp4-icon-cube, .bp4-dark .all-pane .bp4-icon-cube {
+  color: #fbb360 !important;
+}
 .bp4-dark .lib-tab-button .bp4-icon-database, .bp4-dark .lib-tab-button .bp4-icon-th, .bp4-dark .lib-tab-button .bp4-icon-freeform, .bp4-dark .lib-tab-button .bp4-icon-align-left, .bp4-dark .context-tab-button-content .bp4-icon-database, .bp4-dark .context-tab-button-content .bp4-icon-th, .bp4-dark .context-tab-button-content .bp4-icon-freeform, .bp4-dark .context-tab-button-content .bp4-icon-align-left, .bp4-dark .menu-bar .bp4-icon-database, .bp4-dark .menu-bar .bp4-icon-th, .bp4-dark .menu-bar .bp4-icon-freeform, .bp4-dark .menu-bar .bp4-icon-align-left, .bp4-dark .combined-metadata .bp4-icon-database, .bp4-dark .combined-metadata .bp4-icon-th, .bp4-dark .combined-metadata .bp4-icon-freeform, .bp4-dark .combined-metadata .bp4-icon-align-left, .bp4-dark .all-pane .bp4-icon-database, .bp4-dark .all-pane .bp4-icon-th, .bp4-dark .all-pane .bp4-icon-freeform, .bp4-dark .all-pane .bp4-icon-align-left {
   color: #8abbff !important;
 }
@@ -1169,19 +1175,19 @@ pre code {
   color: #d4f17e !important;
 }
 .bp4-dark .lib-tab-button.selected-lib-tab-button .bp4-icon-database + span, .bp4-dark .open-resource-tab.selected-tab-button .bp4-icon-database + span {
-  color: #8abbff !important;
+  color: white !important;
 }
 .bp4-dark .lib-tab-button.selected-lib-tab-button .bp4-icon-projects + span, .bp4-dark .open-resource-tab.selected-tab-button .bp4-icon-projects + span {
-  color: #72ca9b !important;
+  color: white !important;
 }
 .bp4-dark .lib-tab-button.selected-lib-tab-button .bp4-icon-application + span, .bp4-dark .open-resource-tab.selected-tab-button .bp4-icon-application + span {
-  color: #bdadff !important;
+  color: white !important;
 }
 .bp4-dark .lib-tab-button.selected-lib-tab-button .bp4-icon-list + span, .bp4-dark .open-resource-tab.selected-tab-button .bp4-icon-list + span {
-  color: #ff66a1 !important;
+  color: white !important;
 }
 .bp4-dark .lib-tab-button.selected-lib-tab-button .bp4-icon-code + span, .bp4-dark .open-resource-tab.selected-tab-button .bp4-icon-code + span {
-  color: #d4f17e !important;
+  color: white !important;
 }
 
 .option-row-highlight {
