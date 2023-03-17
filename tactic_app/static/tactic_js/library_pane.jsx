@@ -588,6 +588,18 @@ class LibraryPane extends React.Component {
         }
     }
 
+    _unsearch() {
+        if (this.props.search_string != "") {
+            this._update_search_state({search_string: ""})
+        }
+        else if (this.props.tag_button_state.active_tag != "all") {
+            this._updateTagState({"active_tag": "all"})
+        }
+        else if (this.props.pane_type == "all" && this.props.filterType != "all") {
+            this._setFilterType("all")
+        }
+    }
+
     _update_search_state(new_state) {
         //new_state.search_from_tags = false;
         this._updatePaneState(new_state, ()=> {
@@ -1309,7 +1321,8 @@ class LibraryPane extends React.Component {
         let key_bindings = [
             [["up"], ()=>this._handleArrowKeyPress("ArrowUp")],
             [["down"], ()=>this._handleArrowKeyPress("ArrowDown")],
-            [["ctrl+space"], this._showOmnibar]
+            [["ctrl+space"], this._showOmnibar],
+            [["esc"], this._unsearch]
         ];
 
         let filter_buttons = [];
