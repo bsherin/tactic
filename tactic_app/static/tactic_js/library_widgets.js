@@ -278,6 +278,7 @@ var SearchForm = /*#__PURE__*/function (_React$Component3) {
 
       var current_text = this.current_timer ? this.state.temp_text : this.props.search_string;
       return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+        ref: this.form_ref,
         helperText: match_text,
         style: {
           marginBottom: 0
@@ -290,6 +291,7 @@ var SearchForm = /*#__PURE__*/function (_React$Component3) {
         }
       }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
         type: "search",
+        className: "search-input",
         placeholder: "Search",
         leftIcon: "search",
         value: current_text,

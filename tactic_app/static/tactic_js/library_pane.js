@@ -928,6 +928,21 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       }
     }
   }, {
+    key: "_unsearch",
+    value: function _unsearch() {
+      if (this.props.search_string != "") {
+        this._update_search_state({
+          search_string: ""
+        });
+      } else if (this.props.tag_button_state.active_tag != "all") {
+        this._updateTagState({
+          "active_tag": "all"
+        });
+      } else if (this.props.pane_type == "all" && this.props.filterType != "all") {
+        this._setFilterType("all");
+      }
+    }
+  }, {
     key: "_update_search_state",
     value: function _update_search_state(new_state) {
       var _this6 = this;
@@ -1806,7 +1821,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         return _this10._handleArrowKeyPress("ArrowUp");
       }], [["down"], function () {
         return _this10._handleArrowKeyPress("ArrowDown");
-      }], [["ctrl+space"], this._showOmnibar]];
+      }], [["ctrl+space"], this._showOmnibar], [["esc"], this._unsearch]];
       var filter_buttons = [];
       var self = this;
 
