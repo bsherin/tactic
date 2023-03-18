@@ -90,14 +90,14 @@ class SearchableConsole extends React.PureComponent {
                             style={{marginLeft: 15,
                                     marginBottom: 6, marginTop: 12 }}>
                         <Button onClick={this.props.clearConsole} small={true}>
-                            Clear
+                            Reset
                         </Button>
                     </form>
                     <FilterSearchForm
                          search_string={this.state.search_string}
                          handleSearchFieldChange={this._handleSearchFieldChange}
                          handleFilter={this._handleFilter}
-                         handleUnFilter={null}
+                         handleUnFilter={this._handleUnFilter}
                          searchNext={null}
                          searchPrevious={null}
                          search_helper_text={this.state.search_helper_text}
