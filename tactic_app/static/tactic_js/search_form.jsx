@@ -24,7 +24,7 @@ class FilterSearchForm extends React.PureComponent {
         return (
             <form onSubmit={self._handleSubmit} id="console-search-form"
                   className="d-flex flex-row bp4-form-group" style={{
-                justifyContent: "flex-end", marginRight: 116,
+                justifyContent: "flex-end", marginRight: this.props.margin_right,
                 marginBottom: 6, marginTop: 12
             }}>
                 <div className="d-flex flex-column">
@@ -73,7 +73,8 @@ class FilterSearchForm extends React.PureComponent {
      handleUnFilter: PropTypes.func,
      searchNext: PropTypes.func,
      searchPrevious: PropTypes.func,
-     search_helper_text: PropTypes.string
+     search_helper_text: PropTypes.string,
+     margin_right: PropTypes.number
 };
 
  FilterSearchForm.defaultProps = {
@@ -81,5 +82,6 @@ class FilterSearchForm extends React.PureComponent {
      handleUnfilter: null,
      searchNext: null,
      searchPrevious: null,
-     search_helper_text: null
+     search_helper_text: null,
+     margin_right: 116
  };

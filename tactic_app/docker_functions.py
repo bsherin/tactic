@@ -361,9 +361,13 @@ def get_id_from_name_and_parent(cont_name, parent_id):
     return None
 
 
-def get_log(tactic_id):
+def get_log(tactic_id, since=None):
+
     cont = get_container(tactic_id)
-    return cont.logs()
+    if since is not None:
+        return cont.logs(since=since)
+    else:
+        return cont.logs()
 
 
 def destroy_container(tactic_id, notify=True):

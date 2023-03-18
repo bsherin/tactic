@@ -19,7 +19,6 @@ import tactic_app
 import uuid
 import sys
 import copy
-import datetime
 import time
 import os
 
@@ -338,7 +337,12 @@ class HostWorker(QWorker):
     @task_worthy
     def get_container_log(self, data):
         container_id = data["container_id"]
-        return {"success": True, "log_text": bytes_to_string(get_log(container_id))}
+        if "since" in data and data["since"] is not None:
+            dt = datetime.datetime.fromtimestamp(data["since"] / 1000)
+        else:
+            dt = None
+        log_text = bytes_to_string(get_log(container_id, since=dt))
+        return {"success": True, "log_text": log_text}
 
     @task_worthy
     def get_lists_classes_functions(self, data):

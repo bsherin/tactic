@@ -4,6 +4,7 @@ import React from "react";
 import PropTypes from 'prop-types';
 import _ from 'lodash';
 
+import {Button} from "@blueprintjs/core";
 import {FilterSearchForm} from "./search_form";
 
 export {SearchableConsole}
@@ -83,15 +84,26 @@ class SearchableConsole extends React.PureComponent {
 
         return (
             <div className="searchable-console">
-                 <FilterSearchForm
-                     search_string={this.state.search_string}
-                     handleSearchFieldChange={this._handleSearchFieldChange}
-                     handleFilter={this._handleFilter}
-                     handleUnFilter={this._handleUnFilter}
-                     searchNext={null}
-                     searchPrevious={null}
-                     search_helper_text={this.state.search_helper_text}
+                <div className="d-flex flex-row" style={{justifyContent: "space-between"}}>
+                    <form onSubmit={self._handleSubmit}
+                            className="bp4-form-group"
+                            style={{marginLeft: 15,
+                                    marginBottom: 6, marginTop: 12 }}>
+                        <Button onClick={this.props.clearConsole} small={true}>
+                            Clear
+                        </Button>
+                    </form>
+                    <FilterSearchForm
+                         search_string={this.state.search_string}
+                         handleSearchFieldChange={this._handleSearchFieldChange}
+                         handleFilter={this._handleFilter}
+                         handleUnFilter={null}
+                         searchNext={null}
+                         searchPrevious={null}
+                         search_helper_text={this.state.search_helper_text}
+                         margin_right={25}
                      />
+                </div>
                 <div ref={this.props.inner_ref} style={the_style} dangerouslySetInnerHTML={the_text}/>
             </div>
         )
@@ -99,15 +111,17 @@ class SearchableConsole extends React.PureComponent {
  }
 
  SearchableConsole.propTypes = {
-    log_content: PropTypes.string,
+     log_content: PropTypes.string,
      outer_style: PropTypes.object,
-     inner_ref: PropTypes.object
+     inner_ref: PropTypes.object,
+     clearConsole: PropTypes.func
 
 };
 
  SearchableConsole.defaultProps = {
      log_content: "",
      outer_style: {},
-     inner_ref: null
+     inner_ref: null,
+     clearConsole: null
  };
 

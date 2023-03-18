@@ -45,6 +45,8 @@ const BUTTON_CONSUMED_SPACE = 208;
              console_item_with_focus: null,
              console_item_saved_focus: null,
              console_error_log_text: "",
+             main_log_since: null,
+             pseudo_log_since: null,
              show_console_error_log: false,
              all_selected_items: [],
              search_string: null,
@@ -371,12 +373,13 @@ const BUTTON_CONSUMED_SPACE = 208;
                              self.setState({"show_console_error_log": true});
                          });
                      } else {
-                         postWithCallback("host", "get_container_log", {"container_id": self.pseudo_tile_id}, function (res) {
+                         postWithCallback("host", "get_container_log",
+                             {"container_id": self.pseudo_tile_id, "since": self.state.pseudo_log_since}, function (res) {
                              let log_text = res.log_text;
                              if (log_text == "") {
                                  log_text = "Got empty result. The pseudo-tile is probably starting up."
                              }
-                             self.setState({"console_error_log_text": log_text}, () => {
+                             self.setState({"console_error_log_text": log_text, console_log_showing: "pseudo"}, () => {
                                  self.setState({"show_console_error_log": true});
                                  self._startPseudoLogStreaming()
                              });
@@ -384,8 +387,9 @@ const BUTTON_CONSUMED_SPACE = 208;
                      }
                  }, null, this.props.main_id)
              } else {
-                 postWithCallback("host", "get_container_log", {"container_id": self.pseudo_tile_id}, function (res) {
-                     self.setState({"console_error_log_text": res.log_text}, () => {
+                 postWithCallback("host", "get_container_log",
+                     {"container_id": self.pseudo_tile_id, "since": self.state.pseudo_log_since}, function (res) {
+                     self.setState({"console_error_log_text": res.log_text, console_log_showing: "pseudo"}, () => {
                              self.setState({"show_console_error_log": true});
                             self._startPseudoLogStreaming()
                          }
@@ -395,8 +399,49 @@ const BUTTON_CONSUMED_SPACE = 208;
          }
      }
 
+     _setPseudoLogSince() {
+        var now = new Date().getTime();
+        const self = this;
+        this.setState({pseudo_log_since: now}, ()=>{
+            self._stopMainPseudoLogStreaming(()=>{
+            postWithCallback("host", "get_container_log",
+                    {container_id: self.pseudo_tile_id, since: self.state.pseudo_log_since}, function (res) {
+                    self.setState({console_error_log_text: res.log_text, console_log_showing: "pseudo"}, () => {
+                        self.setState({"show_console_error_log": true});
+                        self._startPseudoLogStreaming();
+                 });
+             }, null, this.props.main_id)
+            })
+        })
+    }
+
      _startPseudoLogStreaming() {
         postWithCallback(this.props.main_id, "StartPseudoLogStreaming", {}, null, null, this.props.main_id);
+    }
+
+    _setLogSince() {
+         if (this.state.console_log_showing == "main") {
+             this._setMainLogSince()
+         }
+         else {
+             this._setPseudoLogSince()
+         }
+    }
+
+    _setMainLogSince() {
+        var now = new Date().getTime();
+        const self = this;
+        this.setState({main_log_since: now}, ()=>{
+            self._stopMainPseudoLogStreaming(()=>{
+                postWithCallback("host", "get_container_log",
+                    {container_id: self.props.main_id, since: self.state.main_log_since}, function (res) {
+                    self.setState({console_error_log_text: res.log_text, console_log_showing: "main"}, () => {
+                        self._startMainLogStreaming();
+                        self.setState({"show_console_error_log": true})
+                 });
+             }, null, this.props.main_id)
+            })
+        })
     }
 
      _toggleMainLog() {
@@ -405,8 +450,9 @@ const BUTTON_CONSUMED_SPACE = 208;
              this.setState({"show_console_error_log": false});
              this._stopMainPseudoLogStreaming()
          } else {
-             postWithCallback("host", "get_container_log", {"container_id": this.props.main_id}, function (res) {
-                 self.setState({"console_error_log_text": res.log_text}, () => {
+             postWithCallback("host", "get_container_log", {
+                 "container_id": this.props.main_id, "since": self.state.main_log_since}, function (res) {
+                 self.setState({"console_error_log_text": res.log_text, console_log_showing: "main"}, () => {
                      self._startMainLogStreaming();
                      self.setState({"show_console_error_log": true})
                  });
@@ -418,8 +464,8 @@ const BUTTON_CONSUMED_SPACE = 208;
         postWithCallback(this.props.main_id, "StartMainLogStreaming", {}, null, null, this.props.main_id);
     }
 
-    _stopMainPseudoLogStreaming() {
-        postWithCallback(this.props.main_id, "StopMainPseudoLogStreaming", {}, null, null, this.props.main_id);
+    _stopMainPseudoLogStreaming(callback=null) {
+        postWithCallback(this.props.main_id, "StopMainPseudoLogStreaming", {}, callback, null, this.props.main_id);
     }
 
      _setFocusedItem(unique_id, callback = null) {
@@ -1206,6 +1252,7 @@ const BUTTON_CONSUMED_SPACE = 208;
                                                 overflowY: "auto",
                                                 height: this._bodyHeight() - 30,
                                                 margin: 20}}
+                                            clearConsole={this._setLogSince}
                          />
                  }
                  {!this.props.console_is_shrunk &&
