@@ -109,6 +109,11 @@ $dark-medium: $dark-gray4;
             color: white !important;
         }
     }
+    .combined-metadata {
+        .bp4-input:disabled {
+            color: #abb3bf !important;
+        }
+    }
 }
 
 
@@ -126,6 +131,11 @@ $dark-medium: $dark-gray4;
         box-shadow: none;
         border-top: 0.75px solid #c5cbd3;
         border-bottom: 0.75px solid #c5cbd3;
+    }
+    .combined-metadata {
+        .bp4-input:disabled {
+            color: #5f6b7c !important;
+        }
     }
 
     .cm-matchhighlight {
