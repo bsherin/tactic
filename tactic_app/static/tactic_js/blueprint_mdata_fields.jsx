@@ -5,7 +5,7 @@ import React from "react";
 import PropTypes from 'prop-types';
 
 import { PopoverPosition, Button, MenuDivider, MenuItem, TagInput, TextArea, FormGroup, InputGroup,
-    Card, Icon, Collapse} from "@blueprintjs/core";
+    Card, Icon, Collapse, H4} from "@blueprintjs/core";
 import {Select2, MultiSelect} from "@blueprintjs/select";
 
 import markdownIt from 'markdown-it'
@@ -44,7 +44,7 @@ class SuggestionItemAdvanced extends React.Component{
     render() {
         let item = this.props.item;
         let display_text = "display_text" in item ? item.display_text : item.text;
-        let the_icon = "icon" in item ? item.icon : null
+        let the_icon = "icon" in item ? item.icon : null;
         if (item.isgroup) {
             return (
                 <MenuDivider className="tile-form-menu-item" title={display_text}/>
@@ -534,7 +534,7 @@ var icon_entry_dict = {};
 const cat_order = ['data', 'action', 'table', 'interface', 'editor', 'file', 'media', 'miscellaneous'];
 
 for (let category of cat_order) {
-    var cat_entry = {text: category, display_text: category, isgroup: true}
+    var cat_entry = {text: category, display_text: category, isgroup: true};
     icon_dlist.push(cat_entry);
     for (let entry of tile_icon_dict[category]) {
         let new_entry = {
@@ -634,8 +634,9 @@ class CombinedMetadata extends React.Component {
                     if (sresult != null)  md = sresult[0].slice(1)
                 }
                 additional_items.push(
-                     <FormGroup label={field + ": "} key={field} inline={true}>
-                            <InputGroup disabled={true} value={md} fill={true}/>
+                     <FormGroup label={field + ": "} className="metadata-form_group" key={field} inline={true}>
+                            {/*<InputGroup disabled={true} value={md} fill={true}/>*/}
+                         <span className="bp4-ui-text metadata-field">{String(md)}</span>
                         </FormGroup>
                 )
             }
@@ -644,7 +645,8 @@ class CombinedMetadata extends React.Component {
         return (
             <Card elevation={this.props.elevation} className="combined-metadata accent-bg" style={this.props.outer_style}>
                 {this.props.name != null &&
-                    <h6><Icon icon={icon_dict[this.props.res_type]} style={{marginRight: 4}}/>{this.props.name}</h6>
+                    <H4><Icon icon={icon_dict[this.props.res_type]}
+                              style={{marginRight: 6, marginBottom: 2}}/>{this.props.name}</H4>
                 }
 
                     <FormGroup label="Tags">
@@ -674,12 +676,13 @@ class CombinedMetadata extends React.Component {
                         />
                         {this.props.notes_buttons && this.props.notes_buttons()}
                     </FormGroup>
-                    <FormGroup label="Created " inline={true}>
-                        <InputGroup disabled={true} value={this.props.created}/>
+                    <FormGroup label="Created: " className="metadata-form_group" inline={true}>
+                        <span className="bp4-ui-text metadata-field">{this.props.created}</span>
+                        {/*<InputGroup disabled={true} value={this.props.created}/>*/}
                     </FormGroup>
                     {this.props.updated != null &&
-                        <FormGroup label="Updated: " inline={true}>
-                            <InputGroup disabled={true} value={this.props.updated}/>
+                        <FormGroup label="Updated: " className="metadata-form_group" inline={true}>
+                            <span className="bp4-ui-text metadata-field">{this.props.updated}</span>
                         </FormGroup>
                     }
                     {this.props.additional_metadata != null &&

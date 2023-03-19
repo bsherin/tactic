@@ -1189,6 +1189,9 @@ pre code {
 .bp4-dark .lib-tab-button.selected-lib-tab-button .bp4-icon-code + span, .bp4-dark .open-resource-tab.selected-tab-button .bp4-icon-code + span {
   color: white !important;
 }
+.bp4-dark .combined-metadata .bp4-input:disabled {
+  color: #abb3bf !important;
+}
 
 .option-row-highlight {
   color: #c87619 !important;
@@ -1202,6 +1205,9 @@ pre code {
   box-shadow: none;
   border-top: 0.75px solid #c5cbd3;
   border-bottom: 0.75px solid #c5cbd3;
+}
+.light-theme .combined-metadata .bp4-input:disabled {
+  color: #5f6b7c !important;
 }
 .light-theme .cm-matchhighlight {
   background-color: lightgreen;
@@ -1595,6 +1601,13 @@ table caption {
 }
 .combined-metadata .bp4-form-group.bp4-inline {
   max-width: 450px;
+}
+.combined-metadata .metadata-field {
+  line-height: 30px;
+  opacity: 0.75;
+}
+.combined-metadata .metadata-form_group {
+  margin-bottom: 2px;
 }
 
 /* Other*/

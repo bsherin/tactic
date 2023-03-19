@@ -898,13 +898,12 @@ var CombinedMetadata = /*#__PURE__*/function (_React$Component8) {
 
           additional_items.push( /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
             label: field + ": ",
+            className: "metadata-form_group",
             key: field,
             inline: true
-          }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
-            disabled: true,
-            value: md,
-            fill: true
-          })));
+          }, /*#__PURE__*/_react["default"].createElement("span", {
+            className: "bp4-ui-text metadata-field"
+          }, String(md))));
         }
       }
 
@@ -913,10 +912,11 @@ var CombinedMetadata = /*#__PURE__*/function (_React$Component8) {
         elevation: this.props.elevation,
         className: "combined-metadata accent-bg",
         style: this.props.outer_style
-      }, this.props.name != null && /*#__PURE__*/_react["default"].createElement("h6", null, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+      }, this.props.name != null && /*#__PURE__*/_react["default"].createElement(_core.H4, null, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
         icon: icon_dict[this.props.res_type],
         style: {
-          marginRight: 4
+          marginRight: 6,
+          marginBottom: 2
         }
       }), this.props.name), /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
         label: "Tags"
@@ -944,18 +944,18 @@ var CombinedMetadata = /*#__PURE__*/function (_React$Component8) {
         show_markdown_initial: true,
         handleBlur: this.props.handleNotesBlur
       }), this.props.notes_buttons && this.props.notes_buttons()), /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
-        label: "Created ",
+        label: "Created: ",
+        className: "metadata-form_group",
         inline: true
-      }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
-        disabled: true,
-        value: this.props.created
-      })), this.props.updated != null && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+      }, /*#__PURE__*/_react["default"].createElement("span", {
+        className: "bp4-ui-text metadata-field"
+      }, this.props.created)), this.props.updated != null && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
         label: "Updated: ",
+        className: "metadata-form_group",
         inline: true
-      }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
-        disabled: true,
-        value: this.props.updated
-      })), this.props.additional_metadata != null && additional_items, this.props.aux_pane != null && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
+      }, /*#__PURE__*/_react["default"].createElement("span", {
+        className: "bp4-ui-text metadata-field"
+      }, this.props.updated)), this.props.additional_metadata != null && additional_items, this.props.aux_pane != null && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
         className: "d-flex flex-row justify-content-around",
         style: {
           marginTop: 20
