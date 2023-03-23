@@ -135,7 +135,15 @@ class TileContainer extends React.Component {
 
     _addToLog(tile_id, new_line) {
         let entry = this.get_tile_entry(tile_id);
-        let new_log = entry["log_content"] + new_line;
+        let log_content = entry["log_content"];
+        let log_list = log_content.split(/\r?\n/);
+        let mlines = entry["max_console_lines"];
+        if (log_list.length >= mlines) {
+            log_list = log_list.slice(-1 * mlines + 1);
+            log_content = log_list.join("\n")
+        }
+        let new_log = log_content + new_line;
+
         let self = this;
         this._setTileValue(tile_id, "log_content", new_log)
     }
@@ -382,12 +390,15 @@ class TileComponent extends React.Component {
             return
         }
 
-        postWithCallback("host", "get_container_log",
-            {"container_id": this.props.tile_id, "since": this.props.log_since}, function (res) {
-            self.props.setTileState(self.props.tile_id, {show_log: true, show_form: false, log_content: res.log_text});
-            self._startLogStreaming();
-            self._setTileBack(false);
-        }, null, this.props.main_id)
+        postWithCallback("host",
+            "get_container_log",
+            {container_id: this.props.tile_id, since: this.props.log_since, max_lines: this.props.max_console_lines},
+            function (res) {
+                self.props.setTileState(self.props.tile_id, {show_log: true, show_form: false, log_content: res.log_text});
+                self._startLogStreaming();
+                self._setTileBack(false);
+            },
+            null, this.props.main_id)
     }
 
     _setLogSince() {
@@ -396,10 +407,29 @@ class TileComponent extends React.Component {
         this.props.setTileValue(this.props.tile_id, "log_since", now, ()=>{
             self._stopLogStreaming(()=>{
                 postWithCallback("host", "get_container_log",
-                    {"container_id": self.props.tile_id, "since": self.props.log_since}, function (res) {
+                    {"container_id": self.props.tile_id,
+                        "since": self.props.log_since,
+                        "max_lines": self.props.max_console_lines,
+                    }, function (res) {
                     self.props.setTileState(self.props.tile_id, {show_log: true, show_form: false, log_content: res.log_text});
                     self._startLogStreaming();
                 }, null, this.props.main_id)
+            })
+        })
+    }
+
+    _setMaxConsoleLines(max_lines) {
+        const self = this;
+        this.props.setTileValue(this.props.tile_id, "max_console_lines", max_lines, ()=>{
+            self._stopLogStreaming(()=>{
+                postWithCallback("host",
+                    "get_container_log",
+                    {container_id: self.props.tile_id, since: self.props.log_since, max_lines: self.props.max_console_lines},
+                    function (res) {
+                        self.props.setTileState(self.props.tile_id, {show_log: true, show_form: false, log_content: res.log_text});
+                        self._startLogStreaming();
+                    },
+                    null, this.props.main_id)
             })
         })
     }
@@ -813,7 +843,7 @@ class TileComponent extends React.Component {
                                          style={this.transitionFadeStyles[state]}>
                                         <div className="tile-log-area">
                                             <SearchableConsole log_content={this.props.log_content}
-                                                               log_since={this.props.log_since}
+                                                               setMaxConsoleLines={this._setMaxConsoleLines}
                                                                outer_style={this.tile_log_style}
                                                                clearConsole={this._setLogSince}
                                             />
@@ -849,6 +879,7 @@ TileComponent.propTypes = {
     front_content: PropTypes.string,
     javascript_code: PropTypes.string,
     javascript_arg_dict: PropTypes.object,
+    max_console_lines: PropTypes.number,
     source_changed: PropTypes.bool,
     tile_width: PropTypes.number,
     tile_height: PropTypes.number,
@@ -868,7 +899,9 @@ TileComponent.propTypes = {
 };
 
 TileComponent.defaultProps = {
-    javascript_code: null
+    javascript_code: null,
+    log_since: null,
+    max_console_lines: 100
 };
 
 let STileComponent = SortableElement(TileComponent);
