@@ -46,6 +46,7 @@ const BUTTON_CONSUMED_SPACE = 208;
              console_item_saved_focus: null,
              console_error_log_text: "",
              main_log_since: null,
+             max_console_lines: 100,
              pseudo_log_since: null,
              show_console_error_log: false,
              all_selected_items: [],
@@ -374,7 +375,8 @@ const BUTTON_CONSUMED_SPACE = 208;
                          });
                      } else {
                          postWithCallback("host", "get_container_log",
-                             {"container_id": self.pseudo_tile_id, "since": self.state.pseudo_log_since}, function (res) {
+                             {"container_id": self.pseudo_tile_id, "since": self.state.pseudo_log_since, "max_lines": self.state.max_console_lines},
+                             function (res) {
                              let log_text = res.log_text;
                              if (log_text == "") {
                                  log_text = "Got empty result. The pseudo-tile is probably starting up."
@@ -388,12 +390,13 @@ const BUTTON_CONSUMED_SPACE = 208;
                  }, null, this.props.main_id)
              } else {
                  postWithCallback("host", "get_container_log",
-                     {"container_id": self.pseudo_tile_id, "since": self.state.pseudo_log_since}, function (res) {
-                     self.setState({"console_error_log_text": res.log_text, console_log_showing: "pseudo"}, () => {
-                             self.setState({"show_console_error_log": true});
-                            self._startPseudoLogStreaming()
-                         }
-                     );
+                     {"container_id": self.pseudo_tile_id, "since": self.state.pseudo_log_since, "max_lines": self.state.max_console_lines},
+                     function (res) {
+                         self.setState({"console_error_log_text": res.log_text, console_log_showing: "pseudo"}, () => {
+                                 self.setState({"show_console_error_log": true});
+                                self._startPseudoLogStreaming()
+                             }
+                         );
                  }, null, this.props.main_id)
              }
          }
@@ -405,7 +408,7 @@ const BUTTON_CONSUMED_SPACE = 208;
         this.setState({pseudo_log_since: now}, ()=>{
             self._stopMainPseudoLogStreaming(()=>{
             postWithCallback("host", "get_container_log",
-                    {container_id: self.pseudo_tile_id, since: self.state.pseudo_log_since}, function (res) {
+                    {container_id: self.pseudo_tile_id, since: self.state.pseudo_log_since, max_lines: self.state.max_console_lines}, function (res) {
                     self.setState({console_error_log_text: res.log_text, console_log_showing: "pseudo"}, () => {
                         self.setState({"show_console_error_log": true});
                         self._startPseudoLogStreaming();
@@ -428,16 +431,57 @@ const BUTTON_CONSUMED_SPACE = 208;
          }
     }
 
+    _setMaxConsoleLines(max_lines) {
+         if (this.state.console_log_showing == "main") {
+             this._setMainMaxConsoleLines(max_lines)
+         }
+         else {
+             this._setPseudoMaxConsoleLines(max_lines)
+         }
+    }
+
     _setMainLogSince() {
         var now = new Date().getTime();
         const self = this;
         this.setState({main_log_since: now}, ()=>{
             self._stopMainPseudoLogStreaming(()=>{
                 postWithCallback("host", "get_container_log",
-                    {container_id: self.props.main_id, since: self.state.main_log_since}, function (res) {
+                    {container_id: self.props.main_id, since: self.state.main_log_since, max_lines: self.state.max_console_lines}, function (res) {
                     self.setState({console_error_log_text: res.log_text, console_log_showing: "main"}, () => {
                         self._startMainLogStreaming();
                         self.setState({"show_console_error_log": true})
+                 });
+             }, null, this.props.main_id)
+            })
+        })
+    }
+
+    _setMainMaxConsoleLines(max_lines) {
+        const self = this;
+        this.setState({max_console_lines: max_lines}, ()=>{
+            self._stopMainPseudoLogStreaming(()=>{
+                postWithCallback("host", "get_container_log",
+                    {container_id: self.props.main_id, since: self.state.main_log_since, max_lines: self.state.max_console_lines},
+                    function (res) {
+                    self.setState({console_error_log_text: res.log_text, console_log_showing: "main"}, () => {
+                        self._startMainLogStreaming();
+                        self.setState({"show_console_error_log": true})
+                 });
+             }, null, this.props.main_id)
+            })
+        })
+    }
+
+     _setPseudoMaxConsoleLines(max_lines) {
+        const self = this;
+        this.setState({max_console_lines: max_lines}, ()=>{
+            self._stopMainPseudoLogStreaming(()=>{
+            postWithCallback("host", "get_container_log",
+                    {container_id: self.pseudo_tile_id, since: self.state.pseudo_log_since, max_lines: self.state.max_console_lines},
+                    function (res) {
+                    self.setState({console_error_log_text: res.log_text, console_log_showing: "pseudo"}, () => {
+                        self.setState({"show_console_error_log": true});
+                        self._startPseudoLogStreaming();
                  });
              }, null, this.props.main_id)
             })
@@ -451,12 +495,13 @@ const BUTTON_CONSUMED_SPACE = 208;
              this._stopMainPseudoLogStreaming()
          } else {
              postWithCallback("host", "get_container_log", {
-                 "container_id": this.props.main_id, "since": self.state.main_log_since}, function (res) {
-                 self.setState({"console_error_log_text": res.log_text, console_log_showing: "main"}, () => {
-                     self._startMainLogStreaming();
-                     self.setState({"show_console_error_log": true})
-                 });
-             }, null, this.props.main_id)
+                 "container_id": this.props.main_id, "since": self.state.main_log_since, "max_lines": self.state.max_console_lines},
+                 function (res) {
+                     self.setState({"console_error_log_text": res.log_text, console_log_showing: "main"}, () => {
+                         self._startMainLogStreaming();
+                         self.setState({"show_console_error_log": true})
+                     });
+                }, null, this.props.main_id)
          }
      }
 
@@ -841,7 +886,14 @@ const BUTTON_CONSUMED_SPACE = 208;
      }
 
      _addToLog(new_line) {
-         this.setState({"console_error_log_text": this.state.console_error_log_text + new_line})
+         let log_content = this.state.console_error_log_text;
+         let log_list = log_content.split(/\r?\n/);
+         let mlines = this.state.max_console_lines;
+         if (log_list.length >= mlines) {
+            log_list = log_list.slice(-1 * mlines + 1);
+            log_content = log_list.join("\n")
+        }
+         this.setState({"console_error_log_text": log_content + new_line})
      }
 
      _bodyHeight() {
@@ -1246,6 +1298,7 @@ const BUTTON_CONSUMED_SPACE = 208;
                  }
                  {!this.props.console_is_shrunk && this.state.show_console_error_log &&
                          <SearchableConsole log_content={this.state.console_error_log_text}
+                                            setMaxConsoleLines={this._setMaxConsoleLines}
                                             inner_ref={this.body_ref}
                                             outer_style={{
                                                 overflowX: "auto",

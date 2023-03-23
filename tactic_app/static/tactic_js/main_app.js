@@ -587,6 +587,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         show_log: false,
         log_content: "",
         log_since: null,
+        max_console_lines: 100,
         shrunk: false,
         finished_loading: true,
         front_content: ""

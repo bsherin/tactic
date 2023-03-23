@@ -2,9 +2,8 @@ import {doBinding} from "./utilities_react";
 
 import React from "react";
 import PropTypes from 'prop-types';
-import _ from 'lodash';
 
-import {Button} from "@blueprintjs/core";
+import {Button, ControlGroup, HTMLSelect} from "@blueprintjs/core";
 import {FilterSearchForm} from "./search_form";
 
 export {SearchableConsole}
@@ -78,21 +77,30 @@ class SearchableConsole extends React.PureComponent {
 
      }
 
+     _setMaxConsoleLines(event) {
+        this.props.setMaxConsoleLines(parseInt(event.target.value))
+    }
+
      render() {
         let the_text = {__html: this._prepareText()};
         let the_style = {whiteSpace: "nowrap", fontSize: 12, fontFamily: "monospace", ...this.props.outer_style};
-
+        let bottom_info = "575 lines";
         return (
             <div className="searchable-console">
                 <div className="d-flex flex-row" style={{justifyContent: "space-between"}}>
-                    <form onSubmit={self._handleSubmit}
-                            className="bp4-form-group"
-                            style={{marginLeft: 15,
-                                    marginBottom: 6, marginTop: 12 }}>
-                        <Button onClick={this.props.clearConsole} small={true}>
-                            Reset
-                        </Button>
-                    </form>
+                        <ControlGroup vertical={false}
+                                      style={{marginLeft: 15, marginTop: 10}}>
+                            <Button onClick={this.props.clearConsole}
+                                    style={{height: 30}}
+                                    minimal={true} small={true} icon="trash"/>
+                            <HTMLSelect onChange={this._setMaxConsoleLines}
+                                        large={false}
+                                        minimal={true}
+                                        value={this.props.max_console_lines}
+                                        options={[100, 250, 500, 1000, 2000]}
+                            />
+
+                        </ControlGroup>
                     <FilterSearchForm
                          search_string={this.state.search_string}
                          handleSearchFieldChange={this._handleSearchFieldChange}
@@ -114,7 +122,8 @@ class SearchableConsole extends React.PureComponent {
      log_content: PropTypes.string,
      outer_style: PropTypes.object,
      inner_ref: PropTypes.object,
-     clearConsole: PropTypes.func
+     clearConsole: PropTypes.func,
+     setMaxConsoleLines: PropTypes.func
 
 };
 
@@ -122,6 +131,7 @@ class SearchableConsole extends React.PureComponent {
      log_content: "",
      outer_style: {},
      inner_ref: null,
+     setMaxConsoleLines: null,
      clearConsole: null
  };
 

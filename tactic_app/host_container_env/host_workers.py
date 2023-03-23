@@ -342,6 +342,10 @@ class HostWorker(QWorker):
         else:
             dt = None
         log_text = bytes_to_string(get_log(container_id, since=dt))
+        if "max_lines" in data and data["max_lines"] is not None:
+            mlines = data["max_lines"]
+            ltlist = log_text.split("\n")[-1 * data["max_lines"]:]
+            log_text = "\n".join(ltlist)
         return {"success": True, "log_text": log_text}
 
     @task_worthy

@@ -262,7 +262,16 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
     key: "_addToLog",
     value: function _addToLog(tile_id, new_line) {
       var entry = this.get_tile_entry(tile_id);
-      var new_log = entry["log_content"] + new_line;
+      var log_content = entry["log_content"];
+      var log_list = log_content.split(/\r?\n/);
+      var mlines = entry["max_console_lines"];
+
+      if (log_list.length >= mlines) {
+        log_list = log_list.slice(-1 * mlines + 1);
+        log_content = log_list.join("\n");
+      }
+
+      var new_log = log_content + new_line;
       var self = this;
 
       this._setTileValue(tile_id, "log_content", new_log);
@@ -622,8 +631,9 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
       }
 
       (0, _communication_react.postWithCallback)("host", "get_container_log", {
-        "container_id": this.props.tile_id,
-        "since": this.props.log_since
+        container_id: this.props.tile_id,
+        since: this.props.log_since,
+        max_lines: this.props.max_console_lines
       }, function (res) {
         self.props.setTileState(self.props.tile_id, {
           show_log: true,
@@ -647,7 +657,8 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
         self._stopLogStreaming(function () {
           (0, _communication_react.postWithCallback)("host", "get_container_log", {
             "container_id": self.props.tile_id,
-            "since": self.props.log_since
+            "since": self.props.log_since,
+            "max_lines": self.props.max_console_lines
           }, function (res) {
             self.props.setTileState(self.props.tile_id, {
               show_log: true,
@@ -657,6 +668,30 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
 
             self._startLogStreaming();
           }, null, _this3.props.main_id);
+        });
+      });
+    }
+  }, {
+    key: "_setMaxConsoleLines",
+    value: function _setMaxConsoleLines(max_lines) {
+      var _this4 = this;
+
+      var self = this;
+      this.props.setTileValue(this.props.tile_id, "max_console_lines", max_lines, function () {
+        self._stopLogStreaming(function () {
+          (0, _communication_react.postWithCallback)("host", "get_container_log", {
+            container_id: self.props.tile_id,
+            since: self.props.log_since,
+            max_lines: self.props.max_console_lines
+          }, function (res) {
+            self.props.setTileState(self.props.tile_id, {
+              show_log: true,
+              show_form: false,
+              log_content: res.log_text
+            });
+
+            self._startLogStreaming();
+          }, null, _this4.props.main_id);
         });
       });
     }
@@ -1077,14 +1112,14 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "_stopResize",
     value: function _stopResize(e, ui, x, y, dx, dy) {
-      var _this4 = this;
+      var _this5 = this;
 
       this.setState({
         resizing: false,
         dwidth: 0,
         dheight: 0
       }, function () {
-        _this4._resizeTileArea(dx, dy);
+        _this5._resizeTileArea(dx, dy);
       });
     }
   }, {
@@ -1142,7 +1177,7 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "render",
     value: function render() {
-      var _this5 = this;
+      var _this6 = this;
 
       var show_front = !this.props.show_form && !this.props.show_log;
       var front_dict = {
@@ -1193,7 +1228,7 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
       }), this.props.source_changed && !this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
         intent: "danger",
         handleClick: function handleClick() {
-          _this5._reloadTile(true);
+          _this6._reloadTile(true);
         },
         icon: "social-media"
       }), this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
@@ -1212,13 +1247,13 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
       }, function (state) {
         return /*#__PURE__*/_react["default"].createElement("div", {
           className: "back",
-          style: composeObjs(_this5.back_style, _this5.transitionStylesAltUp[state])
+          style: composeObjs(_this6.back_style, _this6.transitionStylesAltUp[state])
         }, /*#__PURE__*/_react["default"].createElement(_tile_form_react.TileForm, {
-          options: _lodash["default"].cloneDeep(_this5.props.form_data),
-          dark_theme: _this5.props.dark_theme,
-          tile_id: _this5.props.tile_id,
-          updateValue: _this5._updateOptionValue,
-          handleSubmit: _this5._handleSubmitOptions
+          options: _lodash["default"].cloneDeep(_this6.props.form_data),
+          dark_theme: _this6.props.dark_theme,
+          tile_id: _this6.props.tile_id,
+          updateValue: _this6._updateOptionValue,
+          handleSubmit: _this6._handleSubmitOptions
         }));
       }), /*#__PURE__*/_react["default"].createElement(_reactTransitionGroup.Transition, {
         "in": this.props.show_log,
@@ -1226,15 +1261,15 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
       }, function (state) {
         return /*#__PURE__*/_react["default"].createElement("div", {
           className: "tile-log",
-          ref: _this5.log_ref,
-          style: _this5.transitionFadeStyles[state]
+          ref: _this6.log_ref,
+          style: _this6.transitionFadeStyles[state]
         }, /*#__PURE__*/_react["default"].createElement("div", {
           className: "tile-log-area"
         }, /*#__PURE__*/_react["default"].createElement(_searchable_console.SearchableConsole, {
-          log_content: _this5.props.log_content,
-          log_since: _this5.props.log_since,
-          outer_style: _this5.tile_log_style,
-          clearConsole: _this5._setLogSince
+          log_content: _this6.props.log_content,
+          setMaxConsoleLines: _this6._setMaxConsoleLines,
+          outer_style: _this6.tile_log_style,
+          clearConsole: _this6._setLogSince
         })));
       }), /*#__PURE__*/_react["default"].createElement(_reactTransitionGroup.Transition, {
         "in": show_front,
@@ -1242,11 +1277,11 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
       }, function (state) {
         return /*#__PURE__*/_react["default"].createElement("div", {
           className: "front",
-          style: composeObjs(_this5.front_style, _this5.transitionStylesAltDown[state])
+          style: composeObjs(_this6.front_style, _this6.transitionStylesAltDown[state])
         }, /*#__PURE__*/_react["default"].createElement("div", {
           className: "tile-display-area",
-          style: _this5.state.tda_style,
-          ref: _this5.tda_ref,
+          style: _this6.state.tda_style,
+          ref: _this6.tda_ref,
           dangerouslySetInnerHTML: front_dict
         }));
       })), /*#__PURE__*/_react["default"].createElement(_resizing_layouts.DragHandle, {
@@ -1270,6 +1305,7 @@ TileComponent.propTypes = {
   front_content: _propTypes["default"].string,
   javascript_code: _propTypes["default"].string,
   javascript_arg_dict: _propTypes["default"].object,
+  max_console_lines: _propTypes["default"].number,
   source_changed: _propTypes["default"].bool,
   tile_width: _propTypes["default"].number,
   tile_height: _propTypes["default"].number,
@@ -1288,6 +1324,8 @@ TileComponent.propTypes = {
   goToModule: _propTypes["default"].func
 };
 TileComponent.defaultProps = {
-  javascript_code: null
+  javascript_code: null,
+  log_since: null,
+  max_console_lines: 100
 };
 var STileComponent = (0, _reactSortableHoc.SortableElement)(TileComponent);
