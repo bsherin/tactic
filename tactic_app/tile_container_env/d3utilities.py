@@ -84,6 +84,7 @@ class D3Tile(TileBase):
                     return
                 else:
                     arg_dict = self.render_content()
+            arg_dict["tile_id"] = self._tworker.my_id
             self.current_html = ""
             self._current_arg_dict = arg_dict
             self._set_d3(arg_dict)
