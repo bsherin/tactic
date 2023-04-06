@@ -12,6 +12,8 @@ require("../tactic_css/tactic.scss");
 
 require("../tactic_css/tactic_console.scss");
 
+require("../tactic_css/tactic_main.scss");
+
 var _react = _interopRequireDefault(require("react"));
 
 var ReactDOM = _interopRequireWildcard(require("react-dom"));
