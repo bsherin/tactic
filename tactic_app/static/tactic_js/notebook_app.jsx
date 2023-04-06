@@ -2,6 +2,7 @@
 
 import "../tactic_css/tactic.scss";
 import "../tactic_css/tactic_console.scss";
+import "../tactic_css/tactic_main.scss";
 
 import React from "react";
 import * as ReactDOM from 'react-dom'
