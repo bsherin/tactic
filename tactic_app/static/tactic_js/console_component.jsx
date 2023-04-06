@@ -1807,8 +1807,8 @@ class RawConsoleCodeItem extends React.Component {
             if (this.cmobject != null) {
                 this.cmobject.focus();
                 this.cmobject.setCursor({line: 0, ch: 0})
+                this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe)
             }
-            this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe)
         }
         let self = this;
         if (this.cmobject != null) {
@@ -1847,9 +1847,10 @@ class RawConsoleCodeItem extends React.Component {
          if (this.props.set_focus) {
             if (this.cmobject != null) {
                 this.cmobject.focus();
-                this.cmobject.setCursor({line: 0, ch: 0})
+                this.cmobject.setCursor({line: 0, ch: 0});
+                this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe)
             }
-            this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe)
+
         }
     }
 
@@ -1924,7 +1925,12 @@ class RawConsoleCodeItem extends React.Component {
     }
 
     _setCMObject(cmobject) {
-        this.cmobject = cmobject
+        this.cmobject = cmobject;
+        if (this.props.set_focus) {
+            this.cmobject.focus();
+            this.cmobject.setCursor({line: 0, ch: 0});
+            this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe)
+        }
     }
 
     _getFirstLine() {
@@ -2284,9 +2290,9 @@ class RawConsoleTextItem extends React.Component {
             else if (this.cmobject != null) {
                 this.cmobject.focus();
                 this.cmobject.setCursor({line: 0, ch: 0})
-
+                this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe)
             }
-            this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe)
+
         }
     }
 
@@ -2448,7 +2454,12 @@ class RawConsoleTextItem extends React.Component {
     }
 
     _setCMObject(cmobject) {
-        this.cmobject = cmobject
+        this.cmobject = cmobject;
+        if (this.props.set_focus) {
+            this.cmobject.focus();
+            this.cmobject.setCursor({line: 0, ch: 0});
+            this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe)
+        }
     }
 
     _extraKeys() {

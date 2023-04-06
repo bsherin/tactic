@@ -2819,9 +2819,8 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component3) {
             line: 0,
             ch: 0
           });
+          this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe);
         }
-
-        this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe);
       }
 
       var self = this;
@@ -2874,9 +2873,8 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component3) {
             line: 0,
             ch: 0
           });
+          this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe);
         }
-
-        this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe);
       }
     }
   }, {
@@ -2996,6 +2994,15 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component3) {
     key: "_setCMObject",
     value: function _setCMObject(cmobject) {
       this.cmobject = cmobject;
+
+      if (this.props.set_focus) {
+        this.cmobject.focus();
+        this.cmobject.setCursor({
+          line: 0,
+          ch: 0
+        });
+        this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe);
+      }
     }
   }, {
     key: "_getFirstLine",
@@ -3457,9 +3464,8 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component4) {
             line: 0,
             ch: 0
           });
+          this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe);
         }
-
-        this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe);
       }
     }
   }, {
@@ -3657,6 +3663,15 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component4) {
     key: "_setCMObject",
     value: function _setCMObject(cmobject) {
       this.cmobject = cmobject;
+
+      if (this.props.set_focus) {
+        this.cmobject.focus();
+        this.cmobject.setCursor({
+          line: 0,
+          ch: 0
+        });
+        this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe);
+      }
     }
   }, {
     key: "_extraKeys",
