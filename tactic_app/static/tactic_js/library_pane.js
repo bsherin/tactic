@@ -1431,9 +1431,9 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     value: function _downloadCollection() {
       var resource_name = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
       var res_name = resource_name ? resource_name : this.props.selected_resource.name;
-      (0, _modal_react.showModalReact)("Download Collection as Excel Notebook", "New File Name", function (new_name) {
+      (0, _modal_react.showModalReact)("Download Collection", "New File Name", function (new_name) {
         window.open("".concat($SCRIPT_ROOT, "/download_collection/") + res_name + "/" + new_name);
-      }, res_name + ".xlsx");
+      }, res_name);
     }
   }, {
     key: "_displayImportResults",
