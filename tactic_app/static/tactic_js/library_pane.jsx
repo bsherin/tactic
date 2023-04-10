@@ -1009,9 +1009,9 @@ class LibraryPane extends React.Component {
 
     _downloadCollection (resource_name=null) {
         let res_name = resource_name ? resource_name : this.props.selected_resource.name;
-        showModalReact("Download Collection as Excel Notebook", "New File Name", function (new_name) {
+        showModalReact("Download Collection", "New File Name", function (new_name) {
             window.open(`${$SCRIPT_ROOT}/download_collection/` + res_name  + "/" + new_name)
-        }, res_name + ".xlsx")
+        }, res_name)
     };
 
     _displayImportResults(data) {

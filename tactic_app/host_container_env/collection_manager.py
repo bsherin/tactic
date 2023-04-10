@@ -1,6 +1,8 @@
 
 import re, datetime, sys, os
 from collections import OrderedDict
+import tempfile
+import zipfile
 from flask_login import login_required, current_user
 from flask import jsonify, render_template, url_for, request, send_file
 from users import User
@@ -213,6 +215,26 @@ class CollectionManager(LibraryResourceManager):
         first = True
         doc_type = "freeform" if coll_mdata["type"] == "freeform" else "table"
 
+        if doc_type == "freeform":
+            if new_name.endswith(".zip"):
+                download_name = new_name
+            else:
+                download_name = new_name + ".zip"
+            with tempfile.TemporaryDirectory() as tmpdir:
+                for doc_name, doc_text in coll_dict.items():
+                    with open(os.path.join(tmpdir, doc_name + ".txt"), 'w') as file:
+                        file.write(doc_text)
+
+                with zipfile.ZipFile(download_name, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                    for root, dirs, files in os.walk(tmpdir):
+                        for file in files:
+                            zipf.write(os.path.join(root, file))
+                return send_file(download_name, as_attachment=True)
+
+        if new_name.endswith(".xlsx"):
+            download_name = new_name
+        else:
+            download_name = new_name + ".xlsx"
         for doc_name in coll_dict.keys():
             sheet_name = re.sub(r"[\[\]\*\/\\ \?\:]", r"-", doc_name)[:25]
             if first:
@@ -248,7 +270,7 @@ class CollectionManager(LibraryResourceManager):
         wb.save(tmp.name)
         tmp.seek(0)
         return send_file(tmp,
-                         download_name=new_name,
+                         download_name=download_name,
                          as_attachment=True)
 
     def remove_duplicate_collections(self, user_obj=None):
