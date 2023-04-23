@@ -60,7 +60,7 @@ def debinarize_python_object(bdat):
         dat = bdat.decode()
     else:
         dat = base64.b64decode(bdat)
-    return pickle.loads(dat)
+    return pickle.loads(bytes(dat))
 
 
 def store_temp_data(db, data_dict, unique_id=None):
