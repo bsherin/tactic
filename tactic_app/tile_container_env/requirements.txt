@@ -23,5 +23,5 @@ docutils
 lime
 mpld3
 scikit-learn
-wordcloud
+## wordcloud
 gensim
