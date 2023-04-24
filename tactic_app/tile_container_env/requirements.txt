@@ -9,7 +9,7 @@ numpy
 pandas
 pika
 plotly
-pyldavis
+pyldavis>=3.4.1
 redis
 regex
 scipy
