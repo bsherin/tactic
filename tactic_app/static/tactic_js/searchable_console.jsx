@@ -3,7 +3,7 @@ import {doBinding} from "./utilities_react";
 import React from "react";
 import PropTypes from 'prop-types';
 
-import {Button, ControlGroup, HTMLSelect, InputGroup} from "@blueprintjs/core";
+import {Button, ControlGroup, HTMLSelect, InputGroup, Switch} from "@blueprintjs/core";
 import {FilterSearchForm} from "./search_form";
 
 export {SearchableConsole}
@@ -17,7 +17,8 @@ class SearchableConsole extends React.PureComponent {
              search_string: null,
              search_helper_text: null,
              filter: false,
-             console_command_value: ""
+             console_command_value: "",
+             livescroll: true
          }
      }
 
@@ -89,6 +90,16 @@ class SearchableConsole extends React.PureComponent {
         })
     }
 
+    componentDidUpdate() {
+        if (this.state.livescroll && this.props.inner_ref && this.props.inner_ref.current) {
+            this.props.inner_ref.current.scrollTo(0, this.props.inner_ref.current.scrollHeight)
+        }
+    }
+
+    _setLiveScroll(event) {
+        this.setState({livescroll: event.target.checked})
+    }
+
      render() {
         let the_text = {__html: this._prepareText()};
         let the_style = {whiteSpace: "nowrap", fontSize: 12, fontFamily: "monospace", ...this.props.outer_style};
@@ -105,12 +116,19 @@ class SearchableConsole extends React.PureComponent {
                             <Button onClick={this.props.clearConsole}
                                     style={{height: 30}}
                                     minimal={true} small={true} icon="trash"/>
-                            <HTMLSelect onChange={this._setMaxConsoleLines}
+                           <HTMLSelect onChange={this._setMaxConsoleLines}
                                         large={false}
                                         minimal={true}
                                         value={this.props.max_console_lines}
                                         options={[100, 250, 500, 1000, 2000]}
                             />
+                            <Switch label="livescroll"
+                                   large={false}
+                                   checked={this.state.livescroll}
+                                   onChange={this._setLiveScroll}
+                                    style={{marginBottom: 0, marginTop: 5, alignSelf: "center", height: 30}}
+                            />
+
 
                         </ControlGroup>
                     <FilterSearchForm

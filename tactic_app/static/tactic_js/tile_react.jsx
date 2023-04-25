@@ -262,6 +262,7 @@ class TileComponent extends React.Component {
         super(props);
         this.my_ref = React.createRef();
         this.body_ref = React.createRef();
+        this.inner_log_ref = React.createRef();
         this.tda_ref = React.createRef();
         this.log_ref = React.createRef();
         this.left_glyphs_ref = React.createRef();
@@ -849,6 +850,7 @@ class TileComponent extends React.Component {
                                          style={this.transitionFadeStyles[state]}>
                                         <div className="tile-log-area">
                                             <SearchableConsole log_content={this.props.log_content}
+                                                               inner_ref={this.inner_log_ref}
                                                                setMaxConsoleLines={this._setMaxConsoleLines}
                                                                outer_style={this.tile_log_style}
                                                                clearConsole={this._setLogSince}

@@ -447,6 +447,7 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
     _this2 = _super3.call(this, props);
     _this2.my_ref = /*#__PURE__*/_react["default"].createRef();
     _this2.body_ref = /*#__PURE__*/_react["default"].createRef();
+    _this2.inner_log_ref = /*#__PURE__*/_react["default"].createRef();
     _this2.tda_ref = /*#__PURE__*/_react["default"].createRef();
     _this2.log_ref = /*#__PURE__*/_react["default"].createRef();
     _this2.left_glyphs_ref = /*#__PURE__*/_react["default"].createRef();
@@ -1276,6 +1277,7 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
           className: "tile-log-area"
         }, /*#__PURE__*/_react["default"].createElement(_searchable_console.SearchableConsole, {
           log_content: _this6.props.log_content,
+          inner_ref: _this6.inner_log_ref,
           setMaxConsoleLines: _this6._setMaxConsoleLines,
           outer_style: _this6.tile_log_style,
           clearConsole: _this6._setLogSince,

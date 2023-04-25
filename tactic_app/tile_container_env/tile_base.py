@@ -146,7 +146,13 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     def os_command_exec(self, data):
         the_code = data["the_code"]
         print(">> " + the_code)
-        exec(f"os.system('{the_code}')")
+        if the_code[:3] == "cd ":
+            try:
+                os.chdir(os.path.abspath(the_code[3:]))
+            except Exception:
+                print("cd: no such file or directory: {}".format(path))
+        else:
+            exec(f"os.system('{the_code}')")
         return
 
     @_task_worthy
