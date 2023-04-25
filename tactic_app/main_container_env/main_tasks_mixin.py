@@ -330,7 +330,6 @@ class LoadSaveTasksMixin:
                 self.create_pseudo_tile()
 
             self.clear_main_status_message()
-            print("about to emit finished to client")
             self.mworker.emit_to_main_client("finish-post-load",
                                              {"message": "finish-post-load",
                                               "collection_name": "",
@@ -981,14 +980,12 @@ class APISupportTasksMixin:
 
     @task_worthy
     def get_collection_info(self, data):
-        print("in get_collection_info")
         info = {}
         for doc_name, ddict in self.doc_dict.items():
             info[doc_name] = {}
             info[doc_name]["number_rows"] = ddict.number_of_rows
             if self.doc_type == "table":
                 info[doc_name]["column_names"] = ddict.table_spec.header_list
-        print("about to return from get_collection_info")
         return info
 
     @task_worthy

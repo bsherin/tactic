@@ -774,6 +774,12 @@ class TileComponent extends React.Component {
                    alt_button={()=>(menu_button)}/>)
      }
 
+     _logExec(command, callback=null) {
+        let self = this;
+        postWithCallback(self.props.tile_id, "os_command_exec", {
+            "the_code": command,
+        }, callback)
+    }
 
     render () {
         let show_front = (!this.props.show_form) && (!this.props.show_log);
@@ -846,6 +852,7 @@ class TileComponent extends React.Component {
                                                                setMaxConsoleLines={this._setMaxConsoleLines}
                                                                outer_style={this.tile_log_style}
                                                                clearConsole={this._setLogSince}
+                                                               commandExec={this._logExec}
                                             />
                                         </div>
                                     </div>

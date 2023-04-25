@@ -119,7 +119,6 @@ class TileWorker(QWorker):
                 "tile_type": self.tile_instance.tile_type,
                 "main_id": self.tile_instance._main_id
                 }
-        print("about to emit add-error-drawer entry with line_number " + str(line_number))
         self.emit_to_client("add-error-drawer-entry", data)
         return {"success": True}
 

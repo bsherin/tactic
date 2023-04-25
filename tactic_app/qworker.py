@@ -149,7 +149,7 @@ class QWorker(ExceptionMixin):
     def handle_delivery(self, channel, method, props, body):
         try:
             task_packet = json.loads(body)
-            debug_log("in handle_delivery with task_type {}".format(task_packet["task_type"]))
+            # debug_log("in handle_delivery with task_type {}".format(task_packet["task_type"]))
             if task_packet["status"] in response_statuses:
                 self.handle_response(task_packet)
             else:
@@ -262,7 +262,6 @@ class QWorker(ExceptionMixin):
                 namespace = task_packet["namespace"]
             else:
                 namespace = "/main"
-            debug_log("about to emit_direct handle-callback. *** task_packet has room" + str(task_packet["room"]))
             emit_direct("handle-callback", task_packet, namespace=namespace, room=room)
         else:
             reply_to = task_packet["reply_to"]

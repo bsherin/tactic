@@ -116,9 +116,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         return self.doc_type in ["notebook", "juptyer"]
 
     def show_main_message(self, message, timeout=None):
-        print("in show_main_message with message " + message)
         data = {"message": message, "timeout": timeout, "main_id": self.mworker.my_id}
-        print("about to emit with data " + str(data))
         self.mworker.emit_to_main_client("show-status-msg", data)
         # self.mworker.post_task("host", "show_main_status_message_task", data)
 
@@ -529,7 +527,6 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             return
 
     def update_pipe_dict(self, exports, tile_id, tile_name):
-        print("got exports " + str(exports))
         if len(exports) == 0:
             if tile_id in self._pipe_dict:
                 del self._pipe_dict[tile_id]
@@ -539,7 +536,6 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                 # legacy old form of exports list of strings
                 exports = [{"name": exp["name"], "tags": "", "type": "unknown"} for exp in exports]
             for export in exports:
-                print("got export " + str(export))
                 self._pipe_dict[tile_id][tile_name + "_" + export["name"]] = {
                     "export_name": export["name"],
                     "export_tags": export["tags"],

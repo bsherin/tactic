@@ -141,6 +141,14 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         return
 
     # <editor-fold desc="_task_worthy methods (events)">
+
+    @_task_worthy
+    def os_command_exec(self, data):
+        the_code = data["the_code"]
+        print(">> " + the_code)
+        exec(f"os.system('{the_code}')")
+        return
+
     @_task_worthy
     def RefreshTile(self, data):
         print("got RefreshTile")
