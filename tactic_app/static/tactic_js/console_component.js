@@ -146,16 +146,6 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       });
     }
   }, {
-    key: "componentDidUpdate",
-    value: function componentDidUpdate() {
-      if (this.state.show_console_error_log) {
-        if (this.body_ref && this.body_ref.current) {
-          var el = this.body_ref.current;
-          this.body_ref.current.scrollTop = el.scrollHeight - 500 - el.offsetHeight + 45;
-        }
-      }
-    }
-  }, {
     key: "initSocket",
     value: function initSocket() {
       var self = this;

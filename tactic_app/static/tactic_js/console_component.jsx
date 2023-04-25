@@ -70,15 +70,6 @@ const BUTTON_CONSUMED_SPACE = 208;
          })
      }
 
-     componentDidUpdate() {
-         if (this.state.show_console_error_log) {
-            if (this.body_ref && this.body_ref.current) {
-                const el = this.body_ref.current;
-                this.body_ref.current.scrollTop = el.scrollHeight - 500 - el.offsetHeight + 45
-            }
-        }
-     }
-
      initSocket() {
          let self = this;
          function _handleConsoleMessage(data) {
