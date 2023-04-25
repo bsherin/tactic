@@ -1175,6 +1175,15 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
       });
     }
   }, {
+    key: "_logExec",
+    value: function _logExec(command) {
+      var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      var self = this;
+      (0, _communication_react.postWithCallback)(self.props.tile_id, "os_command_exec", {
+        "the_code": command
+      }, callback);
+    }
+  }, {
     key: "render",
     value: function render() {
       var _this6 = this;
@@ -1269,7 +1278,8 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
           log_content: _this6.props.log_content,
           setMaxConsoleLines: _this6._setMaxConsoleLines,
           outer_style: _this6.tile_log_style,
-          clearConsole: _this6._setLogSince
+          clearConsole: _this6._setLogSince,
+          commandExec: _this6._logExec
         })));
       }), /*#__PURE__*/_react["default"].createElement(_reactTransitionGroup.Transition, {
         "in": show_front,

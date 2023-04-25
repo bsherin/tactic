@@ -1183,6 +1183,13 @@ const BUTTON_CONSUMED_SPACE = 208;
         this._setConsoleItemValue(unique_id, "show_markdown", true);
     }
 
+    _logExec(command, callback=null) {
+        let self = this;
+        postWithCallback(self.pseudo_tile_id, "os_command_exec", {
+            "the_code": command,
+        }, callback)
+    }
+
      render() {
          let gbstyle = {marginLeft: 1, marginTop: 2};
          let console_class = this.props.console_is_shrunk ? "am-shrunk" : "not-shrunk";
@@ -1303,12 +1310,15 @@ const BUTTON_CONSUMED_SPACE = 208;
                                             outer_style={{
                                                 overflowX: "auto",
                                                 overflowY: "auto",
-                                                height: this._bodyHeight() - 30,
-                                                margin: 20}}
+                                                height: this._bodyHeight(),
+                                                marginLeft: 20,
+                                                marginRight: 20
+                                            }}
                                             clearConsole={this._setLogSince}
+                                            commandExec={this.state.console_log_showing == "pseudo" ? this._logExec : null}
                          />
                  }
-                 {!this.props.console_is_shrunk &&
+                 {!this.props.console_is_shrunk && !this.state.show_console_error_log &&
                      <div id="console"
                           ref={this.body_ref}
                           className="contingent-scroll"

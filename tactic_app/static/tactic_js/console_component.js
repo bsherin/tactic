@@ -1934,6 +1934,15 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       this._setConsoleItemValue(unique_id, "show_markdown", true);
     }
   }, {
+    key: "_logExec",
+    value: function _logExec(command) {
+      var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      var self = this;
+      (0, _communication_react.postWithCallback)(self.pseudo_tile_id, "os_command_exec", {
+        "the_code": command
+      }, callback);
+    }
+  }, {
     key: "render",
     value: function render() {
       var _this20 = this;
@@ -2100,11 +2109,13 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
         outer_style: {
           overflowX: "auto",
           overflowY: "auto",
-          height: this._bodyHeight() - 30,
-          margin: 20
+          height: this._bodyHeight(),
+          marginLeft: 20,
+          marginRight: 20
         },
-        clearConsole: this._setLogSince
-      }), !this.props.console_is_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
+        clearConsole: this._setLogSince,
+        commandExec: this.state.console_log_showing == "pseudo" ? this._logExec : null
+      }), !this.props.console_is_shrunk && !this.state.show_console_error_log && /*#__PURE__*/_react["default"].createElement("div", {
         id: "console",
         ref: this.body_ref,
         className: "contingent-scroll",

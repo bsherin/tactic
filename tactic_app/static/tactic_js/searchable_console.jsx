@@ -3,7 +3,7 @@ import {doBinding} from "./utilities_react";
 import React from "react";
 import PropTypes from 'prop-types';
 
-import {Button, ControlGroup, HTMLSelect} from "@blueprintjs/core";
+import {Button, ControlGroup, HTMLSelect, InputGroup} from "@blueprintjs/core";
 import {FilterSearchForm} from "./search_form";
 
 export {SearchableConsole}
@@ -17,6 +17,7 @@ class SearchableConsole extends React.PureComponent {
              search_string: null,
              search_helper_text: null,
              filter: false,
+             console_command_value: ""
          }
      }
 
@@ -81,10 +82,21 @@ class SearchableConsole extends React.PureComponent {
         this.props.setMaxConsoleLines(parseInt(event.target.value))
     }
 
+    _commandSubmit(e) {
+        e.preventDefault();
+        this.props.commandExec(this.state.console_command_value, ()=>{
+            this.setState({console_command_value: ""})
+        })
+    }
+
      render() {
         let the_text = {__html: this._prepareText()};
         let the_style = {whiteSpace: "nowrap", fontSize: 12, fontFamily: "monospace", ...this.props.outer_style};
+        if (this.props.commandExec) {
+            the_style.height = the_style.height - 40
+        }
         let bottom_info = "575 lines";
+        let self = this;
         return (
             <div className="searchable-console">
                 <div className="d-flex flex-row" style={{justifyContent: "space-between"}}>
@@ -113,6 +125,21 @@ class SearchableConsole extends React.PureComponent {
                      />
                 </div>
                 <div ref={this.props.inner_ref} style={the_style} dangerouslySetInnerHTML={the_text}/>
+                {this.props.commandExec && (
+                    <form onSubmit={this._commandSubmit} style={{position: "relative", bottom: 8, margin: 10}}>
+
+                      <InputGroup type="text"
+                                   onChange={(event)=>{self.setState({console_command_value: event.target.value})}}
+                                   small={true}
+                                   large={false}
+                                   leftIcon="chevron-right"
+                                   fill={true}
+                                   value={this.state.console_command_value}
+                                   />
+                    </form>
+                    )
+                }
+
             </div>
         )
     }
@@ -123,7 +150,8 @@ class SearchableConsole extends React.PureComponent {
      outer_style: PropTypes.object,
      inner_ref: PropTypes.object,
      clearConsole: PropTypes.func,
-     setMaxConsoleLines: PropTypes.func
+     setMaxConsoleLines: PropTypes.func,
+     commandExec: PropTypes.func
 
 };
 
@@ -132,6 +160,7 @@ class SearchableConsole extends React.PureComponent {
      outer_style: {},
      inner_ref: null,
      setMaxConsoleLines: null,
-     clearConsole: null
+     clearConsole: null,
+     commandExec: null
  };
 
