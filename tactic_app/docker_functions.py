@@ -121,7 +121,6 @@ class LogStreamer(object):
         for line in cont.logs(stream=True, tail=0):
             base_data["new_line"] = line.decode()
             self.socketio.emit(event_name, base_data, namespace="/main", room=room)
-            self.socketio.sleep(0.05)
         return
 
 
