@@ -17,6 +17,14 @@ var _react = _interopRequireDefault(require("react"));
 
 var _propTypes = _interopRequireDefault(require("prop-types"));
 
+var _lodash = _interopRequireDefault(require("lodash"));
+
+var _markdownIt = _interopRequireDefault(require("markdown-it"));
+
+require("markdown-it-latex/dist/index.css");
+
+var _markdownItLatex = _interopRequireDefault(require("markdown-it-latex"));
+
 var _modal_react = require("./modal_react.js");
 
 var _communication_react = require("./communication_react.js");
@@ -54,6 +62,11 @@ function _assertThisInitialized(self) { if (self === void 0) { throw new Referen
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+var mdi = (0, _markdownIt["default"])({
+  html: true
+});
+mdi.use(_markdownItLatex["default"]);
 
 var ProjectMenu = /*#__PURE__*/function (_React$Component) {
   _inherits(ProjectMenu, _React$Component);
@@ -162,6 +175,92 @@ var ProjectMenu = /*#__PURE__*/function (_React$Component) {
       }
     }
   }, {
+    key: "_exportAsReport",
+    value: function _exportAsReport() {
+      this.props.startSpinner();
+      var self = this;
+      (0, _communication_react.postWithCallback)("host", "get_collection_names", {
+        "user_id": user_id
+      }, function (data) {
+        var checkboxes = [{
+          checkname: "collapsible",
+          checktext: "collapsible sections"
+        }, {
+          checkname: "include_summaries",
+          checktext: "include summaries"
+        }]; // noinspection JSUnusedAssignment
+
+        (0, _modal_react.showModalReact)("Export Notebook As Html", "New Collection Name", ExportRport, "NewReport", data["collection_names"], checkboxes);
+      }, null, self.props.main_id);
+
+      function ExportRport(new_name, checkbox_states) {
+        var cell_list = [];
+
+        var _iterator = _createForOfIteratorHelper(self.props.console_items),
+            _step;
+
+        try {
+          for (_iterator.s(); !(_step = _iterator.n()).done;) {
+            var entry = _step.value;
+            var new_entry = {};
+            new_entry.type = entry.type;
+
+            switch (entry.type) {
+              case "text":
+                new_entry.console_text = mdi.render(entry.console_text);
+                new_entry.summary_text = entry.summary_text;
+                break;
+
+              case "code":
+                new_entry.console_text = entry.console_text;
+                new_entry.output_text = entry.output_text;
+                new_entry.summary_text = entry.summary_text;
+                break;
+
+              case "divider":
+                new_entry.header_text = entry.header_text;
+                break;
+
+              default:
+                new_entry.console_text = entry.console_text;
+                new_entry.summary_text = entry.summary_text;
+                break;
+            }
+
+            cell_list.push(new_entry);
+          }
+        } catch (err) {
+          _iterator.e(err);
+        } finally {
+          _iterator.f();
+        }
+
+        var result_dict = {
+          "project_name": self.props.project_name,
+          "collection_name": new_name,
+          "main_id": self.props.main_id,
+          "cell_list": cell_list,
+          "collapsible": checkbox_states["collapsible"],
+          "include_summaries": checkbox_states["include_summaries"]
+        };
+        (0, _communication_react.postWithCallback)(self.props.main_id, "export_as_report", result_dict, save_as_success, self.props.postAjaxFailure, self.props.main_id);
+
+        function save_as_success(data_object) {
+          self.props.clearStatusMessage();
+
+          if (data_object.success) {
+            data_object.alert_type = "alert-success";
+            data_object.timeout = 2000;
+          } else {
+            data_object["alert-type"] = "alert-warning";
+          }
+
+          self.props.stopSpinner();
+          (0, _toaster.doFlash)(data_object);
+        }
+      }
+    }
+  }, {
     key: "_exportAsJupyter",
     value: function _exportAsJupyter() {
       this.props.startSpinner();
@@ -177,12 +276,12 @@ var ProjectMenu = /*#__PURE__*/function (_React$Component) {
       function ExportJupyter(new_name) {
         var cell_list = [];
 
-        var _iterator = _createForOfIteratorHelper(self.props.console_items),
-            _step;
+        var _iterator2 = _createForOfIteratorHelper(self.props.console_items),
+            _step2;
 
         try {
-          for (_iterator.s(); !(_step = _iterator.n()).done;) {
-            var entry = _step.value;
+          for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+            var entry = _step2.value;
             var new_cell = {};
             new_cell.source = entry.console_text;
             new_cell.cell_type = entry.type == "code" ? "code" : "markdown";
@@ -194,9 +293,9 @@ var ProjectMenu = /*#__PURE__*/function (_React$Component) {
             cell_list.push(new_cell);
           }
         } catch (err) {
-          _iterator.e(err);
+          _iterator2.e(err);
         } finally {
-          _iterator.f();
+          _iterator2.f();
         }
 
         var result_dict = {
@@ -296,6 +395,10 @@ var ProjectMenu = /*#__PURE__*/function (_React$Component) {
         name_text: "Export as Jupyter Notebook",
         icon_name: "export",
         click_handler: this._exportAsJupyter
+      }, {
+        name_text: "Export Notebook Report",
+        icon_name: "export",
+        click_handler: this._exportAsReport
       }, {
         name_text: "Export Table as Collection",
         icon_name: "export",

@@ -67,6 +67,8 @@ class CollectionManager(LibraryResourceManager):
                          login_required(self.delete_collection), methods=['post'])
         app.add_url_rule('/delete_resource_list', "delete_resource_list",
                          login_required(self.delete_resource_list), methods=['post'])
+        app.add_url_rule('/open_raw/<collection_name>', "open_raw",
+                         login_required(self.open_raw), methods=['post', 'get'])
         app.add_url_rule('/duplicate_collection', "duplicate_collection",
                          login_required(self.duplicate_collection), methods=['post', 'get'])
         app.add_url_rule('/download_collection/<collection_name>/<new_name>', "download_collection",
@@ -206,6 +208,16 @@ class CollectionManager(LibraryResourceManager):
                 # col.alignment = Alignment(wrap_text=True)
         return
 
+
+    def open_raw(self, collection_name):
+        user_obj = current_user
+        coll_dict, doc_mdata_dict, header_list_dict, coll_mdata = user_obj.get_all_collection_info(collection_name,
+                                                                                                   return_lists=False)
+        doc_type = "freeform" if coll_mdata["type"] == "freeform" else "table"
+        if doc_type == "table":
+            return "Only Freeform docs can be opened raw"
+        return list(coll_dict.values())[0]
+
     # noinspection PyTypeChecker
     def download_collection(self, collection_name, new_name, max_col_width=50):
         user_obj = current_user
@@ -216,20 +228,33 @@ class CollectionManager(LibraryResourceManager):
         doc_type = "freeform" if coll_mdata["type"] == "freeform" else "table"
 
         if doc_type == "freeform":
-            if new_name.endswith(".zip"):
-                download_name = new_name
+            if len(coll_dict) ==  1:
+                filename, file_extension = os.path.splitext(new_name)
+                if len(file_extension) == 0:
+                    download_name = new_name + ".txt"
+                else:
+                    download_name = new_name
+                mem = io.BytesIO()
+                mem.write(list(coll_dict.values())[0].encode())
+                mem.seek(0)
+                return send_file(mem,
+                                 download_name=download_name,
+                                 as_attachment=True)
             else:
-                download_name = new_name + ".zip"
-            with tempfile.TemporaryDirectory() as tmpdir:
-                for doc_name, doc_text in coll_dict.items():
-                    with open(os.path.join(tmpdir, doc_name + ".txt"), 'w') as file:
-                        file.write(doc_text)
+                if new_name.endswith(".zip"):
+                    download_name = new_name
+                else:
+                    download_name = new_name + ".zip"
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    for doc_name, doc_text in coll_dict.items():
+                        with open(os.path.join(tmpdir, doc_name + ".txt"), 'w') as file:
+                            file.write(doc_text)
 
-                with zipfile.ZipFile(download_name, 'w', zipfile.ZIP_DEFLATED) as zipf:
-                    for root, dirs, files in os.walk(tmpdir):
-                        for file in files:
-                            zipf.write(os.path.join(root, file))
-                return send_file(download_name, as_attachment=True)
+                    with zipfile.ZipFile(download_name, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                        for root, dirs, files in os.walk(tmpdir):
+                            for file in files:
+                                zipf.write(os.path.join(root, file))
+                    return send_file(download_name, as_attachment=True)
 
         if new_name.endswith(".xlsx"):
             download_name = new_name

@@ -160,6 +160,8 @@ class AllMenubar extends React.Component {
                     click_handler: ()=>{self.props.view_func()}, key_bindings: ["ctrl+o", "return"]},
                 {name_text: "Open In Separate Tab", icon_name: "document-share",
                     click_handler: ()=>{self.props.view_resource(self.props.selected_resource, null, true)}},
+                {name_text: "Open As Raw Html", icon_name: "document-share",
+                    click_handler: ()=>{self.props.open_raw(self.props.selected_resource)}, res_type: "collection"},
                 {name_text: "divider1", icon_name: null, click_handler: "divider"},
                 {name_text: "Open In Creator", icon_name: "document-open",
                     click_handler: this.props.creator_view,  res_type: "tile"},

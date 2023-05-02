@@ -2,6 +2,12 @@
 
 import React from "react";
 import PropTypes from 'prop-types';
+import _ from 'lodash';
+import markdownIt from 'markdown-it'
+import 'markdown-it-latex/dist/index.css'
+import markdownItLatex from 'markdown-it-latex'
+const mdi = markdownIt({html: true});
+mdi.use(markdownItLatex);
 
 import {showModalReact} from "./modal_react.js";
 import {postWithCallback} from "./communication_react.js"
@@ -109,6 +115,68 @@ class ProjectMenu extends React.Component {
         }
     }
 
+    _exportAsReport() {
+        this.props.startSpinner();
+        let self = this;
+        postWithCallback("host", "get_collection_names", {"user_id": user_id}, function (data) {
+                let checkboxes = [{checkname: "collapsible", checktext: "collapsible sections"},
+                    {checkname: "include_summaries", checktext: "include summaries"}
+                ];
+                // noinspection JSUnusedAssignment
+                showModalReact("Export Notebook As Html", "New Collection Name", ExportRport,
+                          "NewReport", data["collection_names"], checkboxes)
+            }, null, self.props.main_id);
+        function ExportRport(new_name, checkbox_states) {
+            var cell_list = [];
+            for (let entry of self.props.console_items) {
+                let new_entry = {};
+                new_entry.type = entry.type;
+                switch (entry.type) {
+                    case "text":
+                        new_entry.console_text = mdi.render(entry.console_text);
+                        new_entry.summary_text = entry.summary_text;
+                        break;
+                    case "code":
+                        new_entry.console_text = entry.console_text;
+                        new_entry.output_text = entry.output_text;
+                        new_entry.summary_text = entry.summary_text;
+                        break;
+                    case "divider":
+                        new_entry.header_text = entry.header_text;
+                        break;
+                    default:
+                        new_entry.console_text = entry.console_text;
+                        new_entry.summary_text =entry.summary_text;
+                        break;
+                }
+                cell_list.push(new_entry)
+            }
+            const result_dict = {
+                "project_name": self.props.project_name,
+                "collection_name": new_name,
+                "main_id": self.props.main_id,
+                "cell_list": cell_list,
+                "collapsible": checkbox_states["collapsible"],
+                "include_summaries": checkbox_states["include_summaries"]
+            };
+            postWithCallback(self.props.main_id, "export_as_report",
+                result_dict, save_as_success, self.props.postAjaxFailure, self.props.main_id);
+
+            function save_as_success(data_object) {
+               self.props.clearStatusMessage();
+                if (data_object.success) {
+                    data_object.alert_type = "alert-success";
+                    data_object.timeout = 2000;
+                }
+                else {
+                    data_object["alert-type"] = "alert-warning";
+                }
+                self.props.stopSpinner();
+                doFlash(data_object)
+            }
+        }
+    }
+
     _exportAsJupyter() {
         this.props.startSpinner();
         let self = this;
@@ -210,6 +278,7 @@ class ProjectMenu extends React.Component {
             {name_text: "Save", icon_name: "saved", click_handler: this._saveProject},
             {name_text: "divider1", icon_name: null, click_handler: "divider"},
             {name_text: "Export as Jupyter Notebook", icon_name: "export", click_handler: this._exportAsJupyter,},
+            {name_text: "Export Notebook Report", icon_name: "export", click_handler: this._exportAsReport,},
             {name_text: "Export Table as Collection", icon_name: "export", click_handler: this._exportDataTable},
             {name_text: "Open Console as Notebook", icon_name: "console", click_handler: this._consoleToNotebook},
             {name_text: "divider2", icon_name: null, click_handler: "divider"},

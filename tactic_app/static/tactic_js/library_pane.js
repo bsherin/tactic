@@ -1075,6 +1075,18 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       }
     }
   }, {
+    key: "_open_raw",
+    value: function _open_raw(selected_resource) {
+      this.props.clearStatus();
+
+      if (selected_resource.type == "freeform") {
+        window.open($SCRIPT_ROOT + "/open_raw/" + selected_resource.name);
+      } else {
+        // doFlash("Only Freeform documents can be raw opened")
+        this.props.statusMessage("Only Freeform documents can be raw opened", 5);
+      }
+    }
+  }, {
     key: "_view_resource",
     value: function _view_resource(selected_resource) {
       var the_view = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
@@ -1936,7 +1948,8 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         clearStatusMessage: this.props.clearStatusMessage,
         sendRef: this._sendToolbarRef,
         sendContextMenuItems: this._sendContextMenuItems,
-        view_resource: this._view_resource
+        view_resource: this._view_resource,
+        open_raw: this._open_raw
       }, this.props.errorDrawerFuncs, {
         handleCreateViewer: this.props.handleCreateViewer,
         library_id: this.props.library_id,

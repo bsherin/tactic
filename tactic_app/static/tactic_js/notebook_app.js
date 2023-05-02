@@ -522,7 +522,7 @@ var NotebookApp = /*#__PURE__*/function (_React$Component) {
         updateLastSave: this._updateLastSave,
         changeCollection: null,
         disabled_items: my_props.is_project ? [] : ["Save"],
-        hidden_items: ["Open Console as Notebook", "Export Table as Collection", "Change collection"]
+        hidden_items: ["Open Console as Notebook", "Export Table as Collection", "divider2", "Change collection"]
       })));
 
       var console_pane = /*#__PURE__*/_react["default"].createElement(_console_component.ConsoleComponent, _extends({}, this.props.statusFuncs, {
