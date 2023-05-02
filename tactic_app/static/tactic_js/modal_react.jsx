@@ -47,7 +47,7 @@ class ModalDialog extends React.Component {
         if ((this.props.checkboxes != null) && (this.props.checkboxes.length != 0)) {
             let checkbox_states = {};
             for (let checkbox of this.props.checkboxes) {
-                checkbox_states[checkbox.id] = false
+                checkbox_states[checkbox.checkname] = false
             }
             this.setState({checkbox_states: checkbox_states})
         }

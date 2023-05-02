@@ -205,11 +205,12 @@ function withStatus(WrappedComponent) {
       key: "_statusMessage",
       value: function _statusMessage(message) {
         var timeout = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+        var self = this;
         this.setState({
           status_message: message
         }, function () {
           if (timeout) {
-            setTimeout(self._clearStatusMessage, data.timeout * 1000);
+            setTimeout(self._clearStatusMessage, timeout * 1000);
           }
         });
       }
@@ -217,13 +218,12 @@ function withStatus(WrappedComponent) {
       key: "_statusMessageFromData",
       value: function _statusMessageFromData(data) {
         if (data.main_id == this.props.main_id) {
-          var _self = this;
-
+          var self = this;
           this.setState({
             status_message: data.message
           }, function () {
             if (data.hasOwnProperty("timeout") && data.timeout != null) {
-              setTimeout(_self._clearStatusMessage, data.timeout * 1000);
+              setTimeout(self._clearStatusMessage, data.timeout * 1000);
             }
           });
         }

@@ -120,7 +120,7 @@ var ModalDialog = /*#__PURE__*/function (_React$Component) {
         try {
           for (_iterator.s(); !(_step = _iterator.n()).done;) {
             var checkbox = _step.value;
-            checkbox_states[checkbox.id] = false;
+            checkbox_states[checkbox.checkname] = false;
           }
         } catch (err) {
           _iterator.e(err);

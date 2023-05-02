@@ -708,6 +708,17 @@ class LibraryPane extends React.Component {
         }
     }
 
+    _open_raw(selected_resource) {
+        this.props.clearStatus();
+        if (selected_resource.type == "freeform") {
+            window.open($SCRIPT_ROOT + "/open_raw/" + selected_resource.name)
+        }
+        else {
+            // doFlash("Only Freeform documents can be raw opened")
+            this.props.statusMessage("Only Freeform documents can be raw opened", 5);
+        }
+    }
+
     _view_resource(selected_resource, the_view=null, force_new_tab=false) {
         const self = this;
         let resource_name = selected_resource.name;
@@ -1413,6 +1424,7 @@ class LibraryPane extends React.Component {
                               sendRef={this._sendToolbarRef}
                               sendContextMenuItems={this._sendContextMenuItems}
                               view_resource={this._view_resource}
+                              open_raw={this._open_raw}
                               {...this.props.errorDrawerFuncs}
                               handleCreateViewer={this.props.handleCreateViewer}
                               library_id={this.props.library_id}

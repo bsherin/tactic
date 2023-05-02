@@ -5,6 +5,7 @@ import os
 import uuid
 import copy
 import json
+from flask import render_template
 from qworker import task_worthy_methods, task_worthy_manual_submit_methods
 from communication_utils import make_python_object_jsonizable, debinarize_python_object, store_temp_data
 from communication_utils import make_jsonizable_and_compress, read_project_dict, socketio
@@ -479,6 +480,29 @@ class LoadSaveTasksMixin:
             _return_data = {"success": False, "message": error_string}
             self.mworker.submit_response(task_packet, _return_data)
         return
+
+    @task_worthy
+    def export_as_report(self, data_dict):
+        try:
+            new_collection_name = data_dict["collection_name"]
+            cell_list = data_dict["cell_list"]
+            report_html = render_template("report_template.html",
+                                          cell_list=cell_list,
+                                          collapsible=data_dict["collapsible"],
+                                          include_summaries=data_dict["include_summaries"],
+                                          project_name=data_dict["project_name"])
+            self.create_complete_collection(new_collection_name, {"report": report_html}, "freeform")
+            self.mworker.ask_host("update_collection_selector_list", {"user_id": self.user_id})
+            _return_data = {"collection_name": new_collection_name,
+                            "success": True,
+                            "message": "Report Successfully Exported"}
+
+        except Exception as ex:
+            debug_log("got an error in export_to_jupyter_notebook")
+            error_string = self.handle_exception(ex, "<pre>Error exporting report </pre>",
+                                                 print_to_console=False)
+            _return_data = {"success": False, "message": error_string}
+        return _return_data
 
     @task_worthy
     def export_to_jupyter_notebook(self, data_dict):

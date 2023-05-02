@@ -138,9 +138,10 @@ function withStatus(WrappedComponent) {
         }
 
         _statusMessage(message, timeout=null) {
+            let self = this;
             this.setState({status_message: message}, () => {
                 if (timeout) {
-                    setTimeout(self._clearStatusMessage, data.timeout * 1000);
+                    setTimeout(self._clearStatusMessage, timeout * 1000);
                 }
             });
         }

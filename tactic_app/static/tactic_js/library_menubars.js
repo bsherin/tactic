@@ -332,6 +332,13 @@ var AllMenubar = /*#__PURE__*/function (_React$Component2) {
             self.props.view_resource(self.props.selected_resource, null, true);
           }
         }, {
+          name_text: "Open As Raw Html",
+          icon_name: "document-share",
+          click_handler: function click_handler() {
+            self.props.open_raw(self.props.selected_resource);
+          },
+          res_type: "collection"
+        }, {
           name_text: "divider1",
           icon_name: null,
           click_handler: "divider"

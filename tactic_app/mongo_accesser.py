@@ -117,6 +117,9 @@ class MongoAccess(object):
                 mdata[k] = v
         if document_metadata is None:
             document_metadata = {}
+        for fname in doc_dict.keys():
+            if fname not in document_metadata:
+                document_metadata[fname] = {}
         if doc_type == "table":
             if header_list_dict is None:
                 header_list_dict = {}

@@ -354,7 +354,7 @@ class NotebookApp extends React.Component {
                              updateLastSave={this._updateLastSave}
                              changeCollection={null}
                              disabled_items={my_props.is_project ? [] : ["Save"]}
-                             hidden_items={["Open Console as Notebook", "Export Table as Collection", "Change collection"]}
+                             hidden_items={["Open Console as Notebook", "Export Table as Collection", "divider2", "Change collection"]}
                 />
             </React.Fragment>
         );
