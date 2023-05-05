@@ -28,6 +28,7 @@ def sleep_until_rabbit_alive(max_tries=20, megaplex_address=None):
         if rabbit_alive(api):
             return True
         time.sleep(2)
+    print("** rabbit was never alive **")
     return False
 
 

@@ -36,7 +36,7 @@ import uuid
 from rabbit_manage import sleep_until_rabbit_alive
 print("Waiting for rabbit")
 success = sleep_until_rabbit_alive()
-print("Done waiting")
+print("Done waiting for rabbit with success " + str(success))
 
 import sys, os
 sys.stdout = sys.stderr
