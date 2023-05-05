@@ -85,9 +85,11 @@ def login_after_register():
 
 @app.route('/attempt_login', methods=['GET', 'POST'])
 def attempt_login():
-    print("entering attempt login")
+    print("entering attempt login modified")
     data = request.json
+    print("got data " + str(data))
     result_dict = {}
+    print("about to call get_user_by_username")
     user = User.get_user_by_username(data["username"])
     print("got user " + str(user))
     if user is not None and user.verify_password(data["password"]):
