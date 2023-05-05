@@ -141,6 +141,7 @@ var LoginApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_return_from_submit_login",
     value: function _return_from_submit_login(data) {
+      console.log("returned from attempt login with data.login " + String(data.logged_in));
       this.props.clearStatus();
 
       if (data.logged_in) {

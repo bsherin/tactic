@@ -89,11 +89,16 @@ def attempt_login():
     data = request.json
     result_dict = {}
     user = User.get_user_by_username(data["username"])
+    print("got user " + str(user))
     if user is not None and user.verify_password(data["password"]):
+        print("about to try to login")
         login_user(user, remember=data["remember_me"])
+        print("out of login_user")
         if current_user.is_anonymous:
             result_dict["logged_in"] = False
+            print("is_anonymous")
         else:
+            print("about to set timezone")
             user.set_user_timezone_offset(data["tzOffset"])
             user.set_last_login()
             print("*** about to post load_user_default_tile_task")
@@ -105,6 +110,7 @@ def attempt_login():
             # result_dict["tile_loading_errors"] = error_list
     else:
         result_dict["logged_in"] = False
+    print("** leaving attempt_login with result_dict " + str(result_dict))
     return jsonify(result_dict)
 
 
