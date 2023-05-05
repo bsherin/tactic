@@ -131,7 +131,10 @@ def on_ready_to_begin(data):
 def load_temp_page(the_id):
     template_data = read_temp_data(db, the_id)
     delete_temp_data(db, the_id)
-    return render_template(template_data["template_name"], **template_data)
+    if "the_html" in template_data:
+        return template_data["the_html"]
+    else:
+        return render_template(template_data["template_name"], **template_data)
 
 
 @app.route('/export_data', methods=['POST'])

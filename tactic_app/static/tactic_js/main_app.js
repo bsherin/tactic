@@ -521,9 +521,6 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
       var self = this;
 
       if (!window.in_context) {
-        this.props.tsocket.attachListener("window-open", function (data) {
-          window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
-        });
         this.props.tsocket.attachListener('close-user-windows', function (data) {
           if (!(data["originator"] == main_id)) {
             window.close();

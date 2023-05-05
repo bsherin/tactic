@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Tactic Report</title>
     <style>
-        {{ extra_styles|safe }}
         .report-output {
             margin-top: 10px;
             margin-left: 10px;
@@ -13,15 +12,14 @@
             padding: 5px;
         }
         .report-divider {
+            display: none;
             margin-top: 20px !important;
+            align-self: center;
+            font-size: 50px !important;
         }
-        .report-divider:hover {
-          background-color: #f1f1f1;
-        }
+
         .section-content {
-          {% if collapsible %}
-          max-height: 0;
-          {% endif %}
+          display: none;
           overflow: hidden;
           transition: max-height 0.2s ease-out;
         }
@@ -30,9 +28,12 @@
             margin-bottom: 5px;
         }
         body{
-            margin-left: 30px;
+            display: flex;
+            flex-direction: column;
+            margin-left: 80px;
+            margin-right: 80px;
             margin-top: 50px;
-          font-size:14px;
+            font-size: 24px;
           font-weight:400;
           letter-spacing:0;
           line-height:1.2858142857;
@@ -42,6 +43,12 @@
         }
         body.bp4-dark {
             background-color: #2f343c
+        }
+        li {
+            margin-bottom: 8px
+        }
+        td, th {
+            font-size: 16px !important;
         }
 
         .sidebyside-table {
@@ -57,6 +64,7 @@
         table caption {
             caption-side: top;
             text-align: left;
+            font-size: 16px !important
         }
         caption {
             caption-side: bottom;
@@ -545,18 +553,17 @@
         .bp4-dark table.bp4-html-table.bp4-interactive tbody tr:active td{
           background-color:rgba(95, 107, 124, 0.4);
         }
-
+    {{ extra_styles|safe }}
     </style>
 </head>
-<body  {% if use_dark_theme -%} class="bp4-dark" {% endif %}>
-<h2 class="bp4-heading" style="margin-bottom:25px">{{ project_name }}</h2>
+<body {% if use_dark_theme -%} class="bp4-dark" {% endif %}>
 <div></div>
 {% for cell in cell_list -%}
 {% if cell.type == "divider" -%}
 </div>
-<h3 class="report-divider bp4-heading">
+<h2 class="report-divider bp4-heading">
 {{ cell.header_text }}
-</h3>
+</h2>
 <div class="section-content">
 {% elif cell.type == "code" -%}
 <div>
@@ -590,10 +597,50 @@
 {% endfor -%}
 </div>
 
+<button id="prev-but" class="bp4-button" style="position:absolute; bottom:10px" type="button">Previous</button>
+<button id="next-but" class="bp4-button" style="position:absolute; bottom:10px; right:80px" type="button">Next</button>
 
 <script>
+var slides = document.getElementsByClassName("report-divider");
 var vgs = document.getElementsByTagName("svg");
 var imgs = document.getElementsByTagName("img");
+const nbut = document.getElementById("next-but");
+const pbut = document.getElementById("prev-but");
+var current = 0;
+var nslides = slides.length;
+var i;
+
+function showSection(i) {
+    let divider = slides[i];
+    let sect = divider.nextElementSibling;
+    divider.style.display = "block";
+    sect.style.display = "block";
+    setSize(sect)
+}
+
+function hideSection(i) {
+    let divider = slides[i];
+    let sect = divider.nextElementSibling;
+    divider.style.display = "none";
+    sect.style.display = "none";
+}
+
+function goToNext() {
+    hideSection(current);
+    current += 1;
+    if (current == nslides) {
+        current = 0
+    }
+    showSection(current)
+}
+function goToPrev() {
+    hideSection(current);
+    current -= 1;
+    if (current < 0) {
+        current = nslides - 1
+    }
+    showSection(current)
+}
 
 function clearVgSizes() {
     vgs = document.getElementsByTagName("svg");
@@ -618,10 +665,13 @@ function sizeObject(vg, new_width) {
     }
 }
 
-function setSizes() {
+function setSize(sect) {
     clearVgSizes();
-    let new_width = document.getElementsByTagName("body")[0].offsetWidth -25;
+    let new_height = pbut.offsetTop - sect.offsetTop - 25;
+    let new_width = nbut.offsetLeft + nbut.offsetWidth - pbut.offsetLeft - 25;
 
+    sect.style.maxHeight = String(new_height) + "px";
+    sect.style.maxWidth = String(new_width) + "px";
     for (let vg of vgs) {
         sizeObject(vg, new_width);
     }
@@ -629,26 +679,22 @@ function setSizes() {
         sizeObject(img, new_width);
     }
 }
-setSizes();
-window.onresize = ()=>{setSizes()};
 
-{% if collapsible -%}
-var coll = document.getElementsByClassName("report-divider");
-var i;
-for (i = 0; i < coll.length; i++) {
-  coll[i].addEventListener("click", function() {
-    this.classList.toggle("active");
-    var content = this.nextElementSibling;
-    if (content.style.maxHeight){
-      content.style.maxHeight = null;
-    } else {
-      content.style.maxHeight = content.scrollHeight + "px";
-    }
-    setSizes()
-  });
-}
-{% endif -%}
+showSection(0);
+
+nbut.addEventListener("click", goToNext);
+pbut.addEventListener("click", goToPrev);
+
+window.onresize = ()=>{setSize(slides[current].nextElementSibling)};
+window.addEventListener('keydown', event => {
+  if (event.key == "ArrowLeft") {
+    goToPrev()
+  } else if (event.key == "ArrowRight") {
+    goToNext()
+  }
+});
+
+
 </script>
-
 </body>
 </html>
