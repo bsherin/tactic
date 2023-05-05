@@ -73,6 +73,7 @@ class LoginApp extends React.Component {
     }
 
     _return_from_submit_login(data) {
+        console.log("returned from attempt login with data.login " + String(data.logged_in));
         this.props.clearStatus();
         if (data.logged_in) {
              window.open($SCRIPT_ROOT + window._next_view, "_self")
