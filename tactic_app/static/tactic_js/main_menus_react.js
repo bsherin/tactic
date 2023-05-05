@@ -17,8 +17,6 @@ var _react = _interopRequireDefault(require("react"));
 
 var _propTypes = _interopRequireDefault(require("prop-types"));
 
-var _lodash = _interopRequireDefault(require("lodash"));
-
 var _markdownIt = _interopRequireDefault(require("markdown-it"));
 
 require("markdown-it-latex/dist/index.css");
@@ -175,25 +173,17 @@ var ProjectMenu = /*#__PURE__*/function (_React$Component) {
       }
     }
   }, {
-    key: "_exportAsReport",
-    value: function _exportAsReport() {
-      this.props.startSpinner();
+    key: "_exportAsPresentation",
+    value: function _exportAsPresentation() {
       var self = this;
       (0, _communication_react.postWithCallback)("host", "get_collection_names", {
         "user_id": user_id
       }, function (data) {
-        var checkboxes = [{
-          checkname: "collapsible",
-          checktext: "collapsible sections"
-        }, {
-          checkname: "include_summaries",
-          checktext: "include summaries"
-        }]; // noinspection JSUnusedAssignment
-
-        (0, _modal_react.showModalReact)("Export Notebook As Html", "New Collection Name", ExportRport, "NewReport", data["collection_names"], checkboxes);
+        // noinspection JSUnusedAssignment
+        (0, _modal_react.showPresentationDialog)(ExportPresentation, data["collection_names"]);
       }, null, self.props.main_id);
 
-      function ExportRport(new_name, checkbox_states) {
+      function ExportPresentation(use_dark_theme, save_as_collection, collection_name) {
         var cell_list = [];
 
         var _iterator = _createForOfIteratorHelper(self.props.console_items),
@@ -208,6 +198,7 @@ var ProjectMenu = /*#__PURE__*/function (_React$Component) {
             switch (entry.type) {
               case "text":
                 new_entry.console_text = mdi.render(entry.console_text);
+                new_entry.raw_text = entry.console_text;
                 new_entry.summary_text = entry.summary_text;
                 break;
 
@@ -237,11 +228,95 @@ var ProjectMenu = /*#__PURE__*/function (_React$Component) {
 
         var result_dict = {
           "project_name": self.props.project_name,
-          "collection_name": new_name,
+          "collection_name": collection_name,
+          "save_as_collection": save_as_collection,
+          "use_dark_theme": use_dark_theme,
+          "presentation": true,
           "main_id": self.props.main_id,
-          "cell_list": cell_list,
-          "collapsible": checkbox_states["collapsible"],
-          "include_summaries": checkbox_states["include_summaries"]
+          "cell_list": cell_list
+        };
+        (0, _communication_react.postWithCallback)(self.props.main_id, "export_as_presentation", result_dict, save_as_success, self.props.postAjaxFailure, self.props.main_id);
+
+        function save_as_success(data_object) {
+          self.props.clearStatusMessage();
+
+          if (data_object.success) {
+            if (save_as_collection) {
+              data_object.alert_type = "alert-success";
+              data_object.timeout = 2000;
+              (0, _toaster.doFlash)(data_object);
+            } else {
+              window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data_object["temp_id"]));
+            }
+          } else {
+            data_object["alert-type"] = "alert-warning";
+          }
+        }
+      }
+    }
+  }, {
+    key: "_exportAsReport",
+    value: function _exportAsReport() {
+      var self = this;
+      (0, _communication_react.postWithCallback)("host", "get_collection_names", {
+        "user_id": user_id
+      }, function (data) {
+        // noinspection JSUnusedAssignment
+        (0, _modal_react.showReportDialog)(ExportRport, data["collection_names"]);
+      }, null, self.props.main_id);
+
+      function ExportRport(collapsible, include_summaries, use_dark_theme, save_as_collection, collection_name) {
+        var cell_list = [];
+
+        var _iterator2 = _createForOfIteratorHelper(self.props.console_items),
+            _step2;
+
+        try {
+          for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+            var entry = _step2.value;
+            var new_entry = {};
+            new_entry.type = entry.type;
+
+            switch (entry.type) {
+              case "text":
+                new_entry.console_text = mdi.render(entry.console_text);
+                new_entry.raw_text = entry.console_text;
+                new_entry.summary_text = entry.summary_text;
+                break;
+
+              case "code":
+                new_entry.console_text = entry.console_text;
+                new_entry.output_text = entry.output_text;
+                new_entry.summary_text = entry.summary_text;
+                break;
+
+              case "divider":
+                new_entry.header_text = entry.header_text;
+                break;
+
+              default:
+                new_entry.console_text = entry.console_text;
+                new_entry.summary_text = entry.summary_text;
+                break;
+            }
+
+            cell_list.push(new_entry);
+          }
+        } catch (err) {
+          _iterator2.e(err);
+        } finally {
+          _iterator2.f();
+        }
+
+        var result_dict = {
+          "project_name": self.props.project_name,
+          "collection_name": collection_name,
+          "save_as_collection": save_as_collection,
+          "use_dark_theme": use_dark_theme,
+          "collapsible": collapsible,
+          "include_summaries": include_summaries,
+          "main_id": self.props.main_id,
+          "cell_list": cell_list
         };
         (0, _communication_react.postWithCallback)(self.props.main_id, "export_as_report", result_dict, save_as_success, self.props.postAjaxFailure, self.props.main_id);
 
@@ -249,14 +324,16 @@ var ProjectMenu = /*#__PURE__*/function (_React$Component) {
           self.props.clearStatusMessage();
 
           if (data_object.success) {
-            data_object.alert_type = "alert-success";
-            data_object.timeout = 2000;
+            if (save_as_collection) {
+              data_object.alert_type = "alert-success";
+              data_object.timeout = 2000;
+              (0, _toaster.doFlash)(data_object);
+            } else {
+              window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data_object["temp_id"]));
+            }
           } else {
             data_object["alert-type"] = "alert-warning";
           }
-
-          self.props.stopSpinner();
-          (0, _toaster.doFlash)(data_object);
         }
       }
     }
@@ -276,12 +353,12 @@ var ProjectMenu = /*#__PURE__*/function (_React$Component) {
       function ExportJupyter(new_name) {
         var cell_list = [];
 
-        var _iterator2 = _createForOfIteratorHelper(self.props.console_items),
-            _step2;
+        var _iterator3 = _createForOfIteratorHelper(self.props.console_items),
+            _step3;
 
         try {
-          for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-            var entry = _step2.value;
+          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+            var entry = _step3.value;
             var new_cell = {};
             new_cell.source = entry.console_text;
             new_cell.cell_type = entry.type == "code" ? "code" : "markdown";
@@ -293,9 +370,9 @@ var ProjectMenu = /*#__PURE__*/function (_React$Component) {
             cell_list.push(new_cell);
           }
         } catch (err) {
-          _iterator2.e(err);
+          _iterator3.e(err);
         } finally {
-          _iterator2.f();
+          _iterator3.f();
         }
 
         var result_dict = {
@@ -396,9 +473,13 @@ var ProjectMenu = /*#__PURE__*/function (_React$Component) {
         icon_name: "export",
         click_handler: this._exportAsJupyter
       }, {
-        name_text: "Export Notebook Report",
-        icon_name: "export",
+        name_text: "Create Report From Notebook",
+        icon_name: "document",
         click_handler: this._exportAsReport
+      }, {
+        name_text: "Create Presentation from Notebook",
+        icon_name: "presentation",
+        click_handler: this._exportAsPresentation
       }, {
         name_text: "Export Table as Collection",
         icon_name: "export",

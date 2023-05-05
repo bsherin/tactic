@@ -360,9 +360,6 @@ class MainApp extends React.Component {
     initSocket() {
         let self = this;
         if (!window.in_context) {
-            this.props.tsocket.attachListener("window-open", data => {
-                window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`)
-            });
             this.props.tsocket.attachListener('close-user-windows', function(data){
                 if (!(data["originator"] == main_id)) {
                     window.close()

@@ -482,23 +482,108 @@ class LoadSaveTasksMixin:
         return
 
     @task_worthy
-    def export_as_report(self, data_dict):
+    def export_as_presentation(self, data_dict):
         try:
+            print("in export_as_report")
             new_collection_name = data_dict["collection_name"]
             cell_list = data_dict["cell_list"]
+            new_cell_list = []
+            ncells = len(cell_list)
+            i = 0
+            style_text = ""
+            while i < ncells:
+                ccell = cell_list[i]
+                if not ccell["type"] == "divider":
+                    new_cell_list.append(ccell)
+                    i += 1
+                    continue
+                if not ccell["header_text"].lower() == "styles":
+                    new_cell_list.append(ccell)
+                    i += 1
+                    continue
+                i += 1
+                while i < ncells and not cell_list[i]["type"] == "divider":
+                    if cell_list[i]["type"] == "text":
+                        style_text += cell_list[i]["raw_text"] + "\n"
+                    else:
+                        style_text += cell_list[i]["console_text"] + "\n"
+                    i += 1
+            report_html = render_template("presentation_template.html",
+                                          cell_list=new_cell_list,
+                                          extra_styles=style_text,
+                                          use_dark_theme=data_dict["use_dark_theme"],
+                                          project_name=data_dict["project_name"])
+            print("rendered the report")
+            if data_dict["save_as_collection"]:
+                self.create_complete_collection(new_collection_name, {"report": report_html}, "freeform")
+                self.mworker.ask_host("update_collection_selector_list", {"user_id": self.user_id})
+                _return_data = {"collection_name": new_collection_name,
+                                "success": True,
+                                "message": "Presentation Successfully Exported"}
+            else:
+                print("not saving to a collection")
+                unique_id = store_temp_data(self.db, {"the_html": report_html})
+                _return_data = {"success": True,
+                                "temp_id": unique_id,
+                                "message": "Presentation Successfully Created"}
+
+        except Exception as ex:
+            debug_log("got an error in export_as_presentation")
+            error_string = self.handle_exception(ex, "<pre>Error exporting presentation </pre>",
+                                                 print_to_console=False)
+            _return_data = {"success": False, "message": error_string}
+        return _return_data
+
+    @task_worthy
+    def export_as_report(self, data_dict):
+        try:
+            print("in export_as_report")
+            new_collection_name = data_dict["collection_name"]
+            cell_list = data_dict["cell_list"]
+            new_cell_list = []
+            ncells = len(cell_list)
+            i = 0
+            style_text = ""
+            while i < ncells:
+                ccell = cell_list[i]
+                if not ccell["type"] == "divider":
+                    new_cell_list.append(ccell)
+                    i += 1
+                    continue
+                if not ccell["header_text"].lower() == "styles":
+                    new_cell_list.append(ccell)
+                    i += 1
+                    continue
+                i += 1
+                while i < ncells and not cell_list[i]["type"] == "divider":
+                    if cell_list[i]["type"] == "text":
+                        style_text += cell_list[i]["raw_text"] + "\n"
+                    else:
+                        style_text += cell_list[i]["console_text"] + "\n"
+                    i += 1
             report_html = render_template("report_template.html",
-                                          cell_list=cell_list,
+                                          cell_list=new_cell_list,
+                                          extra_styles = style_text,
+                                          use_dark_theme = data_dict["use_dark_theme"],
                                           collapsible=data_dict["collapsible"],
                                           include_summaries=data_dict["include_summaries"],
                                           project_name=data_dict["project_name"])
-            self.create_complete_collection(new_collection_name, {"report": report_html}, "freeform")
-            self.mworker.ask_host("update_collection_selector_list", {"user_id": self.user_id})
-            _return_data = {"collection_name": new_collection_name,
-                            "success": True,
-                            "message": "Report Successfully Exported"}
+            print("rendered the report")
+            if data_dict["save_as_collection"]:
+                self.create_complete_collection(new_collection_name, {"report": report_html}, "freeform")
+                self.mworker.ask_host("update_collection_selector_list", {"user_id": self.user_id})
+                _return_data = {"collection_name": new_collection_name,
+                                "success": True,
+                                "message": "Report Successfully Exported"}
+            else:
+                print("not saving to a collection")
+                unique_id = store_temp_data(self.db, {"the_html": report_html})
+                _return_data = {"success": True,
+                                "temp_id": unique_id,
+                                "message": "Report Successfully Created"}
 
         except Exception as ex:
-            debug_log("got an error in export_to_jupyter_notebook")
+            debug_log("got an error in export_as_report")
             error_string = self.handle_exception(ex, "<pre>Error exporting report </pre>",
                                                  print_to_console=False)
             _return_data = {"success": False, "message": error_string}

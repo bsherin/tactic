@@ -10,6 +10,8 @@ exports.showConfirmDialogReact = showConfirmDialogReact;
 exports.showSelectDialog = showSelectDialog;
 exports.showSelectResourceDialog = showSelectResourceDialog;
 exports.showInformDialogReact = showInformDialogReact;
+exports.showPresentationDialog = showPresentationDialog;
+exports.showReportDialog = showReportDialog;
 exports.SelectResourceDialog = void 0;
 
 var _react = _interopRequireDefault(require("react"));
@@ -288,23 +290,427 @@ function showModalReact(modal_title, field_title, submit_function, default_value
   }), domContainer);
 }
 
-var SelectDialog = /*#__PURE__*/function (_React$Component2) {
-  _inherits(SelectDialog, _React$Component2);
+var PresentationDialog = /*#__PURE__*/function (_React$Component2) {
+  _inherits(PresentationDialog, _React$Component2);
 
-  var _super2 = _createSuper(SelectDialog);
+  var _super2 = _createSuper(PresentationDialog);
 
-  function SelectDialog(props) {
+  function PresentationDialog(props) {
     var _this3;
 
-    _classCallCheck(this, SelectDialog);
+    _classCallCheck(this, PresentationDialog);
 
     _this3 = _super2.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this3));
+    var default_name = _this3.props.default_name;
+    var name_counter = 1;
+
+    while (_this3._name_exists(default_name)) {
+      name_counter += 1;
+      default_name = _this3.props.default_value + String(name_counter);
+    }
+
     _this3.state = {
+      save_as_collection: false,
+      collection_name: default_name,
+      use_dark_theme: false,
+      warning_text: ""
+    };
+    return _this3;
+  }
+
+  _createClass(PresentationDialog, [{
+    key: "_changeName",
+    value: function _changeName(event) {
+      this.setState({
+        "collection_name": event.target.value
+      });
+    }
+  }, {
+    key: "_changeDark",
+    value: function _changeDark(event) {
+      this.setState({
+        "use_dark_theme": event.target.checked
+      });
+    }
+  }, {
+    key: "_changeSaveCollection",
+    value: function _changeSaveCollection(event) {
+      this.setState({
+        "save_as_collection": event.target.checked
+      });
+    }
+  }, {
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      this.setState({
+        "show": true
+      });
+    }
+  }, {
+    key: "_name_exists",
+    value: function _name_exists(name) {
+      return this.props.existing_names.indexOf(name) > -1;
+    }
+  }, {
+    key: "_submitHandler",
+    value: function _submitHandler(event) {
+      var msg;
+
+      if (this.state.save_as_collection) {
+        if (this.state.collection_name == "") {
+          msg = "An empty name is not allowed here.";
+          this.setState({
+            "warning_text": msg
+          });
+          return;
+        } else if (this._name_exists(this.state.collection_name)) {
+          msg = "That name already exists";
+          this.setState({
+            "warning_text": msg
+          });
+          return;
+        }
+      }
+
+      this.setState({
+        "show": false
+      });
+      this.props.handleSubmit(this.state.use_dark_theme, this.state.save_as_collection, this.state.collection_name);
+      this.props.handleClose();
+    }
+  }, {
+    key: "_cancelHandler",
+    value: function _cancelHandler() {
+      this.setState({
+        "show": false
+      });
+
+      if (this.props.handleCancel) {
+        this.props.handleCancel();
+      }
+
+      this.props.handleClose();
+    }
+  }, {
+    key: "_refHandler",
+    value: function _refHandler(the_ref) {
+      this.input_ref = the_ref;
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      return /*#__PURE__*/_react["default"].createElement(_core.Dialog, {
+        isOpen: this.state.show,
+        className: window.dark_theme ? "bp4-dark" : "",
+        title: "Create Presentation",
+        onClose: this._cancelHandler,
+        canEscapeKeyClose: true
+      }, /*#__PURE__*/_react["default"].createElement("form", {
+        onSubmit: this._submitHandler
+      }, /*#__PURE__*/_react["default"].createElement("div", {
+        className: _core.Classes.DIALOG_BODY
+      }, /*#__PURE__*/_react["default"].createElement(_core.Checkbox, {
+        checked: this.state.use_dark_theme,
+        label: "Use Dark Theme",
+        id: "use_dark_check",
+        key: "use_dark_check",
+        onChange: this._changeDark
+      }), /*#__PURE__*/_react["default"].createElement(_core.Checkbox, {
+        checked: this.state.save_as_collection,
+        label: "Save As Collection",
+        id: "save_as_collection",
+        key: "save_as_collection",
+        onChange: this._changeSaveCollection
+      }), this.state.save_as_collection && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+        label: "Collection Name",
+        helperText: this.state.warning_text
+      }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
+        inputRef: this._refHandler,
+        onChange: this._changeName,
+        value: this.state.collection_name
+      }))), /*#__PURE__*/_react["default"].createElement("div", {
+        className: _core.Classes.DIALOG_FOOTER
+      }, /*#__PURE__*/_react["default"].createElement("div", {
+        className: _core.Classes.DIALOG_FOOTER_ACTIONS
+      }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
+        onClick: this._cancelHandler
+      }, "Cancel"), /*#__PURE__*/_react["default"].createElement(_core.Button, {
+        intent: _core.Intent.PRIMARY,
+        onClick: this._submitHandler
+      }, "Submit")))));
+    }
+  }]);
+
+  return PresentationDialog;
+}(_react["default"].Component);
+
+PresentationDialog.propTypes = {
+  handleSubmit: _propTypes["default"].func,
+  handleClose: _propTypes["default"].func,
+  default_name: _propTypes["default"].string,
+  existing_names: _propTypes["default"].array
+};
+PresentationDialog.defaultProps = {
+  existing_names: [],
+  default_name: ""
+};
+
+function showPresentationDialog(submit_function, existing_names) {
+  var cancel_function = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+
+  if (typeof existing_names == "undefined") {
+    existing_names = [];
+  }
+
+  var domContainer = document.querySelector('#modal-area');
+
+  function handle_close() {
+    ReactDOM.unmountComponentAtNode(domContainer);
+  }
+
+  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(PresentationDialog, {
+    handleSubmit: submit_function,
+    handleCancel: cancel_function,
+    handleClose: handle_close,
+    default_name: "NewPresentation",
+    existing_names: existing_names
+  }), domContainer);
+}
+
+var ReportDialog = /*#__PURE__*/function (_React$Component3) {
+  _inherits(ReportDialog, _React$Component3);
+
+  var _super3 = _createSuper(ReportDialog);
+
+  function ReportDialog(props) {
+    var _this4;
+
+    _classCallCheck(this, ReportDialog);
+
+    _this4 = _super3.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this4));
+    var default_name = _this4.props.default_name;
+    var name_counter = 1;
+
+    while (_this4._name_exists(default_name)) {
+      name_counter += 1;
+      default_name = _this4.props.default_value + String(name_counter);
+    }
+
+    _this4.state = {
+      save_as_collection: false,
+      collection_name: default_name,
+      use_dark_theme: false,
+      collapsible: false,
+      include_summaries: false,
+      warning_text: ""
+    };
+    return _this4;
+  }
+
+  _createClass(ReportDialog, [{
+    key: "_changeName",
+    value: function _changeName(event) {
+      this.setState({
+        "collection_name": event.target.value
+      });
+    }
+  }, {
+    key: "_changeDark",
+    value: function _changeDark(event) {
+      this.setState({
+        "use_dark_theme": event.target.checked
+      });
+    }
+  }, {
+    key: "_changeCollapsible",
+    value: function _changeCollapsible(event) {
+      this.setState({
+        "collapsible": event.target.checked
+      });
+    }
+  }, {
+    key: "_changeIncludeSummaries",
+    value: function _changeIncludeSummaries(event) {
+      this.setState({
+        "include_summaries": event.target.checked
+      });
+    }
+  }, {
+    key: "_changeSaveCollection",
+    value: function _changeSaveCollection(event) {
+      this.setState({
+        "save_as_collection": event.target.checked
+      });
+    }
+  }, {
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      this.setState({
+        "show": true
+      });
+    }
+  }, {
+    key: "_name_exists",
+    value: function _name_exists(name) {
+      return this.props.existing_names.indexOf(name) > -1;
+    }
+  }, {
+    key: "_submitHandler",
+    value: function _submitHandler(event) {
+      var msg;
+
+      if (this.state.save_as_collection) {
+        if (this.state.collection_name == "") {
+          msg = "An empty name is not allowed here.";
+          this.setState({
+            "warning_text": msg
+          });
+          return;
+        } else if (this._name_exists(this.state.collection_name)) {
+          msg = "That name already exists";
+          this.setState({
+            "warning_text": msg
+          });
+          return;
+        }
+      }
+
+      this.setState({
+        "show": false
+      });
+      this.props.handleSubmit(this.state.collapsible, this.state.include_summaries, this.state.use_dark_theme, this.state.save_as_collection, this.state.collection_name);
+      this.props.handleClose();
+    }
+  }, {
+    key: "_cancelHandler",
+    value: function _cancelHandler() {
+      this.setState({
+        "show": false
+      });
+
+      if (this.props.handleCancel) {
+        this.props.handleCancel();
+      }
+
+      this.props.handleClose();
+    }
+  }, {
+    key: "_refHandler",
+    value: function _refHandler(the_ref) {
+      this.input_ref = the_ref;
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      return /*#__PURE__*/_react["default"].createElement(_core.Dialog, {
+        isOpen: this.state.show,
+        className: window.dark_theme ? "bp4-dark" : "",
+        title: "Create Presentation",
+        onClose: this._cancelHandler,
+        canEscapeKeyClose: true
+      }, /*#__PURE__*/_react["default"].createElement("form", {
+        onSubmit: this._submitHandler
+      }, /*#__PURE__*/_react["default"].createElement("div", {
+        className: _core.Classes.DIALOG_BODY
+      }, /*#__PURE__*/_react["default"].createElement(_core.Checkbox, {
+        checked: this.state.collapsible,
+        label: "Collapsible Sections",
+        id: "collapse_checked",
+        key: "collapse_checked",
+        onChange: this._changeCollapsible
+      }), /*#__PURE__*/_react["default"].createElement(_core.Checkbox, {
+        checked: this.state.include_summaries,
+        label: "Include Summaries",
+        id: "include_summaries",
+        key: "include_summaries",
+        onChange: this._changeIncludeSummaries
+      }), /*#__PURE__*/_react["default"].createElement(_core.Checkbox, {
+        checked: this.state.use_dark_theme,
+        label: "Use Dark Theme",
+        id: "use_dark_check",
+        key: "use_dark_check",
+        onChange: this._changeDark
+      }), /*#__PURE__*/_react["default"].createElement(_core.Checkbox, {
+        checked: this.state.save_as_collection,
+        label: "Save As Collection",
+        id: "save_as_collection",
+        key: "save_as_collection",
+        onChange: this._changeSaveCollection
+      }), this.state.save_as_collection && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+        label: "Collection Name",
+        helperText: this.state.warning_text
+      }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
+        inputRef: this._refHandler,
+        onChange: this._changeName,
+        value: this.state.collection_name
+      }))), /*#__PURE__*/_react["default"].createElement("div", {
+        className: _core.Classes.DIALOG_FOOTER
+      }, /*#__PURE__*/_react["default"].createElement("div", {
+        className: _core.Classes.DIALOG_FOOTER_ACTIONS
+      }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
+        onClick: this._cancelHandler
+      }, "Cancel"), /*#__PURE__*/_react["default"].createElement(_core.Button, {
+        intent: _core.Intent.PRIMARY,
+        onClick: this._submitHandler
+      }, "Submit")))));
+    }
+  }]);
+
+  return ReportDialog;
+}(_react["default"].Component);
+
+ReportDialog.propTypes = {
+  handleSubmit: _propTypes["default"].func,
+  handleClose: _propTypes["default"].func,
+  default_name: _propTypes["default"].string,
+  existing_names: _propTypes["default"].array
+};
+ReportDialog.defaultProps = {
+  existing_names: [],
+  default_name: "NewReport"
+};
+
+function showReportDialog(submit_function, existing_names) {
+  var cancel_function = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+
+  if (typeof existing_names == "undefined") {
+    existing_names = [];
+  }
+
+  var domContainer = document.querySelector('#modal-area');
+
+  function handle_close() {
+    ReactDOM.unmountComponentAtNode(domContainer);
+  }
+
+  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(ReportDialog, {
+    handleSubmit: submit_function,
+    handleCancel: cancel_function,
+    handleClose: handle_close,
+    default_name: "NewReport",
+    existing_names: existing_names
+  }), domContainer);
+}
+
+var SelectDialog = /*#__PURE__*/function (_React$Component4) {
+  _inherits(SelectDialog, _React$Component4);
+
+  var _super4 = _createSuper(SelectDialog);
+
+  function SelectDialog(props) {
+    var _this5;
+
+    _classCallCheck(this, SelectDialog);
+
+    _this5 = _super4.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this5));
+    _this5.state = {
       show: false,
       value: null
     };
-    return _this3;
+    return _this5;
   }
 
   _createClass(SelectDialog, [{
@@ -404,26 +810,26 @@ function showSelectDialog(title, select_label, cancel_text, submit_text, submit_
 
 var res_types = ["collection", "project", "tile", "list", "code"];
 
-var SelectResourceDialog = /*#__PURE__*/function (_React$Component3) {
-  _inherits(SelectResourceDialog, _React$Component3);
+var SelectResourceDialog = /*#__PURE__*/function (_React$Component5) {
+  _inherits(SelectResourceDialog, _React$Component5);
 
-  var _super3 = _createSuper(SelectResourceDialog);
+  var _super5 = _createSuper(SelectResourceDialog);
 
   function SelectResourceDialog(props) {
-    var _this4;
+    var _this6;
 
     _classCallCheck(this, SelectResourceDialog);
 
-    _this4 = _super3.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this4));
-    _this4.state = {
+    _this6 = _super5.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this6));
+    _this6.state = {
       show: false,
       type: "collection",
       value: null,
       option_names: [],
       selected_resource: null
     };
-    return _this4;
+    return _this6;
   }
 
   _createClass(SelectResourceDialog, [{
@@ -459,17 +865,17 @@ var SelectResourceDialog = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "_submitHandler",
     value: function _submitHandler(event) {
-      var _this5 = this;
+      var _this7 = this;
 
       this.setState({
         "show": false
       }, function () {
-        _this5.props.handleSubmit({
-          type: _this5.state.type,
-          selected_resource: _this5.state.selected_resource
+        _this7.props.handleSubmit({
+          type: _this7.state.type,
+          selected_resource: _this7.state.selected_resource
         });
 
-        _this5.props.handleClose();
+        _this7.props.handleClose();
       });
     }
   }, {
@@ -552,22 +958,22 @@ function showSelectResourceDialog(cancel_text, submit_text, submit_function) {
   //                              cancel_text="mob2"/>, domContainer);
 }
 
-var ConfirmDialog = /*#__PURE__*/function (_React$Component4) {
-  _inherits(ConfirmDialog, _React$Component4);
+var ConfirmDialog = /*#__PURE__*/function (_React$Component6) {
+  _inherits(ConfirmDialog, _React$Component6);
 
-  var _super4 = _createSuper(ConfirmDialog);
+  var _super6 = _createSuper(ConfirmDialog);
 
   function ConfirmDialog(props) {
-    var _this6;
+    var _this8;
 
     _classCallCheck(this, ConfirmDialog);
 
-    _this6 = _super4.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this6));
-    _this6.state = {
+    _this8 = _super6.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this8));
+    _this8.state = {
       show: false
     };
-    return _this6;
+    return _this8;
   }
 
   _createClass(ConfirmDialog, [{
@@ -659,22 +1065,22 @@ function showConfirmDialogReact(title, text_body, cancel_text, submit_text, subm
   }), domContainer);
 }
 
-var InformDialog = /*#__PURE__*/function (_React$Component5) {
-  _inherits(InformDialog, _React$Component5);
+var InformDialog = /*#__PURE__*/function (_React$Component7) {
+  _inherits(InformDialog, _React$Component7);
 
-  var _super5 = _createSuper(InformDialog);
+  var _super7 = _createSuper(InformDialog);
 
   function InformDialog(props) {
-    var _this7;
+    var _this9;
 
     _classCallCheck(this, InformDialog);
 
-    _this7 = _super5.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this7));
-    _this7.state = {
+    _this9 = _super7.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this9));
+    _this9.state = {
       show: false
     };
-    return _this7;
+    return _this9;
   }
 
   _createClass(InformDialog, [{

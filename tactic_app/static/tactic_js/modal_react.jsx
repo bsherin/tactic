@@ -10,7 +10,7 @@ import {doBinding} from "./utilities_react.js";
 import {postWithCallback} from "./communication_react.js";
 
 export {showModalReact, showConfirmDialogReact, showSelectDialog, SelectResourceDialog,
-    showSelectResourceDialog, showInformDialogReact}
+    showSelectResourceDialog, showInformDialogReact, showPresentationDialog, showReportDialog}
 
 class ModalDialog extends React.Component {
 
@@ -164,6 +164,318 @@ function showModalReact(modal_title, field_title, submit_function, default_value
                                  field_title={field_title}
                                  default_value={default_value}
                                  checkboxes={checkboxes}
+                                 existing_names={existing_names}/>, domContainer);
+}
+
+class PresentationDialog extends React.Component {
+
+    constructor(props) {
+        super(props);
+        doBinding(this);
+        let default_name = this.props.default_name;
+        var name_counter = 1;
+        while (this._name_exists(default_name)) {
+            name_counter += 1;
+            default_name = this.props.default_value + String(name_counter)
+        }
+        this.state = {
+            save_as_collection: false,
+            collection_name: default_name,
+            use_dark_theme: false,
+            warning_text: ""
+        };
+    }
+
+    _changeName(event) {
+        this.setState({"collection_name": event.target.value})
+    }
+
+    _changeDark(event) {
+        this.setState({"use_dark_theme": event.target.checked})
+    }
+
+    _changeSaveCollection(event) {
+        this.setState({"save_as_collection": event.target.checked})
+    }
+
+    componentDidMount() {
+        this.setState({"show": true});
+    }
+
+    _name_exists(name) {
+        return (this.props.existing_names.indexOf(name) > -1)
+    }
+
+    _submitHandler(event) {
+        let msg;
+        if (this.state.save_as_collection) {
+            if (this.state.collection_name == "") {
+                msg = "An empty name is not allowed here.";
+                this.setState({"warning_text": msg});
+                return
+            } else if (this._name_exists(this.state.collection_name)) {
+                msg = "That name already exists";
+                this.setState({"warning_text": msg});
+                return
+            }
+        }
+        this.setState({"show": false});
+        this.props.handleSubmit(
+            this.state.use_dark_theme,
+            this.state.save_as_collection,
+            this.state.collection_name);
+        this.props.handleClose();
+    }
+
+    _cancelHandler() {
+        this.setState({"show": false});
+        if (this.props.handleCancel) {
+            this.props.handleCancel()
+        }
+        this.props.handleClose()
+    }
+
+    _refHandler(the_ref) {
+        this.input_ref = the_ref;
+    }
+
+    render() {
+        return (
+            <Dialog isOpen={this.state.show}
+                    className={window.dark_theme ? "bp4-dark" : ""}
+                    title="Create Presentation"
+                    onClose={this._cancelHandler}
+                    canEscapeKeyClose={true}>
+                <form onSubmit={this._submitHandler}>
+                    <div className={Classes.DIALOG_BODY}>
+                        <Checkbox checked={this.state.use_dark_theme}
+                                    label="Use Dark Theme"
+                                    id="use_dark_check"
+                                    key="use_dark_check"
+                                    onChange={this._changeDark}
+                        />
+                        <Checkbox checked={this.state.save_as_collection}
+                                    label="Save As Collection"
+                                    id="save_as_collection"
+                                    key="save_as_collection"
+                                    onChange={this._changeSaveCollection}
+                        />
+                        {this.state.save_as_collection &&
+                            <FormGroup label="Collection Name" helperText={this.state.warning_text}>
+                                <InputGroup inputRef={this._refHandler}
+                                               onChange={this._changeName}
+                                               value={this.state.collection_name}/>
+                            </FormGroup>
+                        }
+                    </div>
+                    <div className={Classes.DIALOG_FOOTER}>
+                        <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+                            <Button onClick={this._cancelHandler}>Cancel</Button>
+                            <Button intent={Intent.PRIMARY} onClick={this._submitHandler}>Submit</Button>
+                        </div>
+                    </div>
+                </form>
+            </Dialog>
+        )
+    }
+}
+
+PresentationDialog.propTypes = {
+    handleSubmit: PropTypes.func,
+    handleClose: PropTypes.func,
+    default_name: PropTypes.string,
+    existing_names: PropTypes.array,
+};
+
+PresentationDialog.defaultProps = {
+    existing_names: [],
+    default_name: "",
+};
+
+
+function showPresentationDialog(submit_function, existing_names, cancel_function=null) {
+
+    if (typeof existing_names == "undefined") {
+        existing_names = []
+    }
+
+    let domContainer = document.querySelector('#modal-area');
+
+    function handle_close () {
+        ReactDOM.unmountComponentAtNode(domContainer)
+    }
+    ReactDOM.render(<PresentationDialog handleSubmit={submit_function}
+                                 handleCancel={cancel_function}
+                                 handleClose={handle_close}
+                                 default_name="NewPresentation"
+                                 existing_names={existing_names}/>, domContainer);
+}
+
+class ReportDialog extends React.Component {
+
+    constructor(props) {
+        super(props);
+        doBinding(this);
+        let default_name = this.props.default_name;
+        var name_counter = 1;
+        while (this._name_exists(default_name)) {
+            name_counter += 1;
+            default_name = this.props.default_value + String(name_counter)
+        }
+        this.state = {
+            save_as_collection: false,
+            collection_name: default_name,
+            use_dark_theme: false,
+            collapsible: false,
+            include_summaries: false,
+            warning_text: ""
+        };
+    }
+
+    _changeName(event) {
+        this.setState({"collection_name": event.target.value})
+    }
+
+    _changeDark(event) {
+        this.setState({"use_dark_theme": event.target.checked})
+    }
+
+    _changeCollapsible(event) {
+        this.setState({"collapsible": event.target.checked})
+    }
+
+    _changeIncludeSummaries(event) {
+        this.setState({"include_summaries": event.target.checked})
+    }
+
+    _changeSaveCollection(event) {
+        this.setState({"save_as_collection": event.target.checked})
+    }
+
+    componentDidMount() {
+        this.setState({"show": true});
+    }
+
+    _name_exists(name) {
+        return (this.props.existing_names.indexOf(name) > -1)
+    }
+
+    _submitHandler(event) {
+        let msg;
+        if (this.state.save_as_collection) {
+            if (this.state.collection_name == "") {
+                msg = "An empty name is not allowed here.";
+                this.setState({"warning_text": msg});
+                return
+            } else if (this._name_exists(this.state.collection_name)) {
+                msg = "That name already exists";
+                this.setState({"warning_text": msg});
+                return
+            }
+        }
+        this.setState({"show": false});
+        this.props.handleSubmit(
+            this.state.collapsible,
+            this.state.include_summaries,
+            this.state.use_dark_theme,
+            this.state.save_as_collection,
+            this.state.collection_name);
+        this.props.handleClose();
+    }
+
+    _cancelHandler() {
+        this.setState({"show": false});
+        if (this.props.handleCancel) {
+            this.props.handleCancel()
+        }
+        this.props.handleClose()
+    }
+
+    _refHandler(the_ref) {
+        this.input_ref = the_ref;
+    }
+
+    render() {
+        return (
+            <Dialog isOpen={this.state.show}
+                    className={window.dark_theme ? "bp4-dark" : ""}
+                    title="Create Presentation"
+                    onClose={this._cancelHandler}
+                    canEscapeKeyClose={true}>
+                <form onSubmit={this._submitHandler}>
+                    <div className={Classes.DIALOG_BODY}>
+                        <Checkbox checked={this.state.collapsible}
+                                    label="Collapsible Sections"
+                                    id="collapse_checked"
+                                    key="collapse_checked"
+                                    onChange={this._changeCollapsible}
+                        />
+                        <Checkbox checked={this.state.include_summaries}
+                                    label="Include Summaries"
+                                    id="include_summaries"
+                                    key="include_summaries"
+                                    onChange={this._changeIncludeSummaries}
+                        />
+                        <Checkbox checked={this.state.use_dark_theme}
+                                    label="Use Dark Theme"
+                                    id="use_dark_check"
+                                    key="use_dark_check"
+                                    onChange={this._changeDark}
+                        />
+                        <Checkbox checked={this.state.save_as_collection}
+                                    label="Save As Collection"
+                                    id="save_as_collection"
+                                    key="save_as_collection"
+                                    onChange={this._changeSaveCollection}
+                        />
+                        {this.state.save_as_collection &&
+                            <FormGroup label="Collection Name" helperText={this.state.warning_text}>
+                                <InputGroup inputRef={this._refHandler}
+                                               onChange={this._changeName}
+                                               value={this.state.collection_name}/>
+                            </FormGroup>
+                        }
+                    </div>
+                    <div className={Classes.DIALOG_FOOTER}>
+                        <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+                            <Button onClick={this._cancelHandler}>Cancel</Button>
+                            <Button intent={Intent.PRIMARY} onClick={this._submitHandler}>Submit</Button>
+                        </div>
+                    </div>
+                </form>
+            </Dialog>
+        )
+    }
+}
+
+ReportDialog.propTypes = {
+    handleSubmit: PropTypes.func,
+    handleClose: PropTypes.func,
+    default_name: PropTypes.string,
+    existing_names: PropTypes.array,
+};
+
+ReportDialog.defaultProps = {
+    existing_names: [],
+    default_name: "NewReport",
+};
+
+
+function showReportDialog(submit_function, existing_names, cancel_function=null) {
+
+    if (typeof existing_names == "undefined") {
+        existing_names = []
+    }
+
+    let domContainer = document.querySelector('#modal-area');
+
+    function handle_close () {
+        ReactDOM.unmountComponentAtNode(domContainer)
+    }
+    ReactDOM.render(<ReportDialog handleSubmit={submit_function}
+                                 handleCancel={cancel_function}
+                                 handleClose={handle_close}
+                                 default_name="NewReport"
                                  existing_names={existing_names}/>, domContainer);
 }
 
