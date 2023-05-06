@@ -3,7 +3,7 @@ cloudpickle
 docker
 docutils
 Werkzeug == 2.2.2
-Flask == 2.2.3
+Flask == 2.2.5
 Flask-Login
 Flask-SocketIO
 Flask-SSLify
