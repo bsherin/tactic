@@ -39,6 +39,7 @@ def login():
 
     if next_view is None:
         if current_user.is_authenticated:
+            print("user was already logged in, redirecting")
             return redirect(url_for("successful_login"))
         next_view = "successful_login"
     javascript_source = url_for('static', filename=js_source_dict["auth_react"])
