@@ -2,8 +2,8 @@ chardet
 cloudpickle
 docker
 docutils
-Werkzeug
-Flask
+Werkzeug == 2.2.2
+Flask == 2.2.3
 Flask-Login
 Flask-SocketIO
 Flask-SSLify
