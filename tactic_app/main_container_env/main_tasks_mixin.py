@@ -493,11 +493,16 @@ class LoadSaveTasksMixin:
             style_text = ""
             while i < ncells:
                 ccell = cell_list[i]
+                if ccell["summary_text"] is not None and re.findall("^style(?: )*=(?: )*.*", ccell["summary_text"]):
+                    ccell["extra_style"] = eval(re.sub("^style(?: )*=(?: )*", "", ccell["summary_text"]))
+                else:
+                    ccell["extra_style"] = ""
                 if not ccell["type"] == "divider":
                     new_cell_list.append(ccell)
                     i += 1
                     continue
                 if not ccell["header_text"].lower() == "styles":
+                    ccell["_id"] = re.sub(" ", "_", ccell["header_text"])
                     new_cell_list.append(ccell)
                     i += 1
                     continue

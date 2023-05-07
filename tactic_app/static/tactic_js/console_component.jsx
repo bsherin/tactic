@@ -2055,7 +2055,9 @@ class RawConsoleCodeItem extends React.Component {
                     </div>
                 {this.props.am_shrunk &&
                     <React.Fragment>
-                        <div className="log-panel-summary code-panel-summary">{this._getFirstLine()}</div>
+                        <EditableText value={this.props.summary_text ? this.props.summary_text : this._getFirstLine()}
+                                     onChange={this._handleSummaryTextChange}
+                                     className="log-panel-summary code-panel-summary"/>
                         <div className="button-div d-flex flex-row">
                              <GlyphButton handleClick={this._deleteMe}
                                           intent="danger"
@@ -2152,6 +2154,10 @@ RawConsoleCodeItem.propTypes = {
     goToNextCell: PropTypes.func,
     setFocus: PropTypes.func,
     runCodeItem: PropTypes.func
+};
+
+RawConsoleCodeItem.propTypes = {
+    summary_text: null
 };
 
 const ConsoleCodeItem = ContextMenuTarget(RawConsoleCodeItem);
@@ -2513,7 +2519,9 @@ class RawConsoleTextItem extends React.Component {
                 </div>
                 {this.props.am_shrunk &&
                     <React.Fragment>
-                        <div className="log-panel-summary">{this._getFirstLine()}</div>
+                        <EditableText value={this.props.summary_text ? this.props.summary_text : this._getFirstLine()}
+                                     onChange={this._handleSummaryTextChange}
+                                     className="log-panel-summary"/>
                         <div className="button-div d-flex flex-row">
                              <GlyphButton handleClick={this._deleteMe}
                                           intent="danger"
@@ -2599,6 +2607,7 @@ RawConsoleTextItem.propTypes = {
 
 RawConsoleTextItem.defaultProps = {
     force_sync_to_prop: false,
+    summary_text: null,
     links: []
 };
 

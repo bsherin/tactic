@@ -624,7 +624,7 @@ class HostWorker(QWorker):
                            "type": "text",
                            "am_shrunk": False,
                            "search_string": None,
-                           "summary_text": summary_text,
+                           "summary_text": None,
                            "console_text": data["console_text"],
                            "show_markdown": False}
         data["console_message"] = "consoleLog"
@@ -676,7 +676,7 @@ class HostWorker(QWorker):
                            "am_shrunk": False,
                            "show_spinner": False,
                            "running": False,
-                           "summary_text": summary_text,
+                           "summary_text": None,
                            "search_string": None,
                            "console_text": data["console_text"],
                            "output_text": "",

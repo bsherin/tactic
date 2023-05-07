@@ -138,10 +138,11 @@ class ProjectMenu extends React.Component {
                         break;
                     case "divider":
                         new_entry.header_text = entry.header_text;
+                        new_entry.summary_text = "";
                         break;
                     default:
                         new_entry.console_text = entry.console_text;
-                        new_entry.summary_text =entry.summary_text;
+                        new_entry.summary_text = entry.summary_text;
                         break;
                 }
                 cell_list.push(new_entry)

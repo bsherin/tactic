@@ -560,7 +560,7 @@
 <div class="section-content">
 {% elif cell.type == "code" -%}
 <div>
-{% if include_summaries%}
+{% if include_summaries and cell.summary_text -%}
 <div class="summary bp4-text-muted">{{ cell.summary_text|safe }}</div>
 {% endif -%}
 <pre>
@@ -573,14 +573,14 @@
 </div>
 </div>
 {% elif cell.type == "text" -%}
-{% if include_summaries%}
+{% if include_summaries and cell.summary_text -%}
 <div class="summary bp4-text-muted">{{ cell.summary_text|safe }}</div>
 {% endif -%}
 <div class="report-text">
 {{ cell.console_text|safe}}
 </div>
 {% else -%}
-{% if include_summaries%}
+{% if include_summaries  and cell.summary_text -%}
 <div class="summary bp4-text-muted">{{ cell.summary_text|safe }}</div>
 {% endif -%}
 <div class="report-fixed">

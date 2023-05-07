@@ -210,6 +210,7 @@ var ProjectMenu = /*#__PURE__*/function (_React$Component) {
 
               case "divider":
                 new_entry.header_text = entry.header_text;
+                new_entry.summary_text = "";
                 break;
 
               default:
