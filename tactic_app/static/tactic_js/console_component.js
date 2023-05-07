@@ -3150,9 +3150,11 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component3) {
           marginTop: 5
         },
         handleClick: this._toggleShrink
-      })), this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
+      })), this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.EditableText, {
+        value: this.props.summary_text ? this.props.summary_text : this._getFirstLine(),
+        onChange: this._handleSummaryTextChange,
         className: "log-panel-summary code-panel-summary"
-      }, this._getFirstLine()), /*#__PURE__*/_react["default"].createElement("div", {
+      }), /*#__PURE__*/_react["default"].createElement("div", {
         className: "button-div d-flex flex-row"
       }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
         handleClick: this._deleteMe,
@@ -3261,6 +3263,9 @@ RawConsoleCodeItem.propTypes = {
   goToNextCell: _propTypes["default"].func,
   setFocus: _propTypes["default"].func,
   runCodeItem: _propTypes["default"].func
+};
+RawConsoleCodeItem.propTypes = {
+  summary_text: null
 };
 var ConsoleCodeItem = (0, _core.ContextMenuTarget)(RawConsoleCodeItem);
 
@@ -3745,9 +3750,11 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component4) {
           marginTop: 5
         },
         handleClick: this._toggleShrink
-      })), this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
+      })), this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.EditableText, {
+        value: this.props.summary_text ? this.props.summary_text : this._getFirstLine(),
+        onChange: this._handleSummaryTextChange,
         className: "log-panel-summary"
-      }, this._getFirstLine()), /*#__PURE__*/_react["default"].createElement("div", {
+      }), /*#__PURE__*/_react["default"].createElement("div", {
         className: "button-div d-flex flex-row"
       }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
         handleClick: this._deleteMe,
@@ -3836,6 +3843,7 @@ RawConsoleTextItem.propTypes = {
 };
 RawConsoleTextItem.defaultProps = {
   force_sync_to_prop: false,
+  summary_text: null,
   links: []
 };
 var ConsoleTextItem = (0, _core.ContextMenuTarget)(RawConsoleTextItem);

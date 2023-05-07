@@ -1,5 +1,6 @@
+Werkzeug == 2.2.2
+Flask == 2.2.3
 Flask-SocketIO
-Flask
 kombu
 pika
 ssh-pymongo

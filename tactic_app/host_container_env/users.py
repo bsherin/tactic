@@ -88,7 +88,6 @@ def get_username_true_id(userid):
 class User(UserMixin, MongoAccess):
 
     def __init__(self, user_dict, use_remote=False):
-        print("creating User")
         self.username = ""  # This is just to be make introspection happy
         if use_remote:
             self.db = repository_db
@@ -103,7 +102,6 @@ class User(UserMixin, MongoAccess):
             else:
                 setattr(self, key, fdict["default"])
         self.password_hash = user_dict["password_hash"]
-        print("leaving __init__ in User")
 
     def create_new_alt_key(self, username=None):
         update_dict = {"alt_id": str(ObjectId())}
@@ -173,18 +171,15 @@ class User(UserMixin, MongoAccess):
 
     @staticmethod
     def get_user_by_username(username, use_remote=False):
-        print("in get_user_by_username")
         if use_remote:
             result = repository_db.user_collection.find_one({"username": username})
         else:
             result = db.user_collection.find_one({"username": username})
-        print("got get user result " + str("result"))
         if result is None:
             return None
         else:
             if USE_ALT_IDS and "alt_id" not in result:
                 create_new_alt_id(username)
-            print("about to resturn from get_user_by_username")
             return User(result, use_remote)
 
     def get_theme(self):

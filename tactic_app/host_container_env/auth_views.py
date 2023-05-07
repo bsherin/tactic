@@ -39,7 +39,6 @@ def login():
 
     if next_view is None:
         if current_user.is_authenticated:
-            print("user was already logged in, redirecting")
             return redirect(url_for("successful_login"))
         next_view = "successful_login"
     javascript_source = url_for('static', filename=js_source_dict["auth_react"])
@@ -77,7 +76,6 @@ login_manager.refresh_view = "relogin"
 
 @app.route('/login_after_register', methods=['GET', 'POST'])
 def login_after_register():
-    print("entering login view")
     javascript_source = url_for('static', filename=js_source_dict["auth_react"])
     return render_template('auth/login_react.html', show_message="yes", javascript_source=javascript_source,
                            css_source=css_source("auth_react"),
@@ -86,34 +84,23 @@ def login_after_register():
 
 @app.route('/attempt_login', methods=['GET', 'POST'])
 def attempt_login():
-    print("entering attempt login modified")
     data = request.json
-    print("got data " + str(data))
     result_dict = {}
-    print("about to call get_user_by_username")
     user = User.get_user_by_username(data["username"])
-    print("got user " + str(user))
     if user is not None and user.verify_password(data["password"]):
-        print("about to try to login")
         login_user(user, remember=data["remember_me"])
-        print("out of login_user")
         if current_user.is_anonymous:
             result_dict["logged_in"] = False
-            print("is_anonymous")
         else:
-            print("about to set timezone")
             user.set_user_timezone_offset(data["tzOffset"])
             user.set_last_login()
-            print("*** about to post load_user_default_tile_task")
             tactic_app.host_worker.post_task("host", "load_user_default_tiles_task",
                                              {"username": current_user.username})
-            print("*** return from posting task")
             # error_list = loaded_tile_management.load_user_default_tiles(current_user.username)
             result_dict["logged_in"] = True
             # result_dict["tile_loading_errors"] = error_list
     else:
         result_dict["logged_in"] = False
-    print("** leaving attempt_login with result_dict " + str(result_dict))
     return jsonify(result_dict)
 
 
@@ -133,7 +120,6 @@ def check_if_admin():
 @app.route('/logout/<page_id>')
 @login_required
 def logout(page_id):
-    print("in logout")
     user_id = current_user.get_id()
     # socketio.emit('close-user-windows', {"originator": page_id}, namespace='/library', room=user_id)
     socketio.emit('close-user-windows', {"originator": page_id}, namespace='/main', room=user_id)
