@@ -548,6 +548,33 @@ const BUTTON_CONSUMED_SPACE = 208;
          this.props.setMainStateValue("console_items", new_console_items, callback)
      }
 
+     _reOpenClosedDividers() {
+         if (this.temporarily_closed_items.length == 0) {
+             return
+         }
+         let new_console_items = _.cloneDeep(this.props.console_items);
+         for (let entry of new_console_items) {
+             if (entry.type == "divider" && this.temporarily_closed_items.includes(entry.unique_id)) {
+                 entry.am_shrunk = false;
+             }
+         }
+         this.temporarily_closed_items = [];
+         this.props.setMainStateValue("console_items", new_console_items)
+     }
+
+     _closeAllDividers(callback=null) {
+         let new_console_items = _.cloneDeep(this.props.console_items);
+         for (let entry of new_console_items) {
+             if (entry.type == "divider") {
+                 if (!entry.am_shrunk) {
+                     entry.am_shrunk = true;
+                     this.temporarily_closed_items.push(entry.unique_id)
+                 }
+             }
+         }
+         this.props.setMainStateValue("console_items", new_console_items, callback)
+     }
+
      _multiple_console_item_updates(replace_dicts, callback = null) {
          let new_console_items = [...this.props.console_items];
          for (let d of replace_dicts) {
@@ -695,14 +722,8 @@ const BUTTON_CONSUMED_SPACE = 208;
          return -1
      }
 
-     _moveSection({oldIndex, newIndex}, filtered_items) {
-         let above_entry;
-         if (newIndex > oldIndex) {
-             above_entry = filtered_items[newIndex]
-         }
-         else {
-             above_entry = filtered_items[newIndex - 1];
-         }
+     _moveSection({oldIndex, newIndex}, filtered_items, callback=null) {
+
          let move_entry = filtered_items[oldIndex];
          let move_index = this._consoleItemIndex(move_entry.unique_id);
          let section_ids = this._getSectionIds(move_entry.unique_id);
@@ -710,22 +731,26 @@ const BUTTON_CONSUMED_SPACE = 208;
          let new_console_items = [...this.props.console_items];
         new_console_items.splice(move_index, section_ids.length);
 
-        let new_index;
+        let below_index;
         if (newIndex == 0) {
-            new_index = 0
-        }
-        else if (above_entry.type == "divider" && above_entry.am_shrunk) {
-            let uid = above_entry.unique_id;
-            new_index = this._consoleItemIndex(uid, new_console_items) + this._getSectionIds(uid).length;
+            below_index = 0
         }
         else {
-            new_index = this._consoleItemIndex(above_entry.unique_id, new_console_items) + 1;
+             // noinspection ES6ConvertIndexedForToForOf
+            for (below_index = newIndex; below_index < new_console_items.length; ++below_index) {
+                 if (new_console_items[below_index].type == "divider") {
+                     break
+                 }
+             }
+             if (below_index >= new_console_items.length) {
+                 below_index = new_console_items.length
+             }
         }
-        new_console_items.splice(new_index, 0, ...the_section);
-        this.props.setMainStateValue("console_items", new_console_items)
+        new_console_items.splice(below_index, 0, ...the_section);
+        this.props.setMainStateValue("console_items", new_console_items, callback)
      }
 
-     _moveEntryAfterEntry(move_id, above_id) {
+     _moveEntryAfterEntry(move_id, above_id, callback=null) {
          let new_console_items = [...this.props.console_items];
          let move_entry = _.cloneDeep(this.get_console_item_entry(move_id));
          new_console_items.splice(this._consoleItemIndex(move_id), 1);
@@ -737,15 +762,15 @@ const BUTTON_CONSUMED_SPACE = 208;
              target_index = this._consoleItemIndex(above_id, new_console_items) + 1;
          }
          new_console_items.splice(target_index, 0, move_entry);
-         this.props.setMainStateValue("console_items", new_console_items)
+         this.props.setMainStateValue("console_items", new_console_items, callback)
      }
 
-     _resortConsoleItems({oldIndex, newIndex}, filtered_items) {
+     _resortConsoleItems({oldIndex, newIndex}, filtered_items, callback=null) {
          let self = this;
          if (oldIndex == newIndex) return;
          let move_entry = filtered_items[oldIndex];
-         if (move_entry.type == "divider" && move_entry.am_shrunk) {
-             this._moveSection({oldIndex, newIndex}, filtered_items);
+         if (move_entry.type == "divider") {
+             this._moveSection({oldIndex, newIndex}, filtered_items, callback);
              return
          }
          let trueOldIndex = this._consoleItemIndex(move_entry.unique_id);
@@ -764,13 +789,13 @@ const BUTTON_CONSUMED_SPACE = 208;
              if (above_entry.type == "divider" && above_entry.am_shrunk) {
                 this._setConsoleItemValue(above_entry.unique_id, "am_shrunk", false, ()=>{
                     let lastIdInSection = _.last(this._getSectionIds(above_entry.unique_id));
-                    self._moveEntryAfterEntry(move_entry.unique_id, lastIdInSection)
+                    self._moveEntryAfterEntry(move_entry.unique_id, lastIdInSection, callback)
                 });
                 return
              }
          }
          let target_id = above_entry == null ? null : above_entry.unique_id;
-         this._moveEntryAfterEntry(move_entry.unique_id, target_id)
+         this._moveEntryAfterEntry(move_entry.unique_id, target_id, callback)
      }
 
      _goToNextCell(unique_id) {
@@ -1181,6 +1206,31 @@ const BUTTON_CONSUMED_SPACE = 208;
         }, callback)
     }
 
+    _hideNonDividers() {
+         let nodeList = document.querySelectorAll(".log-panel:not(.divider-log-panel)");
+         for (let i = 0; i < nodeList.length; i++) {
+            nodeList[i].style.height = 0;
+        }
+    }
+
+    _showNonDividers() {
+         let nodeList = document.querySelectorAll(".log-panel:not(.divider-log-panel)");
+         for (let i = 0; i < nodeList.length; i++) {
+            nodeList[i].style.height = null;
+        }
+    }
+
+    _sortStart(data, event) {
+         event.preventDefault();
+         let self = this;
+         let unique_id = data.node.id;
+         let idx = this._consoleItemIndex(unique_id);
+         let entry = this.props.console_items[idx];
+         if (entry.type == "divider") {
+             this._hideNonDividers()
+         }
+    }
+
      render() {
          let gbstyle = {marginLeft: 1, marginTop: 2};
          let console_class = this.props.console_is_shrunk ? "am-shrunk" : "not-shrunk";
@@ -1324,8 +1374,12 @@ const BUTTON_CONSUMED_SPACE = 208;
                                                 item_list={filtered_items}
                                                 helperClass={this.props.dark_theme ? "bp4-dark" : "light-theme"}
                                                 handle=".console-sorter"
-                                                onSortStart={(_, event) => event.preventDefault()} // This prevents Safari weirdness
-                                                onSortEnd={(indices)=>{this._resortConsoleItems(indices, filtered_items)}}
+                                                onSortStart={this._sortStart} // This prevents Safari weirdness
+                                                onSortEnd={(data, event)=>{
+                                                    this._resortConsoleItems(data, filtered_items, this._showNonDividers);
+                                                }}
+                                                hideSortableGhost={true}
+                                                pressDelay={100}
                                                 shouldCancelStart={this._shouldCancelSortStart}
                                                 setConsoleItemValue={this._setConsoleItemValue}
                                                 selectConsoleItem={this._selectConsoleItem}
@@ -1532,7 +1586,7 @@ class RawDividerItem extends React.Component {
 
     render () {
         let converted_dict = {__html: this.props.console_text};
-        let panel_class = this.props.am_shrunk ? "log-panel log-panel-invisible fixed-log-panel" : "log-panel log-panel-visible fixed-log-panel";
+        let panel_class = this.props.am_shrunk ? "log-panel divider-log-panel log-panel-invisible fixed-log-panel" : "log-panel divider-log-panel log-panel-visible fixed-log-panel";
         if (this.props.am_selected) {
             panel_class += " selected"
         }
@@ -2156,7 +2210,7 @@ RawConsoleCodeItem.propTypes = {
     runCodeItem: PropTypes.func
 };
 
-RawConsoleCodeItem.propTypes = {
+RawConsoleCodeItem.defaultProps = {
     summary_text: null
 };
 
