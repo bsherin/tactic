@@ -109,7 +109,7 @@ function main_main() {
   }
 
   (0, _utilities_react.renderSpinnerMessage)("Starting up ...");
-  var target = window.is_new_notebook ? "new_notebook_in_context" : "main_project_in_context";
+  var target = window.is_new_notebook ? "new_notebook_in_context" : "]";
   var resource_name = window.is_new_notebook ? "" : window.project_name;
   var post_data = {
     "resource_name": resource_name

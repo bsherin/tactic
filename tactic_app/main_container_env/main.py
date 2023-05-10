@@ -1,6 +1,7 @@
 # from gevent import monkey; monkey.patch_all()
 import sys
 import re
+import uuid
 # noinspection PyUnresolvedReferences
 import requests
 import pickle
@@ -209,6 +210,20 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                 print("error converting one console cell")
         return entries
 
+    def add_missing_section_ends(self, console_items):
+        new_console_items = []
+        in_section = False
+        end_section = {"unique_id": str(uuid.uuid4()), "type": "section-end"}
+        for entry in console_items:
+            if entry.type == "divider":
+                if in_section:
+                    new_console_items.append({"unique_id": str(uuid.uuid4()),"type": "section-end"})
+                in_section = False
+            new_console_items.append(entry)
+        if in_section:
+            new_console_items.append({"unique_id": str(uuid.uuid4()),"type": "section-end"})
+        return new_console_items
+
     def convert_legacy_save(self, project_dict):
         try:
             the_tile_list = []
@@ -327,12 +342,16 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                     return {}, {}, {}, False
                 else:
                     project_dict["interface_state"] = interface_state
+            project_dict["interface_state"]["console_items"] = \
+                self.add_missing_section_ends(project_dict["interface_state"]["console_items"])
             return tile_info_dict, project_dict["loaded_modules"], project_dict["interface_state"], True
         else:
             if unique_id is None and self.is_legacy_save(self.mdata):
                 project_dict["interface_state"] = {
                     "console_items": self.convert_legacy_console(project_dict)
                 }
+            project_dict["interface_state"]["console_items"] = \
+                self.add_missing_section_ends(project_dict["interface_state"]["console_items"])
             return project_dict["interface_state"], True
 
     def get_used_tile_types(self):

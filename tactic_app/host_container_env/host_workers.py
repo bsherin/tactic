@@ -634,13 +634,17 @@ class HostWorker(QWorker):
     @task_worthy
     def print_divider_area_to_console(self, data):
         from tactic_app import socketio
-        unique_id = str(uuid.uuid4())
-        data["message"] = {"unique_id": unique_id,
-                           "type": "divider",
-                           "am_shrunk": False,
-                           "search_string": None,
-                           "header_text": data["header_text"]}
-        data["console_message"] = "consoleLog"
+        divider_unique_id = str(uuid.uuid4())
+        divider_dict = {"unique_id": divider_unique_id,
+                        "type": "divider",
+                        "am_shrunk": False,
+                        "search_string": None,
+                        "header_text": data["header_text"]}
+        section_end_unique_id = str(uuid.uuid4())
+        section_end_dict = {"unique_id": section_end_unique_id,
+                            "type": "section-end"}
+        data["message"] = [divider_dict, section_end_dict]
+        data["console_message"] = "consoleLogMultiple"
         self.emit_console_message(data)
         return {"success": True, "unique_id": unique_id}
 

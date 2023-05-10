@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 
 import 'codemirror/mode/markdown/markdown.js'
 
-import { Icon, Card, EditableText, Spinner, ContextMenuTarget, MenuDivider} from "@blueprintjs/core";
+import { Icon, Card, EditableText, Spinner, ContextMenuTarget, MenuDivider, Divider } from "@blueprintjs/core";
 import { Menu, MenuItem, ButtonGroup, Button} from "@blueprintjs/core";
 import _ from 'lodash';
 
@@ -76,6 +76,7 @@ const BUTTON_CONSUMED_SPACE = 208;
              if (data.main_id == self.props.main_id) {
                  let handlerDict = {
                      consoleLog: (data) => self._addConsoleEntry(data.message, data.force_open, true),
+                     consoleLogMultiple: (data) => self._addConsoleEntries(data.message, data.force_open, true),
                      createLink: (data) => {
                          let unique_id = data.message.unique_id;
                          self._addConsoleEntry(data.message, data.force_open, false, null, ()=>{
@@ -1624,6 +1625,102 @@ class RawDividerItem extends React.Component {
 }
 
 const DividerItem = ContextMenuTarget(RawDividerItem);
+
+const section_end_item_update_props = ["am_selected", "console_available_width"];
+
+class RawSectionEndItem extends React.Component {
+    constructor(props) {
+        super(props);
+        doBinding(this, "_", RawDividerItem.prototype);
+        this.update_props = section_end_item_update_props;
+        this.update_state_vars = [];
+        this.state = {};
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        for (let prop of this.update_props) {
+            if (nextProps[prop] != this.props[prop]) {
+                return true
+            }
+        }
+        return false
+    }
+
+    _pasteCell() {
+        this.props.pasteCell(this.props.unique_id)
+    }
+
+    _selectMe(e=null, callback=null) {
+        this.props.selectConsoleItem(this.props.unique_id, e, callback)
+    }
+
+    _addBlankText() {
+        let self = this;
+        this._selectMe(null, ()=>{
+            self.props.addNewTextItem()
+        })
+    }
+
+    _addBlankDivider() {
+        let self = this;
+        this._selectMe(null, ()=>{
+            self.props.addNewDividerItem()
+        })
+    }
+
+    _addBlankCode() {
+        let self = this;
+        this._selectMe(null,()=>{
+            self.props.addNewCodeItem()
+        })
+    }
+
+    renderContextMenu() {
+        // return a single element, or nothing to use default browser behavior
+        return (
+            <Menu>
+                <MenuItem icon="clipboard"
+                          onClick={this._pasteCell}
+                          text="Paste Cells" />
+                <MenuDivider/>
+                <MenuItem icon="new-text-box"
+                           onClick={this._addBlankText}
+                           text="New Text Cell"/>
+                 <MenuItem icon="code"
+                           onClick={this._addBlankCode}
+                           text="New Code Cell"/>
+                <MenuItem icon="header"
+                           onClick={this._addBlankDivider}
+                           text="New Section Divider"/>
+                <MenuDivider/>
+            </Menu>
+        );
+    }
+
+    _consoleItemClick(e) {
+        this._selectMe(e);
+        e.stopPropagation()
+    }
+
+    render () {
+        let panel_class = "log-panel section-end-log-panel log-panel-visible fixed-log-panel";
+        if (this.props.am_selected) {
+            panel_class += " selected"
+        }
+        let body_width = this.props.console_available_width - BUTTON_CONSUMED_SPACE;
+        return (
+            <div className={panel_class + " d-flex flex-row"} onClick={this._consoleItemClick} id={this.props.unique_id} style={{marginBottom: 10}}>
+                <div className="button-div shrink-expand-div d-flex flex-row">
+                </div>
+                <Divider/>
+                <div className="button-div d-flex flex-row">
+                </div>
+            </div>
+        )
+    }
+}
+
+const SectionEndItem = ContextMenuTarget(RawSectionEndItem);
 
 const log_item_update_props = ["is_error", "am_shrunk", "am_selected", "summary_text", "console_text", "console_available_width"];
 
