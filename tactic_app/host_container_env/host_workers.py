@@ -646,7 +646,7 @@ class HostWorker(QWorker):
         data["message"] = [divider_dict, section_end_dict]
         data["console_message"] = "consoleLogMultiple"
         self.emit_console_message(data)
-        return {"success": True, "unique_id": unique_id}
+        return {"success": True}
 
     @task_worthy
     def print_link_area_to_console(self, data):

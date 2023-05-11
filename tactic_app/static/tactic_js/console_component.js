@@ -272,7 +272,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       for (var i = cindex + 1; i < this.props.console_items.length; ++i) {
         var entry = this.props.console_items[i];
 
-        if (entry.type == "divider") {
+        if (entry.type == "section-id") {
           break;
         } else {
           id_list.push(entry.unique_id);
@@ -1998,7 +1998,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
   }, {
     key: "_hideNonDividers",
     value: function _hideNonDividers() {
-      var nodeList = document.querySelectorAll(".log-panel:not(.divider-log-panel)");
+      var nodeList = document.querySelectorAll(".in-section");
 
       for (var i = 0; i < nodeList.length; i++) {
         nodeList[i].style.height = 0;
@@ -2007,7 +2007,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
   }, {
     key: "_showNonDividers",
     value: function _showNonDividers() {
-      var nodeList = document.querySelectorAll(".log-panel:not(.divider-log-panel)");
+      var nodeList = document.querySelectorAll(".in-section");
 
       for (var i = 0; i < nodeList.length; i++) {
         nodeList[i].style.height = null;
@@ -2061,6 +2061,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       }]];
       var filtered_items = [];
       var in_closed_section = false;
+      var in_section = false;
 
       var _iterator14 = _createForOfIteratorHelper(this.props.console_items),
           _step14;
@@ -2069,15 +2070,19 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
         for (_iterator14.s(); !(_step14 = _iterator14.n()).done;) {
           var _entry = _step14.value;
 
-          if (_entry.type == "divider" && _entry.am_shrunk) {
-            in_closed_section = true;
+          if (_entry.type == "divider") {
+            in_section = true;
             filtered_items.push(_entry);
-          }
+            in_closed_section = _entry.am_shrunk;
+          } else if (_entry.type == "section-end") {
+            if (!in_closed_section) {
+              filtered_items.push(_entry);
+            }
 
-          if (_entry.type == "divider" && !_entry.am_shrunk) {
             in_closed_section = false;
-            filtered_items.push(_entry);
+            in_section = false;
           } else if (!in_closed_section) {
+            _entry.in_section = in_section;
             filtered_items.push(_entry);
           }
         }
@@ -2338,6 +2343,9 @@ var SuperItem = /*#__PURE__*/function (_React$PureComponent3) {
         case "divider":
           return /*#__PURE__*/_react["default"].createElement(DividerItem, this.props);
 
+        case "section-end":
+          return /*#__PURE__*/_react["default"].createElement(SectionEndItem, this.props);
+
         default:
           return null;
       }
@@ -2512,7 +2520,7 @@ var RawDividerItem = /*#__PURE__*/function (_React$Component) {
       var converted_dict = {
         __html: this.props.console_text
       };
-      var panel_class = this.props.am_shrunk ? "log-panel divider-log-panel log-panel-invisible fixed-log-panel" : "log-panel divider-log-panel log-panel-visible fixed-log-panel";
+      var panel_class = this.props.am_shrunk ? "log-panel in-section log-panel-invisible fixed-log-panel" : "log-panel divider-log-panel log-panel-visible fixed-log-panel";
 
       if (this.props.am_selected) {
         panel_class += " selected";
@@ -2578,7 +2586,7 @@ var RawSectionEndItem = /*#__PURE__*/function (_React$Component2) {
     _classCallCheck(this, RawSectionEndItem);
 
     _this22 = _super5.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this22), "_", RawDividerItem.prototype);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this22), "_", RawSectionEndItem.prototype);
     _this22.update_props = section_end_item_update_props;
     _this22.update_state_vars = [];
     _this22.state = {};
@@ -2692,9 +2700,17 @@ var RawSectionEndItem = /*#__PURE__*/function (_React$Component2) {
         style: {
           marginBottom: 10
         }
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: "button-div shrink-expand-div d-flex flex-row"
-      }), /*#__PURE__*/_react["default"].createElement(_core.Divider, null), /*#__PURE__*/_react["default"].createElement("div", {
+      }, /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, {
+        minimal: true,
+        vertical: true,
+        style: {
+          width: "100%"
+        }
+      }, /*#__PURE__*/_react["default"].createElement(_core.Divider, {
+        style: {
+          width: "100%"
+        }
+      })), /*#__PURE__*/_react["default"].createElement("div", {
         className: "button-div d-flex flex-row"
       }));
     }
@@ -2912,6 +2928,10 @@ var RawLogItem = /*#__PURE__*/function (_React$Component3) {
       };
       var panel_class = this.props.am_shrunk ? "log-panel log-panel-invisible fixed-log-panel" : "log-panel log-panel-visible fixed-log-panel";
 
+      if (this.props.in_section) {
+        panel_class += " in-section";
+      }
+
       if (this.props.am_selected) {
         panel_class += " selected";
       }
@@ -2987,6 +3007,7 @@ var RawLogItem = /*#__PURE__*/function (_React$Component3) {
 
 RawLogItem.propTypes = {
   unique_id: _propTypes["default"].string,
+  in_section: _propTypes["default"].bool,
   is_error: _propTypes["default"].bool,
   am_shrunk: _propTypes["default"].bool,
   summary_text: _propTypes["default"].string,
@@ -3363,6 +3384,10 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component4) {
 
       if (this.props.am_selected) {
         panel_style += " selected";
+      }
+
+      if (this.props.in_section) {
+        panel_style += " in-section";
       }
 
       var output_dict = {
@@ -3949,6 +3974,10 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component5) {
 
       if (this.props.am_selected) {
         panel_class += " selected";
+      }
+
+      if (this.props.in_section) {
+        panel_class += " in-section";
       }
 
       var gbstyle = {
