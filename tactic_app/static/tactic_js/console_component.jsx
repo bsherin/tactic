@@ -34,6 +34,7 @@ export {ConsoleComponent}
 
 const MAX_CONSOLE_WIDTH = 1800;
 const BUTTON_CONSUMED_SPACE = 208;
+const SECTION_INDENT = 25;  // This is also hard coded into the css file at the moment
 
  class RawConsoleComponent extends React.PureComponent {
      constructor(props, context) {
@@ -165,11 +166,9 @@ const BUTTON_CONSUMED_SPACE = 208;
          let id_list = [unique_id];
          for (let i=cindex + 1; i < this.props.console_items.length; ++i) {
              let entry = this.props.console_items[i];
-             if (entry.type == "section-id") {
+             id_list.push(entry.unique_id);
+             if (entry.type == "section-end") {
                  break
-             }
-             else {
-                 id_list.push(entry.unique_id)
              }
          }
          return id_list
@@ -762,6 +761,7 @@ const BUTTON_CONSUMED_SPACE = 208;
          else {
              target_index = this._consoleItemIndex(above_id, new_console_items) + 1;
          }
+         console.log("got target_index " + String(target_index));
          new_console_items.splice(target_index, 0, move_entry);
          this.props.setMainStateValue("console_items", new_console_items, callback)
      }
@@ -787,11 +787,15 @@ const BUTTON_CONSUMED_SPACE = 208;
              else {
                  above_entry = filtered_items[newIndex - 1];
              }
+             console.log("got above_entry type " + above_entry.type);
+
              if (above_entry.type == "divider" && above_entry.am_shrunk) {
-                this._setConsoleItemValue(above_entry.unique_id, "am_shrunk", false, ()=>{
-                    let lastIdInSection = _.last(this._getSectionIds(above_entry.unique_id));
-                    self._moveEntryAfterEntry(move_entry.unique_id, lastIdInSection, callback)
-                });
+                 console.log("it's a shrunk divider");
+                 let section_ids = this._getSectionIds(above_entry.unique_id);
+                 console.log("got section_ids " + String(section_ids));
+                 let lastIdInSection = _.last(section_ids);
+                 console.log("got lastId " + lastIdInSection);
+                self._moveEntryAfterEntry(move_entry.unique_id, lastIdInSection, callback);
                 return
              }
          }
@@ -1260,6 +1264,7 @@ const BUTTON_CONSUMED_SPACE = 208;
              }
              else if (entry.type == "section-end") {
                  if (!in_closed_section) {
+                     entry.in_section = true;
                      filtered_items.push(entry)
                  }
                  in_closed_section = false;
@@ -1595,7 +1600,7 @@ class RawDividerItem extends React.Component {
 
     render () {
         let converted_dict = {__html: this.props.console_text};
-        let panel_class = this.props.am_shrunk ? "log-panel in-section log-panel-invisible fixed-log-panel" : "log-panel divider-log-panel log-panel-visible fixed-log-panel";
+        let panel_class = this.props.am_shrunk ? "log-panel in-section divider-log-panel log-panel-invisible fixed-log-panel" : "log-panel divider-log-panel log-panel-visible fixed-log-panel";
         if (this.props.am_selected) {
             panel_class += " selected"
         }
@@ -1719,7 +1724,7 @@ class RawSectionEndItem extends React.Component {
         return (
             <div className={panel_class + " d-flex flex-row"} onClick={this._consoleItemClick} id={this.props.unique_id} style={{marginBottom: 10}}>
                 <ButtonGroup minimal={true} vertical={true} style={{width: "100%"}}>
-                <Divider style={{width: "100%"}}/>
+                <Divider style={{marginLeft: 85, marginRight: 85}}/>
                 </ButtonGroup>
                 <div className="button-div d-flex flex-row">
                 </div>
@@ -1877,6 +1882,9 @@ class RawLogItem extends React.Component {
             panel_class += " error-log-panel"
         }
         let body_width = this.props.console_available_width - BUTTON_CONSUMED_SPACE;
+        if (this.props.in_section) {
+            body_width -= SECTION_INDENT / 2
+        }
         return (
             <div className={panel_class + " d-flex flex-row"} onClick={this._consoleItemClick} id={this.props.unique_id} style={{marginBottom: 10}}>
                 <div className="button-div shrink-expand-div d-flex flex-row">
@@ -2202,7 +2210,10 @@ class RawConsoleCodeItem extends React.Component {
         }
         let output_dict = {__html: this.props.output_text};
         let spinner_val = this.props.running ? null : 0;
-
+        let code_container_width = this.props.console_available_width - BUTTON_CONSUMED_SPACE;
+        if (this.props.in_section) {
+            code_container_width -= SECTION_INDENT / 2
+        }
         return (
              <div className={panel_style + " d-flex flex-row"}
                   ref={this.elRef}
@@ -2262,7 +2273,7 @@ class RawConsoleCodeItem extends React.Component {
                                                          setCMObject={this._setCMObject}
                                                          extraKeys={this._extraKeys()}
                                                          search_term={this.props.search_string}
-                                                         code_container_width={this.props.console_available_width - BUTTON_CONSUMED_SPACE}
+                                                         code_container_width={code_container_width}
                                                          saveMe={null}/>
                                          <div className="button-div d-flex flex-row">
                                              <GlyphButton handleClick={this._deleteMe}
@@ -2671,6 +2682,10 @@ class RawConsoleTextItem extends React.Component {
                                 res_type={link.res_type}
                                 res_name={link.res_name}/>
         );
+        let code_container_width = this.props.console_available_width - BUTTON_CONSUMED_SPACE;
+        if (this.props.in_section) {
+            code_container_width -= SECTION_INDENT / 2
+        }
         return (
             <div className={panel_class + " d-flex flex-row"} onClick={this._consoleItemClick}
                  ref={this.elRef} id={this.props.unique_id} style={{marginBottom: 10}}>
@@ -2726,7 +2741,7 @@ class RawConsoleTextItem extends React.Component {
                                                      setCMObject={this._setCMObject}
                                                      extraKeys={this._extraKeys()}
                                                      search_term={this.props.search_string}
-                                                     code_container_width={this.props.console_available_width - BUTTON_CONSUMED_SPACE}
+                                                     code_container_width={code_container_width}
                                                      saveMe={null}/>
                                          {/*<KeyTrap target_ref={this.state.ce_ref} bindings={key_bindings} />*/}
                                      </React.Fragment>

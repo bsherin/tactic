@@ -141,6 +141,9 @@ body {
     overflow: hidden;
     transition:min-height .5s ease-in-out, max-height .5s ease-in-out;
 
+    &.in-section:not(.divider-log-panel)  {
+        margin-left: 25px;
+    }
     .notclose {
         font-size: 15px;
         padding-bottom: 3px

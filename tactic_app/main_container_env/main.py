@@ -213,16 +213,17 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
     def add_missing_section_ends(self, console_items):
         new_console_items = []
         in_section = False
-        end_section = {"unique_id": str(uuid.uuid4()), "type": "section-end"}
         for entry in console_items:
             if entry["type"] == "divider":
                 if in_section:
+                    end_section = {"unique_id": str(uuid.uuid4()), "type": "section-end"}
                     new_console_items.append(end_section)
                 in_section = True
             if entry["type"] == "section-end":
                 in_section = False
             new_console_items.append(entry)
         if in_section:
+            end_section = {"unique_id": str(uuid.uuid4()), "type": "section-end"}
             new_console_items.append(end_section)
         return new_console_items
 
