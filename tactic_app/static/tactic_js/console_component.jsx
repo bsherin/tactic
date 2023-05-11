@@ -165,7 +165,7 @@ const BUTTON_CONSUMED_SPACE = 208;
          let id_list = [unique_id];
          for (let i=cindex + 1; i < this.props.console_items.length; ++i) {
              let entry = this.props.console_items[i];
-             if (entry.type == "divider") {
+             if (entry.type == "section-id") {
                  break
              }
              else {
@@ -1208,14 +1208,14 @@ const BUTTON_CONSUMED_SPACE = 208;
     }
 
     _hideNonDividers() {
-         let nodeList = document.querySelectorAll(".log-panel:not(.divider-log-panel)");
+         let nodeList = document.querySelectorAll(".in-section");
          for (let i = 0; i < nodeList.length; i++) {
             nodeList[i].style.height = 0;
         }
     }
 
     _showNonDividers() {
-         let nodeList = document.querySelectorAll(".log-panel:not(.divider-log-panel)");
+         let nodeList = document.querySelectorAll(".in-section");
          for (let i = 0; i < nodeList.length; i++) {
             nodeList[i].style.height = null;
         }
@@ -1251,16 +1251,22 @@ const BUTTON_CONSUMED_SPACE = 208;
          let key_bindings = [[["escape"], ()=>{this._clear_all_selected_items()}]];
          let filtered_items = [];
          let in_closed_section = false;
+         let in_section = false;
          for (let entry of this.props.console_items) {
-             if (entry.type == "divider" && entry.am_shrunk) {
-                 in_closed_section = true;
-                 filtered_items.push(entry)
+             if (entry.type == "divider") {
+                 in_section = true;
+                 filtered_items.push(entry);
+                 in_closed_section = entry.am_shrunk
              }
-             if (entry.type == "divider" && !entry.am_shrunk) {
+             else if (entry.type == "section-end") {
+                 if (!in_closed_section) {
+                     filtered_items.push(entry)
+                 }
                  in_closed_section = false;
-                 filtered_items.push(entry)
+                 in_section = false;
              }
              else if (!in_closed_section) {
+                 entry.in_section = in_section;
                  filtered_items.push(entry)
              }
 
@@ -1462,6 +1468,8 @@ class SuperItem extends React.PureComponent {
                 return <LogItem {...this.props}/>;
             case "divider":
                 return <DividerItem {...this.props}/>;
+            case "section-end":
+                return <SectionEndItem {...this.props}/>;
             default:
                 return null
         }
@@ -1587,7 +1595,7 @@ class RawDividerItem extends React.Component {
 
     render () {
         let converted_dict = {__html: this.props.console_text};
-        let panel_class = this.props.am_shrunk ? "log-panel divider-log-panel log-panel-invisible fixed-log-panel" : "log-panel divider-log-panel log-panel-visible fixed-log-panel";
+        let panel_class = this.props.am_shrunk ? "log-panel in-section log-panel-invisible fixed-log-panel" : "log-panel divider-log-panel log-panel-visible fixed-log-panel";
         if (this.props.am_selected) {
             panel_class += " selected"
         }
@@ -1631,7 +1639,7 @@ const section_end_item_update_props = ["am_selected", "console_available_width"]
 class RawSectionEndItem extends React.Component {
     constructor(props) {
         super(props);
-        doBinding(this, "_", RawDividerItem.prototype);
+        doBinding(this, "_", RawSectionEndItem.prototype);
         this.update_props = section_end_item_update_props;
         this.update_state_vars = [];
         this.state = {};
@@ -1710,9 +1718,9 @@ class RawSectionEndItem extends React.Component {
         let body_width = this.props.console_available_width - BUTTON_CONSUMED_SPACE;
         return (
             <div className={panel_class + " d-flex flex-row"} onClick={this._consoleItemClick} id={this.props.unique_id} style={{marginBottom: 10}}>
-                <div className="button-div shrink-expand-div d-flex flex-row">
-                </div>
-                <Divider/>
+                <ButtonGroup minimal={true} vertical={true} style={{width: "100%"}}>
+                <Divider style={{width: "100%"}}/>
+                </ButtonGroup>
                 <div className="button-div d-flex flex-row">
                 </div>
             </div>
@@ -1859,6 +1867,9 @@ class RawLogItem extends React.Component {
     render () {
         let converted_dict = {__html: this.props.console_text};
         let panel_class = this.props.am_shrunk ? "log-panel log-panel-invisible fixed-log-panel" : "log-panel log-panel-visible fixed-log-panel";
+        if (this.props.in_section) {
+            panel_class += " in-section"
+        }
         if (this.props.am_selected) {
             panel_class += " selected"
         }
@@ -1916,6 +1927,7 @@ class RawLogItem extends React.Component {
 
 RawLogItem.propTypes = {
     unique_id: PropTypes.string,
+    in_section: PropTypes.bool,
     is_error: PropTypes.bool,
     am_shrunk: PropTypes.bool,
     summary_text: PropTypes.string,
@@ -2184,6 +2196,9 @@ class RawConsoleCodeItem extends React.Component {
         let panel_style = this.props.am_shrunk ? "log-panel log-panel-invisible" : "log-panel log-panel-visible";
         if (this.props.am_selected) {
             panel_style += " selected"
+        }
+        if (this.props.in_section) {
+            panel_style += " in-section"
         }
         let output_dict = {__html: this.props.output_text};
         let spinner_val = this.props.running ? null : 0;
@@ -2641,6 +2656,9 @@ class RawConsoleTextItem extends React.Component {
         let panel_class = this.props.am_shrunk ? "log-panel log-panel-invisible text-log-item" : "log-panel log-panel-visible text-log-item";
         if (this.props.am_selected) {
             panel_class += " selected"
+        }
+        if (this.props.in_section) {
+            panel_class += " in-section"
         }
         let gbstyle={marginLeft: 1};
         let body_width = this.props.console_available_width - BUTTON_CONSUMED_SPACE;

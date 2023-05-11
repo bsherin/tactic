@@ -73,6 +73,24 @@ def relogin():
 
 login_manager.refresh_view = "relogin"
 
+@app.route("/context_direct/<username>/<password>", methods=['GET', 'POST'])
+def context_direct(username, password):
+    user = User.get_user_by_username(username)
+    if user is not None and user.verify_password(password):
+        login_user(user, True)
+        if current_user.is_anonymous:
+            return "no good"
+        else:
+            # user.set_user_timezone_offset(data["tzOffset"])
+            user.set_last_login()
+            tactic_app.host_worker.post_task("host", "load_user_default_tiles_task",
+                                             {"username": current_user.username})
+            # error_list = loaded_tile_management.load_user_default_tiles(current_user.username)
+            view_text = "context"
+            return redirect(url_for(view_text))
+            # result_dict["tile_loading_errors"] = error_list
+
+    return "no good login"
 
 @app.route('/login_after_register', methods=['GET', 'POST'])
 def login_after_register():
