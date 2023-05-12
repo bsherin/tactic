@@ -43,6 +43,7 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
          this.header_ref = React.createRef();
          this.body_ref = React.createRef();
          this.state = {
+             hide_in_section: false,
              console_item_with_focus: null,
              console_item_saved_focus: null,
              console_error_log_text: "",
@@ -761,7 +762,6 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
          else {
              target_index = this._consoleItemIndex(above_id, new_console_items) + 1;
          }
-         console.log("got target_index " + String(target_index));
          new_console_items.splice(target_index, 0, move_entry);
          this.props.setMainStateValue("console_items", new_console_items, callback)
      }
@@ -787,14 +787,10 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
              else {
                  above_entry = filtered_items[newIndex - 1];
              }
-             console.log("got above_entry type " + above_entry.type);
 
              if (above_entry.type == "divider" && above_entry.am_shrunk) {
-                 console.log("it's a shrunk divider");
                  let section_ids = this._getSectionIds(above_entry.unique_id);
-                 console.log("got section_ids " + String(section_ids));
                  let lastIdInSection = _.last(section_ids);
-                 console.log("got lastId " + lastIdInSection);
                 self._moveEntryAfterEntry(move_entry.unique_id, lastIdInSection, callback);
                 return
              }
@@ -848,17 +844,56 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
         })
      }
 
+     _getNextEndIndex(start_id) {
+         let start_index = this._consoleItemIndex(start_id);
+         for (let entry of this.props.console_items.slice(start_index,)) {
+             if (entry.type == "section-end") {
+                return this._consoleItemIndex(entry.unique_id)
+             }
+         }
+         return this.props.console_items.length
+     }
+
      _addConsoleEntries(new_entries, force_open = true, set_focus = false, unique_id = null, callback=null) {
          let self = this;
          _.last(new_entries).set_focus = set_focus;
+         let inserting_divider = false;
+         for (let entry of new_entries) {
+            if (entry.type == "divider") {
+                inserting_divider = true
+            }
+         }
          let last_id = _.last(new_entries).unique_id;
          let insert_index;
          if (unique_id) {
-             insert_index = this._consoleItemIndex(unique_id) + 1
+             if (inserting_divider) {
+                 insert_index = this._getNextEndIndex(unique_id) + 1
+             }
+             else {
+                 insert_index = this._consoleItemIndex(unique_id) + 1
+             }
+
          } else if (this.state.all_selected_items.length == 0) {
              insert_index = this.props.console_items.length
          } else {
-             insert_index = this._consoleItemIndex(this._currently_selected()) + 1
+             let current_selected_id = this._currently_selected();
+             if (inserting_divider) {
+                 insert_index = this._getNextEndIndex(current_selected_id) + 1
+             }
+             else {
+                 let selected_item = this.get_console_item_entry(current_selected_id);
+                 if (selected_item.type == "divider") {
+                     if (selected_item.am_shrunk) {
+                        insert_index = this._getNextEndIndex(current_selected_id) + 1
+                     }
+                     else {
+                         insert_index = this._consoleItemIndex(current_selected_id) + 1;
+                     }
+                 }
+                 else {
+                     insert_index = this._consoleItemIndex(this._currently_selected()) + 1
+                 }
+             }
          }
          let new_console_items = [...this.props.console_items];
          new_console_items.splice(insert_index, 0, ...new_entries);
@@ -1212,17 +1247,19 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
     }
 
     _hideNonDividers() {
-         let nodeList = document.querySelectorAll(".in-section");
-         for (let i = 0; i < nodeList.length; i++) {
-            nodeList[i].style.height = 0;
-        }
+         this.setState({hide_in_section: true});
+        //  let nodeList = document.querySelectorAll(".in-section");
+        //  for (let i = 0; i < nodeList.length; i++) {
+        //     nodeList[i].style.height = 0;
+        // }
     }
 
     _showNonDividers() {
-         let nodeList = document.querySelectorAll(".in-section");
-         for (let i = 0; i < nodeList.length; i++) {
-            nodeList[i].style.height = null;
-        }
+          this.setState({hide_in_section: false});
+        //  let nodeList = document.querySelectorAll(".in-section");
+        //  for (let i = 0; i < nodeList.length; i++) {
+        //     nodeList[i].style.height = null;
+        // }
     }
 
     _sortStart(data, event) {
@@ -1263,8 +1300,8 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
                  in_closed_section = entry.am_shrunk
              }
              else if (entry.type == "section-end") {
+                 entry.in_section = true;
                  if (!in_closed_section) {
-                     entry.in_section = true;
                      filtered_items.push(entry)
                  }
                  in_closed_section = false;
@@ -1391,6 +1428,7 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
                                                     this._resortConsoleItems(data, filtered_items, this._showNonDividers);
                                                 }}
                                                 hideSortableGhost={true}
+                                                hide_in_section={this.state.hide_in_section}
                                                 pressDelay={100}
                                                 shouldCancelStart={this._shouldCancelSortStart}
                                                 setConsoleItemValue={this._setConsoleItemValue}
@@ -1639,7 +1677,7 @@ class RawDividerItem extends React.Component {
 
 const DividerItem = ContextMenuTarget(RawDividerItem);
 
-const section_end_item_update_props = ["am_selected", "console_available_width"];
+const section_end_item_update_props = ["hide_in_section", "am_selected", "console_available_width"];
 
 class RawSectionEndItem extends React.Component {
     constructor(props) {
@@ -1716,7 +1754,12 @@ class RawSectionEndItem extends React.Component {
     }
 
     render () {
-        let panel_class = "log-panel section-end-log-panel log-panel-visible fixed-log-panel";
+        if (this.props.hide_in_section) {
+            return (
+                <div className="log-panel fixed-log-panel d-flex flex-row" id={this.props.unique_id} style={{height: 0}}/>
+            )
+        }
+        let panel_class = "log-panel in-section section-end-log-panel log-panel-visible fixed-log-panel";
         if (this.props.am_selected) {
             panel_class += " selected"
         }
@@ -1735,7 +1778,8 @@ class RawSectionEndItem extends React.Component {
 
 const SectionEndItem = ContextMenuTarget(RawSectionEndItem);
 
-const log_item_update_props = ["is_error", "am_shrunk", "am_selected", "summary_text", "console_text", "console_available_width"];
+const log_item_update_props = ["is_error", "am_shrunk", "am_selected", "hide_in_section",
+    "in_section", "summary_text", "console_text", "console_available_width"];
 
 class RawLogItem extends React.Component {
     constructor(props) {
@@ -1870,8 +1914,14 @@ class RawLogItem extends React.Component {
     }
 
     render () {
-        let converted_dict = {__html: this.props.console_text};
         let panel_class = this.props.am_shrunk ? "log-panel log-panel-invisible fixed-log-panel" : "log-panel log-panel-visible fixed-log-panel";
+        if (this.props.hide_in_section && this.props.in_section) {
+            return (
+                <div className="log-panel fixed-log-panel d-flex flex-row" id={this.props.unique_id} style={{height: 0}}/>
+            )
+        }
+        let converted_dict = {__html: this.props.console_text};
+
         if (this.props.in_section) {
             panel_class += " in-section"
         }
@@ -1950,7 +2000,7 @@ RawLogItem.propTypes = {
 const LogItem = ContextMenuTarget(RawLogItem);
 
 const code_item_update_props = ["am_shrunk", "set_focus", "am_selected", "search_string", "summary_text", "console_text",
-            "show_spinner", "execution_count", "output_text", "console_available_width", "dark_theme"];
+            "in_section", "hide_in_section", "show_spinner", "execution_count", "output_text", "console_available_width", "dark_theme"];
 
 class RawConsoleCodeItem extends React.Component {
     constructor(props) {
@@ -2201,6 +2251,11 @@ class RawConsoleCodeItem extends React.Component {
     }
 
     render () {
+        if (this.props.hide_in_section && this.props.in_section) {
+            return (
+                <div className="log-panel fixed-log-panel d-flex flex-row" id={this.props.unique_id} style={{height: 0}}/>
+            )
+        }
         let panel_style = this.props.am_shrunk ? "log-panel log-panel-invisible" : "log-panel log-panel-visible";
         if (this.props.am_selected) {
             panel_style += " selected"
@@ -2356,7 +2411,7 @@ class ResourceLinkButton extends React.PureComponent {
             postAjaxPromise($SCRIPT_ROOT + this.my_view, {context_id: window.context_id,
                 resource_name: this.props.res_name})
                 .then(self.props.handleCreateViewer)
-                .catch(doFlash);
+                .catch(doFlash);""
         }
         else {
             window.open($SCRIPT_ROOT + this.my_view + this.props.res_name)
@@ -2392,7 +2447,7 @@ ResourceLinkButton.propTypes = {
 };
 
 const text_item_update_props = ["am_shrunk", "set_focus", "serach_string", "am_selected", "show_markdown",
-            "summary_text", "console_text", "console_available_width", "links"];
+            "in_section", "hide_in_section", "summary_text", "console_text", "console_available_width", "links"];
 
 class RawConsoleTextItem extends React.Component {
     constructor(props) {
@@ -2657,6 +2712,11 @@ class RawConsoleTextItem extends React.Component {
     }
 
     render () {
+        if (this.props.hide_in_section && this.props.in_section) {
+            return (
+                <div className="log-panel fixed-log-panel d-flex flex-row" id={this.props.unique_id} style={{height: 0}}/>
+            )
+        }
         let really_show_markdown =  this.hasOnlyWhitespace && this.props.links.length == 0 ? false : this.props.show_markdown;
         var converted_markdown;
         if (really_show_markdown) {
