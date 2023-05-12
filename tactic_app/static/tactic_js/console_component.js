@@ -3670,7 +3670,6 @@ var ResourceLinkButton = /*#__PURE__*/function (_React$PureComponent4) {
           context_id: window.context_id,
           resource_name: this.props.res_name
         }).then(self.props.handleCreateViewer)["catch"](_toaster.doFlash);
-        "";
       } else {
         window.open($SCRIPT_ROOT + this.my_view + this.props.res_name);
       }
