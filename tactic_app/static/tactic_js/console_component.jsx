@@ -2411,7 +2411,7 @@ class ResourceLinkButton extends React.PureComponent {
             postAjaxPromise($SCRIPT_ROOT + this.my_view, {context_id: window.context_id,
                 resource_name: this.props.res_name})
                 .then(self.props.handleCreateViewer)
-                .catch(doFlash);""
+                .catch(doFlash);
         }
         else {
             window.open($SCRIPT_ROOT + this.my_view + this.props.res_name)
