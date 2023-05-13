@@ -589,46 +589,46 @@
     </style>
 </head>
 <body {% if use_dark_theme -%} class="bp4-dark" {% endif %}>
-<div>
-<div id="before-space" style="display:flex;flex-direction:column">
 {% for cell in cell_list -%}
-{% if cell.type == "divider" -%}
-</div>
-</div>
-<div id="{{ cell._id }}" class="slide-outer" style="display:flex;flex-direction:column">
-<h2 class="report-divider slide-title bp4-heading" style={{ cell.extra_style|safe }}>
-{{ cell.header_text }}
-</h2>
-<div class="section-content slide-content">
-{% elif cell.type == "code" -%}
-{% if include_summaries -%}
-<div class="summary bp4-text-muted">{{ cell.summary_text|safe }}</div>
-{% endif -%}
-<pre class="code-pre">
-<code class="report-code code-block" style={{ cell.extra_style|safe }}>
-{{cell.console_text|safe}}
-</code>
-</pre>
-<div class="report-output output-block">
-{{ cell.output_text|safe }}
-</div>
-{% elif cell.type == "text" -%}
-{% if include_summaries -%}
-<div class="summary bp4-text-muted">{{ cell.summary_text|safe }}</div>
-{% endif -%}
-<div class="report-text text-block" style={{ cell.extra_style|safe }}>
-{{ cell.console_text|safe}}
-</div>
-{% else -%}
-{% if include_summaries -%}
-<div class="summary bp4-text-muted">{{ cell.summary_text|safe }}</div>
-{% endif -%}
-<div class="report-fixed fixed-block" style={{ cell.extra_style|safe }}>
-{{ cell.console_text|safe }}
-</div>
-{% endif -%}
+    {% if cell.type == "section-end" %}
+        </div>
+        </div>
+    {% elif cell.type == "divider" -%}
+        <div id="{{ cell._id }}" class="slide-outer" style="display:flex;flex-direction:column">
+        <h2 class="report-divider slide-title bp4-heading" style={{ cell.extra_style|safe }}>
+            {{ cell.header_text }}
+        </h2>
+        <div class="section-content slide-content">
+    {% else %}
+        {% if cell.type == "code" -%}
+            {% if include_summaries and cell.summary_text  -%}
+                <div class="summary bp4-text-muted">{{ cell.summary_text|safe }}</div>
+            {% endif -%}
+            <pre class="code-pre">
+                <code class="report-code code-block" style={{ cell.extra_style|safe }}>
+                    {{cell.console_text|safe}}
+                </code>
+            </pre>
+            <div class="report-output output-block">
+                {{ cell.output_text|safe }}
+            </div>
+        {% elif cell.type == "text" -%}
+            {% if include_summaries -%}
+                <div class="summary bp4-text-muted">{{ cell.summary_text|safe }}</div>
+            {% endif -%}
+            <div class="report-text text-block" style={{ cell.extra_style|safe }}>
+                {{ cell.console_text|safe}}
+            </div>
+        {% else -%}
+            {% if include_summaries -%}
+                <div class="summary bp4-text-muted">{{ cell.summary_text|safe }}</div>
+            {% endif -%}
+            <div class="report-fixed fixed-block" style={{ cell.extra_style|safe }}>
+                {{ cell.console_text|safe }}
+            </div>
+        {% endif -%}
+    {% endif %}
 {% endfor -%}
-</div>
 </div>
 
 <button id="prev-but" class="bp4-button" style="position:absolute; bottom:10px" type="button">Previous</button>
@@ -769,7 +769,6 @@ window.addEventListener('keydown', event => {
     goToNext()
   }
 });
-
 
 </script>
 </body>
