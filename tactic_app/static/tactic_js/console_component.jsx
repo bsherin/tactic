@@ -76,6 +76,7 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
          let self = this;
          function _handleConsoleMessage(data) {
              if (data.main_id == self.props.main_id) {
+                 // noinspection JSUnusedGlobalSymbols
                  let handlerDict = {
                      consoleLog: (data) => self._addConsoleEntry(data.message, data.force_open, true),
                      consoleLogMultiple: (data) => self._addConsoleEntries(data.message, data.force_open, true),
@@ -175,24 +176,20 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
          return id_list
      }
      
-     _deleteSection(unique_id=null) {
-         if (!unique_id) {
-             if (this.state.all_selected_items.length != 1) {
-                 return
-             }
-             unique_id = this.state.all_selected_items[0];
-             let entry = this.get_console_item_entry(unique_id);
-             if (entry.type != "divider") {
-                 return
-             }
-         }
-         let id_list = this._getSectionIds(unique_id);
-         let cindex = this._consoleItemIndex(unique_id);
-         let new_console_items = [...this.props.console_items];
-         new_console_items.splice(cindex, id_list.length);
-         this._clear_all_selected_items(()=>{
-             this.props.setMainStateValue("console_items", new_console_items);
+     _deleteSection(unique_id) {
+         let centry = this.get_console_item_entry(unique_id);
+         const confirm_text = `Delete section ${centry.header_text}?`;
+         let self = this;
+         showConfirmDialogReact("Delete Section", confirm_text, "do nothing", "delete", function () {
+             let id_list = self._getSectionIds(unique_id);
+             let cindex = self._consoleItemIndex(unique_id);
+             let new_console_items = [...self.props.console_items];
+             new_console_items.splice(cindex, id_list.length);
+             self._clear_all_selected_items(()=>{
+                 self.props.setMainStateValue("console_items", new_console_items);
+             })
          })
+
      }
 
      _copySection(unique_id=null) {
@@ -235,10 +232,22 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
 
      _copyItems(id_list) {
          let entry_list = [];
-         for (let uid of id_list) {
-             let entry = this.get_console_item_entry(uid);
-             entry.am_selected = false;
-             entry_list.push(entry)
+         let in_section = false;
+         for (let entry of this.props.console_items) {
+             if (in_section) {
+                 entry.am_selected = false;
+                 entry_list.push(entry);
+                 in_section = entry.type != "section-end";
+             }
+             else {
+                 if (id_list.includes(entry.unique_id)) {
+                     entry.am_selected = false;
+                     entry_list.push(entry);
+                     if (entry.type == "divider") {
+                         in_section = true
+                     }
+                 }
+             }
          }
          const result_dict = {
              "main_id": this.props.main_id,
@@ -737,8 +746,9 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
             below_index = 0
         }
         else {
+            let trueNewIndex = this._consoleItemIndex(filtered_items[newIndex].unique_id);
              // noinspection ES6ConvertIndexedForToForOf
-            for (below_index = newIndex; below_index < new_console_items.length; ++below_index) {
+            for (below_index = trueNewIndex; below_index < new_console_items.length; ++below_index) {
                  if (new_console_items[below_index].type == "divider") {
                      break
                  }
@@ -820,28 +830,70 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
          this._addCodeArea("");
          return
      }
+     _isDividerSelected() {
+         for (let uid of this.state.all_selected_items) {
+            let centry = this.get_console_item_entry(uid);
+            if (centry.type == "divider") {
+                return true
+            }
+         }
+         return false
+     }
 
-     _deleteSelected() {
-         if (this._are_selected()) {
-             let new_console_items = [];
-             for (let entry of this.props.console_items) {
-                 if (!this.state.all_selected_items.includes(entry.unique_id)) {
-                     new_console_items.push(entry)
+    _doDeleteSelected() {
+         let new_console_items = [];
+         let in_section = false;
+         for (let entry of this.props.console_items) {
+             if (in_section) {
+                 in_section = entry.type != "section-end";
+                continue
+             }
+             if (!this.state.all_selected_items.includes(entry.unique_id)) {
+                 new_console_items.push(entry);
+             }
+             else {
+                  if (entry.type == "divider") {
+                     in_section = true
                  }
              }
-             this._clear_all_selected_items(()=>{
-                 this.props.setMainStateValue("console_items", new_console_items);
-             })
+
+         }
+         this._clear_all_selected_items(()=>{
+             this.props.setMainStateValue("console_items", new_console_items);
+         })
+    }
+
+     _deleteSelected() {
+         let self = this;
+         if (this._are_selected()) {
+             let new_console_items = [];
+             if (this._isDividerSelected()) {
+                 const confirm_text = "The selection includes section dividers. " +
+                     "The sections will be completed in their entirety. Do you want to continue";
+                 showConfirmDialogReact("Do Delete", confirm_text, "do nothing", "delete", function () {
+                     self._doDeleteSelected();
+                 })
+             }
+             else {
+                 this._doDeleteSelected()
+             }
          }
      }
 
      _closeConsoleItem(unique_id, callback=null) {
-         let cindex = this._consoleItemIndex(unique_id);
-         let new_console_items = [...this.props.console_items];
-         new_console_items.splice(cindex, 1);
-         this._dselectOneItem(unique_id,()=>{
-             this.props.setMainStateValue("console_items", new_console_items, callback);
-        })
+         let centry = this.get_console_item_entry(unique_id);
+         if (centry.type == "divider") {
+            this._deleteSection(unique_id)
+         }
+         else {
+             let cindex = this._consoleItemIndex(unique_id);
+             let new_console_items = [...this.props.console_items];
+             new_console_items.splice(cindex, 1);
+             this._dselectOneItem(unique_id,()=>{
+                 this.props.setMainStateValue("console_items", new_console_items, callback);
+            })
+         }
+
      }
 
      _getNextEndIndex(start_id) {
@@ -891,7 +943,7 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
                      }
                  }
                  else {
-                     insert_index = this._consoleItemIndex(this._currently_selected()) + 1
+                     insert_index = this._consoleItemIndex(current_selected_id) + 1
                  }
              }
          }
@@ -980,7 +1032,7 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
                            text="New Code Cell"/>
                  <MenuItem icon="header"
                            onClick={this._addBlankDivider}
-                           text="New Section Divider"/>
+                           text="New Section"/>
                  <MenuItem icon="clipboard"
                            onClick={() => {
                                this._pasteCell()
@@ -1148,17 +1200,14 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
             Insert :[{name_text: "Text Cell", icon_name: "new-text-box", click_handler: this._addBlankText,
                 key_bindings: ["ctrl+t"]},
                    {name_text: "Code Cell", icon_name: "code", click_handler: this._addBlankCode, key_bindings: ["ctrl+c"]},
-                {name_text: "Section Divider", icon_name: "header", click_handler: this._addBlankDivider},
+                {name_text: "Section", icon_name: "header", click_handler: this._addBlankDivider},
                    {name_text: "Resource Link", icon_name: "link", click_handler: this._insertResourceLink}],
             Edit: [{name_text: "Copy All", icon_name: "duplicate", click_handler: () => {self._copyAll()}},
                     {name_text: "Copy Selected", icon_name: "duplicate", click_handler: () => {self._copyCell()}},
-                   {name_text: "Paste Cells", icon_name: "clipboard", click_handler: () => {self._pasteCell()}},
+                    {name_text: "Paste Cells", icon_name: "clipboard", click_handler: () => {self._pasteCell()}},
                     {name_text: "Delete Selected", icon_name: "trash", click_handler: () => {self._deleteSelected()}},
-                    {name_text: "divider1", icon_name: null, click_handler: "divider"},
-                    {name_text: "Copy Section", icon_name: "duplicate", click_handler: () => {self._copySection()}},
-                    {name_text: "Delete Section", icon_name: "trash", click_handler: () => {self._deleteSection()}},
                     {name_text: "divider2", icon_name: null, click_handler: "divider"},
-                   {name_text: "Clear Log", icon_name: "trash", click_handler: this._clearConsole}
+                    {name_text: "Clear Log", icon_name: "trash", click_handler: this._clearConsole}
             ],
             Execute: [{name_text: "Run Selected", icon_name: "play", click_handler: this._runSelected,
                 key_bindings: ["ctrl+enter", "command+enter"]},
@@ -1248,18 +1297,10 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
 
     _hideNonDividers() {
          this.setState({hide_in_section: true});
-        //  let nodeList = document.querySelectorAll(".in-section");
-        //  for (let i = 0; i < nodeList.length; i++) {
-        //     nodeList[i].style.height = 0;
-        // }
     }
 
     _showNonDividers() {
           this.setState({hide_in_section: false});
-        //  let nodeList = document.querySelectorAll(".in-section");
-        //  for (let i = 0; i < nodeList.length; i++) {
-        //     nodeList[i].style.height = null;
-        // }
     }
 
     _sortStart(data, event) {
@@ -1601,10 +1642,7 @@ class RawDividerItem extends React.Component {
             <Menu>
                 <MenuItem icon="duplicate"
                           onClick={this._copyMe}
-                          text="Copy Divider" />
-                <MenuItem icon="duplicate"
-                          onClick={this._copySection}
-                          text="Copy Section" />
+                          text="Copy" />
                 <MenuItem icon="clipboard"
                           onClick={this._pasteCell}
                           text="Paste Cells" />
@@ -1617,16 +1655,12 @@ class RawDividerItem extends React.Component {
                            text="New Code Cell"/>
                 <MenuItem icon="header"
                            onClick={this._addBlankDivider}
-                           text="New Section Divider"/>
+                           text="New Section"/>
                 <MenuDivider/>
                 <MenuItem icon="trash"
                           onClick={this._deleteMe}
                           intent="danger"
-                          text="Delete Divider" />
-                <MenuItem icon="trash"
-                          onClick={this._deleteSection}
-                          intent="danger"
-                          text="Delete Whole Section" />
+                          text="Delete Section" />
             </Menu>
         );
     }
@@ -1742,7 +1776,7 @@ class RawSectionEndItem extends React.Component {
                            text="New Code Cell"/>
                 <MenuItem icon="header"
                            onClick={this._addBlankDivider}
-                           text="New Section Divider"/>
+                           text="New Section"/>
                 <MenuDivider/>
             </Menu>
         );
@@ -1764,10 +1798,16 @@ class RawSectionEndItem extends React.Component {
             panel_class += " selected"
         }
         let body_width = this.props.console_available_width - BUTTON_CONSUMED_SPACE;
+        let line_style = {
+            marginLeft: 65,
+            marginRight: 85,
+            marginTop: 10,
+            borderBottomWidth: 2
+        };
         return (
             <div className={panel_class + " d-flex flex-row"} onClick={this._consoleItemClick} id={this.props.unique_id} style={{marginBottom: 10}}>
                 <ButtonGroup minimal={true} vertical={true} style={{width: "100%"}}>
-                <Divider style={{marginLeft: 85, marginRight: 85}}/>
+                <Divider style={line_style}/>
                 </ButtonGroup>
                 <div className="button-div d-flex flex-row">
                 </div>
@@ -1898,7 +1938,7 @@ class RawLogItem extends React.Component {
                            text="New Code Cell"/>
                 <MenuItem icon="header"
                            onClick={this._addBlankDivider}
-                           text="New Section Divider"/>
+                           text="New Section"/>
                 <MenuDivider/>
                 <MenuItem icon="trash"
                           onClick={this._deleteMe}
@@ -2224,7 +2264,7 @@ class RawConsoleCodeItem extends React.Component {
                            text="New Code Cell"/>
                 <MenuItem icon="header"
                            onClick={this._addBlankDivider}
-                           text="New Section Divider"/>
+                           text="New Section"/>
                 <MenuDivider/>
                 <MenuItem icon="duplicate"
                           onClick={this._copyMe}
@@ -2667,7 +2707,7 @@ class RawConsoleTextItem extends React.Component {
                            text="New Code Cell"/>
                 <MenuItem icon="header"
                            onClick={this._addBlankDivider}
-                           text="New Section Divider"/>
+                           text="New Section"/>
                 <MenuDivider/>
                 <MenuItem icon="link"
                           onClick={this._insertResourceLink}

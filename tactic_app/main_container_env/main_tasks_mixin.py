@@ -488,31 +488,48 @@ class LoadSaveTasksMixin:
             new_collection_name = data_dict["collection_name"]
             cell_list = data_dict["cell_list"]
             new_cell_list = []
-            ncells = len(cell_list)
-            i = 0
             style_text = ""
-            while i < ncells:
-                ccell = cell_list[i]
-                if ccell["summary_text"] is not None and re.findall("^style(?: )*=(?: )*.*", ccell["summary_text"]):
-                    ccell["extra_style"] = eval(re.sub("^style(?: )*=(?: )*", "", ccell["summary_text"]))
+            in_section = False
+            in_styles = False
+
+            for ccell in cell_list:
+                if in_styles:
+                    if ccell["type"] == "section-end":
+                        in_styles = False
+                        continue
+                    else:
+                        if ccell["type"] == "text":
+                            style_text += ccell["raw_text"] + "\n"
+                        else:
+                            style_text += ccell["console_text"] + "\n"
+                    continue
+                if "summary_text" in ccell:
+                    if ccell["summary_text"] is not None and re.findall("^style(?: )*=(?: )*.*", ccell["summary_text"]):
+                        ccell["extra_style"] = eval(re.sub("^style(?: )*=(?: )*", "", ccell["summary_text"]))
+                    else:
+                        ccell["extra_style"] = ""
                 else:
                     ccell["extra_style"] = ""
-                if not ccell["type"] == "divider":
-                    new_cell_list.append(ccell)
-                    i += 1
-                    continue
-                if not ccell["header_text"].lower() == "styles":
-                    ccell["_id"] = re.sub(" ", "_", ccell["header_text"])
-                    new_cell_list.append(ccell)
-                    i += 1
-                    continue
-                i += 1
-                while i < ncells and not cell_list[i]["type"] == "divider":
-                    if cell_list[i]["type"] == "text":
-                        style_text += cell_list[i]["raw_text"] + "\n"
+                if not in_section:
+                    if not ccell["type"] == "divider":
+                        continue
+                    if not ccell["header_text"].lower() == "styles":
+                        ccell["_id"] = re.sub(" ", "_", ccell["header_text"])
+                        in_section = True
+                        new_cell_list.append(ccell)
+                        continue
                     else:
-                        style_text += cell_list[i]["console_text"] + "\n"
-                    i += 1
+                        in_styles = True
+                        continue
+                else:
+                    if ccell["type"] == "section-end":
+                        new_cell_list.append(ccell)
+                        in_section = False
+                        continue
+                    else:
+                        new_cell_list.append(ccell)
+                        continue
+
             report_html = render_template("presentation_template.html",
                                           cell_list=new_cell_list,
                                           extra_styles=style_text,
@@ -549,23 +566,38 @@ class LoadSaveTasksMixin:
             ncells = len(cell_list)
             i = 0
             style_text = ""
-            while i < ncells:
-                ccell = cell_list[i]
-                if not ccell["type"] == "divider":
-                    new_cell_list.append(ccell)
-                    i += 1
-                    continue
-                if not ccell["header_text"].lower() == "styles":
-                    new_cell_list.append(ccell)
-                    i += 1
-                    continue
-                i += 1
-                while i < ncells and not cell_list[i]["type"] == "divider":
-                    if cell_list[i]["type"] == "text":
-                        style_text += cell_list[i]["raw_text"] + "\n"
+            in_section = False
+            in_styles = False
+            for ccell in cell_list:
+                if in_styles:
+                    if ccell["type"] == "section-end":
+                        in_styles = False
+                        continue
                     else:
-                        style_text += cell_list[i]["console_text"] + "\n"
-                    i += 1
+                        if ccell["type"] == "text":
+                            style_text += ccell["raw_text"] + "\n"
+                        else:
+                            style_text += ccell["console_text"] + "\n"
+                elif not in_section:
+                    if not ccell["type"] == "divider":
+                        new_cell_list.append(ccell)
+                        continue
+                    if not ccell["header_text"].lower() == "styles":
+                        in_section = True
+                        new_cell_list.append(ccell)
+                        continue
+                    else:
+                        in_styles = True
+                        continue
+                else:
+                    if ccell["type"] == "section-end":
+                        new_cell_list.append(ccell)
+                        in_section = False
+                        continue
+                    else:
+                        new_cell_list.append(ccell)
+                        continue
+
             report_html = render_template("report_template.html",
                                           cell_list=new_cell_list,
                                           extra_styles = style_text,
