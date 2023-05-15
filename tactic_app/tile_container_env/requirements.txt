@@ -1,6 +1,6 @@
 beautifulsoup4
 Werkzeug == 2.2.2
-Flask == 2.2.3
+Flask == 2.2.5
 markdown
 matplotlib
 networkx
