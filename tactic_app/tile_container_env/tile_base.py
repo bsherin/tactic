@@ -10,7 +10,7 @@ import traceback
 import pickle
 from pickle import UnpicklingError
 from communication_utils import is_jsonizable, make_python_object_jsonizable, debinarize_python_object
-from fuzzywuzzy import fuzz, process
+import Levenshtein
 # from volume_manager import VolumeManager
 from redis_tools import redis_tm
 from tile_o_plex import app
@@ -562,9 +562,9 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         if not choice_list:
             return ""
         if starting_value is None:
-            new_start_value = process.extractOne(att_name, choice_list, scorer=fuzz.partial_ratio)[0]
+            new_start_value = process.extractOne(att_name, choice_list, scorer=Levenshtein.ratio)[0]
         elif starting_value not in choice_list:
-            new_start_value = process.extractOne(starting_value, choice_list, scorer=fuzz.partial_ratio)[0]
+            new_start_value = process.extractOne(starting_value, choice_list, scorer=Levenshtein.ratio)[0]
         else:
             new_start_value = starting_value
         new_html = ""
@@ -590,7 +590,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                     if full_export_name == starting_value:
                         return full_export_name
                     else:
-                        new_val = fuzz.partial_ratio(att_to_match, full_export_name)
+                        new_val = Levenshtein.ratio(att_to_match, full_export_name)
                         if best_match_item is None or new_val > best_match_value:
                             best_match_item = full_export_name
                             best_match_value = new_val

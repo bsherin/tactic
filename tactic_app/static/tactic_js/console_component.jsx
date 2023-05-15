@@ -906,6 +906,21 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
          return this.props.console_items.length
      }
 
+     _isInSection(unique_id) {
+         let idx = this._consoleItemIndex(unique_id);
+         for (let entry of this.props.console_items.slice(idx + 1,)) {
+             if (entry.type == "divider") {
+                 return false
+             }
+             else {
+                 if (entry.type == "section-end") {
+                     return true
+                 }
+             }
+         }
+         return false
+     }
+
      _addConsoleEntries(new_entries, force_open = true, set_focus = false, unique_id = null, callback=null) {
          let self = this;
          _.last(new_entries).set_focus = set_focus;
@@ -918,7 +933,7 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
          let last_id = _.last(new_entries).unique_id;
          let insert_index;
          if (unique_id) {
-             if (inserting_divider) {
+             if (inserting_divider && this._isInSection(unique_id)) {
                  insert_index = this._getNextEndIndex(unique_id) + 1
              }
              else {
@@ -929,7 +944,7 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
              insert_index = this.props.console_items.length
          } else {
              let current_selected_id = this._currently_selected();
-             if (inserting_divider) {
+             if (inserting_divider && this._isInSection(current_selected_id)) {
                  insert_index = this._getNextEndIndex(current_selected_id) + 1
              }
              else {
