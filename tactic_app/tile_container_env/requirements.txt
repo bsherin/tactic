@@ -1,5 +1,4 @@
 beautifulsoup4
-fuzzywuzzy
 Werkzeug == 2.2.2
 Flask == 2.2.3
 markdown

@@ -5,3 +5,5 @@ praw
 rabbitmq-admin
 eli5
 bokeh
+levenshtein
+pyvis
