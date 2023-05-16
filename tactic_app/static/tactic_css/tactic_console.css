@@ -1,0 +1,410 @@
+/*
+ * Copyright 2022 Palantir Technologies, Inc. All rights reserved.
+ */
+body {
+  background-color: #d3d8de;
+}
+
+/* console */
+.bottom-heading-element {
+  height: 30px !important;
+  line-height: 12px;
+}
+
+.bottom-heading-element-button {
+  margin-left: 13px !important;
+  align-items: baseline;
+}
+
+#console {
+  text-align: left;
+  font-size: 14px;
+  padding: 0 10px 5px 0;
+}
+
+#console-panel {
+  margin-left: 0.5rem;
+  margin-right: 0;
+  padding: 0 !important;
+}
+#console-panel.am-shrunk {
+  margin-top: 0;
+}
+#console-panel.am-zoomed {
+  margin-top: 0.5rem;
+}
+#console-panel.not-shrunk {
+  margin-top: 0;
+}
+
+#console-heading {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 2px 2px 2px;
+  border-bottom: 1px solid rgba(16, 22, 26, 0.1490196078);
+  height: 32px;
+}
+#console-heading .bp4-icon {
+  margin-right: 3px;
+}
+
+#console-header-left .bp4-navbar {
+  box-shadow: none;
+}
+#console-header-left .bp4-navbar.light-theme, #console-header-left .bp4-navbar.bp4-dark {
+  background-color: transparent;
+}
+
+#console-panel .CodeMirror {
+  height: auto !important;
+  margin-top: 2px;
+}
+
+.console-text {
+  padding: 10px;
+  display: inline-block;
+  width: 100%;
+  overflow-y: hidden;
+}
+.console-text:hover {
+  overflow-y: auto;
+}
+
+.console-code {
+  width: 100%;
+  padding-right: 10px !important;
+}
+
+.text-panel-output h1 {
+  font-size: 2rem;
+}
+.text-panel-output h2 {
+  font-size: 1.5rem;
+}
+.text-panel-output h3 {
+  font-size: 1.25rem;
+}
+.text-panel-output h4 {
+  font-size: 1.125rem;
+}
+.text-panel-output p:last-child, .text-panel-output ul:last-child, .text-panel-output h1:last-child, .text-panel-output h2:last-child, .text-panel-output h3:last-child, .text-panel-output h4:last-child {
+  margin-bottom: 4px;
+}
+
+.execution-counter {
+  padding-right: 17px;
+  padding-top: 8px;
+  color: #9B79CC;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.bp4-dark .link-button-group .bp4-button-text {
+  color: #abb3bf;
+}
+
+.log-panel {
+  border: none;
+  margin: 1px 4px 1px 8px;
+  box-shadow: none;
+  position: relative;
+  overflow: hidden;
+  transition: min-height 0.5s ease-in-out, max-height 0.5s ease-in-out;
+}
+.log-panel.in-section:not(.divider-log-panel) {
+  margin-left: 25px;
+}
+.log-panel .notclose {
+  font-size: 15px;
+  padding-bottom: 3px;
+}
+.log-panel.running .card-header .button-div.spinner-div {
+  opacity: 100;
+}
+.log-panel .button-div {
+  opacity: 0;
+}
+.log-panel .button-div button {
+  align-self: baseline;
+  margin-top: 10px;
+}
+.log-panel .card-header {
+  position: absolute;
+  height: 100%;
+  width: 30px;
+  padding: 4px 4px !important;
+  text-align: center;
+  border-right: none;
+  overflow-y: hidden;
+  border-bottom: none;
+  background-color: white;
+  transition-delay: 0s;
+}
+.log-panel .console-sorter {
+  padding-top: 6px;
+  display: flex;
+}
+.log-panel:focus-within .button-div, .log-panel:hover .button-div, .log-panel.selected .button-div {
+  opacity: 100;
+  transition-delay: 0.1s;
+}
+.log-panel:focus-within .card-header, .log-panel:hover .card-header, .log-panel.selected .card-header {
+  border-right: 1px solid #c7c7c7;
+}
+.log-panel.selected {
+  border-right: 3px solid #738091;
+  border-left: 3px solid #738091;
+  margin-left: 5px;
+  margin-right: 1px;
+}
+.log-panel.log-panel-visible {
+  max-height: 9999px;
+}
+.log-panel.log-panel-visible .log-panel-body {
+  display: inline-flex;
+}
+.log-panel.log-panel-visible .log-code-output {
+  display: block;
+}
+.log-panel.log-panel-visible.fixed-log-panel .close-log-button, .log-panel.log-panel-visible.fixed-log-panel .shrink-log-button {
+  display: inline-block;
+}
+.log-panel.log-panel-visible.fixed-log-panel .card-header .button-div {
+  opacity: 100;
+  transition-delay: 0.25s;
+}
+.log-panel.log-panel-visible .console-spin-outer {
+  display: none;
+}
+.log-panel.log-panel-visible :not(:focus-within), .log-panel.log-panel-visible :not(.selected) {
+  min-height: 0;
+}
+.log-panel.log-panel-visible .convert-markdown-button, .log-panel.log-panel-visible .close-log-button, .log-panel.log-panel-visible .run-log-button, .log-panel.log-panel-visible .clear-code-button, .log-panel.log-panel-visible .console-spin-outer, .log-panel.log-panel-visible .shrink-log-button, .log-panel.log-panel-visible .expand-log-button {
+  display: none;
+}
+.log-panel.log-panel-visible.running .clear-code-button {
+  display: none;
+}
+.log-panel.log-panel-visible.running .console-spin-outer {
+  display: inline-block;
+}
+.log-panel.log-panel-visible.running:focus-within .clear-code-button, .log-panel.log-panel-visible.running.selected .clear-code-button {
+  display: none;
+}
+.log-panel.log-panel-visible:focus-within .convert-markdown-button, .log-panel.log-panel-visible:focus-within .close-log-button, .log-panel.log-panel-visible:focus-within .run-log-button, .log-panel.log-panel-visible:focus-within .clear-code-button, .log-panel.log-panel-visible:focus-within .shrink-log-button, .log-panel.log-panel-visible.selected .convert-markdown-button, .log-panel.log-panel-visible.selected .close-log-button, .log-panel.log-panel-visible.selected .run-log-button, .log-panel.log-panel-visible.selected .clear-code-button, .log-panel.log-panel-visible.selected .shrink-log-button {
+  display: inline-block;
+}
+.log-panel.log-panel-visible .link-button-group {
+  min-height: unset;
+  margin-top: 5px;
+  padding-left: 6px;
+}
+.log-panel.log-panel-visible .link-button-group .bp4-button {
+  margin-top: 6px;
+  padding-left: 0;
+  padding-right: 0;
+}
+.log-panel.log-panel-visible:not(:focus-within):hover .button-div.shrink-expand-div {
+  opacity: 100;
+}
+.log-panel.log-panel-visible:not(.selected):hover .button-div.shrink-expand-div {
+  opacity: 100;
+}
+.log-panel.log-panel-visible:not(:focus-within):hover .shrink-log-button {
+  display: inline-block;
+}
+.log-panel.log-panel-visible:not(.selected):hover .shrink-log-button {
+  display: inline-block;
+}
+.log-panel.log-panel-invisible {
+  max-height: 40px;
+}
+.log-panel.log-panel-invisible .card-header {
+  border-right: 0;
+}
+.log-panel.log-panel-invisible .log-panel-summary {
+  display: block;
+}
+.log-panel.log-panel-invisible .console-spin-outer {
+  display: none;
+}
+.log-panel.log-panel-invisible .log-code-output {
+  display: none;
+}
+.log-panel.log-panel-invisible .shrink-log-button {
+  display: none;
+}
+.log-panel.log-panel-invisible.fixed-log-panel:hover .expand-log-buton {
+  display: inline-block;
+}
+.log-panel.log-panel-invisible:hover .button-div.shrink-expand-div {
+  opacity: 100;
+}
+.log-panel.log-panel-invisible:hover .expand-log-button {
+  display: inline-block;
+}
+.log-panel.log-panel-invisible .convert-markdown-button, .log-panel.log-panel-invisible .close-log-button, .log-panel.log-panel-invisible .run-log-button, .log-panel.log-panel-invisible .clear-code-button {
+  display: none;
+}
+
+.log-panel .bp4-editable-text:hover::before {
+  outline: none;
+  box-shadow: none;
+}
+
+.log-panel-body {
+  padding: 0;
+}
+.log-panel-body .bp4-input:focus {
+  outline: none;
+  box-shadow: none;
+}
+.log-panel-body .tile-table {
+  display: inline-block;
+  margin-right: 10px;
+  border: none;
+}
+
+.console-divider-text {
+  font-size: 18px;
+  margin-left: 15px;
+  margin-top: 7px;
+  margin-bottom: 5px;
+  font-weight: 700;
+}
+
+.console-divider-divider {
+  width: 100%;
+}
+
+.log-panel-summary {
+  padding: 5px 15px;
+  border: 1px solid #c7c7c7 !important;
+  margin-left: 27px;
+  margin-bottom: 5px;
+  margin-top: 5px;
+}
+.log-panel-summary.code-panel-summary {
+  font-style: italic;
+}
+
+.log-code-output {
+  padding: 10px 45px 10px 85px;
+}
+
+#selected-export {
+  font-size: 14px;
+  line-height: 30px;
+  font-weight: 400;
+}
+
+#exports-heading {
+  display: flex;
+  justify-content: flex-start;
+  padding: 2px 2px 2px 2px;
+  border-bottom: 1px solid rgba(16, 22, 26, 0.1490196078);
+  height: 32px;
+}
+#exports-heading .bp4-icon {
+  margin-right: 3px;
+}
+
+#exports-footing {
+  display: flex;
+  justify-content: flex-start;
+  padding: 2px 2px 2px 2px;
+  border-top: 1px solid rgba(16, 22, 26, 0.1490196078);
+  height: 23px;
+}
+#exports-footing select {
+  height: 20px;
+}
+#exports-footing label {
+  line-height: 19px;
+  margin-right: 0;
+  font-size: 11px;
+}
+#exports-footing .bp4-icon {
+  margin-right: 3px;
+  height: 20px;
+  top: 2px;
+}
+
+#exports-info {
+  font-size: 12px;
+  line-height: 20px;
+}
+
+#exports-panel {
+  margin-right: 0;
+  padding: 0 !important;
+}
+#exports-panel.am-zoomed {
+  margin-top: 0.5rem;
+}
+#exports-panel.not-shrunk {
+  margin-top: 0;
+}
+
+#exports-button-list .bp4-button-group.bp4-vertical {
+  max-width: 100%;
+}
+
+.export-tail {
+  height: 24px;
+  margin-top: 2px;
+}
+
+.export-button {
+  font-size: 90%;
+}
+.export-button svg {
+  width: 11.5px;
+  height: 11.5px;
+  margin-right: 2px;
+}
+.export-button span {
+  margin-right: 3px;
+}
+.export-button .bp4-button-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.export-label {
+  font-size: 90%;
+  font-weight: 400;
+}
+
+.export-label label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.show-exports-but .bp4-icon {
+  margin-top: 2px;
+}
+
+.export-header-text {
+  text-align: left;
+  font-size: 14px;
+}
+
+button.notclose {
+  -webkit-appearance: none;
+  padding: 3px;
+  cursor: pointer;
+  background: transparent;
+  opacity: 0.9;
+  border: 0;
+  display: inline-flex;
+}
+
+button.notclose:hover {
+  opacity: 0.3 !important;
+}
+
+/*# sourceMappingURL=tactic_console.css.map */

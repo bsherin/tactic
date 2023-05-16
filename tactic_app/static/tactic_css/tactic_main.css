@@ -1,0 +1,212 @@
+/*
+ * Copyright 2022 Palantir Technologies, Inc. All rights reserved.
+ */
+#main-panel {
+  padding: 0;
+  margin-top: 0.5rem;
+  margin-left: 0.5rem;
+}
+#main-panel .main-heading .button-in-select .bp4-button-text {
+  max-width: 100%;
+}
+
+/*main window*/
+#tile-div {
+  overflow: hidden;
+}
+#tile-div:hover {
+  overflow: auto;
+}
+
+/* Tile related */
+.tile-menu-item {
+  padding-bottom: 2px;
+}
+.tile-menu-item .bp4-fill.bp4-text-overflow-ellipsis {
+  font-size: small;
+}
+
+.tile-panel-heading {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  height: 34px;
+  border-bottom: 1px solid rgba(16, 22, 26, 0.1490196078);
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  padding: 5px 3px 4px 3px;
+}
+.tile-panel-heading .tile-name-div {
+  overflow: hidden;
+  line-height: 100%;
+  cursor: move;
+  align-self: center;
+}
+
+.form-display-area label {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.tile-form-menu-item.bp4-menu-item {
+  font-size: 13px;
+  line-height: 15px;
+}
+.tile-form-menu-item.bp4-menu-header h6.bp4-heading {
+  font-size: 13px;
+}
+
+.button-in-select svg {
+  width: 14px;
+  height: 14px;
+}
+
+.tile-panel {
+  display: block;
+  overflow: hidden;
+  height: 265px;
+  margin-right: 0.5rem;
+  margin-top: 0.5rem;
+  padding: 0 !important;
+}
+.tile-panel .ui-resizable-handle {
+  z-index: 10 !important;
+}
+
+.tile-panel-float {
+  float: left;
+}
+
+.tile-display-area {
+  overflow: hidden;
+  padding: 0;
+  margin: 15px 15px 15px 15px;
+}
+.tile-display-area:hover {
+  overflow: auto;
+}
+
+.back {
+  padding: 20px;
+  margin: 0;
+  overflow: auto;
+  position: absolute;
+}
+
+.front {
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+}
+
+.tile-body {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.tile-body img {
+  cursor: pointer;
+}
+
+.output-plot {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* plot related */
+.d3plot {
+  font: 10px Arial;
+}
+
+.d3plot path {
+  stroke: steelblue;
+  stroke-width: 2px;
+  fill: none;
+}
+
+.d3plot path.domain {
+  fill: none;
+  stroke: #a4a4a4;
+  shape-rendering: crispEdges;
+}
+
+.d3plot line {
+  stroke: black;
+}
+
+.d3plot .axis path,
+.d3plot .axis line {
+  fill: none;
+  stroke: grey;
+  stroke-width: 2px;
+  shape-rendering: crispEdges;
+}
+
+.d3plot .heatmap-cell-border {
+  stroke: #eee;
+  stroke-width: 0.3px;
+}
+
+.d3plot .heatmap-colLabel {
+  fill: #aaa;
+}
+
+.d3plot .heatmap-rowLabel {
+  fill: #aaa;
+}
+
+.d3plot-title {
+  font-size: 14px;
+}
+
+/* Tile table related*/
+.tile-table {
+  line-height: 23px;
+}
+.tile-table td {
+  padding-top: 1px !important;
+  padding-bottom: 1px !important;
+  font-size: 13px;
+}
+
+.sidebyside-table {
+  display: inline-block;
+  margin-right: 10px;
+  border: none;
+}
+
+.fw-table {
+  width: 100%;
+}
+
+.row-clickable:hover {
+  background-color: #5bc0de !important;
+}
+
+.row-clickable:active {
+  background-color: #1b6d85 !important;
+}
+
+td.cell-clickable:hover {
+  background-color: #5bc0de !important;
+}
+
+td.cell-clickable:active {
+  background-color: #1b6d85 !important;
+}
+
+.element-clickable:hover {
+  background-color: #5bc0de !important;
+}
+
+.element-clickable:active {
+  background-color: #1b6d85 !important;
+}
+
+/*# sourceMappingURL=tactic_main.css.map */
