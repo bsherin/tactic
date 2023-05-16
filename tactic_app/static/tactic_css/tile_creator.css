@@ -1,0 +1,105 @@
+/*
+ * Copyright 2022 Palantir Technologies, Inc. All rights reserved.
+ */
+#creator-root, .creator-root {
+  vertical-align: top;
+}
+#creator-root .code-holder, .creator-root .code-holder {
+  height: 100%;
+}
+#creator-root .bp4-tab:focus, .creator-root .bp4-tab:focus {
+  outline: none;
+}
+#creator-root .bp4-large > .bp4-tab, .creator-root .bp4-large > .bp4-tab {
+  font-size: 18px;
+  margin-top: 10px;
+  margin-left: 30px;
+  margin-right: 0;
+}
+
+#creator-root .bp4-large > .bp4-tab, .creator-root .bp4-large > .bp4-tab {
+  margin-top: 0px;
+}
+
+#creator-resources {
+  height: 100%;
+}
+#creator-resources .tab-pane {
+  padding: 10px;
+  border-style: solid;
+  border-color: rgb(221, 221, 221);
+  border-width: 1px;
+  margin-right: 10px;
+  height: 100%;
+}
+#creator-resources .bp4-tab-panel {
+  margin-top: 10px;
+}
+#creator-resources .bp4-tab-list {
+  margin-left: 25px;
+}
+#creator-resources .tab-content {
+  height: 100%;
+  padding-bottom: 25px;
+}
+#creator-resources .nav-tabs {
+  border-bottom: none;
+}
+#creator-resources .form-inline label {
+  margin-bottom: 0;
+  margin-left: 4px;
+}
+#creator-resources .indent-row {
+  margin-bottom: 10px;
+}
+#creator-resources .resource-module {
+  margin: 0;
+}
+#creator-resources input {
+  width: 150px;
+}
+#creator-resources .form-row button {
+  align-self: flex-end;
+  margin: 7px;
+}
+#creator-resources #commands-pane blockquote, #creator-resources #commands-pane dd {
+  margin-inline-start: 0;
+}
+#creator-resources #commands-pane .notes-field-markdown-output {
+  padding: 15px 25px 5px 15px;
+  border-top-left-radius: 0;
+}
+#creator-resources #commands-pane button {
+  margin-top: 10px;
+  border-bottom: 0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  max-width: 700px;
+}
+#creator-resources #commands-pane .docutils.literal, #creator-resources #commands-pane cite {
+  color: #e83e8c;
+  word-break: break-word;
+  font-family: monospace;
+  font-style: normal;
+}
+#creator-resources #commands-pane h4 {
+  color: #2d72d2;
+}
+#creator-resources #commands-pane h5 {
+  color: #c87619;
+}
+#creator-resources #commands-pane h6 {
+  color: #238c2c;
+}
+
+.bp4-dark #commands-pane .command-name {
+  font-weight: bold;
+  color: #8f99a8;
+}
+
+.light-theme #commands-pane .command-name {
+  font-weight: 900;
+  color: #47505c;
+}
+
+/*# sourceMappingURL=tile_creator.css.map */
