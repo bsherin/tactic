@@ -59,6 +59,16 @@
             text-decoration: underline;
             margin-bottom: 5px;
         }
+        .report-image-block {
+            display: flex;
+            align-self: center;
+            max-width: 65%
+        }
+        .report-image-block img {
+            width: 100%;
+            align-self: center
+        }
+
         body{
             display: flex;
             flex-direction: column;
@@ -618,6 +628,13 @@
             {% endif -%}
             <div class="report-text text-block" style={{ cell.extra_style|safe }}>
                 {{ cell.console_text|safe}}
+            </div>
+        {% elif cell.type == "figure" -%}
+            {% if include_summaries and cell.summary_text -%}
+                <div class="summary bp4-text-muted">{{ cell.summary_text|safe }}</div>
+            {% endif -%}
+            <div class="report-image-block image-block" style={{ cell.extra_style|safe }}>
+                <img src=" {{ cell.image }}" alt="image cell" width="100%"/>
             </div>
         {% else -%}
             {% if include_summaries -%}

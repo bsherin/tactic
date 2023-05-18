@@ -213,6 +213,11 @@ var ProjectMenu = /*#__PURE__*/function (_React$Component) {
                 new_entry.summary_text = "";
                 break;
 
+              case "figure":
+                new_entry.fig_id = entry.fig_id;
+                new_entry.summary_text = entry.summary_text;
+                break;
+
               default:
                 new_entry.console_text = entry.console_text;
                 new_entry.summary_text = entry.summary_text;
@@ -293,6 +298,11 @@ var ProjectMenu = /*#__PURE__*/function (_React$Component) {
 
               case "divider":
                 new_entry.header_text = entry.header_text;
+                break;
+
+              case "figure":
+                new_entry.fig_id = entry.fig_id;
+                new_entry.summary_text = entry.summary_text;
                 break;
 
               default:
