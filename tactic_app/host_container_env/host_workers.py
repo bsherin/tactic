@@ -631,6 +631,8 @@ class HostWorker(QWorker):
         self.emit_console_message(data)
         return {"success": True, "unique_id": unique_id}
 
+
+
     @task_worthy
     def print_divider_area_to_console(self, data):
         from tactic_app import socketio

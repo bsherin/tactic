@@ -166,6 +166,7 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
     tsocket.attachListener('handle-callback', function (task_packet) {
       (0, _communication_react.handleCallback)(task_packet, main_id);
     });
+    window.base_figure_url = data.base_figure_url;
     var data_dict = {
       "doc_type": "notebook",
       "base_figure_url": data.base_figure_url,

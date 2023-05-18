@@ -209,8 +209,10 @@ class PseudoTileClass(TileBase, MplFigure):
 
     @_task_worthy
     def store_image(self, data):
+        print("storing image")
         encoded_img = data["img"]
         self.img_dict[data["figure_name"]] = debinarize_python_object(encoded_img)
+        print("stored image with name " + str(data["figure_name"]))
         return {"success": True}
 
     def get_user_globals(self):

@@ -53,17 +53,17 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "d
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
 function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
 
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+
+function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
@@ -127,6 +127,8 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
     _this.socket_counter = null;
 
     _this.initSocket();
+
+    _this._requestPseudoTileId();
 
     return _this;
   }
@@ -196,6 +198,17 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       this.props.tsocket.attachListener("console-message", _handleConsoleMessage);
     }
   }, {
+    key: "_requestPseudoTileId",
+    value: function _requestPseudoTileId() {
+      var self = this;
+
+      if (this.pseudo_tile_id == null) {
+        (0, _communication_react.postWithCallback)(this.props.main_id, "get_pseudo_tile_id", {}, function (res) {
+          self.pseudo_tile_id = res.pseudo_tile_id;
+        });
+      }
+    }
+  }, {
     key: "_createTextEntry",
     value: function _createTextEntry(unique_id, summary_text) {
       return {
@@ -206,6 +219,59 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
         console_text: "",
         show_markdown: false
       };
+    }
+  }, {
+    key: "_pasteImage",
+    value: function _pasteImage() {
+      var clipboardContents;
+      var blob = null;
+      var self = this;
+      navigator.clipboard.read().then(function (response) {
+        clipboardContents = response;
+
+        var _iterator = _createForOfIteratorHelper(clipboardContents),
+            _step;
+
+        try {
+          for (_iterator.s(); !(_step = _iterator.n()).done;) {
+            var item = _step.value;
+
+            if (item.types.includes("image/png")) {
+              item.getType("image/png").then(function (response) {
+                blob = response;
+                if (blob == null) return;
+                gotBlob(blob);
+              });
+              break;
+            }
+          }
+        } catch (err) {
+          _iterator.e(err);
+        } finally {
+          _iterator.f();
+        }
+      });
+
+      function gotBlob(blob) {
+        var formData = new FormData();
+        formData.append('image', blob, 'image.png');
+        formData.append("user_id", window.user_id);
+        formData.append("main_id", self.props.main_id);
+        formData.append("pseudo_tile_id", self.pseudo_tile_id);
+        $.ajax({
+          url: '/print_blob_area_to_console',
+          type: 'POST',
+          data: formData,
+          processData: false,
+          contentType: false,
+          success: function success(response) {
+            console.log(response);
+          },
+          error: function error(xhr, status, _error) {
+            console.log(xhr.responseText);
+          }
+        });
+      }
     }
   }, {
     key: "_addConsoleText",
@@ -256,15 +322,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       }
 
       this._addConsoleDivider("");
-    } // _insertTextInCell(the_text) {
-    //     let unique_id = this.state.currently_selected_item;
-    //     let entry = this.get_console_item_entry(unique_id);
-    //     let replace_dicts = [];
-    //     replace_dicts.push({unique_id: unique_id, field:"console_text", value: entry.console_text + the_text});
-    //     replace_dicts.push({unique_id: unique_id, field: "force_sync_to_prop", value: true});
-    //     this._multiple_console_item_updates(replace_dicts)
-    // }
-
+    }
   }, {
     key: "_getSectionIds",
     value: function _getSectionIds(unique_id) {
@@ -359,12 +417,12 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       var entry_list = [];
       var in_section = false;
 
-      var _iterator = _createForOfIteratorHelper(this.props.console_items),
-          _step;
+      var _iterator2 = _createForOfIteratorHelper(this.props.console_items),
+          _step2;
 
       try {
-        for (_iterator.s(); !(_step = _iterator.n()).done;) {
-          var entry = _step.value;
+        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+          var entry = _step2.value;
 
           if (in_section) {
             entry.am_selected = false;
@@ -382,9 +440,9 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
           }
         }
       } catch (err) {
-        _iterator.e(err);
+        _iterator2.e(err);
       } finally {
-        _iterator.f();
+        _iterator2.f();
       }
 
       var result_dict = {
@@ -499,12 +557,12 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
     value: function _resetConsole() {
       var new_console_items = [];
 
-      var _iterator2 = _createForOfIteratorHelper(this.props.console_items),
-          _step2;
+      var _iterator3 = _createForOfIteratorHelper(this.props.console_items),
+          _step3;
 
       try {
-        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-          var entry = _step2.value;
+        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+          var entry = _step3.value;
 
           if (entry.type != "code") {
             new_console_items.push(entry);
@@ -516,9 +574,9 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
           }
         }
       } catch (err) {
-        _iterator2.e(err);
+        _iterator3.e(err);
       } finally {
-        _iterator2.f();
+        _iterator3.f();
       }
 
       this.props.setMainStateValue("console_items", new_console_items);
@@ -867,21 +925,21 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
 
       var new_console_items = _lodash["default"].cloneDeep(this.props.console_items);
 
-      var _iterator3 = _createForOfIteratorHelper(new_console_items),
-          _step3;
+      var _iterator4 = _createForOfIteratorHelper(new_console_items),
+          _step4;
 
       try {
-        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-          var entry = _step3.value;
+        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+          var entry = _step4.value;
 
           if (entry.type == "divider" && this.temporarily_closed_items.includes(entry.unique_id)) {
             entry.am_shrunk = false;
           }
         }
       } catch (err) {
-        _iterator3.e(err);
+        _iterator4.e(err);
       } finally {
-        _iterator3.f();
+        _iterator4.f();
       }
 
       this.temporarily_closed_items = [];
@@ -894,12 +952,12 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
 
       var new_console_items = _lodash["default"].cloneDeep(this.props.console_items);
 
-      var _iterator4 = _createForOfIteratorHelper(new_console_items),
-          _step4;
+      var _iterator5 = _createForOfIteratorHelper(new_console_items),
+          _step5;
 
       try {
-        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-          var entry = _step4.value;
+        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+          var entry = _step5.value;
 
           if (entry.type == "divider") {
             if (!entry.am_shrunk) {
@@ -909,9 +967,9 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
           }
         }
       } catch (err) {
-        _iterator4.e(err);
+        _iterator5.e(err);
       } finally {
-        _iterator4.f();
+        _iterator5.f();
       }
 
       this.props.setMainStateValue("console_items", new_console_items, callback);
@@ -923,21 +981,21 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
 
       var new_console_items = _toConsumableArray(this.props.console_items);
 
-      var _iterator5 = _createForOfIteratorHelper(replace_dicts),
-          _step5;
+      var _iterator6 = _createForOfIteratorHelper(replace_dicts),
+          _step6;
 
       try {
-        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-          var d = _step5.value;
+        for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+          var d = _step6.value;
 
           var cindex = this._consoleItemIndex(d["unique_id"]);
 
           new_console_items[cindex][d["field"]] = d["value"];
         }
       } catch (err) {
-        _iterator5.e(err);
+        _iterator6.e(err);
       } finally {
-        _iterator5.f();
+        _iterator6.f();
       }
 
       this.props.setMainStateValue("console_items", new_console_items, callback);
@@ -950,19 +1008,19 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
 
       var new_console_items = _toConsumableArray(this.props.console_items);
 
-      var _iterator6 = _createForOfIteratorHelper(new_console_items),
-          _step6;
+      var _iterator7 = _createForOfIteratorHelper(new_console_items),
+          _step7;
 
       try {
-        for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-          var item = _step6.value;
+        for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
+          var item = _step7.value;
           item.am_selected = false;
           item.search_string = null;
         }
       } catch (err) {
-        _iterator6.e(err);
+        _iterator7.e(err);
       } finally {
-        _iterator6.f();
+        _iterator7.f();
       }
 
       this.setState({
@@ -985,12 +1043,12 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
 
       var replace_dicts = [];
 
-      var _iterator7 = _createForOfIteratorHelper(this.state.all_selected_items.slice(0, -1)),
-          _step7;
+      var _iterator8 = _createForOfIteratorHelper(this.state.all_selected_items.slice(0, -1)),
+          _step8;
 
       try {
-        for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
-          var uid = _step7.value;
+        for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
+          var uid = _step8.value;
           replace_dicts.push({
             unique_id: uid,
             field: "am_selected",
@@ -1003,9 +1061,9 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
           });
         }
       } catch (err) {
-        _iterator7.e(err);
+        _iterator8.e(err);
       } finally {
-        _iterator7.f();
+        _iterator8.f();
       }
 
       this._multiple_console_item_updates(replace_dicts, function () {
@@ -1068,12 +1126,12 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
 
       if (!shift_down) {
         if (this.state.all_selected_items.length > 0) {
-          var _iterator8 = _createForOfIteratorHelper(this.state.all_selected_items),
-              _step8;
+          var _iterator9 = _createForOfIteratorHelper(this.state.all_selected_items),
+              _step9;
 
           try {
-            for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
-              var uid = _step8.value;
+            for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
+              var uid = _step9.value;
 
               if (uid != unique_id) {
                 replace_dicts.push({
@@ -1089,9 +1147,9 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
               }
             }
           } catch (err) {
-            _iterator8.e(err);
+            _iterator9.e(err);
           } finally {
-            _iterator8.f();
+            _iterator9.f();
           }
         }
 
@@ -1157,12 +1215,12 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       var self = this;
       var replace_dicts = [];
 
-      var _iterator9 = _createForOfIteratorHelper(this.state.all_selected_items),
-          _step9;
+      var _iterator10 = _createForOfIteratorHelper(this.state.all_selected_items),
+          _step10;
 
       try {
-        for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
-          var uid = _step9.value;
+        for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
+          var uid = _step10.value;
           replace_dicts.push({
             unique_id: uid,
             field: "am_selected",
@@ -1175,9 +1233,9 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
           });
         }
       } catch (err) {
-        _iterator9.e(err);
+        _iterator10.e(err);
       } finally {
-        _iterator9.f();
+        _iterator10.f();
       }
 
       this._multiple_console_item_updates(replace_dicts, function () {
@@ -1197,12 +1255,12 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
         console_items = this.props.console_items;
       }
 
-      var _iterator10 = _createForOfIteratorHelper(console_items),
-          _step10;
+      var _iterator11 = _createForOfIteratorHelper(console_items),
+          _step11;
 
       try {
-        for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
-          var entry = _step10.value;
+        for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
+          var entry = _step11.value;
 
           if (entry.unique_id == unique_id) {
             return counter;
@@ -1211,9 +1269,9 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
           ++counter;
         }
       } catch (err) {
-        _iterator10.e(err);
+        _iterator11.e(err);
       } finally {
-        _iterator10.f();
+        _iterator11.f();
       }
 
       return -1;
@@ -1369,12 +1427,12 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
   }, {
     key: "_isDividerSelected",
     value: function _isDividerSelected() {
-      var _iterator11 = _createForOfIteratorHelper(this.state.all_selected_items),
-          _step11;
+      var _iterator12 = _createForOfIteratorHelper(this.state.all_selected_items),
+          _step12;
 
       try {
-        for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
-          var uid = _step11.value;
+        for (_iterator12.s(); !(_step12 = _iterator12.n()).done;) {
+          var uid = _step12.value;
           var centry = this.get_console_item_entry(uid);
 
           if (centry.type == "divider") {
@@ -1382,9 +1440,9 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
           }
         }
       } catch (err) {
-        _iterator11.e(err);
+        _iterator12.e(err);
       } finally {
-        _iterator11.f();
+        _iterator12.f();
       }
 
       return false;
@@ -1397,12 +1455,12 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       var new_console_items = [];
       var in_section = false;
 
-      var _iterator12 = _createForOfIteratorHelper(this.props.console_items),
-          _step12;
+      var _iterator13 = _createForOfIteratorHelper(this.props.console_items),
+          _step13;
 
       try {
-        for (_iterator12.s(); !(_step12 = _iterator12.n()).done;) {
-          var entry = _step12.value;
+        for (_iterator13.s(); !(_step13 = _iterator13.n()).done;) {
+          var entry = _step13.value;
 
           if (in_section) {
             in_section = entry.type != "section-end";
@@ -1418,9 +1476,9 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
           }
         }
       } catch (err) {
-        _iterator12.e(err);
+        _iterator13.e(err);
       } finally {
-        _iterator12.f();
+        _iterator13.f();
       }
 
       this._clear_all_selected_items(function () {
@@ -1472,21 +1530,21 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
     value: function _getNextEndIndex(start_id) {
       var start_index = this._consoleItemIndex(start_id);
 
-      var _iterator13 = _createForOfIteratorHelper(this.props.console_items.slice(start_index)),
-          _step13;
+      var _iterator14 = _createForOfIteratorHelper(this.props.console_items.slice(start_index)),
+          _step14;
 
       try {
-        for (_iterator13.s(); !(_step13 = _iterator13.n()).done;) {
-          var entry = _step13.value;
+        for (_iterator14.s(); !(_step14 = _iterator14.n()).done;) {
+          var entry = _step14.value;
 
           if (entry.type == "section-end") {
             return this._consoleItemIndex(entry.unique_id);
           }
         }
       } catch (err) {
-        _iterator13.e(err);
+        _iterator14.e(err);
       } finally {
-        _iterator13.f();
+        _iterator14.f();
       }
 
       return this.props.console_items.length;
@@ -1496,12 +1554,12 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
     value: function _isInSection(unique_id) {
       var idx = this._consoleItemIndex(unique_id);
 
-      var _iterator14 = _createForOfIteratorHelper(this.props.console_items.slice(idx + 1)),
-          _step14;
+      var _iterator15 = _createForOfIteratorHelper(this.props.console_items.slice(idx + 1)),
+          _step15;
 
       try {
-        for (_iterator14.s(); !(_step14 = _iterator14.n()).done;) {
-          var entry = _step14.value;
+        for (_iterator15.s(); !(_step15 = _iterator15.n()).done;) {
+          var entry = _step15.value;
 
           if (entry.type == "divider") {
             return false;
@@ -1512,9 +1570,9 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
           }
         }
       } catch (err) {
-        _iterator14.e(err);
+        _iterator15.e(err);
       } finally {
-        _iterator14.f();
+        _iterator15.f();
       }
 
       return false;
@@ -1530,21 +1588,21 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       _lodash["default"].last(new_entries).set_focus = set_focus;
       var inserting_divider = false;
 
-      var _iterator15 = _createForOfIteratorHelper(new_entries),
-          _step15;
+      var _iterator16 = _createForOfIteratorHelper(new_entries),
+          _step16;
 
       try {
-        for (_iterator15.s(); !(_step15 = _iterator15.n()).done;) {
-          var entry = _step15.value;
+        for (_iterator16.s(); !(_step16 = _iterator16.n()).done;) {
+          var entry = _step16.value;
 
           if (entry.type == "divider") {
             inserting_divider = true;
           }
         }
       } catch (err) {
-        _iterator15.e(err);
+        _iterator16.e(err);
       } finally {
-        _iterator15.f();
+        _iterator16.f();
       }
 
       var last_id = _lodash["default"].last(new_entries).unique_id;
@@ -1757,12 +1815,12 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
         search_string: nval
       }, function () {
         if (self._are_selected()) {
-          var _iterator16 = _createForOfIteratorHelper(_this13.state.all_selected_items),
-              _step16;
+          var _iterator17 = _createForOfIteratorHelper(_this13.state.all_selected_items),
+              _step17;
 
           try {
-            for (_iterator16.s(); !(_step16 = _iterator16.n()).done;) {
-              var uid = _step16.value;
+            for (_iterator17.s(); !(_step17 = _iterator17.n()).done;) {
+              var uid = _step17.value;
               replace_dicts.push({
                 unique_id: uid,
                 field: "search_string",
@@ -1770,9 +1828,9 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
               });
             }
           } catch (err) {
-            _iterator16.e(err);
+            _iterator17.e(err);
           } finally {
-            _iterator16.f();
+            _iterator17.f();
           }
 
           _this13._multiple_console_item_updates(replace_dicts);
@@ -1798,12 +1856,12 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
 
       var new_console_items = _toConsumableArray(this.props.console_items);
 
-      var _iterator17 = _createForOfIteratorHelper(new_console_items),
-          _step17;
+      var _iterator18 = _createForOfIteratorHelper(new_console_items),
+          _step18;
 
       try {
-        for (_iterator17.s(); !(_step17 = _iterator17.n()).done;) {
-          var entry = _step17.value;
+        for (_iterator18.s(); !(_step18 = _iterator18.n()).done;) {
+          var entry = _step18.value;
 
           if (entry.type == "code" || entry.type == "text") {
             entry["show_on_filtered"] = entry.console_text.toLowerCase().includes(this.state.search_string.toLowerCase());
@@ -1812,9 +1870,9 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
           }
         }
       } catch (err) {
-        _iterator17.e(err);
+        _iterator18.e(err);
       } finally {
-        _iterator17.f();
+        _iterator18.f();
       }
 
       this.props.setMainStateValue("console_items", new_console_items, function () {
@@ -1988,6 +2046,12 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
           icon_name: "clipboard",
           click_handler: function click_handler() {
             self._pasteCell();
+          }
+        }, {
+          name_text: "Paste Image",
+          icon_name: "clipboard",
+          click_handler: function click_handler() {
+            self._pasteImage();
           }
         }, {
           name_text: "Delete Selected",
@@ -2190,12 +2254,12 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       var in_closed_section = false;
       var in_section = false;
 
-      var _iterator18 = _createForOfIteratorHelper(this.props.console_items),
-          _step18;
+      var _iterator19 = _createForOfIteratorHelper(this.props.console_items),
+          _step19;
 
       try {
-        for (_iterator18.s(); !(_step18 = _iterator18.n()).done;) {
-          var _entry = _step18.value;
+        for (_iterator19.s(); !(_step19 = _iterator19.n()).done;) {
+          var _entry = _step19.value;
 
           if (_entry.type == "divider") {
             in_section = true;
@@ -2216,29 +2280,29 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
           }
         }
       } catch (err) {
-        _iterator18.e(err);
+        _iterator19.e(err);
       } finally {
-        _iterator18.f();
+        _iterator19.f();
       }
 
       if (this.state.filter_console_items) {
         var new_filtered_items = [];
 
-        var _iterator19 = _createForOfIteratorHelper(filtered_items),
-            _step19;
+        var _iterator20 = _createForOfIteratorHelper(filtered_items),
+            _step20;
 
         try {
-          for (_iterator19.s(); !(_step19 = _iterator19.n()).done;) {
-            var entry = _step19.value;
+          for (_iterator20.s(); !(_step20 = _iterator20.n()).done;) {
+            var entry = _step20.value;
 
             if (entry.show_on_filtered) {
               new_filtered_items.push(entry);
             }
           }
         } catch (err) {
-          _iterator19.e(err);
+          _iterator20.e(err);
         } finally {
-          _iterator19.f();
+          _iterator20.f();
         }
 
         filtered_items = new_filtered_items;
@@ -2378,6 +2442,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
         insertResourceLink: this._insertResourceLink,
         useDragHandle: true,
         dark_theme: this.props.dark_theme,
+        pseudo_tile_id: this.pseudo_tile_id,
         handleCreateViewer: this.props.handleCreateViewer,
         axis: "y"
       })), /*#__PURE__*/_react["default"].createElement("div", {
@@ -2470,6 +2535,9 @@ var SuperItem = /*#__PURE__*/function (_React$PureComponent3) {
         case "fixed":
           return /*#__PURE__*/_react["default"].createElement(LogItem, this.props);
 
+        case "figure":
+          return /*#__PURE__*/_react["default"].createElement(BlobItem, this.props);
+
         case "divider":
           return /*#__PURE__*/_react["default"].createElement(DividerItem, this.props);
 
@@ -2509,21 +2577,21 @@ var RawDividerItem = /*#__PURE__*/function (_React$Component) {
   _createClass(RawDividerItem, [{
     key: "shouldComponentUpdate",
     value: function shouldComponentUpdate(nextProps, nextState) {
-      var _iterator20 = _createForOfIteratorHelper(this.update_props),
-          _step20;
+      var _iterator21 = _createForOfIteratorHelper(this.update_props),
+          _step21;
 
       try {
-        for (_iterator20.s(); !(_step20 = _iterator20.n()).done;) {
-          var prop = _step20.value;
+        for (_iterator21.s(); !(_step21 = _iterator21.n()).done;) {
+          var prop = _step21.value;
 
           if (nextProps[prop] != this.props[prop]) {
             return true;
           }
         }
       } catch (err) {
-        _iterator20.e(err);
+        _iterator21.e(err);
       } finally {
-        _iterator20.f();
+        _iterator21.f();
       }
 
       return false;
@@ -2717,21 +2785,21 @@ var RawSectionEndItem = /*#__PURE__*/function (_React$Component2) {
   _createClass(RawSectionEndItem, [{
     key: "shouldComponentUpdate",
     value: function shouldComponentUpdate(nextProps, nextState) {
-      var _iterator21 = _createForOfIteratorHelper(this.update_props),
-          _step21;
+      var _iterator22 = _createForOfIteratorHelper(this.update_props),
+          _step22;
 
       try {
-        for (_iterator21.s(); !(_step21 = _iterator21.n()).done;) {
-          var prop = _step21.value;
+        for (_iterator22.s(); !(_step22 = _iterator22.n()).done;) {
+          var prop = _step22.value;
 
           if (nextProps[prop] != this.props[prop]) {
             return true;
           }
         }
       } catch (err) {
-        _iterator21.e(err);
+        _iterator22.e(err);
       } finally {
-        _iterator21.f();
+        _iterator22.f();
       }
 
       return false;
@@ -2882,21 +2950,21 @@ var RawLogItem = /*#__PURE__*/function (_React$Component3) {
   _createClass(RawLogItem, [{
     key: "shouldComponentUpdate",
     value: function shouldComponentUpdate(nextProps, nextState) {
-      var _iterator22 = _createForOfIteratorHelper(this.update_props),
-          _step22;
+      var _iterator23 = _createForOfIteratorHelper(this.update_props),
+          _step23;
 
       try {
-        for (_iterator22.s(); !(_step22 = _iterator22.n()).done;) {
-          var prop = _step22.value;
+        for (_iterator23.s(); !(_step23 = _iterator23.n()).done;) {
+          var prop = _step23.value;
 
           if (nextProps[prop] != this.props[prop]) {
             return true;
           }
         }
       } catch (err) {
-        _iterator22.e(err);
+        _iterator23.e(err);
       } finally {
-        _iterator22.f();
+        _iterator23.f();
       }
 
       return false;
@@ -2936,21 +3004,21 @@ var RawLogItem = /*#__PURE__*/function (_React$Component3) {
         this.last_output_text = this.props.output_text;
         var scripts = $("#" + this.props.unique_id + " .log-code-output script").toArray(); // $("#" + this.props.unique_id + " .bk-root").html(""); // This is a kluge to deal with bokeh double images
 
-        var _iterator23 = _createForOfIteratorHelper(scripts),
-            _step23;
+        var _iterator24 = _createForOfIteratorHelper(scripts),
+            _step24;
 
         try {
-          for (_iterator23.s(); !(_step23 = _iterator23.n()).done;) {
-            var script = _step23.value;
+          for (_iterator24.s(); !(_step24 = _iterator24.n()).done;) {
+            var script = _step24.value;
 
             try {
               window.eval(script.text);
             } catch (e) {}
           }
         } catch (err) {
-          _iterator23.e(err);
+          _iterator24.e(err);
         } finally {
-          _iterator23.f();
+          _iterator24.f();
         }
       }
     }
@@ -2959,18 +3027,18 @@ var RawLogItem = /*#__PURE__*/function (_React$Component3) {
     value: function makeTablesSortable() {
       var tables = $("#" + this.props.unique_id + " table.sortable").toArray();
 
-      var _iterator24 = _createForOfIteratorHelper(tables),
-          _step24;
+      var _iterator25 = _createForOfIteratorHelper(tables),
+          _step25;
 
       try {
-        for (_iterator24.s(); !(_step24 = _iterator24.n()).done;) {
-          var table = _step24.value;
+        for (_iterator25.s(); !(_step25 = _iterator25.n()).done;) {
+          var table = _step25.value;
           sorttable.makeSortable(table);
         }
       } catch (err) {
-        _iterator24.e(err);
+        _iterator25.e(err);
       } finally {
-        _iterator24.f();
+        _iterator25.f();
       }
     }
   }, {
@@ -3170,47 +3238,48 @@ RawLogItem.propTypes = {
   console_available_width: _propTypes["default"].number
 };
 var LogItem = (0, _core.ContextMenuTarget)(RawLogItem);
-var code_item_update_props = ["am_shrunk", "set_focus", "am_selected", "search_string", "summary_text", "console_text", "in_section", "hide_in_section", "show_spinner", "execution_count", "output_text", "console_available_width", "dark_theme"];
+var blob_item_update_props = ["is_error", "am_shrunk", "am_selected", "hide_in_section", "in_section", "summary_text", "fig_id", "pseudo_tile_id", "console_available_width"];
 
-var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component4) {
-  _inherits(RawConsoleCodeItem, _React$Component4);
+var RawBlobItem = /*#__PURE__*/function (_React$Component4) {
+  _inherits(RawBlobItem, _React$Component4);
 
-  var _super7 = _createSuper(RawConsoleCodeItem);
+  var _super7 = _createSuper(RawBlobItem);
 
-  function RawConsoleCodeItem(props) {
+  function RawBlobItem(props) {
     var _this22;
 
-    _classCallCheck(this, RawConsoleCodeItem);
+    _classCallCheck(this, RawBlobItem);
 
     _this22 = _super7.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this22), "_", RawConsoleCodeItem.prototype);
-    _this22.cmobject = null;
-    _this22.elRef = /*#__PURE__*/_react["default"].createRef();
-    _this22.update_props = code_item_update_props;
+    _this22.ce_summary0ref = /*#__PURE__*/_react["default"].createRef();
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this22), "_", RawLogItem.prototype);
+    _this22.update_props = blob_item_update_props;
     _this22.update_state_vars = [];
-    _this22.state = {};
+    _this22.state = {
+      selected: false
+    };
     _this22.last_output_text = "";
     return _this22;
   }
 
-  _createClass(RawConsoleCodeItem, [{
+  _createClass(RawBlobItem, [{
     key: "shouldComponentUpdate",
     value: function shouldComponentUpdate(nextProps, nextState) {
-      var _iterator25 = _createForOfIteratorHelper(this.update_props),
-          _step25;
+      var _iterator26 = _createForOfIteratorHelper(this.update_props),
+          _step26;
 
       try {
-        for (_iterator25.s(); !(_step25 = _iterator25.n()).done;) {
-          var prop = _step25.value;
+        for (_iterator26.s(); !(_step26 = _iterator26.n()).done;) {
+          var prop = _step26.value;
 
           if (nextProps[prop] != this.props[prop]) {
             return true;
           }
         }
       } catch (err) {
-        _iterator25.e(err);
+        _iterator26.e(err);
       } finally {
-        _iterator25.f();
+        _iterator26.f();
       }
 
       return false;
@@ -3218,7 +3287,324 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component4) {
   }, {
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this23 = this;
+      this.executeEmbeddedScripts();
+      this.makeTablesSortable();
+    }
+  }, {
+    key: "componentDidUpdate",
+    value: function componentDidUpdate() {
+      this.executeEmbeddedScripts();
+      this.makeTablesSortable();
+    }
+  }, {
+    key: "_toggleShrink",
+    value: function _toggleShrink() {
+      this.props.setConsoleItemValue(this.props.unique_id, "am_shrunk", !this.props.am_shrunk);
+    }
+  }, {
+    key: "_deleteMe",
+    value: function _deleteMe() {
+      this.props.handleDelete(this.props.unique_id);
+    }
+  }, {
+    key: "_handleSummaryTextChange",
+    value: function _handleSummaryTextChange(value) {
+      this.props.setConsoleItemValue(this.props.unique_id, "summary_text", value);
+    }
+  }, {
+    key: "executeEmbeddedScripts",
+    value: function executeEmbeddedScripts() {
+      if (this.props.output_text != this.last_output_text) {
+        // to avoid doubles of bokeh images
+        this.last_output_text = this.props.output_text;
+        var scripts = $("#" + this.props.unique_id + " .log-code-output script").toArray(); // $("#" + this.props.unique_id + " .bk-root").html(""); // This is a kluge to deal with bokeh double images
+
+        var _iterator27 = _createForOfIteratorHelper(scripts),
+            _step27;
+
+        try {
+          for (_iterator27.s(); !(_step27 = _iterator27.n()).done;) {
+            var script = _step27.value;
+
+            try {
+              window.eval(script.text);
+            } catch (e) {}
+          }
+        } catch (err) {
+          _iterator27.e(err);
+        } finally {
+          _iterator27.f();
+        }
+      }
+    }
+  }, {
+    key: "makeTablesSortable",
+    value: function makeTablesSortable() {
+      var tables = $("#" + this.props.unique_id + " table.sortable").toArray();
+
+      var _iterator28 = _createForOfIteratorHelper(tables),
+          _step28;
+
+      try {
+        for (_iterator28.s(); !(_step28 = _iterator28.n()).done;) {
+          var table = _step28.value;
+          sorttable.makeSortable(table);
+        }
+      } catch (err) {
+        _iterator28.e(err);
+      } finally {
+        _iterator28.f();
+      }
+    }
+  }, {
+    key: "_copyMe",
+    value: function _copyMe() {
+      this.props.copyCell(this.props.unique_id);
+    }
+  }, {
+    key: "_pasteCell",
+    value: function _pasteCell() {
+      this.props.pasteCell(this.props.unique_id);
+    }
+  }, {
+    key: "_selectMe",
+    value: function _selectMe() {
+      var e = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      this.props.selectConsoleItem(this.props.unique_id, e, callback);
+    }
+  }, {
+    key: "_addBlankText",
+    value: function _addBlankText() {
+      var self = this;
+
+      this._selectMe(null, function () {
+        self.props.addNewTextItem();
+      });
+    }
+  }, {
+    key: "_addBlankDivider",
+    value: function _addBlankDivider() {
+      var self = this;
+
+      this._selectMe(null, function () {
+        self.props.addNewDividerItem();
+      });
+    }
+  }, {
+    key: "_addBlankCode",
+    value: function _addBlankCode() {
+      var self = this;
+
+      this._selectMe(null, function () {
+        self.props.addNewCodeItem();
+      });
+    }
+  }, {
+    key: "renderContextMenu",
+    value: function renderContextMenu() {
+      // return a single element, or nothing to use default browser behavior
+      return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+        icon: "duplicate",
+        onClick: this._copyMe,
+        text: "Copy Cell"
+      }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+        icon: "clipboard",
+        onClick: this._pasteCell,
+        text: "Paste Cells"
+      }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+        icon: "new-text-box",
+        onClick: this._addBlankText,
+        text: "New Text Cell"
+      }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+        icon: "code",
+        onClick: this._addBlankCode,
+        text: "New Code Cell"
+      }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+        icon: "header",
+        onClick: this._addBlankDivider,
+        text: "New Section"
+      }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+        icon: "trash",
+        onClick: this._deleteMe,
+        intent: "danger",
+        text: "Delete Cell"
+      }));
+    }
+  }, {
+    key: "_consoleItemClick",
+    value: function _consoleItemClick(e) {
+      this._selectMe(e);
+
+      e.stopPropagation();
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var panel_class = this.props.am_shrunk ? "log-panel log-panel-invisible fixed-log-panel" : "log-panel log-panel-visible fixed-log-panel";
+
+      if (this.props.hide_in_section && this.props.in_section) {
+        return /*#__PURE__*/_react["default"].createElement("div", {
+          className: "log-panel fixed-log-panel d-flex flex-row",
+          id: this.props.unique_id,
+          style: {
+            height: 0
+          }
+        });
+      } // let blob_url = URL.createObjectURL(new Blob([this.props.blob], {type: "image/png"}));
+
+
+      if (this.props.in_section) {
+        panel_class += " in-section";
+      }
+
+      if (this.props.am_selected) {
+        panel_class += " selected";
+      }
+
+      var body_width = this.props.console_available_width - BUTTON_CONSUMED_SPACE;
+
+      if (this.props.in_section) {
+        body_width -= SECTION_INDENT / 2;
+      }
+
+      var true_figure_url = window.base_figure_url;
+
+      if (this.props.pseudo_tile_id) {
+        true_figure_url = true_figure_url.replace("tile_id", this.props.pseudo_tile_id);
+        true_figure_url = true_figure_url + "/" + this.props.fig_id;
+      }
+
+      return /*#__PURE__*/_react["default"].createElement("div", {
+        className: panel_class + " d-flex flex-row",
+        onClick: this._consoleItemClick,
+        id: this.props.unique_id,
+        style: {
+          marginBottom: 10
+        }
+      }, /*#__PURE__*/_react["default"].createElement("div", {
+        className: "button-div shrink-expand-div d-flex flex-row"
+      }, /*#__PURE__*/_react["default"].createElement(Shandle, null), !this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+        icon: "chevron-down",
+        handleClick: this._toggleShrink
+      }), this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+        icon: "chevron-right",
+        style: {
+          marginTop: 5
+        },
+        handleClick: this._toggleShrink
+      })), this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.EditableText, {
+        value: this.props.summary_text,
+        onChange: this._handleSummaryTextChange,
+        className: "log-panel-summary"
+      }), /*#__PURE__*/_react["default"].createElement("div", {
+        className: "button-div d-flex flex-row"
+      }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+        handleClick: this._deleteMe,
+        intent: "danger",
+        tooltip: "Delete this item",
+        style: {
+          marginLeft: 10,
+          marginRight: 66
+        },
+        icon: "trash"
+      }))), !this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
+        className: "d-flex flex-column"
+      }, /*#__PURE__*/_react["default"].createElement("div", {
+        className: "log-panel-body d-flex flex-row"
+      }, /*#__PURE__*/_react["default"].createElement("div", {
+        style: {
+          marginTop: 10,
+          marginLeft: 30,
+          padding: 8,
+          width: body_width,
+          border: "1px solid #c7c7c7"
+        }
+      }, this.props.pseudo_tile_id && /*#__PURE__*/_react["default"].createElement("img", {
+        src: true_figure_url,
+        alt: "An Image",
+        width: body_width - 25
+      })), /*#__PURE__*/_react["default"].createElement("div", {
+        className: "button-div d-flex flex-row"
+      }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+        handleClick: this._deleteMe,
+        tooltip: "Delete this item",
+        style: {
+          marginLeft: 10,
+          marginRight: 66
+        },
+        intent: "danger",
+        icon: "trash"
+      })))));
+    }
+  }]);
+
+  return RawBlobItem;
+}(_react["default"].Component);
+
+RawBlobItem.propTypes = {
+  unique_id: _propTypes["default"].string,
+  in_section: _propTypes["default"].bool,
+  is_error: _propTypes["default"].bool,
+  am_shrunk: _propTypes["default"].bool,
+  summary_text: _propTypes["default"].string,
+  selectConsoleItem: _propTypes["default"].func,
+  am_selected: _propTypes["default"].bool,
+  blob: _propTypes["default"].object,
+  setConsoleItemValue: _propTypes["default"].func,
+  handleDelete: _propTypes["default"].func,
+  console_available_width: _propTypes["default"].number
+};
+var BlobItem = (0, _core.ContextMenuTarget)(RawBlobItem);
+var code_item_update_props = ["am_shrunk", "set_focus", "am_selected", "search_string", "summary_text", "console_text", "in_section", "hide_in_section", "show_spinner", "execution_count", "output_text", "console_available_width", "dark_theme"];
+
+var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component5) {
+  _inherits(RawConsoleCodeItem, _React$Component5);
+
+  var _super8 = _createSuper(RawConsoleCodeItem);
+
+  function RawConsoleCodeItem(props) {
+    var _this23;
+
+    _classCallCheck(this, RawConsoleCodeItem);
+
+    _this23 = _super8.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this23), "_", RawConsoleCodeItem.prototype);
+    _this23.cmobject = null;
+    _this23.elRef = /*#__PURE__*/_react["default"].createRef();
+    _this23.update_props = code_item_update_props;
+    _this23.update_state_vars = [];
+    _this23.state = {};
+    _this23.last_output_text = "";
+    return _this23;
+  }
+
+  _createClass(RawConsoleCodeItem, [{
+    key: "shouldComponentUpdate",
+    value: function shouldComponentUpdate(nextProps, nextState) {
+      var _iterator29 = _createForOfIteratorHelper(this.update_props),
+          _step29;
+
+      try {
+        for (_iterator29.s(); !(_step29 = _iterator29.n()).done;) {
+          var prop = _step29.value;
+
+          if (nextProps[prop] != this.props[prop]) {
+            return true;
+          }
+        }
+      } catch (err) {
+        _iterator29.e(err);
+      } finally {
+        _iterator29.f();
+      }
+
+      return false;
+    }
+  }, {
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      var _this24 = this;
 
       if (this.props.set_focus) {
         if (this.cmobject != null) {
@@ -3235,7 +3621,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component4) {
 
       if (this.cmobject != null) {
         this.cmobject.on("focus", function () {
-          self.props.setFocus(_this23.props.unique_id, self._selectMe);
+          self.props.setFocus(_this24.props.unique_id, self._selectMe);
         });
         this.cmobject.on("blur", function () {
           self.props.setFocus(null);
@@ -3293,12 +3679,12 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component4) {
         this.last_output_text = this.props.output_text;
         var scripts = $("#" + this.props.unique_id + " .log-code-output script").toArray(); // $("#" + this.props.unique_id + " .bk-root").html(""); // This is a kluge to deal with bokeh double images
 
-        var _iterator26 = _createForOfIteratorHelper(scripts),
-            _step26;
+        var _iterator30 = _createForOfIteratorHelper(scripts),
+            _step30;
 
         try {
-          for (_iterator26.s(); !(_step26 = _iterator26.n()).done;) {
-            var script = _step26.value;
+          for (_iterator30.s(); !(_step30 = _iterator30.n()).done;) {
+            var script = _step30.value;
 
             // noinspection EmptyCatchBlockJS,UnusedCatchParameterJS
             try {
@@ -3306,9 +3692,9 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component4) {
             } catch (e) {}
           }
         } catch (err) {
-          _iterator26.e(err);
+          _iterator30.e(err);
         } finally {
-          _iterator26.f();
+          _iterator30.f();
         }
       }
     }
@@ -3317,18 +3703,18 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component4) {
     value: function makeTablesSortable() {
       var tables = $("#" + this.props.unique_id + " table.sortable").toArray();
 
-      var _iterator27 = _createForOfIteratorHelper(tables),
-          _step27;
+      var _iterator31 = _createForOfIteratorHelper(tables),
+          _step31;
 
       try {
-        for (_iterator27.s(); !(_step27 = _iterator27.n()).done;) {
-          var table = _step27.value;
+        for (_iterator31.s(); !(_step31 = _iterator31.n()).done;) {
+          var table = _step31.value;
           sorttable.makeSortable(table);
         }
       } catch (err) {
-        _iterator27.e(err);
+        _iterator31.e(err);
       } finally {
-        _iterator27.f();
+        _iterator31.f();
       }
     }
   }, {
@@ -3384,15 +3770,15 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component4) {
   }, {
     key: "_extraKeys",
     value: function _extraKeys() {
-      var _this24 = this;
+      var _this25 = this;
 
       var self = this;
       return {
         'Ctrl-Enter': function CtrlEnter() {
-          return self.props.runCodeItem(_this24.props.unique_id, true);
+          return self.props.runCodeItem(_this25.props.unique_id, true);
         },
         'Cmd-Enter': function CmdEnter() {
-          return self.props.runCodeItem(_this24.props.unique_id, true);
+          return self.props.runCodeItem(_this25.props.unique_id, true);
         },
         'Ctrl-C': self.props.addNewCodeItem,
         'Ctrl-T': self.props.addNewTextItem
@@ -3470,14 +3856,14 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component4) {
   }, {
     key: "renderContextMenu",
     value: function renderContextMenu() {
-      var _this25 = this;
+      var _this26 = this;
 
       // return a single element, or nothing to use default browser behavior
       return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, !this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "play",
         intent: "success",
         onClick: function onClick() {
-          _this25.props.runCodeItem(_this25.props.unique_id);
+          _this26.props.runCodeItem(_this26.props.unique_id);
         },
         text: "Run Cell"
       }), this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
@@ -3514,7 +3900,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component4) {
         icon: "clean",
         intent: "warning",
         onClick: function onClick() {
-          _this25._clearOutput();
+          _this26._clearOutput();
         },
         text: "Clear Output"
       }));
@@ -3529,7 +3915,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component4) {
   }, {
     key: "render",
     value: function render() {
-      var _this26 = this;
+      var _this27 = this;
 
       if (this.props.hide_in_section && this.props.in_section) {
         return /*#__PURE__*/_react["default"].createElement("div", {
@@ -3605,7 +3991,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component4) {
         className: "button-div d-flex pr-1"
       }, !this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
         handleClick: function handleClick() {
-          _this26.props.runCodeItem(_this26.props.unique_id);
+          _this27.props.runCodeItem(_this27.props.unique_id);
         },
         intent: "success",
         tooltip: "Execute this item",
@@ -3640,7 +4026,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component4) {
         icon: "trash"
       }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
         handleClick: function handleClick() {
-          _this26._clearOutput();
+          _this27._clearOutput();
         },
         intent: "warning",
         tooltip: "Clear this item's output",
@@ -3699,23 +4085,23 @@ var ConsoleCodeItem = (0, _core.ContextMenuTarget)(RawConsoleCodeItem);
 var ResourceLinkButton = /*#__PURE__*/function (_React$PureComponent4) {
   _inherits(ResourceLinkButton, _React$PureComponent4);
 
-  var _super8 = _createSuper(ResourceLinkButton);
+  var _super9 = _createSuper(ResourceLinkButton);
 
   function ResourceLinkButton(props) {
-    var _this27;
+    var _this28;
 
     _classCallCheck(this, ResourceLinkButton);
 
-    _this27 = _super8.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this27));
-    _this27.my_view = (0, _library_pane.view_views)(false)[props.res_type];
+    _this28 = _super9.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this28));
+    _this28.my_view = (0, _library_pane.view_views)(false)[props.res_type];
 
     if (window.in_context) {
       var re = new RegExp("/$");
-      _this27.my_view = _this27.my_view.replace(re, "_in_context");
+      _this28.my_view = _this28.my_view.replace(re, "_in_context");
     }
 
-    return _this27;
+    return _this28;
   }
 
   _createClass(ResourceLinkButton, [{
@@ -3766,65 +4152,65 @@ ResourceLinkButton.propTypes = {
 };
 var text_item_update_props = ["am_shrunk", "set_focus", "serach_string", "am_selected", "show_markdown", "in_section", "hide_in_section", "summary_text", "console_text", "console_available_width", "links"];
 
-var RawConsoleTextItem = /*#__PURE__*/function (_React$Component5) {
-  _inherits(RawConsoleTextItem, _React$Component5);
+var RawConsoleTextItem = /*#__PURE__*/function (_React$Component6) {
+  _inherits(RawConsoleTextItem, _React$Component6);
 
-  var _super9 = _createSuper(RawConsoleTextItem);
+  var _super10 = _createSuper(RawConsoleTextItem);
 
   function RawConsoleTextItem(props) {
-    var _this28;
+    var _this29;
 
     _classCallCheck(this, RawConsoleTextItem);
 
-    _this28 = _super9.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this28), "_", RawConsoleTextItem.prototype);
-    _this28.cmobject = null;
-    _this28.elRef = /*#__PURE__*/_react["default"].createRef();
-    _this28.ce_summary_ref = /*#__PURE__*/_react["default"].createRef();
-    _this28.update_props = text_item_update_props;
-    _this28.update_state_vars = ["ce_ref"];
-    _this28.previous_dark_theme = props.dark_theme;
-    _this28.state = {
+    _this29 = _super10.call(this, props);
+    (0, _utilities_react.doBinding)(_assertThisInitialized(_this29), "_", RawConsoleTextItem.prototype);
+    _this29.cmobject = null;
+    _this29.elRef = /*#__PURE__*/_react["default"].createRef();
+    _this29.ce_summary_ref = /*#__PURE__*/_react["default"].createRef();
+    _this29.update_props = text_item_update_props;
+    _this29.update_state_vars = ["ce_ref"];
+    _this29.previous_dark_theme = props.dark_theme;
+    _this29.state = {
       ce_ref: null
     };
-    return _this28;
+    return _this29;
   }
 
   _createClass(RawConsoleTextItem, [{
     key: "shouldComponentUpdate",
     value: function shouldComponentUpdate(nextProps, nextState) {
-      var _iterator28 = _createForOfIteratorHelper(this.update_props),
-          _step28;
+      var _iterator32 = _createForOfIteratorHelper(this.update_props),
+          _step32;
 
       try {
-        for (_iterator28.s(); !(_step28 = _iterator28.n()).done;) {
-          var prop = _step28.value;
+        for (_iterator32.s(); !(_step32 = _iterator32.n()).done;) {
+          var prop = _step32.value;
 
           if (nextProps[prop] != this.props[prop]) {
             return true;
           }
         }
       } catch (err) {
-        _iterator28.e(err);
+        _iterator32.e(err);
       } finally {
-        _iterator28.f();
+        _iterator32.f();
       }
 
-      var _iterator29 = _createForOfIteratorHelper(this.update_state_vars),
-          _step29;
+      var _iterator33 = _createForOfIteratorHelper(this.update_state_vars),
+          _step33;
 
       try {
-        for (_iterator29.s(); !(_step29 = _iterator29.n()).done;) {
-          var state_var = _step29.value;
+        for (_iterator33.s(); !(_step33 = _iterator33.n()).done;) {
+          var state_var = _step33.value;
 
           if (nextState[state_var] != this.state[state_var]) {
             return true;
           }
         }
       } catch (err) {
-        _iterator29.e(err);
+        _iterator33.e(err);
       } finally {
-        _iterator29.f();
+        _iterator33.f();
       }
 
       if (this.props.dark_theme != this.previous_dark_theme) {
@@ -3837,7 +4223,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component5) {
   }, {
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this29 = this;
+      var _this30 = this;
 
       if (this.props.set_focus) {
         if (this.props.show_markdown) {
@@ -3856,7 +4242,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component5) {
 
       if (this.cmobject != null) {
         this.cmobject.on("focus", function () {
-          self.props.setFocus(_this29.props.unique_id, self._selectMe);
+          self.props.setFocus(_this30.props.unique_id, self._selectMe);
         });
         this.cmobject.on("blur", function () {
           self.props.setFocus(null);
@@ -4124,7 +4510,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component5) {
   }, {
     key: "render",
     value: function render() {
-      var _this30 = this;
+      var _this31 = this;
 
       if (this.props.hide_in_section && this.props.in_section) {
         return /*#__PURE__*/_react["default"].createElement("div", {
@@ -4166,7 +4552,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component5) {
         return /*#__PURE__*/_react["default"].createElement(ResourceLinkButton, {
           key: index,
           my_index: index,
-          handleCreateViewer: _this30.props.handleCreateViewer,
+          handleCreateViewer: _this31.props.handleCreateViewer,
           deleteMe: self._deleteLinkButton,
           res_type: link.res_type,
           res_name: link.res_name

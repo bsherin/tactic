@@ -740,7 +740,7 @@ class TileCreationTasksMixin:
         data_dict["tile_address"] = create_container_dict["tile_address"]
         self.tile_id_dict[tile_name] = tile_container_id
 
-        data_dict["base_figure_url"] = self.base_figure_url.replace("tile_id", tile_container_id)
+        data_dict["base_figure_url"] = self.base_figure_url
         data_dict["doc_type"] = self.doc_type
         print("about to get tile_code")
         data_dict["tile_code"] = self.get_tile_code(data_dict["tile_type"])
@@ -808,7 +808,7 @@ class TileCreationTasksMixin:
         new_id.append(gtc_response["tile_id"])
 
         self.tile_addresses[gtc_response["tile_id"]] = gtc_response["tile_address"]
-        tile_save_dict["new_base_figure_url"] = self.base_figure_url.replace("tile_id", new_id[0])
+        tile_save_dict["new_base_figure_url"] = self.base_figure_url
         tile_save_dict["my_address"] = gtc_response["tile_address"]
         tile_save_dict["ppi"] = self.ppi
         lsdata = {"tile_code": tile_code, "tile_save_dict": tile_save_dict}
@@ -1619,7 +1619,7 @@ class ConsoleTasksMixin:
                     self.updated_globals(instantiate_result)
                 self.show_main_message("Notebook reset", 21)
 
-            data_dict = {"base_figure_url": self.base_figure_url.replace("tile_id", self.pseudo_tile_id),
+            data_dict = {"base_figure_url": self.base_figure_url,
                          "doc_type": self.doc_type, "globals_dict": {}, "img_dict": {},
                          "tile_address": self.pseudo_tile_address}
             self.mworker.post_task(self.pseudo_tile_id, "instantiate_as_pseudo_tile", data_dict, instantiate_done)

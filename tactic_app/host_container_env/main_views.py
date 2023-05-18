@@ -5,6 +5,7 @@ import json
 import copy
 import requests
 import functools
+import uuid
 
 from flask import request, jsonify, render_template, send_file, url_for
 from flask_login import current_user, login_required
@@ -13,7 +14,7 @@ from tactic_app import app, db, fs, socketio, csrf
 from library_views import collection_manager
 from docker_functions import destroy_container, destroy_child_containers
 from users import load_user
-from communication_utils import debinarize_python_object
+from communication_utils import debinarize_python_object, make_python_object_jsonizable
 from communication_utils import read_temp_data, delete_temp_data
 from exception_mixin import generic_exception_handler
 import tactic_app
@@ -136,6 +137,29 @@ def load_temp_page(the_id):
     else:
         return render_template(template_data["template_name"], **template_data)
 
+@app.route("/print_blob_area_to_console", methods=['get', 'post'])
+def print_blob_area_to_console():
+    from tactic_app import socketio
+    bytes_object = request.files['image'].read()
+    encoded_img = make_python_object_jsonizable(bytes_object)
+    main_id = request.form["main_id"]
+    pseudo_tile_id = request.form["pseudo_tile_id"]
+    unique_id = str(uuid.uuid4())
+    fig_id = str(uuid.uuid4())
+    data = {"figure_name": fig_id}
+    data["img"] = encoded_img
+    tactic_app.host_worker.post_task(pseudo_tile_id, "store_image", data)
+    data["message"] = {"unique_id": unique_id,
+                       "type": "figure",
+                       "am_shrunk": False,
+                       "search_string": None,
+                       "summary_text": "pasted image",
+                       "fig_id": fig_id}
+    data["console_message"] = "consoleLog"
+    data["main_id"] = main_id
+    socketio.emit("console-message", data, namespace='/main', room=main_id)
+    return jsonify({"success": True})
+
 
 @app.route('/export_data', methods=['POST'])
 @login_required
@@ -157,12 +181,15 @@ def export_data():
 @app.route('/figure_source/<tile_id>/<figure_name>', methods=['GET', 'POST'])
 @login_required
 def figure_source(tile_id, figure_name):
-    encoded_img = tactic_app.host_worker.post_and_wait(tile_id, "get_image", {"figure_name": figure_name})["img"]
-    img = debinarize_python_object(encoded_img)
+    print("in figure source")
+    figure_response = tactic_app.host_worker.post_and_wait(tile_id, "get_image", {"figure_name": figure_name})
+    print(str(figure_response))
+    img = debinarize_python_object(figure_response["img"])
     # img = cPickle.loads(encoded_img.decode("utf-8", "ignore").encode("ascii"))
-    img_file = io.StringIO()
+    img_file = io.BytesIO()
     img_file.write(img)
     img_file.seek(0)
+    print("got img file " + str(img_file))
     return send_file(img_file, mimetype='image/png')
 
 

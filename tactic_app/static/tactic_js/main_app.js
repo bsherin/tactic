@@ -191,6 +191,7 @@ function main_props(data, registerDirtyMethod, finalCallback) {
     tsocket.attachListener('handle-callback', function (task_packet) {
       (0, _communication_react.handleCallback)(task_packet, main_id);
     });
+    window.base_figure_url = data.base_figure_url;
 
     if (data.is_project) {
       var data_dict = {
