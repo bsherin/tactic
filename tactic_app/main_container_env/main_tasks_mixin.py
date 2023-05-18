@@ -13,6 +13,7 @@ import docker_functions
 from mongo_accesser import bytes_to_string, NameExistsError
 from doc_info import docInfo, FreeformDocInfo
 from qworker import debug_log
+import base64
 
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
 
@@ -484,7 +485,6 @@ class LoadSaveTasksMixin:
     @task_worthy
     def export_as_presentation(self, data_dict):
         try:
-            print("in export_as_report")
             new_collection_name = data_dict["collection_name"]
             cell_list = data_dict["cell_list"]
             new_cell_list = []
@@ -527,6 +527,8 @@ class LoadSaveTasksMixin:
                         in_section = False
                         continue
                     else:
+                        if ccell["type"] == "figure":
+                            ccell["image"] = self.prepare_image(ccell)
                         new_cell_list.append(ccell)
                         continue
 
@@ -556,10 +558,19 @@ class LoadSaveTasksMixin:
             _return_data = {"success": False, "message": error_string}
         return _return_data
 
+    def prepare_image(self, ccell):
+        if self.pseudo_tile_id:
+            figure_response = self.mworker.post_and_wait(self.pseudo_tile_id, "get_image",
+                                                         {"figure_name": ccell["fig_id"]})
+            raw_response = figure_response["img"]
+            byte_array = debinarize_python_object(raw_response)
+            base_64_str = base64.b64encode(byte_array).decode('utf-8')
+            return "data:image/png;base64, " + base_64_str
+        return ""
+
     @task_worthy
     def export_as_report(self, data_dict):
         try:
-            print("in export_as_report")
             new_collection_name = data_dict["collection_name"]
             cell_list = data_dict["cell_list"]
             new_cell_list = []
@@ -580,7 +591,10 @@ class LoadSaveTasksMixin:
                             style_text += ccell["console_text"] + "\n"
                 elif not in_section:
                     if not ccell["type"] == "divider":
+                        if ccell["type"] == "figure":
+                            ccell["image"] = self.prepare_image(ccell)
                         new_cell_list.append(ccell)
+
                         continue
                     if not ccell["header_text"].lower() == "styles":
                         in_section = True
@@ -595,12 +609,14 @@ class LoadSaveTasksMixin:
                         in_section = False
                         continue
                     else:
+                        if ccell["type"] == "figure":
+                            ccell["image"] = self.prepare_image(ccell)
                         new_cell_list.append(ccell)
                         continue
 
             report_html = render_template("report_template.html",
                                           cell_list=new_cell_list,
-                                          extra_styles = style_text,
+                                          extra_styles=style_text,
                                           use_dark_theme = data_dict["use_dark_theme"],
                                           collapsible=data_dict["collapsible"],
                                           include_summaries=data_dict["include_summaries"],
