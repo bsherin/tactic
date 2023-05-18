@@ -60,6 +60,7 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
          this.pseudo_tile_id = null;
          this.socket_counter = null;
          this.initSocket();
+         this._requestPseudoTileId();
      }
 
      componentDidMount() {
@@ -105,6 +106,15 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
          this.props.tsocket.attachListener("console-message", _handleConsoleMessage);
      }
 
+     _requestPseudoTileId(){
+         let self = this;
+        if (this.pseudo_tile_id == null) {
+             postWithCallback(this.props.main_id, "get_pseudo_tile_id", {}, function (res) {
+                 self.pseudo_tile_id = res.pseudo_tile_id;
+             })
+        }
+     }
+
      _createTextEntry(unique_id, summary_text) {
          return {
              unique_id: unique_id,
@@ -114,6 +124,47 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
              console_text: "",
              show_markdown: false
          }
+     }
+     _pasteImage() {
+         var clipboardContents;
+         let blob = null;
+         let self = this;
+         navigator.clipboard.read()
+             .then((response) => {
+                     clipboardContents = response;
+                     for (const item of clipboardContents) {
+                         if (item.types.includes("image/png")) {
+                             item.getType("image/png")
+                                 .then((response) => {
+                                     blob = response;
+                                     if (blob == null) return;
+                                     gotBlob(blob);
+                                 });
+                             break;
+                         }
+                     }
+                 }
+             );
+        function gotBlob(blob) {
+            const formData = new FormData();
+            formData.append('image', blob, 'image.png');
+            formData.append("user_id", window.user_id);
+            formData.append("main_id", self.props.main_id);
+            formData.append("pseudo_tile_id", self.pseudo_tile_id);
+            $.ajax({
+              url: '/print_blob_area_to_console',
+              type: 'POST',
+              data: formData,
+              processData: false,
+              contentType: false,
+              success: function(response) {
+                console.log(response);
+              },
+              error: function(xhr, status, error) {
+                console.log(xhr.responseText);
+              }
+            });
+        }
      }
 
      _addConsoleText(the_text, callback=null) {
@@ -153,15 +204,6 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
          }
          this._addConsoleDivider("")
      }
-
-     // _insertTextInCell(the_text) {
-     //     let unique_id = this.state.currently_selected_item;
-     //     let entry = this.get_console_item_entry(unique_id);
-     //     let replace_dicts = [];
-     //     replace_dicts.push({unique_id: unique_id, field:"console_text", value: entry.console_text + the_text});
-     //     replace_dicts.push({unique_id: unique_id, field: "force_sync_to_prop", value: true});
-     //     this._multiple_console_item_updates(replace_dicts)
-     // }
 
      _getSectionIds(unique_id) {
          let cindex = this._consoleItemIndex(unique_id);
@@ -1220,6 +1262,7 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
             Edit: [{name_text: "Copy All", icon_name: "duplicate", click_handler: () => {self._copyAll()}},
                     {name_text: "Copy Selected", icon_name: "duplicate", click_handler: () => {self._copyCell()}},
                     {name_text: "Paste Cells", icon_name: "clipboard", click_handler: () => {self._pasteCell()}},
+                    {name_text: "Paste Image", icon_name: "clipboard", click_handler: () => {self._pasteImage()}},
                     {name_text: "Delete Selected", icon_name: "trash", click_handler: () => {self._deleteSelected()}},
                     {name_text: "divider2", icon_name: null, click_handler: "divider"},
                     {name_text: "Clear Log", icon_name: "trash", click_handler: this._clearConsole}
@@ -1505,6 +1548,7 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
                                                 insertResourceLink={this._insertResourceLink}
                                                 useDragHandle={true}
                                                 dark_theme={this.props.dark_theme}
+                                                pseudo_tile_id={this.pseudo_tile_id}
                                                 handleCreateViewer={this.props.handleCreateViewer}
                                                 axis="y"
                              />
@@ -1565,6 +1609,8 @@ class SuperItem extends React.PureComponent {
                 return <ConsoleCodeItem {...this.props}/>;
             case "fixed":
                 return <LogItem {...this.props}/>;
+            case "figure":
+                return <BlobItem {...this.props}/>;
             case "divider":
                 return <DividerItem {...this.props}/>;
             case "section-end":
@@ -2053,6 +2099,234 @@ RawLogItem.propTypes = {
 };
 
 const LogItem = ContextMenuTarget(RawLogItem);
+
+const blob_item_update_props = ["is_error", "am_shrunk", "am_selected", "hide_in_section",
+    "in_section", "summary_text", "fig_id", "pseudo_tile_id", "console_available_width"];
+
+class RawBlobItem extends React.Component {
+    constructor(props) {
+        super(props);
+        this.ce_summary0ref = React.createRef();
+        doBinding(this, "_", RawLogItem.prototype);
+        this.update_props = blob_item_update_props;
+        this.update_state_vars = [];
+        this.state = {selected: false};
+        this.last_output_text = "";
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        for (let prop of this.update_props) {
+            if (nextProps[prop] != this.props[prop]) {
+                return true
+            }
+        }
+        return false
+    }
+
+    componentDidMount() {
+        this.executeEmbeddedScripts();
+        this.makeTablesSortable()
+    }
+
+    componentDidUpdate() {
+        this.executeEmbeddedScripts();
+        this.makeTablesSortable()
+    }
+
+    _toggleShrink() {
+        this.props.setConsoleItemValue(this.props.unique_id, "am_shrunk", !this.props.am_shrunk);
+    }
+
+    _deleteMe() {
+        this.props.handleDelete(this.props.unique_id)
+    }
+
+    _handleSummaryTextChange(value) {
+        this.props.setConsoleItemValue(this.props.unique_id, "summary_text", value)
+    }
+
+     executeEmbeddedScripts() {
+        if (this.props.output_text != this.last_output_text) {  // to avoid doubles of bokeh images
+            this.last_output_text = this.props.output_text;
+            let scripts = $("#" + this.props.unique_id + " .log-code-output script").toArray();
+            // $("#" + this.props.unique_id + " .bk-root").html(""); // This is a kluge to deal with bokeh double images
+            for (let script of scripts) {
+                try {
+                    window.eval(script.text)
+                }
+                catch (e) {
+
+                }
+            }
+        }
+    }
+
+    makeTablesSortable() {
+        let tables = $("#" + this.props.unique_id + " table.sortable").toArray();
+        for (let table of tables) {
+            sorttable.makeSortable(table)
+        }
+    }
+
+    _copyMe() {
+        this.props.copyCell(this.props.unique_id)
+    }
+
+    _pasteCell() {
+        this.props.pasteCell(this.props.unique_id)
+    }
+
+    _selectMe(e=null, callback=null) {
+        this.props.selectConsoleItem(this.props.unique_id, e, callback)
+    }
+
+    _addBlankText() {
+        let self = this;
+        this._selectMe(null, ()=>{
+            self.props.addNewTextItem()
+        })
+    }
+
+    _addBlankDivider() {
+        let self = this;
+        this._selectMe(null, ()=>{
+            self.props.addNewDividerItem()
+        })
+    }
+
+    _addBlankCode() {
+        let self = this;
+        this._selectMe(null,()=>{
+            self.props.addNewCodeItem()
+        })
+    }
+
+    renderContextMenu() {
+        // return a single element, or nothing to use default browser behavior
+        return (
+            <Menu>
+                <MenuItem icon="duplicate"
+                          onClick={this._copyMe}
+                          text="Copy Cell" />
+                <MenuItem icon="clipboard"
+                          onClick={this._pasteCell}
+                          text="Paste Cells" />
+                <MenuDivider/>
+                <MenuItem icon="new-text-box"
+                           onClick={this._addBlankText}
+                           text="New Text Cell"/>
+                 <MenuItem icon="code"
+                           onClick={this._addBlankCode}
+                           text="New Code Cell"/>
+                <MenuItem icon="header"
+                           onClick={this._addBlankDivider}
+                           text="New Section"/>
+                <MenuDivider/>
+                <MenuItem icon="trash"
+                          onClick={this._deleteMe}
+                          intent="danger"
+                          text="Delete Cell" />
+            </Menu>
+        );
+    }
+
+    _consoleItemClick(e) {
+        this._selectMe(e);
+        e.stopPropagation()
+    }
+
+    render () {
+
+        let panel_class = this.props.am_shrunk ? "log-panel log-panel-invisible fixed-log-panel" : "log-panel log-panel-visible fixed-log-panel";
+        if (this.props.hide_in_section && this.props.in_section) {
+            return (
+                <div className="log-panel fixed-log-panel d-flex flex-row" id={this.props.unique_id} style={{height: 0}}/>
+            )
+        }
+        // let blob_url = URL.createObjectURL(new Blob([this.props.blob], {type: "image/png"}));
+
+        if (this.props.in_section) {
+            panel_class += " in-section"
+        }
+        if (this.props.am_selected) {
+            panel_class += " selected"
+        }
+        let body_width = this.props.console_available_width - BUTTON_CONSUMED_SPACE;
+        if (this.props.in_section) {
+            body_width -= SECTION_INDENT / 2
+        }
+        let true_figure_url = window.base_figure_url;
+        if (this.props.pseudo_tile_id) {
+            true_figure_url = true_figure_url.replace("tile_id", this.props.pseudo_tile_id);
+            true_figure_url = true_figure_url + "/" + this.props.fig_id;
+        }
+        return (
+            <div className={panel_class + " d-flex flex-row"} onClick={this._consoleItemClick} id={this.props.unique_id} style={{marginBottom: 10}}>
+                <div className="button-div shrink-expand-div d-flex flex-row">
+                    <Shandle/>
+                        {!this.props.am_shrunk &&
+                            <GlyphButton icon="chevron-down"
+                                         handleClick={this._toggleShrink}/>
+                        }
+                        {this.props.am_shrunk &&
+                            <GlyphButton icon="chevron-right"
+                                         style={{marginTop: 5}}
+                                         handleClick={this._toggleShrink}/>
+                        }
+                </div>
+                {this.props.am_shrunk &&
+                    <React.Fragment>
+                        <EditableText value={this.props.summary_text}
+                                     onChange={this._handleSummaryTextChange}
+                                     className="log-panel-summary"/>
+                        <div className="button-div d-flex flex-row">
+                             <GlyphButton handleClick={this._deleteMe}
+                                          intent="danger"
+                                          tooltip="Delete this item"
+                                          style={{marginLeft: 10, marginRight: 66}}
+                                          icon="trash"/>
+                        </div>
+                    </React.Fragment>
+                }
+                {!this.props.am_shrunk &&
+                    <div className="d-flex flex-column">
+                        <div className="log-panel-body d-flex flex-row">
+                            <div style={{marginTop: 10, marginLeft: 30, padding: 8, width: body_width, border: "1px solid #c7c7c7"}}>
+                                {this.props.pseudo_tile_id && (
+                                    <img src={true_figure_url}
+                                         alt="An Image" width={body_width - 25}/>)
+                                }
+                            </div>
+                            <div className="button-div d-flex flex-row">
+                                 <GlyphButton handleClick={this._deleteMe}
+                                              tooltip="Delete this item"
+                                              style={{marginLeft: 10, marginRight: 66}}
+                                              intent="danger"
+                                              icon="trash"/>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        )
+    }
+}
+
+RawBlobItem.propTypes = {
+    unique_id: PropTypes.string,
+    in_section: PropTypes.bool,
+    is_error: PropTypes.bool,
+    am_shrunk: PropTypes.bool,
+    summary_text: PropTypes.string,
+    selectConsoleItem: PropTypes.func,
+    am_selected: PropTypes.bool,
+    blob: PropTypes.object,
+    setConsoleItemValue: PropTypes.func,
+    handleDelete: PropTypes.func,
+    console_available_width: PropTypes.number,
+};
+
+const BlobItem = ContextMenuTarget(RawBlobItem);
 
 const code_item_update_props = ["am_shrunk", "set_focus", "am_selected", "search_string", "summary_text", "console_text",
             "in_section", "hide_in_section", "show_spinner", "execution_count", "output_text", "console_available_width", "dark_theme"];

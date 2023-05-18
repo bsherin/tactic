@@ -183,9 +183,6 @@ class TileWorker(QWorker):
             tile_env.Tile = self.tile_instance
             self.handler_instances["tilebase"] = self.tile_instance
             self.tile_instance.recreate_from_save(data)
-            if self.tile_instance.current_html is not None:
-                self.tile_instance.current_html = self.tile_instance.current_html.replace(data["base_figure_url"],
-                                                                                          data["new_base_figure_url"])
             self.tile_instance.base_figure_url = data["new_base_figure_url"]
             self.tile_instance.my_address = data["my_address"]
             self.tile_instance.user_id = os.environ["OWNER"]

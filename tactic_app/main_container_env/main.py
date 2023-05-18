@@ -519,7 +519,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         self.pseudo_tile_address = data["tile_address"]
         if globals_dict is None:
             globals_dict = {}
-        data_dict = {"base_figure_url": self.base_figure_url.replace("tile_id", self.pseudo_tile_id),
+        data_dict = {"base_figure_url": self.base_figure_url,
                      "doc_type": self.doc_type, "globals_dict": globals_dict, "tile_address": data["tile_address"]}
         print("about to instantiate")
 

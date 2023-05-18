@@ -101,6 +101,7 @@ function main_props(data, registerDirtyMethod, finalCallback) {
         }
         tsocket.socket.off("remove-ready-block", readyListener);
         tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, main_id)});
+        window.base_figure_url = data.base_figure_url;
         if (data.is_project) {
             let data_dict = {
                 "project_name": data.project_name,

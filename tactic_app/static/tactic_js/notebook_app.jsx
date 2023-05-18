@@ -95,6 +95,7 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
         }
         tsocket.socket.off("remove-ready-block", readyListener);
         tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, main_id)});
+        window.base_figure_url = data.base_figure_url;
         let data_dict = {
                 "doc_type": "notebook",
                 "base_figure_url": data.base_figure_url,
