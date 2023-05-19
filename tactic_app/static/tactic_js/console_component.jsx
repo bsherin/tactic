@@ -54,10 +54,10 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
              all_selected_items: [],
              search_string: null,
              filter_console_items: false,
-             search_helper_text: null
+             search_helper_text: null,
+             pseudo_tile_id: null
 
          };
-         this.pseudo_tile_id = null;
          this.socket_counter = null;
          this.initSocket();
          this._requestPseudoTileId();
@@ -108,9 +108,9 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
 
      _requestPseudoTileId(){
          let self = this;
-        if (this.pseudo_tile_id == null) {
+        if (this.state.pseudo_tile_id == null) {
              postWithCallback(this.props.main_id, "get_pseudo_tile_id", {}, function (res) {
-                 self.pseudo_tile_id = res.pseudo_tile_id;
+                 self.setState({pseudo_tile_id: res.pseudo_tile_id})
              })
         }
      }
@@ -150,7 +150,7 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
             formData.append('image', blob, 'image.png');
             formData.append("user_id", window.user_id);
             formData.append("main_id", self.props.main_id);
-            formData.append("pseudo_tile_id", self.pseudo_tile_id);
+            formData.append("pseudo_tile_id", self.state.pseudo_tile_id);
             $.ajax({
               url: '/print_blob_area_to_console',
               type: 'POST',
@@ -403,44 +403,40 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
          })
      }
 
+     _getContainerLog() {
+         let self = this;
+         if (self.state.pseudo_tile_id == null) {
+             self.setState({"console_error_log_text": "pseudo-tile is initializing..."}, () => {
+                 self.setState({"show_console_error_log": true});
+             });
+         } else {
+             postWithCallback("host", "get_container_log",
+                 {"container_id": self.state.pseudo_tile_id, "since": self.state.pseudo_log_since, "max_lines": self.state.max_console_lines},
+                 function (res) {
+                 let log_text = res.log_text;
+                 if (log_text == "") {
+                     log_text = "Got empty result. The pseudo-tile is probably starting up."
+                 }
+                 self.setState({"console_error_log_text": log_text, console_log_showing: "pseudo"}, () => {
+                     self.setState({"show_console_error_log": true});
+                     self._startPseudoLogStreaming()
+                 });
+             }, null, self.props.main_id)
+         }
+     }
+
      _toggleConsoleLog() {
          let self = this;
          if (this.state.show_console_error_log) {
              this.setState({"show_console_error_log": false});
              this._stopMainPseudoLogStreaming()
          } else {
-             if (self.pseudo_tile_id == null) {
+             if (self.state.pseudo_tile_id == null) {
                  postWithCallback(this.props.main_id, "get_pseudo_tile_id", {}, function (res) {
-                     self.pseudo_tile_id = res.pseudo_tile_id;
-                     if (self.pseudo_tile_id == null) {
-                         self.setState({"console_error_log_text": "pseudo-tile is initializing..."}, () => {
-                             self.setState({"show_console_error_log": true});
-                         });
-                     } else {
-                         postWithCallback("host", "get_container_log",
-                             {"container_id": self.pseudo_tile_id, "since": self.state.pseudo_log_since, "max_lines": self.state.max_console_lines},
-                             function (res) {
-                             let log_text = res.log_text;
-                             if (log_text == "") {
-                                 log_text = "Got empty result. The pseudo-tile is probably starting up."
-                             }
-                             self.setState({"console_error_log_text": log_text, console_log_showing: "pseudo"}, () => {
-                                 self.setState({"show_console_error_log": true});
-                                 self._startPseudoLogStreaming()
-                             });
-                         }, null, self.props.main_id)
-                     }
+                     self.setState({pseudo_tile_id: res.pseudo_tile_id}, self._getContainerLog);
                  }, null, this.props.main_id)
              } else {
-                 postWithCallback("host", "get_container_log",
-                     {"container_id": self.pseudo_tile_id, "since": self.state.pseudo_log_since, "max_lines": self.state.max_console_lines},
-                     function (res) {
-                         self.setState({"console_error_log_text": res.log_text, console_log_showing: "pseudo"}, () => {
-                                 self.setState({"show_console_error_log": true});
-                                self._startPseudoLogStreaming()
-                             }
-                         );
-                 }, null, this.props.main_id)
+                 self._getContainerLog()
              }
          }
      }
@@ -451,7 +447,7 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
         this.setState({pseudo_log_since: now}, ()=>{
             self._stopMainPseudoLogStreaming(()=>{
             postWithCallback("host", "get_container_log",
-                    {container_id: self.pseudo_tile_id, since: self.state.pseudo_log_since, max_lines: self.state.max_console_lines}, function (res) {
+                    {container_id: self.state.pseudo_tile_id_id, since: self.state.pseudo_log_since, max_lines: self.state.max_console_lines}, function (res) {
                     self.setState({console_error_log_text: res.log_text, console_log_showing: "pseudo"}, () => {
                         self.setState({"show_console_error_log": true});
                         self._startPseudoLogStreaming();
@@ -520,7 +516,7 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
         this.setState({max_console_lines: max_lines}, ()=>{
             self._stopMainPseudoLogStreaming(()=>{
             postWithCallback("host", "get_container_log",
-                    {container_id: self.pseudo_tile_id, since: self.state.pseudo_log_since, max_lines: self.state.max_console_lines},
+                    {container_id: self.state.pseudo_tile_id, since: self.state.pseudo_log_since, max_lines: self.state.max_console_lines},
                     function (res) {
                     self.setState({console_error_log_text: res.log_text, console_log_showing: "pseudo"}, () => {
                         self.setState({"show_console_error_log": true});
@@ -1348,7 +1344,7 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
 
     _logExec(command, callback=null) {
         let self = this;
-        postWithCallback(self.pseudo_tile_id, "os_command_exec", {
+        postWithCallback(self.state.pseudo_tile_id, "os_command_exec", {
             "the_code": command,
         }, callback)
     }
@@ -1548,7 +1544,7 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
                                                 insertResourceLink={this._insertResourceLink}
                                                 useDragHandle={true}
                                                 dark_theme={this.props.dark_theme}
-                                                pseudo_tile_id={this.pseudo_tile_id}
+                                                pseudo_tile_id={this.state.pseudo_tile_id}
                                                 handleCreateViewer={this.props.handleCreateViewer}
                                                 axis="y"
                              />
@@ -2110,27 +2106,48 @@ class RawBlobItem extends React.Component {
         doBinding(this, "_", RawLogItem.prototype);
         this.update_props = blob_item_update_props;
         this.update_state_vars = [];
-        this.state = {selected: false};
+        this.state = {selected: false, image_data_str: null};
         this.last_output_text = "";
     }
 
     shouldComponentUpdate(nextProps, nextState) {
         for (let prop of this.update_props) {
             if (nextProps[prop] != this.props[prop]) {
+                if (prop == "pseudo_tile_id") {
+                    this._getImageString()
+                }
                 return true
             }
+        }
+        if (nextState.image_data_str != this.state.image_data_str) {
+            this._getImageString();
+            return true
         }
         return false
     }
 
+    _getImageString() {
+        let self = this;
+        if (this.props.pseudo_tile_id) {
+            postWithCallback(this.props.pseudo_tile_id, "get_image_data_string",
+                {figure_name: this.props.fig_id}, (data)=> {
+                    self.setState({image_data_str: data["image_str"]})
+                })
+        }
+    }
+
     componentDidMount() {
         this.executeEmbeddedScripts();
-        this.makeTablesSortable()
+        this.makeTablesSortable();
+        this._getImageString()
     }
 
     componentDidUpdate() {
         this.executeEmbeddedScripts();
-        this.makeTablesSortable()
+        this.makeTablesSortable();
+        if (!this.state.image_data_str) {
+            this._getImageString()
+        }
     }
 
     _toggleShrink() {
@@ -2243,7 +2260,6 @@ class RawBlobItem extends React.Component {
                 <div className="log-panel fixed-log-panel d-flex flex-row" id={this.props.unique_id} style={{height: 0}}/>
             )
         }
-        // let blob_url = URL.createObjectURL(new Blob([this.props.blob], {type: "image/png"}));
 
         if (this.props.in_section) {
             panel_class += " in-section"
@@ -2255,11 +2271,11 @@ class RawBlobItem extends React.Component {
         if (this.props.in_section) {
             body_width -= SECTION_INDENT / 2
         }
-        let true_figure_url = window.base_figure_url;
-        if (this.props.pseudo_tile_id) {
-            true_figure_url = true_figure_url.replace("tile_id", this.props.pseudo_tile_id);
-            true_figure_url = true_figure_url + "/" + this.props.fig_id;
-        }
+        // let true_figure_url = window.base_figure_url;
+        // if (this.props.pseudo_tile_id) {
+        //     true_figure_url = true_figure_url.replace("tile_id", this.props.pseudo_tile_id);
+        //     true_figure_url = true_figure_url + this.props.fig_id;
+        // }
         return (
             <div className={panel_class + " d-flex flex-row"} onClick={this._consoleItemClick} id={this.props.unique_id} style={{marginBottom: 10}}>
                 <div className="button-div shrink-expand-div d-flex flex-row">
@@ -2292,8 +2308,8 @@ class RawBlobItem extends React.Component {
                     <div className="d-flex flex-column">
                         <div className="log-panel-body d-flex flex-row">
                             <div style={{marginTop: 10, marginLeft: 30, padding: 8, width: body_width, border: "1px solid #c7c7c7"}}>
-                                {this.props.pseudo_tile_id && (
-                                    <img src={true_figure_url}
+                                {this.state.image_data_str && (
+                                    <img src={this.state.image_data_str}
                                          alt="An Image" width={body_width - 25}/>)
                                 }
                             </div>

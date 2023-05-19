@@ -121,9 +121,9 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       all_selected_items: [],
       search_string: null,
       filter_console_items: false,
-      search_helper_text: null
+      search_helper_text: null,
+      pseudo_tile_id: null
     };
-    _this.pseudo_tile_id = null;
     _this.socket_counter = null;
 
     _this.initSocket();
@@ -202,9 +202,11 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
     value: function _requestPseudoTileId() {
       var self = this;
 
-      if (this.pseudo_tile_id == null) {
+      if (this.state.pseudo_tile_id == null) {
         (0, _communication_react.postWithCallback)(this.props.main_id, "get_pseudo_tile_id", {}, function (res) {
-          self.pseudo_tile_id = res.pseudo_tile_id;
+          self.setState({
+            pseudo_tile_id: res.pseudo_tile_id
+          });
         });
       }
     }
@@ -257,7 +259,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
         formData.append('image', blob, 'image.png');
         formData.append("user_id", window.user_id);
         formData.append("main_id", self.props.main_id);
-        formData.append("pseudo_tile_id", self.pseudo_tile_id);
+        formData.append("pseudo_tile_id", self.state.pseudo_tile_id);
         $.ajax({
           url: '/print_blob_area_to_console',
           type: 'POST',
@@ -601,6 +603,44 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       });
     }
   }, {
+    key: "_getContainerLog",
+    value: function _getContainerLog() {
+      var self = this;
+
+      if (self.state.pseudo_tile_id == null) {
+        self.setState({
+          "console_error_log_text": "pseudo-tile is initializing..."
+        }, function () {
+          self.setState({
+            "show_console_error_log": true
+          });
+        });
+      } else {
+        (0, _communication_react.postWithCallback)("host", "get_container_log", {
+          "container_id": self.state.pseudo_tile_id,
+          "since": self.state.pseudo_log_since,
+          "max_lines": self.state.max_console_lines
+        }, function (res) {
+          var log_text = res.log_text;
+
+          if (log_text == "") {
+            log_text = "Got empty result. The pseudo-tile is probably starting up.";
+          }
+
+          self.setState({
+            "console_error_log_text": log_text,
+            console_log_showing: "pseudo"
+          }, function () {
+            self.setState({
+              "show_console_error_log": true
+            });
+
+            self._startPseudoLogStreaming();
+          });
+        }, null, self.props.main_id);
+      }
+    }
+  }, {
     key: "_toggleConsoleLog",
     value: function _toggleConsoleLog() {
       var self = this;
@@ -612,60 +652,14 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
 
         this._stopMainPseudoLogStreaming();
       } else {
-        if (self.pseudo_tile_id == null) {
+        if (self.state.pseudo_tile_id == null) {
           (0, _communication_react.postWithCallback)(this.props.main_id, "get_pseudo_tile_id", {}, function (res) {
-            self.pseudo_tile_id = res.pseudo_tile_id;
-
-            if (self.pseudo_tile_id == null) {
-              self.setState({
-                "console_error_log_text": "pseudo-tile is initializing..."
-              }, function () {
-                self.setState({
-                  "show_console_error_log": true
-                });
-              });
-            } else {
-              (0, _communication_react.postWithCallback)("host", "get_container_log", {
-                "container_id": self.pseudo_tile_id,
-                "since": self.state.pseudo_log_since,
-                "max_lines": self.state.max_console_lines
-              }, function (res) {
-                var log_text = res.log_text;
-
-                if (log_text == "") {
-                  log_text = "Got empty result. The pseudo-tile is probably starting up.";
-                }
-
-                self.setState({
-                  "console_error_log_text": log_text,
-                  console_log_showing: "pseudo"
-                }, function () {
-                  self.setState({
-                    "show_console_error_log": true
-                  });
-
-                  self._startPseudoLogStreaming();
-                });
-              }, null, self.props.main_id);
-            }
+            self.setState({
+              pseudo_tile_id: res.pseudo_tile_id
+            }, self._getContainerLog);
           }, null, this.props.main_id);
         } else {
-          (0, _communication_react.postWithCallback)("host", "get_container_log", {
-            "container_id": self.pseudo_tile_id,
-            "since": self.state.pseudo_log_since,
-            "max_lines": self.state.max_console_lines
-          }, function (res) {
-            self.setState({
-              "console_error_log_text": res.log_text,
-              console_log_showing: "pseudo"
-            }, function () {
-              self.setState({
-                "show_console_error_log": true
-              });
-
-              self._startPseudoLogStreaming();
-            });
-          }, null, this.props.main_id);
+          self._getContainerLog();
         }
       }
     }
@@ -681,7 +675,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       }, function () {
         self._stopMainPseudoLogStreaming(function () {
           (0, _communication_react.postWithCallback)("host", "get_container_log", {
-            container_id: self.pseudo_tile_id,
+            container_id: self.state.pseudo_tile_id_id,
             since: self.state.pseudo_log_since,
             max_lines: self.state.max_console_lines
           }, function (res) {
@@ -792,7 +786,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       }, function () {
         self._stopMainPseudoLogStreaming(function () {
           (0, _communication_react.postWithCallback)("host", "get_container_log", {
-            container_id: self.pseudo_tile_id,
+            container_id: self.state.pseudo_tile_id,
             since: self.state.pseudo_log_since,
             max_lines: self.state.max_console_lines
           }, function (res) {
@@ -2186,7 +2180,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
     value: function _logExec(command) {
       var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
       var self = this;
-      (0, _communication_react.postWithCallback)(self.pseudo_tile_id, "os_command_exec", {
+      (0, _communication_react.postWithCallback)(self.state.pseudo_tile_id, "os_command_exec", {
         "the_code": command
       }, callback);
     }
@@ -2442,7 +2436,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
         insertResourceLink: this._insertResourceLink,
         useDragHandle: true,
         dark_theme: this.props.dark_theme,
-        pseudo_tile_id: this.pseudo_tile_id,
+        pseudo_tile_id: this.state.pseudo_tile_id,
         handleCreateViewer: this.props.handleCreateViewer,
         axis: "y"
       })), /*#__PURE__*/_react["default"].createElement("div", {
@@ -3256,7 +3250,8 @@ var RawBlobItem = /*#__PURE__*/function (_React$Component4) {
     _this22.update_props = blob_item_update_props;
     _this22.update_state_vars = [];
     _this22.state = {
-      selected: false
+      selected: false,
+      image_data_str: null
     };
     _this22.last_output_text = "";
     return _this22;
@@ -3273,6 +3268,10 @@ var RawBlobItem = /*#__PURE__*/function (_React$Component4) {
           var prop = _step26.value;
 
           if (nextProps[prop] != this.props[prop]) {
+            if (prop == "pseudo_tile_id") {
+              this._getImageString();
+            }
+
             return true;
           }
         }
@@ -3282,19 +3281,46 @@ var RawBlobItem = /*#__PURE__*/function (_React$Component4) {
         _iterator26.f();
       }
 
+      if (nextState.image_data_str != this.state.image_data_str) {
+        this._getImageString();
+
+        return true;
+      }
+
       return false;
+    }
+  }, {
+    key: "_getImageString",
+    value: function _getImageString() {
+      var self = this;
+
+      if (this.props.pseudo_tile_id) {
+        (0, _communication_react.postWithCallback)(this.props.pseudo_tile_id, "get_image_data_string", {
+          figure_name: this.props.fig_id
+        }, function (data) {
+          self.setState({
+            image_data_str: data["image_str"]
+          });
+        });
+      }
     }
   }, {
     key: "componentDidMount",
     value: function componentDidMount() {
       this.executeEmbeddedScripts();
       this.makeTablesSortable();
+
+      this._getImageString();
     }
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate() {
       this.executeEmbeddedScripts();
       this.makeTablesSortable();
+
+      if (!this.state.image_data_str) {
+        this._getImageString();
+      }
     }
   }, {
     key: "_toggleShrink",
@@ -3451,8 +3477,7 @@ var RawBlobItem = /*#__PURE__*/function (_React$Component4) {
             height: 0
           }
         });
-      } // let blob_url = URL.createObjectURL(new Blob([this.props.blob], {type: "image/png"}));
-
+      }
 
       if (this.props.in_section) {
         panel_class += " in-section";
@@ -3466,14 +3491,12 @@ var RawBlobItem = /*#__PURE__*/function (_React$Component4) {
 
       if (this.props.in_section) {
         body_width -= SECTION_INDENT / 2;
-      }
+      } // let true_figure_url = window.base_figure_url;
+      // if (this.props.pseudo_tile_id) {
+      //     true_figure_url = true_figure_url.replace("tile_id", this.props.pseudo_tile_id);
+      //     true_figure_url = true_figure_url + this.props.fig_id;
+      // }
 
-      var true_figure_url = window.base_figure_url;
-
-      if (this.props.pseudo_tile_id) {
-        true_figure_url = true_figure_url.replace("tile_id", this.props.pseudo_tile_id);
-        true_figure_url = true_figure_url + "/" + this.props.fig_id;
-      }
 
       return /*#__PURE__*/_react["default"].createElement("div", {
         className: panel_class + " d-flex flex-row",
@@ -3520,8 +3543,8 @@ var RawBlobItem = /*#__PURE__*/function (_React$Component4) {
           width: body_width,
           border: "1px solid #c7c7c7"
         }
-      }, this.props.pseudo_tile_id && /*#__PURE__*/_react["default"].createElement("img", {
-        src: true_figure_url,
+      }, this.state.image_data_str && /*#__PURE__*/_react["default"].createElement("img", {
+        src: this.state.image_data_str,
         alt: "An Image",
         width: body_width - 25
       })), /*#__PURE__*/_react["default"].createElement("div", {

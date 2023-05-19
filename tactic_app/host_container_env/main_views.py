@@ -183,12 +183,14 @@ def export_data():
 def figure_source(tile_id, figure_name):
     print("in figure source")
     figure_response = tactic_app.host_worker.post_and_wait(tile_id, "get_image", {"figure_name": figure_name})
+    print("got a figure_response")
     img = debinarize_python_object(figure_response["img"])
+    print("debinarized image has len " + str(len(img)))
     # img = cPickle.loads(encoded_img.decode("utf-8", "ignore").encode("ascii"))
     img_file = io.BytesIO()
     img_file.write(img)
     img_file.seek(0)
-    print("got img file " + str(img_file))
+    print("about to send file")
     return send_file(img_file, mimetype='image/png')
 
 
