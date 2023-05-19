@@ -141,7 +141,7 @@ class ProjectMenu extends React.Component {
                         new_entry.summary_text = "";
                         break;
                      case "figure":
-                        new_entry.fig_id = entry.fig_id;
+                        new_entry.image_data_str = entry.image_data_str;
                         new_entry.summary_text =entry.summary_text;
                         break;
                     default:
@@ -209,7 +209,7 @@ class ProjectMenu extends React.Component {
                         new_entry.header_text = entry.header_text;
                         break;
                     case "figure":
-                        new_entry.fig_id = entry.fig_id;
+                        new_entry.image_data_str = entry.image_data_str;
                         new_entry.summary_text =entry.summary_text;
                         break;
                     default:

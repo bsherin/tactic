@@ -148,9 +148,7 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
         function gotBlob(blob) {
             const formData = new FormData();
             formData.append('image', blob, 'image.png');
-            formData.append("user_id", window.user_id);
             formData.append("main_id", self.props.main_id);
-            formData.append("pseudo_tile_id", self.state.pseudo_tile_id);
             $.ajax({
               url: '/print_blob_area_to_console',
               type: 'POST',
@@ -158,7 +156,7 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
               processData: false,
               contentType: false,
               success: function(response) {
-                console.log(response);
+                console.log("");
               },
               error: function(xhr, status, error) {
                 console.log(xhr.responseText);
@@ -2097,7 +2095,7 @@ RawLogItem.propTypes = {
 const LogItem = ContextMenuTarget(RawLogItem);
 
 const blob_item_update_props = ["is_error", "am_shrunk", "am_selected", "hide_in_section",
-    "in_section", "summary_text", "fig_id", "pseudo_tile_id", "console_available_width"];
+    "in_section", "summary_text", "image_data_str", "console_available_width"];
 
 class RawBlobItem extends React.Component {
     constructor(props) {
@@ -2113,41 +2111,20 @@ class RawBlobItem extends React.Component {
     shouldComponentUpdate(nextProps, nextState) {
         for (let prop of this.update_props) {
             if (nextProps[prop] != this.props[prop]) {
-                if (prop == "pseudo_tile_id") {
-                    this._getImageString()
-                }
                 return true
             }
         }
-        if (nextState.image_data_str != this.state.image_data_str) {
-            this._getImageString();
-            return true
-        }
         return false
-    }
-
-    _getImageString() {
-        let self = this;
-        if (this.props.pseudo_tile_id) {
-            postWithCallback(this.props.pseudo_tile_id, "get_image_data_string",
-                {figure_name: this.props.fig_id}, (data)=> {
-                    self.setState({image_data_str: data["image_str"]})
-                })
-        }
     }
 
     componentDidMount() {
         this.executeEmbeddedScripts();
         this.makeTablesSortable();
-        this._getImageString()
     }
 
     componentDidUpdate() {
         this.executeEmbeddedScripts();
         this.makeTablesSortable();
-        if (!this.state.image_data_str) {
-            this._getImageString()
-        }
     }
 
     _toggleShrink() {
@@ -2271,11 +2248,6 @@ class RawBlobItem extends React.Component {
         if (this.props.in_section) {
             body_width -= SECTION_INDENT / 2
         }
-        // let true_figure_url = window.base_figure_url;
-        // if (this.props.pseudo_tile_id) {
-        //     true_figure_url = true_figure_url.replace("tile_id", this.props.pseudo_tile_id);
-        //     true_figure_url = true_figure_url + this.props.fig_id;
-        // }
         return (
             <div className={panel_class + " d-flex flex-row"} onClick={this._consoleItemClick} id={this.props.unique_id} style={{marginBottom: 10}}>
                 <div className="button-div shrink-expand-div d-flex flex-row">
@@ -2308,8 +2280,8 @@ class RawBlobItem extends React.Component {
                     <div className="d-flex flex-column">
                         <div className="log-panel-body d-flex flex-row">
                             <div style={{marginTop: 10, marginLeft: 30, padding: 8, width: body_width, border: "1px solid #c7c7c7"}}>
-                                {this.state.image_data_str && (
-                                    <img src={this.state.image_data_str}
+                                {this.props.image_data_str && (
+                                    <img src={this.props.image_data_str}
                                          alt="An Image" width={body_width - 25}/>)
                                 }
                             </div>

@@ -257,9 +257,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
       function gotBlob(blob) {
         var formData = new FormData();
         formData.append('image', blob, 'image.png');
-        formData.append("user_id", window.user_id);
         formData.append("main_id", self.props.main_id);
-        formData.append("pseudo_tile_id", self.state.pseudo_tile_id);
         $.ajax({
           url: '/print_blob_area_to_console',
           type: 'POST',
@@ -267,7 +265,7 @@ var RawConsoleComponent = /*#__PURE__*/function (_React$PureComponent) {
           processData: false,
           contentType: false,
           success: function success(response) {
-            console.log(response);
+            console.log("");
           },
           error: function error(xhr, status, _error) {
             console.log(xhr.responseText);
@@ -3232,7 +3230,7 @@ RawLogItem.propTypes = {
   console_available_width: _propTypes["default"].number
 };
 var LogItem = (0, _core.ContextMenuTarget)(RawLogItem);
-var blob_item_update_props = ["is_error", "am_shrunk", "am_selected", "hide_in_section", "in_section", "summary_text", "fig_id", "pseudo_tile_id", "console_available_width"];
+var blob_item_update_props = ["is_error", "am_shrunk", "am_selected", "hide_in_section", "in_section", "summary_text", "image_data_str", "console_available_width"];
 
 var RawBlobItem = /*#__PURE__*/function (_React$Component4) {
   _inherits(RawBlobItem, _React$Component4);
@@ -3268,10 +3266,6 @@ var RawBlobItem = /*#__PURE__*/function (_React$Component4) {
           var prop = _step26.value;
 
           if (nextProps[prop] != this.props[prop]) {
-            if (prop == "pseudo_tile_id") {
-              this._getImageString();
-            }
-
             return true;
           }
         }
@@ -3281,46 +3275,19 @@ var RawBlobItem = /*#__PURE__*/function (_React$Component4) {
         _iterator26.f();
       }
 
-      if (nextState.image_data_str != this.state.image_data_str) {
-        this._getImageString();
-
-        return true;
-      }
-
       return false;
-    }
-  }, {
-    key: "_getImageString",
-    value: function _getImageString() {
-      var self = this;
-
-      if (this.props.pseudo_tile_id) {
-        (0, _communication_react.postWithCallback)(this.props.pseudo_tile_id, "get_image_data_string", {
-          figure_name: this.props.fig_id
-        }, function (data) {
-          self.setState({
-            image_data_str: data["image_str"]
-          });
-        });
-      }
     }
   }, {
     key: "componentDidMount",
     value: function componentDidMount() {
       this.executeEmbeddedScripts();
       this.makeTablesSortable();
-
-      this._getImageString();
     }
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate() {
       this.executeEmbeddedScripts();
       this.makeTablesSortable();
-
-      if (!this.state.image_data_str) {
-        this._getImageString();
-      }
     }
   }, {
     key: "_toggleShrink",
@@ -3491,12 +3458,7 @@ var RawBlobItem = /*#__PURE__*/function (_React$Component4) {
 
       if (this.props.in_section) {
         body_width -= SECTION_INDENT / 2;
-      } // let true_figure_url = window.base_figure_url;
-      // if (this.props.pseudo_tile_id) {
-      //     true_figure_url = true_figure_url.replace("tile_id", this.props.pseudo_tile_id);
-      //     true_figure_url = true_figure_url + this.props.fig_id;
-      // }
-
+      }
 
       return /*#__PURE__*/_react["default"].createElement("div", {
         className: panel_class + " d-flex flex-row",
@@ -3543,8 +3505,8 @@ var RawBlobItem = /*#__PURE__*/function (_React$Component4) {
           width: body_width,
           border: "1px solid #c7c7c7"
         }
-      }, this.state.image_data_str && /*#__PURE__*/_react["default"].createElement("img", {
-        src: this.state.image_data_str,
+      }, this.props.image_data_str && /*#__PURE__*/_react["default"].createElement("img", {
+        src: this.props.image_data_str,
         alt: "An Image",
         width: body_width - 25
       })), /*#__PURE__*/_react["default"].createElement("div", {

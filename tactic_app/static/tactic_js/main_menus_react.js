@@ -214,7 +214,7 @@ var ProjectMenu = /*#__PURE__*/function (_React$Component) {
                 break;
 
               case "figure":
-                new_entry.fig_id = entry.fig_id;
+                new_entry.image_data_str = entry.image_data_str;
                 new_entry.summary_text = entry.summary_text;
                 break;
 
@@ -301,7 +301,7 @@ var ProjectMenu = /*#__PURE__*/function (_React$Component) {
                 break;
 
               case "figure":
-                new_entry.fig_id = entry.fig_id;
+                new_entry.image_data_str = entry.image_data_str;
                 new_entry.summary_text = entry.summary_text;
                 break;
 
