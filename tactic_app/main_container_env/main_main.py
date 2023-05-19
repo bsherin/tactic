@@ -151,12 +151,14 @@ class MainWorker(QWorker, ExceptionMixin):
 
             self.mwindow = mainWindow(self, data_dict)
             self.handler_instances["mainwindow"] = self.mwindow
-            print("ready to emit to client")
+
             task_data = {"success": True,
                          "message": "finish-post-load",
                          "collection_name": self.mwindow.collection_name,
                          "doc_names": self.mwindow.doc_names,
                          "console_html": ""}
+            if data_dict["doc_type"] == "notebook":
+                return task_data
             print("ready to grab chunk")
             if data_dict["doc_type"] == "table":
                 task_data.update(self.mwindow.grab_chunk_by_row_index({"doc_name": self.mwindow.doc_names[0], "row_index": 0, "set_visible_doc": True}))

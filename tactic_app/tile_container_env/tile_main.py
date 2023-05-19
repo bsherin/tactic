@@ -7,6 +7,7 @@ monkey.patch_all()
 import os
 import pika
 import json
+import base64
 print("entering tile__main")
 from flask import Flask
 import exception_mixin
@@ -209,6 +210,12 @@ class TileWorker(QWorker):
             return {"success": True, "img": encoded_img}
         except Exception as ex:
             return self.handle_exception(ex, "Error getting image")
+
+    @task_worthy
+    def get_image_data_string(self, data_dict):
+        byte_array = self.tile_instance.img_dict[data_dict["figure_name"]]
+        base_64_str = base64.b64encode(byte_array).decode('utf-8')
+        return {"success": True, "image_str": "data:image/png;base64, " + base_64_str}
 
     def extract_option_names(self, opt_dict):
         opt_names = []
