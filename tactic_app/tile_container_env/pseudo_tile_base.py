@@ -102,13 +102,6 @@ class PseudoTileClass(TileBase, MplFigure):
 
     @_task_worthy
     def compile_save_dict(self, data):
-        print("entering compile_save_dict with data " + str(data))
-        used_images = data["used_images"]
-        # for fig_id in self.img_dict.keys():
-        #     if fig_id not in used_images:
-        #         print(f"*** deleting img {fig_id} ***")
-        #         del self.img_dict[fig_id]
-        print(f"{len(self.img_dict)} images remaining")
         result = {"binary_attrs": [], "imports": []}
         attrs = globals().keys()
         for attr in attrs:

@@ -84,7 +84,6 @@ class LoadSaveTasksMixin:
 
     @task_worthy_manual_submit
     def compile_save_dict(self, data, task_packet):
-        used_images = data["used_images"]
 
         def track_tile_compile_receipts(tile_save_dict):
             tile_id = tile_save_dict["tile_id"]
@@ -138,7 +137,7 @@ class LoadSaveTasksMixin:
             tile_ids_to_compile = copy.copy(self.tile_instances)
             if self.pseudo_tile_id is not None:
                 tile_ids_to_compile.append(self.pseudo_tile_id)
-                self.mworker.post_task(self.pseudo_tile_id, "compile_save_dict", {"used_images": used_images},
+                self.mworker.post_task(self.pseudo_tile_id, "compile_save_dict", {},
                                        callback_func=track_tile_compile_receipts)
             if not tile_ids_to_compile:
                 result["used_tile_types"] = []
@@ -155,7 +154,7 @@ class LoadSaveTasksMixin:
         else:
             if self.pseudo_tile_id is not None:
                 tile_ids_to_compile = [self.pseudo_tile_id]
-                self.mworker.post_task(self.pseudo_tile_id, "compile_save_dict", {"used_images": used_images},
+                self.mworker.post_task(self.pseudo_tile_id, "compile_save_dict", {},
                                        callback_func=track_tile_compile_receipts)
             else:
                 self.mworker.submit_response(task_packet, result)
@@ -375,16 +374,12 @@ class LoadSaveTasksMixin:
 
         try:
             console_items = data_dict["interface_state"]["console_items"]
-            used_images = []
-            for entry in console_items:
-                if entry["type"] == "figure":
-                    used_images.append(entry["fig_id"])
             self.project_name = data_dict["project_name"]
             self.purgetiles = data_dict["purgetiles"]
             self.show_main_status_message("Getting loaded modules")
             self.loaded_modules = self.get_loaded_user_modules()
             self.show_main_status_message("compiling save dictionary")
-            self.mworker.post_task(self.mworker.my_id, "compile_save_dict", {"used_images": used_images}, got_save_dict)
+            self.mworker.post_task(self.mworker.my_id, "compile_save_dict", {}, got_save_dict)
 
         except Exception as ex:
             debug_log("got an error in save_new_project")
@@ -420,16 +415,12 @@ class LoadSaveTasksMixin:
 
         try:
             console_items = data_dict["interface_state"]["console_items"]
-            used_images = []
-            for entry in console_items:
-                if entry["type"] == "figure":
-                    used_images.append(entry["fig_id"])
             self.project_name = data_dict["project_name"]
             self.purgetiles = True
 
             self.show_main_status_message("compiling save dictionary")
             self.doc_type = "notebook"  # This is necessary in case we're saving a juypyter notebook
-            self.mworker.post_task(self.mworker.my_id, "compile_save_dict", {"used_images": used_images}, got_save_dict)
+            self.mworker.post_task(self.mworker.my_id, "compile_save_dict", {}, got_save_dict)
 
         except Exception as ex:
             debug_log("got an error in save_new_project")
@@ -483,14 +474,10 @@ class LoadSaveTasksMixin:
 
         try:
             console_items = data_dict["interface_state"]["console_items"]
-            used_images = []
-            for entry in console_items:
-                if entry["type"] == "figure":
-                    used_images.append(entry["fig_id"])
             self.show_main_status_message("Getting loaded modules")
             self.loaded_modules = self.get_loaded_user_modules()
             self.show_main_status_message("compiling save dictionary")
-            self.mworker.post_task(self.mworker.my_id, "compile_save_dict", {"used_images": used_images}, got_save_dict)
+            self.mworker.post_task(self.mworker.my_id, "compile_save_dict", {}, got_save_dict)
 
         except Exception as ex:
             error_string = self.handle_exception(ex, "Error saving project", print_to_console=False)
@@ -544,7 +531,7 @@ class LoadSaveTasksMixin:
                         continue
                     else:
                         if ccell["type"] == "figure":
-                            ccell["image"] = self.prepare_image(ccell)
+                            ccell["image"] = ccell["image_data_str"]
                         new_cell_list.append(ccell)
                         continue
 
@@ -605,12 +592,19 @@ class LoadSaveTasksMixin:
                             style_text += ccell["raw_text"] + "\n"
                         else:
                             style_text += ccell["console_text"] + "\n"
-                elif not in_section:
+                    continue
+                if "summary_text" in ccell:
+                    if ccell["summary_text"] is not None and re.findall("^style(?: )*=(?: )*.*", ccell["summary_text"]):
+                        ccell["extra_style"] = eval(re.sub("^style(?: )*=(?: )*", "", ccell["summary_text"]))
+                    else:
+                        ccell["extra_style"] = ""
+                else:
+                    ccell["extra_style"] = ""
+                if not in_section:
                     if not ccell["type"] == "divider":
                         if ccell["type"] == "figure":
-                            ccell["image"] = self.prepare_image(ccell)
+                            ccell["image"] = ccell["image_data_str"]
                         new_cell_list.append(ccell)
-
                         continue
                     if not ccell["header_text"].lower() == "styles":
                         in_section = True
@@ -626,7 +620,7 @@ class LoadSaveTasksMixin:
                         continue
                     else:
                         if ccell["type"] == "figure":
-                            ccell["image"] = self.prepare_image(ccell)
+                            ccell["image"] = ccell["image_data_str"]
                         new_cell_list.append(ccell)
                         continue
 

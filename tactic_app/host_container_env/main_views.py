@@ -6,6 +6,7 @@ import copy
 import requests
 import functools
 import uuid
+import base64
 
 from flask import request, jsonify, render_template, send_file, url_for
 from flask_login import current_user, login_required
@@ -141,20 +142,16 @@ def load_temp_page(the_id):
 def print_blob_area_to_console():
     from tactic_app import socketio
     bytes_object = request.files['image'].read()
-    encoded_img = make_python_object_jsonizable(bytes_object)
+    base_64_str = base64.b64encode(bytes_object).decode('utf-8')
     main_id = request.form["main_id"]
-    pseudo_tile_id = request.form["pseudo_tile_id"]
     unique_id = str(uuid.uuid4())
-    fig_id = str(uuid.uuid4())
-    data = {"figure_name": fig_id}
-    data["img"] = encoded_img
-    tactic_app.host_worker.post_task(pseudo_tile_id, "store_image", data)
+    data = {}
     data["message"] = {"unique_id": unique_id,
                        "type": "figure",
                        "am_shrunk": False,
                        "search_string": None,
                        "summary_text": "pasted image",
-                       "fig_id": fig_id}
+                       "image_data_str": "data:image/png;base64, " + base_64_str}
     data["console_message"] = "consoleLog"
     data["main_id"] = main_id
     socketio.emit("console-message", data, namespace='/main', room=main_id)
@@ -178,14 +175,12 @@ def export_data():
     return jsonify({"success": True})
 
 
+### *** Warning: the post_and_wait here is very problematic ***
 @app.route('/figure_source/<tile_id>/<figure_name>', methods=['GET', 'POST'])
 @login_required
 def figure_source(tile_id, figure_name):
-    print("in figure source")
     figure_response = tactic_app.host_worker.post_and_wait(tile_id, "get_image", {"figure_name": figure_name})
-    print("got a figure_response")
     img = debinarize_python_object(figure_response["img"])
-    print("debinarized image has len " + str(len(img)))
     # img = cPickle.loads(encoded_img.decode("utf-8", "ignore").encode("ascii"))
     img_file = io.BytesIO()
     img_file.write(img)

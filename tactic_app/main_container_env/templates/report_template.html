@@ -22,12 +22,24 @@
           {% if collapsible %}
           max-height: 0;
           {% endif %}
+          display: flex;
+          flex-direction: column;
           overflow: hidden;
           transition: max-height 0.2s ease-out;
         }
         .summary {
             text-decoration: underline;
             margin-bottom: 5px;
+        }
+
+        .report-image-block {
+            display: flex;
+            align-self: center;
+            max-width: 65%
+        }
+        .report-image-block img {
+            width: 100%;
+            align-self: center
         }
 
         .code-pre {
@@ -565,11 +577,11 @@
     {% if cell.type == "section-end" %}
         </div>
     {% elif cell.type == "divider" -%}
-        <h3 class="report-divider bp4-heading">{{ cell.header_text }}</h3>
+        <h3 class="report-divider bp4-heading" style={{ cell.extra_style|safe }}>{{ cell.header_text }}</h3>
         <div class="section-content">
     {% else %}
         {% if cell.type == "code" -%}
-            <div>
+            <div style={{ cell.extra_style|safe }}>
                 {% if include_summaries and cell.summary_text -%}
                     <div class="summary bp4-text-muted">{{ cell.summary_text|safe }}</div>
                 {% endif -%}
@@ -580,17 +592,19 @@
             {% if include_summaries and cell.summary_text -%}
                 <div class="summary bp4-text-muted">{{ cell.summary_text|safe }}</div>
             {% endif -%}
-            <div class="report-text">{{ cell.console_text|safe}}</div>
+            <div class="report-text" style={{ cell.extra_style|safe }}>{{ cell.console_text|safe}}</div>
         {% elif cell.type == "figure" -%}
             {% if include_summaries and cell.summary_text -%}
                 <div class="summary bp4-text-muted">{{ cell.summary_text|safe }}</div>
             {% endif -%}
-            <img class="report-image image-block" src=" {{ cell.image }}" alt="image cell"/>
+            <div class="report-image-block image-block" style={{ cell.extra_style|safe }}>
+                <img src=" {{ cell.image }}" alt="image cell" width="100%"/>
+            </div>
         {% else -%}
             {% if include_summaries  and cell.summary_text -%}
                 <div class="summary bp4-text-muted">{{ cell.summary_text|safe }}</div>
             {% endif -%}
-            <div class="report-fixed">{{ cell.console_text|safe }}</div>
+            <div class="report-fixed" style={{ cell.extra_style|safe }}>{{ cell.console_text|safe }}</div>
         {% endif -%}
     {% endif %}
 {% endfor -%}
