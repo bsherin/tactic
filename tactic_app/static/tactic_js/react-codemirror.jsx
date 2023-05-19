@@ -75,6 +75,7 @@ class ReactCodemirror extends React.Component {
 
         this.handleChange = this.handleChange.bind(this);
         this.handleBlur = this.handleBlur.bind(this);
+        this.handleFocus = this.handleFocus.bind(this);
         this._current_codemirror_theme = this._current_codemirror_theme.bind(this);
         this._foldAll = this._foldAll.bind(this);
         this._unfoldAll = this._unfoldAll.bind(this);
@@ -128,6 +129,7 @@ class ReactCodemirror extends React.Component {
         cmobject.setSize("100%", "100%");
         cmobject.on("change", this.handleChange);
         cmobject.on("blur", this.handleBlur);
+        cmobject.on("focus", this.handleFocus);
         return cmobject
     }
 
@@ -140,6 +142,12 @@ class ReactCodemirror extends React.Component {
     handleBlur(cm, changeObject) {
         if (this.props.handleBlur) {
             this.props.handleBlur(cm.getDoc().getValue())
+        }
+    }
+
+    handleFocus(cm, changeObject) {
+        if (this.props.handleFocus) {
+            this.props.handleFocus()
         }
     }
 
@@ -428,6 +436,7 @@ ReactCodemirror.propTypes = {
     show_fold_button: PropTypes.bool,
     soft_wrap: PropTypes.bool,
     handleBlur: PropTypes.func,
+    handleFocus: PropTypes.func,
     code_content: PropTypes.string,
     sync_to_prop: PropTypes.bool,
     force_sync_to_prop: PropTypes.bool,
@@ -466,6 +475,7 @@ ReactCodemirror.defaultProps = {
     regex_search: false,
     handleChange: null,
     handleBlur: null,
+    handleFocus: null,
     sync_to_prop: false,
     force_sync_to_prop: false,
     clear_force_sync: null,
