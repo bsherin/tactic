@@ -3893,9 +3893,18 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component5) {
   }, {
     key: "_consoleItemClick",
     value: function _consoleItemClick(e) {
-      this._selectMe(e);
+      if (!this.props.am_selected) {
+        this._selectMe(e);
+      }
 
       e.stopPropagation();
+    }
+  }, {
+    key: "_handleFocus",
+    value: function _handleFocus() {
+      if (!this.props.am_selected) {
+        this._selectMe();
+      }
     }
   }, {
     key: "render",
@@ -3988,6 +3997,7 @@ var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component5) {
         icon: "stop"
       })), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
         handleChange: this._handleChange,
+        handleFocus: this._handleFocus,
         dark_theme: this.props.dark_theme,
         am_selected: this.props.am_selected,
         readOnly: false,
@@ -4464,6 +4474,13 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component6) {
       e.stopPropagation();
     }
   }, {
+    key: "_handleFocus",
+    value: function _handleFocus() {
+      if (!this.props.am_selected) {
+        this._selectMe();
+      }
+    }
+  }, {
     key: "_setCMObject",
     value: function _setCMObject(cmobject) {
       this.cmobject = cmobject;
@@ -4604,6 +4621,7 @@ var RawConsoleTextItem = /*#__PURE__*/function (_React$Component6) {
         dark_theme: this.props.dark_theme,
         am_selected: this.props.am_selected,
         readOnly: false,
+        handleFocus: this._handleFocus,
         show_line_numbers: false,
         soft_wrap: true,
         sync_to_prop: false,

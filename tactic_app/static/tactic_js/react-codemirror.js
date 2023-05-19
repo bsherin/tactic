@@ -156,6 +156,7 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
 
     _this.handleChange = _this.handleChange.bind(_assertThisInitialized(_this));
     _this.handleBlur = _this.handleBlur.bind(_assertThisInitialized(_this));
+    _this.handleFocus = _this.handleFocus.bind(_assertThisInitialized(_this));
     _this._current_codemirror_theme = _this._current_codemirror_theme.bind(_assertThisInitialized(_this));
     _this._foldAll = _this._foldAll.bind(_assertThisInitialized(_this));
     _this._unfoldAll = _this._unfoldAll.bind(_assertThisInitialized(_this));
@@ -211,6 +212,7 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
       cmobject.setSize("100%", "100%");
       cmobject.on("change", this.handleChange);
       cmobject.on("blur", this.handleBlur);
+      cmobject.on("focus", this.handleFocus);
       return cmobject;
     }
   }, {
@@ -225,6 +227,13 @@ var ReactCodemirror = /*#__PURE__*/function (_React$Component) {
     value: function handleBlur(cm, changeObject) {
       if (this.props.handleBlur) {
         this.props.handleBlur(cm.getDoc().getValue());
+      }
+    }
+  }, {
+    key: "handleFocus",
+    value: function handleFocus(cm, changeObject) {
+      if (this.props.handleFocus) {
+        this.props.handleFocus();
       }
     }
   }, {
@@ -588,6 +597,7 @@ ReactCodemirror.propTypes = {
   show_fold_button: _propTypes["default"].bool,
   soft_wrap: _propTypes["default"].bool,
   handleBlur: _propTypes["default"].func,
+  handleFocus: _propTypes["default"].func,
   code_content: _propTypes["default"].string,
   sync_to_prop: _propTypes["default"].bool,
   force_sync_to_prop: _propTypes["default"].bool,
@@ -621,6 +631,7 @@ ReactCodemirror.defaultProps = {
   regex_search: false,
   handleChange: null,
   handleBlur: null,
+  handleFocus: null,
   sync_to_prop: false,
   force_sync_to_prop: false,
   clear_force_sync: null,

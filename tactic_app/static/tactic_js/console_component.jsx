@@ -2563,8 +2563,16 @@ class RawConsoleCodeItem extends React.Component {
     }
 
     _consoleItemClick(e) {
-        this._selectMe(e);
+        if (!this.props.am_selected) {
+            this._selectMe(e);
+        }
         e.stopPropagation()
+    }
+
+    _handleFocus() {
+        if (!this.props.am_selected) {
+            this._selectMe()
+        }
     }
 
     render () {
@@ -2637,6 +2645,7 @@ class RawConsoleCodeItem extends React.Component {
                                             }
                                         </div>
                                         <ReactCodemirror handleChange={this._handleChange}
+                                                         handleFocus={this._handleFocus}
                                                          dark_theme={this.props.dark_theme}
                                                          am_selected={this.props.am_selected}
                                                          readOnly={false}
@@ -3009,6 +3018,13 @@ class RawConsoleTextItem extends React.Component {
         e.stopPropagation()
     }
 
+   _handleFocus() {
+        if (!this.props.am_selected) {
+            this._selectMe()
+        }
+    }
+
+
     _setCMObject(cmobject) {
         this.cmobject = cmobject;
         if (this.props.set_focus) {
@@ -3108,6 +3124,7 @@ class RawConsoleTextItem extends React.Component {
                                                      dark_theme={this.props.dark_theme}
                                                      am_selected={this.props.am_selected}
                                                      readOnly={false}
+                                                     handleFocus={this._handleFocus}
                                                      show_line_numbers={false}
                                                      soft_wrap={true}
                                                      sync_to_prop={false}
