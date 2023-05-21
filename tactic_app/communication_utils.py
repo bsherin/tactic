@@ -7,6 +7,7 @@ import types
 from bson import Binary
 import base64
 import pickle
+import copy
 import cloudpickle
 import zlib
 import uuid
@@ -67,7 +68,11 @@ def store_temp_data(db, data_dict, unique_id=None):
     if not unique_id:
         unique_id = str(uuid.uuid4())
     data_dict["unique_id"] = unique_id
-    db["temp_data"].insert_one(data_dict)
+
+    # Note that the dict passed to insert_one has an ObjectId added to it
+    # This can end up in the task_data and cause a problem for jsonifying
+    ldata = copy.deepcopy(data_dict)
+    db["temp_data"].insert_one(ldata)
     return unique_id
 
 

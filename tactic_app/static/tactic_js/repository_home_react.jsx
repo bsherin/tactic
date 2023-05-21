@@ -101,10 +101,14 @@ class RepositoryHomeApp extends React.Component {
     initSocket() {
         let self = this;
         let tsocket = this.props.tsocket;
+        tsocket.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
+        tsocket.attachListener("doFlash", function(data) {
+            doFlash(data)
+        });
         if (!window.in_context) {
-            tsocket.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
+
             tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, self.extra_args.library_id)});
-            tsocket.attachListener("doFlash", function(data) {
+            tsocket.attachListener("doFlashUser", function(data) {
                 doFlash(data)
             });
             tsocket.attachListener('close-user-windows', (data) => {

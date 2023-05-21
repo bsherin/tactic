@@ -290,6 +290,9 @@ class FreeformTacticDocument:
     def metadata(self):
         return _tworker.tile_instance.get_document_metadata(self._docname)
 
+    def download(self, file_name=None):
+        _tworker.tile_instance.download_data(self.text, file_name)
+
     @metadata.setter
     def metadata(self, new_metadata):
         _tworker.tile_instance.set_document_metadata(self._docname, new_metadata)

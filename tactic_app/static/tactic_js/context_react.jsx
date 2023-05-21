@@ -202,7 +202,9 @@ class ContextApp extends React.Component {
          // If I dont delete I end up with duplicatesSelectList
          // If I just keep the original one then I end up something with a handler linked
          // to an earlier state
-        this.props.tsocket.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
+        this.props.tsocket.attachListener("window-open", data => {
+            window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`)}
+        );
         this.props.tsocket.attachListener('close-user-windows', data => {
             if (!(data["originator"] === window.context_id)) {
                 window.close()
@@ -211,6 +213,9 @@ class ContextApp extends React.Component {
         this.props.tsocket.attachListener("doFlash", function(data) {
                 doFlash(data)
             });
+        this.props.tsocket.attachListener("doFlashUser", function(data) {
+            doFlash(data)
+        });
         this.props.tsocket.attachListener('handle-callback', (task_packet)=>{handleCallback(task_packet, window.context_id)});
         this.props.tsocket.attachListener("create-viewer", this._handleCreateViewer);
 

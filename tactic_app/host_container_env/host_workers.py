@@ -603,13 +603,8 @@ class HostWorker(QWorker):
         return {"success": True}
 
     @task_worthy
-    def flash_to_main(self, data):
-        socketio.emit("doFlash", data, namespace='/main', room=data["main_id"])
-        return {"success": True}
-
-    @task_worthy
     def flash_to_user(self, data):
-        socketio.emit("doFlash", data, namespace='/main', room=data["user_id"])
+        socketio.emit("doFlashUser", data, namespace='/main', room=data["user_id"])
         return {"success": True}
 
     @task_worthy

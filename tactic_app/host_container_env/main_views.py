@@ -8,7 +8,7 @@ import functools
 import uuid
 import base64
 
-from flask import request, jsonify, render_template, send_file, url_for
+from flask import request, jsonify, render_template, send_file, url_for, redirect
 from flask_login import current_user, login_required
 from flask_socketio import join_room, disconnect
 from tactic_app import app, db, fs, socketio, csrf
@@ -133,6 +133,19 @@ def on_ready_to_begin(data):
 def load_temp_page(the_id):
     template_data = read_temp_data(db, the_id)
     delete_temp_data(db, the_id)
+    if "type" in template_data:
+        the_type = template_data["type"]
+        if the_type == "collection_download":
+            return redirect(url_for('download_collection',
+                                     collection_name=template_data["collection_name"],
+                                     new_name=template_data["file_name"]))
+        elif the_type == "data_download":
+            mem = io.BytesIO()
+            mem.write(template_data["the_data"].encode())
+            mem.seek(0)
+            return send_file(mem,
+                             download_name=template_data["file_name"],
+                             as_attachment=True)
     if "the_html" in template_data:
         return template_data["the_html"]
     else:

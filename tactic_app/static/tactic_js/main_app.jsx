@@ -360,6 +360,12 @@ class MainApp extends React.Component {
 
     initSocket() {
         let self = this;
+        this.props.tsocket.attachListener("window-open", data => {
+            window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`)
+        });
+        this.props.tsocket.attachListener("doFlash", function(data) {
+            doFlash(data)
+        });
         if (!window.in_context) {
             this.props.tsocket.attachListener('close-user-windows', function(data){
                 if (!(data["originator"] == main_id)) {
@@ -369,9 +375,10 @@ class MainApp extends React.Component {
             this.props.tsocket.attachListener("notebook-open", function(data) {
                 window.open($SCRIPT_ROOT + "/new_notebook_with_data/" + data.temp_data_id)
             });
-            this.props.tsocket.attachListener("doFlash", function(data) {
+            this.props.tsocket.attachListener("doFlashUser", function(data) {
                 doFlash(data)
             });
+
         }
         else {
             this.props.tsocket.attachListener("notebook-open", function(data) {
@@ -381,10 +388,6 @@ class MainApp extends React.Component {
                     .catch(doFlash);
             })
         }
-        this.props.tsocket.attachListener('forcedisconnect', function() {
-            self.props.tsocket.socket.disconnect()
-        });
-
         this.props.tsocket.attachListener('table-message', this._handleTableMessage);
         this.props.tsocket.attachListener("update-menus", this._update_menus_listener);
         this.props.tsocket.attachListener('change-doc', this._change_doc_listener);

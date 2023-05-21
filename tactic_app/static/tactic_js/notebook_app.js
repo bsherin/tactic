@@ -247,6 +247,9 @@ var NotebookApp = /*#__PURE__*/function (_React$Component) {
 
     _this = _super.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
+
+    _this.initSocket();
+
     _this.last_save = {};
     _this.main_outer_ref = /*#__PURE__*/_react["default"].createRef();
     _this.socket_counter = null;
@@ -374,15 +377,15 @@ var NotebookApp = /*#__PURE__*/function (_React$Component) {
     key: "initSocket",
     value: function initSocket() {
       var self = this;
-      this.props.tsocket.attachListener('forcedisconnect', function () {
-        this.props.tsocket.socket.disconnect();
+      this.props.tsocket.attachListener("window-open", function (data) {
+        window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
+      });
+      this.props.tsocket.attachListener("doFlash", function (data) {
+        (0, _toaster.doFlash)(data);
       });
 
       if (!window.in_context) {
-        this.props.tsocket.attachListener("window-open", function (data) {
-          window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
-        });
-        this.props.tsocket.attachListener("doFlash", function (data) {
+        this.props.tsocket.attachListener("doFlashUser", function (data) {
           (0, _toaster.doFlash)(data);
         });
         this.props.tsocket.attachListener('close-user-windows', function (data) {

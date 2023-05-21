@@ -163,6 +163,7 @@ class NotebookApp extends React.Component {
     constructor (props) {
         super(props);
         doBinding(this);
+        this.initSocket();
 
         this.last_save = {};
         this.main_outer_ref = React.createRef();
@@ -258,15 +259,16 @@ class NotebookApp extends React.Component {
 
     initSocket() {
         let self = this;
-        this.props.tsocket.attachListener('forcedisconnect', function() {
-            this.props.tsocket.socket.disconnect()
+
+        this.props.tsocket.attachListener("window-open", data => {
+            window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`)
+        });
+        this.props.tsocket.attachListener("doFlash", function(data) {
+            doFlash(data)
         });
 
         if (!window.in_context) {
-            this.props.tsocket.attachListener("window-open", data => {
-                window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`)
-            });
-            this.props.tsocket.attachListener("doFlash", function(data) {
+            this.props.tsocket.attachListener("doFlashUser", function(data) {
                 doFlash(data)
                 });
 

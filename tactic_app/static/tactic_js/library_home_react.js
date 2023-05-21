@@ -196,12 +196,15 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
       this.props.tsocket.attachListener('handle-callback', function (task_packet) {
         (0, _communication_react.handleCallback)(task_packet, self.props.library_id);
       });
+      this.props.tsocket.attachListener("window-open", function (data) {
+        return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
+      });
+      this.props.tsocket.attachListener("doFlash", function (data) {
+        (0, _toaster.doFlash)(data);
+      });
 
       if (!window.in_context) {
-        this.props.tsocket.attachListener("window-open", function (data) {
-          return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
-        });
-        this.props.tsocket.attachListener("doFlash", function (data) {
+        this.props.tsocket.attachListener("doFlashUser", function (data) {
           (0, _toaster.doFlash)(data);
         });
         this.props.tsocket.attachListener('close-user-windows', function (data) {

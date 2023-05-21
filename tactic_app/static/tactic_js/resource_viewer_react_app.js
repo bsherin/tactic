@@ -120,6 +120,9 @@ var ResourceViewerApp = /*#__PURE__*/function (_React$Component) {
       this.props.tsocket.attachListener('handle-callback', function (task_packet) {
         (0, _communication_react.handleCallback)(task_packet, self.props.resource_viewer_id);
       });
+      this.props.tsocket.attachListener("doFlash", function (data) {
+        (0, _toaster.doFlash)(data);
+      });
 
       if (!this.props.controlled) {
         this.props.tsocket.attachListener('close-user-windows', function (data) {
@@ -127,7 +130,7 @@ var ResourceViewerApp = /*#__PURE__*/function (_React$Component) {
             window.close();
           }
         });
-        this.props.tsocket.attachListener("doFlash", function (data) {
+        this.props.tsocket.attachListener("doFlashUser", function (data) {
           (0, _toaster.doFlash)(data);
         });
       }

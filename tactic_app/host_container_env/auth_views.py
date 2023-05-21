@@ -139,7 +139,6 @@ def check_if_admin():
 @login_required
 def logout(page_id):
     user_id = current_user.get_id()
-    # socketio.emit('close-user-windows', {"originator": page_id}, namespace='/library', room=user_id)
     socketio.emit('close-user-windows', {"originator": page_id}, namespace='/main', room=user_id)
     loaded_tile_management.remove_user(current_user.username)
     # The containers should be gone by this point. But make sure.

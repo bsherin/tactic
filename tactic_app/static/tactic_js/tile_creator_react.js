@@ -374,9 +374,12 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
 
         _this2._selectLineNumber(data.line_number);
       });
+      this.props.tsocket.attachListener("doFlash", function (data) {
+        (0, _toaster.doFlash)(data);
+      });
 
       if (!window.in_context) {
-        this.props.tsocket.attachListener("doFlash", function (data) {
+        this.props.tsocket.attachListener("doFlashUser", function (data) {
           (0, _toaster.doFlash)(data);
         });
         this.props.tsocket.attachListener('close-user-windows', function (data) {

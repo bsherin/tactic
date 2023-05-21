@@ -572,6 +572,12 @@ class LoadSaveTasksMixin:
         return ""
 
     @task_worthy
+    def store_temp_data_task(self, data_dict):
+        unique_id = store_temp_data(self.db, data_dict)
+        return_data = {"success": True, "temp_id": unique_id}
+        return return_data
+
+    @task_worthy
     def export_as_report(self, data_dict):
         try:
             new_collection_name = data_dict["collection_name"]

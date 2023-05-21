@@ -97,6 +97,7 @@ class TileDifferApp extends React.Component {
             }
         });
         this.props.tsocket.attachListener('doflash', doFlash);
+        this.props.tsocket.attachListener('doflashUser', doFlash);
     }
     componentDidMount() {
         if (!this.props.controlled) {
