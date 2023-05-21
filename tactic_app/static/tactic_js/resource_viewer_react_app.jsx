@@ -67,13 +67,16 @@ class ResourceViewerApp extends React.Component {
         this.props.tsocket.attachListener('handle-callback', (task_packet)=>{
             handleCallback(task_packet, self.props.resource_viewer_id)
         });
+        this.props.tsocket.attachListener("doFlash", function (data) {
+            doFlash(data)
+        });
         if (!this.props.controlled) {
             this.props.tsocket.attachListener('close-user-windows', (data) => {
                 if (!(data["originator"] == self.props.resource_viewer_id)) {
                     window.close()
                 }
             });
-            this.props.tsocket.attachListener("doFlash", function (data) {
+            this.props.tsocket.attachListener("doFlashUser", function (data) {
                 doFlash(data)
             });
         }

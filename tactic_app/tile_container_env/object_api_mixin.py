@@ -54,7 +54,3 @@ class ObjectAPIMixin:
             self._remote_tiles = Tiles
         return self._remote_tiles
 
-    def force_client_disconnect(self):
-        self._tworker.emit_to_client("forcedisconnect", {})
-        return None
-

@@ -287,8 +287,11 @@ class CreatorApp extends React.Component {
             window.focus();
             this._selectLineNumber(data.line_number)
         });
+        this.props.tsocket.attachListener("doFlash", function(data) {
+            doFlash(data)
+        });
         if (!window.in_context) {
-            this.props.tsocket.attachListener("doFlash", function(data) {
+            this.props.tsocket.attachListener("doFlashUser", function(data) {
                 doFlash(data)
             });
             this.props.tsocket.attachListener('close-user-windows', (data) => {

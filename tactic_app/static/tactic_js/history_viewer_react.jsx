@@ -101,6 +101,7 @@ class HistoryViewerApp extends React.Component {
             }
         });
         this.props.tsocket.attachListener('doflash', doFlash);
+        this.props.tsocket.attachListener('doflashUser', doFlash);
     }
 
     componentDidMount() {

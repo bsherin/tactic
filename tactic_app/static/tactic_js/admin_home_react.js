@@ -182,6 +182,7 @@ var AdministerHomeApp = /*#__PURE__*/function (_React$Component) {
         }
       });
       this.props.tsocket.attachListener('doflash', _toaster.doFlash);
+      this.props.tsocket.attachListener('doflashUser', _toaster.doFlash);
     }
   }, {
     key: "componentDidMount",

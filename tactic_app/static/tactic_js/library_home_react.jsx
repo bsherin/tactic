@@ -100,9 +100,13 @@ class LibraryHomeApp extends React.Component {
         this.props.tsocket.attachListener('handle-callback', (task_packet)=>{
             handleCallback(task_packet, self.props.library_id)
         });
+        this.props.tsocket.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
+        this.props.tsocket.attachListener("doFlash", function(data) {
+            doFlash(data)
+        });
         if (!window.in_context) {
-            this.props.tsocket.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
-            this.props.tsocket.attachListener("doFlash", function(data) {
+
+            this.props.tsocket.attachListener("doFlashUser", function(data) {
                 doFlash(data)
             });
             this.props.tsocket.attachListener('close-user-windows', (data) => {

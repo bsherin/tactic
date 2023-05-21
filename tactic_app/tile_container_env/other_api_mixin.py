@@ -17,6 +17,7 @@ def iterable(arg):
     )
 
 
+# noinspection PyClassHasNoInit
 class OtherAPIMIxin:
 
     # <editor-fold desc="Other">
@@ -105,6 +106,49 @@ class OtherAPIMIxin:
             result += it
         return result
 
+    def download_collection(self, collection_name, file_name=None):
+        self._save_stdout()
+        def got_id(result):
+            try:
+                temp_id = result["temp_id"]
+                data = {"message": "window-open",
+                        "the_id": temp_id,
+                        "main_id": self._main_id}
+                self._tworker.emit_to_client("window-open", data)
+            except Exception as ex:
+                error_string = self._handle_exception(ex, "Error emitting to client", print_to_console=False)
+            return
+
+        if file_name is None:
+            file_name = collection_name
+        self._tworker.post_task(self._main_id, "store_temp_data_task",
+                                {"type": "collection_download",
+                                 "collection_name": collection_name,
+                                 "file_name": file_name}, got_id)
+        self._restore_stdout()
+        return
+
+    def download_data(self, the_data, file_name=None):
+        self._save_stdout()
+        def got_id(result):
+            try:
+                temp_id = result["temp_id"]
+                data = {"message": "window-open",
+                        "the_id": temp_id,
+                        "main_id": self._main_id}
+                self._tworker.emit_to_client("window-open", data)
+            except Exception as ex:
+                self._handle_exception(ex, "Error emitting to client")
+            return
+        if file_name is None:
+            file_name = "data_file"
+        self._tworker.post_task(self._main_id, "store_temp_data_task",
+                                {"type": "data_download",
+                                 "the_data": the_data,
+                                 "file_name": file_name}, got_id)
+        self._restore_stdout()
+        return
+
     def convert_df_to_datalist(self, df, max_rows=None, include_row_labels=False):
         if max_rows is not None:
             new_df = df.head(max_rows)
@@ -175,7 +219,7 @@ class OtherAPIMIxin:
             sortable=True, sidebyside=False, has_header=True, header_style=None, body_style=None, outer_border=False):
         return self.build_html_table_from_data_list(data_list, title, click_type,
                                                     sortable, sidebyside, has_header,
-                                                    header_style, body_style)
+                                                    header_style, body_style, outer_border)
 
     def build_html_table_from_data_list(self, data_list, title=None, click_type="word-clickable",
                                         sortable=True, sidebyside=False, has_header=True,

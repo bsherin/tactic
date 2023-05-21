@@ -2,8 +2,7 @@
 from gevent import monkey
 # import pydevd_pycharm
 monkey.patch_all()
-# pydevd_pycharm.settrace('docker.for.mac.localhost', port=21000, stdoutToServer=True, stderrToServer=True,
-#                         suspend=True)
+# pydevd_pycharm.settrace('docker.for.mac.localhost', port=21000, stdoutToServer=True, stderrToServer=True, suspend=True)
 import pika
 print("entering main_main")
 import os

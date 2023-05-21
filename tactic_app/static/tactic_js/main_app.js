@@ -520,6 +520,12 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
       var _this2 = this;
 
       var self = this;
+      this.props.tsocket.attachListener("window-open", function (data) {
+        window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
+      });
+      this.props.tsocket.attachListener("doFlash", function (data) {
+        (0, _toaster.doFlash)(data);
+      });
 
       if (!window.in_context) {
         this.props.tsocket.attachListener('close-user-windows', function (data) {
@@ -530,7 +536,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         this.props.tsocket.attachListener("notebook-open", function (data) {
           window.open($SCRIPT_ROOT + "/new_notebook_with_data/" + data.temp_data_id);
         });
-        this.props.tsocket.attachListener("doFlash", function (data) {
+        this.props.tsocket.attachListener("doFlashUser", function (data) {
           (0, _toaster.doFlash)(data);
         });
       } else {
@@ -543,9 +549,6 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         });
       }
 
-      this.props.tsocket.attachListener('forcedisconnect', function () {
-        self.props.tsocket.socket.disconnect();
-      });
       this.props.tsocket.attachListener('table-message', this._handleTableMessage);
       this.props.tsocket.attachListener("update-menus", this._update_menus_listener);
       this.props.tsocket.attachListener('change-doc', this._change_doc_listener);

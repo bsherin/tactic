@@ -319,6 +319,7 @@ class QWorker(ExceptionMixin):
                 except Exception as ex:
                     special_string = "Error submitting response for task type {} for my_id {}".format(task_type,
                                                                                                       self.my_id)
+                    print("task packet is " + str(task_packet))
                     debug_log(self.extract_short_error_message(ex, special_string))
 
         elif task_type in task_worthy_manual_submit_methods:
