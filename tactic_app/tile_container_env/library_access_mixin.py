@@ -139,7 +139,7 @@ class LibraryAccessMixin:
         self._restore_stdout()
         if not result["success"]:
             raise Exception(result["message"])
-        return result["message"]
+        return result
 
     # deprecated
     def get_tokenizer(self, tokenizer_name):

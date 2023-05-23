@@ -107,10 +107,11 @@ class MongoAccess(object):
 
     def create_complete_collection(self, new_name, doc_dict, doc_type, document_metadata=None,
                                    header_list_dict=None, collection_metadata=None, temp_type=None):
-        name_exists = new_name in self.data_collection_names
-        if name_exists:
+
+        if temp_type is None and new_name in self.data_collection_names:
             raise NameExistsError("Collection name {} already exists".format(new_name))
         mdata = self.create_initial_metadata()
+        print("got doc_dict " + str(doc_dict))
         mdata["number_of_docs"] = len(list(doc_dict.keys()))
         mdata["type"] = doc_type
         if collection_metadata is not None:
@@ -141,7 +142,7 @@ class MongoAccess(object):
         if temp_type is not None:
             new_save_dict["type"] = temp_type
             unique_id = store_temp_data(self.db, new_save_dict)
-            return {"success": True, "message": "Collection created", "metadata": mdata}
+            return {"success": True, "message": "Collection created", "temp_id": unique_id}
         else:
             self.db[self.collection_collection_name].insert_one(new_save_dict)
 
@@ -233,12 +234,15 @@ class MongoAccess(object):
             result.append(row_dict[str(r)])
         return result
 
-    def get_all_collection_info(self, short_collection_name, return_lists=True):
+    def get_all_collection_info(self, short_collection_name, return_lists=True, temp_id=None):
         name_exists = short_collection_name in self.data_collection_names
         if not name_exists:
             return None, None, None, None
         else:
-            save_dict = self.db[self.collection_collection_name].find_one({"collection_name": short_collection_name})
+            if temp_id is None:
+                save_dict = self.db[self.collection_collection_name].find_one({"collection_name": short_collection_name})
+            else:
+                save_dict = read_temp_data(self.db, temp_id)
             collection_metadata = save_dict["metadata"]
             if "type" in collection_metadata and collection_metadata["type"] == "freeform":
                 doc_type = "freeform"

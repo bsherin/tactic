@@ -71,6 +71,8 @@ class CollectionManager(LibraryResourceManager):
                          login_required(self.open_raw), methods=['post', 'get'])
         app.add_url_rule('/duplicate_collection', "duplicate_collection",
                          login_required(self.duplicate_collection), methods=['post', 'get'])
+        app.add_url_rule('/download_temp_collection/<temp_id>', "download_temp_collection",
+                         login_required(self.download_temp_collection), methods=['post', 'get'])
         app.add_url_rule('/download_collection/<collection_name>/<new_name>', "download_collection",
                          login_required(self.download_collection), methods=['post', 'get'])
         app.add_url_rule('/combine_collections/<base_collection_name>/<collection_to_add>', "combine_collections",
@@ -208,7 +210,6 @@ class CollectionManager(LibraryResourceManager):
                 # col.alignment = Alignment(wrap_text=True)
         return
 
-
     def open_raw(self, collection_name):
         user_obj = current_user
         coll_dict, doc_mdata_dict, header_list_dict, coll_mdata = user_obj.get_all_collection_info(collection_name,
@@ -217,11 +218,17 @@ class CollectionManager(LibraryResourceManager):
         if doc_type == "table":
             return "Only Freeform docs can be opened raw"
         return list(coll_dict.values())[0]
+
+    def download_temp_collection(self, temp_id):
+        return self.download_collection("", "filename", temp_id=temp_id)
+
     # noinspection PyTypeChecker
-    def download_collection(self, collection_name, new_name, max_col_width=50):
+    def download_collection(self, collection_name, new_name, max_col_width=50, temp_id=None):
         user_obj = current_user
         coll_dict, doc_mdata_dict, header_list_dict, coll_mdata = user_obj.get_all_collection_info(collection_name,
-                                                                                                    return_lists=False)
+                                                                                                   return_lists=False,
+                                                                                                   temp_id=temp_id)
+
         wb = openpyxl.Workbook()
         first = True
         doc_type = "freeform" if coll_mdata["type"] == "freeform" else "table"
