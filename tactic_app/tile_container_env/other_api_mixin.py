@@ -117,6 +117,7 @@ class OtherAPIMIxin:
                 self._tworker.emit_to_client("window-open", data)
             except Exception as ex:
                 error_string = self._handle_exception(ex, "Error emitting to client", print_to_console=False)
+                print(error_string)
             return
 
         if file_name is None:

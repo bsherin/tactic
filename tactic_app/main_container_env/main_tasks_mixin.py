@@ -1293,12 +1293,15 @@ class APISupportTasksMixin:
     def create_collection(self, data):
         print("in create_collection")
         try:
+            temp = data["temp_type"] if "temp_type" in data else False
             result = self.create_complete_collection(data["name"],
                                                      data["doc_dict"],
                                                      data["doc_type"],
                                                      data["doc_metadata"],
                                                      data["header_list_dict"],
-                                                     data["collection_metadata"])
+                                                     data["collection_metadata"],
+                                                     temp_type=temp
+                                                     )
             print('got result form create_complete_collection')
 
             if result["success"]:

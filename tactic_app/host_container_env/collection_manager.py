@@ -217,7 +217,6 @@ class CollectionManager(LibraryResourceManager):
         if doc_type == "table":
             return "Only Freeform docs can be opened raw"
         return list(coll_dict.values())[0]
-
     # noinspection PyTypeChecker
     def download_collection(self, collection_name, new_name, max_col_width=50):
         user_obj = current_user
