@@ -1,4 +1,4 @@
-
+import uuid
 from communication_utils import debinarize_python_object
 
 class CollectionNotFound(Exception):
@@ -93,9 +93,8 @@ class LibraryAccessMixin:
         self.create_collection(name, doc_dict, doc_type, doc_metadata)
         return
 
-    def create_collection(self, name, doc_dict, doc_type="table", doc_metadata=None,
-                          header_list_dict=None, collection_metadata=None):
-        self._save_stdout()
+    def assemble_collection_data(self, name, doc_dict, doc_type="table", doc_metadata=None,
+                                 header_list_dict=None, collection_metadata=None):
         if header_list_dict is None:
             header_list_dict = {}
         if doc_type == "table":
@@ -128,9 +127,15 @@ class LibraryAccessMixin:
             data["doc_metadata"] = doc_metadata
         else:
             data["doc_metadata"] = {}
-        print("about to post to create_collection")
+        return data
+
+    def create_collection(self, name, doc_dict, doc_type="table", doc_metadata=None,
+                          header_list_dict=None, collection_metadata=None, temp_type=None):
+        self._save_stdout()
+        data = self.assemble_collection_data(name, doc_dict, doc_type, doc_metadata,
+                                             header_list_dict, collection_metadata)
+        data["temp_type"] = temp_type
         result = self._tworker.post_and_wait(self._main_id, "create_collection", data)
-        print("back from post_and_waith of create collection")
         self._restore_stdout()
         if not result["success"]:
             raise Exception(result["message"])

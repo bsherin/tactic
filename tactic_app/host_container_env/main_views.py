@@ -134,18 +134,19 @@ def load_temp_page(the_id):
     template_data = read_temp_data(db, the_id)
     delete_temp_data(db, the_id)
     if "type" in template_data:
-        the_type = template_data["type"]
-        if the_type == "collection_download":
-            return redirect(url_for('download_collection',
-                                     collection_name=template_data["collection_name"],
-                                     new_name=template_data["file_name"]))
-        elif the_type == "data_download":
-            mem = io.BytesIO()
-            mem.write(template_data["the_data"].encode())
-            mem.seek(0)
-            return send_file(mem,
-                             download_name=template_data["file_name"],
-                             as_attachment=True)
+        match template_data["type"]:
+            case "collection_download":
+                return redirect(url_for('download_collection',
+                                         collection_name=template_data["collection_name"],
+                                         new_name=template_data["file_name"]))
+            case "data_download":
+                mem = io.BytesIO()
+                mem.write(template_data["the_data"].encode())
+                mem.seek(0)
+                return send_file(mem,
+                                 download_name=template_data["file_name"],
+                                 as_attachment=True)
+
     if "the_html" in template_data:
         return template_data["the_html"]
     else:

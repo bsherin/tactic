@@ -2,6 +2,7 @@ import re
 import datetime
 import zlib
 from communication_utils import make_python_object_jsonizable, debinarize_python_object, make_jsonizable_and_compress
+from communication_utils import store_temp_data
 import traceback
 
 name_keys = {"tile": "tile_module_name", "list": "list_name", "collection": "collection_name",
@@ -105,7 +106,7 @@ class MongoAccess(object):
         return self.create_complete_collection(new_name, {}, doc_type, None, None, collection_metadata)
 
     def create_complete_collection(self, new_name, doc_dict, doc_type, document_metadata=None,
-                                   header_list_dict=None, collection_metadata=None):
+                                   header_list_dict=None, collection_metadata=None, temp_type=None):
         name_exists = new_name in self.data_collection_names
         if name_exists:
             raise NameExistsError("Collection name {} already exists".format(new_name))
@@ -137,7 +138,12 @@ class MongoAccess(object):
                          "collection_name": new_name}
         cdict = make_jsonizable_and_compress(collection_dict)
         new_save_dict["file_id"] = self.fs.put(cdict)
-        self.db[self.collection_collection_name].insert_one(new_save_dict)
+        if temp_type is not None:
+            new_save_dict["type"] = temp_type
+            unique_id = store_temp_data(self.db, new_save_dict)
+            return {"success": True, "message": "Collection created", "metadata": mdata}
+        else:
+            self.db[self.collection_collection_name].insert_one(new_save_dict)
 
         if "_id" in mdata:
             del mdata["_id"]  # without this can get an error submitting the result
