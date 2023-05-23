@@ -137,8 +137,8 @@ def load_temp_page(the_id):
         match template_data["type"]:
             case "collection_download":
                 return redirect(url_for('download_collection',
-                                         collection_name=template_data["collection_name"],
-                                         new_name=template_data["file_name"]))
+                                        collection_name=template_data["collection_name"],
+                                        new_name=template_data["file_name"]))
             case "data_download":
                 mem = io.BytesIO()
                 mem.write(template_data["the_data"].encode())
@@ -147,10 +147,15 @@ def load_temp_page(the_id):
                                  download_name=template_data["file_name"],
                                  as_attachment=True)
 
+            case "temp_collection_download":
+                return redirect(url_for('download_temp_collection',
+                                temp_id=the_id))
+
     if "the_html" in template_data:
         return template_data["the_html"]
     else:
         return render_template(template_data["template_name"], **template_data)
+
 
 @app.route("/print_blob_area_to_console", methods=['get', 'post'])
 def print_blob_area_to_console():

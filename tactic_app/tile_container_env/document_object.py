@@ -905,16 +905,13 @@ class TacticCollection:
             else:
                 full_collection[doc.name] = doc.text
             metadata_dict[doc.name] = doc.metadata
-        result = _tworker.tile_instance.create_collection(full_collection, self._doc_type, metadata_dict,
+        result = _tworker.tile_instance.create_collection("", full_collection, self._doc_type, metadata_dict,
                                                           temp_type="temp_collection_download")
-        try:
-            temp_id = result["temp_id"]
-            data = {"message": "window-open",
-                    "the_id": temp_id,
-                    "main_id": self._main_id}
-            self._tworker.emit_to_client("window-open", data)
-        except Exception as ex:
-            self._handle_exception(ex, "Error emitting to client")
+        temp_id = result["temp_id"]
+        data = {"message": "window-open",
+                "the_id": temp_id,
+                "main_id": _tworker.tile_instance._main_id}
+        _tworker.emit_to_client("window-open", data)
         return
 
     def _create_doc_object(self, dname):
