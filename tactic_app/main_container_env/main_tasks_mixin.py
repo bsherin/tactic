@@ -1291,7 +1291,6 @@ class APISupportTasksMixin:
 
     @task_worthy
     def create_collection(self, data):
-        print("in create_collection")
         try:
             temp_type = data["temp_type"] if "temp_type" in data else None
             result = self.create_complete_collection(data["name"],

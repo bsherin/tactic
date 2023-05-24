@@ -24,9 +24,12 @@ pydevd_pycharm.settrace('docker.for.mac.localhost', port=21000, stdoutToServer=T
 2a. If I want to debug in only one of the host containers, then I will need this instead
 
 ```python
-if "DEBUG_CONTAINER" in os.environ:
-    import pydevd_pycharm
-    pydevd_pycharm.settrace('docker.for.mac.localhost', port=21000, stdoutToServer=True, stderrToServer=True, suspend=True)
+import pydevd_pycharm
+import os
+myport = os.environ.get("MYPORT")
+if myport == str(5000):
+   pydevd_pycharm.settrace('docker.for.mac.localhost', port=21000, stdoutToServer=True, stderrToServer=True,
+                           suspend=True)
 ```
 
 3. Launch one of the Python Remote Debug configurations.

@@ -2,7 +2,7 @@ import re
 import datetime
 import zlib
 from communication_utils import make_python_object_jsonizable, debinarize_python_object, make_jsonizable_and_compress
-from communication_utils import store_temp_data
+from communication_utils import store_temp_data, read_temp_data
 import traceback
 
 name_keys = {"tile": "tile_module_name", "list": "list_name", "collection": "collection_name",
@@ -235,8 +235,7 @@ class MongoAccess(object):
         return result
 
     def get_all_collection_info(self, short_collection_name, return_lists=True, temp_id=None):
-        name_exists = short_collection_name in self.data_collection_names
-        if not name_exists:
+        if temp_id is None and short_collection_name in self.data_collection_names:
             return None, None, None, None
         else:
             if temp_id is None:

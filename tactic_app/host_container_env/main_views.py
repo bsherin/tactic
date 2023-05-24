@@ -131,11 +131,13 @@ def on_ready_to_begin(data):
 @app.route('/load_temp_page/<the_id>', methods=['get', 'post'])
 @login_required
 def load_temp_page(the_id):
+
     template_data = read_temp_data(db, the_id)
-    delete_temp_data(db, the_id)
+
     if "type" in template_data:
         match template_data["type"]:
             case "collection_download":
+                delete_temp_data(db, the_id)
                 return redirect(url_for('download_collection',
                                         collection_name=template_data["collection_name"],
                                         new_name=template_data["file_name"]))
@@ -143,6 +145,7 @@ def load_temp_page(the_id):
                 mem = io.BytesIO()
                 mem.write(template_data["the_data"].encode())
                 mem.seek(0)
+                delete_temp_data(db, the_id)
                 return send_file(mem,
                                  download_name=template_data["file_name"],
                                  as_attachment=True)

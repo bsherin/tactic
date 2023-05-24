@@ -228,6 +228,8 @@ class CollectionManager(LibraryResourceManager):
         coll_dict, doc_mdata_dict, header_list_dict, coll_mdata = user_obj.get_all_collection_info(collection_name,
                                                                                                    return_lists=False,
                                                                                                    temp_id=temp_id)
+        if temp_id is not None:
+            delete_temp_data(self.db, temp_id)
 
         wb = openpyxl.Workbook()
         first = True
