@@ -11,10 +11,10 @@ I just need to place a settrace whereever
 
 1. There needs to be a dockerfile for the container that does this. Remember it needs to be by arm64 version.
 
-    * newest version: ```RUN pip install pydevd-pycharm```
+    * newest version: ```RUN pip install pydevd-pycharm``` or ```RUN pip install pydevd-pycharm~=231.8109.197```
 
-3. Insert these lines somewhere near to where I want to debug. I also need to import pydevd_pycharm before 
-   monkey_patching. It seems a little less fussy now.
+3. Insert these lines somewhere near to where I want to debug. I might also need to import pydevd_pycharm before 
+   monkey_patching. But it seems a little less fussy now.
    
 ```python
 import pydevd_pycharm

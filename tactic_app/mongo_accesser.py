@@ -106,9 +106,9 @@ class MongoAccess(object):
         return self.create_complete_collection(new_name, {}, doc_type, None, None, collection_metadata)
 
     def create_complete_collection(self, new_name, doc_dict, doc_type, document_metadata=None,
-                                   header_list_dict=None, collection_metadata=None, temp_type=None):
+                                   header_list_dict=None, collection_metadata=None, temp_data=None):
 
-        if temp_type is None and new_name in self.data_collection_names:
+        if temp_data is None and new_name in self.data_collection_names:
             raise NameExistsError("Collection name {} already exists".format(new_name))
         mdata = self.create_initial_metadata()
         print("got doc_dict " + str(doc_dict))
@@ -139,8 +139,8 @@ class MongoAccess(object):
                          "collection_name": new_name}
         cdict = make_jsonizable_and_compress(collection_dict)
         new_save_dict["file_id"] = self.fs.put(cdict)
-        if temp_type is not None:
-            new_save_dict["type"] = temp_type
+        if temp_data is not None:
+            new_save_dict.update(temp_data)
             unique_id = store_temp_data(self.db, new_save_dict)
             return {"success": True, "message": "Collection created", "temp_id": unique_id}
         else:
@@ -235,8 +235,8 @@ class MongoAccess(object):
         return result
 
     def get_all_collection_info(self, short_collection_name, return_lists=True, temp_id=None):
-        if temp_id is None and short_collection_name in self.data_collection_names:
-            return None, None, None, None
+        if temp_id is None and short_collection_name not in self.data_collection_names:
+            raise NonexistentNameError("")
         else:
             if temp_id is None:
                 save_dict = self.db[self.collection_collection_name].find_one({"collection_name": short_collection_name})

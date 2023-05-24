@@ -152,6 +152,7 @@ def load_temp_page(the_id):
 
             case "temp_collection_download":
                 return redirect(url_for('download_temp_collection',
+                                download_name=template_data["file_name"],
                                 temp_id=the_id))
 
     if "the_html" in template_data:
