@@ -10,5 +10,5 @@ ADD ./tile_container_env/transformers_requirements.txt /code/transformers_requir
 RUN pip3 install --no-cache-dir -r transformers_requirements.txt
 ADD  ./tile_container_env ./volume_manager.py ./exception_mixin.py ./redis_tools.py ./rabbit_manage.py ./qworker.py ./communication_utils.py /code/
 ADD ./tactic_dark.mplstyle /usr/local/lib/python3.10/site-packages/matplotlib/mpl-data/stylelib/
-# RUN pip install pydevd-pycharm~=213.5605.23
+# RUN pip install pydevd-pycharm~=231.8109.197
 CMD ["python", "-u", "tile_main.py"]

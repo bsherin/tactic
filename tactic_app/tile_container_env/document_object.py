@@ -420,7 +420,7 @@ class DetachedFreeformTacticDocument(FreeformTacticDocument):
     def text(self):
         txt = ""
         for l in self._line_list:
-            txt = txt + l.text + "\n"
+            txt += l.text + "\n"
         return txt
 
     def __iadd__(self, other):
@@ -895,7 +895,7 @@ class TacticCollection:
     def current_document(self):
         return self[_tworker.tile_instance.get_current_document_name()]
 
-    def download(self):
+    def download(self, file_name="filename"):
         full_collection = {}
         metadata_dict = {}
         self.rewind()
@@ -905,8 +905,8 @@ class TacticCollection:
             else:
                 full_collection[doc.name] = doc.text
             metadata_dict[doc.name] = doc.metadata
-        result = _tworker.tile_instance.create_collection("", full_collection, self._doc_type, metadata_dict,
-                                                          temp_type="temp_collection_download")
+        result = _tworker.tile_instance.create_temp_collection(file_name, full_collection, self._doc_type, metadata_dict,
+                                                               temp_type="temp_collection_download")
         temp_id = result["temp_id"]
         data = {"message": "window-open",
                 "the_id": temp_id,

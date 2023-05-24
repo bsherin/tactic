@@ -10,7 +10,7 @@ from docker_functions import create_container, main_container_info
 from tactic_app import app, db, repository_db, use_remote_database
 from communication_utils import make_python_object_jsonizable, debinarize_python_object, make_jsonizable_and_compress
 from communication_utils import read_temp_data, delete_temp_data
-from mongo_accesser import MongoAccessException
+from mongo_accesser import MongoAccessException, NonexistentNameError
 import tempfile
 # noinspection PyPackageRequirements
 import openpyxl
@@ -71,7 +71,7 @@ class CollectionManager(LibraryResourceManager):
                          login_required(self.open_raw), methods=['post', 'get'])
         app.add_url_rule('/duplicate_collection', "duplicate_collection",
                          login_required(self.duplicate_collection), methods=['post', 'get'])
-        app.add_url_rule('/download_temp_collection/<temp_id>', "download_temp_collection",
+        app.add_url_rule('/download_temp_collection/<download_name>/<temp_id>', "download_temp_collection",
                          login_required(self.download_temp_collection), methods=['post', 'get'])
         app.add_url_rule('/download_collection/<collection_name>/<new_name>', "download_collection",
                          login_required(self.download_collection), methods=['post', 'get'])
@@ -219,15 +219,18 @@ class CollectionManager(LibraryResourceManager):
             return "Only Freeform docs can be opened raw"
         return list(coll_dict.values())[0]
 
-    def download_temp_collection(self, temp_id):
-        return self.download_collection("", "filename", temp_id=temp_id)
+    def download_temp_collection(self, download_name, temp_id):
+        return self.download_collection("", download_name, temp_id=temp_id)
 
     # noinspection PyTypeChecker
     def download_collection(self, collection_name, new_name, max_col_width=50, temp_id=None):
         user_obj = current_user
-        coll_dict, doc_mdata_dict, header_list_dict, coll_mdata = user_obj.get_all_collection_info(collection_name,
-                                                                                                   return_lists=False,
-                                                                                                   temp_id=temp_id)
+        try:
+            coll_dict, doc_mdata_dict, header_list_dict, coll_mdata = user_obj.get_all_collection_info(collection_name,
+                                                                                                       return_lists=False,
+                                                                                                       temp_id=temp_id)
+        except NonexistentNameError:
+            return "Collection name not found"
         if temp_id is not None:
             delete_temp_data(self.db, temp_id)
 

@@ -129,12 +129,21 @@ class LibraryAccessMixin:
             data["doc_metadata"] = {}
         return data
 
+    def create_temp_collection(self, file_name, doc_dict, doc_type, doc_metadata, temp_type):
+        self._save_stdout()
+        data = self.assemble_collection_data("", doc_dict, doc_type, doc_metadata)
+        data["temp_data"] = {"type": temp_type, "file_name": file_name}
+        result = self._tworker.post_and_wait(self._main_id, "create_collection", data)
+        self._restore_stdout()
+        if not result["success"]:
+            raise Exception(result["message"])
+        return result
+
     def create_collection(self, name, doc_dict, doc_type="table", doc_metadata=None,
-                          header_list_dict=None, collection_metadata=None, temp_type=None):
+                          header_list_dict=None, collection_metadata=None):
         self._save_stdout()
         data = self.assemble_collection_data(name, doc_dict, doc_type, doc_metadata,
                                              header_list_dict, collection_metadata)
-        data["temp_type"] = temp_type
         result = self._tworker.post_and_wait(self._main_id, "create_collection", data)
         self._restore_stdout()
         if not result["success"]:

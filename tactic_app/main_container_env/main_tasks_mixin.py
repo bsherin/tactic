@@ -1292,15 +1292,15 @@ class APISupportTasksMixin:
     @task_worthy
     def create_collection(self, data):
         try:
-            temp_type = data["temp_type"] if "temp_type" in data else None
+            temp_data = data["temp_data"] if "temp_data" in data else None
             result = self.create_complete_collection(data["name"],
                                                      data["doc_dict"],
                                                      data["doc_type"],
                                                      data["doc_metadata"],
                                                      data["header_list_dict"],
                                                      data["collection_metadata"],
-                                                     temp_type=temp_type)
-            if result["success"] and temp_type is None:
+                                                     temp_data=temp_data)
+            if result["success"] and temp_data is None:
                 self.mworker.ask_host("update_collection_selector_list", {"user_id": self.user_id})
             return result
         except Exception as ex:
