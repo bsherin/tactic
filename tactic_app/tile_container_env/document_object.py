@@ -895,7 +895,7 @@ class TacticCollection:
     def current_document(self):
         return self[_tworker.tile_instance.get_current_document_name()]
 
-    def download(self, filename="filename"):
+    def download(self):
         full_collection = {}
         metadata_dict = {}
         self.rewind()
