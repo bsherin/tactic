@@ -5,9 +5,6 @@ import "../tactic_css/tactic_table.scss";
 import "../tactic_css/library_home.scss";
 import "../tactic_css/tile_creator.scss";
 
-const blip = "blah";
-const tstr = `some text ${blip}`;
-
 import React from "react";
 import * as ReactDOM from 'react-dom';
 
@@ -44,6 +41,8 @@ const spinner_panel = (
          <Spinner size={100}/>
      </div>);
 
+const MIN_CONTEXT_WIDTH = 45;
+const MIN_CONTEXT_SAVED_WIDTH = 100;
 
 window.context_id = guid();
 window.main_id = window.context_id;
@@ -101,6 +100,7 @@ class ContextApp extends React.Component {
             currently_dragging: null
         };
         this.libraryTabChange = null;
+        this.saved_width = this.state.tabWidth;
         // this.repositoryTabChange = null;
         this.top_ref = React.createRef();
         this.key_bindings = [
@@ -119,11 +119,28 @@ class ContextApp extends React.Component {
         return document.querySelector("#context-container .context-tab-list > .bp4-tab-list");
     }
 
+    _togglePane(pane_closed) {
+        let w = pane_closed ? this.saved_width : MIN_CONTEXT_WIDTH;
+        let tab_elem = this.get_tab_list_elem();
+        tab_elem.setAttribute("style",`width:${w}px`);
+    }
+
     _handleTabResize(e, ui, lastX, lastY, dx, dy) {
         let tab_elem = this.get_tab_list_elem();
         let w = lastX > window.innerWidth / 2 ? window.innerWidth / 2 : lastX;
-        w = w < 0 ? 0 : w;
+        w = w <= MIN_CONTEXT_WIDTH ? MIN_CONTEXT_WIDTH : w;
         tab_elem.setAttribute("style",`width:${w}px`);
+    }
+
+    _handleTabResizeStart(e, ui, lastX, lastY, dx, dy) {
+        this.saved_width = Math.max(this.state.tabWidth, MIN_CONTEXT_SAVED_WIDTH)
+    }
+
+    _handleTabResizeEnd(e, ui, lastX, lastY, dx, dy) {
+        let tab_elem = this.get_tab_list_elem();
+        if (tab_elem.offsetWidth > 45) {
+            this.saved_width = Math.max(tab_elem.offsetWidth, MIN_CONTEXT_SAVED_WIDTH);
+        }
     }
 
     _update_window_dimensions(callback=null) {
@@ -821,6 +838,11 @@ class ContextApp extends React.Component {
         if (unified) {
             tlclass += " unified"
         }
+        let pane_closed = this.state.tabWidth <= MIN_CONTEXT_WIDTH;
+        if (pane_closed) {
+            tlclass += " context-pane-closed"
+        }
+        let self = this;
         return (
             <React.Fragment>
                 <TacticNavbar is_authenticated={window.is_authenticated}
@@ -833,10 +855,25 @@ class ContextApp extends React.Component {
                               user_name={window.username}/>
                     <div className={outer_class} style={outer_style} ref={this.top_ref}>
                         <div id="context-container" style={outer_style}>
+                            <Button icon={<Icon icon={pane_closed ? "drawer-left-filled" : "drawer-right-filled"}
+                                                iconSize={18} />}
+                                    style={{
+                                        paddingLeft: 4, paddingRight:0,
+                                        position: "absolute", left: this.state.tabWidth - 30, bottom: 10,
+                                        zIndex: 100
+                                    }}
+                                    minimal={true}
+                                    className="context-close-button"
+                                    small={true}
+                                    tabIndex={-1}
+                                    onClick={() => {
+                                        self._togglePane(pane_closed)
+                                    }}
+                            />
                             <DragHandle position_dict={{position: "absolute", left: this.state.tabWidth - 5}}
                                         onDrag={this._handleTabResize}
-                                        dragStart={null}
-                                        dragEnd={null}
+                                        dragStart={this._handleTabResizeStart}
+                                        dragEnd={this._handleTabResizeEnd}
                                         direction="x"
                                         barHeight="100%"
                                         useThinBar={true}/>
