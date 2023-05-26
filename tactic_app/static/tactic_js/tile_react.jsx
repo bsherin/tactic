@@ -370,9 +370,11 @@ class TileComponent extends React.Component {
     }
 
     componentDidUpdate() {
-        this.executeEmbeddedScripts();
+        if (!this.state.resizing) {
+            this.executeEmbeddedScripts();
+        }
         this.makeTablesSortable();
-        if (this.props.javascript_code) {
+        if (this.props.javascript_code && !this.state.resizing) {
             this._executeJavascript()
         }
         this.listen_for_clicks();
