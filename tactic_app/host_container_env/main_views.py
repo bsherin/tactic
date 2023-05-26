@@ -65,17 +65,6 @@ def on_join(data):
     else:
         return True
 
-
-@socketio.on('join-main', namespace='/main')
-@authenticated_only
-def on_join_main(data):
-    room = data["room"]
-    join_room(room)
-    print("user joined room " + room)
-    tile_types = tactic_app.host_worker.get_tile_types({"user_id": data["user_id"]})
-    return tile_types
-
-
 @socketio.on('client-ready', namespace='/main')
 @authenticated_only
 def on_client_ready(data):
@@ -111,15 +100,15 @@ def post_from_client():
     tactic_app.host_worker.forward_client_post(task_packet)
     return jsonify({"success": True})
 
-
-def set_mainwindow_property(main_id, prop_name, prop_value):
-    tactic_app.host_worker.post_task(main_id, "set_property", {"property": prop_name, "val": prop_value})
-    return
-
-
-def get_mainwindow_property(main_id, prop_name, callback):
-    tactic_app.host_worker.post_task(main_id, "get_property", {"property": prop_name}, callback)
-    return
+#
+# def set_mainwindow_property(main_id, prop_name, prop_value):
+#     tactic_app.host_worker.post_task(main_id, "set_property", {"property": prop_name, "val": prop_value})
+#     return
+#
+#
+# def get_mainwindow_property(main_id, prop_name, callback):
+#     tactic_app.host_worker.post_task(main_id, "get_property", {"property": prop_name}, callback)
+#     return
 
 
 @socketio.on('ready-to-begin', namespace='/main')
@@ -161,6 +150,8 @@ def load_temp_page(the_id):
         return render_template(template_data["template_name"], **template_data)
 
 
+# This isn't done with a task because of some slight trickiness
+# because we're dealing with a blob.
 @app.route("/print_blob_area_to_console", methods=['get', 'post'])
 def print_blob_area_to_console():
     from tactic_app import socketio
@@ -198,7 +189,7 @@ def export_data():
     return jsonify({"success": True})
 
 
-### *** Warning: the post_and_wait here is very problematic ***
+## *** Warning: the post_and_wait here is very problematic ***
 @app.route('/figure_source/<tile_id>/<figure_name>', methods=['GET', 'POST'])
 @login_required
 def figure_source(tile_id, figure_name):
@@ -210,16 +201,3 @@ def figure_source(tile_id, figure_name):
     img_file.seek(0)
     print("about to send file")
     return send_file(img_file, mimetype='image/png')
-
-
-# tactic_todo deal with data_source, part of base_data_url, create_data_source
-# @app.route('/data_source/<main_id>/<tile_id>/<data_name>', methods=['GET'])
-# @login_required
-# def data_source(main_id, tile_id, data_name):
-#     try:
-#         the_data = shared_dicts.mainwindow_instances[main_id].tile_instances[tile_id].data_dict[data_name]
-#         return jsonify({"success": True, "data": the_data})
-#     except:
-#         error_string = str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
-#         mainwindow_instances[main_id].handle_exception("Error getting data " + error_string)
-#         return jsonify({"success": False})
