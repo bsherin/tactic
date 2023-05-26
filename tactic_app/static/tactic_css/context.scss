@@ -40,6 +40,9 @@ $light-highlight-weight: 600;
                 color: white
             }
         }
+        .context-pane-closed .context-tab-button-content {
+            opacity: 0 !important;
+        }
         .context-tab-button-content {
             color: white;
             opacity: .5;
@@ -104,6 +107,9 @@ $light-highlight-weight: 600;
                 color: $pt-text-color;
                 font-weight: $light-highlight-weight;
             }
+        }
+        .context-pane-closed .context-tab-button-content {
+            opacity: 0 !important;
         }
         .context-tab-button-content {
             color: $dark-gray1;
