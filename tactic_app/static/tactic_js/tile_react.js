@@ -600,10 +600,13 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate() {
-      this.executeEmbeddedScripts();
+      if (!this.state.resizing) {
+        this.executeEmbeddedScripts();
+      }
+
       this.makeTablesSortable();
 
-      if (this.props.javascript_code) {
+      if (this.props.javascript_code && !this.state.resizing) {
         this._executeJavascript();
       }
 
