@@ -118,8 +118,6 @@ class HostWorker(QWorker):
 
     @task_worthy
     def set_user_theme(self, data):
-        print("in set_user_theme")
-        print("data is " + str(data))
         user_id = data["user_id"]
         user_obj = load_user(user_id)
         print("got user_obj")
@@ -433,13 +431,6 @@ class HostWorker(QWorker):
             self.post_task("host", "load_tile_module_task", data, did_load)
         return
 
-    # @task_worthy
-    # def update_tile_selector_list(self, data):
-    #     user_id = data["user_id"]
-    #     user_obj = load_user(user_id)
-    #     tile_manager.update_selector_list(user_obj=user_obj)
-    #     return {"success": True}
-    #
     @task_worthy
     def refresh_project_selector_list(self, data):
         user_id = data["user_id"]
@@ -531,13 +522,6 @@ class HostWorker(QWorker):
         result = {"tile_types": tile_types,
                   "icon_dict": icon_dict}
         return result
-
-    # tactic_todo I'm in the middle of figuring out how to do this send_file_to_client
-    # currently I'm thinking I'll do it with something like the temp page loading
-    # @task_worthy
-    # def send_file_to_client(self, data):
-        # from tactic_app import socketio
-        # str_io = cPickle.loads(data["encoded_str_io"]).decode("utf-8", "ignore").encode("ascii")
 
     @task_worthy
     def emit_table_message(self, data):

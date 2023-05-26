@@ -1314,12 +1314,12 @@ class APISupportTasksMixin:
             tile_ids.append(self.pseudo_tile_id)
         return {"success": True, "tile_ids": tile_ids}
 
-    @task_worthy
-    def set_property(self, data_dict):
-        prop_name = data_dict["property"]
-        val = data_dict["val"]
-        setattr(self, prop_name, val)
-        return
+    # @task_worthy
+    # def set_property(self, data_dict):
+    #     prop_name = data_dict["property"]
+    #     val = data_dict["val"]
+    #     setattr(self, prop_name, val)
+    #     return
 
     @task_worthy
     def SearchTable(self, data):
@@ -1566,7 +1566,7 @@ class ConsoleTasksMixin:
         return self.mworker.print_code_area_to_console(unique_id, force_open=True)
 
     @task_worthy
-    def create_console_text_item(self, data):
+    def create_console_text_item(self, data):  # not used I think
         unique_id = str(uuid.uuid4())
         return self.mworker.print_text_area_to_console(unique_id, data["the_text"], force_open=True)
 
