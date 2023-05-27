@@ -1289,7 +1289,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         var mode = my_props.is_mpl ? "python" : "javascript";
         var code_content = my_props.is_mpl ? this.state.draw_plot_code : this.state.jscript_code;
         var first_line_number = my_props.is_mpl ? this.state.draw_plot_line_number + 1 : 1;
-        var title_label = my_props.is_mpl ? "draw_plot" : "(selector, w, h, arg_dict) =>";
+        var title_label = my_props.is_mpl ? "draw_plot" : "(selector, w, h, arg_dict, resizing) =>";
         tc_item = /*#__PURE__*/_react["default"].createElement("div", {
           key: "dpcode",
           style: ch_style,

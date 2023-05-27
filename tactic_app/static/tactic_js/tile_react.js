@@ -558,19 +558,19 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
   }, {
     key: "tdaWidth",
     get: function get() {
-      return this.props.tile_width - TILE_DISPLAY_AREA_MARGIN * 2;
+      return this.props.tile_width + this.state.dwidth - TILE_DISPLAY_AREA_MARGIN * 2;
     }
   }, {
     key: "tdaHeight",
     get: function get() {
-      return this.props.tile_height - this.state.header_height - TILE_DISPLAY_AREA_MARGIN * 2;
+      return this.props.tile_height + this.state.dheight - this.state.header_height - TILE_DISPLAY_AREA_MARGIN * 2;
     }
   }, {
     key: "_executeJavascript",
     value: function _executeJavascript() {
       try {
         var selector = "[id='" + this.props.tile_id + "'] .jscript-target";
-        eval(this.props.javascript_code)(selector, this.tdaWidth, this.tdaHeight, this.props.javascript_arg_dict);
+        eval(this.props.javascript_code)(selector, this.tdaWidth, this.tdaHeight, this.props.javascript_arg_dict, this.state.resizing);
       } catch (err) {
         (0, _toaster.doFlash)({
           "alert-type": "alert-warning",
@@ -606,7 +606,7 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
 
       this.makeTablesSortable();
 
-      if (this.props.javascript_code && !this.state.resizing) {
+      if (this.props.javascript_code) {
         this._executeJavascript();
       }
 

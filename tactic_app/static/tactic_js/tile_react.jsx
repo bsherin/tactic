@@ -340,17 +340,17 @@ class TileComponent extends React.Component {
     }
 
     get tdaWidth() {
-        return this.props.tile_width - TILE_DISPLAY_AREA_MARGIN * 2
+        return this.props.tile_width + this.state.dwidth - TILE_DISPLAY_AREA_MARGIN * 2
     }
 
     get tdaHeight() {
-         return this.props.tile_height - this.state.header_height - TILE_DISPLAY_AREA_MARGIN * 2
+         return this.props.tile_height + this.state.dheight - this.state.header_height - TILE_DISPLAY_AREA_MARGIN * 2
     }
 
     _executeJavascript(){
         try{
             let selector = "[id='" + this.props.tile_id + "'] .jscript-target";
-            eval(this.props.javascript_code)(selector, this.tdaWidth, this.tdaHeight, this.props.javascript_arg_dict)
+            eval(this.props.javascript_code)(selector, this.tdaWidth, this.tdaHeight, this.props.javascript_arg_dict, this.state.resizing)
         }
         catch(err) {
             doFlash({"alert-type": "alert-warning", "message": "Error evaluating javascript: " + err.message})
@@ -374,7 +374,7 @@ class TileComponent extends React.Component {
             this.executeEmbeddedScripts();
         }
         this.makeTablesSortable();
-        if (this.props.javascript_code && !this.state.resizing) {
+        if (this.props.javascript_code) {
             this._executeJavascript()
         }
         this.listen_for_clicks();
