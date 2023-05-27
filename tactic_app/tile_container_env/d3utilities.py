@@ -45,7 +45,7 @@ class D3Tile(TileBase):
         ddict = {}
         ddict["arg_dict"] = arg_dict
         ddict["tile_id"] = self._tworker.my_id
-        ddict["javascript_code"] = "(selector, w, h, arg_dict) => {" + self.jscript + "}"
+        ddict["javascript_code"] = "(selector, w, h, arg_dict, resizing) => {" + self.jscript + "}"
         the_html = "<div class='jscript-target'></div>"
         if "styles" in arg_dict:
             styles = arg_dict["styles"]

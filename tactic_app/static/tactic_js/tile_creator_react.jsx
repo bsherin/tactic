@@ -933,7 +933,7 @@ class CreatorApp extends React.Component {
             let mode = my_props.is_mpl ? "python" : "javascript";
             let code_content = my_props.is_mpl ? this.state.draw_plot_code : this.state.jscript_code;
             let first_line_number =my_props.is_mpl ? this.state.draw_plot_line_number + 1: 1;
-            let title_label = my_props.is_mpl ? "draw_plot" : "(selector, w, h, arg_dict) =>";
+            let title_label = my_props.is_mpl ? "draw_plot" : "(selector, w, h, arg_dict, resizing) =>";
             tc_item = (
                 <div key="dpcode" style={ch_style} className="d-flex flex-column align-items-baseline code-holder">
                     <div style={{display: "flex", flexDirection: "row", justifyContent: "space-between", width: "100%"}}>
