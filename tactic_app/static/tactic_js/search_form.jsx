@@ -4,7 +4,6 @@ import React from "react";
 import PropTypes from 'prop-types';
 
 import {InputGroup, ButtonGroup, Button} from "@blueprintjs/core";
-
 export {FilterSearchForm}
 
 class FilterSearchForm extends React.PureComponent {
