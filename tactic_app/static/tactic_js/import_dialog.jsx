@@ -2,12 +2,9 @@ import React from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 import DropzoneComponent from 'react-dropzone-component';
-
 import { Checkbox, Dialog, FormGroup, Classes, Button, InputGroup, ButtonGroup,
     Intent, Collapse, Divider, Alignment} from "@blueprintjs/core";
-
 import { BpSelect } from "./blueprint_mdata_fields.js";
-
 import {doBinding} from "./utilities_react.js";
 import {renderToStaticMarkup} from "react-dom/server";
 import {ErrorItem} from "./error_drawer";
