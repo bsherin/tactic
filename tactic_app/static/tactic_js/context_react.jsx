@@ -1,4 +1,6 @@
 
+// noinspection XmlDeprecatedElement
+
 import "../tactic_css/tactic.scss";
 import "../tactic_css/context.scss";
 import "../tactic_css/tactic_table.scss";
@@ -66,7 +68,7 @@ function _context_main() {
     ReactDOM.render(<ContextAppPlus initial_theme={window.theme} tsocket={tsocket}/>, domContainer);
 }
 
-// noinspection JSValidateTypes
+// noinspection JSValidateTypes,DuplicatedCode,JSUnusedLocalSymbols
 class ContextApp extends React.Component {
 
     constructor(props) {
@@ -782,7 +784,7 @@ class ContextApp extends React.Component {
                      onDragEnd={(e)=>{this._onDragEnd(e)}}
                      tabIndex={-1} key={tab_id} panelClassName="context-tab" title="" panel={wrapped_panel}>
 
-                    <div className={bclass + " open-resource-tab"} style={{display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
+                    <div className={bclass + " open-resource-tab"} style={{display: "flex", flexDirection: "row", width: "100%", justifyContent: "space-between"}}>
                         <div style={{display: "table-cell", flexDirection: "row", justifyContent: "flex-start",
                             textOverflow: "ellipsis", overflow: "hidden"}}>
                             <Icon icon={this.iconDict[tab_entry.kind]}
