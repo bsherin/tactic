@@ -11,7 +11,7 @@ import {HorizontalPanes} from "./resizing_layouts.js";
 import {postAjax} from "./communication_react.js";
 import {getUsableDimensions} from "./sizing_tools.js";
 import {doBinding} from "./utilities_react.js";
-import _ from "../js/lodash";
+import _ from 'lodash';
 
 export {AdminPane}
 
