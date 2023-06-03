@@ -313,7 +313,7 @@ class TileManager(LibraryResourceManager):
         return jsonify({"success": True, "message": "Tile unloaded"})
 
     def send_tile_source_changed_message(self, data):
-        socketio.emit('tile-source-change', data, nhandamespace='/main', room=data["user_id"])
+        socketio.emit('tile-source-change', data, namespace='/main', room=data["user_id"])
 
     def add_tile_module(self):
         user_obj = current_user
