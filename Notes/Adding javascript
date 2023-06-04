@@ -1,0 +1,37 @@
+Actually want css and javascript
+
+Actually, might want this to be a d3 specific tile.
+And think of it more like matplotlib tiles
+A reason is that there's lots of specific things to be done to create the d3
+plot and insert it in a location.
+
+-----------------
+Here's how it works for d3heatmap
+
+in __init__
+self.styles == some class
+
+self.jscript = """function createHeatmap(data, target_element_id, labels, margin, domain, title, colors) {
+                           var tda = $("#" + target_element_id).parent(".tile-display-area");...
+
+in render_content:
+return self.create_heatmap(self.code_matrix, row_labels=self.row_labels,
+                                   margins=self.margins, title=self.title_text)
+
+in create_heatmap:
+uid = self.get_unique_div_id()
+the_html = "<div id='{}'><div class='d3plot'></div>".format(str(uid))
+the_script = 'createHeatmap({0}, "{1}", {2}, {3}, {4}, "{5}", {6});'.format(str(data), str(uid), str(fixed_labels),
+                                                                            str(margins), str(domain), title, str(fixed_colors))
+the_script += self.jscript
+the_html += "<style>{0}</style><script class='resize-rerun' >{1}</script></div>".format(self.styles, the_script)
+
+Note uid is used inside createHeatmap so that it knows where to place the result
+
+---
+So user's javascript will need to be passed the dom in which to write the html.
+That will be inside the .d3plot div.
+The user will somehow have to specify what the arguments are for their javascript function.
+Then it will have to be called with the values for those arguments.
+
+---

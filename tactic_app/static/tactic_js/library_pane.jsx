@@ -158,6 +158,9 @@ class LibraryPane extends React.Component {
     }
 
     _renderBodyContextMenu(menu_context) {
+        if (event) {
+            event.preventDefault();
+        }
         let regions = menu_context.regions;
         if (regions.length == 0) return null;  // Without this get an error when clicking on a body cell
         let selected_rows = [];

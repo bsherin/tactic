@@ -1,73 +1,45 @@
 "use strict";
 
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.LibraryOmnibar = exports.BpSelectorTable = exports.SearchForm = void 0;
-
+exports.SearchForm = exports.LibraryOmnibar = exports.BpSelectorTable = void 0;
 require("../tactic_css/tactic_select.scss");
-
 var _react = _interopRequireDefault(require("react"));
-
 var _propTypes = _interopRequireDefault(require("prop-types"));
-
 var _objectHash = _interopRequireDefault(require("object-hash"));
-
 var _core = require("@blueprintjs/core");
-
 var _table = require("@blueprintjs/table");
-
 var _select = require("@blueprintjs/select");
-
 var _lodash = _interopRequireDefault(require("lodash"));
-
 var _utilities_react = require("./utilities_react.js");
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
+function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 var OmnibarItem = /*#__PURE__*/function (_React$Component) {
   _inherits(OmnibarItem, _React$Component);
-
   var _super = _createSuper(OmnibarItem);
-
   function OmnibarItem(props) {
     var _this;
-
     _classCallCheck(this, OmnibarItem);
-
     _this = _super.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
     return _this;
   }
-
   _createClass(OmnibarItem, [{
     key: "_handleClick",
     value: function _handleClick() {
@@ -85,26 +57,19 @@ var OmnibarItem = /*#__PURE__*/function (_React$Component) {
       });
     }
   }]);
-
   return OmnibarItem;
 }(_react["default"].Component);
-
 OmnibarItem.propTypes = {
   item: _propTypes["default"].string,
   modifiers: _propTypes["default"].object,
   handleClick: _propTypes["default"].func
 };
-
 var LibraryOmnibar = /*#__PURE__*/function (_React$Component2) {
   _inherits(LibraryOmnibar, _React$Component2);
-
   var _super2 = _createSuper(LibraryOmnibar);
-
   function LibraryOmnibar(props) {
     var _this2;
-
     _classCallCheck(this, LibraryOmnibar);
-
     _this2 = _super2.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this2));
     _this2.state = {
@@ -112,7 +77,6 @@ var LibraryOmnibar = /*#__PURE__*/function (_React$Component2) {
     };
     return _this2;
   }
-
   _createClass(LibraryOmnibar, [{
     key: "componentDidUpdate",
     value: function componentDidUpdate(prevProps) {
@@ -143,7 +107,7 @@ var LibraryOmnibar = /*#__PURE__*/function (_React$Component2) {
     key: "_itemRenderer",
     value: function _itemRenderer(item, _ref) {
       var modifiers = _ref.modifiers,
-          handleClick = _ref.handleClick;
+        handleClick = _ref.handleClick;
       return /*#__PURE__*/_react["default"].createElement(OmnibarItem, {
         modifiers: modifiers,
         item: item,
@@ -156,16 +120,13 @@ var LibraryOmnibar = /*#__PURE__*/function (_React$Component2) {
       if (query.length == 0) {
         return false;
       }
-
       var lquery = query.toLowerCase();
       var re = new RegExp(query);
       return re.test(item.toLowerCase());
     }
   }]);
-
   return LibraryOmnibar;
 }(_react["default"].Component);
-
 exports.LibraryOmnibar = LibraryOmnibar;
 LibraryOmnibar.propTypes = {
   res_type: _propTypes["default"].string,
@@ -177,17 +138,12 @@ LibraryOmnibar.propTypes = {
 LibraryOmnibar.defaultProps = {
   dark_theme: false
 };
-
 var SearchForm = /*#__PURE__*/function (_React$Component3) {
   _inherits(SearchForm, _React$Component3);
-
   var _super3 = _createSuper(SearchForm);
-
   function SearchForm(props) {
     var _this3;
-
     _classCallCheck(this, SearchForm);
-
     _this3 = _super3.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this3));
     _this3.current_timer = null;
@@ -197,7 +153,6 @@ var SearchForm = /*#__PURE__*/function (_React$Component3) {
     _this3.temp_text = null;
     return _this3;
   }
-
   _createClass(SearchForm, [{
     key: "_handleSearchFieldChange",
     value: function _handleSearchFieldChange(event) {
@@ -205,7 +160,6 @@ var SearchForm = /*#__PURE__*/function (_React$Component3) {
         clearTimeout(this.current_timer);
         this.current_timer = null;
       }
-
       var self = this;
       var newval = event.target.value;
       this.current_timer = setTimeout(function () {
@@ -257,17 +211,14 @@ var SearchForm = /*#__PURE__*/function (_React$Component3) {
     key: "render",
     value: function render() {
       var match_text;
-
       if (this.props.number_matches != null && this.props.search_string && this.props.search_string != "") {
         switch (this.props.number_matches) {
           case 0:
             match_text = "no matches";
             break;
-
           case 1:
             match_text = "1 match";
             break;
-
           default:
             match_text = "".concat(this.props.number_matches, " matches");
             break;
@@ -275,7 +226,6 @@ var SearchForm = /*#__PURE__*/function (_React$Component3) {
       } else {
         match_text = null;
       }
-
       var current_text = this.current_timer ? this.state.temp_text : this.props.search_string;
       return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
         ref: this.form_ref,
@@ -350,10 +300,8 @@ var SearchForm = /*#__PURE__*/function (_React$Component3) {
       event.preventDefault();
     }
   }]);
-
   return SearchForm;
 }(_react["default"].Component);
-
 exports.SearchForm = SearchForm;
 SearchForm.propTypes = {
   allow_search_inside: _propTypes["default"].bool,
@@ -392,17 +340,12 @@ SearchForm.defaultProps = {
   number_matches: null,
   update_delay: 500
 };
-
 var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
   _inherits(BpSelectorTable, _React$Component4);
-
   var _super4 = _createSuper(BpSelectorTable);
-
   function BpSelectorTable(props) {
     var _this4;
-
     _classCallCheck(this, BpSelectorTable);
-
     _this4 = _super4.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this4));
     _this4.state = {
@@ -413,7 +356,6 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
     _this4.table_ref = /*#__PURE__*/_react["default"].createRef();
     return _this4;
   }
-
   _createClass(BpSelectorTable, [{
     key: "componentDidMount",
     value: function componentDidMount() {
@@ -424,20 +366,16 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
     key: "computeColumnWidths",
     value: function computeColumnWidths() {
       var _this5 = this;
-
       if (Object.keys(this.props.data_dict).length == 0) return;
       var column_names = Object.keys(this.props.columns);
       var bcwidths = compute_initial_column_widths(column_names, Object.values(this.props.data_dict));
       var cwidths = [];
-
       if (this.props.maxColumnWidth) {
         var _iterator = _createForOfIteratorHelper(bcwidths),
-            _step;
-
+          _step;
         try {
           for (_iterator.s(); !(_step = _iterator.n()).done;) {
             var c = _step.value;
-
             if (c > this.props.maxColumnWidth) {
               cwidths.push(this.props.maxColumnWidth);
             } else {
@@ -452,7 +390,6 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
       } else {
         cwidths = bcwidths;
       }
-
       var self = this;
       this.setState({
         columnWidths: cwidths
@@ -460,7 +397,6 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
         var the_sum = _this5.state.columnWidths.reduce(function (a, b) {
           return a + b;
         }, 0);
-
         self.props.communicateColumnWidthSum(the_sum);
       });
     }
@@ -480,11 +416,8 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
         this.props.initiateDataGrab(this.data_update_required);
         this.data_update_required = null;
       }
-
       var lastColumnRegion = _table.Regions.column(Object.keys(this.props.columns).length - 1);
-
       var firstColumnRegion = _table.Regions.column(0);
-
       this.table_ref.current.scrollToRegion(lastColumnRegion);
       this.table_ref.current.scrollToRegion(firstColumnRegion);
     }
@@ -497,30 +430,24 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
     key: "_cellRendererCreator",
     value: function _cellRendererCreator(column_name) {
       var _this6 = this;
-
       var self = this;
       return function (rowIndex) {
         if (!_this6.haveRowData(rowIndex)) {
           if (self.data_update_required == null) {
             self.data_update_required = rowIndex;
           }
-
           return /*#__PURE__*/_react["default"].createElement(_table.Cell, {
             key: column_name,
             loading: true
           });
         }
-
         var the_body;
         var the_class = "";
-
         if (Object.keys(self.props.data_dict[rowIndex]).includes(column_name)) {
           if ("hidden" in self.props.data_dict[rowIndex] && self.props.data_dict[rowIndex]["hidden"]) {
             the_class = "hidden_cell";
           }
-
           var the_text = String(self.props.data_dict[rowIndex][column_name]);
-
           if (the_text.startsWith("icon:")) {
             the_text = the_text.replace(/(^icon:)/gi, "");
             the_body = /*#__PURE__*/_react["default"].createElement(_core.Icon, {
@@ -535,15 +462,12 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
         } else {
           the_body = "";
         }
-
         var tclass;
-
         if (_this6.props.open_resources && _this6.props.open_resources.includes(_this6.props.data_dict[rowIndex][_this6.props.identifier_field])) {
           tclass = "open-selector-row";
         } else {
           tclass = "";
         }
-
         return /*#__PURE__*/_react["default"].createElement(_table.Cell, {
           key: column_name,
           interactive: true,
@@ -563,17 +487,13 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
     key: "_renderMenu",
     value: function _renderMenu(sortColumn) {
       var _this7 = this;
-
       if (!this.props.columns[sortColumn].sort_field) return null;
-
       var sortAsc = function sortAsc() {
         _this7.props.sortColumn(sortColumn, _this7.props.columns[sortColumn].sort_field, "ascending");
       };
-
       var sortDesc = function sortDesc() {
         _this7.props.sortColumn(sortColumn, _this7.props.columns[sortColumn].sort_field, "descending");
       };
-
       return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
         icon: "sort-asc",
         onClick: sortAsc,
@@ -588,12 +508,10 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
     key: "render",
     value: function render() {
       var _this8 = this;
-
       var self = this;
       var column_names = Object.keys(this.props.columns);
       var columns = column_names.map(function (column_name) {
         var cellRenderer = self._cellRendererCreator(column_name);
-
         var columnHeaderCellRenderer = function columnHeaderCellRenderer() {
           return /*#__PURE__*/_react["default"].createElement(_table.ColumnHeaderCell, {
             name: column_name,
@@ -603,7 +521,6 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
             }
           });
         };
-
         return /*#__PURE__*/_react["default"].createElement(_table.Column, {
           cellRenderer: cellRenderer,
           enableColumnReordering: false,
@@ -618,13 +535,12 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
       };
       var hsh = (0, _objectHash["default"])(obj);
       return /*#__PURE__*/_react["default"].createElement(_core.HotkeysProvider, null, /*#__PURE__*/_react["default"].createElement(_table.Table2, {
-        numRows: this.props.num_rows // key={this.props.num_rows}
+        numRows: this.props.num_rows
+        // key={this.props.num_rows}
         ,
         ref: this.table_ref,
         cellRendererDependencies: [self.props.data_dict],
-        bodyContextMenuRenderer: function bodyContextMenuRenderer(mcontext) {
-          return _this8.props.renderBodyContextMenu(mcontext);
-        },
+        bodyContextMenuRenderer: this.props.renderBodyContextMenu,
         enableColumnReordering: false,
         enableColumnResizing: this.props.enableColumnResizing,
         maxColumnWidth: this.props.maxColumnWidth,
@@ -645,7 +561,6 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
     value: function _columnHeaderNameRenderer(the_text) {
       var the_body;
       the_text = String(the_text);
-
       if (the_text.startsWith("icon:")) {
         the_text = the_text.replace(/(^icon:)/gi, "");
         the_body = /*#__PURE__*/_react["default"].createElement(_core.Icon, {
@@ -657,14 +572,11 @@ var BpSelectorTable = /*#__PURE__*/function (_React$Component4) {
           className: "bp4-table-truncated-text"
         }, the_text);
       }
-
       return the_body;
     }
   }]);
-
   return BpSelectorTable;
 }(_react["default"].Component);
-
 exports.BpSelectorTable = BpSelectorTable;
 BpSelectorTable.propTypes = {
   columns: _propTypes["default"].object,
@@ -711,12 +623,13 @@ BpSelectorTable.defaultProps = {
 };
 var MAX_INITIAL_CELL_WIDTH = 300;
 var ICON_WIDTH = 35;
-
 function compute_initial_column_widths(header_list, data_list) {
   var ncols = header_list.length;
-  var max_field_width = MAX_INITIAL_CELL_WIDTH; // Get sample header and body cells
-  // set up a canvas so that we can use it to compute the width of text
+  var max_field_width = MAX_INITIAL_CELL_WIDTH;
 
+  // Get sample header and body cells
+
+  // set up a canvas so that we can use it to compute the width of text
   var body_font = $($(".bp4-table-truncated-text")[0]).css("font");
   var header_font = $($(".bp4-table-column-name-text")[0]).css("font");
   var canvas_element = document.getElementById("measure-canvas");
@@ -726,21 +639,17 @@ function compute_initial_column_widths(header_list, data_list) {
   var column_widths = {};
   var columns_remaining = [];
   ctx.font = header_font;
-
   var _iterator2 = _createForOfIteratorHelper(header_list),
-      _step2;
-
+    _step2;
   try {
     for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
       var c = _step2.value;
       var cstr = String(c);
-
       if (cstr.startsWith("icon:")) {
         column_widths[cstr] = ICON_WIDTH;
       } else {
         column_widths[cstr] = ctx.measureText(cstr).width + added_header_width;
       }
-
       columns_remaining.push(cstr);
     }
   } catch (err) {
@@ -748,49 +657,40 @@ function compute_initial_column_widths(header_list, data_list) {
   } finally {
     _iterator2.f();
   }
-
   var the_row;
   var the_width;
   var the_text;
-  var the_child; // Find the width of each body cell
+  var the_child;
+
+  // Find the width of each body cell
   // Keep track of the largest value for each column
   // Once a column has the max value can ignore that column in the future.
-
   ctx.font = body_font;
-
   var _iterator3 = _createForOfIteratorHelper(data_list),
-      _step3;
-
+    _step3;
   try {
     for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
       var item = _step3.value;
-
       if (columns_remaining.length == 0) {
         break;
       }
-
       the_row = item;
       var cols_to_remove = [];
-
       var _iterator5 = _createForOfIteratorHelper(columns_remaining),
-          _step5;
-
+        _step5;
       try {
         for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
           var _c2 = _step5.value;
           the_text = String(the_row[_c2]);
-
           if (the_text.startsWith("icon:")) {
             the_width = ICON_WIDTH;
           } else {
             the_width = ctx.measureText(the_text).width + added_body_width;
           }
-
           if (the_width > max_field_width) {
             the_width = max_field_width;
             cols_to_remove.push(_c2);
           }
-
           if (the_width > column_widths[_c2]) {
             column_widths[_c2] = the_width;
           }
@@ -800,11 +700,9 @@ function compute_initial_column_widths(header_list, data_list) {
       } finally {
         _iterator5.f();
       }
-
       for (var _i = 0, _cols_to_remove = cols_to_remove; _i < _cols_to_remove.length; _i++) {
         var _c = _cols_to_remove[_i];
         var index = columns_remaining.indexOf(_c);
-
         if (index !== -1) {
           columns_remaining.splice(index, 1);
         }
@@ -815,12 +713,9 @@ function compute_initial_column_widths(header_list, data_list) {
   } finally {
     _iterator3.f();
   }
-
   var result = [];
-
   var _iterator4 = _createForOfIteratorHelper(header_list),
-      _step4;
-
+    _step4;
   try {
     for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
       var _c3 = _step4.value;
@@ -831,6 +726,5 @@ function compute_initial_column_widths(header_list, data_list) {
   } finally {
     _iterator4.f();
   }
-
   return result;
 }
