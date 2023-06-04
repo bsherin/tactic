@@ -9,11 +9,11 @@
     "dc": "docker-compose -f ./tactic_app/docker-compose.yml build"
   },
   "dependencies": {
-    "@blueprintjs/core": "^4.5.1",
-    "@blueprintjs/icons": "^4.3.0",
-    "@blueprintjs/popover2": "^1.5.1",
-    "@blueprintjs/select": "^4.4.1",
-    "@blueprintjs/table": "^4.3.1",
+    "@blueprintjs/core": "^4.20.0",
+    "@blueprintjs/icons": "^4.16.0",
+    "@blueprintjs/popover2": "latest",
+    "@blueprintjs/select": "^4.9.21",
+    "@blueprintjs/table": "^4.10.8",
     "@codemirror/lang-markdown": "^0.18.4",
     "codemirror": "^5.62.2",
     "diff-match-patch": "^1.0.5",

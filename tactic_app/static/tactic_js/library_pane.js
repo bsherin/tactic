@@ -1,93 +1,54 @@
 "use strict";
 
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.view_views = view_views;
 exports.res_types = exports.LibraryPane = void 0;
-
+exports.view_views = view_views;
 var _react = _interopRequireDefault(require("react"));
-
 var _propTypes = _interopRequireDefault(require("prop-types"));
-
 var _core = require("@blueprintjs/core");
-
 var _popover = require("@blueprintjs/popover2");
-
 var _table = require("@blueprintjs/table");
-
 var _lodash = _interopRequireDefault(require("lodash"));
-
 var _tag_buttons_react = require("./tag_buttons_react.js");
-
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields.js");
-
 var _library_widgets = require("./library_widgets.js");
-
 var _resizing_layouts = require("./resizing_layouts.js");
-
 var _modal_react = require("./modal_react.js");
-
 var _communication_react = require("./communication_react.js");
-
 var _sizing_tools = require("./sizing_tools.js");
-
 var _toaster = require("./toaster.js");
-
 var _key_trap = require("./key_trap.js");
-
 var _utilities_react = require("./utilities_react.js");
-
 var _import_dialog = require("./import_dialog");
-
 var _modal_react2 = require("./modal_react");
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
-
+function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
-
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
-
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
-
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
+function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); } // noinspection JSValidateTypes
 var res_types = ["collection", "project", "tile", "list", "code"];
 exports.res_types = res_types;
-
 function view_views() {
   var is_repository = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-
   if (is_repository) {
     return {
       collection: null,
@@ -106,7 +67,6 @@ function view_views() {
     };
   }
 }
-
 function duplicate_views() {
   var is_repository = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
   return {
@@ -117,18 +77,13 @@ function duplicate_views() {
     code: "/create_duplicate_code"
   };
 }
-
 var BodyMenu = /*#__PURE__*/function (_React$Component) {
   _inherits(BodyMenu, _React$Component);
-
   var _super = _createSuper(BodyMenu);
-
   function BodyMenu() {
     _classCallCheck(this, BodyMenu);
-
     return _super.apply(this, arguments);
   }
-
   _createClass(BodyMenu, [{
     key: "getIntent",
     value: function getIntent(item) {
@@ -138,7 +93,6 @@ var BodyMenu = /*#__PURE__*/function (_React$Component) {
     key: "render",
     value: function render() {
       var _this = this;
-
       var menu_items = this.props.items.map(function (item, index) {
         if (item.text == "__divider__") {
           return /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, {
@@ -165,25 +119,18 @@ var BodyMenu = /*#__PURE__*/function (_React$Component) {
       }), menu_items);
     }
   }]);
-
   return BodyMenu;
 }(_react["default"].Component);
-
 BodyMenu.propTypes = {
   items: _propTypes["default"].array,
   selected_rows: _propTypes["default"].array
 };
-
 var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   _inherits(LibraryPane, _React$Component2);
-
   var _super2 = _createSuper(LibraryPane);
-
   function LibraryPane(props) {
     var _this2;
-
     _classCallCheck(this, LibraryPane);
-
     _this2 = _super2.call(this, props);
     _this2.top_ref = /*#__PURE__*/_react["default"].createRef();
     _this2.table_ref = /*#__PURE__*/_react["default"].createRef();
@@ -202,36 +149,22 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     _this2.toolbarRef = null;
     _this2.previous_search_spec = null;
     _this2.socket_counter = null;
-
     _this2.initSocket();
-
     _this2.blank_selected_resource = {};
-
     for (var col in _this2.props.columns) {
       _this2.blank_selected_resource[col] = "";
     }
-
     return _this2;
   }
-
   _createClass(LibraryPane, [{
     key: "initSocket",
     value: function initSocket() {
       if (this.props.tsocket != null && !this.props.is_repository) {
         if (this.props.pane_type == "all") {
-          var _iterator = _createForOfIteratorHelper(res_types),
-              _step;
-
-          try {
-            for (_iterator.s(); !(_step = _iterator.n()).done;) {
-              var res_type = _step.value;
-              this.props.tsocket.attachListener("update-".concat(res_type, "-selector-row"), this._handleRowUpdate);
-              this.props.tsocket.attachListener("refresh-".concat(res_type, "-selector"), this._refresh_func);
-            }
-          } catch (err) {
-            _iterator.e(err);
-          } finally {
-            _iterator.f();
+          for (var _i = 0, _res_types = res_types; _i < _res_types.length; _i++) {
+            var res_type = _res_types[_i];
+            this.props.tsocket.attachListener("update-".concat(res_type, "-selector-row"), this._handleRowUpdate);
+            this.props.tsocket.attachListener("refresh-".concat(res_type, "-selector"), this._refresh_func);
           }
         } else {
           this.props.tsocket.attachListener("update-".concat(this.props.pane_type, "-selector-row"), this._handleRowUpdate);
@@ -262,22 +195,20 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_renderBodyContextMenu",
     value: function _renderBodyContextMenu(menu_context) {
+      if (event) {
+        event.preventDefault();
+      }
       var regions = menu_context.regions;
       if (regions.length == 0) return null; // Without this get an error when clicking on a body cell
-
       var selected_rows = [];
-
-      var _iterator2 = _createForOfIteratorHelper(regions),
-          _step2;
-
+      var _iterator = _createForOfIteratorHelper(regions),
+        _step;
       try {
-        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-          var region = _step2.value;
-
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var region = _step.value;
           if (region.hasOwnProperty("rows")) {
             var first_row = region["rows"][0];
             var last_row = region["rows"][1];
-
             for (var i = first_row; i <= last_row; ++i) {
               if (!selected_rows.includes(i)) {
                 selected_rows.push(this.state.data_dict[i]);
@@ -286,11 +217,10 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
           }
         }
       } catch (err) {
-        _iterator2.e(err);
+        _iterator.e(err);
       } finally {
-        _iterator2.f();
+        _iterator.f();
       }
-
       return /*#__PURE__*/_react["default"].createElement(BodyMenu, {
         items: this.state.contextMenuItems,
         selected_rows: selected_rows
@@ -300,9 +230,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "_handleTypeFilterChange",
     value: function _handleTypeFilterChange(event) {
       var _this3 = this;
-
       if (event.currentTarget.value == this.props.filterType) return;
-
       this._updatePaneState({
         "filterType": event.currentTarget.value
       }, function () {
@@ -313,9 +241,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "_setFilterType",
     value: function _setFilterType(rtype) {
       var _this4 = this;
-
       if (rtype == this.props.filterType) return;
-
       this._updatePaneState({
         "filterType": rtype
       }, function () {
@@ -326,23 +252,18 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "_onTableSelection",
     value: function _onTableSelection(regions) {
       if (regions.length == 0) return; // Without this get an error when clicking on a body cell
-
       var selected_rows = [];
       var selected_row_indices = [];
       var revised_regions = [];
-
-      var _iterator3 = _createForOfIteratorHelper(regions),
-          _step3;
-
+      var _iterator2 = _createForOfIteratorHelper(regions),
+        _step2;
       try {
-        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-          var region = _step3.value;
-
+        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+          var region = _step2.value;
           if (region.hasOwnProperty("rows")) {
             var first_row = region["rows"][0];
             revised_regions.push(_table.Regions.row(first_row));
             var last_row = region["rows"][1];
-
             for (var i = first_row; i <= last_row; ++i) {
               if (!selected_row_indices.includes(i)) {
                 selected_row_indices.push(i);
@@ -353,13 +274,11 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
           }
         }
       } catch (err) {
-        _iterator3.e(err);
+        _iterator2.e(err);
       } finally {
-        _iterator3.f();
+        _iterator2.f();
       }
-
       this._handleRowSelection(selected_rows);
-
       this._updatePaneState({
         selectedRegions: revised_regions
       });
@@ -376,7 +295,8 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         data_dict: {},
         num_rows: 100,
         tag_list: []
-      }); // this._grabNewChunkWithRow(0, true, null, true, null)
+      });
+      // this._grabNewChunkWithRow(0, true, null, true, null)
     }
   }, {
     key: "_grabNewChunkWithRow",
@@ -386,17 +306,13 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       var select = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
       var select_by_name = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : null;
       var callback = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : null;
-
       var search_spec = this._getSearchSpec();
-
       if (spec_update) {
         search_spec = Object.assign(search_spec, spec_update);
       }
-
       if (search_spec.active_tag && search_spec.active_tag[0] != "/") {
         search_spec.active_tag = "/" + search_spec.active_tag;
       }
-
       var data = {
         pane_type: this.props.filterType,
         search_spec: search_spec,
@@ -406,14 +322,12 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       var self = this;
       (0, _communication_react.postAjax)("grab_all_list_chunk", data, function (data) {
         var new_data_dict;
-
         if (flush) {
           new_data_dict = data.chunk_dict;
         } else {
           new_data_dict = _lodash["default"].cloneDeep(self.state.data_dict);
           new_data_dict = Object.assign(new_data_dict, data.chunk_dict);
         }
-
         self.previous_search_spec = search_spec;
         self.setState({
           data_dict: new_data_dict,
@@ -437,15 +351,11 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "_handleRowUpdate",
     value: function _handleRowUpdate(res_dict) {
       var _this5 = this;
-
       var res_name = res_dict.name;
       var ind = this.get_data_dict_index(res_name, res_dict.res_type);
       if (!ind) return;
-
       var new_data_dict = _lodash["default"].cloneDeep(this.state.data_dict);
-
       var the_row = new_data_dict[ind];
-
       for (var field in res_dict) {
         if ("new_name" in res_dict && field == "name") {} else if (field == "new_name") {
           the_row["name"] = res_dict[field];
@@ -453,41 +363,32 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
           the_row[field] = res_dict[field];
         }
       }
-
       var new_state = {
         "data_dict": new_data_dict
       };
-
       if ("tags" in res_dict) {
         var res_tags = res_dict.tags.split(" ");
-
         var new_tag_list = _lodash["default"].cloneDeep(this.state.tag_list);
-
         var new_tag_found = false;
-
-        var _iterator4 = _createForOfIteratorHelper(res_tags),
-            _step4;
-
+        var _iterator3 = _createForOfIteratorHelper(res_tags),
+          _step3;
         try {
-          for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-            var tag = _step4.value;
-
+          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+            var tag = _step3.value;
             if (!new_tag_list.includes(tag)) {
               new_tag_list.push(tag);
               new_tag_found = true;
             }
           }
         } catch (err) {
-          _iterator4.e(err);
+          _iterator3.e(err);
         } finally {
-          _iterator4.f();
+          _iterator3.f();
         }
-
         if (new_tag_found) {
           new_state["tag_list"] = new_tag_list;
         }
       }
-
       if (res_name == this.props.selected_resource.name) {
         this._updatePaneState({
           "selected_resource": the_row
@@ -502,12 +403,9 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "delete_row",
     value: function delete_row(name) {
       var ind = this.get_data_list_index(name);
-
       var new_data_list = _toConsumableArray(this.state.data_list);
-
       new_data_list.splice(ind, 1);
       var self = this;
-
       if (this.props.list_of_selected.includes(name)) {
         this._updatePaneState({
           list_of_selected: [],
@@ -516,7 +414,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
           selected_resource: self.blank_selected_resource
         });
       }
-
       this.setState({
         data_list: new_data_list
       }, this.update_tag_list);
@@ -526,12 +423,10 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     value: function get_data_dict_entry(name, res_type) {
       for (var index in this.state.data_dict) {
         var the_row = this.state.data_dict[index];
-
         if (the_row.name == name && the_row.res_type == res_type) {
           return this.state.data_dict[index];
         }
       }
-
       return null;
     }
   }, {
@@ -542,42 +437,35 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "_match_any_row",
     value: function _match_any_row(row1, row_list) {
-      var _iterator5 = _createForOfIteratorHelper(row_list),
-          _step5;
-
+      var _iterator4 = _createForOfIteratorHelper(row_list),
+        _step4;
       try {
-        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-          var row2 = _step5.value;
-
+        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+          var row2 = _step4.value;
           if (this._match_row(row1, row2)) {
             return true;
           }
         }
       } catch (err) {
-        _iterator5.e(err);
+        _iterator4.e(err);
       } finally {
-        _iterator5.f();
+        _iterator4.f();
       }
-
       return false;
     }
   }, {
     key: "set_in_data_dict",
     value: function set_in_data_dict(old_rows, new_val_dict, data_dict) {
       var new_data_dict = {};
-
       for (var index in data_dict) {
         var entry = data_dict[index];
-
         if (this._match_any_row(entry, old_rows)) {
           for (var k in new_val_dict) {
             entry[k] = new_val_dict[k];
           }
         }
-
         new_data_dict[index] = entry;
       }
-
       return new_data_dict;
     }
   }, {
@@ -587,7 +475,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         name: name,
         res_type: res_type
       };
-
       for (var index in this.state.data_dict) {
         if (this._match_row(this.state.data_dict[index], {
           name: name,
@@ -596,7 +483,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
           return index;
         }
       }
-
       return null;
     }
   }, {
@@ -604,24 +490,20 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     value: function _extractNewTags(tstring) {
       var tlist = tstring.split(" ");
       var new_tags = [];
-
-      var _iterator6 = _createForOfIteratorHelper(tlist),
-          _step6;
-
+      var _iterator5 = _createForOfIteratorHelper(tlist),
+        _step5;
       try {
-        for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-          var tag = _step6.value;
-
+        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+          var tag = _step5.value;
           if (!(tag.length == 0) && !(tag in this.state.tag_list)) {
             new_tags.push(tag);
           }
         }
       } catch (err) {
-        _iterator6.e(err);
+        _iterator5.e(err);
       } finally {
-        _iterator6.f();
+        _iterator5.f();
       }
-
       return new_tags;
     }
   }, {
@@ -634,21 +516,16 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         "tags": this.props.selected_resource.tags,
         "notes": this.props.selected_resource.notes
       };
-
       if (this.props.selected_rows[0].res_type == "tile" && "icon" in this.props.selected_resource) {
         result_dict["icon"] = this.props.selected_resource["icon"];
       }
-
-      var saved_selected_resource = Object.assign({}, this.props.selected_resource); // let saved_list_of_selected = [...this.props.list_of_selected];
-
+      var saved_selected_resource = Object.assign({}, this.props.selected_resource);
+      // let saved_list_of_selected = [...this.props.list_of_selected];
       var saved_selected_rows = _toConsumableArray(this.props.selected_rows);
-
       var new_tags = this._extractNewTags(this.props.selected_resource.tags);
-
       var self = this;
       (0, _communication_react.postAjaxPromise)("save_metadata", result_dict).then(function (data) {
         var new_data_list = self.set_in_data_dict(saved_selected_rows, saved_selected_resource, self.state.data_dict);
-
         if (new_tags.length > 0) {
           var new_tag_list = [].concat(_toConsumableArray(self.state.tag_list), _toConsumableArray(new_tags));
           self.setState({
@@ -670,30 +547,24 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         "tags": this.props.selected_resource.tags
       };
       var self = this;
-
       var new_tags = this._extractNewTags(this.props.selected_resource.tags);
-
       (0, _communication_react.postAjaxPromise)("overwrite_common_tags", result_dict).then(function (data) {
         var utags = data.updated_tags;
-
         var new_data_dict = _lodash["default"].cloneDeep(self.state.data_dict);
-
-        var _iterator7 = _createForOfIteratorHelper(utags),
-            _step7;
-
+        var _iterator6 = _createForOfIteratorHelper(utags),
+          _step6;
         try {
-          for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
-            var urow = _step7.value;
+          for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+            var urow = _step6.value;
             new_data_dict = self.set_in_data_dict([urow], {
               tags: urow.tags
             }, new_data_dict);
           }
         } catch (err) {
-          _iterator7.e(err);
+          _iterator6.e(err);
         } finally {
-          _iterator7.f();
+          _iterator6.f();
         }
-
         if (new_tags.length > 0) {
           var new_tag_list = [].concat(_toConsumableArray(self.state.tag_list), _toConsumableArray(new_tags));
           self.setState({
@@ -713,10 +584,8 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       if (!this.props.multi_select) {
         var revised_selected_resource = Object.assign({}, this.props.selected_resource);
         revised_selected_resource = Object.assign(revised_selected_resource, changed_state_elements);
-
         if (Object.keys(changed_state_elements).includes("tags")) {
           revised_selected_resource["tags"] = revised_selected_resource["tags"].join(" ");
-
           this._updatePaneState({
             selected_resource: revised_selected_resource
           }, this._saveFromSelectedResource);
@@ -727,10 +596,8 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         }
       } else {
         var _revised_selected_resource = Object.assign({}, this.props.selected_resource);
-
         _revised_selected_resource = Object.assign(_revised_selected_resource, changed_state_elements);
         _revised_selected_resource["tags"] = _revised_selected_resource["tags"].join(" ");
-
         this._updatePaneState({
           selected_resource: _revised_selected_resource
         }, this._overwriteCommonTags);
@@ -749,7 +616,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       var new_pane_state = {
         tag_button_state: new_tb_state
       };
-
       this._update_search_state(new_pane_state);
     }
   }, {
@@ -770,7 +636,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "_handleSplitResizeEnd",
     value: function _handleSplitResizeEnd(width_fraction) {
       this.resizing = false;
-
       this._updatePaneState({
         left_width_fraction: width_fraction
       });
@@ -809,7 +674,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         show_spinner: true,
         status_message: "Opening ..."
       });
-
       this._updatePaneState({
         selected_resource: row_dict,
         multi_select: false,
@@ -848,50 +712,41 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     value: function _handleRowSelection(selected_rows) {
       if (!this.props.multi_select) {
         var sres = this.props.selected_resource;
-
         if (sres.name != "" && sres.notes != this.get_data_dict_entry(sres.name, sres.res_type).notes) {
           this._saveFromSelectedResource();
         }
       }
-
       if (selected_rows.length > 1) {
         var common_tags = selected_rows[0].tags.split(" ");
         var other_rows = selected_rows.slice(1, selected_rows.length);
-
-        var _iterator8 = _createForOfIteratorHelper(other_rows),
-            _step8;
-
+        var _iterator7 = _createForOfIteratorHelper(other_rows),
+          _step7;
         try {
-          for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
-            var row_dict = _step8.value;
+          for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
+            var row_dict = _step7.value;
             var new_common_tags = [];
             var new_tag_list = row_dict.tags.split(" ");
-
-            var _iterator9 = _createForOfIteratorHelper(new_tag_list),
-                _step9;
-
+            var _iterator8 = _createForOfIteratorHelper(new_tag_list),
+              _step8;
             try {
-              for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
-                var tag = _step9.value;
-
+              for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
+                var tag = _step8.value;
                 if (common_tags.includes(tag)) {
                   new_common_tags.push(tag);
                 }
               }
             } catch (err) {
-              _iterator9.e(err);
+              _iterator8.e(err);
             } finally {
-              _iterator9.f();
+              _iterator8.f();
             }
-
             common_tags = new_common_tags;
           }
         } catch (err) {
-          _iterator8.e(err);
+          _iterator7.e(err);
         } finally {
-          _iterator8.f();
+          _iterator7.f();
         }
-
         var multi_select_list = selected_rows.map(function (row_dict) {
           return row_dict.name;
         });
@@ -900,7 +755,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
           tags: common_tags.join(" "),
           notes: ""
         };
-
         this._updatePaneState({
           multi_select: true,
           selected_resource: new_selected_resource,
@@ -909,7 +763,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         });
       } else {
         var _row_dict = selected_rows[0];
-
         this._updatePaneState({
           selected_resource: _row_dict,
           multi_select: false,
@@ -946,7 +799,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "_update_search_state",
     value: function _update_search_state(new_state) {
       var _this6 = this;
-
       //new_state.search_from_tags = false;
       this._updatePaneState(new_state, function () {
         if (_this6.search_spec_changed(new_state)) {
@@ -960,7 +812,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       if (!this.previous_search_spec) {
         return true;
       }
-
       for (var key in this.previous_search_spec) {
         if (key == "active_tag") {
           if (new_spec.hasOwnProperty("tag_button_state")) {
@@ -975,19 +826,16 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
           }
         }
       }
-
       return false;
     }
   }, {
     key: "_set_sort_state",
     value: function _set_sort_state(column_name, sort_field, direction) {
       var _this7 = this;
-
       var spec_update = {
         sort_field: column_name,
         sort_direction: direction
       };
-
       this._updatePaneState(spec_update, function () {
         if (_this7.search_spec_changed(spec_update)) {
           _this7._grabNewChunkWithRow(0, true, spec_update, true);
@@ -1002,14 +850,12 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       var current_index = parseInt(this.get_data_dict_index(the_res.name, the_res.res_type));
       var new_index;
       var new_selected_res;
-
       if (key == "ArrowDown") {
         new_index = current_index + 1;
       } else {
         new_index = current_index - 1;
         if (new_index < 0) return;
       }
-
       this._selectRow(new_index);
     }
   }, {
@@ -1025,14 +871,12 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "_selectRow",
     value: function _selectRow(new_index) {
       var _this8 = this;
-
       if (!Object.keys(this.state.data_dict).includes(String(new_index))) {
         this._grabNewChunkWithRow(new_index, false, null, false, null, function () {
           _this8._selectRow(new_index);
         });
       } else {
         var new_regions = [_table.Regions.row(new_index)];
-
         this._updatePaneState({
           selected_resource: this.state.data_dict[new_index],
           list_of_selected: [this.state.data_dict[new_index].name],
@@ -1047,16 +891,13 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     value: function _view_func() {
       var the_view = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
       var self = this;
-
       if (the_view == null) {
         the_view = view_views(this.props.is_repository)[this.props.selected_resource.res_type];
       }
-
       this.props.setStatus({
         show_spinner: true,
         status_message: "Opening ..."
       });
-
       if (window.in_context) {
         var re = new RegExp("/$");
         the_view = the_view.replace(re, "_in_context");
@@ -1078,7 +919,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "_open_raw",
     value: function _open_raw(selected_resource) {
       this.props.clearStatus();
-
       if (selected_resource.type == "freeform") {
         window.open($SCRIPT_ROOT + "/open_raw/" + selected_resource.name);
       } else {
@@ -1093,16 +933,13 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       var force_new_tab = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
       var self = this;
       var resource_name = selected_resource.name;
-
       if (the_view == null) {
         the_view = view_views(this.props.is_repository)[selected_resource.res_type];
       }
-
       this.props.setStatus({
         show_spinner: true,
         status_message: "Opening ..."
       });
-
       if (window.in_context && !force_new_tab) {
         var re = new RegExp("/$");
         the_view = the_view.replace(re, "_in_context");
@@ -1132,7 +969,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       });
       var self = this;
       var duplicate_view = duplicate_views()[res_type];
-
       function DuplicateResource(new_name) {
         var result_dict = {
           "new_res_name": new_name,
@@ -1142,7 +978,8 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         };
         (0, _communication_react.postAjaxPromise)(duplicate_view, result_dict).then(function (data) {
           self._grabNewChunkWithRow(0, true, null, false, new_name);
-        }); // .catch(doFlash)
+        });
+        // .catch(doFlash)
       }
     }
   }, {
@@ -1150,47 +987,40 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     value: function _delete_func(resource) {
       var res_list = resource ? [resource] : this.props.selected_rows;
       var confirm_text;
-
       if (res_list.length == 1) {
         var res_name = res_list[0].name;
         confirm_text = "Are you sure that you want to delete ".concat(res_name, "?");
       } else {
         confirm_text = "Are you sure that you want to delete multiple items?";
       }
-
       var self = this;
       var first_index = 99999;
-
-      var _iterator10 = _createForOfIteratorHelper(this.props.selected_rows),
-          _step10;
-
+      var _iterator9 = _createForOfIteratorHelper(this.props.selected_rows),
+        _step9;
       try {
-        for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
-          var row = _step10.value;
+        for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
+          var row = _step9.value;
           var ind = parseInt(this.get_data_dict_index(row.name, row.res_type));
-
           if (ind < first_index) {
             first_index = ind;
           }
         }
       } catch (err) {
-        _iterator10.e(err);
+        _iterator9.e(err);
       } finally {
-        _iterator10.f();
+        _iterator9.f();
       }
-
       (0, _modal_react.showConfirmDialogReact)("Delete resources", confirm_text, "do nothing", "delete", function () {
         (0, _communication_react.postAjaxPromise)("delete_resource_list", {
           "resource_list": res_list
         }).then(function () {
           var new_index = 0;
-
           if (first_index > 0) {
             new_index = first_index - 1;
           }
-
           self._grabNewChunkWithRow(new_index, true, null, true);
-        }); // .catch(doFlash);
+        });
+        // .catch(doFlash);
       });
     }
   }, {
@@ -1199,7 +1029,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       var row = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
       var res_type;
       var res_name;
-
       if (!row) {
         res_type = this.props.selected_resource.res_type;
         res_name = this.props.selected_resource.name;
@@ -1207,34 +1036,27 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         res_type = row.res_type;
         res_name = row.name;
       }
-
       var self = this;
       $.getJSON($SCRIPT_ROOT + "get_resource_names/" + res_type, function (data) {
         var res_names = data["resource_names"];
         var index = res_names.indexOf(res_name);
-
         if (index >= 0) {
           res_names.splice(index, 1);
         }
-
         (0, _modal_react.showModalReact)("Rename ".concat(res_type), "New Name", RenameResource, res_name, res_names);
       });
-
       function RenameResource(new_name) {
         var the_data = {
           "new_name": new_name
         };
         (0, _communication_react.postAjax)("rename_resource/".concat(res_type, "/").concat(res_name), the_data, renameSuccess);
-
         function renameSuccess(data) {
           if (!data.success) {
             (0, _toaster.doFlash)(data);
             return false;
           } else {
             var ind = self.get_data_dict_index(res_name, res_type);
-
             var new_data_dict = _lodash["default"].cloneDeep(self.state.data_dict);
-
             new_data_dict[ind].name = new_name;
             self.setState({
               data_dict: new_data_dict
@@ -1258,7 +1080,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
           };
           (0, _communication_react.postAjaxPromise)("/copy_from_repository", result_dict).then(_toaster.doFlash)["catch"](_toaster.doFlash);
         };
-
         var res_type = this.props.selected_resource.res_type;
         var res_name = this.props.selected_resource.name;
         $.getJSON($SCRIPT_ROOT + "get_resource_names/" + res_type, function (data) {
@@ -1277,7 +1098,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "_send_repository_func",
     value: function _send_repository_func() {
       var pane_type = this.props.pane_type;
-
       if (!this.props.multi_select) {
         var ShareResource = function ShareResource(new_name) {
           var result_dict = {
@@ -1288,7 +1108,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
           };
           (0, _communication_react.postAjaxPromise)('/send_to_repository', result_dict).then(_toaster.doFlash)["catch"](_toaster.doFlash);
         };
-
         var res_type = this.props.selected_resource.res_type;
         var res_name = this.props.selected_resource.name;
         $.getJSON($SCRIPT_ROOT + "get_repository_resource_names/" + res_type, function (data) {
@@ -1308,7 +1127,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "_refresh_func",
     value: function _refresh_func() {
       var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-
       this._grabNewChunkWithRow(0, true, null, true, callback);
     }
   }, {
@@ -1330,7 +1148,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     value: function _omnibarSelect(item) {
       var the_view = view_views(this.props.is_repository)[item.res_type];
       window.open($SCRIPT_ROOT + the_view + item);
-
       this._closeOmnibar();
     }
   }, {
@@ -1344,9 +1161,10 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "_sendToolbarRef",
     value: function _sendToolbarRef(the_ref) {
       this.toolbarRef = the_ref;
-    } // This total_width machinery is all part of a trick to get the table to fully render all rows
-    // It seems to matter that the containing box is very tight.
+    }
 
+    // This total_width machinery is all part of a trick to get the table to fully render all rows
+    // It seems to matter that the containing box is very tight.
   }, {
     key: "_communicateColumnWidthSum",
     value: function _communicateColumnWidthSum(total_width) {
@@ -1358,7 +1176,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "_new_notebook",
     value: function _new_notebook() {
       var self = this;
-
       if (window.in_context) {
         var the_view = "".concat($SCRIPT_ROOT, "/new_notebook_in_context");
         (0, _communication_react.postAjaxPromise)(the_view, {
@@ -1394,14 +1211,12 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     value: function _combineCollections() {
       var res_name = this.props.selected_resource.name;
       var self = this;
-
       if (!this.props.multi_select) {
         var doTheCombine = function doTheCombine(other_name) {
           self.props.startSpinner(true);
           var target = "".concat($SCRIPT_ROOT, "/combine_collections/").concat(res_name, "/").concat(other_name);
           $.post(target, function (data) {
             self.props.stopSpinner();
-
             if (!data.success) {
               self.props.addErrorDrawerEntry({
                 title: "Error combining collections",
@@ -1412,7 +1227,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
             }
           });
         };
-
         $.getJSON("".concat($SCRIPT_ROOT, "get_resource_names/collection"), function (data) {
           (0, _modal_react2.showSelectDialog)("Select a new collection to combine with " + res_name, "Collection to Combine", "Cancel", "Combine", doTheCombine, data["resource_names"]);
         });
@@ -1421,14 +1235,12 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
           (0, _modal_react.showModalReact)("Combine Collections", "Name for combined collection", CreateCombinedCollection, "NewCollection", data["resource_names"]);
         });
       }
-
       function CreateCombinedCollection(new_name) {
         (0, _communication_react.postAjaxPromise)("combine_to_new_collection", {
           "original_collections": self.props.list_of_selected,
           "new_name": new_name
         }).then(function (data) {
           self._refresh_func();
-
           data.new_row;
         })["catch"](function (data) {
           self.props.addErrorDrawerEntry({
@@ -1453,19 +1265,16 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       var title = "Collection Created";
       var message = "";
       var number_of_errors;
-
       if (data.file_decoding_errors == null) {
         data.message = "No decoding errors were encounters";
         data.alert_type = "Success";
         (0, _toaster.doFlash)(data);
       } else {
         message = "<b>Decoding errors were enountered</b>";
-
         for (var filename in data.file_decoding_errors) {
           number_of_errors = String(data.file_decoding_errors[filename].length);
           message = message + "<br>".concat(filename, ": ").concat(number_of_errors, " errors");
         }
-
         this.props.addErrorDrawerEntry({
           title: title,
           content: message
@@ -1484,16 +1293,13 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "_import_collection",
     value: function _import_collection(myDropZone, setCurrentUrl, new_name, check_results) {
       var _this9 = this;
-
       var csv_options = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : null;
       var doc_type;
-
       if (check_results["import_as_freeform"]) {
         doc_type = "freeform";
       } else {
         doc_type = "table";
       }
-
       (0, _communication_react.postAjaxPromise)("create_empty_collection", {
         "collection_name": new_name,
         "doc_type": doc_type,
@@ -1516,7 +1322,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "_view_named_tile",
     value: function _view_named_tile(res) {
       var in_new_tab = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-
       this._view_resource({
         name: res.name,
         res_type: "tile"
@@ -1526,7 +1331,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "_creator_view_named_tile",
     value: function _creator_view_named_tile(res) {
       var in_new_tab = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-
       this._view_resource({
         name: res.tile,
         res_type: "tile"
@@ -1547,7 +1351,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     value: function _compare_tiles() {
       var res_names = this.props.list_of_selected;
       if (res_names.length == 0) return;
-
       if (res_names.length == 1) {
         window.open("".concat($SCRIPT_ROOT, "/show_tile_differ/").concat(res_names[0]));
       } else if (res_names.length == 2) {
@@ -1598,7 +1401,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         (0, _modal_react.showModalReact)("New Tile", "New Tile Name", CreateNewTileModule, "NewTileModule", data["resource_names"]);
       });
       var self = this;
-
       function CreateNewTileModule(new_name) {
         var result_dict = {
           "template_name": template_name,
@@ -1607,7 +1409,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         };
         (0, _communication_react.postAjaxPromise)("/create_tile_module", result_dict).then(function (data) {
           self._refresh_func();
-
           self._.view_resource({
             name: new_name,
             res_type: "tile"
@@ -1627,7 +1428,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         (0, _modal_react.showModalReact)("New Tile", "New Tile Name", CreateNewTileModule, "NewTileModule", data["resource_names"]);
       });
       var self = this;
-
       function CreateNewTileModule(new_name) {
         var result_dict = {
           "template_name": template_name,
@@ -1636,7 +1436,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         };
         (0, _communication_react.postAjaxPromise)("/create_tile_module", result_dict).then(function (data) {
           self._refresh_func();
-
           self._view_resource({
             name: String(new_name),
             res_type: "tile"
@@ -1656,7 +1455,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         (0, _modal_react.showModalReact)("New List Resource", "New List Resource Name", CreateNewListResource, "NewListResource", data["resource_names"]);
       });
       var self = this;
-
       function CreateNewListResource(new_name) {
         var result_dict = {
           "template_name": template_name,
@@ -1664,7 +1462,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         };
         (0, _communication_react.postAjaxPromise)("/create_list", result_dict).then(function (data) {
           self._refresh_func();
-
           self._view_resource({
             name: String(new_name),
             res_type: "list"
@@ -1697,7 +1494,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         (0, _modal_react.showModalReact)("New Code Resource", "New Code Resource Name", CreateNewCodeResource, "NewCodeResource", data["resource_names"]);
       });
       var self = this;
-
       function CreateNewCodeResource(new_name) {
         var result_dict = {
           "template_name": template_name,
@@ -1705,7 +1501,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         };
         (0, _communication_react.postAjaxPromise)("/create_code", result_dict).then(function (data) {
           self._refresh_func();
-
           self._view_resource({
             name: String(new_name),
             res_type: "code"
@@ -1754,7 +1549,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
     key: "render",
     value: function render() {
       var _this10 = this;
-
       var new_button_groups;
       var uwidth = this.props.usable_width;
       var left_width = uwidth * this.props.left_width_fraction;
@@ -1762,22 +1556,19 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       var ignore_fields = ["doc_type", "size_for_sort", "res_type"];
       var additional_metadata = {};
       var selected_resource_icon = null;
-
       for (var field in this.props.selected_resource) {
         if (this.props.selected_rows.length == 1 && this.props.selected_resource.res_type == "tile" && field == "icon") {
           selected_resource_icon = this.props.selected_resource["icon"];
         }
-
         if (!primary_mdata_fields.includes(field) && !ignore_fields.includes(field) && !field.startsWith("icon:")) {
           additional_metadata[field] = this.props.selected_resource[field];
         }
       }
-
       if (Object.keys(additional_metadata).length == 0) {
         additional_metadata = null;
-      } // let right_pane;
+      }
 
-
+      // let right_pane;
       var split_tags = this.props.selected_resource.tags == "" ? [] : this.props.selected_resource.tags.split(" ");
       var outer_style = {
         marginTop: 0,
@@ -1787,7 +1578,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         marginRight: 0,
         height: "100%"
       };
-
       var right_pane = /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.CombinedMetadata, {
         tags: split_tags,
         elevation: 2,
@@ -1806,7 +1596,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         aux_pane_title: this.props.aux_pane_title,
         readOnly: this.props.is_repository
       });
-
       var th_style = {
         "display": "inline-block",
         "verticalAlign": "top",
@@ -1815,12 +1604,12 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         "overflowX": "scroll",
         "lineHeight": 1,
         "whiteSpace": "nowrap"
-      }; // let filtered_data_list = _.cloneDeep(this.state.data_list.filter(this._filter_on_match_list));
+      };
 
+      // let filtered_data_list = _.cloneDeep(this.state.data_list.filter(this._filter_on_match_list));
       var MenubarClass = this.props.MenubarClass;
       var table_width;
       var left_pane_height;
-
       if (this.table_ref && this.table_ref.current) {
         table_width = left_width - this.table_ref.current.offsetLeft + this.top_ref.current.offsetLeft;
         left_pane_height = window.innerHeight - this.table_ref.current.getBoundingClientRect().top - _sizing_tools.BOTTOM_MARGIN;
@@ -1828,7 +1617,6 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         table_width = left_width - 150;
         left_pane_height = this.props.usable_height - 100;
       }
-
       var key_bindings = [[["up"], function () {
         return _this10._handleArrowKeyPress("ArrowUp");
       }], [["down"], function () {
@@ -1836,13 +1624,11 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       }], [["ctrl+space"], this._showOmnibar], [["esc"], this._unsearch]];
       var filter_buttons = [];
       var self = this;
-
-      var _iterator11 = _createForOfIteratorHelper(["all"].concat(res_types)),
-          _step11;
-
+      var _iterator10 = _createForOfIteratorHelper(["all"].concat(res_types)),
+        _step10;
       try {
         var _loop = function _loop() {
-          var rtype = _step11.value;
+          var rtype = _step10.value;
           filter_buttons.push( /*#__PURE__*/_react["default"].createElement(_popover.Tooltip2, {
             content: rtype,
             key: rtype,
@@ -1858,16 +1644,14 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
             }
           })));
         };
-
-        for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
+        for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
           _loop();
         }
       } catch (err) {
-        _iterator11.e(err);
+        _iterator10.e(err);
       } finally {
-        _iterator11.f();
+        _iterator10.f();
       }
-
       var left_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
         className: "d-flex flex-row",
         style: {
@@ -1932,9 +1716,7 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
         renderBodyContextMenu: this._renderBodyContextMenu,
         handleRowDoubleClick: this._handleRowDoubleClick
       }))));
-
       var selected_types = this._selectedTypes();
-
       var selected_type = selected_types.length == 1 ? this.props.selected_resource.res_type : "multi";
       return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(MenubarClass, _extends({
         selected_resource: this.props.selected_resource,
@@ -1988,10 +1770,8 @@ var LibraryPane = /*#__PURE__*/function (_React$Component2) {
       })));
     }
   }]);
-
   return LibraryPane;
 }(_react["default"].Component);
-
 exports.LibraryPane = LibraryPane;
 LibraryPane.propTypes = {
   columns: _propTypes["default"].object,
