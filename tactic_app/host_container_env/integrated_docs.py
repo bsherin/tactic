@@ -4,8 +4,15 @@ from docutils.core import publish_string
 
 
 def get_api_from_rst():
-    f = open("./docs_for_integrated_docs/Tile-Commands.rst")
-    txt = f.read()
+    # f = open("./docs_for_integrated_docs/Tile-Commands.rst")
+    # txt = f.read()
+    url = 'https://raw.githubusercontent.com/bsherin/tacticdocs/main/docs/Tile-Commands.rst'
+    response = requests.get(url)
+    if response.status_code == 200:
+        txt = response.content.decode('utf-8')
+    else:
+        print(f"*** Failed to retrieve Tile-Commands.rst. Status code: {response.status_code} ***")
+        return
     categories = re.findall(r".. category_start([\s\S]*?).. category_end", txt)
     newres = []
     for cat in categories:
@@ -22,8 +29,16 @@ def get_api_from_rst():
 
 
 def get_object_api_from_rst():
-    f = open("./docs_for_integrated_docs/Object-Oriented-API.rst")
-    txt = f.read()
+    # f = open("./docs_for_integrated_docs/Object-Oriented-API.rst")
+    # txt = f.read()
+    url = 'https://raw.githubusercontent.com/bsherin/tacticdocs/main/docs/Object-Oriented-API.rst'
+    response = requests.get(url)
+    if response.status_code == 200:
+        txt = response.content.decode('utf-8')
+    else:
+        print(f"*** Failed to retrieve Object-Oriented-API.rst. Status code: {response.status_code} ***")
+        return
+
     categories = re.findall(r".. category_start([\s\S]*?).. category_end", txt)
     newres = {}
     ordered_catnames = []
@@ -58,13 +73,6 @@ def get_api_html(ar):
         for entry in section[1]:
             result += "<button class='accordion btn btn-info'>{}</button>\n<div class='accordion-panel'><p>{}</p></div>\n".format(entry[0], entry[1])
     return result
-
-
-def get_tile_command_html():
-    f = open("./docs_for_integrated_docs/Tile-Commands.html")
-    txt = f.read()
-    return txt
-
 
 def process_body(rbody):
     raw_body = rbody.strip()
