@@ -1,117 +1,73 @@
 "use strict";
 
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.TileContainer = void 0;
-
 var _react = _interopRequireDefault(require("react"));
-
 var _propTypes = _interopRequireDefault(require("prop-types"));
-
 var _core = require("@blueprintjs/core");
-
 var _reactTransitionGroup = require("react-transition-group");
-
 var _reactSortableHoc = require("react-sortable-hoc");
-
 var _lodash = _interopRequireDefault(require("lodash"));
-
 var _tile_form_react = require("./tile_form_react.js");
-
 var _blueprint_react_widgets = require("./blueprint_react_widgets.js");
-
 var _resizing_layouts = require("./resizing_layouts.js");
-
 var _sortable_container = require("./sortable_container.js");
-
 var _communication_react = require("./communication_react.js");
-
 var _toaster = require("./toaster.js");
-
 var _utilities_react = require("./utilities_react.js");
-
 var _error_boundary = require("./error_boundary.js");
-
 var _menu_utilities = require("./menu_utilities.js");
-
 var _modal_react = require("./modal_react");
-
 var _searchable_console = require("./searchable_console");
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
-
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
-
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
-
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
+function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 var using_touch = ("ontouchend" in document);
 var click_event;
-
 if (using_touch) {
   click_event = "touchstart";
 } else {
   click_event = "click";
 }
-
 var TILE_DISPLAY_AREA_MARGIN = 15;
 var ANI_DURATION = 300;
-
 function composeObjs(base_style, new_style) {
   return Object.assign(Object.assign({}, base_style), new_style);
 }
-
 var TileContainer = /*#__PURE__*/function (_React$Component) {
   _inherits(TileContainer, _React$Component);
-
   var _super = _createSuper(TileContainer);
-
   function TileContainer(props) {
     var _this;
-
     _classCallCheck(this, TileContainer);
-
     _this = _super.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
     _this.socket_counter = null;
     return _this;
   }
-
   _createClass(TileContainer, [{
     key: "shouldComponentUpdate",
-    value: function shouldComponentUpdate(nextProps, nextState) {
+    value: function shouldComponentUpdate(nextProps, nextState, nextContext) {
       return !(0, _utilities_react.propsAreEqual)(nextProps, this.props);
     }
   }, {
@@ -140,10 +96,8 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
     key: "_resortTilesOld",
     value: function _resortTilesOld(new_sort_list) {
       var new_tile_list = [];
-
       var _iterator = _createForOfIteratorHelper(new_sort_list),
-          _step;
-
+        _step;
       try {
         for (_iterator.s(); !(_step = _iterator.n()).done;) {
           var tid = _step.value;
@@ -155,17 +109,14 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
       } finally {
         _iterator.f();
       }
-
       this.props.setMainStateValue("tile_list", new_tile_list);
     }
   }, {
     key: "_resortTiles",
     value: function _resortTiles(_ref) {
       var oldIndex = _ref.oldIndex,
-          newIndex = _ref.newIndex;
-
+        newIndex = _ref.newIndex;
       var old_tile_list = _toConsumableArray(this.props.tile_list);
-
       var new_tile_list = (0, _utilities_react.arrayMove)(old_tile_list, oldIndex, newIndex);
       this.props.setMainStateValue("tile_list", new_tile_list);
     }
@@ -173,16 +124,12 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
     key: "_markSourceChange",
     value: function _markSourceChange(tile_type) {
       var new_tile_list = _toConsumableArray(this.props.tile_list);
-
       var change_list = [];
-
       var _iterator2 = _createForOfIteratorHelper(new_tile_list),
-          _step2;
-
+        _step2;
       try {
         for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
           var entry = _step2.value;
-
           if (entry.tile_type == tile_type) {
             change_list.push(entry.tile_id);
           }
@@ -192,10 +139,8 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
       } finally {
         _iterator2.f();
       }
-
       for (var _i = 0, _change_list = change_list; _i < _change_list.length; _i++) {
         var tid = _change_list[_i];
-
         this._setTileValue(tid, "source_changed", true);
       }
     }
@@ -210,9 +155,7 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
     key: "replace_tile_entry",
     value: function replace_tile_entry(tile_id, new_entry) {
       var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-
       var new_tile_list = _toConsumableArray(this.props.tile_list);
-
       var tindex = this.tileIndex(tile_id);
       new_tile_list.splice(tindex, 1, new_entry);
       this.props.setMainStateValue("tile_list", new_tile_list, callback);
@@ -221,18 +164,14 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
     key: "tileIndex",
     value: function tileIndex(tile_id) {
       var counter = 0;
-
       var _iterator3 = _createForOfIteratorHelper(this.props.tile_list),
-          _step3;
-
+        _step3;
       try {
         for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
           var entry = _step3.value;
-
           if (entry.tile_id == tile_id) {
             return counter;
           }
-
           ++counter;
         }
       } catch (err) {
@@ -240,16 +179,13 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
       } finally {
         _iterator3.f();
       }
-
       return -1;
     }
   }, {
     key: "_closeTile",
     value: function _closeTile(tile_id) {
       var tindex = this.tileIndex(tile_id);
-
       var new_tile_list = _toConsumableArray(this.props.tile_list);
-
       new_tile_list.splice(tindex, 1);
       this.props.setMainStateValue("tile_list", new_tile_list);
       var data_dict = {
@@ -265,15 +201,12 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
       var log_content = entry["log_content"];
       var log_list = log_content.split(/\r?\n/);
       var mlines = entry["max_console_lines"];
-
       if (log_list.length >= mlines) {
         log_list = log_list.slice(-1 * mlines + 1);
         log_content = log_list.join("\n");
       }
-
       var new_log = log_content + new_line;
       var self = this;
-
       this._setTileValue(tile_id, "log_content", new_log);
     }
   }, {
@@ -281,7 +214,6 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
     value: function _setTileValue(tile_id, field, value) {
       var callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
       var entry = this.get_tile_entry(tile_id);
-
       if (entry) {
         entry[field] = value;
         this.replace_tile_entry(tile_id, entry, callback);
@@ -292,11 +224,9 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
     value: function _setTileState(tile_id, new_state) {
       var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
       var entry = this.get_tile_entry(tile_id);
-
       for (var field in new_state) {
         entry[field] = new_state[field];
       }
-
       this.replace_tile_entry(tile_id, entry, callback);
     }
   }, {
@@ -321,7 +251,6 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
     key: "_handleTileMessage",
     value: function _handleTileMessage(data) {
       var tile_id = data.tile_id;
-
       if (this.tileIndex(tile_id) != -1) {
         var self = this;
         var handlerDict = {
@@ -381,10 +310,8 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
       });
     }
   }]);
-
   return TileContainer;
 }(_react["default"].Component);
-
 exports.TileContainer = TileContainer;
 TileContainer.propTypes = {
   setMainStateValue: _propTypes["default"].func,
@@ -397,18 +324,13 @@ TileContainer.propTypes = {
   selected_row: _propTypes["default"].number,
   goToModule: _propTypes["default"].func
 };
-
 var RawSortHandle = /*#__PURE__*/function (_React$Component2) {
   _inherits(RawSortHandle, _React$Component2);
-
   var _super2 = _createSuper(RawSortHandle);
-
   function RawSortHandle() {
     _classCallCheck(this, RawSortHandle);
-
     return _super2.apply(this, arguments);
   }
-
   _createClass(RawSortHandle, [{
     key: "shouldComponentUpdate",
     value: function shouldComponentUpdate(nextProps, nextState, nextContext) {
@@ -425,25 +347,18 @@ var RawSortHandle = /*#__PURE__*/function (_React$Component2) {
       }), this.props.tile_name);
     }
   }]);
-
   return RawSortHandle;
 }(_react["default"].Component);
-
 RawSortHandle.propTypes = {
   tile_name: _propTypes["default"].string
 };
 var Shandle = (0, _reactSortableHoc.SortableHandle)(RawSortHandle);
-
 var TileComponent = /*#__PURE__*/function (_React$Component3) {
   _inherits(TileComponent, _React$Component3);
-
   var _super3 = _createSuper(TileComponent);
-
   function TileComponent(props) {
     var _this2;
-
     _classCallCheck(this, TileComponent);
-
     _this2 = _super3.call(this, props);
     _this2.my_ref = /*#__PURE__*/_react["default"].createRef();
     _this2.body_ref = /*#__PURE__*/_react["default"].createRef();
@@ -467,14 +382,14 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
     _this2.menu_component = _this2._createMenu();
     return _this2;
   }
-
   _createClass(TileComponent, [{
     key: "shouldComponentUpdate",
     value: function shouldComponentUpdate(nextProps, nextState, nextContext) {
       return !(0, _utilities_react.propsAreEqual)(nextProps, this.props) || !(0, _utilities_react.propsAreEqual)(nextState, this.state);
-    } // Broadcasting the tile size is necessary because some tiles (notably matplotlib tiles)
-    // need to know the size of the display area.
+    }
 
+    // Broadcasting the tile size is necessary because some tiles (notably matplotlib tiles)
+    // need to know the size of the display area.
   }, {
     key: "_broadcastTileSize",
     value: function _broadcastTileSize() {
@@ -517,14 +432,11 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
         // to avoid doubles of bokeh images
         this.last_front_content = this.props.front_content;
         var scripts = $("#" + this.props.tile_id + " .tile-display-area script").toArray();
-
         var _iterator4 = _createForOfIteratorHelper(scripts),
-            _step4;
-
+          _step4;
         try {
           for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
             var script = _step4.value;
-
             try {
               window.eval(script.text);
             } catch (e) {}
@@ -540,10 +452,8 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
     key: "makeTablesSortable",
     value: function makeTablesSortable() {
       var tables = $("#" + this.props.tile_id + " table.sortable").toArray();
-
       var _iterator5 = _createForOfIteratorHelper(tables),
-          _step5;
-
+        _step5;
       try {
         for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
           var table = _step5.value;
@@ -585,33 +495,25 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
       this.setState({
         mounted: true
       });
-
       this._broadcastTileSize(this.props.tile_width, this.props.tile_height);
-
       this.executeEmbeddedScripts();
       this.makeTablesSortable();
-
       if (this.props.javascript_code) {
         this._executeJavascript();
       }
-
       this.listen_for_clicks();
     }
   }, {
     key: "componentDidUpdate",
-    value: function componentDidUpdate() {
+    value: function componentDidUpdate(prevProps, prevState, snapshot) {
       if (!this.state.resizing) {
         this.executeEmbeddedScripts();
       }
-
       this.makeTablesSortable();
-
       if (this.props.javascript_code) {
         this._executeJavascript();
       }
-
       this.listen_for_clicks();
-
       if (this.props.show_log) {
         if (this.log_ref && this.log_ref.current) {
           this.log_ref.current.scrollTo(0, this.log_ref.current.scrollHeight);
@@ -622,18 +524,14 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
     key: "_toggleTileLog",
     value: function _toggleTileLog() {
       var self = this;
-
       if (this.props.show_log) {
         this.props.setTileState(this.props.tile_id, {
           show_log: false,
           show_form: false
         });
-
         this._stopLogStreaming();
-
         return;
       }
-
       (0, _communication_react.postWithCallback)("host", "get_container_log", {
         container_id: this.props.tile_id,
         since: this.props.log_since,
@@ -644,9 +542,7 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
           show_form: false,
           log_content: res.log_text
         });
-
         self._startLogStreaming();
-
         self._setTileBack(false);
       }, null, this.props.main_id);
     }
@@ -654,7 +550,6 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
     key: "_setLogSince",
     value: function _setLogSince() {
       var _this3 = this;
-
       var now = new Date().getTime();
       var self = this;
       this.props.setTileValue(this.props.tile_id, "log_since", now, function () {
@@ -669,7 +564,6 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
               show_form: false,
               log_content: res.log_text
             });
-
             self._startLogStreaming();
           }, null, _this3.props.main_id);
         });
@@ -679,7 +573,6 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
     key: "_setMaxConsoleLines",
     value: function _setMaxConsoleLines(max_lines) {
       var _this4 = this;
-
       var self = this;
       this.props.setTileValue(this.props.tile_id, "max_console_lines", max_lines, function () {
         self._stopLogStreaming(function () {
@@ -693,7 +586,6 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
               show_form: false,
               log_content: res.log_text
             });
-
             self._startLogStreaming();
           }, null, _this4.props.main_id);
         });
@@ -759,7 +651,6 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
       if (this.props.show_log) {
         this._stopLogStreaming();
       }
-
       this.props.setTileState(this.props.tile_id, {
         show_log: false,
         show_form: !this.props.show_form
@@ -776,14 +667,12 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
       this.props.setTileState(this.props.tile_id, {
         show_form: false,
         show_spinner: true
-      }); // this.props.setTileValue(this.props.tile_id, "show_form", false);
+      });
+      // this.props.setTileValue(this.props.tile_id, "show_form", false);
       // this._startSpinner();
-
       var data = {};
-
       var _iterator6 = _createForOfIteratorHelper(this.props.form_data),
-          _step6;
-
+        _step6;
       try {
         for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
           var opt = _step6.value;
@@ -794,7 +683,6 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
       } finally {
         _iterator6.f();
       }
-
       data.tile_id = this.props.tile_id;
       this.props.broadcast_event("UpdateOptions", data);
     }
@@ -817,7 +705,6 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
     key: "spin_and_refresh",
     value: function spin_and_refresh() {
       this._startSpinner();
-
       var self = this;
       (0, _communication_react.postWithCallback)(this.props.tile_id, "RefreshTile", {}, function () {
         self._stopSpinner();
@@ -832,20 +719,14 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
         "tile_id": this.props.tile_id,
         "tile_name": this.props.tile_name
       };
-
       this._startSpinner();
-
       (0, _communication_react.postWithCallback)(self.props.main_id, "reload_tile", data_dict, reload_success, null, this.props.main_id);
-
       function reload_success(data) {
         if (data.success) {
           self._displayFormContent(data);
-
           self.props.setTileValue(self.props.tile_id, "source_changed", false);
-
           if (data.options_changed || !resubmit) {
             self._stopSpinner();
-
             self._setTileBack(true);
           } else {
             self.spin_and_refresh();
@@ -860,51 +741,40 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
       $(this.body_ref.current).off();
       $(this.body_ref.current).on(click_event, '.element-clickable', function (e) {
         var data_dict = self._standard_click_data();
-
         var dset = e.target.dataset;
         data_dict.dataset = {};
-
         for (var key in dset) {
           if (!dset.hasOwnProperty(key)) continue;
           data_dict.dataset[key] = dset[key];
         }
-
         (0, _communication_react.postWithCallback)(self.props.tile_id, "TileElementClick", data_dict, null, null, self.props.main_id);
         e.stopPropagation();
       });
       $(this.body_ref.current).on(click_event, '.word-clickable', function (e) {
         var data_dict = self._standard_click_data();
-
         var s = window.getSelection();
         var range = s.getRangeAt(0);
         var node = s.anchorNode;
-
         while (range.toString().indexOf(' ') !== 0 && range.startOffset !== 0) {
           range.setStart(node, range.startOffset - 1);
         }
-
         var nlen = node.textContent.length;
-
         if (range.startOffset !== 0) {
           range.setStart(node, range.startOffset + 1);
         }
-
         do {
           range.setEnd(node, range.endOffset + 1);
         } while (range.toString().indexOf(' ') == -1 && range.toString().trim() !== '' && range.endOffset < nlen);
-
         data_dict.clicked_text = range.toString().trim();
         (0, _communication_react.postWithCallback)(self.props.tile_id, "TileWordClick", data_dict, null, null, self.props.main_id);
       });
       $(this.body_ref.current).on(click_event, '.cell-clickable', function (e) {
         var data_dict = self._standard_click_data();
-
         data_dict.clicked_cell = $(this).text();
         (0, _communication_react.postWithCallback)(self.props.tile_id, "TileCellClick", data_dict, null, null, self.props.main_id);
       });
       $(this.body_ref.current).on(click_event, '.row-clickable', function (e) {
         var data_dict = self._standard_click_data();
-
         var cells = $(this).children();
         var row_vals = [];
         cells.each(function () {
@@ -915,34 +785,28 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
       });
       $(this.body_ref.current).on(click_event, '.front button', function (e) {
         var data_dict = self._standard_click_data();
-
         data_dict["button_value"] = e.target.value;
         (0, _communication_react.postWithCallback)(self.props.tile_id, "TileButtonClick", data_dict, null, null, self.props.main_id);
       });
       $(this.body_ref.current).on('submit', '.front form', function (e) {
         var data_dict = self._standard_click_data();
-
         var form_data = {};
         var the_form = e.target;
-
         for (var i = 0; i < the_form.length; i += 1) {
           form_data[the_form[i]["name"]] = the_form[i]["value"];
         }
-
         data_dict["form_data"] = form_data;
         (0, _communication_react.postWithCallback)(self.props.tile_id, "TileFormSubmit", data_dict, null, null, self.props.main_id);
         return false;
       });
       $(this.body_ref.current).on("change", '.front select', function (e) {
         var data_dict = self._standard_click_data();
-
         data_dict.select_value = e.target.value;
         data_dict.select_name = e.target.name;
         (0, _communication_react.postWithCallback)(self.props.tile_id, "SelectChange", data_dict, null, null, self.props.main_id);
       });
       $(this.body_ref.current).on('change', '.front textarea', function (e) {
         var data_dict = self._standard_click_data();
-
         data_dict["text_value"] = e.target.value;
         (0, _communication_react.postWithCallback)(self.props.tile_id, "TileTextAreaChange", data_dict, null, null, self.props.main_id);
       });
@@ -960,7 +824,6 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
         width: this.props.tile_width - TILE_DISPLAY_AREA_MARGIN * 2,
         height: tile_height - this.state.header_height - TILE_DISPLAY_AREA_MARGIN * 2
       };
-
       if (this.state.mounted) {
         var lg_rect = this.left_glyphs_ref.current.getBoundingClientRect();
         var rg_rect = this.right_glyphs_ref.current.getBoundingClientRect();
@@ -972,7 +835,6 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
       } else {
         this.lg_style = {};
       }
-
       this.back_style = Object.assign({}, this.front_style);
       this.tile_log_style = {
         overflow: "auto",
@@ -991,11 +853,9 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
         height: tile_height + this.state.dheight,
         position: "relative"
       };
-
       if (!this.props.finished_loading) {
         this.main_style.opacity = .5;
       }
-
       this.front_style.transition = "top ".concat(ANI_DURATION, "ms ease-in-out");
       this.back_style.transition = "top ".concat(ANI_DURATION, "ms ease-in-out");
       this.transitionStylesAltUp = {
@@ -1064,7 +924,6 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
     key: "_editMe",
     value: function _editMe() {
       var self = this;
-
       if (!window.in_context) {
         window.blur();
         (0, _communication_react.postWithCallback)("host", "go_to_module_viewer_if_exists", {
@@ -1117,7 +976,6 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
     key: "_stopResize",
     value: function _stopResize(e, ui, x, y, dx, dy) {
       var _this5 = this;
-
       this.setState({
         resizing: false,
         dwidth: 0,
@@ -1161,13 +1019,11 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
         "Edit my source": "edit",
         "Delete me": "trash"
       };
-
       var menu_button = /*#__PURE__*/_react["default"].createElement(_core.Button, {
         minimal: true,
         small: true,
         icon: "more"
       });
-
       return /*#__PURE__*/_react["default"].createElement(_menu_utilities.MenuComponent, {
         option_dict: tile_menu_options,
         icon_dict: menu_icons,
@@ -1191,7 +1047,6 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
     key: "render",
     value: function render() {
       var _this6 = this;
-
       var show_front = !this.props.show_form && !this.props.show_log;
       var front_dict = {
         __html: this.props.front_content
@@ -1309,10 +1164,8 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
       })));
     }
   }]);
-
   return TileComponent;
 }(_react["default"].Component);
-
 TileComponent.propTypes = {
   tile_name: _propTypes["default"].string,
   tile_id: _propTypes["default"].string,

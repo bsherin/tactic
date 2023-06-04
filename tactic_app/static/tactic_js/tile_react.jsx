@@ -48,7 +48,7 @@ class TileContainer extends React.Component {
         this.socket_counter = null;
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
         return !propsAreEqual(nextProps, this.props)
     }
 
@@ -369,7 +369,7 @@ class TileComponent extends React.Component {
         this.listen_for_clicks();
     }
 
-    componentDidUpdate() {
+    componentDidUpdate(prevProps, prevState, snapshot) {
         if (!this.state.resizing) {
             this.executeEmbeddedScripts();
         }
