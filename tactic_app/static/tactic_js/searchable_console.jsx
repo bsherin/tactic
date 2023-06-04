@@ -18,7 +18,9 @@ class SearchableConsole extends React.PureComponent {
              filter: false,
              console_command_value: "",
              livescroll: true
-         }
+         };
+         this.past_commands = [];
+         this.past_commands_index = null;
      }
 
      _prepareText() {
@@ -84,12 +86,14 @@ class SearchableConsole extends React.PureComponent {
 
     _commandSubmit(e) {
         e.preventDefault();
+        this.past_commands.push(this.state.console_command_value);
+        this.past_commands_index = null;
         this.props.commandExec(this.state.console_command_value, ()=>{
             this.setState({console_command_value: ""})
         })
     }
 
-    componentDidUpdate() {
+    componentDidUpdate(prevProps, prevState, snapshot) {
         if (this.state.livescroll && this.props.inner_ref && this.props.inner_ref.current) {
             this.props.inner_ref.current.scrollTo(0, this.props.inner_ref.current.scrollHeight)
         }
@@ -98,6 +102,41 @@ class SearchableConsole extends React.PureComponent {
     _setLiveScroll(event) {
         this.setState({livescroll: event.target.checked})
     }
+    
+    _onInputChange(event) {
+        this.setState({console_command_value: event.target.value})
+    }
+
+    _handleKeyDown(event) {
+        let charCode = event.keyCode;
+        let new_val;
+        if (charCode == 38) {  // down arraw
+            if (this.past_commands.length == 0) {
+                return
+            }
+            if (this.past_commands_index == null) {
+                this.past_commands_index = this.past_commands.length - 1
+            }
+            new_val = this.past_commands[this.past_commands_index];
+            if (this.past_commands_index > 0) {
+                this.past_commands_index -= 1
+            }
+
+        }
+        else if (charCode == 40) {  // up arro
+            if (this.past_commands.length == 0 || this.past_commands_index == null ||
+                this.past_commands_index == this.past_commands.length - 1) {
+                return
+            }
+            this.past_commands_index += 1;
+            new_val = this.past_commands[this.past_commands_index];
+        }
+        else {
+            return
+        }
+        this.setState({console_command_value: new_val})
+    }
+
 
      render() {
         let the_text = {__html: this._prepareText()};
@@ -146,11 +185,13 @@ class SearchableConsole extends React.PureComponent {
                     <form onSubmit={this._commandSubmit} style={{position: "relative", bottom: 8, margin: 10}}>
 
                       <InputGroup type="text"
-                                   onChange={(event)=>{self.setState({console_command_value: event.target.value})}}
+                                  className="bp4-monospace-text"
+                                   onChange={this._onInputChange}
                                    small={true}
                                    large={false}
                                    leftIcon="chevron-right"
                                    fill={true}
+                                   onKeyDown={(e) => this._handleKeyDown(e)}
                                    value={this.state.console_command_value}
                                    />
                     </form>
