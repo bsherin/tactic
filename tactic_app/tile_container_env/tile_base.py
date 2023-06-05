@@ -479,9 +479,13 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     def compile_save_dict(self, data):
         result = {"my_class_for_recreate": "TileBase",
                   "binary_attrs": []}
+        is_lite = "lite_save" in data and data["lite_save"]
+        export_names = [exp["name"] for exp in self.exports]
         for attr in self.save_attrs:
             if not hasattr(self, attr):
                 result[attr] = None
+                continue
+            if is_lite and attr in export_names:
                 continue
             attr_val = getattr(self, attr)
             if hasattr(attr_val, "compile_save_dict"):

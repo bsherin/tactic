@@ -28,21 +28,23 @@ class ProjectMenu extends React.Component {
         this.props.startSpinner();
         let self = this;
         postWithCallback("host", "get_project_names", {"user_id": window.user_id}, function (data) {
-            let checkboxes;
+            let checkboxes = [{checkname: "lite_save", checktext: "create lite save"}];
+
             showModalReact("Save Project As", "New Project Name", CreateNewProject,
-                      "NewProject", data["project_names"], null, doCancel)
+                      "NewProject", data["project_names"], checkboxes, doCancel)
         }, null, self.props.main_id);
 
         function doCancel() {
             self.props.stopSpinner()
         }
-        function CreateNewProject (new_name) {
+        function CreateNewProject (new_name, checkbox_states) {
             //let console_node = cleanse_bokeh(document.getElementById("console"));
             const result_dict = {
                 "project_name": new_name,
                 "main_id": self.props.main_id,
                 "doc_type": "table",
-                "purgetiles": true
+                "purgetiles": true,
+                "lite_save": checkbox_states["lite_save"]
             };
 
             result_dict.interface_state = self.props.interface_state;
@@ -70,7 +72,7 @@ class ProjectMenu extends React.Component {
                             {'user_id': window.user_id}, null, null, self.props.main_id);
                         self.props.updateLastSave();
                         self.props.stopSpinner();
-                        self._saveProject()
+                        // self._saveProject()
                     });
 
                 }
@@ -85,12 +87,13 @@ class ProjectMenu extends React.Component {
         }
     }
 
-    _saveProject () {
+    _saveProject (lite_save) {
         // let console_node = cleanse_bokeh(document.getElementById("console"));
         let self = this;
         const result_dict = {
             main_id: this.props.main_id,
-            project_name: this.props.project_name
+            project_name: this.props.project_name,
+            lite_save: lite_save
         };
 
         result_dict.interface_state = this.props.interface_state;
@@ -324,34 +327,11 @@ class ProjectMenu extends React.Component {
         postWithCallback(this.props.main_id, "console_to_notebook", result_dict, null, null, this.props.main_id)
     }
 
-    get option_dict () {
-        return {
-            "Save As...": this._saveProjectAs,
-            "Save": this._saveProject,
-            "divider1": "divider",
-            "Export as Jupyter Notebook": this._exportAsJupyter,
-            "Export Table as Collection": this._exportDataTable,
-            "Open Console as Notebook": this._consoleToNotebook,
-            "divider2": "divider",
-            "Change collection": this.props.changeCollection
-        }
-    }
-
-    get icon_dict() {
-        return {
-            "Save As...": "floppy-disk",
-            "Save": "saved",
-            "Export as Jupyter Notebook": "export",
-            "Open Console as Notebook": "console",
-            "Export Table as Collection": "export",
-            "Change collection": "exchange"
-        }
-    }
-
     get menu_items() {
         let items = [
             {name_text: "Save As...", icon_name: "floppy-disk", click_handler: this._saveProjectAs},
-            {name_text: "Save", icon_name: "saved", click_handler: this._saveProject},
+            {name_text: "Save", icon_name: "saved", click_handler: ()=>{this._saveProject(false)}},
+            {name_text: "Save Lite", icon_name: "saved", click_handler: ()=>{this._saveProject(true)}},
             {name_text: "divider1", icon_name: null, click_handler: "divider"},
             {name_text: "Export as Jupyter Notebook", icon_name: "export", click_handler: this._exportAsJupyter,},
             {name_text: "Create Report From Notebook", icon_name: "document", click_handler: this._exportAsReport,},

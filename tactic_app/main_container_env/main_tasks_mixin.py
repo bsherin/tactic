@@ -84,6 +84,7 @@ class LoadSaveTasksMixin:
 
     @task_worthy_manual_submit
     def compile_save_dict(self, data, task_packet):
+        is_lite = "lite_save" in data and data["lite_save"]
 
         def track_tile_compile_receipts(tile_save_dict):
             tile_id = tile_save_dict["tile_id"]
@@ -137,7 +138,7 @@ class LoadSaveTasksMixin:
             tile_ids_to_compile = copy.copy(self.tile_instances)
             if self.pseudo_tile_id is not None:
                 tile_ids_to_compile.append(self.pseudo_tile_id)
-                self.mworker.post_task(self.pseudo_tile_id, "compile_save_dict", {},
+                self.mworker.post_task(self.pseudo_tile_id, "compile_save_dict", {"lite_save": is_lite},
                                        callback_func=track_tile_compile_receipts)
             if not tile_ids_to_compile:
                 result["used_tile_types"] = []
@@ -150,11 +151,11 @@ class LoadSaveTasksMixin:
                 return
 
             for _tid in self.tile_instances:
-                self.mworker.post_task(_tid, "compile_save_dict", callback_func=track_tile_compile_receipts)
+                self.mworker.post_task(_tid, "compile_save_dict", {"lite_save": is_lite}, callback_func=track_tile_compile_receipts)
         else:
             if self.pseudo_tile_id is not None:
                 tile_ids_to_compile = [self.pseudo_tile_id]
-                self.mworker.post_task(self.pseudo_tile_id, "compile_save_dict", {},
+                self.mworker.post_task(self.pseudo_tile_id, "compile_save_dict", {"lite_save": is_lite},
                                        callback_func=track_tile_compile_receipts)
             else:
                 self.mworker.submit_response(task_packet, result)
@@ -379,7 +380,7 @@ class LoadSaveTasksMixin:
             self.show_main_status_message("Getting loaded modules")
             self.loaded_modules = self.get_loaded_user_modules()
             self.show_main_status_message("compiling save dictionary")
-            self.mworker.post_task(self.mworker.my_id, "compile_save_dict", {}, got_save_dict)
+            self.mworker.post_task(self.mworker.my_id, "compile_save_dict", data_dict, got_save_dict)
 
         except Exception as ex:
             debug_log("got an error in save_new_project")
@@ -420,7 +421,7 @@ class LoadSaveTasksMixin:
 
             self.show_main_status_message("compiling save dictionary")
             self.doc_type = "notebook"  # This is necessary in case we're saving a juypyter notebook
-            self.mworker.post_task(self.mworker.my_id, "compile_save_dict", {}, got_save_dict)
+            self.mworker.post_task(self.mworker.my_id, "compile_save_dict", data_dict, got_save_dict)
 
         except Exception as ex:
             debug_log("got an error in save_new_project")
@@ -477,7 +478,7 @@ class LoadSaveTasksMixin:
             self.show_main_status_message("Getting loaded modules")
             self.loaded_modules = self.get_loaded_user_modules()
             self.show_main_status_message("compiling save dictionary")
-            self.mworker.post_task(self.mworker.my_id, "compile_save_dict", {}, got_save_dict)
+            self.mworker.post_task(self.mworker.my_id, "compile_save_dict", data_dict, got_save_dict)
 
         except Exception as ex:
             error_string = self.handle_exception(ex, "Error saving project", print_to_console=False)
