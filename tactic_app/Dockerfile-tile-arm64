@@ -8,6 +8,8 @@ ADD ./tile_container_env/new_requirements.txt /code/new_requirements.txt
 RUN pip3 install --no-cache-dir -r new_requirements.txt
 ADD ./tile_container_env/transformers_requirements.txt /code/transformers_requirements.txt
 RUN pip3 install --no-cache-dir -r transformers_requirements.txt
+ADD ./tile_container_env/newer_requirements.txt /code/newer_requirements.txt
+RUN pip3 install --no-cache-dir -r newer_requirements.txt
 ADD  ./tile_container_env ./volume_manager.py ./exception_mixin.py ./redis_tools.py ./rabbit_manage.py ./qworker.py ./communication_utils.py /code/
 ADD ./tactic_dark.mplstyle /usr/local/lib/python3.10/site-packages/matplotlib/mpl-data/stylelib/
 # RUN pip install pydevd-pycharm~=231.8109.197
