@@ -103,43 +103,45 @@ class PseudoTileClass(TileBase, MplFigure):
     @_task_worthy
     def compile_save_dict(self, data):
         result = {"binary_attrs": [], "imports": []}
-        attrs = globals().keys()
-        for attr in attrs:
-            try:
-                if attr in self._saved_globals:
-                    continue
-                attr_val = globals()[attr]
-                if hasattr(attr_val, "compile_save_dict"):
-                    result[attr] = attr_val.compile_save_dict(data)
-                elif isinstance(attr_val, types.ModuleType):
-                    result["imports"].append(attr)
-                elif((type(attr_val) == dict) and (len(attr_val) > 0) and
-                     hasattr(list(attr_val.values())[0], "compile_save_dict")):
-                    res = {}
-                    for(key, val) in attr_val.items():
-                        res[key] = attr_val.compile_save_dict(data)
-                    result[attr] = res
-                else:
-                    if type(attr_val) in _jsonizable_types.values():
-                        if is_jsonizable(attr_val):
-                            result[attr] = attr_val
-                            continue
-                    try:
-                        debug_log("Found non jsonizable attribute " + attr)
-                        result["binary_attrs"].append(attr)
-                        bser_attr_val = make_python_object_jsonizable(attr_val)
-                        result[attr] = bser_attr_val
-                        if is_jsonizable(bser_attr_val):
-                            print("new bser_attr_val is jsonizable")
-                        else:
-                            print("new bser_attr_val is not jsonizable")
-                    except TypeError:
-                        print("got a TypeError")
+        is_lite = "lite_save" in data and data["lite_save"]
+        if not is_lite:
+            attrs = globals().keys()
+            for attr in attrs:
+                try:
+                    if attr in self._saved_globals:
                         continue
-            except Exception as ex:
-                error_string = self._handle_exception(ex, "Error compiling attr {}".format(attr),
-                                                      print_to_console=False)
-                print(error_string)
+                    attr_val = globals()[attr]
+                    if hasattr(attr_val, "compile_save_dict"):
+                        result[attr] = attr_val.compile_save_dict(data)
+                    elif isinstance(attr_val, types.ModuleType):
+                        result["imports"].append(attr)
+                    elif((type(attr_val) == dict) and (len(attr_val) > 0) and
+                         hasattr(list(attr_val.values())[0], "compile_save_dict")):
+                        res = {}
+                        for(key, val) in attr_val.items():
+                            res[key] = attr_val.compile_save_dict(data)
+                        result[attr] = res
+                    else:
+                        if type(attr_val) in _jsonizable_types.values():
+                            if is_jsonizable(attr_val):
+                                result[attr] = attr_val
+                                continue
+                        try:
+                            debug_log("Found non jsonizable attribute " + attr)
+                            result["binary_attrs"].append(attr)
+                            bser_attr_val = make_python_object_jsonizable(attr_val)
+                            result[attr] = bser_attr_val
+                            if is_jsonizable(bser_attr_val):
+                                print("new bser_attr_val is jsonizable")
+                            else:
+                                print("new bser_attr_val is not jsonizable")
+                        except TypeError:
+                            print("got a TypeError")
+                            continue
+                except Exception as ex:
+                    error_string = self._handle_exception(ex, "Error compiling attr {}".format(attr),
+                                                          print_to_console=False)
+                    print(error_string)
 
         result["tile_id"] = self._tworker.my_id  # I had to move this down here because it was being overwritten
         result["img_dict"] = make_python_object_jsonizable(self.img_dict)
