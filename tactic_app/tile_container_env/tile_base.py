@@ -169,8 +169,9 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     # noinspection PyAttributeOutsideInit
     @_task_worthy
     def TileSizeChange(self, data):
-        self.width = data["width"]  # this might not be used for anything
-        self.height = data["height"]  # this might not be used for anything
+        self.width = data["width"]
+        self.height = data["height"]
+        self._tworker.send_updated_reload_dict()
         if self.configured:
             if isinstance(self, MplFigure):
                 self._resize_mpl_tile()
