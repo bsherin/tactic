@@ -1,139 +1,97 @@
 "use strict";
 
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.library_props = library_props;
 exports.LibraryHomeApp = void 0;
-
+exports.library_props = library_props;
 require("../tactic_css/tactic.scss");
-
 require("../tactic_css/tactic_table.scss");
-
 require("../tactic_css/library_home.scss");
-
-var _react = _interopRequireDefault(require("react"));
-
+var _react = _interopRequireWildcard(require("react"));
 var ReactDOM = _interopRequireWildcard(require("react-dom"));
-
 var _propTypes = _interopRequireDefault(require("prop-types"));
-
 var _core = require("@blueprintjs/core");
-
 var _table = require("@blueprintjs/table");
-
+var _tactic_omnibar = require("./tactic_omnibar");
 var _tactic_socket = require("./tactic_socket.js");
-
 var _communication_react = require("./communication_react.js");
-
 var _toaster = require("./toaster.js");
-
 var _library_pane = require("./library_pane.js");
-
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields.js");
-
 var _sizing_tools = require("./sizing_tools.js");
-
 var _error_drawer = require("./error_drawer.js");
-
 var _key_trap = require("./key_trap.js");
-
 var _utilities_react = require("./utilities_react.js");
-
 var _blueprint_navbar = require("./blueprint_navbar");
-
 var _library_menubars = require("./library_menubars.js");
-
 var _library_pane2 = require("./library_pane");
-
-function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
-
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
+function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
-
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); } // noinspection JSCheckFunctionSignatures
 var TAB_BAR_WIDTH = 50;
-
 function _library_home_main() {
   var LibraryHomeAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(LibraryHomeApp));
   var domContainer = document.querySelector('#library-home-root');
   ReactDOM.render( /*#__PURE__*/_react["default"].createElement(LibraryHomeAppPlus, _extends({}, library_props(), {
+    registerOmniFunction: null,
     controlled: false,
     initial_theme: window.theme,
     registerLibraryTabChanger: null
   })), domContainer);
 }
-
 function library_props() {
   var library_id = (0, _utilities_react.guid)();
-  var tsocket = new _tactic_socket.TacticSocket("main", 5000, library_id); // main_id is needed below for withStatus
-
+  var tsocket = new _tactic_socket.TacticSocket("main", 5000, library_id);
+  // main_id is needed below for withStatus
   return {
     library_id: library_id,
     tsocket: tsocket,
     main_id: library_id
   };
 }
-
 var tab_panes = ["all-pane", "collections-pane", "projects-pane", "tiles-pane", "lists-pane", "code-pane"];
-var controllable_props = ["usable_width", "usable_height"]; // noinspection JSUnusedLocalSymbols,JSRemoveUnnecessaryParentheses
+var controllable_props = ["usable_width", "usable_height"];
 
+// noinspection JSUnusedLocalSymbols,JSRemoveUnnecessaryParentheses
 var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
   _inherits(LibraryHomeApp, _React$Component);
-
   var _super = _createSuper(LibraryHomeApp);
-
   function LibraryHomeApp(props) {
     var _this;
-
     _classCallCheck(this, LibraryHomeApp);
-
     _this = _super.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
     _this.state = {
       selected_tab_id: "all-pane",
       pane_states: {}
     };
-
+    _this.omniGetters = {};
+    if (_this.props.registerOmniFunction) {
+      _this.props.registerOmniFunction(_this._omniFunction);
+    }
     var _iterator = _createForOfIteratorHelper(_library_pane2.res_types.concat("all")),
-        _step;
-
+      _step;
     try {
       for (_iterator.s(); !(_step = _iterator.n()).done;) {
         var res_type = _step.value;
@@ -169,15 +127,11 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
     } finally {
       _iterator.f();
     }
-
     _this.top_ref = /*#__PURE__*/_react["default"].createRef();
-
     _this.initSocket();
-
     if (props.registerLibraryTabChanger) {
       props.registerLibraryTabChanger(_this._handleTabChange);
     }
-
     if (!window.controlled) {
       var aheight = (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
       var awidth = (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
@@ -185,10 +139,12 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
       _this.state.usable_width = awidth;
       _this.state.dark_theme = props.initial_theme === "dark";
     }
-
+    if (!window.in_context) {
+      _this.key_bindings = [[["ctrl+space"], _this._showOmnibar], [["tab"], _this._goToNextPane], [["shift+tab"], _this._goToPreviousPane]];
+      _this.state.showOmnibar = false;
+    }
     return _this;
   }
-
   _createClass(LibraryHomeApp, [{
     key: "initSocket",
     value: function initSocket() {
@@ -202,7 +158,6 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
       this.props.tsocket.attachListener("doFlash", function (data) {
         (0, _toaster.doFlash)(data);
       });
-
       if (!window.in_context) {
         this.props.tsocket.attachListener("doFlashUser", function (data) {
           (0, _toaster.doFlash)(data);
@@ -220,12 +175,11 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
       this.setState({
         "mounted": true
       });
-      this.props.stopSpinner(null); // this.props.setStatusTheme(this.props.dark_theme);
-
+      this.props.stopSpinner(null);
+      // this.props.setStatusTheme(this.props.dark_theme);
       if (!this.props.controlled) {
         window.dark_theme = this.state.dark_theme;
         window.addEventListener("resize", this._handleResize);
-
         this._handleResize();
       }
     }
@@ -241,18 +195,44 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
       }, callback);
     }
   }, {
+    key: "_showOmnibar",
+    value: function _showOmnibar() {
+      this.setState({
+        showOmnibar: true
+      });
+    }
+  }, {
+    key: "_closeOmnibar",
+    value: function _closeOmnibar() {
+      this.setState({
+        showOmnibar: false
+      });
+    }
+  }, {
+    key: "_omniFunction",
+    value: function _omniFunction() {
+      var omni_items = [];
+      for (var ogetter in this.omniGetters) {
+        omni_items = omni_items.concat(this.omniGetters[ogetter]());
+      }
+      return omni_items;
+    }
+  }, {
+    key: "_registerOmniGetter",
+    value: function _registerOmniGetter(name, the_function) {
+      this.omniGetters[name] = the_function;
+    }
+  }, {
     key: "_update_window_dimensions",
     value: function _update_window_dimensions() {
       if (!this.props.controlled) {
         var uwidth = window.innerWidth - 2 * _sizing_tools.SIDE_MARGIN;
         var uheight = window.innerHeight;
-
         if (this.top_ref && this.top_ref.current) {
           uheight = uheight - this.top_ref.current.offsetTop;
         } else {
           uheight = uheight - _sizing_tools.USUAL_TOOLBAR_HEIGHT;
         }
-
         this.setState({
           usable_height: uheight,
           usable_width: uwidth
@@ -267,10 +247,11 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
       }, function () {
         window.dark_theme = dark_theme;
       });
-    } // This mechanism in _handleTabChange necessary in order to force the pane to change
+    }
+
+    // This mechanism in _handleTabChange necessary in order to force the pane to change
     // before updating window dimensions (which seems to be necessary to get
     // the pane to be appropriately sized when it's shown
-
   }, {
     key: "_handleTabChange",
     value: function _handleTabChange(newTabId, prevTabId, event) {
@@ -282,11 +263,9 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
     key: "_goToNextPane",
     value: function _goToNextPane() {
       var tabIndex = tab_panes.indexOf(this.state.selected_tab_id) + 1;
-
       if (tabIndex === tab_panes.length) {
         tabIndex = 0;
       }
-
       this.setState({
         selected_tab_id: tab_panes[tabIndex]
       });
@@ -295,11 +274,9 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
     key: "_goToPreviousPane",
     value: function _goToPreviousPane() {
       var tabIndex = tab_panes.indexOf(this.state.selected_tab_id) - 1;
-
       if (tabIndex === -1) {
         tabIndex = tab_panes.length - 1;
       }
-
       this.setState({
         selected_tab_id: tab_panes[tabIndex]
       });
@@ -325,30 +302,17 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
+      var _this2 = this;
       var dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme;
-
       var lib_props = _objectSpread({}, this.props);
-
       if (!this.props.controlled) {
-        var _iterator2 = _createForOfIteratorHelper(controllable_props),
-            _step2;
-
-        try {
-          for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-            var prop_name = _step2.value;
-            lib_props[prop_name] = this.state[prop_name];
-          }
-        } catch (err) {
-          _iterator2.e(err);
-        } finally {
-          _iterator2.f();
+        for (var _i = 0, _controllable_props = controllable_props; _i < _controllable_props.length; _i++) {
+          var prop_name = _controllable_props[_i];
+          lib_props[prop_name] = this.state[prop_name];
         }
-
         lib_props.usable_width -= TAB_BAR_WIDTH;
       }
-
       var get_all_panes = !window.in_context || window.library_style == "tabbed";
-
       var all_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
         columns: {
           "icon:th": {
@@ -386,12 +350,12 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
         allow_search_inside: true,
         allow_search_metadata: true,
         MenubarClass: _library_menubars.AllMenubar,
+        registerOmniGetter: this._registerOmniGetter,
         updatePaneState: this._updatePaneState
       }, this.state.pane_states["all"], this.props.errorDrawerFuncs, {
         errorDrawerFuncs: this.props.errorDrawerFuncs,
         library_id: this.props.library_id
       }));
-
       if (get_all_panes) {
         var collection_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
           columns: {
@@ -426,12 +390,12 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
           allow_search_inside: false,
           allow_search_metadata: false,
           MenubarClass: _library_menubars.CollectionMenubar,
+          registerOmniGetter: this._registerOmniGetter,
           updatePaneState: this._updatePaneState
         }, this.state.pane_states["collection"], this.props.errorDrawerFuncs, {
           errorDrawerFuncs: this.props.errorDrawerFuncs,
           library_id: this.props.library_id
         }));
-
         var projects_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
           columns: {
             "icon:th": {
@@ -465,11 +429,11 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
           allow_search_inside: false,
           allow_search_metadata: true,
           MenubarClass: _library_menubars.ProjectMenubar,
+          registerOmniGetter: this._registerOmniGetter,
           updatePaneState: this._updatePaneState
         }, this.props.errorDrawerFuncs, this.state.pane_states["project"], {
           library_id: this.props.library_id
         }));
-
         var tiles_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
           columns: {
             "icon:th": {
@@ -503,11 +467,11 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
           allow_search_inside: true,
           allow_search_metadata: true,
           MenubarClass: _library_menubars.TileMenubar,
+          registerOmniGetter: this._registerOmniGetter,
           updatePaneState: this._updatePaneState
         }, this.props.errorDrawerFuncs, this.state.pane_states["tile"], {
           library_id: this.props.library_id
         }));
-
         var lists_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
           columns: {
             "icon:th": {
@@ -535,13 +499,13 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
           open_resources: this.props.open_resources ? this.props.open_resources["list"] : null,
           allow_search_inside: true,
           allow_search_metadata: true,
-          MenubarClass: _library_menubars.ListMenubar
+          MenubarClass: _library_menubars.ListMenubar,
+          registerOmniGetter: this._registerOmniGetter
         }, this.props.errorDrawerFuncs, {
           updatePaneState: this._updatePaneState
         }, this.state.pane_states["list"], {
           library_id: this.props.library_id
         }));
-
         var code_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
           columns: {
             "icon:th": {
@@ -570,40 +534,34 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
           open_resources: this.props.open_resources ? this.props.open_resources["code"] : null,
           allow_search_inside: true,
           allow_search_metadata: true,
-          MenubarClass: _library_menubars.CodeMenubar
+          MenubarClass: _library_menubars.CodeMenubar,
+          registerOmniGetter: this._registerOmniGetter
         }, this.props.errorDrawerFuncs, {
           updatePaneState: this._updatePaneState
         }, this.state.pane_states["code"], {
           library_id: this.props.library_id
         }));
       }
-
       var outer_style = {
         height: this.state.available_height,
         width: "100%",
         paddingLeft: 0
       };
       var outer_class = "";
-
       if (!this.props.controlled) {
         outer_class = "library-pane-holder  ";
-
         if (dark_theme) {
           outer_class = "".concat(outer_class, " bp4-dark");
         } else {
           outer_class = "".concat(outer_class, " light-theme");
         }
       }
-
       var key_bindings = [[["tab"], this._goToNextPane], [["shift+tab"], this._goToPreviousPane]];
       var extra_tabs = [];
-
       if (get_all_panes) {
         var tab_specs = [["collections", "collection", collection_pane], ["projects", "project", projects_pane], ["tiles", "tile", tiles_pane], ["lists", "list", lists_pane], ["code", "code", code_pane]];
-
-        for (var _i = 0, _tab_specs = tab_specs; _i < _tab_specs.length; _i++) {
-          var tlist = _tab_specs[_i];
-
+        for (var _i2 = 0, _tab_specs = tab_specs; _i2 < _tab_specs.length; _i2++) {
+          var tlist = _tab_specs[_i2];
           var new_tab = /*#__PURE__*/_react["default"].createElement(_core.Tab, {
             id: tlist[0] + "-pane",
             panel: tlist[2]
@@ -617,14 +575,15 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
             tabIndex: -1,
             color: this.getIconColor(tlist[0] + "-pane")
           })));
-
           extra_tabs.push(new_tab);
         }
       }
-
       return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, !this.props.controlled && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
         is_authenticated: window.is_authenticated,
         dark_theme: dark_theme,
+        registerOmniFunction: function registerOmniFunction(register_func) {
+          return _this2._registerOmniFunction("navbar", register_func);
+        },
         set_theme: this.props.controlled ? this.props.setTheme : this._setTheme,
         selected: null,
         show_api_links: false,
@@ -658,16 +617,18 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
         iconSize: 20,
         tabIndex: -1,
         color: this.getIconColor("all-pane")
-      }))), extra_tabs)), !this.props.controlled && /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
+      }))), extra_tabs)), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_tactic_omnibar.TacticOmnibar, {
+        omniGetters: [this._omniFunction],
+        showOmnibar: this.state.showOmnibar,
+        closeOmnibar: this._closeOmnibar
+      }), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
         global: true,
-        bindings: key_bindings
-      }));
+        bindings: this.key_bindings
+      })));
     }
   }]);
-
   return LibraryHomeApp;
 }(_react["default"].Component);
-
 exports.LibraryHomeApp = LibraryHomeApp;
 LibraryHomeApp.propTypes = {
   open_resources: _propTypes["default"].object
@@ -675,7 +636,6 @@ LibraryHomeApp.propTypes = {
 LibraryHomeApp.defaultProps = {
   open_resources: null
 };
-
 if (!window.in_context) {
   _library_home_main();
 }

@@ -9,6 +9,7 @@ import "../tactic_css/tile_creator.scss";
 
 import React from "react";
 import * as ReactDOM from 'react-dom';
+import { Fragment } from 'react';
 
 import { Tab, Tabs, Button, Icon, Spinner } from "@blueprintjs/core";
 import { FocusStyleManager } from "@blueprintjs/core";
@@ -16,6 +17,7 @@ import { FocusStyleManager } from "@blueprintjs/core";
 FocusStyleManager.onlyShowFocusOnTabs();
 
 import {TacticSocket} from "./tactic_socket";
+import {TacticOmnibar} from "./tactic_omnibar";
 import {handleCallback} from "./communication_react.js";
 import {doFlash, withStatus} from "./toaster.js";
 import {TacticNavbar} from "./blueprint_navbar";
@@ -81,10 +83,10 @@ class ContextApp extends React.Component {
 
         const aheight = getUsableDimensions(true).usable_height_no_bottom;
         const awidth = getUsableDimensions(true).usable_width - 170;
+        this.library_omni_function = null;
         this.state = {
             tab_ids: [],
             library_panel_props: library_panel_props,
-            // repository_panel_props: repository_panel_props,
             tab_panel_dict: {},
             open_resources: {},
             dirty_methods: {},
@@ -93,21 +95,21 @@ class ContextApp extends React.Component {
             theme_setters: [],
             lastSelectedTabId: null,
             selectedLibraryTab: "all",
-            // selectedRepositoryTab: "collections",
             usable_width: awidth,
             usable_height: aheight,
             tabWidth: 150,
             show_repository: false,
             dragging_over: null,
-            currently_dragging: null
+            currently_dragging: null,
+            showOmnibar: false
         };
         this.libraryTabChange = null;
         this.saved_width = this.state.tabWidth;
-        // this.repositoryTabChange = null;
         this.top_ref = React.createRef();
         this.key_bindings = [
             [["tab"], this._goToNextPane],
             [["shift+tab"], this._goToPreviousPane],
+            [["ctrl+space"], this._showOmnibar],
             [["ctrl+w"], ()=>{this._closeTab(this.state.selectedTabId)}]
         ];
     }
@@ -241,6 +243,9 @@ class ContextApp extends React.Component {
      }
 
      _refreshTab(the_id) {
+        if (the_id == "library") {
+            return
+        }
         let self = this;
         if (!(the_id in this.state.dirty_methods) || this.state.dirty_methods[the_id]()) {
             const title = this.state.tab_panel_dict[the_id].title;
@@ -394,7 +399,10 @@ class ContextApp extends React.Component {
 
      _addPanel(new_id, viewer_kind, res_type, title, new_panel, callback=null) {
          let new_tab_panel_dict = {...this.state.tab_panel_dict};
-         new_tab_panel_dict[new_id] = {kind: viewer_kind, res_type: res_type, title: title, panel: new_panel};
+         new_tab_panel_dict[new_id] = {kind: viewer_kind, res_type: res_type, title: title,
+             panel: new_panel,
+             omni_function: null
+         };
          let self = this;
          this.setState({
                  tab_panel_dict: new_tab_panel_dict,
@@ -473,6 +481,23 @@ class ContextApp extends React.Component {
          return -1
      }
 
+     _showOmnibar() {
+        this.setState({showOmnibar: true})
+    }
+
+    _closeOmnibar() {
+        this.setState({showOmnibar: false})
+    }
+
+     _registerOmniFunction(tab_id, the_function) {
+         if (tab_id == "library") {
+             this.library_omni_function = the_function
+         }
+         else {
+             this._updatePanel(tab_id, {omni_function: the_function})
+         }
+     }
+
      _handleCreateViewer(data, callback=null) {
         let self = this;
 
@@ -487,7 +512,7 @@ class ContextApp extends React.Component {
          this._addPanel(new_id, data.kind, data.res_type, data.resource_name, "spinner", ()=> {
              let new_panel = self.propDict[data.kind](data, drmethod, (new_panel)=>{
                 this._updatePanel(new_id, {panel: new_panel}, callback);
-             });
+             }, (register_func) => self._registerOmniFunction(new_id, register_func))
          })
 
      }
@@ -548,9 +573,8 @@ class ContextApp extends React.Component {
                      let new_panel = self.propDict[data.kind](data, drmethod, (new_panel)=>{
                         this._updatePanel(new_id, {panel: new_panel}, ()=>{
                             let pdict = self.state.tab_panel_dict[new_id];
-                            // pdict.line_setter(line_number)  // gives maximum depth exceeded error
                         });
-                     });
+                     }, (register_func) => self._registerOmniFunction(new_id, register_func));
                  })
             })
             .catch(doFlash);
@@ -641,6 +665,36 @@ class ContextApp extends React.Component {
          this.setState({open_resources: this._getOpenResources()}, callback)
     }
 
+    _contextOmniItems() {
+         if (this.state.tab_ids.length == 0) return [];
+        let omni_funcs = [
+            ["Go To Next Panel", "context", this._goToNextPane, "arrow-right"],
+            ["Go To Previous Panel", "context", this._goToPreviousPane, "arrow-left"],
+        ];
+        if (this.state.selectedTabID != "library") {
+            omni_funcs = omni_funcs.concat([
+                ["Close Current Panel", "context", ()=>{this._closeTab(this.state.selectedTabId)}, "delete"],
+                ["Refresh Current Panel", "context", ()=>{this._refreshTab(this.state.selectedTabId)}, "reset"]
+            ])
+        }
+
+        let omni_items = [];
+        for (let item of omni_funcs) {
+            omni_items.push(
+                {
+                    category: item[1],
+                    display_text: item[0],
+                    search_text: item[0],
+                    icon_name: item[3],
+                    the_function: item[2]
+                }
+            )
+
+        }
+        return omni_items
+    }
+
+
     render() {
      let unified = window.library_style == "unified";
       let bstyle = {paddingTop: 0, paddingBotton: 0};
@@ -696,6 +750,7 @@ class ContextApp extends React.Component {
                                     registerLibraryTabChanger={this._registerLibraryTabChanger}
                                     dark_theme={this.state.dark_theme}
                                     setTheme={this._setTheme}
+                                    registerOmniFunction={(register_func)=>self._registerOmniFunction("library", register_func)}
                                     handleCreateViewer={this._handleCreateViewer}
                                     usable_width={this.state.usable_width}
                                     usable_height={this.state.usable_height}
@@ -845,8 +900,25 @@ class ContextApp extends React.Component {
             tlclass += " context-pane-closed"
         }
         let self = this;
+        let sid = this.state.selectedTabId;
+        let omniGetter;
+        if (sid && sid in this.state.tab_panel_dict) {
+            let the_dict = this.state.tab_panel_dict[sid];
+            if ("omni_function" in the_dict) {
+                omniGetter = the_dict.omni_function;
+            }
+            else {
+                omniGetter = ()=>{return []};
+            }
+        }
+        else if (sid == "library") {
+            omniGetter = this.library_omni_function
+        }
+        else {
+            omniGetter = ()=>{return []};  // Should never get here
+        }
         return (
-            <React.Fragment>
+            <Fragment>
                 <TacticNavbar is_authenticated={window.is_authenticated}
                               dark_theme={this.state.dark_theme}
                               setTheme={this._setTheme}
@@ -886,9 +958,16 @@ class ContextApp extends React.Component {
                                 {all_tabs}
                             </Tabs>
                         </div>
+                        <TacticOmnibar omniGetters={[omniGetter, this._contextOmniItems]}
+                                       showOmnibar={this.state.showOmnibar}
+                                       closeOmnibar={this._closeOmnibar}
+                                       is_authenticated={window.is_authenticated}
+                                       dark_theme={this.state.dark_theme}
+                                       setTheme={this._setTheme}
+                        />
                     </div>
                     <KeyTrap global={true} bindings={this.key_bindings}/>
-            </React.Fragment>
+            </Fragment>
         )
     }
 

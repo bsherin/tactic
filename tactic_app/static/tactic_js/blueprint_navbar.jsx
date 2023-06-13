@@ -1,6 +1,7 @@
 
 
 import React from "react";
+import {Fragment} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
@@ -47,11 +48,11 @@ class TacticNavbar extends React.Component {
         };
         this.overflow_items = [];
         this.update_state_vars = ["usable_width", "old_left_width"];
-        this.update_props = ["is_authenticated", "user_name", "menus", "selected", "show_api_links", "dark_theme"]
+        this.update_props = ["is_authenticated", "user_name", "menus", "selected", "show_api_links", "dark_theme"];
     }
 
 
-    shouldComponentUpdate(nextProps, nextState) {
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
         for (let prop of this.update_props) {
             if (nextProps[prop] != this.props[prop]) {
                 return true
@@ -73,7 +74,7 @@ class TacticNavbar extends React.Component {
     }
 
     // For some reason sizing things are a little flaky without old_left_width stuff
-    componentDidUpdate() {
+    componentDidUpdate(prevProps, prevState, snapshot) {
         let new_left_width = this._getLeftWidth();
         if (new_left_width != this.state.old_left_width) {
             this.setState({old_left_width: new_left_width})
@@ -245,9 +246,9 @@ class TacticNavbar extends React.Component {
                         {name_string}
                     </NavbarHeading>
                         {this.props.menus != null && (
-                            <React.Fragment>
+                            <Fragment>
                                 {this.props.menus}
-                            </React.Fragment>)}
+                            </Fragment>)}
                 </div>
 
 

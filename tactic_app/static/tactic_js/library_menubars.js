@@ -116,6 +116,7 @@ var LibraryMenubar = /*#__PURE__*/function (_React$Component) {
       }
       return /*#__PURE__*/_react["default"].createElement(_menu_utilities.TacticMenubar, {
         menu_specs: this.props.menu_specs,
+        registerOmniGetter: this.props.registerOmniGetter,
         dark_theme: this.props.dark_theme,
         showRefresh: true,
         showClose: false,
@@ -435,6 +436,7 @@ var AllMenubar = /*#__PURE__*/function (_React$Component2) {
     value: function render() {
       return /*#__PURE__*/_react["default"].createElement(LibraryMenubar, {
         sendContextMenuItems: this.props.sendContextMenuItems,
+        registerOmniGetter: this.props.registerOmniGetter,
         context_menu_items: this.context_menu_items,
         selected_rows: this.props.selected_rows,
         selected_type: this.props.selected_type,

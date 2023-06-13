@@ -63,6 +63,7 @@ class LibraryMenubar extends React.Component {
             }
         }
         return <TacticMenubar menu_specs={this.props.menu_specs}
+                              registerOmniGetter={this.props.registerOmniGetter}
                               dark_theme={this.props.dark_theme}
                               showRefresh={true}
                               showClose={false}
@@ -216,6 +217,7 @@ class AllMenubar extends React.Component {
 
      render () {
         return <LibraryMenubar sendContextMenuItems={this.props.sendContextMenuItems}
+                               registerOmniGetter={this.props.registerOmniGetter}
                                context_menu_items={this.context_menu_items}
                                selected_rows={this.props.selected_rows}
                                selected_type={this.props.selected_type}

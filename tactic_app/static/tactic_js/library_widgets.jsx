@@ -2,12 +2,12 @@
 import "../tactic_css/tactic_select.scss"
 
 import React from "react";
+import {Fragment} from "react";
 import PropTypes from 'prop-types';
 import hash from "object-hash"
 
 import { InputGroup, HotkeysProvider, Menu, MenuItem, Icon, FormGroup, Switch, Button, ButtonGroup } from "@blueprintjs/core";
 import { Cell, Column, Table2, ColumnHeaderCell, RegionCardinality, TruncatedFormat, Regions } from "@blueprintjs/table";
-import {Omnibar} from "@blueprintjs/select"
 import _ from 'lodash';
 
 
@@ -15,95 +15,6 @@ import {doBinding} from "./utilities_react.js";
 
 export {SearchForm}
 export {BpSelectorTable}
-export {LibraryOmnibar}
-
-class OmnibarItem extends React.Component{
-    constructor(props) {
-        super(props);
-        doBinding(this)
-    }
-
-    _handleClick() {
-        this.props.handleClick(this.props.item)
-    }
-
-    render() {
-        return (
-            <MenuItem
-                active={this.props.modifiers.active}
-                text={this.props.item}
-                key={this.props.item}
-                onClick={this._handleClick}
-                shouldDismissPopover={true}
-            />
-        );
-    }
-}
-OmnibarItem.propTypes = {
-    item: PropTypes.string,
-    modifiers: PropTypes.object,
-    handleClick: PropTypes.func
-};
-
-class LibraryOmnibar extends React.Component {
-
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.state = {items: []}
-    }
-
-    componentDidUpdate(prevProps) {
-        if (this.props.showOmnibar && !prevProps.showOmnibar) {
-            let self = this;
-            $.getJSON($SCRIPT_ROOT + `get_resource_names/${this.props.res_type}`, function (data) {
-                self.setState({items: data["resource_names"]});
-            })
-        }
-    }
-
-    static _itemRenderer(item, { modifiers, handleClick}) {
-         return <OmnibarItem modifiers={modifiers} item={item} handleClick={handleClick}/>
-    }
-
-    static _itemPredicate(query, item) {
-        if (query.length == 0) {
-            return false
-        }
-        let lquery = query.toLowerCase();
-        let re = new RegExp(query);
-
-        return re.test(item.toLowerCase())
-    }
-
-    render () {
-        return (
-            <Omnibar items={this.state.items}
-                     className={window.dark_theme ? "bp4-dark" : ""}
-                     isOpen={this.props.showOmnibar}
-                     onItemSelect={this.props.onItemSelect}
-                     itemRenderer={LibraryOmnibar._itemRenderer}
-                     itemPredicate={LibraryOmnibar._itemPredicate}
-                     resetOnSelect={true}
-                     onClose={this.props.handleClose}
-                     />
-        )
-    }
-
-}
-
-LibraryOmnibar.propTypes = {
-    res_type: PropTypes.string,
-    onItemSelect: PropTypes.func,
-    showOmnibar: PropTypes.bool,
-    handleClose: PropTypes.func,
-    dark_theme: PropTypes.bool,
-};
-
-LibraryOmnibar.defaultProps = {
-    dark_theme: false
-};
-
 
 class SearchForm extends React.Component {
 
@@ -176,7 +87,7 @@ class SearchForm extends React.Component {
         }
         let current_text = this.current_timer ? this.state.temp_text : this.props.search_string;
         return (
-            <React.Fragment>
+            <Fragment>
                 <FormGroup ref={this.form_ref} helperText={match_text} style={{marginBottom: 0}}>
                     <div className="d-flex flex-row" style={{marginTop: 5, marginBottom: 5}}>
                         <InputGroup type="search"
@@ -232,7 +143,7 @@ class SearchForm extends React.Component {
                         }
                     </div>
                 </FormGroup>
-            </React.Fragment>
+            </Fragment>
         )
     }
 }
@@ -317,7 +228,7 @@ class BpSelectorTable extends React.Component {
         })
     }
 
-    componentDidUpdate() {
+    componentDidUpdate(prevProps, prevState, snapshot) {
         // this.props.my_ref.current.scrollTop = this.props.scroll_top;
         if ((this.state.columnWidths == null) || !_.isEqual(this.props.data_dict, this.saved_data_dict)) {
             this.computeColumnWidths();
@@ -390,11 +301,11 @@ class BpSelectorTable extends React.Component {
                           tabIndex={-1}
                           onKeyDown={this.props.keyHandler}
                           wrapText={true}>
-                    <React.Fragment>
+                    <Fragment>
                         <div className={tclass} onDoubleClick={()=>self.props.handleRowDoubleClick(self.props.data_dict[rowIndex])}>
                                 {the_body}
                         </div>
-                    </React.Fragment>
+                    </Fragment>
                 </Cell>
             )
         };

@@ -358,6 +358,7 @@ class ProjectMenu extends React.Component {
                        binding_dict={{}}
                        disabled_items={this.props.disabled_items}
                        disable_all={false}
+                      registerOmniGetter={this.props.registerOmniGetter}
             />
         )
     }
@@ -467,6 +468,7 @@ class DocumentMenu extends React.Component {
                            icon_dict={this.icon_dict}
                            binding_dict={{}}
                            disabled_items={this.props.disabled_items}
+                           registerOmniGetter={this.props.registerOmniGetter}
                            hidden_items={[]}
             />
         )
@@ -554,6 +556,7 @@ class ColumnMenu extends React.Component {
                            icon_dict={this.icon_dict}
                            binding_dict={{}}
                            disabled_items={this.props.disabled_items}
+                           registerOmniGetter={this.props.registerOmniGetter}
                            hidden_items={[]}
             />
         )
@@ -605,6 +608,7 @@ class RowMenu extends React.Component {
                            icon_dict={this.icon_dict}
                            binding_dict={{}}
                            disabled_items={this.props.disabled_items}
+                           registerOmniGetter={this.props.registerOmniGetter}
                            hidden_items={[]}
             />
         )
@@ -683,6 +687,7 @@ class ViewMenu extends React.Component {
                            disabled_items={[]}
                            binding_dict={{}}
                            disable_all={this.props.disable_all}
+                           registerOmniGetter={this.props.registerOmniGetter}
                            hidden_items={[]}
             />
         )
