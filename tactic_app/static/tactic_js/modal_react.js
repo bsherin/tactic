@@ -1,85 +1,56 @@
 "use strict";
 
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.showModalReact = showModalReact;
+exports.SelectResourceDialog = void 0;
 exports.showConfirmDialogReact = showConfirmDialogReact;
-exports.showSelectDialog = showSelectDialog;
-exports.showSelectResourceDialog = showSelectResourceDialog;
 exports.showInformDialogReact = showInformDialogReact;
+exports.showModalReact = showModalReact;
 exports.showPresentationDialog = showPresentationDialog;
 exports.showReportDialog = showReportDialog;
-exports.SelectResourceDialog = void 0;
-
-var _react = _interopRequireDefault(require("react"));
-
+exports.showSelectDialog = showSelectDialog;
+exports.showSelectResourceDialog = showSelectResourceDialog;
+var _react = _interopRequireWildcard(require("react"));
 var ReactDOM = _interopRequireWildcard(require("react-dom"));
-
 var _propTypes = _interopRequireDefault(require("prop-types"));
-
 var _core = require("@blueprintjs/core");
-
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields.js");
-
 var _utilities_react = require("./utilities_react.js");
-
 var _communication_react = require("./communication_react.js");
-
-function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
+function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 var ModalDialog = /*#__PURE__*/function (_React$Component) {
   _inherits(ModalDialog, _React$Component);
-
   var _super = _createSuper(ModalDialog);
-
   function ModalDialog(props) {
     var _this;
-
     _classCallCheck(this, ModalDialog);
-
     _this = _super.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
     var default_name = _this.props.default_value;
     var name_counter = 1;
-
     while (_this._name_exists(default_name)) {
       name_counter += 1;
       default_name = _this.props.default_value + String(name_counter);
     }
-
     _this.state = {
       show: false,
       current_value: default_name,
@@ -88,7 +59,6 @@ var ModalDialog = /*#__PURE__*/function (_React$Component) {
     };
     return _this;
   }
-
   _createClass(ModalDialog, [{
     key: "_changeHandler",
     value: function _changeHandler(event) {
@@ -112,13 +82,10 @@ var ModalDialog = /*#__PURE__*/function (_React$Component) {
       this.setState({
         "show": true
       });
-
       if (this.props.checkboxes != null && this.props.checkboxes.length != 0) {
         var checkbox_states = {};
-
         var _iterator = _createForOfIteratorHelper(this.props.checkboxes),
-            _step;
-
+          _step;
         try {
           for (_iterator.s(); !(_step = _iterator.n()).done;) {
             var checkbox = _step.value;
@@ -129,7 +96,6 @@ var ModalDialog = /*#__PURE__*/function (_React$Component) {
         } finally {
           _iterator.f();
         }
-
         this.setState({
           checkbox_states: checkbox_states
         });
@@ -144,7 +110,6 @@ var ModalDialog = /*#__PURE__*/function (_React$Component) {
     key: "_submitHandler",
     value: function _submitHandler(event) {
       var msg;
-
       if (this.state.current_value == "") {
         msg = "An empty name is not allowed here.";
         this.setState({
@@ -169,11 +134,9 @@ var ModalDialog = /*#__PURE__*/function (_React$Component) {
       this.setState({
         "show": false
       });
-
       if (this.props.handleCancel) {
         this.props.handleCancel();
       }
-
       this.props.handleClose();
     }
   }, {
@@ -185,17 +148,13 @@ var ModalDialog = /*#__PURE__*/function (_React$Component) {
     key: "render",
     value: function render() {
       var _this2 = this;
-
       var checkbox_items = [];
-
       if (this.props.checkboxes != null && this.props.checkboxes.length != 0) {
         var _iterator2 = _createForOfIteratorHelper(this.props.checkboxes),
-            _step2;
-
+          _step2;
         try {
           for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
             var checkbox = _step2.value;
-
             var new_item = /*#__PURE__*/_react["default"].createElement(_core.Checkbox, {
               checked: this.state.checkbox_states[checkbox.checkname],
               label: checkbox.checktext,
@@ -203,7 +162,6 @@ var ModalDialog = /*#__PURE__*/function (_React$Component) {
               key: checkbox.checkname,
               onChange: this._checkbox_change_handler
             });
-
             checkbox_items.push(new_item);
           }
         } catch (err) {
@@ -212,7 +170,6 @@ var ModalDialog = /*#__PURE__*/function (_React$Component) {
           _iterator2.f();
         }
       }
-
       return /*#__PURE__*/_react["default"].createElement(_core.Dialog, {
         isOpen: this.state.show,
         className: window.dark_theme ? "bp4-dark" : "",
@@ -245,10 +202,8 @@ var ModalDialog = /*#__PURE__*/function (_React$Component) {
       }, "Submit")))));
     }
   }]);
-
   return ModalDialog;
 }(_react["default"].Component);
-
 ModalDialog.propTypes = {
   handleSubmit: _propTypes["default"].func,
   handleClose: _propTypes["default"].func,
@@ -263,21 +218,16 @@ ModalDialog.defaultProps = {
   default_value: "",
   checkboxes: null
 };
-
 function showModalReact(modal_title, field_title, submit_function, default_value, existing_names) {
   var checkboxes = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : null;
   var cancel_function = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : null;
-
   if (typeof existing_names == "undefined") {
     existing_names = [];
   }
-
   var domContainer = document.querySelector('#modal-area');
-
   function handle_close() {
     ReactDOM.unmountComponentAtNode(domContainer);
   }
-
   ReactDOM.render( /*#__PURE__*/_react["default"].createElement(ModalDialog, {
     handleSubmit: submit_function,
     handleCancel: cancel_function,
@@ -289,27 +239,20 @@ function showModalReact(modal_title, field_title, submit_function, default_value
     existing_names: existing_names
   }), domContainer);
 }
-
 var PresentationDialog = /*#__PURE__*/function (_React$Component2) {
   _inherits(PresentationDialog, _React$Component2);
-
   var _super2 = _createSuper(PresentationDialog);
-
   function PresentationDialog(props) {
     var _this3;
-
     _classCallCheck(this, PresentationDialog);
-
     _this3 = _super2.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this3));
     var default_name = _this3.props.default_name;
     var name_counter = 1;
-
     while (_this3._name_exists(default_name)) {
       name_counter += 1;
       default_name = _this3.props.default_value + String(name_counter);
     }
-
     _this3.state = {
       save_as_collection: false,
       collection_name: default_name,
@@ -318,7 +261,6 @@ var PresentationDialog = /*#__PURE__*/function (_React$Component2) {
     };
     return _this3;
   }
-
   _createClass(PresentationDialog, [{
     key: "_changeName",
     value: function _changeName(event) {
@@ -356,7 +298,6 @@ var PresentationDialog = /*#__PURE__*/function (_React$Component2) {
     key: "_submitHandler",
     value: function _submitHandler(event) {
       var msg;
-
       if (this.state.save_as_collection) {
         if (this.state.collection_name == "") {
           msg = "An empty name is not allowed here.";
@@ -372,7 +313,6 @@ var PresentationDialog = /*#__PURE__*/function (_React$Component2) {
           return;
         }
       }
-
       this.setState({
         "show": false
       });
@@ -385,11 +325,9 @@ var PresentationDialog = /*#__PURE__*/function (_React$Component2) {
       this.setState({
         "show": false
       });
-
       if (this.props.handleCancel) {
         this.props.handleCancel();
       }
-
       this.props.handleClose();
     }
   }, {
@@ -441,10 +379,8 @@ var PresentationDialog = /*#__PURE__*/function (_React$Component2) {
       }, "Submit")))));
     }
   }]);
-
   return PresentationDialog;
 }(_react["default"].Component);
-
 PresentationDialog.propTypes = {
   handleSubmit: _propTypes["default"].func,
   handleClose: _propTypes["default"].func,
@@ -455,20 +391,15 @@ PresentationDialog.defaultProps = {
   existing_names: [],
   default_name: ""
 };
-
 function showPresentationDialog(submit_function, existing_names) {
   var cancel_function = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-
   if (typeof existing_names == "undefined") {
     existing_names = [];
   }
-
   var domContainer = document.querySelector('#modal-area');
-
   function handle_close() {
     ReactDOM.unmountComponentAtNode(domContainer);
   }
-
   ReactDOM.render( /*#__PURE__*/_react["default"].createElement(PresentationDialog, {
     handleSubmit: submit_function,
     handleCancel: cancel_function,
@@ -477,27 +408,20 @@ function showPresentationDialog(submit_function, existing_names) {
     existing_names: existing_names
   }), domContainer);
 }
-
 var ReportDialog = /*#__PURE__*/function (_React$Component3) {
   _inherits(ReportDialog, _React$Component3);
-
   var _super3 = _createSuper(ReportDialog);
-
   function ReportDialog(props) {
     var _this4;
-
     _classCallCheck(this, ReportDialog);
-
     _this4 = _super3.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this4));
     var default_name = _this4.props.default_name;
     var name_counter = 1;
-
     while (_this4._name_exists(default_name)) {
       name_counter += 1;
       default_name = _this4.props.default_value + String(name_counter);
     }
-
     _this4.state = {
       save_as_collection: false,
       collection_name: default_name,
@@ -508,7 +432,6 @@ var ReportDialog = /*#__PURE__*/function (_React$Component3) {
     };
     return _this4;
   }
-
   _createClass(ReportDialog, [{
     key: "_changeName",
     value: function _changeName(event) {
@@ -560,7 +483,6 @@ var ReportDialog = /*#__PURE__*/function (_React$Component3) {
     key: "_submitHandler",
     value: function _submitHandler(event) {
       var msg;
-
       if (this.state.save_as_collection) {
         if (this.state.collection_name == "") {
           msg = "An empty name is not allowed here.";
@@ -576,7 +498,6 @@ var ReportDialog = /*#__PURE__*/function (_React$Component3) {
           return;
         }
       }
-
       this.setState({
         "show": false
       });
@@ -589,11 +510,9 @@ var ReportDialog = /*#__PURE__*/function (_React$Component3) {
       this.setState({
         "show": false
       });
-
       if (this.props.handleCancel) {
         this.props.handleCancel();
       }
-
       this.props.handleClose();
     }
   }, {
@@ -657,10 +576,8 @@ var ReportDialog = /*#__PURE__*/function (_React$Component3) {
       }, "Submit")))));
     }
   }]);
-
   return ReportDialog;
 }(_react["default"].Component);
-
 ReportDialog.propTypes = {
   handleSubmit: _propTypes["default"].func,
   handleClose: _propTypes["default"].func,
@@ -671,20 +588,15 @@ ReportDialog.defaultProps = {
   existing_names: [],
   default_name: "NewReport"
 };
-
 function showReportDialog(submit_function, existing_names) {
   var cancel_function = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-
   if (typeof existing_names == "undefined") {
     existing_names = [];
   }
-
   var domContainer = document.querySelector('#modal-area');
-
   function handle_close() {
     ReactDOM.unmountComponentAtNode(domContainer);
   }
-
   ReactDOM.render( /*#__PURE__*/_react["default"].createElement(ReportDialog, {
     handleSubmit: submit_function,
     handleCancel: cancel_function,
@@ -693,17 +605,12 @@ function showReportDialog(submit_function, existing_names) {
     existing_names: existing_names
   }), domContainer);
 }
-
 var SelectDialog = /*#__PURE__*/function (_React$Component4) {
   _inherits(SelectDialog, _React$Component4);
-
   var _super4 = _createSuper(SelectDialog);
-
   function SelectDialog(props) {
     var _this5;
-
     _classCallCheck(this, SelectDialog);
-
     _this5 = _super4.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this5));
     _this5.state = {
@@ -712,7 +619,6 @@ var SelectDialog = /*#__PURE__*/function (_React$Component4) {
     };
     return _this5;
   }
-
   _createClass(SelectDialog, [{
     key: "componentDidMount",
     value: function componentDidMount() {
@@ -774,10 +680,8 @@ var SelectDialog = /*#__PURE__*/function (_React$Component4) {
       }, "Submit"))));
     }
   }]);
-
   return SelectDialog;
 }(_react["default"].Component);
-
 SelectDialog.propTypes = {
   handleSubmit: _propTypes["default"].func,
   handleClose: _propTypes["default"].func,
@@ -788,15 +692,12 @@ SelectDialog.propTypes = {
   submit_text: _propTypes["default"].string,
   cancel_text: _propTypes["default"].string
 };
-
 function showSelectDialog(title, select_label, cancel_text, submit_text, submit_function, option_list) {
   var dark_theme = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : false;
   var domContainer = document.querySelector('#modal-area');
-
   function handle_close() {
     ReactDOM.unmountComponentAtNode(domContainer);
   }
-
   ReactDOM.render( /*#__PURE__*/_react["default"].createElement(SelectDialog, {
     handleSubmit: submit_function,
     handleClose: handle_close,
@@ -807,19 +708,13 @@ function showSelectDialog(title, select_label, cancel_text, submit_text, submit_
     cancel_text: cancel_text
   }), domContainer);
 }
-
 var res_types = ["collection", "project", "tile", "list", "code"];
-
 var SelectResourceDialog = /*#__PURE__*/function (_React$Component5) {
   _inherits(SelectResourceDialog, _React$Component5);
-
   var _super5 = _createSuper(SelectResourceDialog);
-
   function SelectResourceDialog(props) {
     var _this6;
-
     _classCallCheck(this, SelectResourceDialog);
-
     _this6 = _super5.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this6));
     _this6.state = {
@@ -831,7 +726,6 @@ var SelectResourceDialog = /*#__PURE__*/function (_React$Component5) {
     };
     return _this6;
   }
-
   _createClass(SelectResourceDialog, [{
     key: "componentDidMount",
     value: function componentDidMount() {
@@ -866,7 +760,6 @@ var SelectResourceDialog = /*#__PURE__*/function (_React$Component5) {
     key: "_submitHandler",
     value: function _submitHandler(event) {
       var _this7 = this;
-
       this.setState({
         "show": false
       }, function () {
@@ -874,7 +767,6 @@ var SelectResourceDialog = /*#__PURE__*/function (_React$Component5) {
           type: _this7.state.type,
           selected_resource: _this7.state.selected_resource
         });
-
         _this7.props.handleClose();
       });
     }
@@ -921,10 +813,8 @@ var SelectResourceDialog = /*#__PURE__*/function (_React$Component5) {
       }, "Submit"))));
     }
   }]);
-
   return SelectResourceDialog;
 }(_react["default"].Component);
-
 exports.SelectResourceDialog = SelectResourceDialog;
 SelectResourceDialog.propTypes = {
   handleSubmit: _propTypes["default"].func,
@@ -933,23 +823,20 @@ SelectResourceDialog.propTypes = {
   submit_text: _propTypes["default"].string,
   cancel_text: _propTypes["default"].string
 };
-
 function showSelectResourceDialog(cancel_text, submit_text, submit_function) {
   var dark_theme = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
   var domContainer = document.querySelector('#modal-area');
-
   function handle_close() {
     ReactDOM.unmountComponentAtNode(domContainer);
   }
-
   var the_elem = /*#__PURE__*/_react["default"].createElement(SelectResourceDialog, {
     handleSubmit: submit_function,
     handleClose: handle_close,
     submit_text: submit_text,
     cancel_text: cancel_text
   });
-
-  ReactDOM.render(the_elem, domContainer); // ReactDOM.render(<ConfirmDialog handleSubmit={null}
+  ReactDOM.render(the_elem, domContainer);
+  // ReactDOM.render(<ConfirmDialog handleSubmit={null}
   //                                handleCancel={null}
   //                              handleClose={handle_close}
   //                              title="blah"
@@ -957,17 +844,12 @@ function showSelectResourceDialog(cancel_text, submit_text, submit_function) {
   //                              submit_text="mob"
   //                              cancel_text="mob2"/>, domContainer);
 }
-
 var ConfirmDialog = /*#__PURE__*/function (_React$Component6) {
   _inherits(ConfirmDialog, _React$Component6);
-
   var _super6 = _createSuper(ConfirmDialog);
-
   function ConfirmDialog(props) {
     var _this8;
-
     _classCallCheck(this, ConfirmDialog);
-
     _this8 = _super6.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this8));
     _this8.state = {
@@ -975,7 +857,6 @@ var ConfirmDialog = /*#__PURE__*/function (_React$Component6) {
     };
     return _this8;
   }
-
   _createClass(ConfirmDialog, [{
     key: "componentDidMount",
     value: function componentDidMount() {
@@ -999,7 +880,6 @@ var ConfirmDialog = /*#__PURE__*/function (_React$Component6) {
         "show": false
       });
       this.props.handleClose();
-
       if (this.props.handleCancel) {
         this.props.handleCancel();
       }
@@ -1007,30 +887,29 @@ var ConfirmDialog = /*#__PURE__*/function (_React$Component6) {
   }, {
     key: "render",
     value: function render() {
+      var self = this;
       return /*#__PURE__*/_react["default"].createElement(_core.Dialog, {
         isOpen: this.state.show,
         className: window.dark_theme ? "bp4-dark" : "",
         title: this.props.title,
         onClose: this._cancelHandler,
+        autoFocus: true,
+        enforceFocus: true,
+        usePortal: false,
         canEscapeKeyClose: true
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: _core.Classes.DIALOG_BODY
-      }, /*#__PURE__*/_react["default"].createElement("p", null, this.props.text_body)), /*#__PURE__*/_react["default"].createElement("div", {
-        className: _core.Classes.DIALOG_FOOTER
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: _core.Classes.DIALOG_FOOTER_ACTIONS
-      }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
-        onClick: this._cancelHandler
-      }, this.props.cancel_text), /*#__PURE__*/_react["default"].createElement(_core.Button, {
-        intent: _core.Intent.PRIMARY,
-        onClick: this._submitHandler
-      }, this.props.submit_text))));
+      }, /*#__PURE__*/_react["default"].createElement(_core.DialogBody, null, /*#__PURE__*/_react["default"].createElement("p", null, this.props.text_body)), /*#__PURE__*/_react["default"].createElement(_core.DialogFooter, {
+        actions: /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.Button, {
+          onClick: this._cancelHandler
+        }, this.props.cancel_text), /*#__PURE__*/_react["default"].createElement(_core.Button, {
+          type: "submit",
+          intent: _core.Intent.PRIMARY,
+          onClick: this._submitHandler
+        }, this.props.submit_text))
+      }));
     }
   }]);
-
   return ConfirmDialog;
 }(_react["default"].Component);
-
 ConfirmDialog.propTypes = {
   handleSubmit: _propTypes["default"].func,
   handleCancel: _propTypes["default"].func,
@@ -1045,15 +924,12 @@ ConfirmDialog.defaultProps = {
   cancel_text: "Cancel",
   handleCancel: null
 };
-
 function showConfirmDialogReact(title, text_body, cancel_text, submit_text, submit_function) {
   var cancel_function = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : null;
   var domContainer = document.querySelector('#modal-area');
-
   function handle_close() {
     ReactDOM.unmountComponentAtNode(domContainer);
   }
-
   ReactDOM.render( /*#__PURE__*/_react["default"].createElement(ConfirmDialog, {
     handleSubmit: submit_function,
     handleCancel: cancel_function,
@@ -1064,17 +940,12 @@ function showConfirmDialogReact(title, text_body, cancel_text, submit_text, subm
     cancel_text: cancel_text
   }), domContainer);
 }
-
 var InformDialog = /*#__PURE__*/function (_React$Component7) {
   _inherits(InformDialog, _React$Component7);
-
   var _super7 = _createSuper(InformDialog);
-
   function InformDialog(props) {
     var _this9;
-
     _classCallCheck(this, InformDialog);
-
     _this9 = _super7.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this9));
     _this9.state = {
@@ -1082,7 +953,6 @@ var InformDialog = /*#__PURE__*/function (_React$Component7) {
     };
     return _this9;
   }
-
   _createClass(InformDialog, [{
     key: "componentDidMount",
     value: function componentDidMount() {
@@ -1118,25 +988,20 @@ var InformDialog = /*#__PURE__*/function (_React$Component7) {
       }, "Okay"))));
     }
   }]);
-
   return InformDialog;
 }(_react["default"].Component);
-
 InformDialog.propTypes = {
   handleClose: _propTypes["default"].func,
   title: _propTypes["default"].string,
   text_body: _propTypes["default"].string,
   close_text: _propTypes["default"].string
 };
-
 function showInformDialogReact(title, text_body) {
   var close_text = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "Okay";
   var domContainer = document.querySelector('#modal-area');
-
   function handle_close() {
     ReactDOM.unmountComponentAtNode(domContainer);
   }
-
   ReactDOM.render( /*#__PURE__*/_react["default"].createElement(ConfirmDialog, {
     handleClose: handle_close,
     title: title,

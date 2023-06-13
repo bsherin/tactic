@@ -1,5 +1,6 @@
 
 import React from "react";
+import {Fragment} from "react";
 import PropTypes from 'prop-types';
 
 import 'codemirror/mode/markdown/markdown.js'
@@ -814,7 +815,10 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
 
      _resortConsoleItems({oldIndex, newIndex}, filtered_items, callback=null) {
          let self = this;
-         if (oldIndex == newIndex) return;
+         if (oldIndex == newIndex) {
+             callback();
+             return
+         }
          let move_entry = filtered_items[oldIndex];
          if (move_entry.type == "divider") {
              this._moveSection({oldIndex, newIndex}, filtered_items, callback);
@@ -1508,7 +1512,7 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
                           onClick={this._clickConsoleBody}
                           style={{height: this._bodyHeight()}}>
                          {!this.state.show_console_error_log &&
-                             <React.Fragment>
+                             <Fragment>
                              <SortableComponent id="console-items-div"
                                                 main_id={this.props.main_id}
                                                 ElementComponent={SSuperItem}
@@ -1546,7 +1550,7 @@ const SECTION_INDENT = 25;  // This is also hard coded into the css file at the 
                                                 handleCreateViewer={this.props.handleCreateViewer}
                                                 axis="y"
                              />
-                         </React.Fragment>
+                         </Fragment>
                          }
                          <div id="padding-div" style={{height: 500}}></div>
                      </div>
@@ -1629,7 +1633,7 @@ class RawDividerItem extends React.Component {
         this.state = {};
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
         for (let prop of this.update_props) {
             if (nextProps[prop] != this.props[prop]) {
                 return true
@@ -1777,7 +1781,7 @@ class RawSectionEndItem extends React.Component {
         this.state = {};
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
         for (let prop of this.update_props) {
             if (nextProps[prop] != this.props[prop]) {
                 return true
@@ -1887,7 +1891,7 @@ class RawLogItem extends React.Component {
         this.last_output_text = "";
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
         for (let prop of this.update_props) {
             if (nextProps[prop] != this.props[prop]) {
                 return true
@@ -1901,7 +1905,7 @@ class RawLogItem extends React.Component {
         this.makeTablesSortable()
     }
 
-    componentDidUpdate() {
+    componentDidUpdate(prevProps, prevState, snapshot) {
         this.executeEmbeddedScripts();
         this.makeTablesSortable()
     }
@@ -2045,7 +2049,7 @@ class RawLogItem extends React.Component {
                         }
                 </div>
                 {this.props.am_shrunk &&
-                    <React.Fragment>
+                    <Fragment>
                         <EditableText value={this.props.summary_text}
                                      onChange={this._handleSummaryTextChange}
                                      className="log-panel-summary"/>
@@ -2056,7 +2060,7 @@ class RawLogItem extends React.Component {
                                           style={{marginLeft: 10, marginRight: 66}}
                                           icon="trash"/>
                         </div>
-                    </React.Fragment>
+                    </Fragment>
                 }
                 {!this.props.am_shrunk &&
                     <div className="d-flex flex-column">
@@ -2108,7 +2112,7 @@ class RawBlobItem extends React.Component {
         this.last_output_text = "";
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
         for (let prop of this.update_props) {
             if (nextProps[prop] != this.props[prop]) {
                 return true
@@ -2122,7 +2126,7 @@ class RawBlobItem extends React.Component {
         this.makeTablesSortable();
     }
 
-    componentDidUpdate() {
+    componentDidUpdate(prevProp, prevState, snapshot) {
         this.executeEmbeddedScripts();
         this.makeTablesSortable();
     }
@@ -2263,7 +2267,7 @@ class RawBlobItem extends React.Component {
                         }
                 </div>
                 {this.props.am_shrunk &&
-                    <React.Fragment>
+                    <Fragment>
                         <EditableText value={this.props.summary_text}
                                      onChange={this._handleSummaryTextChange}
                                      className="log-panel-summary"/>
@@ -2274,7 +2278,7 @@ class RawBlobItem extends React.Component {
                                           style={{marginLeft: 10, marginRight: 66}}
                                           icon="trash"/>
                         </div>
-                    </React.Fragment>
+                    </Fragment>
                 }
                 {!this.props.am_shrunk &&
                     <div className="d-flex flex-column">
@@ -2331,7 +2335,7 @@ class RawConsoleCodeItem extends React.Component {
         this.last_output_text = ""
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
         for (let prop of this.update_props) {
             if (nextProps[prop] != this.props[prop]) {
                 return true
@@ -2611,7 +2615,7 @@ class RawConsoleCodeItem extends React.Component {
                         }
                     </div>
                 {this.props.am_shrunk &&
-                    <React.Fragment>
+                    <Fragment>
                         <EditableText value={this.props.summary_text ? this.props.summary_text : this._getFirstLine()}
                                      onChange={this._handleSummaryTextChange}
                                      className="log-panel-summary code-panel-summary"/>
@@ -2622,11 +2626,11 @@ class RawConsoleCodeItem extends React.Component {
                                           style={{marginLeft: 10, marginRight: 66}}
                                           icon="trash"/>
                         </div>
-                    </React.Fragment>
+                    </Fragment>
 
                 }
                 {!this.props.am_shrunk &&
-                    <React.Fragment>
+                    <Fragment>
                             <div className="d-flex flex-column" style={{width: "100%"}}>
                                 <div className="d-flex flex-row">
                                     <div className="log-panel-body d-flex flex-row console-code">
@@ -2681,7 +2685,7 @@ class RawConsoleCodeItem extends React.Component {
                                 < div className='log-code-output' dangerouslySetInnerHTML={output_dict}/>
                             </div>
 
-                    </React.Fragment>
+                    </Fragment>
                 }
             </div>
         )
@@ -2790,7 +2794,7 @@ class RawConsoleTextItem extends React.Component {
     }
 
 
-    shouldComponentUpdate(nextProps, nextState) {
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
         for (let prop of this.update_props) {
             if (nextProps[prop] != this.props[prop]) {
                 return true
@@ -3095,7 +3099,7 @@ class RawConsoleTextItem extends React.Component {
                         }
                 </div>
                 {this.props.am_shrunk &&
-                    <React.Fragment>
+                    <Fragment>
                         <EditableText value={this.props.summary_text ? this.props.summary_text : this._getFirstLine()}
                                      onChange={this._handleSummaryTextChange}
                                      className="log-panel-summary"/>
@@ -3106,7 +3110,7 @@ class RawConsoleTextItem extends React.Component {
                                           style={{marginLeft: 10, marginRight: 66}}
                                           icon="trash"/>
                         </div>
-                    </React.Fragment>
+                    </Fragment>
                 }
                 {!this.props.am_shrunk &&
                     <div className="d-flex flex-column" style={{width: "100%"}}>
@@ -3119,7 +3123,7 @@ class RawConsoleTextItem extends React.Component {
                                 </div>
                             <div className="d-flex flex-column">
                                 {!really_show_markdown &&
-                                    <React.Fragment>
+                                    <Fragment>
                                     <ReactCodemirror handleChange={this._handleChange}
                                                      dark_theme={this.props.dark_theme}
                                                      am_selected={this.props.am_selected}
@@ -3138,7 +3142,7 @@ class RawConsoleTextItem extends React.Component {
                                                      code_container_width={code_container_width}
                                                      saveMe={null}/>
                                          {/*<KeyTrap target_ref={this.state.ce_ref} bindings={key_bindings} />*/}
-                                     </React.Fragment>
+                                     </Fragment>
                                 }
                                 {really_show_markdown && !this.hasOnlyWhitespace &&
                                     <div className="text-panel-output"
