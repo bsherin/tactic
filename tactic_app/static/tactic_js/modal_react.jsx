@@ -1,9 +1,10 @@
 
 import React from "react";
+import {Fragment} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
-import { Checkbox, Dialog, FormGroup, Classes, Button, InputGroup, Intent} from "@blueprintjs/core";
+import { Checkbox, Dialog, DialogBody, DialogFooter, FormGroup, Classes, Button, InputGroup, Intent} from "@blueprintjs/core";
 
 import {BpSelect} from "./blueprint_mdata_fields.js"
 import {doBinding} from "./utilities_react.js";
@@ -104,10 +105,10 @@ class ModalDialog extends React.Component {
         return (
             <Dialog isOpen={this.state.show}
                     className={window.dark_theme ? "bp4-dark" : ""}
-                       title={this.props.title}
-                       onClose={this._cancelHandler}
-                       onOpened={()=>{$(this.input_ref).focus()}}
-                       canEscapeKeyClose={true}>
+                    title={this.props.title}
+                    onClose={this._cancelHandler}
+                    onOpened={()=>{$(this.input_ref).focus()}}
+                    canEscapeKeyClose={true}>
                 <form onSubmit={this._submitHandler}>
                     <div className={Classes.DIALOG_BODY}>
                         <FormGroup label={this.props.field_title} helperText={this.state.warning_text}>
@@ -676,7 +677,7 @@ class ConfirmDialog extends React.Component {
 
 
     componentDidMount() {
-        this.setState({"show": true})
+        this.setState({"show": true});
     }
 
     _submitHandler(event) {
@@ -694,21 +695,26 @@ class ConfirmDialog extends React.Component {
     }
 
     render() {
+        let self = this;
         return (
             <Dialog isOpen={this.state.show}
                     className={window.dark_theme ? "bp4-dark" : ""}
-                       title={this.props.title}
-                       onClose={this._cancelHandler}
-                       canEscapeKeyClose={true}>
-                <div className={Classes.DIALOG_BODY}>
+                    title={this.props.title}
+                    onClose={this._cancelHandler}
+                    autoFocus={true}
+                    enforceFocus={true}
+                    usePortal={false}
+                    canEscapeKeyClose={true}>
+                <DialogBody>
                     <p>{this.props.text_body}</p>
-                </div>
-                <div className={Classes.DIALOG_FOOTER}>
-                    <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+                </DialogBody>
+                <DialogFooter actions={
+                    <Fragment>
                         <Button onClick={this._cancelHandler}>{this.props.cancel_text}</Button>
-                        <Button intent={Intent.PRIMARY} onClick={this._submitHandler}>{this.props.submit_text}</Button>
-                    </div>
-                </div>
+                        <Button type="submit" intent={Intent.PRIMARY}
+                                onClick={this._submitHandler}>{this.props.submit_text}</Button>
+                    </Fragment>
+                }/>
             </Dialog>
         )
     }
