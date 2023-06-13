@@ -7,11 +7,14 @@ import "../tactic_css/tile_creator.scss";
 import 'codemirror/mode/javascript/javascript.js'
 
 import React from "react";
+import { Fragment } from 'react';
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
 import { Tab, Tabs, Button, ButtonGroup, Icon } from "@blueprintjs/core";
 
+import {TacticOmnibar} from "./tactic_omnibar";
+import {KeyTrap} from "./key_trap";
 import {TacticSocket} from "./tactic_socket.js";
 import {TacticMenubar} from "./menu_utilities.js"
 import {sendToRepository} from "./resource_viewer_react_app.js";
@@ -49,11 +52,11 @@ function tile_creator_main() {
     renderSpinnerMessage("Starting up ...", '#creator-root');
     postAjaxPromise("view_in_creator_in_context", {"resource_name": window.module_name})
         .then((data)=>{
-            creator_props(data, null, gotProps)
+            creator_props(data, null, gotProps, null)
     })
 }
 
-function creator_props(data, registerDirtyMethod, finalCallback) {
+function creator_props(data, registerDirtyMethod, finalCallback, registerOmniFunction) {
 
     let mdata = data.mdata;
     let split_tags = mdata.tags == "" ? [] : mdata.tags.split(" ");
@@ -136,7 +139,8 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
                     additional_save_attrs: parsed_data.additional_save_attrs,
                     couple_save_attrs_and_exports: couple_save_attrs_and_exports,
                     created: mdata.datestring,
-                    registerDirtyMethod: registerDirtyMethod
+                    registerDirtyMethod: registerDirtyMethod,
+                    registerOmniFunction: registerOmniFunction
                 }
             );
         }
@@ -192,6 +196,10 @@ class CreatorApp extends React.Component {
         super(props);
         doBinding(this);
         this.initSocket();
+        if (this.props.registerOmniFunction) {
+            this.props.registerOmniFunction(this._omniFunction);
+        }
+        this.omniGetters = {};
         this.top_ref = React.createRef();
         this.options_ref = React.createRef();
         this.left_div_ref = React.createRef();
@@ -279,7 +287,13 @@ class CreatorApp extends React.Component {
             tc: 0,
             rc: 0,
             em: 0
-        }
+        };
+        if (!window.in_context) {
+          this.key_bindings = [
+              [["ctrl+space"], this._showOmnibar],
+          ];
+          this.state.showOmnibar = false
+      }
     }
 
     initSocket() {
@@ -304,6 +318,26 @@ class CreatorApp extends React.Component {
 
     _cProp(pname) {
         return this.props.controlled ? this.props[pname] :  this.state[pname]
+    }
+
+    _showOmnibar() {
+        this.setState({showOmnibar: true})
+    }
+
+    _closeOmnibar() {
+        this.setState({showOmnibar: false})
+    }
+
+    _omniFunction() {
+        let omni_items = [];
+        for (let ogetter in this.omniGetters) {
+            omni_items = omni_items.concat(this.omniGetters[ogetter]())
+        }
+        return omni_items
+    }
+
+    _registerOmniGetter(name, the_function) {
+        this.omniGetters[name] = the_function
     }
 
     get menu_specs() {
@@ -724,7 +758,7 @@ class CreatorApp extends React.Component {
         }
     }
 
-    componentDidUpdate(prevProps) {
+    componentDidUpdate(prevProps, prevState, snaptho) {
 
         this._goToLineNumber();
     }
@@ -1027,7 +1061,7 @@ class CreatorApp extends React.Component {
         let left_pane;
         if (my_props.is_mpl || my_props.is_d3) {
             left_pane = (
-                <React.Fragment>
+                <Fragment>
                     <div ref={this.vp_ref}/>
                     <VerticalPanes top_pane={tc_item}
                                    bottom_pane={bc_item}
@@ -1037,18 +1071,18 @@ class CreatorApp extends React.Component {
                                    handleSplitUpdate={this.handleTopPaneResize}
                                    id="creator-left"
                                    />
-                </React.Fragment>
+                </Fragment>
             );
         }
         else {
             left_pane = (
-                <React.Fragment>
+                <Fragment>
 
                     <div ref={this.vp_ref}>
                         {bc_item}
                     </div>
 
-                </React.Fragment>
+                </Fragment>
             );
         }
         let default_module_height = this.get_height_minus_top_offset(null, 128, 128);
@@ -1117,7 +1151,7 @@ class CreatorApp extends React.Component {
             />
         );
         let right_pane = (
-                <React.Fragment>
+                <Fragment>
                     <div id="creator-resources" className="d-block">
                         <Tabs id="resource_tabs" selectedTabId={this.state.selectedTabId}
                                  large={false} onChange={this._handleTabSelect}>
@@ -1128,7 +1162,7 @@ class CreatorApp extends React.Component {
                             <Tab id="commands" title={<span><Icon size={12} icon="manual"/> documentation</span>} panel={commands_panel}/>
                         </Tabs>
                     </div>
-                </React.Fragment>
+                </Fragment>
         );
         let outer_style = {
             width: "100%",
@@ -1149,7 +1183,7 @@ class CreatorApp extends React.Component {
                 {!window.in_context &&
                     <TacticNavbar is_authenticated={window.is_authenticated}
                                   dark_theme={dark_theme}
-                                  setTheme={this.props.controlled ? this.props.setTheme : this._setTheme}
+                                  setTheme={this._setTheme}
                                   selected={null}
                                   show_api_links={true}
                                   page_id={this.props.module_viewer_id}
@@ -1165,6 +1199,7 @@ class CreatorApp extends React.Component {
                                showErrorDrawerButton={true}
                                toggleErrorDrawer={this.props.toggleErrorDrawer}
                                controlled={this.props.controlled}
+                               registerOmniGetter={this._registerOmniGetter}
                                am_selected={this.props.am_selected}
                 />
                 <ErrorBoundary>
@@ -1177,6 +1212,18 @@ class CreatorApp extends React.Component {
                                          handleSplitUpdate={this.handleLeftPaneResize}
                         />
                     </div>
+                    {!window.in_context &&
+                          <Fragment>
+                              <TacticOmnibar omniGetters={[this._omniFunction]}
+                                             showOmnibar={this.state.showOmnibar}
+                                             closeOmnibar={this._closeOmnibar}
+                                             is_authenticated={window.is_authenticated}
+                                             dark_theme={dark_theme}
+                                             setTheme={this._setTheme}
+                              />
+                              <KeyTrap global={true} bindings={this.key_bindings}/>
+                          </Fragment>
+                      }
                 </ErrorBoundary>
             </ErrorBoundary>
         )

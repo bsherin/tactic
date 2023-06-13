@@ -1,95 +1,63 @@
 "use strict";
 
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.render_navbar = render_navbar;
-exports.get_theme_cookie = get_theme_cookie;
-exports.set_theme_cookie = set_theme_cookie;
 exports.TacticNavbar = void 0;
-
-var _react = _interopRequireDefault(require("react"));
-
+exports.get_theme_cookie = get_theme_cookie;
+exports.render_navbar = render_navbar;
+exports.set_theme_cookie = set_theme_cookie;
+var _react = _interopRequireWildcard(require("react"));
 var ReactDOM = _interopRequireWildcard(require("react-dom"));
-
 var _propTypes = _interopRequireDefault(require("prop-types"));
-
 var _core = require("@blueprintjs/core");
-
 var _main_menus_react = require("./main_menus_react.js");
-
 var _utilities_react = require("./utilities_react.js");
-
 var _communication_react = require("./communication_react");
-
-function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
+function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 var context_url = $SCRIPT_ROOT + '/context';
 var library_url = $SCRIPT_ROOT + '/library';
 var repository_url = $SCRIPT_ROOT + '/repository';
 var account_url = $SCRIPT_ROOT + '/account_info';
 var login_url = $SCRIPT_ROOT + "/login";
 var padding = 10;
-
 function get_theme_cookie() {
   var cookie_str = document.cookie.split('; ').find(function (row) {
     return row.startsWith('tactic_theme');
   });
-
   if (cookie_str == undefined) {
     set_theme_cookie("light");
     return "light";
   }
-
   return cookie_str.split('=')[1];
 }
-
 function set_theme_cookie(theme) {
   document.cookie = "tactic_theme=" + theme;
 }
-
 var TacticNavbar = /*#__PURE__*/function (_React$Component) {
   _inherits(TacticNavbar, _React$Component);
-
   var _super = _createSuper(TacticNavbar);
-
   function TacticNavbar(props) {
     var _this;
-
     _classCallCheck(this, TacticNavbar);
-
     _this = _super.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
     _this.lg_ref = /*#__PURE__*/_react["default"].createRef();
@@ -102,17 +70,14 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
     _this.update_props = ["is_authenticated", "user_name", "menus", "selected", "show_api_links", "dark_theme"];
     return _this;
   }
-
   _createClass(TacticNavbar, [{
     key: "shouldComponentUpdate",
-    value: function shouldComponentUpdate(nextProps, nextState) {
+    value: function shouldComponentUpdate(nextProps, nextState, nextContext) {
       var _iterator = _createForOfIteratorHelper(this.update_props),
-          _step;
-
+        _step;
       try {
         for (_iterator.s(); !(_step = _iterator.n()).done;) {
           var prop = _step.value;
-
           if (nextProps[prop] != this.props[prop]) {
             return true;
           }
@@ -122,14 +87,11 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
       } finally {
         _iterator.f();
       }
-
       var _iterator2 = _createForOfIteratorHelper(this.update_state_vars),
-          _step2;
-
+        _step2;
       try {
         for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
           var state = _step2.value;
-
           if (nextState[state] != this.state[state]) {
             return true;
           }
@@ -139,27 +101,24 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
       } finally {
         _iterator2.f();
       }
-
       return false;
     }
   }, {
     key: "componentDidMount",
     value: function componentDidMount() {
       window.addEventListener("resize", this._update_window_dimensions);
-
       this._update_window_dimensions();
-
       this.setState({
         old_left_width: this._getLeftWidth()
       });
       this.last_theme = this.props.dark_theme;
-    } // For some reason sizing things are a little flaky without old_left_width stuff
+    }
 
+    // For some reason sizing things are a little flaky without old_left_width stuff
   }, {
     key: "componentDidUpdate",
-    value: function componentDidUpdate() {
+    value: function componentDidUpdate(prevProps, prevState, snapshot) {
       var new_left_width = this._getLeftWidth();
-
       if (new_left_width != this.state.old_left_width) {
         this.setState({
           old_left_width: new_left_width
@@ -187,7 +146,6 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
         "theme": !this.props.dark_theme ? "dark" : "light"
       };
       (0, _communication_react.postWithCallback)("host", "set_user_theme", result_dict, null, null);
-
       if (this.props.setTheme) {
         this.props.setTheme(!this.props.dark_theme);
       }
@@ -205,7 +163,6 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
         };
         (0, _communication_react.postWithCallback)("host", "set_user_theme", result_dict, null, null);
       }
-
       if (this.props.setTheme) {
         this.props.setTheme(event.target.checked);
       }
@@ -233,14 +190,12 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
       if (this.lg_ref && this.lg_ref.current) {
         return this.lg_ref.current.getBoundingClientRect().width;
       }
-
       return null;
     }
   }, {
     key: "_getRightWidth",
     value: function _getRightWidth() {
       var lg_width = this._getLeftWidth();
-
       if (lg_width) {
         return this.state.usable_width - lg_width - 35;
       } else {
@@ -307,10 +262,8 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
     value: function _overflowRenderer() {
       var opt_dict = {};
       var icon_dict = {};
-
       var _iterator3 = _createForOfIteratorHelper(this.overflow_items),
-          _step3;
-
+        _step3;
       try {
         for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
           var item = _step3.value;
@@ -322,7 +275,6 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
       } finally {
         _iterator3.f();
       }
-
       return /*#__PURE__*/_react["default"].createElement(_main_menus_react.MenuComponent, {
         alt_button: function alt_button() {
           return /*#__PURE__*/_react["default"].createElement("span", {
@@ -342,7 +294,6 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
     value: function render() {
       var nav_class = this.props.menus == null ? "justify-content-end" : "justify-content-between";
       var right_nav_items = [];
-
       if (this.props.show_api_links) {
         right_nav_items = [{
           icon: "code-block",
@@ -360,7 +311,6 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
           }
         }];
       }
-
       right_nav_items.push({
         icon: "manual",
         text: "Docs",
@@ -369,26 +319,21 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
           window.open("http://tactic.readthedocs.io/en/latest/index.html");
         }
       });
-
       if (this.props.is_authenticated) {
         right_nav_items = right_nav_items.concat(this._authenticatedItems());
       } else {
         right_nav_items = right_nav_items.concat(this._notAuthenticatedItems());
       }
-
       var right_width = this._getRightWidth();
-
       var right_style = {
         width: right_width
       };
       right_style.justifyContent = "flex-end";
       var theme_class = this.props.dark_theme ? "bp4-dark" : "light-theme";
       var name_string = "Tactic";
-
       if (this.props.extra_text != null) {
         name_string += " " + this.props.extra_text;
       }
-
       return /*#__PURE__*/_react["default"].createElement(_core.Navbar, {
         style: {
           paddingLeft: 10
@@ -405,7 +350,7 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
         alt: "",
         width: "32 ",
         height: "32"
-      }), name_string), this.props.menus != null && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, this.props.menus)), /*#__PURE__*/_react["default"].createElement(_core.NavbarGroup, {
+      }), name_string), this.props.menus != null && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, this.props.menus)), /*#__PURE__*/_react["default"].createElement(_core.NavbarGroup, {
         align: _core.Alignment.RIGHT,
         style: right_style
       }, /*#__PURE__*/_react["default"].createElement(_core.NavbarDivider, null), /*#__PURE__*/_react["default"].createElement(_core.OverflowList, {
@@ -426,10 +371,8 @@ var TacticNavbar = /*#__PURE__*/function (_React$Component) {
       })));
     }
   }]);
-
   return TacticNavbar;
 }(_react["default"].Component);
-
 exports.TacticNavbar = TacticNavbar;
 TacticNavbar.propTypes = {
   refreshTab: _propTypes["default"].func,
@@ -449,7 +392,6 @@ TacticNavbar.defaultProps = {
   selected: null,
   show_api_links: false
 };
-
 function render_navbar() {
   var selected = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
   var show_api_links = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;

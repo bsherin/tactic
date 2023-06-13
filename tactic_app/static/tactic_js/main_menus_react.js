@@ -443,7 +443,8 @@ var ProjectMenu = /*#__PURE__*/function (_React$Component) {
         menu_items: this.menu_items,
         binding_dict: {},
         disabled_items: this.props.disabled_items,
-        disable_all: false
+        disable_all: false,
+        registerOmniGetter: this.props.registerOmniGetter
       });
     }
   }]);
@@ -550,6 +551,7 @@ var DocumentMenu = /*#__PURE__*/function (_React$Component2) {
         icon_dict: this.icon_dict,
         binding_dict: {},
         disabled_items: this.props.disabled_items,
+        registerOmniGetter: this.props.registerOmniGetter,
         hidden_items: []
       });
     }
@@ -656,6 +658,7 @@ var ColumnMenu = /*#__PURE__*/function (_React$Component3) {
         icon_dict: this.icon_dict,
         binding_dict: {},
         disabled_items: this.props.disabled_items,
+        registerOmniGetter: this.props.registerOmniGetter,
         hidden_items: []
       });
     }
@@ -714,6 +717,7 @@ var RowMenu = /*#__PURE__*/function (_React$Component4) {
         icon_dict: this.icon_dict,
         binding_dict: {},
         disabled_items: this.props.disabled_items,
+        registerOmniGetter: this.props.registerOmniGetter,
         hidden_items: []
       });
     }
@@ -803,6 +807,7 @@ var ViewMenu = /*#__PURE__*/function (_React$Component5) {
         disabled_items: [],
         binding_dict: {},
         disable_all: this.props.disable_all,
+        registerOmniGetter: this.props.registerOmniGetter,
         hidden_items: []
       });
     }

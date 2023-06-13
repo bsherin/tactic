@@ -5,6 +5,7 @@
 import "../tactic_css/tactic.scss";
 
 import React from "react";
+import {Fragment} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
@@ -38,11 +39,11 @@ function code_viewer_main () {
     let target = window.is_repository ? "repository_view_code_in_context" : "view_code_in_context";
     postAjaxPromise(target, {"resource_name": window.resource_name})
         .then((data)=>{
-            code_viewer_props(data, null, gotProps);
+            code_viewer_props(data, null, gotProps, null);
         })
 }
 
-function code_viewer_props(data, registerDirtyMethod, finalCallback) {
+function code_viewer_props(data, registerDirtyMethod, finalCallback, registerOmniFunction) {
     
     let resource_viewer_id = guid();
     var tsocket = new TacticSocket("main", 5000, resource_viewer_id);
@@ -59,7 +60,8 @@ function code_viewer_props(data, registerDirtyMethod, finalCallback) {
         readOnly: data.read_only,
         is_repository: data.is_repository,
         meta_outer: "#right-div",
-        registerDirtyMethod: registerDirtyMethod
+        registerDirtyMethod: registerDirtyMethod,
+        registerOmniFunction: registerOmniFunction
     })
 }
 const controllable_props = ["resource_name", "usable_height", "usable_width"];
@@ -321,7 +323,7 @@ class CodeViewerApp extends React.Component {
             }
         }
         return (
-            <React.Fragment>
+            <Fragment>
                 {!this.props.controlled &&
                 <TacticNavbar is_authenticated={window.is_authenticated}
                               dark_theme={dark_theme}
@@ -333,6 +335,8 @@ class CodeViewerApp extends React.Component {
                 }
                 <div className={outer_class} ref={this.top_ref} style={outer_style}>
                     <ResourceViewerApp {...my_props}
+                                       dark_theme={dark_theme}
+                                       setTheme={this.props.controlled ? null: this._setTheme}
                                        resource_viewer_id={this.props.resource_viewer_id}
                                        setResourceNameState={this._setResourceNameState}
                                        refreshTab={this.props.refreshTab}
@@ -355,6 +359,7 @@ class CodeViewerApp extends React.Component {
                                        allow_regex_search={true}
                                        showErrorDrawerButton={true}
                                        toggleErrorDrawer={this.props.toggleErrorDrawer}
+                                       registerOmniFunction={this.props.registerOmniFunction}
                     >
                         <ReactCodemirror code_content={this.state.code_content}
                                          dark_theme={dark_theme}
@@ -372,7 +377,7 @@ class CodeViewerApp extends React.Component {
                         />
                     </ResourceViewerApp>
                 </div>
-            </React.Fragment>
+            </Fragment>
         )
     }
 }

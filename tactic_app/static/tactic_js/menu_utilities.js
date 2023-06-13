@@ -1,79 +1,53 @@
 "use strict";
 
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.TopLeftButtons = exports.TacticMenubar = exports.ToolMenu = exports.MenuComponent = void 0;
-
+exports.TopLeftButtons = exports.ToolMenu = exports.TacticMenubar = exports.MenuComponent = void 0;
 var _react = _interopRequireDefault(require("react"));
-
 var _propTypes = _interopRequireDefault(require("prop-types"));
-
 var _core = require("@blueprintjs/core");
-
 var _popover = require("@blueprintjs/popover2");
-
 var _utilities_react = require("./utilities_react.js");
-
 var _key_trap = require("./key_trap");
-
 var _blueprint_react_widgets = require("./blueprint_react_widgets.js");
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
+function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 var TacticMenubar = /*#__PURE__*/function (_React$Component) {
   _inherits(TacticMenubar, _React$Component);
-
   var _super = _createSuper(TacticMenubar);
-
   function TacticMenubar() {
     _classCallCheck(this, TacticMenubar);
-
     return _super.apply(this, arguments);
   }
-
   _createClass(TacticMenubar, [{
     key: "render",
     value: function render() {
       var menus;
-
       if (this.props.menu_specs == null) {
         menus = this.props.menus;
       } else {
         menus = [];
-
         for (var menu_name in this.props.menu_specs) {
           menus.push( /*#__PURE__*/_react["default"].createElement(ToolMenu, {
             menu_name: menu_name,
             key: menu_name,
+            registerOmniGetter: this.props.registerOmniGetter,
             disabled_items: this.props.disabled_items,
             menu_items: this.props.menu_specs[menu_name],
             controlled: this.props.controlled,
@@ -81,12 +55,9 @@ var TacticMenubar = /*#__PURE__*/function (_React$Component) {
           }));
         }
       }
-
       var sug_glyphs = [];
-
       var _iterator = _createForOfIteratorHelper(this.props.suggestionGlyphs),
-          _step;
-
+        _step;
       try {
         for (_iterator.s(); !(_step = _iterator.n()).done;) {
           var sg = _step.value;
@@ -101,7 +72,6 @@ var TacticMenubar = /*#__PURE__*/function (_React$Component) {
       } finally {
         _iterator.f();
       }
-
       var theme_class = this.props.dark_theme ? "bp4-dark" : "light-theme";
       var name_style = {
         marginButton: 0,
@@ -143,10 +113,8 @@ var TacticMenubar = /*#__PURE__*/function (_React$Component) {
       }));
     }
   }]);
-
   return TacticMenubar;
 }(_react["default"].Component);
-
 exports.TacticMenubar = TacticMenubar;
 TacticMenubar.propTypes = {
   refreshTab: _propTypes["default"].func,
@@ -180,7 +148,6 @@ TacticMenubar.defaultProps = {
   extraButtons: null,
   suggestionGlyphs: []
 };
-
 function ErrorDrawerButton(props) {
   var top_icon_style = {
     display: "flex",
@@ -211,27 +178,20 @@ function ErrorDrawerButton(props) {
     }
   }));
 }
-
 var TopLeftButtons = /*#__PURE__*/function (_React$Component2) {
   _inherits(TopLeftButtons, _React$Component2);
-
   var _super2 = _createSuper(TopLeftButtons);
-
   function TopLeftButtons(props) {
     var _this;
-
     _classCallCheck(this, TopLeftButtons);
-
     _this = _super2.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
     return _this;
   }
-
   _createClass(TopLeftButtons, [{
     key: "render",
     value: function render() {
       var _this2 = this;
-
       var top_icon_style = {
         display: "flex",
         justifyContent: "flex-start",
@@ -240,7 +200,6 @@ var TopLeftButtons = /*#__PURE__*/function (_React$Component2) {
         marginRight: 8
       };
       var ebuttons = [];
-
       if (this.props.extraButtons != null) {
         this.props.extraButtons.map(function (but_info, index) {
           ebuttons.push( /*#__PURE__*/_react["default"].createElement(_core.Button, {
@@ -262,7 +221,6 @@ var TopLeftButtons = /*#__PURE__*/function (_React$Component2) {
           }));
         });
       }
-
       return /*#__PURE__*/_react["default"].createElement("div", {
         style: top_icon_style
       }, this.props.showClose && /*#__PURE__*/_react["default"].createElement(_core.Button, {
@@ -301,10 +259,8 @@ var TopLeftButtons = /*#__PURE__*/function (_React$Component2) {
       }), this.props.extraButtons && ebuttons);
     }
   }]);
-
   return TopLeftButtons;
 }(_react["default"].Component);
-
 exports.TopLeftButtons = TopLeftButtons;
 TopLeftButtons.propTypes = {
   showRefresh: _propTypes["default"].bool,
@@ -316,27 +272,29 @@ TopLeftButtons.propTypes = {
 TopLeftButtons.defaultProps = {
   extraButtons: null
 };
-
 var MenuComponent = /*#__PURE__*/function (_React$Component3) {
   _inherits(MenuComponent, _React$Component3);
-
   var _super3 = _createSuper(MenuComponent);
-
   function MenuComponent(props) {
     var _this3;
-
     _classCallCheck(this, MenuComponent);
-
     _this3 = _super3.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this3));
     _this3.replacers = [["CTRL+", "^"], ["COMMAND+", "⌘"]];
+    if (_this3.props.registerOmniGetter) {
+      _this3.props.registerOmniGetter(_this3.props.menu_name, _this3._getOmniItems);
+    }
     return _this3;
   }
-
   _createClass(MenuComponent, [{
     key: "_filter_on_match_list",
     value: function _filter_on_match_list(opt_name) {
       return !this.props.hidden_items.includes(opt_name);
+    }
+  }, {
+    key: "_filter_on_disabled_list",
+    value: function _filter_on_disabled_list(opt_name) {
+      return !this.props.disable_all && !this.props.disabled_items.includes(opt_name);
     }
   }, {
     key: "_bindingsToString",
@@ -344,12 +302,9 @@ var MenuComponent = /*#__PURE__*/function (_React$Component3) {
       if (binding_list == null) {
         return null;
       }
-
       var new_binding = binding_list[0];
-
       var _iterator2 = _createForOfIteratorHelper(this.replacers),
-          _step2;
-
+        _step2;
       try {
         for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
           var rep = _step2.value;
@@ -360,7 +315,6 @@ var MenuComponent = /*#__PURE__*/function (_React$Component3) {
       } finally {
         _iterator2.f();
       }
-
       return /*#__PURE__*/_react["default"].createElement("span", {
         style: {
           fontFamily: "system-ui"
@@ -368,10 +322,37 @@ var MenuComponent = /*#__PURE__*/function (_React$Component3) {
       }, new_binding);
     }
   }, {
+    key: "_getOmniItems",
+    value: function _getOmniItems() {
+      var omni_items = [];
+      var pruned_list = Object.keys(this.props.option_dict).filter(this._filter_on_match_list);
+      pruned_list = pruned_list.filter(this._filter_on_disabled_list);
+      var _iterator3 = _createForOfIteratorHelper(pruned_list),
+        _step3;
+      try {
+        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+          var choice = _step3.value;
+          if (choice.startsWith("divider")) continue;
+          var icon_name = this.props.icon_dict.hasOwnProperty(choice) ? this.props.icon_dict[choice] : null;
+          omni_items.push({
+            category: this.props.menu_name,
+            display_text: choice,
+            search_text: choice,
+            icon_name: icon_name,
+            the_function: this.props.option_dict[choice]
+          });
+        }
+      } catch (err) {
+        _iterator3.e(err);
+      } finally {
+        _iterator3.f();
+      }
+      return omni_items;
+    }
+  }, {
     key: "render",
     value: function render() {
       var _this4 = this;
-
       var pruned_list = Object.keys(this.props.option_dict).filter(this._filter_on_match_list);
       var choices = pruned_list.map(function (opt_name, index) {
         if (opt_name.startsWith("divider")) {
@@ -379,22 +360,17 @@ var MenuComponent = /*#__PURE__*/function (_React$Component3) {
             key: index
           });
         }
-
         var icon = null;
-
         if (_this4.props.icon_dict.hasOwnProperty(opt_name)) {
           icon = /*#__PURE__*/_react["default"].createElement(_core.Icon, {
             icon: _this4.props.icon_dict[opt_name],
             size: 14
           });
         }
-
         var label = null;
-
         if (opt_name in _this4.props.binding_dict) {
           label = _this4._bindingsToString(_this4.props.binding_dict[opt_name]);
         }
-
         return /*#__PURE__*/_react["default"].createElement(_popover.MenuItem2, {
           disabled: _this4.props.disable_all || _this4.props.disabled_items.includes(opt_name),
           onClick: _this4.props.option_dict[opt_name],
@@ -405,11 +381,9 @@ var MenuComponent = /*#__PURE__*/function (_React$Component3) {
           className: _this4.props.item_class
         });
       });
-
       var the_menu = /*#__PURE__*/_react["default"].createElement(_core.Menu, {
         className: _core.Classes.ELEVATION_1
       }, choices);
-
       if (this.props.alt_button) {
         var AltButton = this.props.alt_button;
         return /*#__PURE__*/_react["default"].createElement(_popover.Popover2, {
@@ -432,10 +406,8 @@ var MenuComponent = /*#__PURE__*/function (_React$Component3) {
       }
     }
   }]);
-
   return MenuComponent;
 }(_react["default"].Component);
-
 exports.MenuComponent = MenuComponent;
 MenuComponent.propTypes = {
   menu_name: _propTypes["default"].string,
@@ -447,7 +419,8 @@ MenuComponent.propTypes = {
   disable_all: _propTypes["default"].bool,
   hidden_items: _propTypes["default"].array,
   alt_button: _propTypes["default"].func,
-  position: _propTypes["default"].string
+  position: _propTypes["default"].string,
+  registerOmniGetter: _propTypes["default"].func
 };
 MenuComponent.defaultProps = {
   menu_name: null,
@@ -458,78 +431,64 @@ MenuComponent.defaultProps = {
   hidden_items: [],
   icon_dict: {},
   alt_button: null,
-  position: _core.PopoverPosition.BOTTOM_LEFT
+  position: _core.PopoverPosition.BOTTOM_LEFT,
+  registerOmniGetter: null
 };
-
 var ToolMenu = /*#__PURE__*/function (_React$Component4) {
   _inherits(ToolMenu, _React$Component4);
-
   var _super4 = _createSuper(ToolMenu);
-
   function ToolMenu(props) {
     var _this5;
-
     _classCallCheck(this, ToolMenu);
-
     _this5 = _super4.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this5));
     return _this5;
   }
-
   _createClass(ToolMenu, [{
     key: "option_dict",
     get: function get() {
       var opt_dict = {};
-
-      var _iterator3 = _createForOfIteratorHelper(this.props.menu_items),
-          _step3;
-
-      try {
-        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-          var but = _step3.value;
-          opt_dict[but.name_text] = but.click_handler;
-        }
-      } catch (err) {
-        _iterator3.e(err);
-      } finally {
-        _iterator3.f();
-      }
-
-      return opt_dict;
-    }
-  }, {
-    key: "icon_dict",
-    get: function get() {
-      var icon_dict = {};
-
       var _iterator4 = _createForOfIteratorHelper(this.props.menu_items),
-          _step4;
-
+        _step4;
       try {
         for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
           var but = _step4.value;
-          icon_dict[but.name_text] = but.icon_name;
+          opt_dict[but.name_text] = but.click_handler;
         }
       } catch (err) {
         _iterator4.e(err);
       } finally {
         _iterator4.f();
       }
-
+      return opt_dict;
+    }
+  }, {
+    key: "icon_dict",
+    get: function get() {
+      var icon_dict = {};
+      var _iterator5 = _createForOfIteratorHelper(this.props.menu_items),
+        _step5;
+      try {
+        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+          var but = _step5.value;
+          icon_dict[but.name_text] = but.icon_name;
+        }
+      } catch (err) {
+        _iterator5.e(err);
+      } finally {
+        _iterator5.f();
+      }
       return icon_dict;
     }
   }, {
     key: "binding_dict",
     get: function get() {
       var binding_dict = {};
-
-      var _iterator5 = _createForOfIteratorHelper(this.props.menu_items),
-          _step5;
-
+      var _iterator6 = _createForOfIteratorHelper(this.props.menu_items),
+        _step6;
       try {
-        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-          var but = _step5.value;
-
+        for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+          var but = _step6.value;
           if ("key_bindings" in but) {
             binding_dict[but.name_text] = but.key_bindings;
           } else {
@@ -537,44 +496,40 @@ var ToolMenu = /*#__PURE__*/function (_React$Component4) {
           }
         }
       } catch (err) {
-        _iterator5.e(err);
+        _iterator6.e(err);
       } finally {
-        _iterator5.f();
+        _iterator6.f();
       }
-
       return binding_dict;
     }
   }, {
     key: "render",
     value: function render() {
       var key_bindings = [];
-
-      var _iterator6 = _createForOfIteratorHelper(this.props.menu_items),
-          _step6;
-
+      var _iterator7 = _createForOfIteratorHelper(this.props.menu_items),
+        _step7;
       try {
         var _loop = function _loop() {
-          var button = _step6.value;
+          var button = _step7.value;
           if (button.hasOwnProperty("key_bindings")) key_bindings.push([button.key_bindings, function () {
             return button.click_handler();
           }]);
         };
-
-        for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+        for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
           _loop();
         }
       } catch (err) {
-        _iterator6.e(err);
+        _iterator7.e(err);
       } finally {
-        _iterator6.f();
+        _iterator7.f();
       }
-
       return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(MenuComponent, {
         menu_name: this.props.menu_name,
         option_dict: this.option_dict,
         icon_dict: this.icon_dict,
         binding_dict: this.binding_dict,
         disabled_items: this.props.disabled_items,
+        registerOmniGetter: this.props.registerOmniGetter,
         hidden_items: []
       }), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
         global: true,
@@ -583,18 +538,18 @@ var ToolMenu = /*#__PURE__*/function (_React$Component4) {
       }));
     }
   }]);
-
   return ToolMenu;
 }(_react["default"].Component);
-
 exports.ToolMenu = ToolMenu;
 ToolMenu.propTypes = {
   menu_name: _propTypes["default"].string,
   menu_items: _propTypes["default"].array,
   disabled_items: _propTypes["default"].array,
   controlled: _propTypes["default"].bool,
-  am_selected: _propTypes["default"].bool
+  am_selected: _propTypes["default"].bool,
+  registerOmniGetter: _propTypes["default"].func
 };
 ToolMenu.defaultProps = {
-  disabled_items: []
+  disabled_items: [],
+  registerOmniGetter: null
 };

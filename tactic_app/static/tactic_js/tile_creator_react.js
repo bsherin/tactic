@@ -1,139 +1,89 @@
 "use strict";
 
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.creator_props = creator_props;
 exports.CreatorApp = void 0;
-
+exports.creator_props = creator_props;
 require("../tactic_css/tactic.scss");
-
 require("../tactic_css/tactic_table.scss");
-
 require("../tactic_css/tile_creator.scss");
-
 require("codemirror/mode/javascript/javascript.js");
-
-var _react = _interopRequireDefault(require("react"));
-
+var _react = _interopRequireWildcard(require("react"));
 var ReactDOM = _interopRequireWildcard(require("react-dom"));
-
 var _propTypes = _interopRequireDefault(require("prop-types"));
-
 var _core = require("@blueprintjs/core");
-
+var _tactic_omnibar = require("./tactic_omnibar");
+var _key_trap = require("./key_trap");
 var _tactic_socket = require("./tactic_socket.js");
-
 var _menu_utilities = require("./menu_utilities.js");
-
 var _resource_viewer_react_app = require("./resource_viewer_react_app.js");
-
 var _reactCodemirror = require("./react-codemirror.js");
-
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields.js");
-
 var _creator_modules_react = require("./creator_modules_react.js");
-
 var _resizing_layouts = require("./resizing_layouts.js");
-
 var _communication_react = require("./communication_react.js");
-
 var _toaster = require("./toaster.js");
-
 var _sizing_tools = require("./sizing_tools.js");
-
 var _error_drawer = require("./error_drawer.js");
-
 var _utilities_react = require("./utilities_react.js");
-
 var _blueprint_navbar = require("./blueprint_navbar.js");
-
 var _library_widgets = require("./library_widgets");
-
 var _modal_react = require("./modal_react");
-
 var _error_boundary = require("./error_boundary");
-
 var _autocomplete = require("./autocomplete");
-
-function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
-
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
+function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
-
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 var BOTTOM_MARGIN = 50;
 var MARGIN_SIZE = 17;
-
 function tile_creator_main() {
   function gotProps(the_props) {
     var CreatorAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(CreatorApp));
-
     var the_element = /*#__PURE__*/_react["default"].createElement(CreatorAppPlus, _extends({}, the_props, {
       controlled: false,
       initial_theme: window.theme,
       changeName: null
     }));
-
     var domContainer = document.querySelector('#creator-root');
     ReactDOM.render(the_element, domContainer);
   }
-
   (0, _utilities_react.renderSpinnerMessage)("Starting up ...", '#creator-root');
   (0, _communication_react.postAjaxPromise)("view_in_creator_in_context", {
     "resource_name": window.module_name
   }).then(function (data) {
-    creator_props(data, null, gotProps);
+    creator_props(data, null, gotProps, null);
   });
 }
-
-function creator_props(data, registerDirtyMethod, finalCallback) {
+function creator_props(data, registerDirtyMethod, finalCallback, registerOmniFunction) {
   var mdata = data.mdata;
   var split_tags = mdata.tags == "" ? [] : mdata.tags.split(" ");
   var module_name = data.resource_name;
   var module_viewer_id = data.module_viewer_id;
   window.name = module_viewer_id;
-
   function readyListener() {
     _everyone_ready_in_context(finalCallback);
   }
-
   var tsocket = new _tactic_socket.TacticSocket("main", 5000, module_viewer_id, function (response) {
     tsocket.socket.on("remove-ready-block", readyListener);
     tsocket.socket.emit('client-ready', {
@@ -145,12 +95,10 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
     });
   });
   var tile_collection_name = data.tile_collection_name;
-
   function _everyone_ready_in_context(finalCallback) {
     if (!window.in_context) {
       (0, _utilities_react.renderSpinnerMessage)("Everyone is ready, initializing...", '#creator-root');
     }
-
     var the_content = {
       "module_name": module_name,
       "module_viewer_id": module_viewer_id,
@@ -170,12 +118,10 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
     (0, _communication_react.postWithCallback)(module_viewer_id, "initialize_parser", the_content, function (pdata) {
       return got_parsed_data_in_context(pdata);
     }, null, module_viewer_id);
-
     function got_parsed_data_in_context(data_object) {
       if (!window.in_context) {
         (0, _utilities_react.renderSpinnerMessage)("Creating the page...", '#creator-root');
       }
-
       tsocket.socket.off("remove-ready-block", readyListener);
       var parsed_data = data_object.the_content;
       var category = parsed_data.category ? parsed_data.category : "basic";
@@ -212,12 +158,12 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
         additional_save_attrs: parsed_data.additional_save_attrs,
         couple_save_attrs_and_exports: couple_save_attrs_and_exports,
         created: mdata.datestring,
-        registerDirtyMethod: registerDirtyMethod
+        registerDirtyMethod: registerDirtyMethod,
+        registerOmniFunction: registerOmniFunction
       });
     }
   }
 }
-
 function TileCreatorToolbar(props) {
   var tstyle = {
     "marginTop": window.in_context ? 0 : 20,
@@ -246,7 +192,6 @@ function TileCreatorToolbar(props) {
     number_matches: props.search_matches
   }));
 }
-
 TileCreatorToolbar.proptypes = {
   button_groups: _propTypes["default"].array,
   setResourceNameState: _propTypes["default"].func,
@@ -259,22 +204,19 @@ TileCreatorToolbar.proptypes = {
 };
 TileCreatorToolbar.defaultProps = {};
 var controllable_props = ["resource_name", "usable_width", "usable_height"];
-
 var CreatorApp = /*#__PURE__*/function (_React$Component) {
   _inherits(CreatorApp, _React$Component);
-
   var _super = _createSuper(CreatorApp);
-
   function CreatorApp(props) {
     var _this;
-
     _classCallCheck(this, CreatorApp);
-
     _this = _super.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
-
     _this.initSocket();
-
+    if (_this.props.registerOmniFunction) {
+      _this.props.registerOmniFunction(_this._omniFunction);
+    }
+    _this.omniGetters = {};
     _this.top_ref = /*#__PURE__*/_react["default"].createRef();
     _this.options_ref = /*#__PURE__*/_react["default"].createRef();
     _this.left_div_ref = /*#__PURE__*/_react["default"].createRef();
@@ -325,9 +267,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       regex: false,
       search_matches: 0
     };
-
     var self = _assertThisInitialized(_this);
-
     if (props.controlled) {
       props.registerDirtyMethod(_this._dirty);
     } else {
@@ -343,7 +283,6 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         }
       });
     }
-
     _this.cm_list = _this.props.is_mpl || _this.props.is_d3 ? ["tc", "rc", "em"] : ["rc", "em"];
     _this.state.top_pane_fraction = _this.props.is_mpl || _this.props.is_d3 ? .5 : 1;
     _this.state.left_pane_fraction = .5;
@@ -361,23 +300,23 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       rc: 0,
       em: 0
     };
+    if (!window.in_context) {
+      _this.key_bindings = [[["ctrl+space"], _this._showOmnibar]];
+      _this.state.showOmnibar = false;
+    }
     return _this;
   }
-
   _createClass(CreatorApp, [{
     key: "initSocket",
     value: function initSocket() {
       var _this2 = this;
-
       this.props.tsocket.attachListener('focus-me', function (data) {
         window.focus();
-
         _this2._selectLineNumber(data.line_number);
       });
       this.props.tsocket.attachListener("doFlash", function (data) {
         (0, _toaster.doFlash)(data);
       });
-
       if (!window.in_context) {
         this.props.tsocket.attachListener("doFlashUser", function (data) {
           (0, _toaster.doFlash)(data);
@@ -395,10 +334,37 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       return this.props.controlled ? this.props[pname] : this.state[pname];
     }
   }, {
+    key: "_showOmnibar",
+    value: function _showOmnibar() {
+      this.setState({
+        showOmnibar: true
+      });
+    }
+  }, {
+    key: "_closeOmnibar",
+    value: function _closeOmnibar() {
+      this.setState({
+        showOmnibar: false
+      });
+    }
+  }, {
+    key: "_omniFunction",
+    value: function _omniFunction() {
+      var omni_items = [];
+      for (var ogetter in this.omniGetters) {
+        omni_items = omni_items.concat(this.omniGetters[ogetter]());
+      }
+      return omni_items;
+    }
+  }, {
+    key: "_registerOmniGetter",
+    value: function _registerOmniGetter(name, the_function) {
+      this.omniGetters[name] = the_function;
+    }
+  }, {
     key: "menu_specs",
     get: function get() {
       var _this3 = this;
-
       var ms = {
         Save: [{
           name_text: "Save",
@@ -442,11 +408,9 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           }
         }]
       };
-
       for (var menu in ms) {
         var _iterator = _createForOfIteratorHelper(ms[menu]),
-            _step;
-
+          _step;
         try {
           for (_iterator.s(); !(_step = _iterator.n()).done;) {
             var but = _step.value;
@@ -458,7 +422,6 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           _iterator.f();
         }
       }
-
       return ms;
     }
   }, {
@@ -482,10 +445,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     value: function _searchNext() {
       if (this.state.current_search_number >= this.search_match_numbers[this.state.current_search_cm] - 1) {
         var next_cm;
-
         if (this.state.current_search_cm == "rc") {
           next_cm = "em";
-
           this._handleTabSelect("methods");
         } else if (this.state.current_search_cm == "tc") {
           next_cm = "rc";
@@ -496,11 +457,9 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
             next_cm = "rc";
           }
         }
-
         if (next_cm == "em") {
           this._handleTabSelect("methods");
         }
-
         this.setState({
           current_search_cm: next_cm,
           current_search_number: 0
@@ -516,7 +475,6 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     value: function _searchPrev() {
       var next_cm;
       var next_search_number;
-
       if (this.state.current_search_number <= 0) {
         if (this.state.current_search_cm == "em") {
           next_cm = "rc";
@@ -533,11 +491,9 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
             next_search_number = this.search_match_numbers["em"] - 1;
           }
         }
-
         if (next_cm == "em") {
           this._handleTabSelect("methods");
         }
-
         this.setState({
           current_search_cm: next_cm,
           current_search_number: next_search_number
@@ -563,12 +519,10 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         return true;
       } else {
         var _iterator2 = _createForOfIteratorHelper(this.cm_list),
-            _step2;
-
+          _step2;
         try {
           for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
             var cm = _step2.value;
-
             if (this.search_match_numbers[cm]) {
               return false;
             }
@@ -578,7 +532,6 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         } finally {
           _iterator2.f();
         }
-
         return true;
       }
     }
@@ -613,7 +566,6 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     key: "_selectLineNumber",
     value: function _selectLineNumber(lnumber) {
       this.line_number = lnumber;
-
       this._goToLineNumber();
     }
   }, {
@@ -625,11 +577,9 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         title: title,
         content: data.message
       };
-
       if ("line_number" in data) {
         entry.line_number = data.line_number;
       }
-
       this.props.addErrorDrawerEntry(entry, true);
       this.props.openErrorDrawer();
     }
@@ -637,13 +587,11 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     key: "_dirty",
     value: function _dirty() {
       var current_state = this._getSaveDict();
-
       for (var k in current_state) {
         if (current_state[k] != this.last_save[k]) {
           return true;
         }
       }
-
       return false;
     }
   }, {
@@ -660,14 +608,11 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       })["catch"](function (data) {
         self._logErrorStopSpinner("Error loading module", data);
       });
-
       function load_success(data) {
         if (data.success) {
           data.timeout = 2000;
         }
-
         self._doFlashStopSpinner(data);
-
         return false;
       }
     }
@@ -681,14 +626,11 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         "tile_module_name": self._cProp("resource_name"),
         "user_id": window.user_id
       }, load_success, null, self.props.module_viewer_id);
-
       function load_success(data) {
         if (data.success) {
           data.timeout = 2000;
         }
-
         self._doFlashStopSpinner(data);
-
         return false;
       }
     }
@@ -703,11 +645,9 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         var checkboxes;
         (0, _modal_react.showModalReact)("Save Module As", "New ModuleName Name", CreateNewModule, "NewModule", data["tile_names"], null, doCancel);
       }, null, this.props.main_id);
-
       function doCancel() {
         self.props.stopSpinner();
       }
-
       function CreateNewModule(new_name) {
         var result_dict = {
           "new_res_name": new_name,
@@ -724,11 +664,9 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     key: "_saveMe",
     value: function _saveMe() {
       var self = this;
-
       if (!self.props.am_selected) {
         return false;
       }
-
       this.props.startSpinner();
       this.props.statusMessage("Saving Module");
       this.doSavePromise().then(self._doFlashStopSpinner)["catch"](function (data) {
@@ -756,10 +694,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     value: function get_tags_string() {
       var taglist = this.state.tags;
       var tags = "";
-
       var _iterator3 = _createForOfIteratorHelper(taglist),
-          _step3;
-
+        _step3;
       try {
         for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
           var tag = _step3.value;
@@ -770,7 +706,6 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       } finally {
         _iterator3.f();
       }
-
       return tags.trim();
     }
   }, {
@@ -801,7 +736,6 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       var self = this;
       return new Promise(function (resolve, reject) {
         var result_dict = self._getSaveDict();
-
         (0, _communication_react.postWithCallback)(self.props.module_viewer_id, "update_module", result_dict, function (data) {
           if (data.success) {
             self.save_success(data);
@@ -837,7 +771,6 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         "extra_methods_line_number": data.extra_methods_line_number,
         "draw_plot_line_number": data.draw_plot_line_number
       });
-
       this._update_saved_state();
     }
   }, {
@@ -860,14 +793,11 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     value: function _goToLineNumber() {
       if (this.line_number) {
         this.props.closeErrorDrawer();
-
         if (this.props.is_mpl || this.props.is_d3) {
           if (this.line_number < this.state.draw_plot_line_number) {
             if (this.emObject) {
               this._handleTabSelect("methods");
-
               CreatorApp._selectLine(this.emObject, this.line_number - this.state.extra_methods_line_number);
-
               this.line_number = null;
             } else {
               return;
@@ -875,23 +805,19 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           } else if (this.line_number < this.state.render_content_line_number) {
             if (this.dpObject) {
               CreatorApp._selectLine(this.dpObject, this.line_number - this.state.draw_plot_line_number - 1);
-
               this.line_number = null;
             } else {
               return;
             }
           } else if (this.rcObject) {
             CreatorApp._selectLine(this.rcObject, this.line_number - this.state.render_content_line_number - 1);
-
             this.line_number = null;
           }
         } else {
           if (this.line_number < this.props.render_content_line_number) {
             if (this.emObject) {
               this._handleTabSelect("methods");
-
               CreatorApp._selectLine(this.emObject, this.line_number - this.state.extra_methods_line_number);
-
               this.line_number = null;
             } else {
               return;
@@ -899,7 +825,6 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           } else {
             if (this.rcObject) {
               CreatorApp._selectLine(this.rcObject, this.line_number - this.state.render_content_line_number - 1);
-
               this.line_number = null;
             }
           }
@@ -912,29 +837,22 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       this.setState({
         "mounted": true
       });
-
       this._goToLineNumber();
-
       if (window.in_context) {
         this.props.registerLineSetter(this._selectLineNumber);
       }
-
       this.props.setGoToLineNumber(this._selectLineNumber);
-
       this._update_saved_state();
-
       this.props.stopSpinner();
-
       if (!this.props.controlled) {
         document.title = this.state.resource_name;
         window.addEventListener("resize", this._update_window_dimensions);
-
         this._update_window_dimensions();
       }
     }
   }, {
     key: "componentDidUpdate",
-    value: function componentDidUpdate(prevProps) {
+    value: function componentDidUpdate(prevProps, prevState, snaptho) {
       this._goToLineNumber();
     }
   }, {
@@ -955,7 +873,6 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     key: "_handleTabSelect",
     value: function _handleTabSelect(newTabId, prevTabid, event) {
       var _this4 = this;
-
       var new_fg = Object.assign({}, this.state.foregrounded_panes);
       new_fg[newTabId] = true;
       this.setState({
@@ -976,10 +893,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     key: "_appendOptionText",
     value: function _appendOptionText() {
       var res_string = "\n\noptions: \n\n";
-
       var _iterator4 = _createForOfIteratorHelper(this.state.option_list),
-          _step4;
-
+        _step4;
       try {
         for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
           var opt = _step4.value;
@@ -990,17 +905,14 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       } finally {
         _iterator4.f();
       }
-
       this._handleNotesAppend(res_string);
     }
   }, {
     key: "_appendExportText",
     value: function _appendExportText() {
       var res_string = "\n\nexports: \n\n";
-
       var _iterator5 = _createForOfIteratorHelper(this.state.export_list),
-          _step5;
-
+        _step5;
       try {
         for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
           var exp = _step5.value;
@@ -1011,7 +923,6 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       } finally {
         _iterator5.f();
       }
-
       this._handleNotesAppend(res_string);
     }
   }, {
@@ -1032,7 +943,6 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         icon: "select",
         onClick: function onClick(e) {
           e.preventDefault();
-
           self._appendOptionText();
         }
       }), /*#__PURE__*/_react["default"].createElement(_core.Button, {
@@ -1049,7 +959,6 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         icon: "export",
         onClick: function onClick(e) {
           e.preventDefault();
-
           self._appendExportText();
         }
       }));
@@ -1087,15 +996,12 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     value: function get_height_minus_top_offset(element_ref) {
       var min_offset = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
       var default_offset = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 100;
-
       if (this.state.mounted && element_ref && element_ref.current) {
         // This will be true after the initial render
         var offset = element_ref.current.offsetTop;
-
         if (offset < min_offset) {
           offset = min_offset;
         }
-
         return this._cProp("usable_height") - offset;
       } else {
         return this._cProp("usable_height") - default_offset;
@@ -1158,7 +1064,6 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     key: "_setResourceNameState",
     value: function _setResourceNameState(new_name) {
       var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-
       if (this.props.controlled) {
         this.props.changeResourceName(new_name, callback);
       } else {
@@ -1172,7 +1077,6 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     value: function _clearAllSelections() {
       for (var _i = 0, _arr = [this.rcObject, this.dpObject, this.emObject]; _i < _arr.length; _i++) {
         var cm = _arr[_i];
-
         if (cm) {
           var to = cm.getCursor("to");
           cm.setCursor(to);
@@ -1199,11 +1103,9 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     value: function _setSearchMatches(rc_name, num) {
       this.search_match_numbers[rc_name] = num;
       var current_matches = 0;
-
       for (var cname in this.search_match_numbers) {
         current_matches += this.search_match_numbers[cname];
       }
-
       this.setState({
         search_matches: current_matches
       });
@@ -1212,10 +1114,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
     key: "_getOptionNames",
     value: function _getOptionNames() {
       var onames = [];
-
       var _iterator6 = _createForOfIteratorHelper(this.state.option_list),
-          _step6;
-
+        _step6;
       try {
         for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
           var entry = _step6.value;
@@ -1226,19 +1126,15 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       } finally {
         _iterator6.f();
       }
-
       return onames;
     }
   }, {
     key: "render",
     value: function render() {
       var _this5 = this;
-
       var onames_for_autocomplete = [];
-
       var _iterator7 = _createForOfIteratorHelper(this._getOptionNames()),
-          _step7;
-
+        _step7;
       try {
         for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
           var oname = _step7.value;
@@ -1254,27 +1150,15 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       } finally {
         _iterator7.f();
       }
-
-      var dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme; //let hp_height = this.get_height_minus_top_offset(this.hp_ref);
-
+      var dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme;
+      //let hp_height = this.get_height_minus_top_offset(this.hp_ref);
       var my_props = _objectSpread({}, this.props);
-
       if (!this.props.controlled) {
-        var _iterator8 = _createForOfIteratorHelper(controllable_props),
-            _step8;
-
-        try {
-          for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
-            var prop_name = _step8.value;
-            my_props[prop_name] = this.state[prop_name];
-          }
-        } catch (err) {
-          _iterator8.e(err);
-        } finally {
-          _iterator8.f();
+        for (var _i2 = 0, _controllable_props = controllable_props; _i2 < _controllable_props.length; _i2++) {
+          var prop_name = _controllable_props[_i2];
+          my_props[prop_name] = this.state[prop_name];
         }
       }
-
       var vp_height = this.get_height_minus_top_offset(this.vp_ref);
       var uwidth = my_props.usable_width - 2 * _sizing_tools.SIDE_MARGIN;
       var uheight = my_props.usable_height;
@@ -1283,7 +1167,6 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         "width": "100%"
       };
       var tc_item;
-
       if (my_props.is_mpl || my_props.is_d3) {
         var tc_height = this.get_new_tc_height();
         var mode = my_props.is_mpl ? "python" : "javascript";
@@ -1342,16 +1225,13 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           extra_autocomplete_list: mode == "python" ? onames_for_autocomplete : []
         }));
       }
-
       var rc_height;
-
       if (my_props.is_mpl || my_props.is_d3) {
         var bheight = (1 - this.state.top_pane_fraction) * uheight - 35;
         rc_height = this.get_new_rc_height(bheight);
       } else {
         rc_height = this.get_new_rc_height(vp_height);
       }
-
       var bc_item = /*#__PURE__*/_react["default"].createElement("div", {
         key: "rccode",
         id: "rccode",
@@ -1403,11 +1283,9 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         },
         extra_autocomplete_list: onames_for_autocomplete
       }));
-
       var left_pane;
-
       if (my_props.is_mpl || my_props.is_d3) {
-        left_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
+        left_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
           ref: this.vp_ref
         }), /*#__PURE__*/_react["default"].createElement(_resizing_layouts.VerticalPanes, {
           top_pane: tc_item,
@@ -1419,11 +1297,10 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           id: "creator-left"
         }));
       } else {
-        left_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
+        left_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
           ref: this.vp_ref
         }, bc_item));
       }
-
       var default_module_height = this.get_height_minus_top_offset(null, 128, 128);
       var mdata_style = {
         marginLeft: 20,
@@ -1431,7 +1308,6 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         padding: 15,
         height: default_module_height
       };
-
       var mdata_panel = /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.CombinedMetadata, {
         tags: this.state.tags,
         readOnly: this.props.readOnly,
@@ -1443,7 +1319,6 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         notes_buttons: this._metadataNotesButtons,
         handleChange: this.handleStateChange
       });
-
       var option_panel = /*#__PURE__*/_react["default"].createElement(_creator_modules_react.OptionModule, {
         options_ref: this.options_ref,
         data_list: this.state.option_list,
@@ -1452,7 +1327,6 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         handleNotesAppend: this._handleNotesAppend,
         available_height: default_module_height
       });
-
       var export_panel = /*#__PURE__*/_react["default"].createElement(_creator_modules_react.ExportModule, {
         export_list: this.state.export_list,
         save_list: this.state.additional_save_attrs,
@@ -1462,9 +1336,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         handleNotesAppend: this._handleNotesAppend,
         available_height: default_module_height
       });
-
       var methods_height = this.get_height_minus_top_offset(this.methods_ref, 128, 128);
-
       var methods_panel = /*#__PURE__*/_react["default"].createElement("div", {
         style: {
           marginLeft: 5
@@ -1492,16 +1364,13 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         },
         extra_autocomplete_list: onames_for_autocomplete
       }));
-
       var commands_height = this.get_height_minus_top_offset(this.commands_ref, 128, 128);
-
       var commands_panel = /*#__PURE__*/_react["default"].createElement(_creator_modules_react.CommandsModule, {
         foregrounded: this.state.foregrounded_panes["commands"],
         available_height: commands_height,
         commands_ref: this.commands_ref
       });
-
-      var right_pane = /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
+      var right_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
         id: "creator-resources",
         className: "d-block"
       }, /*#__PURE__*/_react["default"].createElement(_core.Tabs, {
@@ -1545,7 +1414,6 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         }), " documentation"),
         panel: commands_panel
       }))));
-
       var outer_style = {
         width: "100%",
         height: uheight,
@@ -1553,7 +1421,6 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         paddingTop: 15
       };
       var outer_class = "resource-viewer-holder pane-holder";
-
       if (!window.in_context) {
         if (dark_theme) {
           outer_class = outer_class + " bp4-dark";
@@ -1561,11 +1428,10 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
           outer_class = outer_class + " light-theme";
         }
       }
-
       return /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, !window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
         is_authenticated: window.is_authenticated,
         dark_theme: dark_theme,
-        setTheme: this.props.controlled ? this.props.setTheme : this._setTheme,
+        setTheme: this._setTheme,
         selected: null,
         show_api_links: true,
         page_id: this.props.module_viewer_id,
@@ -1581,6 +1447,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         showErrorDrawerButton: true,
         toggleErrorDrawer: this.props.toggleErrorDrawer,
         controlled: this.props.controlled,
+        registerOmniGetter: this._registerOmniGetter,
         am_selected: this.props.am_selected
       }), /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement("div", {
         className: outer_class,
@@ -1593,13 +1460,22 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         available_height: uheight,
         available_width: uwidth,
         handleSplitUpdate: this.handleLeftPaneResize
+      })), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_tactic_omnibar.TacticOmnibar, {
+        omniGetters: [this._omniFunction],
+        showOmnibar: this.state.showOmnibar,
+        closeOmnibar: this._closeOmnibar,
+        is_authenticated: window.is_authenticated,
+        dark_theme: dark_theme,
+        setTheme: this._setTheme
+      }), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
+        global: true,
+        bindings: this.key_bindings
       }))));
     }
   }], [{
     key: "_selectLine",
     value: function _selectLine(cm, lnumber) {
       var doc = cm.getDoc();
-
       if (doc.getLine(lnumber)) {
         doc.setSelection({
           line: lnumber,
@@ -1613,10 +1489,8 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
       }
     }
   }]);
-
   return CreatorApp;
 }(_react["default"].Component);
-
 exports.CreatorApp = CreatorApp;
 CreatorApp.propTypes = {
   controlled: _propTypes["default"].bool,
@@ -1657,7 +1531,6 @@ CreatorApp.defaultProps = {
   closeTab: null,
   updatePanel: null
 };
-
 if (!window.in_context) {
   tile_creator_main();
 }

@@ -5,6 +5,7 @@ import "../tactic_css/tactic_console.scss";
 import "../tactic_css/tactic_main.scss";
 
 import React from "react";
+import { Fragment } from 'react';
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
@@ -16,6 +17,8 @@ import {ConsoleComponent} from "./console_component.js";
 import {doFlash} from "./toaster.js"
 import {withStatus} from "./toaster.js";
 import {doBinding, get_ppi, renderSpinnerMessage} from "./utilities_react.js";
+import {TacticOmnibar} from "./tactic_omnibar";
+import {KeyTrap} from "./key_trap";
 
 import {handleCallback, postWithCallback, postAjaxPromise, postAjax} from "./communication_react.js"
 import {ExportsViewer} from "./export_viewer_react";
@@ -61,7 +64,7 @@ function main_main() {
         })
 }
 
-function notebook_props(data, registerDirtyMethod, finalCallback) {
+function notebook_props(data, registerDirtyMethod, finalCallback, registerOmniFunction) {
 
     ppi = get_ppi();
     let main_id = data.main_id;
@@ -139,7 +142,8 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
                            is_notebook: true,
                            is_juptyer: data.is_jupyter,
                            initial_theme: window.theme,
-                            registerDirtyMethod: registerDirtyMethod
+                            registerDirtyMethod: registerDirtyMethod,
+                            registerOmniFunction: registerOmniFunction
             })}
             else {
                 finalCallback({ is_project: false,
@@ -150,7 +154,8 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
                                 is_notebook: true,
                                is_juptyer: data.is_jupyter,
                                initial_theme: window.theme,
-                               registerDirtyMethod: registerDirtyMethod
+                               registerDirtyMethod: registerDirtyMethod,
+                                registerOmniFunction: registerOmniFunction
                 })
             }
     }
@@ -168,6 +173,10 @@ class NotebookApp extends React.Component {
         this.last_save = {};
         this.main_outer_ref = React.createRef();
         this.socket_counter = null;
+        if (this.props.registerOmniFunction) {
+            this.props.registerOmniFunction(this._omniFunction);
+        }
+        this.omniGetters = {};
         this.state = {
             mounted: false,
             console_items: [],
@@ -198,6 +207,12 @@ class NotebookApp extends React.Component {
             for (let attr of save_attrs) {
                 this.state[attr] = this.props.interface_state[attr]
             }
+        }
+        if (!window.in_context) {
+            this.key_bindings = [
+                [["ctrl+space"], this._showOmnibar],
+            ];
+            this.state.showOmnibar = false;
         }
 
     }
@@ -332,6 +347,26 @@ class NotebookApp extends React.Component {
         }
     }
 
+    _showOmnibar() {
+        this.setState({showOmnibar: true})
+    }
+
+    _closeOmnibar() {
+        this.setState({showOmnibar: false})
+    }
+
+    _omniFunction() {
+        let omni_items = [];
+        for (let ogetter in this.omniGetters) {
+            omni_items = omni_items.concat(this.omniGetters[ogetter]())
+        }
+        return omni_items
+    }
+
+    _registerOmniGetter(name, the_function) {
+        this.omniGetters[name] = the_function;
+    }
+
     render () {
         let dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme;
         let my_props = {...this.props};
@@ -344,7 +379,7 @@ class NotebookApp extends React.Component {
         let console_available_height = this.get_zoomed_console_height() - MARGIN_ADJUSTMENT;
         let project_name = my_props.is_project ? this.props.resource_name : "";
         let menus = (
-            <React.Fragment>
+            <Fragment>
                 <ProjectMenu {...this.props.statusFuncs}
                              main_id={this.props.main_id}
                              project_name={project_name}
@@ -357,9 +392,10 @@ class NotebookApp extends React.Component {
                              updateLastSave={this._updateLastSave}
                              changeCollection={null}
                              disabled_items={my_props.is_project ? [] : ["Save"]}
+                             registerOmniGetter={this._registerOmniGetter}
                              hidden_items={["Open Console as Notebook", "Export Table as Collection", "divider2", "Change collection"]}
                 />
-            </React.Fragment>
+            </Fragment>
         );
         let console_pane = (
             <ConsoleComponent {...this.props.statusFuncs}
@@ -409,7 +445,7 @@ class NotebookApp extends React.Component {
         };
         let stheme = this.props.controlled ? this.props.setTheme : this._setTheme;
         return (
-            <React.Fragment>
+            <Fragment>
                 {!window.in_context &&
                     <TacticNavbar is_authenticated={window.is_authenticated}
                           dark_theme={dark_theme}
@@ -443,7 +479,16 @@ class NotebookApp extends React.Component {
                                      handleSplitUpdate={this._handleConsoleFractionChange}
                         />
                     </div>
-            </React.Fragment>
+                {!window.in_context &&
+                    <Fragment>
+                        <TacticOmnibar omniGetters={[this._omniFunction]}
+                                       showOmnibar={this.state.showOmnibar}
+                                       closeOmnibar={this._closeOmnibar}
+                        />
+                        <KeyTrap global={true} bindings={this.key_bindings}/>
+                    </Fragment>
+                }
+            </Fragment>
         )
     }
 }

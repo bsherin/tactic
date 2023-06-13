@@ -7,10 +7,12 @@ import "../tactic_css/library_home.scss";
 import React from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
+import { Fragment } from 'react';
 
 import { Tabs, Tab, Tooltip, Icon, Position } from "@blueprintjs/core";
 import {Regions} from "@blueprintjs/table";
 
+import {TacticOmnibar} from "./tactic_omnibar";
 import {TacticSocket} from "./tactic_socket.js";
 import {handleCallback} from "./communication_react.js";
 import {doFlash} from "./toaster.js";
@@ -34,6 +36,7 @@ function _library_home_main () {
     const LibraryHomeAppPlus = withErrorDrawer(withStatus(LibraryHomeApp));
     const domContainer = document.querySelector('#library-home-root');
     ReactDOM.render(<LibraryHomeAppPlus {...library_props()}
+                                        registerOmniFunction={null}
                                         controlled={false}
                                         initial_theme={window.theme}
                                         registerLibraryTabChanger={null}/>, domContainer)
@@ -60,6 +63,10 @@ class LibraryHomeApp extends React.Component {
             selected_tab_id: "all-pane",
             pane_states: {},
         };
+        this.omniGetters = {};
+        if (this.props.registerOmniFunction) {
+            this.props.registerOmniFunction(this._omniFunction);
+        }
         for (let res_type of res_types.concat("all")) {
             this.state.pane_states[res_type] = {
                 left_width_fraction: .65,
@@ -94,6 +101,14 @@ class LibraryHomeApp extends React.Component {
             this.state.usable_width = awidth;
             this.state.dark_theme = props.initial_theme === "dark"
         }
+        if (!window.in_context) {
+          this.key_bindings = [
+              [["ctrl+space"], this._showOmnibar],
+              [["tab"], this._goToNextPane],
+              [["shift+tab"], this._goToPreviousPane]
+          ];
+          this.state.showOmnibar = false
+      }
     }
     initSocket() {
         let self = this;
@@ -133,6 +148,26 @@ class LibraryHomeApp extends React.Component {
         let new_pane_states = Object.assign({}, this.state.pane_states);
         new_pane_states[res_type] = Object.assign(old_state, state_update);
         this.setState({pane_states: new_pane_states}, callback)
+    }
+
+    _showOmnibar() {
+        this.setState({showOmnibar: true})
+    }
+
+    _closeOmnibar() {
+        this.setState({showOmnibar: false})
+    }
+
+    _omniFunction() {
+        let omni_items = [];
+        for (let ogetter in this.omniGetters) {
+            omni_items = omni_items.concat(this.omniGetters[ogetter]())
+        }
+        return omni_items
+    }
+
+    _registerOmniGetter(name, the_function) {
+        this.omniGetters[name] = the_function
     }
 
     _update_window_dimensions() {
@@ -219,6 +254,7 @@ class LibraryHomeApp extends React.Component {
                                      allow_search_inside={true}
                                      allow_search_metadata={true}
                                      MenubarClass={AllMenubar}
+                                     registerOmniGetter={this._registerOmniGetter}
                                      updatePaneState={this._updatePaneState}
                                      {...this.state.pane_states["all"]}
                                      {...this.props.errorDrawerFuncs}
@@ -243,6 +279,7 @@ class LibraryHomeApp extends React.Component {
                              allow_search_inside={false}
                              allow_search_metadata={false}
                              MenubarClass={CollectionMenubar}
+                             registerOmniGetter={this._registerOmniGetter}
                              updatePaneState={this._updatePaneState}
                              {...this.state.pane_states["collection"]}
                              {...this.props.errorDrawerFuncs}
@@ -271,6 +308,7 @@ class LibraryHomeApp extends React.Component {
                                               allow_search_inside={false}
                                               allow_search_metadata={true}
                                               MenubarClass={ProjectMenubar}
+                                              registerOmniGetter={this._registerOmniGetter}
                                               updatePaneState={this._updatePaneState}
                                               {...this.props.errorDrawerFuncs}
                                               {...this.state.pane_states["project"]}
@@ -295,6 +333,7 @@ class LibraryHomeApp extends React.Component {
                                            allow_search_inside={true}
                                            allow_search_metadata={true}
                                            MenubarClass={TileMenubar}
+                                           registerOmniGetter={this._registerOmniGetter}
                                            updatePaneState={this._updatePaneState}
                                            {...this.props.errorDrawerFuncs}
                                            {...this.state.pane_states["tile"]}
@@ -317,6 +356,7 @@ class LibraryHomeApp extends React.Component {
                                            allow_search_inside={true}
                                            allow_search_metadata={true}
                                            MenubarClass={ListMenubar}
+                                           registerOmniGetter={this._registerOmniGetter}
                                            {...this.props.errorDrawerFuncs}
                                            updatePaneState={this._updatePaneState}
                                            {...this.state.pane_states["list"]}
@@ -337,6 +377,7 @@ class LibraryHomeApp extends React.Component {
                                           allow_search_inside={true}
                                           allow_search_metadata={true}
                                           MenubarClass={CodeMenubar}
+                                          registerOmniGetter={this._registerOmniGetter}
                                           {...this.props.errorDrawerFuncs}
                                           updatePaneState={this._updatePaneState}
                                           {...this.state.pane_states["code"]}
@@ -387,6 +428,7 @@ class LibraryHomeApp extends React.Component {
                 {!this.props.controlled &&
                     <TacticNavbar is_authenticated={window.is_authenticated}
                                   dark_theme={dark_theme}
+                                  registerOmniFunction={(register_func) => this._registerOmniFunction("navbar", register_func)}
                                   set_theme={this.props.controlled ? this.props.setTheme : this._setTheme}
                                   selected={null}
                                   show_api_links={false}
@@ -408,8 +450,14 @@ class LibraryHomeApp extends React.Component {
                     </Tabs>
                 </div>
 
-                {!this.props.controlled &&
-                    <KeyTrap global={true} bindings={key_bindings}/>
+                {!window.in_context &&
+                  <Fragment>
+                      <TacticOmnibar omniGetters={[this._omniFunction]}
+                             showOmnibar={this.state.showOmnibar}
+                             closeOmnibar={this._closeOmnibar}
+                      />
+                      <KeyTrap global={true} bindings={this.key_bindings}/>
+                  </Fragment>
                 }
             </React.Fragment>
         )

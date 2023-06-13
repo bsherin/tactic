@@ -1,5 +1,6 @@
 
 import React from "react";
+import {Fragment} from "react";
 import PropTypes from 'prop-types';
 
 import {PopoverPosition} from "@blueprintjs/core";
@@ -7,6 +8,9 @@ import {PopoverPosition} from "@blueprintjs/core";
 import {ReactCodemirrorMergeView} from "./react-codemirror-mergeview.js";
 import {BpSelect} from "./blueprint_mdata_fields.js";
 import {TacticMenubar} from "./menu_utilities";
+import {TacticOmnibar} from "./tactic_omnibar";
+import {doBinding} from "./utilities_react.js";
+import {KeyTrap} from "./key_trap";
 
 export {MergeViewerApp}
 
@@ -14,6 +18,7 @@ class MergeViewerApp extends React.Component {
 
     constructor(props) {
         super(props);
+        doBinding(this);
         this.left_div_ref = React.createRef();
         this.above_main_ref = React.createRef();
         this.merge_element_ref = React.createRef();
@@ -24,6 +29,13 @@ class MergeViewerApp extends React.Component {
             "mounted": false,
         };
         this.resize_to_window = this.resize_to_window.bind(this);
+        this.omniGetters = {};
+        if (!window.in_context) {
+          this.key_bindings = [
+              [["ctrl+space"], this._showOmnibar],
+          ];
+          this.state.showOmnibar = false
+        }
     }
 
     get button_groups() {
@@ -57,6 +69,26 @@ class MergeViewerApp extends React.Component {
         this.props.handleSelectChange(this.props.select_val);
         this.resize_to_window();
         this.props.stopSpinner();
+    }
+
+    _showOmnibar() {
+        this.setState({showOmnibar: true})
+    }
+
+    _closeOmnibar() {
+        this.setState({showOmnibar: false})
+    }
+
+    _omniFunction() {
+        let omni_items = [];
+        for (let ogetter in this.omniGetters) {
+            omni_items = omni_items.concat(this.omniGetters[ogetter]())
+        }
+        return omni_items
+    }
+
+    _registerOmniGetter(name, the_function) {
+        this.omniGetters[name] = the_function
     }
 
     resize_to_window() {
@@ -101,7 +133,7 @@ class MergeViewerApp extends React.Component {
         }
         let current_style = {"bottom": 0};
         return (
-            <React.Fragment>
+            <Fragment>
                 <TacticMenubar menu_specs={this.menu_specs}
                                showRefresh={false}
                                showClose={false}
@@ -112,6 +144,7 @@ class MergeViewerApp extends React.Component {
                                toggleErrorDrawer={this.props.toggleErrorDrawer}
                                controlled={false}
                                am_selected={false}
+                               registerOmniGetter={this._registerOmniGetter}
                     />
                 <div className={outer_class}>
                     <div id="left-div" ref={this.left_div_ref} style={left_div_style}>
@@ -134,7 +167,17 @@ class MergeViewerApp extends React.Component {
                         />
                     </div>
                 </div>
-            </React.Fragment>
+                  <Fragment>
+                      <TacticOmnibar omniGetters={[this._omniFunction]}
+                                     showOmnibar={this.state.showOmnibar}
+                                     closeOmnibar={this._closeOmnibar}
+                                     is_authenticated={window.is_authenticated}
+                                     dark_theme={this.props.dark_theme}
+                                     setTheme={this.props.setTheme}
+                      />
+                      <KeyTrap global={true} bindings={this.key_bindings}/>
+                  </Fragment>
+            </Fragment>
         )
     }
 }

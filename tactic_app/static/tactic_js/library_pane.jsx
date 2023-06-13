@@ -11,7 +11,7 @@ import _ from 'lodash';
 
 import {TagButtonList} from "./tag_buttons_react.js";
 import {CombinedMetadata, icon_dict} from "./blueprint_mdata_fields.js";
-import {SearchForm, BpSelectorTable, LibraryOmnibar} from "./library_widgets.js";
+import {SearchForm, BpSelectorTable} from "./library_widgets.js";
 import {HorizontalPanes} from "./resizing_layouts.js";
 import {showModalReact, showConfirmDialogReact} from "./modal_react.js";
 import {postAjax, postAjaxPromise, postWithCallback} from "./communication_react.js"
@@ -1335,7 +1335,7 @@ class LibraryPane extends React.Component {
         let key_bindings = [
             [["up"], ()=>this._handleArrowKeyPress("ArrowUp")],
             [["down"], ()=>this._handleArrowKeyPress("ArrowDown")],
-            [["ctrl+space"], this._showOmnibar],
+            // [["ctrl+space"], this._showOmnibar],
             [["esc"], this._unsearch]
         ];
 
@@ -1416,6 +1416,7 @@ class LibraryPane extends React.Component {
         return (
             <React.Fragment>
                 <MenubarClass selected_resource={this.props.selected_resource}
+                              registerOmniGetter={this.props.registerOmniGetter}
                               multi_select={this.props.multi_select}
                               list_of_selected={this.props.list_of_selected}
                               selected_rows={this.props.selected_rows}
@@ -1454,10 +1455,6 @@ class LibraryPane extends React.Component {
                             />
                         </div>
                     <KeyTrap global={true} bindings={key_bindings} />
-                    <LibraryOmnibar res_type={this.props.pane_type}
-                                    onItemSelect={this._omnibarSelect}
-                                    handleClose={this._closeOmnibar}
-                                    showOmnibar={this.state.showOmnibar}/>
                 </div>
             </React.Fragment>
         )

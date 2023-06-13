@@ -2,9 +2,13 @@
 
 import React from "react";
 import PropTypes from 'prop-types';
+import { Fragment } from 'react';
+
 
 import { ResizeSensor} from "@blueprintjs/core";
 
+import {TacticOmnibar} from "./tactic_omnibar";
+import {KeyTrap} from "./key_trap";
 import {CombinedMetadata} from "./blueprint_mdata_fields.js";
 import {showModalReact} from "./modal_react.js";
 import {HorizontalPanes} from "./resizing_layouts.js";
@@ -60,6 +64,16 @@ class ResourceViewerApp extends React.Component {
         this.savedNotes = props.notes;
         let self = this;
         this.state = {mounted: false};
+        if (this.props.registerOmniFunction) {
+          this.props.registerOmniFunction(this._omniFunction);
+        }
+        this.omniGetters = {};
+        if (!window.in_context) {
+          this.key_bindings = [
+              [["ctrl+space"], this._showOmnibar],
+          ];
+          this.state.showOmnibar = false
+        }
     }
 
     initSocket() {
@@ -88,9 +102,30 @@ class ResourceViewerApp extends React.Component {
         this.props.stopSpinner()
     }
 
+    _showOmnibar() {
+        this.setState({showOmnibar: true})
+    }
+
+    _closeOmnibar() {
+        this.setState({showOmnibar: false})
+    }
+
+    _omniFunction() {
+        let omni_items = [];
+        for (let ogetter in this.omniGetters) {
+            omni_items = omni_items.concat(this.omniGetters[ogetter]())
+        }
+        return omni_items
+    }
+
+    _registerOmniGetter(name, the_function) {
+        this.omniGetters[name] = the_function
+    }
+
+
     render() {
         let left_pane = (
-            <React.Fragment>
+            <Fragment>
                 {this.props.show_search &&
                     <div style={{display: "flex", justifyContent: "flex-end", marginBottom: 5, marginTop: 15}}>
                         <SearchForm
@@ -104,12 +139,12 @@ class ResourceViewerApp extends React.Component {
                     </div>
                     }
                 {this.props.children}
-            </React.Fragment>
+            </Fragment>
         );
         //let available_height = this.get_new_hp_height(this.hp_ref);
 
         let right_pane = (
-            <React.Fragment>
+            <Fragment>
                 <CombinedMetadata tags={this.props.tags}
                                   outer_style={{marginTop: 0, marginLeft: 10, overflow: "auto", padding: 15,
                                                 marginRight: 0, height: "100%"}}
@@ -119,11 +154,11 @@ class ResourceViewerApp extends React.Component {
                                   readOnly={this.props.readOnly}
                                   handleChange={this.props.handleStateChange}
                                   pane_type={this.props.res_type} />
-                </React.Fragment>
+                </Fragment>
         );
 
         return(
-            <React.Fragment>
+            <Fragment>
                 <TacticMenubar menu_specs={this.props.menu_specs}
                                dark_theme={this.props.dark_theme}
                                showRefresh={window.in_context}
@@ -133,6 +168,7 @@ class ResourceViewerApp extends React.Component {
                                resource_name={this.props.resource_name}
                                showErrorDrawerButton={this.props.showErrorDrawerButton}
                                toggleErrorDrawer={this.props.toggleErrorDrawer}
+                               registerOmniGetter={this._registerOmniGetter}
                 />
                 <ResizeSensor onResize={this._handleResize} observeParents={true}>
                     <div ref={this.top_ref} style={{width: this.props.usable_width, height: this.props.usable_height, marginLeft: 15, marginTop: 0}}>
@@ -146,7 +182,19 @@ class ResourceViewerApp extends React.Component {
                         />
                     </div>
                 </ResizeSensor>
-            </React.Fragment>
+                {!window.in_context &&
+                  <Fragment>
+                      <TacticOmnibar omniGetters={[this._omniFunction]}
+                                     showOmnibar={this.state.showOmnibar}
+                                     closeOmnibar={this._closeOmnibar}
+                                     is_authenticated={window.is_authenticated}
+                                     dark_theme={this.props.dark_theme}
+                                     setTheme={this.props.setTheme}
+                      />
+                      <KeyTrap global={true} bindings={this.key_bindings}/>
+                  </Fragment>
+                }
+            </Fragment>
         )
     }
 }

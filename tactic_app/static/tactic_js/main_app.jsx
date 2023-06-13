@@ -8,6 +8,7 @@ import "../tactic_css/tactic_select.scss"
 import React from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
+import { Fragment } from 'react';
 
 import { NavbarDivider } from "@blueprintjs/core";
 import _ from 'lodash';
@@ -30,10 +31,12 @@ import {withErrorDrawer} from "./error_drawer.js";
 import {doBinding, get_ppi, renderSpinnerMessage} from "./utilities_react.js";
 import {getUsableDimensions} from "./sizing_tools.js";
 import {ErrorBoundary} from "./error_boundary";
+import {TacticOmnibar} from "./tactic_omnibar";
+import {KeyTrap} from "./key_trap";
 
 export {main_props, MainApp}
 
-const MARGIN_SIZE = 0;  // a test comment
+const MARGIN_SIZE = 0;
 const BOTTOM_MARGIN = 30;  // includes space for status messages at bottom
 const MARGIN_ADJUSTMENT = 8; // This is the amount at the top of both the table and the console
 const CONSOLE_HEADER_HEIGHT = 35;
@@ -62,12 +65,12 @@ function main_main() {
 
     postAjaxPromise(target, {"resource_name": resource_name})
         .then((data)=>{
-            main_props(data, null, gotProps)
+            main_props(data, null, gotProps, null)
         })
 }
 
 
-function main_props(data, registerDirtyMethod, finalCallback) {
+function main_props(data, registerDirtyMethod, finalCallback, registerOmniFunction) {
 
     ppi = get_ppi();
     let main_id = data.main_id;
@@ -154,7 +157,8 @@ function main_props(data, registerDirtyMethod, finalCallback) {
                            initial_data_text: fdata.data_text,
                            initial_theme: window.theme,
                            initial_doc_names: fdata.doc_names,
-                            registerDirtyMethod: registerDirtyMethod
+                           registerDirtyMethod: registerDirtyMethod,
+                           registerOmniFunction: registerOmniFunction
             })
 
         }
@@ -178,7 +182,8 @@ function main_props(data, registerDirtyMethod, finalCallback) {
                            initial_hidden_columns_list: fdata.table_spec.hidden_columns_list,
                            initial_cell_backgrounds: fdata.table_spec.cell_backgrounds,
                            initial_doc_names: fdata.doc_names,
-                           registerDirtyMethod: registerDirtyMethod
+                           registerDirtyMethod: registerDirtyMethod,
+                           registerOmniFunction: registerOmniFunction
             });
         }
 
@@ -204,6 +209,10 @@ class MainApp extends React.Component {
         this.last_save = {};
         this.resizing = false;
         this.socket_counter = null;
+        if (this.props.registerOmniFunction) {
+            this.props.registerOmniFunction(this._omniFunction);
+        }
+        this.omniGetters = {};
         let base_state = {
                 mounted: false,
                 doc_names: props.initial_doc_names,
@@ -284,6 +293,12 @@ class MainApp extends React.Component {
             }
         }
         this.updateExportsList = null;
+        if (!window.in_context) {
+            this.key_bindings = [
+                [["ctrl+space"], this._showOmnibar],
+            ];
+            this.state.showOmnibar = false;
+        }
     }
 
     _cProp(pname) {
@@ -547,6 +562,52 @@ class MainApp extends React.Component {
                 }
             }, null, self.props.main_id)
         }
+    }
+
+    _showOmnibar() {
+        this.setState({showOmnibar: true})
+    }
+
+    _closeOmnibar() {
+        this.setState({showOmnibar: false})
+    }
+
+    _omniFunction() {
+        let omni_items = [];
+        for (let ogetter in this.omniGetters) {
+            omni_items = omni_items.concat(this.omniGetters[ogetter]())
+        }
+        omni_items = omni_items.concat(this._getTileOmniItems());
+        return omni_items
+    }
+
+    _registerOmniGetter(name, the_function) {
+        this.omniGetters[name] = the_function;
+    }
+
+    _getTileOmniItems() {
+        let self = this;
+        let omni_items = [];
+        let sorted_categories = [...Object.keys(this.state.tile_types)];
+        sorted_categories.sort();
+        for (let category of sorted_categories) {
+            let sorted_types = [...this.state.tile_types[category]];
+            sorted_types.sort();
+            for (let ttype of sorted_types) {
+                omni_items.push(
+                    {
+                        category: category,
+                        display_text: ttype,
+                        search_text: ttype,
+                        icon_name: self.state.tile_icon_dict[ttype],
+                        the_function: () => this._tile_command(ttype)
+                    }
+                )
+
+            }
+
+        }
+        return omni_items
     }
 
     create_tile_menus() {
@@ -949,7 +1010,7 @@ class MainApp extends React.Component {
         }
         let project_name = my_props.is_project ? this.props.resource_name : "";
         let menus = (
-            <React.Fragment>
+            <Fragment>
                 <ProjectMenu {...this.props.statusFuncs}
                              main_id={this.props.main_id}
                              project_name={project_name}
@@ -963,11 +1024,13 @@ class MainApp extends React.Component {
                              changeCollection={this._changeCollection}
                              updateLastSave={this._updateLastSave}
                              disabled_items={my_props.is_project ? [] : ["Save"]}
+                             registerOmniGetter={this._registerOmniGetter}
                              hidden_items={["Export as Jupyter Notebook"]}
                 />
                 <DocumentMenu {...this.props.statusFuncs}
                               main_id={this.props.main_id}
                               documentNames={this.state.doc_names}
+                              registerOmniGetter={this._registerOmniGetter}
                               currentDoc={this.state.table_spec.current_doc_name}
 
                 />
@@ -986,6 +1049,7 @@ class MainApp extends React.Component {
                                 hideInAll={this._hideColumnInAll}
                                 unhideAllColumns={this._unhideAllColumns}
                                 addColumn={this._addColumn}
+                                registerOmniGetter={this._registerOmniGetter}
                                 deleteColumn={this._deleteColumn}
                     />
                 }
@@ -1000,6 +1064,7 @@ class MainApp extends React.Component {
                              insertRowAfter={()=>{this._insertRow(this.state.selected_row +1)}}
                              duplicateRow={this._duplicateRow}
                              selected_row={this.state.selected_row}
+                             registerOmniGetter={this._registerOmniGetter}
                              disabled_items={disabled_row_items}
                     />
                 }
@@ -1013,11 +1078,12 @@ class MainApp extends React.Component {
                           openErrorDrawer={this.props.openErrorDrawer}
                           show_exports_pane={this.state.show_exports_pane}
                           show_console_pane={this.state.show_console_pane}
+                          registerOmniGetter={this._registerOmniGetter}
                           setMainStateValue={this._setMainStateValue}
                 />
                 <NavbarDivider/>
                 {this.create_tile_menus()}
-            </React.Fragment>
+            </Fragment>
         );
         let table_available_height = hp_height;
         let card_header = (
@@ -1155,7 +1221,7 @@ class MainApp extends React.Component {
                 />
         );
         let table_pane =  (
-            <React.Fragment>
+            <Fragment>
                 <div ref={this.table_container_ref}>
                     <MainTableCard
                         main_id={this.props.main_id}
@@ -1166,24 +1232,24 @@ class MainApp extends React.Component {
                         updateTableSpec={this._updateTableSpec}
                     />
                 </div>
-            </React.Fragment>
+            </Fragment>
         );
         let top_pane;
         if (this.state.table_is_shrunk) {
             top_pane = (
-                <React.Fragment>
+                <Fragment>
                     <div style={{paddingLeft: 10}}>
                         {tile_pane}
                     </div>
                     {this.state.console_is_shrunk &&
                         bottom_pane
                     }
-                </React.Fragment>
+                </Fragment>
             )
         }
         else {
             top_pane = (
-                <React.Fragment>
+                <Fragment>
                     <HorizontalPanes left_pane={table_pane}
                                      right_pane={tile_pane}
                                      available_height={hp_height}
@@ -1199,7 +1265,7 @@ class MainApp extends React.Component {
                     {this.state.console_is_shrunk &&
                         bottom_pane
                     }
-                </React.Fragment>
+                </Fragment>
             );
         }
         let outer_class = "main-outer";
@@ -1263,6 +1329,15 @@ class MainApp extends React.Component {
                             />
                         }
                     </div>
+                    {!window.in_context &&
+                        <Fragment>
+                            <TacticOmnibar omniGetters={[this._omniFunction]}
+                                   showOmnibar={this.state.showOmnibar}
+                                   closeOmnibar={this._closeOmnibar}
+                            />
+                            <KeyTrap global={true} bindings={this.key_bindings}/>
+                        </Fragment>
+                    }
                 </ErrorBoundary>
             </ErrorBoundary>
         )

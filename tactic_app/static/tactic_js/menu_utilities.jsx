@@ -22,6 +22,7 @@ class TacticMenubar extends React.Component {
             for (let menu_name in this.props.menu_specs) {
                 menus.push(<ToolMenu menu_name={menu_name}
                                      key={menu_name}
+                                     registerOmniGetter={this.props.registerOmniGetter}
                                      disabled_items={this.props.disabled_items}
                                      menu_items={this.props.menu_specs[menu_name]}
                                      controlled={this.props.controlled}
@@ -215,11 +216,18 @@ class MenuComponent extends React.Component {
         this.replacers = [
             ["CTRL+", "^"],
             ["COMMAND+", "⌘"]
-        ]
+        ];
+        if (this.props.registerOmniGetter) {
+            this.props.registerOmniGetter(this.props.menu_name, this._getOmniItems)
+        }
     }
 
      _filter_on_match_list(opt_name) {
         return !this.props.hidden_items.includes(opt_name)
+    }
+
+    _filter_on_disabled_list(opt_name) {
+        return !this.props.disable_all && !this.props.disabled_items.includes(opt_name)
     }
 
     _bindingsToString(binding_list) {
@@ -234,6 +242,26 @@ class MenuComponent extends React.Component {
         }
 
         return <span style={{fontFamily: "system-ui"}}>{new_binding}</span>
+    }
+
+    _getOmniItems() {
+        let omni_items = [];
+        let pruned_list = Object.keys(this.props.option_dict).filter(this._filter_on_match_list);
+        pruned_list = pruned_list.filter(this._filter_on_disabled_list);
+        for (let choice of pruned_list) {
+            if (choice.startsWith("divider")) continue;
+            let icon_name = this.props.icon_dict.hasOwnProperty(choice) ? this.props.icon_dict[choice] : null;
+            omni_items.push(
+                {
+                    category: this.props.menu_name,
+                    display_text: choice,
+                    search_text: choice,
+                    icon_name: icon_name,
+                    the_function: this.props.option_dict[choice]
+                }
+            )
+        }
+        return omni_items
     }
 
     render () {
@@ -299,7 +327,8 @@ MenuComponent.propTypes = {
     disable_all: PropTypes.bool,
     hidden_items: PropTypes.array,
     alt_button: PropTypes.func,
-    position: PropTypes.string
+    position: PropTypes.string,
+    registerOmniGetter: PropTypes.func,
 };
 
 MenuComponent.defaultProps = {
@@ -311,7 +340,8 @@ MenuComponent.defaultProps = {
     hidden_items: [],
     icon_dict: {},
     alt_button: null,
-    position: PopoverPosition.BOTTOM_LEFT
+    position: PopoverPosition.BOTTOM_LEFT,
+    registerOmniGetter: null
 };
 
 class ToolMenu extends React.Component {
@@ -363,6 +393,7 @@ class ToolMenu extends React.Component {
                                icon_dict={this.icon_dict}
                                binding_dict={this.binding_dict}
                                disabled_items={this.props.disabled_items}
+                               registerOmniGetter={this.props.registerOmniGetter}
                                hidden_items={[]}
                 />
                 <KeyTrap global={true}
@@ -378,9 +409,12 @@ ToolMenu.propTypes = {
     menu_items: PropTypes.array,
     disabled_items: PropTypes.array,
     controlled: PropTypes.bool,
-    am_selected: PropTypes.bool
+    am_selected: PropTypes.bool,
+    registerOmniGetter: PropTypes.func
 };
 
 ToolMenu.defaultProps = {
     disabled_items: [],
+    registerOmniGetter: null
+
 };

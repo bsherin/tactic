@@ -5,6 +5,7 @@
 import "../tactic_css/tactic.scss";
 
 import React from "react";
+import {Fragment} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
@@ -142,17 +143,19 @@ class HistoryViewerApp extends React.Component {
         let option_list = this.state.history_list.map((item) => item["updatestring"]);
         let dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme;
         return (
-                <React.Fragment>
+                <Fragment>
                     {!this.props.controlled} {
                         <TacticNavbar is_authenticated={window.is_authenticated}
+                                      registerOmniFunction={(register_func) => this._registerOmniFunction("navbar", register_func)}
                                       dark_theme={dark_theme}
-                                    setTheme={this.props.controlled ? this.props.setTheme : this._setTheme}
+                                      setTheme={this._setTheme}
                                       selected={null}
                                       show_api_links={true}
                                       page_id={this.props.resource_viewer_id}
                                       user_name={window.username}/>
                     }
                     <MergeViewerApp {...this.props.statusFuncs}
+                                    setTheme={this.props.controlled ? null: this._setTheme}
                                     dark_theme={dark_theme}
                                     resource_viewer_id={this.props.resource_viewer_id}
                                     resource_name={this.props.resource_name}
@@ -164,7 +167,7 @@ class HistoryViewerApp extends React.Component {
                                     handleEditChange={this.handleEditChange}
                                     saveHandler={this.checkpointThenSaveFromLeft}
                 />
-            </React.Fragment>
+            </Fragment>
         )
     }
 

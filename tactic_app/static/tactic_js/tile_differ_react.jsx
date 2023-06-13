@@ -134,7 +134,7 @@ class TileDifferApp extends React.Component {
                 {!this.props.controlled} {
                     <TacticNavbar is_authenticated={window.is_authenticated}
                                   dark_theme={dark_theme}
-                                  setTheme={this.props.controlled ? this.props.setTheme : this._setTheme}
+                                  setTheme={this._setTheme}
                                   selected={null}
                                   show_api_links={true}
                                   page_id={this.props.resource_viewer_id}
@@ -142,6 +142,7 @@ class TileDifferApp extends React.Component {
                 }
 
                 <MergeViewerApp {...this.props.statusFuncs}
+                                setTheme={this.props.controlled ? null: this._setTheme}
                                 dark_theme={dark_theme}
                                 resource_viewer_id={this.props.resource_viewer_id}
                                 resource_name={this.props.resource_name}
