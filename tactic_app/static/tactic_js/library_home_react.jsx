@@ -94,20 +94,19 @@ class LibraryHomeApp extends React.Component {
         if (props.registerLibraryTabChanger) {
             props.registerLibraryTabChanger(this._handleTabChange)
         }
-        if (!window.controlled) {
+        if (!window.in_context) {
             const aheight = getUsableDimensions(true).usable_height_no_bottom;
             const awidth = getUsableDimensions(true).usable_width - 170;
             this.state.usable_height = aheight;
             this.state.usable_width = awidth;
-            this.state.dark_theme = props.initial_theme === "dark"
-        }
-        if (!window.in_context) {
-          this.key_bindings = [
+            this.state.dark_theme = props.initial_theme === "dark";
+
+            this.key_bindings = [
               [["ctrl+space"], this._showOmnibar],
               [["tab"], this._goToNextPane],
               [["shift+tab"], this._goToPreviousPane]
-          ];
-          this.state.showOmnibar = false
+            ];
+            this.state.showOmnibar = false
       }
     }
     initSocket() {
