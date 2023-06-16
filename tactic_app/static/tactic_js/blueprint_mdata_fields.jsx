@@ -1,22 +1,25 @@
-
 import "../tactic_css/tactic_select.scss"
 
 import React from "react";
+import {Fragment, useState, useEffect, useRef, memo} from "react";
 import PropTypes from 'prop-types';
 
-import { PopoverPosition, Button, MenuDivider, MenuItem, TagInput, TextArea, FormGroup, InputGroup,
-    Card, Icon, Collapse, H4} from "@blueprintjs/core";
+import {
+    PopoverPosition, Button, MenuDivider, MenuItem, TagInput, TextArea, FormGroup, InputGroup,
+    Card, Icon, Collapse, H4
+} from "@blueprintjs/core";
 import {Select2, MultiSelect} from "@blueprintjs/select";
 
 import markdownIt from 'markdown-it'
 import 'markdown-it-latex/dist/index.css'
 import markdownItLatex from 'markdown-it-latex'
+
 const mdi = markdownIt({html: true});
 mdi.use(markdownItLatex);
 import _ from 'lodash';
 
 import {postAjaxPromise} from "./communication_react.js"
-import {doBinding, propsAreEqual} from "./utilities_react.js";
+import {propsAreEqual} from "./utilities_react.js";
 import {tile_icon_dict} from "./icon_info.js";
 
 export {icon_dict};
@@ -31,64 +34,43 @@ let icon_dict = {
     code: "code"
 };
 
-class SuggestionItemAdvanced extends React.Component{
-    constructor(props) {
-        super(props);
-        doBinding(this)
-    }
 
-    shouldComponentUpdate(nextProps, nextState) {
-        return !propsAreEqual(nextProps, this.props)
-    }
-
-    render() {
-        let item = this.props.item;
-        let display_text = "display_text" in item ? item.display_text : item.text;
-        let the_icon = "icon" in item ? item.icon : null;
-        if (item.isgroup) {
-            return (
-                <MenuDivider className="tile-form-menu-item" title={display_text}/>
-            )
-        }
-        else {
-            return (
-                <MenuItem
-                    className="tile-form-menu-item"
-                    text={display_text}
-                    key={display_text}
-                    icon={the_icon}
-                    onClick={this.props.handleClick}
-                    active={this.props.modifiers.active}
-                    shouldDismissPopover={true}
-                />
-            );
-        }
+function SuggestionItemAdvanced({item, handleClick, modifiers}) {
+    let display_text = "display_text" in item ? item.display_text : item.text;
+    let the_icon = "icon" in item ? item.icon : null;
+    if (item.isgroup) {
+        return (
+            <MenuDivider className="tile-form-menu-item" title={display_text}/>
+        )
+    } else {
+        return (
+            <MenuItem
+                className="tile-form-menu-item"
+                text={display_text}
+                key={display_text}
+                icon={the_icon}
+                onClick={handleClick}
+                active={modifiers.active}
+                shouldDismissPopover={true}
+            />
+        );
     }
 }
+
+SuggestionItemAdvanced = memo(SuggestionItemAdvanced);
+
 SuggestionItemAdvanced.propTypes = {
     item: PropTypes.object,
     modifiers: PropTypes.object,
     handleClick: PropTypes.func
 };
 
-function renderSuggestionAdvanced (item, {modifiers, handleClick, index}) {
+function renderSuggestionAdvanced(item, {modifiers, handleClick, index}) {
     return <SuggestionItemAdvanced item={item} key={index} modifiers={modifiers} handleClick={handleClick}/>
 }
 
-class BpSelectAdvanced extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.state = {
-            activeItem: this.props.value
-        }
-    }
-
-    shouldComponentUpdate(nextProps, nextState) {
-        return !propsAreEqual(nextProps, this.props)
-    }
-
-    _filterSuggestion(query, item) {
+function BpSelectAdvanced({options, value, onChange, buttonIcon}) {
+    function _filterSuggestion(query, item) {
         if (query.length === 0) {
             return true
         }
@@ -97,19 +79,14 @@ class BpSelectAdvanced extends React.Component {
         let the_text;
         if (typeof item == "object") {
             the_text = item["text"]
-        }
-        else {
+        } else {
             the_text = item
         }
         return re.test(the_text.toLowerCase())
     }
 
-    _handleActiveItemChange(newActiveItem) {
-        // this.setState({activeItem: newActiveItem})
-    }
-
-    _getActiveItem(val) {
-        for (let option of this.props.options) {
+    function _getActiveItem(val) {
+        for (let option of options) {
             if (_.isEqual(option, val)) {
                 return option
             }
@@ -117,26 +94,27 @@ class BpSelectAdvanced extends React.Component {
         return null
     }
 
-    render () {
-        let value = this.props.value;
-        let display_text = "display_text" in value ? value.display_text : value.text;
-        return (
-            <Select2
-                activeItem={this._getActiveItem(value)}
-                onActiveItemChange={this._handleActiveItemChange}
-                itemRenderer={renderSuggestionAdvanced}
-                itemPredicate={this._filterSuggestion}
-                items={this.props.options}
-                onItemSelect={this.props.onChange}
-                popoverProps={{minimal: true,
-                    boundary: "window",
-                    modifiers: {flip: false, preventOverflow: true},
-                    position: PopoverPosition.BOTTOM_LEFT}}>
-                <Button text={display_text} className="button-in-select" icon={this.props.buttonIcon}  />
-            </Select2>
-        )
-    }
+    let display_text = "display_text" in value ? value.display_text : value.text;
+    return (
+        <Select2
+            activeItem={_getActiveItem(value)}
+            onActiveItemChange={null}
+            itemRenderer={renderSuggestionAdvanced}
+            itemPredicate={_filterSuggestion}
+            items={options}
+            onItemSelect={onChange}
+            popoverProps={{
+                minimal: true,
+                boundary: "window",
+                modifiers: {flip: false, preventOverflow: true},
+                position: PopoverPosition.BOTTOM_LEFT
+            }}>
+            <Button text={display_text} className="button-in-select" icon={buttonIcon}/>
+        </Select2>
+    )
 }
+
+BpSelectAdvanced = memo(BpSelectAdvanced);
 
 BpSelectAdvanced.propTypes = {
     options: PropTypes.array,
@@ -149,21 +127,11 @@ BpSelectAdvanced.defaultProps = {
     buttonIcon: null,
 };
 
+function BpSelect(props) {
 
-class BpSelect extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.state = {
-            activeItem: this.props.value
-        }
-    }
+    const [activeItem, setActiveItem] = useState(null);
 
-    shouldComponentUpdate(nextProps, nextState) {
-        return !propsAreEqual(nextProps, this.props, ["buttonTextObject"])
-    }
-
-    _filterSuggestion(query, item) {
+    function _filterSuggestion(query, item) {
         if ((query.length === 0) || (item["isgroup"])) {
             return true
         }
@@ -172,48 +140,51 @@ class BpSelect extends React.Component {
         let the_text;
         if (typeof item == "object") {
             the_text = item["text"]
-        }
-        else {
+        } else {
             the_text = item
         }
         return re.test(the_text.toLowerCase())
     }
 
-    _handleActiveItemChange(newActiveItem) {
+    function _handleActiveItemChange(newActiveItem) {
         let the_text;
         if (typeof item == "object") {
             the_text = newActiveItem["text"]
-        }
-        else {
+        } else {
             the_text = newActiveItem
         }
-        this.setState({activeItem: the_text})
+        setActiveItem(the_text);
     }
 
-    render () {
-        return (
-            <Select2
-                className="tile-form-menu-item"
-                activeItem={this.state.activeItem}
-                filterable={this.props.filterable}
-                onActiveItemChange={this._handleActiveItemChange}
-                itemRenderer={renderSuggestion}
-                itemPredicate={this._filterSuggestion}
-                items={_.cloneDeep(this.props.options)}
-                onItemSelect={this.props.onChange}
-                popoverProps={{minimal: true,
-                    boundary: "window",
-                    modifiers: {flip: false, preventOverflow: true},
-                    position: this.props.popoverPosition}}>
-                <Button className="button-in-select"
-                           style={this.props.buttonStyle}
-                           small={this.props.small}
-                           text={this.props.buttonTextObject ? this.props.buttonTextObject : this.props.value}
-                           icon={this.props.buttonIcon} />
-            </Select2>
-        )
-    }
+    return (
+        <Select2
+            className="tile-form-menu-item"
+            activeItem={activeItem}
+            filterable={props.filterable}
+            onActiveItemChange={_handleActiveItemChange}
+            itemRenderer={renderSuggestion}
+            itemPredicate={_filterSuggestion}
+            items={_.cloneDeep(props.options)}
+            onItemSelect={props.onChange}
+            popoverProps={{
+                minimal: true,
+                boundary: "window",
+                modifiers: {flip: false, preventOverflow: true},
+                position: props.popoverPosition
+            }}>
+            <Button className="button-in-select"
+                    style={props.buttonStyle}
+                    small={props.small}
+                    text={props.buttonTextObject ? props.buttonTextObject : props.value}
+                    icon={props.buttonIcon}/>
+        </Select2>
+    )
+
 }
+
+BpSelect = memo(BpSelect, (prevProps, newProps) => {
+    propsAreEqual(newProps, prevProps, ["buttonTextObject"])
+});
 
 BpSelect.propTypes = {
     options: PropTypes.array,
@@ -236,57 +207,46 @@ BpSelect.defaultProps = {
     small: undefined
 };
 
-
-class SuggestionItem extends React.Component{
-    constructor(props) {
-        super(props);
-        doBinding(this)
+function SuggestionItem({item, modifiers, handleClick}) {
+    let the_text;
+    let the_icon;
+    if (typeof item == "object") {
+        the_text = item["text"];
+        the_icon = item["icon"]
+    } else {
+        the_text = item;
+        the_icon = null
     }
-
-    shouldComponentUpdate(nextProps, nextState) {
-        return !propsAreEqual(nextProps, this.props)
-    }
-
-    render() {
-        let the_text;
-        let the_icon;
-        if (typeof this.props.item == "object") {
-            the_text = this.props.item["text"];
-            the_icon = this.props.item["icon"]
-        }
-        else {
-            the_text = this.props.item;
-            the_icon = null
-        }
-        return (
-            <MenuItem
-                className="tile-form-menu-item"
-                text={the_text}
-                icon={the_icon}
-                active={this.props.modifiers.active}
-                onClick={()=>this.props.handleClick(the_text)}
-                shouldDismissPopover={true}
-            />
-        );
-    }
+    return (
+        <MenuItem
+            className="tile-form-menu-item"
+            text={the_text}
+            icon={the_icon}
+            active={modifiers.active}
+            onClick={() => handleClick(the_text)}
+            shouldDismissPopover={true}
+        />
+    );
 }
+
+SuggestionItem = memo(SuggestionItem);
+
 SuggestionItem.propTypes = {
     item: PropTypes.oneOfType([
-            PropTypes.string,
-            PropTypes.object]),
-    index: PropTypes.number,
+        PropTypes.string,
+        PropTypes.object]),
     modifiers: PropTypes.object,
     handleClick: PropTypes.func,
 };
 
 
-function renderSuggestion (item, { modifiers, handleClick, index}) {
+function renderSuggestion(item, {modifiers, handleClick, index}) {
     return <SuggestionItem item={item} key={index} modifiers={modifiers} handleClick={handleClick}/>
 }
 
 const renderCreateNewTag = (query, active, handleClick) => {
     let hclick = handleClick;
-    return(
+    return (
         <MenuItem
             icon="add"
             key="create_item"
@@ -298,208 +258,190 @@ const renderCreateNewTag = (query, active, handleClick) => {
     );
 };
 
-class NativeTags extends React.Component {
-    constructor (props) {
-        super(props);
-        doBinding(this);
+function NativeTags(props) {
+    const [query, setQuery] = useState("");
+    const [suggestions, setSuggestions] = useState([]);
 
-        this.state = {
-            query: "",
-          suggestions: [
-          ]
-        }
-     }
-
-     componentDidMount() {
-        let self = this;
-        let data_dict = {"pane_type": this.props.pane_type, "is_repository": false};
-        if (!this.props.pane_type) {
-            self.setState({"suggestions": []});
+    useEffect(() => {
+        let data_dict = {"pane_type": props.pane_type, "is_repository": false};
+        if (!props.pane_type) {
+            setSuggestions([]);
             return
         }
         postAjaxPromise("get_tag_list", data_dict)
             .then(data => {
                 let all_tags = data.tag_list;
-                self.setState({"suggestions": all_tags})
+                setSuggestions(all_tags)
             })
-     }
+    }, [props.pane_type]);
 
-     renderTag(item) {
+    function renderTag(item) {
         return item
-     }
-
-    _handleDelete (tag, i) {
-        let new_tlist = [...this.props.tags];
-        new_tlist.splice(i, 1);
-        this.props.handleChange(new_tlist)
-      }
-
-     _handleAddition (tag) {
-        let new_tlist = [...this.props.tags];
-        new_tlist.push(tag);
-        this.props.handleChange(new_tlist)
     }
 
-    _filterSuggestion(query, item) {
+    function _createItemFromQuery(name) {
+        return name
+    }
+
+    function _handleDelete(tag, i) {
+        let new_tlist = [...props.tags];
+        new_tlist.splice(i, 1);
+        props.handleChange(new_tlist)
+    }
+
+    function _handleAddition(tag) {
+        let new_tlist = [...props.tags];
+        new_tlist.push(tag);
+        props.handleChange(new_tlist)
+    }
+
+    function _filterSuggestion(query, item) {
         if (query.length === 0) {
             return false
         }
         let re = new RegExp(`^${query}`);
-
         return re.test(item)
     }
 
-    _createItemFromQuery(name) {
-        return name
+    if (props.readOnly) {
+        return (<TagInput values={props.tags} disabled={true}/>)
     }
 
-      render () {
-        if (this.props.readOnly) {
-            return (
-                <TagInput values={this.props.tags} disabled={true}/>
-            )
-        }
-        return (
-            <MultiSelect
-                allowCreate={true}
-                openOnKeyDown={true}
-                createNewItemFromQuery={this._createItemFromQuery}
-                createNewItemRenderer={renderCreateNewTag}
-                resetOnSelect={true}
-                itemRenderer={renderSuggestion}
-                selectedItems={this.props.tags}
-                allowNew={true}
-                items={this.state.suggestions}
-                itemPredicate={this._filterSuggestion}
-                tagRenderer={this.renderTag}
-                tagInputProps={{onRemove: this._handleDelete}}
-                onItemSelect={this._handleAddition} />
-        )
-    }
+    return (
+        <MultiSelect
+            allowCreate={true}
+            openOnKeyDown={true}
+            createNewItemFromQuery={_createItemFromQuery}
+            createNewItemRenderer={renderCreateNewTag}
+            resetOnSelect={true}
+            itemRenderer={renderSuggestion}
+            selectedItems={props.tags}
+            allowNew={true}
+            items={suggestions}
+            itemPredicate={_filterSuggestion}
+            tagRenderer={renderTag}
+            tagInputProps={{onRemove: _handleDelete}}
+            onItemSelect={_handleAddition}/>
+    )
 }
+
+NativeTags = memo(NativeTags);
 
 NativeTags.proptypes = {
     tags: PropTypes.array,
     handleChange: PropTypes.func,
-    pane_type: PropTypes.string
+    pane_type: PropTypes.string,
+    readOnly: PropTypes.bool,
 };
 
-class NotesField extends React.Component {
+function NotesField(props) {
+    const [mdHeight, setMdHeight] = useState(500);
+    const [showMarkdown, setShowMarkdown] = useState(() => {
+        return hasOnlyWhitespace() ? false : props.show_markdown_initial
+    });
+    const awaitingFocus = useRef(false);
 
-    constructor(props) {
-        super(props);
+    var mdRef = useRef(null);
+    var notesRef = useRef(null);
 
-        this.state = {
-            "md_height": 500,
-            "show_markdown": this.hasOnlyWhitespace ? false : this.props.show_markdown_initial
-        };
-        doBinding(this);
-        // this.notes_ref = React.createRef();
-        this.md_ref = React.createRef();
-        this.awaiting_focus = false
-    }
-
-    getNotesField() {
-        return $(this.notes_ref)
-    }
-
-    get hasOnlyWhitespace() {
-        return !this.props.notes.trim().length
-    }
-
-    getMarkdownField() {
-        return $(this.md_ref.current)
-    }
-
-    componentDidUpdate(prevProps, prevState, snapShot) {
-        if (this.awaiting_focus) {
-            this.focusNotes();
-            this.awaiting_focus = false
-        }
-        else if (this.hasOnlyWhitespace) {
-            if (this.state.show_markdown) {
+    useEffect(() => {
+        if (awaitingFocus.current) {
+            focusNotes();
+            awaitingFocus.current = false
+        } else if (hasOnlyWhitespace()) {
+            if (showMarkdown) {
                 // If we are here, then we are reusing a notes field that previously showed markdown
                 // and now is empty. We want to prevent markdown being shown when a character is typed.
-                this.setState({"show_markdown": false})
+                setShowMarkdown(false)
             }
-        }
-        else if (!this.state.show_markdown && (this.notes_ref !== document.activeElement)) {
+        } else if (!showMarkdown && (notesRef.current !== document.activeElement)) {
             // If we are here it means the change was initiated externally
-            this._showMarkdown()
+            _showMarkdown()
+        }
+    });
+
+    function getNotesField() {
+        return $(notesRef.current)
+    }
+
+    function hasOnlyWhitespace() {
+        return !props.notes.trim().length
+    }
+
+    function getMarkdownField() {
+        return $(mdRef.current)
+    }
+
+    function focusNotes() {
+        getNotesField().focus()
+    }
+
+    function _notesRefHandler(the_ref) {
+        notesRef.current = the_ref
+    }
+
+    function _hideMarkdown() {
+        if (props.readOnly) return;
+        awaitingFocus.current = true;  // We can't set focus until the input is visible
+        setShowMarkdown(false);
+    }
+
+    function _handleMyBlur() {
+        _showMarkdown();
+        if (props.handleBlur != null) {
+            props.handleBlur()
         }
     }
 
-    focusNotes() {
-        this.getNotesField().focus()
-    }
-
-    _hideMarkdown() {
-        if (this.props.readOnly) return;
-        this.awaiting_focus = true;  // We can't set focus until the input is visible
-        this.setState({"show_markdown": false});
-    }
-
-    _handleMyBlur() {
-        this._showMarkdown();
-        if (this.props.handleBlur != null) {
-            this.props.handleBlur()
+    function _showMarkdown() {
+        if (!hasOnlyWhitespace()) {
+            setShowMarkdown(true)
         }
     }
 
-    _showMarkdown() {
-        if (!this.hasOnlyWhitespace) {
-            this.setState({"show_markdown": true})
-        }
+    let really_show_markdown = hasOnlyWhitespace() ? false : showMarkdown;
+    let notes_style = {
+        display: really_show_markdown ? "none" : "block",
+        fontSize: 13,
+        resize: "both"
+    };
+    let md_style = {
+        display: really_show_markdown ? "block" : "none",
+        maxHeight: mdHeight,
+        fontSize: 13
+    };
+    var converted_markdown;
+    if (really_show_markdown) {
+        converted_markdown = mdi.render(props.notes)
     }
 
-    _notesRefHandler(the_ref) {
-        this.notes_ref = the_ref;
-    }
-
-    render() {
-        let really_show_markdown =  this.hasOnlyWhitespace ? false : this.state.show_markdown;
-        let notes_style = {
-            "display": really_show_markdown ? "none" : "block",
-            fontSize: 13,
-            resize: "both"
-            // fontSize: 14
-        };
-        let md_style = {
-            "display": really_show_markdown ? "block": "none",
-            "maxHeight": this.state.md_height,
-            "fontSize": 13
-        };
-        var converted_markdown;
-        if (really_show_markdown) {
-            // converted_markdown = this.converter.makeHtml(this.props.notes);
-            converted_markdown = mdi.render(this.props.notes)
-        }
-
-        let converted_dict = {__html: converted_markdown};
-        return (
-        <React.Fragment>
+    let converted_dict = {__html: converted_markdown};
+    return (
+        <Fragment>
             <TextArea
-                      rows="20"
-                      cols="75"
-                      inputRef={this._notesRefHandler}
-                      growVertically={false}
-                      onBlur={this._handleMyBlur}
-                      onChange={this.props.handleChange}
-                      value={this.props.notes}
-                      disabled={this.props.readOnly}
-                      style={notes_style}
+                rows="20"
+                cols="75"
+                inputRef={_notesRefHandler}
+                growVertically={false}
+                onBlur={_handleMyBlur}
+                onChange={props.handleChange}
+                value={props.notes}
+                disabled={props.readOnly}
+                style={notes_style}
             />
-            <div ref={this.md_ref}
+            <div ref={mdRef}
                  style={md_style}
-                 onClick={this._hideMarkdown}
+                 onClick={_hideMarkdown}
                  className="notes-field-markdown-output"
                  dangerouslySetInnerHTML={converted_dict}/>
-        </React.Fragment>
-        )
-    }
+        </Fragment>
+    )
 }
 
+NotesField = memo(NotesField);
+
 NotesField.propTypes = {
+    readOnly: PropTypes.bool,
     notes: PropTypes.string,
     handleChange: PropTypes.func,
     show_markdown_initial: PropTypes.bool,
@@ -521,7 +463,7 @@ const icon_list = ["application", "code",
     "list-columns", "delta",
     "edit", "fork", "numbered-list", "path-search", "search",
     "plus", "repeat", "reset", "resolve",
-    "widget-button", 
+    "widget-button",
     "star", "time", "settings", "properties", "cog", "key-command",
     "ip-address", "download", "cloud", "globe",
     "tag", "label",
@@ -550,167 +492,153 @@ for (let category of cat_order) {
     }
 }
 
-class IconSelector extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this);
-    }
-
-    render() {
-        return (
-            <BpSelectAdvanced options={icon_dlist}
-                              onChange={(item)=>{this.props.handleSelectChange(item.val)}}
-                              buttonIcon={this.props.icon_val}
-                              value={icon_entry_dict[this.props.icon_val]}/>
-        )
-    }
+function IconSelector({handleSelectChange, icon_val}) {
+    return (
+        <BpSelectAdvanced options={icon_dlist}
+                          onChange={(item) => {
+                              handleSelectChange(item.val)
+                          }}
+                          buttonIcon={icon_val}
+                          value={icon_entry_dict[icon_val]}/>
+    )
 }
+
+IconSelector = memo(IconSelector);
 
 IconSelector.propTypes = {
     handleSelectChange: PropTypes.func,
     icon_val: PropTypes.string
 };
 
+function CombinedMetadata(props) {
+    const [auxIsOpen, setAuxIsOpen] = useState(false);
+    const [tempNotes, setTempNotes] = useState(null);
+    const updateDelay = 500;
+    const notesTimer = useRef(null);
 
-class CombinedMetadata extends React.Component {
-
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.notes_timer = null;
-        this.state = {
-            auxIsOpen: false,
-            temp_notes: null,
-        };
-        this.update_delay = 500
-    }
-
-    _handleNotesChange(event) {
-        if (this.notes_timer) {
-            clearTimeout(this.notes_timer);
-            this.notes_timer = null;
+    function _handleNotesChange(event) {
+        if (notesTimer.current) {
+            clearTimeout(notesTimer.current);
+            notesTimer.current = null;
         }
-        let self = this;
         let new_val = event.target.value;
-        this.notes_timer = setTimeout(()=> {
-                self.notes_timer = null;
-                self.props.handleChange({"notes": new_val})
-            }, self.update_delay);
-        this.setState({temp_notes: new_val});
+        notesTimer.current = setTimeout(() => {
+            notesTimer.current = null;
+            props.handleChange({"notes": new_val})
+        }, updateDelay);
+        setTempNotes(new_val);
     }
 
-    _handleTagsChange(tags) {
-        this.props.handleChange({"tags": tags})
+    function _handleTagsChange(tags) {
+        props.handleChange({"tags": tags})
     }
 
-    _handleTagsChangeNative(tags) {
-        this.props.handleChange({"tags": tags})
+    function _handleTagsChangeNative(tags) {
+        props.handleChange({"tags": tags})
     }
 
-    _handleCategoryChange(event) {
-        this.props.handleChange({"category": event.target.value})
-    }
-    _handleIconChange(icon) {
-        this.props.handleChange({"icon": icon})
+    function _handleCategoryChange(event) {
+        props.handleChange({"category": event.target.value})
     }
 
-    _toggleAuxVisibility() {
-        this.setState({auxIsOpen: !this.state.auxIsOpen})
+    function _handleIconChange(icon) {
+        props.handleChange({"icon": icon})
     }
 
-    render () {
-        let addition_field_style = {fontSize: 14};
-        let additional_items;
-        let current_notes = this.notes_timer ? this.state.temp_notes : this.props.notes;
-        if (this.props.additional_metadata != null) {
-            additional_items = [];
-            for (let field in this.props.additional_metadata) {
-                let md = this.props.additional_metadata[field];
-                if (Array.isArray(md)) {
-                    md = md.join(", ")
-                }
-                else if (field == "collection_name") {
-                    let sresult = /\.\w*$/.exec(md);
-                    if (sresult != null)  md = sresult[0].slice(1)
-                }
-                additional_items.push(
-                     <FormGroup label={field + ": "} className="metadata-form_group" key={field} inline={true}>
-                            {/*<InputGroup disabled={true} value={md} fill={true}/>*/}
-                         <span className="bp4-ui-text metadata-field">{String(md)}</span>
-                        </FormGroup>
-                )
+    function _toggleAuxVisibility() {
+        setAuxIsOpen(!auxIsOpen)
+    }
+
+    let addition_field_style = {fontSize: 14};
+    let additional_items;
+    let current_notes = notesTimer.current ? tempNotes : props.notes;
+    if (props.additional_metadata != null) {
+        additional_items = [];
+        for (let field in props.additional_metadata) {
+            let md = props.additional_metadata[field];
+            if (Array.isArray(md)) {
+                md = md.join(", ")
+            } else if (field == "collection_name") {
+                let sresult = /\.\w*$/.exec(md);
+                if (sresult != null) md = sresult[0].slice(1)
             }
+            additional_items.push(
+                <FormGroup label={field + ": "} className="metadata-form_group" key={field} inline={true}>
+                    {/*<InputGroup disabled={true} value={md} fill={true}/>*/}
+                    <span className="bp4-ui-text metadata-field">{String(md)}</span>
+                </FormGroup>
+            )
         }
-        let button_base = this.state.auxIsOpen ? "Hide" : "Show";
-        return (
-            <Card elevation={this.props.elevation} className="combined-metadata accent-bg" style={this.props.outer_style}>
-                {this.props.name != null &&
-                    <H4><Icon icon={icon_dict[this.props.res_type]}
-                              style={{marginRight: 6, marginBottom: 2}}/>{this.props.name}</H4>
-                }
-
-                    <FormGroup label="Tags">
-                        <NativeTags tags={this.props.tags}
-                                    readOnly={this.props.readOnly}
-                                    handleChange={this._handleTagsChange}
-                                    pane_type={this.props.pane_type}/>
-                    </FormGroup>
-                    {this.props.category != null &&
-                        <FormGroup label="Category">
-                            <InputGroup  onChange={this._handleCategoryChange}
-                                            value={this.props.category} />
-                        </FormGroup>
-                    }
-                    {this.props.icon != null &&
-                        <FormGroup label="Icon">
-                            <IconSelector icon_val={this.props.icon}
-                                          handleSelectChange={this._handleIconChange}/>
-                        </FormGroup>
-                    }
-                    <FormGroup label="Notes">
-                        <NotesField notes={current_notes}
-                                    readOnly={this.props.readOnly}
-                                    handleChange={this._handleNotesChange}
-                                    show_markdown_initial={true}
-                                    handleBlur={this.props.handleNotesBlur}
-                        />
-                        {this.props.notes_buttons && this.props.notes_buttons()}
-                    </FormGroup>
-                    <FormGroup label="Created: " className="metadata-form_group" inline={true}>
-                        <span className="bp4-ui-text metadata-field">{this.props.created}</span>
-                        {/*<InputGroup disabled={true} value={this.props.created}/>*/}
-                    </FormGroup>
-                    {this.props.updated != null &&
-                        <FormGroup label="Updated: " className="metadata-form_group" inline={true}>
-                            <span className="bp4-ui-text metadata-field">{this.props.updated}</span>
-                        </FormGroup>
-                    }
-                    {this.props.additional_metadata != null &&
-                        additional_items
-                    }
-                {this.props.aux_pane != null &&
-                    <React.Fragment>
-                    <div  className="d-flex flex-row justify-content-around" style={{marginTop: 20}}>
+    }
+    let button_base = auxIsOpen ? "Hide" : "Show";
+    return (
+        <Card elevation={props.elevation} className="combined-metadata accent-bg" style={props.outer_style}>
+            {props.name != null &&
+                <H4><Icon icon={icon_dict[props.res_type]}
+                          style={{marginRight: 6, marginBottom: 2}}/>{props.name}</H4>}
+            <FormGroup label="Tags">
+                <NativeTags tags={props.tags}
+                            readOnly={props.readOnly}
+                            handleChange={_handleTagsChange}
+                            pane_type={props.pane_type}/>
+            </FormGroup>
+            {props.category != null &&
+                <FormGroup label="Category">
+                    <InputGroup onChange={_handleCategoryChange}
+                                value={props.category}/>
+                </FormGroup>
+            }
+            {props.icon != null &&
+                <FormGroup label="Icon">
+                    <IconSelector icon_val={props.icon}
+                                  handleSelectChange={_handleIconChange}/>
+                </FormGroup>
+            }
+            <FormGroup label="Notes">
+                <NotesField notes={current_notes}
+                            readOnly={props.readOnly}
+                            handleChange={_handleNotesChange}
+                            show_markdown_initial={true}
+                            handleBlur={props.handleNotesBlur}
+                />
+                {props.notes_buttons && props.notes_buttons()}
+            </FormGroup>
+            <FormGroup label="Created: " className="metadata-form_group" inline={true}>
+                <span className="bp4-ui-text metadata-field">{props.created}</span>
+            </FormGroup>
+            {props.updated != null &&
+                <FormGroup label="Updated: " className="metadata-form_group" inline={true}>
+                    <span className="bp4-ui-text metadata-field">{props.updated}</span>
+                </FormGroup>
+            }
+            {props.additional_metadata != null &&
+                additional_items
+            }
+            {props.aux_pane != null &&
+                <Fragment>
+                    <div className="d-flex flex-row justify-content-around" style={{marginTop: 20}}>
                         <Button fill={false}
-                                   small={true}
-                                   minimal={false}
-                                   onClick={this._toggleAuxVisibility}>
-                            {button_base + " " + this.props.aux_pane_title}
+                                small={true}
+                                minimal={false}
+                                onClick={_toggleAuxVisibility}>
+                            {button_base + " " + props.aux_pane_title}
                         </Button>
                     </div>
-                    <Collapse isOpen={this.state.auxIsOpen} keepChildrenMounted={true}>
-                        {this.props.aux_pane}
+                    <Collapse isOpen={auxIsOpen} keepChildrenMounted={true}>
+                        {props.aux_pane}
                     </Collapse>
-                </React.Fragment>
-                }
-                <div style={{height: 100}}/>
-            </Card>
-        )
-    }
+                </Fragment>
+            }
+            <div style={{height: 100}}/>
+        </Card>
+    )
 }
+
+CombinedMetadata = memo(CombinedMetadata);
 
 CombinedMetadata.propTypes = {
     outer_style: PropTypes.object,
+    readOnly: PropTypes.bool,
     elevation: PropTypes.number,
     res_type: PropTypes.string,
     pane_type: PropTypes.string,
@@ -725,6 +653,7 @@ CombinedMetadata.propTypes = {
     handleNotesBlur: PropTypes.func,
     additional_metadata: PropTypes.object,
     aux_pane: PropTypes.object,
+    aux_pane_title: PropTypes.string,
     notes_buttons: PropTypes.oneOfType([
         PropTypes.number,
         PropTypes.func])

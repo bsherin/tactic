@@ -132,14 +132,12 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
     if (props.registerLibraryTabChanger) {
       props.registerLibraryTabChanger(_this._handleTabChange);
     }
-    if (!window.controlled) {
+    if (!window.in_context) {
       var aheight = (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
       var awidth = (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
       _this.state.usable_height = aheight;
       _this.state.usable_width = awidth;
       _this.state.dark_theme = props.initial_theme === "dark";
-    }
-    if (!window.in_context) {
       _this.key_bindings = [[["ctrl+space"], _this._showOmnibar], [["tab"], _this._goToNextPane], [["shift+tab"], _this._goToPreviousPane]];
       _this.state.showOmnibar = false;
     }

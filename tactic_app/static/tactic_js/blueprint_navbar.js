@@ -4,7 +4,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" =
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.TacticNavbar = void 0;
+exports.TacticNavbar = TacticNavbar;
 exports.get_theme_cookie = get_theme_cookie;
 exports.render_navbar = render_navbar;
 exports.set_theme_cookie = set_theme_cookie;
@@ -13,26 +13,17 @@ var ReactDOM = _interopRequireWildcard(require("react-dom"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
 var _main_menus_react = require("./main_menus_react.js");
-var _utilities_react = require("./utilities_react.js");
 var _communication_react = require("./communication_react");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
-function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 var context_url = $SCRIPT_ROOT + '/context';
 var library_url = $SCRIPT_ROOT + '/library';
 var repository_url = $SCRIPT_ROOT + '/repository';
@@ -52,337 +43,253 @@ function get_theme_cookie() {
 function set_theme_cookie(theme) {
   document.cookie = "tactic_theme=" + theme;
 }
-var TacticNavbar = /*#__PURE__*/function (_React$Component) {
-  _inherits(TacticNavbar, _React$Component);
-  var _super = _createSuper(TacticNavbar);
-  function TacticNavbar(props) {
-    var _this;
-    _classCallCheck(this, TacticNavbar);
-    _this = _super.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
-    _this.lg_ref = /*#__PURE__*/_react["default"].createRef();
-    _this.state = {
-      usable_width: window.innerWidth - padding * 2,
-      old_left_width: 0
-    };
-    _this.overflow_items = [];
-    _this.update_state_vars = ["usable_width", "old_left_width"];
-    _this.update_props = ["is_authenticated", "user_name", "menus", "selected", "show_api_links", "dark_theme"];
-    return _this;
+function TacticNavbar(props) {
+  var _useState = (0, _react.useState)(function () {
+      return window.innerWidth - padding * 2;
+    }),
+    _useState2 = _slicedToArray(_useState, 2),
+    usable_width = _useState2[0],
+    set_usable_width = _useState2[1];
+  var _useState3 = (0, _react.useState)(null),
+    _useState4 = _slicedToArray(_useState3, 2),
+    old_left_width = _useState4[0],
+    set_old_left_width = _useState4[1];
+  var lg_ref = (0, _react.useRef)(null);
+  var overflow_items = [];
+  function _update_window_dimensions() {
+    set_usable_width(window.innerWidth - 2 * padding);
   }
-  _createClass(TacticNavbar, [{
-    key: "shouldComponentUpdate",
-    value: function shouldComponentUpdate(nextProps, nextState, nextContext) {
-      var _iterator = _createForOfIteratorHelper(this.update_props),
-        _step;
-      try {
-        for (_iterator.s(); !(_step = _iterator.n()).done;) {
-          var prop = _step.value;
-          if (nextProps[prop] != this.props[prop]) {
-            return true;
-          }
-        }
-      } catch (err) {
-        _iterator.e(err);
-      } finally {
-        _iterator.f();
-      }
-      var _iterator2 = _createForOfIteratorHelper(this.update_state_vars),
-        _step2;
-      try {
-        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-          var state = _step2.value;
-          if (nextState[state] != this.state[state]) {
-            return true;
-          }
-        }
-      } catch (err) {
-        _iterator2.e(err);
-      } finally {
-        _iterator2.f();
-      }
-      return false;
-    }
-  }, {
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      window.addEventListener("resize", this._update_window_dimensions);
-      this._update_window_dimensions();
-      this.setState({
-        old_left_width: this._getLeftWidth()
-      });
-      this.last_theme = this.props.dark_theme;
-    }
 
-    // For some reason sizing things are a little flaky without old_left_width stuff
-  }, {
-    key: "componentDidUpdate",
-    value: function componentDidUpdate(prevProps, prevState, snapshot) {
-      var new_left_width = this._getLeftWidth();
-      if (new_left_width != this.state.old_left_width) {
-        this.setState({
-          old_left_width: new_left_width
-        });
+  // For some reason sizing things are a little flaky without old_left_width stuff
+  (0, _react.useEffect)(function () {
+    window.addEventListener("resize", _update_window_dimensions);
+    _update_window_dimensions();
+    if (!old_left_width) {
+      set_old_left_width(_getLeftWidth());
+    } else {
+      var new_left_width = _getLeftWidth();
+      if (new_left_width != old_left_width) {
+        set_old_left_width(new_left_width);
       }
     }
-  }, {
-    key: "_update_window_dimensions",
-    value: function _update_window_dimensions() {
-      this.setState({
-        "usable_width": window.innerWidth - 2 * padding
-      });
-    }
-  }, {
-    key: "_handle_signout",
-    value: function _handle_signout() {
-      window.open($SCRIPT_ROOT + "/logout/" + this.props.page_id, "_self");
-      return false;
-    }
-  }, {
-    key: "_toggleTheme",
-    value: function _toggleTheme() {
+  });
+  function getIntent(butname) {
+    return props.selected == butname ? "primary" : null;
+  }
+  function _onOverflow(items) {
+    overflow_items = items;
+  }
+  function _handle_signout() {
+    window.open($SCRIPT_ROOT + "/logout/" + props.page_id, "_self");
+    return false;
+  }
+  function _setTheme(event) {
+    if (window.user_id == undefined) {
+      var theme = event.target.checked ? "dark" : "light";
+      set_theme_cookie(theme);
+    } else {
       var result_dict = {
         "user_id": window.user_id,
-        "theme": !this.props.dark_theme ? "dark" : "light"
+        "theme": event.target.checked ? "dark" : "light"
       };
       (0, _communication_react.postWithCallback)("host", "set_user_theme", result_dict, null, null);
-      if (this.props.setTheme) {
-        this.props.setTheme(!this.props.dark_theme);
+    }
+    if (props.setTheme) {
+      props.setTheme(event.target.checked);
+    }
+  }
+  function renderNav(item) {
+    return /*#__PURE__*/_react["default"].createElement(_core.Button, {
+      icon: item.icon,
+      key: item.text,
+      minimal: true,
+      style: {
+        minWidth: "fit-content"
+      },
+      text: item.text,
+      intent: item.intent,
+      onClick: item.onClick
+    });
+  }
+  function _getLeftWidth() {
+    if (lg_ref && lg_ref.current) {
+      return lg_ref.current.getBoundingClientRect().width;
+    }
+    return null;
+  }
+  function _getRightWidth() {
+    var lg_width = _getLeftWidth();
+    if (lg_width) {
+      return usable_width - lg_width - 35;
+    } else {
+      return .25 * usable_width - 35;
+    }
+  }
+  function _authenticatedItems() {
+    return [{
+      icon: "add",
+      text: "Context",
+      intent: getIntent("library"),
+      onClick: function onClick() {
+        window.open(context_url);
       }
-    }
-  }, {
-    key: "_setTheme",
-    value: function _setTheme(event) {
-      if (window.user_id == undefined) {
-        var theme = event.target.checked ? "dark" : "light";
-        set_theme_cookie(theme);
-      } else {
-        var result_dict = {
-          "user_id": window.user_id,
-          "theme": event.target.checked ? "dark" : "light"
-        };
-        (0, _communication_react.postWithCallback)("host", "set_user_theme", result_dict, null, null);
+    }, {
+      icon: "add",
+      text: "Tabbed",
+      intent: getIntent("library"),
+      onClick: function onClick() {
+        window.open(library_url);
       }
-      if (this.props.setTheme) {
-        this.props.setTheme(event.target.checked);
+    }, {
+      icon: "database",
+      text: "Repository",
+      intent: getIntent("repository"),
+      onClick: function onClick() {
+        window.open(repository_url);
       }
-    }
-  }, {
-    key: "getIntent",
-    value: function getIntent(butname) {
-      return this.props.selected == butname ? "primary" : null;
-    }
-  }, {
-    key: "renderNav",
-    value: function renderNav(item) {
-      return /*#__PURE__*/_react["default"].createElement(_core.Button, {
-        icon: item.icon,
-        key: item.text,
-        minimal: true,
-        text: item.text,
-        intent: item.intent,
-        onClick: item.onClick
-      });
-    }
-  }, {
-    key: "_getLeftWidth",
-    value: function _getLeftWidth() {
-      if (this.lg_ref && this.lg_ref.current) {
-        return this.lg_ref.current.getBoundingClientRect().width;
+    }, {
+      icon: "person",
+      text: props.user_name,
+      intent: getIntent("account"),
+      onClick: function onClick() {
+        window.open(account_url);
       }
-      return null;
-    }
-  }, {
-    key: "_getRightWidth",
-    value: function _getRightWidth() {
-      var lg_width = this._getLeftWidth();
-      if (lg_width) {
-        return this.state.usable_width - lg_width - 35;
-      } else {
-        return .25 * this.state.usable_width - 35;
+    }, {
+      icon: "log-out",
+      text: "Logout",
+      intent: getIntent("logout"),
+      onClick: _handle_signout
+    }];
+  }
+  function _notAuthenticatedItems() {
+    return [{
+      icon: "log-in",
+      text: "Login",
+      intent: getIntent("login"),
+      onClick: function onClick() {
+        window.open(login_url);
       }
-    }
-  }, {
-    key: "_authenticatedItems",
-    value: function _authenticatedItems() {
-      return [{
-        icon: "add",
-        text: "Context",
-        intent: this.getIntent("library"),
-        onClick: function onClick() {
-          window.open(context_url);
-        }
-      }, {
-        icon: "add",
-        text: "Tabbed",
-        intent: this.getIntent("library"),
-        onClick: function onClick() {
-          window.open(library_url);
-        }
-      }, {
-        icon: "database",
-        text: "Repository",
-        intent: this.getIntent("repository"),
-        onClick: function onClick() {
-          window.open(repository_url);
-        }
-      }, {
-        icon: "person",
-        text: this.props.user_name,
-        intent: this.getIntent("account"),
-        onClick: function onClick() {
-          window.open(account_url);
-        }
-      }, {
-        icon: "log-out",
-        text: "Logout",
-        intent: this.getIntent("logout"),
-        onClick: this._handle_signout
-      }];
-    }
-  }, {
-    key: "_notAuthenticatedItems",
-    value: function _notAuthenticatedItems() {
-      return [{
-        icon: "log-in",
-        text: "Login",
-        intent: this.getIntent("login"),
-        onClick: function onClick() {
-          window.open(login_url);
-        }
-      }];
-    }
-  }, {
-    key: "_onOverflow",
-    value: function _onOverflow(items) {
-      this.overflow_items = items;
-    }
-  }, {
-    key: "_overflowRenderer",
-    value: function _overflowRenderer() {
-      var opt_dict = {};
-      var icon_dict = {};
-      var _iterator3 = _createForOfIteratorHelper(this.overflow_items),
-        _step3;
-      try {
-        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-          var item = _step3.value;
-          opt_dict[item.text] = item.onClick;
-          icon_dict[item.text] = item.icon;
-        }
-      } catch (err) {
-        _iterator3.e(err);
-      } finally {
-        _iterator3.f();
+    }];
+  }
+  function _overflowRenderer() {
+    var opt_dict = {};
+    var icon_dict = {};
+    var _iterator = _createForOfIteratorHelper(overflow_items),
+      _step;
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var item = _step.value;
+        opt_dict[item.text] = item.onClick;
+        icon_dict[item.text] = item.icon;
       }
-      return /*#__PURE__*/_react["default"].createElement(_main_menus_react.MenuComponent, {
-        alt_button: function alt_button() {
-          return /*#__PURE__*/_react["default"].createElement("span", {
-            className: "bp4-breadcrumbs-collapsed",
-            style: {
-              marginTop: 5
-            }
-          });
-        },
-        option_dict: opt_dict,
-        binding_dict: {},
-        icon_dict: icon_dict
-      });
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
     }
-  }, {
-    key: "render",
-    value: function render() {
-      var nav_class = this.props.menus == null ? "justify-content-end" : "justify-content-between";
-      var right_nav_items = [];
-      if (this.props.show_api_links) {
-        right_nav_items = [{
-          icon: "code-block",
-          text: "Api",
-          intent: null,
-          onClick: function onClick() {
-            window.open("https://tactic.readthedocs.io/en/latest/Tile-Commands.html");
+    return /*#__PURE__*/_react["default"].createElement(_main_menus_react.MenuComponent, {
+      alt_button: function alt_button() {
+        return /*#__PURE__*/_react["default"].createElement("span", {
+          className: "bp4-breadcrumbs-collapsed",
+          style: {
+            marginTop: 5
           }
-        }, {
-          icon: "code-block",
-          text: "ObjApi",
-          intent: null,
-          onClick: function onClick() {
-            window.open("https://tactic.readthedocs.io/en/latest/Object-Oriented-API.html");
-          }
-        }];
+        });
+      },
+      option_dict: opt_dict,
+      binding_dict: {},
+      icon_dict: icon_dict
+    });
+  }
+  var nav_class = props.menus == null ? "justify-content-end" : "justify-content-between";
+  var right_nav_items = [];
+  if (props.show_api_links) {
+    right_nav_items = [{
+      icon: "code-block",
+      text: "Api",
+      intent: null,
+      onClick: function onClick() {
+        window.open("https://tactic.readthedocs.io/en/latest/Tile-Commands.html");
       }
-      right_nav_items.push({
-        icon: "manual",
-        text: "Docs",
-        intent: null,
-        onClick: function onClick() {
-          window.open("http://tactic.readthedocs.io/en/latest/index.html");
-        }
-      });
-      if (this.props.is_authenticated) {
-        right_nav_items = right_nav_items.concat(this._authenticatedItems());
-      } else {
-        right_nav_items = right_nav_items.concat(this._notAuthenticatedItems());
+    }, {
+      icon: "code-block",
+      text: "ObjApi",
+      intent: null,
+      onClick: function onClick() {
+        window.open("https://tactic.readthedocs.io/en/latest/Object-Oriented-API.html");
       }
-      var right_width = this._getRightWidth();
-      var right_style = {
-        width: right_width
-      };
-      right_style.justifyContent = "flex-end";
-      var theme_class = this.props.dark_theme ? "bp4-dark" : "light-theme";
-      var name_string = "Tactic";
-      if (this.props.extra_text != null) {
-        name_string += " " + this.props.extra_text;
-      }
-      return /*#__PURE__*/_react["default"].createElement(_core.Navbar, {
-        style: {
-          paddingLeft: 10
-        },
-        className: theme_class
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: "bp4-navbar-group bp4-align-left",
-        ref: this.lg_ref
-      }, /*#__PURE__*/_react["default"].createElement(_core.NavbarHeading, {
-        className: "d-flex align-items-center"
-      }, /*#__PURE__*/_react["default"].createElement("img", {
-        className: "mr-2",
-        src: window.tactic_img_url,
-        alt: "",
-        width: "32 ",
-        height: "32"
-      }), name_string), this.props.menus != null && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, this.props.menus)), /*#__PURE__*/_react["default"].createElement(_core.NavbarGroup, {
-        align: _core.Alignment.RIGHT,
-        style: right_style
-      }, /*#__PURE__*/_react["default"].createElement(_core.NavbarDivider, null), /*#__PURE__*/_react["default"].createElement(_core.OverflowList, {
-        items: right_nav_items,
-        overflowRenderer: this._overflowRenderer,
-        visibleItemRenderer: this.renderNav,
-        onOverflow: this._onOverflow
-      }), /*#__PURE__*/_react["default"].createElement(_core.NavbarDivider, null), /*#__PURE__*/_react["default"].createElement(_core.Switch, {
-        checked: this.props.dark_theme,
-        onChange: this._setTheme,
-        large: false,
-        style: {
-          marginBottom: 0
-        },
-        innerLabel: "Light",
-        innerLabelChecked: "Dark",
-        alignIndicator: "center"
-      })));
+    }];
+  }
+  right_nav_items.push({
+    icon: "manual",
+    text: "Docs",
+    intent: null,
+    onClick: function onClick() {
+      window.open("http://tactic.readthedocs.io/en/latest/index.html");
     }
-  }]);
-  return TacticNavbar;
-}(_react["default"].Component);
-exports.TacticNavbar = TacticNavbar;
+  });
+  if (props.is_authenticated) {
+    right_nav_items = right_nav_items.concat(_authenticatedItems());
+  } else {
+    right_nav_items = right_nav_items.concat(_notAuthenticatedItems());
+  }
+  var right_width = _getRightWidth();
+  var right_style = {
+    width: right_width
+  };
+  right_style.justifyContent = "flex-end";
+  var theme_class = props.dark_theme ? "bp4-dark" : "light-theme";
+  var name_string = "Tactic";
+  if (props.extra_text != null) {
+    name_string += " " + props.extra_text;
+  }
+  return /*#__PURE__*/_react["default"].createElement(_core.Navbar, {
+    style: {
+      paddingLeft: 10
+    },
+    className: theme_class
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    className: "bp4-navbar-group bp4-align-left",
+    ref: lg_ref
+  }, /*#__PURE__*/_react["default"].createElement(_core.NavbarHeading, {
+    className: "d-flex align-items-center"
+  }, /*#__PURE__*/_react["default"].createElement("img", {
+    className: "mr-2",
+    src: window.tactic_img_url,
+    alt: "",
+    width: "32 ",
+    height: "32"
+  }), name_string), props.menus != null && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, props.menus)), /*#__PURE__*/_react["default"].createElement(_core.NavbarGroup, {
+    align: _core.Alignment.RIGHT,
+    style: right_style
+  }, /*#__PURE__*/_react["default"].createElement(_core.NavbarDivider, null), /*#__PURE__*/_react["default"].createElement(_core.OverflowList, {
+    items: right_nav_items,
+    overflowRenderer: _overflowRenderer,
+    visibleItemRenderer: renderNav,
+    onOverflow: _onOverflow
+  }), /*#__PURE__*/_react["default"].createElement(_core.NavbarDivider, null), /*#__PURE__*/_react["default"].createElement(_core.Switch, {
+    checked: props.dark_theme,
+    onChange: _setTheme,
+    large: false,
+    style: {
+      marginBottom: 0
+    },
+    innerLabel: "Light",
+    innerLabelChecked: "Dark",
+    alignIndicator: "center"
+  })));
+}
+exports.TacticNavbar = TacticNavbar = /*#__PURE__*/(0, _react.memo)(TacticNavbar);
 TacticNavbar.propTypes = {
-  refreshTab: _propTypes["default"].func,
-  closeTab: _propTypes["default"].func,
   is_authenticated: _propTypes["default"].bool,
   user_name: _propTypes["default"].string,
   menus: _propTypes["default"].object,
   selected: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
   page_id: _propTypes["default"].string,
-  extra_text: _propTypes["default"].string
+  extra_text: _propTypes["default"].string,
+  dark_theme: _propTypes["default"].bool,
+  setTheme: _propTypes["default"].func,
+  show_api_links: _propTypes["default"].bool
 };
 TacticNavbar.defaultProps = {
   extra_text: null,
@@ -390,7 +297,8 @@ TacticNavbar.defaultProps = {
   closeTab: null,
   menus: null,
   selected: null,
-  show_api_links: false
+  show_api_links: false,
+  setTheme: null
 };
 function render_navbar() {
   var selected = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;

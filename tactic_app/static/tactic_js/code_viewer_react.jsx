@@ -5,7 +5,7 @@
 import "../tactic_css/tactic.scss";
 
 import React from "react";
-import {Fragment} from "react";
+import {Fragment, useState, useEffect, useRef, useMemo, memo} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
@@ -18,33 +18,34 @@ import {doFlash, withStatus} from "./toaster.js"
 
 import {getUsableDimensions, BOTTOM_MARGIN} from "./sizing_tools.js";
 import {withErrorDrawer} from "./error_drawer.js";
-import {doBinding} from "./utilities_react.js";
 import {guid} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 import {showModalReact} from "./modal_react.js";
+import {useCallbackStack, useConstructor} from "./utilities_react";
 
 export {code_viewer_props, CodeViewerApp}
 
-function code_viewer_main () {
+function code_viewer_main() {
     function gotProps(the_props) {
         let CodeViewerAppPlus = withErrorDrawer(withStatus(CodeViewerApp));
         let the_element = <CodeViewerAppPlus {...the_props}
-                                     controlled={false}
-                                     initial_theme={window.theme}
-                                     changeName={null}
+                                             controlled={false}
+                                             initial_theme={window.theme}
+                                             changeName={null}
         />;
         let domContainer = document.querySelector('#root');
         ReactDOM.render(the_element, domContainer)
     }
+
     let target = window.is_repository ? "repository_view_code_in_context" : "view_code_in_context";
     postAjaxPromise(target, {"resource_name": window.resource_name})
-        .then((data)=>{
+        .then((data) => {
             code_viewer_props(data, null, gotProps, null);
         })
 }
 
 function code_viewer_props(data, registerDirtyMethod, finalCallback, registerOmniFunction) {
-    
+
     let resource_viewer_id = guid();
     var tsocket = new TacticSocket("main", 5000, resource_viewer_id);
 
@@ -64,83 +65,105 @@ function code_viewer_props(data, registerDirtyMethod, finalCallback, registerOmn
         registerOmniFunction: registerOmniFunction
     })
 }
+
 const controllable_props = ["resource_name", "usable_height", "usable_width"];
 
-class CodeViewerApp extends React.Component {
+function CodeViewerApp(props) {
 
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.top_ref = React.createRef();
-        this.cc_ref = React.createRef();
-        this.search_ref = React.createRef();
-        this.savedContent = props.the_content;
-        this.savedTags = props.split_tags;
-        this.savedNotes = props.notes;
-        let self = this;
+    const top_ref = useRef(null);
+    const cc_ref = useRef(null);
+    const search_ref = useRef(null);
+    const cc_offset_top = useRef(null);
 
-        this.state = {
-            code_content: props.the_content,
-            notes: props.notes,
-            tags: props.split_tags,
-            search_string: "",
-            regex: false,
-            search_matches: null
-        };
+    const savedContent = useRef(props.the_content);
+    const savedTags = useRef(props.split_tags);
+    const savedNotes = useRef(props.notes);
 
-        if (props.controlled) {
-            props.registerDirtyMethod(this._dirty)
-        }
+    const [didInit, setDidInit] = useState(false);
+    const [code_content, set_code_content] = useState(props.the_content);
+    const [notes, set_notes] = useState(props.notes);
+    const [tags, set_tags] = useState(props.split_tags);
+    const [search_string, set_search_string] = useState("");
+    const [regex, set_regex] = useState(false);
+    const [search_matches, set_search_matches] = useState(props.null);
 
+
+    useEffect(() => {
+        props.stopSpinner();
+        cc_offset_top.current = cc_ref.current.offsetTop;
         if (!props.controlled) {
-            const aheight = getUsableDimensions(true).usable_height_no_bottom;
-            const awidth = getUsableDimensions(true).usable_width - 170;
-            this.state.usable_height = aheight;
-            this.state.usable_width = awidth;
-            this.state.dark_theme = props.initial_theme === "dark";
-            this.state.resource_name = props.resource_name;
+            window.dark_theme = dark_theme;
+            window.addEventListener("resize", _update_window_dimensions);
+            _update_window_dimensions();
+        }
+    }, []);
+
+    const prepCallback = useCallbackStack();
+
+    useConstructor(() => {
+        if (props.controlled) {
+            props.registerDirtyMethod(_dirty)
+        }
+        if (!props.controlled) {
+            const [usable_width, set_usable_width] = useState(() => {
+                return getUsableDimensions(true).usable_width - 170
+            });
+            const [usable_height, set_usable_height] = useState(() => {
+                return getUsableDimensions(true).usable_height_no_bottom
+            });
+            const [dark_theme, set_dark_theme] = useState(() => {
+                return props.initial_theme === "dark"
+            });
+            const [resource_name, set_resource_name] = useState(props.resource_name);
+            const cPropGetters = {
+                usable_width: usable_width,
+                usable_height: usable_height,
+                resource_name: resource_name
+            };
             window.addEventListener("beforeunload", function (e) {
-                if (self._dirty()) {
+                if (_dirty()) {
                     e.preventDefault();
                     e.returnValue = ''
                 }
-            });
+            })
         }
-    }
+    });
 
-    _update_search_state(nstate, callback=null) {
-        this.setState(nstate, callback)
-    }
-
-    componentDidMount() {
-        this.props.stopSpinner();
-        if (!this.props.controlled) {
-            window.dark_theme = this.state.dark_theme;
-            window.addEventListener("resize", this._update_window_dimensions);
-            this._update_window_dimensions();
-        }
-    }
-
-    _setTheme(dark_theme) {
-        this.setState({dark_theme: dark_theme}, () => {
-            if (!window.in_context) {
-                window.dark_theme = this.state.dark_theme
+    function _update_search_state(nstate, callback = null) {
+        for (let field in nstate) {
+            switch (field) {
+                case "regex":
+                    set_regex(nstate[field]);
+                    break;
+                case "search_string":
+                    set_search_string(nstate[field]);
+                    break;
             }
-        })
+        }
     }
 
-    _cProp(pname) {
-        return this.props.controlled ? this.props[pname] : this.state[pname]
+    function _setTheme(dark_theme) {
+        set_dark_theme(dark_theme);
+
+        if (!window.in_context) {
+            prepCallback(() => {
+                window.dark_theme = dark_theme
+            })
+        }
     }
 
-    get menu_specs() {
-        let ms;
-        if (this.props.is_repository) {
+    function _cProp(pname) {
+        return props.controlled ? props[pname] : cPropGetters[pname]
+    }
+
+    const menu_specs = useMemo(() => {
+        var ms;
+        if (props.is_repository) {
             ms = {
                 Transfer: [{
                     "name_text": "Copy to library", "icon_name": "import",
                     "click_handler": () => {
-                        copyToLibrary("list", this._cProp("resource_name"))
+                        copyToLibrary("list", _cProp("resource_name"))
                     }, tooltip: "Copy to library"
                 }]
             }
@@ -150,7 +173,7 @@ class CodeViewerApp extends React.Component {
                     {
                         name_text: "Save",
                         icon_name: "saved",
-                        click_handler: this._saveMe,
+                        click_handler: _saveMe,
                         key_bindings: ['ctrl+s'],
                         tooltip: "Save"
                     },
@@ -158,103 +181,106 @@ class CodeViewerApp extends React.Component {
                     {
                         name_text: "Save As...",
                         icon_name: "floppy-disk",
-                        click_handler: this._saveMeAs,
+                        click_handler: _saveMeAs,
                         tooltip: "Save as"
                     },
                 ],
                 Transfer: [
-                    {name_text: "Share",
+                    {
+                        name_text: "Share",
                         icon_name: "share",
                         click_handler: () => {
-                            sendToRepository("list", this._cProp("resource_name"))
+                            sendToRepository("list", _cProp("resource_name"))
                         },
                         tooltip: "Share to repository"
                     },
                 ]
-
-            }
-        }
-        for (const [menu_name, menu] of Object.entries(ms)) {
-            for (let but of menu) {
-                but.click_handler = but.click_handler.bind(this)
             }
         }
         return ms
-    }
+    });
 
-    _setResourceNameState(new_name, callback=null) {
-        if (this.props.controlled) {
-            this.props.changeResourceName(new_name, callback)
+    function _setResourceNameState(new_name, callback = null) {
+        if (props.controlled) {
+            props.changeResourceName(new_name, callback)
         } else {
-            this.setState({resource_name: new_name}, callback)
+            set_resource_name(new_name);
+            prepCallback(callback);
         }
     }
 
-    _handleStateChange(state_stuff) {
-        this.setState(state_stuff)
+    function _handleMetadataChange(state_stuff) {
+        for (let field in state_stuff) {
+            switch (field) {
+                case "tags":
+                    set_tags(state_stuff[field]);
+                    break;
+                case "notes":
+                    set_notes(state_stuff[field]);
+                    break;
+            }
+        }
     }
 
-    _handleCodeChange(new_code) {
-        this.setState({"code_content": new_code})
+    function _handleCodeChange(new_code) {
+        set_code_content(new_code)
     }
 
-    _update_window_dimensions() {
-        this.setState({
-            usable_width: window.innerWidth - this.top_ref.current.offsetLeft,
-            usable_height: window.innerHeight - this.top_ref.current.offsetTop
-        });
+    function _update_window_dimensions() {
+        set_usable_width(window.innerWidth - top_ref.current.offsetLeft);
+        set_usable_height(window.innerHeight - top_ref.current.offsetTop)
     }
 
-    get_new_cc_height() {
-        let uheight = this._cProp("usable_height");
-        if (this.cc_ref && this.cc_ref.current) {  // This will be true after the initial render
-            return uheight - this.cc_ref.current.offsetTop - BOTTOM_MARGIN
+    function get_new_cc_height() {
+        let uheight = _cProp("usable_height");
+        if (cc_offset_top.current) {
+            return uheight - cc_offset_top.current - BOTTOM_MARGIN
+        } else if (cc_ref && cc_ref.current) {  // This will be true after the initial render
+            return uheight - cc_ref.current.offsetTop - BOTTOM_MARGIN
         } else {
             return uheight - 100
         }
     }
 
-    _setSearchMatches(nmatches) {
-        this.setState({search_matches: nmatches})
+    function _setSearchMatches(nmatches) {
+        set_search_matches(nmatches);
     }
 
-    _extraKeys() {
-        let self = this;
+    function _extraKeys() {
         return {
-            'Ctrl-S': self._saveMe,
+            'Ctrl-S': _saveMe,
             'Ctrl-F': () => {
-                self.search_ref.current.focus()
+                search_ref.current.focus()
             },
             'Cmd-F': () => {
-                self.search_ref.current.focus()
+                search_ref.current.focus()
             }
         }
     }
 
-    _saveMe() {
-        if (!this.props.am_selected) {
+    function _saveMe() {
+        if (!props.am_selected) {
             return false
         }
-        const new_code = this.state.code_content;
-        const tagstring = this.state.tags.join(" ");
-        const notes = this.state.notes;
-        const tags = this.state.tags;  // In case it's modified wile saving
+        const new_code = code_content;
+        const tagstring = tags.join(" ");
+        const local_notes = notes;
+        const local_tags = tags;  // In case it's modified wile saving
         const result_dict = {
-            "code_name": this._cProp("resource_name"),
+            "code_name": _cProp("resource_name"),
             "new_code": new_code,
             "tags": tagstring,
-            "notes": notes,
+            "notes": local_notes,
             "user_id": window.user_id
         };
-        let self = this;
         postWithCallback("host", "update_code_task", result_dict,
-            update_success, null, this.props.resource_viewer_id);
+            update_success, null, props.resource_viewer_id);
 
         function update_success(data) {
             if (data.success) {
-                self.savedContent = new_code;
-                self.savedTags = tags;
-                self.savedNotes = notes;
+                savedContent.current = new_code;
+                savedTags.current = local_tags;
+                savedNotes.current = local_notes;
                 data.timeout = 2000;
             }
             doFlash(data);
@@ -262,28 +288,27 @@ class CodeViewerApp extends React.Component {
         }
     }
 
-    _saveMeAs(e) {
-        this.props.startSpinner();
-        let self = this;
+    function _saveMeAs(e) {
+        props.startSpinner();
         postWithCallback("host", "get_code_names", {"user_id": window.user_id}, function (data) {
             let checkboxes;
             showModalReact("Save Code As", "New Code Name", CreateNewList,
                 "NewCode", data["code_names"], null, doCancel)
-        }, null, this.props.main_id);
+        }, null, props.main_id);
 
         function doCancel() {
-            self.props.stopSpinner()
+            props.stopSpinner()
         }
 
         function CreateNewList(new_name) {
             const result_dict = {
                 "new_res_name": new_name,
-                "res_to_copy": self._cProp("resource_name")
+                "res_to_copy": _cProp("resource_name")
             };
             postAjaxPromise('/create_duplicate_code', result_dict)
                 .then((data) => {
-                        self._setResourceNameState(new_name, () => {
-                            self._saveMe()
+                        _setResourceNameState(new_name, () => {
+                            _saveMe()
                         })
                     }
                 )
@@ -291,96 +316,92 @@ class CodeViewerApp extends React.Component {
         }
     }
 
-
-    _dirty() {
-        let current_content = this.state.code_content;
-        const tags = this.state.tags;
-        const notes = this.state.notes;
-        return !((current_content == this.savedContent) && (tags == this.savedTags) && (notes == this.savedNotes))
+    function _dirty() {
+        return !((code_content == savedContent.current) && (tags == savedTags.current) && (notes == savedNotes.current))
     }
 
-    render() {
-        let dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme;
-        let my_props = {...this.props};
-        if (!this.props.controlled) {
-            for (let prop_name of controllable_props) {
-                my_props[prop_name] = this.state[prop_name]
-            }
+    let actual_dark_theme = props.controlled ? props.dark_theme : dark_theme;
+    let my_props = {...props};
+    if (!props.controlled) {
+        for (let prop_name of controllable_props) {
+            my_props[prop_name] = state[prop_name]
         }
-        let outer_style = {
-            width: "100%",
-            height: my_props.usable_height,
-            paddingLeft: 0,
-            position: "relative"
-        };
-        let cc_height = this.get_new_cc_height();
-        let outer_class = "resource-viewer-holder";
-        if (!this.props.controlled) {
-            if (dark_theme) {
-                outer_class = outer_class + " bp4-dark";
-            } else {
-                outer_class = outer_class + " light-theme"
-            }
+    }
+    let outer_style = {
+        width: "100%",
+        height: my_props.usable_height,
+        paddingLeft: 0,
+        position: "relative"
+    };
+    let cc_height = get_new_cc_height();
+    let outer_class = "resource-viewer-holder";
+    if (!props.controlled) {
+        if (actual_dark_theme) {
+            outer_class = outer_class + " bp4-dark";
+        } else {
+            outer_class = outer_class + " light-theme"
         }
-        return (
-            <Fragment>
-                {!this.props.controlled &&
+    }
+    return (
+        <Fragment>
+            {!props.controlled &&
                 <TacticNavbar is_authenticated={window.is_authenticated}
-                              dark_theme={dark_theme}
-                              setTheme={this.props.controlled ? this.props.setTheme : this._setTheme}
+                              dark_theme={actual_dark_theme}
+                              setTheme={props.controlled ? props.setTheme : _setTheme}
                               selected={null}
                               show_api_links={true}
-                              page_id={this.props.resource_viewer_id}
+                              page_id={props.resource_viewer_id}
                               user_name={window.username}/>
-                }
-                <div className={outer_class} ref={this.top_ref} style={outer_style}>
-                    <ResourceViewerApp {...my_props}
-                                       dark_theme={dark_theme}
-                                       setTheme={this.props.controlled ? null: this._setTheme}
-                                       resource_viewer_id={this.props.resource_viewer_id}
-                                       setResourceNameState={this._setResourceNameState}
-                                       refreshTab={this.props.refreshTab}
-                                       closeTab={this.props.closeTab}
-                                       res_type="code"
-                                       resource_name={my_props.resource_name}
-                                       menu_specs={this.menu_specs}
-                                       handleStateChange={this._handleStateChange}
-                                       created={this.props.created}
-                                       meta_outer={this.props.meta_outer}
-                                       notes={this.state.notes}
-                                       tags={this.state.tags}
-                                       saveMe={this._saveMe}
-                                       search_ref={this.search_ref}
-                                       show_search={true}
-                                       update_search_state={this._update_search_state}
-                                       search_string={this.state.search_string}
-                                       search_matches={this.state.search_matches}
-                                       regex={this.state.regex}
-                                       allow_regex_search={true}
-                                       showErrorDrawerButton={true}
-                                       toggleErrorDrawer={this.props.toggleErrorDrawer}
-                                       registerOmniFunction={this.props.registerOmniFunction}
-                    >
-                        <ReactCodemirror code_content={this.state.code_content}
-                                         dark_theme={dark_theme}
-                                         am_selected={this.props.am_selected}
-                                         extraKeys={this._extraKeys()}
-                                         readOnly={this.props.readOnly}
-                                         handleChange={this._handleCodeChange}
-                                         saveMe={this._saveMe}
-                                         search_term={this.state.search_string}
-                                         update_search_state={this._update_search_state}
-                                         regex_search={this.state.regex}
-                                         setSearchMatches={this._setSearchMatches}
-                                         code_container_ref={this.cc_ref}
-                                         code_container_height={cc_height}
-                        />
-                    </ResourceViewerApp>
-                </div>
-            </Fragment>
-        )
-    }
+            }
+            <div className={outer_class} ref={top_ref} style={outer_style}>
+                <ResourceViewerApp {...my_props}
+                                   dark_theme={actual_dark_theme}
+                                   setTheme={props.controlled ? null : _setTheme}
+                                   resource_viewer_id={props.resource_viewer_id}
+                                   setResourceNameState={_setResourceNameState}
+                                   refreshTab={props.refreshTab}
+                                   closeTab={props.closeTab}
+                                   res_type="code"
+                                   resource_name={my_props.resource_name}
+                                   menu_specs={menu_specs}
+                                   handleStateChange={_handleMetadataChange}
+                                   created={props.created}
+                                   meta_outer={props.meta_outer}
+                                   notes={notes}
+                                   tags={tags}
+                                   saveMe={_saveMe}
+                                   search_ref={search_ref}
+                                   show_search={true}
+                                   update_search_state={_update_search_state}
+                                   search_string={search_string}
+                                   search_matches={search_matches}
+                                   regex={regex}
+                                   allow_regex_search={true}
+                                   showErrorDrawerButton={true}
+                                   toggleErrorDrawer={props.toggleErrorDrawer}
+                                   registerOmniFunction={props.registerOmniFunction}
+                >
+                    <ReactCodemirror code_content={code_content}
+                                     dark_theme={actual_dark_theme}
+                                     am_selected={props.am_selected}
+                                     extraKeys={_extraKeys()}
+                                     readOnly={props.readOnly}
+                                     handleChange={_handleCodeChange}
+                                     saveMe={_saveMe}
+                                     search_term={search_string}
+                                     update_search_state={_update_search_state}
+                                     regex_search={regex}
+                                     setSearchMatches={_setSearchMatches}
+                                     code_container_ref={cc_ref}
+                                     code_container_height={cc_height}
+                    />
+                </ResourceViewerApp>
+            </div>
+        </Fragment>
+    )
 }
+
+CodeViewerApp = memo(CodeViewerApp);
 
 CodeViewerApp.propTypes = {
     controlled: PropTypes.bool,

@@ -7,14 +7,49 @@
 
 import _ from 'lodash';
 import React from "react";
+import {useState, useEffect, useRef} from "react";
 import * as ReactDOM from 'react-dom'
-import { Spinner, Text} from "@blueprintjs/core";
+import {Spinner, Text} from "@blueprintjs/core";
 
-export {doBinding, propsAreEqual, arrayMove, arraysMatch, get_ppi, isInt};
+export {useConstructor, doBinding, propsAreEqual, arrayMove, arraysMatch, get_ppi, isInt};
 export {remove_duplicates, doSignOut, guid, scrollMeIntoView, renderSpinnerMessage};
+export {useCallbackStack}
 
-function doBinding(obj, seq="_", proto=null) {
-    if (!proto) { proto = Object.getPrototypeOf(obj); }
+function useCallbackStack() {
+    const [effectCount, setEffectCount] = useState(0);
+    const myCallbacksList = useRef([]);
+    useEffect(() => {
+        if (myCallbacksList.current.length > 0) {
+            myCallbacksList.current[0]();
+            myCallbacksList.current.shift();
+            if (myCallbacksList.current.length > 0) {
+                setEffectCount(effectCount + 1);
+            }
+        }
+    }, [effectCount]);
+
+    function prepCallback(callback) {
+        if (callback) {
+            myCallbacksList.current.push(callback);
+            setEffectCount(effectCount + 1);
+        }
+    }
+
+    return prepCallback
+}
+
+const useConstructor = (callback = () => {
+}) => {
+    const hasBeenCalled = useRef(false);
+    if (hasBeenCalled.current) return;
+    callback();
+    hasBeenCalled.current = true
+};
+
+function doBinding(obj, seq = "_", proto = null) {
+    if (!proto) {
+        proto = Object.getPrototypeOf(obj);
+    }
     for (const key of Object.getOwnPropertyNames(proto)) {
         if (key.startsWith(seq)) {
             obj[key] = obj[key].bind(obj);
@@ -23,20 +58,22 @@ function doBinding(obj, seq="_", proto=null) {
 }
 
 function isInt(value) {
-  if (isNaN(value)) {
-    return false;
-  }
+    if (isNaN(value)) {
+        return false;
+    }
 
-  return parseFloat(value) == parseInt(value)
+    return parseFloat(value) == parseInt(value)
 }
 
-function propsAreEqual(p1, p2, skipProps=[]) {
+function propsAreEqual(p1, p2, skipProps = []) {
     if (!_.isEqual(Object.keys(p1), Object.keys(p2))) {
         return false
     }
 
     for (const option in p1) {
-        if (skipProps.includes(option)) {continue;}
+        if (skipProps.includes(option)) {
+            continue;
+        }
         if (typeof p1[option] == "function") {
             if (!(typeof p2[option] == "function")) {
                 return false
@@ -51,37 +88,41 @@ function propsAreEqual(p1, p2, skipProps=[]) {
 }
 
 function arrayMoveMutate(array, from, to) {
-	array.splice(to < 0 ? array.length + to : to, 0, array.splice(from, 1)[0]);
+    array.splice(to < 0 ? array.length + to : to, 0, array.splice(from, 1)[0]);
 }
 
-function arrayMove (array, from, to) {
-	array = array.slice();
-	arrayMoveMutate(array, from, to);
-	return array;
+function arrayMove(array, from, to) {
+    array = array.slice();
+    arrayMoveMutate(array, from, to);
+    return array;
 }
 
-function arraysMatch (arr1, arr2) {
-	// Check if the arrays are the same length
-	if (arr1.length !== arr2.length) { return false; }
+function arraysMatch(arr1, arr2) {
+    // Check if the arrays are the same length
+    if (arr1.length !== arr2.length) {
+        return false;
+    }
 
-	// Check if all items exist and are in the same order
-	for (let i = 0; i < arr1.length; i++) {
-		if (arr1[i] !== arr2[i]) { return false; }
-	}
+    // Check if all items exist and are in the same order
+    for (let i = 0; i < arr1.length; i++) {
+        if (arr1[i] !== arr2[i]) {
+            return false;
+        }
+    }
 
-	// Otherwise, return true
-	return true;
+    // Otherwise, return true
+    return true;
 
 }
 
 
-String.prototype.format = function() {
-  let str = this;
-  for (let i = 0; i < arguments.length; i++) {
-    const reg = new RegExp("\\{" + i + "\\}", "gm");
-    str = str.replace(reg, arguments[i]);
-  }
-  return str;
+String.prototype.format = function () {
+    let str = this;
+    for (let i = 0; i < arguments.length; i++) {
+        const reg = new RegExp("\\{" + i + "\\}", "gm");
+        str = str.replace(reg, arguments[i]);
+    }
+    return str;
 };
 
 function get_ppi() {
@@ -94,15 +135,15 @@ function get_ppi() {
     }).appendTo('body');
     const px_per_in = d.height() / 1000;
     d.remove();
-  return px_per_in;
+    return px_per_in;
 }
 
-function remove_duplicates (arrArg) {
-  return arrArg.filter((elem, pos, arr) => arr.indexOf(elem) == pos);
+function remove_duplicates(arrArg) {
+    return arrArg.filter((elem, pos, arr) => arr.indexOf(elem) == pos);
 }
 
 Array.prototype.empty = function () {
-  return this.length == 0;
+    return this.length == 0;
 };
 
 function doSignOut(page_id) {
@@ -111,15 +152,15 @@ function doSignOut(page_id) {
 }
 
 function scrollIntoView(element, container) {
-  const containerTop = $(container).scrollTop();
-  const containerBottom = containerTop + $(container).height();
-  const elemTop = element.offsetTop;
-  const elemBottom = elemTop + $(element).height();
-  if (elemTop < containerTop) {
-    $(container).scrollTop(elemTop);
-  } else if (elemBottom > containerBottom) {
-    $(container).scrollTop(elemBottom - $(container).height());
-  }
+    const containerTop = $(container).scrollTop();
+    const containerBottom = containerTop + $(container).height();
+    const elemTop = element.offsetTop;
+    const elemBottom = elemTop + $(element).height();
+    if (elemTop < containerTop) {
+        $(container).scrollTop(elemTop);
+    } else if (elemBottom > containerBottom) {
+        $(container).scrollTop(elemBottom - $(container).height());
+    }
 }
 
 function scrollMeIntoView(element) {
@@ -130,8 +171,7 @@ function scrollMeIntoView(element) {
     if (distance_from_top > outer_height - 35) {
         const distance_to_move = distance_from_top - 0.5 * outer_height;
         outer_element.scrollTop += distance_to_move
-    }
-    else if (distance_from_top < 0) {
+    } else if (distance_from_top < 0) {
         const distance_to_move = 0.25 * outer_height - distance_from_top;
         outer_element.scrollTop -= distance_to_move
     }
@@ -151,16 +191,17 @@ function altScrollIntoView(element, container) {
 
 
 function guid() {
-  function s4() {
-    return Math.floor((1 + Math.random()) * 0x10000)
-      .toString(16)
-      .substring(1);
-  }
-  return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-    s4() + '-' + s4() + s4() + s4();
+    function s4() {
+        return Math.floor((1 + Math.random()) * 0x10000)
+            .toString(16)
+            .substring(1);
+    }
+
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+        s4() + '-' + s4() + s4() + s4();
 }
 
-function renderSpinnerMessage(msg, selector="#main-root") {
+function renderSpinnerMessage(msg, selector = "#main-root") {
     let domContainer = document.querySelector(selector);
     ReactDOM.render(
         (<div className="screen-center" style={{textAlign: "center"}}>
