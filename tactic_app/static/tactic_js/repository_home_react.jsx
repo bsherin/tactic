@@ -88,7 +88,7 @@ class RepositoryHomeApp extends React.Component {
         if (props.registerLibraryTabChanger) {
             props.registerLibraryTabChanger(this._handleTabChange)
         }
-        if (!window.controlled) {
+        if (!window.in_context) {
             const aheight = getUsableDimensions(true).usable_height_no_bottom;
             const awidth = getUsableDimensions(true).usable_width - 170;
             this.state.usable_height = aheight;

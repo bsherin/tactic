@@ -3,70 +3,38 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.BpSelectAdvanced = exports.BpSelect = exports.CombinedMetadata = exports.NotesField = exports.icon_dict = void 0;
-
+exports.BpSelect = BpSelect;
+exports.BpSelectAdvanced = BpSelectAdvanced;
+exports.CombinedMetadata = CombinedMetadata;
+exports.NotesField = NotesField;
+exports.icon_dict = void 0;
 require("../tactic_css/tactic_select.scss");
-
-var _react = _interopRequireDefault(require("react"));
-
+var _react = _interopRequireWildcard(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
-
 var _core = require("@blueprintjs/core");
-
 var _select = require("@blueprintjs/select");
-
 var _markdownIt = _interopRequireDefault(require("markdown-it"));
-
 require("markdown-it-latex/dist/index.css");
-
 var _markdownItLatex = _interopRequireDefault(require("markdown-it-latex"));
-
 var _lodash = _interopRequireDefault(require("lodash"));
-
 var _communication_react = require("./communication_react.js");
-
 var _utilities_react = require("./utilities_react.js");
-
 var _icon_info = require("./icon_info.js");
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
-
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
-
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
-
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 var mdi = (0, _markdownIt["default"])({
   html: true
 });
@@ -80,66 +48,39 @@ var icon_dict = {
   code: "code"
 };
 exports.icon_dict = icon_dict;
-
-var SuggestionItemAdvanced = /*#__PURE__*/function (_React$Component) {
-  _inherits(SuggestionItemAdvanced, _React$Component);
-
-  var _super = _createSuper(SuggestionItemAdvanced);
-
-  function SuggestionItemAdvanced(props) {
-    var _this;
-
-    _classCallCheck(this, SuggestionItemAdvanced);
-
-    _this = _super.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
-    return _this;
+function SuggestionItemAdvanced(_ref) {
+  var item = _ref.item,
+    handleClick = _ref.handleClick,
+    modifiers = _ref.modifiers;
+  var display_text = "display_text" in item ? item.display_text : item.text;
+  var the_icon = "icon" in item ? item.icon : null;
+  if (item.isgroup) {
+    return /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, {
+      className: "tile-form-menu-item",
+      title: display_text
+    });
+  } else {
+    return /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      className: "tile-form-menu-item",
+      text: display_text,
+      key: display_text,
+      icon: the_icon,
+      onClick: handleClick,
+      active: modifiers.active,
+      shouldDismissPopover: true
+    });
   }
-
-  _createClass(SuggestionItemAdvanced, [{
-    key: "shouldComponentUpdate",
-    value: function shouldComponentUpdate(nextProps, nextState) {
-      return !(0, _utilities_react.propsAreEqual)(nextProps, this.props);
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var item = this.props.item;
-      var display_text = "display_text" in item ? item.display_text : item.text;
-      var the_icon = "icon" in item ? item.icon : null;
-
-      if (item.isgroup) {
-        return /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, {
-          className: "tile-form-menu-item",
-          title: display_text
-        });
-      } else {
-        return /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-          className: "tile-form-menu-item",
-          text: display_text,
-          key: display_text,
-          icon: the_icon,
-          onClick: this.props.handleClick,
-          active: this.props.modifiers.active,
-          shouldDismissPopover: true
-        });
-      }
-    }
-  }]);
-
-  return SuggestionItemAdvanced;
-}(_react["default"].Component);
-
+}
+SuggestionItemAdvanced = /*#__PURE__*/(0, _react.memo)(SuggestionItemAdvanced);
 SuggestionItemAdvanced.propTypes = {
   item: _propTypes["default"].object,
   modifiers: _propTypes["default"].object,
   handleClick: _propTypes["default"].func
 };
-
-function renderSuggestionAdvanced(item, _ref) {
-  var modifiers = _ref.modifiers,
-      handleClick = _ref.handleClick,
-      index = _ref.index;
+function renderSuggestionAdvanced(item, _ref2) {
+  var modifiers = _ref2.modifiers,
+    handleClick = _ref2.handleClick,
+    index = _ref2.index;
   return /*#__PURE__*/_react["default"].createElement(SuggestionItemAdvanced, {
     item: item,
     key: index,
@@ -147,107 +88,65 @@ function renderSuggestionAdvanced(item, _ref) {
     handleClick: handleClick
   });
 }
-
-var BpSelectAdvanced = /*#__PURE__*/function (_React$Component2) {
-  _inherits(BpSelectAdvanced, _React$Component2);
-
-  var _super2 = _createSuper(BpSelectAdvanced);
-
-  function BpSelectAdvanced(props) {
-    var _this2;
-
-    _classCallCheck(this, BpSelectAdvanced);
-
-    _this2 = _super2.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this2));
-    _this2.state = {
-      activeItem: _this2.props.value
-    };
-    return _this2;
+function BpSelectAdvanced(_ref3) {
+  var options = _ref3.options,
+    value = _ref3.value,
+    onChange = _ref3.onChange,
+    buttonIcon = _ref3.buttonIcon;
+  function _filterSuggestion(query, item) {
+    if (query.length === 0) {
+      return true;
+    }
+    var re = new RegExp(query.toLowerCase());
+    var the_text;
+    if (_typeof(item) == "object") {
+      the_text = item["text"];
+    } else {
+      the_text = item;
+    }
+    return re.test(the_text.toLowerCase());
   }
-
-  _createClass(BpSelectAdvanced, [{
-    key: "shouldComponentUpdate",
-    value: function shouldComponentUpdate(nextProps, nextState) {
-      return !(0, _utilities_react.propsAreEqual)(nextProps, this.props);
-    }
-  }, {
-    key: "_filterSuggestion",
-    value: function _filterSuggestion(query, item) {
-      if (query.length === 0) {
-        return true;
-      }
-
-      var re = new RegExp(query.toLowerCase());
-      var the_text;
-
-      if (_typeof(item) == "object") {
-        the_text = item["text"];
-      } else {
-        the_text = item;
-      }
-
-      return re.test(the_text.toLowerCase());
-    }
-  }, {
-    key: "_handleActiveItemChange",
-    value: function _handleActiveItemChange(newActiveItem) {// this.setState({activeItem: newActiveItem})
-    }
-  }, {
-    key: "_getActiveItem",
-    value: function _getActiveItem(val) {
-      var _iterator = _createForOfIteratorHelper(this.props.options),
-          _step;
-
-      try {
-        for (_iterator.s(); !(_step = _iterator.n()).done;) {
-          var option = _step.value;
-
-          if (_lodash["default"].isEqual(option, val)) {
-            return option;
-          }
+  function _getActiveItem(val) {
+    var _iterator = _createForOfIteratorHelper(options),
+      _step;
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var option = _step.value;
+        if (_lodash["default"].isEqual(option, val)) {
+          return option;
         }
-      } catch (err) {
-        _iterator.e(err);
-      } finally {
-        _iterator.f();
       }
-
-      return null;
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
     }
-  }, {
-    key: "render",
-    value: function render() {
-      var value = this.props.value;
-      var display_text = "display_text" in value ? value.display_text : value.text;
-      return /*#__PURE__*/_react["default"].createElement(_select.Select2, {
-        activeItem: this._getActiveItem(value),
-        onActiveItemChange: this._handleActiveItemChange,
-        itemRenderer: renderSuggestionAdvanced,
-        itemPredicate: this._filterSuggestion,
-        items: this.props.options,
-        onItemSelect: this.props.onChange,
-        popoverProps: {
-          minimal: true,
-          boundary: "window",
-          modifiers: {
-            flip: false,
-            preventOverflow: true
-          },
-          position: _core.PopoverPosition.BOTTOM_LEFT
-        }
-      }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
-        text: display_text,
-        className: "button-in-select",
-        icon: this.props.buttonIcon
-      }));
+    return null;
+  }
+  var display_text = "display_text" in value ? value.display_text : value.text;
+  return /*#__PURE__*/_react["default"].createElement(_select.Select2, {
+    activeItem: _getActiveItem(value),
+    onActiveItemChange: null,
+    itemRenderer: renderSuggestionAdvanced,
+    itemPredicate: _filterSuggestion,
+    items: options,
+    onItemSelect: onChange,
+    popoverProps: {
+      minimal: true,
+      boundary: "window",
+      modifiers: {
+        flip: false,
+        preventOverflow: true
+      },
+      position: _core.PopoverPosition.BOTTOM_LEFT
     }
-  }]);
-
-  return BpSelectAdvanced;
-}(_react["default"].Component);
-
-exports.BpSelectAdvanced = BpSelectAdvanced;
+  }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
+    text: display_text,
+    className: "button-in-select",
+    icon: buttonIcon
+  }));
+}
+exports.BpSelectAdvanced = BpSelectAdvanced = /*#__PURE__*/(0, _react.memo)(BpSelectAdvanced);
 BpSelectAdvanced.propTypes = {
   options: _propTypes["default"].array,
   onChange: _propTypes["default"].func,
@@ -257,98 +156,62 @@ BpSelectAdvanced.propTypes = {
 BpSelectAdvanced.defaultProps = {
   buttonIcon: null
 };
-
-var BpSelect = /*#__PURE__*/function (_React$Component3) {
-  _inherits(BpSelect, _React$Component3);
-
-  var _super3 = _createSuper(BpSelect);
-
-  function BpSelect(props) {
-    var _this3;
-
-    _classCallCheck(this, BpSelect);
-
-    _this3 = _super3.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this3));
-    _this3.state = {
-      activeItem: _this3.props.value
-    };
-    return _this3;
+function BpSelect(props) {
+  var _useState = (0, _react.useState)(null),
+    _useState2 = _slicedToArray(_useState, 2),
+    activeItem = _useState2[0],
+    setActiveItem = _useState2[1];
+  function _filterSuggestion(query, item) {
+    if (query.length === 0 || item["isgroup"]) {
+      return true;
+    }
+    var re = new RegExp(query.toLowerCase());
+    var the_text;
+    if (_typeof(item) == "object") {
+      the_text = item["text"];
+    } else {
+      the_text = item;
+    }
+    return re.test(the_text.toLowerCase());
   }
-
-  _createClass(BpSelect, [{
-    key: "shouldComponentUpdate",
-    value: function shouldComponentUpdate(nextProps, nextState) {
-      return !(0, _utilities_react.propsAreEqual)(nextProps, this.props, ["buttonTextObject"]);
+  function _handleActiveItemChange(newActiveItem) {
+    var the_text;
+    if ((typeof item === "undefined" ? "undefined" : _typeof(item)) == "object") {
+      the_text = newActiveItem["text"];
+    } else {
+      the_text = newActiveItem;
     }
-  }, {
-    key: "_filterSuggestion",
-    value: function _filterSuggestion(query, item) {
-      if (query.length === 0 || item["isgroup"]) {
-        return true;
-      }
-
-      var re = new RegExp(query.toLowerCase());
-      var the_text;
-
-      if (_typeof(item) == "object") {
-        the_text = item["text"];
-      } else {
-        the_text = item;
-      }
-
-      return re.test(the_text.toLowerCase());
+    setActiveItem(the_text);
+  }
+  return /*#__PURE__*/_react["default"].createElement(_select.Select2, {
+    className: "tile-form-menu-item",
+    activeItem: activeItem,
+    filterable: props.filterable,
+    onActiveItemChange: _handleActiveItemChange,
+    itemRenderer: renderSuggestion,
+    itemPredicate: _filterSuggestion,
+    items: _lodash["default"].cloneDeep(props.options),
+    onItemSelect: props.onChange,
+    popoverProps: {
+      minimal: true,
+      boundary: "window",
+      modifiers: {
+        flip: false,
+        preventOverflow: true
+      },
+      position: props.popoverPosition
     }
-  }, {
-    key: "_handleActiveItemChange",
-    value: function _handleActiveItemChange(newActiveItem) {
-      var the_text;
-
-      if ((typeof item === "undefined" ? "undefined" : _typeof(item)) == "object") {
-        the_text = newActiveItem["text"];
-      } else {
-        the_text = newActiveItem;
-      }
-
-      this.setState({
-        activeItem: the_text
-      });
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      return /*#__PURE__*/_react["default"].createElement(_select.Select2, {
-        className: "tile-form-menu-item",
-        activeItem: this.state.activeItem,
-        filterable: this.props.filterable,
-        onActiveItemChange: this._handleActiveItemChange,
-        itemRenderer: renderSuggestion,
-        itemPredicate: this._filterSuggestion,
-        items: _lodash["default"].cloneDeep(this.props.options),
-        onItemSelect: this.props.onChange,
-        popoverProps: {
-          minimal: true,
-          boundary: "window",
-          modifiers: {
-            flip: false,
-            preventOverflow: true
-          },
-          position: this.props.popoverPosition
-        }
-      }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
-        className: "button-in-select",
-        style: this.props.buttonStyle,
-        small: this.props.small,
-        text: this.props.buttonTextObject ? this.props.buttonTextObject : this.props.value,
-        icon: this.props.buttonIcon
-      }));
-    }
-  }]);
-
-  return BpSelect;
-}(_react["default"].Component);
-
-exports.BpSelect = BpSelect;
+  }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
+    className: "button-in-select",
+    style: props.buttonStyle,
+    small: props.small,
+    text: props.buttonTextObject ? props.buttonTextObject : props.value,
+    icon: props.buttonIcon
+  }));
+}
+exports.BpSelect = BpSelect = /*#__PURE__*/(0, _react.memo)(BpSelect, function (prevProps, newProps) {
+  (0, _utilities_react.propsAreEqual)(newProps, prevProps, ["buttonTextObject"]);
+});
 BpSelect.propTypes = {
   options: _propTypes["default"].array,
   onChange: _propTypes["default"].func,
@@ -368,70 +231,40 @@ BpSelect.defaultProps = {
   filterable: true,
   small: undefined
 };
-
-var SuggestionItem = /*#__PURE__*/function (_React$Component4) {
-  _inherits(SuggestionItem, _React$Component4);
-
-  var _super4 = _createSuper(SuggestionItem);
-
-  function SuggestionItem(props) {
-    var _this4;
-
-    _classCallCheck(this, SuggestionItem);
-
-    _this4 = _super4.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this4));
-    return _this4;
+function SuggestionItem(_ref4) {
+  var item = _ref4.item,
+    modifiers = _ref4.modifiers,
+    handleClick = _ref4.handleClick;
+  var the_text;
+  var the_icon;
+  if (_typeof(item) == "object") {
+    the_text = item["text"];
+    the_icon = item["icon"];
+  } else {
+    the_text = item;
+    the_icon = null;
   }
-
-  _createClass(SuggestionItem, [{
-    key: "shouldComponentUpdate",
-    value: function shouldComponentUpdate(nextProps, nextState) {
-      return !(0, _utilities_react.propsAreEqual)(nextProps, this.props);
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var _this5 = this;
-
-      var the_text;
-      var the_icon;
-
-      if (_typeof(this.props.item) == "object") {
-        the_text = this.props.item["text"];
-        the_icon = this.props.item["icon"];
-      } else {
-        the_text = this.props.item;
-        the_icon = null;
-      }
-
-      return /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        className: "tile-form-menu-item",
-        text: the_text,
-        icon: the_icon,
-        active: this.props.modifiers.active,
-        onClick: function onClick() {
-          return _this5.props.handleClick(the_text);
-        },
-        shouldDismissPopover: true
-      });
-    }
-  }]);
-
-  return SuggestionItem;
-}(_react["default"].Component);
-
+  return /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+    className: "tile-form-menu-item",
+    text: the_text,
+    icon: the_icon,
+    active: modifiers.active,
+    onClick: function onClick() {
+      return handleClick(the_text);
+    },
+    shouldDismissPopover: true
+  });
+}
+SuggestionItem = /*#__PURE__*/(0, _react.memo)(SuggestionItem);
 SuggestionItem.propTypes = {
   item: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].object]),
-  index: _propTypes["default"].number,
   modifiers: _propTypes["default"].object,
   handleClick: _propTypes["default"].func
 };
-
-function renderSuggestion(item, _ref2) {
-  var modifiers = _ref2.modifiers,
-      handleClick = _ref2.handleClick,
-      index = _ref2.index;
+function renderSuggestion(item, _ref5) {
+  var modifiers = _ref5.modifiers,
+    handleClick = _ref5.handleClick,
+    index = _ref5.index;
   return /*#__PURE__*/_react["default"].createElement(SuggestionItem, {
     item: item,
     key: index,
@@ -439,7 +272,6 @@ function renderSuggestion(item, _ref2) {
     handleClick: handleClick
   });
 }
-
 var renderCreateNewTag = function renderCreateNewTag(query, active, handleClick) {
   var hclick = handleClick;
   return /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
@@ -451,268 +283,182 @@ var renderCreateNewTag = function renderCreateNewTag(query, active, handleClick)
     shouldDismissPopover: false
   });
 };
-
-var NativeTags = /*#__PURE__*/function (_React$Component5) {
-  _inherits(NativeTags, _React$Component5);
-
-  var _super5 = _createSuper(NativeTags);
-
-  function NativeTags(props) {
-    var _this6;
-
-    _classCallCheck(this, NativeTags);
-
-    _this6 = _super5.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this6));
-    _this6.state = {
-      query: "",
-      suggestions: []
+function NativeTags(props) {
+  var _useState3 = (0, _react.useState)(""),
+    _useState4 = _slicedToArray(_useState3, 2),
+    query = _useState4[0],
+    setQuery = _useState4[1];
+  var _useState5 = (0, _react.useState)([]),
+    _useState6 = _slicedToArray(_useState5, 2),
+    suggestions = _useState6[0],
+    setSuggestions = _useState6[1];
+  (0, _react.useEffect)(function () {
+    var data_dict = {
+      "pane_type": props.pane_type,
+      "is_repository": false
     };
-    return _this6;
+    if (!props.pane_type) {
+      setSuggestions([]);
+      return;
+    }
+    (0, _communication_react.postAjaxPromise)("get_tag_list", data_dict).then(function (data) {
+      var all_tags = data.tag_list;
+      setSuggestions(all_tags);
+    });
+  }, [props.pane_type]);
+  function renderTag(item) {
+    return item;
   }
-
-  _createClass(NativeTags, [{
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      var self = this;
-      var data_dict = {
-        "pane_type": this.props.pane_type,
-        "is_repository": false
-      };
-
-      if (!this.props.pane_type) {
-        self.setState({
-          "suggestions": []
-        });
-        return;
-      }
-
-      (0, _communication_react.postAjaxPromise)("get_tag_list", data_dict).then(function (data) {
-        var all_tags = data.tag_list;
-        self.setState({
-          "suggestions": all_tags
-        });
-      });
+  function _createItemFromQuery(name) {
+    return name;
+  }
+  function _handleDelete(tag, i) {
+    var new_tlist = _toConsumableArray(props.tags);
+    new_tlist.splice(i, 1);
+    props.handleChange(new_tlist);
+  }
+  function _handleAddition(tag) {
+    var new_tlist = _toConsumableArray(props.tags);
+    new_tlist.push(tag);
+    props.handleChange(new_tlist);
+  }
+  function _filterSuggestion(query, item) {
+    if (query.length === 0) {
+      return false;
     }
-  }, {
-    key: "renderTag",
-    value: function renderTag(item) {
-      return item;
-    }
-  }, {
-    key: "_handleDelete",
-    value: function _handleDelete(tag, i) {
-      var new_tlist = _toConsumableArray(this.props.tags);
-
-      new_tlist.splice(i, 1);
-      this.props.handleChange(new_tlist);
-    }
-  }, {
-    key: "_handleAddition",
-    value: function _handleAddition(tag) {
-      var new_tlist = _toConsumableArray(this.props.tags);
-
-      new_tlist.push(tag);
-      this.props.handleChange(new_tlist);
-    }
-  }, {
-    key: "_filterSuggestion",
-    value: function _filterSuggestion(query, item) {
-      if (query.length === 0) {
-        return false;
-      }
-
-      var re = new RegExp("^".concat(query));
-      return re.test(item);
-    }
-  }, {
-    key: "_createItemFromQuery",
-    value: function _createItemFromQuery(name) {
-      return name;
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      if (this.props.readOnly) {
-        return /*#__PURE__*/_react["default"].createElement(_core.TagInput, {
-          values: this.props.tags,
-          disabled: true
-        });
-      }
-
-      return /*#__PURE__*/_react["default"].createElement(_select.MultiSelect, {
-        allowCreate: true,
-        openOnKeyDown: true,
-        createNewItemFromQuery: this._createItemFromQuery,
-        createNewItemRenderer: renderCreateNewTag,
-        resetOnSelect: true,
-        itemRenderer: renderSuggestion,
-        selectedItems: this.props.tags,
-        allowNew: true,
-        items: this.state.suggestions,
-        itemPredicate: this._filterSuggestion,
-        tagRenderer: this.renderTag,
-        tagInputProps: {
-          onRemove: this._handleDelete
-        },
-        onItemSelect: this._handleAddition
-      });
-    }
-  }]);
-
-  return NativeTags;
-}(_react["default"].Component);
-
+    var re = new RegExp("^".concat(query));
+    return re.test(item);
+  }
+  if (props.readOnly) {
+    return /*#__PURE__*/_react["default"].createElement(_core.TagInput, {
+      values: props.tags,
+      disabled: true
+    });
+  }
+  return /*#__PURE__*/_react["default"].createElement(_select.MultiSelect, {
+    allowCreate: true,
+    openOnKeyDown: true,
+    createNewItemFromQuery: _createItemFromQuery,
+    createNewItemRenderer: renderCreateNewTag,
+    resetOnSelect: true,
+    itemRenderer: renderSuggestion,
+    selectedItems: props.tags,
+    allowNew: true,
+    items: suggestions,
+    itemPredicate: _filterSuggestion,
+    tagRenderer: renderTag,
+    tagInputProps: {
+      onRemove: _handleDelete
+    },
+    onItemSelect: _handleAddition
+  });
+}
+NativeTags = /*#__PURE__*/(0, _react.memo)(NativeTags);
 NativeTags.proptypes = {
   tags: _propTypes["default"].array,
   handleChange: _propTypes["default"].func,
-  pane_type: _propTypes["default"].string
+  pane_type: _propTypes["default"].string,
+  readOnly: _propTypes["default"].bool
 };
-
-var NotesField = /*#__PURE__*/function (_React$Component6) {
-  _inherits(NotesField, _React$Component6);
-
-  var _super6 = _createSuper(NotesField);
-
-  function NotesField(props) {
-    var _this7;
-
-    _classCallCheck(this, NotesField);
-
-    _this7 = _super6.call(this, props);
-    _this7.state = {
-      "md_height": 500,
-      "show_markdown": _this7.hasOnlyWhitespace ? false : _this7.props.show_markdown_initial
-    };
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this7)); // this.notes_ref = React.createRef();
-
-    _this7.md_ref = /*#__PURE__*/_react["default"].createRef();
-    _this7.awaiting_focus = false;
-    return _this7;
+function NotesField(props) {
+  var _useState7 = (0, _react.useState)(500),
+    _useState8 = _slicedToArray(_useState7, 2),
+    mdHeight = _useState8[0],
+    setMdHeight = _useState8[1];
+  var _useState9 = (0, _react.useState)(function () {
+      return hasOnlyWhitespace() ? false : props.show_markdown_initial;
+    }),
+    _useState10 = _slicedToArray(_useState9, 2),
+    showMarkdown = _useState10[0],
+    setShowMarkdown = _useState10[1];
+  var awaitingFocus = (0, _react.useRef)(false);
+  var mdRef = (0, _react.useRef)(null);
+  var notesRef = (0, _react.useRef)(null);
+  (0, _react.useEffect)(function () {
+    if (awaitingFocus.current) {
+      focusNotes();
+      awaitingFocus.current = false;
+    } else if (hasOnlyWhitespace()) {
+      if (showMarkdown) {
+        // If we are here, then we are reusing a notes field that previously showed markdown
+        // and now is empty. We want to prevent markdown being shown when a character is typed.
+        setShowMarkdown(false);
+      }
+    } else if (!showMarkdown && notesRef.current !== document.activeElement) {
+      // If we are here it means the change was initiated externally
+      _showMarkdown();
+    }
+  });
+  function getNotesField() {
+    return $(notesRef.current);
   }
-
-  _createClass(NotesField, [{
-    key: "getNotesField",
-    value: function getNotesField() {
-      return $(this.notes_ref);
+  function hasOnlyWhitespace() {
+    return !props.notes.trim().length;
+  }
+  function getMarkdownField() {
+    return $(mdRef.current);
+  }
+  function focusNotes() {
+    getNotesField().focus();
+  }
+  function _notesRefHandler(the_ref) {
+    notesRef.current = the_ref;
+  }
+  function _hideMarkdown() {
+    if (props.readOnly) return;
+    awaitingFocus.current = true; // We can't set focus until the input is visible
+    setShowMarkdown(false);
+  }
+  function _handleMyBlur() {
+    _showMarkdown();
+    if (props.handleBlur != null) {
+      props.handleBlur();
     }
-  }, {
-    key: "hasOnlyWhitespace",
-    get: function get() {
-      return !this.props.notes.trim().length;
+  }
+  function _showMarkdown() {
+    if (!hasOnlyWhitespace()) {
+      setShowMarkdown(true);
     }
-  }, {
-    key: "getMarkdownField",
-    value: function getMarkdownField() {
-      return $(this.md_ref.current);
-    }
-  }, {
-    key: "componentDidUpdate",
-    value: function componentDidUpdate(prevProps, prevState, snapShot) {
-      if (this.awaiting_focus) {
-        this.focusNotes();
-        this.awaiting_focus = false;
-      } else if (this.hasOnlyWhitespace) {
-        if (this.state.show_markdown) {
-          // If we are here, then we are reusing a notes field that previously showed markdown
-          // and now is empty. We want to prevent markdown being shown when a character is typed.
-          this.setState({
-            "show_markdown": false
-          });
-        }
-      } else if (!this.state.show_markdown && this.notes_ref !== document.activeElement) {
-        // If we are here it means the change was initiated externally
-        this._showMarkdown();
-      }
-    }
-  }, {
-    key: "focusNotes",
-    value: function focusNotes() {
-      this.getNotesField().focus();
-    }
-  }, {
-    key: "_hideMarkdown",
-    value: function _hideMarkdown() {
-      if (this.props.readOnly) return;
-      this.awaiting_focus = true; // We can't set focus until the input is visible
-
-      this.setState({
-        "show_markdown": false
-      });
-    }
-  }, {
-    key: "_handleMyBlur",
-    value: function _handleMyBlur() {
-      this._showMarkdown();
-
-      if (this.props.handleBlur != null) {
-        this.props.handleBlur();
-      }
-    }
-  }, {
-    key: "_showMarkdown",
-    value: function _showMarkdown() {
-      if (!this.hasOnlyWhitespace) {
-        this.setState({
-          "show_markdown": true
-        });
-      }
-    }
-  }, {
-    key: "_notesRefHandler",
-    value: function _notesRefHandler(the_ref) {
-      this.notes_ref = the_ref;
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var really_show_markdown = this.hasOnlyWhitespace ? false : this.state.show_markdown;
-      var notes_style = {
-        "display": really_show_markdown ? "none" : "block",
-        fontSize: 13,
-        resize: "both" // fontSize: 14
-
-      };
-      var md_style = {
-        "display": really_show_markdown ? "block" : "none",
-        "maxHeight": this.state.md_height,
-        "fontSize": 13
-      };
-      var converted_markdown;
-
-      if (really_show_markdown) {
-        // converted_markdown = this.converter.makeHtml(this.props.notes);
-        converted_markdown = mdi.render(this.props.notes);
-      }
-
-      var converted_dict = {
-        __html: converted_markdown
-      };
-      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.TextArea, {
-        rows: "20",
-        cols: "75",
-        inputRef: this._notesRefHandler,
-        growVertically: false,
-        onBlur: this._handleMyBlur,
-        onChange: this.props.handleChange,
-        value: this.props.notes,
-        disabled: this.props.readOnly,
-        style: notes_style
-      }), /*#__PURE__*/_react["default"].createElement("div", {
-        ref: this.md_ref,
-        style: md_style,
-        onClick: this._hideMarkdown,
-        className: "notes-field-markdown-output",
-        dangerouslySetInnerHTML: converted_dict
-      }));
-    }
-  }]);
-
-  return NotesField;
-}(_react["default"].Component);
-
-exports.NotesField = NotesField;
+  }
+  var really_show_markdown = hasOnlyWhitespace() ? false : showMarkdown;
+  var notes_style = {
+    display: really_show_markdown ? "none" : "block",
+    fontSize: 13,
+    resize: "both"
+  };
+  var md_style = {
+    display: really_show_markdown ? "block" : "none",
+    maxHeight: mdHeight,
+    fontSize: 13
+  };
+  var converted_markdown;
+  if (really_show_markdown) {
+    converted_markdown = mdi.render(props.notes);
+  }
+  var converted_dict = {
+    __html: converted_markdown
+  };
+  return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.TextArea, {
+    rows: "20",
+    cols: "75",
+    inputRef: _notesRefHandler,
+    growVertically: false,
+    onBlur: _handleMyBlur,
+    onChange: props.handleChange,
+    value: props.notes,
+    disabled: props.readOnly,
+    style: notes_style
+  }), /*#__PURE__*/_react["default"].createElement("div", {
+    ref: mdRef,
+    style: md_style,
+    onClick: _hideMarkdown,
+    className: "notes-field-markdown-output",
+    dangerouslySetInnerHTML: converted_dict
+  }));
+}
+exports.NotesField = NotesField = /*#__PURE__*/(0, _react.memo)(NotesField);
 NotesField.propTypes = {
+  readOnly: _propTypes["default"].bool,
   notes: _propTypes["default"].string,
   handleChange: _propTypes["default"].func,
   show_markdown_initial: _propTypes["default"].bool,
@@ -725,19 +471,16 @@ var icon_list = ["application", "code", "timeline-line-chart", "heatmap", "graph
 var icon_dlist = [];
 var icon_entry_dict = {};
 var cat_order = ['data', 'action', 'table', 'interface', 'editor', 'file', 'media', 'miscellaneous'];
-
-for (var _i = 0, _cat_order = cat_order; _i < _cat_order.length; _i++) {
-  var category = _cat_order[_i];
+for (var _i2 = 0, _cat_order = cat_order; _i2 < _cat_order.length; _i2++) {
+  var category = _cat_order[_i2];
   var cat_entry = {
     text: category,
     display_text: category,
     isgroup: true
   };
   icon_dlist.push(cat_entry);
-
   var _iterator2 = _createForOfIteratorHelper(_icon_info.tile_icon_dict[category]),
-      _step2;
-
+    _step2;
   try {
     for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
       var entry = _step2.value;
@@ -758,230 +501,167 @@ for (var _i = 0, _cat_order = cat_order; _i < _cat_order.length; _i++) {
     _iterator2.f();
   }
 }
-
-var IconSelector = /*#__PURE__*/function (_React$Component7) {
-  _inherits(IconSelector, _React$Component7);
-
-  var _super7 = _createSuper(IconSelector);
-
-  function IconSelector(props) {
-    var _this8;
-
-    _classCallCheck(this, IconSelector);
-
-    _this8 = _super7.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this8));
-    return _this8;
-  }
-
-  _createClass(IconSelector, [{
-    key: "render",
-    value: function render() {
-      var _this9 = this;
-
-      return /*#__PURE__*/_react["default"].createElement(BpSelectAdvanced, {
-        options: icon_dlist,
-        onChange: function onChange(item) {
-          _this9.props.handleSelectChange(item.val);
-        },
-        buttonIcon: this.props.icon_val,
-        value: icon_entry_dict[this.props.icon_val]
-      });
-    }
-  }]);
-
-  return IconSelector;
-}(_react["default"].Component);
-
+function IconSelector(_ref6) {
+  var handleSelectChange = _ref6.handleSelectChange,
+    icon_val = _ref6.icon_val;
+  return /*#__PURE__*/_react["default"].createElement(BpSelectAdvanced, {
+    options: icon_dlist,
+    onChange: function onChange(item) {
+      handleSelectChange(item.val);
+    },
+    buttonIcon: icon_val,
+    value: icon_entry_dict[icon_val]
+  });
+}
+IconSelector = /*#__PURE__*/(0, _react.memo)(IconSelector);
 IconSelector.propTypes = {
   handleSelectChange: _propTypes["default"].func,
   icon_val: _propTypes["default"].string
 };
-
-var CombinedMetadata = /*#__PURE__*/function (_React$Component8) {
-  _inherits(CombinedMetadata, _React$Component8);
-
-  var _super8 = _createSuper(CombinedMetadata);
-
-  function CombinedMetadata(props) {
-    var _this10;
-
-    _classCallCheck(this, CombinedMetadata);
-
-    _this10 = _super8.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this10));
-    _this10.notes_timer = null;
-    _this10.state = {
-      auxIsOpen: false,
-      temp_notes: null
-    };
-    _this10.update_delay = 500;
-    return _this10;
+function CombinedMetadata(props) {
+  var _useState11 = (0, _react.useState)(false),
+    _useState12 = _slicedToArray(_useState11, 2),
+    auxIsOpen = _useState12[0],
+    setAuxIsOpen = _useState12[1];
+  var _useState13 = (0, _react.useState)(null),
+    _useState14 = _slicedToArray(_useState13, 2),
+    tempNotes = _useState14[0],
+    setTempNotes = _useState14[1];
+  var updateDelay = 500;
+  var notesTimer = (0, _react.useRef)(null);
+  function _handleNotesChange(event) {
+    if (notesTimer.current) {
+      clearTimeout(notesTimer.current);
+      notesTimer.current = null;
+    }
+    var new_val = event.target.value;
+    notesTimer.current = setTimeout(function () {
+      notesTimer.current = null;
+      props.handleChange({
+        "notes": new_val
+      });
+    }, updateDelay);
+    setTempNotes(new_val);
   }
-
-  _createClass(CombinedMetadata, [{
-    key: "_handleNotesChange",
-    value: function _handleNotesChange(event) {
-      if (this.notes_timer) {
-        clearTimeout(this.notes_timer);
-        this.notes_timer = null;
+  function _handleTagsChange(tags) {
+    props.handleChange({
+      "tags": tags
+    });
+  }
+  function _handleTagsChangeNative(tags) {
+    props.handleChange({
+      "tags": tags
+    });
+  }
+  function _handleCategoryChange(event) {
+    props.handleChange({
+      "category": event.target.value
+    });
+  }
+  function _handleIconChange(icon) {
+    props.handleChange({
+      "icon": icon
+    });
+  }
+  function _toggleAuxVisibility() {
+    setAuxIsOpen(!auxIsOpen);
+  }
+  var addition_field_style = {
+    fontSize: 14
+  };
+  var additional_items;
+  var current_notes = notesTimer.current ? tempNotes : props.notes;
+  if (props.additional_metadata != null) {
+    additional_items = [];
+    for (var field in props.additional_metadata) {
+      var md = props.additional_metadata[field];
+      if (Array.isArray(md)) {
+        md = md.join(", ");
+      } else if (field == "collection_name") {
+        var sresult = /\.\w*$/.exec(md);
+        if (sresult != null) md = sresult[0].slice(1);
       }
-
-      var self = this;
-      var new_val = event.target.value;
-      this.notes_timer = setTimeout(function () {
-        self.notes_timer = null;
-        self.props.handleChange({
-          "notes": new_val
-        });
-      }, self.update_delay);
-      this.setState({
-        temp_notes: new_val
-      });
-    }
-  }, {
-    key: "_handleTagsChange",
-    value: function _handleTagsChange(tags) {
-      this.props.handleChange({
-        "tags": tags
-      });
-    }
-  }, {
-    key: "_handleTagsChangeNative",
-    value: function _handleTagsChangeNative(tags) {
-      this.props.handleChange({
-        "tags": tags
-      });
-    }
-  }, {
-    key: "_handleCategoryChange",
-    value: function _handleCategoryChange(event) {
-      this.props.handleChange({
-        "category": event.target.value
-      });
-    }
-  }, {
-    key: "_handleIconChange",
-    value: function _handleIconChange(icon) {
-      this.props.handleChange({
-        "icon": icon
-      });
-    }
-  }, {
-    key: "_toggleAuxVisibility",
-    value: function _toggleAuxVisibility() {
-      this.setState({
-        auxIsOpen: !this.state.auxIsOpen
-      });
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var addition_field_style = {
-        fontSize: 14
-      };
-      var additional_items;
-      var current_notes = this.notes_timer ? this.state.temp_notes : this.props.notes;
-
-      if (this.props.additional_metadata != null) {
-        additional_items = [];
-
-        for (var field in this.props.additional_metadata) {
-          var md = this.props.additional_metadata[field];
-
-          if (Array.isArray(md)) {
-            md = md.join(", ");
-          } else if (field == "collection_name") {
-            var sresult = /\.\w*$/.exec(md);
-            if (sresult != null) md = sresult[0].slice(1);
-          }
-
-          additional_items.push( /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
-            label: field + ": ",
-            className: "metadata-form_group",
-            key: field,
-            inline: true
-          }, /*#__PURE__*/_react["default"].createElement("span", {
-            className: "bp4-ui-text metadata-field"
-          }, String(md))));
-        }
-      }
-
-      var button_base = this.state.auxIsOpen ? "Hide" : "Show";
-      return /*#__PURE__*/_react["default"].createElement(_core.Card, {
-        elevation: this.props.elevation,
-        className: "combined-metadata accent-bg",
-        style: this.props.outer_style
-      }, this.props.name != null && /*#__PURE__*/_react["default"].createElement(_core.H4, null, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-        icon: icon_dict[this.props.res_type],
-        style: {
-          marginRight: 6,
-          marginBottom: 2
-        }
-      }), this.props.name), /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
-        label: "Tags"
-      }, /*#__PURE__*/_react["default"].createElement(NativeTags, {
-        tags: this.props.tags,
-        readOnly: this.props.readOnly,
-        handleChange: this._handleTagsChange,
-        pane_type: this.props.pane_type
-      })), this.props.category != null && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
-        label: "Category"
-      }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
-        onChange: this._handleCategoryChange,
-        value: this.props.category
-      })), this.props.icon != null && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
-        label: "Icon"
-      }, /*#__PURE__*/_react["default"].createElement(IconSelector, {
-        icon_val: this.props.icon,
-        handleSelectChange: this._handleIconChange
-      })), /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
-        label: "Notes"
-      }, /*#__PURE__*/_react["default"].createElement(NotesField, {
-        notes: current_notes,
-        readOnly: this.props.readOnly,
-        handleChange: this._handleNotesChange,
-        show_markdown_initial: true,
-        handleBlur: this.props.handleNotesBlur
-      }), this.props.notes_buttons && this.props.notes_buttons()), /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
-        label: "Created: ",
+      additional_items.push( /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+        label: field + ": ",
         className: "metadata-form_group",
+        key: field,
         inline: true
       }, /*#__PURE__*/_react["default"].createElement("span", {
         className: "bp4-ui-text metadata-field"
-      }, this.props.created)), this.props.updated != null && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
-        label: "Updated: ",
-        className: "metadata-form_group",
-        inline: true
-      }, /*#__PURE__*/_react["default"].createElement("span", {
-        className: "bp4-ui-text metadata-field"
-      }, this.props.updated)), this.props.additional_metadata != null && additional_items, this.props.aux_pane != null && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
-        className: "d-flex flex-row justify-content-around",
-        style: {
-          marginTop: 20
-        }
-      }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
-        fill: false,
-        small: true,
-        minimal: false,
-        onClick: this._toggleAuxVisibility
-      }, button_base + " " + this.props.aux_pane_title)), /*#__PURE__*/_react["default"].createElement(_core.Collapse, {
-        isOpen: this.state.auxIsOpen,
-        keepChildrenMounted: true
-      }, this.props.aux_pane)), /*#__PURE__*/_react["default"].createElement("div", {
-        style: {
-          height: 100
-        }
-      }));
+      }, String(md))));
     }
-  }]);
-
-  return CombinedMetadata;
-}(_react["default"].Component);
-
-exports.CombinedMetadata = CombinedMetadata;
+  }
+  var button_base = auxIsOpen ? "Hide" : "Show";
+  return /*#__PURE__*/_react["default"].createElement(_core.Card, {
+    elevation: props.elevation,
+    className: "combined-metadata accent-bg",
+    style: props.outer_style
+  }, props.name != null && /*#__PURE__*/_react["default"].createElement(_core.H4, null, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+    icon: icon_dict[props.res_type],
+    style: {
+      marginRight: 6,
+      marginBottom: 2
+    }
+  }), props.name), /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+    label: "Tags"
+  }, /*#__PURE__*/_react["default"].createElement(NativeTags, {
+    tags: props.tags,
+    readOnly: props.readOnly,
+    handleChange: _handleTagsChange,
+    pane_type: props.pane_type
+  })), props.category != null && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+    label: "Category"
+  }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
+    onChange: _handleCategoryChange,
+    value: props.category
+  })), props.icon != null && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+    label: "Icon"
+  }, /*#__PURE__*/_react["default"].createElement(IconSelector, {
+    icon_val: props.icon,
+    handleSelectChange: _handleIconChange
+  })), /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+    label: "Notes"
+  }, /*#__PURE__*/_react["default"].createElement(NotesField, {
+    notes: current_notes,
+    readOnly: props.readOnly,
+    handleChange: _handleNotesChange,
+    show_markdown_initial: true,
+    handleBlur: props.handleNotesBlur
+  }), props.notes_buttons && props.notes_buttons()), /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+    label: "Created: ",
+    className: "metadata-form_group",
+    inline: true
+  }, /*#__PURE__*/_react["default"].createElement("span", {
+    className: "bp4-ui-text metadata-field"
+  }, props.created)), props.updated != null && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+    label: "Updated: ",
+    className: "metadata-form_group",
+    inline: true
+  }, /*#__PURE__*/_react["default"].createElement("span", {
+    className: "bp4-ui-text metadata-field"
+  }, props.updated)), props.additional_metadata != null && additional_items, props.aux_pane != null && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
+    className: "d-flex flex-row justify-content-around",
+    style: {
+      marginTop: 20
+    }
+  }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
+    fill: false,
+    small: true,
+    minimal: false,
+    onClick: _toggleAuxVisibility
+  }, button_base + " " + props.aux_pane_title)), /*#__PURE__*/_react["default"].createElement(_core.Collapse, {
+    isOpen: auxIsOpen,
+    keepChildrenMounted: true
+  }, props.aux_pane)), /*#__PURE__*/_react["default"].createElement("div", {
+    style: {
+      height: 100
+    }
+  }));
+}
+exports.CombinedMetadata = CombinedMetadata = /*#__PURE__*/(0, _react.memo)(CombinedMetadata);
 CombinedMetadata.propTypes = {
   outer_style: _propTypes["default"].object,
+  readOnly: _propTypes["default"].bool,
   elevation: _propTypes["default"].number,
   res_type: _propTypes["default"].string,
   pane_type: _propTypes["default"].string,
@@ -996,6 +676,7 @@ CombinedMetadata.propTypes = {
   handleNotesBlur: _propTypes["default"].func,
   additional_metadata: _propTypes["default"].object,
   aux_pane: _propTypes["default"].object,
+  aux_pane_title: _propTypes["default"].string,
   notes_buttons: _propTypes["default"].oneOfType([_propTypes["default"].number, _propTypes["default"].func])
 };
 CombinedMetadata.defaultProps = {
