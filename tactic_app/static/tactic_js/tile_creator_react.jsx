@@ -13,7 +13,7 @@ import PropTypes from 'prop-types';
 
 import { Tab, Tabs, Button, ButtonGroup, Icon } from "@blueprintjs/core";
 
-import {TacticOmnibar} from "./tactic_omnibar";
+import {TacticOmnibar} from "./TacticOmnibar";
 import {KeyTrap} from "./key_trap";
 import {TacticSocket} from "./tactic_socket.js";
 import {TacticMenubar} from "./menu_utilities.js"

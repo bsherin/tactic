@@ -14,7 +14,7 @@ var _react = _interopRequireWildcard(require("react"));
 var ReactDOM = _interopRequireWildcard(require("react-dom"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
-var _tactic_omnibar = require("./tactic_omnibar");
+var _TacticOmnibar = require("./TacticOmnibar");
 var _key_trap = require("./key_trap");
 var _tactic_socket = require("./tactic_socket.js");
 var _menu_utilities = require("./menu_utilities.js");
@@ -1460,7 +1460,7 @@ var CreatorApp = /*#__PURE__*/function (_React$Component) {
         available_height: uheight,
         available_width: uwidth,
         handleSplitUpdate: this.handleLeftPaneResize
-      })), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_tactic_omnibar.TacticOmnibar, {
+      })), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_TacticOmnibar.TacticOmnibar, {
         omniGetters: [this._omniFunction],
         showOmnibar: this.state.showOmnibar,
         closeOmnibar: this._closeOmnibar,

@@ -32,7 +32,7 @@ var _error_drawer = require("./error_drawer.js");
 var _utilities_react = require("./utilities_react.js");
 var _sizing_tools = require("./sizing_tools.js");
 var _error_boundary = require("./error_boundary");
-var _tactic_omnibar = require("./tactic_omnibar");
+var _TacticOmnibar = require("./TacticOmnibar");
 var _key_trap = require("./key_trap");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
@@ -1565,7 +1565,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         handleResizeStart: this._handleResizeStart,
         handleResizeEnd: this._handleResizeEnd,
         overflow: "hidden"
-      })), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_tactic_omnibar.TacticOmnibar, {
+      })), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_TacticOmnibar.TacticOmnibar, {
         omniGetters: [this._omniFunction],
         showOmnibar: this.state.showOmnibar,
         closeOmnibar: this._closeOmnibar

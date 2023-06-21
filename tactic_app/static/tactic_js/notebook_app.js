@@ -19,7 +19,7 @@ var _tactic_socket = require("./tactic_socket.js");
 var _console_component = require("./console_component.js");
 var _toaster = require("./toaster.js");
 var _utilities_react = require("./utilities_react.js");
-var _tactic_omnibar = require("./tactic_omnibar");
+var _TacticOmnibar = require("./TacticOmnibar");
 var _key_trap = require("./key_trap");
 var _communication_react = require("./communication_react.js");
 var _export_viewer_react = require("./export_viewer_react");
@@ -542,7 +542,7 @@ var NotebookApp = /*#__PURE__*/function (_React$Component) {
         controlled: true,
         dragIconSize: 15,
         handleSplitUpdate: this._handleConsoleFractionChange
-      })), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_tactic_omnibar.TacticOmnibar, {
+      })), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_TacticOmnibar.TacticOmnibar, {
         omniGetters: [this._omniFunction],
         showOmnibar: this.state.showOmnibar,
         closeOmnibar: this._closeOmnibar

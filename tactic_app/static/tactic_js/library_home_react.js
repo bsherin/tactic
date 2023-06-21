@@ -14,7 +14,7 @@ var ReactDOM = _interopRequireWildcard(require("react-dom"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
 var _table = require("@blueprintjs/table");
-var _tactic_omnibar = require("./tactic_omnibar");
+var _TacticOmnibar = require("./TacticOmnibar");
 var _tactic_socket = require("./tactic_socket.js");
 var _communication_react = require("./communication_react.js");
 var _toaster = require("./toaster.js");
@@ -615,7 +615,7 @@ var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
         iconSize: 20,
         tabIndex: -1,
         color: this.getIconColor("all-pane")
-      }))), extra_tabs)), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_tactic_omnibar.TacticOmnibar, {
+      }))), extra_tabs)), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_TacticOmnibar.TacticOmnibar, {
         omniGetters: [this._omniFunction],
         showOmnibar: this.state.showOmnibar,
         closeOmnibar: this._closeOmnibar

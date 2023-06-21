@@ -1,32 +1,27 @@
-
-
 import React from "react";
 import PropTypes from 'prop-types';
-import { Fragment } from 'react';
+import {Fragment, useState, useEffect, useRef, memo} from 'react';
 
-
-import { ResizeSensor} from "@blueprintjs/core";
-
-import {TacticOmnibar} from "./tactic_omnibar";
+import {TacticOmnibar} from "./TacticOmnibar";
 import {KeyTrap} from "./key_trap";
 import {CombinedMetadata} from "./blueprint_mdata_fields.js";
 import {showModalReact} from "./modal_react.js";
 import {HorizontalPanes} from "./resizing_layouts.js";
 import {handleCallback, postAjax} from "./communication_react.js"
-import {doBinding} from "./utilities_react.js";
 import {TacticMenubar} from "./menu_utilities.js"
-
 import {doFlash, doFlashAlways} from "./toaster.js";
 import {SIDE_MARGIN} from "./sizing_tools.js"
 import {SearchForm} from "./library_widgets";
+import {useConstructor} from "./utilities_react";
 
 export {ResourceViewerApp, copyToLibrary, sendToRepository}
 
 function copyToLibrary(res_type, resource_name) {
-    $.getJSON($SCRIPT_ROOT + `get_resource_names/${res_type}`, function(data) {
-        showModalReact(`Import ${res_type}`, `New ${res_type} Name`, ImportResource, resource_name, data["resource_names"])
+    $.getJSON($SCRIPT_ROOT + `get_resource_names/${res_type}`, function (data) {
+            showModalReact(`Import ${res_type}`, `New ${res_type} Name`, ImportResource, resource_name, data["resource_names"])
         }
     );
+
     function ImportResource(new_name) {
         const result_dict = {
             "res_type": res_type,
@@ -38,10 +33,11 @@ function copyToLibrary(res_type, resource_name) {
 }
 
 function sendToRepository(res_type, resource_name) {
-    $.getJSON($SCRIPT_ROOT + `get_repository_resource_names/${res_type}`, function(data) {
-        showModalReact(`Share ${res_type}`, `New ${res_type} Name`, ShareResource, resource_name, data["resource_names"])
+    $.getJSON($SCRIPT_ROOT + `get_repository_resource_names/${res_type}`, function (data) {
+            showModalReact(`Share ${res_type}`, `New ${res_type} Name`, ShareResource, resource_name, data["resource_names"])
         }
     );
+
     function ShareResource(new_name) {
         const result_dict = {
             "res_type": res_type,
@@ -52,152 +48,148 @@ function sendToRepository(res_type, resource_name) {
     }
 }
 
-class ResourceViewerApp extends React.Component {
+function ResourceViewerApp(props) {
 
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.initSocket();
-        this.top_ref = React.createRef();
-        this.savedContent = props.the_content;
-        this.savedTags = props.tags;
-        this.savedNotes = props.notes;
-        let self = this;
-        this.state = {mounted: false};
-        if (this.props.registerOmniFunction) {
-          this.props.registerOmniFunction(this._omniFunction);
-        }
-        this.omniGetters = {};
-        if (!window.in_context) {
-          this.key_bindings = [
-              [["ctrl+space"], this._showOmnibar],
-          ];
-          this.state.showOmnibar = false
-        }
+    const top_ref = useRef(null);
+    const savedContent = useRef(props.the_content);
+    const savedTags = useRef(props.split_tags);
+    const savedNotes = useRef(props.notes);
+    const omniGetters = useRef({});
+    const key_bindings = useRef([]);
+    if (!window.in_context) {
+        const [showOmnibar, setShowOmnibar] = useState(false)
     }
 
-    initSocket() {
-        let self = this;
-        this.props.tsocket.attachListener('handle-callback', (task_packet)=>{
-            handleCallback(task_packet, self.props.resource_viewer_id)
+    useConstructor(() => {
+        initSocket();
+
+        if (props.registerOmniFunction) {
+            props.registerOmniFunction(_omniFunction);
+        }
+        if (!window.in_context) {
+            key_bindings.current = [
+                [["ctrl+space"], _showOmnibar],
+            ];
+        }
+    });
+
+    useEffect(() => {
+        props.stopSpinner()
+    }, []);
+
+    function initSocket() {
+        props.tsocket.attachListener('handle-callback', (task_packet) => {
+            handleCallback(task_packet, props.resource_viewer_id)
         });
-        this.props.tsocket.attachListener("doFlash", function (data) {
+        props.tsocket.attachListener("doFlash", function (data) {
             doFlash(data)
         });
-        if (!this.props.controlled) {
-            this.props.tsocket.attachListener('close-user-windows', (data) => {
-                if (!(data["originator"] == self.props.resource_viewer_id)) {
+        if (!props.controlled) {
+            props.tsocket.attachListener('close-user-windows', (data) => {
+                if (!(data["originator"] == props.resource_viewer_id)) {
                     window.close()
                 }
             });
-            this.props.tsocket.attachListener("doFlashUser", function (data) {
+            props.tsocket.attachListener("doFlashUser", function (data) {
                 doFlash(data)
             });
         }
     }
 
-    componentDidMount() {
-        this.setState({"mounted": true});
-        // this._update_window_dimensions();
-        this.props.stopSpinner()
+    function _showOmnibar() {
+        setShowOmnibar(true)
     }
 
-    _showOmnibar() {
-        this.setState({showOmnibar: true})
+    function _closeOmnibar() {
+        setShowOmnibar(false)
     }
 
-    _closeOmnibar() {
-        this.setState({showOmnibar: false})
-    }
-
-    _omniFunction() {
+    function _omniFunction() {
         let omni_items = [];
-        for (let ogetter in this.omniGetters) {
-            omni_items = omni_items.concat(this.omniGetters[ogetter]())
+        for (let ogetter in omniGetters.current) {
+            omni_items = omni_items.concat(omniGetters.current[ogetter]())
         }
         return omni_items
     }
 
-    _registerOmniGetter(name, the_function) {
-        this.omniGetters[name] = the_function
+    function _registerOmniGetter(name, the_function) {
+        omniGetters.current[name] = the_function
     }
 
+    let left_pane = (
+        <Fragment>
+            {props.show_search &&
+                <div style={{display: "flex", justifyContent: "flex-end", marginBottom: 5, marginTop: 15}}>
+                    <SearchForm
+                        update_search_state={props.update_search_state}
+                        search_string={props.search_string}
+                        regex={props.regex}
+                        search_ref={props.search_ref}
+                        allow_regex={props.allow_regex_search}
+                        number_matches={props.search_matches}
+                    />
+                </div>
+            }
+            {props.children}
+        </Fragment>
+    );
 
-    render() {
-        let left_pane = (
-            <Fragment>
-                {this.props.show_search &&
-                    <div style={{display: "flex", justifyContent: "flex-end", marginBottom: 5, marginTop: 15}}>
-                        <SearchForm
-                            update_search_state={this.props.update_search_state}
-                            search_string={this.props.search_string}
-                            regex={this.props.regex}
-                            search_ref={this.props.search_ref}
-                            allow_regex={this.props.allow_regex_search}
-                            number_matches={this.props.search_matches}
-                        />
-                    </div>
-                    }
-                {this.props.children}
-            </Fragment>
-        );
-        //let available_height = this.get_new_hp_height(this.hp_ref);
+    let right_pane = (
+        <CombinedMetadata tags={props.tags}
+                          outer_style={{
+                              marginTop: 0, marginLeft: 10, overflow: "auto", padding: 15,
+                              marginRight: 0, height: "100%"
+                          }}
+                          created={props.created}
+                          notes={props.notes}
+                          icon={props.mdata_icon}
+                          readOnly={props.readOnly}
+                          handleChange={props.handleStateChange}
+                          pane_type={props.res_type}/>
+    );
 
-        let right_pane = (
-            <Fragment>
-                <CombinedMetadata tags={this.props.tags}
-                                  outer_style={{marginTop: 0, marginLeft: 10, overflow: "auto", padding: 15,
-                                                marginRight: 0, height: "100%"}}
-                                  created={this.props.created}
-                                  notes={this.props.notes}
-                                  icon={this.props.mdata_icon}
-                                  readOnly={this.props.readOnly}
-                                  handleChange={this.props.handleStateChange}
-                                  pane_type={this.props.res_type} />
-                </Fragment>
-        );
-
-        return(
-            <Fragment>
-                <TacticMenubar menu_specs={this.props.menu_specs}
-                               dark_theme={this.props.dark_theme}
-                               showRefresh={window.in_context}
-                               showClose={window.in_context}
-                               refreshTab={this.props.refreshTab}
-                               closeTab={this.props.closeTab}
-                               resource_name={this.props.resource_name}
-                               showErrorDrawerButton={this.props.showErrorDrawerButton}
-                               toggleErrorDrawer={this.props.toggleErrorDrawer}
-                               registerOmniGetter={this._registerOmniGetter}
+    return (
+        <Fragment>
+            <TacticMenubar menu_specs={props.menu_specs}
+                           dark_theme={props.dark_theme}
+                           showRefresh={window.in_context}
+                           showClose={window.in_context}
+                           refreshTab={props.refreshTab}
+                           closeTab={props.closeTab}
+                           resource_name={props.resource_name}
+                           showErrorDrawerButton={props.showErrorDrawerButton}
+                           toggleErrorDrawer={props.toggleErrorDrawer}
+                           registerOmniGetter={_registerOmniGetter}
+            />
+            <div ref={top_ref}
+                 style={{width: props.usable_width, height: props.usable_height, marginLeft: 15, marginTop: 0}}>
+                <HorizontalPanes available_width={props.usable_width - SIDE_MARGIN}
+                                 available_height={props.usable_height}
+                                 left_pane={left_pane}
+                                 show_handle={true}
+                                 right_pane={right_pane}
+                                 initial_width_fraction={.65}
+                                 am_outer={true}
                 />
-                <ResizeSensor onResize={this._handleResize} observeParents={true}>
-                    <div ref={this.top_ref} style={{width: this.props.usable_width, height: this.props.usable_height, marginLeft: 15, marginTop: 0}}>
-                       <HorizontalPanes available_width={this.props.usable_width - SIDE_MARGIN}
-                                        available_height={this.props.usable_height}
-                                        left_pane={left_pane}
-                                        show_handle={true}
-                                        right_pane={right_pane}
-                                        initial_width_fraction={.65}
-                                        am_outer={true}
-                        />
-                    </div>
-                </ResizeSensor>
-                {!window.in_context &&
-                  <Fragment>
-                      <TacticOmnibar omniGetters={[this._omniFunction]}
-                                     showOmnibar={this.state.showOmnibar}
-                                     closeOmnibar={this._closeOmnibar}
-                                     is_authenticated={window.is_authenticated}
-                                     dark_theme={this.props.dark_theme}
-                                     setTheme={this.props.setTheme}
-                      />
-                      <KeyTrap global={true} bindings={this.key_bindings}/>
-                  </Fragment>
-                }
-            </Fragment>
-        )
-    }
+            </div>
+            {!window.in_context &&
+                <Fragment>
+                    <TacticOmnibar omniGetters={[_omniFunction]}
+                                   showOmnibar={state.showOmnibar}
+                                   closeOmnibar={_closeOmnibar}
+                                   is_authenticated={window.is_authenticated}
+                                   dark_theme={props.dark_theme}
+                                   setTheme={props.setTheme}
+                                   page_id={props.resource_viewer_id}
+                    />
+                    <KeyTrap global={true} bindings={key_bindings}/>
+                </Fragment>
+            }
+        </Fragment>
+    )
 }
+
+ResourceViewerApp = memo(ResourceViewerApp);
 
 ResourceViewerApp.propTypes = {
     resource_name: PropTypes.string,
@@ -227,7 +219,7 @@ ResourceViewerApp.propTypes = {
     regex: PropTypes.bool
 };
 
-ResourceViewerApp.defaultProps ={
+ResourceViewerApp.defaultProps = {
     search_string: "",
     search_matches: null,
     showErrorDrawerButton: false,

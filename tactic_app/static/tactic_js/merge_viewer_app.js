@@ -11,7 +11,7 @@ var _core = require("@blueprintjs/core");
 var _reactCodemirrorMergeview = require("./react-codemirror-mergeview.js");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields.js");
 var _menu_utilities = require("./menu_utilities");
-var _tactic_omnibar = require("./tactic_omnibar");
+var _TacticOmnibar = require("./TacticOmnibar");
 var _utilities_react = require("./utilities_react.js");
 var _key_trap = require("./key_trap");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
@@ -228,7 +228,7 @@ var MergeViewerApp = /*#__PURE__*/function (_React$Component) {
         saveMe: this.props.saveHandler,
         max_height: max_merge_height,
         ref: this.merge_element_ref
-      }))), /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_tactic_omnibar.TacticOmnibar, {
+      }))), /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_TacticOmnibar.TacticOmnibar, {
         omniGetters: [this._omniFunction],
         showOmnibar: this.state.showOmnibar,
         closeOmnibar: this._closeOmnibar,
