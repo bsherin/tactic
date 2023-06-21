@@ -8,7 +8,7 @@ import {PopoverPosition} from "@blueprintjs/core";
 import {ReactCodemirrorMergeView} from "./react-codemirror-mergeview.js";
 import {BpSelect} from "./blueprint_mdata_fields.js";
 import {TacticMenubar} from "./menu_utilities";
-import {TacticOmnibar} from "./tactic_omnibar";
+import {TacticOmnibar} from "./TacticOmnibar";
 import {doBinding} from "./utilities_react.js";
 import {KeyTrap} from "./key_trap";
 

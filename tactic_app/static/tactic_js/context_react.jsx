@@ -16,7 +16,7 @@ import {FocusStyleManager} from "@blueprintjs/core";
 FocusStyleManager.onlyShowFocusOnTabs();
 
 import {TacticSocket} from "./tactic_socket";
-import {TacticOmnibar} from "./tactic_omnibar";
+import {TacticOmnibar} from "./TacticOmnibar";
 import {handleCallback} from "./communication_react.js";
 import {doFlash, withStatus} from "./toaster.js";
 import {TacticNavbar} from "./blueprint_navbar";

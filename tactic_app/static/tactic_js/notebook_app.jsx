@@ -17,7 +17,7 @@ import {ConsoleComponent} from "./console_component.js";
 import {doFlash} from "./toaster.js"
 import {withStatus} from "./toaster.js";
 import {doBinding, get_ppi, renderSpinnerMessage} from "./utilities_react.js";
-import {TacticOmnibar} from "./tactic_omnibar";
+import {TacticOmnibar} from "./TacticOmnibar";
 import {KeyTrap} from "./key_trap";
 
 import {handleCallback, postWithCallback, postAjaxPromise, postAjax} from "./communication_react.js"

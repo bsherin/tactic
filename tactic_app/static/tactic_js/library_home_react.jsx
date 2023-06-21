@@ -12,7 +12,7 @@ import { Fragment } from 'react';
 import { Tabs, Tab, Tooltip, Icon, Position } from "@blueprintjs/core";
 import {Regions} from "@blueprintjs/table";
 
-import {TacticOmnibar} from "./tactic_omnibar";
+import {TacticOmnibar} from "./TacticOmnibar";
 import {TacticSocket} from "./tactic_socket.js";
 import {handleCallback} from "./communication_react.js";
 import {doFlash} from "./toaster.js";

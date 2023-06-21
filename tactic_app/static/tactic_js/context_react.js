@@ -9,7 +9,7 @@ var _react = _interopRequireWildcard(require("react"));
 var ReactDOM = _interopRequireWildcard(require("react-dom"));
 var _core = require("@blueprintjs/core");
 var _tactic_socket = require("./tactic_socket");
-var _tactic_omnibar = require("./tactic_omnibar");
+var _TacticOmnibar = require("./TacticOmnibar");
 var _communication_react = require("./communication_react.js");
 var _toaster = require("./toaster.js");
 var _blueprint_navbar = require("./blueprint_navbar");
@@ -1158,7 +1158,7 @@ function ContextApp(props) {
     className: tlclass,
     vertical: true,
     onChange: _handleTabSelect
-  }, all_tabs)), /*#__PURE__*/_react["default"].createElement(_tactic_omnibar.TacticOmnibar, {
+  }, all_tabs)), /*#__PURE__*/_react["default"].createElement(_TacticOmnibar.TacticOmnibar, {
     omniGetters: [omniGetter, _contextOmniItems],
     showOmnibar: showOmnibar,
     closeOmnibar: _closeOmnibar,

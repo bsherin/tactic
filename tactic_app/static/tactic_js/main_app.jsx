@@ -31,7 +31,7 @@ import {withErrorDrawer} from "./error_drawer.js";
 import {doBinding, get_ppi, renderSpinnerMessage} from "./utilities_react.js";
 import {getUsableDimensions} from "./sizing_tools.js";
 import {ErrorBoundary} from "./error_boundary";
-import {TacticOmnibar} from "./tactic_omnibar";
+import {TacticOmnibar} from "./TacticOmnibar";
 import {KeyTrap} from "./key_trap";
 
 export {main_props, MainApp}
