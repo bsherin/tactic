@@ -107,15 +107,6 @@ var ModuleViewerAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withSt
 var CreatorAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(_tile_creator_react.CreatorApp));
 var MainAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(_main_app.MainApp));
 var NotebookAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(_notebook_app.NotebookApp));
-function useStateAndRef(initial) {
-  var _useState = (0, _react.useState)(initial),
-    _useState2 = _slicedToArray(_useState, 2),
-    value = _useState2[0],
-    setValue = _useState2[1];
-  var valueRef = (0, _react.useRef)(value);
-  valueRef.current = value;
-  return [value, setValue, valueRef];
-}
 var classDict = {
   "module-viewer": ModuleViewerAppPlus,
   "code-viewer": CodeViewerAppPlus,
@@ -133,103 +124,101 @@ function _context_main() {
   }), domContainer);
 }
 function ContextApp(props) {
-  var _useState3 = (0, _react.useState)(false),
-    _useState4 = _slicedToArray(_useState3, 2),
-    didInit = _useState4[0],
-    setDidInit = _useState4[1];
-  var _useState5 = (0, _react.useState)("library"),
-    _useState6 = _slicedToArray(_useState5, 2),
-    selectedTabId = _useState6[0],
-    setSelectedTabId = _useState6[1];
-  var _useState7 = (0, _react.useState)(150),
-    _useState8 = _slicedToArray(_useState7, 2),
-    saved_width = _useState8[0],
-    set_saved_width = _useState8[1];
-  var _useStateAndRef = useStateAndRef({}),
+  var _useState = (0, _react.useState)(false),
+    _useState2 = _slicedToArray(_useState, 2),
+    didInit = _useState2[0],
+    setDidInit = _useState2[1];
+  var _useStateAndRef = (0, _utilities_react2.useStateAndRef)("library"),
     _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
-    tab_panel_dict = _useStateAndRef2[0],
-    set_tab_panel_dict = _useStateAndRef2[1],
-    tab_panel_dict_ref = _useStateAndRef2[2];
+    selectedTabId = _useStateAndRef2[0],
+    setSelectedTabId = _useStateAndRef2[1],
+    selectedTabIdRef = _useStateAndRef2[2];
+  var _useState3 = (0, _react.useState)(150),
+    _useState4 = _slicedToArray(_useState3, 2),
+    saved_width = _useState4[0],
+    set_saved_width = _useState4[1];
+  var _useStateAndRef3 = (0, _utilities_react2.useStateAndRef)({}),
+    _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
+    tab_panel_dict = _useStateAndRef4[0],
+    set_tab_panel_dict = _useStateAndRef4[1],
+    tab_panel_dict_ref = _useStateAndRef4[2];
   var library_omni_function = (0, _react.useRef)(null);
-  var _useState9 = (0, _react.useState)([]),
-    _useState10 = _slicedToArray(_useState9, 2),
-    tab_ids = _useState10[0],
-    set_tab_ids = _useState10[1];
-  var _useState11 = (0, _react.useState)(_library_home_react.library_props),
-    _useState12 = _slicedToArray(_useState11, 2),
-    library_panel_props = _useState12[0],
-    set_library_panel_props = _useState12[1];
-  var _useState13 = (0, _react.useState)({}),
-    _useState14 = _slicedToArray(_useState13, 2),
-    open_resources = _useState14[0],
-    set_open_resources = _useState14[1];
-  var _useState15 = (0, _react.useState)({}),
-    _useState16 = _slicedToArray(_useState15, 2),
-    dirty_methods = _useState16[0],
-    set_dirty_methods = _useState16[1];
-  var _useState17 = (0, _react.useState)(function () {
+  var _useStateAndRef5 = (0, _utilities_react2.useStateAndRef)([]),
+    _useStateAndRef6 = _slicedToArray(_useStateAndRef5, 3),
+    tab_ids = _useStateAndRef6[0],
+    set_tab_ids = _useStateAndRef6[1],
+    tab_ids_ref = _useStateAndRef6[2];
+  var _useState5 = (0, _react.useState)({}),
+    _useState6 = _slicedToArray(_useState5, 2),
+    open_resources = _useState6[0],
+    set_open_resources = _useState6[1];
+  var _useState7 = (0, _react.useState)({}),
+    _useState8 = _slicedToArray(_useState7, 2),
+    dirty_methods = _useState8[0],
+    set_dirty_methods = _useState8[1];
+  var _useState9 = (0, _react.useState)(function () {
       return props.initial_theme === "dark";
     }),
-    _useState18 = _slicedToArray(_useState17, 2),
-    dark_theme = _useState18[0],
-    set_dark_theme = _useState18[1];
-  var _useState19 = (0, _react.useState)([]),
-    _useState20 = _slicedToArray(_useState19, 2),
-    theme_setters = _useState20[0],
-    set_theme_setters = _useState20[1];
-  var _useState21 = (0, _react.useState)(null),
-    _useState22 = _slicedToArray(_useState21, 2),
-    lastSelectedTabId = _useState22[0],
-    setLastSelectedTabId = _useState22[1];
-  var _useState23 = (0, _react.useState)("all"),
-    _useState24 = _slicedToArray(_useState23, 2),
-    selectedLibraryTab = _useState24[0],
-    setSelectedLibraryTab = _useState24[1];
-  var _useState25 = (0, _react.useState)(function () {
+    _useState10 = _slicedToArray(_useState9, 2),
+    dark_theme = _useState10[0],
+    set_dark_theme = _useState10[1];
+  var _useState11 = (0, _react.useState)([]),
+    _useState12 = _slicedToArray(_useState11, 2),
+    theme_setters = _useState12[0],
+    set_theme_setters = _useState12[1];
+  var _useState13 = (0, _react.useState)(null),
+    _useState14 = _slicedToArray(_useState13, 2),
+    lastSelectedTabId = _useState14[0],
+    setLastSelectedTabId = _useState14[1];
+  var _useState15 = (0, _react.useState)("all"),
+    _useState16 = _slicedToArray(_useState15, 2),
+    selectedLibraryTab = _useState16[0],
+    setSelectedLibraryTab = _useState16[1];
+  var _useState17 = (0, _react.useState)(function () {
       return (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
     }),
-    _useState26 = _slicedToArray(_useState25, 2),
-    usable_width = _useState26[0],
-    set_usable_width = _useState26[1];
-  var _useState27 = (0, _react.useState)(function () {
+    _useState18 = _slicedToArray(_useState17, 2),
+    usable_width = _useState18[0],
+    set_usable_width = _useState18[1];
+  var _useState19 = (0, _react.useState)(function () {
       return (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
     }),
+    _useState20 = _slicedToArray(_useState19, 2),
+    usable_height = _useState20[0],
+    set_usable_height = _useState20[1];
+  var _useState21 = (0, _react.useState)(150),
+    _useState22 = _slicedToArray(_useState21, 2),
+    tabWidth = _useState22[0],
+    setTabWidth = _useState22[1];
+  var _useState23 = (0, _react.useState)(false),
+    _useState24 = _slicedToArray(_useState23, 2),
+    show_repository = _useState24[0],
+    set_show_repository = _useState24[1];
+  var _useState25 = (0, _react.useState)(false),
+    _useState26 = _slicedToArray(_useState25, 2),
+    dragging_over = _useState26[0],
+    set_dragging_over = _useState26[1];
+  var _useState27 = (0, _react.useState)(false),
     _useState28 = _slicedToArray(_useState27, 2),
-    usable_height = _useState28[0],
-    set_usable_height = _useState28[1];
-  var _useState29 = (0, _react.useState)(150),
+    currently_dragging = _useState28[0],
+    set_currently_dragging = _useState28[1];
+  var _useState29 = (0, _react.useState)(false),
     _useState30 = _slicedToArray(_useState29, 2),
-    tabWidth = _useState30[0],
-    setTabWidth = _useState30[1];
-  var _useState31 = (0, _react.useState)(false),
-    _useState32 = _slicedToArray(_useState31, 2),
-    show_repository = _useState32[0],
-    set_show_repository = _useState32[1];
-  var _useState33 = (0, _react.useState)(false),
-    _useState34 = _slicedToArray(_useState33, 2),
-    dragging_over = _useState34[0],
-    set_dragging_over = _useState34[1];
-  var _useState35 = (0, _react.useState)(false),
-    _useState36 = _slicedToArray(_useState35, 2),
-    currently_dragging = _useState36[0],
-    set_currently_dragging = _useState36[1];
-  var _useState37 = (0, _react.useState)(false),
-    _useState38 = _slicedToArray(_useState37, 2),
-    showOmnibar = _useState38[0],
-    setShowOmnibar = _useState38[1];
+    showOmnibar = _useState30[0],
+    setShowOmnibar = _useState30[1];
   var libraryTabChange = (0, _react.useRef)(null);
   var top_ref = (0, _react.useRef)(null);
   var key_bindings = [[["tab"], _goToNextPane], [["shift+tab"], _goToPreviousPane], [["ctrl+space"], _showOmnibar], [["ctrl+w"], function () {
-    _closeTab(selectedTabId);
+    _closeTab(selectedTabIdRef.current);
   }]];
-  (0, _utilities_react2.useConstructor)(initSocket);
-  var prepCallback = (0, _utilities_react2.useCallbackStack)();
+  var pushCallback = (0, _utilities_react2.useCallbackStack)();
   (0, _react.useEffect)(function () {
     // for unmount
+    initSocket();
     return function () {
       tsocket.disconnect();
     };
-  });
+  }, []);
   (0, _react.useEffect)(function () {
     // for mount
     window.dark_theme = dark_theme;
@@ -303,7 +292,7 @@ function ContextApp(props) {
     set_usable_height(uheight);
     set_usable_width(uwidth);
     setTabWidth(tabWidth);
-    prepCallback(callback);
+    pushCallback(callback);
   }
   function _registerThemeSetter(setter) {
     set_theme_setters([].concat(_toConsumableArray(theme_setters), [setter]));
@@ -321,10 +310,6 @@ function ContextApp(props) {
     setSelectedLibraryTab(res_type);
   }
   function initSocket() {
-    // It is necessary to delete and remake these callbacks
-    // If I dont delete I end up with duplicatesSelectList
-    // If I just keep the original one then I end up something with a handler linked
-    // to an earlier state
     props.tsocket.attachListener("window-open", function (data) {
       window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
     });
@@ -389,9 +374,9 @@ function ContextApp(props) {
   }
   function _closeATab(the_id) {
     var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-    var idx = tab_ids.indexOf(the_id);
+    var idx = tab_ids_ref.current.indexOf(the_id);
     var copied_tab_panel_dict = _objectSpread({}, tab_panel_dict);
-    var copied_tab_ids = _toConsumableArray(tab_ids);
+    var copied_tab_ids = _toConsumableArray(tab_ids_ref.current);
     var copied_dirty_methods = _objectSpread({}, dirty_methods);
     if (idx > -1) {
       copied_tab_ids.splice(idx, 1);
@@ -402,8 +387,8 @@ function ContextApp(props) {
     set_tab_ids(copied_tab_ids);
     set_dirty_methods(copied_dirty_methods);
     set_tab_panel_dict(copied_tab_panel_dict);
-    prepCallback(function () {
-      if (the_id == selectedTabId) {
+    pushCallback(function () {
+      if (the_id == selectedTabIdRef.current) {
         var newSelectedId;
         if (lastSelectedTabId && copied_tab_ids.includes(lastSelectedTabId)) {
           newSelectedId = lastSelectedTabId;
@@ -418,7 +403,7 @@ function ContextApp(props) {
           setLastSelectedTabId("library");
         }
       }
-      prepCallback(function () {
+      pushCallback(function () {
         _updateOpenResources(function () {
           return _update_window_dimensions(callback);
         });
@@ -450,9 +435,10 @@ function ContextApp(props) {
       omni_function: null
     };
     set_tab_panel_dict(new_tab_panel_dict);
-    set_tab_ids([].concat(_toConsumableArray(tab_ids), [new_id]));
-    setLastSelectedTabId(selectedTabId), setSelectedTabId(new_id);
-    prepCallback(function () {
+    var new_tab_ids = [].concat(_toConsumableArray(tab_ids_ref.current), [new_id]);
+    set_tab_ids(new_tab_ids);
+    setLastSelectedTabId(selectedTabIdRef.current), setSelectedTabId(new_id);
+    pushCallback(function () {
       _updateOpenResources(callback);
     });
   }
@@ -476,7 +462,7 @@ function ContextApp(props) {
       }
     }
     set_tab_panel_dict(new_tab_panel_dict);
-    prepCallback(function () {
+    pushCallback(function () {
       _updateOpenResources(function () {
         return _update_window_dimensions(callback);
       });
@@ -491,7 +477,7 @@ function ContextApp(props) {
     }
     new_tab_panel_dict[the_id].panel.resource_name = new_name;
     set_tab_panel_dict(new_tab_panel_dict);
-    prepCallback(function () {
+    pushCallback(function () {
       _updateOpenResources(function () {
         return _update_window_dimensions(callback);
       });
@@ -501,7 +487,7 @@ function ContextApp(props) {
     var new_tab_panel_dict = _objectSpread({}, tab_panel_dict);
     new_tab_panel_dict[the_id].title = new_title;
     set_tab_panel_dict(new_tab_panel_dict);
-    prepCallback(function () {
+    pushCallback(function () {
       _updateOpenResources(function () {
         return _update_window_dimensions(null);
       });
@@ -514,14 +500,14 @@ function ContextApp(props) {
       new_tab_panel_dict[the_id].panel[prop] = new_props[prop];
     }
     set_tab_panel_dict(new_tab_panel_dict);
-    prepCallback(function () {
+    pushCallback(function () {
       _updateOpenResources(function () {
         return _update_window_dimensions(null);
       });
     });
   }
   function _getResourceId(res_name, res_type) {
-    var _iterator = _createForOfIteratorHelper(tab_ids),
+    var _iterator = _createForOfIteratorHelper(tab_ids_ref.current),
       _step;
     try {
       for (_iterator.s(); !(_step = _iterator.n()).done;) {
@@ -558,6 +544,7 @@ function ContextApp(props) {
     var existing_id = _getResourceId(data.resource_name, data.res_type);
     if (existing_id != -1) {
       setSelectedTabId(existing_id);
+      pushCallback(callback);
       return;
     }
     var new_id = (0, _utilities_react.guid)();
@@ -576,24 +563,24 @@ function ContextApp(props) {
   }
   function _goToNextPane(e) {
     var newId;
-    if (selectedTabId == "library") {
-      newId = tab_ids[0];
+    if (selectedTabIdRef.current == "library") {
+      newId = tab_ids_ref.current[0];
     } else {
-      var tabIndex = tab_ids.indexOf(selectedTabId) + 1;
-      newId = tabIndex === tab_ids.length ? "library" : tab_ids[tabIndex];
+      var tabIndex = tab_ids_ref.current.indexOf(selectedTabIdRef.current) + 1;
+      newId = tabIndex === tab_ids_ref.current.length ? "library" : tab_ids_ref.current[tabIndex];
     }
-    _handleTabSelect(newId, selectedTabId);
+    _handleTabSelect(newId, selectedTabIdRef.current);
     e.preventDefault();
   }
   function _goToPreviousPane(e) {
     var newId;
-    if (selectedTabId == "library") {
-      newId = tab_ids.at(-1);
+    if (selectedTabIdRef.current == "library") {
+      newId = tab_ids_ref.current.at(-1);
     } else {
-      var tabIndex = tab_ids.indexOf(selectedTabId) - 1;
-      newId = tabIndex == -1 ? "library" : tab_ids[tabIndex];
+      var tabIndex = tab_ids_ref.current.indexOf(selectedTabIdRef.current) - 1;
+      newId = tabIndex == -1 ? "library" : tab_ids_ref.current[tabIndex];
     }
-    _handleTabSelect(newId, selectedTabId);
+    _handleTabSelect(newId, selectedTabIdRef.current);
     e.preventDefault();
   }
   function _handleTabSelect(newTabId, prevTabId) {
@@ -601,7 +588,7 @@ function ContextApp(props) {
     var callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
     setSelectedTabId(newTabId);
     setLastSelectedTabId(prevTabId);
-    prepCallback(function () {
+    pushCallback(function () {
       return _update_window_dimensions(callback);
     });
   }
@@ -609,7 +596,7 @@ function ContextApp(props) {
     var _loop = function _loop() {
       var pdict = tab_panel_dict[tab_id];
       if (pdict.kind == "creator-viewer" && pdict.panel.resource_name == module_name) {
-        _handleTabSelect(tab_id, selectedTabId, null, function () {
+        _handleTabSelect(tab_id, selectedTabIdRef.current, null, function () {
           if ("line_setter" in pdict) {
             pdict.line_setter(line_number);
           }
@@ -664,15 +651,15 @@ function ContextApp(props) {
     event.preventDefault();
   }
   function _nextTab(tab_id) {
-    var tidx = tab_ids.indexOf(tab_id);
+    var tidx = tab_ids_ref.current.indexOf(tab_id);
     if (tidx == -1) return null;
-    if (tidx == tab_ids.length - 1) return "dummy";
-    return tab_ids[tidx + 1];
+    if (tidx == tab_ids_ref.current.length - 1) return "dummy";
+    return tab_ids_ref.current[tidx + 1];
   }
   function _onDrop(event, target_id) {
     if (currently_dragging == null || currently_dragging == target_id) return;
-    var current_index = tab_ids.indexOf(currently_dragging);
-    var new_tab_ids = _toConsumableArray(tab_ids);
+    var current_index = tab_ids_ref.current.indexOf(currently_dragging);
+    var new_tab_ids = _toConsumableArray(tab_ids_ref.current);
     new_tab_ids.splice(current_index, 1);
     if (target_id == "dummy") {
       new_tab_ids.push(currently_dragging);
@@ -732,16 +719,16 @@ function ContextApp(props) {
   function _updateOpenResources() {
     var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     set_open_resources(_getOpenResources());
-    prepCallback(callback);
+    pushCallback(callback);
   }
   function _contextOmniItems() {
-    if (tab_ids.length == 0) return [];
+    if (tab_ids_ref.current.length == 0) return [];
     var omni_funcs = [["Go To Next Panel", "context", _goToNextPane, "arrow-right"], ["Go To Previous Panel", "context", _goToPreviousPane, "arrow-left"]];
-    if (selectedTabID != "library") {
+    if (selectedTabIdRef.current != "library") {
       omni_funcs = omni_funcs.concat([["Close Current Panel", "context", function () {
-        _closeTab(selectedTabId);
+        _closeTab(selectedTabIdRef.current);
       }, "delete"], ["Refresh Current Panel", "context", function () {
-        _refreshTab(selectedTabId);
+        _refreshTab(selectedTabIdRef.current);
       }, "reset"]]);
     }
     var omni_items = [];
@@ -811,7 +798,7 @@ function ContextApp(props) {
     }
   } else {
     var cname = "lib-tab-button";
-    if (selectedTabId == "library") {
+    if (selectedTabIdRef.current == "library") {
       cname += selected_bclass;
     }
     lib_buttons.push( /*#__PURE__*/_react["default"].createElement(_core.Button, {
@@ -827,16 +814,20 @@ function ContextApp(props) {
     }, "Library"));
   }
   var bclass = "context-tab-button-content";
-  if (selectedTabId == "library") {
+  if (selectedTabIdRef.current == "library") {
     bclass += " selected-tab-button";
   }
   var library_panel;
+  var library_id = (0, _utilities_react.guid)();
+  var tsocket = new _tactic_socket.TacticSocket("main", 5000, library_id);
   library_panel = /*#__PURE__*/_react["default"].createElement("div", {
     id: "library-home-root"
-  }, /*#__PURE__*/_react["default"].createElement(LibraryHomeAppPlus, _extends({}, library_panel_props, {
+  }, /*#__PURE__*/_react["default"].createElement(LibraryHomeAppPlus, {
+    library_id: library_id,
+    tsocket: tsocket,
     library_style: window.library_style,
     controlled: true,
-    am_selected: selectedTabId == "library",
+    am_selected: selectedTabIdRef.current == "library",
     open_resources: open_resources,
     registerLibraryTabChanger: _registerLibraryTabChanger,
     dark_theme: dark_theme,
@@ -847,7 +838,7 @@ function ContextApp(props) {
     handleCreateViewer: _handleCreateViewer,
     usable_width: usable_width,
     usable_height: usable_height
-  })));
+  }));
   // }
   var mbot = unified ? 0 : 5;
   var ltab = /*#__PURE__*/_react["default"].createElement(_core.Tab, {
@@ -883,14 +874,14 @@ function ContextApp(props) {
     }
   }, lib_buttons)));
   var all_tabs = [ltab];
-  var _iterator5 = _createForOfIteratorHelper(tab_ids),
+  var _iterator5 = _createForOfIteratorHelper(tab_ids_ref.current),
     _step5;
   try {
     var _loop3 = function _loop3() {
       var tab_id = _step5.value;
       var tab_entry = tab_panel_dict[tab_id];
       var bclass = "context-tab-button-content";
-      if (selectedTabId == tab_id) {
+      if (selectedTabIdRef.current == tab_id) {
         bclass += " selected-tab-button";
       }
       var visible_title = tab_entry.title;
@@ -905,7 +896,7 @@ function ContextApp(props) {
           ,
           handleCreateViewer: _handleCreateViewer,
           setTheme: _setTheme,
-          am_selected: tab_id == selectedTabId,
+          am_selected: tab_id == selectedTabIdRef.current,
           changeResourceName: function changeResourceName(new_name) {
             var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
             var change_title = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
@@ -1086,7 +1077,7 @@ function ContextApp(props) {
   if (pane_closed) {
     tlclass += " context-pane-closed";
   }
-  var sid = selectedTabId;
+  var sid = selectedTabIdRef.current;
   var omniGetter;
   if (sid && sid in tab_panel_dict) {
     var the_dict = tab_panel_dict[sid];
@@ -1154,7 +1145,7 @@ function ContextApp(props) {
     useThinBar: true
   }), /*#__PURE__*/_react["default"].createElement(_core.Tabs, {
     id: "context-tabs",
-    selectedTabId: selectedTabId,
+    selectedTabId: selectedTabIdRef.current,
     className: tlclass,
     vertical: true,
     onChange: _handleTabSelect

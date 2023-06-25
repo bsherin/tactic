@@ -1,327 +1,220 @@
 "use strict";
 
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.ErrorItem = ErrorItem;
 exports.withErrorDrawer = withErrorDrawer;
-exports.ErrorItem = void 0;
-
-var _react = _interopRequireDefault(require("react"));
-
+var _react = _interopRequireWildcard(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
-
 var _core = require("@blueprintjs/core");
-
 var _toaster = require("./toaster.js");
-
-var _utilities_react = require("./utilities_react.js");
-
 var _communication_react = require("./communication_react.js");
-
 var _blueprint_react_widgets = require("./blueprint_react_widgets");
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
-
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
-
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
-function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
-
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
-
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
+function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
+function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 function withErrorDrawer(WrappedComponent) {
   var title = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
   var position = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "right";
   var size = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "30%";
-  // noinspection JSPotentiallyInvalidUsageOfThis
-  return /*#__PURE__*/function (_React$Component) {
-    _inherits(_class, _React$Component);
-
-    var _super = _createSuper(_class);
-
-    function _class(props) {
-      var _this;
-
-      _classCallCheck(this, _class);
-
-      _this = _super.call(this, props);
-      (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
-      _this.state = {
-        show_drawer: false,
-        contents: {},
-        error_drawer_size: size,
-        position: position,
-        goToLineNumber: null
-      };
-      _this.socket_counter = null;
-      _this.ucounter = 0;
-      _this.local_id = _this.props.main_id ? _this.props.main_id : _this.props.library_id;
-      return _this;
+  function newFunction(props) {
+    var _useState = (0, _react.useState)(false),
+      _useState2 = _slicedToArray(_useState, 2),
+      show_drawer = _useState2[0],
+      set_show_drawer = _useState2[1];
+    var _useState3 = (0, _react.useState)({}),
+      _useState4 = _slicedToArray(_useState3, 2),
+      contents = _useState4[0],
+      set_contents = _useState4[1];
+    var _useState5 = (0, _react.useState)(size),
+      _useState6 = _slicedToArray(_useState5, 2),
+      error_drawer_size = _useState6[0],
+      set_error_drawer_size = _useState6[1];
+    var _useState7 = (0, _react.useState)(position),
+      _useState8 = _slicedToArray(_useState7, 2),
+      position = _useState8[0],
+      set_position = _useState8[1];
+    var _useState9 = (0, _react.useState)(null),
+      _useState10 = _slicedToArray(_useState9, 2),
+      goToLineNumber = _useState10[0],
+      setGoToLineNumber = _useState10[1];
+    var socket_counter = (0, _react.useRef)(null);
+    var ucounter = (0, _react.useRef)(0);
+    var local_id = (0, _react.useRef)(props.main_id ? props.main_id : props.library_id);
+    (0, _react.useEffect)(function () {
+      initSocket();
+    }, []);
+    function initSocket() {
+      props.tsocket.attachListener('close-error-drawer', _close);
+      props.tsocket.attachListener('open-error-drawer', _open);
+      props.tsocket.attachListener('add-error-drawer-entry', _addEntry);
+      props.tsocket.attachListener("clear-error-drawer", _clearAll);
     }
-
-    _createClass(_class, [{
-      key: "componentDidMount",
-      value: function componentDidMount() {
-        if (this.props.tsocket) {
-          this.initSocket();
-        }
+    function _close(data) {
+      if (data == null || !("main_id" in data) || data.main_id == local_id.current) {
+        set_show_drawer(false);
       }
-    }, {
-      key: "initSocket",
-      value: function initSocket() {
-        this.props.tsocket.attachListener('close-error-drawer', this._close);
-        this.props.tsocket.attachListener('open-error-drawer', this._open);
-        this.props.tsocket.attachListener('add-error-drawer-entry', this._addEntry);
-        this.props.tsocket.attachListener("clear-error-drawer", this._clearAll);
+    }
+    function _open(data) {
+      if (data == null || !("main_id" in data) || data.main_id == local_id.current) {
+        set_show_drawer(true);
       }
-    }, {
-      key: "_close",
-      value: function _close(data) {
-        if (data == null || !("main_id" in data) || data.main_id == this.local_id) {
-          this.setState({
-            show_drawer: false
-          });
-        }
+    }
+    function _toggle(data) {
+      if (data == null || !("main_id" in data) || data.main_id == local_id.current) {
+        set_show_drawer(!show_drawer);
       }
-    }, {
-      key: "_open",
-      value: function _open(data) {
-        if (data == null || !("main_id" in data) || data.main_id == this.local_id) {
-          this.setState({
-            show_drawer: true
-          });
-        }
+    }
+    function _addEntry(data) {
+      var open = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+      if (data == null || !("main_id" in data) || data.main_id == local_id.current) {
+        ucounter.current = ucounter.current + 1;
+        var newcontents = _objectSpread({}, contents);
+        newcontents[String(ucounter.current)] = data;
+        set_contents(newcontents);
+        set_show_drawer(open);
       }
-    }, {
-      key: "_toggle",
-      value: function _toggle(data) {
-        if (data == null || !("main_id" in data) || data.main_id == this.local_id) {
-          this.setState({
-            show_drawer: !this.state.show_drawer
-          });
-        }
+    }
+    function _closeEntry(ukey) {
+      var newcontents = _objectSpread({}, contents);
+      delete newcontents[ukey];
+      set_contents(newcontents);
+      set_show_drawer(open);
+    }
+    function _postAjaxFailure(qXHR, textStatus, errorThrown) {
+      _addEntry({
+        title: "Post Ajax Failure: {}".format(textStatus),
+        content: errorThrown
+      });
+    }
+    function _clearAll(data) {
+      if (data == null || !("main_id" in data) || data.main_id == props.main_id) {
+        set_contents([]);
+        set_show_drawer(false);
       }
-    }, {
-      key: "_addEntry",
-      value: function _addEntry(data) {
-        var open = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-
-        if (data == null || !("main_id" in data) || data.main_id == this.local_id) {
-          this.ucounter = this.ucounter + 1;
-
-          var newcontents = _objectSpread({}, this.state.contents);
-
-          newcontents[String(this.ucounter)] = data;
-          this.setState({
-            contents: newcontents,
-            show_drawer: open
-          });
-        }
-      }
-    }, {
-      key: "_closeEntry",
-      value: function _closeEntry(ukey) {
-        var newcontents = _objectSpread({}, this.state.contents);
-
-        delete newcontents[ukey];
-        this.setState({
-          contents: newcontents,
-          show_drawer: open
-        });
-      }
-    }, {
-      key: "_postAjaxFailure",
-      value: function _postAjaxFailure(qXHR, textStatus, errorThrown) {
-        this._addEntry({
-          title: "Post Ajax Failure: {}".format(textStatus),
-          content: errorThrown
-        });
-      }
-    }, {
-      key: "_clearAll",
-      value: function _clearAll(data) {
-        if (data == null || !("main_id" in data) || data.main_id == this.props.main_id) {
-          this.setState({
-            contents: [],
-            show_drawer: false
-          });
-        }
-      }
-    }, {
-      key: "_onClose",
-      value: function _onClose() {
-        this.setState({
-          "show_drawer": false
-        });
-      }
-    }, {
-      key: "_setGoToLineNumber",
-      value: function _setGoToLineNumber(gtfunc) {
-        this.setState({
-          goToLineNumber: gtfunc
-        });
-      }
-    }, {
-      key: "render",
-      value: function render() {
-        var errorDrawerFuncs = {
-          openErrorDrawer: this._open,
-          closeErrorDrawer: this._close,
-          clearErrorDrawer: this._clearAll,
-          addErrorDrawerEntry: this._addEntry,
-          postAjaxFailure: this._postAjaxFailure,
-          toggleErrorDrawer: this._toggle,
-          setGoToLineNumber: this._setGoToLineNumber
-        };
-        return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(WrappedComponent, _extends({}, this.props, errorDrawerFuncs, {
-          errorDrawerFuncs: errorDrawerFuncs
-        })), /*#__PURE__*/_react["default"].createElement(ErrorDrawer, _extends({}, this.state, {
-          local_id: this.local_id,
-          handleCloseItem: this._closeEntry,
-          goToLineNumberFunc: this.state.goToLineNumber,
-          goToModule: this.props.goToModule,
-          closeErrorDrawer: this._close,
-          title: "Error Drawer",
-          dark_theme: this.props.controlled ? this.props.dark_theme : window.dark_theme,
-          size: this.state.error_drawer_size,
-          onClose: this._onClose,
-          clearAll: this._clearAll
-        })));
-      }
-    }]);
-
-    return _class;
-  }(_react["default"].Component);
-}
-
-var ErrorItem = /*#__PURE__*/function (_React$Component2) {
-  _inherits(ErrorItem, _React$Component2);
-
-  var _super2 = _createSuper(ErrorItem);
-
-  function ErrorItem(props) {
-    var _this2;
-
-    _classCallCheck(this, ErrorItem);
-
-    _this2 = _super2.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this2));
-    return _this2;
+    }
+    function _onClose() {
+      set_show_drawer(false);
+    }
+    function _setGoToLineNumber(gtfunc) {
+      setGoToLineNumber(gtfunc);
+    }
+    var errorDrawerFuncs = {
+      openErrorDrawer: _open,
+      closeErrorDrawer: _close,
+      clearErrorDrawer: _clearAll,
+      addErrorDrawerEntry: _addEntry,
+      postAjaxFailure: _postAjaxFailure,
+      toggleErrorDrawer: _toggle,
+      setGoToLineNumber: _setGoToLineNumber
+    };
+    var the_state = {
+      show_drawer: show_drawer,
+      contents: contents,
+      error_drawer_size: error_drawer_size,
+      position: position,
+      goToLineNumber: goToLineNumber
+    };
+    return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(WrappedComponent, _extends({}, props, errorDrawerFuncs, {
+      errorDrawerFuncs: errorDrawerFuncs
+    })), /*#__PURE__*/_react["default"].createElement(ErrorDrawer, _extends({}, the_state, {
+      local_id: local_id.current,
+      handleCloseItem: _closeEntry,
+      goToLineNumberFunc: goToLineNumber,
+      goToModule: props.goToModule,
+      closeErrorDrawer: _close,
+      title: "Error Drawer",
+      dark_theme: props.controlled ? props.dark_theme : window.dark_theme,
+      size: error_drawer_size,
+      onClose: _onClose,
+      clearAll: _clearAll
+    })));
   }
-
-  _createClass(ErrorItem, [{
-    key: "_openError",
-    value: function _openError() {
-      var _this3 = this;
-
-      // This first condition will be true if this error drawer is in the tile creator
-      if (this.props.goToLineNumberFunc) {
-        this.props.goToLineNumberFunc(this.props.line_number);
+  return /*#__PURE__*/(0, _react.memo)(newFunction);
+}
+function ErrorItem(props) {
+  function _openError() {
+    // This first condition will be true if this error drawer is in the tile creator
+    if (props.goToLineNumberFunc) {
+      props.goToLineNumberFunc(props.line_number);
+    } else {
+      if (!window.in_context) {
+        window.blur();
+        (0, _communication_react.postWithCallback)("host", "go_to_module_viewer_if_exists", {
+          user_id: window.user_id,
+          tile_type: props.tile_type,
+          line_number: props.line_number
+        }, function (data) {
+          if (!data.success) {
+            window.open($SCRIPT_ROOT + "/view_location_in_creator/" + props.tile_type + "/" + props.line_number);
+          } else {
+            window.open("", data.window_name);
+          }
+        }, null, props.local_id);
       } else {
-        if (!window.in_context) {
-          window.blur();
-          (0, _communication_react.postWithCallback)("host", "go_to_module_viewer_if_exists", {
-            user_id: window.user_id,
-            tile_type: this.props.tile_type,
-            line_number: this.props.line_number
-          }, function (data) {
-            if (!data.success) {
-              window.open($SCRIPT_ROOT + "/view_location_in_creator/" + _this3.props.tile_type + "/" + _this3.props.line_number);
-            } else {
-              window.open("", data.window_name);
-            }
-          }, null, this.props.local_id);
-        } else {
-          this.props.closeErrorDrawer();
-          this.props.goToModule(this.props.tile_type, this.props.line_number);
-        }
+        props.closeErrorDrawer();
+        props.goToModule(props.tile_type, props.line_number);
       }
     }
-  }, {
-    key: "render",
-    value: function render() {
-      var _this4 = this;
-
-      var content_dict = {
-        __html: this.props.content
-      };
-      return /*#__PURE__*/_react["default"].createElement(_core.Card, {
-        interactive: true,
-        elevation: _core.Elevation.TWO,
-        style: {
-          marginBottom: 5,
-          position: "relative"
-        }
-      }, this.props.title && /*#__PURE__*/_react["default"].createElement("h6", {
-        style: {
-          overflow: "auto"
-        }
-      }, /*#__PURE__*/_react["default"].createElement("a", {
-        href: "#"
-      }, this.props.title)), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        handleClick: function handleClick() {
-          _this4.props.handleCloseItem(_this4.props.ukey);
-        },
-        style: {
-          position: "absolute",
-          right: 5,
-          top: 5
-        },
-        icon: "cross"
-      }), /*#__PURE__*/_react["default"].createElement("div", {
-        style: {
-          fontSize: 13,
-          overflow: "auto"
-        },
-        dangerouslySetInnerHTML: content_dict
-      }), this.props.has_link && /*#__PURE__*/_react["default"].createElement(_core.Button, {
-        text: "show",
-        icon: "eye-open",
-        small: true,
-        onClick: this._openError
-      }));
+  }
+  var content_dict = {
+    __html: props.content
+  };
+  return /*#__PURE__*/_react["default"].createElement(_core.Card, {
+    interactive: true,
+    elevation: _core.Elevation.TWO,
+    style: {
+      marginBottom: 5,
+      position: "relative"
     }
-  }]);
-
-  return ErrorItem;
-}(_react["default"].Component);
-
-exports.ErrorItem = ErrorItem;
+  }, props.title && /*#__PURE__*/_react["default"].createElement("h6", {
+    style: {
+      overflow: "auto"
+    }
+  }, /*#__PURE__*/_react["default"].createElement("a", {
+    href: "#"
+  }, props.title)), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+    handleClick: function handleClick() {
+      props.handleCloseItem(props.ukey);
+    },
+    style: {
+      position: "absolute",
+      right: 5,
+      top: 5
+    },
+    icon: "cross"
+  }), /*#__PURE__*/_react["default"].createElement("div", {
+    style: {
+      fontSize: 13,
+      overflow: "auto"
+    },
+    dangerouslySetInnerHTML: content_dict
+  }), props.has_link && /*#__PURE__*/_react["default"].createElement(_core.Button, {
+    text: "show",
+    icon: "eye-open",
+    small: true,
+    onClick: _openError
+  }));
+}
+exports.ErrorItem = ErrorItem = /*#__PURE__*/(0, _react.memo)(ErrorItem);
 ErrorItem.propTypes = {
   ukey: _propTypes["default"].string,
   title: _propTypes["default"].string,
@@ -339,78 +232,55 @@ ErrorItem.defaultProps = {
   goToLineNumberfunc: null,
   tile_type: null
 };
-
-var ErrorDrawer = /*#__PURE__*/function (_React$Component3) {
-  _inherits(ErrorDrawer, _React$Component3);
-
-  var _super3 = _createSuper(ErrorDrawer);
-
-  function ErrorDrawer() {
-    _classCallCheck(this, ErrorDrawer);
-
-    return _super3.apply(this, arguments);
-  }
-
-  _createClass(ErrorDrawer, [{
-    key: "render",
-    value: function render() {
-      var _this5 = this;
-
-      var sorted_keys = _toConsumableArray(Object.keys(this.props.contents));
-
-      sorted_keys.sort(function (a, b) {
-        return parseInt(b) - parseInt(a);
-      });
-      var items = sorted_keys.map(function (ukey, index) {
-        var entry = _this5.props.contents[ukey];
-        var content_dict = {
-          __html: entry.content
-        };
-        var has_link = false;
-
-        if (entry.hasOwnProperty("line_number")) {
-          has_link = true;
-        }
-
-        return /*#__PURE__*/_react["default"].createElement(ErrorItem, {
-          ukey: ukey,
-          title: entry.title,
-          content: entry.content,
-          has_link: has_link,
-          local_id: _this5.props.local_id,
-          handleCloseItem: _this5.props.handleCloseItem,
-          goToLineNumberFunc: _this5.props.goToLineNumberFunc,
-          closeErrorDrawer: _this5.props.closeErrorDrawer,
-          goToModule: _this5.props.goToModule,
-          line_number: entry.line_number,
-          tile_type: entry.tile_type
-        });
-      });
-      return /*#__PURE__*/_react["default"].createElement(_core.Drawer, {
-        icon: "console",
-        className: this.props.dark_theme ? "bp4-dark" : "light-theme",
-        title: this.props.title,
-        isOpen: this.props.show_drawer,
-        position: this.props.position,
-        canOutsideClickClose: true,
-        onClose: this.props.onClose,
-        size: this.props.size
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: _core.Classes.DRAWER_BODY
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: "d-flex flex-row justify-content-around mt-2"
-      }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
-        text: "Clear All",
-        onClick: this.props.clearAll
-      })), /*#__PURE__*/_react["default"].createElement("div", {
-        className: _core.Classes.DIALOG_BODY
-      }, items)));
+function ErrorDrawer(props) {
+  var sorted_keys = _toConsumableArray(Object.keys(props.contents));
+  sorted_keys.sort(function (a, b) {
+    return parseInt(b) - parseInt(a);
+  });
+  var items = sorted_keys.map(function (ukey, index) {
+    var entry = props.contents[ukey];
+    var content_dict = {
+      __html: entry.content
+    };
+    var has_link = false;
+    if (entry.hasOwnProperty("line_number")) {
+      has_link = true;
     }
-  }]);
-
-  return ErrorDrawer;
-}(_react["default"].Component);
-
+    return /*#__PURE__*/_react["default"].createElement(ErrorItem, {
+      ukey: ukey,
+      title: entry.title,
+      content: entry.content,
+      has_link: has_link,
+      local_id: props.local_id,
+      handleCloseItem: props.handleCloseItem,
+      goToLineNumberFunc: props.goToLineNumberFunc,
+      closeErrorDrawer: props.closeErrorDrawer,
+      goToModule: props.goToModule,
+      line_number: entry.line_number,
+      tile_type: entry.tile_type
+    });
+  });
+  return /*#__PURE__*/_react["default"].createElement(_core.Drawer, {
+    icon: "console",
+    className: props.dark_theme ? "bp4-dark" : "light-theme",
+    title: props.title,
+    isOpen: props.show_drawer,
+    position: props.position,
+    canOutsideClickClose: true,
+    onClose: props.onClose,
+    size: props.size
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    className: _core.Classes.DRAWER_BODY
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    className: "d-flex flex-row justify-content-around mt-2"
+  }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
+    text: "Clear All",
+    onClick: props.clearAll
+  })), /*#__PURE__*/_react["default"].createElement("div", {
+    className: _core.Classes.DIALOG_BODY
+  }, items)));
+}
+ErrorDrawer = /*#__PURE__*/(0, _react.memo)(ErrorDrawer);
 _toaster.Status.propTypes = {
   show_drawer: _propTypes["default"].bool,
   dark_theme: _propTypes["default"].bool,

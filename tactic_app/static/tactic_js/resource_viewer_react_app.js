@@ -62,23 +62,29 @@ function ResourceViewerApp(props) {
   var savedNotes = (0, _react.useRef)(props.notes);
   var omniGetters = (0, _react.useRef)({});
   var key_bindings = (0, _react.useRef)([]);
-  if (!window.in_context) {
-    var _useState = (0, _react.useState)(false),
-      _useState2 = _slicedToArray(_useState, 2),
-      showOmnibar = _useState2[0],
-      _setShowOmnibar = _useState2[1];
-  }
+
+  // Only used when not in context
+  var _useState = (0, _react.useState)(false),
+    _useState2 = _slicedToArray(_useState, 2),
+    showOmnibar = _useState2[0],
+    setShowOmnibar = _useState2[1];
   (0, _utilities_react.useConstructor)(function () {
-    initSocket();
-    if (props.registerOmniFunction) {
-      props.registerOmniFunction(_omniFunction);
-    }
+    var showOmnibar;
+    var setShowOmnibar;
     if (!window.in_context) {
       key_bindings.current = [[["ctrl+space"], _showOmnibar]];
     }
+    return;
   });
   (0, _react.useEffect)(function () {
+    initSocket();
     props.stopSpinner();
+    if (props.registerOmniFunction) {
+      props.registerOmniFunction(_omniFunction);
+    }
+    return function () {
+      tsocket.disconnect();
+    };
   }, []);
   function initSocket() {
     props.tsocket.attachListener('handle-callback', function (task_packet) {
@@ -175,7 +181,7 @@ function ResourceViewerApp(props) {
     am_outer: true
   })), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_TacticOmnibar.TacticOmnibar, {
     omniGetters: [_omniFunction],
-    showOmnibar: state.showOmnibar,
+    showOmnibar: showOmnibar,
     closeOmnibar: _closeOmnibar,
     is_authenticated: window.is_authenticated,
     dark_theme: props.dark_theme,
@@ -183,7 +189,7 @@ function ResourceViewerApp(props) {
     page_id: props.resource_viewer_id
   }), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
     global: true,
-    bindings: key_bindings
+    bindings: key_bindings.current
   })));
 }
 exports.ResourceViewerApp = ResourceViewerApp = /*#__PURE__*/(0, _react.memo)(ResourceViewerApp);

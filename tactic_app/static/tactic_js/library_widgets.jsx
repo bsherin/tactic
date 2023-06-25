@@ -1,152 +1,150 @@
-
 import "../tactic_css/tactic_select.scss"
 
 import React from "react";
-import {Fragment} from "react";
+import {Fragment, useState, useEffect, useRef, memo} from 'react';
 import PropTypes from 'prop-types';
 import hash from "object-hash"
 
-import { InputGroup, HotkeysProvider, Menu, MenuItem, Icon, FormGroup, Switch, Button, ButtonGroup } from "@blueprintjs/core";
-import { Cell, Column, Table2, ColumnHeaderCell, RegionCardinality, TruncatedFormat, Regions } from "@blueprintjs/table";
+import {
+    InputGroup,
+    HotkeysProvider,
+    Menu,
+    MenuItem,
+    Icon,
+    FormGroup,
+    Switch,
+    Button,
+    ButtonGroup
+} from "@blueprintjs/core";
+import {Cell, Column, Table2, ColumnHeaderCell, RegionCardinality, TruncatedFormat, Regions} from "@blueprintjs/table";
 import _ from 'lodash';
 
-
-import {doBinding} from "./utilities_react.js";
+import { useCallbackStack, useStateAndRef } from "./utilities_react";
 
 export {SearchForm}
 export {BpSelectorTable}
 
-class SearchForm extends React.Component {
+function SearchForm(props) {
+    const [temp_text, set_temp_text] = useState(null);
+    const current_timer = useRef(null);
 
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.current_timer = null;
-        this.state = {
-            temp_text: null
-        };
-        this.temp_text = null;
-    }
-
-    _handleSearchFieldChange(event) {
-        if (this.current_timer) {
-            clearTimeout(this.current_timer);
-            this.current_timer = null;
+    function _handleSearchFieldChange(event) {
+        if (current_timer.current) {
+            clearTimeout(current_timer.current);
+            current_timer.current = null;
         }
-        let self = this;
         let newval = event.target.value;
-        this.current_timer = setTimeout(()=> {
-                self.current_timer = null;
-                self.props.update_search_state({"search_string": newval})
-            }, self.props.update_delay);
-        this.setState({temp_text: newval});
+        current_timer.current = setTimeout(() => {
+            current_timer.current = null;
+            props.update_search_state({"search_string": newval})
+        }, props.update_delay);
+        set_temp_text(newval)
     }
 
-    _handleClearSearch() {
-        this.props.update_search_state({"search_string": ""});
+    function _handleClearSearch() {
+        props.update_search_state({"search_string": ""});
     }
 
-    _handleSearchMetadataChange(event) {
-        this.props.update_search_state({"search_metadata": event.target.checked});
+    function _handleSearchMetadataChange(event) {
+        props.update_search_state({"search_metadata": event.target.checked});
     }
 
-    _handleSearchInsideChange(event) {
-        this.props.update_search_state({"search_inside": event.target.checked});
+    function _handleSearchInsideChange(event) {
+        props.update_search_state({"search_inside": event.target.checked});
 
     }
 
-    _handleShowHiddenChange(event) {
-        this.props.update_search_state({"show_hidden": event.target.checked});
+    function _handleShowHiddenChange(event) {
+        props.update_search_state({"show_hidden": event.target.checked});
     }
 
-    _handleRegexChange(event) {
-        this.props.update_search_state({"regex": event.target.checked});
+    function _handleRegexChange(event) {
+        props.update_search_state({"regex": event.target.checked});
     }
 
-    static _handleSubmit(event) {
+    function _handleSubmit(event) {
         event.preventDefault()
     }
 
-    render() {
-        let match_text;
-        if (this.props.number_matches != null && this.props.search_string && this.props.search_string != "") {
-            switch (this.props.number_matches) {
-                case 0:
-                    match_text = "no matches";
-                    break;
-                case 1:
-                    match_text = "1 match";
-                    break;
-                default:
-                    match_text = `${this.props.number_matches} matches`;
-                    break;
-            }
+    let match_text;
+    if (props.number_matches != null && props.search_string && props.search_string != "") {
+        switch (props.number_matches) {
+            case 0:
+                match_text = "no matches";
+                break;
+            case 1:
+                match_text = "1 match";
+                break;
+            default:
+                match_text = `${props.number_matches} matches`;
+                break;
         }
-        else {
-            match_text = null
-        }
-        let current_text = this.current_timer ? this.state.temp_text : this.props.search_string;
-        return (
-            <Fragment>
-                <FormGroup ref={this.form_ref} helperText={match_text} style={{marginBottom: 0}}>
-                    <div className="d-flex flex-row" style={{marginTop: 5, marginBottom: 5}}>
-                        <InputGroup type="search"
-                                    className="search-input"
-                                    placeholder="Search"
-                                    leftIcon="search"
-                                    value={current_text}
-                                    onChange={this._handleSearchFieldChange}
-                                    style={{"width": this.props.field_width}}
-                                    autoCapitalize="none"
-                                    autoCorrect="off"
-                                    small={true}
-                                    inputRef={this.props.search_ref}
-                        />
-                    {this.props.allow_regex &&
-                        <Switch label="regexp"
-                                   className="ml-3 mb-0 mt-1"
-                                   large={false}
-                                   checked={this.props.regex}
-                                   onChange={this._handleRegexChange}
-                        />
-                    }
-                    {this.props.allow_search_metadata &&
-                        <Switch label="metadata"
-                                     className="ml-3 mb-0 mt-1"
-                                    large={false}
-                                    checked={this.props.search_metadata}
-                                    onChange={this._handleSearchMetadataChange}
-                        />
-                    }
-                    {this.props.allow_search_inside &&
-                        <Switch label="inside"
-                                   className="ml-3 mb-0 mt-1"
-                                   large={false}
-                                   checked={this.props.search_inside}
-                                   onChange={this._handleSearchInsideChange}
-                        />
-                    }
-                    {this.props.allow_show_hidden &&
-                        <Switch label="show hidden"
-                                   className="ml-3 mb-0 mt-1"
-                                   large={false}
-                                   checked={this.props.show_hidden}
-                                   onChange={this._handleShowHiddenChange}
-                        />
-                    }
-                        {this.props.include_search_jumper &&
-                            <ButtonGroup style={{marginLeft: 5, padding: 2}}>
-                                <Button onClick={this.props.searchNext} icon="caret-down" text={undefined} small={true}/>
-                                <Button onClick={this.props.searchPrev} icon="caret-up" text={undefined} small={true}/>
-                            </ButtonGroup>
-
-                        }
-                    </div>
-                </FormGroup>
-            </Fragment>
-        )
+    } else {
+        match_text = null
     }
+    let current_text = current_timer.current ? temp_text : props.search_string;
+    return (
+        <Fragment>
+            <FormGroup helperText={match_text} style={{marginBottom: 0}}>
+                <div className="d-flex flex-row" style={{marginTop: 5, marginBottom: 5}}>
+                    <InputGroup type="search"
+                                className="search-input"
+                                placeholder="Search"
+                                leftIcon="search"
+                                value={current_text}
+                                onChange={_handleSearchFieldChange}
+                                style={{"width": props.field_width}}
+                                autoCapitalize="none"
+                                autoCorrect="off"
+                                small={true}
+                                inputRef={props.search_ref}
+                    />
+                    {props.allow_regex &&
+                        <Switch label="regexp"
+                                className="ml-3 mb-0 mt-1"
+                                large={false}
+                                checked={props.regex}
+                                onChange={_handleRegexChange}
+                        />
+                    }
+                    {props.allow_search_metadata &&
+                        <Switch label="metadata"
+                                className="ml-3 mb-0 mt-1"
+                                large={false}
+                                checked={props.search_metadata}
+                                onChange={_handleSearchMetadataChange}
+                        />
+                    }
+                    {props.allow_search_inside &&
+                        <Switch label="inside"
+                                className="ml-3 mb-0 mt-1"
+                                large={false}
+                                checked={props.search_inside}
+                                onChange={_handleSearchInsideChange}
+                        />
+                    }
+                    {props.allow_show_hidden &&
+                        <Switch label="show hidden"
+                                className="ml-3 mb-0 mt-1"
+                                large={false}
+                                checked={props.show_hidden}
+                                onChange={_handleShowHiddenChange}
+                        />
+                    }
+                    {props.include_search_jumper &&
+                        <ButtonGroup style={{marginLeft: 5, padding: 2}}>
+                            <Button onClick={props.searchNext} icon="caret-down" text={undefined} small={true}/>
+                            <Button onClick={props.searchPrev} icon="caret-up" text={undefined} small={true}/>
+                        </ButtonGroup>
+
+                    }
+                </div>
+            </FormGroup>
+        </Fragment>
+    )
 }
+
+SearchForm = memo(SearchForm);
 
 SearchForm.propTypes = {
     allow_search_inside: PropTypes.bool,
@@ -187,76 +185,70 @@ SearchForm.defaultProps = {
     update_delay: 500
 };
 
-class BpSelectorTable extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.state = {columnWidths: null};
-        this.saved_data_dict = null;
-        this.data_update_required = null;
-        this.table_ref = React.createRef();
-    }
+function BpSelectorTable(props) {
+    const [columnWidths, setColumnWidths, columnWidthsRef] = useStateAndRef(null);
+    const saved_data_dict = useRef(null);
+    const data_update_required = useRef(null);
+    const table_ref = useRef(null);
 
-    componentDidMount() {
-        this.computeColumnWidths();
-        this.saved_data_dict = this.props.data_dict;
-    }
+    useEffect(() => {
+        computeColumnWidths();
+        saved_data_dict.current = props.data_dict;
+    }, []);
 
-    computeColumnWidths() {
-        if (Object.keys(this.props.data_dict).length == 0) return;
-        let column_names = Object.keys(this.props.columns);
-        let bcwidths = compute_initial_column_widths(column_names, Object.values(this.props.data_dict));
+    useEffect(() => {
+        if ((columnWidthsRef.current == null) || !_.isEqual(props.data_dict, saved_data_dict.current)) {
+            computeColumnWidths();
+            saved_data_dict.current = props.data_dict;
+        }
+    });
+
+    const pushCallback = useCallbackStack();
+
+    function computeColumnWidths() {
+        if (Object.keys(props.data_dict).length == 0) return;
+        let column_names = Object.keys(props.columns);
+        let bcwidths = compute_initial_column_widths(column_names, Object.values(props.data_dict));
         let cwidths = [];
-        if (this.props.maxColumnWidth) {
+        if (props.maxColumnWidth) {
             for (let c of bcwidths) {
-                if (c > this.props.maxColumnWidth) {
-                    cwidths.push(this.props.maxColumnWidth)
-                }
-                else {
+                if (c > props.maxColumnWidth) {
+                    cwidths.push(props.maxColumnWidth)
+                } else {
                     cwidths.push(c)
                 }
             }
-        }
-        else {
+        } else {
             cwidths = bcwidths
         }
 
-        let self = this;
-        this.setState({columnWidths: cwidths}, ()=>{
-            let the_sum = this.state.columnWidths.reduce((a,b) => a + b, 0);
-            self.props.communicateColumnWidthSum(the_sum)
+        setColumnWidths(cwidths);
+        pushCallback(() => {
+            let the_sum = columnWidthsRef.current.reduce((a, b) => a + b, 0);
+            props.communicateColumnWidthSum(the_sum)
         })
     }
 
-    componentDidUpdate(prevProps, prevState, snapshot) {
-        // this.props.my_ref.current.scrollTop = this.props.scroll_top;
-        if ((this.state.columnWidths == null) || !_.isEqual(this.props.data_dict, this.saved_data_dict)) {
-            this.computeColumnWidths();
-            this.saved_data_dict = this.props.data_dict;
+    function _onCompleteRender() {
+        if (data_update_required.current != null) {
+            props.initiateDataGrab(data_update_required.current);
+            data_update_required.current = null
         }
-    }
-
-    _onCompleteRender() {
-        if (this.data_update_required != null) {
-            this.props.initiateDataGrab(this.data_update_required);
-            this.data_update_required = null
-        }
-        const lastColumnRegion = Regions.column(Object.keys(this.props.columns).length - 1);
+        const lastColumnRegion = Regions.column(Object.keys(props.columns).length - 1);
         const firstColumnRegion = Regions.column(0);
-        this.table_ref.current.scrollToRegion(lastColumnRegion);
-        this.table_ref.current.scrollToRegion(firstColumnRegion)
+        table_ref.current.scrollToRegion(lastColumnRegion);
+        table_ref.current.scrollToRegion(firstColumnRegion)
     }
 
-    haveRowData(rowIndex) {
-        return this.props.data_dict.hasOwnProperty(rowIndex)
+    function haveRowData(rowIndex) {
+        return props.data_dict.hasOwnProperty(rowIndex)
     }
 
-    _cellRendererCreator(column_name) {
-        let self = this;
+    function _cellRendererCreator(column_name) {
         return (rowIndex) => {
-            if (!this.haveRowData(rowIndex)) {
-                if (self.data_update_required == null) {
-                    self.data_update_required = rowIndex;
+            if (!haveRowData(rowIndex)) {
+                if (data_update_required.current == null) {
+                    data_update_required.current = rowIndex;
                 }
 
                 return (<Cell key={column_name}
@@ -266,44 +258,42 @@ class BpSelectorTable extends React.Component {
             }
             let the_body;
             let the_class = "";
-            if (Object.keys(self.props.data_dict[rowIndex]).includes(column_name)) {
+            if (Object.keys(props.data_dict[rowIndex]).includes(column_name)) {
 
-                if ("hidden" in self.props.data_dict[rowIndex] && self.props.data_dict[rowIndex]["hidden"]) {
+                if ("hidden" in props.data_dict[rowIndex] && props.data_dict[rowIndex]["hidden"]) {
                     the_class = "hidden_cell"
                 }
-                let the_text = String(self.props.data_dict[rowIndex][column_name]);
+                let the_text = String(props.data_dict[rowIndex][column_name]);
                 if (the_text.startsWith("icon:")) {
                     the_text = the_text.replace(/(^icon:)/gi, "");
                     the_body = <Icon icon={the_text} size={14}/>
-                }
-                else {
+                } else {
                     the_body = (<TruncatedFormat className={the_class}>
-                                {the_text}
-                            </TruncatedFormat>)
+                        {the_text}
+                    </TruncatedFormat>)
                 }
 
-            }
-            else {
+            } else {
                 the_body = ""
             }
             let tclass;
-            if (this.props.open_resources &&
-                this.props.open_resources.includes(this.props.data_dict[rowIndex][this.props.identifier_field])) {
+            if (props.open_resources &&
+                props.open_resources.includes(props.data_dict[rowIndex][props.identifier_field])) {
                 tclass = "open-selector-row";
-            }
-            else {
+            } else {
                 tclass = ""
             }
             return (
                 <Cell key={column_name}
-                          interactive={true}
-                          truncated={true}
-                          tabIndex={-1}
-                          onKeyDown={this.props.keyHandler}
-                          wrapText={true}>
+                      interactive={true}
+                      truncated={true}
+                      tabIndex={-1}
+                      onKeyDown={props.keyHandler}
+                      wrapText={true}>
                     <Fragment>
-                        <div className={tclass} onDoubleClick={()=>self.props.handleRowDoubleClick(self.props.data_dict[rowIndex])}>
-                                {the_body}
+                        <div className={tclass}
+                             onDoubleClick={() => props.handleRowDoubleClick(props.data_dict[rowIndex])}>
+                            {the_body}
                         </div>
                     </Fragment>
                 </Cell>
@@ -311,10 +301,14 @@ class BpSelectorTable extends React.Component {
         };
     }
 
-    _renderMenu(sortColumn) {
-        if (!this.props.columns[sortColumn].sort_field) return null;
-        let sortAsc = () => {this.props.sortColumn(sortColumn, this.props.columns[sortColumn].sort_field, "ascending")};
-        let sortDesc = () => {this.props.sortColumn(sortColumn, this.props.columns[sortColumn].sort_field, "descending")};
+    function _renderMenu(sortColumn) {
+        if (!props.columns[sortColumn].sort_field) return null;
+        let sortAsc = () => {
+            props.sortColumn(sortColumn, props.columns[sortColumn].sort_field, "ascending")
+        };
+        let sortDesc = () => {
+            props.sortColumn(sortColumn, props.columns[sortColumn].sort_field, "descending")
+        };
         return (
             <Menu>
                 <MenuItem icon="sort-asc" onClick={sortAsc} text="Sort Asc"/>
@@ -323,62 +317,61 @@ class BpSelectorTable extends React.Component {
         );
     }
 
-    static _columnHeaderNameRenderer(the_text) {
+    function _columnHeaderNameRenderer(the_text) {
         let the_body;
         the_text = String(the_text);
         if (the_text.startsWith("icon:")) {
             the_text = the_text.replace(/(^icon:)/gi, "");
             the_body = <Icon icon={the_text} size={14}/>
-        }
-        else {
+        } else {
             the_body = <div className="bp4-table-truncated-text">{the_text}</div>
         }
         return the_body
     }
 
-    render() {
-        let self = this;
-        let column_names = Object.keys(this.props.columns);
-        let columns = column_names.map((column_name)=> {
-            const cellRenderer = self._cellRendererCreator(column_name);
-            const columnHeaderCellRenderer = () => <ColumnHeaderCell name={column_name}
-                                                                     nameRenderer={BpSelectorTable._columnHeaderNameRenderer}
-                        menuRenderer={()=>{return(self._renderMenu(column_name))}}/>;
+    let column_names = Object.keys(props.columns);
+    let columns = column_names.map((column_name) => {
+        const cellRenderer = _cellRendererCreator(column_name);
+        const columnHeaderCellRenderer = () => <ColumnHeaderCell name={column_name}
+                                                                 nameRenderer={_columnHeaderNameRenderer}
+                                                                 menuRenderer={() => {
+                                                                     return (_renderMenu(column_name))
+                                                                 }}/>;
 
-            return <Column cellRenderer={cellRenderer}
-                               enableColumnReordering={false}
-                               columnHeaderCellRenderer={columnHeaderCellRenderer}
-                               key={column_name}
-                               name={column_name}/>
-        });
-        let obj = {cwidths: this.state.columnWidths, nrows: this.props.num_rows};
-        let hsh = hash(obj);
+        return <Column cellRenderer={cellRenderer}
+                       enableColumnReordering={false}
+                       columnHeaderCellRenderer={columnHeaderCellRenderer}
+                       key={column_name}
+                       name={column_name}/>
+    });
+    let obj = {cwidths: columnWidths, nrows: props.num_rows};
+    let hsh = hash(obj);
 
-        return (
-            <HotkeysProvider>
-            <Table2 numRows={this.props.num_rows}
-                   // key={this.props.num_rows}
-                   ref={this.table_ref}
-                    cellRendererDependencies={[self.props.data_dict]}
-                   bodyContextMenuRenderer={this.props.renderBodyContextMenu}
-                   enableColumnReordering={false}
-                   enableColumnResizing={this.props.enableColumnResizing}
-                   maxColumnWidth={this.props.maxColumnWidth}
-                   enableMultipleSelection={true}
-                   defaultRowHeight={23}
-                   selectedRegions={this.props.selectedRegions}
-                   enableRowHeader={false}
-                   columnWidths={this.state.columnWidths}
-                   onCompleteRender={this._onCompleteRender}
-                   selectionModes={[RegionCardinality.FULL_ROWS, RegionCardinality.CELLS]}
-                   onSelection={(regions)=>this.props.onSelection(regions)}
-                   >
-                        {columns}
-                </Table2>
-            </HotkeysProvider>
-        )
-    }
+    return (
+        <HotkeysProvider>
+            <Table2 numRows={props.num_rows}
+                    ref={table_ref}
+                    cellRendererDependencies={[props.data_dict]}
+                    bodyContextMenuRenderer={props.renderBodyContextMenu}
+                    enableColumnReordering={false}
+                    enableColumnResizing={props.enableColumnResizing}
+                    maxColumnWidth={props.maxColumnWidth}
+                    enableMultipleSelection={true}
+                    defaultRowHeight={23}
+                    selectedRegions={props.selectedRegions}
+                    enableRowHeader={false}
+                    columnWidths={columnWidthsRef.current}
+                    onCompleteRender={_onCompleteRender}
+                    selectionModes={[RegionCardinality.FULL_ROWS, RegionCardinality.CELLS]}
+                    onSelection={(regions) => props.onSelection(regions)}
+            >
+                {columns}
+            </Table2>
+        </HotkeysProvider>
+    )
 }
+
+BpSelectorTable = memo(BpSelectorTable);
 
 BpSelectorTable.propTypes = {
     columns: PropTypes.object,
@@ -394,13 +387,16 @@ BpSelectorTable.propTypes = {
     onSelection: PropTypes.func,
     handleRowDoubleClick: PropTypes.func,
     identifier_field: PropTypes.string,
+    rowChanged: PropTypes.number
 };
 
 BpSelectorTable.defaultProps = {
-    columns: {"name": {"sort_field": "name", "first_sort": "ascending"},
-             "created": {"sort_field": "created_for_sort", "first_sort": "descending"},
-            "updated": {"sort_field": "updated_for_sort", "first_sort": "ascending"},
-            "tags": {"sort_field": "tags", "first_sort": "ascending"}},
+    columns: {
+        "name": {"sort_field": "name", "first_sort": "ascending"},
+        "created": {"sort_field": "created_for_sort", "first_sort": "descending"},
+        "updated": {"sort_field": "updated_for_sort", "first_sort": "ascending"},
+        "tags": {"sort_field": "tags", "first_sort": "ascending"}
+    },
     identifier_field: "name",
     enableColumnResigin: false,
     maxColumnWidth: null,
@@ -408,7 +404,8 @@ BpSelectorTable.defaultProps = {
     show_animations: false,
     handleSpaceBarPress: null,
     keyHandler: null,
-    draggable: true
+    draggable: true,
+    rowChanged: 0
 };
 
 const MAX_INITIAL_CELL_WIDTH = 300;
@@ -435,8 +432,7 @@ function compute_initial_column_widths(header_list, data_list) {
         let cstr = String(c);
         if (cstr.startsWith("icon:")) {
             column_widths[cstr] = ICON_WIDTH
-        }
-        else {
+        } else {
             column_widths[cstr] = ctx.measureText(cstr).width + added_header_width;
         }
         columns_remaining.push(cstr)
@@ -460,8 +456,7 @@ function compute_initial_column_widths(header_list, data_list) {
             the_text = String(the_row[c]);
             if (the_text.startsWith("icon:")) {
                 the_width = ICON_WIDTH
-            }
-            else {
+            } else {
                 the_width = ctx.measureText(the_text).width + added_body_width;
             }
 

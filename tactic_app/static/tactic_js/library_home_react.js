@@ -4,8 +4,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" =
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.LibraryHomeApp = void 0;
-exports.library_props = library_props;
+exports.LibraryHomeApp = LibraryHomeApp;
 require("../tactic_css/tactic.scss");
 require("../tactic_css/tactic_table.scss");
 require("../tactic_css/library_home.scss");
@@ -13,621 +12,486 @@ var _react = _interopRequireWildcard(require("react"));
 var ReactDOM = _interopRequireWildcard(require("react-dom"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
-var _table = require("@blueprintjs/table");
 var _TacticOmnibar = require("./TacticOmnibar");
-var _tactic_socket = require("./tactic_socket.js");
-var _communication_react = require("./communication_react.js");
+var _tactic_socket = require("./tactic_socket");
+var _communication_react = require("./communication_react");
 var _toaster = require("./toaster.js");
-var _library_pane = require("./library_pane.js");
-var _blueprint_mdata_fields = require("./blueprint_mdata_fields.js");
-var _sizing_tools = require("./sizing_tools.js");
-var _error_drawer = require("./error_drawer.js");
-var _key_trap = require("./key_trap.js");
-var _utilities_react = require("./utilities_react.js");
+var _library_pane = require("./library_pane");
+var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
+var _sizing_tools = require("./sizing_tools");
+var _toaster2 = require("./toaster");
+var _error_drawer = require("./error_drawer");
+var _key_trap = require("./key_trap");
+var _utilities_react = require("./utilities_react");
 var _blueprint_navbar = require("./blueprint_navbar");
-var _library_menubars = require("./library_menubars.js");
-var _library_pane2 = require("./library_pane");
+var _library_menubars = require("./library_menubars");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
 function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
 function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
 function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); } // noinspection JSCheckFunctionSignatures
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; } // noinspection JSCheckFunctionSignatures
 var TAB_BAR_WIDTH = 50;
 function _library_home_main() {
-  var LibraryHomeAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(LibraryHomeApp));
+  var library_id = (0, _utilities_react.guid)();
+  var tsocket = new _tactic_socket.TacticSocket("main", 5000, library_id);
+  var LibraryHomeAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster2.withStatus)(LibraryHomeApp));
   var domContainer = document.querySelector('#library-home-root');
-  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(LibraryHomeAppPlus, _extends({}, library_props(), {
+  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(LibraryHomeAppPlus, {
+    library_id: library_id,
+    tsocket: tsocket,
     registerOmniFunction: null,
     controlled: false,
     initial_theme: window.theme,
     registerLibraryTabChanger: null
-  })), domContainer);
-}
-function library_props() {
-  var library_id = (0, _utilities_react.guid)();
-  var tsocket = new _tactic_socket.TacticSocket("main", 5000, library_id);
-  // main_id is needed below for withStatus
-  return {
-    library_id: library_id,
-    tsocket: tsocket,
-    main_id: library_id
-  };
+  }), domContainer);
 }
 var tab_panes = ["all-pane", "collections-pane", "projects-pane", "tiles-pane", "lists-pane", "code-pane"];
 var controllable_props = ["usable_width", "usable_height"];
-
-// noinspection JSUnusedLocalSymbols,JSRemoveUnnecessaryParentheses
-var LibraryHomeApp = /*#__PURE__*/function (_React$Component) {
-  _inherits(LibraryHomeApp, _React$Component);
-  var _super = _createSuper(LibraryHomeApp);
-  function LibraryHomeApp(props) {
-    var _this;
-    _classCallCheck(this, LibraryHomeApp);
-    _this = _super.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
-    _this.state = {
-      selected_tab_id: "all-pane",
-      pane_states: {}
-    };
-    _this.omniGetters = {};
-    if (_this.props.registerOmniFunction) {
-      _this.props.registerOmniFunction(_this._omniFunction);
+function LibraryHomeApp(props) {
+  var omniGetters = (0, _react.useRef)({});
+  var _useStateAndRef = (0, _utilities_react.useStateAndRef)("all-pane"),
+    _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
+    selected_tab_id = _useStateAndRef2[0],
+    set_selected_tab_id = _useStateAndRef2[1],
+    selected_tab_id_ref = _useStateAndRef2[2];
+  var _useState = (0, _react.useState)(false),
+    _useState2 = _slicedToArray(_useState, 2),
+    showOmnibar = _useState2[0],
+    setShowOmnibar = _useState2[1];
+  var _useState3 = (0, _react.useState)(null),
+    _useState4 = _slicedToArray(_useState3, 2),
+    usable_height = _useState4[0],
+    set_usable_height = _useState4[1];
+  var _useState5 = (0, _react.useState)(null),
+    _useState6 = _slicedToArray(_useState5, 2),
+    usable_width = _useState6[0],
+    set_usable_width = _useState6[1];
+  var _useState7 = (0, _react.useState)(null),
+    _useState8 = _slicedToArray(_useState7, 2),
+    dark_theme = _useState8[0],
+    set_dark_theme = _useState8[1];
+  var pushCallback = (0, _utilities_react.useCallbackStack)();
+  var top_ref = (0, _react.useRef)(null);
+  var key_bindings = [[["ctrl+space"], _showOmnibar], [["tab"], _goToNextPane], [["shift+tab"], _goToPreviousPane]];
+  (0, _utilities_react.useConstructor)(function () {
+    if (props.registerOmniFunction) {
+      props.registerOmniFunction(_omniFunction);
     }
-    var _iterator = _createForOfIteratorHelper(_library_pane2.res_types.concat("all")),
-      _step;
-    try {
-      for (_iterator.s(); !(_step = _iterator.n()).done;) {
-        var res_type = _step.value;
-        _this.state.pane_states[res_type] = {
-          left_width_fraction: .65,
-          selected_resource: {
-            "name": "",
-            "tags": "",
-            "notes": "",
-            "updated": "",
-            "created": ""
-          },
-          selected_rows: [],
-          tag_button_state: {
-            expanded_tags: [],
-            active_tag: "all",
-            tree: []
-          },
-          sort_field: "updated",
-          sort_direction: "descending",
-          filterType: res_type,
-          multi_select: false,
-          list_of_selected: [],
-          search_string: "",
-          search_inside: false,
-          search_metadata: false,
-          show_hidden: false,
-          selectedRegions: [_table.Regions.row(0)]
-        };
-      }
-    } catch (err) {
-      _iterator.e(err);
-    } finally {
-      _iterator.f();
-    }
-    _this.top_ref = /*#__PURE__*/_react["default"].createRef();
-    _this.initSocket();
     if (props.registerLibraryTabChanger) {
-      props.registerLibraryTabChanger(_this._handleTabChange);
+      props.registerLibraryTabChanger(_handleTabChange);
     }
     if (!window.in_context) {
       var aheight = (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
       var awidth = (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
-      _this.state.usable_height = aheight;
-      _this.state.usable_width = awidth;
-      _this.state.dark_theme = props.initial_theme === "dark";
-      _this.key_bindings = [[["ctrl+space"], _this._showOmnibar], [["tab"], _this._goToNextPane], [["shift+tab"], _this._goToPreviousPane]];
-      _this.state.showOmnibar = false;
+      set_usable_height(aheight);
+      set_usable_width(awidth);
+      set_dark_theme(props.initial_theme === "dark");
     }
-    return _this;
-  }
-  _createClass(LibraryHomeApp, [{
-    key: "initSocket",
-    value: function initSocket() {
-      var self = this;
-      this.props.tsocket.attachListener('handle-callback', function (task_packet) {
-        (0, _communication_react.handleCallback)(task_packet, self.props.library_id);
-      });
-      this.props.tsocket.attachListener("window-open", function (data) {
-        return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
-      });
-      this.props.tsocket.attachListener("doFlash", function (data) {
+  });
+  (0, _react.useEffect)(function () {
+    initSocket();
+    props.stopSpinner(null);
+    if (!props.controlled) {
+      window.dark_theme = dark_theme;
+      window.addEventListener("resize", _handleResize);
+      _handleResize();
+    }
+    return function () {
+      props.tsocket.disconnect();
+    };
+  }, []);
+  function initSocket() {
+    props.tsocket.attachListener('handle-callback', function (task_packet) {
+      (0, _communication_react.handleCallback)(task_packet, props.library_id);
+    });
+    props.tsocket.attachListener("window-open", function (data) {
+      return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
+    });
+    props.tsocket.attachListener("doFlash", function (data) {
+      (0, _toaster.doFlash)(data);
+    });
+    if (!window.in_context) {
+      props.tsocket.attachListener("doFlashUser", function (data) {
         (0, _toaster.doFlash)(data);
       });
-      if (!window.in_context) {
-        this.props.tsocket.attachListener("doFlashUser", function (data) {
-          (0, _toaster.doFlash)(data);
-        });
-        this.props.tsocket.attachListener('close-user-windows', function (data) {
-          if (!(data["originator"] == library_id)) {
-            window.close();
-          }
-        });
-      }
-    }
-  }, {
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      this.setState({
-        "mounted": true
-      });
-      this.props.stopSpinner(null);
-      // this.props.setStatusTheme(this.props.dark_theme);
-      if (!this.props.controlled) {
-        window.dark_theme = this.state.dark_theme;
-        window.addEventListener("resize", this._handleResize);
-        this._handleResize();
-      }
-    }
-  }, {
-    key: "_updatePaneState",
-    value: function _updatePaneState(res_type, state_update) {
-      var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-      var old_state = Object.assign({}, this.state.pane_states[res_type]);
-      var new_pane_states = Object.assign({}, this.state.pane_states);
-      new_pane_states[res_type] = Object.assign(old_state, state_update);
-      this.setState({
-        pane_states: new_pane_states
-      }, callback);
-    }
-  }, {
-    key: "_showOmnibar",
-    value: function _showOmnibar() {
-      this.setState({
-        showOmnibar: true
-      });
-    }
-  }, {
-    key: "_closeOmnibar",
-    value: function _closeOmnibar() {
-      this.setState({
-        showOmnibar: false
-      });
-    }
-  }, {
-    key: "_omniFunction",
-    value: function _omniFunction() {
-      var omni_items = [];
-      for (var ogetter in this.omniGetters) {
-        omni_items = omni_items.concat(this.omniGetters[ogetter]());
-      }
-      return omni_items;
-    }
-  }, {
-    key: "_registerOmniGetter",
-    value: function _registerOmniGetter(name, the_function) {
-      this.omniGetters[name] = the_function;
-    }
-  }, {
-    key: "_update_window_dimensions",
-    value: function _update_window_dimensions() {
-      if (!this.props.controlled) {
-        var uwidth = window.innerWidth - 2 * _sizing_tools.SIDE_MARGIN;
-        var uheight = window.innerHeight;
-        if (this.top_ref && this.top_ref.current) {
-          uheight = uheight - this.top_ref.current.offsetTop;
-        } else {
-          uheight = uheight - _sizing_tools.USUAL_TOOLBAR_HEIGHT;
+      props.tsocket.attachListener('close-user-windows', function (data) {
+        if (!(data["originator"] == library_id)) {
+          window.close();
         }
-        this.setState({
-          usable_height: uheight,
-          usable_width: uwidth
-        });
-      }
-    }
-  }, {
-    key: "_setTheme",
-    value: function _setTheme(dark_theme) {
-      this.setState({
-        dark_theme: dark_theme
-      }, function () {
-        window.dark_theme = dark_theme;
       });
     }
+  }
+  function _showOmnibar() {
+    setShowOmnibar(true);
+  }
+  function _closeOmnibar() {
+    setShowOmnibar(false);
+  }
+  function _omniFunction() {
+    var omni_items = [];
+    for (var ogetter in omniGetters.current) {
+      omni_items = omni_items.concat(omniGetters.current[ogetter]());
+    }
+    return omni_items;
+  }
+  function _registerOmniGetter(name, the_function) {
+    omniGetters.current[name] = the_function;
+  }
+  function _setTheme(dark_theme) {
+    set_dark_theme(dark_theme);
+    pushCallback(function () {
+      window.dark_theme = dark_theme;
+    });
+  }
 
-    // This mechanism in _handleTabChange necessary in order to force the pane to change
-    // before updating window dimensions (which seems to be necessary to get
-    // the pane to be appropriately sized when it's shown
-  }, {
-    key: "_handleTabChange",
-    value: function _handleTabChange(newTabId, prevTabId, event) {
-      this.setState({
-        selected_tab_id: newTabId
-      });
+  // This mechanism in _handleTabChange necessary in order to force the pane to change
+  // before updating window dimensions (which seems to be necessary to get
+  // the pane to be appropriately sized when it's shown
+  function _handleTabChange(newTabId, prevTabId, event) {
+    set_selected_tab_id(newTabId);
+  }
+  function _goToNextPane() {
+    var tabIndex = tab_panes.indexOf(selected_tab_id_ref.current) + 1;
+    if (tabIndex === tab_panes.length) {
+      tabIndex = 0;
     }
-  }, {
-    key: "_goToNextPane",
-    value: function _goToNextPane() {
-      var tabIndex = tab_panes.indexOf(this.state.selected_tab_id) + 1;
-      if (tabIndex === tab_panes.length) {
-        tabIndex = 0;
+    set_selected_tab_id(tab_panes[tabIndex]);
+  }
+  function _goToPreviousPane() {
+    var tabIndex = tab_panes.indexOf(selected_tab_id_ref.current) - 1;
+    if (tabIndex === -1) {
+      tabIndex = tab_panes.length - 1;
+    }
+    set_selected_tab_id(tab_panes[tabIndex]);
+  }
+  function getIconColor(paneId) {
+    return paneId === selected_tab_id_ref.current ? "white" : "#CED9E0";
+  }
+  function _handleResize() {
+    set_usable_width(window.innerWidth - top_ref.current.offsetLeft);
+    set_usable_height(window.innerHeight - top_ref.current.offsetTop);
+  }
+  var real_dark_theme = props.controlled ? props.dark_theme : dark_theme;
+  var lib_props = _objectSpread({}, props);
+  if (!props.controlled) {
+    lib_props.usable_width = usable_width - TAB_BAR_WIDTH;
+    lib_props.usable_height = usable_height;
+  }
+  var get_all_panes = !window.in_context || window.library_style == "tabbed";
+  var all_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
+    columns: {
+      "icon:th": {
+        "sort_field": "type",
+        "first_sort": "ascending"
+      },
+      "name": {
+        "sort_field": "name",
+        "first_sort": "ascending"
+      },
+      "icon:upload": {
+        "sort_field": null,
+        "first_sort": "ascending"
+      },
+      "created": {
+        "sort_field": "created_for_sort",
+        "first_sort": "descending"
+      },
+      "updated": {
+        "sort_field": "updated_for_sort",
+        "first_sort": "ascending"
+      },
+      "tags": {
+        "sort_field": "tags",
+        "first_sort": "ascending"
+      },
+      "size": {
+        "sort_field": "size_for_sort",
+        "first_sort": "descending"
       }
-      this.setState({
-        selected_tab_id: tab_panes[tabIndex]
-      });
-    }
-  }, {
-    key: "_goToPreviousPane",
-    value: function _goToPreviousPane() {
-      var tabIndex = tab_panes.indexOf(this.state.selected_tab_id) - 1;
-      if (tabIndex === -1) {
-        tabIndex = tab_panes.length - 1;
-      }
-      this.setState({
-        selected_tab_id: tab_panes[tabIndex]
-      });
-    }
-  }, {
-    key: "getIconColor",
-    value: function getIconColor(paneId) {
-      return paneId === this.state.selected_tab_id ? "white" : "#CED9E0";
-    }
-  }, {
-    key: "componentWillUnmount",
-    value: function componentWillUnmount() {
-      this.props.tsocket.disconnect();
-    }
-  }, {
-    key: "_handleResize",
-    value: function _handleResize(entires) {
-      this.setState({
-        usable_width: window.innerWidth - this.top_ref.current.offsetLeft,
-        usable_height: window.innerHeight - this.top_ref.current.offsetTop
-      });
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var _this2 = this;
-      var dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme;
-      var lib_props = _objectSpread({}, this.props);
-      if (!this.props.controlled) {
-        for (var _i = 0, _controllable_props = controllable_props; _i < _controllable_props.length; _i++) {
-          var prop_name = _controllable_props[_i];
-          lib_props[prop_name] = this.state[prop_name];
-        }
-        lib_props.usable_width -= TAB_BAR_WIDTH;
-      }
-      var get_all_panes = !window.in_context || window.library_style == "tabbed";
-      var all_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
-        columns: {
-          "icon:th": {
-            "sort_field": "type",
-            "first_sort": "ascending"
-          },
-          "name": {
-            "sort_field": "name",
-            "first_sort": "ascending"
-          },
-          "icon:upload": {
-            "sort_field": null,
-            "first_sort": "ascending"
-          },
-          "created": {
-            "sort_field": "created_for_sort",
-            "first_sort": "descending"
-          },
-          "updated": {
-            "sort_field": "updated_for_sort",
-            "first_sort": "ascending"
-          },
-          "tags": {
-            "sort_field": "tags",
-            "first_sort": "ascending"
-          },
-          "size": {
-            "sort_field": "size_for_sort",
-            "first_sort": "descending"
-          }
+    },
+    pane_type: "all",
+    handleCreateViewer: props.handleCreateViewer,
+    open_resources: props.open_resources ? props.open_resources["all"] : null,
+    allow_search_inside: true,
+    allow_search_metadata: true,
+    MenubarClass: _library_menubars.AllMenubar,
+    registerOmniGetter: _registerOmniGetter
+  }, props.errorDrawerFuncs, {
+    errorDrawerFuncs: props.errorDrawerFuncs,
+    library_id: props.library_id
+  }));
+  if (get_all_panes) {
+    var collection_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
+      columns: {
+        "icon:th": {
+          "sort_field": "type",
+          "first_sort": "ascending"
         },
-        pane_type: "all",
-        handleCreateViewer: this.props.handleCreateViewer,
-        open_resources: this.props.open_resources ? this.props.open_resources["all"] : null,
-        allow_search_inside: true,
-        allow_search_metadata: true,
-        MenubarClass: _library_menubars.AllMenubar,
-        registerOmniGetter: this._registerOmniGetter,
-        updatePaneState: this._updatePaneState
-      }, this.state.pane_states["all"], this.props.errorDrawerFuncs, {
-        errorDrawerFuncs: this.props.errorDrawerFuncs,
-        library_id: this.props.library_id
-      }));
-      if (get_all_panes) {
-        var collection_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
-          columns: {
-            "icon:th": {
-              "sort_field": "type",
-              "first_sort": "ascending"
-            },
-            "name": {
-              "sort_field": "name",
-              "first_sort": "ascending"
-            },
-            "created": {
-              "sort_field": "created_for_sort",
-              "first_sort": "descending"
-            },
-            "updated": {
-              "sort_field": "updated_for_sort",
-              "first_sort": "ascending"
-            },
-            "tags": {
-              "sort_field": "tags",
-              "first_sort": "ascending"
-            },
-            "size": {
-              "sort_field": "size_for_sort",
-              "first_sort": "descending"
-            }
-          },
-          pane_type: "collection",
-          handleCreateViewer: this.props.handleCreateViewer,
-          open_resources: this.props.open_resources ? this.props.open_resources["collection"] : null,
-          allow_search_inside: false,
-          allow_search_metadata: false,
-          MenubarClass: _library_menubars.CollectionMenubar,
-          registerOmniGetter: this._registerOmniGetter,
-          updatePaneState: this._updatePaneState
-        }, this.state.pane_states["collection"], this.props.errorDrawerFuncs, {
-          errorDrawerFuncs: this.props.errorDrawerFuncs,
-          library_id: this.props.library_id
-        }));
-        var projects_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
-          columns: {
-            "icon:th": {
-              "sort_field": "type",
-              "first_sort": "ascending"
-            },
-            "name": {
-              "sort_field": "name",
-              "first_sort": "ascending"
-            },
-            "created": {
-              "sort_field": "created_for_sort",
-              "first_sort": "descending"
-            },
-            "updated": {
-              "sort_field": "updated_for_sort",
-              "first_sort": "ascending"
-            },
-            "tags": {
-              "sort_field": "tags",
-              "first_sort": "ascending"
-            },
-            "size": {
-              "sort_field": "size_for_sort",
-              "first_sort": "descending"
-            }
-          },
-          pane_type: "project",
-          handleCreateViewer: this.props.handleCreateViewer,
-          open_resources: this.props.open_resources ? this.props.open_resources["project"] : null,
-          allow_search_inside: false,
-          allow_search_metadata: true,
-          MenubarClass: _library_menubars.ProjectMenubar,
-          registerOmniGetter: this._registerOmniGetter,
-          updatePaneState: this._updatePaneState
-        }, this.props.errorDrawerFuncs, this.state.pane_states["project"], {
-          library_id: this.props.library_id
-        }));
-        var tiles_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
-          columns: {
-            "icon:th": {
-              "sort_field": "type",
-              "first_sort": "ascending"
-            },
-            "name": {
-              "sort_field": "name",
-              "first_sort": "ascending"
-            },
-            "icon:upload": {
-              "sort_field": null,
-              "first_sort": "ascending"
-            },
-            "created": {
-              "sort_field": "created_for_sort",
-              "first_sort": "descending"
-            },
-            "updated": {
-              "sort_field": "updated_for_sort",
-              "first_sort": "ascending"
-            },
-            "tags": {
-              "sort_field": "tags",
-              "first_sort": "ascending"
-            }
-          },
-          pane_type: "tile",
-          handleCreateViewer: this.props.handleCreateViewer,
-          open_resources: this.props.open_resources ? this.props.open_resources["tile"] : null,
-          allow_search_inside: true,
-          allow_search_metadata: true,
-          MenubarClass: _library_menubars.TileMenubar,
-          registerOmniGetter: this._registerOmniGetter,
-          updatePaneState: this._updatePaneState
-        }, this.props.errorDrawerFuncs, this.state.pane_states["tile"], {
-          library_id: this.props.library_id
-        }));
-        var lists_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
-          columns: {
-            "icon:th": {
-              "sort_field": "type",
-              "first_sort": "ascending"
-            },
-            "name": {
-              "sort_field": "name",
-              "first_sort": "ascending"
-            },
-            "created": {
-              "sort_field": "created_for_sort",
-              "first_sort": "descending"
-            },
-            "updated": {
-              "sort_field": "updated_for_sort",
-              "first_sort": "ascending"
-            },
-            "tags": {
-              "sort_field": "tags",
-              "first_sort": "ascending"
-            }
-          },
-          pane_type: "list",
-          open_resources: this.props.open_resources ? this.props.open_resources["list"] : null,
-          allow_search_inside: true,
-          allow_search_metadata: true,
-          MenubarClass: _library_menubars.ListMenubar,
-          registerOmniGetter: this._registerOmniGetter
-        }, this.props.errorDrawerFuncs, {
-          updatePaneState: this._updatePaneState
-        }, this.state.pane_states["list"], {
-          library_id: this.props.library_id
-        }));
-        var code_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
-          columns: {
-            "icon:th": {
-              "sort_field": "type",
-              "first_sort": "ascending"
-            },
-            "name": {
-              "sort_field": "name",
-              "first_sort": "ascending"
-            },
-            "created": {
-              "sort_field": "created_for_sort",
-              "first_sort": "descending"
-            },
-            "updated": {
-              "sort_field": "updated_for_sort",
-              "first_sort": "ascending"
-            },
-            "tags": {
-              "sort_field": "tags",
-              "first_sort": "ascending"
-            }
-          },
-          pane_type: "code",
-          handleCreateViewer: this.props.handleCreateViewer,
-          open_resources: this.props.open_resources ? this.props.open_resources["code"] : null,
-          allow_search_inside: true,
-          allow_search_metadata: true,
-          MenubarClass: _library_menubars.CodeMenubar,
-          registerOmniGetter: this._registerOmniGetter
-        }, this.props.errorDrawerFuncs, {
-          updatePaneState: this._updatePaneState
-        }, this.state.pane_states["code"], {
-          library_id: this.props.library_id
-        }));
-      }
-      var outer_style = {
-        height: this.state.available_height,
-        width: "100%",
-        paddingLeft: 0
-      };
-      var outer_class = "";
-      if (!this.props.controlled) {
-        outer_class = "library-pane-holder  ";
-        if (dark_theme) {
-          outer_class = "".concat(outer_class, " bp4-dark");
-        } else {
-          outer_class = "".concat(outer_class, " light-theme");
-        }
-      }
-      var key_bindings = [[["tab"], this._goToNextPane], [["shift+tab"], this._goToPreviousPane]];
-      var extra_tabs = [];
-      if (get_all_panes) {
-        var tab_specs = [["collections", "collection", collection_pane], ["projects", "project", projects_pane], ["tiles", "tile", tiles_pane], ["lists", "list", lists_pane], ["code", "code", code_pane]];
-        for (var _i2 = 0, _tab_specs = tab_specs; _i2 < _tab_specs.length; _i2++) {
-          var tlist = _tab_specs[_i2];
-          var new_tab = /*#__PURE__*/_react["default"].createElement(_core.Tab, {
-            id: tlist[0] + "-pane",
-            panel: tlist[2]
-          }, /*#__PURE__*/_react["default"].createElement(_core.Tooltip, {
-            content: tlist[0],
-            position: _core.Position.RIGHT,
-            intent: "warning"
-          }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-            icon: _blueprint_mdata_fields.icon_dict[tlist[1]],
-            iconSize: 20,
-            tabIndex: -1,
-            color: this.getIconColor(tlist[0] + "-pane")
-          })));
-          extra_tabs.push(new_tab);
-        }
-      }
-      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, !this.props.controlled && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
-        is_authenticated: window.is_authenticated,
-        dark_theme: dark_theme,
-        registerOmniFunction: function registerOmniFunction(register_func) {
-          return _this2._registerOmniFunction("navbar", register_func);
+        "name": {
+          "sort_field": "name",
+          "first_sort": "ascending"
         },
-        set_theme: this.props.controlled ? this.props.setTheme : this._setTheme,
-        selected: null,
-        show_api_links: false,
-        extra_text: window.database_type == "Local" ? "" : window.database_type,
-        page_id: this.props.library_id,
-        user_name: window.username
-      }), /*#__PURE__*/_react["default"].createElement("div", {
-        className: outer_class,
-        ref: this.top_ref,
-        style: outer_style
-      }, /*#__PURE__*/_react["default"].createElement(_core.Tabs, {
-        id: "the_container",
-        style: {
-          marginTop: 100,
-          height: "100%"
+        "created": {
+          "sort_field": "created_for_sort",
+          "first_sort": "descending"
         },
-        selectedTabId: this.state.selected_tab_id,
-        renderActiveTabPanelOnly: true,
-        vertical: true,
-        large: true,
-        onChange: this._handleTabChange
-      }, /*#__PURE__*/_react["default"].createElement(_core.Tab, {
-        id: "all-pane",
-        panel: all_pane
+        "updated": {
+          "sort_field": "updated_for_sort",
+          "first_sort": "ascending"
+        },
+        "tags": {
+          "sort_field": "tags",
+          "first_sort": "ascending"
+        },
+        "size": {
+          "sort_field": "size_for_sort",
+          "first_sort": "descending"
+        }
+      },
+      pane_type: "collection",
+      handleCreateViewer: props.handleCreateViewer,
+      open_resources: props.open_resources ? props.open_resources["collection"] : null,
+      allow_search_inside: false,
+      allow_search_metadata: false,
+      MenubarClass: _library_menubars.CollectionMenubar,
+      registerOmniGetter: _registerOmniGetter
+    }, props.errorDrawerFuncs, {
+      errorDrawerFuncs: props.errorDrawerFuncs,
+      library_id: props.library_id
+    }));
+    var projects_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
+      columns: {
+        "icon:th": {
+          "sort_field": "type",
+          "first_sort": "ascending"
+        },
+        "name": {
+          "sort_field": "name",
+          "first_sort": "ascending"
+        },
+        "created": {
+          "sort_field": "created_for_sort",
+          "first_sort": "descending"
+        },
+        "updated": {
+          "sort_field": "updated_for_sort",
+          "first_sort": "ascending"
+        },
+        "tags": {
+          "sort_field": "tags",
+          "first_sort": "ascending"
+        },
+        "size": {
+          "sort_field": "size_for_sort",
+          "first_sort": "descending"
+        }
+      },
+      pane_type: "project",
+      handleCreateViewer: props.handleCreateViewer,
+      open_resources: props.open_resources ? props.open_resources["project"] : null,
+      allow_search_inside: false,
+      allow_search_metadata: true,
+      MenubarClass: _library_menubars.ProjectMenubar,
+      registerOmniGetter: _registerOmniGetter
+    }, props.errorDrawerFuncs, {
+      library_id: props.library_id
+    }));
+    var tiles_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
+      columns: {
+        "icon:th": {
+          "sort_field": "type",
+          "first_sort": "ascending"
+        },
+        "name": {
+          "sort_field": "name",
+          "first_sort": "ascending"
+        },
+        "icon:upload": {
+          "sort_field": null,
+          "first_sort": "ascending"
+        },
+        "created": {
+          "sort_field": "created_for_sort",
+          "first_sort": "descending"
+        },
+        "updated": {
+          "sort_field": "updated_for_sort",
+          "first_sort": "ascending"
+        },
+        "tags": {
+          "sort_field": "tags",
+          "first_sort": "ascending"
+        }
+      },
+      pane_type: "tile",
+      handleCreateViewer: props.handleCreateViewer,
+      open_resources: props.open_resources ? props.open_resources["tile"] : null,
+      allow_search_inside: true,
+      allow_search_metadata: true,
+      MenubarClass: _library_menubars.TileMenubar,
+      registerOmniGetter: _registerOmniGetter
+    }, props.errorDrawerFuncs, {
+      library_id: props.library_id
+    }));
+    var lists_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
+      columns: {
+        "icon:th": {
+          "sort_field": "type",
+          "first_sort": "ascending"
+        },
+        "name": {
+          "sort_field": "name",
+          "first_sort": "ascending"
+        },
+        "created": {
+          "sort_field": "created_for_sort",
+          "first_sort": "descending"
+        },
+        "updated": {
+          "sort_field": "updated_for_sort",
+          "first_sort": "ascending"
+        },
+        "tags": {
+          "sort_field": "tags",
+          "first_sort": "ascending"
+        }
+      },
+      pane_type: "list",
+      open_resources: props.open_resources ? props.open_resources["list"] : null,
+      allow_search_inside: true,
+      allow_search_metadata: true,
+      MenubarClass: _library_menubars.ListMenubar,
+      registerOmniGetter: _registerOmniGetter
+    }, props.errorDrawerFuncs, {
+      library_id: props.library_id
+    }));
+    var code_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
+      columns: {
+        "icon:th": {
+          "sort_field": "type",
+          "first_sort": "ascending"
+        },
+        "name": {
+          "sort_field": "name",
+          "first_sort": "ascending"
+        },
+        "created": {
+          "sort_field": "created_for_sort",
+          "first_sort": "descending"
+        },
+        "updated": {
+          "sort_field": "updated_for_sort",
+          "first_sort": "ascending"
+        },
+        "tags": {
+          "sort_field": "tags",
+          "first_sort": "ascending"
+        }
+      },
+      pane_type: "code",
+      handleCreateViewer: props.handleCreateViewer,
+      open_resources: props.open_resources ? props.open_resources["code"] : null,
+      allow_search_inside: true,
+      allow_search_metadata: true,
+      MenubarClass: _library_menubars.CodeMenubar,
+      registerOmniGetter: _registerOmniGetter
+    }, props.errorDrawerFuncs, {
+      library_id: props.library_id
+    }));
+  }
+  var outer_style = {
+    width: "100%",
+    paddingLeft: 0
+  };
+  var outer_class = "";
+  if (!props.controlled) {
+    outer_class = "library-pane-holder  ";
+    if (dark_theme) {
+      outer_class = "".concat(outer_class, " bp4-dark");
+    } else {
+      outer_class = "".concat(outer_class, " light-theme");
+    }
+  }
+  var extra_tabs = [];
+  if (get_all_panes) {
+    var tab_specs = [["collections", "collection", collection_pane], ["projects", "project", projects_pane], ["tiles", "tile", tiles_pane], ["lists", "list", lists_pane], ["code", "code", code_pane]];
+    for (var _i2 = 0, _tab_specs = tab_specs; _i2 < _tab_specs.length; _i2++) {
+      var tlist = _tab_specs[_i2];
+      var new_tab = /*#__PURE__*/_react["default"].createElement(_core.Tab, {
+        id: tlist[0] + "-pane",
+        panel: tlist[2]
       }, /*#__PURE__*/_react["default"].createElement(_core.Tooltip, {
-        content: "All",
+        content: tlist[0],
         position: _core.Position.RIGHT,
         intent: "warning"
       }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-        icon: _blueprint_mdata_fields.icon_dict["all"],
+        icon: _blueprint_mdata_fields.icon_dict[tlist[1]],
         iconSize: 20,
         tabIndex: -1,
-        color: this.getIconColor("all-pane")
-      }))), extra_tabs)), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_TacticOmnibar.TacticOmnibar, {
-        omniGetters: [this._omniFunction],
-        showOmnibar: this.state.showOmnibar,
-        closeOmnibar: this._closeOmnibar
-      }), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
-        global: true,
-        bindings: this.key_bindings
+        color: getIconColor(tlist[0] + "-pane")
       })));
+      extra_tabs.push(new_tab);
     }
-  }]);
-  return LibraryHomeApp;
-}(_react["default"].Component);
-exports.LibraryHomeApp = LibraryHomeApp;
+  }
+  return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, !props.controlled && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+    is_authenticated: window.is_authenticated,
+    dark_theme: dark_theme,
+    registerOmniFunction: function registerOmniFunction(register_func) {
+      return _registerOmniFunction("navbar", register_func);
+    },
+    set_theme: props.controlled ? props.setTheme : _setTheme,
+    selected: null,
+    show_api_links: false,
+    extra_text: window.database_type == "Local" ? "" : window.database_type,
+    page_id: props.library_id,
+    user_name: window.username
+  }), /*#__PURE__*/_react["default"].createElement("div", {
+    className: outer_class,
+    ref: top_ref,
+    style: outer_style
+  }, /*#__PURE__*/_react["default"].createElement(_core.Tabs, {
+    id: "the_container",
+    style: {
+      marginTop: 100,
+      height: "100%"
+    },
+    selectedTabId: selected_tab_id_ref.current,
+    renderActiveTabPanelOnly: true,
+    vertical: true,
+    large: true,
+    onChange: _handleTabChange
+  }, /*#__PURE__*/_react["default"].createElement(_core.Tab, {
+    id: "all-pane",
+    panel: all_pane
+  }, /*#__PURE__*/_react["default"].createElement(_core.Tooltip, {
+    content: "All",
+    position: _core.Position.RIGHT,
+    intent: "warning"
+  }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+    icon: _blueprint_mdata_fields.icon_dict["all"],
+    iconSize: 20,
+    tabIndex: -1,
+    color: getIconColor("all-pane")
+  }))), extra_tabs)), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_TacticOmnibar.TacticOmnibar, {
+    omniGetters: [_omniFunction],
+    showOmnibar: showOmnibar,
+    closeOmnibar: _closeOmnibar
+  }), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
+    global: true,
+    bindings: key_bindings
+  })));
+}
+exports.LibraryHomeApp = LibraryHomeApp = /*#__PURE__*/(0, _react.memo)(LibraryHomeApp);
 LibraryHomeApp.propTypes = {
   open_resources: _propTypes["default"].object
 };

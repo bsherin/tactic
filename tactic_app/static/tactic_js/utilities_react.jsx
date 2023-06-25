@@ -11,9 +11,9 @@ import {useState, useEffect, useRef} from "react";
 import * as ReactDOM from 'react-dom'
 import {Spinner, Text} from "@blueprintjs/core";
 
-export {useConstructor, doBinding, propsAreEqual, arrayMove, arraysMatch, get_ppi, isInt};
+export {doBinding, propsAreEqual, arrayMove, arraysMatch, get_ppi, isInt};
 export {remove_duplicates, doSignOut, guid, scrollMeIntoView, renderSpinnerMessage};
-export {useCallbackStack}
+export {useConstructor, useCallbackStack, useStateAndRef}
 
 function useCallbackStack() {
     const [effectCount, setEffectCount] = useState(0);
@@ -28,23 +28,34 @@ function useCallbackStack() {
         }
     }, [effectCount]);
 
-    function prepCallback(callback) {
+    function pushCallback(callback) {
         if (callback) {
             myCallbacksList.current.push(callback);
             setEffectCount(effectCount + 1);
         }
     }
 
-    return prepCallback
+    return pushCallback
 }
 
-const useConstructor = (callback = () => {
-}) => {
-    const hasBeenCalled = useRef(false);
-    if (hasBeenCalled.current) return;
-    callback();
-    hasBeenCalled.current = true
+const useConstructor = (callback = () => {}) => {
+        const hasBeenCalled = useRef(false);
+        const returnVal = useRef(null);
+        if (hasBeenCalled.current) {
+            return returnVal.current;
+        }
+        hasBeenCalled.current = true;
+        returnVal.current = callback();
+        return returnVal
 };
+
+
+function useStateAndRef(initial) {
+    const [value, setValue] = useState(initial);
+    const valueRef = useRef(value);
+    valueRef.current = value;
+    return [value, setValue, valueRef];
+}
 
 function doBinding(obj, seq = "_", proto = null) {
     if (!proto) {

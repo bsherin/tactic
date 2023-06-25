@@ -17,6 +17,7 @@ exports.renderSpinnerMessage = renderSpinnerMessage;
 exports.scrollMeIntoView = scrollMeIntoView;
 exports.useCallbackStack = useCallbackStack;
 exports.useConstructor = void 0;
+exports.useStateAndRef = useStateAndRef;
 var _lodash = _interopRequireDefault(require("lodash"));
 var _react = _interopRequireWildcard(require("react"));
 var ReactDOM = _interopRequireWildcard(require("react-dom"));
@@ -49,22 +50,35 @@ function useCallbackStack() {
       }
     }
   }, [effectCount]);
-  function prepCallback(callback) {
+  function pushCallback(callback) {
     if (callback) {
       myCallbacksList.current.push(callback);
       setEffectCount(effectCount + 1);
     }
   }
-  return prepCallback;
+  return pushCallback;
 }
 var useConstructor = function useConstructor() {
   var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
   var hasBeenCalled = (0, _react.useRef)(false);
-  if (hasBeenCalled.current) return;
-  callback();
+  var returnVal = (0, _react.useRef)(null);
+  if (hasBeenCalled.current) {
+    return returnVal.current;
+  }
   hasBeenCalled.current = true;
+  returnVal.current = callback();
+  return returnVal;
 };
 exports.useConstructor = useConstructor;
+function useStateAndRef(initial) {
+  var _useState3 = (0, _react.useState)(initial),
+    _useState4 = _slicedToArray(_useState3, 2),
+    value = _useState4[0],
+    setValue = _useState4[1];
+  var valueRef = (0, _react.useRef)(value);
+  valueRef.current = value;
+  return [value, setValue, valueRef];
+}
 function doBinding(obj) {
   var seq = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "_";
   var proto = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;

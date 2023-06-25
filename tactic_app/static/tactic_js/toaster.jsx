@@ -1,12 +1,13 @@
 'use strict';
 
 import React from "react";
+import {Fragment, useState, useEffect, useRef, memo} from "react";
 import PropTypes from 'prop-types';
 
-import { Toaster, Position, Spinner } from "@blueprintjs/core";
+import {Toaster, Position, Spinner} from "@blueprintjs/core";
 import {GlyphButton} from "./blueprint_react_widgets";
 
-import {doBinding} from "./utilities_react.js";
+import {useCallbackStack} from "./utilities_react";
 
 export {doFlash, doFlashAlways, withStatus, Status}
 
@@ -27,20 +28,19 @@ const intent_dict = {
     "alert-info": null,
 };
 
-
 function doFlash(data) {
     let intent;
-    if (typeof(data) == "string") {
+    if (typeof (data) == "string") {
         AppToaster.show({
             message: data,
             timeout: DEFAULT_TIMEOUT,
-            intent: null});
+            intent: null
+        });
         return
     }
     if (!("alert_type" in data)) {
         intent = null;
-    }
-    else {
+    } else {
         intent = intent_dict[data.alert_type];
     }
     if (!("timeout" in data)) {
@@ -59,8 +59,7 @@ function doFlash(data) {
             timeout: data.timeout,
             intent: intent
         });
-    }
-    else if ("is_reconnect_message" in data) {
+    } else if ("is_reconnect_message" in data) {
         if (reconnect_toast_id) {
             AppToaster.dismiss(reconnect_toast_id)
         }
@@ -73,13 +72,12 @@ function doFlash(data) {
             timeout: data.timeout,
             intent: intent
         })
-    }
-
-    else {
+    } else {
         AppToaster.show({
             message: data.message,
             timeout: data.timeout,
-            intent: intent});
+            intent: intent
+        });
     }
 }
 
@@ -88,158 +86,155 @@ function doFlashAlways(data) {
 }
 
 function withStatus(WrappedComponent) {
-    return class extends React.Component {
-        constructor(props) {
-            super(props);
-            doBinding(this);
-            this.state = {
-                show_spinner: false,
-                status_message: null,
-                spinner_size: this.props.spinner_size ? this.props.spinner_size : 25
-            };
-            this.socket_counter = null;
+    function newFunc(props) {
+        const [show_spinner, set_show_spinner] = useState(false);
+        const [status_message, set_status_message] = useState(null);
+        const [spinner_size, set_spinner_size] = useState(props.spinner_size ? props.spinner_size : 25);
+
+        const pushCallback = useCallbackStack();
+
+        useEffect(() => {
+            initSocket()
+        }, []);
+
+        function initSocket() {
+            props.tsocket.attachListener('stop-spinner', _stopSpinner);
+            props.tsocket.attachListener('start-spinner', _startSpinner);
+            props.tsocket.attachListener('show-status-msg', _statusMessageFromData);
+            props.tsocket.attachListener("clear-status-msg", _clearStatusMessage);
         }
 
-        componentDidMount() {
-            if (this.props.tsocket) {
-                this.initSocket();
+        function getId() {
+            if ("main_id" in props) {
+                return props.main_id
+            }
+            else {
+                return props.library_id
             }
         }
 
-        initSocket() {
-            this.props.tsocket.attachListener('stop-spinner', this._stopSpinner);
-            this.props.tsocket.attachListener('start-spinner', this._startSpinner);
-            this.props.tsocket.attachListener('show-status-msg', this._statusMessageFromData);
-            this.props.tsocket.attachListener("clear-status-msg", this._clearStatusMessage);
-        }
-
-         _stopSpinner(data) {
-            if (data == null || (data.main_id == this.props.main_id)) {
-                this.setState({show_spinner: false})
+        function _stopSpinner(data) {
+            if (data == null || (data.main_id == getId())) {
+                set_show_spinner(false)
             }
         }
 
-        _startSpinner(data) {
-            if (data == null || (data.main_id == this.props.main_id)) {
-                this.setState({show_spinner: true, dark_spinner: false})
+        function _startSpinner(data) {
+            if (data == null || (data.main_id == getId() )) {
+                set_show_spinner(true);
             }
         }
 
-        _clearStatusMessage(data) {
-            if (data == null || (data.main_id == this.props.main_id)) {
-                this.setState({status_message: null});
+        function _clearStatusMessage(data) {
+            if (data == null || (data.main_id == getId() )) {
+                set_status_message(null)
             }
         }
 
-        _clearStatus(data, callback=null) {
-            if (data == null || (data.main_id == this.props.main_id)) {
-                this.setState({show_spinner: false, status_message: null}, callback);
+        function _clearStatus(data) {
+            if (data == null || (data.main_id == getId())) {
+                set_show_spinner(false);
+                set_status_message(null)
             }
         }
 
-        _statusMessage(message, timeout=null) {
+        function _statusMessage(message, timeout = null) {
             let self = this;
-            this.setState({status_message: message}, () => {
+            set_status_message(message);
+            pushCallback(() => {
                 if (timeout) {
-                    setTimeout(self._clearStatusMessage, timeout * 1000);
+                    setTimeout(_clearStatusMessage, timeout * 1000);
                 }
             });
         }
 
-        _statusMessageFromData(data) {
-            if (data.main_id == this.props.main_id) {
-                let self = this;
-                this.setState({status_message: data.message}, () => {
+        function _statusMessageFromData(data) {
+            if (data.main_id == props.main_id) {
+                set_status_message(data.message);
+                pushCallback(() => {
                     if (data.hasOwnProperty("timeout") && data.timeout != null) {
-                        setTimeout(self._clearStatusMessage, data.timeout * 1000);
+                        setTimeout(_clearStatusMessage, data.timeout * 1000);
                     }
                 });
             }
         }
 
-        _setStatus(sstate, callback=null) {
-            this.setState(sstate, callback)
-        }
-
-        _statusFuncs() {
-            return {
-                startSpinner: this._startSpinner,
-                stopSpinner: this._stopSpinner,
-                clearStatus: this._clearStatus,
-                clearStatusMessage: this._clearStatusMessage,
-                statusMessage: this._statusMessage,
-                setStatus: this._setStatus,
+        function _setStatus(sstate, callback = null) {
+            if ("show_spinner" in sstate) {
+                set_show_spinner(sstate["show_spinner"])
+            }
+            if ("status_message" in sstate) {
+                set_status_message(sstate["status_message"])
+            }
+            if (callback) {
+                pushCallback(callback)
             }
         }
 
-        render() {
-            return (
-                <React.Fragment>
-                    <WrappedComponent {...this.props}
-                                      statusSocket={this.props.tsocket}
-                                      statusFuncs={this._statusFuncs()}
-                                      startSpinner={this._startSpinner}
-                                      stopSpinner={this._stopSpinner}
-                                      clearStatus={this._clearStatus}
-                                      clearStatusMessage={this._clearStatus}
-                                      statusMessage={this._statusMessage}
-                                      setStatus={this._setStatus}
-                    />
-                    <Status {...this.state}
-                            show_close={true}
-                            handleClose={()=>{this._clearStatus(null)}}
-                            dark_theme={this.props.controlled ? this.props.dark_theme : window.theme == "dark"}/>
-                </React.Fragment>
-            )
-        }
-    }
-}
-
-class Status extends React.Component {
-
-    constructor(props) {
-        super(props);
-        this.elRef = React.createRef();
-    }
-
-    render () {
-        let cname = "d-flex flex-row";
-        let outer_cname;
-        if (this.props.dark_theme) {
-            outer_cname = "status-holder bp4-dark";
-        }
-        else {
-            outer_cname = "status-holder light-theme"
-        }
-        let left;
-        if (this.elRef && this.elRef.current) {
-            left = this.elRef.current.parentNode.offsetLeft;
-        }
-        else {
-            left = 25;
-        }
-
+        const _statusFuncs = {
+            startSpinner: _startSpinner,
+            stopSpinner: _stopSpinner,
+            clearStatus: _clearStatus,
+            clearStatusMessage: _clearStatusMessage,
+            statusMessage: _statusMessage,
+            setStatus: _setStatus,
+        };
 
         return (
-            <div ref={this.elRef}
-                 style={{height: 35, width: "100%", position: "absolute", "left": left, "bottom": 0}}
-                 className={outer_cname}>
-                <div className={cname} style={{position: "absolute", bottom: 7, marginLeft: 15}}>
-                    {this.props.show_spinner &&
-                        <Spinner size={20} />}
-                    {this.props.show_close && (this.props.show_spiner || this.props.status_message) &&
-                        <GlyphButton handleClick={this.props.handleClose}
-                                     icon="cross" />}
-                    {this.props.status_message &&
-                        <div className="d-flex flex-column justify-content-around" style={{marginLeft: 8}}>
-                            <div id="status-msg-area" className="bp4-ui-text">{this.props.status_message}</div>
-                        </div>
-                    }
-                </div>
-            </div>
+            <Fragment>
+                <WrappedComponent {...props}
+                                  statusSocket={props.tsocket}
+                                  statusFuncs={_statusFuncs}
+                                  startSpinner={_startSpinner}
+                                  stopSpinner={_stopSpinner}
+                                  clearStatus={_clearStatus}
+                                  clearStatusMessage={_clearStatus}
+                                  statusMessage={_statusMessage}
+                                  setStatus={_setStatus}
+                />
+                <Status show_spinner={show_spinner}
+                        status_message={status_message}
+                        spinner_size={spinner_size}
+                        show_close={true}
+                        handleClose={() => {
+                            _clearStatus(null)
+                        }}
+                        dark_theme={props.controlled ? props.dark_theme : window.theme == "dark"}/>
+            </Fragment>
         )
     }
+    return memo(newFunc)
 }
+
+function Status(props) {
+    const elRef = useRef(null);
+
+    let cname = "d-flex flex-row";
+    let outer_cname = props.dark_theme ? "status-holder bp4-dark" : "status-holder light-theme";
+    let left = elRef && elRef.current ? elRef.current.parentNode.offsetLeft : 25;
+
+    return (
+        <div ref={elRef}
+             style={{height: 35, width: "100%", position: "absolute", "left": left, "bottom": 0}}
+             className={outer_cname}>
+            <div className={cname} style={{position: "absolute", bottom: 7, marginLeft: 15}}>
+                {props.show_spinner &&
+                    <Spinner size={20}/>}
+                {props.show_close && (props.show_spiner || props.status_message) &&
+                    <GlyphButton handleClick={props.handleClose}
+                                 icon="cross"/>}
+                {props.status_message &&
+                    <div className="d-flex flex-column justify-content-around" style={{marginLeft: 8}}>
+                        <div id="status-msg-area" className="bp4-ui-text">{props.status_message}</div>
+                    </div>
+                }
+            </div>
+        </div>
+    )
+}
+
+Status = memo(Status);
+
 Status.propTypes = {
     show_spinner: PropTypes.bool,
     show_close: PropTypes.bool,

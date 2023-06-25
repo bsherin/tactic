@@ -22,7 +22,7 @@ import {doFlash, withStatus} from "./toaster.js";
 import {TacticNavbar} from "./blueprint_navbar";
 import {ErrorBoundary} from "./error_boundary.js";
 import {icon_dict} from "./blueprint_mdata_fields.js";
-import {library_props, LibraryHomeApp} from "./library_home_react.js";
+import {LibraryHomeApp} from "./library_home_react.js";
 import {view_views} from "./library_pane.js";
 import {guid} from "./utilities_react.js";
 import {module_viewer_props, ModuleViewerApp} from "./module_viewer_react.js";
@@ -38,7 +38,7 @@ import {postAjaxPromise} from "./communication_react.js";
 import {KeyTrap} from "./key_trap";
 import {DragHandle} from "./resizing_layouts.js";
 import {res_types} from "./library_pane";
-import {useCallbackStack, useConstructor} from "./utilities_react";
+import {useCallbackStack, useStateAndRef} from "./utilities_react";
 
 const spinner_panel = (
     <div style={{height: "100%", position: "absolute", top: "50%", left: "50%"}}>
@@ -96,13 +96,6 @@ const CreatorAppPlus = withErrorDrawer(withStatus(CreatorApp));
 const MainAppPlus = withErrorDrawer(withStatus(MainApp));
 const NotebookAppPlus = withErrorDrawer(withStatus(NotebookApp));
 
-function useStateAndRef(initial) {
-    const [value, setValue] = useState(initial);
-    const valueRef = useRef(value);
-    valueRef.current = value;
-    return [value, setValue, valueRef];
-}
-
 const classDict = {
     "module-viewer": ModuleViewerAppPlus,
     "code-viewer": CodeViewerAppPlus,
@@ -120,14 +113,13 @@ function _context_main() {
 
 function ContextApp(props) {
     const [didInit, setDidInit] = useState(false);
-    const [selectedTabId, setSelectedTabId] = useState("library");
+    const [selectedTabId, setSelectedTabId, selectedTabIdRef] = useStateAndRef("library");
     const [saved_width, set_saved_width] = useState(150);
 
     const [tab_panel_dict, set_tab_panel_dict, tab_panel_dict_ref] = useStateAndRef({});
     const library_omni_function = useRef(null);
-    const [tab_ids, set_tab_ids] = useState([]);
+    const [tab_ids, set_tab_ids, tab_ids_ref] = useStateAndRef([]);
 
-    const [library_panel_props, set_library_panel_props] = useState(library_props);
     const [open_resources, set_open_resources] = useState({});
     const [dirty_methods, set_dirty_methods] = useState({});
     const [dark_theme, set_dark_theme] = useState(() => {
@@ -156,18 +148,18 @@ function ContextApp(props) {
         [["shift+tab"], _goToPreviousPane],
         [["ctrl+space"], _showOmnibar],
         [["ctrl+w"], () => {
-            _closeTab(selectedTabId)
+            _closeTab(selectedTabIdRef.current)
         }]
     ];
 
-    useConstructor(initSocket);
-    const prepCallback = useCallbackStack();
+    const pushCallback = useCallbackStack();
 
     useEffect(() => {  // for unmount
+        initSocket();
         return (() => {
             tsocket.disconnect()
         })
-    });
+    }, []);
 
     useEffect(() => {  // for mount
         window.dark_theme = dark_theme;
@@ -248,7 +240,7 @@ function ContextApp(props) {
         set_usable_height(uheight);
         set_usable_width(uwidth);
         setTabWidth(tabWidth);
-        prepCallback(callback);
+        pushCallback(callback);
     }
 
     function _registerThemeSetter(setter) {
@@ -271,10 +263,6 @@ function ContextApp(props) {
     }
 
     function initSocket() {
-        // It is necessary to delete and remake these callbacks
-        // If I dont delete I end up with duplicatesSelectList
-        // If I just keep the original one then I end up something with a handler linked
-        // to an earlier state
         props.tsocket.attachListener("window-open", data => {
                 window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`)
             }
@@ -336,9 +324,9 @@ function ContextApp(props) {
     }
 
     function _closeATab(the_id, callback = null) {
-        let idx = tab_ids.indexOf(the_id);
+        let idx = tab_ids_ref.current.indexOf(the_id);
         let copied_tab_panel_dict = {...tab_panel_dict};
-        let copied_tab_ids = [...tab_ids];
+        let copied_tab_ids = [...tab_ids_ref.current];
         let copied_dirty_methods = {...dirty_methods};
         if (idx > -1) {
             copied_tab_ids.splice(idx, 1);
@@ -349,8 +337,8 @@ function ContextApp(props) {
         set_tab_ids(copied_tab_ids);
         set_dirty_methods(copied_dirty_methods);
         set_tab_panel_dict(copied_tab_panel_dict);
-        prepCallback(() => {
-            if (the_id == selectedTabId) {
+        pushCallback(() => {
+            if (the_id == selectedTabIdRef.current) {
                 let newSelectedId;
                 if (lastSelectedTabId && copied_tab_ids.includes(lastSelectedTabId)) {
                     newSelectedId = lastSelectedTabId;
@@ -365,7 +353,7 @@ function ContextApp(props) {
                     setLastSelectedTabId("library")
                 }
             }
-            prepCallback(() => {
+            pushCallback(() => {
                 _updateOpenResources(() => _update_window_dimensions(callback))
             })
         });
@@ -397,11 +385,11 @@ function ContextApp(props) {
             omni_function: null
         };
         set_tab_panel_dict(new_tab_panel_dict);
-        set_tab_ids([...tab_ids, new_id]);
-        setLastSelectedTabId(selectedTabId),
-
-            setSelectedTabId(new_id);
-        prepCallback(() => {
+        const new_tab_ids = [...tab_ids_ref.current, new_id];
+        set_tab_ids(new_tab_ids);
+        setLastSelectedTabId(selectedTabIdRef.current),
+        setSelectedTabId(new_id);
+        pushCallback(() => {
             _updateOpenResources(callback);
         });
     }
@@ -426,7 +414,7 @@ function ContextApp(props) {
             }
         }
         set_tab_panel_dict(new_tab_panel_dict);
-        prepCallback(() => {
+        pushCallback(() => {
             _updateOpenResources(() => _update_window_dimensions(callback))
         });
     }
@@ -438,7 +426,7 @@ function ContextApp(props) {
         }
         new_tab_panel_dict[the_id].panel.resource_name = new_name;
         set_tab_panel_dict(new_tab_panel_dict);
-        prepCallback(() => {
+        pushCallback(() => {
             _updateOpenResources(() => _update_window_dimensions(callback))
         });
     }
@@ -448,7 +436,7 @@ function ContextApp(props) {
         new_tab_panel_dict[the_id].title = new_title;
         set_tab_panel_dict(new_tab_panel_dict);
 
-        prepCallback(() => {
+        pushCallback(() => {
             _updateOpenResources(() => _update_window_dimensions(null))
         });
 
@@ -460,13 +448,13 @@ function ContextApp(props) {
             new_tab_panel_dict[the_id].panel[prop] = new_props[prop]
         }
         set_tab_panel_dict(new_tab_panel_dict);
-        prepCallback(() => {
+        pushCallback(() => {
             _updateOpenResources(() => _update_window_dimensions(null))
         });
     }
 
     function _getResourceId(res_name, res_type) {
-        for (let the_id of tab_ids) {
+        for (let the_id of tab_ids_ref.current) {
             let the_panel = tab_panel_dict[the_id];
             if (the_panel.panel.resource_name == res_name && the_panel.res_type == res_type) {
                 return the_id
@@ -495,6 +483,7 @@ function ContextApp(props) {
         let existing_id = _getResourceId(data.resource_name, data.res_type);
         if (existing_id != -1) {
             setSelectedTabId(existing_id);
+            pushCallback(callback);
             return
         }
         const new_id = guid();
@@ -511,40 +500,40 @@ function ContextApp(props) {
 
     function _goToNextPane(e) {
         let newId;
-        if (selectedTabId == "library") {
-            newId = tab_ids[0]
+        if (selectedTabIdRef.current == "library") {
+            newId = tab_ids_ref.current[0]
         } else {
-            let tabIndex = tab_ids.indexOf(selectedTabId) + 1;
-            newId = tabIndex === tab_ids.length ? "library" : tab_ids[tabIndex];
+            let tabIndex = tab_ids_ref.current.indexOf(selectedTabIdRef.current) + 1;
+            newId = tabIndex === tab_ids_ref.current.length ? "library" : tab_ids_ref.current[tabIndex];
         }
-        _handleTabSelect(newId, selectedTabId);
+        _handleTabSelect(newId, selectedTabIdRef.current);
         e.preventDefault()
     }
 
     function _goToPreviousPane(e) {
         let newId;
-        if (selectedTabId == "library") {
-            newId = tab_ids.at(-1)
+        if (selectedTabIdRef.current == "library") {
+            newId = tab_ids_ref.current.at(-1)
         } else {
-            let tabIndex = tab_ids.indexOf(selectedTabId) - 1;
-            newId = tabIndex == -1 ? "library" : tab_ids[tabIndex]
+            let tabIndex = tab_ids_ref.current.indexOf(selectedTabIdRef.current) - 1;
+            newId = tabIndex == -1 ? "library" : tab_ids_ref.current[tabIndex]
         }
 
-        _handleTabSelect(newId, selectedTabId);
+        _handleTabSelect(newId, selectedTabIdRef.current);
         e.preventDefault();
     }
 
     function _handleTabSelect(newTabId, prevTabId, event = null, callback = null) {
         setSelectedTabId(newTabId);
         setLastSelectedTabId(prevTabId);
-        prepCallback(() => _update_window_dimensions(callback));
+        pushCallback(() => _update_window_dimensions(callback));
     }
 
     function _goToModule(module_name, line_number) {
         for (let tab_id in tab_panel_dict) {
             let pdict = tab_panel_dict[tab_id];
             if (pdict.kind == "creator-viewer" && pdict.panel.resource_name == module_name) {
-                _handleTabSelect(tab_id, selectedTabId, null, () => {
+                _handleTabSelect(tab_id, selectedTabIdRef.current, null, () => {
                     if ("line_setter" in pdict) {
                         pdict.line_setter(line_number)
                     }
@@ -590,16 +579,16 @@ function ContextApp(props) {
     }
 
     function _nextTab(tab_id) {
-        let tidx = tab_ids.indexOf(tab_id);
+        let tidx = tab_ids_ref.current.indexOf(tab_id);
         if (tidx == -1) return null;
-        if (tidx == tab_ids.length - 1) return "dummy";
-        return tab_ids[tidx + 1]
+        if (tidx == tab_ids_ref.current.length - 1) return "dummy";
+        return tab_ids_ref.current[tidx + 1]
     }
 
     function _onDrop(event, target_id) {
         if (currently_dragging == null || currently_dragging == target_id) return;
-        let current_index = tab_ids.indexOf(currently_dragging);
-        let new_tab_ids = [...tab_ids];
+        let current_index = tab_ids_ref.current.indexOf(currently_dragging);
+        let new_tab_ids = [...tab_ids_ref.current];
         new_tab_ids.splice(current_index, 1);
         if (target_id == "dummy") {
             new_tab_ids.push(currently_dragging)
@@ -655,22 +644,22 @@ function ContextApp(props) {
 
     function _updateOpenResources(callback = null) {
         set_open_resources(_getOpenResources());
-        prepCallback(callback);
+        pushCallback(callback);
     }
 
     function _contextOmniItems() {
-        if (tab_ids.length == 0) return [];
+        if (tab_ids_ref.current.length == 0) return [];
         let omni_funcs = [
             ["Go To Next Panel", "context", _goToNextPane, "arrow-right"],
             ["Go To Previous Panel", "context", _goToPreviousPane, "arrow-left"],
         ];
-        if (selectedTabID != "library") {
+        if (selectedTabIdRef.current != "library") {
             omni_funcs = omni_funcs.concat([
                 ["Close Current Panel", "context", () => {
-                    _closeTab(selectedTabId)
+                    _closeTab(selectedTabIdRef.current)
                 }, "delete"],
                 ["Refresh Current Panel", "context", () => {
-                    _refreshTab(selectedTabId)
+                    _refreshTab(selectedTabIdRef.current)
                 }, "reset"]
             ])
         }
@@ -717,7 +706,7 @@ function ContextApp(props) {
         }
     } else {
         let cname = "lib-tab-button";
-        if (selectedTabId == "library") {
+        if (selectedTabIdRef.current == "library") {
             cname += selected_bclass
         }
         lib_buttons.push(
@@ -730,16 +719,19 @@ function ContextApp(props) {
         )
     }
     let bclass = "context-tab-button-content";
-    if (selectedTabId == "library") {
+    if (selectedTabIdRef.current == "library") {
         bclass += " selected-tab-button"
     }
     let library_panel;
+    const library_id = guid();
+    const tsocket = new TacticSocket("main", 5000, library_id);
     library_panel = (
         <div id="library-home-root">
-            <LibraryHomeAppPlus {...library_panel_props}
+            <LibraryHomeAppPlus library_id={library_id}
+                                tsocket={tsocket}
                                 library_style={window.library_style}
                                 controlled={true}
-                                am_selected={selectedTabId == "library"}
+                                am_selected={selectedTabIdRef.current == "library"}
                                 open_resources={open_resources}
                                 registerLibraryTabChanger={_registerLibraryTabChanger}
                                 dark_theme={dark_theme}
@@ -773,10 +765,10 @@ function ContextApp(props) {
 
     let all_tabs = [ltab];
 
-    for (let tab_id of tab_ids) {
+    for (let tab_id of tab_ids_ref.current) {
         let tab_entry = tab_panel_dict[tab_id];
         let bclass = "context-tab-button-content";
-        if (selectedTabId == tab_id) {
+        if (selectedTabIdRef.current == tab_id) {
             bclass += " selected-tab-button"
         }
         let visible_title = tab_entry.title;
@@ -790,7 +782,7 @@ function ContextApp(props) {
                                       dark_theme={dark_theme}  // needed for error drawer and status
                                       handleCreateViewer={_handleCreateViewer}
                                       setTheme={_setTheme}
-                                      am_selected={tab_id == selectedTabId}
+                                      am_selected={tab_id == selectedTabIdRef.current}
                                       changeResourceName={(new_name, callback = null, change_title = true) => {
                                           _changeResourceName(tab_id, new_name, change_title, callback)
                                       }}
@@ -924,7 +916,7 @@ function ContextApp(props) {
     if (pane_closed) {
         tlclass += " context-pane-closed"
     }
-    let sid = selectedTabId;
+    let sid = selectedTabIdRef.current;
     let omniGetter;
     if (sid && sid in tab_panel_dict) {
         let the_dict = tab_panel_dict[sid];
@@ -976,7 +968,7 @@ function ContextApp(props) {
                                 direction="x"
                                 barHeight="100%"
                                 useThinBar={true}/>
-                    <Tabs id="context-tabs" selectedTabId={selectedTabId}
+                    <Tabs id="context-tabs" selectedTabId={selectedTabIdRef.current}
                           className={tlclass}
                           vertical={true}
                           onChange={_handleTabSelect}>
