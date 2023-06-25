@@ -377,9 +377,13 @@ class HostWorker(QWorker):
 
     @task_worthy
     def get_collection_names(self, data):
+        print("*** in get_collection_names** ")
         user_id = data["user_id"]
         the_user = load_user(user_id)
-        return {"collection_names": the_user.data_collection_names}
+        print(" loaded the user ")
+        cnames = the_user.data_collection_names
+        print("got collection names " + str(cnames[:10]))
+        return {"collection_names": cnames}
 
     @task_worthy
     def get_collection_tags_dict(self, data):

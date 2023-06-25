@@ -4,7 +4,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" =
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.SearchForm = exports.BpSelectorTable = void 0;
+exports.BpSelectorTable = BpSelectorTable;
+exports.SearchForm = SearchForm;
 require("../tactic_css/tactic_select.scss");
 var _react = _interopRequireWildcard(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
@@ -12,190 +13,149 @@ var _objectHash = _interopRequireDefault(require("object-hash"));
 var _core = require("@blueprintjs/core");
 var _table = require("@blueprintjs/table");
 var _lodash = _interopRequireDefault(require("lodash"));
-var _utilities_react = require("./utilities_react.js");
+var _utilities_react = require("./utilities_react");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
-function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-var SearchForm = /*#__PURE__*/function (_React$Component) {
-  _inherits(SearchForm, _React$Component);
-  var _super = _createSuper(SearchForm);
-  function SearchForm(props) {
-    var _this;
-    _classCallCheck(this, SearchForm);
-    _this = _super.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
-    _this.current_timer = null;
-    _this.state = {
-      temp_text: null
-    };
-    _this.temp_text = null;
-    return _this;
+function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+function SearchForm(props) {
+  var _useState = (0, _react.useState)(null),
+    _useState2 = _slicedToArray(_useState, 2),
+    temp_text = _useState2[0],
+    set_temp_text = _useState2[1];
+  var current_timer = (0, _react.useRef)(null);
+  function _handleSearchFieldChange(event) {
+    if (current_timer.current) {
+      clearTimeout(current_timer.current);
+      current_timer.current = null;
+    }
+    var newval = event.target.value;
+    current_timer.current = setTimeout(function () {
+      current_timer.current = null;
+      props.update_search_state({
+        "search_string": newval
+      });
+    }, props.update_delay);
+    set_temp_text(newval);
   }
-  _createClass(SearchForm, [{
-    key: "_handleSearchFieldChange",
-    value: function _handleSearchFieldChange(event) {
-      if (this.current_timer) {
-        clearTimeout(this.current_timer);
-        this.current_timer = null;
-      }
-      var self = this;
-      var newval = event.target.value;
-      this.current_timer = setTimeout(function () {
-        self.current_timer = null;
-        self.props.update_search_state({
-          "search_string": newval
-        });
-      }, self.props.update_delay);
-      this.setState({
-        temp_text: newval
-      });
+  function _handleClearSearch() {
+    props.update_search_state({
+      "search_string": ""
+    });
+  }
+  function _handleSearchMetadataChange(event) {
+    props.update_search_state({
+      "search_metadata": event.target.checked
+    });
+  }
+  function _handleSearchInsideChange(event) {
+    props.update_search_state({
+      "search_inside": event.target.checked
+    });
+  }
+  function _handleShowHiddenChange(event) {
+    props.update_search_state({
+      "show_hidden": event.target.checked
+    });
+  }
+  function _handleRegexChange(event) {
+    props.update_search_state({
+      "regex": event.target.checked
+    });
+  }
+  function _handleSubmit(event) {
+    event.preventDefault();
+  }
+  var match_text;
+  if (props.number_matches != null && props.search_string && props.search_string != "") {
+    switch (props.number_matches) {
+      case 0:
+        match_text = "no matches";
+        break;
+      case 1:
+        match_text = "1 match";
+        break;
+      default:
+        match_text = "".concat(props.number_matches, " matches");
+        break;
     }
-  }, {
-    key: "_handleClearSearch",
-    value: function _handleClearSearch() {
-      this.props.update_search_state({
-        "search_string": ""
-      });
+  } else {
+    match_text = null;
+  }
+  var current_text = current_timer.current ? temp_text : props.search_string;
+  return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+    helperText: match_text,
+    style: {
+      marginBottom: 0
     }
-  }, {
-    key: "_handleSearchMetadataChange",
-    value: function _handleSearchMetadataChange(event) {
-      this.props.update_search_state({
-        "search_metadata": event.target.checked
-      });
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    className: "d-flex flex-row",
+    style: {
+      marginTop: 5,
+      marginBottom: 5
     }
-  }, {
-    key: "_handleSearchInsideChange",
-    value: function _handleSearchInsideChange(event) {
-      this.props.update_search_state({
-        "search_inside": event.target.checked
-      });
+  }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
+    type: "search",
+    className: "search-input",
+    placeholder: "Search",
+    leftIcon: "search",
+    value: current_text,
+    onChange: _handleSearchFieldChange,
+    style: {
+      "width": props.field_width
+    },
+    autoCapitalize: "none",
+    autoCorrect: "off",
+    small: true,
+    inputRef: props.search_ref
+  }), props.allow_regex && /*#__PURE__*/_react["default"].createElement(_core.Switch, {
+    label: "regexp",
+    className: "ml-3 mb-0 mt-1",
+    large: false,
+    checked: props.regex,
+    onChange: _handleRegexChange
+  }), props.allow_search_metadata && /*#__PURE__*/_react["default"].createElement(_core.Switch, {
+    label: "metadata",
+    className: "ml-3 mb-0 mt-1",
+    large: false,
+    checked: props.search_metadata,
+    onChange: _handleSearchMetadataChange
+  }), props.allow_search_inside && /*#__PURE__*/_react["default"].createElement(_core.Switch, {
+    label: "inside",
+    className: "ml-3 mb-0 mt-1",
+    large: false,
+    checked: props.search_inside,
+    onChange: _handleSearchInsideChange
+  }), props.allow_show_hidden && /*#__PURE__*/_react["default"].createElement(_core.Switch, {
+    label: "show hidden",
+    className: "ml-3 mb-0 mt-1",
+    large: false,
+    checked: props.show_hidden,
+    onChange: _handleShowHiddenChange
+  }), props.include_search_jumper && /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, {
+    style: {
+      marginLeft: 5,
+      padding: 2
     }
-  }, {
-    key: "_handleShowHiddenChange",
-    value: function _handleShowHiddenChange(event) {
-      this.props.update_search_state({
-        "show_hidden": event.target.checked
-      });
-    }
-  }, {
-    key: "_handleRegexChange",
-    value: function _handleRegexChange(event) {
-      this.props.update_search_state({
-        "regex": event.target.checked
-      });
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var match_text;
-      if (this.props.number_matches != null && this.props.search_string && this.props.search_string != "") {
-        switch (this.props.number_matches) {
-          case 0:
-            match_text = "no matches";
-            break;
-          case 1:
-            match_text = "1 match";
-            break;
-          default:
-            match_text = "".concat(this.props.number_matches, " matches");
-            break;
-        }
-      } else {
-        match_text = null;
-      }
-      var current_text = this.current_timer ? this.state.temp_text : this.props.search_string;
-      return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
-        ref: this.form_ref,
-        helperText: match_text,
-        style: {
-          marginBottom: 0
-        }
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: "d-flex flex-row",
-        style: {
-          marginTop: 5,
-          marginBottom: 5
-        }
-      }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
-        type: "search",
-        className: "search-input",
-        placeholder: "Search",
-        leftIcon: "search",
-        value: current_text,
-        onChange: this._handleSearchFieldChange,
-        style: {
-          "width": this.props.field_width
-        },
-        autoCapitalize: "none",
-        autoCorrect: "off",
-        small: true,
-        inputRef: this.props.search_ref
-      }), this.props.allow_regex && /*#__PURE__*/_react["default"].createElement(_core.Switch, {
-        label: "regexp",
-        className: "ml-3 mb-0 mt-1",
-        large: false,
-        checked: this.props.regex,
-        onChange: this._handleRegexChange
-      }), this.props.allow_search_metadata && /*#__PURE__*/_react["default"].createElement(_core.Switch, {
-        label: "metadata",
-        className: "ml-3 mb-0 mt-1",
-        large: false,
-        checked: this.props.search_metadata,
-        onChange: this._handleSearchMetadataChange
-      }), this.props.allow_search_inside && /*#__PURE__*/_react["default"].createElement(_core.Switch, {
-        label: "inside",
-        className: "ml-3 mb-0 mt-1",
-        large: false,
-        checked: this.props.search_inside,
-        onChange: this._handleSearchInsideChange
-      }), this.props.allow_show_hidden && /*#__PURE__*/_react["default"].createElement(_core.Switch, {
-        label: "show hidden",
-        className: "ml-3 mb-0 mt-1",
-        large: false,
-        checked: this.props.show_hidden,
-        onChange: this._handleShowHiddenChange
-      }), this.props.include_search_jumper && /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, {
-        style: {
-          marginLeft: 5,
-          padding: 2
-        }
-      }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
-        onClick: this.props.searchNext,
-        icon: "caret-down",
-        text: undefined,
-        small: true
-      }), /*#__PURE__*/_react["default"].createElement(_core.Button, {
-        onClick: this.props.searchPrev,
-        icon: "caret-up",
-        text: undefined,
-        small: true
-      })))));
-    }
-  }], [{
-    key: "_handleSubmit",
-    value: function _handleSubmit(event) {
-      event.preventDefault();
-    }
-  }]);
-  return SearchForm;
-}(_react["default"].Component);
-exports.SearchForm = SearchForm;
+  }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
+    onClick: props.searchNext,
+    icon: "caret-down",
+    text: undefined,
+    small: true
+  }), /*#__PURE__*/_react["default"].createElement(_core.Button, {
+    onClick: props.searchPrev,
+    icon: "caret-up",
+    text: undefined,
+    small: true
+  })))));
+}
+exports.SearchForm = SearchForm = /*#__PURE__*/(0, _react.memo)(SearchForm);
 SearchForm.propTypes = {
   allow_search_inside: _propTypes["default"].bool,
   allow_search_metadata: _propTypes["default"].bool,
@@ -233,244 +193,205 @@ SearchForm.defaultProps = {
   number_matches: null,
   update_delay: 500
 };
-var BpSelectorTable = /*#__PURE__*/function (_React$Component2) {
-  _inherits(BpSelectorTable, _React$Component2);
-  var _super2 = _createSuper(BpSelectorTable);
-  function BpSelectorTable(props) {
-    var _this2;
-    _classCallCheck(this, BpSelectorTable);
-    _this2 = _super2.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this2));
-    _this2.state = {
-      columnWidths: null
-    };
-    _this2.saved_data_dict = null;
-    _this2.data_update_required = null;
-    _this2.table_ref = /*#__PURE__*/_react["default"].createRef();
-    return _this2;
-  }
-  _createClass(BpSelectorTable, [{
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      this.computeColumnWidths();
-      this.saved_data_dict = this.props.data_dict;
+function BpSelectorTable(props) {
+  var _useStateAndRef = (0, _utilities_react.useStateAndRef)(null),
+    _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
+    columnWidths = _useStateAndRef2[0],
+    setColumnWidths = _useStateAndRef2[1],
+    columnWidthsRef = _useStateAndRef2[2];
+  var saved_data_dict = (0, _react.useRef)(null);
+  var data_update_required = (0, _react.useRef)(null);
+  var table_ref = (0, _react.useRef)(null);
+  (0, _react.useEffect)(function () {
+    computeColumnWidths();
+    saved_data_dict.current = props.data_dict;
+  }, []);
+  (0, _react.useEffect)(function () {
+    if (columnWidthsRef.current == null || !_lodash["default"].isEqual(props.data_dict, saved_data_dict.current)) {
+      computeColumnWidths();
+      saved_data_dict.current = props.data_dict;
     }
-  }, {
-    key: "computeColumnWidths",
-    value: function computeColumnWidths() {
-      var _this3 = this;
-      if (Object.keys(this.props.data_dict).length == 0) return;
-      var column_names = Object.keys(this.props.columns);
-      var bcwidths = compute_initial_column_widths(column_names, Object.values(this.props.data_dict));
-      var cwidths = [];
-      if (this.props.maxColumnWidth) {
-        var _iterator = _createForOfIteratorHelper(bcwidths),
-          _step;
-        try {
-          for (_iterator.s(); !(_step = _iterator.n()).done;) {
-            var c = _step.value;
-            if (c > this.props.maxColumnWidth) {
-              cwidths.push(this.props.maxColumnWidth);
-            } else {
-              cwidths.push(c);
-            }
-          }
-        } catch (err) {
-          _iterator.e(err);
-        } finally {
-          _iterator.f();
-        }
-      } else {
-        cwidths = bcwidths;
-      }
-      var self = this;
-      this.setState({
-        columnWidths: cwidths
-      }, function () {
-        var the_sum = _this3.state.columnWidths.reduce(function (a, b) {
-          return a + b;
-        }, 0);
-        self.props.communicateColumnWidthSum(the_sum);
-      });
-    }
-  }, {
-    key: "componentDidUpdate",
-    value: function componentDidUpdate(prevProps, prevState, snapshot) {
-      // this.props.my_ref.current.scrollTop = this.props.scroll_top;
-      if (this.state.columnWidths == null || !_lodash["default"].isEqual(this.props.data_dict, this.saved_data_dict)) {
-        this.computeColumnWidths();
-        this.saved_data_dict = this.props.data_dict;
-      }
-    }
-  }, {
-    key: "_onCompleteRender",
-    value: function _onCompleteRender() {
-      if (this.data_update_required != null) {
-        this.props.initiateDataGrab(this.data_update_required);
-        this.data_update_required = null;
-      }
-      var lastColumnRegion = _table.Regions.column(Object.keys(this.props.columns).length - 1);
-      var firstColumnRegion = _table.Regions.column(0);
-      this.table_ref.current.scrollToRegion(lastColumnRegion);
-      this.table_ref.current.scrollToRegion(firstColumnRegion);
-    }
-  }, {
-    key: "haveRowData",
-    value: function haveRowData(rowIndex) {
-      return this.props.data_dict.hasOwnProperty(rowIndex);
-    }
-  }, {
-    key: "_cellRendererCreator",
-    value: function _cellRendererCreator(column_name) {
-      var _this4 = this;
-      var self = this;
-      return function (rowIndex) {
-        if (!_this4.haveRowData(rowIndex)) {
-          if (self.data_update_required == null) {
-            self.data_update_required = rowIndex;
-          }
-          return /*#__PURE__*/_react["default"].createElement(_table.Cell, {
-            key: column_name,
-            loading: true
-          });
-        }
-        var the_body;
-        var the_class = "";
-        if (Object.keys(self.props.data_dict[rowIndex]).includes(column_name)) {
-          if ("hidden" in self.props.data_dict[rowIndex] && self.props.data_dict[rowIndex]["hidden"]) {
-            the_class = "hidden_cell";
-          }
-          var the_text = String(self.props.data_dict[rowIndex][column_name]);
-          if (the_text.startsWith("icon:")) {
-            the_text = the_text.replace(/(^icon:)/gi, "");
-            the_body = /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-              icon: the_text,
-              size: 14
-            });
+  });
+  var pushCallback = (0, _utilities_react.useCallbackStack)();
+  function computeColumnWidths() {
+    if (Object.keys(props.data_dict).length == 0) return;
+    var column_names = Object.keys(props.columns);
+    var bcwidths = compute_initial_column_widths(column_names, Object.values(props.data_dict));
+    var cwidths = [];
+    if (props.maxColumnWidth) {
+      var _iterator = _createForOfIteratorHelper(bcwidths),
+        _step;
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var c = _step.value;
+          if (c > props.maxColumnWidth) {
+            cwidths.push(props.maxColumnWidth);
           } else {
-            the_body = /*#__PURE__*/_react["default"].createElement(_table.TruncatedFormat, {
-              className: the_class
-            }, the_text);
+            cwidths.push(c);
           }
-        } else {
-          the_body = "";
         }
-        var tclass;
-        if (_this4.props.open_resources && _this4.props.open_resources.includes(_this4.props.data_dict[rowIndex][_this4.props.identifier_field])) {
-          tclass = "open-selector-row";
-        } else {
-          tclass = "";
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
+      }
+    } else {
+      cwidths = bcwidths;
+    }
+    setColumnWidths(cwidths);
+    pushCallback(function () {
+      var the_sum = columnWidthsRef.current.reduce(function (a, b) {
+        return a + b;
+      }, 0);
+      props.communicateColumnWidthSum(the_sum);
+    });
+  }
+  function _onCompleteRender() {
+    if (data_update_required.current != null) {
+      props.initiateDataGrab(data_update_required.current);
+      data_update_required.current = null;
+    }
+    var lastColumnRegion = _table.Regions.column(Object.keys(props.columns).length - 1);
+    var firstColumnRegion = _table.Regions.column(0);
+    table_ref.current.scrollToRegion(lastColumnRegion);
+    table_ref.current.scrollToRegion(firstColumnRegion);
+  }
+  function haveRowData(rowIndex) {
+    return props.data_dict.hasOwnProperty(rowIndex);
+  }
+  function _cellRendererCreator(column_name) {
+    return function (rowIndex) {
+      if (!haveRowData(rowIndex)) {
+        if (data_update_required.current == null) {
+          data_update_required.current = rowIndex;
         }
         return /*#__PURE__*/_react["default"].createElement(_table.Cell, {
           key: column_name,
-          interactive: true,
-          truncated: true,
-          tabIndex: -1,
-          onKeyDown: _this4.props.keyHandler,
-          wrapText: true
-        }, /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
-          className: tclass,
-          onDoubleClick: function onDoubleClick() {
-            return self.props.handleRowDoubleClick(self.props.data_dict[rowIndex]);
-          }
-        }, the_body)));
-      };
-    }
-  }, {
-    key: "_renderMenu",
-    value: function _renderMenu(sortColumn) {
-      var _this5 = this;
-      if (!this.props.columns[sortColumn].sort_field) return null;
-      var sortAsc = function sortAsc() {
-        _this5.props.sortColumn(sortColumn, _this5.props.columns[sortColumn].sort_field, "ascending");
-      };
-      var sortDesc = function sortDesc() {
-        _this5.props.sortColumn(sortColumn, _this5.props.columns[sortColumn].sort_field, "descending");
-      };
-      return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "sort-asc",
-        onClick: sortAsc,
-        text: "Sort Asc"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "sort-desc",
-        onClick: sortDesc,
-        text: "Sort Desc"
-      }));
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var _this6 = this;
-      var self = this;
-      var column_names = Object.keys(this.props.columns);
-      var columns = column_names.map(function (column_name) {
-        var cellRenderer = self._cellRendererCreator(column_name);
-        var columnHeaderCellRenderer = function columnHeaderCellRenderer() {
-          return /*#__PURE__*/_react["default"].createElement(_table.ColumnHeaderCell, {
-            name: column_name,
-            nameRenderer: BpSelectorTable._columnHeaderNameRenderer,
-            menuRenderer: function menuRenderer() {
-              return self._renderMenu(column_name);
-            }
-          });
-        };
-        return /*#__PURE__*/_react["default"].createElement(_table.Column, {
-          cellRenderer: cellRenderer,
-          enableColumnReordering: false,
-          columnHeaderCellRenderer: columnHeaderCellRenderer,
-          key: column_name,
-          name: column_name
+          loading: true
         });
-      });
-      var obj = {
-        cwidths: this.state.columnWidths,
-        nrows: this.props.num_rows
-      };
-      var hsh = (0, _objectHash["default"])(obj);
-      return /*#__PURE__*/_react["default"].createElement(_core.HotkeysProvider, null, /*#__PURE__*/_react["default"].createElement(_table.Table2, {
-        numRows: this.props.num_rows
-        // key={this.props.num_rows}
-        ,
-        ref: this.table_ref,
-        cellRendererDependencies: [self.props.data_dict],
-        bodyContextMenuRenderer: this.props.renderBodyContextMenu,
-        enableColumnReordering: false,
-        enableColumnResizing: this.props.enableColumnResizing,
-        maxColumnWidth: this.props.maxColumnWidth,
-        enableMultipleSelection: true,
-        defaultRowHeight: 23,
-        selectedRegions: this.props.selectedRegions,
-        enableRowHeader: false,
-        columnWidths: this.state.columnWidths,
-        onCompleteRender: this._onCompleteRender,
-        selectionModes: [_table.RegionCardinality.FULL_ROWS, _table.RegionCardinality.CELLS],
-        onSelection: function onSelection(regions) {
-          return _this6.props.onSelection(regions);
-        }
-      }, columns));
-    }
-  }], [{
-    key: "_columnHeaderNameRenderer",
-    value: function _columnHeaderNameRenderer(the_text) {
-      var the_body;
-      the_text = String(the_text);
-      if (the_text.startsWith("icon:")) {
-        the_text = the_text.replace(/(^icon:)/gi, "");
-        the_body = /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-          icon: the_text,
-          size: 14
-        });
-      } else {
-        the_body = /*#__PURE__*/_react["default"].createElement("div", {
-          className: "bp4-table-truncated-text"
-        }, the_text);
       }
-      return the_body;
+      var the_body;
+      var the_class = "";
+      if (Object.keys(props.data_dict[rowIndex]).includes(column_name)) {
+        if ("hidden" in props.data_dict[rowIndex] && props.data_dict[rowIndex]["hidden"]) {
+          the_class = "hidden_cell";
+        }
+        var the_text = String(props.data_dict[rowIndex][column_name]);
+        if (the_text.startsWith("icon:")) {
+          the_text = the_text.replace(/(^icon:)/gi, "");
+          the_body = /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+            icon: the_text,
+            size: 14
+          });
+        } else {
+          the_body = /*#__PURE__*/_react["default"].createElement(_table.TruncatedFormat, {
+            className: the_class
+          }, the_text);
+        }
+      } else {
+        the_body = "";
+      }
+      var tclass;
+      if (props.open_resources && props.open_resources.includes(props.data_dict[rowIndex][props.identifier_field])) {
+        tclass = "open-selector-row";
+      } else {
+        tclass = "";
+      }
+      return /*#__PURE__*/_react["default"].createElement(_table.Cell, {
+        key: column_name,
+        interactive: true,
+        truncated: true,
+        tabIndex: -1,
+        onKeyDown: props.keyHandler,
+        wrapText: true
+      }, /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
+        className: tclass,
+        onDoubleClick: function onDoubleClick() {
+          return props.handleRowDoubleClick(props.data_dict[rowIndex]);
+        }
+      }, the_body)));
+    };
+  }
+  function _renderMenu(sortColumn) {
+    if (!props.columns[sortColumn].sort_field) return null;
+    var sortAsc = function sortAsc() {
+      props.sortColumn(sortColumn, props.columns[sortColumn].sort_field, "ascending");
+    };
+    var sortDesc = function sortDesc() {
+      props.sortColumn(sortColumn, props.columns[sortColumn].sort_field, "descending");
+    };
+    return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "sort-asc",
+      onClick: sortAsc,
+      text: "Sort Asc"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "sort-desc",
+      onClick: sortDesc,
+      text: "Sort Desc"
+    }));
+  }
+  function _columnHeaderNameRenderer(the_text) {
+    var the_body;
+    the_text = String(the_text);
+    if (the_text.startsWith("icon:")) {
+      the_text = the_text.replace(/(^icon:)/gi, "");
+      the_body = /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+        icon: the_text,
+        size: 14
+      });
+    } else {
+      the_body = /*#__PURE__*/_react["default"].createElement("div", {
+        className: "bp4-table-truncated-text"
+      }, the_text);
     }
-  }]);
-  return BpSelectorTable;
-}(_react["default"].Component);
-exports.BpSelectorTable = BpSelectorTable;
+    return the_body;
+  }
+  var column_names = Object.keys(props.columns);
+  var columns = column_names.map(function (column_name) {
+    var cellRenderer = _cellRendererCreator(column_name);
+    var columnHeaderCellRenderer = function columnHeaderCellRenderer() {
+      return /*#__PURE__*/_react["default"].createElement(_table.ColumnHeaderCell, {
+        name: column_name,
+        nameRenderer: _columnHeaderNameRenderer,
+        menuRenderer: function menuRenderer() {
+          return _renderMenu(column_name);
+        }
+      });
+    };
+    return /*#__PURE__*/_react["default"].createElement(_table.Column, {
+      cellRenderer: cellRenderer,
+      enableColumnReordering: false,
+      columnHeaderCellRenderer: columnHeaderCellRenderer,
+      key: column_name,
+      name: column_name
+    });
+  });
+  var obj = {
+    cwidths: columnWidths,
+    nrows: props.num_rows
+  };
+  var hsh = (0, _objectHash["default"])(obj);
+  return /*#__PURE__*/_react["default"].createElement(_core.HotkeysProvider, null, /*#__PURE__*/_react["default"].createElement(_table.Table2, {
+    numRows: props.num_rows,
+    ref: table_ref,
+    cellRendererDependencies: [props.data_dict],
+    bodyContextMenuRenderer: props.renderBodyContextMenu,
+    enableColumnReordering: false,
+    enableColumnResizing: props.enableColumnResizing,
+    maxColumnWidth: props.maxColumnWidth,
+    enableMultipleSelection: true,
+    defaultRowHeight: 23,
+    selectedRegions: props.selectedRegions,
+    enableRowHeader: false,
+    columnWidths: columnWidthsRef.current,
+    onCompleteRender: _onCompleteRender,
+    selectionModes: [_table.RegionCardinality.FULL_ROWS, _table.RegionCardinality.CELLS],
+    onSelection: function onSelection(regions) {
+      return props.onSelection(regions);
+    }
+  }, columns));
+}
+exports.BpSelectorTable = BpSelectorTable = /*#__PURE__*/(0, _react.memo)(BpSelectorTable);
 BpSelectorTable.propTypes = {
   columns: _propTypes["default"].object,
   open_resources: _propTypes["default"].array,
@@ -484,7 +405,8 @@ BpSelectorTable.propTypes = {
   sortColumn: _propTypes["default"].func,
   onSelection: _propTypes["default"].func,
   handleRowDoubleClick: _propTypes["default"].func,
-  identifier_field: _propTypes["default"].string
+  identifier_field: _propTypes["default"].string,
+  rowChanged: _propTypes["default"].number
 };
 BpSelectorTable.defaultProps = {
   columns: {
@@ -512,7 +434,8 @@ BpSelectorTable.defaultProps = {
   show_animations: false,
   handleSpaceBarPress: null,
   keyHandler: null,
-  draggable: true
+  draggable: true,
+  rowChanged: 0
 };
 var MAX_INITIAL_CELL_WIDTH = 300;
 var ICON_WIDTH = 35;
@@ -593,8 +516,8 @@ function compute_initial_column_widths(header_list, data_list) {
       } finally {
         _iterator5.f();
       }
-      for (var _i = 0, _cols_to_remove = cols_to_remove; _i < _cols_to_remove.length; _i++) {
-        var _c = _cols_to_remove[_i];
+      for (var _i2 = 0, _cols_to_remove = cols_to_remove; _i2 < _cols_to_remove.length; _i2++) {
+        var _c = _cols_to_remove[_i2];
         var index = columns_remaining.indexOf(_c);
         if (index !== -1) {
           columns_remaining.splice(index, 1);

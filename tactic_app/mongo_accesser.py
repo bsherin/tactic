@@ -111,7 +111,6 @@ class MongoAccess(object):
         if temp_data is None and new_name in self.data_collection_names:
             raise NameExistsError("Collection name {} already exists".format(new_name))
         mdata = self.create_initial_metadata()
-        print("got doc_dict " + str(doc_dict))
         mdata["number_of_docs"] = len(list(doc_dict.keys()))
         mdata["type"] = doc_type
         if collection_metadata is not None:

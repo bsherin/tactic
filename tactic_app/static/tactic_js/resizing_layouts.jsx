@@ -1,90 +1,83 @@
 
 import React from "react";
+import { useState, useEffect, useRef, memo } from "react";
 import PropTypes from 'prop-types';
 
 import { Icon } from "@blueprintjs/core";
 import { DraggableCore } from "react-draggable"
-import {doBinding, guid} from "./utilities_react.js";
+import { guid } from "./utilities_react.js";
 
 export {HorizontalPanes, VerticalPanes, HANDLE_WIDTH, DragHandle}
 
 const MARGIN_SIZE = 17;
 const HANDLE_WIDTH = 10;
 
-class DragHandle extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.startX = null;
-        this.startY = null;
-        this.lastX = null;
-        this.lastY = null;
-    }
+function DragHandle(props) {
+    const startX = useRef(null);
+    const startY = useRef(null);
+    const lastX = useRef(null);
+    const lastY = useRef(null);
 
-    get icon_dict() {
-        return (
-            { x: "drag-handle-vertical",
-                y: "drag-handle-horizontal",
-                both: "caret-right"
-            }
-        )
-    }
+    const icon_dict = {
+        x: "drag-handle-vertical",
+        y: "drag-handle-horizontal",
+        both: "caret-right"
+    };
 
-    _dragStart(e, ui) {
-        this.startX = this.getMouseX(e);
-        this.startY = this.getMouseY(e);
-        this.lastX = this.startX;
-        this.lastY = this.startY;
-        if (this.props.dragStart) {
-            this.props.dragStart(e, ui, this.startX, this.startY);
+    function _dragStart(e, ui) {
+        startX.current = getMouseX(e);
+        startY.current = getMouseY(e);
+        lastX.current = startX.current;
+        lastY.current = startY.current;
+        if (props.dragStart) {
+            props.dragStart(e, ui, startX.current, startY.current);
         }
         e.preventDefault();
     }
 
-    _onDrag(e, ui) {
-        if (this.props.direction == "y") {
-            this.lastX = this.startX;
+    function _onDrag(e, ui) {
+        if (props.direction == "y") {
+            lastX.current = startX.current;
         }
         else {
-            this.lastX = this.getMouseX(e);
+            lastX.current = getMouseX(e);
         }
-        if (this.props.direction == "x") {
-            this.lastY = this.startY;
-        }
-        else {
-            this.lastY = this.getMouseY(e);
-        }
-        let dx = this.lastX - this.startX;
-        let dy = this.lastY - this.startY;
-        if (this.props.onDrag) {
-            this.props.onDrag(e, ui, this.lastX, this.lastY, dx, dy)
-        }
-        e.preventDefault();
-
-    }
-
-    _dragEnd(e, ui) {
-        if (this.props.direction == "y") {
-            this.lastX = this.startX;
+        if (props.direction == "x") {
+            lastY.current = startY.current;
         }
         else {
-            this.lastX = this.getMouseX(e);
+            lastY.current = getMouseY(e);
         }
-        if (this.props.direction == "x") {
-            this.lastY = this.startY;
-        }
-        else {
-            this.lastY = this.getMouseY(e);
-        }
-        let dx = this.lastX - this.startX;
-        let dy = this.lastY - this.startY;
-        if (this.props.dragEnd) {
-            this.props.dragEnd(e, ui, this.lastX, this.lastY, dx, dy);
+        let dx = lastX.current - startX.current;
+        let dy = lastY.current - startY.current;
+        if (props.onDrag) {
+            props.onDrag(e, ui, lastX.current, lastY.current, dx, dy)
         }
         e.preventDefault();
     }
 
-    getMouseX(e) {
+    function _dragEnd(e, ui) {
+        if (props.direction == "y") {
+            lastX.current = startX.current;
+        }
+        else {
+            lastX.current = getMouseX(e);
+        }
+        if (props.direction == "x") {
+            lastY.current = startY.current;
+        }
+        else {
+            lastY.current = getMouseY(e);
+        }
+        let dx = lastX.current - startX.current;
+        let dy = lastY.current - startY.current;
+        if (props.dragEnd) {
+            props.dragEnd(e, ui, lastX.current, lastY.current, dx, dy);
+        }
+        e.preventDefault();
+    }
+
+    function getMouseX(e) {
         if (e.type == "touchend") return null;
         if ((e.type == "touchmove") || (e.type == "touchstart")) {
             return e.touches[0].clientX
@@ -94,7 +87,7 @@ class DragHandle extends React.Component {
         }
     }
 
-    getMouseY(e) {
+    function getMouseY(e) {
         if (e.type == "touchend") return null;
         if ((e.type == "touchmove") || (e.type == "touchstart")) {
             return e.touches[0].clientY
@@ -104,50 +97,46 @@ class DragHandle extends React.Component {
         }
     }
 
-    get cursor_dict () {
-        return (
-            { x: "ew-resize",
-             y: "ns-resize",
-                both: "se-resize"
-            }
-        )
-    }
+    const cursor_dict = {
+        x: "ew-resize",
+        y: "ns-resize",
+        both: "se-resize"
+    };
 
-    render() {
-        let style = this.props.position_dict;
-        style.cursor = this.cursor_dict[this.props.direction];
-        if (this.props.direction == "both") {
-            style.transform = "rotate(45deg)"
-        }
-        let wrappedElement;
-        if (this.props.useThinBar) {
-            let the_class = this.props.direction == "x" ? "resize-border" : "horizontal-resize-border";
-            if (this.props.barHeight != null) {
-                style.height = this.props.barHeight;
-            }
-            if (this.props.barWidth != null) {
-                style.width = this.props.barWidth
-            }
-            wrappedElement = <div className={the_class} style={style}/>
-        }
-        else {
-            wrappedElement = <Icon icon={this.icon_dict[this.props.direction]}
-                         iconSize={this.props.iconSize}
-                         style={style}
-                    />
-        }
-        return (
-            <DraggableCore
-                onStart={this._dragStart}
-                onStop={this._dragEnd}
-                onDrag={this._onDrag}
-                grid={[5, 5]}
-                scale={1}>
-                {wrappedElement}
-            </DraggableCore>
-        )
+    let style = props.position_dict;
+    style.cursor = cursor_dict[props.direction];
+    if (props.direction == "both") {
+        style.transform = "rotate(45deg)"
     }
+    let wrappedElement;
+    if (props.useThinBar) {
+        let the_class = props.direction == "x" ? "resize-border" : "horizontal-resize-border";
+        if (props.barHeight != null) {
+            style.height = props.barHeight;
+        }
+        if (props.barWidth != null) {
+            style.width = props.barWidth
+        }
+        wrappedElement = <div className={the_class} style={style}/>
+    }
+    else {
+        wrappedElement = <Icon icon={icon_dict[props.direction]}
+                               iconSize={props.iconSize}
+                               style={style}/>
+    }
+    return (
+        <DraggableCore
+            onStart={_dragStart}
+            onStop={_dragEnd}
+            onDrag={_onDrag}
+            grid={[5, 5]}
+            scale={1}>
+            {wrappedElement}
+        </DraggableCore>
+    )
 }
+
+DragHandle = memo(DragHandle);
 
 DragHandle.propTypes = {
     position_dict: PropTypes.object,
@@ -175,83 +164,67 @@ DragHandle.defaultProps = {
     barWidth: null
 };
 
-class HorizontalPanes extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.left_pane_ref = React.createRef();
-        this.right_pane_ref = React.createRef();
-        this.drag_handle_ref = React.createRef();
-        this.scroll_bases = {};
-        this.top_ref = this.props.top_ref == null ? React.createRef() : this.props.top_ref;
-        this.old_left_width = 0;
-        this.old_right_width = 0;
-        this.unique_id = guid();
-        this.state = {
-            "current_width_fraction": this.props.initial_width_fraction,
-            "mounted": false,
-            deltaPosition: {x: 0, y: 0}
-        };
-    }
+function HorizontalPanes(props) {
+    const left_pane_ref = useRef(null);
+    const right_pane_ref = useRef(null);
+    const scroll_bases = useRef({});
+    const top_ref = useRef(props.top_ref == null ? useRef(null) : props.top_ref);
+    const old_left_width = useRef(0);
+    const old_right_width = useRef(0);
+    const unique_id = useRef(guid());
 
-    componentDidMount() {
-        window.addEventListener("resize", this.resize_to_window);
-        this.setState({"mounted": true}, ()=>{
-            if (this.props.handleSplitUpdate) {
-                this.props.handleSplitUpdate(this.left_width, this.right_width, this.state.current_width_fraction)
-            }
+    const [current_width_fraction, set_current_width_fraction] = useState(props.initial_width_fraction);
+    const [deltaPosition, setDeltaPosition] = useState({x: 0, y: 0});
 
-        });
-    }
-
-    componentDidUpdate() {
-        this.notifySplitUpate();
-    }
-
-
-    get left_width() {
-        if (this.props.show_handle) {
-            return (this.props.available_width - HANDLE_WIDTH) * this.state.current_width_fraction
+    useEffect(() => {
+        if (props.handleSplitUpdate) {
+            props.handleSplitUpdate(left_width(), right_width(), current_width_fraction)
         }
-        return this.props.available_width * this.state.current_width_fraction - 2.5
-    }
+    }, []);
 
-    get right_width() {
-        if (this.props.show_handle) {
-            return (1 - this.state.current_width_fraction) * (this.props.available_width - HANDLE_WIDTH)
+    useEffect(() => {
+        notifySplitUpdate();
+    }, [current_width_fraction]);
+
+    function left_width() {
+        if (props.show_handle) {
+            return (props.available_width - HANDLE_WIDTH) * current_width_fraction
         }
-        return (1 - this.state.current_width_fraction) * this.props.available_width - 2.5
+        return props.available_width * current_width_fraction - 2.5
     }
 
-    update_width_fraction(new_width_fraction) {
-        this.setState({"current_width_fraction": new_width_fraction});
+    function right_width() {
+        if (props.show_handle) {
+            return (1 - current_width_fraction) * (props.available_width - HANDLE_WIDTH)
+        }
+        return (1 - current_width_fraction) * props.available_width - 2.5
     }
 
-    get width_has_changed() {
-       return (this.left_width != this.old_left_width) || (this.right_width != this.old_right_width)
+    function width_has_changed() {
+       return (left_width() != old_left_width.current) || (right_width() != old_right_width.current)
     }
 
-    notifySplitUpate() {
-        if (this.width_has_changed && (this.props.handleSplitUpdate != null)) {
-            this.old_left_width = this.left_width;
-            this.old_right_width = this.right_width;
-            this.props.handleSplitUpdate(this.left_width, this.right_width, this.state.current_width_fraction)
+    function notifySplitUpdate() {
+        if (width_has_changed() && (props.handleSplitUpdate != null)) {
+            old_left_width.current = left_width();
+            old_right_width.current = right_width();
+            props.handleSplitUpdate(left_width(), right_width(), current_width_fraction)
         }
     }
 
-    _handleDrag (e, ui, x, y, dx, dy){
-        let new_width_fraction = (x - this.left_pane_ref.current.getBoundingClientRect().left) / this.props.available_width;
+    function _handleDrag (e, ui, x, y, dx, dy){
+        let new_width_fraction = (x - left_pane_ref.current.getBoundingClientRect().left) / props.available_width;
         new_width_fraction = new_width_fraction > 1 ? 1 : new_width_fraction;
         new_width_fraction = new_width_fraction < 0 ? 0 : new_width_fraction;
-        this.update_width_fraction(new_width_fraction);
-        this._resetScrolls();
-     };
+        set_current_width_fraction(new_width_fraction);
+        _resetScrolls();
+     }
 
-    _getSelectorElements() {
+    function _getSelectorElements() {
         let result = {};
-        if (this.props.scrollAdjustSelectors && this.top_ref && this.top_ref.current) {
-            for (let selector of this.props.scrollAdjustSelectors) {
-                let els = $(this.top_ref.current).find(selector);
+        if (props.scrollAdjustSelectors && top_ref && top_ref.current) {
+            for (let selector of props.scrollAdjustSelectors) {
+                let els = $(top_ref.current).find(selector);
                 if (els.length > 0) {
                     result[selector] = els[0]
                 }
@@ -260,103 +233,101 @@ class HorizontalPanes extends React.Component {
         return result
     }
 
-    _resetScrolls() {
-        let selector_element_dict = this._getSelectorElements();
+    function _resetScrolls() {
+        let selector_element_dict = _getSelectorElements();
         for (let selector in selector_element_dict) {
             let el = selector_element_dict[selector];
-            el.scrollLeft = this.scroll_bases[selector].left;
-            el.scrollTop = this.scroll_bases[selector].top;
+            el.scrollLeft = scroll_bases.current[selector].left;
+            el.scrollTop = scroll_bases.current[selector].top;
         }
     }
 
-    _handleDragStart(e, ui, x, y, dx, dy) {
-        let selector_element_dict = this._getSelectorElements();
+    function _handleDragStart(e, ui, x, y, dx, dy) {
+        let selector_element_dict = _getSelectorElements();
         for (let selector in selector_element_dict) {
             let el = selector_element_dict[selector];
-            this.scroll_bases[selector] = {left: el.scrollLeft, top: el.scrollTop}
+            scroll_bases.current[selector] = {left: el.scrollLeft, top: el.scrollTop}
         }
-        if (this.props.handleResizeStart) {
-            this.props.handleResizeStart(e, ui, x, y, dx, dy)
+        if (props.handleResizeStart) {
+            props.handleResizeStart(e, ui, x, y, dx, dy)
         }
     }
 
-    _handleDragEnd(e, ui, x, y, dx, dy) {
-        let new_width_fraction = (x - this.left_pane_ref.current.getBoundingClientRect().left) / this.props.available_width;
+    function _handleDragEnd(e, ui, x, y, dx, dy) {
+        let new_width_fraction = (x - left_pane_ref.current.getBoundingClientRect().left) / props.available_width;
         new_width_fraction = new_width_fraction > 1 ? 1 : new_width_fraction;
         new_width_fraction = new_width_fraction < 0 ? 0 : new_width_fraction;
-        if (this.props.handleResizeEnd) {
-            this.props.handleResizeEnd(new_width_fraction);
+        if (props.handleResizeEnd) {
+            props.handleResizeEnd(new_width_fraction);
         }
-
-        this._resetScrolls();
+        _resetScrolls();
     }
 
-    render () {
-        let handle_left;
-        if (this.right_pane_ref && this.right_pane_ref.current) {
-            handle_left = this.right_pane_ref.current.offsetLeft - 10
-        }
-        else {
-            handle_left = this.left_width + 75
-        }
-        let position_dict = {
-            position: "absolute",
-            left: handle_left
-        };
-        let left_div_style = {
-            width: this.left_width,
-            height: this.props.available_height - this.props.bottom_margin,
-            flexDirection: "column",
-            overflow: "hidden",
-            paddingLeft: window.in_context ? 5 : 12
-        };
-        // noinspection JSSuspiciousNameCombination
-        let right_div_style = {
-            width: this.right_width,
-            height: this.props.available_height - this.props.bottom_margin,
-            flexDirection: "column",
-            marginLeft: 10
-        };
-        let cname = "";
-        if (this.props.right_pane_overflow == "auto") {
-            cname = "contingent-scroll"
-        }
-        else {
-            right_div_style["overflowY"] = this.props.right_pane_overflow
-        }
+    let handle_left;
+    if (right_pane_ref && right_pane_ref.current) {
+        handle_left = right_pane_ref.current.offsetLeft - 10
+    }
+    else {
+        handle_left = left_width() + 75
+    }
+    let position_dict = {
+        position: "absolute",
+        left: handle_left
+    };
+    let left_div_style = {
+        width: left_width(),
+        height: props.available_height - props.bottom_margin,
+        flexDirection: "column",
+        overflow: "hidden",
+        paddingLeft: window.in_context ? 5 : 12
+    };
+    // noinspection JSSuspiciousNameCombination
+    let right_div_style = {
+        width: right_width(),
+        height: props.available_height - props.bottom_margin,
+        flexDirection: "column",
+        marginLeft: 10
+    };
+    let cname = "";
+    if (props.right_pane_overflow == "auto") {
+        cname = "contingent-scroll"
+    }
+    else {
+        right_div_style["overflowY"] = props.right_pane_overflow
+    }
 
-        let dstyle = this.props.hide_me ? {display: "none"} : {};
-        // let position_dict = {position: "relative", left: 0, top: (this.props.available_height - this.props.bottom_margin) / 2};
+    let dstyle = props.hide_me ? {display: "none"} : {};
 
-        let outer_style = {width: "100%"};
-        if (this.props.left_margin) {
-            outer_style["marginLeft"] = this.props.left_margin
-        }
-        return (
-            <div id={this.unique_id} className="d-flex flex-row horizontal-panes" style={outer_style} ref={this.top_ref}>
-                <div ref={this.left_pane_ref} style={left_div_style} className="res-viewer-resizer">
-                        {this.props.left_pane}
-                </div>
-                {this.props.show_handle &&
-                    <DragHandle position_dict={position_dict}
-                                onDrag={this._handleDrag}
-                                dragStart={this._handleDragStart}
-                                dragEnd={this._handleDragEnd}
-                                direction="x"
-                                iconSize={this.props.dragIconSize}
-                                useThinBar={true}
-                                barHeight={this.props.available_height - this.props.bottom_margin}
-
-                    />
-                }
-                <div ref={this.right_pane_ref} className={cname} style={right_div_style}>
-                    {this.props.right_pane}
-                </div>
-
+    let outer_style = {width: "100%"};
+    if (props.left_margin) {
+        outer_style["marginLeft"] = props.left_margin
+    }
+    return (
+        <div id={unique_id.current} className="d-flex flex-row horizontal-panes" style={outer_style} ref={top_ref}>
+            <div ref={left_pane_ref} style={left_div_style} className="res-viewer-resizer">
+                    {props.left_pane}
             </div>
-        )
-    }
+            {props.show_handle &&
+                <DragHandle position_dict={position_dict}
+                            onDrag={_handleDrag}
+                            dragStart={_handleDragStart}
+                            dragEnd={_handleDragEnd}
+                            direction="x"
+                            iconSize={props.dragIconSize}
+                            useThinBar={true}
+                            barHeight={props.available_height - props.bottom_margin}
+
+                />
+            }
+            <div ref={right_pane_ref} className={cname} style={right_div_style}>
+                {props.right_pane}
+            </div>
+
+        </div>
+    )
 }
+
+HorizontalPanes = memo(HorizontalPanes);
 
 HorizontalPanes.propTypes = {
     available_width: PropTypes.number,
@@ -391,69 +362,55 @@ HorizontalPanes.defaultProps = {
     dragIconSize: 20
 };
 
+function VerticalPanes(props) {
+    const top_ref = useRef(null);
 
-class VerticalPanes extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.top_ref = React.createRef();
-        this.top_pane_ref = React.createRef();
-        this.bottom_pane_ref = React.createRef();
-        this.scroll_bases = {};
-        this.old_bottom_height = 0;
-        this.old_top_height = 0;
-        this.unique_id = guid();
-        this.state = {
-            "current_height_fraction": this.props.initial_height_fraction,
-            "mounted": false
-        };
+    const top_pane_ref = useRef(null);
+    const bottom_pane_ref = useRef(null);
+    const scroll_bases = useRef({});
+
+    const old_bottom_height = useRef(0);
+    const old_top_height = useRef(0);
+    const unique_id = useRef(guid());
+
+    const [current_height_fraction, set_current_height_fraction] = useState(props.initial_height_fraction);
+
+    useEffect(() => {
+        notifySplitUpdate();
+    }, [current_height_fraction]);
+
+    function top_height() {
+        return props.available_height * current_height_fraction - 2.5
     }
 
-    componentDidMount() {
-        this.setState({"mounted": true});
-        window.addEventListener("resize", this.resize_to_window);
+    function bottom_height() {
+        return (1 - current_height_fraction) * props.available_height - 2.5
     }
 
-    componentDidUpdate() {
-        this.notifySplitUpate()
-    }
-
-    get top_height() {
-        return this.props.available_height * this.state.current_height_fraction - 2.5
-    }
-
-    get bottom_height() {
-        return (1 - this.state.current_height_fraction) * this.props.available_height - 2.5
-    }
-
-    notifySplitUpate() {
-        if (this.props.handleSplitUpdate != null && this.height_has_changed) {
-            this.old_top_height = this.top_height;
-            this.old_bottom_height = this.bottom_height;
-            this.props.handleSplitUpdate(this.top_height, this.bottom_height, this.state.current_height_fraction)
+    function notifySplitUpdate() {
+        if (props.handleSplitUpdate != null && height_has_changed()) {
+            old_top_height.current = top_height();
+            old_bottom_height.current = bottom_height();
+            props.handleSplitUpdate(top_height(), bottom_height(), current_height_fraction)
         }
     }
 
-    update_height_fraction(new_height_fraction) {
-        this.setState({"current_height_fraction": new_height_fraction});
+    function height_has_changed() {
+       return (top_height() != old_top_height.current) || (bottom_height() != old_bottom_height.current)
     }
 
-    get height_has_changed() {
-       return (this.top_height != this.old_top_height) || (this.bottom_height != this.old_bottom_height)
-    }
-
-    _handleDrag (e, ui, x, y, dx, dy){
-        let new_height_fraction = (y - this.top_pane_ref.current.offsetTop) / this.props.available_height;
+    function _handleDrag (e, ui, x, y, dx, dy){
+        let new_height_fraction = (y - top_pane_ref.current.offsetTop) / props.available_height;
         new_height_fraction = new_height_fraction > 1 ? 1 : new_height_fraction;
         new_height_fraction = new_height_fraction < 0 ? 0 : new_height_fraction;
-        this.update_height_fraction(new_height_fraction)
-     };
+        set_current_height_fraction(new_height_fraction)
+     }
 
-    _getSelectorElements() {
+    function _getSelectorElements() {
         let result = {};
-        if (this.props.scrollAdjustSelectors && this.top_ref && this.top_ref.current) {
-            for (let selector of this.props.scrollAdjustSelectors) {
-                let els = $(this.top_ref.current).find(selector);
+        if (props.scrollAdjustSelectors && top_ref && top_ref.current) {
+            for (let selector of props.scrollAdjustSelectors) {
+                let els = $(top_ref.current).find(selector);
                 if (els.length > 0) {
                     result[selector] = els[0]
                 }
@@ -462,89 +419,87 @@ class VerticalPanes extends React.Component {
         return result
     }
 
-    _resetScrolls() {
-        let selector_element_dict = this._getSelectorElements();
+    function _resetScrolls() {
+        let selector_element_dict = _getSelectorElements();
         for (let selector in selector_element_dict) {
             let el = selector_element_dict[selector];
-            el.scrollLeft = this.scroll_bases[selector].left;
-            el.scrollTop = this.scroll_bases[selector].top;
+            el.scrollLeft = scroll_bases.current[selector].left;
+            el.scrollTop = scroll_bases.current[selector].top;
         }
     }
 
-    _handleDragStart(e, ui, x, y, dx, dy) {
-        let selector_element_dict = this._getSelectorElements();
+    function _handleDragStart(e, ui, x, y, dx, dy) {
+        let selector_element_dict = _getSelectorElements();
         for (let selector in selector_element_dict) {
             let el = selector_element_dict[selector];
-            this.scroll_bases[selector] = {left: el.scrollLeft, top: el.scrollTop}
+            scroll_bases.current[selector] = {left: el.scrollLeft, top: el.scrollTop}
         }
-        if (this.props.handleResizeStart) {
-            this.props.handleResizeStart(e, ui, x, y, dx, dy)
+        if (props.handleResizeStart) {
+            props.handleResizeStart(e, ui, x, y, dx, dy)
         }
     }
 
-    _handleDragEnd(e, ui, x, y, dx, dy) {
-        let new_height_fraction = (y - this.top_pane_ref.current.offsetTop) / this.props.available_height;
+    function _handleDragEnd(e, ui, x, y, dx, dy) {
+        let new_height_fraction = (y - top_pane_ref.current.offsetTop) / props.available_height;
         new_height_fraction = new_height_fraction > 1 ? 1 : new_height_fraction;
         new_height_fraction = new_height_fraction < 0 ? 0 : new_height_fraction;
-        if (this.props.handleResizeEnd) {
-            this.props.handleResizeEnd(new_height_fraction);
+        if (props.handleResizeEnd) {
+            props.handleResizeEnd(new_height_fraction);
         }
-        this._resetScrolls();
+        _resetScrolls();
     }
 
+    let handle_top;
+    if (bottom_pane_ref && bottom_pane_ref.current) {
+        handle_top = bottom_pane_ref.current.offsetTop - 10
+    }
+    else {
+        handle_top = top_height() + 75
+    }
+    let position_dict = {
+        position: "absolute",
+        top: handle_top
+    };
+    let top_div_style = {
+        "width": props.available_width,
+        "height": top_height(),
+        overflowY: props.overflow
+    };
+    if (props.hide_top) {
+        top_div_style.display = "none";
+    }
+    let bottom_div_style = {
+        "width": props.available_width,
+        "height": bottom_height(),
+        overflowY: props.overflow,
+        marginTop: 10
 
-    render () {
-        let handle_top;
-        if (this.bottom_pane_ref && this.bottom_pane_ref.current) {
-            handle_top = this.bottom_pane_ref.current.offsetTop - 10
-        }
-        else {
-            handle_top = this.top_height + 75
-        }
-        let position_dict = {
-            position: "absolute",
-            top: handle_top
-        };
-        let top_div_style = {
-            "width": this.props.available_width,
-            "height": this.top_height,
-            // borderBottom: "0.5px solid rgb(238, 238, 238)",
-            overflowY: this.props.overflow
-        };
-        if (this.props.hide_top) {
-            top_div_style.display = "none";
-        }
-        let bottom_div_style = {
-            "width": this.props.available_width,
-            "height": this.bottom_height,
-            overflowY: this.props.overflow,
-            marginTop: 10
+    };
 
-        };
-
-        return (
-            <div id={this.unique_id} className="d-flex flex-column" ref={this.top_ref}>
-                <div ref={this.top_pane_ref} style={top_div_style}>
-                        {this.props.top_pane}
-                </div>
-                {this.props.show_handle &&
-                    <DragHandle position_dict={position_dict}
-                                onDrag={this._handleDrag}
-                                direction="y"
-                                iconSize={this.props.dragIconSize}
-                                dragStart={this._handleDragStart}
-                                dragEnd={this._handleDragEnd}
-                                useThinBar={true}
-                                barWidth={this.props.available_width}
-                    />
-                }
-                <div ref={this.bottom_pane_ref} style={bottom_div_style}>
-                        {this.props.bottom_pane}
-                </div>
+    return (
+        <div id={unique_id.current} className="d-flex flex-column" ref={top_ref}>
+            <div ref={top_pane_ref} style={top_div_style}>
+                    {props.top_pane}
             </div>
-        )
-    }
+            {props.show_handle &&
+                <DragHandle position_dict={position_dict}
+                            onDrag={_handleDrag}
+                            direction="y"
+                            iconSize={props.dragIconSize}
+                            dragStart={_handleDragStart}
+                            dragEnd={_handleDragEnd}
+                            useThinBar={true}
+                            barWidth={props.available_width}
+                />
+            }
+            <div ref={bottom_pane_ref} style={bottom_div_style}>
+                    {props.bottom_pane}
+            </div>
+        </div>
+    )
 }
+
+VerticalPanes = memo(VerticalPanes);
 
 VerticalPanes.propTypes = {
     available_width: PropTypes.number,

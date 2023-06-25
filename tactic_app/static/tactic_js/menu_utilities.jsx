@@ -1,80 +1,79 @@
 import React from "react";
+import {Fragment, useEffect, memo} from "react";
 import PropTypes from 'prop-types';
 
-import { Icon, MenuDivider, Menu, Navbar, Button, PopoverPosition, Classes } from "@blueprintjs/core";
+import {Icon, MenuDivider, Menu, Navbar, Button, PopoverPosition, Classes} from "@blueprintjs/core";
 import {Popover2, MenuItem2} from "@blueprintjs/popover2";
 
-import {doBinding} from "./utilities_react.js";
 import {KeyTrap} from "./key_trap";
 
 export {MenuComponent, ToolMenu, TacticMenubar, TopLeftButtons}
-import {GlyphButton} from "./blueprint_react_widgets.js";
+import {GlyphButton} from "./blueprint_react_widgets";
 
-class TacticMenubar extends React.Component {
-
-    render () {
-        let menus;
-        if (this.props.menu_specs == null) {
-            menus = this.props.menus
+function TacticMenubar(props) {
+    let menus;
+    if (props.menu_specs == null) {
+        menus = props.menus
+    } else {
+        menus = [];
+        for (let menu_name in props.menu_specs) {
+            menus.push(<ToolMenu menu_name={menu_name}
+                                 key={menu_name}
+                                 registerOmniGetter={props.registerOmniGetter}
+                                 disabled_items={props.disabled_items}
+                                 menu_items={props.menu_specs[menu_name]}
+                                 controlled={props.controlled}
+                                 am_selected={props.am_selected}
+            />)
         }
-        else {
-            menus = [];
-            for (let menu_name in this.props.menu_specs) {
-                menus.push(<ToolMenu menu_name={menu_name}
-                                     key={menu_name}
-                                     registerOmniGetter={this.props.registerOmniGetter}
-                                     disabled_items={this.props.disabled_items}
-                                     menu_items={this.props.menu_specs[menu_name]}
-                                     controlled={this.props.controlled}
-                                     am_selected={this.props.am_selected}
-                />)
-            }
-        }
-        let sug_glyphs = [];
-        for (let sg of this.props.suggestionGlyphs) {
-            sug_glyphs.push(<GlyphButton intent={sg.intent}
-                                         handleClick={sg.handleClick}
-                                         icon={sg.icon}/>)
-        }
-        const theme_class = this.props.dark_theme ? "bp4-dark" : "light-theme";
-        const name_style = {
-            marginButton: 0,
-            marginLeft: 10,
-            marginRight: 10,
-            display: "flex",
-            alignItems: "center",
-            fontWeight: "bold"
-        };
-        return (
-            <Navbar style={{paddingLeft: 3, height: 30, display: "flex"}} className={theme_class + " menu-bar"}>
-                {(this.props.showClose || this.props.showRefresh) &&
-                    <TopLeftButtons showRefresh={this.props.showRefresh}
-                                    showClose={this.props.showClose}
-                                    refreshTab={this.props.refreshTab}
-                                    closeTab={this.props.closeTab}
-                                    extraButtons={this.props.extraButtons}
-                    />
-                }
-                {this.props.resource_icon &&
-                    <Icon style={{marginTop: 6}} icon={this.props.resource_icon} iconSize={16} tabIndex={-1}/>
-                }
-                {this.props.resource_name &&
-                    <div style={name_style}>{this.props.resource_name}</div>
-                }
-                <div style={{height: 30}} className="bp4-navbar-group bp4-align-left">
-                            <React.Fragment>
-                                {menus}
-                                {sug_glyphs}
-                            </React.Fragment>
-                </div>
-                {this.props.showErrorDrawerButton &&
-                    <ErrorDrawerButton toggleErrorDrawer={this.props.toggleErrorDrawer}/>
-                }
-
-            </Navbar>
-        )
     }
+    let sug_glyphs = [];
+    for (let sg of props.suggestionGlyphs) {
+        sug_glyphs.push(<GlyphButton intent={sg.intent}
+                                     handleClick={sg.handleClick}
+                                     icon={sg.icon}/>)
+    }
+    const theme_class = props.dark_theme ? "bp4-dark" : "light-theme";
+    const name_style = {
+        marginButton: 0,
+        marginLeft: 10,
+        marginRight: 10,
+        display: "flex",
+        alignItems: "center",
+        fontWeight: "bold"
+    };
+    return (
+        <Navbar style={{paddingLeft: 3, height: 30, display: "flex"}} className={theme_class + " menu-bar"}>
+            {(props.showClose || props.showRefresh) &&
+                <TopLeftButtons showRefresh={props.showRefresh}
+                                showClose={props.showClose}
+                                refreshTab={props.refreshTab}
+                                closeTab={props.closeTab}
+                                extraButtons={props.extraButtons}
+                />
+            }
+            {props.resource_icon &&
+                <Icon style={{marginTop: 6}} icon={props.resource_icon} iconSize={16} tabIndex={-1}/>
+            }
+            {props.resource_name &&
+                <div style={name_style}>{props.resource_name}</div>
+            }
+            <div style={{height: 30}} className="bp4-navbar-group bp4-align-left">
+                <Fragment>
+                    {menus}
+                    {sug_glyphs}
+                </Fragment>
+            </div>
+            {props.showErrorDrawerButton &&
+                <ErrorDrawerButton toggleErrorDrawer={props.toggleErrorDrawer}/>
+            }
+
+        </Navbar>
+    )
 }
+
+TacticMenubar = memo(TacticMenubar);
+
 TacticMenubar.propTypes = {
     refreshTab: PropTypes.func,
     closeTab: PropTypes.func,
@@ -109,7 +108,7 @@ TacticMenubar.defaultProps = {
     suggestionGlyphs: []
 };
 
-function ErrorDrawerButton (props) {
+function ErrorDrawerButton(props) {
     let top_icon_style = {
         display: "flex",
         justifyContent: "flex-end",
@@ -120,82 +119,80 @@ function ErrorDrawerButton (props) {
         right: 10
     };
     return (<div style={top_icon_style}>
-                <Button icon={<Icon icon="drawer-right" iconSize={18} />}
-                        style={{paddingLeft: 4, paddingRight:0}}
+        <Button icon={<Icon icon="drawer-right" iconSize={18}/>}
+                style={{paddingLeft: 4, paddingRight: 0}}
+                minimal={true}
+                className="context-close-button"
+                small={true}
+                tabIndex={-1}
+                onClick={() => {
+                    props.toggleErrorDrawer()
+                }}
+        />
+    </div>)
+}
+
+ErrorDrawerButton = memo(ErrorDrawerButton);
+
+function TopLeftButtons(props) {
+    let top_icon_style = {
+        display: "flex",
+        justifyContent: "flex-start",
+        marginTop: 0,
+        paddingTop: 0,
+        marginRight: 8
+    };
+    let ebuttons = [];
+    if (props.extraButtons != null) {
+        props.extraButtons.map((but_info, index) => {
+            ebuttons.push(
+                <Button icon={<Icon icon={but_info.icon} iconSize={14}/>}
+                        style={{paddingLeft: 8}}
+                        minimal={true}
+                        className="context-close-button"
+                        small={true}
+                        key={index}
+                        tabIndex={-1}
+                        onClick={() => {
+                            but_info.onClick()
+                        }}
+                />)
+
+        })
+    }
+    return (
+        <div style={top_icon_style}>
+            {props.showClose &&
+                <Button icon={<Icon icon="delete" iconSize={14}/>}
+                        style={{paddingLeft: 4, paddingRight: 0}}
                         minimal={true}
                         className="context-close-button"
                         small={true}
                         tabIndex={-1}
+                        intent="danger"
                         onClick={() => {
-                             props.toggleErrorDrawer()
+                            props.closeTab()
                         }}
-                />
-            </div>)
+                />}
+            {props.showRefresh &&
+                <Button icon={<Icon icon="reset" iconSize={14}/>}
+                        style={{paddingLeft: 8}}
+                        minimal={true}
+                        className="context-close-button"
+                        small={true}
+                        tabIndex={-1} intent="danger"
+                        onClick={() => {
+                            props.refreshTab()
+                        }}
+                />}
+            {props.extraButtons &&
+                ebuttons
+            }
+        </div>
+    )
 }
 
-class TopLeftButtons extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this);
-    }
-    render() {
-        let top_icon_style = {
-            display: "flex",
-            justifyContent: "flex-start",
-            marginTop: 0,
-            paddingTop: 0,
-            marginRight: 8
-        };
-        let ebuttons = [];
-        if (this.props.extraButtons != null) {
-            this.props.extraButtons.map((but_info, index) => {
-                ebuttons.push(
-                    <Button icon={<Icon icon={but_info.icon} iconSize={14}/>}
-                            style={{paddingLeft: 8}}
-                            minimal={true}
-                            className="context-close-button"
-                            small={true}
-                            key={index}
-                            tabIndex={-1}
-                            onClick={() => {
-                             but_info.onClick()
-                         }}
-                />)
-
-            })
-        }
-        return (
-                <div style={top_icon_style}>
-                    {this.props.showClose &&
-                        <Button icon={<Icon icon="delete" iconSize={14}/>}
-                                style={{paddingLeft: 4, paddingRight: 0}}
-                                minimal={true}
-                                className="context-close-button"
-                                small={true}
-                                tabIndex={-1}
-                                intent="danger"
-                                onClick={() => {
-                                    this.props.closeTab()
-                                }}
-                        />}
-                    {this.props.showRefresh &&
-                        <Button icon={<Icon icon="reset" iconSize={14}/>}
-                             style={{paddingLeft: 8}}
-                             minimal={true}
-                             className="context-close-button"
-                             small={true}
-                             tabIndex={-1} intent="danger"
-                             onClick={() => {
-                                 this.props.refreshTab()
-                             }}
-                    />}
-                    {this.props.extraButtons &&
-                        ebuttons
-                    }
-                </div>
-        )
-    }
-}
+TopLeftButtons = memo(TopLeftButtons);
 
 TopLeftButtons.propTypes = {
     showRefresh: PropTypes.bool,
@@ -209,113 +206,113 @@ TopLeftButtons.defaultProps = {
     extraButtons: null
 };
 
-class MenuComponent extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.replacers = [
-            ["CTRL+", "^"],
-            ["COMMAND+", "⌘"]
-        ];
-        if (this.props.registerOmniGetter) {
-            this.props.registerOmniGetter(this.props.menu_name, this._getOmniItems)
+function MenuComponent(props) {
+    const replacers = [
+        ["CTRL+", "^"],
+        ["COMMAND+", "⌘"]
+    ];
+
+    useEffect(() => {
+        if (props.registerOmniGetter) {
+            props.registerOmniGetter(props.menu_name, _getOmniItems)
         }
+    }, []);
+
+    function _filter_on_match_list(opt_name) {
+        return !props.hidden_items.includes(opt_name)
     }
 
-     _filter_on_match_list(opt_name) {
-        return !this.props.hidden_items.includes(opt_name)
+    function _filter_on_disabled_list(opt_name) {
+        return !props.disable_all && !props.disabled_items.includes(opt_name)
     }
 
-    _filter_on_disabled_list(opt_name) {
-        return !this.props.disable_all && !this.props.disabled_items.includes(opt_name)
-    }
-
-    _bindingsToString(binding_list) {
+    function _bindingsToString(binding_list) {
         if (binding_list == null) {
             return null
         }
 
         let new_binding = binding_list[0];
 
-        for (let rep of this.replacers) {
+        for (let rep of replacers) {
+            // noinspection JSCheckFunctionSignatures
             new_binding = new_binding.toUpperCase().replace(rep[0], rep[1])
         }
 
         return <span style={{fontFamily: "system-ui"}}>{new_binding}</span>
     }
 
-    _getOmniItems() {
+    function _getOmniItems() {
         let omni_items = [];
-        let pruned_list = Object.keys(this.props.option_dict).filter(this._filter_on_match_list);
-        pruned_list = pruned_list.filter(this._filter_on_disabled_list);
+        let pruned_list = Object.keys(props.option_dict).filter(_filter_on_match_list);
+        pruned_list = pruned_list.filter(_filter_on_disabled_list);
         for (let choice of pruned_list) {
             if (choice.startsWith("divider")) continue;
-            let icon_name = this.props.icon_dict.hasOwnProperty(choice) ? this.props.icon_dict[choice] : null;
+            let icon_name = props.icon_dict.hasOwnProperty(choice) ? props.icon_dict[choice] : null;
             omni_items.push(
                 {
-                    category: this.props.menu_name,
+                    category: props.menu_name,
                     display_text: choice,
                     search_text: choice,
                     icon_name: icon_name,
-                    the_function: this.props.option_dict[choice]
+                    the_function: props.option_dict[choice]
                 }
             )
         }
         return omni_items
     }
 
-    render () {
-        let pruned_list = Object.keys(this.props.option_dict).filter(this._filter_on_match_list);
-        let choices = pruned_list.map((opt_name, index) => {
-                if (opt_name.startsWith("divider")) {
-                    return <MenuDivider key={index}/>
-                }
-                let icon = null;
-                if (this.props.icon_dict.hasOwnProperty(opt_name)) {
-                    icon = <Icon icon={this.props.icon_dict[opt_name]} size={14} />
-                }
-                let label = null;
-                if (opt_name in this.props.binding_dict) {
-                    label = this._bindingsToString(this.props.binding_dict[opt_name])
-                }
-                return (
-                    <MenuItem2 disabled={this.props.disable_all || this.props.disabled_items.includes(opt_name)}
-                              onClick={this.props.option_dict[opt_name]}
-                              icon={icon}
-                              labelElement={label}
-                              key={opt_name}
-                              text={opt_name}
-                              className={this.props.item_class}
-                    >
-                    </MenuItem2>
-                )
+    let pruned_list = Object.keys(props.option_dict).filter(_filter_on_match_list);
+    let choices = pruned_list.map((opt_name, index) => {
+            if (opt_name.startsWith("divider")) {
+                return <MenuDivider key={index}/>
             }
-        );
-        let the_menu = (
-            <Menu className={Classes.ELEVATION_1} >
-                {choices}
-            </Menu>
-        );
-        if (this.props.alt_button) {
-            let AltButton = this.props.alt_button;
-            return (<Popover2 minimal={true}
-                              content={the_menu}
-                              transitionDuration={150}
-                              position={this.props.position}>
-                <AltButton/>
-            </Popover2>)
-        } else {
+            let icon = null;
+            if (props.icon_dict.hasOwnProperty(opt_name)) {
+                icon = <Icon icon={props.icon_dict[opt_name]} size={14}/>
+            }
+            let label = null;
+            if (opt_name in props.binding_dict) {
+                label = _bindingsToString(props.binding_dict[opt_name])
+            }
             return (
-                <Popover2 minimal={true}
-                          content={the_menu}
-                          transitionDuration={150}
-                          position={this.props.position}>
-                    <Button text={this.props.menu_name} small={true} minimal={true}/>
-                </Popover2>
+                <MenuItem2 disabled={props.disable_all || props.disabled_items.includes(opt_name)}
+                           onClick={props.option_dict[opt_name]}
+                           icon={icon}
+                           labelElement={label}
+                           key={opt_name}
+                           text={opt_name}
+                           className={props.item_class}
+                >
+                </MenuItem2>
             )
         }
+    );
+    let the_menu = (
+        <Menu className={Classes.ELEVATION_1}>
+            {choices}
+        </Menu>
+    );
+    if (props.alt_button) {
+        let AltButton = props.alt_button;
+        return (<Popover2 minimal={true}
+                          content={the_menu}
+                          transitionDuration={150}
+                          position={props.position}>
+            <AltButton/>
+        </Popover2>)
+    } else {
+        return (
+            <Popover2 minimal={true}
+                      content={the_menu}
+                      transitionDuration={150}
+                      position={props.position}>
+                <Button text={props.menu_name} small={true} minimal={true}/>
+            </Popover2>
+        )
     }
 }
+
+MenuComponent = memo(MenuComponent);
 
 MenuComponent.propTypes = {
     menu_name: PropTypes.string,
@@ -344,65 +341,57 @@ MenuComponent.defaultProps = {
     registerOmniGetter: null
 };
 
-class ToolMenu extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this);
-    }
-
-    get option_dict () {
+function ToolMenu(props) {
+    function option_dict() {
         let opt_dict = {};
-        for (let but of this.props.menu_items) {
+        for (let but of props.menu_items) {
             opt_dict[but.name_text] = but.click_handler
         }
         return opt_dict
     }
 
-    get icon_dict () {
+    function icon_dict() {
         let icon_dict = {};
-        for (let but of this.props.menu_items) {
+        for (let but of props.menu_items) {
             icon_dict[but.name_text] = but.icon_name
         }
         return icon_dict
     }
 
-    get binding_dict() {
+    function binding_dict() {
         let binding_dict = {};
-        for (let but of this.props.menu_items) {
+        for (let but of props.menu_items) {
             if ("key_bindings" in but) {
                 binding_dict[but.name_text] = but.key_bindings
-            }
-            else {
+            } else {
                 binding_dict[but.name_text] = null
             }
 
         }
         return binding_dict
     }
-
-    render () {
-        let key_bindings = [];
-        for (let button of this.props.menu_items) {
-                if (button.hasOwnProperty("key_bindings"))
-                    key_bindings.push([button.key_bindings, ()=>button.click_handler()])
-        }
-        return (
-            <React.Fragment>
-                <MenuComponent menu_name={this.props.menu_name}
-                               option_dict={this.option_dict}
-                               icon_dict={this.icon_dict}
-                               binding_dict={this.binding_dict}
-                               disabled_items={this.props.disabled_items}
-                               registerOmniGetter={this.props.registerOmniGetter}
-                               hidden_items={[]}
-                />
-                <KeyTrap global={true}
-                         active={!this.props.controlled || this.props.am_selected}
-                         bindings={key_bindings} />
-            </React.Fragment>
-        )
+    let key_bindings = [];
+    for (let button of props.menu_items) {
+        if (button.hasOwnProperty("key_bindings"))
+            key_bindings.push([button.key_bindings, () => button.click_handler()])
     }
+    return (
+        <Fragment>
+            <MenuComponent menu_name={props.menu_name}
+                           option_dict={option_dict()}
+                           icon_dict={icon_dict()}
+                           binding_dict={binding_dict()}
+                           disabled_items={props.disabled_items}
+                           registerOmniGetter={props.registerOmniGetter}
+                           hidden_items={[]}
+            />
+            <KeyTrap global={true}
+                     active={!props.controlled || props.am_selected}
+                     bindings={key_bindings}/>
+        </Fragment>
+    )
 }
+ToolMenu = memo(ToolMenu);
 
 ToolMenu.propTypes = {
     menu_name: PropTypes.string,

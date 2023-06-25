@@ -56,25 +56,30 @@ function ResourceViewerApp(props) {
     const savedNotes = useRef(props.notes);
     const omniGetters = useRef({});
     const key_bindings = useRef([]);
-    if (!window.in_context) {
-        const [showOmnibar, setShowOmnibar] = useState(false)
-    }
 
-    useConstructor(() => {
-        initSocket();
+    // Only used when not in context
+    const [showOmnibar, setShowOmnibar] = useState(false);
 
-        if (props.registerOmniFunction) {
-            props.registerOmniFunction(_omniFunction);
-        }
+  useConstructor(() => {
+        var showOmnibar;
+        var setShowOmnibar;
         if (!window.in_context) {
             key_bindings.current = [
                 [["ctrl+space"], _showOmnibar],
             ];
         }
+        return
     });
 
     useEffect(() => {
-        props.stopSpinner()
+        initSocket();
+        props.stopSpinner();
+        if (props.registerOmniFunction) {
+            props.registerOmniFunction(_omniFunction);
+        }
+        return (() => {
+            tsocket.disconnect()
+        })
     }, []);
 
     function initSocket() {
@@ -175,14 +180,14 @@ function ResourceViewerApp(props) {
             {!window.in_context &&
                 <Fragment>
                     <TacticOmnibar omniGetters={[_omniFunction]}
-                                   showOmnibar={state.showOmnibar}
+                                   showOmnibar={showOmnibar}
                                    closeOmnibar={_closeOmnibar}
                                    is_authenticated={window.is_authenticated}
                                    dark_theme={props.dark_theme}
                                    setTheme={props.setTheme}
                                    page_id={props.resource_viewer_id}
                     />
-                    <KeyTrap global={true} bindings={key_bindings}/>
+                    <KeyTrap global={true} bindings={key_bindings.current}/>
                 </Fragment>
             }
         </Fragment>

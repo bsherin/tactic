@@ -4,118 +4,98 @@ function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" =
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.TopLeftButtons = exports.ToolMenu = exports.TacticMenubar = exports.MenuComponent = void 0;
-var _react = _interopRequireDefault(require("react"));
+exports.MenuComponent = MenuComponent;
+exports.TacticMenubar = TacticMenubar;
+exports.ToolMenu = ToolMenu;
+exports.TopLeftButtons = TopLeftButtons;
+var _react = _interopRequireWildcard(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
 var _popover = require("@blueprintjs/popover2");
-var _utilities_react = require("./utilities_react.js");
 var _key_trap = require("./key_trap");
-var _blueprint_react_widgets = require("./blueprint_react_widgets.js");
+var _blueprint_react_widgets = require("./blueprint_react_widgets");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
-function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-var TacticMenubar = /*#__PURE__*/function (_React$Component) {
-  _inherits(TacticMenubar, _React$Component);
-  var _super = _createSuper(TacticMenubar);
-  function TacticMenubar() {
-    _classCallCheck(this, TacticMenubar);
-    return _super.apply(this, arguments);
-  }
-  _createClass(TacticMenubar, [{
-    key: "render",
-    value: function render() {
-      var menus;
-      if (this.props.menu_specs == null) {
-        menus = this.props.menus;
-      } else {
-        menus = [];
-        for (var menu_name in this.props.menu_specs) {
-          menus.push( /*#__PURE__*/_react["default"].createElement(ToolMenu, {
-            menu_name: menu_name,
-            key: menu_name,
-            registerOmniGetter: this.props.registerOmniGetter,
-            disabled_items: this.props.disabled_items,
-            menu_items: this.props.menu_specs[menu_name],
-            controlled: this.props.controlled,
-            am_selected: this.props.am_selected
-          }));
-        }
-      }
-      var sug_glyphs = [];
-      var _iterator = _createForOfIteratorHelper(this.props.suggestionGlyphs),
-        _step;
-      try {
-        for (_iterator.s(); !(_step = _iterator.n()).done;) {
-          var sg = _step.value;
-          sug_glyphs.push( /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-            intent: sg.intent,
-            handleClick: sg.handleClick,
-            icon: sg.icon
-          }));
-        }
-      } catch (err) {
-        _iterator.e(err);
-      } finally {
-        _iterator.f();
-      }
-      var theme_class = this.props.dark_theme ? "bp4-dark" : "light-theme";
-      var name_style = {
-        marginButton: 0,
-        marginLeft: 10,
-        marginRight: 10,
-        display: "flex",
-        alignItems: "center",
-        fontWeight: "bold"
-      };
-      return /*#__PURE__*/_react["default"].createElement(_core.Navbar, {
-        style: {
-          paddingLeft: 3,
-          height: 30,
-          display: "flex"
-        },
-        className: theme_class + " menu-bar"
-      }, (this.props.showClose || this.props.showRefresh) && /*#__PURE__*/_react["default"].createElement(TopLeftButtons, {
-        showRefresh: this.props.showRefresh,
-        showClose: this.props.showClose,
-        refreshTab: this.props.refreshTab,
-        closeTab: this.props.closeTab,
-        extraButtons: this.props.extraButtons
-      }), this.props.resource_icon && /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-        style: {
-          marginTop: 6
-        },
-        icon: this.props.resource_icon,
-        iconSize: 16,
-        tabIndex: -1
-      }), this.props.resource_name && /*#__PURE__*/_react["default"].createElement("div", {
-        style: name_style
-      }, this.props.resource_name), /*#__PURE__*/_react["default"].createElement("div", {
-        style: {
-          height: 30
-        },
-        className: "bp4-navbar-group bp4-align-left"
-      }, /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, menus, sug_glyphs)), this.props.showErrorDrawerButton && /*#__PURE__*/_react["default"].createElement(ErrorDrawerButton, {
-        toggleErrorDrawer: this.props.toggleErrorDrawer
+function TacticMenubar(props) {
+  var menus;
+  if (props.menu_specs == null) {
+    menus = props.menus;
+  } else {
+    menus = [];
+    for (var menu_name in props.menu_specs) {
+      menus.push( /*#__PURE__*/_react["default"].createElement(ToolMenu, {
+        menu_name: menu_name,
+        key: menu_name,
+        registerOmniGetter: props.registerOmniGetter,
+        disabled_items: props.disabled_items,
+        menu_items: props.menu_specs[menu_name],
+        controlled: props.controlled,
+        am_selected: props.am_selected
       }));
     }
-  }]);
-  return TacticMenubar;
-}(_react["default"].Component);
-exports.TacticMenubar = TacticMenubar;
+  }
+  var sug_glyphs = [];
+  var _iterator = _createForOfIteratorHelper(props.suggestionGlyphs),
+    _step;
+  try {
+    for (_iterator.s(); !(_step = _iterator.n()).done;) {
+      var sg = _step.value;
+      sug_glyphs.push( /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+        intent: sg.intent,
+        handleClick: sg.handleClick,
+        icon: sg.icon
+      }));
+    }
+  } catch (err) {
+    _iterator.e(err);
+  } finally {
+    _iterator.f();
+  }
+  var theme_class = props.dark_theme ? "bp4-dark" : "light-theme";
+  var name_style = {
+    marginButton: 0,
+    marginLeft: 10,
+    marginRight: 10,
+    display: "flex",
+    alignItems: "center",
+    fontWeight: "bold"
+  };
+  return /*#__PURE__*/_react["default"].createElement(_core.Navbar, {
+    style: {
+      paddingLeft: 3,
+      height: 30,
+      display: "flex"
+    },
+    className: theme_class + " menu-bar"
+  }, (props.showClose || props.showRefresh) && /*#__PURE__*/_react["default"].createElement(TopLeftButtons, {
+    showRefresh: props.showRefresh,
+    showClose: props.showClose,
+    refreshTab: props.refreshTab,
+    closeTab: props.closeTab,
+    extraButtons: props.extraButtons
+  }), props.resource_icon && /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+    style: {
+      marginTop: 6
+    },
+    icon: props.resource_icon,
+    iconSize: 16,
+    tabIndex: -1
+  }), props.resource_name && /*#__PURE__*/_react["default"].createElement("div", {
+    style: name_style
+  }, props.resource_name), /*#__PURE__*/_react["default"].createElement("div", {
+    style: {
+      height: 30
+    },
+    className: "bp4-navbar-group bp4-align-left"
+  }, /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, menus, sug_glyphs)), props.showErrorDrawerButton && /*#__PURE__*/_react["default"].createElement(ErrorDrawerButton, {
+    toggleErrorDrawer: props.toggleErrorDrawer
+  }));
+}
+exports.TacticMenubar = TacticMenubar = /*#__PURE__*/(0, _react.memo)(TacticMenubar);
 TacticMenubar.propTypes = {
   refreshTab: _propTypes["default"].func,
   closeTab: _propTypes["default"].func,
@@ -178,71 +158,21 @@ function ErrorDrawerButton(props) {
     }
   }));
 }
-var TopLeftButtons = /*#__PURE__*/function (_React$Component2) {
-  _inherits(TopLeftButtons, _React$Component2);
-  var _super2 = _createSuper(TopLeftButtons);
-  function TopLeftButtons(props) {
-    var _this;
-    _classCallCheck(this, TopLeftButtons);
-    _this = _super2.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
-    return _this;
-  }
-  _createClass(TopLeftButtons, [{
-    key: "render",
-    value: function render() {
-      var _this2 = this;
-      var top_icon_style = {
-        display: "flex",
-        justifyContent: "flex-start",
-        marginTop: 0,
-        paddingTop: 0,
-        marginRight: 8
-      };
-      var ebuttons = [];
-      if (this.props.extraButtons != null) {
-        this.props.extraButtons.map(function (but_info, index) {
-          ebuttons.push( /*#__PURE__*/_react["default"].createElement(_core.Button, {
-            icon: /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-              icon: but_info.icon,
-              iconSize: 14
-            }),
-            style: {
-              paddingLeft: 8
-            },
-            minimal: true,
-            className: "context-close-button",
-            small: true,
-            key: index,
-            tabIndex: -1,
-            onClick: function onClick() {
-              but_info.onClick();
-            }
-          }));
-        });
-      }
-      return /*#__PURE__*/_react["default"].createElement("div", {
-        style: top_icon_style
-      }, this.props.showClose && /*#__PURE__*/_react["default"].createElement(_core.Button, {
+ErrorDrawerButton = /*#__PURE__*/(0, _react.memo)(ErrorDrawerButton);
+function TopLeftButtons(props) {
+  var top_icon_style = {
+    display: "flex",
+    justifyContent: "flex-start",
+    marginTop: 0,
+    paddingTop: 0,
+    marginRight: 8
+  };
+  var ebuttons = [];
+  if (props.extraButtons != null) {
+    props.extraButtons.map(function (but_info, index) {
+      ebuttons.push( /*#__PURE__*/_react["default"].createElement(_core.Button, {
         icon: /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-          icon: "delete",
-          iconSize: 14
-        }),
-        style: {
-          paddingLeft: 4,
-          paddingRight: 0
-        },
-        minimal: true,
-        className: "context-close-button",
-        small: true,
-        tabIndex: -1,
-        intent: "danger",
-        onClick: function onClick() {
-          _this2.props.closeTab();
-        }
-      }), this.props.showRefresh && /*#__PURE__*/_react["default"].createElement(_core.Button, {
-        icon: /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-          icon: "reset",
+          icon: but_info.icon,
           iconSize: 14
         }),
         style: {
@@ -251,17 +181,52 @@ var TopLeftButtons = /*#__PURE__*/function (_React$Component2) {
         minimal: true,
         className: "context-close-button",
         small: true,
+        key: index,
         tabIndex: -1,
-        intent: "danger",
         onClick: function onClick() {
-          _this2.props.refreshTab();
+          but_info.onClick();
         }
-      }), this.props.extraButtons && ebuttons);
+      }));
+    });
+  }
+  return /*#__PURE__*/_react["default"].createElement("div", {
+    style: top_icon_style
+  }, props.showClose && /*#__PURE__*/_react["default"].createElement(_core.Button, {
+    icon: /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+      icon: "delete",
+      iconSize: 14
+    }),
+    style: {
+      paddingLeft: 4,
+      paddingRight: 0
+    },
+    minimal: true,
+    className: "context-close-button",
+    small: true,
+    tabIndex: -1,
+    intent: "danger",
+    onClick: function onClick() {
+      props.closeTab();
     }
-  }]);
-  return TopLeftButtons;
-}(_react["default"].Component);
-exports.TopLeftButtons = TopLeftButtons;
+  }), props.showRefresh && /*#__PURE__*/_react["default"].createElement(_core.Button, {
+    icon: /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+      icon: "reset",
+      iconSize: 14
+    }),
+    style: {
+      paddingLeft: 8
+    },
+    minimal: true,
+    className: "context-close-button",
+    small: true,
+    tabIndex: -1,
+    intent: "danger",
+    onClick: function onClick() {
+      props.refreshTab();
+    }
+  }), props.extraButtons && ebuttons);
+}
+exports.TopLeftButtons = TopLeftButtons = /*#__PURE__*/(0, _react.memo)(TopLeftButtons);
 TopLeftButtons.propTypes = {
   showRefresh: _propTypes["default"].bool,
   showClose: _propTypes["default"].bool,
@@ -272,143 +237,114 @@ TopLeftButtons.propTypes = {
 TopLeftButtons.defaultProps = {
   extraButtons: null
 };
-var MenuComponent = /*#__PURE__*/function (_React$Component3) {
-  _inherits(MenuComponent, _React$Component3);
-  var _super3 = _createSuper(MenuComponent);
-  function MenuComponent(props) {
-    var _this3;
-    _classCallCheck(this, MenuComponent);
-    _this3 = _super3.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this3));
-    _this3.replacers = [["CTRL+", "^"], ["COMMAND+", "⌘"]];
-    if (_this3.props.registerOmniGetter) {
-      _this3.props.registerOmniGetter(_this3.props.menu_name, _this3._getOmniItems);
+function MenuComponent(props) {
+  var replacers = [["CTRL+", "^"], ["COMMAND+", "⌘"]];
+  (0, _react.useEffect)(function () {
+    if (props.registerOmniGetter) {
+      props.registerOmniGetter(props.menu_name, _getOmniItems);
     }
-    return _this3;
+  }, []);
+  function _filter_on_match_list(opt_name) {
+    return !props.hidden_items.includes(opt_name);
   }
-  _createClass(MenuComponent, [{
-    key: "_filter_on_match_list",
-    value: function _filter_on_match_list(opt_name) {
-      return !this.props.hidden_items.includes(opt_name);
+  function _filter_on_disabled_list(opt_name) {
+    return !props.disable_all && !props.disabled_items.includes(opt_name);
+  }
+  function _bindingsToString(binding_list) {
+    if (binding_list == null) {
+      return null;
     }
-  }, {
-    key: "_filter_on_disabled_list",
-    value: function _filter_on_disabled_list(opt_name) {
-      return !this.props.disable_all && !this.props.disabled_items.includes(opt_name);
+    var new_binding = binding_list[0];
+    for (var _i = 0, _replacers = replacers; _i < _replacers.length; _i++) {
+      var rep = _replacers[_i];
+      // noinspection JSCheckFunctionSignatures
+      new_binding = new_binding.toUpperCase().replace(rep[0], rep[1]);
     }
-  }, {
-    key: "_bindingsToString",
-    value: function _bindingsToString(binding_list) {
-      if (binding_list == null) {
-        return null;
+    return /*#__PURE__*/_react["default"].createElement("span", {
+      style: {
+        fontFamily: "system-ui"
       }
-      var new_binding = binding_list[0];
-      var _iterator2 = _createForOfIteratorHelper(this.replacers),
-        _step2;
-      try {
-        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-          var rep = _step2.value;
-          new_binding = new_binding.toUpperCase().replace(rep[0], rep[1]);
-        }
-      } catch (err) {
-        _iterator2.e(err);
-      } finally {
-        _iterator2.f();
-      }
-      return /*#__PURE__*/_react["default"].createElement("span", {
-        style: {
-          fontFamily: "system-ui"
-        }
-      }, new_binding);
-    }
-  }, {
-    key: "_getOmniItems",
-    value: function _getOmniItems() {
-      var omni_items = [];
-      var pruned_list = Object.keys(this.props.option_dict).filter(this._filter_on_match_list);
-      pruned_list = pruned_list.filter(this._filter_on_disabled_list);
-      var _iterator3 = _createForOfIteratorHelper(pruned_list),
-        _step3;
-      try {
-        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-          var choice = _step3.value;
-          if (choice.startsWith("divider")) continue;
-          var icon_name = this.props.icon_dict.hasOwnProperty(choice) ? this.props.icon_dict[choice] : null;
-          omni_items.push({
-            category: this.props.menu_name,
-            display_text: choice,
-            search_text: choice,
-            icon_name: icon_name,
-            the_function: this.props.option_dict[choice]
-          });
-        }
-      } catch (err) {
-        _iterator3.e(err);
-      } finally {
-        _iterator3.f();
-      }
-      return omni_items;
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var _this4 = this;
-      var pruned_list = Object.keys(this.props.option_dict).filter(this._filter_on_match_list);
-      var choices = pruned_list.map(function (opt_name, index) {
-        if (opt_name.startsWith("divider")) {
-          return /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, {
-            key: index
-          });
-        }
-        var icon = null;
-        if (_this4.props.icon_dict.hasOwnProperty(opt_name)) {
-          icon = /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-            icon: _this4.props.icon_dict[opt_name],
-            size: 14
-          });
-        }
-        var label = null;
-        if (opt_name in _this4.props.binding_dict) {
-          label = _this4._bindingsToString(_this4.props.binding_dict[opt_name]);
-        }
-        return /*#__PURE__*/_react["default"].createElement(_popover.MenuItem2, {
-          disabled: _this4.props.disable_all || _this4.props.disabled_items.includes(opt_name),
-          onClick: _this4.props.option_dict[opt_name],
-          icon: icon,
-          labelElement: label,
-          key: opt_name,
-          text: opt_name,
-          className: _this4.props.item_class
+    }, new_binding);
+  }
+  function _getOmniItems() {
+    var omni_items = [];
+    var pruned_list = Object.keys(props.option_dict).filter(_filter_on_match_list);
+    pruned_list = pruned_list.filter(_filter_on_disabled_list);
+    var _iterator2 = _createForOfIteratorHelper(pruned_list),
+      _step2;
+    try {
+      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+        var choice = _step2.value;
+        if (choice.startsWith("divider")) continue;
+        var icon_name = props.icon_dict.hasOwnProperty(choice) ? props.icon_dict[choice] : null;
+        omni_items.push({
+          category: props.menu_name,
+          display_text: choice,
+          search_text: choice,
+          icon_name: icon_name,
+          the_function: props.option_dict[choice]
         });
-      });
-      var the_menu = /*#__PURE__*/_react["default"].createElement(_core.Menu, {
-        className: _core.Classes.ELEVATION_1
-      }, choices);
-      if (this.props.alt_button) {
-        var AltButton = this.props.alt_button;
-        return /*#__PURE__*/_react["default"].createElement(_popover.Popover2, {
-          minimal: true,
-          content: the_menu,
-          transitionDuration: 150,
-          position: this.props.position
-        }, /*#__PURE__*/_react["default"].createElement(AltButton, null));
-      } else {
-        return /*#__PURE__*/_react["default"].createElement(_popover.Popover2, {
-          minimal: true,
-          content: the_menu,
-          transitionDuration: 150,
-          position: this.props.position
-        }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
-          text: this.props.menu_name,
-          small: true,
-          minimal: true
-        }));
       }
+    } catch (err) {
+      _iterator2.e(err);
+    } finally {
+      _iterator2.f();
     }
-  }]);
-  return MenuComponent;
-}(_react["default"].Component);
-exports.MenuComponent = MenuComponent;
+    return omni_items;
+  }
+  var pruned_list = Object.keys(props.option_dict).filter(_filter_on_match_list);
+  var choices = pruned_list.map(function (opt_name, index) {
+    if (opt_name.startsWith("divider")) {
+      return /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, {
+        key: index
+      });
+    }
+    var icon = null;
+    if (props.icon_dict.hasOwnProperty(opt_name)) {
+      icon = /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+        icon: props.icon_dict[opt_name],
+        size: 14
+      });
+    }
+    var label = null;
+    if (opt_name in props.binding_dict) {
+      label = _bindingsToString(props.binding_dict[opt_name]);
+    }
+    return /*#__PURE__*/_react["default"].createElement(_popover.MenuItem2, {
+      disabled: props.disable_all || props.disabled_items.includes(opt_name),
+      onClick: props.option_dict[opt_name],
+      icon: icon,
+      labelElement: label,
+      key: opt_name,
+      text: opt_name,
+      className: props.item_class
+    });
+  });
+  var the_menu = /*#__PURE__*/_react["default"].createElement(_core.Menu, {
+    className: _core.Classes.ELEVATION_1
+  }, choices);
+  if (props.alt_button) {
+    var AltButton = props.alt_button;
+    return /*#__PURE__*/_react["default"].createElement(_popover.Popover2, {
+      minimal: true,
+      content: the_menu,
+      transitionDuration: 150,
+      position: props.position
+    }, /*#__PURE__*/_react["default"].createElement(AltButton, null));
+  } else {
+    return /*#__PURE__*/_react["default"].createElement(_popover.Popover2, {
+      minimal: true,
+      content: the_menu,
+      transitionDuration: 150,
+      position: props.position
+    }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
+      text: props.menu_name,
+      small: true,
+      minimal: true
+    }));
+  }
+}
+exports.MenuComponent = MenuComponent = /*#__PURE__*/(0, _react.memo)(MenuComponent);
 MenuComponent.propTypes = {
   menu_name: _propTypes["default"].string,
   item_class: _propTypes["default"].string,
@@ -434,113 +370,92 @@ MenuComponent.defaultProps = {
   position: _core.PopoverPosition.BOTTOM_LEFT,
   registerOmniGetter: null
 };
-var ToolMenu = /*#__PURE__*/function (_React$Component4) {
-  _inherits(ToolMenu, _React$Component4);
-  var _super4 = _createSuper(ToolMenu);
-  function ToolMenu(props) {
-    var _this5;
-    _classCallCheck(this, ToolMenu);
-    _this5 = _super4.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this5));
-    return _this5;
+function ToolMenu(props) {
+  function option_dict() {
+    var opt_dict = {};
+    var _iterator3 = _createForOfIteratorHelper(props.menu_items),
+      _step3;
+    try {
+      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+        var but = _step3.value;
+        opt_dict[but.name_text] = but.click_handler;
+      }
+    } catch (err) {
+      _iterator3.e(err);
+    } finally {
+      _iterator3.f();
+    }
+    return opt_dict;
   }
-  _createClass(ToolMenu, [{
-    key: "option_dict",
-    get: function get() {
-      var opt_dict = {};
-      var _iterator4 = _createForOfIteratorHelper(this.props.menu_items),
-        _step4;
-      try {
-        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-          var but = _step4.value;
-          opt_dict[but.name_text] = but.click_handler;
-        }
-      } catch (err) {
-        _iterator4.e(err);
-      } finally {
-        _iterator4.f();
+  function icon_dict() {
+    var icon_dict = {};
+    var _iterator4 = _createForOfIteratorHelper(props.menu_items),
+      _step4;
+    try {
+      for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+        var but = _step4.value;
+        icon_dict[but.name_text] = but.icon_name;
       }
-      return opt_dict;
+    } catch (err) {
+      _iterator4.e(err);
+    } finally {
+      _iterator4.f();
     }
-  }, {
-    key: "icon_dict",
-    get: function get() {
-      var icon_dict = {};
-      var _iterator5 = _createForOfIteratorHelper(this.props.menu_items),
-        _step5;
-      try {
-        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-          var but = _step5.value;
-          icon_dict[but.name_text] = but.icon_name;
+    return icon_dict;
+  }
+  function binding_dict() {
+    var binding_dict = {};
+    var _iterator5 = _createForOfIteratorHelper(props.menu_items),
+      _step5;
+    try {
+      for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+        var but = _step5.value;
+        if ("key_bindings" in but) {
+          binding_dict[but.name_text] = but.key_bindings;
+        } else {
+          binding_dict[but.name_text] = null;
         }
-      } catch (err) {
-        _iterator5.e(err);
-      } finally {
-        _iterator5.f();
       }
-      return icon_dict;
+    } catch (err) {
+      _iterator5.e(err);
+    } finally {
+      _iterator5.f();
     }
-  }, {
-    key: "binding_dict",
-    get: function get() {
-      var binding_dict = {};
-      var _iterator6 = _createForOfIteratorHelper(this.props.menu_items),
-        _step6;
-      try {
-        for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-          var but = _step6.value;
-          if ("key_bindings" in but) {
-            binding_dict[but.name_text] = but.key_bindings;
-          } else {
-            binding_dict[but.name_text] = null;
-          }
-        }
-      } catch (err) {
-        _iterator6.e(err);
-      } finally {
-        _iterator6.f();
-      }
-      return binding_dict;
+    return binding_dict;
+  }
+  var key_bindings = [];
+  var _iterator6 = _createForOfIteratorHelper(props.menu_items),
+    _step6;
+  try {
+    var _loop = function _loop() {
+      var button = _step6.value;
+      if (button.hasOwnProperty("key_bindings")) key_bindings.push([button.key_bindings, function () {
+        return button.click_handler();
+      }]);
+    };
+    for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+      _loop();
     }
-  }, {
-    key: "render",
-    value: function render() {
-      var key_bindings = [];
-      var _iterator7 = _createForOfIteratorHelper(this.props.menu_items),
-        _step7;
-      try {
-        var _loop = function _loop() {
-          var button = _step7.value;
-          if (button.hasOwnProperty("key_bindings")) key_bindings.push([button.key_bindings, function () {
-            return button.click_handler();
-          }]);
-        };
-        for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
-          _loop();
-        }
-      } catch (err) {
-        _iterator7.e(err);
-      } finally {
-        _iterator7.f();
-      }
-      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(MenuComponent, {
-        menu_name: this.props.menu_name,
-        option_dict: this.option_dict,
-        icon_dict: this.icon_dict,
-        binding_dict: this.binding_dict,
-        disabled_items: this.props.disabled_items,
-        registerOmniGetter: this.props.registerOmniGetter,
-        hidden_items: []
-      }), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
-        global: true,
-        active: !this.props.controlled || this.props.am_selected,
-        bindings: key_bindings
-      }));
-    }
-  }]);
-  return ToolMenu;
-}(_react["default"].Component);
-exports.ToolMenu = ToolMenu;
+  } catch (err) {
+    _iterator6.e(err);
+  } finally {
+    _iterator6.f();
+  }
+  return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(MenuComponent, {
+    menu_name: props.menu_name,
+    option_dict: option_dict(),
+    icon_dict: icon_dict(),
+    binding_dict: binding_dict(),
+    disabled_items: props.disabled_items,
+    registerOmniGetter: props.registerOmniGetter,
+    hidden_items: []
+  }), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
+    global: true,
+    active: !props.controlled || props.am_selected,
+    bindings: key_bindings
+  }));
+}
+exports.ToolMenu = ToolMenu = /*#__PURE__*/(0, _react.memo)(ToolMenu);
 ToolMenu.propTypes = {
   menu_name: _propTypes["default"].string,
   menu_items: _propTypes["default"].array,

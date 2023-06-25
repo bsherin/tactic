@@ -18,9 +18,9 @@ const mdi = markdownIt({html: true});
 mdi.use(markdownItLatex);
 import _ from 'lodash';
 
-import {postAjaxPromise} from "./communication_react.js"
-import {propsAreEqual} from "./utilities_react.js";
-import {tile_icon_dict} from "./icon_info.js";
+import {postAjaxPromise} from "./communication_react"
+import {propsAreEqual} from "./utilities_react";
+import {tile_icon_dict} from "./icon_info";
 
 export {icon_dict};
 export {NotesField, CombinedMetadata, BpSelect, BpSelectAdvanced}

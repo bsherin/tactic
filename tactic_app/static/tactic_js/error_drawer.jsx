@@ -1,185 +1,179 @@
-
 import React from "react";
+import {Fragment, useState, useEffect, useRef, memo} from "react";
 import PropTypes from 'prop-types';
 
-import { Card, Elevation, Drawer, Classes, Button} from "@blueprintjs/core";
+import {Card, Elevation, Drawer, Classes, Button} from "@blueprintjs/core";
 
 import {Status} from "./toaster.js";
-import {doBinding} from "./utilities_react.js";
 import {postWithCallback} from "./communication_react.js";
 import {GlyphButton} from "./blueprint_react_widgets";
 
 export {withErrorDrawer, ErrorItem}
 
-function withErrorDrawer(WrappedComponent, title=null, position="right", size="30%") {
-    // noinspection JSPotentiallyInvalidUsageOfThis
-    return class extends React.Component {
-        constructor(props) {
-            super(props);
-            doBinding(this);
-            this.state = {
-                show_drawer: false,
-                contents: {},
-                error_drawer_size: size,
-                position: position,
-                goToLineNumber: null,
-            };
-            this.socket_counter = null;
-            this.ucounter = 0;
-            this.local_id = this.props.main_id ? this.props.main_id : this.props.library_id;
+function withErrorDrawer(WrappedComponent, title = null, position = "right", size = "30%") {
+    function newFunction(props) {
+        const [show_drawer, set_show_drawer] = useState(false);
+        const [contents, set_contents] = useState({});
+        const [error_drawer_size, set_error_drawer_size] = useState(size);
+        const [position, set_position] = useState(position);
+        const [goToLineNumber, setGoToLineNumber] = useState(null);
+
+        const socket_counter = useRef(null);
+        const ucounter = useRef(0);
+        const local_id = useRef(props.main_id ? props.main_id : props.library_id);
+
+        useEffect(() => {
+            initSocket()
+        }, []);
+
+        function initSocket() {
+            props.tsocket.attachListener('close-error-drawer', _close);
+            props.tsocket.attachListener('open-error-drawer', _open);
+            props.tsocket.attachListener('add-error-drawer-entry', _addEntry);
+            props.tsocket.attachListener("clear-error-drawer", _clearAll);
         }
 
-        componentDidMount() {
-            if (this.props.tsocket) {
-                this.initSocket()
+        function _close(data) {
+            if (data == null || !("main_id" in data) || (data.main_id == local_id.current)) {
+                set_show_drawer(false)
             }
         }
 
-        initSocket() {
-            this.props.tsocket.attachListener('close-error-drawer', this._close);
-            this.props.tsocket.attachListener('open-error-drawer', this._open);
-            this.props.tsocket.attachListener('add-error-drawer-entry', this._addEntry);
-            this.props.tsocket.attachListener("clear-error-drawer", this._clearAll);
-        }
-
-        _close(data) {
-            if (data == null || !("main_id" in data) || (data.main_id == this.local_id)) {
-                this.setState({show_drawer: false})
+        function _open(data) {
+            if (data == null || !("main_id" in data) || (data.main_id == local_id.current)) {
+                set_show_drawer(true)
             }
         }
 
-        _open(data) {
-            if (data == null || !("main_id" in data) || (data.main_id == this.local_id)) {
-                this.setState({show_drawer: true})
+        function _toggle(data) {
+            if (data == null || !("main_id" in data) || (data.main_id == local_id.current)) {
+                set_show_drawer(!show_drawer)
             }
         }
 
-        _toggle(data) {
-            if (data == null || !("main_id" in data) || (data.main_id == this.local_id)) {
-                this.setState({show_drawer: !this.state.show_drawer})
+        function _addEntry(data, open = true) {
+            if (data == null || !("main_id" in data) || (data.main_id == local_id.current)) {
+                ucounter.current = ucounter.current + 1;
+                const newcontents = {...contents};
+                newcontents[String(ucounter.current)] = data;
+                set_contents(newcontents);
+                set_show_drawer(open);
             }
         }
 
-        _addEntry(data, open=true) {
-            if (data == null || !("main_id" in data) || (data.main_id == this.local_id)) {
-                this.ucounter = this.ucounter + 1;
-                const newcontents = {... this.state.contents};
-                newcontents[String(this.ucounter)] = data;
-                this.setState({contents: newcontents, show_drawer: open})
-            }
-        }
-
-        _closeEntry(ukey) {
-            const newcontents = {... this.state.contents};
+        function _closeEntry(ukey) {
+            const newcontents = {...contents};
             delete newcontents[ukey];
-            this.setState({contents: newcontents, show_drawer: open})
+            set_contents(newcontents);
+            set_show_drawer(open)
         }
 
-        _postAjaxFailure(qXHR, textStatus, errorThrown) {
-            this._addEntry({ title: "Post Ajax Failure: {}".format(textStatus),
-                content: errorThrown})
+        function _postAjaxFailure(qXHR, textStatus, errorThrown) {
+            _addEntry({
+                title: "Post Ajax Failure: {}".format(textStatus),
+                content: errorThrown
+            })
         }
 
 
-        _clearAll(data) {
-            if (data == null || !("main_id" in data) || (data.main_id == this.props.main_id)) {
-                this.setState({contents: [], show_drawer: false})
+        function _clearAll(data) {
+            if (data == null || !("main_id" in data) || (data.main_id == props.main_id)) {
+                set_contents([]);
+                set_show_drawer(false)
             }
         }
 
-       _onClose() {
-            this.setState({"show_drawer": false})
-        }
-        
-        _setGoToLineNumber(gtfunc) {
-            this.setState({goToLineNumber: gtfunc})
+        function _onClose() {
+            set_show_drawer(false);
         }
 
-        render() {
-            let errorDrawerFuncs = {
-                openErrorDrawer: this._open,
-                closeErrorDrawer: this._close,
-                clearErrorDrawer: this._clearAll,
-                addErrorDrawerEntry: this._addEntry,
-                postAjaxFailure: this._postAjaxFailure,
-                toggleErrorDrawer: this._toggle,
-                setGoToLineNumber: this._setGoToLineNumber
-            };
-            return (
-                <React.Fragment>
-                    <WrappedComponent {...this.props}
-                                      {...errorDrawerFuncs}
-                                      errorDrawerFuncs={errorDrawerFuncs}
-                    />
-                    <ErrorDrawer {...this.state}
-                                 local_id={this.local_id}
-                                 handleCloseItem={this._closeEntry}
-                                 goToLineNumberFunc={this.state.goToLineNumber}
-                                 goToModule={this.props.goToModule}
-                                 closeErrorDrawer={this._close}
-                                 title="Error Drawer"
-                                 dark_theme={this.props.controlled ? this.props.dark_theme : window.dark_theme}
-                                 size={this.state.error_drawer_size}
-                                 onClose={this._onClose}
-                                 clearAll={this._clearAll}/>
-                </React.Fragment>
-            )
+        function _setGoToLineNumber(gtfunc) {
+            setGoToLineNumber(gtfunc)
         }
+
+        let errorDrawerFuncs = {
+            openErrorDrawer: _open,
+            closeErrorDrawer: _close,
+            clearErrorDrawer: _clearAll,
+            addErrorDrawerEntry: _addEntry,
+            postAjaxFailure: _postAjaxFailure,
+            toggleErrorDrawer: _toggle,
+            setGoToLineNumber: _setGoToLineNumber
+        };
+        const the_state = {
+            show_drawer, contents, error_drawer_size, position, goToLineNumber
+        };
+        return (
+            <Fragment>
+                <WrappedComponent {...props}
+                                  {...errorDrawerFuncs}
+                                  errorDrawerFuncs={errorDrawerFuncs}
+                />
+                <ErrorDrawer {...the_state}
+                             local_id={local_id.current}
+                             handleCloseItem={_closeEntry}
+                             goToLineNumberFunc={goToLineNumber}
+                             goToModule={props.goToModule}
+                             closeErrorDrawer={_close}
+                             title="Error Drawer"
+                             dark_theme={props.controlled ? props.dark_theme : window.dark_theme}
+                             size={error_drawer_size}
+                             onClose={_onClose}
+                             clearAll={_clearAll}/>
+            </Fragment>
+        )
     }
+    return memo(newFunction)
 }
 
-class ErrorItem extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this);
-    }
+function ErrorItem(props) {
 
-    _openError() {
+    function _openError() {
         // This first condition will be true if this error drawer is in the tile creator
-        if (this.props.goToLineNumberFunc) {
-            this.props.goToLineNumberFunc(this.props.line_number)
-        }
-        else {
+        if (props.goToLineNumberFunc) {
+            props.goToLineNumberFunc(props.line_number)
+        } else {
             if (!window.in_context) {
                 window.blur();
                 postWithCallback("host", "go_to_module_viewer_if_exists",
                     {
                         user_id: window.user_id,
-                        tile_type: this.props.tile_type,
-                        line_number: this.props.line_number
+                        tile_type: props.tile_type,
+                        line_number: props.line_number
                     }, (data) => {
                         if (!data.success) {
-                            window.open($SCRIPT_ROOT + "/view_location_in_creator/" + this.props.tile_type + "/" + this.props.line_number);
+                            window.open($SCRIPT_ROOT + "/view_location_in_creator/" + props.tile_type + "/" + props.line_number);
                         } else {
                             window.open("", data.window_name)
                         }
-                    }, null, this.props.local_id)
-            }
-            else {
-                this.props.closeErrorDrawer();
-                this.props.goToModule(this.props.tile_type, this.props.line_number)
+                    }, null, props.local_id)
+            } else {
+                props.closeErrorDrawer();
+                props.goToModule(props.tile_type, props.line_number)
             }
         }
     }
 
-    render () {
-        let content_dict = {__html: this.props.content};
-        return(
-            <Card interactive={true} elevation={Elevation.TWO} style={{marginBottom: 5, position: "relative"}}>
-                {this.props.title &&
-                    <h6 style={{overflow: "auto"}}><a href="#">{this.props.title}</a></h6>
-                }
-                <GlyphButton handleClick={()=>{this.props.handleCloseItem(this.props.ukey)}}
-                             style={{position: "absolute", right: 5, top: 5}}
-                             icon="cross" />
-                <div style={{fontSize: 13, overflow: "auto"}} dangerouslySetInnerHTML={content_dict}/>
-                {this.props.has_link && <Button text="show" icon="eye-open" small={true} onClick={this._openError}/>
-                }
+    let content_dict = {__html: props.content};
+    return (
+        <Card interactive={true} elevation={Elevation.TWO} style={{marginBottom: 5, position: "relative"}}>
+            {props.title &&
+                <h6 style={{overflow: "auto"}}><a href="#">{props.title}</a></h6>
+            }
+            <GlyphButton handleClick={() => {
+                props.handleCloseItem(props.ukey)
+            }}
+                         style={{position: "absolute", right: 5, top: 5}}
+                         icon="cross"/>
+            <div style={{fontSize: 13, overflow: "auto"}} dangerouslySetInnerHTML={content_dict}/>
+            {props.has_link && <Button text="show" icon="eye-open" small={true} onClick={_openError}/>
+            }
 
-            </Card>
-        )
-    }
+        </Card>
+    )
 }
+
+ErrorItem = memo(ErrorItem);
 
 ErrorItem.propTypes = {
     ukey: PropTypes.string,
@@ -200,52 +194,53 @@ ErrorItem.defaultProps = {
     tile_type: null
 };
 
-class ErrorDrawer extends React.Component {
-    render () {
-        let sorted_keys = [...Object.keys(this.props.contents)];
-        sorted_keys.sort(function(a, b) {
-            return parseInt(b) - parseInt(a);
-        });
-        let items = sorted_keys.map((ukey, index)=>{
-            let entry = this.props.contents[ukey];
-            let content_dict = {__html: entry.content};
-            let has_link = false;
-            if (entry.hasOwnProperty("line_number")) {
-                has_link = true;
-            }
-            return(
-                <ErrorItem ukey={ukey} title={entry.title} content={entry.content} has_link={has_link}
-                           local_id={this.props.local_id}
-                           handleCloseItem={this.props.handleCloseItem}
-                           goToLineNumberFunc={this.props.goToLineNumberFunc}
-                           closeErrorDrawer={this.props.closeErrorDrawer}
-                           goToModule={this.props.goToModule}
-                           line_number={entry.line_number} tile_type={entry.tile_type}/>
-            )
-        });
+function ErrorDrawer(props) {
+
+    let sorted_keys = [...Object.keys(props.contents)];
+    sorted_keys.sort(function (a, b) {
+        return parseInt(b) - parseInt(a);
+    });
+    let items = sorted_keys.map((ukey, index) => {
+        let entry = props.contents[ukey];
+        let content_dict = {__html: entry.content};
+        let has_link = false;
+        if (entry.hasOwnProperty("line_number")) {
+            has_link = true;
+        }
         return (
-            <Drawer
-                    icon="console"
-                    className={this.props.dark_theme ? "bp4-dark" : "light-theme"}
-                    title={this.props.title}
-                    isOpen={this.props.show_drawer}
-                    position={this.props.position}
-                    canOutsideClickClose={true}
-                    onClose={this.props.onClose}
-                    size={this.props.size}
-                >
-                <div className={Classes.DRAWER_BODY}>
-                    <div className="d-flex flex-row justify-content-around mt-2">
-                        <Button text="Clear All" onClick={this.props.clearAll}/>
-                    </div>
-                    <div className={Classes.DIALOG_BODY}>
-                        {items}
-                    </div>
-                </div>
-            </Drawer>
+            <ErrorItem ukey={ukey} title={entry.title} content={entry.content} has_link={has_link}
+                       local_id={props.local_id}
+                       handleCloseItem={props.handleCloseItem}
+                       goToLineNumberFunc={props.goToLineNumberFunc}
+                       closeErrorDrawer={props.closeErrorDrawer}
+                       goToModule={props.goToModule}
+                       line_number={entry.line_number} tile_type={entry.tile_type}/>
         )
-    }
+    });
+    return (
+        <Drawer
+            icon="console"
+            className={props.dark_theme ? "bp4-dark" : "light-theme"}
+            title={props.title}
+            isOpen={props.show_drawer}
+            position={props.position}
+            canOutsideClickClose={true}
+            onClose={props.onClose}
+            size={props.size}
+        >
+            <div className={Classes.DRAWER_BODY}>
+                <div className="d-flex flex-row justify-content-around mt-2">
+                    <Button text="Clear All" onClick={props.clearAll}/>
+                </div>
+                <div className={Classes.DIALOG_BODY}>
+                    {items}
+                </div>
+            </div>
+        </Drawer>
+    )
 }
+
+ErrorDrawer = memo(ErrorDrawer);
 
 Status.propTypes = {
     show_drawer: PropTypes.bool,

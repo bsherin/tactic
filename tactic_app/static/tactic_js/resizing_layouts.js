@@ -1,224 +1,142 @@
 "use strict";
 
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.DragHandle = exports.HANDLE_WIDTH = exports.VerticalPanes = exports.HorizontalPanes = void 0;
-
-var _react = _interopRequireDefault(require("react"));
-
+exports.DragHandle = DragHandle;
+exports.HANDLE_WIDTH = void 0;
+exports.HorizontalPanes = HorizontalPanes;
+exports.VerticalPanes = VerticalPanes;
+var _react = _interopRequireWildcard(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
-
 var _core = require("@blueprintjs/core");
-
 var _reactDraggable = require("react-draggable");
-
 var _utilities_react = require("./utilities_react.js");
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 var MARGIN_SIZE = 17;
 var HANDLE_WIDTH = 10;
 exports.HANDLE_WIDTH = HANDLE_WIDTH;
-
-var DragHandle = /*#__PURE__*/function (_React$Component) {
-  _inherits(DragHandle, _React$Component);
-
-  var _super = _createSuper(DragHandle);
-
-  function DragHandle(props) {
-    var _this;
-
-    _classCallCheck(this, DragHandle);
-
-    _this = _super.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
-    _this.startX = null;
-    _this.startY = null;
-    _this.lastX = null;
-    _this.lastY = null;
-    return _this;
+function DragHandle(props) {
+  var startX = (0, _react.useRef)(null);
+  var startY = (0, _react.useRef)(null);
+  var lastX = (0, _react.useRef)(null);
+  var lastY = (0, _react.useRef)(null);
+  var icon_dict = {
+    x: "drag-handle-vertical",
+    y: "drag-handle-horizontal",
+    both: "caret-right"
+  };
+  function _dragStart(e, ui) {
+    startX.current = getMouseX(e);
+    startY.current = getMouseY(e);
+    lastX.current = startX.current;
+    lastY.current = startY.current;
+    if (props.dragStart) {
+      props.dragStart(e, ui, startX.current, startY.current);
+    }
+    e.preventDefault();
   }
-
-  _createClass(DragHandle, [{
-    key: "icon_dict",
-    get: function get() {
-      return {
-        x: "drag-handle-vertical",
-        y: "drag-handle-horizontal",
-        both: "caret-right"
-      };
+  function _onDrag(e, ui) {
+    if (props.direction == "y") {
+      lastX.current = startX.current;
+    } else {
+      lastX.current = getMouseX(e);
     }
-  }, {
-    key: "_dragStart",
-    value: function _dragStart(e, ui) {
-      this.startX = this.getMouseX(e);
-      this.startY = this.getMouseY(e);
-      this.lastX = this.startX;
-      this.lastY = this.startY;
-
-      if (this.props.dragStart) {
-        this.props.dragStart(e, ui, this.startX, this.startY);
-      }
-
-      e.preventDefault();
+    if (props.direction == "x") {
+      lastY.current = startY.current;
+    } else {
+      lastY.current = getMouseY(e);
     }
-  }, {
-    key: "_onDrag",
-    value: function _onDrag(e, ui) {
-      if (this.props.direction == "y") {
-        this.lastX = this.startX;
-      } else {
-        this.lastX = this.getMouseX(e);
-      }
-
-      if (this.props.direction == "x") {
-        this.lastY = this.startY;
-      } else {
-        this.lastY = this.getMouseY(e);
-      }
-
-      var dx = this.lastX - this.startX;
-      var dy = this.lastY - this.startY;
-
-      if (this.props.onDrag) {
-        this.props.onDrag(e, ui, this.lastX, this.lastY, dx, dy);
-      }
-
-      e.preventDefault();
+    var dx = lastX.current - startX.current;
+    var dy = lastY.current - startY.current;
+    if (props.onDrag) {
+      props.onDrag(e, ui, lastX.current, lastY.current, dx, dy);
     }
-  }, {
-    key: "_dragEnd",
-    value: function _dragEnd(e, ui) {
-      if (this.props.direction == "y") {
-        this.lastX = this.startX;
-      } else {
-        this.lastX = this.getMouseX(e);
-      }
-
-      if (this.props.direction == "x") {
-        this.lastY = this.startY;
-      } else {
-        this.lastY = this.getMouseY(e);
-      }
-
-      var dx = this.lastX - this.startX;
-      var dy = this.lastY - this.startY;
-
-      if (this.props.dragEnd) {
-        this.props.dragEnd(e, ui, this.lastX, this.lastY, dx, dy);
-      }
-
-      e.preventDefault();
+    e.preventDefault();
+  }
+  function _dragEnd(e, ui) {
+    if (props.direction == "y") {
+      lastX.current = startX.current;
+    } else {
+      lastX.current = getMouseX(e);
     }
-  }, {
-    key: "getMouseX",
-    value: function getMouseX(e) {
-      if (e.type == "touchend") return null;
-
-      if (e.type == "touchmove" || e.type == "touchstart") {
-        return e.touches[0].clientX;
-      } else {
-        return e.clientX;
-      }
+    if (props.direction == "x") {
+      lastY.current = startY.current;
+    } else {
+      lastY.current = getMouseY(e);
     }
-  }, {
-    key: "getMouseY",
-    value: function getMouseY(e) {
-      if (e.type == "touchend") return null;
-
-      if (e.type == "touchmove" || e.type == "touchstart") {
-        return e.touches[0].clientY;
-      } else {
-        return e.clientY;
-      }
+    var dx = lastX.current - startX.current;
+    var dy = lastY.current - startY.current;
+    if (props.dragEnd) {
+      props.dragEnd(e, ui, lastX.current, lastY.current, dx, dy);
     }
-  }, {
-    key: "cursor_dict",
-    get: function get() {
-      return {
-        x: "ew-resize",
-        y: "ns-resize",
-        both: "se-resize"
-      };
+    e.preventDefault();
+  }
+  function getMouseX(e) {
+    if (e.type == "touchend") return null;
+    if (e.type == "touchmove" || e.type == "touchstart") {
+      return e.touches[0].clientX;
+    } else {
+      return e.clientX;
     }
-  }, {
-    key: "render",
-    value: function render() {
-      var style = this.props.position_dict;
-      style.cursor = this.cursor_dict[this.props.direction];
-
-      if (this.props.direction == "both") {
-        style.transform = "rotate(45deg)";
-      }
-
-      var wrappedElement;
-
-      if (this.props.useThinBar) {
-        var the_class = this.props.direction == "x" ? "resize-border" : "horizontal-resize-border";
-
-        if (this.props.barHeight != null) {
-          style.height = this.props.barHeight;
-        }
-
-        if (this.props.barWidth != null) {
-          style.width = this.props.barWidth;
-        }
-
-        wrappedElement = /*#__PURE__*/_react["default"].createElement("div", {
-          className: the_class,
-          style: style
-        });
-      } else {
-        wrappedElement = /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-          icon: this.icon_dict[this.props.direction],
-          iconSize: this.props.iconSize,
-          style: style
-        });
-      }
-
-      return /*#__PURE__*/_react["default"].createElement(_reactDraggable.DraggableCore, {
-        onStart: this._dragStart,
-        onStop: this._dragEnd,
-        onDrag: this._onDrag,
-        grid: [5, 5],
-        scale: 1
-      }, wrappedElement);
+  }
+  function getMouseY(e) {
+    if (e.type == "touchend") return null;
+    if (e.type == "touchmove" || e.type == "touchstart") {
+      return e.touches[0].clientY;
+    } else {
+      return e.clientY;
     }
-  }]);
-
-  return DragHandle;
-}(_react["default"].Component);
-
-exports.DragHandle = DragHandle;
+  }
+  var cursor_dict = {
+    x: "ew-resize",
+    y: "ns-resize",
+    both: "se-resize"
+  };
+  var style = props.position_dict;
+  style.cursor = cursor_dict[props.direction];
+  if (props.direction == "both") {
+    style.transform = "rotate(45deg)";
+  }
+  var wrappedElement;
+  if (props.useThinBar) {
+    var the_class = props.direction == "x" ? "resize-border" : "horizontal-resize-border";
+    if (props.barHeight != null) {
+      style.height = props.barHeight;
+    }
+    if (props.barWidth != null) {
+      style.width = props.barWidth;
+    }
+    wrappedElement = /*#__PURE__*/_react["default"].createElement("div", {
+      className: the_class,
+      style: style
+    });
+  } else {
+    wrappedElement = /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+      icon: icon_dict[props.direction],
+      iconSize: props.iconSize,
+      style: style
+    });
+  }
+  return /*#__PURE__*/_react["default"].createElement(_reactDraggable.DraggableCore, {
+    onStart: _dragStart,
+    onStop: _dragEnd,
+    onDrag: _onDrag,
+    grid: [5, 5],
+    scale: 1
+  }, wrappedElement);
+}
+exports.DragHandle = DragHandle = /*#__PURE__*/(0, _react.memo)(DragHandle);
 DragHandle.propTypes = {
   position_dict: _propTypes["default"].object,
   onDrag: _propTypes["default"].func,
@@ -240,253 +158,177 @@ DragHandle.defaultProps = {
   barHeight: null,
   barWidth: null
 };
-
-var HorizontalPanes = /*#__PURE__*/function (_React$Component2) {
-  _inherits(HorizontalPanes, _React$Component2);
-
-  var _super2 = _createSuper(HorizontalPanes);
-
-  function HorizontalPanes(props) {
-    var _this2;
-
-    _classCallCheck(this, HorizontalPanes);
-
-    _this2 = _super2.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this2));
-    _this2.left_pane_ref = /*#__PURE__*/_react["default"].createRef();
-    _this2.right_pane_ref = /*#__PURE__*/_react["default"].createRef();
-    _this2.drag_handle_ref = /*#__PURE__*/_react["default"].createRef();
-    _this2.scroll_bases = {};
-    _this2.top_ref = _this2.props.top_ref == null ? /*#__PURE__*/_react["default"].createRef() : _this2.props.top_ref;
-    _this2.old_left_width = 0;
-    _this2.old_right_width = 0;
-    _this2.unique_id = (0, _utilities_react.guid)();
-    _this2.state = {
-      "current_width_fraction": _this2.props.initial_width_fraction,
-      "mounted": false,
-      deltaPosition: {
-        x: 0,
-        y: 0
-      }
-    };
-    return _this2;
+function HorizontalPanes(props) {
+  var left_pane_ref = (0, _react.useRef)(null);
+  var right_pane_ref = (0, _react.useRef)(null);
+  var scroll_bases = (0, _react.useRef)({});
+  var top_ref = (0, _react.useRef)(props.top_ref == null ? (0, _react.useRef)(null) : props.top_ref);
+  var old_left_width = (0, _react.useRef)(0);
+  var old_right_width = (0, _react.useRef)(0);
+  var unique_id = (0, _react.useRef)((0, _utilities_react.guid)());
+  var _useState = (0, _react.useState)(props.initial_width_fraction),
+    _useState2 = _slicedToArray(_useState, 2),
+    current_width_fraction = _useState2[0],
+    set_current_width_fraction = _useState2[1];
+  var _useState3 = (0, _react.useState)({
+      x: 0,
+      y: 0
+    }),
+    _useState4 = _slicedToArray(_useState3, 2),
+    deltaPosition = _useState4[0],
+    setDeltaPosition = _useState4[1];
+  (0, _react.useEffect)(function () {
+    if (props.handleSplitUpdate) {
+      props.handleSplitUpdate(left_width(), right_width(), current_width_fraction);
+    }
+  }, []);
+  (0, _react.useEffect)(function () {
+    notifySplitUpdate();
+  }, [current_width_fraction]);
+  function left_width() {
+    if (props.show_handle) {
+      return (props.available_width - HANDLE_WIDTH) * current_width_fraction;
+    }
+    return props.available_width * current_width_fraction - 2.5;
   }
-
-  _createClass(HorizontalPanes, [{
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      var _this3 = this;
-
-      window.addEventListener("resize", this.resize_to_window);
-      this.setState({
-        "mounted": true
-      }, function () {
-        if (_this3.props.handleSplitUpdate) {
-          _this3.props.handleSplitUpdate(_this3.left_width, _this3.right_width, _this3.state.current_width_fraction);
-        }
-      });
+  function right_width() {
+    if (props.show_handle) {
+      return (1 - current_width_fraction) * (props.available_width - HANDLE_WIDTH);
     }
-  }, {
-    key: "componentDidUpdate",
-    value: function componentDidUpdate() {
-      this.notifySplitUpate();
+    return (1 - current_width_fraction) * props.available_width - 2.5;
+  }
+  function width_has_changed() {
+    return left_width() != old_left_width.current || right_width() != old_right_width.current;
+  }
+  function notifySplitUpdate() {
+    if (width_has_changed() && props.handleSplitUpdate != null) {
+      old_left_width.current = left_width();
+      old_right_width.current = right_width();
+      props.handleSplitUpdate(left_width(), right_width(), current_width_fraction);
     }
-  }, {
-    key: "left_width",
-    get: function get() {
-      if (this.props.show_handle) {
-        return (this.props.available_width - HANDLE_WIDTH) * this.state.current_width_fraction;
-      }
-
-      return this.props.available_width * this.state.current_width_fraction - 2.5;
-    }
-  }, {
-    key: "right_width",
-    get: function get() {
-      if (this.props.show_handle) {
-        return (1 - this.state.current_width_fraction) * (this.props.available_width - HANDLE_WIDTH);
-      }
-
-      return (1 - this.state.current_width_fraction) * this.props.available_width - 2.5;
-    }
-  }, {
-    key: "update_width_fraction",
-    value: function update_width_fraction(new_width_fraction) {
-      this.setState({
-        "current_width_fraction": new_width_fraction
-      });
-    }
-  }, {
-    key: "width_has_changed",
-    get: function get() {
-      return this.left_width != this.old_left_width || this.right_width != this.old_right_width;
-    }
-  }, {
-    key: "notifySplitUpate",
-    value: function notifySplitUpate() {
-      if (this.width_has_changed && this.props.handleSplitUpdate != null) {
-        this.old_left_width = this.left_width;
-        this.old_right_width = this.right_width;
-        this.props.handleSplitUpdate(this.left_width, this.right_width, this.state.current_width_fraction);
-      }
-    }
-  }, {
-    key: "_handleDrag",
-    value: function _handleDrag(e, ui, x, y, dx, dy) {
-      var new_width_fraction = (x - this.left_pane_ref.current.getBoundingClientRect().left) / this.props.available_width;
-      new_width_fraction = new_width_fraction > 1 ? 1 : new_width_fraction;
-      new_width_fraction = new_width_fraction < 0 ? 0 : new_width_fraction;
-      this.update_width_fraction(new_width_fraction);
-
-      this._resetScrolls();
-    }
-  }, {
-    key: "_getSelectorElements",
-    value: function _getSelectorElements() {
-      var result = {};
-
-      if (this.props.scrollAdjustSelectors && this.top_ref && this.top_ref.current) {
-        var _iterator = _createForOfIteratorHelper(this.props.scrollAdjustSelectors),
-            _step;
-
-        try {
-          for (_iterator.s(); !(_step = _iterator.n()).done;) {
-            var selector = _step.value;
-            var els = $(this.top_ref.current).find(selector);
-
-            if (els.length > 0) {
-              result[selector] = els[0];
-            }
+  }
+  function _handleDrag(e, ui, x, y, dx, dy) {
+    var new_width_fraction = (x - left_pane_ref.current.getBoundingClientRect().left) / props.available_width;
+    new_width_fraction = new_width_fraction > 1 ? 1 : new_width_fraction;
+    new_width_fraction = new_width_fraction < 0 ? 0 : new_width_fraction;
+    set_current_width_fraction(new_width_fraction);
+    _resetScrolls();
+  }
+  function _getSelectorElements() {
+    var result = {};
+    if (props.scrollAdjustSelectors && top_ref && top_ref.current) {
+      var _iterator = _createForOfIteratorHelper(props.scrollAdjustSelectors),
+        _step;
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var selector = _step.value;
+          var els = $(top_ref.current).find(selector);
+          if (els.length > 0) {
+            result[selector] = els[0];
           }
-        } catch (err) {
-          _iterator.e(err);
-        } finally {
-          _iterator.f();
         }
-      }
-
-      return result;
-    }
-  }, {
-    key: "_resetScrolls",
-    value: function _resetScrolls() {
-      var selector_element_dict = this._getSelectorElements();
-
-      for (var selector in selector_element_dict) {
-        var el = selector_element_dict[selector];
-        el.scrollLeft = this.scroll_bases[selector].left;
-        el.scrollTop = this.scroll_bases[selector].top;
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
       }
     }
-  }, {
-    key: "_handleDragStart",
-    value: function _handleDragStart(e, ui, x, y, dx, dy) {
-      var selector_element_dict = this._getSelectorElements();
-
-      for (var selector in selector_element_dict) {
-        var el = selector_element_dict[selector];
-        this.scroll_bases[selector] = {
-          left: el.scrollLeft,
-          top: el.scrollTop
-        };
-      }
-
-      if (this.props.handleResizeStart) {
-        this.props.handleResizeStart(e, ui, x, y, dx, dy);
-      }
+    return result;
+  }
+  function _resetScrolls() {
+    var selector_element_dict = _getSelectorElements();
+    for (var selector in selector_element_dict) {
+      var el = selector_element_dict[selector];
+      el.scrollLeft = scroll_bases.current[selector].left;
+      el.scrollTop = scroll_bases.current[selector].top;
     }
-  }, {
-    key: "_handleDragEnd",
-    value: function _handleDragEnd(e, ui, x, y, dx, dy) {
-      var new_width_fraction = (x - this.left_pane_ref.current.getBoundingClientRect().left) / this.props.available_width;
-      new_width_fraction = new_width_fraction > 1 ? 1 : new_width_fraction;
-      new_width_fraction = new_width_fraction < 0 ? 0 : new_width_fraction;
-
-      if (this.props.handleResizeEnd) {
-        this.props.handleResizeEnd(new_width_fraction);
-      }
-
-      this._resetScrolls();
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var handle_left;
-
-      if (this.right_pane_ref && this.right_pane_ref.current) {
-        handle_left = this.right_pane_ref.current.offsetLeft - 10;
-      } else {
-        handle_left = this.left_width + 75;
-      }
-
-      var position_dict = {
-        position: "absolute",
-        left: handle_left
+  }
+  function _handleDragStart(e, ui, x, y, dx, dy) {
+    var selector_element_dict = _getSelectorElements();
+    for (var selector in selector_element_dict) {
+      var el = selector_element_dict[selector];
+      scroll_bases.current[selector] = {
+        left: el.scrollLeft,
+        top: el.scrollTop
       };
-      var left_div_style = {
-        width: this.left_width,
-        height: this.props.available_height - this.props.bottom_margin,
-        flexDirection: "column",
-        overflow: "hidden",
-        paddingLeft: window.in_context ? 5 : 12
-      }; // noinspection JSSuspiciousNameCombination
-
-      var right_div_style = {
-        width: this.right_width,
-        height: this.props.available_height - this.props.bottom_margin,
-        flexDirection: "column",
-        marginLeft: 10
-      };
-      var cname = "";
-
-      if (this.props.right_pane_overflow == "auto") {
-        cname = "contingent-scroll";
-      } else {
-        right_div_style["overflowY"] = this.props.right_pane_overflow;
-      }
-
-      var dstyle = this.props.hide_me ? {
-        display: "none"
-      } : {}; // let position_dict = {position: "relative", left: 0, top: (this.props.available_height - this.props.bottom_margin) / 2};
-
-      var outer_style = {
-        width: "100%"
-      };
-
-      if (this.props.left_margin) {
-        outer_style["marginLeft"] = this.props.left_margin;
-      }
-
-      return /*#__PURE__*/_react["default"].createElement("div", {
-        id: this.unique_id,
-        className: "d-flex flex-row horizontal-panes",
-        style: outer_style,
-        ref: this.top_ref
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        ref: this.left_pane_ref,
-        style: left_div_style,
-        className: "res-viewer-resizer"
-      }, this.props.left_pane), this.props.show_handle && /*#__PURE__*/_react["default"].createElement(DragHandle, {
-        position_dict: position_dict,
-        onDrag: this._handleDrag,
-        dragStart: this._handleDragStart,
-        dragEnd: this._handleDragEnd,
-        direction: "x",
-        iconSize: this.props.dragIconSize,
-        useThinBar: true,
-        barHeight: this.props.available_height - this.props.bottom_margin
-      }), /*#__PURE__*/_react["default"].createElement("div", {
-        ref: this.right_pane_ref,
-        className: cname,
-        style: right_div_style
-      }, this.props.right_pane));
     }
-  }]);
-
-  return HorizontalPanes;
-}(_react["default"].Component);
-
-exports.HorizontalPanes = HorizontalPanes;
+    if (props.handleResizeStart) {
+      props.handleResizeStart(e, ui, x, y, dx, dy);
+    }
+  }
+  function _handleDragEnd(e, ui, x, y, dx, dy) {
+    var new_width_fraction = (x - left_pane_ref.current.getBoundingClientRect().left) / props.available_width;
+    new_width_fraction = new_width_fraction > 1 ? 1 : new_width_fraction;
+    new_width_fraction = new_width_fraction < 0 ? 0 : new_width_fraction;
+    if (props.handleResizeEnd) {
+      props.handleResizeEnd(new_width_fraction);
+    }
+    _resetScrolls();
+  }
+  var handle_left;
+  if (right_pane_ref && right_pane_ref.current) {
+    handle_left = right_pane_ref.current.offsetLeft - 10;
+  } else {
+    handle_left = left_width() + 75;
+  }
+  var position_dict = {
+    position: "absolute",
+    left: handle_left
+  };
+  var left_div_style = {
+    width: left_width(),
+    height: props.available_height - props.bottom_margin,
+    flexDirection: "column",
+    overflow: "hidden",
+    paddingLeft: window.in_context ? 5 : 12
+  };
+  // noinspection JSSuspiciousNameCombination
+  var right_div_style = {
+    width: right_width(),
+    height: props.available_height - props.bottom_margin,
+    flexDirection: "column",
+    marginLeft: 10
+  };
+  var cname = "";
+  if (props.right_pane_overflow == "auto") {
+    cname = "contingent-scroll";
+  } else {
+    right_div_style["overflowY"] = props.right_pane_overflow;
+  }
+  var dstyle = props.hide_me ? {
+    display: "none"
+  } : {};
+  var outer_style = {
+    width: "100%"
+  };
+  if (props.left_margin) {
+    outer_style["marginLeft"] = props.left_margin;
+  }
+  return /*#__PURE__*/_react["default"].createElement("div", {
+    id: unique_id.current,
+    className: "d-flex flex-row horizontal-panes",
+    style: outer_style,
+    ref: top_ref
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    ref: left_pane_ref,
+    style: left_div_style,
+    className: "res-viewer-resizer"
+  }, props.left_pane), props.show_handle && /*#__PURE__*/_react["default"].createElement(DragHandle, {
+    position_dict: position_dict,
+    onDrag: _handleDrag,
+    dragStart: _handleDragStart,
+    dragEnd: _handleDragEnd,
+    direction: "x",
+    iconSize: props.dragIconSize,
+    useThinBar: true,
+    barHeight: props.available_height - props.bottom_margin
+  }), /*#__PURE__*/_react["default"].createElement("div", {
+    ref: right_pane_ref,
+    className: cname,
+    style: right_div_style
+  }, props.right_pane));
+}
+exports.HorizontalPanes = HorizontalPanes = /*#__PURE__*/(0, _react.memo)(HorizontalPanes);
 HorizontalPanes.propTypes = {
   available_width: _propTypes["default"].number,
   available_height: _propTypes["default"].number,
@@ -518,212 +360,140 @@ HorizontalPanes.defaultProps = {
   show_handle: true,
   dragIconSize: 20
 };
-
-var VerticalPanes = /*#__PURE__*/function (_React$Component3) {
-  _inherits(VerticalPanes, _React$Component3);
-
-  var _super3 = _createSuper(VerticalPanes);
-
-  function VerticalPanes(props) {
-    var _this4;
-
-    _classCallCheck(this, VerticalPanes);
-
-    _this4 = _super3.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this4));
-    _this4.top_ref = /*#__PURE__*/_react["default"].createRef();
-    _this4.top_pane_ref = /*#__PURE__*/_react["default"].createRef();
-    _this4.bottom_pane_ref = /*#__PURE__*/_react["default"].createRef();
-    _this4.scroll_bases = {};
-    _this4.old_bottom_height = 0;
-    _this4.old_top_height = 0;
-    _this4.unique_id = (0, _utilities_react.guid)();
-    _this4.state = {
-      "current_height_fraction": _this4.props.initial_height_fraction,
-      "mounted": false
-    };
-    return _this4;
+function VerticalPanes(props) {
+  var top_ref = (0, _react.useRef)(null);
+  var top_pane_ref = (0, _react.useRef)(null);
+  var bottom_pane_ref = (0, _react.useRef)(null);
+  var scroll_bases = (0, _react.useRef)({});
+  var old_bottom_height = (0, _react.useRef)(0);
+  var old_top_height = (0, _react.useRef)(0);
+  var unique_id = (0, _react.useRef)((0, _utilities_react.guid)());
+  var _useState5 = (0, _react.useState)(props.initial_height_fraction),
+    _useState6 = _slicedToArray(_useState5, 2),
+    current_height_fraction = _useState6[0],
+    set_current_height_fraction = _useState6[1];
+  (0, _react.useEffect)(function () {
+    notifySplitUpdate();
+  }, [current_height_fraction]);
+  function top_height() {
+    return props.available_height * current_height_fraction - 2.5;
   }
-
-  _createClass(VerticalPanes, [{
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      this.setState({
-        "mounted": true
-      });
-      window.addEventListener("resize", this.resize_to_window);
+  function bottom_height() {
+    return (1 - current_height_fraction) * props.available_height - 2.5;
+  }
+  function notifySplitUpdate() {
+    if (props.handleSplitUpdate != null && height_has_changed()) {
+      old_top_height.current = top_height();
+      old_bottom_height.current = bottom_height();
+      props.handleSplitUpdate(top_height(), bottom_height(), current_height_fraction);
     }
-  }, {
-    key: "componentDidUpdate",
-    value: function componentDidUpdate() {
-      this.notifySplitUpate();
-    }
-  }, {
-    key: "top_height",
-    get: function get() {
-      return this.props.available_height * this.state.current_height_fraction - 2.5;
-    }
-  }, {
-    key: "bottom_height",
-    get: function get() {
-      return (1 - this.state.current_height_fraction) * this.props.available_height - 2.5;
-    }
-  }, {
-    key: "notifySplitUpate",
-    value: function notifySplitUpate() {
-      if (this.props.handleSplitUpdate != null && this.height_has_changed) {
-        this.old_top_height = this.top_height;
-        this.old_bottom_height = this.bottom_height;
-        this.props.handleSplitUpdate(this.top_height, this.bottom_height, this.state.current_height_fraction);
-      }
-    }
-  }, {
-    key: "update_height_fraction",
-    value: function update_height_fraction(new_height_fraction) {
-      this.setState({
-        "current_height_fraction": new_height_fraction
-      });
-    }
-  }, {
-    key: "height_has_changed",
-    get: function get() {
-      return this.top_height != this.old_top_height || this.bottom_height != this.old_bottom_height;
-    }
-  }, {
-    key: "_handleDrag",
-    value: function _handleDrag(e, ui, x, y, dx, dy) {
-      var new_height_fraction = (y - this.top_pane_ref.current.offsetTop) / this.props.available_height;
-      new_height_fraction = new_height_fraction > 1 ? 1 : new_height_fraction;
-      new_height_fraction = new_height_fraction < 0 ? 0 : new_height_fraction;
-      this.update_height_fraction(new_height_fraction);
-    }
-  }, {
-    key: "_getSelectorElements",
-    value: function _getSelectorElements() {
-      var result = {};
-
-      if (this.props.scrollAdjustSelectors && this.top_ref && this.top_ref.current) {
-        var _iterator2 = _createForOfIteratorHelper(this.props.scrollAdjustSelectors),
-            _step2;
-
-        try {
-          for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-            var selector = _step2.value;
-            var els = $(this.top_ref.current).find(selector);
-
-            if (els.length > 0) {
-              result[selector] = els[0];
-            }
+  }
+  function height_has_changed() {
+    return top_height() != old_top_height.current || bottom_height() != old_bottom_height.current;
+  }
+  function _handleDrag(e, ui, x, y, dx, dy) {
+    var new_height_fraction = (y - top_pane_ref.current.offsetTop) / props.available_height;
+    new_height_fraction = new_height_fraction > 1 ? 1 : new_height_fraction;
+    new_height_fraction = new_height_fraction < 0 ? 0 : new_height_fraction;
+    set_current_height_fraction(new_height_fraction);
+  }
+  function _getSelectorElements() {
+    var result = {};
+    if (props.scrollAdjustSelectors && top_ref && top_ref.current) {
+      var _iterator2 = _createForOfIteratorHelper(props.scrollAdjustSelectors),
+        _step2;
+      try {
+        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+          var selector = _step2.value;
+          var els = $(top_ref.current).find(selector);
+          if (els.length > 0) {
+            result[selector] = els[0];
           }
-        } catch (err) {
-          _iterator2.e(err);
-        } finally {
-          _iterator2.f();
         }
-      }
-
-      return result;
-    }
-  }, {
-    key: "_resetScrolls",
-    value: function _resetScrolls() {
-      var selector_element_dict = this._getSelectorElements();
-
-      for (var selector in selector_element_dict) {
-        var el = selector_element_dict[selector];
-        el.scrollLeft = this.scroll_bases[selector].left;
-        el.scrollTop = this.scroll_bases[selector].top;
+      } catch (err) {
+        _iterator2.e(err);
+      } finally {
+        _iterator2.f();
       }
     }
-  }, {
-    key: "_handleDragStart",
-    value: function _handleDragStart(e, ui, x, y, dx, dy) {
-      var selector_element_dict = this._getSelectorElements();
-
-      for (var selector in selector_element_dict) {
-        var el = selector_element_dict[selector];
-        this.scroll_bases[selector] = {
-          left: el.scrollLeft,
-          top: el.scrollTop
-        };
-      }
-
-      if (this.props.handleResizeStart) {
-        this.props.handleResizeStart(e, ui, x, y, dx, dy);
-      }
+    return result;
+  }
+  function _resetScrolls() {
+    var selector_element_dict = _getSelectorElements();
+    for (var selector in selector_element_dict) {
+      var el = selector_element_dict[selector];
+      el.scrollLeft = scroll_bases.current[selector].left;
+      el.scrollTop = scroll_bases.current[selector].top;
     }
-  }, {
-    key: "_handleDragEnd",
-    value: function _handleDragEnd(e, ui, x, y, dx, dy) {
-      var new_height_fraction = (y - this.top_pane_ref.current.offsetTop) / this.props.available_height;
-      new_height_fraction = new_height_fraction > 1 ? 1 : new_height_fraction;
-      new_height_fraction = new_height_fraction < 0 ? 0 : new_height_fraction;
-
-      if (this.props.handleResizeEnd) {
-        this.props.handleResizeEnd(new_height_fraction);
-      }
-
-      this._resetScrolls();
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var handle_top;
-
-      if (this.bottom_pane_ref && this.bottom_pane_ref.current) {
-        handle_top = this.bottom_pane_ref.current.offsetTop - 10;
-      } else {
-        handle_top = this.top_height + 75;
-      }
-
-      var position_dict = {
-        position: "absolute",
-        top: handle_top
+  }
+  function _handleDragStart(e, ui, x, y, dx, dy) {
+    var selector_element_dict = _getSelectorElements();
+    for (var selector in selector_element_dict) {
+      var el = selector_element_dict[selector];
+      scroll_bases.current[selector] = {
+        left: el.scrollLeft,
+        top: el.scrollTop
       };
-      var top_div_style = {
-        "width": this.props.available_width,
-        "height": this.top_height,
-        // borderBottom: "0.5px solid rgb(238, 238, 238)",
-        overflowY: this.props.overflow
-      };
-
-      if (this.props.hide_top) {
-        top_div_style.display = "none";
-      }
-
-      var bottom_div_style = {
-        "width": this.props.available_width,
-        "height": this.bottom_height,
-        overflowY: this.props.overflow,
-        marginTop: 10
-      };
-      return /*#__PURE__*/_react["default"].createElement("div", {
-        id: this.unique_id,
-        className: "d-flex flex-column",
-        ref: this.top_ref
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        ref: this.top_pane_ref,
-        style: top_div_style
-      }, this.props.top_pane), this.props.show_handle && /*#__PURE__*/_react["default"].createElement(DragHandle, {
-        position_dict: position_dict,
-        onDrag: this._handleDrag,
-        direction: "y",
-        iconSize: this.props.dragIconSize,
-        dragStart: this._handleDragStart,
-        dragEnd: this._handleDragEnd,
-        useThinBar: true,
-        barWidth: this.props.available_width
-      }), /*#__PURE__*/_react["default"].createElement("div", {
-        ref: this.bottom_pane_ref,
-        style: bottom_div_style
-      }, this.props.bottom_pane));
     }
-  }]);
-
-  return VerticalPanes;
-}(_react["default"].Component);
-
-exports.VerticalPanes = VerticalPanes;
+    if (props.handleResizeStart) {
+      props.handleResizeStart(e, ui, x, y, dx, dy);
+    }
+  }
+  function _handleDragEnd(e, ui, x, y, dx, dy) {
+    var new_height_fraction = (y - top_pane_ref.current.offsetTop) / props.available_height;
+    new_height_fraction = new_height_fraction > 1 ? 1 : new_height_fraction;
+    new_height_fraction = new_height_fraction < 0 ? 0 : new_height_fraction;
+    if (props.handleResizeEnd) {
+      props.handleResizeEnd(new_height_fraction);
+    }
+    _resetScrolls();
+  }
+  var handle_top;
+  if (bottom_pane_ref && bottom_pane_ref.current) {
+    handle_top = bottom_pane_ref.current.offsetTop - 10;
+  } else {
+    handle_top = top_height() + 75;
+  }
+  var position_dict = {
+    position: "absolute",
+    top: handle_top
+  };
+  var top_div_style = {
+    "width": props.available_width,
+    "height": top_height(),
+    overflowY: props.overflow
+  };
+  if (props.hide_top) {
+    top_div_style.display = "none";
+  }
+  var bottom_div_style = {
+    "width": props.available_width,
+    "height": bottom_height(),
+    overflowY: props.overflow,
+    marginTop: 10
+  };
+  return /*#__PURE__*/_react["default"].createElement("div", {
+    id: unique_id.current,
+    className: "d-flex flex-column",
+    ref: top_ref
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    ref: top_pane_ref,
+    style: top_div_style
+  }, props.top_pane), props.show_handle && /*#__PURE__*/_react["default"].createElement(DragHandle, {
+    position_dict: position_dict,
+    onDrag: _handleDrag,
+    direction: "y",
+    iconSize: props.dragIconSize,
+    dragStart: _handleDragStart,
+    dragEnd: _handleDragEnd,
+    useThinBar: true,
+    barWidth: props.available_width
+  }), /*#__PURE__*/_react["default"].createElement("div", {
+    ref: bottom_pane_ref,
+    style: bottom_div_style
+  }, props.bottom_pane));
+}
+exports.VerticalPanes = VerticalPanes = /*#__PURE__*/(0, _react.memo)(VerticalPanes);
 VerticalPanes.propTypes = {
   available_width: _propTypes["default"].number,
   available_height: _propTypes["default"].number,

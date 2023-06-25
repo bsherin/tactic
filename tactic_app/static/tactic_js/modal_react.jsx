@@ -1,134 +1,143 @@
-
 import React from "react";
-import {Fragment} from "react";
+import {Fragment, useState, useRef, useEffect, memo} from "react"
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
-import { Checkbox, Dialog, DialogBody, DialogFooter, FormGroup, Classes, Button, InputGroup, Intent} from "@blueprintjs/core";
+import {
+    Checkbox,
+    Dialog,
+    DialogBody,
+    DialogFooter,
+    FormGroup,
+    Classes,
+    Button,
+    InputGroup,
+    Intent
+} from "@blueprintjs/core";
 
-import {BpSelect} from "./blueprint_mdata_fields.js"
-import {doBinding} from "./utilities_react.js";
-import {postWithCallback} from "./communication_react.js";
+import {BpSelect} from "./blueprint_mdata_fields"
+import {useCallbackStack} from "./utilities_react";
+import {postWithCallback} from "./communication_react";
 
-export {showModalReact, showConfirmDialogReact, showSelectDialog, SelectResourceDialog,
-    showSelectResourceDialog, showInformDialogReact, showPresentationDialog, showReportDialog}
+export {
+    showModalReact, showConfirmDialogReact, showSelectDialog, SelectResourceDialog,
+    showSelectResourceDialog, showPresentationDialog, showReportDialog
+}
 
-class ModalDialog extends React.Component {
+function ModalDialog(props) {
 
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        let default_name = this.props.default_value;
-        var name_counter = 1;
-        while (this._name_exists(default_name)) {
-            name_counter += 1;
-            default_name = this.props.default_value + String(name_counter)
-        }
-        this.state = {
-            show: false,
-            current_value: default_name,
-            checkbox_states: {},
-            warning_text: ""
-        };
-    }
+    const [show, set_show] = useState(false);
+    const [checkbox_states, set_checkbox_states] = useState({});
+    const [warning_text, set_warning_text] = useState("");
+    const [current_value, set_current_value] = useState(null);
 
-    _changeHandler(event) {
-        this.setState({"current_value": event.target.value})
-    }
+    const input_ref = useRef(null);
 
-    _checkbox_change_handler(event) {
-        let val = event.target.checked;
-        let new_checkbox_states = Object.assign({}, this.state.checkbox_states);
-        new_checkbox_states[event.target.id] = event.target.checked;
-        this.setState({checkbox_states: new_checkbox_states})
-    }
-
-    componentDidMount() {
-        this.setState({"show": true});
-        if ((this.props.checkboxes != null) && (this.props.checkboxes.length != 0)) {
+    useEffect(() => {
+        set_show(true);
+        if ((props.checkboxes != null) && (props.checkboxes.length != 0)) {
             let checkbox_states = {};
-            for (let checkbox of this.props.checkboxes) {
+            for (let checkbox of props.checkboxes) {
                 checkbox_states[checkbox.checkname] = false
             }
-            this.setState({checkbox_states: checkbox_states})
+            set_checkbox_states(checkbox_states)
         }
+        var default_name = props.default_value;
+        var name_counter = 1;
+        while (_name_exists(default_name)) {
+            name_counter += 1;
+            default_name = props.default_value + String(name_counter)
+        }
+        set_current_value(default_name)
+    }, []);
+
+    function _changeHandler(event) {
+        set_current_value(event.target.value)
     }
 
-    _name_exists(name) {
-        return (this.props.existing_names.indexOf(name) > -1)
+    function _checkbox_change_handler(event) {
+        let val = event.target.checked;
+        let new_checkbox_states = Object.assign({}, checkbox_states);
+        new_checkbox_states[event.target.id] = event.target.checked;
+        set_checkbox_states(new_checkbox_states)
     }
 
-    _submitHandler(event) {
+    function _name_exists(name) {
+        return (props.existing_names.indexOf(name) > -1)
+    }
+
+    function _submitHandler(event) {
         let msg;
-        if (this.state.current_value == "") {
+        if (current_value == "") {
             msg = "An empty name is not allowed here.";
-            this.setState({"warning_text": msg})
-        }
-        else if (this._name_exists(this.state.current_value)) {
+            set_warning_text(msg)
+        } else if (_name_exists(current_value)) {
             msg = "That name already exists";
-            this.setState({"warning_text": msg})
+            set_warning_text(msg)
+        } else {
+            set_show(false);
+            props.handleSubmit(current_value, checkbox_states);
+            props.handleClose();
         }
-        else {
-            this.setState({"show": false});
-            this.props.handleSubmit(this.state.current_value, this.state.checkbox_states);
-            this.props.handleClose();
-            }
     }
 
-    _cancelHandler() {
-        this.setState({"show": false});
-        if (this.props.handleCancel) {
-            this.props.handleCancel()
+    function _cancelHandler() {
+        set_show(false);
+        if (props.handleCancel) {
+            props.handleCancel()
         }
-        this.props.handleClose()
+        props.handleClose()
     }
 
-    _refHandler(the_ref) {
-        this.input_ref = the_ref;
+    function _refHandler(the_ref) {
+        input_ref.current = the_ref;
     }
 
-    render() {
-        let checkbox_items = [];
-        if ((this.props.checkboxes != null) && (this.props.checkboxes.length != 0)) {
-            for (let checkbox of this.props.checkboxes) {
-                let new_item = (
-                    <Checkbox checked={this.state.checkbox_states[checkbox.checkname]}
-                                    label={checkbox.checktext}
-                                    id={checkbox.checkname}
-                                    key={checkbox.checkname}
-                                    onChange={this._checkbox_change_handler}
-                    />
-                );
-                checkbox_items.push(new_item)
-            }
+    let checkbox_items = [];
+    if ((props.checkboxes != null) && (props.checkboxes.length != 0)) {
+        for (let checkbox of props.checkboxes) {
+            let new_item = (
+                <Checkbox checked={checkbox_states[checkbox.checkname]}
+                          label={checkbox.checktext}
+                          id={checkbox.checkname}
+                          key={checkbox.checkname}
+                          onChange={_checkbox_change_handler}
+                />
+            );
+            checkbox_items.push(new_item)
         }
-        return (
-            <Dialog isOpen={this.state.show}
-                    className={window.dark_theme ? "bp4-dark" : ""}
-                    title={this.props.title}
-                    onClose={this._cancelHandler}
-                    onOpened={()=>{$(this.input_ref).focus()}}
-                    canEscapeKeyClose={true}>
-                <form onSubmit={this._submitHandler}>
-                    <div className={Classes.DIALOG_BODY}>
-                        <FormGroup label={this.props.field_title} helperText={this.state.warning_text}>
-                                <InputGroup inputRef={this._refHandler}
-                                               onChange={this._changeHandler}
-                                               value={this.state.current_value}/>
-                        </FormGroup>
-                        {(checkbox_items.length != 0) && checkbox_items}
+    }
+    return (
+        <Dialog isOpen={show}
+                className={window.dark_theme ? "bp4-dark" : ""}
+                title={props.title}
+                onClose={_cancelHandler}
+                onOpened={() => {
+                    input_ref.current.focus()
+                }}
+                canEscapeKeyClose={true}>
+            <form onSubmit={_submitHandler}>
+                <div className={Classes.DIALOG_BODY}>
+                    <FormGroup label={props.field_title} helperText={warning_text}>
+                        <InputGroup inputRef={_refHandler}
+                                    onChange={_changeHandler}
+                                    value={current_value}/>
+                    </FormGroup>
+                    {(checkbox_items.length != 0) && checkbox_items}
+                </div>
+                <div className={Classes.DIALOG_FOOTER}>
+                    <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+                        <Button onClick={_cancelHandler}>Cancel</Button>
+                        <Button intent={Intent.PRIMARY} onClick={_submitHandler}>Submit</Button>
                     </div>
-                    <div className={Classes.DIALOG_FOOTER}>
-                        <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-                            <Button onClick={this._cancelHandler}>Cancel</Button>
-                            <Button intent={Intent.PRIMARY} onClick={this._submitHandler}>Submit</Button>
-                        </div>
-                    </div>
-                </form>
-            </Dialog>
-        )
-    }
+                </div>
+            </form>
+        </Dialog>
+    )
+
 }
+
+ModalDialog = memo(ModalDialog);
 
 ModalDialog.propTypes = {
     handleSubmit: PropTypes.func,
@@ -147,7 +156,7 @@ ModalDialog.defaultProps = {
 };
 
 function showModalReact(modal_title, field_title, submit_function, default_value, existing_names,
-                        checkboxes=null, cancel_function=null) {
+                        checkboxes = null, cancel_function = null) {
 
     if (typeof existing_names == "undefined") {
         existing_names = []
@@ -155,9 +164,10 @@ function showModalReact(modal_title, field_title, submit_function, default_value
 
     let domContainer = document.querySelector('#modal-area');
 
-    function handle_close () {
+    function handle_close() {
         ReactDOM.unmountComponentAtNode(domContainer)
     }
+
     ReactDOM.render(<ModalDialog handleSubmit={submit_function}
                                  handleCancel={cancel_function}
                                  handleClose={handle_close}
@@ -168,118 +178,116 @@ function showModalReact(modal_title, field_title, submit_function, default_value
                                  existing_names={existing_names}/>, domContainer);
 }
 
-class PresentationDialog extends React.Component {
+function PresentationDialog(props) {
 
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        let default_name = this.props.default_name;
+    const [show, set_show] = useState(false);
+    const [save_as_collection, set_save_as_collection] = useState(false);
+    const [collection_name, set_collection_name] = useState(null);
+    const [use_dark_theme, set_use_dark_theme] = useState(null);
+    const [warning_text, set_warning_text] = useState("");
+
+    const input_ref = useRef(null);
+
+    useEffect(() => {
+        set_show(true);
+        var default_name = props.default_value;
         var name_counter = 1;
-        while (this._name_exists(default_name)) {
+        while (_name_exists(default_name)) {
             name_counter += 1;
-            default_name = this.props.default_value + String(name_counter)
+            default_name = props.default_value + String(name_counter)
         }
-        this.state = {
-            save_as_collection: false,
-            collection_name: default_name,
-            use_dark_theme: false,
-            warning_text: ""
-        };
+        set_collection_name(default_name)
+    }, []);
+
+    function _changeName(event) {
+        set_collection_name(event.target.value)
     }
 
-    _changeName(event) {
-        this.setState({"collection_name": event.target.value})
+    function _changeDark(event) {
+        set_use_dark_theme(event.target.checked)
     }
 
-    _changeDark(event) {
-        this.setState({"use_dark_theme": event.target.checked})
+    function _changeSaveCollection(event) {
+        set_save_as_collection(event.target.checked)
     }
 
-    _changeSaveCollection(event) {
-        this.setState({"save_as_collection": event.target.checked})
+    function _name_exists(name) {
+        return (props.existing_names.indexOf(name) > -1)
     }
 
-    componentDidMount() {
-        this.setState({"show": true});
-    }
-
-    _name_exists(name) {
-        return (this.props.existing_names.indexOf(name) > -1)
-    }
-
-    _submitHandler(event) {
+    function _submitHandler(event) {
         let msg;
-        if (this.state.save_as_collection) {
-            if (this.state.collection_name == "") {
+        if (save_as_collection) {
+            if (collection_name == "") {
                 msg = "An empty name is not allowed here.";
-                this.setState({"warning_text": msg});
+                set_warning_text(msg);
                 return
-            } else if (this._name_exists(this.state.collection_name)) {
+            } else if (_name_exists(collection_name)) {
                 msg = "That name already exists";
-                this.setState({"warning_text": msg});
+                set_warning_text(msg);
                 return
             }
         }
-        this.setState({"show": false});
-        this.props.handleSubmit(
-            this.state.use_dark_theme,
-            this.state.save_as_collection,
-            this.state.collection_name);
-        this.props.handleClose();
+        set_show(false);
+        props.handleSubmit(
+            use_dark_theme,
+            save_as_collection,
+            collection_name);
+        props.handleClose();
     }
 
-    _cancelHandler() {
-        this.setState({"show": false});
-        if (this.props.handleCancel) {
-            this.props.handleCancel()
+    function _cancelHandler() {
+        set_show(false);
+        if (props.handleCancel) {
+            props.handleCancel()
         }
-        this.props.handleClose()
+        props.handleClose()
     }
 
-    _refHandler(the_ref) {
-        this.input_ref = the_ref;
+    function _refHandler(the_ref) {
+        input_ref.current = the_ref;
     }
 
-    render() {
-        return (
-            <Dialog isOpen={this.state.show}
-                    className={window.dark_theme ? "bp4-dark" : ""}
-                    title="Create Presentation"
-                    onClose={this._cancelHandler}
-                    canEscapeKeyClose={true}>
-                <form onSubmit={this._submitHandler}>
-                    <div className={Classes.DIALOG_BODY}>
-                        <Checkbox checked={this.state.use_dark_theme}
-                                    label="Use Dark Theme"
-                                    id="use_dark_check"
-                                    key="use_dark_check"
-                                    onChange={this._changeDark}
-                        />
-                        <Checkbox checked={this.state.save_as_collection}
-                                    label="Save As Collection"
-                                    id="save_as_collection"
-                                    key="save_as_collection"
-                                    onChange={this._changeSaveCollection}
-                        />
-                        {this.state.save_as_collection &&
-                            <FormGroup label="Collection Name" helperText={this.state.warning_text}>
-                                <InputGroup inputRef={this._refHandler}
-                                               onChange={this._changeName}
-                                               value={this.state.collection_name}/>
-                            </FormGroup>
-                        }
+    return (
+        <Dialog isOpen={show}
+                className={window.dark_theme ? "bp4-dark" : ""}
+                title="Create Presentation"
+                onClose={_cancelHandler}
+                canEscapeKeyClose={true}>
+            <form onSubmit={_submitHandler}>
+                <div className={Classes.DIALOG_BODY}>
+                    <Checkbox checked={use_dark_theme}
+                              label="Use Dark Theme"
+                              id="use_dark_check"
+                              key="use_dark_check"
+                              onChange={_changeDark}
+                    />
+                    <Checkbox checked={save_as_collection}
+                              label="Save As Collection"
+                              id="save_as_collection"
+                              key="save_as_collection"
+                              onChange={_changeSaveCollection}
+                    />
+                    {save_as_collection &&
+                        <FormGroup label="Collection Name" helperText={warning_text}>
+                            <InputGroup inputRef={_refHandler}
+                                        onChange={_changeName}
+                                        value={collection_name}/>
+                        </FormGroup>
+                    }
+                </div>
+                <div className={Classes.DIALOG_FOOTER}>
+                    <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+                        <Button onClick={_cancelHandler}>Cancel</Button>
+                        <Button intent={Intent.PRIMARY} onClick={_submitHandler}>Submit</Button>
                     </div>
-                    <div className={Classes.DIALOG_FOOTER}>
-                        <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-                            <Button onClick={this._cancelHandler}>Cancel</Button>
-                            <Button intent={Intent.PRIMARY} onClick={this._submitHandler}>Submit</Button>
-                        </div>
-                    </div>
-                </form>
-            </Dialog>
-        )
-    }
+                </div>
+            </form>
+        </Dialog>
+    )
 }
+
+PresentationDialog = memo(PresentationDialog);
 
 PresentationDialog.propTypes = {
     handleSubmit: PropTypes.func,
@@ -294,7 +302,7 @@ PresentationDialog.defaultProps = {
 };
 
 
-function showPresentationDialog(submit_function, existing_names, cancel_function=null) {
+function showPresentationDialog(submit_function, existing_names, cancel_function = null) {
 
     if (typeof existing_names == "undefined") {
         existing_names = []
@@ -302,153 +310,150 @@ function showPresentationDialog(submit_function, existing_names, cancel_function
 
     let domContainer = document.querySelector('#modal-area');
 
-    function handle_close () {
+    function handle_close() {
         ReactDOM.unmountComponentAtNode(domContainer)
     }
+
     ReactDOM.render(<PresentationDialog handleSubmit={submit_function}
-                                 handleCancel={cancel_function}
-                                 handleClose={handle_close}
-                                 default_name="NewPresentation"
-                                 existing_names={existing_names}/>, domContainer);
+                                        handleCancel={cancel_function}
+                                        handleClose={handle_close}
+                                        default_name="NewPresentation"
+                                        existing_names={existing_names}/>, domContainer);
 }
 
-class ReportDialog extends React.Component {
+function ReportDialog(props) {
+    const [show, set_show] = useState(false);
+    const [save_as_collection, set_save_as_collection] = useState(false);
+    const [collection_name, set_collection_name] = useState(null);
+    const [use_dark_theme, set_use_dark_theme] = useState(null);
+    const [warning_text, set_warning_text] = useState("");
+    const [collapsible, set_collapsible] = useState(false);
+    const [include_summaries, set_include_summaries] = useState(false);
 
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        let default_name = this.props.default_name;
+    const input_ref = useRef(null);
+
+    useEffect(() => {
+        set_show(true);
+        var default_name = props.default_value;
         var name_counter = 1;
-        while (this._name_exists(default_name)) {
+        while (_name_exists(default_name)) {
             name_counter += 1;
-            default_name = this.props.default_value + String(name_counter)
+            default_name = props.default_value + String(name_counter)
         }
-        this.state = {
-            save_as_collection: false,
-            collection_name: default_name,
-            use_dark_theme: false,
-            collapsible: false,
-            include_summaries: false,
-            warning_text: ""
-        };
+        set_collection_name(default_name)
+    }, []);
+
+    function _changeName(event) {
+        set_collection_name(event.target.value)
     }
 
-    _changeName(event) {
-        this.setState({"collection_name": event.target.value})
+    function _changeDark(event) {
+        set_use_dark_theme(event.target.checked)
     }
 
-    _changeDark(event) {
-        this.setState({"use_dark_theme": event.target.checked})
+    function _changeCollapsible(event) {
+        set_collapsible(event.target.checked)
     }
 
-    _changeCollapsible(event) {
-        this.setState({"collapsible": event.target.checked})
+    function _changeIncludeSummaries(event) {
+        set_include_summaries(event.target.checked)
     }
 
-    _changeIncludeSummaries(event) {
-        this.setState({"include_summaries": event.target.checked})
+    function _changeSaveCollection(event) {
+        set_save_as_collection(event.target.checked)
     }
 
-    _changeSaveCollection(event) {
-        this.setState({"save_as_collection": event.target.checked})
+    function _name_exists(name) {
+        return (props.existing_names.indexOf(name) > -1)
     }
 
-    componentDidMount() {
-        this.setState({"show": true});
-    }
-
-    _name_exists(name) {
-        return (this.props.existing_names.indexOf(name) > -1)
-    }
-
-    _submitHandler(event) {
+    function _submitHandler(event) {
         let msg;
-        if (this.state.save_as_collection) {
-            if (this.state.collection_name == "") {
+        if (save_as_collection) {
+            if (collection_name == "") {
                 msg = "An empty name is not allowed here.";
-                this.setState({"warning_text": msg});
+                set_warning_text(msg);
                 return
-            } else if (this._name_exists(this.state.collection_name)) {
+            } else if (_name_exists(collection_name)) {
                 msg = "That name already exists";
-                this.setState({"warning_text": msg});
+                set_warning_text(msg);
                 return
             }
         }
-        this.setState({"show": false});
-        this.props.handleSubmit(
-            this.state.collapsible,
-            this.state.include_summaries,
-            this.state.use_dark_theme,
-            this.state.save_as_collection,
-            this.state.collection_name);
-        this.props.handleClose();
+        set_show(false);
+        props.handleSubmit(
+            collapsible,
+            include_summaries,
+            use_dark_theme,
+            save_as_collection,
+            collection_name);
+        props.handleClose();
     }
 
-    _cancelHandler() {
-        this.setState({"show": false});
-        if (this.props.handleCancel) {
-            this.props.handleCancel()
+    function _cancelHandler() {
+        set_show(false);
+        if (props.handleCancel) {
+            props.handleCancel()
         }
-        this.props.handleClose()
+        props.handleClose()
     }
 
-    _refHandler(the_ref) {
-        this.input_ref = the_ref;
+    function _refHandler(the_ref) {
+        input_ref.current = the_ref;
     }
 
-    render() {
-        return (
-            <Dialog isOpen={this.state.show}
-                    className={window.dark_theme ? "bp4-dark" : ""}
-                    title="Create Presentation"
-                    onClose={this._cancelHandler}
-                    canEscapeKeyClose={true}>
-                <form onSubmit={this._submitHandler}>
-                    <div className={Classes.DIALOG_BODY}>
-                        <Checkbox checked={this.state.collapsible}
-                                    label="Collapsible Sections"
-                                    id="collapse_checked"
-                                    key="collapse_checked"
-                                    onChange={this._changeCollapsible}
-                        />
-                        <Checkbox checked={this.state.include_summaries}
-                                    label="Include Summaries"
-                                    id="include_summaries"
-                                    key="include_summaries"
-                                    onChange={this._changeIncludeSummaries}
-                        />
-                        <Checkbox checked={this.state.use_dark_theme}
-                                    label="Use Dark Theme"
-                                    id="use_dark_check"
-                                    key="use_dark_check"
-                                    onChange={this._changeDark}
-                        />
-                        <Checkbox checked={this.state.save_as_collection}
-                                    label="Save As Collection"
-                                    id="save_as_collection"
-                                    key="save_as_collection"
-                                    onChange={this._changeSaveCollection}
-                        />
-                        {this.state.save_as_collection &&
-                            <FormGroup label="Collection Name" helperText={this.state.warning_text}>
-                                <InputGroup inputRef={this._refHandler}
-                                               onChange={this._changeName}
-                                               value={this.state.collection_name}/>
-                            </FormGroup>
-                        }
+    return (
+        <Dialog isOpen={show}
+                className={window.dark_theme ? "bp4-dark" : ""}
+                title="Create Presentation"
+                onClose={_cancelHandler}
+                canEscapeKeyClose={true}>
+            <form onSubmit={_submitHandler}>
+                <div className={Classes.DIALOG_BODY}>
+                    <Checkbox checked={collapsible}
+                              label="Collapsible Sections"
+                              id="collapse_checked"
+                              key="collapse_checked"
+                              onChange={_changeCollapsible}
+                    />
+                    <Checkbox checked={include_summaries}
+                              label="Include Summaries"
+                              id="include_summaries"
+                              key="include_summaries"
+                              onChange={_changeIncludeSummaries}
+                    />
+                    <Checkbox checked={use_dark_theme}
+                              label="Use Dark Theme"
+                              id="use_dark_check"
+                              key="use_dark_check"
+                              onChange={_changeDark}
+                    />
+                    <Checkbox checked={save_as_collection}
+                              label="Save As Collection"
+                              id="save_as_collection"
+                              key="save_as_collection"
+                              onChange={_changeSaveCollection}
+                    />
+                    {save_as_collection &&
+                        <FormGroup label="Collection Name" helperText={warning_text}>
+                            <InputGroup inputRef={_refHandler}
+                                        onChange={_changeName}
+                                        value={collection_name}/>
+                        </FormGroup>
+                    }
+                </div>
+                <div className={Classes.DIALOG_FOOTER}>
+                    <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+                        <Button onClick={_cancelHandler}>Cancel</Button>
+                        <Button intent={Intent.PRIMARY} onClick={_submitHandler}>Submit</Button>
                     </div>
-                    <div className={Classes.DIALOG_FOOTER}>
-                        <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-                            <Button onClick={this._cancelHandler}>Cancel</Button>
-                            <Button intent={Intent.PRIMARY} onClick={this._submitHandler}>Submit</Button>
-                        </div>
-                    </div>
-                </form>
-            </Dialog>
-        )
-    }
+                </div>
+            </form>
+        </Dialog>
+    )
 }
 
+ReportDialog = memo(ReportDialog);
 ReportDialog.propTypes = {
     handleSubmit: PropTypes.func,
     handleClose: PropTypes.func,
@@ -462,7 +467,7 @@ ReportDialog.defaultProps = {
 };
 
 
-function showReportDialog(submit_function, existing_names, cancel_function=null) {
+function showReportDialog(submit_function, existing_names, cancel_function = null) {
 
     if (typeof existing_names == "undefined") {
         existing_names = []
@@ -470,69 +475,63 @@ function showReportDialog(submit_function, existing_names, cancel_function=null)
 
     let domContainer = document.querySelector('#modal-area');
 
-    function handle_close () {
+    function handle_close() {
         ReactDOM.unmountComponentAtNode(domContainer)
     }
+
     ReactDOM.render(<ReportDialog handleSubmit={submit_function}
-                                 handleCancel={cancel_function}
-                                 handleClose={handle_close}
-                                 default_name="NewReport"
-                                 existing_names={existing_names}/>, domContainer);
+                                  handleCancel={cancel_function}
+                                  handleClose={handle_close}
+                                  default_name="NewReport"
+                                  existing_names={existing_names}/>, domContainer);
 }
 
-class SelectDialog extends React.Component {
+function SelectDialog(props) {
+    const [show, set_show] = useState(false);
+    const [value, set_value] = useState(false);
 
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.state = {
-            show: false,
-            value: null
-        };
+    useEffect(() => {
+        set_show(true);
+        set_value(props.option_list[0])
+    }, []);
+
+    function _handleChange(val) {
+        set_value(val)
     }
 
-    componentDidMount() {
-        this.setState({"show": true, "value": this.props.option_list[0]})
+    function _submitHandler(event) {
+        set_show(false);
+        props.handleSubmit(value);
+        props.handleClose();
     }
 
-    _handleChange(val) {
-        this.setState({"value": val})
+    function _cancelHandler() {
+        set_show(false);
+        props.handleClose()
     }
 
-    _submitHandler(event) {
-        this.setState({"show": false});
-        this.props.handleSubmit(this.state.value);
-        this.props.handleClose();
-    }
-
-    _cancelHandler() {
-        this.setState({"show": false});
-        this.props.handleClose()
-    }
-
-    render() {
-        return (
-            <Dialog isOpen={this.state.show}
-                    className={window.dark_theme ? "bp4-dark" : ""}
-                       title={this.props.title}
-                       onClose={this._cancelHandler}
-                       canEscapeKeyClose={true}>
-                <div className={Classes.DIALOG_BODY}>
-                   <FormGroup title={this.props.select_label}>
-                        <BpSelect options={this.props.option_list} onChange={this._handleChange} value={this.state.value}/>
-                       {/*<Bp.HTMLSelect options={this.props.option_list} onChange={this._handleChange} value={this.state.value}/>*/}
-                   </FormGroup>
+    return (
+        <Dialog isOpen={show}
+                className={window.dark_theme ? "bp4-dark" : ""}
+                title={props.title}
+                onClose={_cancelHandler}
+                canEscapeKeyClose={true}>
+            <div className={Classes.DIALOG_BODY}>
+                <FormGroup title={props.select_label}>
+                    <BpSelect options={props.option_list} onChange={_handleChange} value={value}/>
+                </FormGroup>
+            </div>
+            <div className={Classes.DIALOG_FOOTER}>
+                <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+                    <Button onClick={_cancelHandler}>Cancel</Button>
+                    <Button intent={Intent.PRIMARY} onClick={_submitHandler}>Submit</Button>
                 </div>
-                <div className={Classes.DIALOG_FOOTER}>
-                    <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-                        <Button onClick={this._cancelHandler}>Cancel</Button>
-                        <Button intent={Intent.PRIMARY} onClick={this._submitHandler}>Submit</Button>
-                    </div>
-                </div>
-            </Dialog>
-        )
-    }
+            </div>
+        </Dialog>
+    )
 }
+
+SelectDialog = memo(SelectDialog);
 
 SelectDialog.propTypes = {
     handleSubmit: PropTypes.func,
@@ -546,94 +545,95 @@ SelectDialog.propTypes = {
 
 };
 
-
-function showSelectDialog(title, select_label, cancel_text, submit_text, submit_function, option_list, dark_theme=false) {
+function showSelectDialog(title, select_label, cancel_text, submit_text, submit_function, option_list, dark_theme = false) {
 
     let domContainer = document.querySelector('#modal-area');
 
-    function handle_close () {
+    function handle_close() {
         ReactDOM.unmountComponentAtNode(domContainer)
     }
+
     ReactDOM.render(<SelectDialog handleSubmit={submit_function}
-                                   handleClose={handle_close}
-                                   title={title}
-                                   select_label={select_label}
-                                   submit_text={submit_text}
-                                   option_list={option_list}
-                                   cancel_text={cancel_text}/>, domContainer);
+                                  handleClose={handle_close}
+                                  title={title}
+                                  select_label={select_label}
+                                  submit_text={submit_text}
+                                  option_list={option_list}
+                                  cancel_text={cancel_text}/>, domContainer);
 }
 
 var res_types = ["collection", "project", "tile", "list", "code"];
 
-class SelectResourceDialog extends React.Component {
+function SelectResourceDialog(props) {
+    const [show, set_show] = useState(false);
+    const [value, set_value] = useState(null);
+    const [type, set_type] = useState("collection");
+    const [option_names, set_option_names] = useState([]);
+    const [selected_resource, set_selected_resource] = useState(null);
 
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.state = {
-            show: false,
-            type: "collection",
-            value: null,
-            option_names: [],
-            selected_resource: null
-        };
-    }
+    const pushCallback = useCallbackStack();
 
-    componentDidMount() {
-        this._handleTypeChange("collection")
-    }
+    useEffect(() => {
+        console.log("I'm in useEffect");
+        _handleTypeChange("collection")
+    }, []);
 
-    _handleTypeChange(val) {
+    function _handleTypeChange(val) {
+        console.log("entering _handleTypeChange");
         let get_url = `get_${val}_names`;
         let dict_hash = `${val}_names`;
-        let self = this;
-        postWithCallback("host", get_url,{"user_id": user_id}, function (data) {
-            let option_names = data[dict_hash];
-            self.setState({show: true, type: val, option_names: option_names, selected_resource: option_names[0]})
+        console.log("about to postWithCallback");
+        postWithCallback("host", get_url, {"user_id": user_id}, function (data) {
+            console.log("returned from post");
+            set_show(true);
+            set_type(val);
+            set_option_names(data[dict_hash]);
+            set_selected_resource(data[dict_hash][0]);
+        }, (data)=>{console.log("got error callback")});
+    }
+
+    function _handleResourceChange(val) {
+        set_selected_resource(val)
+    }
+
+    function _submitHandler(event) {
+        set_show(false);
+        pushCallback(() => {
+            props.handleSubmit({type: type, selected_resource: selected_resource});
+            props.handleClose();
         });
     }
 
-    _handleResourceChange(val) {
-        this.setState({selected_resource: val})
+    function _cancelHandler() {
+        set_show(false);
+        props.handleClose()
     }
 
-    _submitHandler(event) {
-        this.setState({"show": false}, ()=>{
-            this.props.handleSubmit({type: this.state.type, selected_resource: this.state.selected_resource});
-            this.props.handleClose();
-        });
-    }
-
-    _cancelHandler() {
-        this.setState({"show": false});
-        this.props.handleClose()
-    }
-
-    render() {
-        return (
-            <Dialog isOpen={this.state.show}
-                    className={window.dark_theme ? "bp4-dark" : ""}
-                       title="Select a library resource"
-                       onClose={this._cancelHandler}
-                       canEscapeKeyClose={true}>
-                <div className={Classes.DIALOG_BODY}>
-                   <FormGroup label="Resource Type">
-                        <BpSelect options={res_types} onChange={this._handleTypeChange} value={this.state.type}/>
-                   </FormGroup>
-                   <FormGroup label="Specific Resource">
-                        <BpSelect options={this.state.option_names} onChange={this._handleResourceChange} value={this.state.selected_resource}/>
-                   </FormGroup>
+    return (
+        <Dialog isOpen={show}
+                className={window.dark_theme ? "bp4-dark" : ""}
+                title="Select a library resource"
+                onClose={_cancelHandler}
+                canEscapeKeyClose={true}>
+            <div className={Classes.DIALOG_BODY}>
+                <FormGroup label="Resource Type">
+                    <BpSelect options={res_types} onChange={_handleTypeChange} value={type}/>
+                </FormGroup>
+                <FormGroup label="Specific Resource">
+                    <BpSelect options={option_names} onChange={_handleResourceChange} value={selected_resource}/>
+                </FormGroup>
+            </div>
+            <div className={Classes.DIALOG_FOOTER}>
+                <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+                    <Button onClick={_cancelHandler}>Cancel</Button>
+                    <Button intent={Intent.PRIMARY} onClick={_submitHandler}>Submit</Button>
                 </div>
-                <div className={Classes.DIALOG_FOOTER}>
-                    <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-                        <Button onClick={this._cancelHandler}>Cancel</Button>
-                        <Button intent={Intent.PRIMARY} onClick={this._submitHandler}>Submit</Button>
-                    </div>
-                </div>
-            </Dialog>
-        )
-    }
+            </div>
+        </Dialog>
+    )
 }
+
+SelectDialog = memo(SelectDialog);
 
 SelectResourceDialog.propTypes = {
     handleSubmit: PropTypes.func,
@@ -643,82 +643,66 @@ SelectResourceDialog.propTypes = {
     cancel_text: PropTypes.string
 };
 
-function showSelectResourceDialog(cancel_text, submit_text, submit_function, dark_theme=false) {
+function showSelectResourceDialog(cancel_text, submit_text, submit_function, dark_theme = false) {
 
     let domContainer = document.querySelector('#modal-area');
 
-    function handle_close () {
+    function handle_close() {
         ReactDOM.unmountComponentAtNode(domContainer)
     }
-    let the_elem = <SelectResourceDialog handleSubmit={submit_function}
-                                          handleClose={handle_close}
-                                          submit_text={submit_text}
-                                          cancel_text={cancel_text}/>;
-    ReactDOM.render(the_elem, domContainer);
-    // ReactDOM.render(<ConfirmDialog handleSubmit={null}
-    //                                handleCancel={null}
-    //                              handleClose={handle_close}
-    //                              title="blah"
-    //                              text_body="blip"
-    //                              submit_text="mob"
-    //                              cancel_text="mob2"/>, domContainer);
 
+    let the_elem = <SelectResourceDialog handleSubmit={submit_function}
+                                         handleClose={handle_close}
+                                         submit_text={submit_text}
+                                         cancel_text={cancel_text}/>;
+    ReactDOM.render(the_elem, domContainer);
 }
 
-class ConfirmDialog extends React.Component {
+function ConfirmDialog(props) {
+    const [show, set_show] = useState(false);
 
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.state = {
-            show: false,
-        };
+    useEffect(() => {
+        set_show(true);
+    }, []);
+
+    function _submitHandler(event) {
+        set_show(false);
+        props.handleSubmit();
+        props.handleClose();
     }
 
-
-    componentDidMount() {
-        this.setState({"show": true});
-    }
-
-    _submitHandler(event) {
-        this.setState({"show": false});
-        this.props.handleSubmit();
-        this.props.handleClose();
-    }
-
-    _cancelHandler() {
-        this.setState({"show": false});
-        this.props.handleClose();
-        if (this.props.handleCancel) {
-            this.props.handleCancel()
+    function _cancelHandler() {
+        set_show(false);
+        props.handleClose();
+        if (props.handleCancel) {
+            props.handleCancel()
         }
     }
 
-    render() {
-        let self = this;
-        return (
-            <Dialog isOpen={this.state.show}
-                    className={window.dark_theme ? "bp4-dark" : ""}
-                    title={this.props.title}
-                    onClose={this._cancelHandler}
-                    autoFocus={true}
-                    enforceFocus={true}
-                    usePortal={false}
-                    canEscapeKeyClose={true}>
-                <DialogBody>
-                    <p>{this.props.text_body}</p>
-                </DialogBody>
-                <DialogFooter actions={
-                    <Fragment>
-                        <Button onClick={this._cancelHandler}>{this.props.cancel_text}</Button>
-                        <Button type="submit" intent={Intent.PRIMARY}
-                                onClick={this._submitHandler}>{this.props.submit_text}</Button>
-                    </Fragment>
-                }/>
-            </Dialog>
-        )
-    }
+    return (
+        <Dialog isOpen={show}
+                className={window.dark_theme ? "bp4-dark" : ""}
+                title={props.title}
+                onClose={_cancelHandler}
+                autoFocus={true}
+                enforceFocus={true}
+                usePortal={false}
+                canEscapeKeyClose={true}>
+            <DialogBody>
+                <p>{props.text_body}</p>
+            </DialogBody>
+            <DialogFooter actions={
+                <Fragment>
+                    <Button onClick={_cancelHandler}>{props.cancel_text}</Button>
+                    <Button type="submit" intent={Intent.PRIMARY}
+                            onClick={_submitHandler}>{props.submit_text}</Button>
+                </Fragment>
+            }/>
+        </Dialog>
+    )
 }
+
+ConfirmDialog = memo(ConfirmDialog);
 
 ConfirmDialog.propTypes = {
     handleSubmit: PropTypes.func,
@@ -736,81 +720,20 @@ ConfirmDialog.defaultProps = {
     handleCancel: null
 };
 
-function showConfirmDialogReact(title, text_body, cancel_text, submit_text, submit_function, cancel_function=null) {
+function showConfirmDialogReact(title, text_body, cancel_text, submit_text, submit_function, cancel_function = null) {
 
     let domContainer = document.querySelector('#modal-area');
 
-    function handle_close () {
+    function handle_close() {
         ReactDOM.unmountComponentAtNode(domContainer)
 
     }
+
     ReactDOM.render(<ConfirmDialog handleSubmit={submit_function}
                                    handleCancel={cancel_function}
-                                 handleClose={handle_close}
-                                 title={title}
-                                 text_body={text_body}
-                                 submit_text={submit_text}
-                                 cancel_text={cancel_text}/>, domContainer);
-}
-
-class InformDialog extends React.Component {
-
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.state = {
-            show: false,
-        };
-    }
-
-
-    componentDidMount() {
-        this.setState({"show": true})
-    }
-
-    _closeHandler() {
-        this.setState({"show": false});
-        this.props.handleClose()
-    }
-
-    render() {
-        return (
-            <Dialog isOpen={this.state.show}
-                    className={window.dark_theme ? "bp4-dark" : ""}
-                       title={this.props.title}
-                       onClose={this._closeHandler}
-                       canEscapeKeyClose={true}>
-                <div className={Classes.DIALOG_BODY}>
-                    <p>{this.props.text_body}</p>
-                </div>
-                <div className={Classes.DIALOG_FOOTER}>
-                    <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-                        <Button onClick={this._closeHandler}>Okay</Button>
-                    </div>
-                </div>
-            </Dialog>
-        )
-    }
-}
-
-InformDialog.propTypes = {
-    handleClose: PropTypes.func,
-    title: PropTypes.string,
-    text_body: PropTypes.string,
-    close_text: PropTypes.string,
-};
-
-function showInformDialogReact(title, text_body, close_text="Okay") {
-
-    let domContainer = document.querySelector('#modal-area');
-
-    function handle_close () {
-        ReactDOM.unmountComponentAtNode(domContainer)
-
-    }
-    ReactDOM.render(<ConfirmDialog
-                                 handleClose={handle_close}
-                                 title={title}
-                                 text_body={text_body}
-                                 close_text={close_text}/>, domContainer);
+                                   handleClose={handle_close}
+                                   title={title}
+                                   text_body={text_body}
+                                   submit_text={submit_text}
+                                   cancel_text={cancel_text}/>, domContainer);
 }

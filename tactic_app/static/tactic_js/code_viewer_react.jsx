@@ -87,6 +87,17 @@ function CodeViewerApp(props) {
     const [regex, set_regex] = useState(false);
     const [search_matches, set_search_matches] = useState(props.null);
 
+    // The following only are used if not in context
+    const [usable_width, set_usable_width] = useState(() => {
+        return getUsableDimensions(true).usable_width - 170
+    });
+    const [usable_height, set_usable_height] = useState(() => {
+        return getUsableDimensions(true).usable_height_no_bottom
+    });
+    const [dark_theme, set_dark_theme] = useState(() => {
+        return props.initial_theme === "dark"
+    });
+    const [resource_name, set_resource_name] = useState(props.resource_name);
 
     useEffect(() => {
         props.stopSpinner();
@@ -96,30 +107,15 @@ function CodeViewerApp(props) {
             window.addEventListener("resize", _update_window_dimensions);
             _update_window_dimensions();
         }
+        else {
+             props.registerDirtyMethod(_dirty)
+        }
     }, []);
 
-    const prepCallback = useCallbackStack();
+    const pushCallback = useCallbackStack();
 
     useConstructor(() => {
-        if (props.controlled) {
-            props.registerDirtyMethod(_dirty)
-        }
         if (!props.controlled) {
-            const [usable_width, set_usable_width] = useState(() => {
-                return getUsableDimensions(true).usable_width - 170
-            });
-            const [usable_height, set_usable_height] = useState(() => {
-                return getUsableDimensions(true).usable_height_no_bottom
-            });
-            const [dark_theme, set_dark_theme] = useState(() => {
-                return props.initial_theme === "dark"
-            });
-            const [resource_name, set_resource_name] = useState(props.resource_name);
-            const cPropGetters = {
-                usable_width: usable_width,
-                usable_height: usable_height,
-                resource_name: resource_name
-            };
             window.addEventListener("beforeunload", function (e) {
                 if (_dirty()) {
                     e.preventDefault();
@@ -146,14 +142,23 @@ function CodeViewerApp(props) {
         set_dark_theme(dark_theme);
 
         if (!window.in_context) {
-            prepCallback(() => {
+            pushCallback(() => {
                 window.dark_theme = dark_theme
             })
         }
     }
 
+
+    function cPropGetters() {
+        return {
+            usable_width: usable_width,
+            usable_height: usable_height,
+            resource_name: resource_name
+        }
+    };
+
     function _cProp(pname) {
-        return props.controlled ? props[pname] : cPropGetters[pname]
+        return props.controlled ? props[pname] : cPropGetters()[pname]
     }
 
     const menu_specs = useMemo(() => {
@@ -205,7 +210,7 @@ function CodeViewerApp(props) {
             props.changeResourceName(new_name, callback)
         } else {
             set_resource_name(new_name);
-            prepCallback(callback);
+            pushCallback(callback);
         }
     }
 
@@ -323,9 +328,9 @@ function CodeViewerApp(props) {
     let actual_dark_theme = props.controlled ? props.dark_theme : dark_theme;
     let my_props = {...props};
     if (!props.controlled) {
-        for (let prop_name of controllable_props) {
-            my_props[prop_name] = state[prop_name]
-        }
+        my_props.resource_name = resource_name;
+        my_props.usable_height = usable_height;
+        my_props.usable_width = usable_width;
     }
     let outer_style = {
         width: "100%",

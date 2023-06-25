@@ -489,7 +489,6 @@ class LoadSaveTasksMixin:
     @task_worthy
     def export_as_presentation(self, data_dict):
         try:
-            new_collection_name = data_dict["collection_name"]
             cell_list = data_dict["cell_list"]
             new_cell_list = []
             style_text = ""
@@ -543,13 +542,13 @@ class LoadSaveTasksMixin:
                                           project_name=data_dict["project_name"])
             print("rendered the report")
             if data_dict["save_as_collection"]:
+                new_collection_name = data_dict["collection_name"]
                 self.create_complete_collection(new_collection_name, {"report": report_html}, "freeform")
                 self.mworker.ask_host("update_collection_selector_list", {"user_id": self.user_id})
                 _return_data = {"collection_name": new_collection_name,
                                 "success": True,
                                 "message": "Presentation Successfully Exported"}
             else:
-                print("not saving to a collection")
                 unique_id = store_temp_data(self.db, {"the_html": report_html})
                 _return_data = {"success": True,
                                 "temp_id": unique_id,
@@ -581,7 +580,6 @@ class LoadSaveTasksMixin:
     @task_worthy
     def export_as_report(self, data_dict):
         try:
-            new_collection_name = data_dict["collection_name"]
             cell_list = data_dict["cell_list"]
             new_cell_list = []
             ncells = len(cell_list)
@@ -640,6 +638,7 @@ class LoadSaveTasksMixin:
                                           project_name=data_dict["project_name"])
             print("rendered the report")
             if data_dict["save_as_collection"]:
+                new_collection_name = data_dict["collection_name"]
                 self.create_complete_collection(new_collection_name, {"report": report_html}, "freeform")
                 self.mworker.ask_host("update_collection_selector_list", {"user_id": self.user_id})
                 _return_data = {"collection_name": new_collection_name,
