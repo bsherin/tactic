@@ -5,7 +5,8 @@ import PropTypes from 'prop-types';
 import {LibraryMenubar} from "./library_menubars.js";
 import {doBinding} from "./utilities_react";
 
-export {RepositoryCollectionMenubar, RepositoryProjectMenubar, RepositoryTileMenubar, RepositoryListMenubar, RepositoryCodeMenubar}
+export {RepositoryCollectionMenubar, RepositoryProjectMenubar, RepositoryTileMenubar,
+    RepositoryListMenubar, RepositoryCodeMenubar}
 
 let specializedMenubarPropTypes = {
     sendContextMenuItems: PropTypes.func,

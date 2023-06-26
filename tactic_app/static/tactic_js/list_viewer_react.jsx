@@ -5,41 +5,42 @@
 import "../tactic_css/tactic.scss";
 
 import React from "react";
-import {Fragment} from "react";
+import {Fragment, useState, useEffect, useRef, memo} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
-import { TextArea } from "@blueprintjs/core";
+import {TextArea} from "@blueprintjs/core";
 
-import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app.js";
-import {TacticSocket} from "./tactic_socket.js";
-import {postAjax, postAjaxPromise, postWithCallback} from "./communication_react.js"
-import {doFlash, withStatus} from "./toaster.js"
+import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app";
+import {TacticSocket} from "./tactic_socket";
+import {postAjax, postAjaxPromise, postWithCallback} from "./communication_react"
+import {doFlash, withStatus} from "./toaster"
 
-import {getUsableDimensions, BOTTOM_MARGIN} from "./sizing_tools.js";
-import {withErrorDrawer} from "./error_drawer.js";
-import {doBinding} from "./utilities_react.js";
-import {guid} from "./utilities_react.js";
+import {getUsableDimensions, BOTTOM_MARGIN} from "./sizing_tools";
+import {withErrorDrawer} from "./error_drawer";
+import {guid} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 import {showModalReact} from "./modal_react";
+import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_react";
 
 export {list_viewer_props, ListViewerApp}
 
-function list_viewer_main () {
+function list_viewer_main() {
 
     function gotProps(the_props) {
         let ListViewerAppPlus = withErrorDrawer(withStatus(ListViewerApp));
         let the_element = <ListViewerAppPlus {...the_props}
-                                     controlled={false}
-                                     initial_theme={window.theme}
-                                     changeName={null}
+                                             controlled={false}
+                                             initial_theme={window.theme}
+                                             changeName={null}
         />;
         let domContainer = document.querySelector('#root');
         ReactDOM.render(the_element, domContainer)
     }
+
     let target = window.is_repository ? "repository_view_list_in_context" : "view_list_in_context";
     postAjaxPromise(target, {"resource_name": window.resource_name})
-        .then((data)=>{
+        .then((data) => {
             list_viewer_props(data, null, gotProps, null);
         })
 }
@@ -69,30 +70,29 @@ function list_viewer_props(data, registerDirtyMethod, finalCallback, registerOmn
 
 const LIST_PADDING_TOP = 15;
 
-class ListEditor extends React.Component {
-
-    render() {
-        let tastyle = {
-            resize: "horizontal",
-            margin: 2,
-            height: this.props.height - LIST_PADDING_TOP,
-        };
-        return (
-            <div id="listarea-container"
-                 ref={this.props.outer_ref}
-                 style={{margin: 0, paddingTop: LIST_PADDING_TOP}}>
-                <TextArea
-                      cols="50"
-                      style={tastyle}
-                      disabled={this.props.readOnly}
-                      onChange={this.props.handleChange}
-                      value={this.props.the_content}
+function ListEditor(props) {
+    let tastyle = {
+        resize: "horizontal",
+        margin: 2,
+        height: props.height - LIST_PADDING_TOP,
+    };
+    return (
+        <div id="listarea-container"
+             ref={props.outer_ref}
+             style={{margin: 0, paddingTop: LIST_PADDING_TOP}}>
+            <TextArea
+                cols="50"
+                style={tastyle}
+                disabled={props.readOnly}
+                onChange={props.handleChange}
+                value={props.the_content}
             />
-            </div>
-        )
+        </div>
+    )
 
-    }
 }
+
+ListEditor = memo(ListEditor);
 
 ListEditor.propTypes = {
     the_content: PropTypes.string,
@@ -102,97 +102,116 @@ ListEditor.propTypes = {
     height: PropTypes.number
 };
 
-const controllable_props = ["resource_name", "usable_height", "usable_width"];
+function ListViewerApp(props) {
+    const top_ref = useRef(null);
+    const cc_ref = useRef(null);
+    const search_ref = useRef(null);
+    const cc_offset_top = useRef(null);
 
-class ListViewerApp extends React.Component {
+    const savedContent = useRef(props.the_content);
+    const savedTags = useRef(props.split_tags);
+    const savedNotes = useRef(props.notes);
 
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.top_ref = React.createRef();
-        this.le_ref = React.createRef();
-        this.savedContent = props.the_content;
-        this.savedTags = props.split_tags;
-        this.savedNotes = props.notes;
-        let self = this;
+    const [list_content, set_list_content, list_content_ref] = useStateAndRef(props.the_content);
+    const [notes, set_notes, notes_ref] = useStateAndRef(props.notes);
+    const [tags, set_tags, tags_ref] = useStateAndRef(props.split_tags);
 
-        this.state = {
-            list_content: props.the_content,
-            notes: props.notes,
-            tags: props.split_tags,
-        };
 
-        if (props.controlled) {
-            props.registerDirtyMethod(this._dirty)
+    // The following only are used if not in context
+    const [usable_width, set_usable_width] = useState(() => {
+        return getUsableDimensions(true).usable_width - 170
+    });
+    const [usable_height, set_usable_height] = useState(() => {
+        return getUsableDimensions(true).usable_height_no_bottom
+    });
+    const [dark_theme, set_dark_theme] = useState(() => {
+        return props.initial_theme === "dark"
+    });
+    const [resource_name, set_resource_name] = useState(props.resource_name);
+
+    useEffect(() => {
+        props.stopSpinner();
+        if (cc_ref && cc_ref.current) {
+            cc_offset_top.current = cc_ref.current.offsetTop;
         }
-
         if (!props.controlled) {
-            const aheight = getUsableDimensions(true).usable_height_no_bottom;
-            const awidth = getUsableDimensions(true).usable_width - 170;
-            this.state.usable_height = aheight;
-            this.state.usable_width = awidth;
-            this.state.dark_theme = props.initial_theme === "dark";
-            this.state.resource_name = props.resource_name;
+            window.dark_theme = dark_theme;
+            window.addEventListener("resize", _update_window_dimensions);
+            _update_window_dimensions();
+        } else {
+            props.registerDirtyMethod(_dirty)
+        }
+    }, []);
+
+    const pushCallback = useCallbackStack("code_viewer");
+
+    useConstructor(() => {
+        if (!props.controlled) {
             window.addEventListener("beforeunload", function (e) {
-                if (self._dirty()) {
+                if (_dirty()) {
                     e.preventDefault();
                     e.returnValue = ''
                 }
-            });
+            })
+        }
+    });
+
+    function _setTheme(dark_theme) {
+        set_dark_theme(dark_theme);
+
+        if (!window.in_context) {
+            pushCallback(() => {
+                window.dark_theme = dark_theme
+            })
         }
     }
 
-    componentDidMount() {
-        this.props.stopSpinner();
-        if (!this.props.controlled) {
-            window.dark_theme = this.state.dark_theme;
-            window.addEventListener("resize", this._update_window_dimensions);
-            this._update_window_dimensions();
+    function cPropGetters() {
+        return {
+            usable_width: usable_width,
+            usable_height: usable_height,
+            resource_name: resource_name
         }
     }
 
-    _setTheme(dark_theme) {
-        this.setState({dark_theme: dark_theme}, ()=> {
-            if (!window.in_context) {
-                window.dark_theme = this.state.dark_theme
-            }
-        })
+    function _cProp(pname) {
+        return props.controlled ? props[pname] : cPropGetters()[pname]
     }
 
-    _cProp(pname) {
-            return this.props.controlled ? this.props[pname] :  this.state[pname]
-    }
-
-    get menu_specs() {
+    function menu_specs() {
         let ms;
-        if (this.props.is_repository) {
+        if (props.is_repository) {
             ms = {
                 Transfer: [{
                     "name_text": "Copy to library", "icon_name": "import",
                     "click_handler": () => {
-                        copyToLibrary("list", this._cProp("resource_name"))
+                        copyToLibrary("list", _cProp("resource_name"))
                     }, tooltip: "Copy to library"
                 }]
             }
-        }
-        else {
+        } else {
             ms = {
                 Save: [
-                    {name_text: "Save",
-                    icon_name: "saved",
-                    click_handler: this._saveMe,
-                    key_bindings: ['ctrl+s'],
-                    tooltip: "Save"},
-                    {name_text: "Save As...",
+                    {
+                        name_text: "Save",
+                        icon_name: "saved",
+                        click_handler: _saveMe,
+                        key_bindings: ['ctrl+s'],
+                        tooltip: "Save"
+                    },
+                    {
+                        name_text: "Save As...",
                         icon_name: "floppy-disk",
-                        click_handler: this._saveMeAs,
-                        tooltip: "Save as"},
+                        click_handler: _saveMeAs,
+                        tooltip: "Save as"
+                    },
                 ],
                 Transfer: [
-                    {name_text: "Share",
+                    {
+                        name_text: "Share",
                         icon_name: "share",
                         click_handler: () => {
-                            sendToRepository("list", this._cProp("resource_name"))
+                            sendToRepository("list", _cProp("resource_name"))
                         },
                         tooltip: "Share to repository"
                     },
@@ -208,61 +227,70 @@ class ListViewerApp extends React.Component {
         return ms
     }
 
-    _setResourceNameState(new_name, callback=null) {
-        if (this.props.controlled) {
-            this.props.changeResourceName(new_name, callback)
+    function _setResourceNameState(new_name, callback = null) {
+        if (props.controlled) {
+            props.changeResourceName(new_name, callback)
+        } else {
+            set_resource_name(new_name);
+            pushCallback(callback);
         }
-        else {
-            this.setState({resource_name: new_name}, callback)
+    }
+
+    function _handleMetadataChange(state_stuff) {
+        for (let field in state_stuff) {
+            switch (field) {
+                case "tags":
+                    set_tags(state_stuff[field]);
+                    break;
+                case "notes":
+                    set_notes(state_stuff[field]);
+                    break;
+            }
         }
     }
 
-    _handleStateChange(state_stuff) {
-        this.setState(state_stuff)
+    function _handleListChange(event) {
+        set_list_content(event.target.value);
     }
 
-    _handleListChange(event) {
-        this.setState({"list_content": event.target.value});
+    function _update_window_dimensions() {
+        set_usable_width(window.innerWidth - top_ref.current.offsetLeft);
+        set_usable_height(window.innerHeight - top_ref.current.offsetTop)
     }
 
-    _update_window_dimensions() {
-        this.setState({
-            usable_width: window.innerWidth - this.top_ref.current.offsetLeft,
-            usable_height: window.innerHeight - this.top_ref.current.offsetTop
-        });
-    }
-
-    get_new_le_height () {
-        let uheight = this._cProp("usable_height");
-        if (this.le_ref && this.le_ref.current) {  // This will be true after the initial render
-            return uheight - this.le_ref.current.offsetTop - BOTTOM_MARGIN
-        }
-        else {
+    function get_new_cc_height() {
+        let uheight = _cProp("usable_height");
+        if (cc_offset_top.current) {
+            return uheight - cc_offset_top.current - BOTTOM_MARGIN
+        } else if (cc_ref && cc_ref.current) {  // This will be true after the initial render
+            return uheight - cc_ref.current.offsetTop - BOTTOM_MARGIN
+        } else {
             return uheight - 100
         }
     }
 
-    _saveMe() {
-        if (!this.props.am_selected) {
+    function _saveMe() {
+        if (!props.am_selected) {
             return false
         }
-        const new_list_as_string = this.state.list_content;
-        const tagstring = this.state.tags.join(" ");
-        const notes = this.state.notes;
-        const tags = this.state.tags;  // In case it's modified wile saving
+        const new_list_as_string = list_content;
+        const tagstring = tags.join(" ");
+        const local_notes = notes;
+        const local_tags = tags;  // In case it's modified wile saving
         const result_dict = {
-            "list_name": this._cProp("resource_name"),
+            "list_name": _cProp("resource_name"),
             "new_list_as_string": new_list_as_string,
             "tags": tagstring,
             "notes": notes
         };
         let self = this;
         postAjax("update_list", result_dict, update_success);
+
         function update_success(data) {
             if (data.success) {
-                self.savedContent = new_list_as_string;
-                self.savedTags = tags;
-                self.savedNotes = notes;
+                savedContent.current = new_list_as_string;
+                savedTags.current = local_tags;
+                savedNotes.current = local_notes;
                 data.timeout = 2000;
             }
             doFlash(data);
@@ -270,26 +298,28 @@ class ListViewerApp extends React.Component {
         }
     }
 
-    _saveMeAs(e) {
-        this.props.startSpinner();
+    function _saveMeAs(e) {
+        props.startSpinner();
         let self = this;
         postWithCallback("host", "get_list_names", {"user_id": window.user_id}, function (data) {
             let checkboxes;
             showModalReact("Save List As", "New List Name", CreateNewList,
-                      "NewList", data["list_names"], null, doCancel)
-        }, null, this.props.main_id);
+                "NewList", data["list_names"], null, doCancel)
+        }, null, props.main_id);
+
         function doCancel() {
-            self.props.stopSpinner()
+            props.stopSpinner()
         }
+
         function CreateNewList(new_name) {
             const result_dict = {
                 "new_res_name": new_name,
-                "res_to_copy": self._cProp("resource_name")
+                "res_to_copy": _cProp("resource_name")
             };
             postAjaxPromise('/create_duplicate_list', result_dict)
                 .then((data) => {
-                        self._setResourceNameState(new_name, () => {
-                            self._saveMe()
+                        _setResourceNameState(new_name, () => {
+                            _saveMe()
                         })
                     }
                 )
@@ -297,78 +327,77 @@ class ListViewerApp extends React.Component {
         }
     }
 
-
-    _dirty() {
-        let current_content = this.state.list_content;
-        const tags = this.state.tags;
-        const notes = this.state.notes;
-        return !((current_content == this.savedContent) && (tags == this.savedTags) && (notes == this.savedNotes))
+    function _dirty() {
+        return !((list_content_ref.current == savedContent.current) &&
+            (tags_ref.current == savedTags.current) && (notes_ref.current == savedNotes.current))
     }
 
-    render() {
-        let dark_theme = this.props.controlled ? this.context.dark_theme : this.state.dark_theme;
-        let my_props = {...this.props};
-        if (!this.props.controlled) {
-            for (let prop_name of controllable_props) {
-                my_props[prop_name] = this.state[prop_name]
-            }
+    let actual_dark_theme = props.controlled ? props.dark_theme : dark_theme;
+    let my_props = {...props};
+    if (!props.controlled) {
+        for (let prop_name of controllable_props) {
+            my_props.resource_name = resource_name;
+            my_props.usable_height = usable_height;
+            my_props.usable_width = usable_width;
         }
-        let outer_style = {
-            width: "100%",
-            height: my_props.usable_height,
-            paddingLeft: 0,
-            position: "relative"
-        };
-        let outer_class = "resource-viewer-holder";
-        if (!this.props.controlled) {
-            if (dark_theme) {
-                outer_class = outer_class + " bp4-dark";
-            } else {
-                outer_class = outer_class + " light-theme"
-            }
-        }
-        return (
-            <Fragment>
-                {!this.props.controlled &&
-                    <TacticNavbar is_authenticated={window.is_authenticated}
-                                  dark_theme={dark_theme}
-                                  setTheme={this._setTheme}
-                                  selected={null}
-                                  show_api_links={true}
-                                  page_id={this.props.resource_viewer_id}
-                                  user_name={window.username}/>
-                }
-                <div className={outer_class} ref={this.top_ref} style={outer_style}>
-                    <ResourceViewerApp {...my_props}
-                                       dark_theme={dark_theme}
-                                       setTheme={this.props.controlled ? null: this._setTheme}
-                                       resource_viewer_id={this.props.resource_viewer_id}
-                                       setResourceNameState={this._setResourceNameState}
-                                       refreshTab={this.props.refreshTab}
-                                       closeTab={this.props.closeTab}
-                                       res_type="list"
-                                       resource_name={my_props.resource_name}
-                                       menu_specs={this.menu_specs}
-                                       handleStateChange={this._handleStateChange}
-                                       created={this.props.created}
-                                       meta_outer={this.props.meta_outer}
-                                       notes={this.state.notes}
-                                       tags={this.state.tags}
-                                       showErrorDrawerButton={false}
-                                       registerOmniFunction={this.props.registerOmniFunction}
-                                       saveMe={this._saveMe}>
-                            <ListEditor the_content={this.state.list_content}
-                                        readOnly={this.props.readOnly}
-                                        outer_ref={this.le_ref}
-                                        height={this.get_new_le_height()}
-                                        handleChange={this._handleListChange}
-                            />
-                    </ResourceViewerApp>
-                </div>
-            </Fragment>
-        )
     }
+    let outer_style = {
+        width: "100%",
+        height: my_props.usable_height,
+        paddingLeft: 0,
+        position: "relative"
+    };
+    let outer_class = "resource-viewer-holder";
+    if (!props.controlled) {
+        if (dark_theme) {
+            outer_class = outer_class + " bp4-dark";
+        } else {
+            outer_class = outer_class + " light-theme"
+        }
+    }
+    return (
+        <Fragment>
+            {!props.controlled &&
+                <TacticNavbar is_authenticated={window.is_authenticated}
+                              dark_theme={dark_theme}
+                              setTheme={_setTheme}
+                              selected={null}
+                              show_api_links={true}
+                              page_id={props.resource_viewer_id}
+                              user_name={window.username}/>
+            }
+            <div className={outer_class} ref={top_ref} style={outer_style}>
+                <ResourceViewerApp {...my_props}
+                                   dark_theme={dark_theme}
+                                   setTheme={props.controlled ? null : _setTheme}
+                                   resource_viewer_id={props.resource_viewer_id}
+                                   setResourceNameState={_setResourceNameState}
+                                   refreshTab={props.refreshTab}
+                                   closeTab={props.closeTab}
+                                   res_type="list"
+                                   resource_name={my_props.resource_name}
+                                   menu_specs={menu_specs()}
+                                   handleStateChange={_handleMetadataChange}
+                                   created={props.created}
+                                   meta_outer={props.meta_outer}
+                                   notes={notes}
+                                   tags={tags}
+                                   showErrorDrawerButton={false}
+                                   registerOmniFunction={props.registerOmniFunction}
+                                   saveMe={_saveMe}>
+                    <ListEditor the_content={list_content}
+                                readOnly={props.readOnly}
+                                outer_ref={cc_ref}
+                                height={get_new_cc_height()}
+                                handleChange={_handleListChange}
+                    />
+                </ResourceViewerApp>
+            </div>
+        </Fragment>
+    )
 }
+
+ListViewerApp = memo(ListViewerApp);
 
 ListViewerApp.propTypes = {
     controlled: PropTypes.bool,

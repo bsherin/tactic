@@ -11,7 +11,7 @@ var _react = _interopRequireWildcard(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _TacticOmnibar = require("./TacticOmnibar");
 var _key_trap = require("./key_trap");
-var _blueprint_mdata_fields = require("./blueprint_mdata_fields.js");
+var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _modal_react = require("./modal_react.js");
 var _resizing_layouts = require("./resizing_layouts.js");
 var _communication_react = require("./communication_react.js");
@@ -83,7 +83,7 @@ function ResourceViewerApp(props) {
       props.registerOmniFunction(_omniFunction);
     }
     return function () {
-      tsocket.disconnect();
+      props.tsocket.disconnect();
     };
   }, []);
   function initSocket() {

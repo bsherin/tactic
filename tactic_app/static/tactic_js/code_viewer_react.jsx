@@ -9,10 +9,10 @@ import {Fragment, useState, useEffect, useRef, useMemo, memo} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
-import {ReactCodemirror} from "./react-codemirror.js";
+import {ReactCodemirror} from "./react-codemirror";
 
-import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app.js";
-import {TacticSocket} from "./tactic_socket.js";
+import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app";
+import {TacticSocket} from "./tactic_socket";
 import {postAjaxPromise, postWithCallback} from "./communication_react.js"
 import {doFlash, withStatus} from "./toaster.js"
 
@@ -21,7 +21,7 @@ import {withErrorDrawer} from "./error_drawer.js";
 import {guid} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 import {showModalReact} from "./modal_react.js";
-import {useCallbackStack, useConstructor} from "./utilities_react";
+import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_react";
 
 export {code_viewer_props, CodeViewerApp}
 
@@ -66,23 +66,20 @@ function code_viewer_props(data, registerDirtyMethod, finalCallback, registerOmn
     })
 }
 
-const controllable_props = ["resource_name", "usable_height", "usable_width"];
-
 function CodeViewerApp(props) {
 
     const top_ref = useRef(null);
     const cc_ref = useRef(null);
     const search_ref = useRef(null);
-    const cc_offset_top = useRef(null);
+    const cc_bounding_top = useRef(null);
 
     const savedContent = useRef(props.the_content);
     const savedTags = useRef(props.split_tags);
     const savedNotes = useRef(props.notes);
 
-    const [didInit, setDidInit] = useState(false);
-    const [code_content, set_code_content] = useState(props.the_content);
-    const [notes, set_notes] = useState(props.notes);
-    const [tags, set_tags] = useState(props.split_tags);
+    const [code_content, set_code_content, code_content_ref] = useStateAndRef(props.the_content);
+    const [notes, set_notes, notes_ref] = useStateAndRef(props.notes);
+    const [tags, set_tags, tags_ref] = useStateAndRef(props.split_tags);
     const [search_string, set_search_string] = useState("");
     const [regex, set_regex] = useState(false);
     const [search_matches, set_search_matches] = useState(props.null);
@@ -101,7 +98,9 @@ function CodeViewerApp(props) {
 
     useEffect(() => {
         props.stopSpinner();
-        cc_offset_top.current = cc_ref.current.offsetTop;
+        if (cc_ref && cc_ref.current) {
+            cc_bounding_top.current = cc_ref.current.getBoundingClientRect().top;
+        }
         if (!props.controlled) {
             window.dark_theme = dark_theme;
             window.addEventListener("resize", _update_window_dimensions);
@@ -112,7 +111,7 @@ function CodeViewerApp(props) {
         }
     }, []);
 
-    const pushCallback = useCallbackStack();
+    const pushCallback = useCallbackStack("code_viewer");
 
     useConstructor(() => {
         if (!props.controlled) {
@@ -155,7 +154,7 @@ function CodeViewerApp(props) {
             usable_height: usable_height,
             resource_name: resource_name
         }
-    };
+    }
 
     function _cProp(pname) {
         return props.controlled ? props[pname] : cPropGetters()[pname]
@@ -237,13 +236,12 @@ function CodeViewerApp(props) {
     }
 
     function get_new_cc_height() {
-        let uheight = _cProp("usable_height");
-        if (cc_offset_top.current) {
-            return uheight - cc_offset_top.current - BOTTOM_MARGIN
+        if (cc_bounding_top.current) {
+            return window.innerHeight - cc_bounding_top.current - BOTTOM_MARGIN
         } else if (cc_ref && cc_ref.current) {  // This will be true after the initial render
-            return uheight - cc_ref.current.offsetTop - BOTTOM_MARGIN
+            return window.innerHeight - cc_ref.current.getBoundingClientRect().top - BOTTOM_MARGIN
         } else {
-            return uheight - 100
+            return _cProp("usable_height") - 100
         }
     }
 
@@ -322,7 +320,8 @@ function CodeViewerApp(props) {
     }
 
     function _dirty() {
-        return !((code_content == savedContent.current) && (tags == savedTags.current) && (notes == savedNotes.current))
+        return !((code_content_ref.current == savedContent.current) &&
+            (tags_ref.current == savedTags.current) && (notes_ref.current == savedNotes.current))
     }
 
     let actual_dark_theme = props.controlled ? props.dark_theme : dark_theme;
@@ -397,8 +396,8 @@ function CodeViewerApp(props) {
                                      update_search_state={_update_search_state}
                                      regex_search={regex}
                                      setSearchMatches={_setSearchMatches}
-                                     code_container_ref={cc_ref}
                                      code_container_height={cc_height}
+                                     ref={cc_ref}
                     />
                 </ResourceViewerApp>
             </div>

@@ -4,7 +4,7 @@ import {Fragment, useState, useEffect, useRef, memo} from 'react';
 
 import {TacticOmnibar} from "./TacticOmnibar";
 import {KeyTrap} from "./key_trap";
-import {CombinedMetadata} from "./blueprint_mdata_fields.js";
+import {CombinedMetadata} from "./blueprint_mdata_fields";
 import {showModalReact} from "./modal_react.js";
 import {HorizontalPanes} from "./resizing_layouts.js";
 import {handleCallback, postAjax} from "./communication_react.js"
@@ -78,7 +78,7 @@ function ResourceViewerApp(props) {
             props.registerOmniFunction(_omniFunction);
         }
         return (() => {
-            tsocket.disconnect()
+            props.tsocket.disconnect()
         })
     }, []);
 

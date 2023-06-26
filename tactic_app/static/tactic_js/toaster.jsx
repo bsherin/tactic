@@ -94,7 +94,9 @@ function withStatus(WrappedComponent) {
         const pushCallback = useCallbackStack();
 
         useEffect(() => {
-            initSocket()
+            if (props.tsocket) {
+                initSocket()
+            }
         }, []);
 
         function initSocket() {

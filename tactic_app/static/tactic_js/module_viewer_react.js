@@ -4,28 +4,30 @@ function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" =
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.ModuleViewerApp = void 0;
+exports.ModuleViewerApp = ModuleViewerApp;
 exports.module_viewer_props = module_viewer_props;
 require("../tactic_css/tactic.scss");
 var _react = _interopRequireWildcard(require("react"));
 var ReactDOM = _interopRequireWildcard(require("react-dom"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
-var _resource_viewer_react_app = require("./resource_viewer_react_app.js");
-var _tactic_socket = require("./tactic_socket.js");
-var _reactCodemirror = require("./react-codemirror.js");
-var _communication_react = require("./communication_react.js");
-var _toaster = require("./toaster.js");
-var _error_drawer = require("./error_drawer.js");
-var _utilities_react = require("./utilities_react.js");
-var _sizing_tools = require("./sizing_tools.js");
-var _blueprint_navbar = require("./blueprint_navbar.js");
-var _modal_react = require("./modal_react.js");
+var _resource_viewer_react_app = require("./resource_viewer_react_app");
+var _tactic_socket = require("./tactic_socket");
+var _reactCodemirror = require("./react-codemirror");
+var _communication_react = require("./communication_react");
+var _toaster = require("./toaster");
+var _error_drawer = require("./error_drawer");
+var _sizing_tools = require("./sizing_tools");
+var _utilities_react = require("./utilities_react");
+var _blueprint_navbar = require("./blueprint_navbar");
+var _modal_react = require("./modal_react");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
 function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
+function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
 function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
@@ -33,18 +35,6 @@ function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o =
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
-function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); } /**
                                                                                                                                                                                                                                                                                                                                                      * Created by bls910
                                                                                                                                                                                                                                                                                                                                                      */
@@ -87,489 +77,477 @@ function module_viewer_props(data, registerDirtyMethod, finalCallback, registerO
     registerOmniFunction: registerOmniFunction
   });
 }
-var ModuleViewerApp = /*#__PURE__*/function (_React$Component) {
-  _inherits(ModuleViewerApp, _React$Component);
-  var _super = _createSuper(ModuleViewerApp);
-  function ModuleViewerApp(props) {
-    var _this;
-    _classCallCheck(this, ModuleViewerApp);
-    _this = _super.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
-    _this.top_ref = /*#__PURE__*/_react["default"].createRef();
-    _this.cc_ref = /*#__PURE__*/_react["default"].createRef();
-    _this.search_ref = /*#__PURE__*/_react["default"].createRef();
-    _this.savedContent = props.the_content;
-    _this.savedTags = props.split_tags;
-    _this.savedNotes = props.notes;
-    var self = _assertThisInitialized(_this);
-    _this.state = {
-      code_content: props.the_content,
-      notes: props.notes,
-      icon: _this.props.icon,
-      tags: props.split_tags,
-      search_string: "",
-      regex: false,
-      search_matches: null
-    };
-    if (props.controlled) {
-      props.registerDirtyMethod(_this._dirty);
+function ModuleViewerApp(props) {
+  var top_ref = (0, _react.useRef)(null);
+  var cc_ref = (0, _react.useRef)(null);
+  var search_ref = (0, _react.useRef)(null);
+  var cc_bounding_top = (0, _react.useRef)(null);
+  var savedContent = (0, _react.useRef)(props.the_content);
+  var savedTags = (0, _react.useRef)(props.split_tags);
+  var savedNotes = (0, _react.useRef)(props.notes);
+  var savedIcon = (0, _react.useRef)(props.icon);
+  var _useStateAndRef = (0, _utilities_react.useStateAndRef)(props.the_content),
+    _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
+    code_content = _useStateAndRef2[0],
+    set_code_content = _useStateAndRef2[1],
+    code_content_ref = _useStateAndRef2[2];
+  var _useStateAndRef3 = (0, _utilities_react.useStateAndRef)(props.notes),
+    _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
+    notes = _useStateAndRef4[0],
+    set_notes = _useStateAndRef4[1],
+    notes_ref = _useStateAndRef4[2];
+  var _useStateAndRef5 = (0, _utilities_react.useStateAndRef)(props.split_tags),
+    _useStateAndRef6 = _slicedToArray(_useStateAndRef5, 3),
+    tags = _useStateAndRef6[0],
+    set_tags = _useStateAndRef6[1],
+    tags_ref = _useStateAndRef6[2];
+  var _useStateAndRef7 = (0, _utilities_react.useStateAndRef)(props.icon),
+    _useStateAndRef8 = _slicedToArray(_useStateAndRef7, 3),
+    icon = _useStateAndRef8[0],
+    set_icon = _useStateAndRef8[1],
+    icon_ref = _useStateAndRef8[2];
+  var _useState = (0, _react.useState)(""),
+    _useState2 = _slicedToArray(_useState, 2),
+    search_string = _useState2[0],
+    set_search_string = _useState2[1];
+  var _useState3 = (0, _react.useState)(false),
+    _useState4 = _slicedToArray(_useState3, 2),
+    regex = _useState4[0],
+    set_regex = _useState4[1];
+  var _useState5 = (0, _react.useState)(props["null"]),
+    _useState6 = _slicedToArray(_useState5, 2),
+    search_matches = _useState6[0],
+    set_search_matches = _useState6[1];
+
+  // The following only are used if not in context
+  var _useState7 = (0, _react.useState)(function () {
+      return (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
+    }),
+    _useState8 = _slicedToArray(_useState7, 2),
+    usable_width = _useState8[0],
+    set_usable_width = _useState8[1];
+  var _useState9 = (0, _react.useState)(function () {
+      return (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
+    }),
+    _useState10 = _slicedToArray(_useState9, 2),
+    usable_height = _useState10[0],
+    set_usable_height = _useState10[1];
+  var _useState11 = (0, _react.useState)(function () {
+      return props.initial_theme === "dark";
+    }),
+    _useState12 = _slicedToArray(_useState11, 2),
+    dark_theme = _useState12[0],
+    set_dark_theme = _useState12[1];
+  var _useState13 = (0, _react.useState)(props.resource_name),
+    _useState14 = _slicedToArray(_useState13, 2),
+    resource_name = _useState14[0],
+    set_resource_name = _useState14[1];
+  (0, _react.useEffect)(function () {
+    props.stopSpinner();
+    if (cc_ref && cc_ref.current) {
+      cc_bounding_top.current = cc_ref.current.getBoundingClientRect().top;
     }
     if (!props.controlled) {
-      var aheight = (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
-      var awidth = (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
-      _this.state.usable_height = aheight;
-      _this.state.usable_width = awidth;
-      _this.state.dark_theme = props.initial_theme === "dark";
-      _this.state.resource_name = props.resource_name;
+      window.dark_theme = dark_theme;
+      window.addEventListener("resize", _update_window_dimensions);
+      _update_window_dimensions();
+    } else {
+      props.registerDirtyMethod(_dirty);
+    }
+  }, []);
+  var pushCallback = (0, _utilities_react.useCallbackStack)("code_viewer");
+  (0, _utilities_react.useConstructor)(function () {
+    if (!props.controlled) {
       window.addEventListener("beforeunload", function (e) {
-        if (self._dirty()) {
+        if (_dirty()) {
           e.preventDefault();
           e.returnValue = '';
         }
       });
     }
-    return _this;
+  });
+  function cPropGetters() {
+    return {
+      usable_width: usable_width,
+      usable_height: usable_height,
+      resource_name: resource_name
+    };
   }
-  _createClass(ModuleViewerApp, [{
-    key: "_update_search_state",
-    value: function _update_search_state(nstate) {
-      var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-      this.setState(nstate, callback);
-    }
-  }, {
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      this.props.stopSpinner();
-      if (!this.props.controlled) {
-        window.dark_theme = this.state.dark_theme;
-        window.addEventListener("resize", this._update_window_dimensions);
-        this._update_window_dimensions();
+  function _cProp(pname) {
+    return props.controlled ? props[pname] : cPropGetters()[pname];
+  }
+  function _update_search_state(nstate) {
+    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    for (var field in nstate) {
+      switch (field) {
+        case "regex":
+          set_regex(nstate[field]);
+          break;
+        case "search_string":
+          set_search_string(nstate[field]);
+          break;
       }
     }
-  }, {
-    key: "_cProp",
-    value: function _cProp(pname) {
-      return this.props.controlled ? this.props[pname] : this.state[pname];
-    }
-  }, {
-    key: "_update_window_dimensions",
-    value: function _update_window_dimensions() {
-      this.setState({
-        usable_width: window.innerWidth - this.top_ref.current.offsetLeft,
-        usable_height: window.innerHeight - this.top_ref.current.offsetTop
+  }
+  function _setTheme(dark_theme) {
+    set_dark_theme(dark_theme);
+    if (!window.in_context) {
+      pushCallback(function () {
+        window.dark_theme = dark_theme;
       });
     }
-  }, {
-    key: "_setTheme",
-    value: function _setTheme(dark_theme) {
-      var _this2 = this;
-      this.setState({
-        dark_theme: dark_theme
-      }, function () {
-        if (!window.in_context) {
-          window.dark_theme = _this2.state.dark_theme;
-        }
-      });
-    }
-  }, {
-    key: "menu_specs",
-    get: function get() {
-      var _this3 = this;
-      var ms;
-      if (this.props.is_repository) {
-        ms = {
-          Transfer: [{
-            "name_text": "Copy to library",
-            "icon_name": "import",
-            "click_handler": function click_handler() {
-              (0, _resource_viewer_react_app.copyToLibrary)("tile", _this3._cProp("resource_name"));
-            },
-            tooltip: "Copy to library"
-          }]
-        };
-      } else {
-        ms = {
-          Save: [{
-            "name_text": "Save",
-            "icon_name": "saved",
-            "click_handler": this._saveMe,
-            key_bindings: ['ctrl+s'],
-            tooltip: "Save"
-          }, {
-            "name_text": "Save As...",
-            "icon_name": "floppy-disk",
-            "click_handler": this._saveModuleAs,
-            tooltip: "Save as"
-          }, {
-            "name_text": "Save and Checkpoint",
-            "icon_name": "map-marker",
-            "click_handler": this._saveAndCheckpoint,
-            key_bindings: ['ctrl+m'],
-            tooltip: "Save and checkpoint"
-          }],
-          Load: [{
-            "name_text": "Save and Load",
-            "icon_name": "upload",
-            "click_handler": this._saveAndLoadModule,
-            key_bindings: ['ctrl+l'],
-            tooltip: "Save and load module"
-          }, {
-            "name_text": "Load",
-            "icon_name": "upload",
-            "click_handler": this._loadModule,
-            tooltip: "Load tile"
-          }],
-          Compare: [{
-            "name_text": "View History",
-            "icon_name": "history",
-            "click_handler": this._showHistoryViewer,
-            tooltip: "Show history viewer"
-          }, {
-            "name_text": "Compare to Other Modules",
-            "icon_name": "comparison",
-            "click_handler": this._showTileDiffer,
-            tooltip: "Compare to another tile"
-          }],
-          Transfer: [{
-            name_text: "Share",
-            icon_name: "share",
-            click_handler: function click_handler() {
-              (0, _resource_viewer_react_app.sendToRepository)("list", _this3._cProp("resource_name"));
-            },
-            tooltip: "Share to repository"
-          }]
-        };
-      }
-      for (var _i = 0, _Object$entries = Object.entries(ms); _i < _Object$entries.length; _i++) {
-        var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
-          menu_name = _Object$entries$_i[0],
-          menu = _Object$entries$_i[1];
-        var _iterator = _createForOfIteratorHelper(menu),
-          _step;
-        try {
-          for (_iterator.s(); !(_step = _iterator.n()).done;) {
-            var but = _step.value;
-            but.click_handler = but.click_handler.bind(this);
-          }
-        } catch (err) {
-          _iterator.e(err);
-        } finally {
-          _iterator.f();
-        }
-      }
-      return ms;
-    }
-  }, {
-    key: "_handleCodeChange",
-    value: function _handleCodeChange(new_code) {
-      this.setState({
-        "code_content": new_code
-      });
-    }
-  }, {
-    key: "_handleStateChange",
-    value: function _handleStateChange(state_stuff) {
-      this.setState(state_stuff);
-    }
-  }, {
-    key: "_doFlashStopSpinner",
-    value: function _doFlashStopSpinner(data) {
-      this.props.stopSpinner();
-      this.props.clearStatusMessage();
-      (0, _toaster.doFlash)(data);
-    }
-  }, {
-    key: "get_new_cc_height",
-    value: function get_new_cc_height() {
-      var uheight = this._cProp("usable_height");
-      if (this.cc_ref && this.cc_ref.current) {
-        // This will be true after the initial render
-        return uheight - this.cc_ref.current.offsetTop - _sizing_tools.BOTTOM_MARGIN;
-      } else {
-        return uheight - 100;
-      }
-    }
-  }, {
-    key: "_setResourceNameState",
-    value: function _setResourceNameState(new_name) {
-      var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-      if (this.props.controlled) {
-        this.props.changeResourceName(new_name, callback);
-      } else {
-        this.setState({
-          resource_name: new_name,
-          callback: callback
-        });
-      }
-    }
-  }, {
-    key: "_extraKeys",
-    value: function _extraKeys() {
-      var self = this;
-      return {
-        'Ctrl-S': self._saveMe,
-        'Ctrl-L': self._saveAndLoadModule,
-        'Ctrl-M': self._saveAndCheckpoint,
-        'Ctrl-F': function CtrlF() {
-          self.search_ref.current.focus();
-        },
-        'Cmd-F': function CmdF() {
-          self.search_ref.current.focus();
-        }
+  }
+  function menu_specs() {
+    var ms;
+    if (props.is_repository) {
+      ms = {
+        Transfer: [{
+          "name_text": "Copy to library",
+          "icon_name": "import",
+          "click_handler": function click_handler() {
+            (0, _resource_viewer_react_app.copyToLibrary)("tile", _cProp("resource_name"));
+          },
+          tooltip: "Copy to library"
+        }]
+      };
+    } else {
+      ms = {
+        Save: [{
+          "name_text": "Save",
+          "icon_name": "saved",
+          "click_handler": _saveMe,
+          key_bindings: ['ctrl+s'],
+          tooltip: "Save"
+        }, {
+          "name_text": "Save As...",
+          "icon_name": "floppy-disk",
+          "click_handler": _saveModuleAs,
+          tooltip: "Save as"
+        }, {
+          "name_text": "Save and Checkpoint",
+          "icon_name": "map-marker",
+          "click_handler": _saveAndCheckpoint,
+          key_bindings: ['ctrl+m'],
+          tooltip: "Save and checkpoint"
+        }],
+        Load: [{
+          "name_text": "Save and Load",
+          "icon_name": "upload",
+          "click_handler": _saveAndLoadModule,
+          key_bindings: ['ctrl+l'],
+          tooltip: "Save and load module"
+        }, {
+          "name_text": "Load",
+          "icon_name": "upload",
+          "click_handler": _loadModule,
+          tooltip: "Load tile"
+        }],
+        Compare: [{
+          "name_text": "View History",
+          "icon_name": "history",
+          "click_handler": _showHistoryViewer,
+          tooltip: "Show history viewer"
+        }, {
+          "name_text": "Compare to Other Modules",
+          "icon_name": "comparison",
+          "click_handler": _showTileDiffer,
+          tooltip: "Compare to another tile"
+        }],
+        Transfer: [{
+          name_text: "Share",
+          icon_name: "share",
+          click_handler: function click_handler() {
+            (0, _resource_viewer_react_app.sendToRepository)("list", _cProp("resource_name"));
+          },
+          tooltip: "Share to repository"
+        }]
       };
     }
-  }, {
-    key: "_saveMe",
-    value: function _saveMe() {
-      if (!this.props.am_selected) {
-        return false;
+    for (var _i2 = 0, _Object$entries = Object.entries(ms); _i2 < _Object$entries.length; _i2++) {
+      var _Object$entries$_i = _slicedToArray(_Object$entries[_i2], 2),
+        menu_name = _Object$entries$_i[0],
+        menu = _Object$entries$_i[1];
+      var _iterator = _createForOfIteratorHelper(menu),
+        _step;
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var but = _step.value;
+          but.click_handler = but.click_handler.bind(this);
+        }
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
       }
-      this.props.startSpinner();
-      this.props.statusMessage("Saving Module");
-      var self = this;
-      this.doSavePromise().then(self._doFlashStopSpinner)["catch"](self._doFlashStopSpinner);
+    }
+    return ms;
+  }
+  function _handleCodeChange(new_code) {
+    set_code_content(new_code);
+  }
+  function _handleMetadataChange(state_stuff) {
+    for (var field in state_stuff) {
+      switch (field) {
+        case "tags":
+          set_tags(state_stuff[field]);
+          break;
+        case "notes":
+          set_notes(state_stuff[field]);
+          break;
+        case "icon":
+          set_icon(state_stuff[field]);
+          break;
+      }
+    }
+  }
+  function _doFlashStopSpinner(data) {
+    props.stopSpinner();
+    props.clearStatusMessage();
+    (0, _toaster.doFlash)(data);
+  }
+  function get_new_cc_height() {
+    if (cc_bounding_top.current) {
+      return window.innerHeight - cc_bounding_top.current - _sizing_tools.BOTTOM_MARGIN;
+    } else if (cc_ref && cc_ref.current) {
+      return window.innerHeight - cc_ref.current.getBoundingClientRect().top - _sizing_tools.BOTTOM_MARGIN;
+    } else {
+      return _cProp("usable_height") - 100;
+    }
+  }
+  function _setResourceNameState(new_name) {
+    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    if (props.controlled) {
+      props.changeResourceName(new_name, callback);
+    } else {
+      set_resource_name(new_name);
+      pushCallback(callback);
+    }
+  }
+  function _extraKeys() {
+    return {
+      'Ctrl-S': _saveMe,
+      'Ctrl-L': _saveAndLoadModule,
+      'Ctrl-M': _saveAndCheckpoint,
+      'Ctrl-F': function CtrlF() {
+        search_ref.current.focus();
+      },
+      'Cmd-F': function CmdF() {
+        search_ref.current.focus();
+      }
+    };
+  }
+  function _saveMe() {
+    if (!props.am_selected) {
       return false;
     }
-  }, {
-    key: "doSavePromise",
-    value: function doSavePromise() {
-      var self = this;
-      return new Promise(function (resolve, reject) {
-        var new_code = self.state.code_content;
-        var tagstring = self.state.tags.join(" ");
-        var tags = self.state.tags; // In case it's modified while saving
-        var notes = self.state.notes;
-        var icon = self.state.icon;
-        var result_dict;
-        var category;
-        category = null;
-        result_dict = {
-          "module_name": self._cProp("resource_name"),
-          "category": category,
-          "tags": tagstring,
-          "notes": notes,
-          "icon": icon,
-          "new_code": new_code,
-          "last_saved": "viewer"
-        };
-        (0, _communication_react.postAjax)("update_module", result_dict, function (data) {
-          if (data.success) {
-            self.savedContent = new_code;
-            self.savedTags = tags;
-            self.savedNotes = notes;
-            data.timeout = 2000;
-            resolve(data);
-          } else {
-            reject(data);
-          }
-        });
-      });
-    }
-  }, {
-    key: "_saveModuleAs",
-    value: function _saveModuleAs() {
-      this.props.startSpinner();
-      var self = this;
-      (0, _communication_react.postWithCallback)("host", "get_tile_names", {
-        "user_id": window.user_id
-      }, function (data) {
-        var checkboxes;
-        (0, _modal_react.showModalReact)("Save Module As", "New ModuleName Name", CreateNewModule, "NewModule", data["tile_names"], null, doCancel);
-      }, null, this.props.main_id);
-      function doCancel() {
-        self.props.stopSpinner();
-      }
-      function CreateNewModule(new_name) {
-        var result_dict = {
-          "new_res_name": new_name,
-          "res_to_copy": self._cProp("resource_name")
-        };
-        (0, _communication_react.postAjaxPromise)('/create_duplicate_tile', result_dict).then(function (data) {
-          self._setResourceNameState(new_name, function () {
-            self._saveMe();
-          });
-        })["catch"](_toaster.doFlash);
-      }
-    }
-  }, {
-    key: "_saveAndLoadModule",
-    value: function _saveAndLoadModule() {
-      var self = this;
-      this.props.startSpinner();
-      this.doSavePromise().then(function () {
-        self.props.statusMessage("Loading Module");
-        (0, _communication_react.postWithCallback)("host", "load_tile_module_task", {
-          "tile_module_name": self._cProp("resource_name"),
-          "user_id": window.user_id
-        }, load_success, null, self.props.resource_viewer_id);
-      })["catch"](self._doFlashStopSpinner);
-      function load_success(data) {
-        if (data.success) {
-          data.timeout = 2000;
-        }
-        self._doFlashStopSpinner(data);
-        return false;
-      }
-    }
-  }, {
-    key: "_loadModule",
-    value: function _loadModule() {
-      var self = this;
-      this.props.startSpinner();
-      self.props.statusMessage("Loading Module");
-      (0, _communication_react.postWithCallback)("host", "load_tile_module_task", {
-        "tile_module_name": self._cProp("resource_name"),
-        "user_id": window.user_id
-      }, load_success, null, self.props.resource_viewer_id);
-      function load_success(data) {
-        if (data.success) {
-          data.timeout = 2000;
-        }
-        self._doFlashStopSpinner(data);
-        return false;
-      }
-    }
-  }, {
-    key: "_saveAndCheckpoint",
-    value: function _saveAndCheckpoint() {
-      this.props.startSpinner();
-      var self = this;
-      this.doSavePromise().then(function () {
-        self.props.statusMessage("Checkpointing");
-        self.doCheckpointPromise().then(self._doFlashStopSpinner)["catch"](self._doFlashStopSpinner);
-      })["catch"](self._doFlashStopSpinner);
-      return false;
-    }
-  }, {
-    key: "doCheckpointPromise",
-    value: function doCheckpointPromise() {
-      var self = this;
-      return new Promise(function (resolve, reject) {
-        (0, _communication_react.postAjax)("checkpoint_module", {
-          "module_name": self._cProp("resource_name")
-        }, function (data) {
-          if (data.success) {
-            resolve(data);
-          } else {
-            reject(data);
-          }
-        });
-      });
-    }
-  }, {
-    key: "_showHistoryViewer",
-    value: function _showHistoryViewer() {
-      window.open("".concat($SCRIPT_ROOT, "/show_history_viewer/").concat(this._cProp("resource_name")));
-    }
-  }, {
-    key: "_showTileDiffer",
-    value: function _showTileDiffer() {
-      window.open("".concat($SCRIPT_ROOT, "/show_tile_differ/").concat(this._cProp("resource_name")));
-    }
-  }, {
-    key: "_dirty",
-    value: function _dirty() {
-      var current_content = this.state.code_content;
-      var tags = this.state.tags;
-      var notes = this.state.notes;
-      return !(current_content == this.savedContent && tags == this.savedTags && notes == this.savedNotes);
-    }
-  }, {
-    key: "_setSearchMatches",
-    value: function _setSearchMatches(nmatches) {
-      this.setState({
-        search_matches: nmatches
-      });
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme;
-      var the_context = {
-        "readOnly": this.props.readOnly
+    props.startSpinner();
+    props.statusMessage("Saving Module");
+    doSavePromise().then(_doFlashStopSpinner)["catch"](_doFlashStopSpinner);
+    return false;
+  }
+  function doSavePromise() {
+    return new Promise(function (resolve, reject) {
+      var new_code = code_content;
+      var tagstring = tags.join(" ");
+      var local_notes = notes;
+      var local_tags = tags; // In case it's modified wile saving
+      var local_icon = icon;
+      var result_dict;
+      var category;
+      category = null;
+      result_dict = {
+        "module_name": _cProp("resource_name"),
+        "category": category,
+        "tags": tagstring,
+        "notes": local_notes,
+        "icon": local_icon,
+        "new_code": new_code,
+        "last_saved": "viewer"
       };
-      var my_props = _objectSpread({}, this.props);
-      if (!this.props.controlled) {
-        for (var _i2 = 0, _controllable_props = controllable_props; _i2 < _controllable_props.length; _i2++) {
-          var prop_name = _controllable_props[_i2];
-          my_props[prop_name] = this.state[prop_name];
-        }
-      }
-      var outer_style = {
-        width: "100%",
-        height: my_props.usable_height,
-        paddingLeft: 0,
-        position: "relative"
-      };
-      var cc_height = this.get_new_cc_height();
-      var outer_class = "resource-viewer-holder";
-      if (!this.props.controlled) {
-        // outer_class = "resource-viewer-holder";
-        if (this.state.dark_theme) {
-          outer_class = outer_class + " bp4-dark";
+      (0, _communication_react.postAjax)("update_module", result_dict, function (data) {
+        if (data.success) {
+          savedContent.current = new_code;
+          savedTags.current = local_tags;
+          savedNotes.current = local_notes;
+          savedIcon.current = local_icon;
+          data.timeout = 2000;
+          resolve(data);
         } else {
-          outer_class = outer_class + " light-theme";
+          reject(data);
         }
-      }
-      return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, !this.props.controlled && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
-        is_authenticated: window.is_authenticated,
-        dark_theme: dark_theme,
-        setTheme: this._setTheme,
-        selected: null,
-        show_api_links: true,
-        page_id: this.props.resource_viewer_id,
-        user_name: window.username
-      }), /*#__PURE__*/_react["default"].createElement("div", {
-        className: outer_class,
-        ref: this.top_ref,
-        style: outer_style
-      }, /*#__PURE__*/_react["default"].createElement(_resource_viewer_react_app.ResourceViewerApp, _extends({}, my_props, {
-        dark_theme: dark_theme,
-        setTheme: this.props.controlled ? null : this._setTheme,
-        resource_viewer_id: my_props.resource_viewer_id,
-        setResourceNameState: this._setResourceNameState,
-        refreshTab: this.props.refreshTab,
-        closeTab: this.props.closeTab,
-        res_type: "tile",
-        resource_name: my_props.resource_name,
-        menu_specs: this.menu_specs,
-        handleStateChange: this._handleStateChange,
-        created: this.props.created,
-        notes: this.state.notes,
-        tags: this.state.tags,
-        mdata_icon: this.state.icon,
-        saveMe: this._saveMe,
-        show_search: true,
-        update_search_state: this._update_search_state,
-        search_string: this.state.search_string,
-        search_matches: this.state.search_matches,
-        regex: this.state.regex,
-        allow_regex_search: true,
-        search_ref: this.search_ref,
-        meta_outer: this.props.meta_outer,
-        showErrorDrawerButton: true,
-        toggleErrorDrawer: this.props.toggleErrorDrawer,
-        registerOmniFunction: this.props.registerOmniFunction
-      }), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
-        code_content: this.state.code_content,
-        dark_theme: dark_theme,
-        am_selected: this.props.am_selected,
-        extraKeys: this._extraKeys(),
-        readOnly: this.props.readOnly,
-        handleChange: this._handleCodeChange,
-        saveMe: this._saveMe,
-        search_term: this.state.search_string,
-        update_search_state: this._update_search_state,
-        regex_search: this.state.regex,
-        setSearchMatches: this._setSearchMatches,
-        code_container_ref: this.cc_ref,
-        code_container_height: cc_height
-      }))));
+      });
+    });
+  }
+  function _saveModuleAs() {
+    props.startSpinner();
+    (0, _communication_react.postWithCallback)("host", "get_tile_names", {
+      "user_id": window.user_id
+    }, function (data) {
+      var checkboxes;
+      (0, _modal_react.showModalReact)("Save Module As", "New ModuleName Name", CreateNewModule, "NewModule", data["tile_names"], null, doCancel);
+    }, null, props.main_id);
+    function doCancel() {
+      props.stopSpinner();
     }
-  }]);
-  return ModuleViewerApp;
-}(_react["default"].Component);
-exports.ModuleViewerApp = ModuleViewerApp;
+    function CreateNewModule(new_name) {
+      var result_dict = {
+        "new_res_name": new_name,
+        "res_to_copy": _cProp("resource_name")
+      };
+      (0, _communication_react.postAjaxPromise)('/create_duplicate_tile', result_dict).then(function (data) {
+        _setResourceNameState(new_name, function () {
+          _saveMe();
+        });
+      })["catch"](_toaster.doFlash);
+    }
+  }
+  function _saveAndLoadModule() {
+    props.startSpinner();
+    doSavePromise().then(function () {
+      props.statusMessage("Loading Module");
+      (0, _communication_react.postWithCallback)("host", "load_tile_module_task", {
+        "tile_module_name": _cProp("resource_name"),
+        "user_id": window.user_id
+      }, load_success, null, props.resource_viewer_id);
+    })["catch"](_doFlashStopSpinner);
+    function load_success(data) {
+      if (data.success) {
+        data.timeout = 2000;
+      }
+      _doFlashStopSpinner(data);
+      return false;
+    }
+  }
+  function _loadModule() {
+    props.startSpinner();
+    props.statusMessage("Loading Module");
+    (0, _communication_react.postWithCallback)("host", "load_tile_module_task", {
+      "tile_module_name": _cProp("resource_name"),
+      "user_id": window.user_id
+    }, load_success, null, props.resource_viewer_id);
+    function load_success(data) {
+      if (data.success) {
+        data.timeout = 2000;
+      }
+      _doFlashStopSpinner(data);
+      return false;
+    }
+  }
+  function _saveAndCheckpoint() {
+    props.startSpinner();
+    doSavePromise().then(function () {
+      props.statusMessage("Checkpointing");
+      doCheckpointPromise().then(_doFlashStopSpinner)["catch"](_doFlashStopSpinner);
+    })["catch"](_doFlashStopSpinner);
+    return false;
+  }
+  function doCheckpointPromise() {
+    return new Promise(function (resolve, reject) {
+      (0, _communication_react.postAjax)("checkpoint_module", {
+        "module_name": _cProp("resource_name")
+      }, function (data) {
+        if (data.success) {
+          resolve(data);
+        } else {
+          reject(data);
+        }
+      });
+    });
+  }
+  function _showHistoryViewer() {
+    window.open("".concat($SCRIPT_ROOT, "/show_history_viewer/").concat(_cProp("resource_name")));
+  }
+  function _showTileDiffer() {
+    window.open("".concat($SCRIPT_ROOT, "/show_tile_differ/").concat(_cProp("resource_name")));
+  }
+  function _dirty() {
+    return !(code_content_ref.current == savedContent.current && icon_ref.current == savedIcon.current && tags_ref.current == savedTags.current && notes_ref.current == savedNotes.current);
+  }
+  function _setSearchMatches(nmatches) {
+    set_search_matches(nmatches);
+  }
+  var actual_dark_theme = props.controlled ? props.dark_theme : dark_theme;
+  var the_context = {
+    "readOnly": props.readOnly
+  };
+  var my_props = _objectSpread({}, props);
+  if (!props.controlled) {
+    my_props.resource_name = resource_name;
+    my_props.usable_height = usable_height;
+    my_props.usable_width = usable_width;
+  }
+  var outer_style = {
+    width: "100%",
+    height: my_props.usable_height,
+    paddingLeft: 0,
+    position: "relative"
+  };
+  var cc_height = get_new_cc_height();
+  var outer_class = "resource-viewer-holder";
+  if (!props.controlled) {
+    // outer_class = "resource-viewer-holder";
+    if (actual_dark_theme) {
+      outer_class = outer_class + " bp4-dark";
+    } else {
+      outer_class = outer_class + " light-theme";
+    }
+  }
+  return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, !props.controlled && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+    is_authenticated: window.is_authenticated,
+    dark_theme: actual_dark_theme,
+    setTheme: _setTheme,
+    selected: null,
+    show_api_links: true,
+    page_id: props.resource_viewer_id,
+    user_name: window.username
+  }), /*#__PURE__*/_react["default"].createElement("div", {
+    className: outer_class,
+    ref: top_ref,
+    style: outer_style
+  }, /*#__PURE__*/_react["default"].createElement(_resource_viewer_react_app.ResourceViewerApp, _extends({}, my_props, {
+    dark_theme: actual_dark_theme,
+    setTheme: props.controlled ? null : _setTheme,
+    resource_viewer_id: my_props.resource_viewer_id,
+    setResourceNameState: _setResourceNameState,
+    refreshTab: props.refreshTab,
+    closeTab: props.closeTab,
+    res_type: "tile",
+    resource_name: my_props.resource_name,
+    menu_specs: menu_specs(),
+    handleStateChange: _handleMetadataChange,
+    created: props.created,
+    notes: notes,
+    tags: tags,
+    mdata_icon: icon,
+    saveMe: _saveMe,
+    show_search: true,
+    update_search_state: _update_search_state,
+    search_string: search_string,
+    search_matches: search_matches,
+    regex: regex,
+    allow_regex_search: true,
+    search_ref: search_ref,
+    meta_outer: props.meta_outer,
+    showErrorDrawerButton: true,
+    toggleErrorDrawer: props.toggleErrorDrawer,
+    registerOmniFunction: props.registerOmniFunction
+  }), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
+    code_content: code_content,
+    dark_theme: actual_dark_theme,
+    am_selected: props.am_selected,
+    extraKeys: _extraKeys(),
+    readOnly: props.readOnly,
+    handleChange: _handleCodeChange,
+    saveMe: _saveMe,
+    search_term: search_string,
+    update_search_state: _update_search_state,
+    regex_search: regex,
+    setSearchMatches: _setSearchMatches,
+    code_container_height: cc_height,
+    ref: cc_ref
+  }))));
+}
+exports.ModuleViewerApp = ModuleViewerApp = /*#__PURE__*/(0, _react.memo)(ModuleViewerApp);
 ModuleViewerApp.propTypes = {
   controlled: _propTypes["default"].bool,
   am_selected: _propTypes["default"].bool,

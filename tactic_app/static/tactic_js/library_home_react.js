@@ -11,13 +11,11 @@ require("../tactic_css/library_home.scss");
 var _react = _interopRequireWildcard(require("react"));
 var ReactDOM = _interopRequireWildcard(require("react-dom"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
-var _core = require("@blueprintjs/core");
 var _TacticOmnibar = require("./TacticOmnibar");
 var _tactic_socket = require("./tactic_socket");
 var _communication_react = require("./communication_react");
 var _toaster = require("./toaster.js");
 var _library_pane = require("./library_pane");
-var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _sizing_tools = require("./sizing_tools");
 var _toaster2 = require("./toaster");
 var _error_drawer = require("./error_drawer");
@@ -51,19 +49,13 @@ function _library_home_main() {
     tsocket: tsocket,
     registerOmniFunction: null,
     controlled: false,
-    initial_theme: window.theme,
-    registerLibraryTabChanger: null
+    initial_theme: window.theme
   }), domContainer);
 }
 var tab_panes = ["all-pane", "collections-pane", "projects-pane", "tiles-pane", "lists-pane", "code-pane"];
 var controllable_props = ["usable_width", "usable_height"];
 function LibraryHomeApp(props) {
   var omniGetters = (0, _react.useRef)({});
-  var _useStateAndRef = (0, _utilities_react.useStateAndRef)("all-pane"),
-    _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
-    selected_tab_id = _useStateAndRef2[0],
-    set_selected_tab_id = _useStateAndRef2[1],
-    selected_tab_id_ref = _useStateAndRef2[2];
   var _useState = (0, _react.useState)(false),
     _useState2 = _slicedToArray(_useState, 2),
     showOmnibar = _useState2[0],
@@ -80,15 +72,12 @@ function LibraryHomeApp(props) {
     _useState8 = _slicedToArray(_useState7, 2),
     dark_theme = _useState8[0],
     set_dark_theme = _useState8[1];
-  var pushCallback = (0, _utilities_react.useCallbackStack)();
+  var pushCallback = (0, _utilities_react.useCallbackStack)("library_home");
   var top_ref = (0, _react.useRef)(null);
-  var key_bindings = [[["ctrl+space"], _showOmnibar], [["tab"], _goToNextPane], [["shift+tab"], _goToPreviousPane]];
+  var key_bindings = [[["ctrl+space"], _showOmnibar]];
   (0, _utilities_react.useConstructor)(function () {
     if (props.registerOmniFunction) {
       props.registerOmniFunction(_omniFunction);
-    }
-    if (props.registerLibraryTabChanger) {
-      props.registerLibraryTabChanger(_handleTabChange);
     }
     if (!window.in_context) {
       var aheight = (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
@@ -153,30 +142,6 @@ function LibraryHomeApp(props) {
       window.dark_theme = dark_theme;
     });
   }
-
-  // This mechanism in _handleTabChange necessary in order to force the pane to change
-  // before updating window dimensions (which seems to be necessary to get
-  // the pane to be appropriately sized when it's shown
-  function _handleTabChange(newTabId, prevTabId, event) {
-    set_selected_tab_id(newTabId);
-  }
-  function _goToNextPane() {
-    var tabIndex = tab_panes.indexOf(selected_tab_id_ref.current) + 1;
-    if (tabIndex === tab_panes.length) {
-      tabIndex = 0;
-    }
-    set_selected_tab_id(tab_panes[tabIndex]);
-  }
-  function _goToPreviousPane() {
-    var tabIndex = tab_panes.indexOf(selected_tab_id_ref.current) - 1;
-    if (tabIndex === -1) {
-      tabIndex = tab_panes.length - 1;
-    }
-    set_selected_tab_id(tab_panes[tabIndex]);
-  }
-  function getIconColor(paneId) {
-    return paneId === selected_tab_id_ref.current ? "white" : "#CED9E0";
-  }
   function _handleResize() {
     set_usable_width(window.innerWidth - top_ref.current.offsetLeft);
     set_usable_height(window.innerHeight - top_ref.current.offsetTop);
@@ -187,7 +152,6 @@ function LibraryHomeApp(props) {
     lib_props.usable_width = usable_width - TAB_BAR_WIDTH;
     lib_props.usable_height = usable_height;
   }
-  var get_all_panes = !window.in_context || window.library_style == "tabbed";
   var all_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
     columns: {
       "icon:th": {
@@ -230,185 +194,6 @@ function LibraryHomeApp(props) {
     errorDrawerFuncs: props.errorDrawerFuncs,
     library_id: props.library_id
   }));
-  if (get_all_panes) {
-    var collection_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
-      columns: {
-        "icon:th": {
-          "sort_field": "type",
-          "first_sort": "ascending"
-        },
-        "name": {
-          "sort_field": "name",
-          "first_sort": "ascending"
-        },
-        "created": {
-          "sort_field": "created_for_sort",
-          "first_sort": "descending"
-        },
-        "updated": {
-          "sort_field": "updated_for_sort",
-          "first_sort": "ascending"
-        },
-        "tags": {
-          "sort_field": "tags",
-          "first_sort": "ascending"
-        },
-        "size": {
-          "sort_field": "size_for_sort",
-          "first_sort": "descending"
-        }
-      },
-      pane_type: "collection",
-      handleCreateViewer: props.handleCreateViewer,
-      open_resources: props.open_resources ? props.open_resources["collection"] : null,
-      allow_search_inside: false,
-      allow_search_metadata: false,
-      MenubarClass: _library_menubars.CollectionMenubar,
-      registerOmniGetter: _registerOmniGetter
-    }, props.errorDrawerFuncs, {
-      errorDrawerFuncs: props.errorDrawerFuncs,
-      library_id: props.library_id
-    }));
-    var projects_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
-      columns: {
-        "icon:th": {
-          "sort_field": "type",
-          "first_sort": "ascending"
-        },
-        "name": {
-          "sort_field": "name",
-          "first_sort": "ascending"
-        },
-        "created": {
-          "sort_field": "created_for_sort",
-          "first_sort": "descending"
-        },
-        "updated": {
-          "sort_field": "updated_for_sort",
-          "first_sort": "ascending"
-        },
-        "tags": {
-          "sort_field": "tags",
-          "first_sort": "ascending"
-        },
-        "size": {
-          "sort_field": "size_for_sort",
-          "first_sort": "descending"
-        }
-      },
-      pane_type: "project",
-      handleCreateViewer: props.handleCreateViewer,
-      open_resources: props.open_resources ? props.open_resources["project"] : null,
-      allow_search_inside: false,
-      allow_search_metadata: true,
-      MenubarClass: _library_menubars.ProjectMenubar,
-      registerOmniGetter: _registerOmniGetter
-    }, props.errorDrawerFuncs, {
-      library_id: props.library_id
-    }));
-    var tiles_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
-      columns: {
-        "icon:th": {
-          "sort_field": "type",
-          "first_sort": "ascending"
-        },
-        "name": {
-          "sort_field": "name",
-          "first_sort": "ascending"
-        },
-        "icon:upload": {
-          "sort_field": null,
-          "first_sort": "ascending"
-        },
-        "created": {
-          "sort_field": "created_for_sort",
-          "first_sort": "descending"
-        },
-        "updated": {
-          "sort_field": "updated_for_sort",
-          "first_sort": "ascending"
-        },
-        "tags": {
-          "sort_field": "tags",
-          "first_sort": "ascending"
-        }
-      },
-      pane_type: "tile",
-      handleCreateViewer: props.handleCreateViewer,
-      open_resources: props.open_resources ? props.open_resources["tile"] : null,
-      allow_search_inside: true,
-      allow_search_metadata: true,
-      MenubarClass: _library_menubars.TileMenubar,
-      registerOmniGetter: _registerOmniGetter
-    }, props.errorDrawerFuncs, {
-      library_id: props.library_id
-    }));
-    var lists_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
-      columns: {
-        "icon:th": {
-          "sort_field": "type",
-          "first_sort": "ascending"
-        },
-        "name": {
-          "sort_field": "name",
-          "first_sort": "ascending"
-        },
-        "created": {
-          "sort_field": "created_for_sort",
-          "first_sort": "descending"
-        },
-        "updated": {
-          "sort_field": "updated_for_sort",
-          "first_sort": "ascending"
-        },
-        "tags": {
-          "sort_field": "tags",
-          "first_sort": "ascending"
-        }
-      },
-      pane_type: "list",
-      open_resources: props.open_resources ? props.open_resources["list"] : null,
-      allow_search_inside: true,
-      allow_search_metadata: true,
-      MenubarClass: _library_menubars.ListMenubar,
-      registerOmniGetter: _registerOmniGetter
-    }, props.errorDrawerFuncs, {
-      library_id: props.library_id
-    }));
-    var code_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
-      columns: {
-        "icon:th": {
-          "sort_field": "type",
-          "first_sort": "ascending"
-        },
-        "name": {
-          "sort_field": "name",
-          "first_sort": "ascending"
-        },
-        "created": {
-          "sort_field": "created_for_sort",
-          "first_sort": "descending"
-        },
-        "updated": {
-          "sort_field": "updated_for_sort",
-          "first_sort": "ascending"
-        },
-        "tags": {
-          "sort_field": "tags",
-          "first_sort": "ascending"
-        }
-      },
-      pane_type: "code",
-      handleCreateViewer: props.handleCreateViewer,
-      open_resources: props.open_resources ? props.open_resources["code"] : null,
-      allow_search_inside: true,
-      allow_search_metadata: true,
-      MenubarClass: _library_menubars.CodeMenubar,
-      registerOmniGetter: _registerOmniGetter
-    }, props.errorDrawerFuncs, {
-      library_id: props.library_id
-    }));
-  }
   var outer_style = {
     width: "100%",
     paddingLeft: 0
@@ -420,27 +205,6 @@ function LibraryHomeApp(props) {
       outer_class = "".concat(outer_class, " bp4-dark");
     } else {
       outer_class = "".concat(outer_class, " light-theme");
-    }
-  }
-  var extra_tabs = [];
-  if (get_all_panes) {
-    var tab_specs = [["collections", "collection", collection_pane], ["projects", "project", projects_pane], ["tiles", "tile", tiles_pane], ["lists", "list", lists_pane], ["code", "code", code_pane]];
-    for (var _i2 = 0, _tab_specs = tab_specs; _i2 < _tab_specs.length; _i2++) {
-      var tlist = _tab_specs[_i2];
-      var new_tab = /*#__PURE__*/_react["default"].createElement(_core.Tab, {
-        id: tlist[0] + "-pane",
-        panel: tlist[2]
-      }, /*#__PURE__*/_react["default"].createElement(_core.Tooltip, {
-        content: tlist[0],
-        position: _core.Position.RIGHT,
-        intent: "warning"
-      }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-        icon: _blueprint_mdata_fields.icon_dict[tlist[1]],
-        iconSize: 20,
-        tabIndex: -1,
-        color: getIconColor(tlist[0] + "-pane")
-      })));
-      extra_tabs.push(new_tab);
     }
   }
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, !props.controlled && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
@@ -459,30 +223,7 @@ function LibraryHomeApp(props) {
     className: outer_class,
     ref: top_ref,
     style: outer_style
-  }, /*#__PURE__*/_react["default"].createElement(_core.Tabs, {
-    id: "the_container",
-    style: {
-      marginTop: 100,
-      height: "100%"
-    },
-    selectedTabId: selected_tab_id_ref.current,
-    renderActiveTabPanelOnly: true,
-    vertical: true,
-    large: true,
-    onChange: _handleTabChange
-  }, /*#__PURE__*/_react["default"].createElement(_core.Tab, {
-    id: "all-pane",
-    panel: all_pane
-  }, /*#__PURE__*/_react["default"].createElement(_core.Tooltip, {
-    content: "All",
-    position: _core.Position.RIGHT,
-    intent: "warning"
-  }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-    icon: _blueprint_mdata_fields.icon_dict["all"],
-    iconSize: 20,
-    tabIndex: -1,
-    color: getIconColor("all-pane")
-  }))), extra_tabs)), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_TacticOmnibar.TacticOmnibar, {
+  }, all_pane), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_TacticOmnibar.TacticOmnibar, {
     omniGetters: [_omniFunction],
     showOmnibar: showOmnibar,
     closeOmnibar: _closeOmnibar

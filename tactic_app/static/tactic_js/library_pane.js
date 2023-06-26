@@ -107,6 +107,7 @@ BodyMenu.propTypes = {
 function LibraryPane(props) {
   var top_ref = (0, _react.useRef)(null);
   var table_ref = (0, _react.useRef)(null);
+  var tr_bounding_top = (0, _react.useRef)(null);
   var resizing = (0, _react.useRef)(false);
   var previous_search_spec = (0, _react.useRef)(null);
   var socket_counter = (0, _react.useRef)(null);
@@ -251,10 +252,11 @@ function LibraryPane(props) {
     }
   });
   (0, _react.useEffect)(function () {
+    tr_bounding_top.current = table_ref.current.getBoundingClientRect().top;
     initSocket();
     _grabNewChunkWithRow(0);
   }, []);
-  var pushCallback = (0, _utilities_react.useCallbackStack)();
+  var pushCallback = (0, _utilities_react.useCallbackStack)("library_home");
   function setState(new_state) {
     for (var attr in new_state) {
       stateSetters[attr](new_state[attr]);
@@ -675,7 +677,7 @@ function LibraryPane(props) {
           props.handleCreateViewer(data, props.clearStatus);
         })["catch"](function (data) {
           (0, _toaster.doFlash)(data);
-          props.clearstatus();
+          props.clearStatus();
         });
       } else {
         props.clearStatus();
@@ -1363,6 +1365,18 @@ function LibraryPane(props) {
       });
     }
   }
+  function get_left_pane_height() {
+    var left_pane_height;
+    if (tr_bounding_top.current) {
+      left_pane_height = window.innerHeight - tr_bounding_top.current - _sizing_tools.BOTTOM_MARGIN;
+    } else if (table_ref && table_ref.current) {
+      left_pane_height = window.innerHeight - table_ref.current.getBoundingClientRect().top - _sizing_tools.BOTTOM_MARGIN;
+    } else {
+      table_width = left_width - 150;
+      left_pane_height = props.usable_height - 100;
+    }
+    return left_pane_height;
+  }
   function _menu_funcs() {
     return {
       view_func: _view_func,
@@ -1449,13 +1463,11 @@ function LibraryPane(props) {
   };
   var MenubarClass = props.MenubarClass;
   var table_width;
-  var left_pane_height;
+  var left_pane_height = get_left_pane_height();
   if (table_ref && table_ref.current) {
     table_width = left_width - table_ref.current.offsetLeft + top_ref.current.offsetLeft;
-    left_pane_height = window.innerHeight - table_ref.current.getBoundingClientRect().top - _sizing_tools.BOTTOM_MARGIN;
   } else {
     table_width = left_width - 150;
-    left_pane_height = props.usable_height - 100;
   }
   var key_bindings = [[["up"], function () {
     return _handleArrowKeyPress("ArrowUp");

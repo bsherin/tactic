@@ -10,9 +10,9 @@ require("../tactic_css/tactic.scss");
 var _react = _interopRequireWildcard(require("react"));
 var ReactDOM = _interopRequireWildcard(require("react-dom"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
-var _reactCodemirror = require("./react-codemirror.js");
-var _resource_viewer_react_app = require("./resource_viewer_react_app.js");
-var _tactic_socket = require("./tactic_socket.js");
+var _reactCodemirror = require("./react-codemirror");
+var _resource_viewer_react_app = require("./resource_viewer_react_app");
+var _tactic_socket = require("./tactic_socket");
 var _communication_react = require("./communication_react.js");
 var _toaster = require("./toaster.js");
 var _sizing_tools = require("./sizing_tools.js");
@@ -74,70 +74,70 @@ function code_viewer_props(data, registerDirtyMethod, finalCallback, registerOmn
     registerOmniFunction: registerOmniFunction
   });
 }
-var controllable_props = ["resource_name", "usable_height", "usable_width"];
 function CodeViewerApp(props) {
   var top_ref = (0, _react.useRef)(null);
   var cc_ref = (0, _react.useRef)(null);
   var search_ref = (0, _react.useRef)(null);
-  var cc_offset_top = (0, _react.useRef)(null);
+  var cc_bounding_top = (0, _react.useRef)(null);
   var savedContent = (0, _react.useRef)(props.the_content);
   var savedTags = (0, _react.useRef)(props.split_tags);
   var savedNotes = (0, _react.useRef)(props.notes);
-  var _useState = (0, _react.useState)(false),
+  var _useStateAndRef = (0, _utilities_react.useStateAndRef)(props.the_content),
+    _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
+    code_content = _useStateAndRef2[0],
+    set_code_content = _useStateAndRef2[1],
+    code_content_ref = _useStateAndRef2[2];
+  var _useStateAndRef3 = (0, _utilities_react.useStateAndRef)(props.notes),
+    _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
+    notes = _useStateAndRef4[0],
+    set_notes = _useStateAndRef4[1],
+    notes_ref = _useStateAndRef4[2];
+  var _useStateAndRef5 = (0, _utilities_react.useStateAndRef)(props.split_tags),
+    _useStateAndRef6 = _slicedToArray(_useStateAndRef5, 3),
+    tags = _useStateAndRef6[0],
+    set_tags = _useStateAndRef6[1],
+    tags_ref = _useStateAndRef6[2];
+  var _useState = (0, _react.useState)(""),
     _useState2 = _slicedToArray(_useState, 2),
-    didInit = _useState2[0],
-    setDidInit = _useState2[1];
-  var _useState3 = (0, _react.useState)(props.the_content),
+    search_string = _useState2[0],
+    set_search_string = _useState2[1];
+  var _useState3 = (0, _react.useState)(false),
     _useState4 = _slicedToArray(_useState3, 2),
-    code_content = _useState4[0],
-    set_code_content = _useState4[1];
-  var _useState5 = (0, _react.useState)(props.notes),
+    regex = _useState4[0],
+    set_regex = _useState4[1];
+  var _useState5 = (0, _react.useState)(props["null"]),
     _useState6 = _slicedToArray(_useState5, 2),
-    notes = _useState6[0],
-    set_notes = _useState6[1];
-  var _useState7 = (0, _react.useState)(props.split_tags),
-    _useState8 = _slicedToArray(_useState7, 2),
-    tags = _useState8[0],
-    set_tags = _useState8[1];
-  var _useState9 = (0, _react.useState)(""),
-    _useState10 = _slicedToArray(_useState9, 2),
-    search_string = _useState10[0],
-    set_search_string = _useState10[1];
-  var _useState11 = (0, _react.useState)(false),
-    _useState12 = _slicedToArray(_useState11, 2),
-    regex = _useState12[0],
-    set_regex = _useState12[1];
-  var _useState13 = (0, _react.useState)(props["null"]),
-    _useState14 = _slicedToArray(_useState13, 2),
-    search_matches = _useState14[0],
-    set_search_matches = _useState14[1];
+    search_matches = _useState6[0],
+    set_search_matches = _useState6[1];
 
   // The following only are used if not in context
-  var _useState15 = (0, _react.useState)(function () {
+  var _useState7 = (0, _react.useState)(function () {
       return (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
     }),
-    _useState16 = _slicedToArray(_useState15, 2),
-    usable_width = _useState16[0],
-    set_usable_width = _useState16[1];
-  var _useState17 = (0, _react.useState)(function () {
+    _useState8 = _slicedToArray(_useState7, 2),
+    usable_width = _useState8[0],
+    set_usable_width = _useState8[1];
+  var _useState9 = (0, _react.useState)(function () {
       return (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
     }),
-    _useState18 = _slicedToArray(_useState17, 2),
-    usable_height = _useState18[0],
-    set_usable_height = _useState18[1];
-  var _useState19 = (0, _react.useState)(function () {
+    _useState10 = _slicedToArray(_useState9, 2),
+    usable_height = _useState10[0],
+    set_usable_height = _useState10[1];
+  var _useState11 = (0, _react.useState)(function () {
       return props.initial_theme === "dark";
     }),
-    _useState20 = _slicedToArray(_useState19, 2),
-    dark_theme = _useState20[0],
-    set_dark_theme = _useState20[1];
-  var _useState21 = (0, _react.useState)(props.resource_name),
-    _useState22 = _slicedToArray(_useState21, 2),
-    resource_name = _useState22[0],
-    set_resource_name = _useState22[1];
+    _useState12 = _slicedToArray(_useState11, 2),
+    dark_theme = _useState12[0],
+    set_dark_theme = _useState12[1];
+  var _useState13 = (0, _react.useState)(props.resource_name),
+    _useState14 = _slicedToArray(_useState13, 2),
+    resource_name = _useState14[0],
+    set_resource_name = _useState14[1];
   (0, _react.useEffect)(function () {
     props.stopSpinner();
-    cc_offset_top.current = cc_ref.current.offsetTop;
+    if (cc_ref && cc_ref.current) {
+      cc_bounding_top.current = cc_ref.current.getBoundingClientRect().top;
+    }
     if (!props.controlled) {
       window.dark_theme = dark_theme;
       window.addEventListener("resize", _update_window_dimensions);
@@ -146,7 +146,7 @@ function CodeViewerApp(props) {
       props.registerDirtyMethod(_dirty);
     }
   }, []);
-  var pushCallback = (0, _utilities_react.useCallbackStack)();
+  var pushCallback = (0, _utilities_react.useCallbackStack)("code_viewer");
   (0, _utilities_react.useConstructor)(function () {
     if (!props.controlled) {
       window.addEventListener("beforeunload", function (e) {
@@ -185,7 +185,6 @@ function CodeViewerApp(props) {
       resource_name: resource_name
     };
   }
-  ;
   function _cProp(pname) {
     return props.controlled ? props[pname] : cPropGetters()[pname];
   }
@@ -257,14 +256,13 @@ function CodeViewerApp(props) {
     set_usable_height(window.innerHeight - top_ref.current.offsetTop);
   }
   function get_new_cc_height() {
-    var uheight = _cProp("usable_height");
-    if (cc_offset_top.current) {
-      return uheight - cc_offset_top.current - _sizing_tools.BOTTOM_MARGIN;
+    if (cc_bounding_top.current) {
+      return window.innerHeight - cc_bounding_top.current - _sizing_tools.BOTTOM_MARGIN;
     } else if (cc_ref && cc_ref.current) {
       // This will be true after the initial render
-      return uheight - cc_ref.current.offsetTop - _sizing_tools.BOTTOM_MARGIN;
+      return window.innerHeight - cc_ref.current.getBoundingClientRect().top - _sizing_tools.BOTTOM_MARGIN;
     } else {
-      return uheight - 100;
+      return _cProp("usable_height") - 100;
     }
   }
   function _setSearchMatches(nmatches) {
@@ -332,7 +330,7 @@ function CodeViewerApp(props) {
     }
   }
   function _dirty() {
-    return !(code_content == savedContent.current && tags == savedTags.current && notes == savedNotes.current);
+    return !(code_content_ref.current == savedContent.current && tags_ref.current == savedTags.current && notes_ref.current == savedNotes.current);
   }
   var actual_dark_theme = props.controlled ? props.dark_theme : dark_theme;
   var my_props = _objectSpread({}, props);
@@ -406,8 +404,8 @@ function CodeViewerApp(props) {
     update_search_state: _update_search_state,
     regex_search: regex,
     setSearchMatches: _setSearchMatches,
-    code_container_ref: cc_ref,
-    code_container_height: cc_height
+    code_container_height: cc_height,
+    ref: cc_ref
   }))));
 }
 exports.CodeViewerApp = CodeViewerApp = /*#__PURE__*/(0, _react.memo)(CodeViewerApp);
