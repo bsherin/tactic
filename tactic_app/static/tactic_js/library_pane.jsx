@@ -93,6 +93,7 @@ function LibraryPane(props) {
 
     const top_ref = useRef(null);
     const table_ref = useRef(null);
+    const tr_bounding_top = useRef(null);
     const resizing = useRef(false);
     const previous_search_spec = useRef(null);
     const socket_counter = useRef(null);
@@ -162,11 +163,12 @@ function LibraryPane(props) {
     });
 
     useEffect(() => {
+        tr_bounding_top.current = table_ref.current.getBoundingClientRect().top;
         initSocket();
         _grabNewChunkWithRow(0)
     }, []);
 
-    const pushCallback = useCallbackStack();
+    const pushCallback = useCallbackStack("library_home");
 
     function setState(new_state) {
         for (let attr in new_state) {
@@ -533,7 +535,7 @@ function LibraryPane(props) {
                     })
                     .catch((data) => {
                             doFlash(data);
-                            props.clearstatus()
+                            props.clearStatus()
                         }
                     );
             } else {
@@ -1219,6 +1221,20 @@ function LibraryPane(props) {
         }
     }
 
+    function get_left_pane_height() {
+        let left_pane_height;
+        if (tr_bounding_top.current) {
+            left_pane_height = window.innerHeight - tr_bounding_top.current - BOTTOM_MARGIN
+        }
+        else if (table_ref && table_ref.current) {
+            left_pane_height = window.innerHeight - table_ref.current.getBoundingClientRect().top - BOTTOM_MARGIN
+        } else {
+            table_width = left_width - 150;
+            left_pane_height = props.usable_height - 100
+        }
+        return left_pane_height
+    }
+
     function _menu_funcs() {
         return {
             view_func: _view_func,
@@ -1305,13 +1321,11 @@ function LibraryPane(props) {
     let MenubarClass = props.MenubarClass;
 
     let table_width;
-    let left_pane_height;
+    const left_pane_height = get_left_pane_height();
     if (table_ref && table_ref.current) {
         table_width = left_width - table_ref.current.offsetLeft + top_ref.current.offsetLeft;
-        left_pane_height = window.innerHeight - table_ref.current.getBoundingClientRect().top - BOTTOM_MARGIN
     } else {
         table_width = left_width - 150;
-        left_pane_height = props.usable_height - 100
     }
 
     let key_bindings = [

@@ -35,27 +35,36 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; } // noinspe
 /**
  * Created by bls910 much later
  */ /*jshint esversion: 6 */
+// Note it seems to be necessary to have effectcount be a ref.
+// I think the issue occurs
 function useCallbackStack() {
-  var _useState = (0, _react.useState)(0),
-    _useState2 = _slicedToArray(_useState, 2),
-    effectCount = _useState2[0],
-    setEffectCount = _useState2[1];
+  var myId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
+  var _useStateAndRef = useStateAndRef(0),
+    _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
+    effectCount = _useStateAndRef2[0],
+    setEffectCount = _useStateAndRef2[1],
+    effectCountRef = _useStateAndRef2[2];
   var myCallbacksList = (0, _react.useRef)([]);
   (0, _react.useEffect)(function () {
+    // console.log(`${myId} Entering effect with length ${String(myCallbacksList.current.length)} and effectcount${String(effectCountRef.current)}`);
     if (myCallbacksList.current.length > 0) {
       myCallbacksList.current[0]();
       myCallbacksList.current.shift();
       if (myCallbacksList.current.length > 0) {
-        setEffectCount(effectCount + 1);
+        setEffectCount(effectCountRef.current + 1);
       }
     }
+    // console.log(`${myId} leaving with length ${String(myCallbacksList.current.length)} and effectcount${String(effectCountRef.current)}`)
   }, [effectCount]);
   function pushCallback(callback) {
     if (callback) {
       myCallbacksList.current.push(callback);
-      setEffectCount(effectCount + 1);
+      setEffectCount(effectCountRef.current + 1);
+      console.log("".concat(myId, " Pushed callback length ").concat(String(myCallbacksList.current.length), " and effectcount").concat(String(effectCountRef.current)));
+      // console.log(String(callback))
     }
   }
+
   return pushCallback;
 }
 var useConstructor = function useConstructor() {
@@ -71,6 +80,16 @@ var useConstructor = function useConstructor() {
 };
 exports.useConstructor = useConstructor;
 function useStateAndRef(initial) {
+  var _useState = (0, _react.useState)(initial),
+    _useState2 = _slicedToArray(_useState, 2),
+    value = _useState2[0],
+    setValue = _useState2[1];
+  var valueRef = (0, _react.useRef)(value);
+  valueRef.current = value;
+  return [value, setValue, valueRef];
+}
+function useRefRef(theRef) {
+  var refRef = (0, _react.useRef)(theRef);
   var _useState3 = (0, _react.useState)(initial),
     _useState4 = _slicedToArray(_useState3, 2),
     value = _useState4[0],

@@ -15,23 +15,29 @@ export {doBinding, propsAreEqual, arrayMove, arraysMatch, get_ppi, isInt};
 export {remove_duplicates, doSignOut, guid, scrollMeIntoView, renderSpinnerMessage};
 export {useConstructor, useCallbackStack, useStateAndRef}
 
-function useCallbackStack() {
-    const [effectCount, setEffectCount] = useState(0);
+// Note it seems to be necessary to have effectcount be a ref.
+// I think the issue occurs
+function useCallbackStack(myId="") {
+    const [effectCount, setEffectCount, effectCountRef] = useStateAndRef(0);
     const myCallbacksList = useRef([]);
     useEffect(() => {
+        // console.log(`${myId} Entering effect with length ${String(myCallbacksList.current.length)} and effectcount${String(effectCountRef.current)}`);
         if (myCallbacksList.current.length > 0) {
             myCallbacksList.current[0]();
             myCallbacksList.current.shift();
             if (myCallbacksList.current.length > 0) {
-                setEffectCount(effectCount + 1);
+                setEffectCount(effectCountRef.current + 1);
             }
         }
+        // console.log(`${myId} leaving with length ${String(myCallbacksList.current.length)} and effectcount${String(effectCountRef.current)}`)
     }, [effectCount]);
 
     function pushCallback(callback) {
         if (callback) {
             myCallbacksList.current.push(callback);
-            setEffectCount(effectCount + 1);
+            setEffectCount(effectCountRef.current + 1);
+            console.log(`${myId} Pushed callback length ${String(myCallbacksList.current.length)} and effectcount${String(effectCountRef.current)}`);
+            // console.log(String(callback))
         }
     }
 
@@ -56,6 +62,16 @@ function useStateAndRef(initial) {
     valueRef.current = value;
     return [value, setValue, valueRef];
 }
+
+function useRefRef(theRef) {
+    const refRef = useRef(theRef);
+
+    const [value, setValue] = useState(initial);
+    const valueRef = useRef(value);
+    valueRef.current = value;
+    return [value, setValue, valueRef];
+}
+
 
 function doBinding(obj, seq = "_", proto = null) {
     if (!proto) {

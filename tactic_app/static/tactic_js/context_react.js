@@ -170,48 +170,43 @@ function ContextApp(props) {
     _useState14 = _slicedToArray(_useState13, 2),
     lastSelectedTabId = _useState14[0],
     setLastSelectedTabId = _useState14[1];
-  var _useState15 = (0, _react.useState)("all"),
-    _useState16 = _slicedToArray(_useState15, 2),
-    selectedLibraryTab = _useState16[0],
-    setSelectedLibraryTab = _useState16[1];
-  var _useState17 = (0, _react.useState)(function () {
+  var _useState15 = (0, _react.useState)(function () {
       return (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
     }),
-    _useState18 = _slicedToArray(_useState17, 2),
-    usable_width = _useState18[0],
-    set_usable_width = _useState18[1];
-  var _useState19 = (0, _react.useState)(function () {
+    _useState16 = _slicedToArray(_useState15, 2),
+    usable_width = _useState16[0],
+    set_usable_width = _useState16[1];
+  var _useState17 = (0, _react.useState)(function () {
       return (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
     }),
+    _useState18 = _slicedToArray(_useState17, 2),
+    usable_height = _useState18[0],
+    set_usable_height = _useState18[1];
+  var _useState19 = (0, _react.useState)(150),
     _useState20 = _slicedToArray(_useState19, 2),
-    usable_height = _useState20[0],
-    set_usable_height = _useState20[1];
-  var _useState21 = (0, _react.useState)(150),
+    tabWidth = _useState20[0],
+    setTabWidth = _useState20[1];
+  var _useState21 = (0, _react.useState)(false),
     _useState22 = _slicedToArray(_useState21, 2),
-    tabWidth = _useState22[0],
-    setTabWidth = _useState22[1];
+    show_repository = _useState22[0],
+    set_show_repository = _useState22[1];
   var _useState23 = (0, _react.useState)(false),
     _useState24 = _slicedToArray(_useState23, 2),
-    show_repository = _useState24[0],
-    set_show_repository = _useState24[1];
+    dragging_over = _useState24[0],
+    set_dragging_over = _useState24[1];
   var _useState25 = (0, _react.useState)(false),
     _useState26 = _slicedToArray(_useState25, 2),
-    dragging_over = _useState26[0],
-    set_dragging_over = _useState26[1];
+    currently_dragging = _useState26[0],
+    set_currently_dragging = _useState26[1];
   var _useState27 = (0, _react.useState)(false),
     _useState28 = _slicedToArray(_useState27, 2),
-    currently_dragging = _useState28[0],
-    set_currently_dragging = _useState28[1];
-  var _useState29 = (0, _react.useState)(false),
-    _useState30 = _slicedToArray(_useState29, 2),
-    showOmnibar = _useState30[0],
-    setShowOmnibar = _useState30[1];
-  var libraryTabChange = (0, _react.useRef)(null);
+    showOmnibar = _useState28[0],
+    setShowOmnibar = _useState28[1];
   var top_ref = (0, _react.useRef)(null);
   var key_bindings = [[["tab"], _goToNextPane], [["shift+tab"], _goToPreviousPane], [["ctrl+space"], _showOmnibar], [["ctrl+w"], function () {
     _closeTab(selectedTabIdRef.current);
   }]];
-  var pushCallback = (0, _utilities_react2.useCallbackStack)();
+  var pushCallback = (0, _utilities_react2.useCallbackStack)("context");
   (0, _react.useEffect)(function () {
     // for unmount
     initSocket();
@@ -238,9 +233,9 @@ function ContextApp(props) {
       resizeObserver.observe(tab_list_elem);
     }
   }, []);
-  function _setTheme(dark_theme) {
-    window.theme = dark_theme ? "dark" : "light";
-    setDarkTheme(dark_theme);
+  function _setTheme(local_dark_theme) {
+    window.theme = local_dark_theme ? "dark" : "light";
+    set_dark_theme(local_dark_theme);
   }
   function get_tab_list_elem() {
     return document.querySelector("#context-container .context-tab-list > .bp4-tab-list");
@@ -302,13 +297,6 @@ function ContextApp(props) {
     new_dirty_methods[tab_id] = dirty_method;
     set_dirty_methods(new_dirty_methods);
   }
-  function _registerLibraryTabChanger(handleTabChange) {
-    libraryTabChange.current = handleTabChange;
-  }
-  function _changeLibTab(res_type) {
-    libraryTabChange.current(res_type + "-pane");
-    setSelectedLibraryTab(res_type);
-  }
   function initSocket() {
     props.tsocket.attachListener("window-open", function (data) {
       window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
@@ -334,14 +322,14 @@ function ContextApp(props) {
       return;
     }
     if (!(the_id in dirty_methods) || dirty_methods[the_id]()) {
-      var title = tab_panel_dict[the_id].title;
+      var title = tab_panel_dict_ref.current[the_id].title;
       var confirm_text = "Are you sure that you want to reload the tab ".concat(title, "? Changes will be lost");
       (0, _modal_react.showConfirmDialogReact)("reload the tab ".concat(title), confirm_text, "do nothing", "reload", do_the_refresh);
     } else {
       do_the_refresh();
     }
     function do_the_refresh() {
-      var old_tab_panel = _objectSpread({}, tab_panel_dict[the_id]);
+      var old_tab_panel = _objectSpread({}, tab_panel_dict_ref.current[the_id]);
       var resource_name = old_tab_panel.panel.resource_name;
       var res_type = old_tab_panel.res_type;
       var the_view;
@@ -375,7 +363,7 @@ function ContextApp(props) {
   function _closeATab(the_id) {
     var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     var idx = tab_ids_ref.current.indexOf(the_id);
-    var copied_tab_panel_dict = _objectSpread({}, tab_panel_dict);
+    var copied_tab_panel_dict = _objectSpread({}, tab_panel_dict_ref.current);
     var copied_tab_ids = _toConsumableArray(tab_ids_ref.current);
     var copied_dirty_methods = _objectSpread({}, dirty_methods);
     if (idx > -1) {
@@ -415,7 +403,7 @@ function ContextApp(props) {
       return;
     }
     if (!(the_id in dirty_methods) || dirty_methods[the_id]()) {
-      var title = tab_panel_dict[the_id].title;
+      var title = tab_panel_dict_ref.current[the_id].title;
       var confirm_text = "Are you sure that you want to close the tab ".concat(title, "? Changes will be lost");
       (0, _modal_react.showConfirmDialogReact)("close the tab ".concat(title, "\""), confirm_text, "do nothing", "close", function () {
         _closeATab(the_id);
@@ -426,7 +414,7 @@ function ContextApp(props) {
   }
   function _addPanel(new_id, viewer_kind, res_type, title, new_panel) {
     var callback = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : null;
-    var new_tab_panel_dict = _objectSpread({}, tab_panel_dict);
+    var new_tab_panel_dict = _objectSpread({}, tab_panel_dict_ref.current);
     new_tab_panel_dict[new_id] = {
       kind: viewer_kind,
       res_type: res_type,
@@ -471,7 +459,7 @@ function ContextApp(props) {
   function _changeResourceName(the_id, new_name) {
     var change_title = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
     var callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
-    var new_tab_panel_dict = _objectSpread({}, tab_panel_dict);
+    var new_tab_panel_dict = _objectSpread({}, tab_panel_dict_ref.current);
     if (change_title) {
       new_tab_panel_dict[the_id].title = new_name;
     }
@@ -484,7 +472,7 @@ function ContextApp(props) {
     });
   }
   function _changeResourceTitle(the_id, new_title) {
-    var new_tab_panel_dict = _objectSpread({}, tab_panel_dict);
+    var new_tab_panel_dict = _objectSpread({}, tab_panel_dict_ref.current);
     new_tab_panel_dict[the_id].title = new_title;
     set_tab_panel_dict(new_tab_panel_dict);
     pushCallback(function () {
@@ -495,7 +483,7 @@ function ContextApp(props) {
   }
   function _changeResourceProps(the_id, new_props) {
     var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-    var new_tab_panel_dict = _objectSpread({}, tab_panel_dict);
+    var new_tab_panel_dict = _objectSpread({}, tab_panel_dict_ref.current);
     for (var prop in new_props) {
       new_tab_panel_dict[the_id].panel[prop] = new_props[prop];
     }
@@ -512,7 +500,7 @@ function ContextApp(props) {
     try {
       for (_iterator.s(); !(_step = _iterator.n()).done;) {
         var the_id = _step.value;
-        var the_panel = tab_panel_dict[the_id];
+        var the_panel = tab_panel_dict_ref.current[the_id];
         if (the_panel.panel.resource_name == res_name && the_panel.res_type == res_type) {
           return the_id;
         }
@@ -594,7 +582,7 @@ function ContextApp(props) {
   }
   function _goToModule(module_name, line_number) {
     var _loop = function _loop() {
-      var pdict = tab_panel_dict[tab_id];
+      var pdict = tab_panel_dict_ref.current[tab_id];
       if (pdict.kind == "creator-viewer" && pdict.panel.resource_name == module_name) {
         _handleTabSelect(tab_id, selectedTabIdRef.current, null, function () {
           if ("line_setter" in pdict) {
@@ -606,7 +594,7 @@ function ContextApp(props) {
         };
       }
     };
-    for (var tab_id in tab_panel_dict) {
+    for (var tab_id in tab_panel_dict_ref.current) {
       var _ret = _loop();
       if (_typeof(_ret) === "object") return _ret.v;
     }
@@ -626,7 +614,7 @@ function ContextApp(props) {
           _updatePanel(new_id, {
             panel: new_panel
           }, function () {
-            var pdict = tab_panel_dict[new_id];
+            var pdict = tab_panel_dict_ref.current[new_id];
           });
         }, function (register_func) {
           return _registerOmniFunction(new_id, register_func);
@@ -704,8 +692,8 @@ function ContextApp(props) {
     } finally {
       _iterator2.f();
     }
-    for (var the_id in tab_panel_dict) {
-      var entry = tab_panel_dict[the_id];
+    for (var the_id in tab_panel_dict_ref.current) {
+      var entry = tab_panel_dict_ref.current[the_id];
       if (entry.panel != "spinner") {
         open_resources[entry.res_type].push(entry.panel.resource_name);
       }
@@ -752,75 +740,15 @@ function ContextApp(props) {
     }
     return omni_items;
   }
-  var unified = window.library_style == "unified";
-  var bstyle = {
-    paddingTop: 0,
-    paddingBotton: 0
-  };
-  var lib_buttons = [];
-  var selected_lib_button;
-  var selected_bclass;
-  selected_lib_button = selectedLibraryTab;
-  selected_bclass = " selected-lib-tab-button";
-  // }
-  if (!unified) {
-    var _iterator4 = _createForOfIteratorHelper(resTypes),
-      _step4;
-    try {
-      var _loop2 = function _loop2() {
-        var rt = _step4.value;
-        var cname = "lib-tab-button";
-        if (rt == selected_lib_button) {
-          cname += selected_bclass;
-        }
-        lib_buttons.push( /*#__PURE__*/_react["default"].createElement(_core.Button, {
-          key: rt,
-          icon: libIconDict[rt],
-          className: cname,
-          alignText: "left",
-          style: {
-            display: "flex"
-          },
-          small: true,
-          minimal: true,
-          onClick: function onClick() {
-            _changeLibTab(rt);
-          }
-        }, rt));
-      };
-      for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-        _loop2();
-      }
-    } catch (err) {
-      _iterator4.e(err);
-    } finally {
-      _iterator4.f();
-    }
-  } else {
-    var cname = "lib-tab-button";
-    if (selectedTabIdRef.current == "library") {
-      cname += selected_bclass;
-    }
-    lib_buttons.push( /*#__PURE__*/_react["default"].createElement(_core.Button, {
-      key: "all",
-      icon: libIconDict["all"],
-      className: cname,
-      alignText: "left",
-      small: true,
-      minimal: true,
-      onClick: function onClick() {
-        _changeLibTab("all");
-      }
-    }, "Library"));
-  }
+
+  // Create the library tab
   var bclass = "context-tab-button-content";
   if (selectedTabIdRef.current == "library") {
     bclass += " selected-tab-button";
   }
-  var library_panel;
   var library_id = (0, _utilities_react.guid)();
   var tsocket = new _tactic_socket.TacticSocket("main", 5000, library_id);
-  library_panel = /*#__PURE__*/_react["default"].createElement("div", {
+  var library_panel = /*#__PURE__*/_react["default"].createElement("div", {
     id: "library-home-root"
   }, /*#__PURE__*/_react["default"].createElement(LibraryHomeAppPlus, {
     library_id: library_id,
@@ -829,7 +757,6 @@ function ContextApp(props) {
     controlled: true,
     am_selected: selectedTabIdRef.current == "library",
     open_resources: open_resources,
-    registerLibraryTabChanger: _registerLibraryTabChanger,
     dark_theme: dark_theme,
     setTheme: _setTheme,
     registerOmniFunction: function registerOmniFunction(register_func) {
@@ -839,47 +766,49 @@ function ContextApp(props) {
     usable_width: usable_width,
     usable_height: usable_height
   }));
-  // }
-  var mbot = unified ? 0 : 5;
   var ltab = /*#__PURE__*/_react["default"].createElement(_core.Tab, {
     id: "library",
     tabIndex: -1,
     key: "library",
-    className: "context-tab",
+    style: {
+      paddingLeft: 10,
+      marginBottom: 0
+    },
+    panelClassName: "context-tab",
+    title: "",
     panel: library_panel
   }, /*#__PURE__*/_react["default"].createElement("div", {
-    className: bclass,
+    className: bclass + " open-resource-tab",
     style: {
       display: "flex",
-      flexDirection: "column"
+      flexDirection: "row",
+      width: "100%",
+      justifyContent: "space-between"
     }
-  }, window.library_style == "tabbed" && /*#__PURE__*/_react["default"].createElement(_core.Button, {
-    minimal: true,
-    alignText: "left",
+  }, /*#__PURE__*/_react["default"].createElement("div", {
     style: {
       display: "table-cell",
-      overflow: "hidden"
-    }
-  }, /*#__PURE__*/_react["default"].createElement("span", {
-    className: "context-library-title"
-  }, "Library")), /*#__PURE__*/_react["default"].createElement("div", {
-    style: {
-      display: "table-cell",
-      flexDirection: "column",
-      marginBottom: {
-        mbot: mbot
-      },
+      flexDirection: "row",
+      justifyContent: "flex-start",
       textOverflow: "ellipsis",
       overflow: "hidden"
     }
-  }, lib_buttons)));
+  }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+    icon: libIconDict["all"],
+    style: {
+      verticalAlign: "middle",
+      marginRight: 5
+    },
+    iconSize: 16,
+    tabIndex: -1
+  }), /*#__PURE__*/_react["default"].createElement("span", null, "Library"))));
   var all_tabs = [ltab];
-  var _iterator5 = _createForOfIteratorHelper(tab_ids_ref.current),
-    _step5;
+  var _iterator4 = _createForOfIteratorHelper(tab_ids_ref.current),
+    _step4;
   try {
-    var _loop3 = function _loop3() {
-      var tab_id = _step5.value;
-      var tab_entry = tab_panel_dict[tab_id];
+    var _loop2 = function _loop2() {
+      var tab_id = _step4.value;
+      var tab_entry = tab_panel_dict_ref.current[tab_id];
       var bclass = "context-tab-button-content";
       if (selectedTabIdRef.current == tab_id) {
         bclass += " selected-tab-button";
@@ -929,7 +858,7 @@ function ContextApp(props) {
         }));
         wrapped_panel = /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement("div", {
           id: tab_id + "-holder",
-          className: panelRootDict[tab_panel_dict[tab_id].kind]
+          className: panelRootDict[tab_panel_dict_ref.current[tab_id].kind]
         }, the_panel));
       }
       var icon_style = {
@@ -1013,15 +942,15 @@ function ContextApp(props) {
       }))));
       all_tabs.push(new_tab);
     };
-    for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-      _loop3();
+    for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+      _loop2();
     }
 
     // The purpose of the dummy tab is to make it possible to drag a tab to the bottom of the list
   } catch (err) {
-    _iterator5.e(err);
+    _iterator4.e(err);
   } finally {
-    _iterator5.f();
+    _iterator4.f();
   }
   bclass = "context-tab-button-content";
   if (dragging_over == "dummy") {
@@ -1070,17 +999,14 @@ function ContextApp(props) {
     paddingLeft: 0
   };
   var tlclass = "context-tab-list";
-  if (unified) {
-    tlclass += " unified";
-  }
   var pane_closed = tabWidth <= MIN_CONTEXT_WIDTH;
   if (pane_closed) {
     tlclass += " context-pane-closed";
   }
   var sid = selectedTabIdRef.current;
   var omniGetter;
-  if (sid && sid in tab_panel_dict) {
-    var the_dict = tab_panel_dict[sid];
+  if (sid && sid in tab_panel_dict_ref.current) {
+    var the_dict = tab_panel_dict_ref.current[sid];
     if ("omni_function" in the_dict) {
       omniGetter = the_dict.omni_function;
     } else {

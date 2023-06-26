@@ -106,7 +106,9 @@ function withStatus(WrappedComponent) {
       set_spinner_size = _useState6[1];
     var pushCallback = (0, _utilities_react.useCallbackStack)();
     (0, _react.useEffect)(function () {
-      initSocket();
+      if (props.tsocket) {
+        initSocket();
+      }
     }, []);
     function initSocket() {
       props.tsocket.attachListener('stop-spinner', _stopSpinner);
