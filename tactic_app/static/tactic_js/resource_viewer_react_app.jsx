@@ -60,9 +60,7 @@ function ResourceViewerApp(props) {
     // Only used when not in context
     const [showOmnibar, setShowOmnibar] = useState(false);
 
-  useConstructor(() => {
-        var showOmnibar;
-        var setShowOmnibar;
+    useConstructor(() => {
         if (!window.in_context) {
             key_bindings.current = [
                 [["ctrl+space"], _showOmnibar],

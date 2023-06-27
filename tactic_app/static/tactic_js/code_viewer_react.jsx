@@ -337,7 +337,6 @@ function CodeViewerApp(props) {
         paddingLeft: 0,
         position: "relative"
     };
-    let cc_height = get_new_cc_height();
     let outer_class = "resource-viewer-holder";
     if (!props.controlled) {
         if (actual_dark_theme) {
@@ -396,7 +395,7 @@ function CodeViewerApp(props) {
                                      update_search_state={_update_search_state}
                                      regex_search={regex}
                                      setSearchMatches={_setSearchMatches}
-                                     code_container_height={cc_height}
+                                     code_container_height={get_new_cc_height()}
                                      ref={cc_ref}
                     />
                 </ResourceViewerApp>

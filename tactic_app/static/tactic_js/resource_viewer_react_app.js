@@ -69,8 +69,6 @@ function ResourceViewerApp(props) {
     showOmnibar = _useState2[0],
     setShowOmnibar = _useState2[1];
   (0, _utilities_react.useConstructor)(function () {
-    var showOmnibar;
-    var setShowOmnibar;
     if (!window.in_context) {
       key_bindings.current = [[["ctrl+space"], _showOmnibar]];
     }

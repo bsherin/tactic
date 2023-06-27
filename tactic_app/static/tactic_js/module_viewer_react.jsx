@@ -47,7 +47,7 @@ function module_viewer_main() {
 
 const controllable_props = ["resource_name", "usable_height", "usable_width"];
 
-function module_viewer_props(data, registerDirtyMethod, finalCallback, registerOmniFunction) {
+function module_viewer_props(data, registerDirtyMethod, finalCallback, reniFunction) {
 
     let resource_viewer_id = guid();
     var tsocket = new TacticSocket("main", 5000, resource_viewer_id);
@@ -127,6 +127,12 @@ function ModuleViewerApp(props) {
             })
         }
     });
+
+    function _update_window_dimensions() {
+        set_usable_width(window.innerWidth - top_ref.current.offsetLeft);
+        set_usable_height(window.innerHeight - top_ref.current.offsetTop)
+    }
+
 
     function cPropGetters() {
         return {
@@ -457,7 +463,6 @@ function ModuleViewerApp(props) {
     }
 
     let actual_dark_theme = props.controlled ? props.dark_theme : dark_theme;
-    let the_context = {"readOnly": props.readOnly};
     let my_props = {...props};
     if (!props.controlled) {
         my_props.resource_name = resource_name;
@@ -473,7 +478,6 @@ function ModuleViewerApp(props) {
     let cc_height = get_new_cc_height();
     let outer_class = "resource-viewer-holder";
     if (!props.controlled) {
-        // outer_class = "resource-viewer-holder";
         if (actual_dark_theme) {
             outer_class = outer_class + " bp4-dark";
         } else {

@@ -29,20 +29,17 @@ function SearchForm(props) {
     _useState2 = _slicedToArray(_useState, 2),
     temp_text = _useState2[0],
     set_temp_text = _useState2[1];
-  var current_timer = (0, _react.useRef)(null);
-  function _handleSearchFieldChange(event) {
-    if (current_timer.current) {
-      clearTimeout(current_timer.current);
-      current_timer.current = null;
-    }
-    var newval = event.target.value;
-    current_timer.current = setTimeout(function () {
-      current_timer.current = null;
+  var _useDebounce = (0, _utilities_react.useDebounce)(function (newval) {
       props.update_search_state({
         "search_string": newval
       });
-    }, props.update_delay);
-    set_temp_text(newval);
+    }),
+    _useDebounce2 = _slicedToArray(_useDebounce, 2),
+    waiting = _useDebounce2[0],
+    doUpdate = _useDebounce2[1];
+  function _handleSearchFieldChange(event) {
+    doUpdate(event.target.value);
+    set_temp_text(event.target.value);
   }
   function _handleClearSearch() {
     props.update_search_state({
@@ -88,7 +85,7 @@ function SearchForm(props) {
   } else {
     match_text = null;
   }
-  var current_text = current_timer.current ? temp_text : props.search_string;
+  var current_text = waiting.current ? temp_text : props.search_string;
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     helperText: match_text,
     style: {

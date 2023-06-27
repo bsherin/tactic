@@ -19,26 +19,20 @@ import {
 import {Cell, Column, Table2, ColumnHeaderCell, RegionCardinality, TruncatedFormat, Regions} from "@blueprintjs/table";
 import _ from 'lodash';
 
-import { useCallbackStack, useStateAndRef } from "./utilities_react";
+import { useCallbackStack, useStateAndRef, useDebounce } from "./utilities_react";
 
 export {SearchForm}
 export {BpSelectorTable}
 
 function SearchForm(props) {
     const [temp_text, set_temp_text] = useState(null);
-    const current_timer = useRef(null);
+    const [waiting, doUpdate] = useDebounce((newval)=>{
+        props.update_search_state({"search_string": newval});
+    });
 
     function _handleSearchFieldChange(event) {
-        if (current_timer.current) {
-            clearTimeout(current_timer.current);
-            current_timer.current = null;
-        }
-        let newval = event.target.value;
-        current_timer.current = setTimeout(() => {
-            current_timer.current = null;
-            props.update_search_state({"search_string": newval})
-        }, props.update_delay);
-        set_temp_text(newval)
+        doUpdate(event.target.value);
+        set_temp_text(event.target.value)
     }
 
     function _handleClearSearch() {
@@ -82,7 +76,7 @@ function SearchForm(props) {
     } else {
         match_text = null
     }
-    let current_text = current_timer.current ? temp_text : props.search_string;
+    let current_text = waiting.current ? temp_text : props.search_string;
     return (
         <Fragment>
             <FormGroup helperText={match_text} style={{marginBottom: 0}}>

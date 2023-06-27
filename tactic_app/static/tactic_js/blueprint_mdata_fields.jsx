@@ -19,7 +19,7 @@ mdi.use(markdownItLatex);
 import _ from 'lodash';
 
 import {postAjaxPromise} from "./communication_react"
-import {propsAreEqual} from "./utilities_react";
+import {propsAreEqual, useDebounce} from "./utilities_react";
 import {tile_icon_dict} from "./icon_info";
 
 export {icon_dict};
@@ -365,7 +365,7 @@ function NotesField(props) {
     }
 
     function hasOnlyWhitespace() {
-        return !props.notes.trim().length
+        return !props.notes || !props.notes.trim().length
     }
 
     function getMarkdownField() {
@@ -513,20 +513,13 @@ IconSelector.propTypes = {
 function CombinedMetadata(props) {
     const [auxIsOpen, setAuxIsOpen] = useState(false);
     const [tempNotes, setTempNotes] = useState(null);
-    const updateDelay = 500;
-    const notesTimer = useRef(null);
+    const [waiting, doUpdate] = useDebounce((newval)=>{
+        props.handleChange({"notes": newval});
+    });
 
     function _handleNotesChange(event) {
-        if (notesTimer.current) {
-            clearTimeout(notesTimer.current);
-            notesTimer.current = null;
-        }
-        let new_val = event.target.value;
-        notesTimer.current = setTimeout(() => {
-            notesTimer.current = null;
-            props.handleChange({"notes": new_val})
-        }, updateDelay);
-        setTempNotes(new_val);
+        doUpdate(event.target.value);
+        setTempNotes(event.target.value);
     }
 
     function _handleTagsChange(tags) {
@@ -551,7 +544,7 @@ function CombinedMetadata(props) {
 
     let addition_field_style = {fontSize: 14};
     let additional_items;
-    let current_notes = notesTimer.current ? tempNotes : props.notes;
+    let current_notes = waiting.current ? tempNotes : props.notes;
     if (props.additional_metadata != null) {
         additional_items = [];
         for (let field in props.additional_metadata) {
