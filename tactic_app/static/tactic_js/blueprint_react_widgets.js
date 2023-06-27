@@ -190,8 +190,7 @@ SelectList.defaultProps = {
   fontSize: null,
   minimal: false
 };
-function BpOrderableTable(props) {
-  var table_ref = (0, _react.useRef)(null);
+function BpOrderableTable(props, passedRef) {
   function _onRowsReordered(oldIndex, newIndex) {
     var new_data_list = _toConsumableArray(props.data_array);
     var the_item = new_data_list[oldIndex];
@@ -270,9 +269,7 @@ function BpOrderableTable(props) {
   });
   return /*#__PURE__*/_react["default"].createElement(_core.HotkeysProvider, null, /*#__PURE__*/_react["default"].createElement(_table.Table2, {
     enableFocusedCell: false,
-    ref: table_ref,
     cellRendererDependencies: [props.data_array],
-    onCompleteRender: _onCompleteRender,
     numRows: props.data_array.length,
     enableColumnReordering: false,
     selectionModes: props.selectionModes,

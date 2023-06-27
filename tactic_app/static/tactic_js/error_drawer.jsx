@@ -10,15 +10,12 @@ import {GlyphButton} from "./blueprint_react_widgets";
 
 export {withErrorDrawer, ErrorItem}
 
-function withErrorDrawer(WrappedComponent, title = null, position = "right", size = "30%") {
-    function newFunction(props) {
+function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_size = "30%") {
+    function WithErrorComponent(props) {
         const [show_drawer, set_show_drawer] = useState(false);
         const [contents, set_contents] = useState({});
-        const [error_drawer_size, set_error_drawer_size] = useState(size);
-        const [position, set_position] = useState(position);
-        const [goToLineNumber, setGoToLineNumber] = useState(null);
 
-        const socket_counter = useRef(null);
+        const goToLineNumber = useRef(null);
         const ucounter = useRef(0);
         const local_id = useRef(props.main_id ? props.main_id : props.library_id);
 
@@ -65,7 +62,7 @@ function withErrorDrawer(WrappedComponent, title = null, position = "right", siz
             const newcontents = {...contents};
             delete newcontents[ukey];
             set_contents(newcontents);
-            set_show_drawer(open)
+            set_show_drawer(false)
         }
 
         function _postAjaxFailure(qXHR, textStatus, errorThrown) {
@@ -74,7 +71,6 @@ function withErrorDrawer(WrappedComponent, title = null, position = "right", siz
                 content: errorThrown
             })
         }
-
 
         function _clearAll(data) {
             if (data == null || !("main_id" in data) || (data.main_id == props.main_id)) {
@@ -88,7 +84,7 @@ function withErrorDrawer(WrappedComponent, title = null, position = "right", siz
         }
 
         function _setGoToLineNumber(gtfunc) {
-            setGoToLineNumber(gtfunc)
+            goToLineNumber.current = gtfunc
         }
 
         let errorDrawerFuncs = {
@@ -100,19 +96,20 @@ function withErrorDrawer(WrappedComponent, title = null, position = "right", siz
             toggleErrorDrawer: _toggle,
             setGoToLineNumber: _setGoToLineNumber
         };
-        const the_state = {
-            show_drawer, contents, error_drawer_size, position, goToLineNumber
-        };
+
         return (
             <Fragment>
                 <WrappedComponent {...props}
                                   {...errorDrawerFuncs}
                                   errorDrawerFuncs={errorDrawerFuncs}
                 />
-                <ErrorDrawer {...the_state}
+                <ErrorDrawer show_drawer={show_drawer}
+                             contents={contents}
+                             position={lposition}
+                             error_drawer_size={error_drawer_size}
                              local_id={local_id.current}
                              handleCloseItem={_closeEntry}
-                             goToLineNumberFunc={goToLineNumber}
+                             goToLineNumberFunc={goToLineNumber.current}
                              goToModule={props.goToModule}
                              closeErrorDrawer={_close}
                              title="Error Drawer"
@@ -123,7 +120,7 @@ function withErrorDrawer(WrappedComponent, title = null, position = "right", siz
             </Fragment>
         )
     }
-    return memo(newFunction)
+    return memo(WithErrorComponent)
 }
 
 function ErrorItem(props) {

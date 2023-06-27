@@ -16,6 +16,4 @@ user_data_fields = [
      "type": "select", "default": "default", "options": ["default", "elegant", "juejin", "neat", "solarized"], "info_type": "setting"},
     {"name": "preferred_interface", "editable": True, "display_text": "preferred interface",
      "type": "select", "default": "single-window", "options": ["separate-tabs", "single-window"], "info_type": "setting"},
-    {"name": "library_style", "editable": True, "display_text": "library style",
-     "type": "select", "default": "unified", "options": ["tabbed", "unified"], "info_type": "setting"}
 ]

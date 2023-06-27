@@ -38,7 +38,7 @@ import {postAjaxPromise} from "./communication_react.js";
 import {KeyTrap} from "./key_trap";
 import {DragHandle} from "./resizing_layouts.js";
 import {res_types} from "./library_pane";
-import {useCallbackStack, useStateAndRef} from "./utilities_react";
+import {useCallbackStack, useStateAndRef, throttle} from "./utilities_react";
 
 const spinner_panel = (
     <div style={{height: "100%", position: "absolute", top: "50%", left: "50%"}}>
@@ -219,7 +219,6 @@ function ContextApp(props) {
 
     function _update_window_dimensions(callback = null) {
         const tab_list_elem = get_tab_list_elem();
-
         let uwidth;
         let uheight;
         let tabWidth;

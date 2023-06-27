@@ -194,9 +194,6 @@ class User(UserMixin, MongoAccess):
     def get_preferred_interface(self):
         return self.user_data_dict["preferred_interface"]
 
-    def get_library_style(self):
-        return self.user_data_dict["library_style"]
-
     def get_tzoffset(self):
         return self.user_data_dict["tzoffset"]
 

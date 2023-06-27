@@ -1,5 +1,5 @@
 import React from "react";
-import {useRef, memo} from "react";
+import {memo} from "react";
 import PropTypes from 'prop-types';
 
 import {
@@ -186,8 +186,7 @@ SelectList.defaultProps = {
     minimal: false
 };
 
-function BpOrderableTable(props) {
-    const table_ref = useRef(null);
+function BpOrderableTable(props, passedRef) {
 
     function _onRowsReordered(oldIndex, newIndex) {
         let new_data_list = [...props.data_array];
@@ -270,9 +269,7 @@ function BpOrderableTable(props) {
     return (
         <HotkeysProvider>
             <Table2 enableFocusedCell={false}
-                    ref={table_ref}
                     cellRendererDependencies={[props.data_array]}
-                    onCompleteRender={_onCompleteRender}
                     numRows={props.data_array.length}
                     enableColumnReordering={false}
                     selectionModes={props.selectionModes}

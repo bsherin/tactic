@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.arrayMove = arrayMove;
 exports.arraysMatch = arraysMatch;
+exports.debounce = debounce;
 exports.doBinding = doBinding;
 exports.doSignOut = doSignOut;
 exports.get_ppi = get_ppi;
@@ -15,8 +16,10 @@ exports.propsAreEqual = propsAreEqual;
 exports.remove_duplicates = remove_duplicates;
 exports.renderSpinnerMessage = renderSpinnerMessage;
 exports.scrollMeIntoView = scrollMeIntoView;
+exports.throttle = throttle;
 exports.useCallbackStack = useCallbackStack;
 exports.useConstructor = void 0;
+exports.useDebounce = useDebounce;
 exports.useStateAndRef = useStateAndRef;
 var _lodash = _interopRequireDefault(require("lodash"));
 var _react = _interopRequireWildcard(require("react"));
@@ -35,8 +38,7 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; } // noinspe
 /**
  * Created by bls910 much later
  */ /*jshint esversion: 6 */
-// Note it seems to be necessary to have effectcount be a ref.
-// I think the issue occurs
+// It's necessary to have effectcount be a ref. Otherwise there can be subtle bugs
 function useCallbackStack() {
   var myId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
   var _useStateAndRef = useStateAndRef(0),
@@ -97,6 +99,47 @@ function useRefRef(theRef) {
   var valueRef = (0, _react.useRef)(value);
   valueRef.current = value;
   return [value, setValue, valueRef];
+}
+function useDebounce(callback) {
+  var delay = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 500;
+  var current_timer = (0, _react.useRef)(null);
+  var waiting = (0, _react.useRef)(false);
+  return [waiting, function () {
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+    clearTimeout(current_timer.current);
+    waiting.current = true;
+    current_timer.current = setTimeout(function () {
+      waiting.current = false;
+      callback.apply(void 0, args);
+    }, delay);
+  }];
+}
+function debounce(callback) {
+  var delay = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1000;
+  var time;
+  return function () {
+    for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+      args[_key2] = arguments[_key2];
+    }
+    clearTimeout(time);
+    time = setTimeout(function () {
+      callback.apply(void 0, args);
+    }, delay);
+  };
+}
+function throttle(callback) {
+  var delay = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1000;
+  var shouldWait = false;
+  return function () {
+    if (shouldWait) return;
+    callback.apply(void 0, arguments);
+    shouldWait = true;
+    setTimeout(function () {
+      shouldWait = false;
+    }, delay);
+  };
 }
 function doBinding(obj) {
   var seq = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "_";

@@ -15,9 +15,10 @@ export {doBinding, propsAreEqual, arrayMove, arraysMatch, get_ppi, isInt};
 export {remove_duplicates, doSignOut, guid, scrollMeIntoView, renderSpinnerMessage};
 export {useConstructor, useCallbackStack, useStateAndRef}
 
-// Note it seems to be necessary to have effectcount be a ref.
-// I think the issue occurs
-function useCallbackStack(myId="") {
+export {debounce, throttle, useDebounce}
+
+// It's necessary to have effectcount be a ref. Otherwise there can be subtle bugs
+function useCallbackStack(myId = "") {
     const [effectCount, setEffectCount, effectCountRef] = useStateAndRef(0);
     const myCallbacksList = useRef([]);
     useEffect(() => {
@@ -44,15 +45,16 @@ function useCallbackStack(myId="") {
     return pushCallback
 }
 
-const useConstructor = (callback = () => {}) => {
-        const hasBeenCalled = useRef(false);
-        const returnVal = useRef(null);
-        if (hasBeenCalled.current) {
-            return returnVal.current;
-        }
-        hasBeenCalled.current = true;
-        returnVal.current = callback();
-        return returnVal
+const useConstructor = (callback = () => {
+}) => {
+    const hasBeenCalled = useRef(false);
+    const returnVal = useRef(null);
+    if (hasBeenCalled.current) {
+        return returnVal.current;
+    }
+    hasBeenCalled.current = true;
+    returnVal.current = callback();
+    return returnVal
 };
 
 
@@ -72,6 +74,43 @@ function useRefRef(theRef) {
     return [value, setValue, valueRef];
 }
 
+function useDebounce(callback, delay=500) {
+    const current_timer = useRef(null);
+    const waiting = useRef(false);
+    return [waiting, (...args) => {
+        clearTimeout(current_timer.current);
+        waiting.current = true;
+        current_timer.current = setTimeout(() => {
+            waiting.current = false;
+            callback(...args);
+        }, delay);
+    }]
+}
+
+function debounce(callback, delay = 1000) {
+    var time;
+
+    return (...args) => {
+        clearTimeout(time);
+        time = setTimeout(() => {
+            callback(...args);
+        }, delay);
+    };
+}
+
+function throttle(callback, delay = 1000) {
+    let shouldWait = false;
+
+    return (...args) => {
+        if (shouldWait) return;
+
+        callback(...args);
+        shouldWait = true;
+        setTimeout(() => {
+            shouldWait = false;
+        }, delay);
+    };
+}
 
 function doBinding(obj, seq = "_", proto = null) {
     if (!proto) {

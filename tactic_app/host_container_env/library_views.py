@@ -152,7 +152,6 @@ def library():
                                repository_type="",
                                database_type=database_type,
                                version_string=tstring,
-                               library_style=current_user.get_library_style(),
                                theme=current_user.get_theme(),
                                page_title="tactic resources",
                                css_source=css_source("library_home_react"),
@@ -167,7 +166,6 @@ def context():
                            develop=str(_develop),
                            version_string=tstring,
                            theme=current_user.get_theme(),
-                           library_style=current_user.get_library_style(),
                            page_title="context",
                            css_source=css_source("context_react"),
                            module_source=js_source_dict["context_react"])

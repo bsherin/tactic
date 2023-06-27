@@ -393,7 +393,7 @@ function NotesField(props) {
     return $(notesRef.current);
   }
   function hasOnlyWhitespace() {
-    return !props.notes.trim().length;
+    return !props.notes || !props.notes.trim().length;
   }
   function getMarkdownField() {
     return $(mdRef.current);
@@ -527,21 +527,17 @@ function CombinedMetadata(props) {
     _useState14 = _slicedToArray(_useState13, 2),
     tempNotes = _useState14[0],
     setTempNotes = _useState14[1];
-  var updateDelay = 500;
-  var notesTimer = (0, _react.useRef)(null);
-  function _handleNotesChange(event) {
-    if (notesTimer.current) {
-      clearTimeout(notesTimer.current);
-      notesTimer.current = null;
-    }
-    var new_val = event.target.value;
-    notesTimer.current = setTimeout(function () {
-      notesTimer.current = null;
+  var _useDebounce = (0, _utilities_react.useDebounce)(function (newval) {
       props.handleChange({
-        "notes": new_val
+        "notes": newval
       });
-    }, updateDelay);
-    setTempNotes(new_val);
+    }),
+    _useDebounce2 = _slicedToArray(_useDebounce, 2),
+    waiting = _useDebounce2[0],
+    doUpdate = _useDebounce2[1];
+  function _handleNotesChange(event) {
+    doUpdate(event.target.value);
+    setTempNotes(event.target.value);
   }
   function _handleTagsChange(tags) {
     props.handleChange({
@@ -570,7 +566,7 @@ function CombinedMetadata(props) {
     fontSize: 14
   };
   var additional_items;
-  var current_notes = notesTimer.current ? tempNotes : props.notes;
+  var current_notes = waiting.current ? tempNotes : props.notes;
   if (props.additional_metadata != null) {
     additional_items = [];
     for (var field in props.additional_metadata) {

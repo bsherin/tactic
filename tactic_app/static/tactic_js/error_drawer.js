@@ -32,10 +32,9 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 function withErrorDrawer(WrappedComponent) {
-  var title = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-  var position = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "right";
-  var size = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "30%";
-  function newFunction(props) {
+  var lposition = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "right";
+  var error_drawer_size = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "30%";
+  function WithErrorComponent(props) {
     var _useState = (0, _react.useState)(false),
       _useState2 = _slicedToArray(_useState, 2),
       show_drawer = _useState2[0],
@@ -44,19 +43,7 @@ function withErrorDrawer(WrappedComponent) {
       _useState4 = _slicedToArray(_useState3, 2),
       contents = _useState4[0],
       set_contents = _useState4[1];
-    var _useState5 = (0, _react.useState)(size),
-      _useState6 = _slicedToArray(_useState5, 2),
-      error_drawer_size = _useState6[0],
-      set_error_drawer_size = _useState6[1];
-    var _useState7 = (0, _react.useState)(position),
-      _useState8 = _slicedToArray(_useState7, 2),
-      position = _useState8[0],
-      set_position = _useState8[1];
-    var _useState9 = (0, _react.useState)(null),
-      _useState10 = _slicedToArray(_useState9, 2),
-      goToLineNumber = _useState10[0],
-      setGoToLineNumber = _useState10[1];
-    var socket_counter = (0, _react.useRef)(null);
+    var goToLineNumber = (0, _react.useRef)(null);
     var ucounter = (0, _react.useRef)(0);
     var local_id = (0, _react.useRef)(props.main_id ? props.main_id : props.library_id);
     (0, _react.useEffect)(function () {
@@ -97,7 +84,7 @@ function withErrorDrawer(WrappedComponent) {
       var newcontents = _objectSpread({}, contents);
       delete newcontents[ukey];
       set_contents(newcontents);
-      set_show_drawer(open);
+      set_show_drawer(false);
     }
     function _postAjaxFailure(qXHR, textStatus, errorThrown) {
       _addEntry({
@@ -115,7 +102,7 @@ function withErrorDrawer(WrappedComponent) {
       set_show_drawer(false);
     }
     function _setGoToLineNumber(gtfunc) {
-      setGoToLineNumber(gtfunc);
+      goToLineNumber.current = gtfunc;
     }
     var errorDrawerFuncs = {
       openErrorDrawer: _open,
@@ -126,19 +113,16 @@ function withErrorDrawer(WrappedComponent) {
       toggleErrorDrawer: _toggle,
       setGoToLineNumber: _setGoToLineNumber
     };
-    var the_state = {
-      show_drawer: show_drawer,
-      contents: contents,
-      error_drawer_size: error_drawer_size,
-      position: position,
-      goToLineNumber: goToLineNumber
-    };
     return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(WrappedComponent, _extends({}, props, errorDrawerFuncs, {
       errorDrawerFuncs: errorDrawerFuncs
-    })), /*#__PURE__*/_react["default"].createElement(ErrorDrawer, _extends({}, the_state, {
+    })), /*#__PURE__*/_react["default"].createElement(ErrorDrawer, {
+      show_drawer: show_drawer,
+      contents: contents,
+      position: lposition,
+      error_drawer_size: error_drawer_size,
       local_id: local_id.current,
       handleCloseItem: _closeEntry,
-      goToLineNumberFunc: goToLineNumber,
+      goToLineNumberFunc: goToLineNumber.current,
       goToModule: props.goToModule,
       closeErrorDrawer: _close,
       title: "Error Drawer",
@@ -146,9 +130,9 @@ function withErrorDrawer(WrappedComponent) {
       size: error_drawer_size,
       onClose: _onClose,
       clearAll: _clearAll
-    })));
+    }));
   }
-  return /*#__PURE__*/(0, _react.memo)(newFunction);
+  return /*#__PURE__*/(0, _react.memo)(WithErrorComponent);
 }
 function ErrorItem(props) {
   function _openError() {
