@@ -44,14 +44,14 @@ body {
   border-bottom: 1px solid rgba(16, 22, 26, 0.1490196078);
   height: 32px;
 }
-#console-heading .bp4-icon {
+#console-heading .bp5-icon {
   margin-right: 3px;
 }
 
-#console-header-left .bp4-navbar {
+#console-header-left .bp5-navbar {
   box-shadow: none;
 }
-#console-header-left .bp4-navbar.light-theme, #console-header-left .bp4-navbar.bp4-dark {
+#console-header-left .bp5-navbar.light-theme, #console-header-left .bp5-navbar.bp5-dark {
   background-color: transparent;
 }
 
@@ -100,7 +100,7 @@ body {
   white-space: nowrap;
 }
 
-.bp4-dark .link-button-group .bp4-button-text {
+.bp5-dark .link-button-group .bp5-button-text {
   color: #abb3bf;
 }
 
@@ -200,7 +200,7 @@ body {
   margin-top: 5px;
   padding-left: 6px;
 }
-.log-panel.log-panel-visible .link-button-group .bp4-button {
+.log-panel.log-panel-visible .link-button-group .bp5-button {
   margin-top: 6px;
   padding-left: 0;
   padding-right: 0;
@@ -248,7 +248,7 @@ body {
   display: none;
 }
 
-.log-panel .bp4-editable-text:hover::before {
+.log-panel .bp5-editable-text:hover::before {
   outline: none;
   box-shadow: none;
 }
@@ -256,7 +256,7 @@ body {
 .log-panel-body {
   padding: 0;
 }
-.log-panel-body .bp4-input:focus {
+.log-panel-body .bp5-input:focus {
   outline: none;
   box-shadow: none;
 }
@@ -306,7 +306,7 @@ body {
   border-bottom: 1px solid rgba(16, 22, 26, 0.1490196078);
   height: 32px;
 }
-#exports-heading .bp4-icon {
+#exports-heading .bp5-icon {
   margin-right: 3px;
 }
 
@@ -325,7 +325,7 @@ body {
   margin-right: 0;
   font-size: 11px;
 }
-#exports-footing .bp4-icon {
+#exports-footing .bp5-icon {
   margin-right: 3px;
   height: 20px;
   top: 2px;
@@ -347,7 +347,7 @@ body {
   margin-top: 0;
 }
 
-#exports-button-list .bp4-button-group.bp4-vertical {
+#exports-button-list .bp5-button-group.bp5-vertical {
   max-width: 100%;
 }
 
@@ -367,7 +367,7 @@ body {
 .export-button span {
   margin-right: 3px;
 }
-.export-button .bp4-button-text {
+.export-button .bp5-button-text {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -384,7 +384,7 @@ body {
   white-space: nowrap;
 }
 
-.show-exports-but .bp4-icon {
+.show-exports-but .bp5-icon {
   margin-top: 2px;
 }
 

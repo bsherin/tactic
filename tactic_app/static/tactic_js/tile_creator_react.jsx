@@ -6,7 +6,7 @@ import 'codemirror/mode/javascript/javascript'
 
 import React from "react";
 import {Fragment, useState, useEffect, useRef, memo} from "react";
-import * as ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client';
 import PropTypes from 'prop-types';
 
 import {Tab, Tabs, Button, ButtonGroup, Icon} from "@blueprintjs/core";
@@ -45,8 +45,8 @@ function tile_creator_main() {
                                           initial_theme={window.theme}
                                           changeName={null}
         />;
-        const domContainer = document.querySelector('#creator-root');
-        ReactDOM.render(the_element, domContainer)
+        const root = createRoot(domContainer);
+        root.render(the_element)
     }
 
     renderSpinnerMessage("Starting up ...", '#creator-root');
@@ -210,6 +210,8 @@ function CreatorApp(props) {
         em: 0
     });
     const key_bindings = useRef([]);
+    
+    const [tabSelectCounter, setTabSelectCounter] = useState(0);
 
     const [foregrounded_panes, set_foregrounded_panes] = useState({
         "metadata": true,
@@ -257,13 +259,10 @@ function CreatorApp(props) {
 
     const pushCallback = useCallbackStack();
 
-    if (!props.controlled) {
-
-        const [dark_theme, set_dark_theme] = useState(() => {
-            return props.initial_theme === "dark"
-        });
-        const [resource_name, set_resource_name] = useState(props.resource_name);
-    }
+    const [dark_theme, set_dark_theme] = useState(() => {
+        return props.initial_theme === "dark"
+    });
+    const [resource_name, set_resource_name] = useState(props.resource_name);
 
     useConstructor(() => {
         if (!window.in_context) {
@@ -281,7 +280,7 @@ function CreatorApp(props) {
         }
         if (props.controlled) {
             props.registerDirtyMethod(_dirty);
-            props.registerLineSetter(_selectLineNumber)
+            props.registerLineSetter(_selectLineNumber);
         } else {
             window.dark_theme = dark_theme;
             window.addEventListener("beforeunload", function (e) {
@@ -790,7 +789,13 @@ function CreatorApp(props) {
         setSelectedTabId(newTabId);
         set_foregrounded_panes(new_fg);
         pushCallback(() => {
-            _update_window_dimensions();
+            if (props.controlled) {
+                setTabSelectCounter(tabSelectCounter + 1);
+            }
+            else {
+                _update_window_dimensions();
+            }
+
         })
     }
 
@@ -1010,7 +1015,7 @@ function CreatorApp(props) {
         tc_item = (
             <div key="dpcode" style={ch_style} className="d-flex flex-column align-items-baseline code-holder">
                 <div style={{display: "flex", flexDirection: "row", justifyContent: "space-between", width: "100%"}}>
-                    <span className="bp4-ui-text"
+                    <span className="bp5-ui-text"
                           style={{display: "flex", alignItems: "self-end"}}>{title_label}</span>
                     <SearchForm update_search_state={_updateSearchState}
                                 search_string={search_string}
@@ -1057,7 +1062,7 @@ function CreatorApp(props) {
     let bc_item = (
         <div key="rccode" id="rccode" style={ch_style} className="d-flex flex-column align-items-baseline code-holder">
             <div style={{display: "flex", flexDirection: "row", justifyContent: "space-between", width: "100%"}}>
-                <span className="bp4-ui-text"
+                <span className="bp5-ui-text"
                       style={{display: "flex", alignItems: "self-end"}}
                       ref={rc_span_ref}>render_content</span>
                 {!my_props.is_mpl && !my_props.is_d3 &&
@@ -1212,7 +1217,7 @@ function CreatorApp(props) {
     let outer_class = "resource-viewer-holder pane-holder";
     if (!window.in_context) {
         if (dark_theme) {
-            outer_class = outer_class + " bp4-dark";
+            outer_class = outer_class + " bp5-dark";
         } else {
             outer_class = outer_class + " light-theme"
         }

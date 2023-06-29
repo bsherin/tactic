@@ -6,7 +6,7 @@ require("../tactic_css/tactic_table.scss");
 require("../tactic_css/library_home.scss");
 require("../tactic_css/tile_creator.scss");
 var _react = _interopRequireWildcard(require("react"));
-var ReactDOM = _interopRequireWildcard(require("react-dom"));
+var _client = require("react-dom/client");
 var _core = require("@blueprintjs/core");
 var _tactic_socket = require("./tactic_socket");
 var _TacticOmnibar = require("./TacticOmnibar");
@@ -118,10 +118,12 @@ var classDict = {
 function _context_main() {
   var ContextAppPlus = ContextApp;
   var domContainer = document.querySelector('#context-root');
-  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(ContextAppPlus, {
+  var root = (0, _client.createRoot)(domContainer);
+  window.root = root;
+  root.render( /*#__PURE__*/_react["default"].createElement(ContextAppPlus, {
     initial_theme: window.theme,
     tsocket: tsocket
-  }), domContainer);
+  }));
 }
 function ContextApp(props) {
   var _useState = (0, _react.useState)(false),
@@ -202,13 +204,16 @@ function ContextApp(props) {
     _useState28 = _slicedToArray(_useState27, 2),
     showOmnibar = _useState28[0],
     setShowOmnibar = _useState28[1];
+  var _useState29 = (0, _react.useState)(0),
+    _useState30 = _slicedToArray(_useState29, 2),
+    tabSelectCounter = _useState30[0],
+    setTabSelectCounter = _useState30[1];
   var top_ref = (0, _react.useRef)(null);
   var key_bindings = [[["tab"], _goToNextPane], [["shift+tab"], _goToPreviousPane], [["ctrl+space"], _showOmnibar], [["ctrl+w"], function () {
     _closeTab(selectedTabIdRef.current);
   }]];
   var pushCallback = (0, _utilities_react2.useCallbackStack)("context");
   (0, _react.useEffect)(function () {
-    // for unmount
     initSocket();
     return function () {
       tsocket.disconnect();
@@ -225,7 +230,7 @@ function ContextApp(props) {
       e.returnValue = 'Are you sure you want to close? All changes will be lost.';
     });
     _update_window_dimensions(null);
-    var tab_list_elem = document.querySelector("#context-container .context-tab-list > .bp4-tab-list");
+    var tab_list_elem = document.querySelector("#context-container .context-tab-list > .bp5-tab-list");
     var resizeObserver = new ResizeObserver(function (entries) {
       _update_window_dimensions(null);
     });
@@ -238,7 +243,7 @@ function ContextApp(props) {
     set_dark_theme(local_dark_theme);
   }
   function get_tab_list_elem() {
-    return document.querySelector("#context-container .context-tab-list > .bp4-tab-list");
+    return document.querySelector("#context-container .context-tab-list > .bp5-tab-list");
   }
   function _togglePane(pane_closed) {
     var w = pane_closed ? saved_width : MIN_CONTEXT_WIDTH;
@@ -577,7 +582,8 @@ function ContextApp(props) {
     setSelectedTabId(newTabId);
     setLastSelectedTabId(prevTabId);
     pushCallback(function () {
-      return _update_window_dimensions(callback);
+      _update_window_dimensions(callback);
+      setTabSelectCounter(tabSelectCounter + 1);
     });
   }
   function _goToModule(module_name, line_number) {
@@ -989,7 +995,7 @@ function ContextApp(props) {
   all_tabs.push(dummy_tab);
   var outer_class = "pane-holder ";
   if (dark_theme) {
-    outer_class = "".concat(outer_class, " bp4-dark");
+    outer_class = "".concat(outer_class, " bp5-dark");
   } else {
     outer_class = "".concat(outer_class, " light-theme");
   }

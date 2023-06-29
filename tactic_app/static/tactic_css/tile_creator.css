@@ -7,17 +7,17 @@
 #creator-root .code-holder, .creator-root .code-holder {
   height: 100%;
 }
-#creator-root .bp4-tab:focus, .creator-root .bp4-tab:focus {
+#creator-root .bp5-tab:focus, .creator-root .bp5-tab:focus {
   outline: none;
 }
-#creator-root .bp4-large > .bp4-tab, .creator-root .bp4-large > .bp4-tab {
+#creator-root .bp5-large > .bp5-tab, .creator-root .bp5-large > .bp5-tab {
   font-size: 18px;
   margin-top: 10px;
   margin-left: 30px;
   margin-right: 0;
 }
 
-#creator-root .bp4-large > .bp4-tab, .creator-root .bp4-large > .bp4-tab {
+#creator-root .bp5-large > .bp5-tab, .creator-root .bp5-large > .bp5-tab {
   margin-top: 0px;
 }
 
@@ -32,10 +32,10 @@
   margin-right: 10px;
   height: 100%;
 }
-#creator-resources .bp4-tab-panel {
+#creator-resources .bp5-tab-panel {
   margin-top: 10px;
 }
-#creator-resources .bp4-tab-list {
+#creator-resources .bp5-tab-list {
   margin-left: 25px;
 }
 #creator-resources .tab-content {
@@ -92,7 +92,7 @@
   color: #238c2c;
 }
 
-.bp4-dark #commands-pane .command-name {
+.bp5-dark #commands-pane .command-name {
   font-weight: bold;
   color: #8f99a8;
 }

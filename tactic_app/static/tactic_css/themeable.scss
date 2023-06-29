@@ -15,102 +15,102 @@ $dark-medium: $dark-gray4;
 
 .light-theme {
     .lib-tab-button, .context-tab-button-content, .menu-bar, .combined-metadata, .all-pane {
-        .bp4-icon-cube {
+        .bp5-icon-cube {
             color: $orange3 ! important
         }
-        .bp4-icon-database, .bp4-icon-th, .bp4-icon-freeform, .bp4-icon-align-left {
+        .bp5-icon-database, .bp5-icon-th, .bp5-icon-freeform, .bp5-icon-align-left {
             color: $blue3 !important;
         }
 
-        .bp4-icon-projects, .bp4-icon-console, .bp4-icon-globe-network{
+        .bp5-icon-projects, .bp5-icon-console, .bp5-icon-globe-network{
             color: $green3 !important;
         }
 
-        .bp4-icon-application, .bp4-icon-timeline-line-chart, .bp4-icon-timeline-area-chart {
+        .bp5-icon-application, .bp5-icon-timeline-line-chart, .bp5-icon-timeline-area-chart {
             color: $indigo3 !important;
         }
 
-        .bp4-icon-list {
+        .bp5-icon-list {
             color: $rose3 !important;
         }
 
-        .bp4-icon-code {
+        .bp5-icon-code {
             color: $lime2 !important;
         }
     }
 
     .lib-tab-button.selected-lib-tab-button, .open-resource-tab.selected-tab-button {
-        .bp4-icon-database + span {
+        .bp5-icon-database + span {
             color: $pt-text-color !important;
         }
 
-        .bp4-icon-projects + span {
+        .bp5-icon-projects + span {
             color: $pt-text-color !important;
         }
 
-        .bp4-icon-application + span {
+        .bp5-icon-application + span {
             color: $pt-text-color !important;
         }
 
-        .bp4-icon-list + span {
+        .bp5-icon-list + span {
             color: $pt-text-color !important;
         }
 
-        .bp4-icon-code + span {
+        .bp5-icon-code + span {
             color: $pt-text-color !important;
         }
     }
 }
 
-.bp4-dark {
+.bp5-dark {
     .lib-tab-button, .context-tab-button-content, .menu-bar, .combined-metadata, .all-pane {
-        .bp4-icon-cube {
+        .bp5-icon-cube {
             color: $orange5 ! important
         }
-        .bp4-icon-database, .bp4-icon-th, .bp4-icon-freeform, .bp4-icon-align-left  {
+        .bp5-icon-database, .bp5-icon-th, .bp5-icon-freeform, .bp5-icon-align-left  {
             color: $blue5 !important;
         }
 
-        .bp4-icon-projects, .bp4-icon-console, .bp4-icon-globe-network {
+        .bp5-icon-projects, .bp5-icon-console, .bp5-icon-globe-network {
             color: $green5!important;
         }
 
-        .bp4-icon-application, .bp4-icon-timeline-line-chart, .bp4-icon-timeline-area-chart {
+        .bp5-icon-application, .bp5-icon-timeline-line-chart, .bp5-icon-timeline-area-chart {
             color: $indigo5 !important;
         }
 
-        .bp4-icon-list {
+        .bp5-icon-list {
             color: $rose5 !important;
         }
 
-        .bp4-icon-code {
+        .bp5-icon-code {
             color: $lime5 !important;
         }
     }
 
     .lib-tab-button.selected-lib-tab-button, .open-resource-tab.selected-tab-button {
-        .bp4-icon-database + span {
+        .bp5-icon-database + span {
             color: white !important;
         }
 
-        .bp4-icon-projects + span {
+        .bp5-icon-projects + span {
             color: white !important;
         }
 
-        .bp4-icon-application + span {
+        .bp5-icon-application + span {
             color: white!important;
         }
 
-        .bp4-icon-list + span {
+        .bp5-icon-list + span {
             color: white!important;
         }
 
-        .bp4-icon-code + span {
+        .bp5-icon-code + span {
             color: white !important;
         }
     }
     .combined-metadata {
-        .bp4-input:disabled {
+        .bp5-input:disabled {
             color: #abb3bf !important;
         }
     }
@@ -133,7 +133,7 @@ $dark-medium: $dark-gray4;
         border-bottom: 0.75px solid #c5cbd3;
     }
     .combined-metadata {
-        .bp4-input:disabled {
+        .bp5-input:disabled {
             color: #5f6b7c !important;
         }
     }
@@ -169,14 +169,14 @@ $dark-medium: $dark-gray4;
     }
 
     .tactic-tag-button-list {
-        .bp4-tree-node-selected {
-            .bp4-tree-node-content {
+        .bp5-tree-node-selected {
+            .bp5-tree-node-content {
                 background-color: white;
                 color: $blue3;
                 font-weight: 900
             }
 
-            .bp4-icon {
+            .bp5-icon {
                 background-color: white;
                 color: $blue3 !important;
                 font-weight: 900
@@ -232,7 +232,7 @@ $dark-medium: $dark-gray4;
     }
 
     .tile-form-divider {
-        .bp4-divider {
+        .bp5-divider {
             border-bottom: 2px solid #5c7080;
             width: 50%;
             min-width: 200px
@@ -298,7 +298,7 @@ $dark-medium: $dark-gray4;
 }
 
 
-.bp4-dark {
+.bp5-dark {
     &.resource-viewer-holder, &.merge-viewer-outer, &.login-body {
       background-color: $darkest-bg
     }
@@ -349,14 +349,14 @@ $dark-medium: $dark-gray4;
     }
 
     .tactic-tag-button-list {
-        .bp4-tree-node-selected {
-            .bp4-tree-node-content {
+        .bp5-tree-node-selected {
+            .bp5-tree-node-content {
                 background-color: $darkest-bg;
                 color: $blue5;
                 font-weight: 900
             }
 
-            .bp4-icon {
+            .bp5-icon {
                 background-color: $darkest-bg;
                 color: $blue5 !important;
                 font-weight: 900
@@ -411,7 +411,7 @@ $dark-medium: $dark-gray4;
     }
 
     .tile-form-divider {
-        .bp4-divider {
+        .bp5-divider {
             border-color: white;
             width: 50%;
             min-width: 200px
@@ -465,7 +465,7 @@ $dark-medium: $dark-gray4;
         background-color: transparent;
       }
 
-    &.bp4-dark {
+    &.bp5-dark {
         background-color: transparent;
         &.light-dark{
             background-color: $gray1;

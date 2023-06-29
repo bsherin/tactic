@@ -43,10 +43,10 @@
 #table-area .hidden-row {
   display: none !important;
 }
-#table-area .bp4-table-quadrant-scroll-container {
+#table-area .bp5-table-quadrant-scroll-container {
   overflow: hidden;
 }
-#table-area .bp4-table-quadrant-scroll-container:hover {
+#table-area .bp5-table-quadrant-scroll-container:hover {
   overflow: auto;
 }
 

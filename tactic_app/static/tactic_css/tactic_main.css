@@ -6,7 +6,7 @@
   margin-top: 0.5rem;
   margin-left: 0.5rem;
 }
-#main-panel .main-heading .button-in-select .bp4-button-text {
+#main-panel .main-heading .button-in-select .bp5-button-text {
   max-width: 100%;
 }
 
@@ -22,7 +22,7 @@
 .tile-menu-item {
   padding-bottom: 2px;
 }
-.tile-menu-item .bp4-fill.bp4-text-overflow-ellipsis {
+.tile-menu-item .bp5-fill.bp5-text-overflow-ellipsis {
   font-size: small;
 }
 
@@ -50,11 +50,11 @@
   font-size: 15px;
 }
 
-.tile-form-menu-item.bp4-menu-item {
+.tile-form-menu-item.bp5-menu-item {
   font-size: 13px;
   line-height: 15px;
 }
-.tile-form-menu-item.bp4-menu-header h6.bp4-heading {
+.tile-form-menu-item.bp5-menu-header h6.bp5-heading {
   font-size: 13px;
 }
 

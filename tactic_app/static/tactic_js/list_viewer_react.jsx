@@ -6,7 +6,7 @@ import "../tactic_css/tactic.scss";
 
 import React from "react";
 import {Fragment, useState, useEffect, useRef, memo} from "react";
-import * as ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client';
 import PropTypes from 'prop-types';
 
 import {TextArea} from "@blueprintjs/core";
@@ -35,7 +35,8 @@ function list_viewer_main() {
                                              changeName={null}
         />;
         let domContainer = document.querySelector('#root');
-        ReactDOM.render(the_element, domContainer)
+        const root = createRoot(domContainer);
+        root.render(the_element)
     }
 
     let target = window.is_repository ? "repository_view_list_in_context" : "view_list_in_context";
@@ -350,7 +351,7 @@ function ListViewerApp(props) {
     let outer_class = "resource-viewer-holder";
     if (!props.controlled) {
         if (dark_theme) {
-            outer_class = outer_class + " bp4-dark";
+            outer_class = outer_class + " bp5-dark";
         } else {
             outer_class = outer_class + " light-theme"
         }

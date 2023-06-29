@@ -31,11 +31,11 @@ $regular: #5c7080;
         }
     }
 
-    .bp4-button.bp4-intent-danger {
+    .bp5-button.bp5-intent-danger {
         //background-color: $light-gray5;
         //color: $danger !important;
         //
-        //.bp4-icon {
+        //.bp5-icon {
         //    color: $danger !important
         //}
     }
@@ -44,43 +44,43 @@ $regular: #5c7080;
         color: gray;
     }
 
-    .bp4-button.bp4-intent-warning {
+    .bp5-button.bp5-intent-warning {
         background-color: $light-gray5;
         color: $warning !important;
 
-        .bp4-icon {
+        .bp5-icon {
             color: $warning !important
         }
     }
 
-    .bp4-button.bp4-intent-success {
+    .bp5-button.bp5-intent-success {
         background-color: $light-gray5;
         color: $success !important;
 
-        .bp4-icon {
+        .bp5-icon {
             color: $success !important
         }
     }
 
-    .bp4-button.bp4-intent-primary {
+    .bp5-button.bp5-intent-primary {
         background-color: $light-gray5;
         color: $primary !important;
 
-        .bp4-icon {
+        .bp5-icon {
             color: $primary !important
         }
     }
 
-    .bp4-button.bp4-intent-regular {
+    .bp5-button.bp5-intent-regular {
         background-color: $light-gray5;
         color: $regular !important;
 
-        .bp4-icon {
+        .bp5-icon {
             color: $regular !important
         }
     }
 
-    .bp4-table-quadrant-scroll-container {
+    .bp5-table-quadrant-scroll-container {
         overflow: hidden;
 
         &:hover {
@@ -135,16 +135,16 @@ $regular: #5c7080;
         border-left: .4em solid transparent;
     }
 
-    .bp4-tabs.bp4-vertical {
+    .bp5-tabs.bp5-vertical {
         height: 100%
     }
 
-    .bp4-tabs.bp4-vertical > .bp4-tab-list .bp4-tab {
+    .bp5-tabs.bp5-vertical > .bp5-tab-list .bp5-tab {
         padding: 0 12px;
         margin: 0;
     }
 
-    .bp4-tab-list {
+    .bp5-tab-list {
         margin-top: unset;
         padding-top: 100px;
         padding-left: 2px;
@@ -152,38 +152,38 @@ $regular: #5c7080;
         background-color: $dark-medium;
     }
 
-    .bp4-tab-indicator {
+    .bp5-tab-indicator {
         background-color: #48aff09e;
         border-radius: 0;
         width: 46px
     }
 
-    .bp4-table-column-headers .bp4-table-header {
+    .bp5-table-column-headers .bp5-table-header {
         font-weight: 600
     }
 
-    .bp4-tab:focus {
+    .bp5-tab:focus {
         outline: none
     }
 
-    .bp4-large > .bp4-tab {
+    .bp5-large > .bp5-tab {
         //font-size: 16px;
         //margin-left: 30px;
         //margin-right: 0
     }
 
-    .bp4-tabs.bp4-vertical > .bp4-tab-panel {
+    .bp5-tabs.bp5-vertical > .bp5-tab-panel {
         padding-left: 0 !important;
         //background-color: #f5f8fa;
         //border-left: 1px solid #CED9E0;
         margin-left: 0px
     }
 
-    .bp4-checkbox .bp4-control-indicator:focus {
+    .bp5-checkbox .bp5-control-indicator:focus {
         outline: none
     }
 
-    .bp4-table-cell {
+    .bp5-table-cell {
         font-size: 13px;
         line-height: 23px
     }
@@ -243,7 +243,7 @@ $regular: #5c7080;
 }
 
 #repository_container  {
-    .bp4-tabs.bp4-vertical > .bp4-tab-list .bp4-tab-indicator-wrapper .bp4-tab-indicator {
+    .bp5-tabs.bp5-vertical > .bp5-tab-list .bp5-tab-indicator-wrapper .bp5-tab-indicator {
         background-color: #e648f09e
     }
 }
@@ -270,10 +270,10 @@ $regular: #5c7080;
     &:hover {
         overflow-y: auto;
     }
-    .bp4-tree-node-content {
+    .bp5-tree-node-content {
         font-size: 12px;
         height: 25px;
-        .bp4-tree-node-icon {
+        .bp5-tree-node-icon {
             svg {
                 width: 14px;
                 height: 14px
@@ -282,7 +282,7 @@ $regular: #5c7080;
     }
     .hidden-tag {
         opacity: .5;
-        .bp4-tree-node-label {
+        .bp5-tree-node-label {
             font-style: italic
         }
     }

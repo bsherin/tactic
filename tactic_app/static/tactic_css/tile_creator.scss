@@ -9,11 +9,11 @@
 
   }
 
-  .bp4-tab:focus {
+  .bp5-tab:focus {
     outline: none
   }
 
-  .bp4-large > .bp4-tab {
+  .bp5-large > .bp5-tab {
     font-size: 18px;
     margin-top: 10px;
     margin-left: 30px;
@@ -28,7 +28,7 @@
 }
 
   #creator-root, .creator-root {
-    .bp4-large > .bp4-tab {
+    .bp5-large > .bp5-tab {
       margin-top: 0px
     }
   }
@@ -45,11 +45,11 @@
     height: 100%
   }
 
-  .bp4-tab-panel {
+  .bp5-tab-panel {
     margin-top: 10px
   }
 
-  .bp4-tab-list {
+  .bp5-tab-list {
     margin-left: 25px
   }
 
@@ -120,7 +120,7 @@
   }
 }
 
-.bp4-dark {
+.bp5-dark {
   #commands-pane {
     .command-name {
       font-weight: bold;

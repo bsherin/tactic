@@ -33,16 +33,14 @@ function useCallbackStack(myId = "") {
         // console.log(`${myId} leaving with length ${String(myCallbacksList.current.length)} and effectcount${String(effectCountRef.current)}`)
     }, [effectCount]);
 
-    function pushCallback(callback) {
+    return (callback) => {
         if (callback) {
             myCallbacksList.current.push(callback);
             setEffectCount(effectCountRef.current + 1);
-            console.log(`${myId} Pushed callback length ${String(myCallbacksList.current.length)} and effectcount${String(effectCountRef.current)}`);
+            // console.log(`${myId} Pushed callback length ${String(myCallbacksList.current.length)} and effectcount${String(effectCountRef.current)}`);
             // console.log(String(callback))
         }
     }
-
-    return pushCallback
 }
 
 const useConstructor = (callback = () => {
@@ -57,17 +55,7 @@ const useConstructor = (callback = () => {
     return returnVal
 };
 
-
 function useStateAndRef(initial) {
-    const [value, setValue] = useState(initial);
-    const valueRef = useRef(value);
-    valueRef.current = value;
-    return [value, setValue, valueRef];
-}
-
-function useRefRef(theRef) {
-    const refRef = useRef(theRef);
-
     const [value, setValue] = useState(initial);
     const valueRef = useRef(value);
     valueRef.current = value;
