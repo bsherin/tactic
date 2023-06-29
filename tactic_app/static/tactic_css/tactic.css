@@ -1118,78 +1118,78 @@ pre code {
   visibility: hidden !important;
 }
 
-/*# sourceMappingURL=bootstrap.css.map */
+
 /*
  * Copyright 2022 Palantir Technologies, Inc. All rights reserved.
  */
-.light-theme .lib-tab-button .bp4-icon-cube, .light-theme .context-tab-button-content .bp4-icon-cube, .light-theme .menu-bar .bp4-icon-cube, .light-theme .combined-metadata .bp4-icon-cube, .light-theme .all-pane .bp4-icon-cube {
+.light-theme .lib-tab-button .bp5-icon-cube, .light-theme .context-tab-button-content .bp5-icon-cube, .light-theme .menu-bar .bp5-icon-cube, .light-theme .combined-metadata .bp5-icon-cube, .light-theme .all-pane .bp5-icon-cube {
   color: #c87619 !important;
 }
-.light-theme .lib-tab-button .bp4-icon-database, .light-theme .lib-tab-button .bp4-icon-th, .light-theme .lib-tab-button .bp4-icon-freeform, .light-theme .lib-tab-button .bp4-icon-align-left, .light-theme .context-tab-button-content .bp4-icon-database, .light-theme .context-tab-button-content .bp4-icon-th, .light-theme .context-tab-button-content .bp4-icon-freeform, .light-theme .context-tab-button-content .bp4-icon-align-left, .light-theme .menu-bar .bp4-icon-database, .light-theme .menu-bar .bp4-icon-th, .light-theme .menu-bar .bp4-icon-freeform, .light-theme .menu-bar .bp4-icon-align-left, .light-theme .combined-metadata .bp4-icon-database, .light-theme .combined-metadata .bp4-icon-th, .light-theme .combined-metadata .bp4-icon-freeform, .light-theme .combined-metadata .bp4-icon-align-left, .light-theme .all-pane .bp4-icon-database, .light-theme .all-pane .bp4-icon-th, .light-theme .all-pane .bp4-icon-freeform, .light-theme .all-pane .bp4-icon-align-left {
+.light-theme .lib-tab-button .bp5-icon-database, .light-theme .lib-tab-button .bp5-icon-th, .light-theme .lib-tab-button .bp5-icon-freeform, .light-theme .lib-tab-button .bp5-icon-align-left, .light-theme .context-tab-button-content .bp5-icon-database, .light-theme .context-tab-button-content .bp5-icon-th, .light-theme .context-tab-button-content .bp5-icon-freeform, .light-theme .context-tab-button-content .bp5-icon-align-left, .light-theme .menu-bar .bp5-icon-database, .light-theme .menu-bar .bp5-icon-th, .light-theme .menu-bar .bp5-icon-freeform, .light-theme .menu-bar .bp5-icon-align-left, .light-theme .combined-metadata .bp5-icon-database, .light-theme .combined-metadata .bp5-icon-th, .light-theme .combined-metadata .bp5-icon-freeform, .light-theme .combined-metadata .bp5-icon-align-left, .light-theme .all-pane .bp5-icon-database, .light-theme .all-pane .bp5-icon-th, .light-theme .all-pane .bp5-icon-freeform, .light-theme .all-pane .bp5-icon-align-left {
   color: #2d72d2 !important;
 }
-.light-theme .lib-tab-button .bp4-icon-projects, .light-theme .lib-tab-button .bp4-icon-console, .light-theme .lib-tab-button .bp4-icon-globe-network, .light-theme .context-tab-button-content .bp4-icon-projects, .light-theme .context-tab-button-content .bp4-icon-console, .light-theme .context-tab-button-content .bp4-icon-globe-network, .light-theme .menu-bar .bp4-icon-projects, .light-theme .menu-bar .bp4-icon-console, .light-theme .menu-bar .bp4-icon-globe-network, .light-theme .combined-metadata .bp4-icon-projects, .light-theme .combined-metadata .bp4-icon-console, .light-theme .combined-metadata .bp4-icon-globe-network, .light-theme .all-pane .bp4-icon-projects, .light-theme .all-pane .bp4-icon-console, .light-theme .all-pane .bp4-icon-globe-network {
+.light-theme .lib-tab-button .bp5-icon-projects, .light-theme .lib-tab-button .bp5-icon-console, .light-theme .lib-tab-button .bp5-icon-globe-network, .light-theme .context-tab-button-content .bp5-icon-projects, .light-theme .context-tab-button-content .bp5-icon-console, .light-theme .context-tab-button-content .bp5-icon-globe-network, .light-theme .menu-bar .bp5-icon-projects, .light-theme .menu-bar .bp5-icon-console, .light-theme .menu-bar .bp5-icon-globe-network, .light-theme .combined-metadata .bp5-icon-projects, .light-theme .combined-metadata .bp5-icon-console, .light-theme .combined-metadata .bp5-icon-globe-network, .light-theme .all-pane .bp5-icon-projects, .light-theme .all-pane .bp5-icon-console, .light-theme .all-pane .bp5-icon-globe-network {
   color: #238551 !important;
 }
-.light-theme .lib-tab-button .bp4-icon-application, .light-theme .lib-tab-button .bp4-icon-timeline-line-chart, .light-theme .lib-tab-button .bp4-icon-timeline-area-chart, .light-theme .context-tab-button-content .bp4-icon-application, .light-theme .context-tab-button-content .bp4-icon-timeline-line-chart, .light-theme .context-tab-button-content .bp4-icon-timeline-area-chart, .light-theme .menu-bar .bp4-icon-application, .light-theme .menu-bar .bp4-icon-timeline-line-chart, .light-theme .menu-bar .bp4-icon-timeline-area-chart, .light-theme .combined-metadata .bp4-icon-application, .light-theme .combined-metadata .bp4-icon-timeline-line-chart, .light-theme .combined-metadata .bp4-icon-timeline-area-chart, .light-theme .all-pane .bp4-icon-application, .light-theme .all-pane .bp4-icon-timeline-line-chart, .light-theme .all-pane .bp4-icon-timeline-area-chart {
+.light-theme .lib-tab-button .bp5-icon-application, .light-theme .lib-tab-button .bp5-icon-timeline-line-chart, .light-theme .lib-tab-button .bp5-icon-timeline-area-chart, .light-theme .context-tab-button-content .bp5-icon-application, .light-theme .context-tab-button-content .bp5-icon-timeline-line-chart, .light-theme .context-tab-button-content .bp5-icon-timeline-area-chart, .light-theme .menu-bar .bp5-icon-application, .light-theme .menu-bar .bp5-icon-timeline-line-chart, .light-theme .menu-bar .bp5-icon-timeline-area-chart, .light-theme .combined-metadata .bp5-icon-application, .light-theme .combined-metadata .bp5-icon-timeline-line-chart, .light-theme .combined-metadata .bp5-icon-timeline-area-chart, .light-theme .all-pane .bp5-icon-application, .light-theme .all-pane .bp5-icon-timeline-line-chart, .light-theme .all-pane .bp5-icon-timeline-area-chart {
   color: #7961db !important;
 }
-.light-theme .lib-tab-button .bp4-icon-list, .light-theme .context-tab-button-content .bp4-icon-list, .light-theme .menu-bar .bp4-icon-list, .light-theme .combined-metadata .bp4-icon-list, .light-theme .all-pane .bp4-icon-list {
+.light-theme .lib-tab-button .bp5-icon-list, .light-theme .context-tab-button-content .bp5-icon-list, .light-theme .menu-bar .bp5-icon-list, .light-theme .combined-metadata .bp5-icon-list, .light-theme .all-pane .bp5-icon-list {
   color: #db2c6f !important;
 }
-.light-theme .lib-tab-button .bp4-icon-code, .light-theme .context-tab-button-content .bp4-icon-code, .light-theme .menu-bar .bp4-icon-code, .light-theme .combined-metadata .bp4-icon-code, .light-theme .all-pane .bp4-icon-code {
+.light-theme .lib-tab-button .bp5-icon-code, .light-theme .context-tab-button-content .bp5-icon-code, .light-theme .menu-bar .bp5-icon-code, .light-theme .combined-metadata .bp5-icon-code, .light-theme .all-pane .bp5-icon-code {
   color: #5a701a !important;
 }
-.light-theme .lib-tab-button.selected-lib-tab-button .bp4-icon-database + span, .light-theme .open-resource-tab.selected-tab-button .bp4-icon-database + span {
+.light-theme .lib-tab-button.selected-lib-tab-button .bp5-icon-database + span, .light-theme .open-resource-tab.selected-tab-button .bp5-icon-database + span {
   color: #1c2127 !important;
 }
-.light-theme .lib-tab-button.selected-lib-tab-button .bp4-icon-projects + span, .light-theme .open-resource-tab.selected-tab-button .bp4-icon-projects + span {
+.light-theme .lib-tab-button.selected-lib-tab-button .bp5-icon-projects + span, .light-theme .open-resource-tab.selected-tab-button .bp5-icon-projects + span {
   color: #1c2127 !important;
 }
-.light-theme .lib-tab-button.selected-lib-tab-button .bp4-icon-application + span, .light-theme .open-resource-tab.selected-tab-button .bp4-icon-application + span {
+.light-theme .lib-tab-button.selected-lib-tab-button .bp5-icon-application + span, .light-theme .open-resource-tab.selected-tab-button .bp5-icon-application + span {
   color: #1c2127 !important;
 }
-.light-theme .lib-tab-button.selected-lib-tab-button .bp4-icon-list + span, .light-theme .open-resource-tab.selected-tab-button .bp4-icon-list + span {
+.light-theme .lib-tab-button.selected-lib-tab-button .bp5-icon-list + span, .light-theme .open-resource-tab.selected-tab-button .bp5-icon-list + span {
   color: #1c2127 !important;
 }
-.light-theme .lib-tab-button.selected-lib-tab-button .bp4-icon-code + span, .light-theme .open-resource-tab.selected-tab-button .bp4-icon-code + span {
+.light-theme .lib-tab-button.selected-lib-tab-button .bp5-icon-code + span, .light-theme .open-resource-tab.selected-tab-button .bp5-icon-code + span {
   color: #1c2127 !important;
 }
 
-.bp4-dark .lib-tab-button .bp4-icon-cube, .bp4-dark .context-tab-button-content .bp4-icon-cube, .bp4-dark .menu-bar .bp4-icon-cube, .bp4-dark .combined-metadata .bp4-icon-cube, .bp4-dark .all-pane .bp4-icon-cube {
+.bp5-dark .lib-tab-button .bp5-icon-cube, .bp5-dark .context-tab-button-content .bp5-icon-cube, .bp5-dark .menu-bar .bp5-icon-cube, .bp5-dark .combined-metadata .bp5-icon-cube, .bp5-dark .all-pane .bp5-icon-cube {
   color: #fbb360 !important;
 }
-.bp4-dark .lib-tab-button .bp4-icon-database, .bp4-dark .lib-tab-button .bp4-icon-th, .bp4-dark .lib-tab-button .bp4-icon-freeform, .bp4-dark .lib-tab-button .bp4-icon-align-left, .bp4-dark .context-tab-button-content .bp4-icon-database, .bp4-dark .context-tab-button-content .bp4-icon-th, .bp4-dark .context-tab-button-content .bp4-icon-freeform, .bp4-dark .context-tab-button-content .bp4-icon-align-left, .bp4-dark .menu-bar .bp4-icon-database, .bp4-dark .menu-bar .bp4-icon-th, .bp4-dark .menu-bar .bp4-icon-freeform, .bp4-dark .menu-bar .bp4-icon-align-left, .bp4-dark .combined-metadata .bp4-icon-database, .bp4-dark .combined-metadata .bp4-icon-th, .bp4-dark .combined-metadata .bp4-icon-freeform, .bp4-dark .combined-metadata .bp4-icon-align-left, .bp4-dark .all-pane .bp4-icon-database, .bp4-dark .all-pane .bp4-icon-th, .bp4-dark .all-pane .bp4-icon-freeform, .bp4-dark .all-pane .bp4-icon-align-left {
+.bp5-dark .lib-tab-button .bp5-icon-database, .bp5-dark .lib-tab-button .bp5-icon-th, .bp5-dark .lib-tab-button .bp5-icon-freeform, .bp5-dark .lib-tab-button .bp5-icon-align-left, .bp5-dark .context-tab-button-content .bp5-icon-database, .bp5-dark .context-tab-button-content .bp5-icon-th, .bp5-dark .context-tab-button-content .bp5-icon-freeform, .bp5-dark .context-tab-button-content .bp5-icon-align-left, .bp5-dark .menu-bar .bp5-icon-database, .bp5-dark .menu-bar .bp5-icon-th, .bp5-dark .menu-bar .bp5-icon-freeform, .bp5-dark .menu-bar .bp5-icon-align-left, .bp5-dark .combined-metadata .bp5-icon-database, .bp5-dark .combined-metadata .bp5-icon-th, .bp5-dark .combined-metadata .bp5-icon-freeform, .bp5-dark .combined-metadata .bp5-icon-align-left, .bp5-dark .all-pane .bp5-icon-database, .bp5-dark .all-pane .bp5-icon-th, .bp5-dark .all-pane .bp5-icon-freeform, .bp5-dark .all-pane .bp5-icon-align-left {
   color: #8abbff !important;
 }
-.bp4-dark .lib-tab-button .bp4-icon-projects, .bp4-dark .lib-tab-button .bp4-icon-console, .bp4-dark .lib-tab-button .bp4-icon-globe-network, .bp4-dark .context-tab-button-content .bp4-icon-projects, .bp4-dark .context-tab-button-content .bp4-icon-console, .bp4-dark .context-tab-button-content .bp4-icon-globe-network, .bp4-dark .menu-bar .bp4-icon-projects, .bp4-dark .menu-bar .bp4-icon-console, .bp4-dark .menu-bar .bp4-icon-globe-network, .bp4-dark .combined-metadata .bp4-icon-projects, .bp4-dark .combined-metadata .bp4-icon-console, .bp4-dark .combined-metadata .bp4-icon-globe-network, .bp4-dark .all-pane .bp4-icon-projects, .bp4-dark .all-pane .bp4-icon-console, .bp4-dark .all-pane .bp4-icon-globe-network {
+.bp5-dark .lib-tab-button .bp5-icon-projects, .bp5-dark .lib-tab-button .bp5-icon-console, .bp5-dark .lib-tab-button .bp5-icon-globe-network, .bp5-dark .context-tab-button-content .bp5-icon-projects, .bp5-dark .context-tab-button-content .bp5-icon-console, .bp5-dark .context-tab-button-content .bp5-icon-globe-network, .bp5-dark .menu-bar .bp5-icon-projects, .bp5-dark .menu-bar .bp5-icon-console, .bp5-dark .menu-bar .bp5-icon-globe-network, .bp5-dark .combined-metadata .bp5-icon-projects, .bp5-dark .combined-metadata .bp5-icon-console, .bp5-dark .combined-metadata .bp5-icon-globe-network, .bp5-dark .all-pane .bp5-icon-projects, .bp5-dark .all-pane .bp5-icon-console, .bp5-dark .all-pane .bp5-icon-globe-network {
   color: #72ca9b !important;
 }
-.bp4-dark .lib-tab-button .bp4-icon-application, .bp4-dark .lib-tab-button .bp4-icon-timeline-line-chart, .bp4-dark .lib-tab-button .bp4-icon-timeline-area-chart, .bp4-dark .context-tab-button-content .bp4-icon-application, .bp4-dark .context-tab-button-content .bp4-icon-timeline-line-chart, .bp4-dark .context-tab-button-content .bp4-icon-timeline-area-chart, .bp4-dark .menu-bar .bp4-icon-application, .bp4-dark .menu-bar .bp4-icon-timeline-line-chart, .bp4-dark .menu-bar .bp4-icon-timeline-area-chart, .bp4-dark .combined-metadata .bp4-icon-application, .bp4-dark .combined-metadata .bp4-icon-timeline-line-chart, .bp4-dark .combined-metadata .bp4-icon-timeline-area-chart, .bp4-dark .all-pane .bp4-icon-application, .bp4-dark .all-pane .bp4-icon-timeline-line-chart, .bp4-dark .all-pane .bp4-icon-timeline-area-chart {
+.bp5-dark .lib-tab-button .bp5-icon-application, .bp5-dark .lib-tab-button .bp5-icon-timeline-line-chart, .bp5-dark .lib-tab-button .bp5-icon-timeline-area-chart, .bp5-dark .context-tab-button-content .bp5-icon-application, .bp5-dark .context-tab-button-content .bp5-icon-timeline-line-chart, .bp5-dark .context-tab-button-content .bp5-icon-timeline-area-chart, .bp5-dark .menu-bar .bp5-icon-application, .bp5-dark .menu-bar .bp5-icon-timeline-line-chart, .bp5-dark .menu-bar .bp5-icon-timeline-area-chart, .bp5-dark .combined-metadata .bp5-icon-application, .bp5-dark .combined-metadata .bp5-icon-timeline-line-chart, .bp5-dark .combined-metadata .bp5-icon-timeline-area-chart, .bp5-dark .all-pane .bp5-icon-application, .bp5-dark .all-pane .bp5-icon-timeline-line-chart, .bp5-dark .all-pane .bp5-icon-timeline-area-chart {
   color: #bdadff !important;
 }
-.bp4-dark .lib-tab-button .bp4-icon-list, .bp4-dark .context-tab-button-content .bp4-icon-list, .bp4-dark .menu-bar .bp4-icon-list, .bp4-dark .combined-metadata .bp4-icon-list, .bp4-dark .all-pane .bp4-icon-list {
+.bp5-dark .lib-tab-button .bp5-icon-list, .bp5-dark .context-tab-button-content .bp5-icon-list, .bp5-dark .menu-bar .bp5-icon-list, .bp5-dark .combined-metadata .bp5-icon-list, .bp5-dark .all-pane .bp5-icon-list {
   color: #ff66a1 !important;
 }
-.bp4-dark .lib-tab-button .bp4-icon-code, .bp4-dark .context-tab-button-content .bp4-icon-code, .bp4-dark .menu-bar .bp4-icon-code, .bp4-dark .combined-metadata .bp4-icon-code, .bp4-dark .all-pane .bp4-icon-code {
+.bp5-dark .lib-tab-button .bp5-icon-code, .bp5-dark .context-tab-button-content .bp5-icon-code, .bp5-dark .menu-bar .bp5-icon-code, .bp5-dark .combined-metadata .bp5-icon-code, .bp5-dark .all-pane .bp5-icon-code {
   color: #d4f17e !important;
 }
-.bp4-dark .lib-tab-button.selected-lib-tab-button .bp4-icon-database + span, .bp4-dark .open-resource-tab.selected-tab-button .bp4-icon-database + span {
+.bp5-dark .lib-tab-button.selected-lib-tab-button .bp5-icon-database + span, .bp5-dark .open-resource-tab.selected-tab-button .bp5-icon-database + span {
   color: white !important;
 }
-.bp4-dark .lib-tab-button.selected-lib-tab-button .bp4-icon-projects + span, .bp4-dark .open-resource-tab.selected-tab-button .bp4-icon-projects + span {
+.bp5-dark .lib-tab-button.selected-lib-tab-button .bp5-icon-projects + span, .bp5-dark .open-resource-tab.selected-tab-button .bp5-icon-projects + span {
   color: white !important;
 }
-.bp4-dark .lib-tab-button.selected-lib-tab-button .bp4-icon-application + span, .bp4-dark .open-resource-tab.selected-tab-button .bp4-icon-application + span {
+.bp5-dark .lib-tab-button.selected-lib-tab-button .bp5-icon-application + span, .bp5-dark .open-resource-tab.selected-tab-button .bp5-icon-application + span {
   color: white !important;
 }
-.bp4-dark .lib-tab-button.selected-lib-tab-button .bp4-icon-list + span, .bp4-dark .open-resource-tab.selected-tab-button .bp4-icon-list + span {
+.bp5-dark .lib-tab-button.selected-lib-tab-button .bp5-icon-list + span, .bp5-dark .open-resource-tab.selected-tab-button .bp5-icon-list + span {
   color: white !important;
 }
-.bp4-dark .lib-tab-button.selected-lib-tab-button .bp4-icon-code + span, .bp4-dark .open-resource-tab.selected-tab-button .bp4-icon-code + span {
+.bp5-dark .lib-tab-button.selected-lib-tab-button .bp5-icon-code + span, .bp5-dark .open-resource-tab.selected-tab-button .bp5-icon-code + span {
   color: white !important;
 }
-.bp4-dark .combined-metadata .bp4-input:disabled {
+.bp5-dark .combined-metadata .bp5-input:disabled {
   color: #abb3bf !important;
 }
 
@@ -1206,7 +1206,7 @@ pre code {
   border-top: 0.75px solid #c5cbd3;
   border-bottom: 0.75px solid #c5cbd3;
 }
-.light-theme .combined-metadata .bp4-input:disabled {
+.light-theme .combined-metadata .bp5-input:disabled {
   color: #5f6b7c !important;
 }
 .light-theme .cm-matchhighlight {
@@ -1231,12 +1231,12 @@ pre code {
   background: rgba(255, 255, 255, 0.7);
   color: #5f6b7c;
 }
-.light-theme .tactic-tag-button-list .bp4-tree-node-selected .bp4-tree-node-content {
+.light-theme .tactic-tag-button-list .bp5-tree-node-selected .bp5-tree-node-content {
   background-color: white;
   color: #2d72d2;
   font-weight: 900;
 }
-.light-theme .tactic-tag-button-list .bp4-tree-node-selected .bp4-icon {
+.light-theme .tactic-tag-button-list .bp5-tree-node-selected .bp5-icon {
   background-color: white;
   color: #2d72d2 !important;
   font-weight: 900;
@@ -1269,7 +1269,7 @@ pre code {
 .light-theme .tile-panel {
   background-color: white !important;
 }
-.light-theme .tile-form-divider .bp4-divider {
+.light-theme .tile-form-divider .bp5-divider {
   border-bottom: 2px solid #5c7080;
   width: 50%;
   min-width: 200px;
@@ -1316,125 +1316,125 @@ pre code {
   background-color: #edeff2;
 }
 
-.bp4-dark.resource-viewer-holder, .bp4-dark.merge-viewer-outer, .bp4-dark.login-body {
+.bp5-dark.resource-viewer-holder, .bp5-dark.merge-viewer-outer, .bp5-dark.login-body {
   background-color: #2f343c;
 }
-.bp4-dark.menu-bar {
+.bp5-dark.menu-bar {
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2), 0 1px 1px 0 rgba(17, 20, 24, 0.4);
 }
-.bp4-dark .cm-matchhighlight {
+.bp5-dark .cm-matchhighlight {
   background-color: lightgreen;
   color: black !important;
 }
-.bp4-dark .cm-searchhighlight {
+.bp5-dark .cm-searchhighlight {
   background-color: #6aaed8;
   color: black !important;
 }
-.bp4-dark .cm-focussearchhighlight {
+.bp5-dark .cm-focussearchhighlight {
   background-color: yellow;
   color: black !important;
 }
-.bp4-dark.account-settings {
+.bp5-dark.account-settings {
   background-color: #2f343c;
 }
-.bp4-dark.pane-holder {
+.bp5-dark.pane-holder {
   background-color: #383e47;
 }
-.bp4-dark.library-pane-holder {
+.bp5-dark.library-pane-holder {
   background-color: #2f343c;
 }
-.bp4-dark .combined-metadata, .bp4-dark div.filepicker, .bp4-dark #options-pane, .bp4-dark #exports-pane {
+.bp5-dark .combined-metadata, .bp5-dark div.filepicker, .bp5-dark #options-pane, .bp5-dark #exports-pane {
   background-color: #2f343c;
 }
-.bp4-dark div.filepicker {
+.bp5-dark div.filepicker {
   background-color: #383e47;
 }
-.bp4-dark .notes-field-markdown-output {
+.bp5-dark .notes-field-markdown-output {
   background-color: #2f343c;
   color: #f6f7f9;
 }
-.bp4-dark .tactic-tag-button-list .bp4-tree-node-selected .bp4-tree-node-content {
+.bp5-dark .tactic-tag-button-list .bp5-tree-node-selected .bp5-tree-node-content {
   background-color: #2f343c;
   color: #8abbff;
   font-weight: 900;
 }
-.bp4-dark .tactic-tag-button-list .bp4-tree-node-selected .bp4-icon {
+.bp5-dark .tactic-tag-button-list .bp5-tree-node-selected .bp5-icon {
   background-color: #2f343c;
   color: #8abbff !important;
   font-weight: 900;
 }
-.bp4-dark .log-panel-body {
+.bp5-dark .log-panel-body {
   color: white !important;
 }
-.bp4-dark.main-outer {
+.bp5-dark.main-outer {
   background-color: #5f6b7c;
 }
-.bp4-dark #main-panel .main-heading {
+.bp5-dark #main-panel .main-heading {
   background-color: #2f343c;
   border-bottom: 1px solid rgba(16, 22, 26, 0.1490196078);
 }
-.bp4-dark #table-area {
+.bp5-dark #table-area {
   border-right: 1px none;
 }
-.bp4-dark #table-area mark {
+.bp5-dark #table-area mark {
   background-color: #cebde6;
 }
-.bp4-dark .searchable-console mark {
+.bp5-dark .searchable-console mark {
   background-color: #cebde6;
 }
-.bp4-dark .tile-panel-heading {
+.bp5-dark .tile-panel-heading {
   background-color: #2f343c;
   border-bottom: 1px solid rgba(16, 22, 26, 0.1490196078);
   margin-right: 2px;
   margin-left: 2px;
 }
-.bp4-dark .tile-panel {
+.bp5-dark .tile-panel {
   background-color: #383e47 !important;
 }
-.bp4-dark .tile-form-divider .bp4-divider {
+.bp5-dark .tile-form-divider .bp5-divider {
   border-color: white;
   width: 50%;
   min-width: 200px;
 }
-.bp4-dark #console, .bp4-dark #exports {
+.bp5-dark #console, .bp5-dark #exports {
   background-color: #2f343c;
   margin-left: 2px;
   margin-right: 2px;
 }
-.bp4-dark #console-heading, .bp4-dark #exports-heading, .bp4-dark #exports-footing {
+.bp5-dark #console-heading, .bp5-dark #exports-heading, .bp5-dark #exports-footing {
   background-color: #383e47 !important;
   margin-left: 2px;
   margin-right: 2px;
 }
-.bp4-dark .export-header-text {
+.bp5-dark .export-header-text {
   color: #c5cbd3;
 }
-.bp4-dark .console-text {
+.bp5-dark .console-text {
   border: 1px solid #c7c7c7 !important;
 }
-.bp4-dark caption {
+.bp5-dark caption {
   color: #d3d8de;
 }
-.bp4-dark .account-pane {
+.bp5-dark .account-pane {
   background-color: #383e47;
 }
-.bp4-dark .CodeMirror-merge-gap {
+.bp5-dark .CodeMirror-merge-gap {
   background: #5f6b7c;
 }
-.bp4-dark .CodeMirror-merge-r-chunk {
+.bp5-dark .CodeMirror-merge-r-chunk {
   background: #2f343c;
 }
-.bp4-dark .CodeMirror-merge-r-connect {
+.bp5-dark .CodeMirror-merge-r-connect {
   fill: #2f343c;
 }
 
 .status-holder.light-theme {
   background-color: transparent;
 }
-.status-holder.bp4-dark {
+.status-holder.bp5-dark {
   background-color: transparent;
 }
-.status-holder.bp4-dark.light-dark {
+.status-holder.bp5-dark.light-dark {
   background-color: #5f6b7c;
 }
 
@@ -1551,11 +1551,11 @@ table caption {
 .toolbar-button-group {
   margin-left: 5px;
 }
-.toolbar-button-group .bp4-button.bp4-large.bp-toolbar-button {
+.toolbar-button-group .bp5-button.bp5-large.bp-toolbar-button {
   padding: 5px 12px;
 }
 
-.bp-toolbar-button .bp4-icon {
+.bp-toolbar-button .bp5-icon {
   margin-right: 0;
   margin-bottom: 4px;
   margin-top: 2px;
@@ -1564,7 +1564,7 @@ table caption {
   outline: none;
 }
 
-.bp4-button:focus {
+.bp5-button:focus {
   outline: none;
 }
 
@@ -1596,10 +1596,10 @@ table caption {
   width: auto;
 }
 
-.combined-metadata .bp4-form-content {
+.combined-metadata .bp5-form-content {
   width: 100%;
 }
-.combined-metadata .bp4-form-group.bp4-inline {
+.combined-metadata .bp5-form-group.bp5-inline {
   max-width: 450px;
 }
 .combined-metadata .metadata-field {
@@ -1656,7 +1656,7 @@ table caption {
   opacity: 50%;
 }
 
-.bp4-icon path {
+.bp5-icon path {
   fill: inherit;
 }
 

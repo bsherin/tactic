@@ -139,13 +139,13 @@ table {
 
 .toolbar-button-group {
     margin-left: 5px;
-    .bp4-button.bp4-large.bp-toolbar-button {
+    .bp5-button.bp5-large.bp-toolbar-button {
         padding: 5px 12px
     }
 }
 
 .bp-toolbar-button {
-    .bp4-icon {
+    .bp5-icon {
         margin-right: 0;
         margin-bottom: 4px;
         margin-top: 2px
@@ -156,7 +156,7 @@ table {
     //background-color: white !important
 }
 
-.bp4-button:focus {
+.bp5-button:focus {
     outline: none
 }
 
@@ -191,10 +191,10 @@ table {
 }
 
 .combined-metadata {
-    .bp4-form-content {
+    .bp5-form-content {
         width: 100%;
     }
-    .bp4-form-group.bp4-inline {
+    .bp5-form-group.bp5-inline {
         max-width: 450px
     }
 
@@ -257,7 +257,7 @@ table {
 
 // This below is necessary to intercept a problem
 // with pyLDAvis where it would make buttons disappear
-.bp4-icon path {
+.bp5-icon path {
     //noinspection CssInvalidPropertyValue
     fill: inherit
 }

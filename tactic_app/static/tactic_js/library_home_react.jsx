@@ -5,7 +5,7 @@ import "../tactic_css/tactic_table.scss";
 import "../tactic_css/library_home.scss";
 
 import React from "react";
-import * as ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client';
 import PropTypes from 'prop-types';
 import {Fragment, useState, useEffect, useRef, memo} from "react";
 
@@ -33,11 +33,12 @@ function _library_home_main() {
     const tsocket = new TacticSocket("main", 5000, library_id);
     const LibraryHomeAppPlus = withErrorDrawer(withStatus(LibraryHomeApp));
     const domContainer = document.querySelector('#library-home-root');
-    ReactDOM.render(<LibraryHomeAppPlus library_id={library_id}
+    const root = createRoot(domContainer);
+    root.render(<LibraryHomeAppPlus library_id={library_id}
                                         tsocket={tsocket}
                                         registerOmniFunction={null}
                                         controlled={false}
-                                        initial_theme={window.theme}/>, domContainer)
+                                        initial_theme={window.theme}/>)
 }
 
 const tab_panes = ["all-pane", "collections-pane", "projects-pane", "tiles-pane", "lists-pane", "code-pane"];
@@ -176,7 +177,7 @@ function LibraryHomeApp(props) {
     if (!props.controlled) {
         outer_class = "library-pane-holder  ";
         if (dark_theme) {
-            outer_class = `${outer_class} bp4-dark`;
+            outer_class = `${outer_class} bp5-dark`;
         } else {
             outer_class = `${outer_class} light-theme`;
         }

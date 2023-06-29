@@ -58,17 +58,16 @@ function useCallbackStack() {
     }
     // console.log(`${myId} leaving with length ${String(myCallbacksList.current.length)} and effectcount${String(effectCountRef.current)}`)
   }, [effectCount]);
-  function pushCallback(callback) {
+  return function (callback) {
     if (callback) {
       myCallbacksList.current.push(callback);
       setEffectCount(effectCountRef.current + 1);
-      console.log("".concat(myId, " Pushed callback length ").concat(String(myCallbacksList.current.length), " and effectcount").concat(String(effectCountRef.current)));
+      // console.log(`${myId} Pushed callback length ${String(myCallbacksList.current.length)} and effectcount${String(effectCountRef.current)}`);
       // console.log(String(callback))
     }
-  }
-
-  return pushCallback;
+  };
 }
+
 var useConstructor = function useConstructor() {
   var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
   var hasBeenCalled = (0, _react.useRef)(false);
@@ -86,16 +85,6 @@ function useStateAndRef(initial) {
     _useState2 = _slicedToArray(_useState, 2),
     value = _useState2[0],
     setValue = _useState2[1];
-  var valueRef = (0, _react.useRef)(value);
-  valueRef.current = value;
-  return [value, setValue, valueRef];
-}
-function useRefRef(theRef) {
-  var refRef = (0, _react.useRef)(theRef);
-  var _useState3 = (0, _react.useState)(initial),
-    _useState4 = _slicedToArray(_useState3, 2),
-    value = _useState4[0],
-    setValue = _useState4[1];
   var valueRef = (0, _react.useRef)(value);
   valueRef.current = value;
   return [value, setValue, valueRef];

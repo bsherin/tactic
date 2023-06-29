@@ -8,7 +8,7 @@ import "../tactic_css/tile_creator.scss";
 
 import React from "react";
 import {Fragment, useState, useEffect, useRef} from "react";
-import * as ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 import {Tab, Tabs, Button, Icon, Spinner} from "@blueprintjs/core";
 import {FocusStyleManager} from "@blueprintjs/core";
@@ -38,7 +38,7 @@ import {postAjaxPromise} from "./communication_react.js";
 import {KeyTrap} from "./key_trap";
 import {DragHandle} from "./resizing_layouts.js";
 import {res_types} from "./library_pane";
-import {useCallbackStack, useStateAndRef, throttle} from "./utilities_react";
+import {useCallbackStack, useStateAndRef} from "./utilities_react";
 
 const spinner_panel = (
     <div style={{height: "100%", position: "absolute", top: "50%", left: "50%"}}>
@@ -108,7 +108,9 @@ const classDict = {
 function _context_main() {
     const ContextAppPlus = ContextApp;
     const domContainer = document.querySelector('#context-root');
-    ReactDOM.render(<ContextAppPlus initial_theme={window.theme} tsocket={tsocket}/>, domContainer);
+    const root = createRoot(domContainer);
+    window.root = root;
+    root.render(<ContextAppPlus initial_theme={window.theme} tsocket={tsocket}/>);
 }
 
 function ContextApp(props) {
@@ -139,6 +141,8 @@ function ContextApp(props) {
     const [currently_dragging, set_currently_dragging] = useState(false);
     const [showOmnibar, setShowOmnibar] = useState(false);
 
+    const [tabSelectCounter, setTabSelectCounter] = useState(0);
+
     const top_ref = useRef(null);
 
     const key_bindings = [
@@ -152,7 +156,7 @@ function ContextApp(props) {
 
     const pushCallback = useCallbackStack("context");
 
-    useEffect(() => {  // for unmount
+    useEffect(() => {
         initSocket();
         return (() => {
             tsocket.disconnect()
@@ -168,7 +172,7 @@ function ContextApp(props) {
         });
 
         _update_window_dimensions(null);
-        const tab_list_elem = document.querySelector("#context-container .context-tab-list > .bp4-tab-list");
+        const tab_list_elem = document.querySelector("#context-container .context-tab-list > .bp5-tab-list");
         const resizeObserver = new ResizeObserver(entries => {
             _update_window_dimensions(null)
         });
@@ -183,7 +187,7 @@ function ContextApp(props) {
     }
 
     function get_tab_list_elem() {
-        return document.querySelector("#context-container .context-tab-list > .bp4-tab-list");
+        return document.querySelector("#context-container .context-tab-list > .bp5-tab-list");
     }
 
     function _togglePane(pane_closed) {
@@ -514,7 +518,10 @@ function ContextApp(props) {
     function _handleTabSelect(newTabId, prevTabId, event = null, callback = null) {
         setSelectedTabId(newTabId);
         setLastSelectedTabId(prevTabId);
-        pushCallback(() => _update_window_dimensions(callback));
+        pushCallback(() => {
+            _update_window_dimensions(callback);
+            setTabSelectCounter(tabSelectCounter + 1)
+        });
     }
 
     function _goToModule(module_name, line_number) {
@@ -849,7 +856,7 @@ function ContextApp(props) {
 
     let outer_class = "pane-holder ";
     if (dark_theme) {
-        outer_class = `${outer_class} bp4-dark`;
+        outer_class = `${outer_class} bp5-dark`;
     } else {
         outer_class = `${outer_class} light-theme`;
     }

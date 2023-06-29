@@ -8,7 +8,7 @@
     margin-left: 0.5rem;
     .main-heading{
 
-        .button-in-select .bp4-button-text {
+        .button-in-select .bp5-button-text {
             max-width: 100%
         }
     }
@@ -27,7 +27,7 @@
 
 .tile-menu-item {
     padding-bottom: 2px;
-    .bp4-fill.bp4-text-overflow-ellipsis {
+    .bp5-fill.bp5-text-overflow-ellipsis {
         font-size: small,
     }
 }
@@ -66,12 +66,12 @@
 }
 
 .tile-form-menu-item {
-    &.bp4-menu-item {
+    &.bp5-menu-item {
         font-size: 13px;
         line-height: 15px;
     }
-    &.bp4-menu-header {
-        h6.bp4-heading {
+    &.bp5-menu-header {
+        h6.bp5-heading {
             font-size: 13px
         }
     }

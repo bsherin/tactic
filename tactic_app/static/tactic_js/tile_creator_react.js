@@ -11,7 +11,7 @@ require("../tactic_css/tactic_table.scss");
 require("../tactic_css/tile_creator.scss");
 require("codemirror/mode/javascript/javascript");
 var _react = _interopRequireWildcard(require("react"));
-var ReactDOM = _interopRequireWildcard(require("react-dom"));
+var _client = require("react-dom/client");
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
 var _TacticOmnibar = require("./TacticOmnibar");
@@ -63,8 +63,8 @@ function tile_creator_main() {
       initial_theme: window.theme,
       changeName: null
     }));
-    var domContainer = document.querySelector('#creator-root');
-    ReactDOM.render(the_element, domContainer);
+    var root = (0, _client.createRoot)(domContainer);
+    root.render(the_element);
   }
   (0, _utilities_react.renderSpinnerMessage)("Starting up ...", '#creator-root');
   (0, _communication_react.postAjaxPromise)("view_in_creator_in_context", {
@@ -221,36 +221,40 @@ function CreatorApp(props) {
     em: 0
   });
   var key_bindings = (0, _react.useRef)([]);
-  var _useState = (0, _react.useState)({
+  var _useState = (0, _react.useState)(0),
+    _useState2 = _slicedToArray(_useState, 2),
+    tabSelectCounter = _useState2[0],
+    setTabSelectCounter = _useState2[1];
+  var _useState3 = (0, _react.useState)({
       "metadata": true,
       "options": false,
       "exports": false,
       "methods": false,
       "commands": false
     }),
-    _useState2 = _slicedToArray(_useState, 2),
-    foregrounded_panes = _useState2[0],
-    set_foregrounded_panes = _useState2[1];
-  var _useState3 = (0, _react.useState)(""),
     _useState4 = _slicedToArray(_useState3, 2),
-    search_string = _useState4[0],
-    set_search_string = _useState4[1];
-  var _useState5 = (0, _react.useState)(null),
+    foregrounded_panes = _useState4[0],
+    set_foregrounded_panes = _useState4[1];
+  var _useState5 = (0, _react.useState)(""),
     _useState6 = _slicedToArray(_useState5, 2),
-    current_search_number = _useState6[0],
-    set_current_search_number = _useState6[1];
-  var _useState7 = (0, _react.useState)(cm_list.current[0]),
+    search_string = _useState6[0],
+    set_search_string = _useState6[1];
+  var _useState7 = (0, _react.useState)(null),
     _useState8 = _slicedToArray(_useState7, 2),
-    current_search_cm = _useState8[0],
-    set_current_search_cm = _useState8[1];
-  var _useState9 = (0, _react.useState)(false),
+    current_search_number = _useState8[0],
+    set_current_search_number = _useState8[1];
+  var _useState9 = (0, _react.useState)(cm_list.current[0]),
     _useState10 = _slicedToArray(_useState9, 2),
-    regex = _useState10[0],
-    set_regex = _useState10[1];
-  var _useState11 = (0, _react.useState)(0),
+    current_search_cm = _useState10[0],
+    set_current_search_cm = _useState10[1];
+  var _useState11 = (0, _react.useState)(false),
     _useState12 = _slicedToArray(_useState11, 2),
-    search_matches = _useState12[0],
-    set_search_matches = _useState12[1];
+    regex = _useState12[0],
+    set_regex = _useState12[1];
+  var _useState13 = (0, _react.useState)(0),
+    _useState14 = _slicedToArray(_useState13, 2),
+    search_matches = _useState14[0],
+    set_search_matches = _useState14[1];
   var _useStateAndRef = (0, _utilities_react.useStateAndRef)(props.render_content_code),
     _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
     render_content_code = _useStateAndRef2[0],
@@ -326,47 +330,45 @@ function CreatorApp(props) {
     couple_save_attrs_and_exports = _useStateAndRef30[0],
     set_couple_save_attrs_and_exports = _useStateAndRef30[1],
     couple_save_attrs_and_exports_ref = _useStateAndRef30[2];
-  var _useState13 = (0, _react.useState)("metadata"),
-    _useState14 = _slicedToArray(_useState13, 2),
-    selectedTabId = _useState14[0],
-    setSelectedTabId = _useState14[1];
-  var _useState15 = (0, _react.useState)(props.is_mpl || props.is_d3 ? .5 : 1),
+  var _useState15 = (0, _react.useState)("metadata"),
     _useState16 = _slicedToArray(_useState15, 2),
-    top_pane_fraction = _useState16[0],
-    set_top_pane_fraction = _useState16[1];
-  var _useState17 = (0, _react.useState)(.5),
+    selectedTabId = _useState16[0],
+    setSelectedTabId = _useState16[1];
+  var _useState17 = (0, _react.useState)(props.is_mpl || props.is_d3 ? .5 : 1),
     _useState18 = _slicedToArray(_useState17, 2),
-    left_pane_fraction = _useState18[0],
-    set_left_pane_fraction = _useState18[1];
-  var _useState19 = (0, _react.useState)(function () {
+    top_pane_fraction = _useState18[0],
+    set_top_pane_fraction = _useState18[1];
+  var _useState19 = (0, _react.useState)(.5),
+    _useState20 = _slicedToArray(_useState19, 2),
+    left_pane_fraction = _useState20[0],
+    set_left_pane_fraction = _useState20[1];
+  var _useState21 = (0, _react.useState)(function () {
       return (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
     }),
-    _useState20 = _slicedToArray(_useState19, 2),
-    usable_height = _useState20[0],
-    set_usable_height = _useState20[1];
-  var _useState21 = (0, _react.useState)(function () {
+    _useState22 = _slicedToArray(_useState21, 2),
+    usable_height = _useState22[0],
+    set_usable_height = _useState22[1];
+  var _useState23 = (0, _react.useState)(function () {
       return (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
     }),
-    _useState22 = _slicedToArray(_useState21, 2),
-    usable_width = _useState22[0],
-    set_usable_width = _useState22[1];
-  var _useState23 = (0, _react.useState)(false),
     _useState24 = _slicedToArray(_useState23, 2),
-    showOmnibar = _useState24[0],
-    setShowOmnibar = _useState24[1];
+    usable_width = _useState24[0],
+    set_usable_width = _useState24[1];
+  var _useState25 = (0, _react.useState)(false),
+    _useState26 = _slicedToArray(_useState25, 2),
+    showOmnibar = _useState26[0],
+    setShowOmnibar = _useState26[1];
   var pushCallback = (0, _utilities_react.useCallbackStack)();
-  if (!props.controlled) {
-    var _useState25 = (0, _react.useState)(function () {
-        return props.initial_theme === "dark";
-      }),
-      _useState26 = _slicedToArray(_useState25, 2),
-      _dark_theme = _useState26[0],
-      _set_dark_theme = _useState26[1];
-    var _useState27 = (0, _react.useState)(props.resource_name),
-      _useState28 = _slicedToArray(_useState27, 2),
-      _resource_name = _useState28[0],
-      _set_resource_name = _useState28[1];
-  }
+  var _useState27 = (0, _react.useState)(function () {
+      return props.initial_theme === "dark";
+    }),
+    _useState28 = _slicedToArray(_useState27, 2),
+    dark_theme = _useState28[0],
+    set_dark_theme = _useState28[1];
+  var _useState29 = (0, _react.useState)(props.resource_name),
+    _useState30 = _slicedToArray(_useState29, 2),
+    resource_name = _useState30[0],
+    set_resource_name = _useState30[1];
   (0, _utilities_react.useConstructor)(function () {
     if (!window.in_context) {
       key_bindings.current = [[["ctrl+space"], _showOmnibar]];
@@ -878,7 +880,11 @@ function CreatorApp(props) {
     setSelectedTabId(newTabId);
     set_foregrounded_panes(new_fg);
     pushCallback(function () {
-      _update_window_dimensions();
+      if (props.controlled) {
+        setTabSelectCounter(tabSelectCounter + 1);
+      } else {
+        _update_window_dimensions();
+      }
     });
   }
   function _handleNotesAppend(new_text) {
@@ -1133,7 +1139,7 @@ function CreatorApp(props) {
         width: "100%"
       }
     }, /*#__PURE__*/_react["default"].createElement("span", {
-      className: "bp4-ui-text",
+      className: "bp5-ui-text",
       style: {
         display: "flex",
         alignItems: "self-end"
@@ -1192,7 +1198,7 @@ function CreatorApp(props) {
       width: "100%"
     }
   }, /*#__PURE__*/_react["default"].createElement("span", {
-    className: "bp4-ui-text",
+    className: "bp5-ui-text",
     style: {
       display: "flex",
       alignItems: "self-end"
@@ -1369,7 +1375,7 @@ function CreatorApp(props) {
   var outer_class = "resource-viewer-holder pane-holder";
   if (!window.in_context) {
     if (dark_theme) {
-      outer_class = outer_class + " bp4-dark";
+      outer_class = outer_class + " bp5-dark";
     } else {
       outer_class = outer_class + " light-theme";
     }

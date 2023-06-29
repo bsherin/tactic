@@ -1074,12 +1074,6 @@ function LibraryPane(props) {
   function _closeOmnibar() {
     setShowOmnibar(false);
   }
-
-  // This total_width machinery is all part of a trick to get the table to fully render all rows
-  // It seems to matter that the containing box is very tight.
-  function _communicateColumnWidthSum(twidth) {
-    set_total_width(twidth);
-  }
   function _new_notebook() {
     if (window.in_context) {
       var the_view = "".concat($SCRIPT_ROOT, "/new_notebook_in_context");
@@ -1562,7 +1556,7 @@ function LibraryPane(props) {
     open_resources: props.open_resources,
     sortColumn: _set_sort_state,
     selectedRegions: selectedRegionsRef.current,
-    communicateColumnWidthSum: _communicateColumnWidthSum,
+    communicateColumnWidthSum: set_total_width,
     onSelection: _onTableSelection,
     keyHandler: _handleTableKeyPress,
     initiateDataGrab: _grabNewChunkWithRow,
@@ -1608,7 +1602,7 @@ function LibraryPane(props) {
     right_pane: right_pane,
     right_pane_overflow: "auto",
     initial_width_fraction: .75,
-    scrollAdjustSelectors: [".bp4-table-quadrant-scroll-container"],
+    scrollAdjustSelectors: [".bp5-table-quadrant-scroll-container"],
     handleSplitUpdate: _handleSplitResize,
     handleResizeStart: _handleSplitResizeStart,
     handleResizeEnd: _handleSplitResizeEnd
