@@ -55,7 +55,7 @@ function TacticMenubar(props) {
   } finally {
     _iterator.f();
   }
-  var theme_class = props.dark_theme ? "bp4-dark" : "light-theme";
+  var theme_class = props.dark_theme ? "bp5-dark" : "light-theme";
   var name_style = {
     marginButton: 0,
     marginLeft: 10,
@@ -90,7 +90,7 @@ function TacticMenubar(props) {
     style: {
       height: 30
     },
-    className: "bp4-navbar-group bp4-align-left"
+    className: "bp5-navbar-group bp5-align-left"
   }, /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, menus, sug_glyphs)), props.showErrorDrawerButton && /*#__PURE__*/_react["default"].createElement(ErrorDrawerButton, {
     toggleErrorDrawer: props.toggleErrorDrawer
   }));

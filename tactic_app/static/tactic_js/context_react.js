@@ -6,7 +6,7 @@ require("../tactic_css/tactic_table.scss");
 require("../tactic_css/library_home.scss");
 require("../tactic_css/tile_creator.scss");
 var _react = _interopRequireWildcard(require("react"));
-var _client = require("react-dom/client");
+var ReactDOM = _interopRequireWildcard(require("react-dom"));
 var _core = require("@blueprintjs/core");
 var _tactic_socket = require("./tactic_socket");
 var _TacticOmnibar = require("./TacticOmnibar");
@@ -118,12 +118,10 @@ var classDict = {
 function _context_main() {
   var ContextAppPlus = ContextApp;
   var domContainer = document.querySelector('#context-root');
-  var root = (0, _client.createRoot)(domContainer);
-  window.root = root;
-  root.render( /*#__PURE__*/_react["default"].createElement(ContextAppPlus, {
+  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(ContextAppPlus, {
     initial_theme: window.theme,
     tsocket: tsocket
-  }));
+  }), domContainer);
 }
 function ContextApp(props) {
   var _useState = (0, _react.useState)(false),

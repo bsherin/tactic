@@ -6,7 +6,7 @@ import "../tactic_css/tactic.scss";
 
 import React from "react";
 import {Fragment, useState, useEffect, useRef, memo} from "react";
-import { createRoot } from 'react-dom/client';
+import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
 import {TextArea} from "@blueprintjs/core";
@@ -35,8 +35,7 @@ function list_viewer_main() {
                                              changeName={null}
         />;
         let domContainer = document.querySelector('#root');
-        const root = createRoot(domContainer);
-        root.render(the_element)
+        ReactDOM.render(the_element, domContainer)
     }
 
     let target = window.is_repository ? "repository_view_list_in_context" : "view_list_in_context";

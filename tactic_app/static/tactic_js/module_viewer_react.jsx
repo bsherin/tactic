@@ -47,7 +47,7 @@ function module_viewer_main() {
 
 const controllable_props = ["resource_name", "usable_height", "usable_width"];
 
-function module_viewer_props(data, registerDirtyMethod, finalCallback, reniFunction) {
+function module_viewer_props(data, registerDirtyMethod, finalCallback, registerOmniFunction) {
 
     let resource_viewer_id = guid();
     var tsocket = new TacticSocket("main", 5000, resource_viewer_id);
@@ -479,7 +479,7 @@ function ModuleViewerApp(props) {
     let outer_class = "resource-viewer-holder";
     if (!props.controlled) {
         if (actual_dark_theme) {
-            outer_class = outer_class + " bp4-dark";
+            outer_class = outer_class + " bp5-dark";
         } else {
             outer_class = outer_class + " light-theme"
         }

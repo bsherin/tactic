@@ -292,7 +292,7 @@ class FileImportDialog extends React.Component {
         let allowed_types_string = this.props.allowed_file_types.replaceAll(",", " ");
         return (
             <Dialog isOpen={this.state.show}
-                    className={this.props.dark_theme ? "import-dialog bp4-dark" : "import-dialog light-theme"}
+                    className={this.props.dark_theme ? "import-dialog bp5-dark" : "import-dialog light-theme"}
                     title={this.props.title}
                     onClose={this._closeHandler}
                     canOutsideClickClose={false}
@@ -364,7 +364,7 @@ class FileImportDialog extends React.Component {
                         </Button>
                     </ButtonGroup>
                     <Collapse isOpen={this.state.log_open}>
-                        <div className="bp4-dialog-body">
+                        <div className="bp5-dialog-body">
                             {log_items}
                         </div>
                     </Collapse>

@@ -695,7 +695,7 @@ function ExportModule(props) {
     className: "d-flex flex-column",
     style: exports_pane_style
   }, props.foregrounded && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("h4", {
-    className: "bp4-heading"
+    className: "bp5-heading"
   }, "Exports"), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.BpOrderableTable, {
     columns: cols,
     data_array: props.export_list,
@@ -715,7 +715,7 @@ function ExportModule(props) {
       marginTop: 15
     }
   }, /*#__PURE__*/_react["default"].createElement("h4", {
-    className: "bp4-heading"
+    className: "bp5-heading"
   }, "Save Attrs"), /*#__PURE__*/_react["default"].createElement(_core.Switch, {
     label: "Couple save_attrs and exports",
     className: "ml-2 mb-0 mt-1",
@@ -1023,7 +1023,7 @@ function CommandEntry(props) {
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.Button, {
     minimal: true,
     outlined: isOpen,
-    className: "bp4-monospace-text",
+    className: "bp5-monospace-text",
     onClick: _handleClick
   }, /*#__PURE__*/_react["default"].createElement("span", {
     dangerouslySetInnerHTML: {
@@ -1048,7 +1048,7 @@ function CommandEntry(props) {
     handleClick: _doCopy
   }), /*#__PURE__*/_react["default"].createElement("div", {
     style: md_style,
-    className: "notes-field-markdown-output bp4-button bp4-outlined",
+    className: "notes-field-markdown-output bp5-button bp5-outlined",
     dangerouslySetInnerHTML: {
       __html: props.body
     }

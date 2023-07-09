@@ -340,7 +340,7 @@ function CodeViewerApp(props) {
     let outer_class = "resource-viewer-holder";
     if (!props.controlled) {
         if (actual_dark_theme) {
-            outer_class = outer_class + " bp4-dark";
+            outer_class = outer_class + " bp5-dark";
         } else {
             outer_class = outer_class + " light-theme"
         }

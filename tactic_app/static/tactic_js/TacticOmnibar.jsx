@@ -137,7 +137,7 @@ class TacticOmnibar extends React.Component {
         }
         return (
             <Omnibar items={the_items}
-                     className={window.dark_theme ? "bp4-dark" : ""}
+                     className={window.dark_theme ? "bp5-dark" : ""}
                      isOpen={this.props.showOmnibar}
                      onItemSelect={this._onItemSelect}
                      itemRenderer={TacticOmnibar._itemRenderer}

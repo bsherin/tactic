@@ -190,7 +190,7 @@ function TacticNavbar(props) {
     return /*#__PURE__*/_react["default"].createElement(_main_menus_react.MenuComponent, {
       alt_button: function alt_button() {
         return /*#__PURE__*/_react["default"].createElement("span", {
-          className: "bp4-breadcrumbs-collapsed",
+          className: "bp5-breadcrumbs-collapsed",
           style: {
             marginTop: 5
           }
@@ -238,7 +238,7 @@ function TacticNavbar(props) {
     width: right_width
   };
   right_style.justifyContent = "flex-end";
-  var theme_class = props.dark_theme ? "bp4-dark" : "light-theme";
+  var theme_class = props.dark_theme ? "bp5-dark" : "light-theme";
   var name_string = "Tactic";
   if (props.extra_text != null) {
     name_string += " " + props.extra_text;
@@ -249,7 +249,7 @@ function TacticNavbar(props) {
     },
     className: theme_class
   }, /*#__PURE__*/_react["default"].createElement("div", {
-    className: "bp4-navbar-group bp4-align-left",
+    className: "bp5-navbar-group bp5-align-left",
     ref: lg_ref
   }, /*#__PURE__*/_react["default"].createElement(_core.NavbarHeading, {
     className: "d-flex align-items-center"

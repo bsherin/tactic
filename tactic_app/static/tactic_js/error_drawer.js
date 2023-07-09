@@ -246,7 +246,7 @@ function ErrorDrawer(props) {
   });
   return /*#__PURE__*/_react["default"].createElement(_core.Drawer, {
     icon: "console",
-    className: props.dark_theme ? "bp4-dark" : "light-theme",
+    className: props.dark_theme ? "bp5-dark" : "light-theme",
     title: props.title,
     isOpen: props.show_drawer,
     position: props.position,

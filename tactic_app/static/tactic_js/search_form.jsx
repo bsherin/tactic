@@ -22,7 +22,7 @@ class FilterSearchForm extends React.PureComponent {
         let self = this;
         return (
             <form onSubmit={self._handleSubmit} id="console-search-form"
-                  className="d-flex flex-row bp4-form-group" style={{
+                  className="d-flex flex-row bp5-form-group" style={{
                 justifyContent: "flex-end", marginRight: this.props.margin_right,
                 marginBottom: 6, marginTop: 12
             }}>
@@ -58,7 +58,7 @@ class FilterSearchForm extends React.PureComponent {
                             }
                         </ButtonGroup>
                     </div>
-                    <div className="bp4-form-helper-text" style={{marginLeft: 10}}>{this.props.search_helper_text}</div>
+                    <div className="bp5-form-helper-text" style={{marginLeft: 10}}>{this.props.search_helper_text}</div>
                 </div>
             </form>
         )

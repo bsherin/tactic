@@ -539,7 +539,7 @@ function ExportModule(props) {
         <Card elevation={1} id="exports-pane" className="d-flex flex-column" style={exports_pane_style}>
             {props.foregrounded &&
                 <Fragment>
-                    <h4 className="bp4-heading">Exports</h4>
+                    <h4 className="bp5-heading">Exports</h4>
                     <BpOrderableTable columns={cols}
                                       data_array={props.export_list}
                                       active_row={active_export_row}
@@ -556,7 +556,7 @@ function ExportModule(props) {
             />
             <Divider/>
             <div style={{display: "flex", justifyContent: "space-between", marginTop: 15}}>
-                <h4 className="bp4-heading">Save Attrs</h4>
+                <h4 className="bp5-heading">Save Attrs</h4>
                 <Switch label="Couple save_attrs and exports"
                         className="ml-2 mb-0 mt-1"
                         large={false}
@@ -809,7 +809,7 @@ function CommandEntry(props) {
 
     return (
         <Fragment>
-            <Button minimal={true} outlined={isOpen} className="bp4-monospace-text"
+            <Button minimal={true} outlined={isOpen} className="bp5-monospace-text"
                     onClick={_handleClick}>
                 <span dangerouslySetInnerHTML={{__html: bolded_command}}/>
             </Button>
@@ -821,7 +821,7 @@ function CommandEntry(props) {
                                  handleClick={_doCopy}
                     />
                     <div style={md_style}
-                         className="notes-field-markdown-output bp4-button bp4-outlined"
+                         className="notes-field-markdown-output bp5-button bp5-outlined"
                          dangerouslySetInnerHTML={{__html: props.body}}/>
                 </div>
             </Collapse>

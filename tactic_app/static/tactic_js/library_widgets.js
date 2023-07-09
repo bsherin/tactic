@@ -338,7 +338,7 @@ function BpSelectorTable(props) {
       });
     } else {
       the_body = /*#__PURE__*/_react["default"].createElement("div", {
-        className: "bp4-table-truncated-text"
+        className: "bp5-table-truncated-text"
       }, the_text);
     }
     return the_body;
@@ -443,8 +443,8 @@ function compute_initial_column_widths(header_list, data_list) {
   // Get sample header and body cells
 
   // set up a canvas so that we can use it to compute the width of text
-  var body_font = $($(".bp4-table-truncated-text")[0]).css("font");
-  var header_font = $($(".bp4-table-column-name-text")[0]).css("font");
+  var body_font = $($(".bp5-table-truncated-text")[0]).css("font");
+  var header_font = $($(".bp5-table-column-name-text")[0]).css("font");
   var canvas_element = document.getElementById("measure-canvas");
   var ctx = canvas_element.getContext("2d");
   var added_body_width = 20;

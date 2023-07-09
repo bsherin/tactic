@@ -8,7 +8,7 @@ import "../tactic_css/tile_creator.scss";
 
 import React from "react";
 import {Fragment, useState, useEffect, useRef} from "react";
-import { createRoot } from 'react-dom/client';
+import * as ReactDOM from 'react-dom'
 
 import {Tab, Tabs, Button, Icon, Spinner} from "@blueprintjs/core";
 import {FocusStyleManager} from "@blueprintjs/core";
@@ -108,9 +108,7 @@ const classDict = {
 function _context_main() {
     const ContextAppPlus = ContextApp;
     const domContainer = document.querySelector('#context-root');
-    const root = createRoot(domContainer);
-    window.root = root;
-    root.render(<ContextAppPlus initial_theme={window.theme} tsocket={tsocket}/>);
+    ReactDOM.render(<ContextAppPlus initial_theme={window.theme} tsocket={tsocket}/>, domContainer)
 }
 
 function ContextApp(props) {

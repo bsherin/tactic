@@ -1,5 +1,7 @@
+// noinspection JSConstructorReturnsPrimitive
+
 import React from "react";
-import {Fragment, useState, useEffect, useRef, memo} from "react";
+import {Fragment, useState, useEffect, useRef, useCallback, memo} from "react";
 import PropTypes from 'prop-types';
 
 import 'codemirror/mode/markdown/markdown.js'
@@ -8,7 +10,6 @@ import {Icon, Card, EditableText, Spinner, MenuDivider, Divider} from "@blueprin
 import {Menu, MenuItem, ButtonGroup, Button} from "@blueprintjs/core";
 import _ from 'lodash';
 
-import {SortableHandle} from 'react-sortable-hoc';
 import markdownIt from 'markdown-it'
 import 'markdown-it-latex/dist/index.css'
 import markdownItLatex from 'markdown-it-latex'
@@ -19,11 +20,9 @@ mdi.use(markdownItLatex);
 import {GlyphButton} from "./blueprint_react_widgets";
 import {ReactCodemirror} from "./react-codemirror";
 import {SortableComponent} from "./sortable_container";
-import {MySortableElement} from "./sortable_container";
 import {KeyTrap} from "./key_trap";
 import {postAjaxPromise, postWithCallback} from "./communication_react"
 import {doFlash} from "./toaster"
-import {doBinding} from "./utilities_react";
 import {showConfirmDialogReact, showSelectResourceDialog} from "./modal_react";
 import {icon_dict} from "./blueprint_mdata_fields";
 import {view_views} from "./library_pane";
@@ -43,8 +42,8 @@ function ConsoleComponent(props) {
     const header_ref = useRef(null);
     const body_ref = useRef(null);
     const temporarily_closed_items = useRef([]);
+    const  filtered_items_ref = useRef([]);
 
-    const [hide_in_section, set_hide_in_section] = useState(false);
     const [console_item_with_focus, set_console_item_with_focus] = useState(null);
     const [console_item_saved_focus, set_console_item_saved_focus] = useState(null);
     const [console_error_log_text, set_console_error_log_text] = useState("");
@@ -175,12 +174,12 @@ function ConsoleComponent(props) {
             }, null, props.main_id);
     }
 
-    function _addBlankText() {
+    const _addBlankText = useCallback(()=>{
         if (!props.am_selected) {
             return
         }
         _addConsoleText("")
-    }
+    }, []);
 
     function _addConsoleDivider(header_text, callback = null) {
         postWithCallback("host", "print_divider_area_to_console",
@@ -193,12 +192,12 @@ function ConsoleComponent(props) {
             }, null, props.main_id);
     }
 
-    function _addBlankDivider() {
+    const _addBlankDivider = useCallback(() => {
         if (!props.am_selected) {
             return
         }
         _addConsoleDivider("")
-    }
+    }, []);
 
     function _getSectionIds(unique_id) {
         let cindex = _consoleItemIndex(unique_id);
@@ -213,7 +212,7 @@ function ConsoleComponent(props) {
         return id_list
     }
 
-    function _deleteSection(unique_id) {
+    const _deleteSection = useCallback((unique_id)=>{
         let centry = get_console_item_entry(unique_id);
         const confirm_text = `Delete section ${centry.header_text}?`;
         showConfirmDialogReact("Delete Section", confirm_text, "do nothing", "delete", function () {
@@ -227,9 +226,9 @@ function ConsoleComponent(props) {
                 id_list: id_list,
             });
         })
-    }
+    }, []);
 
-    function _copySection(unique_id = null) {
+    const _copySection = useCallback((unique_id = null)=>{
         if (!unique_id) {
             if (all_selected_items_ref.current.length != 1) {
                 return
@@ -242,9 +241,9 @@ function ConsoleComponent(props) {
         }
         let id_list = _getSectionIds(unique_id);
         _copyItems(id_list)
-    }
+    }, []);
 
-    function _copyCell(unique_id = null) {
+    const _copyCell = useCallback((unique_id = null)=>{
         let id_list;
         if (!unique_id) {
             id_list = _sortSelectedItems();
@@ -255,7 +254,7 @@ function ConsoleComponent(props) {
             id_list = [unique_id]
         }
         _copyItems(id_list)
-    }
+    }, []);
 
     function _copyAll() {
         const result_dict = {
@@ -292,7 +291,7 @@ function ConsoleComponent(props) {
         postWithCallback("host", "copy_console_cells", result_dict, null, null, props.main_id);
     }
 
-    function _pasteCell(unique_id = null) {
+    const _pasteCell = useCallback((unique_id = null)=>{
         postWithCallback("host", "get_copied_console_cells", {user_id: window.user_id}, (data) => {
             if (!data.success) {
                 doFlash(data)
@@ -300,7 +299,7 @@ function ConsoleComponent(props) {
                 _addConsoleEntries(data.console_items, true, false, unique_id)
             }
         }, null, props.main_id)
-    }
+    }, []);
 
     function _addConsoleTextLink(callback = null) {
         postWithCallback("host", "print_link_area_to_console",
@@ -321,7 +320,7 @@ function ConsoleComponent(props) {
         }
     }
 
-    function _insertResourceLink() {
+    const _insertResourceLink = useCallback(()=>{
         if (!_currently_selected()) {
             _addConsoleTextLink();
             return
@@ -332,7 +331,7 @@ function ConsoleComponent(props) {
             return;
         }
         _insertLinkInItem(_currently_selected());
-    }
+    }, []);
 
     function _insertLinkInItem(unique_id) {
         let entry = get_console_item_entry(unique_id);
@@ -343,12 +342,12 @@ function ConsoleComponent(props) {
         })
     }
 
-    function _addBlankCode(e) {
+    const _addBlankCode = useCallback((e)=>{
         if (!props.am_selected) {
             return
         }
         _addCodeArea("");
-    }
+    }, []);
 
     function _addCodeArea(the_text, force_open = true) {
         postWithCallback("host", "print_code_area_to_console",
@@ -541,13 +540,13 @@ function ConsoleComponent(props) {
         postWithCallback(props.main_id, "StopMainPseudoLogStreaming", {}, callback, null, props.main_id);
     }
 
-    function _setFocusedItem(unique_id, callback = null) {
+    const _setFocusedItem = useCallback((unique_id, callback = null)=>{
         set_console_item_with_focus(unique_id);
         if (unique_id) {
             set_console_item_saved_focus(unique_id)
         }
         pushCallback(callback);
-    }
+    }, []);
 
     function _zoomConsole() {
         props.setMainStateValue("console_is_zoomed", true)
@@ -572,7 +571,7 @@ function ConsoleComponent(props) {
         props.setMainStateValue("show_exports_pane", !props.show_exports_pane)
     }
 
-    function _setConsoleItemValue(unique_id, field, new_value, callback = null) {
+    const _setConsoleItemValue = useCallback((unique_id, field, new_value, callback = null) => {
         props.dispatch({
             type: "change_item_value",
             unique_id: unique_id,
@@ -580,7 +579,7 @@ function ConsoleComponent(props) {
             new_value: new_value
         });
         pushCallback(callback)
-    }
+    }, []);
 
     function _reOpenClosedDividers() {
         if (temporarily_closed_items.current.length == 0) {
@@ -662,7 +661,7 @@ function ConsoleComponent(props) {
         }
     }
 
-    function _selectConsoleItem(unique_id, event = null, callback = null) {
+    const _selectConsoleItem = useCallback((unique_id, event = null, callback = null) => {
         let updates = {};
         let shift_down = event != null && event.shiftKey;
         if (!shift_down) {
@@ -696,7 +695,7 @@ function ConsoleComponent(props) {
             }
 
         }
-    }
+    }, []);
 
     function _sortSelectedItems() {
         let sitems = _.cloneDeep(all_selected_items_ref.current);
@@ -733,6 +732,9 @@ function ConsoleComponent(props) {
     }
 
     function _moveSection({oldIndex, newIndex}, filtered_items, callback = null) {
+        if (newIndex > oldIndex) {
+            newIndex += 1
+        }
 
         let move_entry = filtered_items[oldIndex];
         let move_index = _consoleItemIndex(move_entry.unique_id);
@@ -747,7 +749,12 @@ function ConsoleComponent(props) {
             if (newIndex == 0) {
                 below_index = 0
             } else {
-                let trueNewIndex = _consoleItemIndex(filtered_items[newIndex].unique_id);
+                var trueNewIndex;
+                if (newIndex >= filtered_items.length) {
+                    trueNewIndex = -1
+                }
+                else
+                    trueNewIndex = _consoleItemIndex(filtered_items[newIndex].unique_id);
                 // noinspection ES6ConvertIndexedForToForOf
                 if (trueNewIndex == -1) {
                     below_index = props.console_items.current.length
@@ -763,6 +770,7 @@ function ConsoleComponent(props) {
                     }
                 }
             }
+            console.log("Got below index " + String(below_index));
             props.dispatch({
                 type: "add_at_index",
                 new_items: the_section,
@@ -771,8 +779,6 @@ function ConsoleComponent(props) {
             pushCallback(callback)
 
         })
-
-
     }
 
     function _moveEntryAfterEntry(move_id, above_id, callback = null) {
@@ -798,7 +804,11 @@ function ConsoleComponent(props) {
         })
     }
 
-    function _resortConsoleItems({oldIndex, newIndex}, filtered_items, callback = null) {
+    const _resortConsoleItems = useCallback(({destination, source}) => {
+        const oldIndex = source.index;
+        const newIndex = destination.index;
+        filtered_items = filtered_items_ref.current;
+        const callback = _showNonDividers;
         console.log(`Got oldIndex ${String(oldIndex)} newIndex ${String(newIndex)} ${filtered_items.length} items`);
         if (oldIndex == newIndex) {
             callback();
@@ -830,9 +840,9 @@ function ConsoleComponent(props) {
         }
         let target_id = above_entry == null ? null : above_entry.unique_id;
         _moveEntryAfterEntry(move_entry.unique_id, target_id, callback)
-    }
+    }, []);
 
-    function _goToNextCell(unique_id) {
+    const _goToNextCell = useCallback((unique_id)=>{
         let next_index = _consoleItemIndex(unique_id) + 1;
         while (next_index < props.console_items.current.length) {
             let next_id = props.console_items.current[next_index].unique_id;
@@ -853,7 +863,7 @@ function ConsoleComponent(props) {
         }
         _addCodeArea("");
         return
-    }
+    }, []);
 
     function _isDividerSelected() {
         for (let uid of all_selected_items_ref.current) {
@@ -905,7 +915,7 @@ function ConsoleComponent(props) {
         }
     }
 
-    function _closeConsoleItem(unique_id, callback = null) {
+    const _closeConsoleItem = useCallback((unique_id, callback = null)=>{
         let centry = get_console_item_entry(unique_id);
         if (centry.type == "divider") {
             _deleteSection(unique_id)
@@ -917,7 +927,7 @@ function ConsoleComponent(props) {
                 })
             })
         }
-    }
+    }, []);
 
     function _getNextEndIndex(start_id) {
         let start_index = _consoleItemIndex(start_id);
@@ -959,11 +969,8 @@ function ConsoleComponent(props) {
             } else {
                 insert_index = _consoleItemIndex(unique_id) + 1
             }
-
-        } else if (props.console_items.current.length == 0) {
-            insert_index = 0
         }
-        else if (all_selected_items_ref.length == 0) {
+        else if (props.console_items.current.length == 0 || all_selected_items_ref.length == 0) {
             insert_index = props.console_items.current.length
         } else {
             let current_selected_id = _currently_selected();
@@ -1342,7 +1349,7 @@ function ConsoleComponent(props) {
         }
     }
 
-    function _runCodeItem(unique_id, go_to_next = false) {
+    const _runCodeItem = useCallback((unique_id, go_to_next = false)=>{
         _clearCodeOutput(unique_id, () => {
             _startSpinner(unique_id);
             let entry = get_console_item_entry(unique_id);
@@ -1355,7 +1362,7 @@ function ConsoleComponent(props) {
                 }
             }, null, props.main_id)
         })
-    }
+    }, []);
 
     function _showTextItemMarkdown(unique_id) {
         _setConsoleItemValue(unique_id, "show_markdown", true);
@@ -1368,22 +1375,20 @@ function ConsoleComponent(props) {
     }
 
     function _hideNonDividers() {
-        set_hide_in_section(true);
+        $(".in-section:not(.divider-log-panel)").css({opacity: "10%"})
     }
 
     function _showNonDividers() {
-        set_hide_in_section(false);
+        $(".in-section:not(.divider-log-panel)").css({opacity: "100%"})
     }
 
-    function _sortStart(data, event) {
-        event.preventDefault();
-        let unique_id = data.node.id;
-        let idx = _consoleItemIndex(unique_id);
+    const _sortStart = useCallback(({draggableId, mode})=>{
+        let idx = _consoleItemIndex(draggableId);
         let entry = props.console_items.current[idx];
         if (entry.type == "divider") {
             _hideNonDividers()
         }
-    }
+    }, []);
 
     let gbstyle = {marginLeft: 1, marginTop: 2};
     let console_class = props.console_is_shrunk ? "am-shrunk" : "not-shrunk";
@@ -1434,6 +1439,7 @@ function ConsoleComponent(props) {
         }
         filtered_items = new_filtered_items;
     }
+    filtered_items_ref.current = filtered_items;
     let suggestionGlyphs = [];
     if (show_console_error_log) {
         suggestionGlyphs.push({intent: "primary", handleClick: _toggleMainLog, icon: "console"})
@@ -1529,19 +1535,13 @@ function ConsoleComponent(props) {
                         <Fragment>
                             <SortableComponent id="console-items-div"
                                                main_id={props.main_id}
-                                               ElementComponent={SSuperItem}
+                                               ElementComponent={SuperItem}
                                                key_field_name="unique_id"
                                                item_list={filtered_items}
                                                helperClass={props.dark_theme ? "bp5-dark" : "light-theme"}
                                                handle=".console-sorter"
-                                               onSortStart={_sortStart} // This prevents Safari weirdness
-                                               onSortEnd={(data, event) => {
-                                                   _resortConsoleItems(data, filtered_items, _showNonDividers);
-                                               }}
-                                               hideSortableGhost={true}
-                                               hide_in_section={hide_in_section}
-                                               pressDelay={100}
-                                               shouldCancelStart={_shouldCancelSortStart}
+                                               onBeforeCapture={_sortStart}
+                                               onDragEnd={_resortConsoleItems}
                                                setConsoleItemValue={_setConsoleItemValue}
                                                selectConsoleItem={_selectConsoleItem}
                                                console_available_width={_bodyWidth()}
@@ -1598,354 +1598,276 @@ ConsoleComponent.defaultProps = {
 };
 
 
-class RawSortHandle extends React.PureComponent {
-
-    render() {
+function Shandle(props) {
         return (
-            <Icon icon="drag-handle-vertical"
-                  style={{marginLeft: 0, marginRight: 6}}
-                  iconSize={20}
-                  className="console-sorter"/>
+            <span {...props.dragHandleProps}>
+                <Icon icon="drag-handle-vertical"
+                      {...props.dragHandleProps}
+                      style={{marginLeft: 0, marginRight: 6}}
+                      iconSize={20}
+                      className="console-sorter"/>
+            </span>
         )
+}
+function SuperItem(props) {
+    switch (props.type) {
+        case "text":
+            return <ConsoleTextItem {...props}/>;
+        case "code":
+            return <ConsoleCodeItem {...props}/>;
+        case "fixed":
+            return <LogItem {...props}/>;
+        case "figure":
+            return <BlobItem {...props}/>;
+        case "divider":
+            return <DividerItem {...props}/>;
+        case "section-end":
+            return <SectionEndItem {...props}/>;
+        default:
+            return null
     }
 }
 
-const Shandle = SortableHandle(RawSortHandle);
-
-class SuperItem extends React.PureComponent {
-    render() {
-        switch (this.props.type) {
-            case "text":
-                return <ConsoleTextItem {...this.props}/>;
-            case "code":
-                return <ConsoleCodeItem {...this.props}/>;
-            case "fixed":
-                return <LogItem {...this.props}/>;
-            case "figure":
-                return <BlobItem {...this.props}/>;
-            case "divider":
-                return <DividerItem {...this.props}/>;
-            case "section-end":
-                return <SectionEndItem {...this.props}/>;
-            default:
-                return null
-        }
-    }
-}
-
-const SSuperItem = MySortableElement(SuperItem);
-
+SuperItem = memo(SuperItem);
 
 const divider_item_update_props = ["am_shrunk", "am_selected", "header_text", "console_available_width"];
 
-class RawDividerItem extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this, "_", RawDividerItem.prototype);
-        this.update_props = divider_item_update_props;
-        this.update_state_vars = [];
-        this.state = {};
+function DividerItem(props) {
+    function _toggleShrink() {
+        props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
     }
 
-    shouldComponentUpdate(nextProps, nextState, nextContext) {
-        for (let prop of this.update_props) {
-            if (nextProps[prop] != this.props[prop]) {
-                return true
-            }
-        }
-        return false
+    function _deleteMe() {
+        props.handleDelete(props.unique_id)
     }
 
-    _toggleShrink() {
-        this.props.setConsoleItemValue(this.props.unique_id, "am_shrunk", !this.props.am_shrunk);
+    function _handleHeaderTextChange(value) {
+        props.setConsoleItemValue(props.unique_id, "header_text", value)
     }
 
-    _deleteMe() {
-        this.props.handleDelete(this.props.unique_id)
+    function _copyMe() {
+        props.copyCell(props.unique_id)
     }
 
-    _handleHeaderTextChange(value) {
-        this.props.setConsoleItemValue(this.props.unique_id, "header_text", value)
+    function _copySection() {
+        props.copySection(props.unique_id)
     }
 
-    _copyMe() {
-        this.props.copyCell(this.props.unique_id)
+    function _deleteSection() {
+        props.deleteSection(props.unique_id)
     }
 
-    _copySection() {
-        this.props.copySection(this.props.unique_id)
+    function _pasteCell() {
+        props.pasteCell(props.unique_id)
     }
 
-    _deleteSection() {
-        this.props.deleteSection(this.props.unique_id)
+    function _selectMe(e = null, callback = null) {
+        props.selectConsoleItem(props.unique_id, e, callback)
     }
 
-    _pasteCell() {
-        this.props.pasteCell(this.props.unique_id)
-    }
-
-    _selectMe(e = null, callback = null) {
-        this.props.selectConsoleItem(this.props.unique_id, e, callback)
-    }
-
-    _addBlankText() {
-        let self = this;
-        this._selectMe(null, () => {
-            self.props.addNewTextItem()
+    function _addBlankText() {
+        _selectMe(null, () => {
+            props.addNewTextItem()
         })
     }
 
-    _addBlankDivider() {
+    function _addBlankDivider() {
         let self = this;
-        this._selectMe(null, () => {
-            self.props.addNewDividerItem()
+        _selectMe(null, () => {
+            props.addNewDividerItem()
         })
     }
 
-    _addBlankCode() {
-        let self = this;
-        this._selectMe(null, () => {
-            self.props.addNewCodeItem()
+    function _addBlankCode() {
+        _selectMe(null, () => {
+            props.addNewCodeItem()
         })
     }
 
-    renderContextMenu() {
+   function  renderContextMenu() {
         // return a single element, or nothing to use default browser behavior
         return (
             <Menu>
                 <MenuItem icon="duplicate"
-                          onClick={this._copyMe}
+                          onClick={_copyMe}
                           text="Copy"/>
                 <MenuItem icon="clipboard"
-                          onClick={this._pasteCell}
+                          onClick={_pasteCell}
                           text="Paste Cells"/>
                 <MenuDivider/>
                 <MenuItem icon="new-text-box"
-                          onClick={this._addBlankText}
+                          onClick={_addBlankText}
                           text="New Text Cell"/>
                 <MenuItem icon="code"
-                          onClick={this._addBlankCode}
+                          onClick={_addBlankCode}
                           text="New Code Cell"/>
                 <MenuItem icon="header"
-                          onClick={this._addBlankDivider}
+                          onClick={_addBlankDivider}
                           text="New Section"/>
                 <MenuDivider/>
                 <MenuItem icon="trash"
-                          onClick={this._deleteMe}
+                          onClick={_deleteMe}
                           intent="danger"
                           text="Delete Section"/>
             </Menu>
         );
     }
 
-    _consoleItemClick(e) {
-        this._selectMe(e);
+    function _consoleItemClick(e) {
+        _selectMe(e);
         e.stopPropagation()
     }
 
-    render() {
-        let converted_dict = {__html: this.props.console_text};
-        let panel_class = this.props.am_shrunk ? "log-panel in-section divider-log-panel log-panel-invisible fixed-log-panel" : "log-panel divider-log-panel log-panel-visible fixed-log-panel";
-        if (this.props.am_selected) {
-            panel_class += " selected"
-        }
-        if (this.props.is_error) {
-            panel_class += " error-log-panel"
-        }
-        let body_width = this.props.console_available_width - BUTTON_CONSUMED_SPACE;
-        return (
-            <div className={panel_class + " d-flex flex-row"} onClick={this._consoleItemClick}
-                 id={this.props.unique_id} style={{marginBottom: 10}}>
-                <div className="button-div shrink-expand-div d-flex flex-row">
-                    <Shandle/>
-                    {!this.props.am_shrunk &&
-                        <GlyphButton icon="chevron-down"
-                                     handleClick={this._toggleShrink}/>
-                    }
-                    {this.props.am_shrunk &&
-                        <GlyphButton icon="chevron-right"
-                                     style={{marginTop: 5}}
-                                     handleClick={this._toggleShrink}/>
-                    }
-                </div>
-                <EditableText value={this.props.header_text}
-                              onChange={this._handleHeaderTextChange}
-                              className="console-divider-text"/>
-                <div className="button-div d-flex flex-row">
-                    <GlyphButton handleClick={this._deleteMe}
-                                 intent="danger"
-                                 tooltip="Delete this item"
-                                 style={{marginLeft: 10, marginRight: 66, minHeight: 0}}
-                                 icon="trash"/>
-                </div>
-            </div>
-        )
+    let converted_dict = {__html: props.console_text};
+    let panel_class = props.am_shrunk ? "log-panel in-section divider-log-panel log-panel-invisible fixed-log-panel" : "log-panel divider-log-panel log-panel-visible fixed-log-panel";
+    if (props.am_selected) {
+        panel_class += " selected"
     }
+    if (props.is_error) {
+        panel_class += " error-log-panel"
+    }
+    let body_width = props.console_available_width - BUTTON_CONSUMED_SPACE;
+    return (
+        <div className={panel_class + " d-flex flex-row"} onClick={_consoleItemClick}
+             id={props.unique_id} style={{marginBottom: 10}}>
+            <div className="button-div shrink-expand-div d-flex flex-row">
+                <Shandle dragHandleProps={props.dragHandleProps}/>
+                {!props.am_shrunk &&
+                    <GlyphButton icon="chevron-down"
+                                 handleClick={_toggleShrink}/>
+                }
+                {props.am_shrunk &&
+                    <GlyphButton icon="chevron-right"
+                                 style={{marginTop: 5}}
+                                 handleClick={_toggleShrink}/>
+                }
+            </div>
+            <EditableText value={props.header_text}
+                          onChange={_handleHeaderTextChange}
+                          className="console-divider-text"/>
+            <div className="button-div d-flex flex-row">
+                <GlyphButton handleClick={_deleteMe}
+                             intent="danger"
+                             tooltip="Delete this item"
+                             style={{marginLeft: 10, marginRight: 66, minHeight: 0}}
+                             icon="trash"/>
+            </div>
+        </div>
+    )
 }
 
-// const DividerItem = ContextMenuTarget(RawDividerItem);
-const DividerItem = RawDividerItem;
+DividerItem = memo(DividerItem);
 
-const section_end_item_update_props = ["hide_in_section", "am_selected", "console_available_width"];
+const section_end_item_update_props = ["am_selected", "console_available_width"];
 
-class RawSectionEndItem extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this, "_", RawSectionEndItem.prototype);
-        this.update_props = section_end_item_update_props;
-        this.update_state_vars = [];
-        this.state = {};
+function SectionEndItem(props) {
+    function _pasteCell() {
+        props.pasteCell(props.unique_id)
     }
 
-    shouldComponentUpdate(nextProps, nextState, nextContext) {
-        for (let prop of this.update_props) {
-            if (nextProps[prop] != this.props[prop]) {
-                return true
-            }
-        }
-        return false
+    function selectMe(e = null, callback = null) {
+        props.selectConsoleItem(props.unique_id, e, callback)
     }
 
-    _pasteCell() {
-        this.props.pasteCell(this.props.unique_id)
-    }
-
-    _selectMe(e = null, callback = null) {
-        this.props.selectConsoleItem(this.props.unique_id, e, callback)
-    }
-
-    _addBlankText() {
-        let self = this;
-        this._selectMe(null, () => {
-            self.props.addNewTextItem()
+    function _addBlankText() {
+        _selectMe(null, () => {
+            props.addNewTextItem()
         })
     }
 
-    _addBlankDivider() {
-        let self = this;
-        this._selectMe(null, () => {
-            self.props.addNewDividerItem()
+    function _addBlankDivider() {
+        _selectMe(null, () => {
+            props.addNewDividerItem()
         })
     }
 
-    _addBlankCode() {
-        let self = this;
-        this._selectMe(null, () => {
-            self.props.addNewCodeItem()
+    function _addBlankCode() {
+        _selectMe(null, () => {
+            props.addNewCodeItem()
         })
     }
 
-    renderContextMenu() {
+    function renderContextMenu() {
         // return a single element, or nothing to use default browser behavior
         return (
             <Menu>
                 <MenuItem icon="clipboard"
-                          onClick={this._pasteCell}
+                          onClick={_pasteCell}
                           text="Paste Cells"/>
                 <MenuDivider/>
                 <MenuItem icon="new-text-box"
-                          onClick={this._addBlankText}
+                          onClick={_addBlankText}
                           text="New Text Cell"/>
                 <MenuItem icon="code"
-                          onClick={this._addBlankCode}
+                          onClick={_addBlankCode}
                           text="New Code Cell"/>
                 <MenuItem icon="header"
-                          onClick={this._addBlankDivider}
+                          onClick={_addBlankDivider}
                           text="New Section"/>
                 <MenuDivider/>
             </Menu>
         );
     }
 
-    _consoleItemClick(e) {
-        this._selectMe(e);
+    function _consoleItemClick(e) {
+        _selectMe(e);
         e.stopPropagation()
     }
 
-    render() {
-        if (this.props.hide_in_section) {
-            return (
-                <div className="log-panel fixed-log-panel d-flex flex-row" id={this.props.unique_id}
-                     style={{height: 0}}/>
-            )
-        }
-        let panel_class = "log-panel in-section section-end-log-panel log-panel-visible fixed-log-panel";
-        if (this.props.am_selected) {
-            panel_class += " selected"
-        }
-        let body_width = this.props.console_available_width - BUTTON_CONSUMED_SPACE;
-        let line_style = {
-            marginLeft: 65,
-            marginRight: 85,
-            marginTop: 10,
-            borderBottomWidth: 2
-        };
-        return (
-            <div className={panel_class + " d-flex flex-row"} onClick={this._consoleItemClick}
-                 id={this.props.unique_id} style={{marginBottom: 10}}>
-                <ButtonGroup minimal={true} vertical={true} style={{width: "100%"}}>
-                    <Divider style={line_style}/>
-                </ButtonGroup>
-                <div className="button-div d-flex flex-row">
-                </div>
-            </div>
-        )
+    let panel_class = "log-panel in-section section-end-log-panel log-panel-visible fixed-log-panel";
+    if (props.am_selected) {
+        panel_class += " selected"
     }
+    let body_width = props.console_available_width - BUTTON_CONSUMED_SPACE;
+    let line_style = {
+        marginLeft: 65,
+        marginRight: 85,
+        marginTop: 10,
+        borderBottomWidth: 2
+    };
+    return (
+        <div className={panel_class + " d-flex flex-row"} onClick={_consoleItemClick}
+             id={props.unique_id} style={{marginBottom: 10}}>
+            <ButtonGroup minimal={true} vertical={true} style={{width: "100%"}}>
+                <span {...props.dragHandleProps}/>
+                <Divider style={line_style}/>
+            </ButtonGroup>
+            <div className="button-div d-flex flex-row">
+            </div>
+        </div>
+    )
 }
 
+SectionEndItem = memo(SectionEndItem);
 // const SectionEndItem = ContextMenuTarget(RawSectionEndItem);
-const SectionEndItem = RawSectionEndItem;
 
-const log_item_update_props = ["is_error", "am_shrunk", "am_selected", "hide_in_section",
+const log_item_update_props = ["is_error", "am_shrunk", "am_selected",
     "in_section", "summary_text", "console_text", "console_available_width"];
 
-class RawLogItem extends React.Component {
-    constructor(props) {
-        super(props);
-        this.ce_summary0ref = React.createRef();
-        doBinding(this, "_", RawLogItem.prototype);
-        this.update_props = log_item_update_props;
-        this.update_state_vars = [];
-        this.state = {selected: false};
-        this.last_output_text = "";
+function LogItem(props) {
+    const last_output_text = useRef("");
+
+    useEffect(()=>{
+        executeEmbeddedScripts();
+        makeTablesSortable()
+    });
+
+    function _toggleShrink() {
+        props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
     }
 
-    shouldComponentUpdate(nextProps, nextState, nextContext) {
-        for (let prop of this.update_props) {
-            if (nextProps[prop] != this.props[prop]) {
-                return true
-            }
-        }
-        return false
+    function _deleteMe() {
+        props.handleDelete(props.unique_id)
     }
 
-    componentDidMount() {
-        this.executeEmbeddedScripts();
-        this.makeTablesSortable()
+    function _handleSummaryTextChange(value) {
+        props.setConsoleItemValue(props.unique_id, "summary_text", value)
     }
 
-    componentDidUpdate(prevProps, prevState, snapshot) {
-        this.executeEmbeddedScripts();
-        this.makeTablesSortable()
-    }
-
-    _toggleShrink() {
-        this.props.setConsoleItemValue(this.props.unique_id, "am_shrunk", !this.props.am_shrunk);
-    }
-
-    _deleteMe() {
-        this.props.handleDelete(this.props.unique_id)
-    }
-
-    _handleSummaryTextChange(value) {
-        this.props.setConsoleItemValue(this.props.unique_id, "summary_text", value)
-    }
-
-    executeEmbeddedScripts() {
-        if (this.props.output_text != this.last_output_text) {  // to avoid doubles of bokeh images
-            this.last_output_text = this.props.output_text;
-            let scripts = $("#" + this.props.unique_id + " .log-code-output script").toArray();
-            // $("#" + this.props.unique_id + " .bk-root").html(""); // This is a kluge to deal with bokeh double images
+    function executeEmbeddedScripts() {
+        if (props.output_text != last_output_text.current) {  // to avoid doubles of bokeh images
+            last_output_text.current = props.output_text;
+            let scripts = $("#" + props.unique_id + " .log-code-output script").toArray();
             for (let script of scripts) {
                 try {
                     window.eval(script.text)
@@ -1956,225 +1878,178 @@ class RawLogItem extends React.Component {
         }
     }
 
-    makeTablesSortable() {
-        let tables = $("#" + this.props.unique_id + " table.sortable").toArray();
+    function makeTablesSortable() {
+        let tables = $("#" + props.unique_id + " table.sortable").toArray();
         for (let table of tables) {
             sorttable.makeSortable(table)
         }
     }
 
-    _copyMe() {
-        this.props.copyCell(this.props.unique_id)
+    function _copyMe() {
+        props.copyCell(props.unique_id)
     }
 
-    _pasteCell() {
-        this.props.pasteCell(this.props.unique_id)
+    function _pasteCell() {
+        props.pasteCell(props.unique_id)
     }
 
-    _selectMe(e = null, callback = null) {
-        this.props.selectConsoleItem(this.props.unique_id, e, callback)
+    function _selectMe(e = null, callback = null) {
+        props.selectConsoleItem(props.unique_id, e, callback)
     }
 
-    _addBlankText() {
-        let self = this;
-        this._selectMe(null, () => {
-            self.props.addNewTextItem()
+    function _addBlankText() {
+        _selectMe(null, () => {
+            props.addNewTextItem()
         })
     }
 
-    _addBlankDivider() {
-        let self = this;
-        this._selectMe(null, () => {
-            self.props.addNewDividerItem()
+    function _addBlankDivider() {
+        _selectMe(null, () => {
+            props.addNewDividerItem()
         })
     }
 
-    _addBlankCode() {
-        let self = this;
-        this._selectMe(null, () => {
-            self.props.addNewCodeItem()
+    function _addBlankCode() {
+        _selectMe(null, () => {
+            props.addNewCodeItem()
         })
     }
 
-    renderContextMenu() {
+    function renderContextMenu() {
         // return a single element, or nothing to use default browser behavior
         return (
             <Menu>
                 <MenuItem icon="duplicate"
-                          onClick={this._copyMe}
+                          onClick={_copyMe}
                           text="Copy Cell"/>
                 <MenuItem icon="clipboard"
-                          onClick={this._pasteCell}
+                          onClick={_pasteCell}
                           text="Paste Cells"/>
                 <MenuDivider/>
                 <MenuItem icon="new-text-box"
-                          onClick={this._addBlankText}
+                          onClick={_addBlankText}
                           text="New Text Cell"/>
                 <MenuItem icon="code"
-                          onClick={this._addBlankCode}
+                          onClick={_addBlankCode}
                           text="New Code Cell"/>
                 <MenuItem icon="header"
-                          onClick={this._addBlankDivider}
+                          onClick={_addBlankDivider}
                           text="New Section"/>
                 <MenuDivider/>
                 <MenuItem icon="trash"
-                          onClick={this._deleteMe}
+                          onClick={_deleteMe}
                           intent="danger"
                           text="Delete Cell"/>
             </Menu>
         );
     }
 
-    _consoleItemClick(e) {
-        this._selectMe(e);
+    function _consoleItemClick(e) {
+        _selectMe(e);
         e.stopPropagation()
     }
 
-    render() {
-        let panel_class = this.props.am_shrunk ? "log-panel log-panel-invisible fixed-log-panel" : "log-panel log-panel-visible fixed-log-panel";
-        if (this.props.hide_in_section && this.props.in_section) {
-            return (
-                <div className="log-panel fixed-log-panel d-flex flex-row" id={this.props.unique_id}
-                     style={{height: 0}}/>
-            )
-        }
-        let converted_dict = {__html: this.props.console_text};
+    let panel_class = props.am_shrunk ? "log-panel log-panel-invisible fixed-log-panel" : "log-panel log-panel-visible fixed-log-panel";
+    let converted_dict = {__html: props.console_text};
 
-        if (this.props.in_section) {
-            panel_class += " in-section"
-        }
-        if (this.props.am_selected) {
-            panel_class += " selected"
-        }
-        if (this.props.is_error) {
-            panel_class += " error-log-panel"
-        }
-        let body_width = this.props.console_available_width - BUTTON_CONSUMED_SPACE;
-        if (this.props.in_section) {
-            body_width -= SECTION_INDENT / 2
-        }
-        return (
-            <div className={panel_class + " d-flex flex-row"} onClick={this._consoleItemClick}
-                 id={this.props.unique_id} style={{marginBottom: 10}}>
-                <div className="button-div shrink-expand-div d-flex flex-row">
-                    <Shandle/>
-                    {!this.props.am_shrunk &&
-                        <GlyphButton icon="chevron-down"
-                                     handleClick={this._toggleShrink}/>
-                    }
-                    {this.props.am_shrunk &&
-                        <GlyphButton icon="chevron-right"
-                                     style={{marginTop: 5}}
-                                     handleClick={this._toggleShrink}/>
-                    }
-                </div>
-                {this.props.am_shrunk &&
-                    <Fragment>
-                        <EditableText value={this.props.summary_text}
-                                      onChange={this._handleSummaryTextChange}
-                                      className="log-panel-summary"/>
-                        <div className="button-div d-flex flex-row">
-                            <GlyphButton handleClick={this._deleteMe}
-                                         intent="danger"
-                                         tooltip="Delete this item"
-                                         style={{marginLeft: 10, marginRight: 66}}
-                                         icon="trash"/>
-                        </div>
-                    </Fragment>
+    if (props.in_section) {
+        panel_class += " in-section"
+    }
+    if (props.am_selected) {
+        panel_class += " selected"
+    }
+    if (props.is_error) {
+        panel_class += " error-log-panel"
+    }
+    let body_width = props.console_available_width - BUTTON_CONSUMED_SPACE;
+    if (props.in_section) {
+        body_width -= SECTION_INDENT / 2
+    }
+    return (
+        <div className={panel_class + " d-flex flex-row"} onClick={_consoleItemClick}
+             id={props.unique_id} style={{marginBottom: 10}}>
+            <div className="button-div shrink-expand-div d-flex flex-row">
+                <Shandle dragHandleProps={props.dragHandleProps}/>
+                {!props.am_shrunk &&
+                    <GlyphButton icon="chevron-down"
+                                 handleClick={_toggleShrink}/>
                 }
-                {!this.props.am_shrunk &&
-                    <div className="d-flex flex-column">
-                        <div className="log-panel-body d-flex flex-row">
-                            <div style={{
-                                marginTop: 10,
-                                marginLeft: 30,
-                                padding: 8,
-                                width: body_width,
-                                border: "1px solid #c7c7c7"
-                            }}
-                                 dangerouslySetInnerHTML={converted_dict}/>
-                            <div className="button-div d-flex flex-row">
-                                <GlyphButton handleClick={this._deleteMe}
-                                             tooltip="Delete this item"
-                                             style={{marginLeft: 10, marginRight: 66}}
-                                             intent="danger"
-                                             icon="trash"/>
-                            </div>
-                        </div>
-                    </div>
+                {props.am_shrunk &&
+                    <GlyphButton icon="chevron-right"
+                                 style={{marginTop: 5}}
+                                 handleClick={_toggleShrink}/>
                 }
             </div>
-        )
-    }
+            {props.am_shrunk &&
+                <Fragment>
+                    <EditableText value={props.summary_text}
+                                  onChange={_handleSummaryTextChange}
+                                  className="log-panel-summary"/>
+                    <div className="button-div d-flex flex-row">
+                        <GlyphButton handleClick={_deleteMe}
+                                     intent="danger"
+                                     tooltip="Delete this item"
+                                     style={{marginLeft: 10, marginRight: 66}}
+                                     icon="trash"/>
+                    </div>
+                </Fragment>
+            }
+            {!props.am_shrunk &&
+                <div className="d-flex flex-column">
+                    <div className="log-panel-body d-flex flex-row">
+                        <div style={{
+                            marginTop: 10,
+                            marginLeft: 30,
+                            padding: 8,
+                            width: body_width,
+                            border: "1px solid #c7c7c7"
+                        }}
+                             dangerouslySetInnerHTML={converted_dict}/>
+                        <div className="button-div d-flex flex-row">
+                            <GlyphButton handleClick={_deleteMe}
+                                         tooltip="Delete this item"
+                                         style={{marginLeft: 10, marginRight: 66}}
+                                         intent="danger"
+                                         icon="trash"/>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    )
 }
 
-RawLogItem.propTypes = {
-    unique_id: PropTypes.string,
-    in_section: PropTypes.bool,
-    is_error: PropTypes.bool,
-    am_shrunk: PropTypes.bool,
-    summary_text: PropTypes.string,
-    selectConsoleItem: PropTypes.func,
-    am_selected: PropTypes.bool,
-    console_text: PropTypes.string,
-    setConsoleItemValue: PropTypes.func,
-    handleDelete: PropTypes.func,
-    console_available_width: PropTypes.number,
-};
+LogItem = memo(LogItem);
 
 // const LogItem = ContextMenuTarget(RawLogItem);
-const LogItem = RawLogItem;
 
-const blob_item_update_props = ["is_error", "am_shrunk", "am_selected", "hide_in_section",
+const blob_item_update_props = ["is_error", "am_shrunk", "am_selected",
     "in_section", "summary_text", "image_data_str", "console_available_width"];
 
-class RawBlobItem extends React.Component {
-    constructor(props) {
-        super(props);
-        this.ce_summary0ref = React.createRef();
-        doBinding(this, "_", RawLogItem.prototype);
-        this.update_props = blob_item_update_props;
-        this.update_state_vars = [];
-        this.state = {selected: false, image_data_str: null};
-        this.last_output_text = "";
+function BlobItem(props) {
+    const last_output_text = useRef("");
+
+    useEffect(()=>{
+        executeEmbeddedScripts();
+        makeTablesSortable()
+    });
+
+    function _toggleShrink() {
+        props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
     }
 
-    shouldComponentUpdate(nextProps, nextState, nextContext) {
-        for (let prop of this.update_props) {
-            if (nextProps[prop] != this.props[prop]) {
-                return true
-            }
-        }
-        return false
+    function _deleteMe() {
+        props.handleDelete(props.unique_id)
     }
 
-    componentDidMount() {
-        this.executeEmbeddedScripts();
-        this.makeTablesSortable();
+   function _handleSummaryTextChange(value) {
+        props.setConsoleItemValue(props.unique_id, "summary_text", value)
     }
 
-    componentDidUpdate(prevProp, prevState, snapshot) {
-        this.executeEmbeddedScripts();
-        this.makeTablesSortable();
-    }
-
-    _toggleShrink() {
-        this.props.setConsoleItemValue(this.props.unique_id, "am_shrunk", !this.props.am_shrunk);
-    }
-
-    _deleteMe() {
-        this.props.handleDelete(this.props.unique_id)
-    }
-
-    _handleSummaryTextChange(value) {
-        this.props.setConsoleItemValue(this.props.unique_id, "summary_text", value)
-    }
-
-    executeEmbeddedScripts() {
-        if (this.props.output_text != this.last_output_text) {  // to avoid doubles of bokeh images
-            this.last_output_text = this.props.output_text;
-            let scripts = $("#" + this.props.unique_id + " .log-code-output script").toArray();
-            // $("#" + this.props.unique_id + " .bk-root").html(""); // This is a kluge to deal with bokeh double images
+    function executeEmbeddedScripts() {
+        if (props.output_text != last_output_text.current) {  // to avoid doubles of bokeh images
+            last_output_text.current = props.output_text;
+            let scripts = $("#" + props.unique_id + " .log-code-output script").toArray();
             for (let script of scripts) {
                 try {
                     window.eval(script.text)
@@ -2185,160 +2060,153 @@ class RawBlobItem extends React.Component {
         }
     }
 
-    makeTablesSortable() {
-        let tables = $("#" + this.props.unique_id + " table.sortable").toArray();
+    function makeTablesSortable() {
+        let tables = $("#" + props.unique_id + " table.sortable").toArray();
         for (let table of tables) {
             sorttable.makeSortable(table)
         }
     }
 
-    _copyMe() {
-        this.props.copyCell(this.props.unique_id)
+    function _copyMe() {
+        props.copyCell(props.unique_id)
     }
 
-    _pasteCell() {
-        this.props.pasteCell(this.props.unique_id)
+    function _pasteCell() {
+        props.pasteCell(props.unique_id)
     }
 
-    _selectMe(e = null, callback = null) {
-        this.props.selectConsoleItem(this.props.unique_id, e, callback)
+    function _selectMe(e = null, callback = null) {
+        props.selectConsoleItem(props.unique_id, e, callback)
     }
 
-    _addBlankText() {
-        let self = this;
-        this._selectMe(null, () => {
-            self.props.addNewTextItem()
+    function _addBlankText() {
+        _selectMe(null, () => {
+            props.addNewTextItem()
         })
     }
 
-    _addBlankDivider() {
-        let self = this;
-        this._selectMe(null, () => {
-            self.props.addNewDividerItem()
+    function _addBlankDivider() {
+        _selectMe(null, () => {
+            props.addNewDividerItem()
         })
     }
 
-    _addBlankCode() {
+   function _addBlankCode() {
         let self = this;
-        this._selectMe(null, () => {
-            self.props.addNewCodeItem()
+        _selectMe(null, () => {
+            props.addNewCodeItem()
         })
     }
 
-    renderContextMenu() {
+    function renderContextMenu() {
         // return a single element, or nothing to use default browser behavior
         return (
             <Menu>
                 <MenuItem icon="duplicate"
-                          onClick={this._copyMe}
+                          onClick={_copyMe}
                           text="Copy Cell"/>
                 <MenuItem icon="clipboard"
-                          onClick={this._pasteCell}
+                          onClick={_pasteCell}
                           text="Paste Cells"/>
                 <MenuDivider/>
                 <MenuItem icon="new-text-box"
-                          onClick={this._addBlankText}
+                          onClick={_addBlankText}
                           text="New Text Cell"/>
                 <MenuItem icon="code"
-                          onClick={this._addBlankCode}
+                          onClick={_addBlankCode}
                           text="New Code Cell"/>
                 <MenuItem icon="header"
-                          onClick={this._addBlankDivider}
+                          onClick={_addBlankDivider}
                           text="New Section"/>
                 <MenuDivider/>
                 <MenuItem icon="trash"
-                          onClick={this._deleteMe}
+                          onClick={_deleteMe}
                           intent="danger"
                           text="Delete Cell"/>
             </Menu>
         );
     }
 
-    _consoleItemClick(e) {
-        this._selectMe(e);
+   function  _consoleItemClick(e) {
+        _selectMe(e);
         e.stopPropagation()
     }
 
-    render() {
+    let panel_class = props.am_shrunk ? "log-panel log-panel-invisible fixed-log-panel" : "log-panel log-panel-visible fixed-log-panel";
 
-        let panel_class = this.props.am_shrunk ? "log-panel log-panel-invisible fixed-log-panel" : "log-panel log-panel-visible fixed-log-panel";
-        if (this.props.hide_in_section && this.props.in_section) {
-            return (
-                <div className="log-panel fixed-log-panel d-flex flex-row" id={this.props.unique_id}
-                     style={{height: 0}}/>
-            )
-        }
 
-        if (this.props.in_section) {
-            panel_class += " in-section"
-        }
-        if (this.props.am_selected) {
-            panel_class += " selected"
-        }
-        let body_width = this.props.console_available_width - BUTTON_CONSUMED_SPACE;
-        if (this.props.in_section) {
-            body_width -= SECTION_INDENT / 2
-        }
-        return (
-            <div className={panel_class + " d-flex flex-row"} onClick={this._consoleItemClick}
-                 id={this.props.unique_id} style={{marginBottom: 10}}>
-                <div className="button-div shrink-expand-div d-flex flex-row">
-                    <Shandle/>
-                    {!this.props.am_shrunk &&
-                        <GlyphButton icon="chevron-down"
-                                     handleClick={this._toggleShrink}/>
-                    }
-                    {this.props.am_shrunk &&
-                        <GlyphButton icon="chevron-right"
-                                     style={{marginTop: 5}}
-                                     handleClick={this._toggleShrink}/>
-                    }
-                </div>
-                {this.props.am_shrunk &&
-                    <Fragment>
-                        <EditableText value={this.props.summary_text}
-                                      onChange={this._handleSummaryTextChange}
-                                      className="log-panel-summary"/>
-                        <div className="button-div d-flex flex-row">
-                            <GlyphButton handleClick={this._deleteMe}
-                                         intent="danger"
-                                         tooltip="Delete this item"
-                                         style={{marginLeft: 10, marginRight: 66}}
-                                         icon="trash"/>
-                        </div>
-                    </Fragment>
+    if (props.in_section) {
+        panel_class += " in-section"
+    }
+    if (props.am_selected) {
+        panel_class += " selected"
+    }
+    let body_width = props.console_available_width - BUTTON_CONSUMED_SPACE;
+    if (props.in_section) {
+        body_width -= SECTION_INDENT / 2
+    }
+    return (
+        <div className={panel_class + " d-flex flex-row"} onClick={_consoleItemClick}
+             id={props.unique_id} style={{marginBottom: 10}}>
+            <div className="button-div shrink-expand-div d-flex flex-row">
+                <Shandle dragHandleProps={props.dragHandleProps}/>
+                {!props.am_shrunk &&
+                    <GlyphButton icon="chevron-down"
+                                 handleClick={_toggleShrink}/>
                 }
-                {!this.props.am_shrunk &&
-                    <div className="d-flex flex-column">
-                        <div className="log-panel-body d-flex flex-row">
-                            <div style={{
-                                marginTop: 10,
-                                marginLeft: 30,
-                                padding: 8,
-                                width: body_width,
-                                border: "1px solid #c7c7c7"
-                            }}>
-                                {this.props.image_data_str && (
-                                    <img src={this.props.image_data_str}
-                                         alt="An Image" width={body_width - 25}/>)
-                                }
-                            </div>
-                            <div className="button-div d-flex flex-row">
-                                <GlyphButton handleClick={this._deleteMe}
-                                             tooltip="Delete this item"
-                                             style={{marginLeft: 10, marginRight: 66}}
-                                             intent="danger"
-                                             icon="trash"/>
-                            </div>
-                        </div>
-                    </div>
+                {props.am_shrunk &&
+                    <GlyphButton icon="chevron-right"
+                                 style={{marginTop: 5}}
+                                 handleClick={_toggleShrink}/>
                 }
             </div>
-        )
-    }
+            {props.am_shrunk &&
+                <Fragment>
+                    <EditableText value={props.summary_text}
+                                  onChange={_handleSummaryTextChange}
+                                  className="log-panel-summary"/>
+                    <div className="button-div d-flex flex-row">
+                        <GlyphButton handleClick={_deleteMe}
+                                     intent="danger"
+                                     tooltip="Delete this item"
+                                     style={{marginLeft: 10, marginRight: 66}}
+                                     icon="trash"/>
+                    </div>
+                </Fragment>
+            }
+            {!props.am_shrunk &&
+                <div className="d-flex flex-column">
+                    <div className="log-panel-body d-flex flex-row">
+                        <div style={{
+                            marginTop: 10,
+                            marginLeft: 30,
+                            padding: 8,
+                            width: body_width,
+                            border: "1px solid #c7c7c7"
+                        }}>
+                            {props.image_data_str && (
+                                <img src={props.image_data_str}
+                                     alt="An Image" width={body_width - 25}/>)
+                            }
+                        </div>
+                        <div className="button-div d-flex flex-row">
+                            <GlyphButton handleClick={_deleteMe}
+                                         tooltip="Delete this item"
+                                         style={{marginLeft: 10, marginRight: 66}}
+                                         intent="danger"
+                                         icon="trash"/>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    )
+
 }
 
-RawBlobItem.propTypes = {
+BlobItem = memo(BlobItem);
+
+BlobItem.propTypes = {
     unique_id: PropTypes.string,
     in_section: PropTypes.bool,
     is_error: PropTypes.bool,
@@ -2353,57 +2221,35 @@ RawBlobItem.propTypes = {
 };
 
 // const BlobItem = ContextMenuTarget(RawBlobItem);
-const BlobItem = RawBlobItem;
 
 const code_item_update_props = ["am_shrunk", "set_focus", "am_selected", "search_string", "summary_text", "console_text",
-    "in_section", "hide_in_section", "show_spinner", "execution_count", "output_text", "console_available_width", "dark_theme"];
+    "in_section", "show_spinner", "execution_count", "output_text", "console_available_width", "dark_theme"];
 
-class RawConsoleCodeItem extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this, "_", RawConsoleCodeItem.prototype);
-        this.cmobject = null;
-        this.elRef = React.createRef();
-        this.update_props = code_item_update_props;
-        this.update_state_vars = [];
-        this.state = {};
-        this.last_output_text = ""
+function ConsoleCodeItem(props) {
+    const elRef = useRef(null);
+    const last_output_text = useRef("");
+    const am_selected_previous = useRef(false);
+    const setFocusFunc = useRef(null);
+
+    useEffect(()=>{
+        executeEmbeddedScripts();
+        makeTablesSortable();
+        if (props.am_selected && !am_selected_previous.current && elRef && elRef.current) {
+            scrollMeIntoView()
+        }
+        am_selected_previous.current = props.am_selected;
+        if (props.set_focus && setFocusFunc.current) {
+            setFocusFunc.current();
+            props.setConsoleItemValue(props.unique_id, "set_focus", false, _selectMe)
+        }
+    });
+
+    function registerSetFocusFunc(theFunc) {
+        setFocusFunc.current = theFunc;
     }
 
-    shouldComponentUpdate(nextProps, nextState, nextContext) {
-        for (let prop of this.update_props) {
-            if (nextProps[prop] != this.props[prop]) {
-                return true
-            }
-        }
-
-        return false
-    }
-
-    componentDidMount() {
-        if (this.props.set_focus) {
-            if (this.cmobject != null) {
-                this.cmobject.focus();
-                this.cmobject.setCursor({line: 0, ch: 0});
-                this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe)
-            }
-        }
-        let self = this;
-        if (this.cmobject != null) {
-            this.cmobject.on("focus", () => {
-                    self.props.setFocus(this.props.unique_id, self._selectMe)
-                }
-            );
-            this.cmobject.on("blur", () => {
-                self.props.setFocus(null)
-            })
-        }
-        this.executeEmbeddedScripts();
-        this.makeTablesSortable()
-    }
-
-    _scrollMeIntoView() {
-        let my_element = this.elRef.current;
+    function scrollMeIntoView() {
+        let my_element = elRef.current;
         let outer_element = my_element.parentNode.parentNode;
         let scrolled_element = my_element.parentNode;
         let outer_height = outer_element.offsetHeight;
@@ -2417,28 +2263,10 @@ class RawConsoleCodeItem extends React.Component {
         }
     }
 
-    componentDidUpdate(prevProps, prevState, snapShot) {
-        this.executeEmbeddedScripts();
-        this.makeTablesSortable();
-        if (this.props.am_selected && !prevProps.am_selected && this.elRef && this.elRef.current) {
-            // this.elRef.current.scrollIntoView()
-            this._scrollMeIntoView()
-        }
-        if (this.props.set_focus) {
-            if (this.cmobject != null) {
-                this.cmobject.focus();
-                this.cmobject.setCursor({line: 0, ch: 0});
-                this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe)
-            }
-
-        }
-    }
-
-    executeEmbeddedScripts() {
-        if (this.props.output_text != this.last_output_text) {  // to avoid doubles of bokeh images
-            this.last_output_text = this.props.output_text;
-            let scripts = $("#" + this.props.unique_id + " .log-code-output script").toArray();
-            // $("#" + this.props.unique_id + " .bk-root").html(""); // This is a kluge to deal with bokeh double images
+    function executeEmbeddedScripts() {
+        if (props.output_text != last_output_text.current) {  // to avoid doubles of bokeh images
+            last_output_text.current = props.output_text;
+            let scripts = $("#" + props.unique_id + " .log-code-output script").toArray();
             for (let script of scripts) {
                 // noinspection EmptyCatchBlockJS,UnusedCatchParameterJS
                 try {
@@ -2450,295 +2278,275 @@ class RawConsoleCodeItem extends React.Component {
         }
     }
 
-    makeTablesSortable() {
-        let tables = $("#" + this.props.unique_id + " table.sortable").toArray();
+    function makeTablesSortable() {
+        let tables = $("#" + props.unique_id + " table.sortable").toArray();
         for (let table of tables) {
             sorttable.makeSortable(table)
         }
     }
 
-    _stopMe() {
-        this._stopMySpinner();
-        postWithCallback(this.props.main_id, "stop_console_code", {"console_id": this.props.unique_id}, null, null, this.props.main_id)
+    function _stopMe() {
+        _stopMySpinner();
+        postWithCallback(props.main_id, "stop_console_code", {"console_id": props.unique_id}, null, null, props.main_id)
     }
 
-    _showMySpinner(callback = null) {
-        this.props.setConsoleItemValue(this.props.unique_id, "show_spinner", true, callback)
+    function _showMySpinner(callback = null) {
+        props.setConsoleItemValue(props.unique_id, "show_spinner", true, callback)
     }
 
-    _stopMySpinner() {
-        this.props.setConsoleItemValue(this.props.unique_id, "show_spinner", false)
+    function _stopMySpinner() {
+        props.setConsoleItemValue(props.unique_id, "show_spinner", false)
     }
 
-    _handleChange(new_code) {
-        this.props.setConsoleItemValue(this.props.unique_id, "console_text", new_code)
+    function _handleChange(new_code) {
+        props.setConsoleItemValue(props.unique_id, "console_text", new_code)
     }
 
-    _handleSummaryTextChange(value) {
-        this.props.setConsoleItemValue(this.props.unique_id, "summary_text", value)
+    function _handleSummaryTextChange(value) {
+        props.setConsoleItemValue(props.unique_id, "summary_text", value)
     }
 
-    _toggleShrink() {
-        this.props.setConsoleItemValue(this.props.unique_id, "am_shrunk", !this.props.am_shrunk);
+    function _toggleShrink() {
+        props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
     }
 
-    _deleteMe() {
-        if (this.props.show_spinner) {
-            this._stopMe()
+    function _deleteMe() {
+        if (props.show_spinner) {
+            _stopMe()
         }
-        this.props.handleDelete(this.props.unique_id)
+        props.handleDelete(props.unique_id)
     }
 
-    _clearOutput(callback = null) {
-        this.props.setConsoleItemValue(this.props.unique_id, "output_text", "", callback)
+   function _clearOutput(callback = null) {
+        props.setConsoleItemValue(props.unique_id, "output_text", "", callback)
     }
 
-    _extraKeys() {
+   function  _extraKeys() {
         let self = this;
         return {
-            'Ctrl-Enter': () => self.props.runCodeItem(this.props.unique_id, true),
-            'Cmd-Enter': () => self.props.runCodeItem(this.props.unique_id, true),
-            'Ctrl-C': self.props.addNewCodeItem,
-            'Ctrl-T': self.props.addNewTextItem
+            'Ctrl-Enter': () => props.runCodeItem(props.unique_id, true),
+            'Cmd-Enter': () => props.runCodeItem(props.unique_id, true),
+            'Ctrl-C': props.addNewCodeItem,
+            'Ctrl-T': props.addNewTextItem
         }
     }
 
-    _setCMObject(cmobject) {
-        this.cmobject = cmobject;
-        if (this.props.set_focus) {
-            this.cmobject.focus();
-            this.cmobject.setCursor({line: 0, ch: 0});
-            this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe)
-        }
-    }
-
-    _getFirstLine() {
+    function _getFirstLine() {
         let re = /^(.*)$/m;
-        if (this.props.console_text == "") {
+        if (props.console_text == "") {
             return "empty text cell"
         } else {
-            return re.exec(this.props.console_text)[0]
+            return re.exec(props.console_text)[0]
         }
-
     }
 
-    _copyMe() {
-        this.props.copyCell(this.props.unique_id)
+   function  _copyMe() {
+        props.copyCell(props.unique_id)
     }
 
-    _pasteCell() {
-        this.props.pasteCell(this.props.unique_id)
+    function _pasteCell() {
+        props.pasteCell(props.unique_id)
     }
 
-    _selectMe(e = null, callback = null) {
-        this.props.selectConsoleItem(this.props.unique_id, e, callback)
+   function  _selectMe(e = null, callback = null) {
+        props.selectConsoleItem(props.unique_id, e, callback)
     }
 
-    _addBlankText() {
-        let self = this;
-        this._selectMe(null, () => {
-            self.props.addNewTextItem()
+   function  _addBlankText() {
+        _selectMe(null, () => {
+            props.addNewTextItem()
         })
     }
 
-    _addBlankDivider() {
-        let self = this;
-        this._selectMe(null, () => {
-            self.props.addNewDividerItem()
+   function  _addBlankDivider() {
+        _selectMe(null, () => {
+            props.addNewDividerItem()
         })
     }
 
-    _addBlankCode() {
-        let self = this;
-        this._selectMe(null, () => {
-            self.props.addNewCodeItem()
+   function _addBlankCode() {
+        _selectMe(null, () => {
+            props.addNewCodeItem()
         })
     }
 
-    renderContextMenu() {
+   function renderContextMenu() {
         // return a single element, or nothing to use default browser behavior
         return (
             <Menu>
-                {!this.props.show_spinner &&
+                {!props.show_spinner &&
                     <MenuItem icon="play"
                               intent="success"
                               onClick={() => {
-                                  this.props.runCodeItem(this.props.unique_id)
+                                  props.runCodeItem(props.unique_id)
                               }}
                               text="Run Cell"/>
                 }
-                {this.props.show_spinner &&
+                {props.show_spinner &&
                     <MenuItem icon="stop"
                               intent="danger"
-                              onClick={this._stopMe}
+                              onClick={_stopMe}
                               text="Stop Cell"/>
                 }
                 <MenuDivider/>
                 <MenuItem icon="new-text-box"
-                          onClick={this._addBlankText}
+                          onClick={_addBlankText}
                           text="New Text Cell"/>
                 <MenuItem icon="code"
-                          onClick={this._addBlankCode}
+                          onClick={_addBlankCode}
                           text="New Code Cell"/>
                 <MenuItem icon="header"
-                          onClick={this._addBlankDivider}
+                          onClick={_addBlankDivider}
                           text="New Section"/>
                 <MenuDivider/>
                 <MenuItem icon="duplicate"
-                          onClick={this._copyMe}
+                          onClick={_copyMe}
                           text="Copy Cell"/>
                 <MenuItem icon="clipboard"
-                          onClick={this._pasteCell}
+                          onClick={_pasteCell}
                           text="Paste Cells"/>
                 <MenuDivider/>
                 <MenuItem icon="trash"
-                          onClick={this._deleteMe}
+                          onClick={_deleteMe}
                           intent="danger"
                           text="Delete Cell"/>
                 <MenuItem icon="clean"
                           intent={"warning"}
                           onClick={() => {
-                              this._clearOutput()
+                              _clearOutput()
                           }}
                           text="Clear Output"/>
             </Menu>
         );
     }
 
-    _consoleItemClick(e) {
-        if (!this.props.am_selected) {
-            this._selectMe(e);
+   function _consoleItemClick(e) {
+        if (!props.am_selected) {
+            _selectMe(e);
         }
         e.stopPropagation()
     }
 
-    _handleFocus() {
-        if (!this.props.am_selected) {
-            this._selectMe()
+   function _handleFocus() {
+        if (!props.am_selected) {
+            _selectMe()
         }
     }
 
-    render() {
-        if (this.props.hide_in_section && this.props.in_section) {
-            return (
-                <div className="log-panel fixed-log-panel d-flex flex-row" id={this.props.unique_id}
-                     style={{height: 0}}/>
-            )
-        }
-        let panel_style = this.props.am_shrunk ? "log-panel log-panel-invisible" : "log-panel log-panel-visible";
-        if (this.props.am_selected) {
-            panel_style += " selected"
-        }
-        if (this.props.in_section) {
-            panel_style += " in-section"
-        }
-        let output_dict = {__html: this.props.output_text};
-        let spinner_val = this.props.running ? null : 0;
-        let code_container_width = this.props.console_available_width - BUTTON_CONSUMED_SPACE;
-        if (this.props.in_section) {
-            code_container_width -= SECTION_INDENT / 2
-        }
-        return (
-            <div className={panel_style + " d-flex flex-row"}
-                 ref={this.elRef}
-                 onClick={this._consoleItemClick} id={this.props.unique_id}>
-                <div className="button-div shrink-expand-div d-flex flex-row">
-                    <Shandle/>
-                    {!this.props.am_shrunk &&
-                        <GlyphButton icon="chevron-down"
-                                     handleClick={this._toggleShrink}/>
-                    }
-                    {this.props.am_shrunk &&
-                        <GlyphButton icon="chevron-right"
-                                     style={{marginTop: 5}}
-                                     handleClick={this._toggleShrink}/>
-                    }
-                </div>
-                {this.props.am_shrunk &&
-                    <Fragment>
-                        <EditableText
-                            value={this.props.summary_text ? this.props.summary_text : this._getFirstLine()}
-                            onChange={this._handleSummaryTextChange}
-                            className="log-panel-summary code-panel-summary"/>
-                        <div className="button-div d-flex flex-row">
-                            <GlyphButton handleClick={this._deleteMe}
-                                         intent="danger"
-                                         tooltip="Delete this item"
-                                         style={{marginLeft: 10, marginRight: 66}}
-                                         icon="trash"/>
-                        </div>
-                    </Fragment>
-
+    let panel_style = props.am_shrunk ? "log-panel log-panel-invisible" : "log-panel log-panel-visible";
+    if (props.am_selected) {
+        panel_style += " selected"
+    }
+    if (props.in_section) {
+        panel_style += " in-section"
+    }
+    let output_dict = {__html: props.output_text};
+    let spinner_val = props.running ? null : 0;
+    let code_container_width = props.console_available_width - BUTTON_CONSUMED_SPACE;
+    if (props.in_section) {
+        code_container_width -= SECTION_INDENT / 2
+    }
+    return (
+        <div className={panel_style + " d-flex flex-row"}
+             ref={elRef}
+             onClick={_consoleItemClick} id={props.unique_id}>
+            <div className="button-div shrink-expand-div d-flex flex-row">
+                <Shandle dragHandleProps={props.dragHandleProps}/>
+                {!props.am_shrunk &&
+                    <GlyphButton icon="chevron-down"
+                                 handleClick={_toggleShrink}/>
                 }
-                {!this.props.am_shrunk &&
-                    <Fragment>
-                        <div className="d-flex flex-column" style={{width: "100%"}}>
-                            <div className="d-flex flex-row">
-                                <div className="log-panel-body d-flex flex-row console-code">
-                                    <div className="button-div d-flex pr-1">
-                                        {!this.props.show_spinner &&
-                                            <GlyphButton handleClick={() => {
-                                                this.props.runCodeItem(this.props.unique_id)
-                                            }}
-                                                         intent="success"
-                                                         tooltip="Execute this item"
-                                                         icon="play"/>
-                                        }
-                                        {this.props.show_spinner &&
-                                            <GlyphButton handleClick={this._stopMe}
-                                                         intent="danger"
-                                                         tooltip="Stop this item"
-                                                         icon="stop"/>
-                                        }
-                                    </div>
-                                    <ReactCodemirror handleChange={this._handleChange}
-                                                     handleFocus={this._handleFocus}
-                                                     dark_theme={this.props.dark_theme}
-                                                     am_selected={this.props.am_selected}
-                                                     readOnly={false}
-                                                     show_line_numbers={true}
-                                                     code_content={this.props.console_text}
-                                                     setCMObject={this._setCMObject}
-                                                     extraKeys={this._extraKeys()}
-                                                     search_term={this.props.search_string}
-                                                     code_container_width={code_container_width}
-                                                     saveMe={null}/>
-                                    <div className="button-div d-flex flex-row">
-                                        <GlyphButton handleClick={this._deleteMe}
-                                                     intent="danger"
-                                                     tooltip="Delete this item"
-                                                     style={{marginLeft: 10, marginRight: 0}}
-                                                     icon="trash"/>
-                                        <GlyphButton handleClick={() => {
-                                            this._clearOutput()
-                                        }}
-                                                     intent="warning"
-                                                     tooltip="Clear this item's output"
-                                                     style={{marginLeft: 10, marginRight: 0}}
-                                                     icon="clean"/>
-                                    </div>
-                                </div>
-                                {!this.props.show_spinner &&
-                                    <div className='execution-counter'>[{String(this.props.execution_count)}]</div>
-                                }
-                                {this.props.show_spinner &&
-                                    <div style={{marginTop: 10, marginRight: 22}}>
-                                        <Spinner size={13} value={spinner_val}/>
-                                    </div>
-                                }
-                            </div>
-                            < div className='log-code-output' dangerouslySetInnerHTML={output_dict}/>
-                        </div>
-
-                    </Fragment>
+                {props.am_shrunk &&
+                    <GlyphButton icon="chevron-right"
+                                 style={{marginTop: 5}}
+                                 handleClick={_toggleShrink}/>
                 }
             </div>
-        )
-    }
+            {props.am_shrunk &&
+                <Fragment>
+                    <EditableText
+                        value={props.summary_text ? props.summary_text : _getFirstLine()}
+                        onChange={_handleSummaryTextChange}
+                        className="log-panel-summary code-panel-summary"/>
+                    <div className="button-div d-flex flex-row">
+                        <GlyphButton handleClick={_deleteMe}
+                                     intent="danger"
+                                     tooltip="Delete this item"
+                                     style={{marginLeft: 10, marginRight: 66}}
+                                     icon="trash"/>
+                    </div>
+                </Fragment>
+
+            }
+            {!props.am_shrunk &&
+                <Fragment>
+                    <div className="d-flex flex-column" style={{width: "100%"}}>
+                        <div className="d-flex flex-row">
+                            <div className="log-panel-body d-flex flex-row console-code">
+                                <div className="button-div d-flex pr-1">
+                                    {!props.show_spinner &&
+                                        <GlyphButton handleClick={() => {
+                                            props.runCodeItem(props.unique_id)
+                                        }}
+                                                     intent="success"
+                                                     tooltip="Execute this item"
+                                                     icon="play"/>
+                                    }
+                                    {props.show_spinner &&
+                                        <GlyphButton handleClick={_stopMe}
+                                                     intent="danger"
+                                                     tooltip="Stop this item"
+                                                     icon="stop"/>
+                                    }
+                                </div>
+                                <ReactCodemirror handleChange={_handleChange}
+                                                 handleFocus={_handleFocus}
+                                                 registerSetFocusFunc={registerSetFocusFunc}
+                                                 dark_theme={props.dark_theme}
+                                                 am_selected={props.am_selected}
+                                                 readOnly={false}
+                                                 show_line_numbers={true}
+                                                 code_content={props.console_text}
+                                                 extraKeys={_extraKeys()}
+                                                 search_term={props.search_string}
+                                                 code_container_width={code_container_width}
+                                                 saveMe={null}/>
+                                <div className="button-div d-flex flex-row">
+                                    <GlyphButton handleClick={_deleteMe}
+                                                 intent="danger"
+                                                 tooltip="Delete this item"
+                                                 style={{marginLeft: 10, marginRight: 0}}
+                                                 icon="trash"/>
+                                    <GlyphButton handleClick={() => {
+                                        _clearOutput()
+                                    }}
+                                                 intent="warning"
+                                                 tooltip="Clear this item's output"
+                                                 style={{marginLeft: 10, marginRight: 0}}
+                                                 icon="clean"/>
+                                </div>
+                            </div>
+                            {!props.show_spinner &&
+                                <div className='execution-counter'>[{String(props.execution_count)}]</div>
+                            }
+                            {props.show_spinner &&
+                                <div style={{marginTop: 10, marginRight: 22}}>
+                                    <Spinner size={13} value={spinner_val}/>
+                                </div>
+                            }
+                        </div>
+                        < div className='log-code-output' dangerouslySetInnerHTML={output_dict}/>
+                    </div>
+
+                </Fragment>
+            }
+        </div>
+    )
 }
 
+ConsoleCodeItem = memo(ConsoleCodeItem);
 
-RawConsoleCodeItem.propTypes = {
+ConsoleCodeItem.propTypes = {
     unique_id: PropTypes.string,
     am_shrunk: PropTypes.bool,
     set_focus: PropTypes.bool,
@@ -2763,59 +2571,56 @@ RawConsoleCodeItem.propTypes = {
     runCodeItem: PropTypes.func
 };
 
-RawConsoleCodeItem.defaultProps = {
+ConsoleCodeItem.defaultProps = {
     summary_text: null
 };
 
 // const ConsoleCodeItem = ContextMenuTarget(RawConsoleCodeItem);
-const ConsoleCodeItem = RawConsoleCodeItem;
 
-class ResourceLinkButton extends React.PureComponent {
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.my_view = view_views(false)[props.res_type];
+function ResourceLinkButton(props) {
+    const my_view = useRef(null);
+
+    useConstructor(()=>{
+        my_view.current = view_views(false)[props.res_type];
         if (window.in_context) {
             const re = new RegExp("/$");
-            this.my_view = this.my_view.replace(re, "_in_context");
+            my_view.current = my_view.replace(re, "_in_context");
         }
-    }
+    });
 
-    _goToLink() {
-        let self = this;
+    function _goToLink() {
         if (window.in_context) {
-            postAjaxPromise($SCRIPT_ROOT + this.my_view, {
+            postAjaxPromise($SCRIPT_ROOT + my_view.current, {
                 context_id: window.context_id,
-                resource_name: this.props.res_name
+                resource_name: props.res_name
             })
-                .then(self.props.handleCreateViewer)
+                .then(props.handleCreateViewer)
                 .catch(doFlash);
         } else {
-            window.open($SCRIPT_ROOT + this.my_view + this.props.res_name)
+            window.open($SCRIPT_ROOT + my_view.current + props.res_name)
         }
     }
 
-    render() {
-        let self = this;
-        return (
-            <ButtonGroup className="link-button-group">
-                <Button small={true}
-                        text={this.props.res_name}
-                        icon={icon_dict[this.props.res_type]}
-                        minimal={true}
-                        onClick={this._goToLink}/>
-                <Button small={true}
-                        icon="small-cross"
-                        minimal={true}
-                        onClick={(e) => {
-                            self.props.deleteMe(self.props.my_index);
-                            e.stopPropagation()
-                        }}
-                />
-            </ButtonGroup>
-        )
-    }
+    return (
+        <ButtonGroup className="link-button-group">
+            <Button small={true}
+                    text={props.res_name}
+                    icon={icon_dict[props.res_type]}
+                    minimal={true}
+                    onClick={_goToLink}/>
+            <Button small={true}
+                    icon="small-cross"
+                    minimal={true}
+                    onClick={(e) => {
+                        props.deleteMe(props.my_index);
+                        e.stopPropagation()
+                    }}
+            />
+        </ButtonGroup>
+    )
 }
+
+ResourceLinkButton = memo(ResourceLinkButton);
 
 ResourceLinkButton.propTypes = {
     res_type: PropTypes.string,
@@ -2824,65 +2629,35 @@ ResourceLinkButton.propTypes = {
 };
 
 const text_item_update_props = ["am_shrunk", "set_focus", "serach_string", "am_selected", "show_markdown",
-    "in_section", "hide_in_section", "summary_text", "console_text", "console_available_width", "links"];
+    "in_section", "summary_text", "console_text", "console_available_width", "links"];
 
-class RawConsoleTextItem extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this, "_", RawConsoleTextItem.prototype);
-        this.cmobject = null;
-        this.elRef = React.createRef();
+function ConsoleTextItem(props) {
+    const elRef = useRef(null);
+    const am_selected_previous = useRef(false);
+        const setFocusFunc = useRef(null);
 
-        this.ce_summary_ref = React.createRef();
-        this.update_props = text_item_update_props;
-        this.update_state_vars = ["ce_ref"];
-        this.previous_dark_theme = props.dark_theme;
-        this.state = {ce_ref: null}
+    useEffect(()=> {
+        if (props.am_selected && !am_selected_previous.current && elRef && elRef.current) {
+            scrollMeIntoView()
+        }
+        am_selected_previous.current = props.am_selected;
+        if (props.set_focus) {
+            if (props.show_markdown) {
+                _hideMarkdown()
+            } else if (setFocusFunc.current) {
+                setFocusFunc.current();
+                props.setConsoleItemValue(props.unique_id, "set_focus", false, _selectMe)
+            }
+
+        }
+    });
+
+    function registerSetFocusFunc(theFunc) {
+        setFocusFunc.current = theFunc;
     }
 
-
-    shouldComponentUpdate(nextProps, nextState, nextContext) {
-        for (let prop of this.update_props) {
-            if (nextProps[prop] != this.props[prop]) {
-                return true
-            }
-        }
-        for (let state_var of this.update_state_vars) {
-            if (nextState[state_var] != this.state[state_var]) {
-                return true
-            }
-        }
-        if (this.props.dark_theme != this.previous_dark_theme) {
-            this.previous_dark_theme = this.props.dark_theme;
-            return true
-        }
-        return false
-    }
-
-    componentDidMount() {
-        if (this.props.set_focus) {
-            if (this.props.show_markdown) {
-                this._hideMarkdown()
-            } else if (this.cmobject != null) {
-                this.cmobject.focus();
-                this.cmobject.setCursor({line: 0, ch: 0});
-                this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe)
-            }
-        }
-        let self = this;
-        if (this.cmobject != null) {
-            this.cmobject.on("focus", () => {
-                    self.props.setFocus(this.props.unique_id, self._selectMe)
-                }
-            );
-            this.cmobject.on("blur", () => {
-                self.props.setFocus(null)
-            })
-        }
-    }
-
-    _scrollMeIntoView() {
-        let my_element = this.elRef.current;
+    function scrollMeIntoView() {
+        let my_element = elRef.current;
         let outer_element = my_element.parentNode.parentNode;
         let scrolled_element = my_element.parentNode;
         let outer_height = outer_element.offsetHeight;
@@ -2896,328 +2671,310 @@ class RawConsoleTextItem extends React.Component {
         }
     }
 
-    componentDidUpdate(prevProps, prevState, snapShot) {
-        if (this.props.am_selected && !prevProps.am_selected && this.elRef && this.elRef.current) {
-            this._scrollMeIntoView()
-        }
-        if (this.props.set_focus) {
-            if (this.props.show_markdown) {
-                this._hideMarkdown()
-            } else if (this.cmobject != null) {
-                this.cmobject.focus();
-                this.cmobject.setCursor({line: 0, ch: 0});
-                this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe)
-            }
 
-        }
+
+    function hasOnlyWhitespace() {
+        return !props.console_text.trim().length
     }
 
-    get hasOnlyWhitespace() {
-        return !this.props.console_text.trim().length
+    function _showMarkdown() {
+        props.setConsoleItemValue(props.unique_id, "show_markdown", true);
     }
 
-    _showMarkdown() {
-        this.props.setConsoleItemValue(this.props.unique_id, "show_markdown", true);
-    }
-
-    _toggleMarkdown() {
-        if (this.props.show_markdown) {
-            this._hideMarkdown()
+    function _toggleMarkdown() {
+        if (props.show_markdown) {
+            _hideMarkdown()
         } else {
-            this._showMarkdown()
+            _showMarkdown()
         }
     }
 
-    _hideMarkdown() {
-        this.props.setConsoleItemValue(this.props.unique_id, "show_markdown", false);
+    function _hideMarkdown() {
+        props.setConsoleItemValue(props.unique_id, "show_markdown", false);
     }
 
-    _handleChange(new_text) {
-        this.props.setConsoleItemValue(this.props.unique_id, "console_text", new_text)
+    function _handleChange(new_text) {
+        props.setConsoleItemValue(props.unique_id, "console_text", new_text)
     }
 
-    _clearForceSync() {
-        this.props.setConsoleItemValue(this.props.unique_id, "force_sync_to_prop", false)
+    function _clearForceSync() {
+        props.setConsoleItemValue(props.unique_id, "force_sync_to_prop", false)
     }
 
-    _handleSummaryTextChange(value) {
-        this.props.setConsoleItemValue(this.props.unique_id, "summary_text", value)
+    function _handleSummaryTextChange(value) {
+        props.setConsoleItemValue(props.unique_id, "summary_text", value)
     }
 
-    _toggleShrink() {
-        this.props.setConsoleItemValue(this.props.unique_id, "am_shrunk", !this.props.am_shrunk);
+    function _toggleShrink() {
+        props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
     }
 
-    _deleteMe() {
-        this.props.handleDelete(this.props.unique_id)
+    function _deleteMe() {
+        props.handleDelete(props.unique_id)
     }
 
-    _handleKeyDown(event) {
+    function _handleKeyDown(event) {
         if (event.key == "Tab") {
-            this.props.goToNextCell(this.props.unique_id);
+            props.goToNextCell(props.unique_id);
             event.preventDefault()
         }
     }
 
-    _gotEnter() {
-        this.props.goToNextCell(this.props.unique_id);
-        this._showMarkdown();
+    function _gotEnter() {
+        props.goToNextCell(props.unique_id);
+        _showMarkdown();
     }
 
-    _getFirstLine() {
+    function _getFirstLine() {
         let re = /^(.*)$/m;
-        if (this.props.console_text == "") {
+        if (props.console_text == "") {
             return "empty text cell"
         } else {
-            return re.exec(this.props.console_text)[0]
+            return re.exec(props.console_text)[0]
         }
 
     }
 
-    _copyMe() {
-        this.props.copyCell(this.props.unique_id)
+    function _copyMe() {
+        props.copyCell(props.unique_id)
     }
 
-    _pasteCell() {
-        this.props.pasteCell(this.props.unique_id)
+    function _pasteCell() {
+        props.pasteCell(props.unique_id)
     }
 
-    _selectMe(e = null, callback = null) {
-        this.props.selectConsoleItem(this.props.unique_id, e, callback)
+    function _selectMe(e = null, callback = null) {
+        props.selectConsoleItem(props.unique_id, e, callback)
     }
 
-    _insertResourceLink() {
-        let self = this;
+    function _insertResourceLink() {
         showSelectResourceDialog("cancel", "insert link", (result) => {
-            let new_links = [...self.props.links];
+            let new_links = [...props.links];
             new_links.push({res_type: result.type, res_name: result.selected_resource});
-            self.props.setConsoleItemValue(self.props.unique_id, "links", new_links)
+            props.setConsoleItemValue(props.unique_id, "links", new_links)
         })
     }
 
-    _deleteLinkButton(index) {
-        let new_links = _.cloneDeep(this.props.links);
+    function _deleteLinkButton(index) {
+        let new_links = _.cloneDeep(props.links);
         new_links.splice(index, 1);
         let self = this;
-        this.props.setConsoleItemValue(this.props.unique_id, "links", new_links, () => {
-            console.log("i am here with nlinks " + String(self.props.links.length))
+        props.setConsoleItemValue(props.unique_id, "links", new_links, () => {
+            console.log("i am here with nlinks " + String(props.links.length))
         });
 
     }
 
-    _addBlankText() {
-        let self = this;
-        this._selectMe(null, () => {
-            self.props.addNewTextItem()
+    function _addBlankText() {
+        _selectMe(null, () => {
+            props.addNewTextItem()
         })
     }
 
-    _addBlankDivider() {
-        let self = this;
-        this._selectMe(null, () => {
-            self.props.addNewDividerItem()
+    function _addBlankDivider() {
+        _selectMe(null, () => {
+            props.addNewDividerItem()
         })
     }
 
-    _addBlankCode() {
-        let self = this;
-        this._selectMe(null, () => {
-            self.props.addNewCodeItem()
+    function _addBlankCode() {
+        _selectMe(null, () => {
+            props.addNewCodeItem()
         })
     }
 
-    renderContextMenu() {
+    function renderContextMenu() {
         // return a single element, or nothing to use default browser behavior
         return (
             <Menu>
                 <MenuItem icon="paragraph"
                           intent="success"
-                          onClick={this._showMarkdown}
+                          onClick={_showMarkdown}
                           text="Show Markdown"/>
                 <MenuDivider/>
                 <MenuItem icon="new-text-box"
-                          onClick={this._addBlankText}
+                          onClick={_addBlankText}
                           text="New Text Cell"/>
                 <MenuItem icon="code"
-                          onClick={this._addBlankCode}
+                          onClick={_addBlankCode}
                           text="New Code Cell"/>
                 <MenuItem icon="header"
-                          onClick={this._addBlankDivider}
+                          onClick={_addBlankDivider}
                           text="New Section"/>
                 <MenuDivider/>
                 <MenuItem icon="link"
-                          onClick={this._insertResourceLink}
+                          onClick={_insertResourceLink}
                           text="Insert ResourceLink"/>
                 <MenuItem icon="duplicate"
-                          onClick={this._copyMe}
+                          onClick={_copyMe}
                           text="Copy Cell"/>
                 <MenuItem icon="clipboard"
-                          onClick={this._pasteCell}
+                          onClick={_pasteCell}
                           text="Paste Cells"/>
                 <MenuDivider/>
                 <MenuItem icon="trash"
-                          onClick={this._deleteMe}
+                          onClick={_deleteMe}
                           intent="danger"
                           text="Delete Cell"/>
             </Menu>
         );
     }
 
-    _consoleItemClick(e) {
-        this._selectMe(e);
+    function _consoleItemClick(e) {
+        _selectMe(e);
         e.stopPropagation()
     }
 
-    _handleFocus() {
-        if (!this.props.am_selected) {
-            this._selectMe()
+    function _handleFocus() {
+        if (!props.am_selected) {
+            _selectMe()
         }
     }
 
-
-    _setCMObject(cmobject) {
-        this.cmobject = cmobject;
-        if (this.props.set_focus) {
-            this.cmobject.focus();
-            this.cmobject.setCursor({line: 0, ch: 0});
-            this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe)
+    function _setCMObject(cmobject) {
+        cmobject.current = cmobject;
+        if (props.set_focus) {
+            cmobject.current.focus();
+            cmobject.current.setCursor({line: 0, ch: 0});
+            props.setConsoleItemValue(props.unique_id, "set_focus", false, _selectMe)
+        }
+        if (cmobject.current != null) {
+            cmobject.current.on("focus", () => {
+                    props.setFocus(props.unique_id, _selectMe)
+                }
+            );
+            cmobject.current.on("blur", () => {
+                props.setFocus(null)
+            })
         }
     }
 
-    _extraKeys() {
+    function _extraKeys() {
         let self = this;
         return {
-            'Ctrl-Enter': () => self._gotEnter(),
-            'Cmd-Enter': () => self._gotEnter(),
-            'Ctrl-C': self.props.addNewCodeItem,
-            'Ctrl-T': self.props.addNewTextItem
+            'Ctrl-Enter': () => _gotEnter(),
+            'Cmd-Enter': () => _gotEnter(),
+            'Ctrl-C': props.addNewCodeItem,
+            'Ctrl-T': props.addNewTextItem
         }
     }
 
-    render() {
-        if (this.props.hide_in_section && this.props.in_section) {
-            return (
-                <div className="log-panel fixed-log-panel d-flex flex-row" id={this.props.unique_id}
-                     style={{height: 0}}/>
-            )
-        }
-        let really_show_markdown = this.hasOnlyWhitespace && this.props.links.length == 0 ? false : this.props.show_markdown;
-        var converted_markdown;
-        if (really_show_markdown) {
-            converted_markdown = mdi.render(this.props.console_text)
-        }
-        // let key_bindings = [[["ctrl+enter", "command+enter"], this._gotEnter]];
-        let converted_dict = {__html: converted_markdown};
-        let panel_class = this.props.am_shrunk ? "log-panel log-panel-invisible text-log-item" : "log-panel log-panel-visible text-log-item";
-        if (this.props.am_selected) {
-            panel_class += " selected"
-        }
-        if (this.props.in_section) {
-            panel_class += " in-section"
-        }
-        let gbstyle = {marginLeft: 1};
-        let body_width = this.props.console_available_width - BUTTON_CONSUMED_SPACE;
-        let self = this;
-        let link_buttons = this.props.links.map((link, index) =>
-            <ResourceLinkButton key={index}
-                                my_index={index}
-                                handleCreateViewer={this.props.handleCreateViewer}
-                                deleteMe={self._deleteLinkButton}
-                                res_type={link.res_type}
-                                res_name={link.res_name}/>
-        );
-        let code_container_width = this.props.console_available_width - BUTTON_CONSUMED_SPACE;
-        if (this.props.in_section) {
-            code_container_width -= SECTION_INDENT / 2
-        }
-        return (
-            <div className={panel_class + " d-flex flex-row"} onClick={this._consoleItemClick}
-                 ref={this.elRef} id={this.props.unique_id} style={{marginBottom: 10}}>
-                <div className="button-div shrink-expand-div d-flex flex-row">
-                    <Shandle/>
-                    {!this.props.am_shrunk &&
-                        <GlyphButton icon="chevron-down"
-                                     handleClick={this._toggleShrink}/>
-                    }
-                    {this.props.am_shrunk &&
-                        <GlyphButton icon="chevron-right"
-                                     style={{marginTop: 5}}
-                                     handleClick={this._toggleShrink}/>
-                    }
-                </div>
-                {this.props.am_shrunk &&
-                    <Fragment>
-                        <EditableText
-                            value={this.props.summary_text ? this.props.summary_text : this._getFirstLine()}
-                            onChange={this._handleSummaryTextChange}
-                            className="log-panel-summary"/>
+    let really_show_markdown = hasOnlyWhitespace() && props.links.length == 0 ? false : props.show_markdown;
+    var converted_markdown;
+    if (really_show_markdown) {
+        converted_markdown = mdi.render(props.console_text)
+    }
+
+    let converted_dict = {__html: converted_markdown};
+    let panel_class = props.am_shrunk ? "log-panel log-panel-invisible text-log-item" : "log-panel log-panel-visible text-log-item";
+    if (props.am_selected) {
+        panel_class += " selected"
+    }
+    if (props.in_section) {
+        panel_class += " in-section"
+    }
+    let gbstyle = {marginLeft: 1};
+    let body_width = props.console_available_width - BUTTON_CONSUMED_SPACE;
+    let self = this;
+    let link_buttons = props.links.map((link, index) =>
+        <ResourceLinkButton key={index}
+                            my_index={index}
+                            handleCreateViewer={props.handleCreateViewer}
+                            deleteMe={_deleteLinkButton}
+                            res_type={link.res_type}
+                            res_name={link.res_name}/>
+    );
+    let code_container_width = props.console_available_width - BUTTON_CONSUMED_SPACE;
+    if (props.in_section) {
+        code_container_width -= SECTION_INDENT / 2
+    }
+    return (
+        <div className={panel_class + " d-flex flex-row"} onClick={_consoleItemClick}
+             ref={elRef} id={props.unique_id} style={{marginBottom: 10}}>
+            <div className="button-div shrink-expand-div d-flex flex-row">
+                <Shandle dragHandleProps={props.dragHandleProps}/>
+                {!props.am_shrunk &&
+                    <GlyphButton icon="chevron-down"
+                                 handleClick={_toggleShrink}/>
+                }
+                {props.am_shrunk &&
+                    <GlyphButton icon="chevron-right"
+                                 style={{marginTop: 5}}
+                                 handleClick={_toggleShrink}/>
+                }
+            </div>
+            {props.am_shrunk &&
+                <Fragment>
+                    <EditableText
+                        value={props.summary_text ? props.summary_text : _getFirstLine()}
+                        onChange={_handleSummaryTextChange}
+                        className="log-panel-summary"/>
+                    <div className="button-div d-flex flex-row">
+                        <GlyphButton handleClick={_deleteMe}
+                                     intent="danger"
+                                     tooltip="Delete this item"
+                                     style={{marginLeft: 10, marginRight: 66}}
+                                     icon="trash"/>
+                    </div>
+                </Fragment>
+            }
+            {!props.am_shrunk &&
+                <div className="d-flex flex-column" style={{width: "100%"}}>
+                    <div className="log-panel-body text-box d-flex flex-row">
+                        <div className="button-div d-inline-flex pr-1">
+                            <GlyphButton handleClick={_toggleMarkdown}
+                                         intent="success"
+                                         tooltip="Convert to/from markdown"
+                                         icon="paragraph"/>
+                        </div>
+                        <div className="d-flex flex-column">
+                            {!really_show_markdown &&
+                                <Fragment>
+                                    <ReactCodemirror handleChange={_handleChange}
+                                                     dark_theme={props.dark_theme}
+                                                     am_selected={props.am_selected}
+                                                     readOnly={false}
+                                                     handleFocus={_handleFocus}
+                                                     registerSetFocusFunc={registerSetFocusFunc}
+                                                     show_line_numbers={false}
+                                                     soft_wrap={true}
+                                                     sync_to_prop={false}
+                                                     force_sync_to_prop={props.force_sync_to_prop}
+                                                     clear_force_sync={_clearForceSync}
+                                                     mode="markdown"
+                                                     code_content={props.console_text}
+                                                     extraKeys={_extraKeys()}
+                                                     search_term={props.search_string}
+                                                     code_container_width={code_container_width}
+                                                     saveMe={null}/>
+                                </Fragment>
+                            }
+                            {really_show_markdown && !hasOnlyWhitespace() &&
+                                <div className="text-panel-output"
+                                     onDoubleClick={_hideMarkdown}
+                                     style={{width: body_width, padding: 9}}
+                                     dangerouslySetInnerHTML={converted_dict}/>
+                            }
+                            {link_buttons}
+                        </div>
+
                         <div className="button-div d-flex flex-row">
-                            <GlyphButton handleClick={this._deleteMe}
+                            <GlyphButton handleClick={_deleteMe}
                                          intent="danger"
                                          tooltip="Delete this item"
                                          style={{marginLeft: 10, marginRight: 66}}
                                          icon="trash"/>
                         </div>
-                    </Fragment>
-                }
-                {!this.props.am_shrunk &&
-                    <div className="d-flex flex-column" style={{width: "100%"}}>
-                        <div className="log-panel-body text-box d-flex flex-row">
-                            <div className="button-div d-inline-flex pr-1">
-                                <GlyphButton handleClick={this._toggleMarkdown}
-                                             intent="success"
-                                             tooltip="Convert to/from markdown"
-                                             icon="paragraph"/>
-                            </div>
-                            <div className="d-flex flex-column">
-                                {!really_show_markdown &&
-                                    <Fragment>
-                                        <ReactCodemirror handleChange={this._handleChange}
-                                                         dark_theme={this.props.dark_theme}
-                                                         am_selected={this.props.am_selected}
-                                                         readOnly={false}
-                                                         handleFocus={this._handleFocus}
-                                                         show_line_numbers={false}
-                                                         soft_wrap={true}
-                                                         sync_to_prop={false}
-                                                         force_sync_to_prop={this.props.force_sync_to_prop}
-                                                         clear_force_sync={this._clearForceSync}
-                                                         mode="markdown"
-                                                         code_content={this.props.console_text}
-                                                         setCMObject={this._setCMObject}
-                                                         extraKeys={this._extraKeys()}
-                                                         search_term={this.props.search_string}
-                                                         code_container_width={code_container_width}
-                                                         saveMe={null}/>
-                                        {/*<KeyTrap target_ref={this.state.ce_ref} bindings={key_bindings} />*/}
-                                    </Fragment>
-                                }
-                                {really_show_markdown && !this.hasOnlyWhitespace &&
-                                    <div className="text-panel-output"
-                                         onDoubleClick={this._hideMarkdown}
-                                         style={{width: body_width, padding: 9}}
-                                         dangerouslySetInnerHTML={converted_dict}/>
-                                }
-                                {link_buttons}
-                            </div>
-
-                            <div className="button-div d-flex flex-row">
-                                <GlyphButton handleClick={this._deleteMe}
-                                             intent="danger"
-                                             tooltip="Delete this item"
-                                             style={{marginLeft: 10, marginRight: 66}}
-                                             icon="trash"/>
-                            </div>
-                        </div>
                     </div>
-                }
-            </div>
-        )
-    }
+                </div>
+            }
+        </div>
+    )
 }
 
+ConsoleTextItem = memo(ConsoleTextItem);
 
-RawConsoleTextItem.propTypes = {
+ConsoleTextItem.propTypes = {
     unique_id: PropTypes.string,
     am_shrunk: PropTypes.bool,
     set_focus: PropTypes.bool,
@@ -3235,14 +2992,13 @@ RawConsoleTextItem.propTypes = {
     links: PropTypes.array
 };
 
-RawConsoleTextItem.defaultProps = {
+ConsoleTextItem.defaultProps = {
     force_sync_to_prop: false,
     summary_text: null,
     links: []
 };
 
 // const ConsoleTextItem = ContextMenuTarget(RawConsoleTextItem);
-const ConsoleTextItem = RawConsoleTextItem;
 
 const all_update_props = {
     "text": text_item_update_props,

@@ -185,7 +185,7 @@ class SearchableConsole extends React.PureComponent {
                     <form onSubmit={this._commandSubmit} style={{position: "relative", bottom: 8, margin: 10}}>
 
                       <InputGroup type="text"
-                                  className="bp4-monospace-text"
+                                  className="bp5-monospace-text"
                                    onChange={this._onInputChange}
                                    small={true}
                                    large={false}

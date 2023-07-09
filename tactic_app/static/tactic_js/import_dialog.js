@@ -1,82 +1,48 @@
 "use strict";
 
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.showFileImportDialog = showFileImportDialog;
-
 var _react = _interopRequireDefault(require("react"));
-
 var ReactDOM = _interopRequireWildcard(require("react-dom"));
-
 var _propTypes = _interopRequireDefault(require("prop-types"));
-
 var _reactDropzoneComponent = _interopRequireDefault(require("react-dropzone-component"));
-
 var _core = require("@blueprintjs/core");
-
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields.js");
-
 var _utilities_react = require("./utilities_react.js");
-
 var _server = require("react-dom/server");
-
 var _error_drawer = require("./error_drawer");
-
-function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
-
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
-
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
+function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 var defaultImportDialogWidth = 700;
-
 var FileImportDialog = /*#__PURE__*/function (_React$Component) {
   _inherits(FileImportDialog, _React$Component);
-
   var _super = _createSuper(FileImportDialog);
-
   function FileImportDialog(props) {
     var _this;
-
     _classCallCheck(this, FileImportDialog);
-
     _this = _super.call(this, props);
     (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
     var initial_default_name = "new" + props.res_type;
@@ -85,12 +51,10 @@ var FileImportDialog = /*#__PURE__*/function (_React$Component) {
     _this.picker_ref = /*#__PURE__*/_react["default"].createRef();
     _this.existing_names = props.existing_names;
     _this.current_url = "dummy";
-
     while (_this._name_exists(default_name)) {
       name_counter += 1;
       default_name = initial_default_name + String(name_counter);
     }
-
     _this.state = {
       show: false,
       current_value: default_name,
@@ -100,26 +64,22 @@ var FileImportDialog = /*#__PURE__*/function (_React$Component) {
       log_contents: [],
       current_picker_width: defaultImportDialogWidth - 100
     };
-
     if (_this.props.show_csv_options) {
       _this.state.delimiter = ",";
       _this.state.quoting = "QUOTE_MINIMAL";
       _this.state.skipinitialspace = true;
       _this.state.csv_options_open = false;
     }
-
     _this.myDropzone = null;
     _this.socket_counter = null;
     return _this;
   }
-
   _createClass(FileImportDialog, [{
     key: "_handleResponse",
     value: function _handleResponse(entry) {
       if (entry.resource_name && entry["success"] in ["success", "partial"]) {
         this.existing_names.push(entry.resource_name);
       }
-
       this.setState({
         log_contents: [].concat(_toConsumableArray(this.state.log_contents), [entry]),
         log_open: true
@@ -129,7 +89,6 @@ var FileImportDialog = /*#__PURE__*/function (_React$Component) {
     key: "_handleError",
     value: function _handleError(file, message) {
       var xhr = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-
       this._handleResponse({
         title: "Error for ".concat(file.name),
         "content": message
@@ -140,7 +99,6 @@ var FileImportDialog = /*#__PURE__*/function (_React$Component) {
     value: function _updatePickerSize() {
       if (this.picker_ref && this.picker_ref.current) {
         var new_width = this.picker_ref.current.offsetWidth;
-
         if (new_width != this.state.current_picker_width) {
           this.setState({
             current_picker_width: this.picker_ref.current.offsetWidth
@@ -159,13 +117,10 @@ var FileImportDialog = /*#__PURE__*/function (_React$Component) {
       this.setState({
         "show": true
       });
-
       if (this.props.checkboxes != null && this.props.checkboxes.length != 0) {
         var checkbox_states = {};
-
         var _iterator = _createForOfIteratorHelper(this.props.checkboxes),
-            _step;
-
+          _step;
         try {
           for (_iterator.s(); !(_step = _iterator.n()).done;) {
             var checkbox = _step.value;
@@ -176,14 +131,11 @@ var FileImportDialog = /*#__PURE__*/function (_React$Component) {
         } finally {
           _iterator.f();
         }
-
         this.setState({
           checkbox_states: checkbox_states
         });
       }
-
       this._updatePickerSize();
-
       this.initSocket();
     }
   }, {
@@ -213,11 +165,9 @@ var FileImportDialog = /*#__PURE__*/function (_React$Component) {
     key: "_do_submit",
     value: function _do_submit() {
       var msg;
-
       if (this.myDropzone.getQueuedFiles().length == 0) {
         return;
       }
-
       if (this.state.current_value == "") {
         msg = "An empty name is not allowed here.";
         this.setState({
@@ -230,7 +180,6 @@ var FileImportDialog = /*#__PURE__*/function (_React$Component) {
         });
       } else {
         var csv_options;
-
         if (this.props.show_csv_options && this.state.csv_options_open) {
           csv_options = {
             delimiter: this.state.delimiter,
@@ -240,7 +189,6 @@ var FileImportDialog = /*#__PURE__*/function (_React$Component) {
         } else {
           csv_options = null;
         }
-
         this.props.process_handler(this.myDropzone, this._setCurrentUrl, this.state.current_value, this.state.checkbox_states, csv_options);
       }
     }
@@ -259,11 +207,12 @@ var FileImportDialog = /*#__PURE__*/function (_React$Component) {
     value: function _setCurrentUrl(new_url) {
       this.myDropzone.options.url = new_url;
       this.current_url = new_url;
-    } // There's trickiness with setting the current url in the dropzone object.
+    }
+
+    // There's trickiness with setting the current url in the dropzone object.
     // If I don't set it below in uploadComplete, then the second file processed
     // gets the dummy url in some cases. It's related to the component re-rendering
     // I think, perhaps when messages are shown in the dialog.
-
   }, {
     key: "_uploadComplete",
     value: function _uploadComplete(f) {
@@ -365,8 +314,8 @@ var FileImportDialog = /*#__PURE__*/function (_React$Component) {
         postUrl: this.current_url // Must have this even though will never be used
         // iconFiletypes: this.props.allowed_file_types,
         // showFiletypeIcon: true
-
       };
+
       var djsConfig = {
         uploadMultiple: false,
         parallelUploads: 1,
@@ -416,15 +365,12 @@ var FileImportDialog = /*#__PURE__*/function (_React$Component) {
         error: this._handleError
       };
       var checkbox_items = [];
-
       if (this.props.checkboxes != null && this.props.checkboxes.length != 0) {
         var _iterator2 = _createForOfIteratorHelper(this.props.checkboxes),
-            _step2;
-
+          _step2;
         try {
           for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
             var checkbox = _step2.value;
-
             var new_item = /*#__PURE__*/_react["default"].createElement(_core.Checkbox, {
               checked: this.state.checkbox_states[checkbox.checkname],
               label: checkbox.checktext,
@@ -434,7 +380,6 @@ var FileImportDialog = /*#__PURE__*/function (_React$Component) {
               alignIndicator: _core.Alignment.RIGHT,
               onChange: this._checkbox_change_handler
             });
-
             checkbox_items.push(new_item);
           }
         } catch (err) {
@@ -443,9 +388,7 @@ var FileImportDialog = /*#__PURE__*/function (_React$Component) {
           _iterator2.f();
         }
       }
-
       var log_items;
-
       if (this.state.log_open) {
         if (this.state.log_contents.length > 0) {
           log_items = this.state.log_contents.map(function (entry, index) {
@@ -464,7 +407,6 @@ var FileImportDialog = /*#__PURE__*/function (_React$Component) {
           log_items = /*#__PURE__*/_react["default"].createElement("div", null, "Log is empty");
         }
       }
-
       var body_style = {
         marginTop: 25,
         display: "flex",
@@ -475,7 +417,7 @@ var FileImportDialog = /*#__PURE__*/function (_React$Component) {
       var allowed_types_string = this.props.allowed_file_types.replaceAll(",", " ");
       return /*#__PURE__*/_react["default"].createElement(_core.Dialog, {
         isOpen: this.state.show,
-        className: this.props.dark_theme ? "import-dialog bp4-dark" : "import-dialog light-theme",
+        className: this.props.dark_theme ? "import-dialog bp5-dark" : "import-dialog light-theme",
         title: this.props.title,
         onClose: this._closeHandler,
         canOutsideClickClose: false,
@@ -554,14 +496,12 @@ var FileImportDialog = /*#__PURE__*/function (_React$Component) {
       }, "Clear log")), /*#__PURE__*/_react["default"].createElement(_core.Collapse, {
         isOpen: this.state.log_open
       }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: "bp4-dialog-body"
+        className: "bp5-dialog-body"
       }, log_items))));
     }
   }]);
-
   return FileImportDialog;
 }(_react["default"].Component);
-
 FileImportDialog.propTypes = {
   res_type: _propTypes["default"].string,
   title: _propTypes["default"].string,
@@ -583,7 +523,6 @@ FileImportDialog.defaultProps = {
   popupoptions: null,
   after_upload: null
 };
-
 function showFileImportDialog(res_type, allowed_file_types, checkboxes, process_handler, tsocket, dark_theme) {
   var combine = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : false;
   var show_csv_options = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : false;
@@ -591,14 +530,11 @@ function showFileImportDialog(res_type, allowed_file_types, checkboxes, process_
   $.getJSON("".concat($SCRIPT_ROOT, "get_resource_names/").concat(res_type), function (data) {
     showTheDialog(data["resource_names"]);
   });
-
   function showTheDialog(existing_names) {
     var domContainer = document.querySelector('#modal-area');
-
     function handle_close() {
       ReactDOM.unmountComponentAtNode(domContainer);
     }
-
     ReactDOM.render( /*#__PURE__*/_react["default"].createElement(FileImportDialog, {
       title: "Import ".concat(res_type),
       tsocket: tsocket,
