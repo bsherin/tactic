@@ -1,26 +1,27 @@
 
 import React from "react";
+import {Fragment, useState, useEffect, useRef, memo} from "react";
 import PropTypes from 'prop-types';
 import { Card, Button, InputGroup, Spinner, ButtonGroup, FormGroup, Divider} from "@blueprintjs/core";
 
 import {GlyphButton, SelectList} from "./blueprint_react_widgets.js";
 import {postWithCallback} from "./communication_react.js"
 import {doFlash} from "./toaster.js"
-import {doBinding} from "./utilities_react.js";
+import {useCallbackStack, useStateAndRef} from "./utilities_react";
 
 export {ExportsViewer}
 
-class TextIcon extends React.Component {
-    render() {
-        return(
-            <React.Fragment>
-                <span className="bp4-icon" style={{fontWeight: 500}}>
-                    {this.props.the_text}
+function TextIcon(props) {
+    return (
+            <ragment>
+                <span className="bp5-icon" style={{fontWeight: 500}}>
+                    {props.the_text}
                 </span>
-            </React.Fragment>
+            </ragment>
         )
-    }
 }
+
+TextIcon = memo(TextIcon);
 
 TextIcon.propTypes = {
     the_text: PropTypes.string
@@ -52,28 +53,18 @@ const export_icon_dict = {
     unknown: <TextIcon the_text="?"/>
 };
 
-
-
-class ExportButtonListButton extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this);
+function ExportButtonListButton(props) {
+    function _onPressed() {
+        props.buttonPress(props.fullname)
     }
-
-    _onPressed() {
-        this.props.buttonPress(this.props.fullname)
-    }
-
-    render() {
-        return (
-            <Button className="export-button" icon={export_icon_dict[this.props.type]} minimal={false}
-                    onClick={this._onPressed} key={this.props.fullname}
-                    active={this.props.active} small={true} value={this.props.fullname} text={this.props.shortname}/>
-        )
-    }
-
-    return
+    return (
+        <Button className="export-button" icon={export_icon_dict[props.type]} minimal={false}
+                onClick={_onPressed} key={props.fullname}
+                active={props.active} small={true} value={props.fullname} text={props.shortname}/>
+    )
 }
+
+ExportButtonListButton = memo(ExportButtonListButton);
 
 ExportButtonListButton.propTypes = {
     fullname: PropTypes.string,
@@ -81,47 +72,31 @@ ExportButtonListButton.propTypes = {
     type: PropTypes.string,
     buttonPress: PropTypes.func,
     active: PropTypes.bool
-
 };
 
-class ExportButtonList extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.select_ref = null;
-        this.export_index = {}
+function ExportButtonList(props) {
+    const select_ref = useRef(null);
+    const export_index_ref = useRef({});
+
+    function _buttonPress(fullname) {
+        props.handleChange(fullname, export_index_ref.current[fullname].shortname, export_index_ref.current[fullname].tilename)
     }
 
-    _buttonPress(fullname) {
-        this.props.handleChange(fullname, this.export_index[fullname].shortname, this.export_index[fullname].tilename)
-    }
-
-    componentDidUpdate() {
-        if (this.select_ref) {
-            let currently_selected = this.select_ref.value;
-            if (currently_selected && (currently_selected != this.props.value)) {
-                this.props.handleChange(currently_selected,
-                    this.export_index[currently_selected].shortname,
-                    this.export_index[currently_selected].tilename)
-            }
-        }
-    }
-
-    _compareEntries(a, b) {
+    function _compareEntries(a, b) {
         if (a[1].toLowerCase() == b[1].toLowerCase()) return 0;
         if (b[1].toLowerCase() > a[1].toLowerCase()) return -1;
         return 1
     }
 
-    create_groups() {
+    function create_groups() {
         let groups = [];
-        let group_names = Object.keys(this.props.pipe_dict);
+        let group_names = Object.keys(props.pipe_dict);
         group_names.sort();
         let index = 0;
         for (let group of group_names) {
             let group_items = [];
-            let entries = this.props.pipe_dict[group];
-            entries.sort(this._compareEntries);
+            let entries = props.pipe_dict[group];
+            entries.sort(_compareEntries);
             for (let entry of entries) {
                 let fullname = entry[0];
                 let shortname = entry[1];
@@ -129,16 +104,15 @@ class ExportButtonList extends React.Component {
                 if (!(type in export_icon_dict)) {
                     type = "other"
                 }
-                this.export_index[fullname] = {tilename: group, shortname: shortname};
+                export_index_ref.current[fullname] = {tilename: group, shortname: shortname};
                 group_items.push(
                     <ExportButtonListButton fullname={fullname}
                                             key={fullname}
                                             shortname={shortname}
                                             type={type}
-                                            active={this.props.value == fullname}
-                                            buttonPress={this._buttonPress}
-                    />
-            )
+                                            active={props.value == fullname}
+                                            buttonPress={_buttonPress}
+                    />)
             }
             if (group == "__log__") {
                 groups.unshift(
@@ -162,19 +136,15 @@ class ExportButtonList extends React.Component {
         }
         return groups
     }
-
-    _handleSelectRef(the_ref) {
-        this.select_ref = the_ref;
-    }
-    render() {
-        return (
-            <div id="exports-button-list" style={{flexDirection: "column", display: "inline-block", verticalAlign: "top", padding: 15, height:this.props.body_height}}
-                className="contingent-scroll">
-                {this.create_groups()}
-            </div>
-        )
-    }
+    return (
+        <div id="exports-button-list" style={{flexDirection: "column", display: "inline-block", verticalAlign: "top", padding: 15, height:props.body_height}}
+            className="contingent-scroll">
+            {create_groups()}
+        </div>
+    )
 }
+
+ExportButtonList = memo(ExportButtonList);
 
 ExportButtonList.propTypes = {
     pipe_dict: PropTypes.object,
@@ -185,165 +155,168 @@ ExportButtonList.propTypes = {
     handleChange: PropTypes.func
 };
 
-class ExportsViewer extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.header_ref = React.createRef();
-        this.footer_ref = React.createRef();
-        this.state = {
-            selected_export: "",
-            selected_export_tilename: null,
-            key_list: null,
-            key_list_value: null,
-            tail_value: "",
-            max_rows: 25,
-            exports_info_value: null,
-            selected_export_short_name: null,
-            show_spinner: false,
-            running: false,
-            exports_body_value: "",
-            type: null,
-            pipe_dict: {},
-        };
-        this.initSocket();
+function ExportsViewer(props) {
+    const header_ref = useRef(null);
+    const footer_ref = useRef(null);
 
+    const [selected_export, set_selected_export, selected_export_ref] = useStateAndRef("");
+    const [selected_export_tilename, set_selected_export_tilename] = useState(null);
+    const [key_list, set_key_list] = useState(null);
+    const [key_list_value, set_key_list_value] = useState(null);
+    const [tail_value, set_tail_value] = useState("");
+    const [max_rows, set_max_rows] = useState(25);
+    const [exports_info_value, set_exports_info_value] = useState(null);
+    const [selected_export_short_name, set_selected_export_short_name] = useState(null);
+    const [show_spinner, set_show_spinner] = useState(false);
+    const [running, set_running] = useState(false);
+    const [exports_body_value, set_exports_body_value] = useState("");
+    const [type, set_type] = useState(null);
+    const [pipe_dict, set_pipe_dict] = useState({});
+
+    const pushCallback = useCallbackStack();
+
+    useEffect(() => {
+        initSocket();
+        props.setUpdate(_updateExportsList);
+        _updateExportsList();
+        return (() => {
+            props.tsocket.disconnect();
+        })
+    }, []);
+
+    function initSocket() {
+        props.tsocket.attachListener("export-viewer-message", _handleExportViewerMessage);
     }
 
-    componentDidMount(){
-        this.props.setUpdate(this._updateExportsList);
-        this._updateExportsList()
-    }
-
-    initSocket() {
-        this.props.tsocket.attachListener("export-viewer-message", this._handleExportViewerMessage);
-    }
-
-    _handleExportViewerMessage(data) {
-        if (data.main_id == this.props.main_id) {
+    function _handleExportViewerMessage(data) {
+        if (data.main_id == props.main_id) {
             let self = this;
             let handlerDict = {
-                update_exports_popup: () => self._updateExportsList(),
-                display_result: self._displayResult,
-                showMySpinner: self._showMySpinner,
-                stopMySpinner: self._stopMySpinner,
-                startMySpinner: self._startMySpinner,
-                got_export_info: self._gotExportInfo
+                update_exports_popup: () => _updateExportsList(),
+                display_result: _displayResult,
+                showMySpinner: _showMySpinner,
+                stopMySpinner: _stopMySpinner,
+                startMySpinner: _startMySpinner,
+                got_export_info: _gotExportInfo
             };
             handlerDict[data.export_viewer_message](data)
         }
     }
 
-    _handleMaxRowsChange(new_value){
-        this.setState({max_rows: new_value}, this._eval)
+    function _handleMaxRowsChange(new_value){
+        setState({max_rows: new_value}, _eval)
     }
 
-    _updateExportsList() {
-        let self = this;
-        postWithCallback(this.props.main_id, "get_full_pipe_dict", {}, function (data) {
-            self.setState({pipe_dict: data.pipe_dict, pipe_dict_updated: true})
-        }, null, this.props.main_id)
+    function _updateExportsList() {
+        postWithCallback(props.main_id, "get_full_pipe_dict", {}, function (data) {
+            set_pipe_dict(data.pipe_dict);
+        }, null, props.main_id)
     }
 
-    _refresh() {
-        this._handleExportListChange(this.state.selected_export, this.state.selected_export_short_name, true)
+    function _refresh() {
+        _handleExportListChange(selected_export_ref.current, selected_export_short_name, true)
     }
 
-    _displayResult(data) {
-        this.setState({exports_body_value: data.the_html, show_spinner: false, running: false})
+    function _displayResult(data) {
+        set_exports_body_value(data.the_html);
+        set_show_spinner(false);
+        set_running(false)
     }
 
-    _eval(e = null) {
-        this._showMySpinner();
+    function _eval(e = null) {
+        console.log(`entering eval with selected_export ${selected_export_ref.current}`);
+        _showMySpinner();
         let send_data = {
-            "export_name": this.state.selected_export,
-            "tail": this.state.tail_value,
-            "max_rows": this.state.max_rows
+            "export_name": selected_export_ref.current,
+            "tail": tail_value,
+            "max_rows": max_rows
         };
-        if (this.state.key_list) {
-            send_data.key = this.state.key_list_value
+        if (key_list) {
+            send_data.key = key_list_value
         }
-        postWithCallback(this.props.main_id, "evaluate_export", send_data, null,null, this.props.main_id);
+        postWithCallback(props.main_id, "evaluate_export", send_data, null,null, props.main_id);
         if (e) e.preventDefault();
     }
 
-    _stopMe() {
-        this._stopMySpinner();
-        postWithCallback(this.props.main_id, "stop_evaluate_export", {}, null, null, this.props.main_id);
+    function _stopMe() {
+        _stopMySpinner();
+        postWithCallback(props.main_id, "stop_evaluate_export", {}, null, null, props.main_id);
     }
 
-    _showMySpinner() {
-        this.setState({show_spinner: true});
+    function _showMySpinner() {
+        set_show_spinner(true);
     }
 
-    _startMySpinner() {
-        this.setState({show_spinner: true, running: true});
+    function _startMySpinner() {
+        set_show_spinner(true);
+        set_running(true);
     }
 
-    _stopMySpinner() {
-        this.setState({show_spinner: false, running: false});
+    function _stopMySpinner() {
+        set_show_spinner(false);
+        set_running(false);
     }
 
-    _gotExportInfo(data) {
-        let new_state = {
-            type: data.type,
-            exports_info_value: data.info_string,
-            tail_value: "",
-            show_spinner: false,
-            running: false
-        };
+    function _gotExportInfo(data) {
+        var new_key_list = null;
+        var new_key_list_value = null;
         if (data.hasOwnProperty("key_list")) {
-            new_state.key_list = data.key_list;
+            new_key_list = data.key_list;
             if (data.hasOwnProperty("key_list_value")) {
-                new_state.key_list_value = data.key_list_value
+                new_key_list_value = data.key_list_value
             }
             else {
-                if (new_state.key_list.length > 0) {
-                    new_state.key_list_value = data.key_list[0]
+                if (new_key_list.length > 0) {
+                    new_key_list_value = data.key_list[0]
                 }
             }
-        } else {
-            new_state.key_list = null;
-            new_state.key_list_value = null
         }
-        this.setState(new_state, this._eval)
+        set_type(data.type);
+        set_exports_info_value(data.info_string);
+        set_tail_value("");
+        set_show_spinner(false);
+        set_running(false);
+        set_key_list(new_key_list);
+        set_key_list_value(new_key_list_value);
+        pushCallback(_eval);
     }
 
-    _handleExportListChange(fullname, shortname, tilename, force_refresh = false) {
-        let self = this;
-        if (!force_refresh && fullname == this.state.selected_export) return;
-        this.setState({show_spinner: true,
-            selected_export: fullname,
-            selected_export_tilename: tilename,
-            selected_export_short_name: shortname});
-        postWithCallback(this.props.main_id, "get_export_info", {"export_name": fullname}, null, null, this.props.main_id);
+    function _handleExportListChange(fullname, shortname, tilename, force_refresh = false) {
+        console.log(`entering handlexportlistchange with fullname ${fullname}`);
+        if (!force_refresh && fullname == selected_export_ref.current) return;
+        set_show_spinner(true);
+        set_selected_export(fullname);
+        set_selected_export_tilename(tilename);
+        set_selected_export_short_name(shortname);
+        postWithCallback(props.main_id, "get_export_info", {"export_name": fullname}, null, null, props.main_id);
     }
 
-    _handleKeyListChange(new_value) {
-        this.setState({key_list_value: new_value}, this._eval)
+    function _handleKeyListChange(new_value) {
+        set_key_list_value(new_value);
+        pushCallback(_eval);
     }
 
-    _handleTailChange(event) {
-        this.setState({tail_value: event.target.value})
+    function _handleTailChange(event) {
+        set_tail_value(event.target.value);
     }
 
-    _bodyHeight() {
-        if (this.header_ref && this.header_ref.current && this.footer_ref && this.footer_ref.current) {
-            return this.props.available_height - $(this.header_ref.current).outerHeight() - $(this.footer_ref.current).outerHeight()
+    function _bodyHeight() {
+        if (header_ref && header_ref.current && footer_ref && footer_ref.current) {
+            return props.available_height - $(header_ref.current).outerHeight() - $(footer_ref.current).outerHeight()
         }
         else {
-            return this.props.available_height - 75
+            return props.available_height - 75
         }
     }
 
-    _sendToConsole() {
-        const tail = this.state.tail_value;
-        let tilename = this.state.selected_export_tilename;
-        let shortname = this.state.selected_export_short_name;
+    function _sendToConsole() {
+        const tail = tail_value;
+        let tilename = selected_export_tilename;
+        let shortname = selected_export_short_name;
 
         let key_string = "";
-        if (!(this.state.key_list == null)) {
-            key_string = `["${this.state.key_list_value}"]`;
+        if (!(key_list == null)) {
+            key_string = `["${key_list_value}"]`;
         }
 
         let the_text;
@@ -356,110 +329,107 @@ class ExportsViewer extends React.Component {
 
         let self = this;
         postWithCallback("host", "print_code_area_to_console",
-            {"console_text": the_text, "user_id": window.user_id, "main_id": this.props.main_id}, function (data) {
+            {"console_text": the_text, "user_id": window.user_id, "main_id": props.main_id}, function (data) {
             if (!data.success) {
                 doFlash(data)
             }
-        }, null, this.props.main_id);
+        }, null, props.main_id);
     }
 
-    render () {
-        let exports_body_dict = {__html: this.state.exports_body_value};
-        let butclass = "notclose bottom-heading-element bottom-heading-element-button";
-        let exports_class = this.props.console_is_shrunk ? "am-shrunk" : "not-shrunk";
-        let spinner_val = this.state.running ? null : 0;
-        if (this.props.console_is_zoomed) {
-            exports_class = "am-zoomed"
-        }
-        return (
-             <Card id="exports-panel" elevation={2} className={"mr-3 " + exports_class} style={this.props.style}>
-                 <div className="d-flex flex-column justify-content-around">
-                     <div id="exports-heading"
-                          ref={this.header_ref}
-                         className="d-flex flex-row justify-content-start">
-                         {!this.state.show_spinner &&
-                            <GlyphButton handleClick={this._eval}
-                                          intent="primary"
-                                          tooltip="Send code to the console"
-                                          style={{marginLeft: 6, marginTop: 2}}
-                                          icon="play"/>
-                         }
-                         {this.state.show_spinner &&
-                            <GlyphButton handleClick={this._stopMe}
-                                              intent="danger"
-                                              tooltip="Send code to the console"
-                                              style={{marginLeft: 6, marginTop: 2}}
-                                              icon="stop"/>
-
-                         }
-
-                         <GlyphButton handleClick={this._sendToConsole}
+    let exports_body_dict = {__html: exports_body_value};
+    let butclass = "notclose bottom-heading-element bottom-heading-element-button";
+    let exports_class = props.console_is_shrunk ? "am-shrunk" : "not-shrunk";
+    let spinner_val = running ? null : 0;
+    if (props.console_is_zoomed) {
+        exports_class = "am-zoomed"
+    }
+    return (
+         <Card id="exports-panel" elevation={2} className={"mr-3 " + exports_class} style={props.style}>
+             <div className="d-flex flex-column justify-content-around">
+                 <div id="exports-heading"
+                      ref={header_ref}
+                     className="d-flex flex-row justify-content-start">
+                     {!show_spinner &&
+                        <GlyphButton handleClick={_eval}
                                       intent="primary"
                                       tooltip="Send code to the console"
                                       style={{marginLeft: 6, marginTop: 2}}
-                                      icon="circle-arrow-left"/>
-                         {(Object.keys(this.state.pipe_dict).length > 0) && (
-                             <form onSubmit={this._eval} className="d-flex flex-row">
-                                   <span id="selected-export"
-                                         className="bottom-heading-element mr-2">{this.state.selected_export_short_name}</span>
-                                   {this.state.key_list && <SelectList option_list={this.state.key_list}
-                                                                         onChange={this._handleKeyListChange}
-                                                                         the_value={this.state.key_list_value}
-                                                                         minimal={true}
-                                                                         fontSize={11}
-                                     />
-                                    }
-                                 <InputGroup type="text"
-                                             small={true}
-                                             onChange={this._handleTailChange}
-                                             onSubmit={this._eval}
-                                             value={this.state.tail_value}
-                                             className="export-tail"
-                                 />
-                             </form>
-                             )
-                         }
+                                      icon="play"/>
+                     }
+                     {show_spinner &&
+                        <GlyphButton handleClick={_stopMe}
+                                          intent="danger"
+                                          tooltip="Send code to the console"
+                                          style={{marginLeft: 6, marginTop: 2}}
+                                          icon="stop"/>
 
-                         {this.state.show_spinner &&
-                             <div style={{marginTop: 7, marginRight: 10, marginLeft: 10}}>
-                                <Spinner size={13} value={spinner_val}/>
-                             </div>
-                         }
+                     }
+
+                     <GlyphButton handleClick={_sendToConsole}
+                                  intent="primary"
+                                  tooltip="Send code to the console"
+                                  style={{marginLeft: 6, marginTop: 2}}
+                                  icon="circle-arrow-left"/>
+                     {(Object.keys(pipe_dict).length > 0) && (
+                         <form onSubmit={_eval} className="d-flex flex-row">
+                               <span id="selected-export"
+                                     className="bottom-heading-element mr-2">{selected_export_short_name}</span>
+                               {key_list && <SelectList option_list={key_list}
+                                                         onChange={_handleKeyListChange}
+                                                         the_value={key_list_value}
+                                                         minimal={true}
+                                                         fontSize={11}/>
+                                }
+                             <InputGroup type="text"
+                                         small={true}
+                                         onChange={_handleTailChange}
+                                         onSubmit={_eval}
+                                         value={tail_value}
+                                         className="export-tail"/>
+                         </form>
+                         )
+                     }
+
+                     {show_spinner &&
+                         <div style={{marginTop: 7, marginRight: 10, marginLeft: 10}}>
+                            <Spinner size={13} value={spinner_val}/>
+                         </div>
+                     }
 
 
-                     </div>
-                     {!this.props.console_is_shrunk &&
-                         <React.Fragment>
-                             <div className="d-flex flex_row">
-                                 <ExportButtonList pipe_dict={this.state.pipe_dict}
-                                                   body_height={this._bodyHeight()}
-                                                   value={this.state.selected_export}
-                                                   handleChange={this._handleExportListChange}
-                                 />
-                                 <Divider/>
-                                 <div id="exports-body" style={{padding: 15, width: "80%", height: this._bodyHeight(), display: "inline-block"}}
-                                      className="contingent-scroll" dangerouslySetInnerHTML={exports_body_dict}/>
-                             </div>
-                             <div id="exports-footing"
-                                  ref={this.footer_ref}
-                                  className="d-flex flex-row justify-content-between">
-                                 <span id="exports-info" className="bottom-heading-element ml-2">{this.state.exports_info_value}</span>
-                                 <FormGroup label="max rows" inline={true}>
-                                     <SelectList option_list={[25, 100, 250, 500]}
-                                                 onChange={this._handleMaxRowsChange}
-                                                 the_value={this.state.max_rows}
-                                                 minimal={true}
-                                                 fontSize={11}
-                                         />
-                                 </FormGroup>
-                             </div>
-                         </React.Fragment>
-                 }
                  </div>
-             </Card>
-        )
-    }
+                 {!props.console_is_shrunk &&
+                     <Fragment>
+                         <div className="d-flex flex_row">
+                             <ExportButtonList pipe_dict={pipe_dict}
+                                               body_height={_bodyHeight()}
+                                               value={selected_export_ref.current}
+                                               handleChange={_handleExportListChange}
+                             />
+                             <Divider/>
+                             <div id="exports-body" style={{padding: 15, width: "80%", height: _bodyHeight(), display: "inline-block"}}
+                                  className="contingent-scroll" dangerouslySetInnerHTML={exports_body_dict}/>
+                         </div>
+                         <div id="exports-footing"
+                              ref={footer_ref}
+                              className="d-flex flex-row justify-content-between">
+                             <span id="exports-info" className="bottom-heading-element ml-2">{exports_info_value}</span>
+                             <FormGroup label="max rows" inline={true}>
+                                 <SelectList option_list={[25, 100, 250, 500]}
+                                             onChange={_handleMaxRowsChange}
+                                             the_value={max_rows}
+                                             minimal={true}
+                                             fontSize={11}/>
+                             </FormGroup>
+                         </div>
+                     </Fragment>
+             }
+             </div>
+         </Card>
+    )
 }
+
+ExportsViewer = memo(ExportsViewer);
 
 ExportsViewer.propTypes = {
     available_height: PropTypes.number,

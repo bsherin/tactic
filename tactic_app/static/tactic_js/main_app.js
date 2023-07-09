@@ -1507,7 +1507,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
           right_pane: tile_pane,
           available_height: hp_height,
           show_handle: true,
-          scrollAdjustSelectors: [".bp4-table-quadrant-scroll-container", "#tile-div"],
+          scrollAdjustSelectors: [".bp5-table-quadrant-scroll-container", "#tile-div"],
           available_width: true_usable_width,
           initial_width_fraction: this.state.horizontal_fraction,
           dragIconSize: 15,
@@ -1518,7 +1518,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
       }
       var outer_class = "main-outer";
       if (dark_theme) {
-        outer_class = outer_class + " bp4-dark";
+        outer_class = outer_class + " bp5-dark";
       } else {
         outer_class = outer_class + " light-theme";
       }
@@ -1560,7 +1560,7 @@ var MainApp = /*#__PURE__*/function (_React$Component) {
         available_height: vp_height,
         initial_height_fraction: this.state.height_fraction,
         dragIconSize: 15,
-        scrollAdjustSelectors: [".bp4-table-quadrant-scroll-container", "#tile-div"],
+        scrollAdjustSelectors: [".bp5-table-quadrant-scroll-container", "#tile-div"],
         handleSplitUpdate: this._handleVerticalSplitUpdate,
         handleResizeStart: this._handleResizeStart,
         handleResizeEnd: this._handleResizeEnd,

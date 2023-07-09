@@ -318,7 +318,7 @@ function BpSelectorTable(props) {
             the_text = the_text.replace(/(^icon:)/gi, "");
             the_body = <Icon icon={the_text} size={14}/>
         } else {
-            the_body = <div className="bp4-table-truncated-text">{the_text}</div>
+            the_body = <div className="bp5-table-truncated-text">{the_text}</div>
         }
         return the_body
     }
@@ -412,8 +412,8 @@ function compute_initial_column_widths(header_list, data_list) {
     // Get sample header and body cells
 
     // set up a canvas so that we can use it to compute the width of text
-    let body_font = $($(".bp4-table-truncated-text")[0]).css("font");
-    let header_font = $($(".bp4-table-column-name-text")[0]).css("font");
+    let body_font = $($(".bp5-table-truncated-text")[0]).css("font");
+    let header_font = $($(".bp5-table-column-name-text")[0]).css("font");
     let canvas_element = document.getElementById("measure-canvas");
     let ctx = canvas_element.getContext("2d");
     let added_body_width = 20;

@@ -12,21 +12,20 @@ require("../tactic_css/tactic_main.scss");
 var _react = _interopRequireWildcard(require("react"));
 var ReactDOM = _interopRequireWildcard(require("react-dom"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
-var _blueprint_navbar = require("./blueprint_navbar.js");
-var _menu_utilities = require("./menu_utilities.js");
-var _main_menus_react = require("./main_menus_react.js");
-var _tactic_socket = require("./tactic_socket.js");
+var _blueprint_navbar = require("./blueprint_navbar");
+var _menu_utilities = require("./menu_utilities");
+var _main_menus_react = require("./main_menus_react");
+var _tactic_socket = require("./tactic_socket");
 var _console_component = require("./console_component");
-var _toaster = require("./toaster.js");
-var _utilities_react = require("./utilities_react.js");
+var _toaster = require("./toaster");
+var _utilities_react = require("./utilities_react");
 var _TacticOmnibar = require("./TacticOmnibar");
 var _key_trap = require("./key_trap");
-var _communication_react = require("./communication_react.js");
+var _communication_react = require("./communication_react");
 var _export_viewer_react = require("./export_viewer_react");
 var _resizing_layouts = require("./resizing_layouts");
-var _error_drawer = require("./error_drawer.js");
-var _sizing_tools = require("./sizing_tools.js");
-var _utilities_react2 = require("./utilities_react");
+var _error_drawer = require("./error_drawer");
+var _sizing_tools = require("./sizing_tools");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -199,12 +198,12 @@ function NotebookApp(props) {
 
   // const [console_items, set_console_items, console_items_ref] =
   //     useStateAndRe(props.is_project ? props.interface_state["console_items"] : []);
-  var _useStateAndRef = (0, _utilities_react2.useStateAndRef)(false),
+  var _useStateAndRef = (0, _utilities_react.useStateAndRef)(false),
     _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
     console_is_shrunk = _useStateAndRef2[0],
     set_console_is_shrunk = _useStateAndRef2[1],
     console_is_shrunk_ref = _useStateAndRef2[2];
-  var _useStateAndRef3 = (0, _utilities_react2.useStateAndRef)(true),
+  var _useStateAndRef3 = (0, _utilities_react.useStateAndRef)(true),
     _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
     console_is_zoomed = _useStateAndRef4[0],
     set_console_is_zoomed = _useStateAndRef4[1],
@@ -257,7 +256,7 @@ function NotebookApp(props) {
         break;
       case "reset":
         new_items = console_items.map(function (t) {
-          if (t.type != code) {
+          if (t.type != "code") {
             return t;
           } else {
             var new_t = _objectSpread({}, t);
@@ -348,8 +347,8 @@ function NotebookApp(props) {
     console_is_shrunk: set_console_is_shrunk,
     console_is_zoomed: set_console_is_zoomed
   });
-  var pushCallback = (0, _utilities_react2.useCallbackStack)();
-  (0, _utilities_react2.useConstructor)(function () {
+  var pushCallback = (0, _utilities_react.useCallbackStack)();
+  (0, _utilities_react.useConstructor)(function () {
     console_items_ref.current = console_items;
     set_show_exports_pane(props.is_project ? props.interface_state["show_exports_pane"] : true);
     set_console_width_fraction(props.is_project ? props.interface_state["console_width_fraction"] : .5);

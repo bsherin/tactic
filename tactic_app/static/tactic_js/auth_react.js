@@ -101,7 +101,7 @@ function LoginApp(props) {
   }
   var outer_class = "login-body d-flex flex-column justify-content-center";
   if (dark_theme) {
-    outer_class = outer_class + " bp4-dark";
+    outer_class = outer_class + " bp5-dark";
   } else {
     outer_class = outer_class + " light-theme";
   }

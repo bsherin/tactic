@@ -177,7 +177,7 @@ function TacticNavbar(props) {
         }
         return (
             <MenuComponent
-                alt_button={() => (<span className="bp4-breadcrumbs-collapsed" style={{marginTop: 5}}></span>)}
+                alt_button={() => (<span className="bp5-breadcrumbs-collapsed" style={{marginTop: 5}}></span>)}
                 option_dict={opt_dict}
                 binding_dict={{}}
                 icon_dict={icon_dict}/>
@@ -215,7 +215,7 @@ function TacticNavbar(props) {
     let right_width = _getRightWidth();
     let right_style = {width: right_width};
     right_style.justifyContent = "flex-end";
-    let theme_class = props.dark_theme ? "bp4-dark" : "light-theme";
+    let theme_class = props.dark_theme ? "bp5-dark" : "light-theme";
     let name_string = "Tactic";
     if (props.extra_text != null) {
         name_string += " " + props.extra_text
@@ -223,7 +223,7 @@ function TacticNavbar(props) {
 
     return (
         <Navbar style={{paddingLeft: 10}} className={theme_class}>
-            <div className="bp4-navbar-group bp4-align-left" ref={lg_ref}>
+            <div className="bp5-navbar-group bp5-align-left" ref={lg_ref}>
                 <NavbarHeading className="d-flex align-items-center">
                     <img className="mr-2" src={window.tactic_img_url} alt="" width="32 " height="32"/>
                     {name_string}

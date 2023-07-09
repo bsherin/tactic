@@ -7,22 +7,22 @@ import {Fragment, useState, useEffect, useReducer, useRef, memo} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
-import {TacticNavbar} from "./blueprint_navbar.js";
-import {TacticMenubar} from "./menu_utilities.js";
-import {ProjectMenu} from "./main_menus_react.js";
-import {TacticSocket} from "./tactic_socket.js";
+import {TacticNavbar} from "./blueprint_navbar";
+import {TacticMenubar} from "./menu_utilities";
+import {ProjectMenu} from "./main_menus_react";
+import {TacticSocket} from "./tactic_socket";
 import {ConsoleComponent} from "./console_component";
-import {doFlash} from "./toaster.js"
-import {withStatus} from "./toaster.js";
-import {get_ppi, renderSpinnerMessage} from "./utilities_react.js";
+import {doFlash} from "./toaster"
+import {withStatus} from "./toaster";
+import {get_ppi, renderSpinnerMessage} from "./utilities_react";
 import {TacticOmnibar} from "./TacticOmnibar";
 import {KeyTrap} from "./key_trap";
 
-import {handleCallback, postWithCallback, postAjaxPromise, postAjax} from "./communication_react.js"
+import {handleCallback, postWithCallback, postAjaxPromise, postAjax} from "./communication_react"
 import {ExportsViewer} from "./export_viewer_react";
 import {HorizontalPanes} from "./resizing_layouts";
-import {withErrorDrawer} from "./error_drawer.js";
-import {getUsableDimensions} from "./sizing_tools.js";
+import {withErrorDrawer} from "./error_drawer";
+import {getUsableDimensions} from "./sizing_tools";
 import {useCallbackStack, useStateAndRef, useConstructor} from "./utilities_react";
 
 const MARGIN_SIZE = 10;
@@ -214,7 +214,7 @@ function NotebookApp(props) {
                 break;
             case "reset":
                 new_items = console_items.map(t => {
-                    if (t.type != code) {
+                    if (t.type != "code") {
                         return t
                     }
                     else {

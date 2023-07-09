@@ -558,7 +558,7 @@ function CombinedMetadata(props) {
             additional_items.push(
                 <FormGroup label={field + ": "} className="metadata-form_group" key={field} inline={true}>
                     {/*<InputGroup disabled={true} value={md} fill={true}/>*/}
-                    <span className="bp4-ui-text metadata-field">{String(md)}</span>
+                    <span className="bp5-ui-text metadata-field">{String(md)}</span>
                 </FormGroup>
             )
         }
@@ -597,11 +597,11 @@ function CombinedMetadata(props) {
                 {props.notes_buttons && props.notes_buttons()}
             </FormGroup>
             <FormGroup label="Created: " className="metadata-form_group" inline={true}>
-                <span className="bp4-ui-text metadata-field">{props.created}</span>
+                <span className="bp5-ui-text metadata-field">{props.created}</span>
             </FormGroup>
             {props.updated != null &&
                 <FormGroup label="Updated: " className="metadata-form_group" inline={true}>
-                    <span className="bp4-ui-text metadata-field">{props.updated}</span>
+                    <span className="bp5-ui-text metadata-field">{props.updated}</span>
                 </FormGroup>
             }
             {props.additional_metadata != null &&

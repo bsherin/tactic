@@ -286,7 +286,7 @@ var SearchableConsole = /*#__PURE__*/function (_React$PureComponent) {
         }
       }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
         type: "text",
-        className: "bp4-monospace-text",
+        className: "bp5-monospace-text",
         onChange: this._onInputChange,
         small: true,
         large: false,

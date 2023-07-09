@@ -77,6 +77,9 @@ function ReactCodemirror(props, passedRef) {
 
     useEffect(()=>{
         prevSoftWrap.current = props.soft_wrap;
+        if (props.registerSetFocusFunc) {
+            props.registerSetFocusFunc(setFocus);
+        }
         postAjaxPromise('get_preferred_codemirror_themes', {})
             .then((data) => {
                     preferred_themes.current = data;
@@ -122,6 +125,13 @@ function ReactCodemirror(props, passedRef) {
         _doHighlight();
         set_keymap()
     });
+
+    function setFocus() {
+        if (cmobject.current) {
+            cmobject.current.focus();
+            cmobject.current.setCursor({line: 0, ch: 0});
+        }
+    }
 
     function _current_codemirror_theme() {
         return props.dark_theme ? preferred_themes.current.preferred_dark_theme :

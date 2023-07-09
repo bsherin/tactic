@@ -11,7 +11,7 @@ require("../tactic_css/tactic_table.scss");
 require("../tactic_css/tile_creator.scss");
 require("codemirror/mode/javascript/javascript");
 var _react = _interopRequireWildcard(require("react"));
-var _client = require("react-dom/client");
+var ReactDOM = _interopRequireWildcard(require("react-dom"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
 var _TacticOmnibar = require("./TacticOmnibar");
@@ -63,8 +63,8 @@ function tile_creator_main() {
       initial_theme: window.theme,
       changeName: null
     }));
-    var root = (0, _client.createRoot)(domContainer);
-    root.render(the_element);
+    var domContainer = document.querySelector('#creator-root');
+    ReactDOM.render(the_element, domContainer);
   }
   (0, _utilities_react.renderSpinnerMessage)("Starting up ...", '#creator-root');
   (0, _communication_react.postAjaxPromise)("view_in_creator_in_context", {

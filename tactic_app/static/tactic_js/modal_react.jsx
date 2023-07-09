@@ -109,7 +109,7 @@ function ModalDialog(props) {
     }
     return (
         <Dialog isOpen={show}
-                className={window.dark_theme ? "bp4-dark" : ""}
+                className={window.dark_theme ? "bp5-dark" : ""}
                 title={props.title}
                 onClose={_cancelHandler}
                 onOpened={() => {
@@ -250,7 +250,7 @@ function PresentationDialog(props) {
 
     return (
         <Dialog isOpen={show}
-                className={window.dark_theme ? "bp4-dark" : ""}
+                className={window.dark_theme ? "bp5-dark" : ""}
                 title="Create Presentation"
                 onClose={_cancelHandler}
                 canEscapeKeyClose={true}>
@@ -404,7 +404,7 @@ function ReportDialog(props) {
 
     return (
         <Dialog isOpen={show}
-                className={window.dark_theme ? "bp4-dark" : ""}
+                className={window.dark_theme ? "bp5-dark" : ""}
                 title="Create Presentation"
                 onClose={_cancelHandler}
                 canEscapeKeyClose={true}>
@@ -512,7 +512,7 @@ function SelectDialog(props) {
 
     return (
         <Dialog isOpen={show}
-                className={window.dark_theme ? "bp4-dark" : ""}
+                className={window.dark_theme ? "bp5-dark" : ""}
                 title={props.title}
                 onClose={_cancelHandler}
                 canEscapeKeyClose={true}>
@@ -611,7 +611,7 @@ function SelectResourceDialog(props) {
 
     return (
         <Dialog isOpen={show}
-                className={window.dark_theme ? "bp4-dark" : ""}
+                className={window.dark_theme ? "bp5-dark" : ""}
                 title="Select a library resource"
                 onClose={_cancelHandler}
                 canEscapeKeyClose={true}>
@@ -681,7 +681,7 @@ function ConfirmDialog(props) {
 
     return (
         <Dialog isOpen={show}
-                className={window.dark_theme ? "bp4-dark" : ""}
+                className={window.dark_theme ? "bp5-dark" : ""}
                 title={props.title}
                 onClose={_cancelHandler}
                 autoFocus={true}

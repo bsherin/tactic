@@ -212,7 +212,7 @@ function Status(props) {
     const elRef = useRef(null);
 
     let cname = "d-flex flex-row";
-    let outer_cname = props.dark_theme ? "status-holder bp4-dark" : "status-holder light-theme";
+    let outer_cname = props.dark_theme ? "status-holder bp5-dark" : "status-holder light-theme";
     let left = elRef && elRef.current ? elRef.current.parentNode.offsetLeft : 25;
 
     return (
@@ -227,7 +227,7 @@ function Status(props) {
                                  icon="cross"/>}
                 {props.status_message &&
                     <div className="d-flex flex-column justify-content-around" style={{marginLeft: 8}}>
-                        <div id="status-msg-area" className="bp4-ui-text">{props.status_message}</div>
+                        <div id="status-msg-area" className="bp5-ui-text">{props.status_message}</div>
                     </div>
                 }
             </div>

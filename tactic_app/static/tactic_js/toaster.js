@@ -209,7 +209,7 @@ function withStatus(WrappedComponent) {
 function Status(props) {
   var elRef = (0, _react.useRef)(null);
   var cname = "d-flex flex-row";
-  var outer_cname = props.dark_theme ? "status-holder bp4-dark" : "status-holder light-theme";
+  var outer_cname = props.dark_theme ? "status-holder bp5-dark" : "status-holder light-theme";
   var left = elRef && elRef.current ? elRef.current.parentNode.offsetLeft : 25;
   return /*#__PURE__*/_react["default"].createElement("div", {
     ref: elRef,
@@ -240,7 +240,7 @@ function Status(props) {
     }
   }, /*#__PURE__*/_react["default"].createElement("div", {
     id: "status-msg-area",
-    className: "bp4-ui-text"
+    className: "bp5-ui-text"
   }, props.status_message))));
 }
 exports.Status = Status = /*#__PURE__*/(0, _react.memo)(Status);

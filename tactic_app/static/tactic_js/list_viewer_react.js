@@ -8,7 +8,7 @@ exports.ListViewerApp = ListViewerApp;
 exports.list_viewer_props = list_viewer_props;
 require("../tactic_css/tactic.scss");
 var _react = _interopRequireWildcard(require("react"));
-var _client = require("react-dom/client");
+var ReactDOM = _interopRequireWildcard(require("react-dom"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
 var _resource_viewer_react_app = require("./resource_viewer_react_app");
@@ -47,8 +47,7 @@ function list_viewer_main() {
       changeName: null
     }));
     var domContainer = document.querySelector('#root');
-    var root = (0, _client.createRoot)(domContainer);
-    root.render(the_element);
+    ReactDOM.render(the_element, domContainer);
   }
   var target = window.is_repository ? "repository_view_list_in_context" : "view_list_in_context";
   (0, _communication_react.postAjaxPromise)(target, {

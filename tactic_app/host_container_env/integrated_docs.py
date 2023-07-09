@@ -118,7 +118,6 @@ try:
     api_dict_by_category, ordered_api_categories = create_api_dict_by_category(api_array)
     api_dict_by_name = create_api_dict_by_name(api_dict_by_category)
     ordered_object_categories, object_api_dict_by_category = get_object_api_from_rst()
-
 except Exception as ex:
     print("unable to get api")
     eresult = type(ex).__name__
@@ -129,5 +128,7 @@ except Exception as ex:
     api_dict_by_category = {}
     api_dict_by_name = {}
     ordered_api_categories = []
+    ordered_object_categories = []
+    object_api_dict_by_category = {}
     tile_command_html = ""
     api_html = ""

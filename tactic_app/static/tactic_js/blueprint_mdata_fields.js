@@ -583,7 +583,7 @@ function CombinedMetadata(props) {
         key: field,
         inline: true
       }, /*#__PURE__*/_react["default"].createElement("span", {
-        className: "bp4-ui-text metadata-field"
+        className: "bp5-ui-text metadata-field"
       }, String(md))));
     }
   }
@@ -628,13 +628,13 @@ function CombinedMetadata(props) {
     className: "metadata-form_group",
     inline: true
   }, /*#__PURE__*/_react["default"].createElement("span", {
-    className: "bp4-ui-text metadata-field"
+    className: "bp5-ui-text metadata-field"
   }, props.created)), props.updated != null && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: "Updated: ",
     className: "metadata-form_group",
     inline: true
   }, /*#__PURE__*/_react["default"].createElement("span", {
-    className: "bp4-ui-text metadata-field"
+    className: "bp5-ui-text metadata-field"
   }, props.updated)), props.additional_metadata != null && additional_items, props.aux_pane != null && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
     className: "d-flex flex-row justify-content-around",
     style: {

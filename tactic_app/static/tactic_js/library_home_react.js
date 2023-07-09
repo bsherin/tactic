@@ -9,7 +9,7 @@ require("../tactic_css/tactic.scss");
 require("../tactic_css/tactic_table.scss");
 require("../tactic_css/library_home.scss");
 var _react = _interopRequireWildcard(require("react"));
-var _client = require("react-dom/client");
+var ReactDOM = _interopRequireWildcard(require("react-dom"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _TacticOmnibar = require("./TacticOmnibar");
 var _tactic_socket = require("./tactic_socket");
@@ -44,14 +44,13 @@ function _library_home_main() {
   var tsocket = new _tactic_socket.TacticSocket("main", 5000, library_id);
   var LibraryHomeAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster2.withStatus)(LibraryHomeApp));
   var domContainer = document.querySelector('#library-home-root');
-  var root = (0, _client.createRoot)(domContainer);
-  root.render( /*#__PURE__*/_react["default"].createElement(LibraryHomeAppPlus, {
+  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(LibraryHomeAppPlus, {
     library_id: library_id,
     tsocket: tsocket,
     registerOmniFunction: null,
     controlled: false,
     initial_theme: window.theme
-  }));
+  }), domContainer);
 }
 var tab_panes = ["all-pane", "collections-pane", "projects-pane", "tiles-pane", "lists-pane", "code-pane"];
 var controllable_props = ["usable_width", "usable_height"];

@@ -6,7 +6,7 @@ import 'codemirror/mode/javascript/javascript'
 
 import React from "react";
 import {Fragment, useState, useEffect, useRef, memo} from "react";
-import { createRoot } from 'react-dom/client';
+import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
 import {Tab, Tabs, Button, ButtonGroup, Icon} from "@blueprintjs/core";
@@ -45,8 +45,8 @@ function tile_creator_main() {
                                           initial_theme={window.theme}
                                           changeName={null}
         />;
-        const root = createRoot(domContainer);
-        root.render(the_element)
+        const domContainer = document.querySelector('#creator-root');
+        ReactDOM.render(the_element, domContainer)
     }
 
     renderSpinnerMessage("Starting up ...", '#creator-root');

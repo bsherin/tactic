@@ -286,7 +286,7 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
         main_id: this.props.main_id,
         style: outer_style,
         dark_theme: this.props.dark_theme,
-        helperClass: this.props.dark_theme ? "bp4-dark" : "light-theme",
+        helperClass: this.props.dark_theme ? "bp5-dark" : "light-theme",
         container_ref: this.props.tile_div_ref,
         goToModule: this.props.goToModule,
         ElementComponent: STileComponent,

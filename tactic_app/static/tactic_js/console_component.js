@@ -9,7 +9,6 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 require("codemirror/mode/markdown/markdown.js");
 var _core = require("@blueprintjs/core");
 var _lodash = _interopRequireDefault(require("lodash"));
-var _reactSortableHoc = require("react-sortable-hoc");
 var _markdownIt = _interopRequireDefault(require("markdown-it"));
 require("markdown-it-latex/dist/index.css");
 var _markdownItLatex = _interopRequireDefault(require("markdown-it-latex"));
@@ -19,28 +18,17 @@ var _sortable_container = require("./sortable_container");
 var _key_trap = require("./key_trap");
 var _communication_react = require("./communication_react");
 var _toaster = require("./toaster");
-var _utilities_react = require("./utilities_react");
 var _modal_react = require("./modal_react");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _library_pane = require("./library_pane");
 var _menu_utilities = require("./menu_utilities");
 var _search_form = require("./search_form");
 var _searchable_console = require("./searchable_console");
+var _utilities_react = require("./utilities_react");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
-function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
@@ -52,7 +40,7 @@ function _nonIterableRest() { throw new TypeError("Invalid attempt to destructur
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; } // noinspection JSConstructorReturnsPrimitive
 var mdi = (0, _markdownIt["default"])({
   html: true
 });
@@ -65,63 +53,60 @@ function ConsoleComponent(props) {
   var header_ref = (0, _react.useRef)(null);
   var body_ref = (0, _react.useRef)(null);
   var temporarily_closed_items = (0, _react.useRef)([]);
-  var _useState = (0, _react.useState)(false),
+  var filtered_items_ref = (0, _react.useRef)([]);
+  var _useState = (0, _react.useState)(null),
     _useState2 = _slicedToArray(_useState, 2),
-    hide_in_section = _useState2[0],
-    set_hide_in_section = _useState2[1];
+    console_item_with_focus = _useState2[0],
+    set_console_item_with_focus = _useState2[1];
   var _useState3 = (0, _react.useState)(null),
     _useState4 = _slicedToArray(_useState3, 2),
-    console_item_with_focus = _useState4[0],
-    set_console_item_with_focus = _useState4[1];
-  var _useState5 = (0, _react.useState)(null),
+    console_item_saved_focus = _useState4[0],
+    set_console_item_saved_focus = _useState4[1];
+  var _useState5 = (0, _react.useState)(""),
     _useState6 = _slicedToArray(_useState5, 2),
-    console_item_saved_focus = _useState6[0],
-    set_console_item_saved_focus = _useState6[1];
-  var _useState7 = (0, _react.useState)(""),
+    console_error_log_text = _useState6[0],
+    set_console_error_log_text = _useState6[1];
+  var _useState7 = (0, _react.useState)(null),
     _useState8 = _slicedToArray(_useState7, 2),
-    console_error_log_text = _useState8[0],
-    set_console_error_log_text = _useState8[1];
+    console_log_showing = _useState8[0],
+    set_console_log_showing = _useState8[1];
   var _useState9 = (0, _react.useState)(null),
     _useState10 = _slicedToArray(_useState9, 2),
-    console_log_showing = _useState10[0],
-    set_console_log_showing = _useState10[1];
+    pseudo_tile_id = _useState10[0],
+    set_pseudo_tile_id = _useState10[1];
   var _useState11 = (0, _react.useState)(null),
     _useState12 = _slicedToArray(_useState11, 2),
-    pseudo_tile_id = _useState12[0],
-    set_pseudo_tile_id = _useState12[1];
-  var _useState13 = (0, _react.useState)(null),
+    main_log_since = _useState12[0],
+    set_main_log_since = _useState12[1];
+  var _useState13 = (0, _react.useState)(100),
     _useState14 = _slicedToArray(_useState13, 2),
-    main_log_since = _useState14[0],
-    set_main_log_since = _useState14[1];
-  var _useState15 = (0, _react.useState)(100),
+    max_console_lines = _useState14[0],
+    set_max_console_lines = _useState14[1];
+  var _useState15 = (0, _react.useState)(null),
     _useState16 = _slicedToArray(_useState15, 2),
-    max_console_lines = _useState16[0],
-    set_max_console_lines = _useState16[1];
-  var _useState17 = (0, _react.useState)(null),
+    pseudo_log_since = _useState16[0],
+    set_pseudo_log_since = _useState16[1];
+  var _useState17 = (0, _react.useState)(false),
     _useState18 = _slicedToArray(_useState17, 2),
-    pseudo_log_since = _useState18[0],
-    set_pseudo_log_since = _useState18[1];
-  var _useState19 = (0, _react.useState)(false),
-    _useState20 = _slicedToArray(_useState19, 2),
-    show_console_error_log = _useState20[0],
-    set_show_console_error_log = _useState20[1];
+    show_console_error_log = _useState18[0],
+    set_show_console_error_log = _useState18[1];
   var _useStateAndRef = (0, _utilities_react.useStateAndRef)([]),
     _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
     all_selected_items = _useStateAndRef2[0],
     set_all_selected_items = _useStateAndRef2[1],
     all_selected_items_ref = _useStateAndRef2[2];
-  var _useState21 = (0, _react.useState)(null),
+  var _useState19 = (0, _react.useState)(null),
+    _useState20 = _slicedToArray(_useState19, 2),
+    search_string = _useState20[0],
+    set_search_string = _useState20[1];
+  var _useState21 = (0, _react.useState)(false),
     _useState22 = _slicedToArray(_useState21, 2),
-    search_string = _useState22[0],
-    set_search_string = _useState22[1];
-  var _useState23 = (0, _react.useState)(false),
+    filter_console_items = _useState22[0],
+    set_filter_console_items = _useState22[1];
+  var _useState23 = (0, _react.useState)(null),
     _useState24 = _slicedToArray(_useState23, 2),
-    filter_console_items = _useState24[0],
-    set_filter_console_items = _useState24[1];
-  var _useState25 = (0, _react.useState)(null),
-    _useState26 = _slicedToArray(_useState25, 2),
-    search_helper_text = _useState26[0],
-    set_search_helper_text = _useState26[1];
+    search_helper_text = _useState24[0],
+    set_search_helper_text = _useState24[1];
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _react.useEffect)(function () {
     initSocket();
@@ -252,12 +237,12 @@ function ConsoleComponent(props) {
       }
     }, null, props.main_id);
   }
-  function _addBlankText() {
+  var _addBlankText = (0, _react.useCallback)(function () {
     if (!props.am_selected) {
       return;
     }
     _addConsoleText("");
-  }
+  }, []);
   function _addConsoleDivider(header_text) {
     var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     (0, _communication_react.postWithCallback)("host", "print_divider_area_to_console", {
@@ -272,12 +257,12 @@ function ConsoleComponent(props) {
       }
     }, null, props.main_id);
   }
-  function _addBlankDivider() {
+  var _addBlankDivider = (0, _react.useCallback)(function () {
     if (!props.am_selected) {
       return;
     }
     _addConsoleDivider("");
-  }
+  }, []);
   function _getSectionIds(unique_id) {
     var cindex = _consoleItemIndex(unique_id);
     var id_list = [unique_id];
@@ -290,7 +275,7 @@ function ConsoleComponent(props) {
     }
     return id_list;
   }
-  function _deleteSection(unique_id) {
+  var _deleteSection = (0, _react.useCallback)(function (unique_id) {
     var centry = get_console_item_entry(unique_id);
     var confirm_text = "Delete section ".concat(centry.header_text, "?");
     (0, _modal_react.showConfirmDialogReact)("Delete Section", confirm_text, "do nothing", "delete", function () {
@@ -304,8 +289,8 @@ function ConsoleComponent(props) {
         id_list: id_list
       });
     });
-  }
-  function _copySection() {
+  }, []);
+  var _copySection = (0, _react.useCallback)(function () {
     var unique_id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     if (!unique_id) {
       if (all_selected_items_ref.current.length != 1) {
@@ -319,8 +304,8 @@ function ConsoleComponent(props) {
     }
     var id_list = _getSectionIds(unique_id);
     _copyItems(id_list);
-  }
-  function _copyCell() {
+  }, []);
+  var _copyCell = (0, _react.useCallback)(function () {
     var unique_id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     var id_list;
     if (!unique_id) {
@@ -332,7 +317,7 @@ function ConsoleComponent(props) {
       id_list = [unique_id];
     }
     _copyItems(id_list);
-  }
+  }, []);
   function _copyAll() {
     var result_dict = {
       "main_id": props.main_id,
@@ -375,7 +360,7 @@ function ConsoleComponent(props) {
     };
     (0, _communication_react.postWithCallback)("host", "copy_console_cells", result_dict, null, null, props.main_id);
   }
-  function _pasteCell() {
+  var _pasteCell = (0, _react.useCallback)(function () {
     var unique_id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     (0, _communication_react.postWithCallback)("host", "get_copied_console_cells", {
       user_id: window.user_id
@@ -386,7 +371,7 @@ function ConsoleComponent(props) {
         _addConsoleEntries(data.console_items, true, false, unique_id);
       }
     }, null, props.main_id);
-  }
+  }, []);
   function _addConsoleTextLink() {
     var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     (0, _communication_react.postWithCallback)("host", "print_link_area_to_console", {
@@ -407,7 +392,7 @@ function ConsoleComponent(props) {
       return _lodash["default"].last(all_selected_items_ref.current);
     }
   }
-  function _insertResourceLink() {
+  var _insertResourceLink = (0, _react.useCallback)(function () {
     if (!_currently_selected()) {
       _addConsoleTextLink();
       return;
@@ -418,7 +403,7 @@ function ConsoleComponent(props) {
       return;
     }
     _insertLinkInItem(_currently_selected());
-  }
+  }, []);
   function _insertLinkInItem(unique_id) {
     var entry = get_console_item_entry(unique_id);
     (0, _modal_react.showSelectResourceDialog)("cancel", "insert link", function (result) {
@@ -430,12 +415,12 @@ function ConsoleComponent(props) {
       _setConsoleItemValue(entry.unique_id, "links", new_links);
     });
   }
-  function _addBlankCode(e) {
+  var _addBlankCode = (0, _react.useCallback)(function (e) {
     if (!props.am_selected) {
       return;
     }
     _addCodeArea("");
-  }
+  }, []);
   function _addCodeArea(the_text) {
     var force_open = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
     (0, _communication_react.postWithCallback)("host", "print_code_area_to_console", {
@@ -630,14 +615,14 @@ function ConsoleComponent(props) {
     var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     (0, _communication_react.postWithCallback)(props.main_id, "StopMainPseudoLogStreaming", {}, callback, null, props.main_id);
   }
-  function _setFocusedItem(unique_id) {
+  var _setFocusedItem = (0, _react.useCallback)(function (unique_id) {
     var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     set_console_item_with_focus(unique_id);
     if (unique_id) {
       set_console_item_saved_focus(unique_id);
     }
     pushCallback(callback);
-  }
+  }, []);
   function _zoomConsole() {
     props.setMainStateValue("console_is_zoomed", true);
   }
@@ -656,7 +641,7 @@ function ConsoleComponent(props) {
   function _toggleExports() {
     props.setMainStateValue("show_exports_pane", !props.show_exports_pane);
   }
-  function _setConsoleItemValue(unique_id, field, new_value) {
+  var _setConsoleItemValue = (0, _react.useCallback)(function (unique_id, field, new_value) {
     var callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
     props.dispatch({
       type: "change_item_value",
@@ -665,7 +650,7 @@ function ConsoleComponent(props) {
       new_value: new_value
     });
     pushCallback(callback);
-  }
+  }, []);
   function _reOpenClosedDividers() {
     if (temporarily_closed_items.current.length == 0) {
       return;
@@ -768,7 +753,7 @@ function ConsoleComponent(props) {
       }
     }
   }
-  function _selectConsoleItem(unique_id) {
+  var _selectConsoleItem = (0, _react.useCallback)(function (unique_id) {
     var event = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
     var updates = {};
@@ -819,7 +804,7 @@ function ConsoleComponent(props) {
         });
       }
     }
-  }
+  }, []);
   function _sortSelectedItems() {
     var sitems = _lodash["default"].cloneDeep(all_selected_items_ref.current);
     sitems.sort(function (firstEl, secondEl) {
@@ -876,6 +861,9 @@ function ConsoleComponent(props) {
     var oldIndex = _ref.oldIndex,
       newIndex = _ref.newIndex;
     var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+    if (newIndex > oldIndex) {
+      newIndex += 1;
+    }
     var move_entry = filtered_items[oldIndex];
     var move_index = _consoleItemIndex(move_entry.unique_id);
     var section_ids = _getSectionIds(move_entry.unique_id);
@@ -889,7 +877,10 @@ function ConsoleComponent(props) {
       if (newIndex == 0) {
         below_index = 0;
       } else {
-        var trueNewIndex = _consoleItemIndex(filtered_items[newIndex].unique_id);
+        var trueNewIndex;
+        if (newIndex >= filtered_items.length) {
+          trueNewIndex = -1;
+        } else trueNewIndex = _consoleItemIndex(filtered_items[newIndex].unique_id);
         // noinspection ES6ConvertIndexedForToForOf
         if (trueNewIndex == -1) {
           below_index = props.console_items.current.length;
@@ -904,6 +895,7 @@ function ConsoleComponent(props) {
           }
         }
       }
+      console.log("Got below index " + String(below_index));
       props.dispatch({
         type: "add_at_index",
         new_items: the_section,
@@ -935,10 +927,13 @@ function ConsoleComponent(props) {
       pushCallback(callback);
     });
   }
-  function _resortConsoleItems(_ref2, filtered_items) {
-    var oldIndex = _ref2.oldIndex,
-      newIndex = _ref2.newIndex;
-    var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+  var _resortConsoleItems = (0, _react.useCallback)(function (_ref2) {
+    var destination = _ref2.destination,
+      source = _ref2.source;
+    var oldIndex = source.index;
+    var newIndex = destination.index;
+    filtered_items = filtered_items_ref.current;
+    var callback = _showNonDividers;
     console.log("Got oldIndex ".concat(String(oldIndex), " newIndex ").concat(String(newIndex), " ").concat(filtered_items.length, " items"));
     if (oldIndex == newIndex) {
       callback();
@@ -972,8 +967,8 @@ function ConsoleComponent(props) {
     }
     var target_id = above_entry == null ? null : above_entry.unique_id;
     _moveEntryAfterEntry(move_entry.unique_id, target_id, callback);
-  }
-  function _goToNextCell(unique_id) {
+  }, []);
+  var _goToNextCell = (0, _react.useCallback)(function (unique_id) {
     var next_index = _consoleItemIndex(unique_id) + 1;
     var _loop = function _loop() {
       var next_id = props.console_items.current[next_index].unique_id;
@@ -999,7 +994,7 @@ function ConsoleComponent(props) {
     }
     _addCodeArea("");
     return;
-  }
+  }, []);
   function _isDividerSelected() {
     var _iterator8 = _createForOfIteratorHelper(all_selected_items_ref.current),
       _step8;
@@ -1064,7 +1059,7 @@ function ConsoleComponent(props) {
       }
     }
   }
-  function _closeConsoleItem(unique_id) {
+  var _closeConsoleItem = (0, _react.useCallback)(function (unique_id) {
     var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     var centry = get_console_item_entry(unique_id);
     if (centry.type == "divider") {
@@ -1077,7 +1072,7 @@ function ConsoleComponent(props) {
         });
       });
     }
-  }
+  }, []);
   function _getNextEndIndex(start_id) {
     var start_index = _consoleItemIndex(start_id);
     var _iterator10 = _createForOfIteratorHelper(props.console_items.current.slice(start_index)),
@@ -1147,9 +1142,7 @@ function ConsoleComponent(props) {
       } else {
         insert_index = _consoleItemIndex(unique_id) + 1;
       }
-    } else if (props.console_items.current.length == 0) {
-      insert_index = 0;
-    } else if (all_selected_items_ref.length == 0) {
+    } else if (props.console_items.current.length == 0 || all_selected_items_ref.length == 0) {
       insert_index = props.console_items.current.length;
     } else {
       var current_selected_id = _currently_selected();
@@ -1577,7 +1570,7 @@ function ConsoleComponent(props) {
       }
     }
   }
-  function _runCodeItem(unique_id) {
+  var _runCodeItem = (0, _react.useCallback)(function (unique_id) {
     var go_to_next = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
     _clearCodeOutput(unique_id, function () {
       _startSpinner(unique_id);
@@ -1591,7 +1584,7 @@ function ConsoleComponent(props) {
         }
       }, null, props.main_id);
     });
-  }
+  }, []);
   function _showTextItemMarkdown(unique_id) {
     _setConsoleItemValue(unique_id, "show_markdown", true);
   }
@@ -1602,20 +1595,24 @@ function ConsoleComponent(props) {
     }, callback);
   }
   function _hideNonDividers() {
-    set_hide_in_section(true);
+    $(".in-section:not(.divider-log-panel)").css({
+      opacity: "10%"
+    });
   }
   function _showNonDividers() {
-    set_hide_in_section(false);
+    $(".in-section:not(.divider-log-panel)").css({
+      opacity: "100%"
+    });
   }
-  function _sortStart(data, event) {
-    event.preventDefault();
-    var unique_id = data.node.id;
-    var idx = _consoleItemIndex(unique_id);
+  var _sortStart = (0, _react.useCallback)(function (_ref3) {
+    var draggableId = _ref3.draggableId,
+      mode = _ref3.mode;
+    var idx = _consoleItemIndex(draggableId);
     var entry = props.console_items.current[idx];
     if (entry.type == "divider") {
       _hideNonDividers();
     }
-  }
+  }, []);
   var gbstyle = {
     marginLeft: 1,
     marginTop: 2
@@ -1684,6 +1681,7 @@ function ConsoleComponent(props) {
     }
     filtered_items = new_filtered_items;
   }
+  filtered_items_ref.current = filtered_items;
   var suggestionGlyphs = [];
   if (show_console_error_log) {
     suggestionGlyphs.push({
@@ -1783,20 +1781,13 @@ function ConsoleComponent(props) {
   }, !show_console_error_log && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_sortable_container.SortableComponent, {
     id: "console-items-div",
     main_id: props.main_id,
-    ElementComponent: SSuperItem,
+    ElementComponent: SuperItem,
     key_field_name: "unique_id",
     item_list: filtered_items,
     helperClass: props.dark_theme ? "bp5-dark" : "light-theme",
     handle: ".console-sorter",
-    onSortStart: _sortStart // This prevents Safari weirdness
-    ,
-    onSortEnd: function onSortEnd(data, event) {
-      _resortConsoleItems(data, filtered_items, _showNonDividers);
-    },
-    hideSortableGhost: true,
-    hide_in_section: hide_in_section,
-    pressDelay: 100,
-    shouldCancelStart: _shouldCancelSortStart,
+    onBeforeCapture: _sortStart,
+    onDragEnd: _resortConsoleItems,
     setConsoleItemValue: _setConsoleItemValue,
     selectConsoleItem: _selectConsoleItem,
     console_available_width: _bodyWidth(),
@@ -1848,957 +1839,628 @@ ConsoleComponent.defaultProps = {
   shrinkable: true,
   zoomable: true
 };
-var RawSortHandle = /*#__PURE__*/function (_React$PureComponent) {
-  _inherits(RawSortHandle, _React$PureComponent);
-  var _super = _createSuper(RawSortHandle);
-  function RawSortHandle() {
-    _classCallCheck(this, RawSortHandle);
-    return _super.apply(this, arguments);
+function Shandle(props) {
+  return /*#__PURE__*/_react["default"].createElement("span", props.dragHandleProps, /*#__PURE__*/_react["default"].createElement(_core.Icon, _extends({
+    icon: "drag-handle-vertical"
+  }, props.dragHandleProps, {
+    style: {
+      marginLeft: 0,
+      marginRight: 6
+    },
+    iconSize: 20,
+    className: "console-sorter"
+  })));
+}
+function SuperItem(props) {
+  switch (props.type) {
+    case "text":
+      return /*#__PURE__*/_react["default"].createElement(ConsoleTextItem, props);
+    case "code":
+      return /*#__PURE__*/_react["default"].createElement(ConsoleCodeItem, props);
+    case "fixed":
+      return /*#__PURE__*/_react["default"].createElement(LogItem, props);
+    case "figure":
+      return /*#__PURE__*/_react["default"].createElement(BlobItem, props);
+    case "divider":
+      return /*#__PURE__*/_react["default"].createElement(DividerItem, props);
+    case "section-end":
+      return /*#__PURE__*/_react["default"].createElement(SectionEndItem, props);
+    default:
+      return null;
   }
-  _createClass(RawSortHandle, [{
-    key: "render",
-    value: function render() {
-      return /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-        icon: "drag-handle-vertical",
-        style: {
-          marginLeft: 0,
-          marginRight: 6
-        },
-        iconSize: 20,
-        className: "console-sorter"
-      });
-    }
-  }]);
-  return RawSortHandle;
-}(_react["default"].PureComponent);
-var Shandle = (0, _reactSortableHoc.SortableHandle)(RawSortHandle);
-var SuperItem = /*#__PURE__*/function (_React$PureComponent2) {
-  _inherits(SuperItem, _React$PureComponent2);
-  var _super2 = _createSuper(SuperItem);
-  function SuperItem() {
-    _classCallCheck(this, SuperItem);
-    return _super2.apply(this, arguments);
-  }
-  _createClass(SuperItem, [{
-    key: "render",
-    value: function render() {
-      switch (this.props.type) {
-        case "text":
-          return /*#__PURE__*/_react["default"].createElement(ConsoleTextItem, this.props);
-        case "code":
-          return /*#__PURE__*/_react["default"].createElement(ConsoleCodeItem, this.props);
-        case "fixed":
-          return /*#__PURE__*/_react["default"].createElement(LogItem, this.props);
-        case "figure":
-          return /*#__PURE__*/_react["default"].createElement(BlobItem, this.props);
-        case "divider":
-          return /*#__PURE__*/_react["default"].createElement(DividerItem, this.props);
-        case "section-end":
-          return /*#__PURE__*/_react["default"].createElement(SectionEndItem, this.props);
-        default:
-          return null;
-      }
-    }
-  }]);
-  return SuperItem;
-}(_react["default"].PureComponent);
-var SSuperItem = (0, _sortable_container.MySortableElement)(SuperItem);
+}
+SuperItem = /*#__PURE__*/(0, _react.memo)(SuperItem);
 var divider_item_update_props = ["am_shrunk", "am_selected", "header_text", "console_available_width"];
-var RawDividerItem = /*#__PURE__*/function (_React$Component) {
-  _inherits(RawDividerItem, _React$Component);
-  var _super3 = _createSuper(RawDividerItem);
-  function RawDividerItem(props) {
-    var _this;
-    _classCallCheck(this, RawDividerItem);
-    _this = _super3.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this), "_", RawDividerItem.prototype);
-    _this.update_props = divider_item_update_props;
-    _this.update_state_vars = [];
-    _this.state = {};
-    return _this;
+function DividerItem(props) {
+  function _toggleShrink() {
+    props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
   }
-  _createClass(RawDividerItem, [{
-    key: "shouldComponentUpdate",
-    value: function shouldComponentUpdate(nextProps, nextState, nextContext) {
-      var _iterator17 = _createForOfIteratorHelper(this.update_props),
+  function _deleteMe() {
+    props.handleDelete(props.unique_id);
+  }
+  function _handleHeaderTextChange(value) {
+    props.setConsoleItemValue(props.unique_id, "header_text", value);
+  }
+  function _copyMe() {
+    props.copyCell(props.unique_id);
+  }
+  function _copySection() {
+    props.copySection(props.unique_id);
+  }
+  function _deleteSection() {
+    props.deleteSection(props.unique_id);
+  }
+  function _pasteCell() {
+    props.pasteCell(props.unique_id);
+  }
+  function _selectMe() {
+    var e = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    props.selectConsoleItem(props.unique_id, e, callback);
+  }
+  function _addBlankText() {
+    _selectMe(null, function () {
+      props.addNewTextItem();
+    });
+  }
+  function _addBlankDivider() {
+    var self = this;
+    _selectMe(null, function () {
+      props.addNewDividerItem();
+    });
+  }
+  function _addBlankCode() {
+    _selectMe(null, function () {
+      props.addNewCodeItem();
+    });
+  }
+  function renderContextMenu() {
+    // return a single element, or nothing to use default browser behavior
+    return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "duplicate",
+      onClick: _copyMe,
+      text: "Copy"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "clipboard",
+      onClick: _pasteCell,
+      text: "Paste Cells"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "new-text-box",
+      onClick: _addBlankText,
+      text: "New Text Cell"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "code",
+      onClick: _addBlankCode,
+      text: "New Code Cell"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "header",
+      onClick: _addBlankDivider,
+      text: "New Section"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "trash",
+      onClick: _deleteMe,
+      intent: "danger",
+      text: "Delete Section"
+    }));
+  }
+  function _consoleItemClick(e) {
+    _selectMe(e);
+    e.stopPropagation();
+  }
+  var converted_dict = {
+    __html: props.console_text
+  };
+  var panel_class = props.am_shrunk ? "log-panel in-section divider-log-panel log-panel-invisible fixed-log-panel" : "log-panel divider-log-panel log-panel-visible fixed-log-panel";
+  if (props.am_selected) {
+    panel_class += " selected";
+  }
+  if (props.is_error) {
+    panel_class += " error-log-panel";
+  }
+  var body_width = props.console_available_width - BUTTON_CONSUMED_SPACE;
+  return /*#__PURE__*/_react["default"].createElement("div", {
+    className: panel_class + " d-flex flex-row",
+    onClick: _consoleItemClick,
+    id: props.unique_id,
+    style: {
+      marginBottom: 10
+    }
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    className: "button-div shrink-expand-div d-flex flex-row"
+  }, /*#__PURE__*/_react["default"].createElement(Shandle, {
+    dragHandleProps: props.dragHandleProps
+  }), !props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+    icon: "chevron-down",
+    handleClick: _toggleShrink
+  }), props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+    icon: "chevron-right",
+    style: {
+      marginTop: 5
+    },
+    handleClick: _toggleShrink
+  })), /*#__PURE__*/_react["default"].createElement(_core.EditableText, {
+    value: props.header_text,
+    onChange: _handleHeaderTextChange,
+    className: "console-divider-text"
+  }), /*#__PURE__*/_react["default"].createElement("div", {
+    className: "button-div d-flex flex-row"
+  }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+    handleClick: _deleteMe,
+    intent: "danger",
+    tooltip: "Delete this item",
+    style: {
+      marginLeft: 10,
+      marginRight: 66,
+      minHeight: 0
+    },
+    icon: "trash"
+  })));
+}
+DividerItem = /*#__PURE__*/(0, _react.memo)(DividerItem);
+var section_end_item_update_props = ["am_selected", "console_available_width"];
+function SectionEndItem(props) {
+  function _pasteCell() {
+    props.pasteCell(props.unique_id);
+  }
+  function selectMe() {
+    var e = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    props.selectConsoleItem(props.unique_id, e, callback);
+  }
+  function _addBlankText() {
+    _selectMe(null, function () {
+      props.addNewTextItem();
+    });
+  }
+  function _addBlankDivider() {
+    _selectMe(null, function () {
+      props.addNewDividerItem();
+    });
+  }
+  function _addBlankCode() {
+    _selectMe(null, function () {
+      props.addNewCodeItem();
+    });
+  }
+  function renderContextMenu() {
+    // return a single element, or nothing to use default browser behavior
+    return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "clipboard",
+      onClick: _pasteCell,
+      text: "Paste Cells"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "new-text-box",
+      onClick: _addBlankText,
+      text: "New Text Cell"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "code",
+      onClick: _addBlankCode,
+      text: "New Code Cell"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "header",
+      onClick: _addBlankDivider,
+      text: "New Section"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null));
+  }
+  function _consoleItemClick(e) {
+    _selectMe(e);
+    e.stopPropagation();
+  }
+  var panel_class = "log-panel in-section section-end-log-panel log-panel-visible fixed-log-panel";
+  if (props.am_selected) {
+    panel_class += " selected";
+  }
+  var body_width = props.console_available_width - BUTTON_CONSUMED_SPACE;
+  var line_style = {
+    marginLeft: 65,
+    marginRight: 85,
+    marginTop: 10,
+    borderBottomWidth: 2
+  };
+  return /*#__PURE__*/_react["default"].createElement("div", {
+    className: panel_class + " d-flex flex-row",
+    onClick: _consoleItemClick,
+    id: props.unique_id,
+    style: {
+      marginBottom: 10
+    }
+  }, /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, {
+    minimal: true,
+    vertical: true,
+    style: {
+      width: "100%"
+    }
+  }, /*#__PURE__*/_react["default"].createElement("span", props.dragHandleProps), /*#__PURE__*/_react["default"].createElement(_core.Divider, {
+    style: line_style
+  })), /*#__PURE__*/_react["default"].createElement("div", {
+    className: "button-div d-flex flex-row"
+  }));
+}
+SectionEndItem = /*#__PURE__*/(0, _react.memo)(SectionEndItem);
+// const SectionEndItem = ContextMenuTarget(RawSectionEndItem);
+
+var log_item_update_props = ["is_error", "am_shrunk", "am_selected", "in_section", "summary_text", "console_text", "console_available_width"];
+function LogItem(props) {
+  var last_output_text = (0, _react.useRef)("");
+  (0, _react.useEffect)(function () {
+    executeEmbeddedScripts();
+    makeTablesSortable();
+  });
+  function _toggleShrink() {
+    props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
+  }
+  function _deleteMe() {
+    props.handleDelete(props.unique_id);
+  }
+  function _handleSummaryTextChange(value) {
+    props.setConsoleItemValue(props.unique_id, "summary_text", value);
+  }
+  function executeEmbeddedScripts() {
+    if (props.output_text != last_output_text.current) {
+      // to avoid doubles of bokeh images
+      last_output_text.current = props.output_text;
+      var scripts = $("#" + props.unique_id + " .log-code-output script").toArray();
+      var _iterator17 = _createForOfIteratorHelper(scripts),
         _step17;
       try {
         for (_iterator17.s(); !(_step17 = _iterator17.n()).done;) {
-          var prop = _step17.value;
-          if (nextProps[prop] != this.props[prop]) {
-            return true;
-          }
+          var script = _step17.value;
+          try {
+            window.eval(script.text);
+          } catch (e) {}
         }
       } catch (err) {
         _iterator17.e(err);
       } finally {
         _iterator17.f();
       }
-      return false;
     }
-  }, {
-    key: "_toggleShrink",
-    value: function _toggleShrink() {
-      this.props.setConsoleItemValue(this.props.unique_id, "am_shrunk", !this.props.am_shrunk);
-    }
-  }, {
-    key: "_deleteMe",
-    value: function _deleteMe() {
-      this.props.handleDelete(this.props.unique_id);
-    }
-  }, {
-    key: "_handleHeaderTextChange",
-    value: function _handleHeaderTextChange(value) {
-      this.props.setConsoleItemValue(this.props.unique_id, "header_text", value);
-    }
-  }, {
-    key: "_copyMe",
-    value: function _copyMe() {
-      this.props.copyCell(this.props.unique_id);
-    }
-  }, {
-    key: "_copySection",
-    value: function _copySection() {
-      this.props.copySection(this.props.unique_id);
-    }
-  }, {
-    key: "_deleteSection",
-    value: function _deleteSection() {
-      this.props.deleteSection(this.props.unique_id);
-    }
-  }, {
-    key: "_pasteCell",
-    value: function _pasteCell() {
-      this.props.pasteCell(this.props.unique_id);
-    }
-  }, {
-    key: "_selectMe",
-    value: function _selectMe() {
-      var e = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-      var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-      this.props.selectConsoleItem(this.props.unique_id, e, callback);
-    }
-  }, {
-    key: "_addBlankText",
-    value: function _addBlankText() {
-      var self = this;
-      this._selectMe(null, function () {
-        self.props.addNewTextItem();
-      });
-    }
-  }, {
-    key: "_addBlankDivider",
-    value: function _addBlankDivider() {
-      var self = this;
-      this._selectMe(null, function () {
-        self.props.addNewDividerItem();
-      });
-    }
-  }, {
-    key: "_addBlankCode",
-    value: function _addBlankCode() {
-      var self = this;
-      this._selectMe(null, function () {
-        self.props.addNewCodeItem();
-      });
-    }
-  }, {
-    key: "renderContextMenu",
-    value: function renderContextMenu() {
-      // return a single element, or nothing to use default browser behavior
-      return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "duplicate",
-        onClick: this._copyMe,
-        text: "Copy"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "clipboard",
-        onClick: this._pasteCell,
-        text: "Paste Cells"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "new-text-box",
-        onClick: this._addBlankText,
-        text: "New Text Cell"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "code",
-        onClick: this._addBlankCode,
-        text: "New Code Cell"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "header",
-        onClick: this._addBlankDivider,
-        text: "New Section"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "trash",
-        onClick: this._deleteMe,
-        intent: "danger",
-        text: "Delete Section"
-      }));
-    }
-  }, {
-    key: "_consoleItemClick",
-    value: function _consoleItemClick(e) {
-      this._selectMe(e);
-      e.stopPropagation();
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var converted_dict = {
-        __html: this.props.console_text
-      };
-      var panel_class = this.props.am_shrunk ? "log-panel in-section divider-log-panel log-panel-invisible fixed-log-panel" : "log-panel divider-log-panel log-panel-visible fixed-log-panel";
-      if (this.props.am_selected) {
-        panel_class += " selected";
-      }
-      if (this.props.is_error) {
-        panel_class += " error-log-panel";
-      }
-      var body_width = this.props.console_available_width - BUTTON_CONSUMED_SPACE;
-      return /*#__PURE__*/_react["default"].createElement("div", {
-        className: panel_class + " d-flex flex-row",
-        onClick: this._consoleItemClick,
-        id: this.props.unique_id,
-        style: {
-          marginBottom: 10
-        }
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: "button-div shrink-expand-div d-flex flex-row"
-      }, /*#__PURE__*/_react["default"].createElement(Shandle, null), !this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        icon: "chevron-down",
-        handleClick: this._toggleShrink
-      }), this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        icon: "chevron-right",
-        style: {
-          marginTop: 5
-        },
-        handleClick: this._toggleShrink
-      })), /*#__PURE__*/_react["default"].createElement(_core.EditableText, {
-        value: this.props.header_text,
-        onChange: this._handleHeaderTextChange,
-        className: "console-divider-text"
-      }), /*#__PURE__*/_react["default"].createElement("div", {
-        className: "button-div d-flex flex-row"
-      }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        handleClick: this._deleteMe,
-        intent: "danger",
-        tooltip: "Delete this item",
-        style: {
-          marginLeft: 10,
-          marginRight: 66,
-          minHeight: 0
-        },
-        icon: "trash"
-      })));
-    }
-  }]);
-  return RawDividerItem;
-}(_react["default"].Component); // const DividerItem = ContextMenuTarget(RawDividerItem);
-var DividerItem = RawDividerItem;
-var section_end_item_update_props = ["hide_in_section", "am_selected", "console_available_width"];
-var RawSectionEndItem = /*#__PURE__*/function (_React$Component2) {
-  _inherits(RawSectionEndItem, _React$Component2);
-  var _super4 = _createSuper(RawSectionEndItem);
-  function RawSectionEndItem(props) {
-    var _this2;
-    _classCallCheck(this, RawSectionEndItem);
-    _this2 = _super4.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this2), "_", RawSectionEndItem.prototype);
-    _this2.update_props = section_end_item_update_props;
-    _this2.update_state_vars = [];
-    _this2.state = {};
-    return _this2;
   }
-  _createClass(RawSectionEndItem, [{
-    key: "shouldComponentUpdate",
-    value: function shouldComponentUpdate(nextProps, nextState, nextContext) {
-      var _iterator18 = _createForOfIteratorHelper(this.update_props),
-        _step18;
-      try {
-        for (_iterator18.s(); !(_step18 = _iterator18.n()).done;) {
-          var prop = _step18.value;
-          if (nextProps[prop] != this.props[prop]) {
-            return true;
-          }
-        }
-      } catch (err) {
-        _iterator18.e(err);
-      } finally {
-        _iterator18.f();
+  function makeTablesSortable() {
+    var tables = $("#" + props.unique_id + " table.sortable").toArray();
+    var _iterator18 = _createForOfIteratorHelper(tables),
+      _step18;
+    try {
+      for (_iterator18.s(); !(_step18 = _iterator18.n()).done;) {
+        var table = _step18.value;
+        sorttable.makeSortable(table);
       }
-      return false;
+    } catch (err) {
+      _iterator18.e(err);
+    } finally {
+      _iterator18.f();
     }
-  }, {
-    key: "_pasteCell",
-    value: function _pasteCell() {
-      this.props.pasteCell(this.props.unique_id);
-    }
-  }, {
-    key: "_selectMe",
-    value: function _selectMe() {
-      var e = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-      var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-      this.props.selectConsoleItem(this.props.unique_id, e, callback);
-    }
-  }, {
-    key: "_addBlankText",
-    value: function _addBlankText() {
-      var self = this;
-      this._selectMe(null, function () {
-        self.props.addNewTextItem();
-      });
-    }
-  }, {
-    key: "_addBlankDivider",
-    value: function _addBlankDivider() {
-      var self = this;
-      this._selectMe(null, function () {
-        self.props.addNewDividerItem();
-      });
-    }
-  }, {
-    key: "_addBlankCode",
-    value: function _addBlankCode() {
-      var self = this;
-      this._selectMe(null, function () {
-        self.props.addNewCodeItem();
-      });
-    }
-  }, {
-    key: "renderContextMenu",
-    value: function renderContextMenu() {
-      // return a single element, or nothing to use default browser behavior
-      return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "clipboard",
-        onClick: this._pasteCell,
-        text: "Paste Cells"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "new-text-box",
-        onClick: this._addBlankText,
-        text: "New Text Cell"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "code",
-        onClick: this._addBlankCode,
-        text: "New Code Cell"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "header",
-        onClick: this._addBlankDivider,
-        text: "New Section"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null));
-    }
-  }, {
-    key: "_consoleItemClick",
-    value: function _consoleItemClick(e) {
-      this._selectMe(e);
-      e.stopPropagation();
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      if (this.props.hide_in_section) {
-        return /*#__PURE__*/_react["default"].createElement("div", {
-          className: "log-panel fixed-log-panel d-flex flex-row",
-          id: this.props.unique_id,
-          style: {
-            height: 0
-          }
-        });
-      }
-      var panel_class = "log-panel in-section section-end-log-panel log-panel-visible fixed-log-panel";
-      if (this.props.am_selected) {
-        panel_class += " selected";
-      }
-      var body_width = this.props.console_available_width - BUTTON_CONSUMED_SPACE;
-      var line_style = {
-        marginLeft: 65,
-        marginRight: 85,
-        marginTop: 10,
-        borderBottomWidth: 2
-      };
-      return /*#__PURE__*/_react["default"].createElement("div", {
-        className: panel_class + " d-flex flex-row",
-        onClick: this._consoleItemClick,
-        id: this.props.unique_id,
-        style: {
-          marginBottom: 10
-        }
-      }, /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, {
-        minimal: true,
-        vertical: true,
-        style: {
-          width: "100%"
-        }
-      }, /*#__PURE__*/_react["default"].createElement(_core.Divider, {
-        style: line_style
-      })), /*#__PURE__*/_react["default"].createElement("div", {
-        className: "button-div d-flex flex-row"
-      }));
-    }
-  }]);
-  return RawSectionEndItem;
-}(_react["default"].Component); // const SectionEndItem = ContextMenuTarget(RawSectionEndItem);
-var SectionEndItem = RawSectionEndItem;
-var log_item_update_props = ["is_error", "am_shrunk", "am_selected", "hide_in_section", "in_section", "summary_text", "console_text", "console_available_width"];
-var RawLogItem = /*#__PURE__*/function (_React$Component3) {
-  _inherits(RawLogItem, _React$Component3);
-  var _super5 = _createSuper(RawLogItem);
-  function RawLogItem(props) {
-    var _this3;
-    _classCallCheck(this, RawLogItem);
-    _this3 = _super5.call(this, props);
-    _this3.ce_summary0ref = /*#__PURE__*/_react["default"].createRef();
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this3), "_", RawLogItem.prototype);
-    _this3.update_props = log_item_update_props;
-    _this3.update_state_vars = [];
-    _this3.state = {
-      selected: false
-    };
-    _this3.last_output_text = "";
-    return _this3;
   }
-  _createClass(RawLogItem, [{
-    key: "shouldComponentUpdate",
-    value: function shouldComponentUpdate(nextProps, nextState, nextContext) {
-      var _iterator19 = _createForOfIteratorHelper(this.update_props),
+  function _copyMe() {
+    props.copyCell(props.unique_id);
+  }
+  function _pasteCell() {
+    props.pasteCell(props.unique_id);
+  }
+  function _selectMe() {
+    var e = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    props.selectConsoleItem(props.unique_id, e, callback);
+  }
+  function _addBlankText() {
+    _selectMe(null, function () {
+      props.addNewTextItem();
+    });
+  }
+  function _addBlankDivider() {
+    _selectMe(null, function () {
+      props.addNewDividerItem();
+    });
+  }
+  function _addBlankCode() {
+    _selectMe(null, function () {
+      props.addNewCodeItem();
+    });
+  }
+  function renderContextMenu() {
+    // return a single element, or nothing to use default browser behavior
+    return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "duplicate",
+      onClick: _copyMe,
+      text: "Copy Cell"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "clipboard",
+      onClick: _pasteCell,
+      text: "Paste Cells"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "new-text-box",
+      onClick: _addBlankText,
+      text: "New Text Cell"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "code",
+      onClick: _addBlankCode,
+      text: "New Code Cell"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "header",
+      onClick: _addBlankDivider,
+      text: "New Section"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "trash",
+      onClick: _deleteMe,
+      intent: "danger",
+      text: "Delete Cell"
+    }));
+  }
+  function _consoleItemClick(e) {
+    _selectMe(e);
+    e.stopPropagation();
+  }
+  var panel_class = props.am_shrunk ? "log-panel log-panel-invisible fixed-log-panel" : "log-panel log-panel-visible fixed-log-panel";
+  var converted_dict = {
+    __html: props.console_text
+  };
+  if (props.in_section) {
+    panel_class += " in-section";
+  }
+  if (props.am_selected) {
+    panel_class += " selected";
+  }
+  if (props.is_error) {
+    panel_class += " error-log-panel";
+  }
+  var body_width = props.console_available_width - BUTTON_CONSUMED_SPACE;
+  if (props.in_section) {
+    body_width -= SECTION_INDENT / 2;
+  }
+  return /*#__PURE__*/_react["default"].createElement("div", {
+    className: panel_class + " d-flex flex-row",
+    onClick: _consoleItemClick,
+    id: props.unique_id,
+    style: {
+      marginBottom: 10
+    }
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    className: "button-div shrink-expand-div d-flex flex-row"
+  }, /*#__PURE__*/_react["default"].createElement(Shandle, {
+    dragHandleProps: props.dragHandleProps
+  }), !props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+    icon: "chevron-down",
+    handleClick: _toggleShrink
+  }), props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+    icon: "chevron-right",
+    style: {
+      marginTop: 5
+    },
+    handleClick: _toggleShrink
+  })), props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.EditableText, {
+    value: props.summary_text,
+    onChange: _handleSummaryTextChange,
+    className: "log-panel-summary"
+  }), /*#__PURE__*/_react["default"].createElement("div", {
+    className: "button-div d-flex flex-row"
+  }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+    handleClick: _deleteMe,
+    intent: "danger",
+    tooltip: "Delete this item",
+    style: {
+      marginLeft: 10,
+      marginRight: 66
+    },
+    icon: "trash"
+  }))), !props.am_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
+    className: "d-flex flex-column"
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    className: "log-panel-body d-flex flex-row"
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    style: {
+      marginTop: 10,
+      marginLeft: 30,
+      padding: 8,
+      width: body_width,
+      border: "1px solid #c7c7c7"
+    },
+    dangerouslySetInnerHTML: converted_dict
+  }), /*#__PURE__*/_react["default"].createElement("div", {
+    className: "button-div d-flex flex-row"
+  }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+    handleClick: _deleteMe,
+    tooltip: "Delete this item",
+    style: {
+      marginLeft: 10,
+      marginRight: 66
+    },
+    intent: "danger",
+    icon: "trash"
+  })))));
+}
+LogItem = /*#__PURE__*/(0, _react.memo)(LogItem);
+
+// const LogItem = ContextMenuTarget(RawLogItem);
+
+var blob_item_update_props = ["is_error", "am_shrunk", "am_selected", "in_section", "summary_text", "image_data_str", "console_available_width"];
+function BlobItem(props) {
+  var last_output_text = (0, _react.useRef)("");
+  (0, _react.useEffect)(function () {
+    executeEmbeddedScripts();
+    makeTablesSortable();
+  });
+  function _toggleShrink() {
+    props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
+  }
+  function _deleteMe() {
+    props.handleDelete(props.unique_id);
+  }
+  function _handleSummaryTextChange(value) {
+    props.setConsoleItemValue(props.unique_id, "summary_text", value);
+  }
+  function executeEmbeddedScripts() {
+    if (props.output_text != last_output_text.current) {
+      // to avoid doubles of bokeh images
+      last_output_text.current = props.output_text;
+      var scripts = $("#" + props.unique_id + " .log-code-output script").toArray();
+      var _iterator19 = _createForOfIteratorHelper(scripts),
         _step19;
       try {
         for (_iterator19.s(); !(_step19 = _iterator19.n()).done;) {
-          var prop = _step19.value;
-          if (nextProps[prop] != this.props[prop]) {
-            return true;
-          }
+          var script = _step19.value;
+          try {
+            window.eval(script.text);
+          } catch (e) {}
         }
       } catch (err) {
         _iterator19.e(err);
       } finally {
         _iterator19.f();
       }
-      return false;
     }
-  }, {
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      this.executeEmbeddedScripts();
-      this.makeTablesSortable();
-    }
-  }, {
-    key: "componentDidUpdate",
-    value: function componentDidUpdate(prevProps, prevState, snapshot) {
-      this.executeEmbeddedScripts();
-      this.makeTablesSortable();
-    }
-  }, {
-    key: "_toggleShrink",
-    value: function _toggleShrink() {
-      this.props.setConsoleItemValue(this.props.unique_id, "am_shrunk", !this.props.am_shrunk);
-    }
-  }, {
-    key: "_deleteMe",
-    value: function _deleteMe() {
-      this.props.handleDelete(this.props.unique_id);
-    }
-  }, {
-    key: "_handleSummaryTextChange",
-    value: function _handleSummaryTextChange(value) {
-      this.props.setConsoleItemValue(this.props.unique_id, "summary_text", value);
-    }
-  }, {
-    key: "executeEmbeddedScripts",
-    value: function executeEmbeddedScripts() {
-      if (this.props.output_text != this.last_output_text) {
-        // to avoid doubles of bokeh images
-        this.last_output_text = this.props.output_text;
-        var scripts = $("#" + this.props.unique_id + " .log-code-output script").toArray();
-        // $("#" + this.props.unique_id + " .bk-root").html(""); // This is a kluge to deal with bokeh double images
-        var _iterator20 = _createForOfIteratorHelper(scripts),
-          _step20;
-        try {
-          for (_iterator20.s(); !(_step20 = _iterator20.n()).done;) {
-            var script = _step20.value;
-            try {
-              window.eval(script.text);
-            } catch (e) {}
-          }
-        } catch (err) {
-          _iterator20.e(err);
-        } finally {
-          _iterator20.f();
-        }
-      }
-    }
-  }, {
-    key: "makeTablesSortable",
-    value: function makeTablesSortable() {
-      var tables = $("#" + this.props.unique_id + " table.sortable").toArray();
-      var _iterator21 = _createForOfIteratorHelper(tables),
-        _step21;
-      try {
-        for (_iterator21.s(); !(_step21 = _iterator21.n()).done;) {
-          var table = _step21.value;
-          sorttable.makeSortable(table);
-        }
-      } catch (err) {
-        _iterator21.e(err);
-      } finally {
-        _iterator21.f();
-      }
-    }
-  }, {
-    key: "_copyMe",
-    value: function _copyMe() {
-      this.props.copyCell(this.props.unique_id);
-    }
-  }, {
-    key: "_pasteCell",
-    value: function _pasteCell() {
-      this.props.pasteCell(this.props.unique_id);
-    }
-  }, {
-    key: "_selectMe",
-    value: function _selectMe() {
-      var e = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-      var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-      this.props.selectConsoleItem(this.props.unique_id, e, callback);
-    }
-  }, {
-    key: "_addBlankText",
-    value: function _addBlankText() {
-      var self = this;
-      this._selectMe(null, function () {
-        self.props.addNewTextItem();
-      });
-    }
-  }, {
-    key: "_addBlankDivider",
-    value: function _addBlankDivider() {
-      var self = this;
-      this._selectMe(null, function () {
-        self.props.addNewDividerItem();
-      });
-    }
-  }, {
-    key: "_addBlankCode",
-    value: function _addBlankCode() {
-      var self = this;
-      this._selectMe(null, function () {
-        self.props.addNewCodeItem();
-      });
-    }
-  }, {
-    key: "renderContextMenu",
-    value: function renderContextMenu() {
-      // return a single element, or nothing to use default browser behavior
-      return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "duplicate",
-        onClick: this._copyMe,
-        text: "Copy Cell"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "clipboard",
-        onClick: this._pasteCell,
-        text: "Paste Cells"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "new-text-box",
-        onClick: this._addBlankText,
-        text: "New Text Cell"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "code",
-        onClick: this._addBlankCode,
-        text: "New Code Cell"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "header",
-        onClick: this._addBlankDivider,
-        text: "New Section"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "trash",
-        onClick: this._deleteMe,
-        intent: "danger",
-        text: "Delete Cell"
-      }));
-    }
-  }, {
-    key: "_consoleItemClick",
-    value: function _consoleItemClick(e) {
-      this._selectMe(e);
-      e.stopPropagation();
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var panel_class = this.props.am_shrunk ? "log-panel log-panel-invisible fixed-log-panel" : "log-panel log-panel-visible fixed-log-panel";
-      if (this.props.hide_in_section && this.props.in_section) {
-        return /*#__PURE__*/_react["default"].createElement("div", {
-          className: "log-panel fixed-log-panel d-flex flex-row",
-          id: this.props.unique_id,
-          style: {
-            height: 0
-          }
-        });
-      }
-      var converted_dict = {
-        __html: this.props.console_text
-      };
-      if (this.props.in_section) {
-        panel_class += " in-section";
-      }
-      if (this.props.am_selected) {
-        panel_class += " selected";
-      }
-      if (this.props.is_error) {
-        panel_class += " error-log-panel";
-      }
-      var body_width = this.props.console_available_width - BUTTON_CONSUMED_SPACE;
-      if (this.props.in_section) {
-        body_width -= SECTION_INDENT / 2;
-      }
-      return /*#__PURE__*/_react["default"].createElement("div", {
-        className: panel_class + " d-flex flex-row",
-        onClick: this._consoleItemClick,
-        id: this.props.unique_id,
-        style: {
-          marginBottom: 10
-        }
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: "button-div shrink-expand-div d-flex flex-row"
-      }, /*#__PURE__*/_react["default"].createElement(Shandle, null), !this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        icon: "chevron-down",
-        handleClick: this._toggleShrink
-      }), this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        icon: "chevron-right",
-        style: {
-          marginTop: 5
-        },
-        handleClick: this._toggleShrink
-      })), this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.EditableText, {
-        value: this.props.summary_text,
-        onChange: this._handleSummaryTextChange,
-        className: "log-panel-summary"
-      }), /*#__PURE__*/_react["default"].createElement("div", {
-        className: "button-div d-flex flex-row"
-      }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        handleClick: this._deleteMe,
-        intent: "danger",
-        tooltip: "Delete this item",
-        style: {
-          marginLeft: 10,
-          marginRight: 66
-        },
-        icon: "trash"
-      }))), !this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
-        className: "d-flex flex-column"
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: "log-panel-body d-flex flex-row"
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        style: {
-          marginTop: 10,
-          marginLeft: 30,
-          padding: 8,
-          width: body_width,
-          border: "1px solid #c7c7c7"
-        },
-        dangerouslySetInnerHTML: converted_dict
-      }), /*#__PURE__*/_react["default"].createElement("div", {
-        className: "button-div d-flex flex-row"
-      }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        handleClick: this._deleteMe,
-        tooltip: "Delete this item",
-        style: {
-          marginLeft: 10,
-          marginRight: 66
-        },
-        intent: "danger",
-        icon: "trash"
-      })))));
-    }
-  }]);
-  return RawLogItem;
-}(_react["default"].Component);
-RawLogItem.propTypes = {
-  unique_id: _propTypes["default"].string,
-  in_section: _propTypes["default"].bool,
-  is_error: _propTypes["default"].bool,
-  am_shrunk: _propTypes["default"].bool,
-  summary_text: _propTypes["default"].string,
-  selectConsoleItem: _propTypes["default"].func,
-  am_selected: _propTypes["default"].bool,
-  console_text: _propTypes["default"].string,
-  setConsoleItemValue: _propTypes["default"].func,
-  handleDelete: _propTypes["default"].func,
-  console_available_width: _propTypes["default"].number
-};
-
-// const LogItem = ContextMenuTarget(RawLogItem);
-var LogItem = RawLogItem;
-var blob_item_update_props = ["is_error", "am_shrunk", "am_selected", "hide_in_section", "in_section", "summary_text", "image_data_str", "console_available_width"];
-var RawBlobItem = /*#__PURE__*/function (_React$Component4) {
-  _inherits(RawBlobItem, _React$Component4);
-  var _super6 = _createSuper(RawBlobItem);
-  function RawBlobItem(props) {
-    var _this4;
-    _classCallCheck(this, RawBlobItem);
-    _this4 = _super6.call(this, props);
-    _this4.ce_summary0ref = /*#__PURE__*/_react["default"].createRef();
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this4), "_", RawLogItem.prototype);
-    _this4.update_props = blob_item_update_props;
-    _this4.update_state_vars = [];
-    _this4.state = {
-      selected: false,
-      image_data_str: null
-    };
-    _this4.last_output_text = "";
-    return _this4;
   }
-  _createClass(RawBlobItem, [{
-    key: "shouldComponentUpdate",
-    value: function shouldComponentUpdate(nextProps, nextState, nextContext) {
-      var _iterator22 = _createForOfIteratorHelper(this.update_props),
-        _step22;
-      try {
-        for (_iterator22.s(); !(_step22 = _iterator22.n()).done;) {
-          var prop = _step22.value;
-          if (nextProps[prop] != this.props[prop]) {
-            return true;
-          }
-        }
-      } catch (err) {
-        _iterator22.e(err);
-      } finally {
-        _iterator22.f();
+  function makeTablesSortable() {
+    var tables = $("#" + props.unique_id + " table.sortable").toArray();
+    var _iterator20 = _createForOfIteratorHelper(tables),
+      _step20;
+    try {
+      for (_iterator20.s(); !(_step20 = _iterator20.n()).done;) {
+        var table = _step20.value;
+        sorttable.makeSortable(table);
       }
-      return false;
+    } catch (err) {
+      _iterator20.e(err);
+    } finally {
+      _iterator20.f();
     }
-  }, {
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      this.executeEmbeddedScripts();
-      this.makeTablesSortable();
+  }
+  function _copyMe() {
+    props.copyCell(props.unique_id);
+  }
+  function _pasteCell() {
+    props.pasteCell(props.unique_id);
+  }
+  function _selectMe() {
+    var e = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    props.selectConsoleItem(props.unique_id, e, callback);
+  }
+  function _addBlankText() {
+    _selectMe(null, function () {
+      props.addNewTextItem();
+    });
+  }
+  function _addBlankDivider() {
+    _selectMe(null, function () {
+      props.addNewDividerItem();
+    });
+  }
+  function _addBlankCode() {
+    var self = this;
+    _selectMe(null, function () {
+      props.addNewCodeItem();
+    });
+  }
+  function renderContextMenu() {
+    // return a single element, or nothing to use default browser behavior
+    return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "duplicate",
+      onClick: _copyMe,
+      text: "Copy Cell"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "clipboard",
+      onClick: _pasteCell,
+      text: "Paste Cells"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "new-text-box",
+      onClick: _addBlankText,
+      text: "New Text Cell"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "code",
+      onClick: _addBlankCode,
+      text: "New Code Cell"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "header",
+      onClick: _addBlankDivider,
+      text: "New Section"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "trash",
+      onClick: _deleteMe,
+      intent: "danger",
+      text: "Delete Cell"
+    }));
+  }
+  function _consoleItemClick(e) {
+    _selectMe(e);
+    e.stopPropagation();
+  }
+  var panel_class = props.am_shrunk ? "log-panel log-panel-invisible fixed-log-panel" : "log-panel log-panel-visible fixed-log-panel";
+  if (props.in_section) {
+    panel_class += " in-section";
+  }
+  if (props.am_selected) {
+    panel_class += " selected";
+  }
+  var body_width = props.console_available_width - BUTTON_CONSUMED_SPACE;
+  if (props.in_section) {
+    body_width -= SECTION_INDENT / 2;
+  }
+  return /*#__PURE__*/_react["default"].createElement("div", {
+    className: panel_class + " d-flex flex-row",
+    onClick: _consoleItemClick,
+    id: props.unique_id,
+    style: {
+      marginBottom: 10
     }
-  }, {
-    key: "componentDidUpdate",
-    value: function componentDidUpdate(prevProp, prevState, snapshot) {
-      this.executeEmbeddedScripts();
-      this.makeTablesSortable();
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    className: "button-div shrink-expand-div d-flex flex-row"
+  }, /*#__PURE__*/_react["default"].createElement(Shandle, {
+    dragHandleProps: props.dragHandleProps
+  }), !props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+    icon: "chevron-down",
+    handleClick: _toggleShrink
+  }), props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+    icon: "chevron-right",
+    style: {
+      marginTop: 5
+    },
+    handleClick: _toggleShrink
+  })), props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.EditableText, {
+    value: props.summary_text,
+    onChange: _handleSummaryTextChange,
+    className: "log-panel-summary"
+  }), /*#__PURE__*/_react["default"].createElement("div", {
+    className: "button-div d-flex flex-row"
+  }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+    handleClick: _deleteMe,
+    intent: "danger",
+    tooltip: "Delete this item",
+    style: {
+      marginLeft: 10,
+      marginRight: 66
+    },
+    icon: "trash"
+  }))), !props.am_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
+    className: "d-flex flex-column"
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    className: "log-panel-body d-flex flex-row"
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    style: {
+      marginTop: 10,
+      marginLeft: 30,
+      padding: 8,
+      width: body_width,
+      border: "1px solid #c7c7c7"
     }
-  }, {
-    key: "_toggleShrink",
-    value: function _toggleShrink() {
-      this.props.setConsoleItemValue(this.props.unique_id, "am_shrunk", !this.props.am_shrunk);
-    }
-  }, {
-    key: "_deleteMe",
-    value: function _deleteMe() {
-      this.props.handleDelete(this.props.unique_id);
-    }
-  }, {
-    key: "_handleSummaryTextChange",
-    value: function _handleSummaryTextChange(value) {
-      this.props.setConsoleItemValue(this.props.unique_id, "summary_text", value);
-    }
-  }, {
-    key: "executeEmbeddedScripts",
-    value: function executeEmbeddedScripts() {
-      if (this.props.output_text != this.last_output_text) {
-        // to avoid doubles of bokeh images
-        this.last_output_text = this.props.output_text;
-        var scripts = $("#" + this.props.unique_id + " .log-code-output script").toArray();
-        // $("#" + this.props.unique_id + " .bk-root").html(""); // This is a kluge to deal with bokeh double images
-        var _iterator23 = _createForOfIteratorHelper(scripts),
-          _step23;
-        try {
-          for (_iterator23.s(); !(_step23 = _iterator23.n()).done;) {
-            var script = _step23.value;
-            try {
-              window.eval(script.text);
-            } catch (e) {}
-          }
-        } catch (err) {
-          _iterator23.e(err);
-        } finally {
-          _iterator23.f();
-        }
-      }
-    }
-  }, {
-    key: "makeTablesSortable",
-    value: function makeTablesSortable() {
-      var tables = $("#" + this.props.unique_id + " table.sortable").toArray();
-      var _iterator24 = _createForOfIteratorHelper(tables),
-        _step24;
-      try {
-        for (_iterator24.s(); !(_step24 = _iterator24.n()).done;) {
-          var table = _step24.value;
-          sorttable.makeSortable(table);
-        }
-      } catch (err) {
-        _iterator24.e(err);
-      } finally {
-        _iterator24.f();
-      }
-    }
-  }, {
-    key: "_copyMe",
-    value: function _copyMe() {
-      this.props.copyCell(this.props.unique_id);
-    }
-  }, {
-    key: "_pasteCell",
-    value: function _pasteCell() {
-      this.props.pasteCell(this.props.unique_id);
-    }
-  }, {
-    key: "_selectMe",
-    value: function _selectMe() {
-      var e = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-      var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-      this.props.selectConsoleItem(this.props.unique_id, e, callback);
-    }
-  }, {
-    key: "_addBlankText",
-    value: function _addBlankText() {
-      var self = this;
-      this._selectMe(null, function () {
-        self.props.addNewTextItem();
-      });
-    }
-  }, {
-    key: "_addBlankDivider",
-    value: function _addBlankDivider() {
-      var self = this;
-      this._selectMe(null, function () {
-        self.props.addNewDividerItem();
-      });
-    }
-  }, {
-    key: "_addBlankCode",
-    value: function _addBlankCode() {
-      var self = this;
-      this._selectMe(null, function () {
-        self.props.addNewCodeItem();
-      });
-    }
-  }, {
-    key: "renderContextMenu",
-    value: function renderContextMenu() {
-      // return a single element, or nothing to use default browser behavior
-      return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "duplicate",
-        onClick: this._copyMe,
-        text: "Copy Cell"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "clipboard",
-        onClick: this._pasteCell,
-        text: "Paste Cells"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "new-text-box",
-        onClick: this._addBlankText,
-        text: "New Text Cell"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "code",
-        onClick: this._addBlankCode,
-        text: "New Code Cell"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "header",
-        onClick: this._addBlankDivider,
-        text: "New Section"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "trash",
-        onClick: this._deleteMe,
-        intent: "danger",
-        text: "Delete Cell"
-      }));
-    }
-  }, {
-    key: "_consoleItemClick",
-    value: function _consoleItemClick(e) {
-      this._selectMe(e);
-      e.stopPropagation();
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var panel_class = this.props.am_shrunk ? "log-panel log-panel-invisible fixed-log-panel" : "log-panel log-panel-visible fixed-log-panel";
-      if (this.props.hide_in_section && this.props.in_section) {
-        return /*#__PURE__*/_react["default"].createElement("div", {
-          className: "log-panel fixed-log-panel d-flex flex-row",
-          id: this.props.unique_id,
-          style: {
-            height: 0
-          }
-        });
-      }
-      if (this.props.in_section) {
-        panel_class += " in-section";
-      }
-      if (this.props.am_selected) {
-        panel_class += " selected";
-      }
-      var body_width = this.props.console_available_width - BUTTON_CONSUMED_SPACE;
-      if (this.props.in_section) {
-        body_width -= SECTION_INDENT / 2;
-      }
-      return /*#__PURE__*/_react["default"].createElement("div", {
-        className: panel_class + " d-flex flex-row",
-        onClick: this._consoleItemClick,
-        id: this.props.unique_id,
-        style: {
-          marginBottom: 10
-        }
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: "button-div shrink-expand-div d-flex flex-row"
-      }, /*#__PURE__*/_react["default"].createElement(Shandle, null), !this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        icon: "chevron-down",
-        handleClick: this._toggleShrink
-      }), this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        icon: "chevron-right",
-        style: {
-          marginTop: 5
-        },
-        handleClick: this._toggleShrink
-      })), this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.EditableText, {
-        value: this.props.summary_text,
-        onChange: this._handleSummaryTextChange,
-        className: "log-panel-summary"
-      }), /*#__PURE__*/_react["default"].createElement("div", {
-        className: "button-div d-flex flex-row"
-      }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        handleClick: this._deleteMe,
-        intent: "danger",
-        tooltip: "Delete this item",
-        style: {
-          marginLeft: 10,
-          marginRight: 66
-        },
-        icon: "trash"
-      }))), !this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
-        className: "d-flex flex-column"
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: "log-panel-body d-flex flex-row"
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        style: {
-          marginTop: 10,
-          marginLeft: 30,
-          padding: 8,
-          width: body_width,
-          border: "1px solid #c7c7c7"
-        }
-      }, this.props.image_data_str && /*#__PURE__*/_react["default"].createElement("img", {
-        src: this.props.image_data_str,
-        alt: "An Image",
-        width: body_width - 25
-      })), /*#__PURE__*/_react["default"].createElement("div", {
-        className: "button-div d-flex flex-row"
-      }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        handleClick: this._deleteMe,
-        tooltip: "Delete this item",
-        style: {
-          marginLeft: 10,
-          marginRight: 66
-        },
-        intent: "danger",
-        icon: "trash"
-      })))));
-    }
-  }]);
-  return RawBlobItem;
-}(_react["default"].Component);
-RawBlobItem.propTypes = {
+  }, props.image_data_str && /*#__PURE__*/_react["default"].createElement("img", {
+    src: props.image_data_str,
+    alt: "An Image",
+    width: body_width - 25
+  })), /*#__PURE__*/_react["default"].createElement("div", {
+    className: "button-div d-flex flex-row"
+  }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+    handleClick: _deleteMe,
+    tooltip: "Delete this item",
+    style: {
+      marginLeft: 10,
+      marginRight: 66
+    },
+    intent: "danger",
+    icon: "trash"
+  })))));
+}
+BlobItem = /*#__PURE__*/(0, _react.memo)(BlobItem);
+BlobItem.propTypes = {
   unique_id: _propTypes["default"].string,
   in_section: _propTypes["default"].bool,
   is_error: _propTypes["default"].bool,
@@ -2813,477 +2475,340 @@ RawBlobItem.propTypes = {
 };
 
 // const BlobItem = ContextMenuTarget(RawBlobItem);
-var BlobItem = RawBlobItem;
-var code_item_update_props = ["am_shrunk", "set_focus", "am_selected", "search_string", "summary_text", "console_text", "in_section", "hide_in_section", "show_spinner", "execution_count", "output_text", "console_available_width", "dark_theme"];
-var RawConsoleCodeItem = /*#__PURE__*/function (_React$Component5) {
-  _inherits(RawConsoleCodeItem, _React$Component5);
-  var _super7 = _createSuper(RawConsoleCodeItem);
-  function RawConsoleCodeItem(props) {
-    var _this5;
-    _classCallCheck(this, RawConsoleCodeItem);
-    _this5 = _super7.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this5), "_", RawConsoleCodeItem.prototype);
-    _this5.cmobject = null;
-    _this5.elRef = /*#__PURE__*/_react["default"].createRef();
-    _this5.update_props = code_item_update_props;
-    _this5.update_state_vars = [];
-    _this5.state = {};
-    _this5.last_output_text = "";
-    return _this5;
+
+var code_item_update_props = ["am_shrunk", "set_focus", "am_selected", "search_string", "summary_text", "console_text", "in_section", "show_spinner", "execution_count", "output_text", "console_available_width", "dark_theme"];
+function ConsoleCodeItem(props) {
+  var elRef = (0, _react.useRef)(null);
+  var last_output_text = (0, _react.useRef)("");
+  var am_selected_previous = (0, _react.useRef)(false);
+  var setFocusFunc = (0, _react.useRef)(null);
+  (0, _react.useEffect)(function () {
+    executeEmbeddedScripts();
+    makeTablesSortable();
+    if (props.am_selected && !am_selected_previous.current && elRef && elRef.current) {
+      scrollMeIntoView();
+    }
+    am_selected_previous.current = props.am_selected;
+    if (props.set_focus && setFocusFunc.current) {
+      setFocusFunc.current();
+      props.setConsoleItemValue(props.unique_id, "set_focus", false, _selectMe);
+    }
+  });
+  function registerSetFocusFunc(theFunc) {
+    setFocusFunc.current = theFunc;
   }
-  _createClass(RawConsoleCodeItem, [{
-    key: "shouldComponentUpdate",
-    value: function shouldComponentUpdate(nextProps, nextState, nextContext) {
-      var _iterator25 = _createForOfIteratorHelper(this.update_props),
-        _step25;
+  function scrollMeIntoView() {
+    var my_element = elRef.current;
+    var outer_element = my_element.parentNode.parentNode;
+    var scrolled_element = my_element.parentNode;
+    var outer_height = outer_element.offsetHeight;
+    var distance_from_top = my_element.offsetTop - outer_element.scrollTop - scrolled_element.offsetTop;
+    if (distance_from_top > outer_height - 35) {
+      var distance_to_move = distance_from_top - .5 * outer_height;
+      outer_element.scrollTop += distance_to_move;
+    } else if (distance_from_top < 0) {
+      var _distance_to_move = .25 * outer_height - distance_from_top;
+      outer_element.scrollTop -= _distance_to_move;
+    }
+  }
+  function executeEmbeddedScripts() {
+    if (props.output_text != last_output_text.current) {
+      // to avoid doubles of bokeh images
+      last_output_text.current = props.output_text;
+      var scripts = $("#" + props.unique_id + " .log-code-output script").toArray();
+      var _iterator21 = _createForOfIteratorHelper(scripts),
+        _step21;
       try {
-        for (_iterator25.s(); !(_step25 = _iterator25.n()).done;) {
-          var prop = _step25.value;
-          if (nextProps[prop] != this.props[prop]) {
-            return true;
-          }
+        for (_iterator21.s(); !(_step21 = _iterator21.n()).done;) {
+          var script = _step21.value;
+          // noinspection EmptyCatchBlockJS,UnusedCatchParameterJS
+          try {
+            window.eval(script.text);
+          } catch (e) {}
         }
       } catch (err) {
-        _iterator25.e(err);
+        _iterator21.e(err);
       } finally {
-        _iterator25.f();
-      }
-      return false;
-    }
-  }, {
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      var _this6 = this;
-      if (this.props.set_focus) {
-        if (this.cmobject != null) {
-          this.cmobject.focus();
-          this.cmobject.setCursor({
-            line: 0,
-            ch: 0
-          });
-          this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe);
-        }
-      }
-      var self = this;
-      if (this.cmobject != null) {
-        this.cmobject.on("focus", function () {
-          self.props.setFocus(_this6.props.unique_id, self._selectMe);
-        });
-        this.cmobject.on("blur", function () {
-          self.props.setFocus(null);
-        });
-      }
-      this.executeEmbeddedScripts();
-      this.makeTablesSortable();
-    }
-  }, {
-    key: "_scrollMeIntoView",
-    value: function _scrollMeIntoView() {
-      var my_element = this.elRef.current;
-      var outer_element = my_element.parentNode.parentNode;
-      var scrolled_element = my_element.parentNode;
-      var outer_height = outer_element.offsetHeight;
-      var distance_from_top = my_element.offsetTop - outer_element.scrollTop - scrolled_element.offsetTop;
-      if (distance_from_top > outer_height - 35) {
-        var distance_to_move = distance_from_top - .5 * outer_height;
-        outer_element.scrollTop += distance_to_move;
-      } else if (distance_from_top < 0) {
-        var _distance_to_move = .25 * outer_height - distance_from_top;
-        outer_element.scrollTop -= _distance_to_move;
+        _iterator21.f();
       }
     }
-  }, {
-    key: "componentDidUpdate",
-    value: function componentDidUpdate(prevProps, prevState, snapShot) {
-      this.executeEmbeddedScripts();
-      this.makeTablesSortable();
-      if (this.props.am_selected && !prevProps.am_selected && this.elRef && this.elRef.current) {
-        // this.elRef.current.scrollIntoView()
-        this._scrollMeIntoView();
+  }
+  function makeTablesSortable() {
+    var tables = $("#" + props.unique_id + " table.sortable").toArray();
+    var _iterator22 = _createForOfIteratorHelper(tables),
+      _step22;
+    try {
+      for (_iterator22.s(); !(_step22 = _iterator22.n()).done;) {
+        var table = _step22.value;
+        sorttable.makeSortable(table);
       }
-      if (this.props.set_focus) {
-        if (this.cmobject != null) {
-          this.cmobject.focus();
-          this.cmobject.setCursor({
-            line: 0,
-            ch: 0
-          });
-          this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe);
-        }
-      }
+    } catch (err) {
+      _iterator22.e(err);
+    } finally {
+      _iterator22.f();
     }
-  }, {
-    key: "executeEmbeddedScripts",
-    value: function executeEmbeddedScripts() {
-      if (this.props.output_text != this.last_output_text) {
-        // to avoid doubles of bokeh images
-        this.last_output_text = this.props.output_text;
-        var scripts = $("#" + this.props.unique_id + " .log-code-output script").toArray();
-        // $("#" + this.props.unique_id + " .bk-root").html(""); // This is a kluge to deal with bokeh double images
-        var _iterator26 = _createForOfIteratorHelper(scripts),
-          _step26;
-        try {
-          for (_iterator26.s(); !(_step26 = _iterator26.n()).done;) {
-            var script = _step26.value;
-            // noinspection EmptyCatchBlockJS,UnusedCatchParameterJS
-            try {
-              window.eval(script.text);
-            } catch (e) {}
-          }
-        } catch (err) {
-          _iterator26.e(err);
-        } finally {
-          _iterator26.f();
-        }
-      }
+  }
+  function _stopMe() {
+    _stopMySpinner();
+    (0, _communication_react.postWithCallback)(props.main_id, "stop_console_code", {
+      "console_id": props.unique_id
+    }, null, null, props.main_id);
+  }
+  function _showMySpinner() {
+    var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    props.setConsoleItemValue(props.unique_id, "show_spinner", true, callback);
+  }
+  function _stopMySpinner() {
+    props.setConsoleItemValue(props.unique_id, "show_spinner", false);
+  }
+  function _handleChange(new_code) {
+    props.setConsoleItemValue(props.unique_id, "console_text", new_code);
+  }
+  function _handleSummaryTextChange(value) {
+    props.setConsoleItemValue(props.unique_id, "summary_text", value);
+  }
+  function _toggleShrink() {
+    props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
+  }
+  function _deleteMe() {
+    if (props.show_spinner) {
+      _stopMe();
     }
-  }, {
-    key: "makeTablesSortable",
-    value: function makeTablesSortable() {
-      var tables = $("#" + this.props.unique_id + " table.sortable").toArray();
-      var _iterator27 = _createForOfIteratorHelper(tables),
-        _step27;
-      try {
-        for (_iterator27.s(); !(_step27 = _iterator27.n()).done;) {
-          var table = _step27.value;
-          sorttable.makeSortable(table);
-        }
-      } catch (err) {
-        _iterator27.e(err);
-      } finally {
-        _iterator27.f();
-      }
+    props.handleDelete(props.unique_id);
+  }
+  function _clearOutput() {
+    var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    props.setConsoleItemValue(props.unique_id, "output_text", "", callback);
+  }
+  function _extraKeys() {
+    var self = this;
+    return {
+      'Ctrl-Enter': function CtrlEnter() {
+        return props.runCodeItem(props.unique_id, true);
+      },
+      'Cmd-Enter': function CmdEnter() {
+        return props.runCodeItem(props.unique_id, true);
+      },
+      'Ctrl-C': props.addNewCodeItem,
+      'Ctrl-T': props.addNewTextItem
+    };
+  }
+  function _getFirstLine() {
+    var re = /^(.*)$/m;
+    if (props.console_text == "") {
+      return "empty text cell";
+    } else {
+      return re.exec(props.console_text)[0];
     }
-  }, {
-    key: "_stopMe",
-    value: function _stopMe() {
-      this._stopMySpinner();
-      (0, _communication_react.postWithCallback)(this.props.main_id, "stop_console_code", {
-        "console_id": this.props.unique_id
-      }, null, null, this.props.main_id);
+  }
+  function _copyMe() {
+    props.copyCell(props.unique_id);
+  }
+  function _pasteCell() {
+    props.pasteCell(props.unique_id);
+  }
+  function _selectMe() {
+    var e = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    props.selectConsoleItem(props.unique_id, e, callback);
+  }
+  function _addBlankText() {
+    _selectMe(null, function () {
+      props.addNewTextItem();
+    });
+  }
+  function _addBlankDivider() {
+    _selectMe(null, function () {
+      props.addNewDividerItem();
+    });
+  }
+  function _addBlankCode() {
+    _selectMe(null, function () {
+      props.addNewCodeItem();
+    });
+  }
+  function renderContextMenu() {
+    // return a single element, or nothing to use default browser behavior
+    return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, !props.show_spinner && /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "play",
+      intent: "success",
+      onClick: function onClick() {
+        props.runCodeItem(props.unique_id);
+      },
+      text: "Run Cell"
+    }), props.show_spinner && /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "stop",
+      intent: "danger",
+      onClick: _stopMe,
+      text: "Stop Cell"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "new-text-box",
+      onClick: _addBlankText,
+      text: "New Text Cell"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "code",
+      onClick: _addBlankCode,
+      text: "New Code Cell"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "header",
+      onClick: _addBlankDivider,
+      text: "New Section"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "duplicate",
+      onClick: _copyMe,
+      text: "Copy Cell"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "clipboard",
+      onClick: _pasteCell,
+      text: "Paste Cells"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "trash",
+      onClick: _deleteMe,
+      intent: "danger",
+      text: "Delete Cell"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "clean",
+      intent: "warning",
+      onClick: function onClick() {
+        _clearOutput();
+      },
+      text: "Clear Output"
+    }));
+  }
+  function _consoleItemClick(e) {
+    if (!props.am_selected) {
+      _selectMe(e);
     }
-  }, {
-    key: "_showMySpinner",
-    value: function _showMySpinner() {
-      var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-      this.props.setConsoleItemValue(this.props.unique_id, "show_spinner", true, callback);
+    e.stopPropagation();
+  }
+  function _handleFocus() {
+    if (!props.am_selected) {
+      _selectMe();
     }
-  }, {
-    key: "_stopMySpinner",
-    value: function _stopMySpinner() {
-      this.props.setConsoleItemValue(this.props.unique_id, "show_spinner", false);
+  }
+  var panel_style = props.am_shrunk ? "log-panel log-panel-invisible" : "log-panel log-panel-visible";
+  if (props.am_selected) {
+    panel_style += " selected";
+  }
+  if (props.in_section) {
+    panel_style += " in-section";
+  }
+  var output_dict = {
+    __html: props.output_text
+  };
+  var spinner_val = props.running ? null : 0;
+  var code_container_width = props.console_available_width - BUTTON_CONSUMED_SPACE;
+  if (props.in_section) {
+    code_container_width -= SECTION_INDENT / 2;
+  }
+  return /*#__PURE__*/_react["default"].createElement("div", {
+    className: panel_style + " d-flex flex-row",
+    ref: elRef,
+    onClick: _consoleItemClick,
+    id: props.unique_id
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    className: "button-div shrink-expand-div d-flex flex-row"
+  }, /*#__PURE__*/_react["default"].createElement(Shandle, {
+    dragHandleProps: props.dragHandleProps
+  }), !props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+    icon: "chevron-down",
+    handleClick: _toggleShrink
+  }), props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+    icon: "chevron-right",
+    style: {
+      marginTop: 5
+    },
+    handleClick: _toggleShrink
+  })), props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.EditableText, {
+    value: props.summary_text ? props.summary_text : _getFirstLine(),
+    onChange: _handleSummaryTextChange,
+    className: "log-panel-summary code-panel-summary"
+  }), /*#__PURE__*/_react["default"].createElement("div", {
+    className: "button-div d-flex flex-row"
+  }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+    handleClick: _deleteMe,
+    intent: "danger",
+    tooltip: "Delete this item",
+    style: {
+      marginLeft: 10,
+      marginRight: 66
+    },
+    icon: "trash"
+  }))), !props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
+    className: "d-flex flex-column",
+    style: {
+      width: "100%"
     }
-  }, {
-    key: "_handleChange",
-    value: function _handleChange(new_code) {
-      this.props.setConsoleItemValue(this.props.unique_id, "console_text", new_code);
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    className: "d-flex flex-row"
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    className: "log-panel-body d-flex flex-row console-code"
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    className: "button-div d-flex pr-1"
+  }, !props.show_spinner && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+    handleClick: function handleClick() {
+      props.runCodeItem(props.unique_id);
+    },
+    intent: "success",
+    tooltip: "Execute this item",
+    icon: "play"
+  }), props.show_spinner && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+    handleClick: _stopMe,
+    intent: "danger",
+    tooltip: "Stop this item",
+    icon: "stop"
+  })), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
+    handleChange: _handleChange,
+    handleFocus: _handleFocus,
+    registerSetFocusFunc: registerSetFocusFunc,
+    dark_theme: props.dark_theme,
+    am_selected: props.am_selected,
+    readOnly: false,
+    show_line_numbers: true,
+    code_content: props.console_text,
+    extraKeys: _extraKeys(),
+    search_term: props.search_string,
+    code_container_width: code_container_width,
+    saveMe: null
+  }), /*#__PURE__*/_react["default"].createElement("div", {
+    className: "button-div d-flex flex-row"
+  }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+    handleClick: _deleteMe,
+    intent: "danger",
+    tooltip: "Delete this item",
+    style: {
+      marginLeft: 10,
+      marginRight: 0
+    },
+    icon: "trash"
+  }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+    handleClick: function handleClick() {
+      _clearOutput();
+    },
+    intent: "warning",
+    tooltip: "Clear this item's output",
+    style: {
+      marginLeft: 10,
+      marginRight: 0
+    },
+    icon: "clean"
+  }))), !props.show_spinner && /*#__PURE__*/_react["default"].createElement("div", {
+    className: "execution-counter"
+  }, "[", String(props.execution_count), "]"), props.show_spinner && /*#__PURE__*/_react["default"].createElement("div", {
+    style: {
+      marginTop: 10,
+      marginRight: 22
     }
-  }, {
-    key: "_handleSummaryTextChange",
-    value: function _handleSummaryTextChange(value) {
-      this.props.setConsoleItemValue(this.props.unique_id, "summary_text", value);
-    }
-  }, {
-    key: "_toggleShrink",
-    value: function _toggleShrink() {
-      this.props.setConsoleItemValue(this.props.unique_id, "am_shrunk", !this.props.am_shrunk);
-    }
-  }, {
-    key: "_deleteMe",
-    value: function _deleteMe() {
-      if (this.props.show_spinner) {
-        this._stopMe();
-      }
-      this.props.handleDelete(this.props.unique_id);
-    }
-  }, {
-    key: "_clearOutput",
-    value: function _clearOutput() {
-      var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-      this.props.setConsoleItemValue(this.props.unique_id, "output_text", "", callback);
-    }
-  }, {
-    key: "_extraKeys",
-    value: function _extraKeys() {
-      var _this7 = this;
-      var self = this;
-      return {
-        'Ctrl-Enter': function CtrlEnter() {
-          return self.props.runCodeItem(_this7.props.unique_id, true);
-        },
-        'Cmd-Enter': function CmdEnter() {
-          return self.props.runCodeItem(_this7.props.unique_id, true);
-        },
-        'Ctrl-C': self.props.addNewCodeItem,
-        'Ctrl-T': self.props.addNewTextItem
-      };
-    }
-  }, {
-    key: "_setCMObject",
-    value: function _setCMObject(cmobject) {
-      this.cmobject = cmobject;
-      if (this.props.set_focus) {
-        this.cmobject.focus();
-        this.cmobject.setCursor({
-          line: 0,
-          ch: 0
-        });
-        this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe);
-      }
-    }
-  }, {
-    key: "_getFirstLine",
-    value: function _getFirstLine() {
-      var re = /^(.*)$/m;
-      if (this.props.console_text == "") {
-        return "empty text cell";
-      } else {
-        return re.exec(this.props.console_text)[0];
-      }
-    }
-  }, {
-    key: "_copyMe",
-    value: function _copyMe() {
-      this.props.copyCell(this.props.unique_id);
-    }
-  }, {
-    key: "_pasteCell",
-    value: function _pasteCell() {
-      this.props.pasteCell(this.props.unique_id);
-    }
-  }, {
-    key: "_selectMe",
-    value: function _selectMe() {
-      var e = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-      var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-      this.props.selectConsoleItem(this.props.unique_id, e, callback);
-    }
-  }, {
-    key: "_addBlankText",
-    value: function _addBlankText() {
-      var self = this;
-      this._selectMe(null, function () {
-        self.props.addNewTextItem();
-      });
-    }
-  }, {
-    key: "_addBlankDivider",
-    value: function _addBlankDivider() {
-      var self = this;
-      this._selectMe(null, function () {
-        self.props.addNewDividerItem();
-      });
-    }
-  }, {
-    key: "_addBlankCode",
-    value: function _addBlankCode() {
-      var self = this;
-      this._selectMe(null, function () {
-        self.props.addNewCodeItem();
-      });
-    }
-  }, {
-    key: "renderContextMenu",
-    value: function renderContextMenu() {
-      var _this8 = this;
-      // return a single element, or nothing to use default browser behavior
-      return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, !this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "play",
-        intent: "success",
-        onClick: function onClick() {
-          _this8.props.runCodeItem(_this8.props.unique_id);
-        },
-        text: "Run Cell"
-      }), this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "stop",
-        intent: "danger",
-        onClick: this._stopMe,
-        text: "Stop Cell"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "new-text-box",
-        onClick: this._addBlankText,
-        text: "New Text Cell"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "code",
-        onClick: this._addBlankCode,
-        text: "New Code Cell"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "header",
-        onClick: this._addBlankDivider,
-        text: "New Section"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "duplicate",
-        onClick: this._copyMe,
-        text: "Copy Cell"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "clipboard",
-        onClick: this._pasteCell,
-        text: "Paste Cells"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "trash",
-        onClick: this._deleteMe,
-        intent: "danger",
-        text: "Delete Cell"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "clean",
-        intent: "warning",
-        onClick: function onClick() {
-          _this8._clearOutput();
-        },
-        text: "Clear Output"
-      }));
-    }
-  }, {
-    key: "_consoleItemClick",
-    value: function _consoleItemClick(e) {
-      if (!this.props.am_selected) {
-        this._selectMe(e);
-      }
-      e.stopPropagation();
-    }
-  }, {
-    key: "_handleFocus",
-    value: function _handleFocus() {
-      if (!this.props.am_selected) {
-        this._selectMe();
-      }
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var _this9 = this;
-      if (this.props.hide_in_section && this.props.in_section) {
-        return /*#__PURE__*/_react["default"].createElement("div", {
-          className: "log-panel fixed-log-panel d-flex flex-row",
-          id: this.props.unique_id,
-          style: {
-            height: 0
-          }
-        });
-      }
-      var panel_style = this.props.am_shrunk ? "log-panel log-panel-invisible" : "log-panel log-panel-visible";
-      if (this.props.am_selected) {
-        panel_style += " selected";
-      }
-      if (this.props.in_section) {
-        panel_style += " in-section";
-      }
-      var output_dict = {
-        __html: this.props.output_text
-      };
-      var spinner_val = this.props.running ? null : 0;
-      var code_container_width = this.props.console_available_width - BUTTON_CONSUMED_SPACE;
-      if (this.props.in_section) {
-        code_container_width -= SECTION_INDENT / 2;
-      }
-      return /*#__PURE__*/_react["default"].createElement("div", {
-        className: panel_style + " d-flex flex-row",
-        ref: this.elRef,
-        onClick: this._consoleItemClick,
-        id: this.props.unique_id
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: "button-div shrink-expand-div d-flex flex-row"
-      }, /*#__PURE__*/_react["default"].createElement(Shandle, null), !this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        icon: "chevron-down",
-        handleClick: this._toggleShrink
-      }), this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        icon: "chevron-right",
-        style: {
-          marginTop: 5
-        },
-        handleClick: this._toggleShrink
-      })), this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.EditableText, {
-        value: this.props.summary_text ? this.props.summary_text : this._getFirstLine(),
-        onChange: this._handleSummaryTextChange,
-        className: "log-panel-summary code-panel-summary"
-      }), /*#__PURE__*/_react["default"].createElement("div", {
-        className: "button-div d-flex flex-row"
-      }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        handleClick: this._deleteMe,
-        intent: "danger",
-        tooltip: "Delete this item",
-        style: {
-          marginLeft: 10,
-          marginRight: 66
-        },
-        icon: "trash"
-      }))), !this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
-        className: "d-flex flex-column",
-        style: {
-          width: "100%"
-        }
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: "d-flex flex-row"
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: "log-panel-body d-flex flex-row console-code"
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: "button-div d-flex pr-1"
-      }, !this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        handleClick: function handleClick() {
-          _this9.props.runCodeItem(_this9.props.unique_id);
-        },
-        intent: "success",
-        tooltip: "Execute this item",
-        icon: "play"
-      }), this.props.show_spinner && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        handleClick: this._stopMe,
-        intent: "danger",
-        tooltip: "Stop this item",
-        icon: "stop"
-      })), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
-        handleChange: this._handleChange,
-        handleFocus: this._handleFocus,
-        dark_theme: this.props.dark_theme,
-        am_selected: this.props.am_selected,
-        readOnly: false,
-        show_line_numbers: true,
-        code_content: this.props.console_text,
-        setCMObject: this._setCMObject,
-        extraKeys: this._extraKeys(),
-        search_term: this.props.search_string,
-        code_container_width: code_container_width,
-        saveMe: null
-      }), /*#__PURE__*/_react["default"].createElement("div", {
-        className: "button-div d-flex flex-row"
-      }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        handleClick: this._deleteMe,
-        intent: "danger",
-        tooltip: "Delete this item",
-        style: {
-          marginLeft: 10,
-          marginRight: 0
-        },
-        icon: "trash"
-      }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        handleClick: function handleClick() {
-          _this9._clearOutput();
-        },
-        intent: "warning",
-        tooltip: "Clear this item's output",
-        style: {
-          marginLeft: 10,
-          marginRight: 0
-        },
-        icon: "clean"
-      }))), !this.props.show_spinner && /*#__PURE__*/_react["default"].createElement("div", {
-        className: "execution-counter"
-      }, "[", String(this.props.execution_count), "]"), this.props.show_spinner && /*#__PURE__*/_react["default"].createElement("div", {
-        style: {
-          marginTop: 10,
-          marginRight: 22
-        }
-      }, /*#__PURE__*/_react["default"].createElement(_core.Spinner, {
-        size: 13,
-        value: spinner_val
-      }))), /*#__PURE__*/_react["default"].createElement("div", {
-        className: "log-code-output",
-        dangerouslySetInnerHTML: output_dict
-      }))));
-    }
-  }]);
-  return RawConsoleCodeItem;
-}(_react["default"].Component);
-RawConsoleCodeItem.propTypes = {
+  }, /*#__PURE__*/_react["default"].createElement(_core.Spinner, {
+    size: 13,
+    value: spinner_val
+  }))), /*#__PURE__*/_react["default"].createElement("div", {
+    className: "log-code-output",
+    dangerouslySetInnerHTML: output_dict
+  }))));
+}
+ConsoleCodeItem = /*#__PURE__*/(0, _react.memo)(ConsoleCodeItem);
+ConsoleCodeItem.propTypes = {
   unique_id: _propTypes["default"].string,
   am_shrunk: _propTypes["default"].bool,
   set_focus: _propTypes["default"].bool,
@@ -3305,547 +2830,390 @@ RawConsoleCodeItem.propTypes = {
   setFocus: _propTypes["default"].func,
   runCodeItem: _propTypes["default"].func
 };
-RawConsoleCodeItem.defaultProps = {
+ConsoleCodeItem.defaultProps = {
   summary_text: null
 };
 
 // const ConsoleCodeItem = ContextMenuTarget(RawConsoleCodeItem);
-var ConsoleCodeItem = RawConsoleCodeItem;
-var ResourceLinkButton = /*#__PURE__*/function (_React$PureComponent3) {
-  _inherits(ResourceLinkButton, _React$PureComponent3);
-  var _super8 = _createSuper(ResourceLinkButton);
-  function ResourceLinkButton(props) {
-    var _this10;
-    _classCallCheck(this, ResourceLinkButton);
-    _this10 = _super8.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this10));
-    _this10.my_view = (0, _library_pane.view_views)(false)[props.res_type];
+
+function ResourceLinkButton(props) {
+  var my_view = (0, _react.useRef)(null);
+  useConstructor(function () {
+    my_view.current = (0, _library_pane.view_views)(false)[props.res_type];
     if (window.in_context) {
       var re = new RegExp("/$");
-      _this10.my_view = _this10.my_view.replace(re, "_in_context");
+      my_view.current = my_view.replace(re, "_in_context");
     }
-    return _this10;
+  });
+  function _goToLink() {
+    if (window.in_context) {
+      (0, _communication_react.postAjaxPromise)($SCRIPT_ROOT + my_view.current, {
+        context_id: window.context_id,
+        resource_name: props.res_name
+      }).then(props.handleCreateViewer)["catch"](_toaster.doFlash);
+    } else {
+      window.open($SCRIPT_ROOT + my_view.current + props.res_name);
+    }
   }
-  _createClass(ResourceLinkButton, [{
-    key: "_goToLink",
-    value: function _goToLink() {
-      var self = this;
-      if (window.in_context) {
-        (0, _communication_react.postAjaxPromise)($SCRIPT_ROOT + this.my_view, {
-          context_id: window.context_id,
-          resource_name: this.props.res_name
-        }).then(self.props.handleCreateViewer)["catch"](_toaster.doFlash);
-      } else {
-        window.open($SCRIPT_ROOT + this.my_view + this.props.res_name);
-      }
+  return /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, {
+    className: "link-button-group"
+  }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
+    small: true,
+    text: props.res_name,
+    icon: _blueprint_mdata_fields.icon_dict[props.res_type],
+    minimal: true,
+    onClick: _goToLink
+  }), /*#__PURE__*/_react["default"].createElement(_core.Button, {
+    small: true,
+    icon: "small-cross",
+    minimal: true,
+    onClick: function onClick(e) {
+      props.deleteMe(props.my_index);
+      e.stopPropagation();
     }
-  }, {
-    key: "render",
-    value: function render() {
-      var self = this;
-      return /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, {
-        className: "link-button-group"
-      }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
-        small: true,
-        text: this.props.res_name,
-        icon: _blueprint_mdata_fields.icon_dict[this.props.res_type],
-        minimal: true,
-        onClick: this._goToLink
-      }), /*#__PURE__*/_react["default"].createElement(_core.Button, {
-        small: true,
-        icon: "small-cross",
-        minimal: true,
-        onClick: function onClick(e) {
-          self.props.deleteMe(self.props.my_index);
-          e.stopPropagation();
-        }
-      }));
-    }
-  }]);
-  return ResourceLinkButton;
-}(_react["default"].PureComponent);
+  }));
+}
+ResourceLinkButton = /*#__PURE__*/(0, _react.memo)(ResourceLinkButton);
 ResourceLinkButton.propTypes = {
   res_type: _propTypes["default"].string,
   res_name: _propTypes["default"].string,
   deleteMe: _propTypes["default"].func
 };
-var text_item_update_props = ["am_shrunk", "set_focus", "serach_string", "am_selected", "show_markdown", "in_section", "hide_in_section", "summary_text", "console_text", "console_available_width", "links"];
-var RawConsoleTextItem = /*#__PURE__*/function (_React$Component6) {
-  _inherits(RawConsoleTextItem, _React$Component6);
-  var _super9 = _createSuper(RawConsoleTextItem);
-  function RawConsoleTextItem(props) {
-    var _this11;
-    _classCallCheck(this, RawConsoleTextItem);
-    _this11 = _super9.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this11), "_", RawConsoleTextItem.prototype);
-    _this11.cmobject = null;
-    _this11.elRef = /*#__PURE__*/_react["default"].createRef();
-    _this11.ce_summary_ref = /*#__PURE__*/_react["default"].createRef();
-    _this11.update_props = text_item_update_props;
-    _this11.update_state_vars = ["ce_ref"];
-    _this11.previous_dark_theme = props.dark_theme;
-    _this11.state = {
-      ce_ref: null
-    };
-    return _this11;
+var text_item_update_props = ["am_shrunk", "set_focus", "serach_string", "am_selected", "show_markdown", "in_section", "summary_text", "console_text", "console_available_width", "links"];
+function ConsoleTextItem(props) {
+  var elRef = (0, _react.useRef)(null);
+  var am_selected_previous = (0, _react.useRef)(false);
+  var setFocusFunc = (0, _react.useRef)(null);
+  (0, _react.useEffect)(function () {
+    if (props.am_selected && !am_selected_previous.current && elRef && elRef.current) {
+      scrollMeIntoView();
+    }
+    am_selected_previous.current = props.am_selected;
+    if (props.set_focus) {
+      if (props.show_markdown) {
+        _hideMarkdown();
+      } else if (setFocusFunc.current) {
+        setFocusFunc.current();
+        props.setConsoleItemValue(props.unique_id, "set_focus", false, _selectMe);
+      }
+    }
+  });
+  function registerSetFocusFunc(theFunc) {
+    setFocusFunc.current = theFunc;
   }
-  _createClass(RawConsoleTextItem, [{
-    key: "shouldComponentUpdate",
-    value: function shouldComponentUpdate(nextProps, nextState, nextContext) {
-      var _iterator28 = _createForOfIteratorHelper(this.update_props),
-        _step28;
-      try {
-        for (_iterator28.s(); !(_step28 = _iterator28.n()).done;) {
-          var prop = _step28.value;
-          if (nextProps[prop] != this.props[prop]) {
-            return true;
-          }
-        }
-      } catch (err) {
-        _iterator28.e(err);
-      } finally {
-        _iterator28.f();
-      }
-      var _iterator29 = _createForOfIteratorHelper(this.update_state_vars),
-        _step29;
-      try {
-        for (_iterator29.s(); !(_step29 = _iterator29.n()).done;) {
-          var state_var = _step29.value;
-          if (nextState[state_var] != this.state[state_var]) {
-            return true;
-          }
-        }
-      } catch (err) {
-        _iterator29.e(err);
-      } finally {
-        _iterator29.f();
-      }
-      if (this.props.dark_theme != this.previous_dark_theme) {
-        this.previous_dark_theme = this.props.dark_theme;
-        return true;
-      }
-      return false;
+  function scrollMeIntoView() {
+    var my_element = elRef.current;
+    var outer_element = my_element.parentNode.parentNode;
+    var scrolled_element = my_element.parentNode;
+    var outer_height = outer_element.offsetHeight;
+    var distance_from_top = my_element.offsetTop - outer_element.scrollTop - scrolled_element.offsetTop;
+    if (distance_from_top > outer_height - 35) {
+      var distance_to_move = distance_from_top - .5 * outer_height;
+      outer_element.scrollTop += distance_to_move;
+    } else if (distance_from_top < 0) {
+      var _distance_to_move2 = .25 * outer_height - distance_from_top;
+      outer_element.scrollTop -= _distance_to_move2;
     }
-  }, {
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      var _this12 = this;
-      if (this.props.set_focus) {
-        if (this.props.show_markdown) {
-          this._hideMarkdown();
-        } else if (this.cmobject != null) {
-          this.cmobject.focus();
-          this.cmobject.setCursor({
-            line: 0,
-            ch: 0
-          });
-          this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe);
-        }
-      }
-      var self = this;
-      if (this.cmobject != null) {
-        this.cmobject.on("focus", function () {
-          self.props.setFocus(_this12.props.unique_id, self._selectMe);
-        });
-        this.cmobject.on("blur", function () {
-          self.props.setFocus(null);
-        });
-      }
+  }
+  function hasOnlyWhitespace() {
+    return !props.console_text.trim().length;
+  }
+  function _showMarkdown() {
+    props.setConsoleItemValue(props.unique_id, "show_markdown", true);
+  }
+  function _toggleMarkdown() {
+    if (props.show_markdown) {
+      _hideMarkdown();
+    } else {
+      _showMarkdown();
     }
-  }, {
-    key: "_scrollMeIntoView",
-    value: function _scrollMeIntoView() {
-      var my_element = this.elRef.current;
-      var outer_element = my_element.parentNode.parentNode;
-      var scrolled_element = my_element.parentNode;
-      var outer_height = outer_element.offsetHeight;
-      var distance_from_top = my_element.offsetTop - outer_element.scrollTop - scrolled_element.offsetTop;
-      if (distance_from_top > outer_height - 35) {
-        var distance_to_move = distance_from_top - .5 * outer_height;
-        outer_element.scrollTop += distance_to_move;
-      } else if (distance_from_top < 0) {
-        var _distance_to_move2 = .25 * outer_height - distance_from_top;
-        outer_element.scrollTop -= _distance_to_move2;
-      }
+  }
+  function _hideMarkdown() {
+    props.setConsoleItemValue(props.unique_id, "show_markdown", false);
+  }
+  function _handleChange(new_text) {
+    props.setConsoleItemValue(props.unique_id, "console_text", new_text);
+  }
+  function _clearForceSync() {
+    props.setConsoleItemValue(props.unique_id, "force_sync_to_prop", false);
+  }
+  function _handleSummaryTextChange(value) {
+    props.setConsoleItemValue(props.unique_id, "summary_text", value);
+  }
+  function _toggleShrink() {
+    props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
+  }
+  function _deleteMe() {
+    props.handleDelete(props.unique_id);
+  }
+  function _handleKeyDown(event) {
+    if (event.key == "Tab") {
+      props.goToNextCell(props.unique_id);
+      event.preventDefault();
     }
-  }, {
-    key: "componentDidUpdate",
-    value: function componentDidUpdate(prevProps, prevState, snapShot) {
-      if (this.props.am_selected && !prevProps.am_selected && this.elRef && this.elRef.current) {
-        this._scrollMeIntoView();
-      }
-      if (this.props.set_focus) {
-        if (this.props.show_markdown) {
-          this._hideMarkdown();
-        } else if (this.cmobject != null) {
-          this.cmobject.focus();
-          this.cmobject.setCursor({
-            line: 0,
-            ch: 0
-          });
-          this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe);
-        }
-      }
+  }
+  function _gotEnter() {
+    props.goToNextCell(props.unique_id);
+    _showMarkdown();
+  }
+  function _getFirstLine() {
+    var re = /^(.*)$/m;
+    if (props.console_text == "") {
+      return "empty text cell";
+    } else {
+      return re.exec(props.console_text)[0];
     }
-  }, {
-    key: "hasOnlyWhitespace",
-    get: function get() {
-      return !this.props.console_text.trim().length;
+  }
+  function _copyMe() {
+    props.copyCell(props.unique_id);
+  }
+  function _pasteCell() {
+    props.pasteCell(props.unique_id);
+  }
+  function _selectMe() {
+    var e = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    props.selectConsoleItem(props.unique_id, e, callback);
+  }
+  function _insertResourceLink() {
+    (0, _modal_react.showSelectResourceDialog)("cancel", "insert link", function (result) {
+      var new_links = _toConsumableArray(props.links);
+      new_links.push({
+        res_type: result.type,
+        res_name: result.selected_resource
+      });
+      props.setConsoleItemValue(props.unique_id, "links", new_links);
+    });
+  }
+  function _deleteLinkButton(index) {
+    var new_links = _lodash["default"].cloneDeep(props.links);
+    new_links.splice(index, 1);
+    var self = this;
+    props.setConsoleItemValue(props.unique_id, "links", new_links, function () {
+      console.log("i am here with nlinks " + String(props.links.length));
+    });
+  }
+  function _addBlankText() {
+    _selectMe(null, function () {
+      props.addNewTextItem();
+    });
+  }
+  function _addBlankDivider() {
+    _selectMe(null, function () {
+      props.addNewDividerItem();
+    });
+  }
+  function _addBlankCode() {
+    _selectMe(null, function () {
+      props.addNewCodeItem();
+    });
+  }
+  function renderContextMenu() {
+    // return a single element, or nothing to use default browser behavior
+    return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "paragraph",
+      intent: "success",
+      onClick: _showMarkdown,
+      text: "Show Markdown"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "new-text-box",
+      onClick: _addBlankText,
+      text: "New Text Cell"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "code",
+      onClick: _addBlankCode,
+      text: "New Code Cell"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "header",
+      onClick: _addBlankDivider,
+      text: "New Section"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "link",
+      onClick: _insertResourceLink,
+      text: "Insert ResourceLink"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "duplicate",
+      onClick: _copyMe,
+      text: "Copy Cell"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "clipboard",
+      onClick: _pasteCell,
+      text: "Paste Cells"
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+      icon: "trash",
+      onClick: _deleteMe,
+      intent: "danger",
+      text: "Delete Cell"
+    }));
+  }
+  function _consoleItemClick(e) {
+    _selectMe(e);
+    e.stopPropagation();
+  }
+  function _handleFocus() {
+    if (!props.am_selected) {
+      _selectMe();
     }
-  }, {
-    key: "_showMarkdown",
-    value: function _showMarkdown() {
-      this.props.setConsoleItemValue(this.props.unique_id, "show_markdown", true);
+  }
+  function _setCMObject(cmobject) {
+    cmobject.current = cmobject;
+    if (props.set_focus) {
+      cmobject.current.focus();
+      cmobject.current.setCursor({
+        line: 0,
+        ch: 0
+      });
+      props.setConsoleItemValue(props.unique_id, "set_focus", false, _selectMe);
     }
-  }, {
-    key: "_toggleMarkdown",
-    value: function _toggleMarkdown() {
-      if (this.props.show_markdown) {
-        this._hideMarkdown();
-      } else {
-        this._showMarkdown();
-      }
-    }
-  }, {
-    key: "_hideMarkdown",
-    value: function _hideMarkdown() {
-      this.props.setConsoleItemValue(this.props.unique_id, "show_markdown", false);
-    }
-  }, {
-    key: "_handleChange",
-    value: function _handleChange(new_text) {
-      this.props.setConsoleItemValue(this.props.unique_id, "console_text", new_text);
-    }
-  }, {
-    key: "_clearForceSync",
-    value: function _clearForceSync() {
-      this.props.setConsoleItemValue(this.props.unique_id, "force_sync_to_prop", false);
-    }
-  }, {
-    key: "_handleSummaryTextChange",
-    value: function _handleSummaryTextChange(value) {
-      this.props.setConsoleItemValue(this.props.unique_id, "summary_text", value);
-    }
-  }, {
-    key: "_toggleShrink",
-    value: function _toggleShrink() {
-      this.props.setConsoleItemValue(this.props.unique_id, "am_shrunk", !this.props.am_shrunk);
-    }
-  }, {
-    key: "_deleteMe",
-    value: function _deleteMe() {
-      this.props.handleDelete(this.props.unique_id);
-    }
-  }, {
-    key: "_handleKeyDown",
-    value: function _handleKeyDown(event) {
-      if (event.key == "Tab") {
-        this.props.goToNextCell(this.props.unique_id);
-        event.preventDefault();
-      }
-    }
-  }, {
-    key: "_gotEnter",
-    value: function _gotEnter() {
-      this.props.goToNextCell(this.props.unique_id);
-      this._showMarkdown();
-    }
-  }, {
-    key: "_getFirstLine",
-    value: function _getFirstLine() {
-      var re = /^(.*)$/m;
-      if (this.props.console_text == "") {
-        return "empty text cell";
-      } else {
-        return re.exec(this.props.console_text)[0];
-      }
-    }
-  }, {
-    key: "_copyMe",
-    value: function _copyMe() {
-      this.props.copyCell(this.props.unique_id);
-    }
-  }, {
-    key: "_pasteCell",
-    value: function _pasteCell() {
-      this.props.pasteCell(this.props.unique_id);
-    }
-  }, {
-    key: "_selectMe",
-    value: function _selectMe() {
-      var e = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-      var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-      this.props.selectConsoleItem(this.props.unique_id, e, callback);
-    }
-  }, {
-    key: "_insertResourceLink",
-    value: function _insertResourceLink() {
-      var self = this;
-      (0, _modal_react.showSelectResourceDialog)("cancel", "insert link", function (result) {
-        var new_links = _toConsumableArray(self.props.links);
-        new_links.push({
-          res_type: result.type,
-          res_name: result.selected_resource
-        });
-        self.props.setConsoleItemValue(self.props.unique_id, "links", new_links);
+    if (cmobject.current != null) {
+      cmobject.current.on("focus", function () {
+        props.setFocus(props.unique_id, _selectMe);
+      });
+      cmobject.current.on("blur", function () {
+        props.setFocus(null);
       });
     }
-  }, {
-    key: "_deleteLinkButton",
-    value: function _deleteLinkButton(index) {
-      var new_links = _lodash["default"].cloneDeep(this.props.links);
-      new_links.splice(index, 1);
-      var self = this;
-      this.props.setConsoleItemValue(this.props.unique_id, "links", new_links, function () {
-        console.log("i am here with nlinks " + String(self.props.links.length));
-      });
+  }
+  function _extraKeys() {
+    var self = this;
+    return {
+      'Ctrl-Enter': function CtrlEnter() {
+        return _gotEnter();
+      },
+      'Cmd-Enter': function CmdEnter() {
+        return _gotEnter();
+      },
+      'Ctrl-C': props.addNewCodeItem,
+      'Ctrl-T': props.addNewTextItem
+    };
+  }
+  var really_show_markdown = hasOnlyWhitespace() && props.links.length == 0 ? false : props.show_markdown;
+  var converted_markdown;
+  if (really_show_markdown) {
+    converted_markdown = mdi.render(props.console_text);
+  }
+  var converted_dict = {
+    __html: converted_markdown
+  };
+  var panel_class = props.am_shrunk ? "log-panel log-panel-invisible text-log-item" : "log-panel log-panel-visible text-log-item";
+  if (props.am_selected) {
+    panel_class += " selected";
+  }
+  if (props.in_section) {
+    panel_class += " in-section";
+  }
+  var gbstyle = {
+    marginLeft: 1
+  };
+  var body_width = props.console_available_width - BUTTON_CONSUMED_SPACE;
+  var self = this;
+  var link_buttons = props.links.map(function (link, index) {
+    return /*#__PURE__*/_react["default"].createElement(ResourceLinkButton, {
+      key: index,
+      my_index: index,
+      handleCreateViewer: props.handleCreateViewer,
+      deleteMe: _deleteLinkButton,
+      res_type: link.res_type,
+      res_name: link.res_name
+    });
+  });
+  var code_container_width = props.console_available_width - BUTTON_CONSUMED_SPACE;
+  if (props.in_section) {
+    code_container_width -= SECTION_INDENT / 2;
+  }
+  return /*#__PURE__*/_react["default"].createElement("div", {
+    className: panel_class + " d-flex flex-row",
+    onClick: _consoleItemClick,
+    ref: elRef,
+    id: props.unique_id,
+    style: {
+      marginBottom: 10
     }
-  }, {
-    key: "_addBlankText",
-    value: function _addBlankText() {
-      var self = this;
-      this._selectMe(null, function () {
-        self.props.addNewTextItem();
-      });
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    className: "button-div shrink-expand-div d-flex flex-row"
+  }, /*#__PURE__*/_react["default"].createElement(Shandle, {
+    dragHandleProps: props.dragHandleProps
+  }), !props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+    icon: "chevron-down",
+    handleClick: _toggleShrink
+  }), props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+    icon: "chevron-right",
+    style: {
+      marginTop: 5
+    },
+    handleClick: _toggleShrink
+  })), props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.EditableText, {
+    value: props.summary_text ? props.summary_text : _getFirstLine(),
+    onChange: _handleSummaryTextChange,
+    className: "log-panel-summary"
+  }), /*#__PURE__*/_react["default"].createElement("div", {
+    className: "button-div d-flex flex-row"
+  }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+    handleClick: _deleteMe,
+    intent: "danger",
+    tooltip: "Delete this item",
+    style: {
+      marginLeft: 10,
+      marginRight: 66
+    },
+    icon: "trash"
+  }))), !props.am_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
+    className: "d-flex flex-column",
+    style: {
+      width: "100%"
     }
-  }, {
-    key: "_addBlankDivider",
-    value: function _addBlankDivider() {
-      var self = this;
-      this._selectMe(null, function () {
-        self.props.addNewDividerItem();
-      });
-    }
-  }, {
-    key: "_addBlankCode",
-    value: function _addBlankCode() {
-      var self = this;
-      this._selectMe(null, function () {
-        self.props.addNewCodeItem();
-      });
-    }
-  }, {
-    key: "renderContextMenu",
-    value: function renderContextMenu() {
-      // return a single element, or nothing to use default browser behavior
-      return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "paragraph",
-        intent: "success",
-        onClick: this._showMarkdown,
-        text: "Show Markdown"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "new-text-box",
-        onClick: this._addBlankText,
-        text: "New Text Cell"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "code",
-        onClick: this._addBlankCode,
-        text: "New Code Cell"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "header",
-        onClick: this._addBlankDivider,
-        text: "New Section"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "link",
-        onClick: this._insertResourceLink,
-        text: "Insert ResourceLink"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "duplicate",
-        onClick: this._copyMe,
-        text: "Copy Cell"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "clipboard",
-        onClick: this._pasteCell,
-        text: "Paste Cells"
-      }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-        icon: "trash",
-        onClick: this._deleteMe,
-        intent: "danger",
-        text: "Delete Cell"
-      }));
-    }
-  }, {
-    key: "_consoleItemClick",
-    value: function _consoleItemClick(e) {
-      this._selectMe(e);
-      e.stopPropagation();
-    }
-  }, {
-    key: "_handleFocus",
-    value: function _handleFocus() {
-      if (!this.props.am_selected) {
-        this._selectMe();
-      }
-    }
-  }, {
-    key: "_setCMObject",
-    value: function _setCMObject(cmobject) {
-      this.cmobject = cmobject;
-      if (this.props.set_focus) {
-        this.cmobject.focus();
-        this.cmobject.setCursor({
-          line: 0,
-          ch: 0
-        });
-        this.props.setConsoleItemValue(this.props.unique_id, "set_focus", false, this._selectMe);
-      }
-    }
-  }, {
-    key: "_extraKeys",
-    value: function _extraKeys() {
-      var self = this;
-      return {
-        'Ctrl-Enter': function CtrlEnter() {
-          return self._gotEnter();
-        },
-        'Cmd-Enter': function CmdEnter() {
-          return self._gotEnter();
-        },
-        'Ctrl-C': self.props.addNewCodeItem,
-        'Ctrl-T': self.props.addNewTextItem
-      };
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var _this13 = this;
-      if (this.props.hide_in_section && this.props.in_section) {
-        return /*#__PURE__*/_react["default"].createElement("div", {
-          className: "log-panel fixed-log-panel d-flex flex-row",
-          id: this.props.unique_id,
-          style: {
-            height: 0
-          }
-        });
-      }
-      var really_show_markdown = this.hasOnlyWhitespace && this.props.links.length == 0 ? false : this.props.show_markdown;
-      var converted_markdown;
-      if (really_show_markdown) {
-        converted_markdown = mdi.render(this.props.console_text);
-      }
-      // let key_bindings = [[["ctrl+enter", "command+enter"], this._gotEnter]];
-      var converted_dict = {
-        __html: converted_markdown
-      };
-      var panel_class = this.props.am_shrunk ? "log-panel log-panel-invisible text-log-item" : "log-panel log-panel-visible text-log-item";
-      if (this.props.am_selected) {
-        panel_class += " selected";
-      }
-      if (this.props.in_section) {
-        panel_class += " in-section";
-      }
-      var gbstyle = {
-        marginLeft: 1
-      };
-      var body_width = this.props.console_available_width - BUTTON_CONSUMED_SPACE;
-      var self = this;
-      var link_buttons = this.props.links.map(function (link, index) {
-        return /*#__PURE__*/_react["default"].createElement(ResourceLinkButton, {
-          key: index,
-          my_index: index,
-          handleCreateViewer: _this13.props.handleCreateViewer,
-          deleteMe: self._deleteLinkButton,
-          res_type: link.res_type,
-          res_name: link.res_name
-        });
-      });
-      var code_container_width = this.props.console_available_width - BUTTON_CONSUMED_SPACE;
-      if (this.props.in_section) {
-        code_container_width -= SECTION_INDENT / 2;
-      }
-      return /*#__PURE__*/_react["default"].createElement("div", {
-        className: panel_class + " d-flex flex-row",
-        onClick: this._consoleItemClick,
-        ref: this.elRef,
-        id: this.props.unique_id,
-        style: {
-          marginBottom: 10
-        }
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: "button-div shrink-expand-div d-flex flex-row"
-      }, /*#__PURE__*/_react["default"].createElement(Shandle, null), !this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        icon: "chevron-down",
-        handleClick: this._toggleShrink
-      }), this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        icon: "chevron-right",
-        style: {
-          marginTop: 5
-        },
-        handleClick: this._toggleShrink
-      })), this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.EditableText, {
-        value: this.props.summary_text ? this.props.summary_text : this._getFirstLine(),
-        onChange: this._handleSummaryTextChange,
-        className: "log-panel-summary"
-      }), /*#__PURE__*/_react["default"].createElement("div", {
-        className: "button-div d-flex flex-row"
-      }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        handleClick: this._deleteMe,
-        intent: "danger",
-        tooltip: "Delete this item",
-        style: {
-          marginLeft: 10,
-          marginRight: 66
-        },
-        icon: "trash"
-      }))), !this.props.am_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
-        className: "d-flex flex-column",
-        style: {
-          width: "100%"
-        }
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: "log-panel-body text-box d-flex flex-row"
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: "button-div d-inline-flex pr-1"
-      }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        handleClick: this._toggleMarkdown,
-        intent: "success",
-        tooltip: "Convert to/from markdown",
-        icon: "paragraph"
-      })), /*#__PURE__*/_react["default"].createElement("div", {
-        className: "d-flex flex-column"
-      }, !really_show_markdown && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
-        handleChange: this._handleChange,
-        dark_theme: this.props.dark_theme,
-        am_selected: this.props.am_selected,
-        readOnly: false,
-        handleFocus: this._handleFocus,
-        show_line_numbers: false,
-        soft_wrap: true,
-        sync_to_prop: false,
-        force_sync_to_prop: this.props.force_sync_to_prop,
-        clear_force_sync: this._clearForceSync,
-        mode: "markdown",
-        code_content: this.props.console_text,
-        setCMObject: this._setCMObject,
-        extraKeys: this._extraKeys(),
-        search_term: this.props.search_string,
-        code_container_width: code_container_width,
-        saveMe: null
-      })), really_show_markdown && !this.hasOnlyWhitespace && /*#__PURE__*/_react["default"].createElement("div", {
-        className: "text-panel-output",
-        onDoubleClick: this._hideMarkdown,
-        style: {
-          width: body_width,
-          padding: 9
-        },
-        dangerouslySetInnerHTML: converted_dict
-      }), link_buttons), /*#__PURE__*/_react["default"].createElement("div", {
-        className: "button-div d-flex flex-row"
-      }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-        handleClick: this._deleteMe,
-        intent: "danger",
-        tooltip: "Delete this item",
-        style: {
-          marginLeft: 10,
-          marginRight: 66
-        },
-        icon: "trash"
-      })))));
-    }
-  }]);
-  return RawConsoleTextItem;
-}(_react["default"].Component);
-RawConsoleTextItem.propTypes = {
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    className: "log-panel-body text-box d-flex flex-row"
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    className: "button-div d-inline-flex pr-1"
+  }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+    handleClick: _toggleMarkdown,
+    intent: "success",
+    tooltip: "Convert to/from markdown",
+    icon: "paragraph"
+  })), /*#__PURE__*/_react["default"].createElement("div", {
+    className: "d-flex flex-column"
+  }, !really_show_markdown && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
+    handleChange: _handleChange,
+    dark_theme: props.dark_theme,
+    am_selected: props.am_selected,
+    readOnly: false,
+    handleFocus: _handleFocus,
+    registerSetFocusFunc: registerSetFocusFunc,
+    show_line_numbers: false,
+    soft_wrap: true,
+    sync_to_prop: false,
+    force_sync_to_prop: props.force_sync_to_prop,
+    clear_force_sync: _clearForceSync,
+    mode: "markdown",
+    code_content: props.console_text,
+    extraKeys: _extraKeys(),
+    search_term: props.search_string,
+    code_container_width: code_container_width,
+    saveMe: null
+  })), really_show_markdown && !hasOnlyWhitespace() && /*#__PURE__*/_react["default"].createElement("div", {
+    className: "text-panel-output",
+    onDoubleClick: _hideMarkdown,
+    style: {
+      width: body_width,
+      padding: 9
+    },
+    dangerouslySetInnerHTML: converted_dict
+  }), link_buttons), /*#__PURE__*/_react["default"].createElement("div", {
+    className: "button-div d-flex flex-row"
+  }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+    handleClick: _deleteMe,
+    intent: "danger",
+    tooltip: "Delete this item",
+    style: {
+      marginLeft: 10,
+      marginRight: 66
+    },
+    icon: "trash"
+  })))));
+}
+ConsoleTextItem = /*#__PURE__*/(0, _react.memo)(ConsoleTextItem);
+ConsoleTextItem.propTypes = {
   unique_id: _propTypes["default"].string,
   am_shrunk: _propTypes["default"].bool,
   set_focus: _propTypes["default"].bool,
@@ -3862,14 +3230,14 @@ RawConsoleTextItem.propTypes = {
   setFocus: _propTypes["default"].func,
   links: _propTypes["default"].array
 };
-RawConsoleTextItem.defaultProps = {
+ConsoleTextItem.defaultProps = {
   force_sync_to_prop: false,
   summary_text: null,
   links: []
 };
 
 // const ConsoleTextItem = ContextMenuTarget(RawConsoleTextItem);
-var ConsoleTextItem = RawConsoleTextItem;
+
 var all_update_props = {
   "text": text_item_update_props,
   "code": code_item_update_props,

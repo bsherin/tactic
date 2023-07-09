@@ -33,7 +33,7 @@ function TacticMenubar(props) {
                                      handleClick={sg.handleClick}
                                      icon={sg.icon}/>)
     }
-    const theme_class = props.dark_theme ? "bp4-dark" : "light-theme";
+    const theme_class = props.dark_theme ? "bp5-dark" : "light-theme";
     const name_style = {
         marginButton: 0,
         marginLeft: 10,
@@ -58,7 +58,7 @@ function TacticMenubar(props) {
             {props.resource_name &&
                 <div style={name_style}>{props.resource_name}</div>
             }
-            <div style={{height: 30}} className="bp4-navbar-group bp4-align-left">
+            <div style={{height: 30}} className="bp5-navbar-group bp5-align-left">
                 <Fragment>
                     {menus}
                     {sug_glyphs}
