@@ -334,6 +334,7 @@ class HostWorker(QWorker):
 
     @task_worthy
     def get_container_log(self, data):
+        print("** in get_container_log in host ***")
         container_id = data["container_id"]
         if "since" in data and data["since"] is not None:
             dt = datetime.datetime.fromtimestamp(data["since"] / 1000)
@@ -344,6 +345,7 @@ class HostWorker(QWorker):
             mlines = data["max_lines"]
             ltlist = log_text.split("\n")[-1 * data["max_lines"]:]
             log_text = "\n".join(ltlist)
+        print("*** returning from get_container_log in host ***")
         return {"success": True, "log_text": log_text}
 
     @task_worthy

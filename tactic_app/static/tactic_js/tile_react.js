@@ -5,11 +5,10 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.TileContainer = void 0;
-var _react = _interopRequireDefault(require("react"));
+var _react = _interopRequireWildcard(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
 var _reactTransitionGroup = require("react-transition-group");
-var _reactSortableHoc = require("react-sortable-hoc");
 var _lodash = _interopRequireDefault(require("lodash"));
 var _tile_form_react = require("./tile_form_react.js");
 var _blueprint_react_widgets = require("./blueprint_react_widgets.js");
@@ -23,6 +22,9 @@ var _menu_utilities = require("./menu_utilities.js");
 var _modal_react = require("./modal_react");
 var _searchable_console = require("./searchable_console");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
@@ -114,8 +116,10 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "_resortTiles",
     value: function _resortTiles(_ref) {
-      var oldIndex = _ref.oldIndex,
-        newIndex = _ref.newIndex;
+      var destination = _ref.destination,
+        source = _ref.source;
+      var oldIndex = source.index;
+      var newIndex = destination.index;
       var old_tile_list = _toConsumableArray(this.props.tile_list);
       var new_tile_list = (0, _utilities_react.arrayMove)(old_tile_list, oldIndex, newIndex);
       this.props.setMainStateValue("tile_list", new_tile_list);
@@ -286,10 +290,11 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
         main_id: this.props.main_id,
         style: outer_style,
         dark_theme: this.props.dark_theme,
-        helperClass: this.props.dark_theme ? "bp5-dark" : "light-theme",
-        container_ref: this.props.tile_div_ref,
+        helperClass: this.props.dark_theme ? "bp5-dark" : "light-theme"
+        // container_ref={this.props.tile_div_ref}
+        ,
         goToModule: this.props.goToModule,
-        ElementComponent: STileComponent,
+        ElementComponent: TileComponent,
         key_field_name: "tile_name",
         item_list: _lodash["default"].cloneDeep(this.props.tile_list),
         handle: ".tile-name-div",
@@ -297,7 +302,7 @@ var TileContainer = /*#__PURE__*/function (_React$Component) {
           return event.preventDefault();
         } // This prevents Safari weirdness
         ,
-        onSortEnd: this._resortTiles,
+        onDragEnd: this._resortTiles,
         handleClose: this._closeTile,
         setTileValue: this._setTileValue,
         setTileState: this._setTileState,
@@ -339,9 +344,9 @@ var RawSortHandle = /*#__PURE__*/function (_React$Component2) {
   }, {
     key: "render",
     value: function render() {
-      return /*#__PURE__*/_react["default"].createElement("span", {
+      return /*#__PURE__*/_react["default"].createElement("span", _extends({
         className: "tile-name-div"
-      }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+      }, this.props.dragHandleProps), /*#__PURE__*/_react["default"].createElement(_core.Icon, {
         icon: "drag-handle-vertical",
         iconSize: 15
       }), this.props.tile_name);
@@ -352,7 +357,7 @@ var RawSortHandle = /*#__PURE__*/function (_React$Component2) {
 RawSortHandle.propTypes = {
   tile_name: _propTypes["default"].string
 };
-var Shandle = (0, _reactSortableHoc.SortableHandle)(RawSortHandle);
+var Shandle = RawSortHandle;
 var TileComponent = /*#__PURE__*/function (_React$Component3) {
   _inherits(TileComponent, _React$Component3);
   var _super3 = _createSuper(TileComponent);
@@ -1082,6 +1087,7 @@ var TileComponent = /*#__PURE__*/function (_React$Component3) {
         handleClick: this._toggleBack,
         icon: "cog"
       }), /*#__PURE__*/_react["default"].createElement(Shandle, {
+        dragHandleProps: this.props.dragHandleProps,
         tile_name: this.props.tile_name
       }))), /*#__PURE__*/_react["default"].createElement("div", {
         className: "right-glyphs",
@@ -1196,4 +1202,3 @@ TileComponent.defaultProps = {
   log_since: null,
   max_console_lines: 100
 };
-var STileComponent = (0, _reactSortableHoc.SortableElement)(TileComponent);

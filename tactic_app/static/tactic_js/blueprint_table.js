@@ -4,534 +4,408 @@ function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" =
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.BlueprintTable = void 0;
+exports.BlueprintTable = BlueprintTable;
 exports.compute_added_column_width = compute_added_column_width;
-var _react = _interopRequireDefault(require("react"));
+var _react = _interopRequireWildcard(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _table = require("@blueprintjs/table");
 var _objectHash = _interopRequireDefault(require("object-hash"));
-var _utilities_react = require("./utilities_react.js");
+var _utilities_react = require("./utilities_react");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
-function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 var MAX_INITIAL_CELL_WIDTH = 400;
 var EXTRA_TABLE_AREA_SPACE = 500;
-var ColoredWord = /*#__PURE__*/function (_React$Component) {
-  _inherits(ColoredWord, _React$Component);
-  var _super = _createSuper(ColoredWord);
-  function ColoredWord() {
-    _classCallCheck(this, ColoredWord);
-    return _super.apply(this, arguments);
-  }
-  _createClass(ColoredWord, [{
-    key: "render",
-    value: function render() {
-      var style = {
-        backgroundColor: this.props.the_color
-      };
-      return /*#__PURE__*/_react["default"].createElement("span", {
-        style: style
-      }, this.props.the_word);
-    }
-  }]);
-  return ColoredWord;
-}(_react["default"].Component);
+function ColoredWord(props) {
+  var style = {
+    backgroundColor: props.the_color
+  };
+  return /*#__PURE__*/_react["default"].createElement("span", {
+    style: style
+  }, props.the_word);
+}
 ColoredWord.propTypes = {
   the_color: _propTypes["default"].string,
   the_word: _propTypes["default"].string
 };
-var BlueprintTable = /*#__PURE__*/function (_React$Component2) {
-  _inherits(BlueprintTable, _React$Component2);
-  var _super2 = _createSuper(BlueprintTable);
-  function BlueprintTable(props) {
-    var _this;
-    _classCallCheck(this, BlueprintTable);
-    _this = _super2.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
-    _this.mismatched_column_widths = false;
-    _this.table_ref = /*#__PURE__*/_react["default"].createRef();
-    _this.set_scroll = null;
-    _this.data_update_required = null;
-    _this.state = {
-      focusedCell: null
+ColoredWord = /*#__PURE__*/(0, _react.memo)(ColoredWord);
+function BlueprintTable(props, passedRef) {
+  var mismatched_column_widths = (0, _react.useRef)(false);
+  var table_ref = (0, _react.useRef)(null);
+  var data_update_required = (0, _react.useRef)(null);
+  var _useState = (0, _react.useState)(null),
+    _useState2 = _slicedToArray(_useState, 2),
+    focusedCell = _useState2[0],
+    setFocusedCell = _useState2[1];
+  (0, _react.useEffect)(function () {
+    computeColumnWidths();
+    _updateRowHeights();
+  }, []);
+  (0, _react.useEffect)(function () {
+    if (props.column_widths == null || mismatched_column_widths.current) {
+      computeColumnWidths();
+    }
+    _updateRowHeights();
+  });
+  function hash_value() {
+    var obj = {
+      cwidths: props.column_widths,
+      nrows: props.total_rows
+      // sscroll: set_scroll
     };
-    return _this;
-  }
-  _createClass(BlueprintTable, [{
-    key: "hash_value",
-    get: function get() {
-      var obj = {
-        cwidths: this.props.column_widths,
-        nrows: this.props.total_rows
-        // sscroll: this.set_scroll
-      };
 
-      return (0, _objectHash["default"])(obj);
-    }
-  }, {
-    key: "shouldComponentUpdate",
-    value: function shouldComponentUpdate(nextProps, nextState) {
-      if (this.set_scroll || this.data_update_required) {
-        return true;
-      }
-      return !(0, _utilities_react.propsAreEqual)(nextProps, this.props) || !(0, _utilities_react.propsAreEqual)(nextState, this.state);
-    }
-  }, {
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      this.setState({
-        mounted: true
-      });
-      this.computeColumnWidths();
-      this._updateRowHeights();
-    }
-  }, {
-    key: "componentDidUpdate",
-    value: function componentDidUpdate() {
-      if (this.props.column_widths == null || this.mismatched_column_widths) {
-        this.computeColumnWidths();
-      }
-      this._updateRowHeights();
-    }
-  }, {
-    key: "computeColumnWidths",
-    value: function computeColumnWidths() {
-      var cwidths = compute_initial_column_widths(this.props.filtered_column_names, this.props.data_row_dict);
-      this.mismatched_column_widths = false;
-      this.props.updateTableSpec({
-        column_widths: cwidths
-      }, true);
-    }
-  }, {
-    key: "haveRowData",
-    value: function haveRowData(rowIndex) {
-      return this.props.data_row_dict.hasOwnProperty(rowIndex);
-    }
-  }, {
-    key: "_doScroll",
-    value: function _doScroll() {
-      if (this.data_update_required != null) {
-        var rindex = this.data_update_required;
-        this.data_update_required = null;
-        this.props.initiateDataGrab(rindex);
-      } else if (this.set_scroll != null && this.table_ref && this.table_ref.current) {
-        try {
-          var singleCellRegion = _table.Regions.cell(this.set_scroll, 0);
-          this.table_ref.current.scrollToRegion(singleCellRegion);
-          this.set_scroll = null;
-        } catch (e) {
-          console.log(e.message);
-        }
-      }
-    }
-  }, {
-    key: "_scrollToRow",
-    value: function _scrollToRow(row_index) {
-      this.set_scroll = row_index;
-    }
-  }, {
-    key: "_updateRowHeights",
-    value: function _updateRowHeights() {
-      var fcnames = this.props.filtered_column_names;
-      var self = this;
-      this.table_ref.current.resizeRowsByApproximateHeight(function (rowIndex, colIndex) {
-        if (!self.haveRowData(rowIndex)) {
-          return "empty cell";
-        }
-        return self.props.data_row_dict[rowIndex][fcnames[colIndex]];
-      }, {
-        getNumBufferLines: 1
-      });
-    }
-  }, {
-    key: "_rowHeaderCellRenderer",
-    value: function _rowHeaderCellRenderer(rowIndex) {
-      if (this.haveRowData(rowIndex)) {
-        return /*#__PURE__*/_react["default"].createElement(_table.RowHeaderCell, {
-          key: rowIndex,
-          name: this.props.data_row_dict[rowIndex].__id__
-        });
-      } else {
-        return /*#__PURE__*/_react["default"].createElement(_table.RowHeaderCell, {
-          key: rowIndex,
-          loading: true,
-          name: rowIndex
-        });
-      }
-    }
-  }, {
-    key: "_text_color_dict",
-    value: function _text_color_dict(row_id, colname) {
-      if (this.props.cells_to_color_text.hasOwnProperty(row_id)) {
-        var text_color_dict = this.props.cells_to_color_text[row_id];
-        if (text_color_dict.hasOwnProperty(colname)) {
-          return text_color_dict[colname];
-        }
-        return null;
-      }
-      return null;
-    }
-  }, {
-    key: "_cell_background_color",
-    value: function _cell_background_color(row_id, colname) {
-      if (this.props.cell_backgrounds.hasOwnProperty(row_id)) {
-        var cell_background_dict = this.props.cell_backgrounds[row_id];
-        if (cell_background_dict.hasOwnProperty(colname)) {
-          return cell_background_dict[colname];
-        }
-        return null;
-      }
-      return null;
-    }
-  }, {
-    key: "_cellRendererCreator",
-    value: function _cellRendererCreator(column_name) {
-      var _this2 = this;
-      var self = this;
-      return function (rowIndex) {
-        var the_text;
-        var cell_bg_color;
-        try {
-          if (!_this2.haveRowData(rowIndex)) {
-            if (self.data_update_required == null) {
-              self.data_update_required = rowIndex;
-            }
-            return /*#__PURE__*/_react["default"].createElement(_table.Cell, {
-              key: column_name,
-              loading: true
-            });
-          }
-          var text_color_dict = self._text_color_dict(rowIndex, column_name);
-          if (text_color_dict) {
-            var color_dict = text_color_dict.color_dict;
-            var token_text = text_color_dict.token_text;
-            var revised_text = [];
-            var index = 0;
-            var _iterator = _createForOfIteratorHelper(token_text),
-              _step;
-            try {
-              for (_iterator.s(); !(_step = _iterator.n()).done;) {
-                var w = _step.value;
-                if (color_dict.hasOwnProperty(w)) {
-                  revised_text.push( /*#__PURE__*/_react["default"].createElement(ColoredWord, {
-                    key: index,
-                    the_color: color_dict[w],
-                    the_word: w
-                  }));
-                } else {
-                  revised_text.push(w + " ");
-                }
-                index += 1;
-              }
-            } catch (err) {
-              _iterator.e(err);
-            } finally {
-              _iterator.f();
-            }
-            var converted_dict = {
-              __html: revised_text
-            };
-            return /*#__PURE__*/_react["default"].createElement(_table.Cell, {
-              key: column_name,
-              truncated: true,
-              wrapText: true
-            }, revised_text);
-          }
-          cell_bg_color = self._cell_background_color(rowIndex, column_name);
-          the_text = self.props.data_row_dict[rowIndex][column_name];
-          if (_this2.props.alt_search_text != null && _this2.props.alt_search_text != "") {
-            var regex = new RegExp(_this2.props.alt_search_text, "gi");
-            the_text = String(the_text).replace(regex, function (matched) {
-              return "<mark>" + matched + "</mark>";
-            });
-            var _converted_dict = {
-              __html: the_text
-            };
-            return /*#__PURE__*/_react["default"].createElement(_table.Cell, {
-              key: column_name,
-              style: {
-                backgroundColor: cell_bg_color
-              },
-              truncated: true,
-              wrapText: true
-            }, /*#__PURE__*/_react["default"].createElement("div", {
-              dangerouslySetInnerHTML: _converted_dict
-            }));
-          }
-          if (self.props.search_text != null && self.props.search_text != "") {
-            var _regex = new RegExp(self.props.search_text, "gi");
-            the_text = String(the_text).replace(_regex, function (matched) {
-              return "<mark>" + matched + "</mark>";
-            });
-            var _converted_dict2 = {
-              __html: the_text
-            };
-            return /*#__PURE__*/_react["default"].createElement(_table.Cell, {
-              key: column_name,
-              style: {
-                backgroundColor: cell_bg_color
-              },
-              truncated: true,
-              wrapText: true
-            }, /*#__PURE__*/_react["default"].createElement("div", {
-              dangerouslySetInnerHTML: _converted_dict2
-            }));
-          }
-          if (!self.props.spreadsheet_mode) {
-            return /*#__PURE__*/_react["default"].createElement(_table.Cell, {
-              key: column_name,
-              style: {
-                backgroundColor: cell_bg_color
-              },
-              truncated: true,
-              wrapText: true
-            }, the_text);
-          }
-        } catch (e) {
-          console.log(e.message);
-          the_text = "";
-        }
-        // Wrapping the contents of the cell in React.Fragment prevent React from
-        // generating a warning for reasons that are mysterious
-        return /*#__PURE__*/_react["default"].createElement(EnhancedEditableCell, {
-          key: column_name,
-          truncated: true,
-          rowIndex: rowIndex,
-          className: "cell-class",
-          interactive: false,
-          columnIndex: _this2.props.filtered_column_names.indexOf(column_name),
-          columnHeader: column_name,
-          wrapText: true,
-          setCellContent: _this2.props.setCellContent,
-          bgColor: cell_bg_color,
-          value: the_text
-        });
-      };
-    }
-  }, {
-    key: "_onSelection",
-    value: function _onSelection(regions) {
-      if (regions.length == 0) return; // Without this get an error when clicking on a body cell
-      this.props.setMainStateValue("selected_regions", regions);
-      if (regions[0].hasOwnProperty("cols")) {
-        this._setSelectedColumn(this.props.filtered_column_names[regions[0]["cols"][0]]);
-      } else if (regions[0].hasOwnProperty("rows")) {
-        this._setSelectedRow(regions[0]["rows"][0]);
-      }
-    }
-  }, {
-    key: "_setSelectedColumn",
-    value: function _setSelectedColumn(column_name) {
-      this.props.setMainStateValue({
-        "selected_column": column_name,
-        "selected_row": null
-      });
-    }
-  }, {
-    key: "_setSelectedRow",
-    value: function _setSelectedRow(rowIndex) {
-      this.props.setMainStateValue({
-        "selected_row": this.props.data_row_dict[rowIndex].__id__,
-        "selected_column": null
-      });
-    }
-  }, {
-    key: "broadcast_column_widths",
-    value: function broadcast_column_widths(docname, cwidths) {
-      this.props.broadcast_event_to_server("UpdateColumnWidths", {
-        "doc_to_update": docname,
-        "column_widths": cwidths
-      }, null);
-    }
-  }, {
-    key: "_onColumnWidthChanged",
-    value: function _onColumnWidthChanged(index, size) {
-      var cwidths = this.props.column_widths;
-      cwidths[index] = size;
-      this.props.updateTableSpec({
-        column_widths: cwidths
-      }, true);
-    }
-  }, {
-    key: "_onColumnsReordered",
-    value: function _onColumnsReordered(oldIndex, newIndex, length) {
-      var col_to_move = this.props.filtered_column_names[oldIndex];
-      var cnames = _toConsumableArray(this.props.filtered_column_names);
-      cnames.splice(oldIndex, 1);
-      var target_col = cnames[newIndex];
-      this.props.moveColumn(col_to_move, target_col);
-    }
-  }, {
-    key: "_onFocusedCell",
-    value: function _onFocusedCell(focusedCell) {
-      this.setState({
-        focusedCell: focusedCell
-      });
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var self = this;
-      var columns = this.props.filtered_column_names.map(function (column_name) {
-        var cellRenderer = self._cellRendererCreator(column_name);
-        return /*#__PURE__*/_react["default"].createElement(_table.Column, {
-          cellRenderer: cellRenderer,
-          enableColumnReordering: true,
-          key: column_name,
-          name: column_name
-        });
-      });
-      var cwidths;
-      if (this.props.column_widths == null || this.props.column_widths.length == 0) {
-        cwidths = null;
-      } else {
-        cwidths = this.props.column_widths;
-      }
-      if (cwidths != null && cwidths.length != this.props.filtered_column_names.length) {
-        cwidths = null;
-        this.mismatched_column_widths = true;
-      }
-      var style = {
-        display: "block",
-        overflowY: "auto",
-        overflowX: "hidden",
-        height: this.props.height
-      };
-      return /*#__PURE__*/_react["default"].createElement("div", {
-        id: "table-area",
-        ref: this.props.my_ref,
-        style: style
-      }, /*#__PURE__*/_react["default"].createElement(_table.Table, {
-        ref: this.table_ref,
-        key: this.hash_value // kludge: Having this prevents partial row rendering
-        ,
-        numRows: this.props.total_rows,
-        enableColumnReordering: true,
-        onColumnsReordered: this._onColumnsReordered,
-        onSelection: this._onSelection,
-        selectedRegions: this.props.selected_regions,
-        onCompleteRender: this._doScroll,
-        onColumnWidthChanged: this._onColumnWidthChanged,
-        onFocusedCell: this._onFocusedCell,
-        focusedCell: this.state.focusedCell,
-        enableMultipleSelection: false,
-        enableFocusedCell: this.props.spreadsheet_mode,
-        selectionModes: [_table.RegionCardinality.FULL_COLUMNS, _table.RegionCardinality.FULL_ROWS],
-        minColumnWidth: 75,
-        columnWidths: cwidths,
-        rowHeaderCellRenderer: this._rowHeaderCellRenderer
-      }, columns));
-    }
-  }]);
-  return BlueprintTable;
-}(_react["default"].Component);
-exports.BlueprintTable = BlueprintTable;
-BlueprintTable.propTypes = {
-  my_ref: _propTypes["default"].object,
-  height: _propTypes["default"].number,
-  setCellContent: _propTypes["default"].func,
-  column_names: _propTypes["default"].array,
-  filtered_column_names: _propTypes["default"].array,
-  moveColumn: _propTypes["default"].func,
-  updateTableSpec: _propTypes["default"].func,
-  data_row_dict: _propTypes["default"].object,
-  total_rows: _propTypes["default"].number,
-  initiateDataGrab: _propTypes["default"].func,
-  setMainStateValue: _propTypes["default"].func,
-  broadcast_event_to_server: _propTypes["default"].func,
-  cells_to_color_text: _propTypes["default"].object,
-  cell_backgrounds: _propTypes["default"].object,
-  column_widths: _propTypes["default"].array,
-  hidden_columns_list: _propTypes["default"].array,
-  search_text: _propTypes["default"].string,
-  spreadsheet_mode: _propTypes["default"].bool,
-  alt_search_text: _propTypes["default"].string
-};
-var EnhancedEditableCell = /*#__PURE__*/function (_React$Component3) {
-  _inherits(EnhancedEditableCell, _React$Component3);
-  var _super3 = _createSuper(EnhancedEditableCell);
-  function EnhancedEditableCell(props) {
-    var _this3;
-    _classCallCheck(this, EnhancedEditableCell);
-    _this3 = _super3.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this3));
-    _this3.cell_ref = /*#__PURE__*/_react["default"].createRef();
-    _this3.state = {
-      am_editing: false,
-      saved_text: ""
-    };
-    return _this3;
+    return (0, _objectHash["default"])(obj);
   }
-  _createClass(EnhancedEditableCell, [{
-    key: "_handleKeyDown",
-    value: function _handleKeyDown(event) {
-      if (this.cell_ref && this.cell_ref.current) {
-        this.cell_ref.current.handleEdit();
-        this.setState({
-          am_editing: true,
-          saved_text: this.props.value
-        });
+
+  // shouldComponentUpdate(nextProps, nextState) {
+  //     if (this.set_scroll || this.data_update_required) {
+  //         return true
+  //     }
+  //     return !propsAreEqual(nextProps, this.props) || !propsAreEqual(nextState, this.state)
+  // }
+
+  function computeColumnWidths() {
+    var cwidths = compute_initial_column_widths(props.filtered_column_names, props.data_row_dict);
+    mismatched_column_widths.current = false;
+    props.updateTableSpec({
+      column_widths: cwidths
+    }, true);
+  }
+  function haveRowData(rowIndex) {
+    return props.data_row_dict.hasOwnProperty(rowIndex);
+  }
+  function _doScroll() {
+    if (data_update_required.current != null) {
+      var rindex = data_update_required.current;
+      data_update_required.current = null;
+      props.initiateDataGrab(rindex);
+    } else if (props.set_scroll != null && table_ref.current) {
+      try {
+        var singleCellRegion = _table.Regions.cell(props.set_scroll, 0);
+        table_ref.current.scrollToRegion(singleCellRegion);
+        props.clearScroll();
+      } catch (e) {
+        console.log(e.message);
       }
     }
-  }, {
-    key: "_onChange",
-    value: function _onChange(value, rowIndex, columnIndex) {
-      this.props.setCellContent(this.props.rowIndex, this.props.columnHeader, value, false);
-    }
-  }, {
-    key: "_onCancel",
-    value: function _onCancel() {
-      this.props.setCellContent(this.props.rowIndex, this.props.columnHeader, this.state.saved_text, false);
-      this.setState({
-        am_editing: false
+  }
+  function _updateRowHeights() {
+    var fcnames = props.filtered_column_names;
+    table_ref.current.resizeRowsByApproximateHeight(function (rowIndex, colIndex) {
+      if (!haveRowData(rowIndex)) {
+        return "empty cell";
+      }
+      return props.data_row_dict[rowIndex][fcnames[colIndex]];
+    }, {
+      getNumBufferLines: 1
+    });
+  }
+  function _rowHeaderCellRenderer(rowIndex) {
+    if (haveRowData(rowIndex)) {
+      return /*#__PURE__*/_react["default"].createElement(_table.RowHeaderCell, {
+        key: rowIndex,
+        name: props.data_row_dict[rowIndex].__id__
+      });
+    } else {
+      return /*#__PURE__*/_react["default"].createElement(_table.RowHeaderCell, {
+        key: rowIndex,
+        loading: true,
+        name: rowIndex
       });
     }
-  }, {
-    key: "_onConfirmCellEdit",
-    value: function _onConfirmCellEdit(value, rowIndex, columnIndex) {
-      var _this4 = this;
-      var self = this;
-      this.setState({
-        am_editing: false
-      }, function () {
-        self.props.setCellContent(_this4.props.rowIndex, _this4.props.columnHeader, value, true);
+  }
+  function _text_color_dict(row_id, colname) {
+    if (props.cells_to_color_text.hasOwnProperty(row_id)) {
+      var text_color_dict = props.cells_to_color_text[row_id];
+      if (text_color_dict.hasOwnProperty(colname)) {
+        return text_color_dict[colname];
+      }
+      return null;
+    }
+    return null;
+  }
+  function _cell_background_color(row_id, colname) {
+    if (props.cell_backgrounds.hasOwnProperty(row_id)) {
+      var cell_background_dict = props.cell_backgrounds[row_id];
+      if (cell_background_dict.hasOwnProperty(colname)) {
+        return cell_background_dict[colname];
+      }
+      return null;
+    }
+    return null;
+  }
+  function _cellRendererCreator(column_name) {
+    var self = this;
+    return function (rowIndex) {
+      var the_text;
+      var cell_bg_color;
+      try {
+        if (!haveRowData(rowIndex)) {
+          if (data_update_required.current == null) {
+            data_update_required.current = rowIndex;
+          }
+          return /*#__PURE__*/_react["default"].createElement(_table.Cell, {
+            key: column_name,
+            loading: true
+          });
+        }
+        var text_color_dict = _text_color_dict(rowIndex, column_name);
+        if (text_color_dict) {
+          var color_dict = text_color_dict.color_dict;
+          var token_text = text_color_dict.token_text;
+          var revised_text = [];
+          var index = 0;
+          var _iterator = _createForOfIteratorHelper(token_text),
+            _step;
+          try {
+            for (_iterator.s(); !(_step = _iterator.n()).done;) {
+              var w = _step.value;
+              if (color_dict.hasOwnProperty(w)) {
+                revised_text.push( /*#__PURE__*/_react["default"].createElement(ColoredWord, {
+                  key: index,
+                  the_color: color_dict[w],
+                  the_word: w
+                }));
+              } else {
+                revised_text.push(w + " ");
+              }
+              index += 1;
+            }
+          } catch (err) {
+            _iterator.e(err);
+          } finally {
+            _iterator.f();
+          }
+          var converted_dict = {
+            __html: revised_text
+          };
+          return /*#__PURE__*/_react["default"].createElement(_table.Cell, {
+            key: column_name,
+            truncated: true,
+            wrapText: true
+          }, revised_text);
+        }
+        cell_bg_color = _cell_background_color(rowIndex, column_name);
+        the_text = props.data_row_dict[rowIndex][column_name];
+        if (props.alt_search_text != null && props.alt_search_text != "") {
+          var regex = new RegExp(props.alt_search_text, "gi");
+          the_text = String(the_text).replace(regex, function (matched) {
+            return "<mark>" + matched + "</mark>";
+          });
+          var _converted_dict = {
+            __html: the_text
+          };
+          return /*#__PURE__*/_react["default"].createElement(_table.Cell, {
+            key: column_name,
+            style: {
+              backgroundColor: cell_bg_color
+            },
+            truncated: true,
+            wrapText: true
+          }, /*#__PURE__*/_react["default"].createElement("div", {
+            dangerouslySetInnerHTML: _converted_dict
+          }));
+        }
+        if (props.search_text != null && props.search_text != "") {
+          var _regex = new RegExp(props.search_text, "gi");
+          the_text = String(the_text).replace(_regex, function (matched) {
+            return "<mark>" + matched + "</mark>";
+          });
+          var _converted_dict2 = {
+            __html: the_text
+          };
+          return /*#__PURE__*/_react["default"].createElement(_table.Cell, {
+            key: column_name,
+            style: {
+              backgroundColor: cell_bg_color
+            },
+            truncated: true,
+            wrapText: true
+          }, /*#__PURE__*/_react["default"].createElement("div", {
+            dangerouslySetInnerHTML: _converted_dict2
+          }));
+        }
+        if (!props.spreadsheet_mode) {
+          return /*#__PURE__*/_react["default"].createElement(_table.Cell, {
+            key: column_name,
+            style: {
+              backgroundColor: cell_bg_color
+            },
+            truncated: true,
+            wrapText: true
+          }, the_text);
+        }
+      } catch (e) {
+        console.log(e.message);
+        the_text = "";
+      }
+      // Wrapping the contents of the cell in React.Fragment prevent React from
+      // generating a warning for reasons that are mysterious
+      return /*#__PURE__*/_react["default"].createElement(EnhancedEditableCell, {
+        key: column_name,
+        truncated: true,
+        rowIndex: rowIndex,
+        className: "cell-class",
+        interactive: false,
+        columnIndex: props.filtered_column_names.indexOf(column_name),
+        columnHeader: column_name,
+        wrapText: true,
+        setCellContent: props.setCellContent,
+        bgColor: cell_bg_color,
+        value: the_text
       });
+    };
+  }
+  function _onSelection(regions) {
+    if (regions.length == 0) return; // Without this get an error when clicking on a body cell
+    props.setMainStateValue("selected_regions", regions);
+    if (regions[0].hasOwnProperty("cols")) {
+      _setSelectedColumn(props.filtered_column_names[regions[0]["cols"][0]]);
+    } else if (regions[0].hasOwnProperty("rows")) {
+      _setSelectedRow(regions[0]["rows"][0]);
     }
-  }, {
-    key: "render",
-    value: function render() {
-      return /*#__PURE__*/_react["default"].createElement(_table.EditableCell, _extends({
-        ref: this.cell_ref,
-        onConfirm: this._onConfirmCellEdit,
-        onChange: this._onChange,
-        onCancel: this._onCancel,
-        style: {
-          backgroundColor: this.props.bgColor
-        },
-        onKeyDown: this.state.am_editing ? null : this._handleKeyDown
-      }, this.props));
+  }
+  function _setSelectedColumn(column_name) {
+    props.setMainStateValue({
+      "selected_column": column_name,
+      "selected_row": null
+    });
+  }
+  function _setSelectedRow(rowIndex) {
+    props.setMainStateValue({
+      "selected_row": props.data_row_dict[rowIndex].__id__,
+      "selected_column": null
+    });
+  }
+  function broadcast_column_widths(docname, cwidths) {
+    props.broadcast_event_to_server("UpdateColumnWidths", {
+      "doc_to_update": docname,
+      "column_widths": cwidths
+    }, null);
+  }
+  function _onColumnWidthChanged(index, size) {
+    var cwidths = props.column_widths;
+    cwidths[index] = size;
+    props.updateTableSpec({
+      column_widths: cwidths
+    }, true);
+  }
+  function _onColumnsReordered(oldIndex, newIndex, length) {
+    var col_to_move = props.filtered_column_names[oldIndex];
+    var cnames = _toConsumableArray(props.filtered_column_names);
+    cnames.splice(oldIndex, 1);
+    var target_col = cnames[newIndex];
+    props.moveColumn(col_to_move, target_col);
+  }
+  function _onFocusedCell(focusedCell) {
+    setFocusedCell(focusedCell);
+  }
+  var columns = props.filtered_column_names.map(function (column_name) {
+    var cellRenderer = _cellRendererCreator(column_name);
+    return /*#__PURE__*/_react["default"].createElement(_table.Column, {
+      cellRenderer: cellRenderer,
+      enableColumnReordering: true,
+      key: column_name,
+      name: column_name
+    });
+  });
+  var cwidths;
+  if (props.column_widths == null || props.column_widths.length == 0) {
+    cwidths = null;
+  } else {
+    cwidths = props.column_widths;
+  }
+  if (cwidths != null && cwidths.length != props.filtered_column_names.length) {
+    cwidths = null;
+    mismatched_column_widths.current = true;
+  }
+  var style = {
+    display: "block",
+    overflowY: "auto",
+    overflowX: "hidden",
+    height: props.height
+  };
+  return /*#__PURE__*/_react["default"].createElement("div", {
+    id: "table-area",
+    ref: passedRef,
+    style: style
+  }, /*#__PURE__*/_react["default"].createElement(_table.Table, {
+    ref: table_ref,
+    key: hash_value() // kludge: Having this prevents partial row rendering
+    ,
+    numRows: props.total_rows,
+    enableColumnReordering: true,
+    onColumnsReordered: _onColumnsReordered,
+    onSelection: _onSelection,
+    selectedRegions: props.selected_regions,
+    onCompleteRender: _doScroll,
+    onColumnWidthChanged: _onColumnWidthChanged,
+    onFocusedCell: _onFocusedCell,
+    focusedCell: focusedCell,
+    enableMultipleSelection: false,
+    enableFocusedCell: props.spreadsheet_mode,
+    selectionModes: [_table.RegionCardinality.FULL_COLUMNS, _table.RegionCardinality.FULL_ROWS],
+    minColumnWidth: 75,
+    columnWidths: cwidths,
+    rowHeaderCellRenderer: _rowHeaderCellRenderer
+  }, columns));
+}
+exports.BlueprintTable = BlueprintTable = /*#__PURE__*/(0, _react.memo)( /*#__PURE__*/(0, _react.forwardRef)(BlueprintTable));
+function EnhancedEditableCell(props) {
+  var cell_ref = (0, _react.useRef)(null);
+  var _useState3 = (0, _react.useState)(false),
+    _useState4 = _slicedToArray(_useState3, 2),
+    am_editing = _useState4[0],
+    set_am_editing = _useState4[1];
+  var _useState5 = (0, _react.useState)(""),
+    _useState6 = _slicedToArray(_useState5, 2),
+    saved_text = _useState6[0],
+    set_saved_text = _useState6[1];
+  var pushCallback = (0, _utilities_react.useCallbackStack)();
+  function _handleKeyDown(event) {
+    if (cell_ref.current) {
+      cell_ref.current.handleEdit();
+      set_am_editing(true);
+      set_saved_text(props.value);
     }
-  }]);
-  return EnhancedEditableCell;
-}(_react["default"].Component);
+  }
+  function _onChange(value, rowIndex, columnIndex) {
+    props.set_scrollprops.setCellContent(props.set_scrollprops.rowIndex, props.set_scrollprops.columnHeader, value, false);
+  }
+  function _onCancel() {
+    props.set_scrollprops.setCellContent(props.set_scrollprops.rowIndex, props.set_scrollprops.columnHeader, props.set_scrollsaved_text, false);
+    set_am_editing(false);
+  }
+  function _onConfirmCellEdit(value, rowIndex, columnIndex) {
+    set_am_editing(false);
+    pushCallback(function () {
+      props.setCellContent(props.rowIndex, props.columnHeader, value, true);
+    });
+  }
+  return /*#__PURE__*/_react["default"].createElement(_table.EditableCell, _extends({
+    ref: cell_ref,
+    onConfirm: _onConfirmCellEdit,
+    onChange: _onChange,
+    onCancel: _onCancel,
+    style: {
+      backgroundColor: props.bgColor
+    },
+    onKeyDown: am_editing ? null : _handleKeyDown
+  }, props));
+}
+EnhancedEditableCell = /*#__PURE__*/(0, _react.memo)(EnhancedEditableCell);
 function compute_added_column_width(header_text) {
   var max_field_width = MAX_INITIAL_CELL_WIDTH;
   var header_font = $($(".bp5-table-truncated-text")[0]).css("font");
@@ -575,8 +449,8 @@ function compute_initial_column_widths(header_list, data_row_dict) {
   var the_width;
   var the_text;
   var the_child;
-  for (var _i = 0, _columns_remaining = columns_remaining; _i < _columns_remaining.length; _i++) {
-    var c = _columns_remaining[_i];
+  for (var _i2 = 0, _columns_remaining = columns_remaining; _i2 < _columns_remaining.length; _i2++) {
+    var c = _columns_remaining[_i2];
     the_text = header_list[c];
     the_width = ctx.measureText(the_text).width + added_header_width;
     if (the_width > max_field_width) {
@@ -596,8 +470,8 @@ function compute_initial_column_widths(header_list, data_row_dict) {
   // Once a column has the max value can ignore that column in the future.
   ctx.font = body_font;
   var dkeys = Object.keys(data_row_dict);
-  for (var _i2 = 0, _dkeys = dkeys; _i2 < _dkeys.length; _i2++) {
-    var item = _dkeys[_i2];
+  for (var _i3 = 0, _dkeys = dkeys; _i3 < _dkeys.length; _i3++) {
+    var item = _dkeys[_i3];
     if (columns_remaining.length == 0) {
       break;
     }
@@ -623,8 +497,8 @@ function compute_initial_column_widths(header_list, data_row_dict) {
     } finally {
       _iterator3.f();
     }
-    for (var _i3 = 0, _cols_to_remove = cols_to_remove; _i3 < _cols_to_remove.length; _i3++) {
-      var _c = _cols_to_remove[_i3];
+    for (var _i4 = 0, _cols_to_remove = cols_to_remove; _i4 < _cols_to_remove.length; _i4++) {
+      var _c = _cols_to_remove[_i4];
       var _index = columns_remaining.indexOf(_c);
       if (_index !== -1) {
         columns_remaining.splice(_index, 1);

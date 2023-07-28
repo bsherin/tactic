@@ -13,11 +13,11 @@ export {ExportsViewer}
 
 function TextIcon(props) {
     return (
-            <ragment>
+            <Fragment>
                 <span className="bp5-icon" style={{fontWeight: 500}}>
                     {props.the_text}
                 </span>
-            </ragment>
+            </Fragment>
         )
 }
 
@@ -179,9 +179,6 @@ function ExportsViewer(props) {
         initSocket();
         props.setUpdate(_updateExportsList);
         _updateExportsList();
-        return (() => {
-            props.tsocket.disconnect();
-        })
     }, []);
 
     function initSocket() {

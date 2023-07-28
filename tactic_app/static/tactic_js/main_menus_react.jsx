@@ -1,6 +1,6 @@
 
-
 import React from "react";
+import {memo} from "react";
 import PropTypes from 'prop-types';
 import markdownIt from 'markdown-it'
 import 'markdown-it-latex/dist/index.css'
@@ -8,124 +8,111 @@ import markdownItLatex from 'markdown-it-latex'
 const mdi = markdownIt({html: true});
 mdi.use(markdownItLatex);
 
-import {showModalReact, showPresentationDialog, showReportDialog} from "./modal_react.js";
-import {postWithCallback} from "./communication_react.js"
-import {doFlash} from "./toaster.js"
-import {doBinding} from "./utilities_react.js";
-import {MenuComponent, ToolMenu} from "./menu_utilities.js";
+import {showModalReact, showPresentationDialog, showReportDialog} from "./modal_react";
+import {postWithCallback} from "./communication_react"
+import {doFlash} from "./toaster"
+import {MenuComponent, ToolMenu} from "./menu_utilities";
 
 export {ProjectMenu, DocumentMenu, ColumnMenu, RowMenu, ViewMenu, MenuComponent}
 
+function ProjectMenu(props) {
 
-
-class ProjectMenu extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this)
-    }
-
-    _saveProjectAs() {
-        this.props.startSpinner();
-        let self = this;
+    function _saveProjectAs() {
+        props.startSpinner();
         postWithCallback("host", "get_project_names", {"user_id": window.user_id}, function (data) {
             let checkboxes = [{checkname: "lite_save", checktext: "create lite save"}];
 
             showModalReact("Save Project As", "New Project Name", CreateNewProject,
                       "NewProject", data["project_names"], checkboxes, doCancel)
-        }, null, self.props.main_id);
+        }, null, props.main_id);
 
         function doCancel() {
-            self.props.stopSpinner()
+            props.stopSpinner()
         }
         function CreateNewProject (new_name, checkbox_states) {
             //let console_node = cleanse_bokeh(document.getElementById("console"));
             const result_dict = {
                 "project_name": new_name,
-                "main_id": self.props.main_id,
+                "main_id": props.main_id,
                 "doc_type": "table",
                 "purgetiles": true,
                 "lite_save": checkbox_states["lite_save"]
             };
 
-            result_dict.interface_state = self.props.interface_state;
-            if (self.props.is_notebook) {
-                postWithCallback(self.props.main_id, "save_new_notebook_project", result_dict,
-                    save_as_success, self.props.postAjaxFailur, self.props.main_id);
+            result_dict.interface_state = props.interface_state;
+            if (props.is_notebook) {
+                postWithCallback(props.main_id, "save_new_notebook_project", result_dict,
+                    save_as_success, props.postAjaxFailur, props.main_id);
             }
             else {
                 result_dict["purgetiles"] = true;
-                postWithCallback(self.props.main_id, "save_new_project", result_dict,
-                    save_as_success, self.props.postAjaxFailure, self.props.main_id);
+                postWithCallback(props.main_id, "save_new_project", result_dict,
+                    save_as_success, props.postAjaxFailure, props.main_id);
             }
-
 
             function save_as_success(data_object) {
                 if (data_object["success"]) {
-                    self.props.setProjectName(new_name, ()=>{
+                    props.setProjectName(new_name, ()=>{
                         if (!window.in_context) {
                             document.title = new_name;
                         }
-                        self.props.clearStatusMessage();
+                        props.clearStatusMessage();
                         data_object.alert_type = "alert-success";
                         data_object.timeout = 2000;
                         postWithCallback("host", "refresh_project_selector_list",
-                            {'user_id': window.user_id}, null, null, self.props.main_id);
-                        self.props.updateLastSave();
-                        self.props.stopSpinner();
-                        // self._saveProject()
+                            {'user_id': window.user_id}, null, null, props.main_id);
+                        props.updateLastSave();
+                        props.stopSpinner();
                     });
 
                 }
                 else {
-                    self.props.clearStatusMessage();
+                    props.clearStatusMessage();
                     data_object["message"] = data_object["message"];
                     data_object["alert-type"] = "alert-warning";
-                    self.props.stopSpinner();
+                    props.stopSpinner();
                     doFlash(data_object)
                 }
             }
         }
     }
 
-    _saveProject (lite_save) {
+    function _saveProject (lite_save) {
         // let console_node = cleanse_bokeh(document.getElementById("console"));
-        let self = this;
         const result_dict = {
-            main_id: this.props.main_id,
-            project_name: this.props.project_name,
+            main_id: props.main_id,
+            project_name: props.project_name,
             lite_save: lite_save
         };
 
-        result_dict.interface_state = this.props.interface_state;
+        result_dict.interface_state = props.interface_state;
 
-        //tableObject.startTableSpinner();
-        this.props.startSpinner();
-        postWithCallback(this.props.main_id, "update_project", result_dict, updateSuccess, self.props.postAjaxFailure, self.props.main_id);
+        props.startSpinner();
+        postWithCallback(props.main_id, "update_project", result_dict, updateSuccess, props.postAjaxFailure, props.main_id);
         function updateSuccess(data) {
-            self.props.startSpinner();
+            props.startSpinner();
             if (data.success) {
                 data["alert_type"] = "alert-success";
                 data.timeout = 2000;
-                self.props.updateLastSave();
+                props.updateLastSave();
             }
             else {
                 data["alert_type"] = "alert-warning";
             }
-            self.props.clearStatusMessage();
-            self.props.stopSpinner();
+            props.clearStatusMessage();
+            props.stopSpinner();
             doFlash(data)
         }
     }
 
-    _exportAsPresentation() {
-        let self = this;
+    function _exportAsPresentation() {
         postWithCallback("host", "get_collection_names", {"user_id": user_id}, function (data) {
                 // noinspection JSUnusedAssignment
                 showPresentationDialog(ExportPresentation, data["collection_names"])
-            }, null, self.props.main_id);
+            }, null, props.main_id);
         function ExportPresentation(use_dark_theme, save_as_collection, collection_name) {
             var cell_list = [];
-            for (let entry of self.props.console_items) {
+            for (let entry of props.console_items) {
                 let new_entry = {};
                 new_entry.type = entry.type;
                 switch (entry.type) {
@@ -155,19 +142,19 @@ class ProjectMenu extends React.Component {
                 cell_list.push(new_entry)
             }
             var result_dict = {
-                "project_name": self.props.project_name,
+                "project_name": props.project_name,
                 "collection_name": collection_name,
                 "save_as_collection": save_as_collection,
                 "use_dark_theme": use_dark_theme,
                 "presentation": true,
-                "main_id": self.props.main_id,
+                "main_id": props.main_id,
                 "cell_list": cell_list,
             };
-            postWithCallback(self.props.main_id, "export_as_presentation",
-                result_dict, save_as_success, self.props.postAjaxFailure, self.props.main_id);
+            postWithCallback(props.main_id, "export_as_presentation",
+                result_dict, save_as_success, props.postAjaxFailure, props.main_id);
 
             function save_as_success(data_object) {
-               self.props.clearStatusMessage();
+               props.clearStatusMessage();
                if (data_object.success) {
                    if (save_as_collection) {
                        data_object.alert_type = "alert-success";
@@ -186,15 +173,14 @@ class ProjectMenu extends React.Component {
         }
     }
 
-    _exportAsReport() {
-        let self = this;
+    function _exportAsReport() {
         postWithCallback("host", "get_collection_names", {"user_id": user_id}, function (data) {
                 // noinspection JSUnusedAssignment
                 showReportDialog(ExportRport, data["collection_names"])
-            }, null, self.props.main_id);
+            }, null, props.main_id);
         function ExportRport(collapsible, include_summaries, use_dark_theme, save_as_collection, collection_name) {
             var cell_list = [];
-            for (let entry of self.props.console_items) {
+            for (let entry of props.console_items) {
                 let new_entry = {};
                 new_entry.type = entry.type;
                 switch (entry.type) {
@@ -224,20 +210,20 @@ class ProjectMenu extends React.Component {
             }
 
             var result_dict = {
-                "project_name": self.props.project_name,
+                "project_name": props.project_name,
                 "collection_name": collection_name,
                 "save_as_collection": save_as_collection,
                 "use_dark_theme": use_dark_theme,
                 "collapsible": collapsible,
                 "include_summaries": include_summaries,
-                "main_id": self.props.main_id,
+                "main_id": props.main_id,
                 "cell_list": cell_list,
             };
-            postWithCallback(self.props.main_id, "export_as_report",
-                result_dict, save_as_success, self.props.postAjaxFailure, self.props.main_id);
+            postWithCallback(props.main_id, "export_as_report",
+                result_dict, save_as_success, props.postAjaxFailure, props.main_id);
 
             function save_as_success(data_object) {
-               self.props.clearStatusMessage();
+               props.clearStatusMessage();
                if (data_object.success) {
                    if (save_as_collection) {
                        data_object.alert_type = "alert-success";
@@ -256,18 +242,17 @@ class ProjectMenu extends React.Component {
         }
     }
 
-    _exportAsJupyter() {
-        this.props.startSpinner();
-        let self = this;
+    function _exportAsJupyter() {
+        props.startSpinner();
         postWithCallback("host", "get_project_names", {"user_id": user_id}, function (data) {
             let checkboxes;
             // noinspection JSUnusedAssignment
             showModalReact("Export Notebook in Jupyter Format", "New Project Name", ExportJupyter,
                       "NewJupyter", data["project_names"], checkboxes)
-        }, null, self.props.main_id);
+        }, null, props.main_id);
         function ExportJupyter(new_name) {
             var cell_list = [];
-            for (let entry of self.props.console_items) {
+            for (let entry of props.console_items) {
                 let new_cell = {};
                 new_cell.source = entry.console_text;
                 new_cell.cell_type = entry.type == "code" ? "code" : "markdown";
@@ -278,14 +263,14 @@ class ProjectMenu extends React.Component {
             }
             const result_dict = {
                 "project_name": new_name,
-                "main_id": self.props.main_id,
+                "main_id": props.main_id,
                 "cell_list": cell_list
             };
-            postWithCallback(self.props.main_id, "export_to_jupyter_notebook",
-                result_dict, save_as_success, self.props.postAjaxFailure, self.props.main_id);
+            postWithCallback(props.main_id, "export_to_jupyter_notebook",
+                result_dict, save_as_success, props.postAjaxFailure, props.main_id);
 
             function save_as_success(data_object) {
-               self.props.clearStatusMessage();
+               props.clearStatusMessage();
                 if (data_object.success) {
                     data_object.alert_type = "alert-success";
                     data_object.timeout = 2000;
@@ -293,75 +278,73 @@ class ProjectMenu extends React.Component {
                 else {
                     data_object["alert-type"] = "alert-warning";
                 }
-                self.props.stopSpinner();
+                props.stopSpinner();
                 doFlash(data_object)
             }
         }
     }
 
-    _exportDataTable() {
-        let self = this;
-        showModalReact("Export Data", "New Collection Name", function (new_name) {
-            const result_dict = {
-                "export_name": new_name,
-                "main_id": self.props.main_id,
-                "user_id": window.user_id
-            };
-            $.ajax({
-                url: $SCRIPT_ROOT + "/export_data",
-                contentType : 'application/json',
-                type : 'POST',
-                async: true,
-                data: JSON.stringify(result_dict),
-                dataType: 'json'
-            });
+    function _exportDataTable() {
+        postWithCallback("host", "get_collection_names", {"user_id": user_id}, function (data) {
+            showModalReact("Export Data", "New Collection Name", function (new_name) {
+                const result_dict = {
+                    "export_name": new_name,
+                    "main_id": props.main_id,
+                    "user_id": window.user_id
+                };
+                $.ajax({
+                    url: $SCRIPT_ROOT + "/export_data",
+                    contentType: 'application/json',
+                    type: 'POST',
+                    async: true,
+                    data: JSON.stringify(result_dict),
+                    dataType: 'json'
+                });
+            }, "new collection", data.collection_names)
         })
     }
 
-    _consoleToNotebook() {
+    function _consoleToNotebook() {
         const result_dict = {
-            "main_id": this.props.main_id,
-            "console_items": this.props.console_items,
+            "main_id": props.main_id,
+            "console_items": props.console_items,
             "user_id": window.user_id,
         };
-        postWithCallback(this.props.main_id, "console_to_notebook", result_dict, null, null, this.props.main_id)
+        postWithCallback(props.main_id, "console_to_notebook", result_dict, null, null, props.main_id)
     }
 
-    get menu_items() {
+    function menu_items() {
         let items = [
-            {name_text: "Save As...", icon_name: "floppy-disk", click_handler: this._saveProjectAs},
-            {name_text: "Save", icon_name: "saved", click_handler: ()=>{this._saveProject(false)}},
-            {name_text: "Save Lite", icon_name: "saved", click_handler: ()=>{this._saveProject(true)}},
+            {name_text: "Save As...", icon_name: "floppy-disk", click_handler: _saveProjectAs},
+            {name_text: "Save", icon_name: "saved", click_handler: ()=>{_saveProject(false)}},
+            {name_text: "Save Lite", icon_name: "saved", click_handler: ()=>{_saveProject(true)}},
             {name_text: "divider1", icon_name: null, click_handler: "divider"},
-            {name_text: "Export as Jupyter Notebook", icon_name: "export", click_handler: this._exportAsJupyter,},
-            {name_text: "Create Report From Notebook", icon_name: "document", click_handler: this._exportAsReport,},
-            {name_text: "Create Presentation from Notebook", icon_name: "presentation", click_handler: this._exportAsPresentation,},
-            {name_text: "Export Table as Collection", icon_name: "export", click_handler: this._exportDataTable},
-            {name_text: "Open Console as Notebook", icon_name: "console", click_handler: this._consoleToNotebook},
+            {name_text: "Export as Jupyter Notebook", icon_name: "export", click_handler: _exportAsJupyter,},
+            {name_text: "Create Report From Notebook", icon_name: "document", click_handler: _exportAsReport,},
+            {name_text: "Create Presentation from Notebook", icon_name: "presentation", click_handler: _exportAsPresentation,},
+            {name_text: "Export Table as Collection", icon_name: "export", click_handler: _exportDataTable},
+            {name_text: "Open Console as Notebook", icon_name: "console", click_handler: _consoleToNotebook},
             {name_text: "divider2", icon_name: null, click_handler: "divider"},
-            {name_text: "Change collection", icon_name: "exchange", click_handler: this.props.changeCollection},
+            {name_text: "Change collection", icon_name: "exchange", click_handler: props.changeCollection},
         ];
         let reduced_items = [];
         for (let item of items) {
-            if (!this.props.hidden_items.includes(item.name_text)) {
+            if (!props.hidden_items.includes(item.name_text)) {
                 reduced_items.push(item)
             }
         }
         return reduced_items
     }
 
-
-    render () {
-        return (
-            <ToolMenu menu_name="Project"
-                      menu_items={this.menu_items}
-                       binding_dict={{}}
-                       disabled_items={this.props.disabled_items}
-                       disable_all={false}
-                      registerOmniGetter={this.props.registerOmniGetter}
-            />
-        )
-    }
+    return (
+        <ToolMenu menu_name="Project"
+                  menu_items={menu_items()}
+                   binding_dict={{}}
+                   disabled_items={props.disabled_items}
+                   disable_all={false}
+                  registerOmniGetter={props.registerOmniGetter}
+        />
+    )
 }
 
 ProjectMenu.propTypes = {
@@ -374,193 +357,166 @@ ProjectMenu.propTypes = {
     hidden_items: PropTypes.array
 };
 
-class DocumentMenu extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this)
-    }
+ProjectMenu = memo(ProjectMenu);
 
-    _newDocument() {
-        this.props.startSpinner();
-        let self = this;
+function DocumentMenu(props) {
+
+    function _newDocument() {
+        props.startSpinner();
         showModalReact("New Document", "New Document Name", doNew,
-            this.props.currentDoc, this.props.documentNames, null, doCancel);
+            props.currentDoc, props.documentNames, null, doCancel);
 
         function doCancel() {
-            self.props.stopSpinner()
+            props.stopSpinner()
         }
 
         function doNew(new_name) {
-            postWithCallback(self.props.main_id, "new_blank_document",
-                {model_document_name: self.props.currentDoc,
+            postWithCallback(props.main_id, "new_blank_document",
+                {model_document_name: props.currentDoc,
                 new_document_name: new_name}, (result)=>{
-                self.props.stopSpinner()
-                }, null, self.props.main_id
+                props.stopSpinner()
+                }, null, props.main_id
             )
         }
-
     }
 
-    _duplicateDocument() {
-        this.props.startSpinner();
-        let self = this;
+    function _duplicateDocument() {
+        props.startSpinner();
         showModalReact("Duplicate Document", "New Document Name", doDuplicate,
-            self.props.currentDoc, self.props.documentNames, null, doCancel);
+            props.currentDoc, props.documentNames, null, doCancel);
 
         function doCancel() {
-            self.props.stopSpinner()
+            props.stopSpinner()
         }
 
         function doDuplicate(new_name) {
-            postWithCallback(self.props.main_id, "duplicate_document",
-                {original_document_name: self.props.currentDoc,
+            postWithCallback(props.main_id, "duplicate_document",
+                {original_document_name: props.currentDoc,
                 new_document_name: new_name}, (result)=>{
-                self.props.stopSpinner()
-                }, null, self.props.main_id
+                props.stopSpinner()
+                }, null, props.main_id
             )
         }
 
     }
 
-    _renameDocument() {
-        this.props.startSpinner();
-        let self = this;
+    function _renameDocument() {
+        props.startSpinner();
         showModalReact("Rename Document", "New Document Name", doRename,
-            self.props.currentDoc, self.props.documentNames, null, doCancel);
+            props.currentDoc, props.documentNames, null, doCancel);
 
         function doCancel() {
-            self.props.stopSpinner()
+            props.stopSpinner()
         }
 
         function doRename(new_name) {
-            postWithCallback(self.props.main_id, "rename_document",
-                {old_document_name: self.props.currentDoc,
+            postWithCallback(props.main_id, "rename_document",
+                {old_document_name: props.currentDoc,
                 new_document_name: new_name}, (result)=>{
-                self.props.stopSpinner()
-                }, null, self.props.main_id
+                props.stopSpinner()
+                }, null, props.main_id
             )
         }
-
     }
 
-    get option_dict () {
-        return {
+    const option_dict = {
+        "New": _newDocument,
+        "Duplicate": _duplicateDocument,
+        "Rename": _renameDocument,
+    };
 
-            "New": this._newDocument,
-            "Duplicate": this._duplicateDocument,
-            "Rename": this._renameDocument,
-        }
-    }
+    const icon_dict = {
+        "New": "document",
+        "Duplicate": "duplicate",
+        "Rename": "edit"
+    };
 
-    get icon_dict () {
-        return {
-            "New": "document",
-            "Duplicate": "duplicate",
-            "Rename": "edit"
-        }
-    }
-
-
-    render () {
-        return (
-            <MenuComponent menu_name="Document"
-                           option_dict={this.option_dict}
-                           icon_dict={this.icon_dict}
-                           binding_dict={{}}
-                           disabled_items={this.props.disabled_items}
-                           registerOmniGetter={this.props.registerOmniGetter}
-                           hidden_items={[]}
-            />
-        )
-    }
+    return (
+        <MenuComponent menu_name="Document"
+                       option_dict={option_dict}
+                       icon_dict={icon_dict}
+                       binding_dict={{}}
+                       disabled_items={props.disabled_items}
+                       registerOmniGetter={props.registerOmniGetter}
+                       hidden_items={[]}
+        />
+    )
 }
 DocumentMenu.propTypes = {
     documentNames: PropTypes.array,
     currentDoc: PropTypes.string,
 };
 
-class ColumnMenu extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this)
-    }
+DocumentMenu = memo(DocumentMenu);
 
-    _shift_column_left() {
-        let cnum = this.props.filtered_column_names.indexOf(this.props.selected_column);
+function ColumnMenu(props) {
+
+    function _shift_column_left() {
+        let cnum = props.filtered_column_names.indexOf(props.selected_column);
         if (cnum == 0) return;
-        let target_col = this.props.filtered_column_names[cnum - 1];
-        this.props.moveColumn(this.props.selected_column, target_col);
+        let target_col = props.filtered_column_names[cnum - 1];
+        props.moveColumn(props.selected_column, target_col);
     }
 
-    _shift_column_to_start() {
-        let cnum = this.props.filtered_column_names.indexOf(this.props.selected_column);
+    function _shift_column_to_start() {
+        let cnum = props.filtered_column_names.indexOf(props.selected_column);
         if (cnum == 0) return;
-        let target_col = this.props.filtered_column_names[0];
-        this.props.moveColumn(this.props.selected_column, target_col);
+        let target_col = props.filtered_column_names[0];
+        props.moveColumn(props.selected_column, target_col);
     }
 
-    _shift_column_right() {
-        let cnum = this.props.table_spec.column_names.indexOf(this.props.selected_column);
-        if (cnum == (this.props.table_spec.column_names.length - 1)) return;
-        let target_col = this.props.table_spec.column_names[cnum + 2];
-        this.props.moveColumn(this.props.selected_column, target_col);
+    function _shift_column_right() {
+        let cnum = props.table_spec.column_names.indexOf(props.selected_column);
+        if (cnum == (props.table_spec.column_names.length - 1)) return;
+        let target_col = props.table_spec.column_names[cnum + 2];
+        props.moveColumn(props.selected_column, target_col);
     }
 
-    _shift_column_to_end() {
-        let cnum = this.props.table_spec.column_names.indexOf(this.props.selected_column);
-        if (cnum == (this.props.table_spec.column_names.length - 1)) return;
-        this.props.moveColumn(this.props.selected_column, null);
+    function _shift_column_to_end() {
+        let cnum = props.table_spec.column_names.indexOf(props.selected_column);
+        if (cnum == (props.table_spec.column_names.length - 1)) return;
+        props.moveColumn(props.selected_column, null);
     }
 
+    const option_dict = {
+        "Shift Left": _shift_column_left,
+        "Shift Right": _shift_column_right,
+        "Shift to Start": _shift_column_to_start,
+        "Shift to End": _shift_column_to_end,
+        "divider1": "divider",
+        "Hide": props.hideColumn,
+        "Hide in All Docs": props.hideInAll,
+        "Unhide All": props.unhideAllColumns,
+        "divider2": "divider",
+        "Add Column": () => props.addColumn(false),
+        "Add Column In All Docs": () => props.addColumn(true),
+        "Delete Column": () => props.deleteColumn(false),
+        "Delete Column In All Docs": () => props.deleteColumn(true)
+    };
 
-
-    get option_dict () {
-        return {
-            "Shift Left": this._shift_column_left,
-            "Shift Right": this._shift_column_right,
-            "Shift to Start": this._shift_column_to_start,
-            "Shift to End": this._shift_column_to_end,
-            "divider1": "divider",
-            "Hide": this.props.hideColumn,
-            "Hide in All Docs": this.props.hideInAll,
-            "Unhide All": this.props.unhideAllColumns,
-            "divider2": "divider",
-            "Add Column": () => this.props.addColumn(false),
-            "Add Column In All Docs": () => this.props.addColumn(true),
-            "Delete Column": () => this.props.deleteColumn(false),
-            "Delete Column In All Docs": () => this.props.deleteColumn(true)
-        }
-    }
-
-    get icon_dict () {
-        return {
-            "Shift Left": "direction-left",
-            "Shift Right": "direction-right",
-            "Shift to Start": "double-chevron-left",
-            "Shift to End": "double-chevron-right",
-            "Hide": "eye-off",
-            "Hide in All Docs": "eye-off",
-            "Unhide All": "eye-on",
-            "Add Column": "add-column-right",
-            "Add Column In All Docs": "add-column-right",
-            "Delete Column": "remove-column",
-            "Delete Column In All Docs": "remove-column"
-        }
-    }
-
-
-    render () {
-        return (
-            <MenuComponent menu_name="Column"
-                           option_dict={this.option_dict}
-                           icon_dict={this.icon_dict}
-                           binding_dict={{}}
-                           disabled_items={this.props.disabled_items}
-                           registerOmniGetter={this.props.registerOmniGetter}
-                           hidden_items={[]}
-            />
-        )
-    }
+    const icon_dict = {
+        "Shift Left": "direction-left",
+        "Shift Right": "direction-right",
+        "Shift to Start": "double-chevron-left",
+        "Shift to End": "double-chevron-right",
+        "Hide": "eye-off",
+        "Hide in All Docs": "eye-off",
+        "Unhide All": "eye-on",
+        "Add Column": "add-column-right",
+        "Add Column In All Docs": "add-column-right",
+        "Delete Column": "remove-column",
+        "Delete Column In All Docs": "remove-column"
+    };
+    return (
+        <MenuComponent menu_name="Column"
+                       option_dict={option_dict}
+                       icon_dict={icon_dict}
+                       binding_dict={{}}
+                       disabled_items={props.disabled_items}
+                       registerOmniGetter={props.registerOmniGetter}
+                       hidden_items={[]}
+        />
+    )
 }
 ColumnMenu.propTypes = {
     moveColumn: PropTypes.func,
@@ -575,45 +531,35 @@ ColumnMenu.propTypes = {
     disabled_items: PropTypes.array,
 };
 
-class RowMenu extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this)
-    }
+ColumnMenu = memo(ColumnMenu);
 
-    get option_dict () {
-        return {
+function RowMenu(props) {
+    const option_dict = {
+        "Insert Row Before": props.insertRowBefore,
+        "Insert Row After": props.insertRowAfter,
+        "Duplicate Row": props.duplicateRow,
+        "Delete Row": props.deleteRow,
+    };
 
-            "Insert Row Before": this.props.insertRowBefore,
-            "Insert Row After": this.props.insertRowAfter,
-            "Duplicate Row": this.props.duplicateRow,
-            "Delete Row": this.props.deleteRow,
-        }
-    }
+    const icon_dict = {
+        "Insert Row Before": "add-row-top",
+        "Insert Row After": "add-row-bottom",
+        "Duplicate Row": "add-row-bottom",
+        "Delete Row": "remove-row-bottom"
+    };
 
-    get icon_dict () {
-        return {
-            "Insert Row Before": "add-row-top",
-            "Insert Row After": "add-row-bottom",
-            "Duplicate Row": "add-row-bottom",
-            "Delete Row": "remove-row-bottom"
-        }
-    }
-
-
-    render () {
-        return (
-            <MenuComponent menu_name="Row"
-                           option_dict={this.option_dict}
-                           icon_dict={this.icon_dict}
-                           binding_dict={{}}
-                           disabled_items={this.props.disabled_items}
-                           registerOmniGetter={this.props.registerOmniGetter}
-                           hidden_items={[]}
-            />
-        )
-    }
+    return (
+        <MenuComponent menu_name="Row"
+                       option_dict={option_dict}
+                       icon_dict={icon_dict}
+                       binding_dict={{}}
+                       disabled_items={props.disabled_items}
+                       registerOmniGetter={props.registerOmniGetter}
+                       hidden_items={[]}
+        />
+    )
 }
+
 RowMenu.propTypes = {
     selected_row: PropTypes.number,
     deleteRow: PropTypes.func,
@@ -623,75 +569,70 @@ RowMenu.propTypes = {
     disabled_items: PropTypes.array,
 };
 
-class ViewMenu extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this)
-    }
+RowMenu = memo(RowMenu);
 
-    _shift_column_left() {
-        let cnum = this.props.table_spec.column_names.indexOf(this.props.selected_column);
+function ViewMenu(props) {
+    function _shift_column_left() {
+        let cnum = props.table_spec.column_names.indexOf(props.selected_column);
         if (cnum == 0) return;
-        let target_col = this.props.table_spec.column_names[cnum - 1];
-        this._moveColumn(this.props.selected_column, target_col);
+        let target_col = props.table_spec.column_names[cnum - 1];
+        _moveColumn(props.selected_column, target_col);
     }
 
-    _shift_column_right() {
-        let cnum = this.props.table_spec.column_names.indexOf(this.props.selected_column);
-        if (cnum == (this.props.table_spec.column_names.length - 1)) return;
-        let target_col = this.props.table_spec.column_names[cnum + 2];
-        this._moveColumn(this.props.selected_column, target_col);
+    function _shift_column_right() {
+        let cnum = props.table_spec.column_names.indexOf(props.selected_column);
+        if (cnum == (props.table_spec.column_names.length - 1)) return;
+        let target_col = props.table_spec.column_names[cnum + 2];
+        _moveColumn(props.selected_column, target_col);
     }
 
-    _toggleExports() {
-        this.props.setMainStateValue("show_exports_pane", !this.props.show_exports_pane)
+    function _toggleExports() {
+        props.setMainStateValue("show_exports_pane", !props.show_exports_pane)
     }
 
-    _toggleConsole() {
-        this.props.setMainStateValue("show_console_pane", !this.props.show_console_pane)
+    function _toggleConsole() {
+        props.setMainStateValue("show_console_pane", !props.show_console_pane)
     }
 
 
-    get option_dict () {
-        let table_opt_name = this.props.table_is_shrunk ? "Maximize Table" : "Minimize Table";
+    function option_dict () {
+        let table_opt_name = props.table_is_shrunk ? "Maximize Table" : "Minimize Table";
         let result = {};
-        result[table_opt_name] = this.props.toggleTableShrink;
+        result[table_opt_name] = props.toggleTableShrink;
         result["divider1"] = "divider";
-        let console_opt_name = this.props.show_console_pane ? "Hide Log" : "Show Log";
-        result[console_opt_name] = this._toggleConsole;
-        let exports_opt_name = this.props.show_exports_pane ? "Hide Exports" : "Show Exports";
-        result[exports_opt_name] = this._toggleExports;
+        let console_opt_name = props.show_console_pane ? "Hide Log" : "Show Log";
+        result[console_opt_name] = _toggleConsole;
+        let exports_opt_name = props.show_exports_pane ? "Hide Exports" : "Show Exports";
+        result[exports_opt_name] = _toggleExports;
         result["divider2"] = "divider";
-        result["Show Error Drawer"] = this.props.openErrorDrawer;
+        result["Show Error Drawer"] = props.openErrorDrawer;
         return result
     }
 
-    get icon_dict () {
-        let opt_name = this.props.table_is_shrunk ? "Maximize Table" : "Minimize Table";
+    function icon_dict () {
+        let opt_name = props.table_is_shrunk ? "Maximize Table" : "Minimize Table";
         let result = {};
-        result[opt_name] = this.props.table_is_shrunk ? "maximize" : "minimize";
+        result[opt_name] = props.table_is_shrunk ? "maximize" : "minimize";
 
-        let console_opt_name = this.props.show_console_pane ? "Hide Log" : "Show Log";
-        let exports_opt_name = this.props.show_exports_pane ? "Hide Exports" : "Show Exports";
+        let console_opt_name = props.show_console_pane ? "Hide Log" : "Show Log";
+        let exports_opt_name = props.show_exports_pane ? "Hide Exports" : "Show Exports";
         result[console_opt_name] = "code";
         result[exports_opt_name] = "variable";
         result["Show Error Drawer"] = "panel-stats";
         return result
     }
 
-    render () {
-        return (
-            <MenuComponent menu_name="View"
-                           option_dict={this.option_dict}
-                           icon_dict={this.icon_dict}
-                           disabled_items={[]}
-                           binding_dict={{}}
-                           disable_all={this.props.disable_all}
-                           registerOmniGetter={this.props.registerOmniGetter}
-                           hidden_items={[]}
-            />
-        )
-    }
+    return (
+        <MenuComponent menu_name="View"
+                       option_dict={option_dict()}
+                       icon_dict={icon_dict()}
+                       disabled_items={[]}
+                       binding_dict={{}}
+                       disable_all={props.disable_all}
+                       registerOmniGetter={props.registerOmniGetter}
+                       hidden_items={[]}
+        />
+    )
 }
 ViewMenu.propTypes = {
     table_is_shrunk: PropTypes.bool,
@@ -701,3 +642,5 @@ ViewMenu.propTypes = {
     show_console_pane: PropTypes.bool,
     setMainStateValue: PropTypes.func,
 };
+
+ViewMenu = memo(ViewMenu);

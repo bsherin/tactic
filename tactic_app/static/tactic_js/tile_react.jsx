@@ -1,10 +1,10 @@
 
 import React from "react";
+import {Fragment, useState, useEffect, useRef, memo} from "react";
 import PropTypes from 'prop-types';
 
 import { Icon, Card, Button, ButtonGroup, Spinner, PopoverPosition } from "@blueprintjs/core";
 import {Transition} from "react-transition-group";
-import { SortableHandle, SortableElement } from 'react-sortable-hoc';
 import _ from 'lodash';
 
 import {TileForm} from "./tile_form_react.js";
@@ -78,7 +78,9 @@ class TileContainer extends React.Component {
         this.props.setMainStateValue("tile_list", new_tile_list)
     }
 
-    _resortTiles({oldIndex, newIndex}) {
+    _resortTiles({destination, source}) {
+        const oldIndex = source.index;
+        const newIndex = destination.index;
         let old_tile_list = [...this.props.tile_list];
         let new_tile_list = arrayMove(old_tile_list, oldIndex, newIndex);
         this.props.setMainStateValue("tile_list", new_tile_list)
@@ -202,14 +204,14 @@ class TileContainer extends React.Component {
                                style={outer_style}
                                dark_theme={this.props.dark_theme}
                                helperClass={this.props.dark_theme ? "bp5-dark" : "light-theme"}
-                               container_ref={this.props.tile_div_ref}
+                               // container_ref={this.props.tile_div_ref}
                                goToModule={this.props.goToModule}
-                               ElementComponent={STileComponent}
+                               ElementComponent={TileComponent}
                                key_field_name="tile_name"
                                item_list={_.cloneDeep(this.props.tile_list)}
                                handle=".tile-name-div"
                                onSortStart={(_, event) => event.preventDefault()} // This prevents Safari weirdness
-                               onSortEnd={this._resortTiles}
+                               onDragEnd={this._resortTiles}
                                handleClose={this._closeTile}
                                setTileValue={this._setTileValue}
                                setTileState={this._setTileState}
@@ -245,7 +247,7 @@ class RawSortHandle extends React.Component {
 
     render () {
         return (
-            <span className="tile-name-div" ><Icon icon="drag-handle-vertical" iconSize={15}/>{this.props.tile_name}</span>
+            <span className="tile-name-div" {...this.props.dragHandleProps} ><Icon icon="drag-handle-vertical" iconSize={15}/>{this.props.tile_name}</span>
         )
     }
 }
@@ -255,7 +257,7 @@ RawSortHandle.propTypes = {
 };
 
 
-const Shandle = SortableHandle(RawSortHandle);
+const Shandle = RawSortHandle;
 
 class TileComponent extends React.Component {
     constructor(props) {
@@ -810,7 +812,7 @@ class TileComponent extends React.Component {
                             <GlyphButton intent="primary"
                                          handleClick={this._toggleBack}
                                          icon="cog"/>
-                             <Shandle tile_name={this.props.tile_name}/>
+                             <Shandle  dragHandleProps={this.props.dragHandleProps} tile_name={this.props.tile_name}/>
                             </ButtonGroup>
                         </div>
 
@@ -914,5 +916,3 @@ TileComponent.defaultProps = {
     log_since: null,
     max_console_lines: 100
 };
-
-let STileComponent = SortableElement(TileComponent);

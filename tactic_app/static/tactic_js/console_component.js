@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.ConsoleComponent = ConsoleComponent;
+exports.itemsReducer = itemsReducer;
 var _react = _interopRequireWildcard(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 require("codemirror/mode/markdown/markdown.js");
@@ -30,17 +31,22 @@ function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "functio
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
 function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; } // noinspection JSConstructorReturnsPrimitive
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
+function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); } // noinspection JSConstructorReturnsPrimitive
 var mdi = (0, _markdownIt["default"])({
   html: true
 });
@@ -49,6 +55,109 @@ var MAX_CONSOLE_WIDTH = 1800;
 var BUTTON_CONSUMED_SPACE = 208;
 var SECTION_INDENT = 25; // This is also hard coded into the css file at the moment
 
+function itemsReducer(console_items, action) {
+  var _new_items;
+  var new_items;
+  switch (action.type) {
+    case "initialize":
+      new_items = action.new_items;
+      break;
+    case "delete_item":
+      new_items = console_items.filter(function (t) {
+        return t.unique_id !== action.unique_id;
+      });
+      break;
+    case "delete_items":
+      new_items = console_items.filter(function (t) {
+        return !action.id_list.includes(t.unique_id);
+      });
+      break;
+    case "delete_all_items":
+      new_items = [];
+      break;
+    case "reset":
+      new_items = console_items.map(function (t) {
+        if (t.type != "code") {
+          return t;
+        } else {
+          var new_t = _objectSpread({}, t);
+          new_t.output_text = "";
+          new_t.execution_count = 0;
+          return new_t;
+        }
+      });
+      break;
+    case "replace_item":
+      new_items = console_items.map(function (t) {
+        if (t.unique === action.unique_id) {
+          return action.new_item;
+        } else {
+          return t;
+        }
+      });
+      break;
+    case "clear_all_selected":
+      new_items = console_items.map(function (t) {
+        var new_t = _objectSpread({}, t);
+        new_t.am_selected = false;
+        new_t.search_string = null;
+        return new_t;
+      });
+      break;
+    case "change_item_value":
+      new_items = console_items.map(function (t) {
+        if (t.unique_id === action.unique_id) {
+          var new_t = _objectSpread({}, t);
+          new_t[action.field] = action.new_value;
+          return new_t;
+        } else {
+          return t;
+        }
+      });
+      break;
+    case "update_items":
+      new_items = console_items.map(function (t) {
+        if (t.unique_id in action.updates) {
+          var update_dict = action.updates[t.unique_id];
+          return _objectSpread(_objectSpread({}, t), update_dict);
+        } else {
+          return t;
+        }
+      });
+      break;
+    case "add_at_index":
+      new_items = _toConsumableArray(console_items);
+      (_new_items = new_items).splice.apply(_new_items, [action.insert_index, 0].concat(_toConsumableArray(action.new_items)));
+      break;
+    case "open_listed_dividers":
+      new_items = console_items.map(function (t) {
+        if (t.type == "divider" && t.divider_list.includes(t.unique_id)) {
+          var new_t = _objectSpread({}, t);
+          new_t.am_shurnk = false;
+          return new_t;
+        } else {
+          return t;
+        }
+      });
+      break;
+    case "close_all_dividers":
+      new_items = console_items.map(function (t) {
+        if (t.type == "divider") {
+          var new_t = _objectSpread({}, t);
+          new_t.am_shurnk = true;
+          return new_t;
+        } else {
+          return t;
+        }
+      });
+      break;
+    default:
+      console.log("Got Unknown action: " + action.type);
+      return _toConsumableArray(console_items);
+  }
+  // console_items_ref.current = new_items;
+  return new_items;
+}
 function ConsoleComponent(props) {
   var header_ref = (0, _react.useRef)(null);
   var body_ref = (0, _react.useRef)(null);
@@ -107,6 +216,9 @@ function ConsoleComponent(props) {
     _useState24 = _slicedToArray(_useState23, 2),
     search_helper_text = _useState24[0],
     set_search_helper_text = _useState24[1];
+
+  // const tsocket = useRef(null);
+
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _react.useEffect)(function () {
     initSocket();
@@ -115,11 +227,9 @@ function ConsoleComponent(props) {
       _addCodeArea("", false);
     }
     _clear_all_selected_items();
-    return function () {
-      props.tsocket.disconnect();
-    };
   }, []);
   function initSocket() {
+    // tsocket.current = new TacticSocket("main", 5000, props.main_id);
     function _handleConsoleMessage(data) {
       if (data.main_id == props.main_id) {
         // noinspection JSUnusedGlobalSymbols
@@ -485,7 +595,9 @@ function ConsoleComponent(props) {
       _stopMainPseudoLogStreaming();
     } else {
       if (pseudo_tile_id == null) {
-        (0, _communication_react.postWithCallback)(props.main_id, "get_pseudo_tile_id", {}, function (res) {
+        (0, _communication_react.postWithCallback)(props.main_id, "get_pseudo_tile_id", {
+          user_id: window.user_id
+        }, function (res) {
           set_pseudo_tile_id(res.pseudo_tile_id);
           pushCallback(_getContainerLog);
         }, null, props.main_id);
@@ -1778,7 +1890,9 @@ function ConsoleComponent(props) {
     style: {
       height: _bodyHeight()
     }
-  }, !show_console_error_log && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_sortable_container.SortableComponent, {
+  }, !show_console_error_log && /*#__PURE__*/_react["default"].createElement(_core.ContextMenu, {
+    content: renderContextMenu()
+  }, /*#__PURE__*/_react["default"].createElement(_sortable_container.SortableComponent, {
     id: "console-items-div",
     main_id: props.main_id,
     ElementComponent: SuperItem,
@@ -1821,8 +1935,6 @@ function ConsoleComponent(props) {
   }));
 }
 exports.ConsoleComponent = ConsoleComponent = /*#__PURE__*/(0, _react.memo)(ConsoleComponent);
-// ConsoleComponent = ContextMenuTarget(memo(ConsoleComponent));
-
 ConsoleComponent.propTypes = {
   console_items: _propTypes["default"].object,
   console_is_shrunk: _propTypes["default"].bool,
@@ -1958,7 +2070,9 @@ function DividerItem(props) {
     panel_class += " error-log-panel";
   }
   var body_width = props.console_available_width - BUTTON_CONSUMED_SPACE;
-  return /*#__PURE__*/_react["default"].createElement("div", {
+  return /*#__PURE__*/_react["default"].createElement(_core.ContextMenu, {
+    content: renderContextMenu()
+  }, /*#__PURE__*/_react["default"].createElement("div", {
     className: panel_class + " d-flex flex-row",
     onClick: _consoleItemClick,
     id: props.unique_id,
@@ -1994,7 +2108,7 @@ function DividerItem(props) {
       minHeight: 0
     },
     icon: "trash"
-  })));
+  }))));
 }
 DividerItem = /*#__PURE__*/(0, _react.memo)(DividerItem);
 var section_end_item_update_props = ["am_selected", "console_available_width"];
@@ -2057,7 +2171,9 @@ function SectionEndItem(props) {
     marginTop: 10,
     borderBottomWidth: 2
   };
-  return /*#__PURE__*/_react["default"].createElement("div", {
+  return /*#__PURE__*/_react["default"].createElement(_core.ContextMenu, {
+    content: renderContextMenu()
+  }, /*#__PURE__*/_react["default"].createElement("div", {
     className: panel_class + " d-flex flex-row",
     onClick: _consoleItemClick,
     id: props.unique_id,
@@ -2074,11 +2190,9 @@ function SectionEndItem(props) {
     style: line_style
   })), /*#__PURE__*/_react["default"].createElement("div", {
     className: "button-div d-flex flex-row"
-  }));
+  })));
 }
 SectionEndItem = /*#__PURE__*/(0, _react.memo)(SectionEndItem);
-// const SectionEndItem = ContextMenuTarget(RawSectionEndItem);
-
 var log_item_update_props = ["is_error", "am_shrunk", "am_selected", "in_section", "summary_text", "console_text", "console_available_width"];
 function LogItem(props) {
   var last_output_text = (0, _react.useRef)("");
@@ -2207,7 +2321,9 @@ function LogItem(props) {
   if (props.in_section) {
     body_width -= SECTION_INDENT / 2;
   }
-  return /*#__PURE__*/_react["default"].createElement("div", {
+  return /*#__PURE__*/_react["default"].createElement(_core.ContextMenu, {
+    content: renderContextMenu()
+  }, /*#__PURE__*/_react["default"].createElement("div", {
     className: panel_class + " d-flex flex-row",
     onClick: _consoleItemClick,
     id: props.unique_id,
@@ -2266,12 +2382,9 @@ function LogItem(props) {
     },
     intent: "danger",
     icon: "trash"
-  })))));
+  }))))));
 }
 LogItem = /*#__PURE__*/(0, _react.memo)(LogItem);
-
-// const LogItem = ContextMenuTarget(RawLogItem);
-
 var blob_item_update_props = ["is_error", "am_shrunk", "am_selected", "in_section", "summary_text", "image_data_str", "console_available_width"];
 function BlobItem(props) {
   var last_output_text = (0, _react.useRef)("");
@@ -2395,7 +2508,9 @@ function BlobItem(props) {
   if (props.in_section) {
     body_width -= SECTION_INDENT / 2;
   }
-  return /*#__PURE__*/_react["default"].createElement("div", {
+  return /*#__PURE__*/_react["default"].createElement(_core.ContextMenu, {
+    content: renderContextMenu()
+  }, /*#__PURE__*/_react["default"].createElement("div", {
     className: panel_class + " d-flex flex-row",
     onClick: _consoleItemClick,
     id: props.unique_id,
@@ -2457,7 +2572,7 @@ function BlobItem(props) {
     },
     intent: "danger",
     icon: "trash"
-  })))));
+  }))))));
 }
 BlobItem = /*#__PURE__*/(0, _react.memo)(BlobItem);
 BlobItem.propTypes = {
@@ -2473,9 +2588,6 @@ BlobItem.propTypes = {
   handleDelete: _propTypes["default"].func,
   console_available_width: _propTypes["default"].number
 };
-
-// const BlobItem = ContextMenuTarget(RawBlobItem);
-
 var code_item_update_props = ["am_shrunk", "set_focus", "am_selected", "search_string", "summary_text", "console_text", "in_section", "show_spinner", "execution_count", "output_text", "console_available_width", "dark_theme"];
 function ConsoleCodeItem(props) {
   var elRef = (0, _react.useRef)(null);
@@ -2701,7 +2813,9 @@ function ConsoleCodeItem(props) {
   if (props.in_section) {
     code_container_width -= SECTION_INDENT / 2;
   }
-  return /*#__PURE__*/_react["default"].createElement("div", {
+  return /*#__PURE__*/_react["default"].createElement(_core.ContextMenu, {
+    content: renderContextMenu()
+  }, /*#__PURE__*/_react["default"].createElement("div", {
     className: panel_style + " d-flex flex-row",
     ref: elRef,
     onClick: _consoleItemClick,
@@ -2805,7 +2919,7 @@ function ConsoleCodeItem(props) {
   }))), /*#__PURE__*/_react["default"].createElement("div", {
     className: "log-code-output",
     dangerouslySetInnerHTML: output_dict
-  }))));
+  })))));
 }
 ConsoleCodeItem = /*#__PURE__*/(0, _react.memo)(ConsoleCodeItem);
 ConsoleCodeItem.propTypes = {
@@ -2833,9 +2947,6 @@ ConsoleCodeItem.propTypes = {
 ConsoleCodeItem.defaultProps = {
   summary_text: null
 };
-
-// const ConsoleCodeItem = ContextMenuTarget(RawConsoleCodeItem);
-
 function ResourceLinkButton(props) {
   var my_view = (0, _react.useRef)(null);
   useConstructor(function () {
@@ -3121,7 +3232,9 @@ function ConsoleTextItem(props) {
   if (props.in_section) {
     code_container_width -= SECTION_INDENT / 2;
   }
-  return /*#__PURE__*/_react["default"].createElement("div", {
+  return /*#__PURE__*/_react["default"].createElement(_core.ContextMenu, {
+    content: renderContextMenu()
+  }, /*#__PURE__*/_react["default"].createElement("div", {
     className: panel_class + " d-flex flex-row",
     onClick: _consoleItemClick,
     ref: elRef,
@@ -3210,7 +3323,7 @@ function ConsoleTextItem(props) {
       marginRight: 66
     },
     icon: "trash"
-  })))));
+  }))))));
 }
 ConsoleTextItem = /*#__PURE__*/(0, _react.memo)(ConsoleTextItem);
 ConsoleTextItem.propTypes = {
@@ -3235,9 +3348,6 @@ ConsoleTextItem.defaultProps = {
   summary_text: null,
   links: []
 };
-
-// const ConsoleTextItem = ContextMenuTarget(RawConsoleTextItem);
-
 var all_update_props = {
   "text": text_item_update_props,
   "code": code_item_update_props,

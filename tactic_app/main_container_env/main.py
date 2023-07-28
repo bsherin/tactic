@@ -381,8 +381,6 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                                                                                    return_lists=False)
 
         print("*** got all collection info ***")
-        print("dm_dict is " + str(dm_dict))
-        print("coll_dict is " + str(coll_dict))
         for fname in coll_dict.keys():
             if self.doc_type == "table":
                 result[fname] = docInfo(fname, hl_dict[fname], dm_dict[fname], coll_dict[fname])

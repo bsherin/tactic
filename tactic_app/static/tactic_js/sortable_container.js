@@ -6,18 +6,10 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.MySortableElement = MySortableElement;
 exports.SortableComponent = SortableComponent;
-var _react = _interopRequireWildcard(require("react"));
-var _propTypes = _interopRequireDefault(require("prop-types"));
+var _react = _interopRequireDefault(require("react"));
 var _lodash = _interopRequireDefault(require("lodash"));
 var _reactBeautifulDnd = require("react-beautiful-dnd");
-var _reactSortableHoc = require("react-sortable-hoc");
-var _utilities_react = require("./utilities_react.js");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
-function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
@@ -32,7 +24,7 @@ function _assertThisInitialized(self) { if (self === void 0) { throw new Referen
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 function MySortableElement(WrappedComponent) {
-  var SElement = (0, _reactSortableHoc.SortableElement)(WrappedComponent);
+  var SElement = SortableElement(WrappedComponent);
   return /*#__PURE__*/function (_React$PureComponent) {
     _inherits(_class, _React$PureComponent);
     var _super = _createSuper(_class);
@@ -78,65 +70,3 @@ function SortableComponent(props) {
     }), provided.placeholder);
   }));
 }
-var RawSortableComponent = /*#__PURE__*/function (_React$Component) {
-  _inherits(RawSortableComponent, _React$Component);
-  var _super2 = _createSuper(RawSortableComponent);
-  function RawSortableComponent(props) {
-    var _this;
-    _classCallCheck(this, RawSortableComponent);
-    _this = _super2.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
-    _this.state = {
-      mounted: false
-    };
-    _this.container_ref = _this.props.container_ref == null ? /*#__PURE__*/_react["default"].createRef() : _this.props.container_ref;
-    return _this;
-  }
-  _createClass(RawSortableComponent, [{
-    key: "sorter_exists",
-    get: function get() {
-      return $(this.container_ref.current).hasClass("ui-sortable");
-    }
-  }, {
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      this.setState({
-        mounted: true
-      });
-      // this.createSorter()
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var _this2 = this;
-      var WrappedComponent = this.props.ElementComponent;
-      var props_to_pass = _objectSpread({}, this.props);
-      delete props_to_pass.item_list;
-      return /*#__PURE__*/_react["default"].createElement("div", {
-        id: this.props.id,
-        style: this.props.style,
-        ref: this.container_ref
-      }, this.props.item_list.length > 0 && this.props.item_list.map(function (entry, index) {
-        return /*#__PURE__*/_react["default"].createElement(WrappedComponent, _extends({
-          key: entry[_this2.props.key_field_name],
-          index: index
-        }, props_to_pass, entry));
-      }));
-    }
-  }]);
-  return RawSortableComponent;
-}(_react["default"].Component);
-RawSortableComponent.propTypes = {
-  id: _propTypes["default"].string,
-  handle: _propTypes["default"].string,
-  key_field_name: _propTypes["default"].string,
-  ElementComponent: _propTypes["default"].func,
-  item_list: _propTypes["default"].array,
-  style: _propTypes["default"].object,
-  container_ref: _propTypes["default"].object,
-  resortFunction: _propTypes["default"].func
-};
-RawSortableComponent.defaultProps = {
-  container_ref: null
-};
-var oldSortableComponent = (0, _reactSortableHoc.SortableContainer)(RawSortableComponent);

@@ -1,8 +1,8 @@
 import React from "react";
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import PropTypes from 'prop-types';
 
-import {Menu, MenuItem, ContextMenu, Tree} from "@blueprintjs/core";
+import {Menu, MenuItem, ContextMenuPopover, Tree} from "@blueprintjs/core";
 
 import {showConfirmDialogReact, showModalReact} from "./modal_react";
 import {arraysMatch, remove_duplicates} from "./utilities_react";
@@ -48,8 +48,14 @@ function TagMenu(props) {
     let disabled = props.tagstring == "all";
     return (
         <Menu>
-            <MenuItem icon="edit" disabled={disabled} onClick={() => props.rename_tag(props.tagstring)} text="Rename"/>
-            <MenuItem icon="trash" disabled={disabled} onClick={() => props.delete_tag(props.tagstring)} text="Delete"/>
+            <MenuItem icon="edit" disabled={disabled} onClick={() => {
+                props.rename_tag(props.tagstring);
+                props.setShowContextMenu(false)
+            }} text="Rename"/>
+            <MenuItem icon="trash" disabled={disabled} onClick={() => {
+                props.delete_tag(props.tagstring);
+                props.setShowContextMenu(false);
+            }} text="Delete"/>
         </Menu>
     )
 }
@@ -57,6 +63,9 @@ function TagMenu(props) {
 TagMenu = memo(TagMenu);
 
 function TagButtonList(props) {
+    const [showContextMenu, setShowContextMenu] = useState(false);
+    const [contextMenuTarget, setContentMenuTarget] = useState({left:0, top:0});
+    const [contextMenuTagString, setContextMenuTagString] = useState("");
 
     function _renameTagPrep(old_tag, new_tag_base) {
         let old_tag_list = tag_to_list(old_tag);
@@ -189,10 +198,9 @@ function TagButtonList(props) {
 
     function _showContextMenu(node, nodepath, e) {
         e.preventDefault();
-        let tmenu = <TagMenu tagstring={node.nodeData.tag_string}
-                             delete_tag={_delete_tag}
-                             rename_tag={_rename_tag}/>;
-        ContextMenu.show(tmenu, {left: e.clientX, top: e.clientY})
+        setShowContextMenu(true);
+        setContextMenuTagString(node.nodeData.tag_string);
+        setContentMenuTarget({left: e.clientX, top: e.clientY});
     }
 
     let tlist = props.tag_list == undefined ? [] : props.tag_list;
@@ -202,8 +210,17 @@ function TagButtonList(props) {
     tag_list = remove_duplicates(tag_list);
     tag_list.sort();
     let tree = _buildTree(tag_list);
+    let tmenu = <TagMenu tagstring={contextMenuTagString}
+                         setShowContextMenu={setShowContextMenu}
+                         delete_tag={_delete_tag}
+                         rename_tag={_rename_tag}/>;
     return (
         <div className="tactic-tag-button-list">
+            <ContextMenuPopover onClose={()=>{setShowContextMenu(false)}}  // Without this doesn't close
+                                content={tmenu}
+                                isOpen={showContextMenu}
+                                isDarkTheme={props.dark_theme}
+                                targetOffset={contextMenuTarget} />
             <Tree contents={tree}
                   onNodeContextMenu={_showContextMenu}
                   onNodeClick={_handleNodeClick}

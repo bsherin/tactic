@@ -7,13 +7,13 @@
 
 import _ from 'lodash';
 import React from "react";
-import {useState, useEffect, useRef} from "react";
+import {useState, useEffect, useRef, useReducer} from "react";
 import * as ReactDOM from 'react-dom'
 import {Spinner, Text} from "@blueprintjs/core";
 
 export {doBinding, propsAreEqual, arrayMove, arraysMatch, get_ppi, isInt};
 export {remove_duplicates, doSignOut, guid, scrollMeIntoView, renderSpinnerMessage};
-export {useConstructor, useCallbackStack, useStateAndRef}
+export {useConstructor, useCallbackStack, useStateAndRef, useReducerAndRef}
 
 export {debounce, throttle, useDebounce}
 
@@ -44,15 +44,15 @@ function useCallbackStack(myId = "") {
 }
 
 const useConstructor = (callback = () => {
-}) => {
-    const hasBeenCalled = useRef(false);
-    const returnVal = useRef(null);
-    if (hasBeenCalled.current) {
-        return returnVal.current;
-    }
-    hasBeenCalled.current = true;
-    returnVal.current = callback();
-    return returnVal
+    }) => {
+        const hasBeenCalled = useRef(false);
+        const returnVal = useRef(null);
+        if (hasBeenCalled.current) {
+            return returnVal.current;
+        }
+        hasBeenCalled.current = true;
+        returnVal.current = callback();
+        return returnVal
 };
 
 function useStateAndRef(initial) {
@@ -60,6 +60,13 @@ function useStateAndRef(initial) {
     const valueRef = useRef(value);
     valueRef.current = value;
     return [value, setValue, valueRef];
+}
+
+function useReducerAndRef(reducer, initial) {
+    const [value, dispatch] = useReducer(reducer, initial);
+    const valueRef = useRef(value);
+    valueRef.current = value;
+    return [value, dispatch, valueRef]
 }
 
 function useDebounce(callback, delay=500) {

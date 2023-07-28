@@ -29,10 +29,6 @@ var _sizing_tools = require("./sizing_tools");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
 function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
@@ -179,7 +175,6 @@ function NotebookApp(props) {
   var last_save = (0, _react.useRef)({});
   var main_outer_ref = (0, _react.useRef)(null);
   var omniGetters = (0, _react.useRef)({});
-  var key_bindings = (0, _react.useRef)([["ctrl+space"], _showOmnibar]);
   var updateExportsList = (0, _react.useRef)(null);
   var height_adjustment = (0, _react.useRef)(props.controlled ? MENU_BAR_HEIGHT : 0);
   var _useState = (0, _react.useState)(function () {
@@ -194,20 +189,11 @@ function NotebookApp(props) {
     _useState4 = _slicedToArray(_useState3, 2),
     usable_width = _useState4[0],
     set_usable_width = _useState4[1];
-  var console_items_ref = (0, _react.useRef)([]);
-
-  // const [console_items, set_console_items, console_items_ref] =
-  //     useStateAndRe(props.is_project ? props.interface_state["console_items"] : []);
-  var _useStateAndRef = (0, _utilities_react.useStateAndRef)(false),
-    _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
-    console_is_shrunk = _useStateAndRef2[0],
-    set_console_is_shrunk = _useStateAndRef2[1],
-    console_is_shrunk_ref = _useStateAndRef2[2];
-  var _useStateAndRef3 = (0, _utilities_react.useStateAndRef)(true),
-    _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
-    console_is_zoomed = _useStateAndRef4[0],
-    set_console_is_zoomed = _useStateAndRef4[1],
-    console_is_zoomed_ref = _useStateAndRef4[2];
+  var _useReducerAndRef = (0, _utilities_react.useReducerAndRef)(_console_component.itemsReducer, []),
+    _useReducerAndRef2 = _slicedToArray(_useReducerAndRef, 3),
+    console_items = _useReducerAndRef2[0],
+    dispatch = _useReducerAndRef2[1],
+    console_items_ref = _useReducerAndRef2[2];
   var _useState5 = (0, _react.useState)(true),
     _useState6 = _slicedToArray(_useState5, 2),
     show_exports_pane = _useState6[0],
@@ -234,122 +220,9 @@ function NotebookApp(props) {
     _useState16 = _slicedToArray(_useState15, 2),
     is_project = _useState16[0],
     set_is_project = _useState16[1];
-  function itemsReducer(console_items, action) {
-    var _new_items;
-    var new_items;
-    switch (action.type) {
-      case "initialize":
-        new_items = action.new_items;
-        break;
-      case "delete_item":
-        new_items = console_items.filter(function (t) {
-          return t.unique_id !== action.unique_id;
-        });
-        break;
-      case "delete_items":
-        new_items = console_items.filter(function (t) {
-          return !action.id_list.includes(t.unique_id);
-        });
-        break;
-      case "delete_all_items":
-        new_items = [];
-        break;
-      case "reset":
-        new_items = console_items.map(function (t) {
-          if (t.type != "code") {
-            return t;
-          } else {
-            var new_t = _objectSpread({}, t);
-            new_t.output_text = "";
-            new_t.execution_count = 0;
-            return new_t;
-          }
-        });
-        break;
-      case "replace_item":
-        new_items = console_items.map(function (t) {
-          if (t.unique === action.unique_id) {
-            return action.new_item;
-          } else {
-            return t;
-          }
-        });
-        break;
-      case "clear_all_selected":
-        new_items = console_items.map(function (t) {
-          var new_t = _objectSpread({}, t);
-          new_t.am_selected = false;
-          new_t.search_string = null;
-          return new_t;
-        });
-        break;
-      case "change_item_value":
-        new_items = console_items.map(function (t) {
-          if (t.unique_id === action.unique_id) {
-            var new_t = _objectSpread({}, t);
-            new_t[action.field] = action.new_value;
-            return new_t;
-          } else {
-            return t;
-          }
-        });
-        break;
-      case "update_items":
-        new_items = console_items.map(function (t) {
-          if (t.unique_id in action.updates) {
-            var update_dict = action.updates[t.unique_id];
-            return _objectSpread(_objectSpread({}, t), update_dict);
-          } else {
-            return t;
-          }
-        });
-        break;
-      case "add_at_index":
-        new_items = _toConsumableArray(console_items);
-        (_new_items = new_items).splice.apply(_new_items, [action.insert_index, 0].concat(_toConsumableArray(action.new_items)));
-        break;
-      case "open_listed_dividers":
-        new_items = console_items.map(function (t) {
-          if (t.type == "divider" && t.divider_list.includes(t.unique_id)) {
-            var new_t = _objectSpread({}, t);
-            new_t.am_shurnk = false;
-            return new_t;
-          } else {
-            return t;
-          }
-        });
-        break;
-      case "close_all_dividers":
-        new_items = console_items.map(function (t) {
-          if (t.type == "divider") {
-            var new_t = _objectSpread({}, t);
-            new_t.am_shurnk = true;
-            return new_t;
-          } else {
-            return t;
-          }
-        });
-        break;
-      default:
-        console.log("Got Unknown action: " + action.type);
-        return _toConsumableArray(console_items);
-    }
-    console_items_ref.current = new_items;
-    return new_items;
-  }
-  var _useReducer = (0, _react.useReducer)(itemsReducer, []),
-    _useReducer2 = _slicedToArray(_useReducer, 2),
-    console_items = _useReducer2[0],
-    dispatch = _useReducer2[1];
-  var stateSetters = (0, _react.useRef)({
-    show_exports_pane: set_show_exports_pane,
-    console_width_fraction: set_console_width_fraction,
-    console_is_shrunk: set_console_is_shrunk,
-    console_is_zoomed: set_console_is_zoomed
-  });
+  var key_bindings = [[["ctrl+space"], _showOmnibar]];
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _utilities_react.useConstructor)(function () {
-    console_items_ref.current = console_items;
     set_show_exports_pane(props.is_project ? props.interface_state["show_exports_pane"] : true);
     set_console_width_fraction(props.is_project ? props.interface_state["console_width_fraction"] : .5);
     set_dark_theme(props.initial_theme === "dark");
@@ -366,7 +239,7 @@ function NotebookApp(props) {
       props.registerDirtyMethod(_dirty);
     } else {
       window.addEventListener("beforeunload", function (e) {
-        if (self._dirty()) {
+        if (_dirty()) {
           e.preventDefault();
           e.returnValue = '';
         }
@@ -379,7 +252,7 @@ function NotebookApp(props) {
     props.stopSpinner();
     if (!props.controlled) {
       document.title = sresource_name;
-      window.dark_theme = dark_theme;
+      window.dark_theme = sdark_theme;
       window.addEventListener("resize", _update_window_dimensions);
       _update_window_dimensions();
     }
@@ -388,16 +261,17 @@ function NotebookApp(props) {
       delete_my_containers();
     };
   }, []);
-  function cPropGetters() {
-    return {
-      usable_width: usable_width,
-      usable_height: usable_height,
-      resource_name: sresource_name,
-      is_project: is_project
-    };
-  }
+  var cPropGetters = {
+    usable_width: usable_width,
+    usable_height: usable_height,
+    resource_name: sresource_name,
+    is_project: is_project
+  };
+  var stateSetters = {
+    show_exports_pane: set_show_exports_pane
+  };
   function _cProp(pname) {
-    return props.controlled ? props[pname] : cPropGetters()[pname];
+    return props.controlled ? props[pname] : cPropGetters[pname];
   }
   function interface_state() {
     return {
@@ -409,7 +283,11 @@ function NotebookApp(props) {
   function _setMainStateValue(field_name, new_value) {
     var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
     // console.log(`field_name is ${field_name} new_value is ${String(new_value)}`);
-    stateSetters.current[field_name](new_value);
+    if (!(field_name in stateSetters)) {
+      console.log("trying to set field_name ".concat(field_name, " that don't have a setter for"));
+      return;
+    }
+    stateSetters[field_name](new_value);
     pushCallback(callback);
   }
   function _update_window_dimensions() {
@@ -443,7 +321,6 @@ function NotebookApp(props) {
     });
   }
   function initSocket() {
-    var self = this;
     props.tsocket.attachListener("window-open", function (data) {
       window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
     });
@@ -466,11 +343,6 @@ function NotebookApp(props) {
     pushCallback(function () {
       window.dark_theme = dark_theme;
     });
-  }
-  function _broadcast_event_to_server(event_name, data_dict, callback) {
-    data_dict.main_id = props.main_id;
-    data_dict.event_name = event_name;
-    (0, _communication_react.postWithCallback)(props.main_id, "distribute_events_stub", data_dict, callback, null, props.main - id);
   }
   function _handleConsoleFractionChange(left_width, right_width, new_fraction) {
     set_console_width_fraction(new_fraction);
@@ -573,7 +445,6 @@ function NotebookApp(props) {
       setUpdate: function setUpdate(ufunc) {
         updateExportsList.current = ufunc;
       },
-      setMainStateValue: _setMainStateValue,
       available_height: console_available_height - MARGIN_SIZE,
       console_is_shrunk: false,
       console_is_zoomed: true,
@@ -584,21 +455,10 @@ function NotebookApp(props) {
   } else {
     exports_pane = /*#__PURE__*/_react["default"].createElement("div", null);
   }
-  var outer_class = "main-outer";
-  if (actual_dark_theme) {
-    outer_class = outer_class + " bp5-dark";
-  } else {
-    outer_class = outer_class + " light-theme";
-  }
-  var outer_style = {
-    width: "100%",
-    height: my_props.usable_height - height_adjustment.current
-  };
-  var stheme = props.controlled ? props.setTheme : _setTheme;
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, !window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
     dark_theme: actual_dark_theme,
-    setTheme: stheme,
+    setTheme: props.controlled ? props.setTheme : _setTheme,
     user_name: window.username,
     menus: null,
     page_id: props.main_id
@@ -614,9 +474,12 @@ function NotebookApp(props) {
     showErrorDrawerButton: true,
     toggleErrorDrawer: props.toggleErrorDrawer
   }), /*#__PURE__*/_react["default"].createElement("div", {
-    className: outer_class,
+    className: "main-outer ".concat(actual_dark_theme ? "bp5-dark" : "light-theme"),
     ref: main_outer_ref,
-    style: outer_style
+    style: {
+      width: "100%",
+      height: my_props.usable_height - height_adjustment.current
+    }
   }, /*#__PURE__*/_react["default"].createElement(_resizing_layouts.HorizontalPanes, {
     left_pane: console_pane,
     right_pane: exports_pane,
@@ -633,7 +496,7 @@ function NotebookApp(props) {
     closeOmnibar: _closeOmnibar
   }), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
     global: true,
-    bindings: key_bindings.current
+    bindings: key_bindings
   })));
 }
 exports.NotebookApp = NotebookApp = /*#__PURE__*/(0, _react.memo)(NotebookApp);

@@ -3,7 +3,7 @@ import "../tactic_css/tactic_console.scss";
 import "../tactic_css/tactic_main.scss";
 
 import React from "react";
-import {Fragment, useState, useEffect, useReducer, useRef, memo} from "react";
+import {Fragment, useState, useEffect, useRef, memo} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
@@ -11,7 +11,7 @@ import {TacticNavbar} from "./blueprint_navbar";
 import {TacticMenubar} from "./menu_utilities";
 import {ProjectMenu} from "./main_menus_react";
 import {TacticSocket} from "./tactic_socket";
-import {ConsoleComponent} from "./console_component";
+import {ConsoleComponent, itemsReducer} from "./console_component";
 import {doFlash} from "./toaster"
 import {withStatus} from "./toaster";
 import {get_ppi, renderSpinnerMessage} from "./utilities_react";
@@ -23,7 +23,7 @@ import {ExportsViewer} from "./export_viewer_react";
 import {HorizontalPanes} from "./resizing_layouts";
 import {withErrorDrawer} from "./error_drawer";
 import {getUsableDimensions} from "./sizing_tools";
-import {useCallbackStack, useStateAndRef, useConstructor} from "./utilities_react";
+import {useCallbackStack, useConstructor, useReducerAndRef} from "./utilities_react";
 
 const MARGIN_SIZE = 10;
 const BOTTOM_MARGIN = 20;
@@ -171,7 +171,6 @@ function NotebookApp(props) {
     const last_save = useRef({});
     const main_outer_ref = useRef(null);
     const omniGetters = useRef({});
-    const key_bindings = useRef([["ctrl+space"], _showOmnibar]);
     const updateExportsList = useRef(null);
     const height_adjustment = useRef(props.controlled ? MENU_BAR_HEIGHT : 0);
 
@@ -182,12 +181,7 @@ function NotebookApp(props) {
         return getUsableDimensions(true).usable_width - 170
     });
 
-    const console_items_ref = useRef([]);
-
-    // const [console_items, set_console_items, console_items_ref] =
-    //     useStateAndRe(props.is_project ? props.interface_state["console_items"] : []);
-    const [console_is_shrunk, set_console_is_shrunk, console_is_shrunk_ref] = useStateAndRef(false);
-    const [console_is_zoomed, set_console_is_zoomed, console_is_zoomed_ref] = useStateAndRef(true);
+    const [console_items, dispatch, console_items_ref] = useReducerAndRef(itemsReducer, []);
     const [show_exports_pane, set_show_exports_pane] = useState(true);
     const [console_width_fraction, set_console_width_fraction] = useState(.5);
 
@@ -197,121 +191,11 @@ function NotebookApp(props) {
     const [showOmnibar, setShowOmnibar] = useState(false);
     const [is_project, set_is_project] = useState(false);
 
-    function itemsReducer(console_items, action) {
-        var new_items;
-        switch (action.type) {
-            case "initialize":
-                new_items = action.new_items;
-                break;
-            case "delete_item":
-                new_items = console_items.filter(t => t.unique_id !== action.unique_id);
-                break;
-            case "delete_items":
-                new_items = console_items.filter(t => !(action.id_list.includes(t.unique_id)));
-                break;
-            case "delete_all_items":
-                new_items = [];
-                break;
-            case "reset":
-                new_items = console_items.map(t => {
-                    if (t.type != "code") {
-                        return t
-                    }
-                    else {
-                        let new_t = {...t};
-                        new_t.output_text = "";
-                        new_t.execution_count = 0;
-                        return new_t
-                    }
-                });
-                break;
-            case "replace_item":
-                new_items = console_items.map(t => {
-                    if (t.unique=== action.unique_id) {
-                      return action.new_item;
-                    } else {
-                      return t;
-                    }
-                });
-                break;
-            case "clear_all_selected":
-                new_items = console_items.map(t => {
-                    let new_t = {...t};
-                    new_t.am_selected = false;
-                    new_t.search_string = null;
-                    return new_t
-                });
-                break;
-            case "change_item_value":
-                new_items = console_items.map(t => {
-                    if (t.unique_id === action.unique_id) {
-                        let new_t = {...t};
-                        new_t[action.field] = action.new_value;
-                      return new_t;
-                    } else {
-                      return t;
-                    }
-                });
-                break;
-            case "update_items":
-                new_items = console_items.map(t => {
-                    if (t.unique_id in action.updates) {
-                        const update_dict = action.updates[t.unique_id];
-                        return {...t, ...update_dict};
-                    } else {
-                      return t;
-                    }
-                });
-                break;
-            case "add_at_index":
-                new_items = [...console_items];
-                new_items.splice(action.insert_index, 0, ...action.new_items);
-                break;
-            case "open_listed_dividers":
-                new_items = console_items.map(t => {
-                    if (t.type == "divider" && t.divider_list.includes(t.unique_id)) {
-                        let new_t = {...t};
-                        new_t.am_shurnk = false;
-                        return new_t
-                    }
-                    else {
-                        return t
-                    }
-                });
-                break;
-            case "close_all_dividers":
-                new_items = console_items.map(t => {
-                    if (t.type == "divider") {
-                        let new_t = {...t};
-                        new_t.am_shurnk = true;
-                        return new_t
-                    }
-                    else {
-                        return t
-                    }
-                });
-                break;
-            default:
-              console.log("Got Unknown action: " + action.type);
-              return [...console_items]
-        }
-        console_items_ref.current = new_items;
-        return new_items
-    }
-
-    const [console_items, dispatch] = useReducer(itemsReducer, []);
-
-    var stateSetters = useRef({
-        show_exports_pane: set_show_exports_pane,
-        console_width_fraction: set_console_width_fraction,
-        console_is_shrunk: set_console_is_shrunk,
-        console_is_zoomed: set_console_is_zoomed
-    });
+    const key_bindings = [[["ctrl+space"], _showOmnibar]];
 
     const pushCallback = useCallbackStack();
 
     useConstructor(()=>{
-        console_items_ref.current = console_items;
         set_show_exports_pane(props.is_project ? props.interface_state["show_exports_pane"] : true);
         set_console_width_fraction(props.is_project ? props.interface_state["console_width_fraction"] : .5);
         set_dark_theme(props.initial_theme === "dark");
@@ -330,7 +214,7 @@ function NotebookApp(props) {
             props.registerDirtyMethod(_dirty);
         } else {
             window.addEventListener("beforeunload", function (e) {
-                if (self._dirty()) {
+                if (_dirty()) {
                     e.preventDefault();
                     e.returnValue = ''
                 }
@@ -344,7 +228,7 @@ function NotebookApp(props) {
 
         if (!props.controlled) {
             document.title = sresource_name;
-            window.dark_theme = dark_theme;
+            window.dark_theme = sdark_theme;
             window.addEventListener("resize", _update_window_dimensions);
             _update_window_dimensions();
         }
@@ -355,17 +239,19 @@ function NotebookApp(props) {
         })
     }, []);
 
-    function cPropGetters() {
-        return {
+    const cPropGetters = {
             usable_width: usable_width,
             usable_height: usable_height,
             resource_name: sresource_name,
             is_project: is_project
-        }
-    }
+    };
+
+    const stateSetters = {
+        show_exports_pane: set_show_exports_pane,
+    };
 
     function _cProp(pname) {
-        return props.controlled ? props[pname] : cPropGetters()[pname]
+        return props.controlled ? props[pname] : cPropGetters[pname]
     }
 
 
@@ -373,10 +259,13 @@ function NotebookApp(props) {
         return {console_items, show_exports_pane, console_width_fraction}
     }
 
-
     function _setMainStateValue(field_name, new_value, callback = null) {
         // console.log(`field_name is ${field_name} new_value is ${String(new_value)}`);
-        stateSetters.current[field_name](new_value);
+        if (!(field_name in stateSetters)) {
+            console.log(`trying to set field_name ${field_name} that don't have a setter for`);
+            return;
+        }
+        stateSetters[field_name](new_value);
         pushCallback(callback)
     }
 
@@ -413,7 +302,6 @@ function NotebookApp(props) {
     }
 
     function initSocket() {
-        let self = this;
 
         props.tsocket.attachListener("window-open", data => {
             window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`)
@@ -440,12 +328,6 @@ function NotebookApp(props) {
         pushCallback(() => {
             window.dark_theme = dark_theme
         })
-    }
-
-    function _broadcast_event_to_server(event_name, data_dict, callback) {
-        data_dict.main_id = props.main_id;
-        data_dict.event_name = event_name;
-        postWithCallback(props.main_id, "distribute_events_stub", data_dict, callback, null, props.main - id)
     }
 
     function _handleConsoleFractionChange(left_width, right_width, new_fraction) {
@@ -555,7 +437,6 @@ function NotebookApp(props) {
                                       setUpdate={(ufunc) => {
                                           updateExportsList.current = ufunc
                                       }}
-                                      setMainStateValue={_setMainStateValue}
                                       available_height={console_available_height - MARGIN_SIZE}
                                       console_is_shrunk={false}
                                       console_is_zoomed={true}
@@ -564,23 +445,13 @@ function NotebookApp(props) {
     } else {
         exports_pane = <div></div>
     }
-    let outer_class = "main-outer";
-    if (actual_dark_theme) {
-        outer_class = outer_class + " bp5-dark";
-    } else {
-        outer_class = outer_class + " light-theme"
-    }
-    let outer_style = {
-        width: "100%",
-        height: my_props.usable_height - height_adjustment.current,
-    };
-    let stheme = props.controlled ? props.setTheme : _setTheme;
+
     return (
         <Fragment>
             {!window.in_context &&
                 <TacticNavbar is_authenticated={window.is_authenticated}
                               dark_theme={actual_dark_theme}
-                              setTheme={stheme}
+                              setTheme={props.controlled ? props.setTheme : _setTheme}
                               user_name={window.username}
                               menus={null}
                               page_id={props.main_id}
@@ -598,7 +469,9 @@ function NotebookApp(props) {
                            showErrorDrawerButton={true}
                            toggleErrorDrawer={props.toggleErrorDrawer}
             />
-            <div className={outer_class} ref={main_outer_ref} style={outer_style}>
+            <div className={`main-outer ${actual_dark_theme ? "bp5-dark" : "light-theme"}`}
+                 ref={main_outer_ref}
+                 style={{width: "100%", height: my_props.usable_height - height_adjustment.current}}>
                 <HorizontalPanes left_pane={console_pane}
                                  right_pane={exports_pane}
                                  show_handle={true}
@@ -616,7 +489,7 @@ function NotebookApp(props) {
                                    showOmnibar={showOmnibar}
                                    closeOmnibar={_closeOmnibar}
                     />
-                    <KeyTrap global={true} bindings={key_bindings.current}/>
+                    <KeyTrap global={true} bindings={key_bindings}/>
                 </Fragment>
             }
         </Fragment>
