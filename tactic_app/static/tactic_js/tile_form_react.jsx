@@ -1,20 +1,19 @@
-
-
 import React from "react";
+import {Fragment, useState, useEffect, useRef, memo} from "react";
 import PropTypes from 'prop-types';
 
-import { FormGroup, InputGroup, Button, Divider, Switch, HTMLSelect, TextArea, Collapse, Card, Elevation } from "@blueprintjs/core";
+import {FormGroup, InputGroup, Button, Divider, Switch, TextArea, Collapse, Card, Elevation} from "@blueprintjs/core";
 import _ from 'lodash';
 
 import {ReactCodemirror} from "./react-codemirror.js";
 import {BpSelect, BpSelectAdvanced} from "./blueprint_mdata_fields.js"
-import {doBinding, propsAreEqual, isInt} from "./utilities_react.js";
+import {isInt} from "./utilities_react.js";
 
 export {TileForm}
 
 let selector_types = ["column_select", "tokenizer_select", "weight_function_select",
-            "cluster_metric", "tile_select", "document_select", "list_select", "collection_select",
-            "function_select", "class_select", "palette_select", "custom_list"];
+    "cluster_metric", "tile_select", "document_select", "list_select", "collection_select",
+    "function_select", "class_select", "palette_select", "custom_list"];
 
 let selector_type_icons = {
     column_select: "one-column",
@@ -31,166 +30,151 @@ let selector_type_icons = {
     custom_list: "property"
 };
 
-class TileForm extends React.Component {
+function TileForm(props) {
 
-    constructor(props) {
-        super(props);
-        doBinding(this);
+    function _updateValue(att_name, new_value, callback) {
+        props.updateValue(att_name, new_value, callback)
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
-        return !propsAreEqual(nextProps, this.props)
-    }
-
-    _updateValue(att_name, new_value, callback) {
-        this.props.updateValue(att_name, new_value, callback)
-    }
-
-    _submitOptions(e) {
-        this.props.handleSubmit(this.props.tile_id);
+    function _submitOptions(e) {
+        props.handleSubmit(props.tile_id);
         e.preventDefault()
     }
 
-    render() {
-        var all_items = [];
-        var section_items = null;
-        var in_section = false;
-        var option_items = all_items;
-        var current_section_att_name = "";
-        var current_section_display_text = "";
-        var current_section_start_open = false;
-        for (let option of this.props.options) {
-            if ("visible" in option && !option["visible"]) continue;
-            let att_name = option["name"];
-            let display_text;
-            if ("display_text" in option && option.display_text != null && option.display_text != "") {
-                display_text = option["display_text"]
+    var all_items = [];
+    var section_items = null;
+    var in_section = false;
+    var option_items = all_items;
+    var current_section_att_name = "";
+    var current_section_display_text = "";
+    var current_section_start_open = false;
+    for (let option of props.options) {
+        if ("visible" in option && !option["visible"]) continue;
+        let att_name = option["name"];
+        let display_text;
+        if ("display_text" in option && option.display_text != null && option.display_text != "") {
+            display_text = option["display_text"]
+        } else {
+            display_text = null
+        }
+        if (option["type"] == "divider") {
+            if (in_section) {
+                all_items.push(
+                    <FormSection att_name={current_section_att_name}
+                                 key={current_section_att_name}
+                                 display_text={current_section_display_text}
+                                 section_items={section_items}
+                                 start_open={current_section_start_open}/>
+                )
             }
-            else {
-                display_text = null
+            section_items = [];
+            option_items = section_items;
+            in_section = true;
+            current_section_att_name = att_name;
+            current_section_display_text = display_text;
+            if ("start_open" in option) {
+                current_section_start_open = option["start_open"]
+            } else {
+                current_section_start_open = false
             }
-            if (option["type"] == "divider") {
-                if (in_section) {
-                    all_items.push(
-                        <FormSection att_name={current_section_att_name}
-                                     key={current_section_att_name}
-                                     display_text={current_section_display_text}
-                                     section_items={section_items}
-                                     start_open={current_section_start_open}/>
-                    )
-                }
-                section_items = [];
-                option_items = section_items;
-                in_section = true;
-                current_section_att_name = att_name;
-                current_section_display_text = display_text;
-                if ("start_open" in option) {
-                    current_section_start_open = option["start_open"]
-                }
-                else {
-                    current_section_start_open = false
-                }
-                continue;
-            }
-            if (selector_types.includes(option["type"])) {
-                option_items.push(<SelectOption att_name={att_name}
-                                                display_text={display_text}
-                                                key={att_name}
-                                                choice_list={option["option_list"]}
-                                                value={option.starting_value}
-                                                buttonIcon={selector_type_icons[option["type"]]}
-                                                updateValue={this._updateValue}/>)
-            }
-            else switch (option["type"]) {
-                case "pipe_select":
-                    option_items.push(<PipeOption att_name={att_name}
-                                                  display_text={display_text}
-                                                  key={att_name}
-                                                  value={_.cloneDeep(option.starting_value)}
-                                                  pipe_dict={_.cloneDeep(option["pipe_dict"])}
-                                                  updateValue={this._updateValue}
-                    />);
-                    break;
-                case "boolean":
-                    option_items.push(<BoolOption att_name={att_name}
-                                                  display_text={display_text}
-                                                  key={att_name}
-                                                  value={option.starting_value}
-                                                  updateValue={this._updateValue}
-                    />);
-                    break;
-                case "textarea":
-                    option_items.push(<TextAreaOption att_name={att_name}
-                                                      display_text={display_text}
-                                                      key={att_name}
-                                                      value={option.starting_value}
-                                                      updateValue={this._updateValue}
-                    />);
-                    break;
-                case "codearea":
-                    option_items.push(<CodeAreaOption att_name={att_name}
-                                                      display_text={display_text}
-                                                      dark_theme={this.props.dark_theme}
-                                                      key={att_name}
-                                                      value={option.starting_value}
-                                                      updateValue={this._updateValue}
-                    />);
-                    break;
-                case "text":
-                    option_items.push(<TextOption att_name={att_name}
+            continue;
+        }
+        if (selector_types.includes(option["type"])) {
+            option_items.push(<SelectOption att_name={att_name}
+                                            display_text={display_text}
+                                            key={att_name}
+                                            choice_list={option["option_list"]}
+                                            value={option.starting_value}
+                                            buttonIcon={selector_type_icons[option["type"]]}
+                                            updateValue={_updateValue}/>)
+        } else switch (option["type"]) {
+            case "pipe_select":
+                option_items.push(<PipeOption att_name={att_name}
+                                              display_text={display_text}
+                                              key={att_name}
+                                              value={_.cloneDeep(option.starting_value)}
+                                              pipe_dict={_.cloneDeep(option["pipe_dict"])}
+                                              updateValue={_updateValue}
+                />);
+                break;
+            case "boolean":
+                option_items.push(<BoolOption att_name={att_name}
+                                              display_text={display_text}
+                                              key={att_name}
+                                              value={option.starting_value}
+                                              updateValue={_updateValue}
+                />);
+                break;
+            case "textarea":
+                option_items.push(<TextAreaOption att_name={att_name}
                                                   display_text={display_text}
                                                   key={att_name}
                                                   value={option.starting_value}
-                                                  leftIcon="paragraph"
-                                                  updateValue={this._updateValue}
-                    />);
-                    break;
-                case "int":
-                    option_items.push(<IntOption att_name={att_name}
+                                                  updateValue={_updateValue}
+                />);
+                break;
+            case "codearea":
+                option_items.push(<CodeAreaOption att_name={att_name}
+                                                  display_text={display_text}
+                                                  dark_theme={props.dark_theme}
+                                                  key={att_name}
+                                                  value={option.starting_value}
+                                                  updateValue={_updateValue}
+                />);
+                break;
+            case "text":
+                option_items.push(<TextOption att_name={att_name}
+                                              display_text={display_text}
+                                              key={att_name}
+                                              value={option.starting_value}
+                                              leftIcon="paragraph"
+                                              updateValue={_updateValue}
+                />);
+                break;
+            case "int":
+                option_items.push(<IntOption att_name={att_name}
+                                             display_text={display_text}
+                                             key={att_name}
+                                             value={option.starting_value}
+                                             updateValue={_updateValue}
+                />);
+                break;
+
+            case "float":
+                option_items.push(<FloatOption att_name={att_name}
+                                               display_text={display_text}
+                                               key={att_name}
+                                               value={option.starting_value}
+                                               updateValue={_updateValue}
+                />);
+                break;
+            case "divider":
+                option_items.push(<DividerOption att_name={att_name}
                                                  display_text={display_text}
                                                  key={att_name}
-                                                 value={option.starting_value}
-                                                 updateValue={this._updateValue}
-                    />);
-                    break;
-
-                case "float":
-                    option_items.push(<FloatOption att_name={att_name}
-                                                   display_text={display_text}
-                                                   key={att_name}
-                                                   value={option.starting_value}
-                                                   updateValue={this._updateValue}
-                    />);
-                    break;
-                case "divider":
-                    option_items.push(<DividerOption att_name={att_name}
-                                                     display_text={display_text}
-                                                   key={att_name}
-                    />);
-                    break;
-                default:
-                    break;
-            }
+                />);
+                break;
+            default:
+                break;
         }
-        if (in_section == true) {
-            all_items.push(
-                <FormSection att_name={current_section_att_name}
-                             key={current_section_att_name}
-                             display_text={current_section_display_text}
-                             section_items={section_items}
-                             start_open={current_section_start_open}/>
-            )
-        }
-        return (
-            <React.Fragment>
-                <form className="form-display-area" onSubmit={this._submitOptions}>
-                    {all_items}
-                </form>
-                <Button text="Submit" intent="primary" style={{width: "100%"}} onClick={this._submitOptions}/>
-            </React.Fragment>
+    }
+    if (in_section == true) {
+        all_items.push(
+            <FormSection att_name={current_section_att_name}
+                         key={current_section_att_name}
+                         display_text={current_section_display_text}
+                         section_items={section_items}
+                         start_open={current_section_start_open}/>
         )
     }
-
+    return (
+        <Fragment>
+            <form className="form-display-area" onSubmit={_submitOptions}>
+                {all_items}
+            </form>
+            <Button text="Submit" intent="primary" style={{width: "100%"}} onClick={_submitOptions}/>
+        </Fragment>
+    )
 }
 
 TileForm.propTypes = {
@@ -201,42 +185,37 @@ TileForm.propTypes = {
     updateValue: PropTypes.func
 };
 
-class FormSection extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.state = {
-            isOpen: this.props.start_open
-        }
+TileForm = memo(TileForm);
+
+function FormSection(props) {
+
+    const [isOpen, setIsOpen] = useState(props.start_open);
+
+    function _handleClick() {
+        setIsOpen(!isOpen);
     }
 
-    _handleClick() {
-        this.setState({ isOpen: !this.state.isOpen });
-    }
-
-    render() {
-        let label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
-        let but_bottom_margin = this.state.isOpen ? 10 : 20;
-        return (
-            <React.Fragment>
-                <Button onClick={this._handleClick}
-                        text={label}
-                        large={false}
-                        outlined={true}
-                        intent="primary"
-                        style={{width: "fit-content", marginBottom: but_bottom_margin, marginTop: 10}}
-                    />
-                <Collapse isOpen={this.state.isOpen}>
-                    <Card interactive={false}
-                          elevation={Elevation.TWO}
-                          style={{boxShadow: "none", marginBottom: 10, borderRadius: 10}}
-                    >
-                        {this.props.section_items}
-                    </Card>
-                </Collapse>
-            </React.Fragment>
-        )
-    }
+    let label = props.display_text == null ? props.att_name : props.display_text;
+    let but_bottom_margin = isOpen ? 10 : 20;
+    return (
+        <Fragment>
+            <Button onClick={_handleClick}
+                    text={label}
+                    large={false}
+                    outlined={true}
+                    intent="primary"
+                    style={{width: "fit-content", marginBottom: but_bottom_margin, marginTop: 10}}
+            />
+            <Collapse isOpen={isOpen}>
+                <Card interactive={false}
+                      elevation={Elevation.TWO}
+                      style={{boxShadow: "none", marginBottom: 10, borderRadius: 10}}
+                >
+                    {props.section_items}
+                </Card>
+            </Collapse>
+        </Fragment>
+    )
 }
 
 FormSection.propTypes = {
@@ -253,29 +232,20 @@ FormSection.defaultProps = {
     start_open: true
 };
 
+FormSection = memo(FormSection);
 
-class DividerOption extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this)
-    }
+function DividerOption(props) {
 
-    shouldComponentUpdate(nextProps, nextState) {
-        return !propsAreEqual(nextProps, this.props)
-    }
+    let label = props.display_text == null ? props.att_name : props.display_text;
+    return (
+        <div className="tile-form-divider" style={{marginTop: 25, marginBottom: 15}}>
 
-    render() {
-        let label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
-        return (
-            <div className="tile-form-divider" style={{marginTop: 25, marginBottom: 15}}>
-
-                <div style={{paddingLeft: 20, fontSize: 25}}>
-                    {label}
-                </div>
-                <Divider/>
+            <div style={{paddingLeft: 20, fontSize: 25}}>
+                {label}
             </div>
-        )
-    }
+            <Divider/>
+        </div>
+    )
 }
 
 DividerOption.propTypes = {
@@ -286,43 +256,33 @@ DividerOption.propTypes = {
     ]),
 };
 
-class TextOption extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.current_timer = null;
-        this.state = {
-            temp_text: null
-        }
-    }
+DividerOption = memo(DividerOption);
 
-    shouldComponentUpdate(nextProps, nextState) {
-        return !propsAreEqual(nextProps, this.props) || nextState.temp_text != this.state.temp_text
-    }
+function TextOption(props) {
 
-    _updateMe(event) {
-        if (this.current_timer) {
-            clearTimeout(this.current_timer);
-            this.current_timer = null;
+    const current_timer = useRef(null);
+    const [temp_text, set_temp_text] = useState(null);
+
+    function _updateMe(event) {
+        if (current_timer.current) {
+            clearTimeout(current_timer.current);
+            current_timer.current = null;
         }
-        let self = this;
-        this.current_timer = setTimeout(() => {
-            self.current_timer = null;
-            self.props.updateValue(this.props.att_name, event.target.value)
+        current_timer.current = setTimeout(() => {
+            current_timer.current = null;
+            props.updateValue(props.att_name, event.target.value)
         }, 500);
-        this.setState({temp_text: event.target.value})
+        set_temp_text(event.target.value)
     }
 
-    render() {
-        let label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
-        let val_to_show = this.current_timer ? this.state.temp_text : this.props.value;
-        return (
-            <FormGroup label={label}>
-                <InputGroup asyncControl={false} type="text" small={false} leftIcon={this.props.leftIcon}
-                            onChange={this._updateMe} value={val_to_show}/>
-            </FormGroup>
-        )
-    }
+    let label = props.display_text == null ? props.att_name : props.display_text;
+    let val_to_show = current_timer.current ? temp_text : props.value;
+    return (
+        <FormGroup label={label}>
+            <InputGroup asyncControl={false} type="text" small={false} leftIcon={props.leftIcon}
+                        onChange={_updateMe} value={val_to_show}/>
+        </FormGroup>
+    )
 }
 
 TextOption.propTypes = {
@@ -331,49 +291,38 @@ TextOption.propTypes = {
         PropTypes.string,
         PropTypes.number
     ]),
-    value:  PropTypes.oneOfType([
+    value: PropTypes.oneOfType([
         PropTypes.string,
         PropTypes.number]),
     updateValue: PropTypes.func,
     leftIcon: PropTypes.string
 };
 
-class IntOption extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.state = {
-            am_empty: props.value == "",
-        }
-    }
+TextOption = memo(TextOption);
 
-    shouldComponentUpdate(nextProps, nextState) {
-        return !propsAreEqual(nextProps, this.props) || nextState.am_empty != this.state.am_empty;
-    }
+function IntOption(props) {
 
-    _updateMe(att_name, val) {
-        let self = this;
+    const [am_empty, set_am_empty] = useState(props.value == "");
+
+    function _updateMe(att_name, val) {
         if (val.length == 0) {
-            this.setState({am_empty: true})
-        }
-        else if (isInt(val)) {
-            self.props.updateValue(this.props.att_name, val, ()=>{
-                this.setState({am_empty: false})
+            set_am_empty(true)
+        } else if (isInt(val)) {
+            props.updateValue(props.att_name, val, () => {
+                set_am_empty(false)
             })
         }
     }
 
-    render () {
-        let label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
-        let val_to_show = this.state.am_empty ? "" : this.props.value;
-        return (
-            <TextOption att_name={label} leftIcon="numerical"
-                                  key={this.props.att_name}
-                                  value={val_to_show}
-                                  updateValue={this._updateMe}
-                />
-        )
-    }
+    let label = props.display_text == null ? props.att_name : props.display_text;
+    let val_to_show = am_empty ? "" : props.value;
+    return (
+        <TextOption att_name={label} leftIcon="numerical"
+                    key={props.att_name}
+                    value={val_to_show}
+                    updateValue={_updateMe}
+        />
+    )
 }
 
 IntOption.propTypes = {
@@ -382,51 +331,40 @@ IntOption.propTypes = {
         PropTypes.string,
         PropTypes.number
     ]),
-    value:  PropTypes.oneOfType([
+    value: PropTypes.oneOfType([
         PropTypes.string,
         PropTypes.number]),
     updateValue: PropTypes.func
 };
 
-class FloatOption extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.state = {
-            temp_val: null
-        }
-    }
+IntOption = memo(IntOption);
 
-    shouldComponentUpdate(nextProps, nextState) {
-        return !propsAreEqual(nextProps, this.props) || nextState.temp_val != this.state.temp_val
-    }
+function FloatOption(props) {
 
-    _updateMe(att_name, val) {
-        let self = this;
+    const [temp_val, set_temp_val] = useState(null);
+
+    function _updateMe(att_name, val) {
+
         if (val.length == 0) {
-            this.setState({temp_val: ""})
-        }
-        else if (val == ".") {
-            this.setState({temp_val: "."})
-        }
-        else if (!isNaN(val)) {
-            self.props.updateValue(this.props.att_name, val, ()=> {
-                this.setState({temp_val: null})
+            set_temp_val("")
+        } else if (val == ".") {
+            set_temp_val(".")
+        } else if (!isNaN(val)) {
+            props.updateValue(props.att_name, val, () => {
+                set_temp_val(null)
             })
         }
     }
 
-    render () {
-        let val_to_show = this.state.temp_val == null ? this.props.value : this.state.temp_val;
-        return (
-            <TextOption att_name={this.props.att_name} leftIcon="numerical"
-                        display_text={this.props.display_text}
-                                  key={this.props.att_name}
-                                  value={val_to_show}
-                                  updateValue={this._updateMe}
-                />
-        )
-    }
+    let val_to_show = temp_val == null ? props.value : temp_val;
+    return (
+        <TextOption att_name={props.att_name} leftIcon="numerical"
+                    display_text={props.display_text}
+                    key={props.att_name}
+                    value={val_to_show}
+                    updateValue={_updateMe}
+        />
+    )
 }
 
 FloatOption.propTypes = {
@@ -435,46 +373,37 @@ FloatOption.propTypes = {
         PropTypes.string,
         PropTypes.number
     ]),
-    value:  PropTypes.oneOfType([
+    value: PropTypes.oneOfType([
         PropTypes.string,
         PropTypes.number]),
     updateValue: PropTypes.func
 };
 
+FloatOption = memo(FloatOption);
 
-class BoolOption extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this)
+function BoolOption(props) {
+
+    function _updateMe(event) {
+        props.updateValue(props.att_name, event.target.checked)
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
-        return !propsAreEqual(nextProps, this.props)
-    }
-
-    _updateMe(event) {
-        this.props.updateValue(this.props.att_name, event.target.checked)
-    }
-
-    boolify(the_var) {
+    function boolify(the_var) {
         if (typeof the_var == "boolean") {
             return the_var
         }
         return (the_var == "True") || (the_var == "true");
     }
 
-    render() {
-        let label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
-        return (
-            <Switch label={label}
-                       checked={this.boolify(this.props.value)}
-                       onChange={this._updateMe}
-                       innerLabel="False"
-                       innerLabelChecked="True"
-                       alignIndicator="center"
-            />
-        )
-    }
+    let label = props.display_text == null ? props.att_name : props.display_text;
+    return (
+        <Switch label={label}
+                checked={boolify(props.value)}
+                onChange={_updateMe}
+                innerLabel="False"
+                innerLabelChecked="True"
+                alignIndicator="center"
+        />
+    )
 }
 
 BoolOption.propTypes = {
@@ -489,33 +418,25 @@ BoolOption.propTypes = {
     updateValue: PropTypes.func
 };
 
-class CodeAreaOption extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this)
+BoolOption = memo(BoolOption);
+
+function CodeAreaOption(props) {
+
+    function _updateMe(newval) {
+        props.updateValue(props.att_name, newval)
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
-        return !propsAreEqual(nextProps, this.props)
-    }
-
-    _updateMe(newval) {
-        this.props.updateValue(this.props.att_name, newval)
-    }
-
-    render() {
-        let label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
-        return (
-            <FormGroup label={label}>
-                <ReactCodemirror handleChange={this._updateMe}
-                                 dark_theme={this.props.dark_theme}
-                                 code_content={this.props.value}
-                                 saveMe={null}
-                                 code_container_height={100}
-                />
-            </FormGroup>
-        )
-    }
+    let label = props.display_text == null ? props.att_name : props.display_text;
+    return (
+        <FormGroup label={label}>
+            <ReactCodemirror handleChange={_updateMe}
+                             dark_theme={props.dark_theme}
+                             code_content={props.value}
+                             saveMe={null}
+                             code_container_height={100}
+            />
+        </FormGroup>
+    )
 }
 
 CodeAreaOption.propTypes = {
@@ -525,48 +446,41 @@ CodeAreaOption.propTypes = {
         PropTypes.number
     ]),
     dark_theme: PropTypes.bool,
-    value:  PropTypes.oneOfType([
+    value: PropTypes.oneOfType([
         PropTypes.string,
         PropTypes.number]),
     updateValue: PropTypes.func
 };
 
-class TextAreaOption extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.inputRef = React.createRef();
-        this.cursor = null;
-    }
+CodeAreaOption = memo(CodeAreaOption);
 
-    shouldComponentUpdate(nextProps, nextState) {
-        return !propsAreEqual(nextProps, this.props)
-    }
+function TextAreaOption(props) {
+    const inputRef = useRef(null);
+    const [cursor, set_cursor] = useState(null);
 
-    componentDidUpdate() {
-        this._setCursorPositions();
-      }
+    useEffect(() => {
+        _setCursorPositions();
+    });
 
-      _setCursorPositions = () => {
+    function _setCursorPositions() {
         //reset the cursor position for input
-        this.inputRef.current.selectionStart = this.cursor;
-        this.inputRef.current.selectionEnd = this.cursor;
-      };
+        inputRef.current.selectionStart = cursor;
+        inputRef.current.selectionEnd = cursor;
+    }
 
-    _updateMe(event) {
-        this.cursor = event.target.selectionStart;
-        this.props.updateValue(this.props.att_name, event.target.value)
+    function _updateMe(event) {
+        set_cursor(event.target.selectionStart);
+        props.updateValue(props.att_name, event.target.value)
     }
-    render() {
-        let label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
-        return (
-            <FormGroup label={label}>
-                <TextArea  onChange={this._updateMe}
-                           inputRef={this.inputRef}
-                              small={false} value={this.props.value}/>
-            </FormGroup>
-        )
-    }
+
+    let label = props.display_text == null ? props.att_name : props.display_text;
+    return (
+        <FormGroup label={label}>
+            <TextArea onChange={_updateMe}
+                      inputRef={inputRef}
+                      small={false} value={props.value}/>
+        </FormGroup>
+    )
 }
 
 TextAreaOption.propTypes = {
@@ -575,38 +489,29 @@ TextAreaOption.propTypes = {
         PropTypes.string,
         PropTypes.number
     ]),
-    value:  PropTypes.oneOfType([
+    value: PropTypes.oneOfType([
         PropTypes.string,
         PropTypes.number]),
     updateValue: PropTypes.func
 };
 
+TextAreaOption = memo(TextAreaOption);
 
-class SelectOption extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this)
+function SelectOption(props) {
+
+    function _updateMe(val) {
+        props.updateValue(props.att_name, val)
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
-        return !propsAreEqual(nextProps, this.props)
-    }
-
-    _updateMe(val) {
-        this.props.updateValue(this.props.att_name, val)
-    }
-
-    render() {
-        let label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
-        return (
-            <FormGroup label={label}>
-                <BpSelect  onChange={this._updateMe}
-                          value={this.props.value}
-                           buttonIcon={this.props.buttonIcon}
-                            options={this.props.choice_list}/>
-            </FormGroup>
-        )
-    }
+    let label = props.display_text == null ? props.att_name : props.display_text;
+    return (
+        <FormGroup label={label}>
+            <BpSelect onChange={_updateMe}
+                      value={props.value}
+                      buttonIcon={props.buttonIcon}
+                      options={props.choice_list}/>
+        </FormGroup>
+    )
 }
 
 SelectOption.propTypes = {
@@ -617,60 +522,52 @@ SelectOption.propTypes = {
     ]),
     choice_list: PropTypes.array,
     buttonIcon: PropTypes.string,
-    value:  PropTypes.oneOfType([
+    value: PropTypes.oneOfType([
         PropTypes.string,
         PropTypes.number]),
     updateValue: PropTypes.func
 };
 
-class PipeOption extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this)
+SelectOption = memo(SelectOption);
+
+function PipeOption(props) {
+
+    function _updateMe(item) {
+        props.updateValue(props.att_name, item["value"])
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
-        return !propsAreEqual(nextProps, this.props)
-    }
-
-    _updateMe(item) {
-        this.props.updateValue(this.props.att_name, item["value"])
-    }
-
-    create_choice_list() {
+    function create_choice_list() {
         let choice_list = [];
-        for (let group in this.props.pipe_dict) {
+        for (let group in props.pipe_dict) {
             choice_list.push({text: group, value: group + "_group", isgroup: true});
-            for (let entry of this.props.pipe_dict[group]) {
+            for (let entry of props.pipe_dict[group]) {
                 choice_list.push({text: entry[1], value: entry[0], isgroup: false})
             }
         }
         return choice_list
     }
 
-    _value_dict() {
+    function _value_dict() {
         let value_dict = {};
-        for (let group in this.props.pipe_dict) {
-            for (let entry of this.props.pipe_dict[group]) {
+        for (let group in props.pipe_dict) {
+            for (let entry of props.pipe_dict[group]) {
                 value_dict[entry[0]] = entry[1];
             }
         }
         return value_dict
     }
 
-    render() {
-        let vdict = this._value_dict();
-        let full_value = {text: vdict[this.props.value], value: this.props.value, isgroup: false};
-        let label = this.props.display_text == null ? this.props.att_name : this.props.display_text;
-        return (
-            <FormGroup label={label}>
-                <BpSelectAdvanced  onChange={this._updateMe}
-                                   value={full_value}
-                                   buttonIcon="flow-end"
-                                   options={this.create_choice_list()}/>
-            </FormGroup>
-        )
-    }
+    let vdict = _value_dict();
+    let full_value = {text: vdict[props.value], value: props.value, isgroup: false};
+    let label = props.display_text == null ? props.att_name : props.display_text;
+    return (
+        <FormGroup label={label}>
+            <BpSelectAdvanced onChange={_updateMe}
+                              value={full_value}
+                              buttonIcon="flow-end"
+                              options={create_choice_list()}/>
+        </FormGroup>
+    )
 }
 
 PipeOption.propTypes = {
@@ -686,49 +583,6 @@ PipeOption.propTypes = {
     updateValue: PropTypes.func
 };
 
-class PipeOptionOld extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this)
-    }
-
-    _updateMe(event) {
-        this.props.updateValue(this.props.att_name, event.target.value)
-    }
-
-    create_groups() {
-        let groups = [];
-        for (let group in this.props.pipe_dict) {
-            groups.push(
-                <optgroup key={group} label={group}>
-                    {this.props.pipe_dict[group].map((entry) => (
-                        <option key={entry[1]} value={entry[0]}>{entry[1]}</option>)
-                    )}
-                </optgroup>
-            )
-        }
-        return groups
-    }
-
-    render() {
-        return (
-        <FormGroup label={this.props.att_name}>
-            <HTMLSelect onChange={this._updateMe}
-                        value={this.props.value}>
-                {this.create_groups()}
-            </HTMLSelect>
-        </FormGroup>
-        )
-    }
-}
-
-PipeOptionOld.propTypes = {
-    att_name: PropTypes.string,
-    pipe_dict: PropTypes.object,
-    value: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number]),
-    updateValue: PropTypes.func
-};
+PipeOption = memo(PipeOption);
 
 

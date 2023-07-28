@@ -1,27 +1,25 @@
 
 
-import React from "react";
+import React, {forwardRef} from "react";
+import {useState, useEffect, useRef, memo} from "react";
 import PropTypes from 'prop-types';
 
 import {Cell, EditableCell, RowHeaderCell, Column, Table, Regions, RegionCardinality} from "@blueprintjs/table";
 import hash from "object-hash"
 
-import {doBinding, propsAreEqual} from "./utilities_react.js";
+import {useCallbackStack} from "./utilities_react";
 
 export {BlueprintTable, compute_added_column_width}
 
 const MAX_INITIAL_CELL_WIDTH = 400;
 const EXTRA_TABLE_AREA_SPACE = 500;
 
-class ColoredWord extends React.Component {
+function ColoredWord(props) {
 
-
-    render() {
-        let style = {backgroundColor: this.props.the_color};
-        return (
-            <span style={style}>{this.props.the_word}</span>
-        )
-    }
+    let style = {backgroundColor: props.the_color};
+    return (
+        <span style={style}>{props.the_word}</span>
+    )
 }
 
 ColoredWord.propTypes = {
@@ -29,68 +27,66 @@ ColoredWord.propTypes = {
     the_word: PropTypes.string,
 };
 
-class BlueprintTable extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.mismatched_column_widths = false;
-        this.table_ref = React.createRef();
-        this.set_scroll = null;
-        this.data_update_required = null;
-        this.state = {focusedCell: null}
-    }
+ColoredWord = memo(ColoredWord);
 
-    get hash_value() {
+function BlueprintTable(props, passedRef) {
+
+    const mismatched_column_widths = useRef(false);
+    const table_ref = useRef(null);
+    const data_update_required = useRef(null);
+
+    const [focusedCell, setFocusedCell] = useState(null);
+
+    useEffect(()=> {
+        computeColumnWidths();
+        _updateRowHeights();
+    }, []);
+
+    useEffect(()=>{
+        if ((props.column_widths == null) || (mismatched_column_widths.current)) {
+            computeColumnWidths()
+        }
+        _updateRowHeights();
+    });
+
+    function hash_value() {
         let obj = {
-            cwidths: this.props.column_widths,
-            nrows: this.props.total_rows
-            // sscroll: this.set_scroll
+            cwidths: props.column_widths,
+            nrows: props.total_rows
+            // sscroll: set_scroll
         };
         return hash(obj)
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
-        if (this.set_scroll || this.data_update_required) {
-            return true
+    // shouldComponentUpdate(nextProps, nextState) {
+    //     if (this.set_scroll || this.data_update_required) {
+    //         return true
+    //     }
+    //     return !propsAreEqual(nextProps, this.props) || !propsAreEqual(nextState, this.state)
+    // }
+
+     function computeColumnWidths() {
+        let cwidths = compute_initial_column_widths(props.filtered_column_names, props.data_row_dict);
+        mismatched_column_widths.current = false;
+        props.updateTableSpec({column_widths: cwidths}, true)
+
+    }
+
+    function haveRowData(rowIndex) {
+        return props.data_row_dict.hasOwnProperty(rowIndex)
+    }
+
+    function _doScroll() {
+        if (data_update_required.current != null) {
+            let rindex = data_update_required.current;
+            data_update_required.current = null;
+            props.initiateDataGrab(rindex);
         }
-        return !propsAreEqual(nextProps, this.props) || !propsAreEqual(nextState, this.state)
-    }
-
-    componentDidMount() {
-        this.setState({mounted: true});
-        this.computeColumnWidths();
-        this._updateRowHeights();
-    }
-
-    componentDidUpdate() {
-        if ((this.props.column_widths == null) || (this.mismatched_column_widths)) {
-            this.computeColumnWidths()
-        }
-        this._updateRowHeights();
-    }
-
-    computeColumnWidths() {
-        let cwidths = compute_initial_column_widths(this.props.filtered_column_names, this.props.data_row_dict);
-        this.mismatched_column_widths = false;
-        this.props.updateTableSpec({column_widths: cwidths}, true)
-
-    }
-
-    haveRowData(rowIndex) {
-        return this.props.data_row_dict.hasOwnProperty(rowIndex)
-    }
-
-    _doScroll() {
-        if (this.data_update_required != null) {
-            let rindex = this.data_update_required;
-            this.data_update_required = null;
-            this.props.initiateDataGrab(rindex);
-        }
-        else if ((this.set_scroll != null) && this.table_ref && this.table_ref.current) {
+        else if ((props.set_scroll != null) && table_ref.current) {
             try {
-                let singleCellRegion = Regions.cell(this.set_scroll, 0);
-                this.table_ref.current.scrollToRegion(singleCellRegion);
-                this.set_scroll = null
+                let singleCellRegion = Regions.cell(props.set_scroll, 0);
+                table_ref.current.scrollToRegion(singleCellRegion);
+                props.clearScroll()
             }
             catch (e) {
                 console.log(e.message)
@@ -98,34 +94,29 @@ class BlueprintTable extends React.Component {
         }
     }
 
-    _scrollToRow(row_index) {
-        this.set_scroll = row_index
-    }
-
-    _updateRowHeights() {
-        let fcnames = this.props.filtered_column_names;
-        let self = this;
-        this.table_ref.current.resizeRowsByApproximateHeight((rowIndex, colIndex)=>{
-            if (!self.haveRowData(rowIndex)) {
+    function _updateRowHeights() {
+        let fcnames = props.filtered_column_names;
+        table_ref.current.resizeRowsByApproximateHeight((rowIndex, colIndex)=>{
+            if (!haveRowData(rowIndex)) {
                 return "empty cell"
             }
-            return self.props.data_row_dict[rowIndex][fcnames[colIndex]]
+            return props.data_row_dict[rowIndex][fcnames[colIndex]]
         }, {getNumBufferLines: 1});
     }
 
-    _rowHeaderCellRenderer(rowIndex) {
-        if (this.haveRowData(rowIndex))  {
+    function _rowHeaderCellRenderer(rowIndex) {
+        if (haveRowData(rowIndex))  {
             return (<RowHeaderCell key={rowIndex}
-                                        name={this.props.data_row_dict[rowIndex].__id__}/>)
+                                        name={props.data_row_dict[rowIndex].__id__}/>)
         }
         else {
             return (<RowHeaderCell key={rowIndex} loading={true} name={rowIndex}/>)
         }
     }
 
-    _text_color_dict(row_id, colname) {
-        if (this.props.cells_to_color_text.hasOwnProperty(row_id)) {
-            let text_color_dict = this.props.cells_to_color_text[row_id];
+    function _text_color_dict(row_id, colname) {
+        if (props.cells_to_color_text.hasOwnProperty(row_id)) {
+            let text_color_dict = props.cells_to_color_text[row_id];
             if (text_color_dict.hasOwnProperty(colname)) {
                 return text_color_dict[colname]
             }
@@ -134,9 +125,9 @@ class BlueprintTable extends React.Component {
         return null
     }
 
-    _cell_background_color(row_id, colname) {
-        if (this.props.cell_backgrounds.hasOwnProperty(row_id)) {
-            let cell_background_dict = this.props.cell_backgrounds[row_id];
+    function _cell_background_color(row_id, colname) {
+        if (props.cell_backgrounds.hasOwnProperty(row_id)) {
+            let cell_background_dict = props.cell_backgrounds[row_id];
             if (cell_background_dict.hasOwnProperty(colname)) {
                 return cell_background_dict[colname]
             }
@@ -145,22 +136,22 @@ class BlueprintTable extends React.Component {
         return null
     }
 
-    _cellRendererCreator(column_name) {
+    function _cellRendererCreator(column_name) {
         let self = this;
         return (rowIndex) => {
             let the_text;
             let cell_bg_color;
             try {
-                if (!this.haveRowData(rowIndex)) {
-                    if (self.data_update_required == null) {
-                        self.data_update_required = rowIndex;
+                if (!haveRowData(rowIndex)) {
+                    if (data_update_required.current == null) {
+                        data_update_required.current = rowIndex;
                     }
                     return (<Cell key={column_name}
                                   loading={true}>
                         </Cell>
                     )
                 }
-                let text_color_dict = self._text_color_dict(rowIndex, column_name);
+                let text_color_dict = _text_color_dict(rowIndex, column_name);
                 if (text_color_dict) {
                     let color_dict = text_color_dict.color_dict;
                     let token_text = text_color_dict.token_text;
@@ -182,10 +173,10 @@ class BlueprintTable extends React.Component {
                         </Cell>
                     )
                 }
-                cell_bg_color = self._cell_background_color(rowIndex, column_name);
-                the_text = self.props.data_row_dict[rowIndex][column_name];
-                if ((this.props.alt_search_text != null) && (this.props.alt_search_text != "")) {
-                    const regex = new RegExp(this.props.alt_search_text, "gi");
+                cell_bg_color = _cell_background_color(rowIndex, column_name);
+                the_text = props.data_row_dict[rowIndex][column_name];
+                if ((props.alt_search_text != null) && (props.alt_search_text != "")) {
+                    const regex = new RegExp(props.alt_search_text, "gi");
                     the_text = String(the_text).replace(regex, function (matched) {
                         return "<mark>" + matched + "</mark>";
                     });
@@ -198,8 +189,8 @@ class BlueprintTable extends React.Component {
                         </Cell>
                     )
                 }
-                if ((self.props.search_text != null) && (self.props.search_text != "")) {
-                    const regex = new RegExp(self.props.search_text, "gi");
+                if ((props.search_text != null) && (props.search_text != "")) {
+                    const regex = new RegExp(props.search_text, "gi");
                     the_text = String(the_text).replace(regex, function (matched) {
                         return "<mark>" + matched + "</mark>";
                     });
@@ -212,7 +203,7 @@ class BlueprintTable extends React.Component {
                         </Cell>
                     )
                 }
-                if (!self.props.spreadsheet_mode) {
+                if (!props.spreadsheet_mode) {
                     return (<Cell key={column_name}
                                   style={{backgroundColor: cell_bg_color}}
                                   truncated={true}
@@ -233,179 +224,153 @@ class BlueprintTable extends React.Component {
                                           rowIndex={rowIndex}
                                           className="cell-class"
                                           interactive={false}
-                                          columnIndex={this.props.filtered_column_names.indexOf(column_name)}
+                                          columnIndex={props.filtered_column_names.indexOf(column_name)}
                                           columnHeader={column_name}
                                           wrapText={true}
-                                          setCellContent={this.props.setCellContent}
+                                          setCellContent={props.setCellContent}
                                           bgColor={cell_bg_color}
                                           value={the_text}/>
             )
         };
     }
 
-    _onSelection(regions) {
+    function _onSelection(regions) {
         if (regions.length == 0) return;  // Without this get an error when clicking on a body cell
-        this.props.setMainStateValue("selected_regions", regions);
+        props.setMainStateValue("selected_regions", regions);
         if (regions[0].hasOwnProperty("cols")) {
-            this._setSelectedColumn(this.props.filtered_column_names[regions[0]["cols"][0]])
+            _setSelectedColumn(props.filtered_column_names[regions[0]["cols"][0]])
         }
         else if (regions[0].hasOwnProperty("rows")) {
-            this._setSelectedRow(regions[0]["rows"][0])
+            _setSelectedRow(regions[0]["rows"][0])
         }
     }
 
-    _setSelectedColumn(column_name) {
-        this.props.setMainStateValue({"selected_column": column_name, "selected_row": null})
+    function _setSelectedColumn(column_name) {
+        props.setMainStateValue({"selected_column": column_name, "selected_row": null})
     }
 
-    _setSelectedRow(rowIndex) {
-        this.props.setMainStateValue({"selected_row": this.props.data_row_dict[rowIndex].__id__,
+    function _setSelectedRow(rowIndex) {
+        props.setMainStateValue({"selected_row": props.data_row_dict[rowIndex].__id__,
             "selected_column": null}
         )
     }
 
-    broadcast_column_widths(docname, cwidths) {
-        this.props.broadcast_event_to_server("UpdateColumnWidths", {"doc_to_update": docname,
+    function broadcast_column_widths(docname, cwidths) {
+        props.broadcast_event_to_server("UpdateColumnWidths", {"doc_to_update": docname,
             "column_widths": cwidths}, null)
     }
 
-    _onColumnWidthChanged(index, size) {
-        let cwidths = this.props.column_widths;
+    function _onColumnWidthChanged(index, size) {
+        let cwidths = props.column_widths;
         cwidths[index] = size;
-        this.props.updateTableSpec({column_widths: cwidths}, true);
+        props.updateTableSpec({column_widths: cwidths}, true);
     }
 
-    _onColumnsReordered(oldIndex, newIndex, length) {
-        let col_to_move = this.props.filtered_column_names[oldIndex];
-        let cnames = [...this.props.filtered_column_names];
+    function _onColumnsReordered(oldIndex, newIndex, length) {
+        let col_to_move = props.filtered_column_names[oldIndex];
+        let cnames = [...props.filtered_column_names];
         cnames.splice(oldIndex, 1);
         let target_col = cnames[newIndex];
-        this.props.moveColumn(col_to_move, target_col)
+        props.moveColumn(col_to_move, target_col)
     }
 
-    _onFocusedCell(focusedCell) {
-        this.setState({focusedCell: focusedCell})
+    function _onFocusedCell(focusedCell) {
+        setFocusedCell(focusedCell)
     }
 
-    render () {
-        let self = this;
-        let columns = this.props.filtered_column_names.map((column_name)=> {
-            const cellRenderer = self._cellRendererCreator(column_name);
-            return <Column cellRenderer={cellRenderer}
-                               enableColumnReordering={true}
-                               key={column_name}
-                               name={column_name}/>
-        });
-        let cwidths;
-        if ((this.props.column_widths == null) || (this.props.column_widths.length == 0)) {
-            cwidths = null
-        }
-        else {
-            cwidths = this.props.column_widths
-        }
-        if ((cwidths != null) && (cwidths.length != this.props.filtered_column_names.length)) {
-            cwidths = null;
-            this.mismatched_column_widths = true
-        }
-        let style = {display: "block",
-            overflowY: "auto",
-            overflowX: "hidden",
-            height: this.props.height
-        };
-        return (
-            <div id="table-area" ref={this.props.my_ref} style={style}>
-                <Table ref={this.table_ref}
-                       key={this.hash_value}  // kludge: Having this prevents partial row rendering
-                       numRows={this.props.total_rows}
-                       enableColumnReordering={true}
-                       onColumnsReordered={this._onColumnsReordered}
-                       onSelection={this._onSelection}
-                       selectedRegions={this.props.selected_regions}
-                       onCompleteRender={this._doScroll}
-                       onColumnWidthChanged={this._onColumnWidthChanged}
-                       onFocusedCell={this._onFocusedCell}
-                       focusedCell={this.state.focusedCell}
-                       enableMultipleSelection={false}
-                       enableFocusedCell={this.props.spreadsheet_mode}
-                       selectionModes={[RegionCardinality.FULL_COLUMNS, RegionCardinality.FULL_ROWS]}
-                       minColumnWidth={75}
-                       columnWidths={cwidths}
-                       rowHeaderCellRenderer={this._rowHeaderCellRenderer}
-                >
-                    {columns}
-                </Table>
-            </div>
-        );
+    let columns = props.filtered_column_names.map((column_name)=> {
+        const cellRenderer = _cellRendererCreator(column_name);
+        return <Column cellRenderer={cellRenderer}
+                           enableColumnReordering={true}
+                           key={column_name}
+                           name={column_name}/>
+    });
+    let cwidths;
+    if ((props.column_widths == null) || (props.column_widths.length == 0)) {
+        cwidths = null
     }
+    else {
+        cwidths = props.column_widths
+    }
+    if ((cwidths != null) && (cwidths.length != props.filtered_column_names.length)) {
+        cwidths = null;
+        mismatched_column_widths.current = true
+    }
+    let style = {display: "block",
+        overflowY: "auto",
+        overflowX: "hidden",
+        height: props.height
+    };
+    return (
+        <div id="table-area" ref={passedRef} style={style}>
+            <Table ref={table_ref}
+                   key={hash_value()}  // kludge: Having this prevents partial row rendering
+                   numRows={props.total_rows}
+                   enableColumnReordering={true}
+                   onColumnsReordered={_onColumnsReordered}
+                   onSelection={_onSelection}
+                   selectedRegions={props.selected_regions}
+                   onCompleteRender={_doScroll}
+                   onColumnWidthChanged={_onColumnWidthChanged}
+                   onFocusedCell={_onFocusedCell}
+                   focusedCell={focusedCell}
+                   enableMultipleSelection={false}
+                   enableFocusedCell={props.spreadsheet_mode}
+                   selectionModes={[RegionCardinality.FULL_COLUMNS, RegionCardinality.FULL_ROWS]}
+                   minColumnWidth={75}
+                   columnWidths={cwidths}
+                   rowHeaderCellRenderer={_rowHeaderCellRenderer}
+            >
+                {columns}
+            </Table>
+        </div>
+    );
 }
+BlueprintTable = memo(forwardRef(BlueprintTable));
 
-BlueprintTable.propTypes = {
-    my_ref: PropTypes.object,
-    height: PropTypes.number,
-    setCellContent: PropTypes.func,
-    column_names: PropTypes.array,
-    filtered_column_names: PropTypes.array,
-    moveColumn: PropTypes.func,
-    updateTableSpec: PropTypes.func,
-    data_row_dict: PropTypes.object,
-    total_rows: PropTypes.number,
-    initiateDataGrab: PropTypes.func,
-    setMainStateValue: PropTypes.func,
-    broadcast_event_to_server: PropTypes.func,
-    cells_to_color_text: PropTypes.object,
-    cell_backgrounds: PropTypes.object,
-    column_widths: PropTypes.array,
-    hidden_columns_list: PropTypes.array,
-    search_text: PropTypes.string,
-    spreadsheet_mode: PropTypes.bool,
-    alt_search_text: PropTypes.string
-};
+function EnhancedEditableCell(props)  {
 
-class EnhancedEditableCell extends React.Component {
+    const cell_ref = useRef(null);
+    const [am_editing, set_am_editing] = useState(false);
+    const [saved_text, set_saved_text] = useState("");
 
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.cell_ref = React.createRef();
-        this.state = {am_editing: false, saved_text: ""}
-    }
+    const pushCallback = useCallbackStack();
 
-    _handleKeyDown(event) {
-        if (this.cell_ref && this.cell_ref.current) {
-            this.cell_ref.current.handleEdit();
-            this.setState({am_editing: true, saved_text: this.props.value})
+    function _handleKeyDown(event) {
+        if (cell_ref.current) {
+            cell_ref.current.handleEdit();
+            set_am_editing(true);
+            set_saved_text(props.value)
         }
     }
 
-    _onChange(value, rowIndex, columnIndex) {
-        this.props.setCellContent(this.props.rowIndex, this.props.columnHeader, value, false)
+    function _onChange(value, rowIndex, columnIndex) {
+        props.set_scrollprops.setCellContent(props.set_scrollprops.rowIndex, props.set_scrollprops.columnHeader, value, false)
     }
 
-    _onCancel() {
-        this.props.setCellContent(this.props.rowIndex, this.props.columnHeader, this.state.saved_text, false);
-        this.setState({am_editing: false})
+    function _onCancel() {
+        props.set_scrollprops.setCellContent(props.set_scrollprops.rowIndex, props.set_scrollprops.columnHeader, props.set_scrollsaved_text, false);
+        set_am_editing(false)
     }
 
-    _onConfirmCellEdit(value, rowIndex, columnIndex) {
-        let self = this;
-        this.setState({am_editing: false}, ()=> {
-            self.props.setCellContent(this.props.rowIndex, this.props.columnHeader, value, true);
+    function _onConfirmCellEdit(value, rowIndex, columnIndex) {
+        set_am_editing(false);
+        pushCallback(()=>{
+            props.setCellContent(props.rowIndex, props.columnHeader, value, true);
         })
     }
-
-    render() {
-
-        return (
-            <EditableCell ref={this.cell_ref}
-                          onConfirm={this._onConfirmCellEdit}
-                          onChange={this._onChange}
-                          onCancel={this._onCancel}
-                          style={{backgroundColor: this.props.bgColor}}
-                          onKeyDown={this.state.am_editing ? null : this._handleKeyDown}
-                          {...this.props}/>
-        )
-    }
+    return (
+        <EditableCell ref={cell_ref}
+                      onConfirm={_onConfirmCellEdit}
+                      onChange={_onChange}
+                      onCancel={_onCancel}
+                      style={{backgroundColor: props.bgColor}}
+                      onKeyDown={am_editing ? null : _handleKeyDown}
+                      {...props}/>
+    )
 }
+
+EnhancedEditableCell = memo(EnhancedEditableCell);
 
 function compute_added_column_width(header_text) {
     const max_field_width = MAX_INITIAL_CELL_WIDTH;

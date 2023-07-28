@@ -20,6 +20,7 @@ exports.throttle = throttle;
 exports.useCallbackStack = useCallbackStack;
 exports.useConstructor = void 0;
 exports.useDebounce = useDebounce;
+exports.useReducerAndRef = useReducerAndRef;
 exports.useStateAndRef = useStateAndRef;
 var _lodash = _interopRequireDefault(require("lodash"));
 var _react = _interopRequireWildcard(require("react"));
@@ -88,6 +89,15 @@ function useStateAndRef(initial) {
   var valueRef = (0, _react.useRef)(value);
   valueRef.current = value;
   return [value, setValue, valueRef];
+}
+function useReducerAndRef(reducer, initial) {
+  var _useReducer = (0, _react.useReducer)(reducer, initial),
+    _useReducer2 = _slicedToArray(_useReducer, 2),
+    value = _useReducer2[0],
+    dispatch = _useReducer2[1];
+  var valueRef = (0, _react.useRef)(value);
+  valueRef.current = value;
+  return [value, dispatch, valueRef];
 }
 function useDebounce(callback) {
   var delay = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 500;

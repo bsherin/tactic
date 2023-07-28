@@ -1,50 +1,46 @@
 
 
 import React from "react";
+import {useState, useEffect, useRef, memo, forwardRef} from "react";
 import PropTypes from 'prop-types';
 
 import { Text, FormGroup, Spinner, InputGroup, ButtonGroup, Button, Card, Switch } from "@blueprintjs/core";
 
-import {GlyphButton} from "./blueprint_react_widgets.js";
-import {ReactCodemirror} from "./react-codemirror.js";
-import {BpSelect} from "./blueprint_mdata_fields.js";
-import {doBinding, propsAreEqual} from "./utilities_react.js";
-import {postWithCallback} from "./communication_react.js"
+import {GlyphButton} from "./blueprint_react_widgets";
+import {ReactCodemirror} from "./react-codemirror";
+import {BpSelect} from "./blueprint_mdata_fields";
+import {postWithCallback} from "./communication_react"
 
 export {MainTableCard, MainTableCardHeader, FreeformBody}
 
-class FreeformBody extends React.Component{
-    constructor(props) {
-        super(props);
-        this.cmobject = null;
-        this.overlay = null;
-        doBinding(this);
+function FreeformBody(props, passedRef) {
+
+    const cmobject = useRef(null);
+    const overlay = useRef(null);
+
+    function _setCMObject(lcmobject) {
+        cmobject.current = lcmobject
     }
 
-
-    _setCMObject(cmobject) {
-        this.cmobject = cmobject
-    }
-
-    _clearSearch() {
-        if (this.cmobject && this.overlay) {
-            this.cmobject.removeOverlay(this.overlay);
-            this.overlay = null
+    function _clearSearch() {
+        if (cmobject.current && overlay.current) {
+            cmobject.current.removeOverlay(overlay.current);
+            overlay.current = null
         }
     }
 
-    _doSearch(){
-        if (this.props.alt_search_text && (this.props.alt_search_text != "") && this.cmobject) {
-            this.overlay = this.mySearchOverlay(this.props.alt_search_text, true);
-            this.cmobject.addOverlay(this.overlay)
+    function _doSearch(){
+        if (props.alt_search_text && (props.alt_search_text != "") && cmobject.current) {
+            overlay.current = mySearchOverlay(props.alt_search_text, true);
+            cmobject.current.addOverlay(overlay.current)
         }
-        else if (this.props.search_text && (this.props.search_text != "") && this.cmobject) {
-            this.overlay = this.mySearchOverlay(this.props.search_text, true);
-            this.cmobject.addOverlay(this.overlay)
+        else if (props.search_text && (props.search_text != "") && cmobject) {
+            overlay.current = mySearchOverlay(props.search_text, true);
+            cmobject.current.addOverlay(overlay.current)
         }
     }
 
-    mySearchOverlay(query, caseInsensitive) {
+    function mySearchOverlay(query, caseInsensitive) {
         if (typeof query == "string")
           { // noinspection RegExpRedundantEscape
               query = new RegExp(query.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"), caseInsensitive ? "gi" : "g");
@@ -66,48 +62,47 @@ class FreeformBody extends React.Component{
         }};
       }
 
-    _handleBlur(new_data_text) {
-        postWithCallback(this.props.main_id, "add_freeform_document",
-            {document_name: this.props.document_name,
-                doc_text: new_data_text})
+    function _handleBlur(new_data_text) {
+        postWithCallback(props.main_id, "add_freeform_document",
+            {document_name: props.document_name, doc_text: new_data_text}, null)
     }
 
-    _handleChange(new_data_text) {
+    function _handleChange(new_data_text) {
 
     }
 
-    render() {
-        this._clearSearch();
-        this._doSearch();
-        return (
-            <div ref={this.props.my_ref}>
-                <ReactCodemirror handleBlur={this._handleBlur}
-                                 handleChange={null}
-                                 code_content={this.props.data_text}
-                                 sync_to_prop={true}
-                                 dark_theme={this.props.dark_theme}
-                                 soft_wrap={this.props.soft_wrap}
-                                 mode="Plain Text"
-                                 code_container_height={this.props.code_container_height}
-                                 code_container_width={this.props.code_container_width - 30}
-                                 setCMObject={this._setCMObject}
-                                 readOnly={false}/>
-            </div>
-        )
-    }
+    _clearSearch();
+    _doSearch();
+    return (
+        <div ref={passedRef}>
+            <ReactCodemirror handleBlur={_handleBlur}
+                             handleChange={null}
+                             code_content={props.data_text}
+                             sync_to_prop={true}
+                             dark_theme={props.dark_theme}
+                             soft_wrap={props.soft_wrap}
+                             mode="Plain Text"
+                             code_container_height={props.code_container_height}
+                             code_container_width={props.code_container_width - 30}
+                             setCMObject={_setCMObject}
+                             readOnly={false}/>
+        </div>
+    )
 }
 
-FreeformBody.propTypes = {
-    main_id: PropTypes.string,
-    document_name: PropTypes.string,
-    my_ref: PropTypes.object,
-    data_text: PropTypes.string,
-    code_container_height: PropTypes.number,
-    search_text: PropTypes.string,
-    alt_search_text: PropTypes.string,
-    setMainStateValue: PropTypes.func,
-    soft_wrap: PropTypes.bool,
-};
+// FreeformBody.propTypes = {
+//     main_id: PropTypes.string,
+//     document_name: PropTypes.string,
+//     my_ref: PropTypes.object,
+//     data_text: PropTypes.string,
+//     code_container_height: PropTypes.number,
+//     search_text: PropTypes.string,
+//     alt_search_text: PropTypes.string,
+//     setMainStateValue: PropTypes.func,
+//     soft_wrap: PropTypes.bool,
+// };
+
+FreeformBody = memo(forwardRef(FreeformBody));
 
 
 function SmallSpinner () {
@@ -118,135 +113,125 @@ function SmallSpinner () {
     )
 }
 
-class MainTableCardHeader extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.heading_left_ref = React.createRef();
-        this.heading_right_ref = React.createRef();
-        this.state = {hide_right_element: false}
-    }
+function MainTableCardHeader(props) {
 
-    _getHideRight() {
-        let le_rect = this.heading_left_ref.current.getBoundingClientRect();
-        let re_rect = this.heading_right_ref.current.getBoundingClientRect();
+    const heading_left_ref = useRef(null);
+    const heading_right_ref = useRef(null);
+
+    const [hide_right_element, set_hide_right_element] = useState(false);
+
+    useEffect(()=>{
+        let hide_right = _getHideRight();
+        if (hide_right != hide_right_element) {
+            set_hide_right_element(hide_right)
+        }
+    });
+
+    function _getHideRight() {
+        let le_rect = heading_left_ref.current.getBoundingClientRect();
+        let re_rect = heading_right_ref.current.getBoundingClientRect();
         return re_rect.x < (le_rect.x + le_rect.width + 10);
     }
 
-    componentDidUpdate() {
-        let hide_right = this._getHideRight();
-        if (hide_right != this.state.hide_right_element) {
-            this.setState({hide_right_element: hide_right})
-        }
+    function _handleSearchFieldChange(event) {
+        props.handleSearchFieldChange(event.target.value)
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
-        return !propsAreEqual(nextProps, this.props) || (this._getHideRight() != this.state.hide_right_element);
-    }
-
-    _handleSearchFieldChange(event) {
-        this.props.handleSearchFieldChange(event.target.value)
-    }
-
-    _handleFilter() {
-        // this.props.handleFilter(this.state.search_field_value);
-        let self = this;
-        const data_dict = {"text_to_find": this.props.search_text};
-        postWithCallback(this.props.main_id, "UnfilterTable", data_dict, function () {
-            if (self.props.search_text !== "") {
-                postWithCallback(self.props.main_id, "FilterTable", data_dict);
-                self.props.setMainStateValue({"table_is_filtered": true,
-                    "selected_regions": null,
-                    "selected_row": null})
-            }
+    function _handleFilter() {
+        const data_dict = {"text_to_find": props.search_text};
+        postWithCallback(props.main_id, "UnfilterTable", data_dict, function () {
+            if (props.search_text !== "") {
+                postWithCallback(props.main_id, "FilterTable", data_dict,
+                    props.setMainStateValue({"table_is_filtered": true,
+                        "selected_regions": null,
+                        "selected_row": null}), null)
+                }
         });
     }
 
-    _handleUnFilter() {
-        this.props.handleSearchFieldChange(null);
-        if (this.props.table_is_filtered) {
-            postWithCallback(this.props.main_id, "UnfilterTable", {selected_row: this.props.selected_row});
-            this.props.setMainStateValue({"table_is_filtered": false,
+    function _handleUnFilter() {
+        props.handleSearchFieldChange(null);
+        if (props.table_is_filtered) {
+            postWithCallback(props.main_id, "UnfilterTable", {selected_row: props.selected_row}, null);
+            props.setMainStateValue({"table_is_filtered": false,
                 "selected_regions": null,
                 "selected_row": null})
         }
     }
 
-    _handleSubmit(e) {
+    function _handleSubmit(e) {
         e.preventDefault();
     }
 
-    _onChangeDoc(value) {
-        this.props.handleChangeDoc(value)
+    function _onChangeDoc(value) {
+        props.handleChangeDoc(value)
     }
 
-    render () {
-        let heading_right_opacity = this.state.hide_right_element ? 0 : 100;
-        let select_style = {height: 30, maxWidth: 250};
-        let doc_button_text = <Text ellipsize={true}>{this.props.current_doc_name}</Text>;
-        let self = this;
-        return (
-            <div className="d-flex pl-2 pr-2 justify-content-between align-baseline main-heading" style={{height: 50}}>
-                <div id="heading-left" ref={this.heading_left_ref} className="d-flex flex-column justify-content-around">
-                    <div className="d-flex flex-row">
-                        <GlyphButton handleClick={this.props.toggleShrink} icon="minimize"/>
-                        <div className="d-flex flex-column justify-content-around">
-                            <form className="d-flex flex-row">
-                                <FormGroup label={this.props.short_collection_name}
-                                              inline={true}
-                                              style={{marginBottom: 0, marginLeft: 5, marginRight: 10}}>
-                                    <BpSelect options={this.props.doc_names}
-                                              onChange={this._onChangeDoc}
-                                              buttonStyle={select_style}
-                                              buttonTextObject={doc_button_text}
-                                              value={this.props.current_doc_name}/>
-                                </FormGroup>
-                                {this.props.show_table_spinner &&
-                                    <Spinner size={15} />}
-                            </form>
-                        </div>
+    let heading_right_opacity = hide_right_element ? 0 : 100;
+    let select_style = {height: 30, maxWidth: 250};
+    let doc_button_text = <Text ellipsize={true}>{props.current_doc_name}</Text>;
+    let self = this;
+    return (
+        <div className="d-flex pl-2 pr-2 justify-content-between align-baseline main-heading" style={{height: 50}}>
+            <div id="heading-left" ref={heading_left_ref} className="d-flex flex-column justify-content-around">
+                <div className="d-flex flex-row">
+                    <GlyphButton handleClick={props.toggleShrink} icon="minimize"/>
+                    <div className="d-flex flex-column justify-content-around">
+                        <form className="d-flex flex-row">
+                            <FormGroup label={props.short_collection_name}
+                                          inline={true}
+                                          style={{marginBottom: 0, marginLeft: 5, marginRight: 10}}>
+                                <BpSelect options={props.doc_names}
+                                          onChange={_onChangeDoc}
+                                          buttonStyle={select_style}
+                                          buttonTextObject={doc_button_text}
+                                          value={props.current_doc_name}/>
+                            </FormGroup>
+                            {props.show_table_spinner &&
+                                <Spinner size={15} />}
+                        </form>
                     </div>
+                </div>
 
-                </div>
-                <div id="heading-right" ref={this.heading_right_ref} style={{opacity: heading_right_opacity}} className="d-flex flex-column justify-content-around">
-                    <form onSubmit={self._handleSubmit} style={{alignItems: "center"}} className="d-flex flex-row">
-                        {this.props.is_freeform &&
-                            <Switch label="soft wrap"
-                                     className="mr-2 mb-0"
-                                    large={false}
-                                    checked={this.props.soft_wrap}
-                                    onChange={this.props.handleSoftWrapChange}
-                            />
-                        }
-                            <Switch label="edit"
-                                     className="mr-4 mb-0"
-                                    large={false}
-                                    checked={this.props.spreadsheet_mode}
-                                    onChange={this.props.handleSpreadsheetModeChange}
-                            />
-                            <InputGroup type="search"
-                                           leftIcon="search"
-                                           placeholder="Search"
-                                           value={!this.props.search_text ? "" : this.props.search_text}
-                                           onChange={this._handleSearchFieldChange}
-                                           autoCapitalize="none"
-                                           autoCorrect="off"
-                                           className="mr-2"/>
-                           <ButtonGroup>
-                                {this.props.show_filter_button &&
-                                    <Button onClick={this._handleFilter}>
-                                        Filter
-                                    </Button>
-                                }
-                                <Button onClick={this._handleUnFilter}>
-                                    Clear
-                                </Button>
-                           </ButtonGroup>
-                    </form>
-                </div>
             </div>
-        )
-    }
+            <div id="heading-right" ref={heading_right_ref} style={{opacity: heading_right_opacity}} className="d-flex flex-column justify-content-around">
+                <form onSubmit={_handleSubmit} style={{alignItems: "center"}} className="d-flex flex-row">
+                    {props.is_freeform &&
+                        <Switch label="soft wrap"
+                                 className="mr-2 mb-0"
+                                large={false}
+                                checked={props.soft_wrap}
+                                onChange={props.handleSoftWrapChange}
+                        />
+                    }
+                        <Switch label="edit"
+                                 className="mr-4 mb-0"
+                                large={false}
+                                checked={props.spreadsheet_mode}
+                                onChange={props.handleSpreadsheetModeChange}
+                        />
+                        <InputGroup type="search"
+                                       leftIcon="search"
+                                       placeholder="Search"
+                                       value={!props.search_text ? "" : props.search_text}
+                                       onChange={_handleSearchFieldChange}
+                                       autoCapitalize="none"
+                                       autoCorrect="off"
+                                       className="mr-2"/>
+                       <ButtonGroup>
+                            {props.show_filter_button &&
+                                <Button onClick={_handleFilter}>
+                                    Filter
+                                </Button>
+                            }
+                            <Button onClick={_handleUnFilter}>
+                                Clear
+                            </Button>
+                       </ButtonGroup>
+                </form>
+            </div>
+        </div>
+    )
 }
 
 MainTableCardHeader.propTypes = {
@@ -278,42 +263,29 @@ MainTableCardHeader.defaultProps = {
     handleSoftWrapChange: null
 };
 
+MainTableCardHeader = memo(MainTableCardHeader);
+
 const MAX_INITIAL_CELL_WIDTH = 400;
 const EXTRA_TABLE_AREA_SPACE = 500;
 
-class MainTableCard extends React.Component {
+function MainTableCard(props) {
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            mounted: false,
-        };
-        doBinding(this);
-    }
-
-    componentDidMount() {
-        this.setState({mounted: true});
-    }
-
-    render () {
-        return (
-            <Card id="main-panel" elevation={2}>
-                {this.props.card_header}
-                <div  id="table-wrapper">
-                    {this.props.card_body}
-                </div>
-            </Card>
-        )
-    }
+    return (
+        <Card id="main-panel" elevation={2}>
+            {props.card_header}
+            <div id="table-wrapper">
+                {props.card_body}
+            </div>
+        </Card>
+    )
 }
 
 MainTableCard.propTypes = {
     card_body: PropTypes.object,
     card_header: PropTypes.object,
-    updateTableSpec: PropTypes.func,
-    table_spec: PropTypes.object,
-    broadcast_event_to_server: PropTypes.func
 };
+
+MainTableCard = memo(MainTableCard);
 
 function compute_added_column_width(header_text) {
     const max_field_width = MAX_INITIAL_CELL_WIDTH;

@@ -1511,6 +1511,7 @@ function LibraryPane(props) {
     }
   }, /*#__PURE__*/_react["default"].createElement(_tag_buttons_react.TagButtonList, {
     tag_list: tag_list,
+    dark_theme: props.dark_theme,
     expanded_tags: expanded_tags_ref.current,
     active_tag: active_tag_ref.current,
     updateTagState: _update_search_state,
