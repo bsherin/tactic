@@ -563,6 +563,7 @@ function PipeOption(props) {
     return (
         <FormGroup label={label}>
             <BpSelectAdvanced onChange={_updateMe}
+                              readOnly={false}
                               value={full_value}
                               buttonIcon="flow-end"
                               options={create_choice_list()}/>

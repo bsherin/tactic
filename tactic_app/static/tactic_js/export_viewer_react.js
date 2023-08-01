@@ -295,7 +295,6 @@ function ExportsViewer(props) {
   }
   function _eval() {
     var e = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-    console.log("entering eval with selected_export ".concat(selected_export_ref.current));
     _showMySpinner();
     var send_data = {
       "export_name": selected_export_ref.current,
@@ -347,7 +346,6 @@ function ExportsViewer(props) {
   }
   function _handleExportListChange(fullname, shortname, tilename) {
     var force_refresh = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
-    console.log("entering handlexportlistchange with fullname ".concat(fullname));
     if (!force_refresh && fullname == selected_export_ref.current) return;
     set_show_spinner(true);
     set_selected_export(fullname);

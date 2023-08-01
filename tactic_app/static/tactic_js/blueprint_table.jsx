@@ -43,7 +43,7 @@ function BlueprintTable(props, passedRef) {
     }, []);
 
     useEffect(()=>{
-        if ((props.column_widths == null) || (mismatched_column_widths.current)) {
+        if ((props.mState.table_spec.column_widths == null) || (mismatched_column_widths.current)) {
             computeColumnWidths()
         }
         _updateRowHeights();
@@ -51,8 +51,8 @@ function BlueprintTable(props, passedRef) {
 
     function hash_value() {
         let obj = {
-            cwidths: props.column_widths,
-            nrows: props.total_rows
+            cwidths: props.mState.table_spec.column_widths,
+            nrows: props.mState.total_rows
             // sscroll: set_scroll
         };
         return hash(obj)
@@ -66,14 +66,14 @@ function BlueprintTable(props, passedRef) {
     // }
 
      function computeColumnWidths() {
-        let cwidths = compute_initial_column_widths(props.filtered_column_names, props.data_row_dict);
+        let cwidths = compute_initial_column_widths(props.filtered_column_names, props.mState.data_row_dict);
         mismatched_column_widths.current = false;
         props.updateTableSpec({column_widths: cwidths}, true)
 
     }
 
     function haveRowData(rowIndex) {
-        return props.data_row_dict.hasOwnProperty(rowIndex)
+        return props.mState.data_row_dict.hasOwnProperty(rowIndex)
     }
 
     function _doScroll() {
@@ -100,14 +100,14 @@ function BlueprintTable(props, passedRef) {
             if (!haveRowData(rowIndex)) {
                 return "empty cell"
             }
-            return props.data_row_dict[rowIndex][fcnames[colIndex]]
+            return props.mState.data_row_dict[rowIndex][fcnames[colIndex]]
         }, {getNumBufferLines: 1});
     }
 
     function _rowHeaderCellRenderer(rowIndex) {
         if (haveRowData(rowIndex))  {
             return (<RowHeaderCell key={rowIndex}
-                                        name={props.data_row_dict[rowIndex].__id__}/>)
+                                        name={props.mState.data_row_dict[rowIndex].__id__}/>)
         }
         else {
             return (<RowHeaderCell key={rowIndex} loading={true} name={rowIndex}/>)
@@ -115,8 +115,8 @@ function BlueprintTable(props, passedRef) {
     }
 
     function _text_color_dict(row_id, colname) {
-        if (props.cells_to_color_text.hasOwnProperty(row_id)) {
-            let text_color_dict = props.cells_to_color_text[row_id];
+        if (props.mState.cells_to_color_text.hasOwnProperty(row_id)) {
+            let text_color_dict = props.mState.cells_to_color_text[row_id];
             if (text_color_dict.hasOwnProperty(colname)) {
                 return text_color_dict[colname]
             }
@@ -126,8 +126,8 @@ function BlueprintTable(props, passedRef) {
     }
 
     function _cell_background_color(row_id, colname) {
-        if (props.cell_backgrounds.hasOwnProperty(row_id)) {
-            let cell_background_dict = props.cell_backgrounds[row_id];
+        if (props.mState.table_spec.cell_backgrounds.hasOwnProperty(row_id)) {
+            let cell_background_dict = props.mState.table_spec.cell_backgrounds[row_id];
             if (cell_background_dict.hasOwnProperty(colname)) {
                 return cell_background_dict[colname]
             }
@@ -174,9 +174,9 @@ function BlueprintTable(props, passedRef) {
                     )
                 }
                 cell_bg_color = _cell_background_color(rowIndex, column_name);
-                the_text = props.data_row_dict[rowIndex][column_name];
-                if ((props.alt_search_text != null) && (props.alt_search_text != "")) {
-                    const regex = new RegExp(props.alt_search_text, "gi");
+                the_text = props.mState.data_row_dict[rowIndex][column_name];
+                if ((props.mState.alt_search_text != null) && (props.mState.alt_search_text != "")) {
+                    const regex = new RegExp(props.mState.alt_search_text, "gi");
                     the_text = String(the_text).replace(regex, function (matched) {
                         return "<mark>" + matched + "</mark>";
                     });
@@ -189,8 +189,8 @@ function BlueprintTable(props, passedRef) {
                         </Cell>
                     )
                 }
-                if ((props.search_text != null) && (props.search_text != "")) {
-                    const regex = new RegExp(props.search_text, "gi");
+                if ((props.mState.search_text != null) && (props.mState.search_text != "")) {
+                    const regex = new RegExp(props.mState.search_text, "gi");
                     the_text = String(the_text).replace(regex, function (matched) {
                         return "<mark>" + matched + "</mark>";
                     });
@@ -203,7 +203,7 @@ function BlueprintTable(props, passedRef) {
                         </Cell>
                     )
                 }
-                if (!props.spreadsheet_mode) {
+                if (!props.mState.spreadsheet_mode) {
                     return (<Cell key={column_name}
                                   style={{backgroundColor: cell_bg_color}}
                                   truncated={true}
@@ -250,7 +250,7 @@ function BlueprintTable(props, passedRef) {
     }
 
     function _setSelectedRow(rowIndex) {
-        props.setMainStateValue({"selected_row": props.data_row_dict[rowIndex].__id__,
+        props.setMainStateValue({"selected_row": props.mState.data_row_dict[rowIndex].__id__,
             "selected_column": null}
         )
     }
@@ -261,7 +261,7 @@ function BlueprintTable(props, passedRef) {
     }
 
     function _onColumnWidthChanged(index, size) {
-        let cwidths = props.column_widths;
+        let cwidths = props.mState.table_spec.column_widths;
         cwidths[index] = size;
         props.updateTableSpec({column_widths: cwidths}, true);
     }
@@ -286,11 +286,11 @@ function BlueprintTable(props, passedRef) {
                            name={column_name}/>
     });
     let cwidths;
-    if ((props.column_widths == null) || (props.column_widths.length == 0)) {
+    if ((props.mState.table_spec.column_widths == null) || (props.mState.table_spec.column_widths.length == 0)) {
         cwidths = null
     }
     else {
-        cwidths = props.column_widths
+        cwidths = props.mState.table_spec.column_widths
     }
     if ((cwidths != null) && (cwidths.length != props.filtered_column_names.length)) {
         cwidths = null;
@@ -305,17 +305,17 @@ function BlueprintTable(props, passedRef) {
         <div id="table-area" ref={passedRef} style={style}>
             <Table ref={table_ref}
                    key={hash_value()}  // kludge: Having this prevents partial row rendering
-                   numRows={props.total_rows}
+                   numRows={props.mState.total_rows}
                    enableColumnReordering={true}
                    onColumnsReordered={_onColumnsReordered}
                    onSelection={_onSelection}
-                   selectedRegions={props.selected_regions}
+                   selectedRegions={props.mState.selected_regions}
                    onCompleteRender={_doScroll}
                    onColumnWidthChanged={_onColumnWidthChanged}
                    onFocusedCell={_onFocusedCell}
                    focusedCell={focusedCell}
                    enableMultipleSelection={false}
-                   enableFocusedCell={props.spreadsheet_mode}
+                   enableFocusedCell={props.mState.spreadsheet_mode}
                    selectionModes={[RegionCardinality.FULL_COLUMNS, RegionCardinality.FULL_ROWS]}
                    minColumnWidth={75}
                    columnWidths={cwidths}

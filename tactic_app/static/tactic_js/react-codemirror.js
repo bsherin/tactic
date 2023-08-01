@@ -8,24 +8,24 @@ exports.ReactCodemirror = ReactCodemirror;
 var _react = _interopRequireWildcard(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
-var _communication_react = require("./communication_react.js");
-var _codemirror = _interopRequireDefault(require("codemirror/lib/codemirror.js"));
-require("codemirror/mode/python/python.js");
+var _communication_react = require("./communication_react");
+var _codemirror = _interopRequireDefault(require("codemirror/lib/codemirror"));
+require("codemirror/mode/python/python");
 require("codemirror/lib/codemirror.css");
-require("codemirror/addon/merge/merge.js");
+require("codemirror/addon/merge/merge");
 require("codemirror/addon/merge/merge.css");
-require("codemirror/addon/hint/show-hint.js");
+require("codemirror/addon/hint/show-hint");
 require("codemirror/addon/hint/show-hint.css");
-require("codemirror/addon/fold/foldcode.js");
-require("codemirror/addon/fold/foldgutter.js");
-require("codemirror/addon/fold/indent-fold.js");
+require("codemirror/addon/fold/foldcode");
+require("codemirror/addon/fold/foldgutter");
+require("codemirror/addon/fold/indent-fold");
 require("codemirror/addon/fold/foldgutter.css");
-require("codemirror/addon/display/autorefresh.js");
-require("codemirror/addon/dialog/dialog.js");
+require("codemirror/addon/display/autorefresh");
+require("codemirror/addon/dialog/dialog");
 require("codemirror/addon/dialog/dialog.css");
-require("codemirror/addon/edit/matchbrackets.js");
-require("codemirror/addon/edit/closebrackets.js");
-require("codemirror/addon/search/match-highlighter.js");
+require("codemirror/addon/edit/matchbrackets");
+require("codemirror/addon/edit/closebrackets");
+require("codemirror/addon/search/match-highlighter");
 require("codemirror/theme/material.css");
 require("codemirror/theme/nord.css");
 require("codemirror/theme/oceanic-next.css");
@@ -35,6 +35,7 @@ require("codemirror/theme/neat.css");
 require("codemirror/theme/solarized.css");
 require("codemirror/theme/juejin.css");
 var _toaster = require("./toaster");
+var _utilities_react = require("./utilities_react");
 require("./autocomplete");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
@@ -108,7 +109,7 @@ function ReactCodemirror(props, passedRef) {
     if (!cmobject.current) {
       return;
     }
-    if (props.dark_theme != saved_theme) {
+    if (props.dark_theme != saved_theme.current) {
       (0, _communication_react.postAjax)("get_preferred_codemirror_themes", {}, function (data) {
         preferred_themes.current = data;
         cmobject.current.setOption("theme", _current_codemirror_theme());
@@ -403,7 +404,9 @@ function ReactCodemirror(props, passedRef) {
     ref: code_container_ref.current
   }));
 }
-exports.ReactCodemirror = ReactCodemirror = /*#__PURE__*/(0, _react.memo)( /*#__PURE__*/(0, _react.forwardRef)(ReactCodemirror));
+exports.ReactCodemirror = ReactCodemirror = /*#__PURE__*/(0, _react.memo)( /*#__PURE__*/(0, _react.forwardRef)(ReactCodemirror), function (prevProps, newProps) {
+  (0, _utilities_react.propsAreEqual)(prevProps, newProps, ["extraKeys"]);
+});
 ReactCodemirror.propTypes = {
   am_selected: _propTypes["default"].bool,
   handleChange: _propTypes["default"].func,
@@ -421,7 +424,7 @@ ReactCodemirror.propTypes = {
   first_line_number: _propTypes["default"].number,
   extraKeys: _propTypes["default"].object,
   setCMObject: _propTypes["default"].func,
-  searchTerm: _propTypes["default"].string,
+  search_term: _propTypes["default"].string,
   update_search_state: _propTypes["default"].func,
   alt_clear_selections: _propTypes["default"].func,
   regex_search: _propTypes["default"].bool,
@@ -439,7 +442,7 @@ ReactCodemirror.defaultProps = {
   show_fold_button: false,
   soft_wrap: false,
   code_container_height: "100%",
-  searchTerm: null,
+  search_term: null,
   update_search_state: null,
   alt_clear_selections: null,
   regex_search: false,

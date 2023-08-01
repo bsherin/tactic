@@ -223,7 +223,6 @@ class LoadSaveTasksMixin:
             debug_log("entering track_loaded_modules")
 
             def track_recreated_tiles(trcdata):
-                self.show_main_status_message("Entering do_full_recreation")
                 debug_log("tracking created tiles")
                 if trcdata["old_tile_id"] in tiles_to_recreate:
                     self.mworker.emit_to_main_client("tile-finished-loading", {"message": "tile-finished-loading",

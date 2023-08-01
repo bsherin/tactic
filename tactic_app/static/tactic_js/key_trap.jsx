@@ -1,50 +1,50 @@
 
 import React from "react";
+import {useEffect, useRef, memo} from "react";
 import PropTypes from 'prop-types';
 
-import {doBinding} from "./utilities_react.js";
 import Mousetrap from "mousetrap";
 
 export {KeyTrap}
 
-class KeyTrap extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.mousetrap = null;
-    }
+function KeyTrap(props) {
+    const mousetrap = useRef(null);
 
-    componentDidMount() {
-        this._initializeMousetrap()
-    }
+    useEffect(()=>{
+        _initializeMousetrap()
+        return (()=>{
+            if (mousetrap.current) {
+                mousetrap.current.reset();
+                mousetrap.current = null
+            }
+        })
+    }, []);
 
-    componentWillUnmount() {
-        if (this.mousetrap) {
-            this.mousetrap.reset();
-            this.mousetrap = null
+    useEffect(()=>{
+        if (!mousetrap.current) {
+            _initializeMousetrap()
         }
-    }
+    })
 
-    _initializeMousetrap() {
-        let self = this;
-        if (this.mousetrap) {
-            this.mousetrap.reset();
+    function _initializeMousetrap() {
+        if (mousetrap.current) {
+            mousetrap.current.reset();
         }
-        if (!this.props.target_ref && !this.props.global) {
-            this.mousetrap = null
+        if (!props.target_ref && !props.global) {
+            mousetrap.current = null
         }
         else {
 
-            if (this.props.global) {
-                this.mousetrap = new Mousetrap();
+            if (props.global) {
+                mousetrap.current = new Mousetrap();
             }
             else {
-                this.mousetrap = new Mousetrap(this.props.target_ref);
+                mousetrap.current = new Mousetrap(props.target_ref);
             }
 
-            for (let binding of this.props.bindings) {
-                this.mousetrap.bind(binding[0], (e)=> {
-                        if (this.props.active) {
+            for (let binding of props.bindings) {
+                mousetrap.current.bind(binding[0], (e)=> {
+                        if (props.active) {
                             binding[1](e)
                         }
                     }
@@ -53,17 +53,9 @@ class KeyTrap extends React.Component {
         }
     }
 
-    componentDidUpdate() {
-        if (!this.mousetrap) {
-            this._initializeMousetrap()
-        }
-    }
-
-    render() {
-        return (
-            <div/>
-        )
-    }
+    return (
+        <div/>
+    )
 }
 
 KeyTrap.propTypes = {
@@ -77,3 +69,5 @@ KeyTrap.defaultProps = {
     active: true,
     global: false
 };
+
+KeyTrap = memo(KeyTrap);

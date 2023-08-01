@@ -5,29 +5,29 @@ import PropTypes from 'prop-types';
 
 import { Button, ButtonGroup } from "@blueprintjs/core";
 
-import {postAjax, postAjaxPromise} from "./communication_react.js"
+import {postAjax, postAjaxPromise} from "./communication_react"
 
-import CodeMirror from 'codemirror/lib/codemirror.js';
-import 'codemirror/mode/python/python.js';
+import CodeMirror from 'codemirror/lib/codemirror';
+import 'codemirror/mode/python/python';
 import 'codemirror/lib/codemirror.css'
 
-import 'codemirror/addon/merge/merge.js'
+import 'codemirror/addon/merge/merge'
 import 'codemirror/addon/merge/merge.css'
-import 'codemirror/addon/hint/show-hint.js'
+import 'codemirror/addon/hint/show-hint'
 import 'codemirror/addon/hint/show-hint.css'
-import 'codemirror/addon/fold/foldcode.js'
-import 'codemirror/addon/fold/foldgutter.js'
-import 'codemirror/addon/fold/indent-fold.js'
+import 'codemirror/addon/fold/foldcode'
+import 'codemirror/addon/fold/foldgutter'
+import 'codemirror/addon/fold/indent-fold'
 import 'codemirror/addon/fold/foldgutter.css'
-import 'codemirror/addon/display/autorefresh.js'
+import 'codemirror/addon/display/autorefresh'
 
 
-import 'codemirror/addon/dialog/dialog.js'
+import 'codemirror/addon/dialog/dialog'
 import 'codemirror/addon/dialog/dialog.css'
 
-import 'codemirror/addon/edit/matchbrackets.js'
-import 'codemirror/addon/edit/closebrackets.js'
-import 'codemirror/addon/search/match-highlighter.js'
+import 'codemirror/addon/edit/matchbrackets'
+import 'codemirror/addon/edit/closebrackets'
+import 'codemirror/addon/search/match-highlighter'
 
 import 'codemirror/theme/material.css'
 import 'codemirror/theme/nord.css'
@@ -38,6 +38,8 @@ import 'codemirror/theme/neat.css'
 import 'codemirror/theme/solarized.css'
 import 'codemirror/theme/juejin.css'
 import {doFlash} from "./toaster";
+
+import {propsAreEqual} from "./utilities_react";
 
 export {ReactCodemirror}
 import './autocomplete'
@@ -101,7 +103,7 @@ function ReactCodemirror(props, passedRef) {
         if (!cmobject.current) {
             return
         }
-        if (props.dark_theme != saved_theme) {
+        if (props.dark_theme != saved_theme.current) {
             postAjax("get_preferred_codemirror_themes", {}, (data)=> {
                 preferred_themes.current = data;
                 cmobject.current.setOption("theme", _current_codemirror_theme());
@@ -407,7 +409,9 @@ function ReactCodemirror(props, passedRef) {
     )
 }
 
-ReactCodemirror = memo(forwardRef(ReactCodemirror));
+ReactCodemirror = memo(forwardRef(ReactCodemirror), (prevProps, newProps)=>{
+    propsAreEqual(prevProps, newProps, ["extraKeys"])
+});
 
 ReactCodemirror.propTypes = {
     am_selected: PropTypes.bool,
@@ -426,7 +430,7 @@ ReactCodemirror.propTypes = {
     first_line_number: PropTypes.number,
     extraKeys: PropTypes.object,
     setCMObject: PropTypes.func,
-    searchTerm: PropTypes.string,
+    search_term: PropTypes.string,
     update_search_state: PropTypes.func,
     alt_clear_selections: PropTypes.func,
     regex_search: PropTypes.bool,
@@ -449,7 +453,7 @@ ReactCodemirror.defaultProps = {
     show_fold_button: false,
     soft_wrap: false,
     code_container_height: "100%",
-    searchTerm: null,
+    search_term: null,
     update_search_state: null,
     alt_clear_selections: null,
     regex_search: false,

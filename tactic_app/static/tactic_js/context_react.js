@@ -1081,6 +1081,7 @@ function ContextApp(props) {
     onChange: _handleTabSelect
   }, all_tabs)), /*#__PURE__*/_react["default"].createElement(_TacticOmnibar.TacticOmnibar, {
     omniGetters: [omniGetter, _contextOmniItems],
+    page_id: window.context_id,
     showOmnibar: showOmnibar,
     closeOmnibar: _closeOmnibar,
     is_authenticated: window.is_authenticated,

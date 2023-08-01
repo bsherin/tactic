@@ -3,7 +3,7 @@ import "../tactic_css/tactic_console.scss";
 import "../tactic_css/tactic_main.scss";
 
 import React from "react";
-import {Fragment, useState, useEffect, useRef, memo} from "react";
+import {Fragment, useEffect, useRef, useReducer, memo} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
@@ -163,7 +163,22 @@ function notebook_props(data, registerDirtyMethod, finalCallback, registerOmniFu
     }
 }
 
-const save_attrs = ["console_items", "show_exports_pane", "console_width_fraction"];
+function mainReducer(mState, action) {
+    var newMstate;
+    if (action.type == "change_field") {
+        newMstate = {...mState};
+        newMstate[action.field] = action.new_value;
+    }
+    else if (action.type == "change_multiple_fields") {
+        newMstate = {...mState, ...action.newPartialState};
+    }
+    else {
+        console.log("Got Unknown action: " + action.type);
+        newMstate = {...mState};
+    }
+    return newMstate
+}
+
 const controllable_props = ["is_project", "resource_name", "usable_width", "usable_height"];
 
 function NotebookApp(props) {
@@ -174,33 +189,25 @@ function NotebookApp(props) {
     const updateExportsList = useRef(null);
     const height_adjustment = useRef(props.controlled ? MENU_BAR_HEIGHT : 0);
 
-    const [usable_height, set_usable_height] = useState(() => {
-        return getUsableDimensions(true).usable_height_no_bottom
-    });
-    const [usable_width, set_usable_width] = useState(() => {
-        return getUsableDimensions(true).usable_width - 170
-    });
-
     const [console_items, dispatch, console_items_ref] = useReducerAndRef(itemsReducer, []);
-    const [show_exports_pane, set_show_exports_pane] = useState(true);
-    const [console_width_fraction, set_console_width_fraction] = useState(.5);
-
-    // These will only be used if not controlled
-    const [sdark_theme, set_dark_theme] = useState(true);
-    const [sresource_name, set_sresource_name] = useState("");
-    const [showOmnibar, setShowOmnibar] = useState(false);
-    const [is_project, set_is_project] = useState(false);
+    const [mState, mDispatch] = useReducer(mainReducer, {
+        show_exports_pane: props.is_project ? props.interface_state["show_exports_pane"] : true,
+        console_width_fraction: props.is_project ? props.interface_state["console_width_fraction"] : .5,
+        console_is_zoomed: true,
+        console_is_shrunk: false,
+        dark_theme: props.initial_theme === "dark",
+        resource_name: props.resource_name,
+        showOmnibar: false,
+        is_project: props.is_project,
+        usable_height: getUsableDimensions(true).usable_height_no_bottom,
+        usable_width: getUsableDimensions(true).usable_width - 170
+    });
 
     const key_bindings = [[["ctrl+space"], _showOmnibar]];
 
     const pushCallback = useCallbackStack();
 
     useConstructor(()=>{
-        set_show_exports_pane(props.is_project ? props.interface_state["show_exports_pane"] : true);
-        set_console_width_fraction(props.is_project ? props.interface_state["console_width_fraction"] : .5);
-        set_dark_theme(props.initial_theme === "dark");
-        set_sresource_name(props.resource_name);
-        set_is_project(props.is_project);
         dispatch({
             type: "initialize",
             new_items: props.is_project ? props.interface_state["console_items"] : []
@@ -227,8 +234,8 @@ function NotebookApp(props) {
         props.stopSpinner();
 
         if (!props.controlled) {
-            document.title = sresource_name;
-            window.dark_theme = sdark_theme;
+            document.title = mState.resource_name;
+            window.dark_theme = mState.dark_theme;
             window.addEventListener("resize", _update_window_dimensions);
             _update_window_dimensions();
         }
@@ -239,33 +246,22 @@ function NotebookApp(props) {
         })
     }, []);
 
-    const cPropGetters = {
-            usable_width: usable_width,
-            usable_height: usable_height,
-            resource_name: sresource_name,
-            is_project: is_project
-    };
-
-    const stateSetters = {
-        show_exports_pane: set_show_exports_pane,
-    };
-
     function _cProp(pname) {
-        return props.controlled ? props[pname] : cPropGetters[pname]
+        return props.controlled ? props[pname] : mState[pname]
     }
 
-
-    function interface_state() {
-        return {console_items, show_exports_pane, console_width_fraction}
-    }
+    const save_state = {
+        console_items: console_items,
+        show_exports_pane: mState.show_exports_pane,
+        console_width_fraction: mState.console_width_fraction
+    };
 
     function _setMainStateValue(field_name, new_value, callback = null) {
-        // console.log(`field_name is ${field_name} new_value is ${String(new_value)}`);
-        if (!(field_name in stateSetters)) {
-            console.log(`trying to set field_name ${field_name} that don't have a setter for`);
-            return;
-        }
-        stateSetters[field_name](new_value);
+        mDispatch({
+            type: "change_field",
+            field: field_name,
+            new_value: new_value
+        });
         pushCallback(callback)
     }
 
@@ -279,16 +275,21 @@ function NotebookApp(props) {
             uheight = window.innerHeight - USUAL_TOOLBAR_HEIGHT;
             uwidth = window.innerWidth - 2 * MARGIN_SIZE;
         }
-        set_usable_height(uheight);
-        set_usable_width(uwidth)
+        mDispatch({
+            type: "change_multiple_fields",
+            newPartial_state: {
+                usable_height: uheight,
+                usable_width: uwidth
+            }
+        });
     }
 
     function _updateLastSave() {
-        last_save.current = interface_state()
+        last_save.current = save_state
     }
 
     function _dirty() {
-        let current_state = interface_state();
+        let current_state = save_state;
         for (let k in current_state) {
             if (current_state[k] != last_save.current[k]) {
                 return true
@@ -324,14 +325,14 @@ function NotebookApp(props) {
     }
 
     function _setTheme(dark_theme) {
-        set_dark_theme(dark_theme);
+        _setMainStateValue("dark_theme", dark_theme);
         pushCallback(() => {
             window.dark_theme = dark_theme
         })
     }
 
     function _handleConsoleFractionChange(left_width, right_width, new_fraction) {
-        set_console_width_fraction(new_fraction)
+        _setMainStateValue("console_width_fraction", new_fraction)
     }
 
     function _setProjectName(new_project_name, callback = null) {
@@ -344,8 +345,13 @@ function NotebookApp(props) {
                 pushCallback(callback)
             })
         } else {
-            set_sresource_name(new_project_name);
-            set_is_project(true);
+            mDispatch({
+                type: "change_multiple_fields",
+                newPartialState: {
+                    resource_name: new_project_name,
+                    is_project: true
+                }
+            });
             pushCallback(callback);
         }
     }
@@ -359,11 +365,11 @@ function NotebookApp(props) {
     }
 
     function _showOmnibar() {
-        setShowOmnibar(true)
+        _setMainStateValue("show_omnibar", true)
     }
 
     function _closeOmnibar() {
-        setShowOmnibar(false)
+        _setMainStateValue("show_omnibar", false)
     }
 
     function _omniFunction() {
@@ -378,13 +384,13 @@ function NotebookApp(props) {
         omniGetters.current[name] = the_function;
     }
 
-    let actual_dark_theme = props.controlled ? props.dark_theme : sdark_theme;
+    let actual_dark_theme = props.controlled ? props.dark_theme : mState.dark_theme;
     let my_props = {...props};
     if (!props.controlled) {
-        my_props.resource_name = sresource_name;
-        my_props.usable_height = usable_height;
-        my_props.usable_width = usable_width;
-        my_props.is_project = is_project
+        my_props.resource_name = mState.resource_name;
+        my_props.usable_height = mState.usable_height;
+        my_props.usable_width = mState.usable_width;
+        my_props.is_project = mState.is_project
     }
     let true_usable_width = my_props.usable_width;
     let console_available_height = get_zoomed_console_height() - MARGIN_ADJUSTMENT;
@@ -399,7 +405,9 @@ function NotebookApp(props) {
                          setProjectName={_setProjectName}
                          postAjaxFailure={props.postAjaxFailure}
                          console_items={console_items_ref.current}
-                         interface_state={interface_state()}
+                         tile_list={[]}
+                         mState={mState}
+                         setMainStateValue={_setMainStateValue}
                          updateLastSave={_updateLastSave}
                          changeCollection={null}
                          disabled_items={my_props.is_project ? [] : ["Save"]}
@@ -416,30 +424,27 @@ function NotebookApp(props) {
                           handleCreateViewer={props.handleCreateViewer}
                           controlled={props.controlled}
                           am_selected={props.am_selected}
-                          pushCallback={pushCallback}
                           console_items={console_items_ref}
                           dispatch={dispatch}
-                          console_is_shrunk={false}
-                          console_is_zoomed={true}
-                          show_exports_pane={show_exports_pane}
+                          mState={mState}
                           setMainStateValue={_setMainStateValue}
                           console_available_height={console_available_height - MARGIN_SIZE}
-                          console_available_width={true_usable_width * console_width_fraction - 16}
+                          console_available_width={true_usable_width * mState.console_width_fraction - 16}
                           zoomable={false}
                           shrinkable={false}
                           style={{marginTop: MARGIN_SIZE}}
         />
     );
     let exports_pane;
-    if (show_exports_pane) {
+    if (mState.show_exports_pane) {
         exports_pane = <ExportsViewer main_id={props.main_id}
                                       tsocket={props.tsocket}
                                       setUpdate={(ufunc) => {
                                           updateExportsList.current = ufunc
                                       }}
                                       available_height={console_available_height - MARGIN_SIZE}
-                                      console_is_shrunk={false}
-                                      console_is_zoomed={true}
+                                      console_is_shrunk={mState.console_is_shrunk}
+                                      console_is_zoomed={mState.console_is_zoomed}
                                       style={{marginTop: MARGIN_SIZE}}
         />
     } else {
@@ -477,7 +482,7 @@ function NotebookApp(props) {
                                  show_handle={true}
                                  available_height={console_available_height}
                                  available_width={true_usable_width}
-                                 initial_width_fraction={console_width_fraction}
+                                 initial_width_fraction={mState.console_width_fraction}
                                  controlled={true}
                                  dragIconSize={15}
                                  handleSplitUpdate={_handleConsoleFractionChange}
@@ -486,7 +491,8 @@ function NotebookApp(props) {
             {!window.in_context &&
                 <Fragment>
                     <TacticOmnibar omniGetters={[_omniFunction]}
-                                   showOmnibar={showOmnibar}
+                                   page_id={props.main_id}
+                                   showOmnibar={mState.showOmnibar}
                                    closeOmnibar={_closeOmnibar}
                     />
                     <KeyTrap global={true} bindings={key_bindings}/>

@@ -4,317 +4,248 @@ function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" =
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.SearchableConsole = void 0;
-var _utilities_react = require("./utilities_react");
-var _react = _interopRequireDefault(require("react"));
-var _propTypes = _interopRequireDefault(require("prop-types"));
+exports.SearchableConsole = SearchableConsole;
+var _react = _interopRequireWildcard(require("react"));
 var _core = require("@blueprintjs/core");
 var _search_form = require("./search_form");
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
 function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
 function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
 function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-var SearchableConsole = /*#__PURE__*/function (_React$PureComponent) {
-  _inherits(SearchableConsole, _React$PureComponent);
-  var _super = _createSuper(SearchableConsole);
-  function SearchableConsole(props, context) {
-    var _this;
-    _classCallCheck(this, SearchableConsole);
-    _this = _super.call(this, props, context);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
-    _this.state = {
-      search_string: null,
-      search_helper_text: null,
-      filter: false,
-      console_command_value: "",
-      livescroll: true
-    };
-    _this.past_commands = [];
-    _this.past_commands_index = null;
-    return _this;
-  }
-  _createClass(SearchableConsole, [{
-    key: "_prepareText",
-    value: function _prepareText() {
-      var tlist = this.props.log_content.split(/\r?\n/);
-      // let the_text = this.props.log_content.replace(/(?:\r\n|\r|\n)/g, '<br>');
-
-      var the_text = "";
-      if (this.state.search_string) {
-        if (this.state.filter) {
-          var new_tlist = [];
-          var _iterator = _createForOfIteratorHelper(tlist),
-            _step;
-          try {
-            for (_iterator.s(); !(_step = _iterator.n()).done;) {
-              var t = _step.value;
-              if (t.includes(this.state.search_string)) {
-                new_tlist.push(t);
-              }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+function SearchableConsole(props, inner_ref) {
+  var _useState = (0, _react.useState)(null),
+    _useState2 = _slicedToArray(_useState, 2),
+    search_string = _useState2[0],
+    set_search_string = _useState2[1];
+  var _useState3 = (0, _react.useState)(null),
+    _useState4 = _slicedToArray(_useState3, 2),
+    search_helper_text = _useState4[0],
+    set_search_helper_text = _useState4[1];
+  var _useState5 = (0, _react.useState)(false),
+    _useState6 = _slicedToArray(_useState5, 2),
+    filter = _useState6[0],
+    set_filter = _useState6[1];
+  var _useState7 = (0, _react.useState)(""),
+    _useState8 = _slicedToArray(_useState7, 2),
+    console_command_value = _useState8[0],
+    set_console_command_value = _useState8[1];
+  var _useState9 = (0, _react.useState)(true),
+    _useState10 = _slicedToArray(_useState9, 2),
+    livescroll = _useState10[0],
+    set_livescroll = _useState10[1];
+  var past_commands = (0, _react.useRef)([]);
+  var past_commands_index = (0, _react.useRef)(null);
+  (0, _react.useEffect)(function () {
+    if (livescroll && inner_ref && inner_ref.current) {
+      inner_ref.current.scrollTo(0, inner_ref.current.scrollHeight);
+    }
+  });
+  function _prepareText() {
+    var tlist = props.log_content.split(/\r?\n/);
+    var the_text = "";
+    if (search_string) {
+      if (filter) {
+        var new_tlist = [];
+        var _iterator = _createForOfIteratorHelper(tlist),
+          _step;
+        try {
+          for (_iterator.s(); !(_step = _iterator.n()).done;) {
+            var t = _step.value;
+            if (t.includes(search_string)) {
+              new_tlist.push(t);
             }
-          } catch (err) {
-            _iterator.e(err);
-          } finally {
-            _iterator.f();
-          }
-          tlist = new_tlist;
-        }
-        var _iterator2 = _createForOfIteratorHelper(tlist),
-          _step2;
-        try {
-          for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-            var _t = _step2.value;
-            the_text = the_text + _t + "<br>";
           }
         } catch (err) {
-          _iterator2.e(err);
+          _iterator.e(err);
         } finally {
-          _iterator2.f();
+          _iterator.f();
         }
-        var regex = new RegExp(this.state.search_string, "gi");
-        the_text = String(the_text).replace(regex, function (matched) {
-          return "<mark>" + matched + "</mark>";
-        });
-      } else {
-        var _iterator3 = _createForOfIteratorHelper(tlist),
-          _step3;
-        try {
-          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-            var _t2 = _step3.value;
-            the_text = the_text + _t2 + "<br>";
-          }
-        } catch (err) {
-          _iterator3.e(err);
-        } finally {
-          _iterator3.f();
-        }
+        tlist = new_tlist;
       }
-      return "<div style=\"white-space:pre\">".concat(the_text, "</div>");
-    }
-  }, {
-    key: "_handleSearchFieldChange",
-    value: function _handleSearchFieldChange(event) {
-      this.setState({
-        search_helper_text: null,
-        search_string: event.target.value
+      var _iterator2 = _createForOfIteratorHelper(tlist),
+        _step2;
+      try {
+        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+          var _t = _step2.value;
+          the_text = the_text + _t + "<br>";
+        }
+      } catch (err) {
+        _iterator2.e(err);
+      } finally {
+        _iterator2.f();
+      }
+      var regex = new RegExp(search_string, "gi");
+      the_text = String(the_text).replace(regex, function (matched) {
+        return "<mark>" + matched + "</mark>";
       });
-    }
-  }, {
-    key: "_handleFilter",
-    value: function _handleFilter() {
-      this.setState({
-        filter: true
-      });
-    }
-  }, {
-    key: "_handleUnFilter",
-    value: function _handleUnFilter() {
-      this.setState({
-        search_helper_text: null,
-        search_string: null,
-        filter: false
-      });
-    }
-  }, {
-    key: "_searchNext",
-    value: function _searchNext() {}
-  }, {
-    key: "_structureText",
-    value: function _structureText() {}
-  }, {
-    key: "_searchPrevious",
-    value: function _searchPrevious() {}
-  }, {
-    key: "_setMaxConsoleLines",
-    value: function _setMaxConsoleLines(event) {
-      this.props.setMaxConsoleLines(parseInt(event.target.value));
-    }
-  }, {
-    key: "_commandSubmit",
-    value: function _commandSubmit(e) {
-      var _this2 = this;
-      e.preventDefault();
-      this.past_commands.push(this.state.console_command_value);
-      this.past_commands_index = null;
-      this.props.commandExec(this.state.console_command_value, function () {
-        _this2.setState({
-          console_command_value: ""
-        });
-      });
-    }
-  }, {
-    key: "componentDidUpdate",
-    value: function componentDidUpdate(prevProps, prevState, snapshot) {
-      if (this.state.livescroll && this.props.inner_ref && this.props.inner_ref.current) {
-        this.props.inner_ref.current.scrollTo(0, this.props.inner_ref.current.scrollHeight);
+    } else {
+      var _iterator3 = _createForOfIteratorHelper(tlist),
+        _step3;
+      try {
+        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+          var _t2 = _step3.value;
+          the_text = the_text + _t2 + "<br>";
+        }
+      } catch (err) {
+        _iterator3.e(err);
+      } finally {
+        _iterator3.f();
       }
     }
-  }, {
-    key: "_setLiveScroll",
-    value: function _setLiveScroll(event) {
-      this.setState({
-        livescroll: event.target.checked
-      });
-    }
-  }, {
-    key: "_onInputChange",
-    value: function _onInputChange(event) {
-      this.setState({
-        console_command_value: event.target.value
-      });
-    }
-  }, {
-    key: "_handleKeyDown",
-    value: function _handleKeyDown(event) {
-      var charCode = event.keyCode;
-      var new_val;
-      if (charCode == 38) {
-        // down arraw
-        if (this.past_commands.length == 0) {
-          return;
-        }
-        if (this.past_commands_index == null) {
-          this.past_commands_index = this.past_commands.length - 1;
-        }
-        new_val = this.past_commands[this.past_commands_index];
-        if (this.past_commands_index > 0) {
-          this.past_commands_index -= 1;
-        }
-      } else if (charCode == 40) {
-        // up arro
-        if (this.past_commands.length == 0 || this.past_commands_index == null || this.past_commands_index == this.past_commands.length - 1) {
-          return;
-        }
-        this.past_commands_index += 1;
-        new_val = this.past_commands[this.past_commands_index];
-      } else {
+    return "<div style=\"white-space:pre\">".concat(the_text, "</div>");
+  }
+  function _handleSearchFieldChange(event) {
+    set_search_helper_text(null);
+    set_search_string(event.target.value);
+  }
+  function _handleFilter() {
+    set_filter(true);
+  }
+  function _handleUnFilter() {
+    set_search_helper_text(null);
+    set_search_string(null);
+    set_filter(false);
+  }
+  function _searchNext() {}
+  function _structureText() {}
+  function _searchPrevious() {}
+  function _setMaxConsoleLines(event) {
+    props.setMaxConsoleLines(parseInt(event.target.value));
+  }
+  function _commandSubmit(e) {
+    e.preventDefault();
+    past_commands.current.push(console_command_value);
+    past_commands_index.current = null;
+    props.commandExec(console_command_value, function () {
+      set_console_command_value("");
+    });
+  }
+  function _setLiveScroll(event) {
+    set_livescroll(event.target.checked);
+  }
+  function _onInputChange(event) {
+    set_console_command_value(event.target.value);
+  }
+  function _handleKeyDown(event) {
+    var charCode = event.keyCode;
+    var new_val;
+    if (charCode == 38) {
+      // down arraw
+      if (past_commands.current.length == 0) {
         return;
       }
-      this.setState({
-        console_command_value: new_val
-      });
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var _this3 = this;
-      var the_text = {
-        __html: this._prepareText()
-      };
-      var the_style = _objectSpread({
-        whiteSpace: "nowrap",
-        fontSize: 12,
-        fontFamily: "monospace"
-      }, this.props.outer_style);
-      if (this.props.commandExec) {
-        the_style.height = the_style.height - 40;
+      if (past_commands_index.current == null) {
+        past_commands_index.current = past_commands.current.length - 1;
       }
-      var bottom_info = "575 lines";
-      var self = this;
-      return /*#__PURE__*/_react["default"].createElement("div", {
-        className: "searchable-console"
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: "d-flex flex-row",
-        style: {
-          justifyContent: "space-between"
-        }
-      }, /*#__PURE__*/_react["default"].createElement(_core.ControlGroup, {
-        vertical: false,
-        style: {
-          marginLeft: 15,
-          marginTop: 10
-        }
-      }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
-        onClick: this.props.clearConsole,
-        style: {
-          height: 30
-        },
-        minimal: true,
-        small: true,
-        icon: "trash"
-      }), /*#__PURE__*/_react["default"].createElement(_core.HTMLSelect, {
-        onChange: this._setMaxConsoleLines,
-        large: false,
-        minimal: true,
-        value: this.props.max_console_lines,
-        options: [100, 250, 500, 1000, 2000]
-      }), /*#__PURE__*/_react["default"].createElement(_core.Switch, {
-        label: "livescroll",
-        large: false,
-        checked: this.state.livescroll,
-        onChange: this._setLiveScroll,
-        style: {
-          marginBottom: 0,
-          marginTop: 5,
-          alignSelf: "center",
-          height: 30
-        }
-      })), /*#__PURE__*/_react["default"].createElement(_search_form.FilterSearchForm, {
-        search_string: this.state.search_string,
-        handleSearchFieldChange: this._handleSearchFieldChange,
-        handleFilter: this._handleFilter,
-        handleUnFilter: this._handleUnFilter,
-        searchNext: null,
-        searchPrevious: null,
-        search_helper_text: this.state.search_helper_text,
-        margin_right: 25
-      })), /*#__PURE__*/_react["default"].createElement("div", {
-        ref: this.props.inner_ref,
-        style: the_style,
-        dangerouslySetInnerHTML: the_text
-      }), this.props.commandExec && /*#__PURE__*/_react["default"].createElement("form", {
-        onSubmit: this._commandSubmit,
-        style: {
-          position: "relative",
-          bottom: 8,
-          margin: 10
-        }
-      }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
-        type: "text",
-        className: "bp5-monospace-text",
-        onChange: this._onInputChange,
-        small: true,
-        large: false,
-        leftIcon: "chevron-right",
-        fill: true,
-        onKeyDown: function onKeyDown(e) {
-          return _this3._handleKeyDown(e);
-        },
-        value: this.state.console_command_value
-      })));
+      new_val = past_commands.current[past_commands_index.current];
+      if (past_commands_index.current > 0) {
+        past_commands_index.current -= 1;
+      }
+    } else if (charCode == 40) {
+      // up arro
+      if (past_commands.current.length == 0 || past_commands_index.current == null || past_commands_index.current == past_commands.current.length - 1) {
+        return;
+      }
+      past_commands_index.current += 1;
+      new_val = past_commands.current[past_commands_index.current];
+    } else {
+      return;
     }
-  }]);
-  return SearchableConsole;
-}(_react["default"].PureComponent);
-exports.SearchableConsole = SearchableConsole;
-SearchableConsole.propTypes = {
-  log_content: _propTypes["default"].string,
-  outer_style: _propTypes["default"].object,
-  inner_ref: _propTypes["default"].object,
-  clearConsole: _propTypes["default"].func,
-  setMaxConsoleLines: _propTypes["default"].func,
-  commandExec: _propTypes["default"].func
-};
-SearchableConsole.defaultProps = {
-  log_content: "",
-  outer_style: {},
-  inner_ref: null,
-  setMaxConsoleLines: null,
-  clearConsole: null,
-  commandExec: null
-};
+    set_console_command_value(new_val);
+  }
+  var the_text = {
+    __html: _prepareText()
+  };
+  var the_style = _objectSpread({
+    whiteSpace: "nowrap",
+    fontSize: 12,
+    fontFamily: "monospace"
+  }, props.outer_style);
+  if (props.commandExec) {
+    the_style.height = the_style.height - 40;
+  }
+  var bottom_info = "575 lines";
+  var self = this;
+  return /*#__PURE__*/_react["default"].createElement("div", {
+    className: "searchable-console"
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    className: "d-flex flex-row",
+    style: {
+      justifyContent: "space-between"
+    }
+  }, /*#__PURE__*/_react["default"].createElement(_core.ControlGroup, {
+    vertical: false,
+    style: {
+      marginLeft: 15,
+      marginTop: 10
+    }
+  }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
+    onClick: props.clearConsole,
+    style: {
+      height: 30
+    },
+    minimal: true,
+    small: true,
+    icon: "trash"
+  }), /*#__PURE__*/_react["default"].createElement(_core.HTMLSelect, {
+    onChange: _setMaxConsoleLines,
+    large: false,
+    minimal: true,
+    value: props.max_console_lines,
+    options: [100, 250, 500, 1000, 2000]
+  }), /*#__PURE__*/_react["default"].createElement(_core.Switch, {
+    label: "livescroll",
+    large: false,
+    checked: livescroll,
+    onChange: _setLiveScroll,
+    style: {
+      marginBottom: 0,
+      marginTop: 5,
+      alignSelf: "center",
+      height: 30
+    }
+  })), /*#__PURE__*/_react["default"].createElement(_search_form.FilterSearchForm, {
+    search_string: search_string,
+    handleSearchFieldChange: _handleSearchFieldChange,
+    handleFilter: _handleFilter,
+    handleUnFilter: _handleUnFilter,
+    searchNext: null,
+    searchPrevious: null,
+    search_helper_text: search_helper_text,
+    margin_right: 25
+  })), /*#__PURE__*/_react["default"].createElement("div", {
+    ref: inner_ref,
+    style: the_style,
+    dangerouslySetInnerHTML: the_text
+  }), props.commandExec && /*#__PURE__*/_react["default"].createElement("form", {
+    onSubmit: _commandSubmit,
+    style: {
+      position: "relative",
+      bottom: 8,
+      margin: 10
+    }
+  }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
+    type: "text",
+    className: "bp5-monospace-text",
+    onChange: _onInputChange,
+    small: true,
+    large: false,
+    leftIcon: "chevron-right",
+    fill: true,
+    onKeyDown: function onKeyDown(e) {
+      return _handleKeyDown(e);
+    },
+    value: console_command_value
+  })));
+}
+exports.SearchableConsole = SearchableConsole = /*#__PURE__*/(0, _react.memo)( /*#__PURE__*/(0, _react.forwardRef)(SearchableConsole));

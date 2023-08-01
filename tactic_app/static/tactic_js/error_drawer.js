@@ -9,9 +9,9 @@ exports.withErrorDrawer = withErrorDrawer;
 var _react = _interopRequireWildcard(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
-var _toaster = require("./toaster.js");
-var _communication_react = require("./communication_react.js");
+var _communication_react = require("./communication_react");
 var _blueprint_react_widgets = require("./blueprint_react_widgets");
+var _utilities_react = require("./utilities_react");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -39,10 +39,12 @@ function withErrorDrawer(WrappedComponent) {
       _useState2 = _slicedToArray(_useState, 2),
       show_drawer = _useState2[0],
       set_show_drawer = _useState2[1];
-    var _useState3 = (0, _react.useState)({}),
-      _useState4 = _slicedToArray(_useState3, 2),
-      contents = _useState4[0],
-      set_contents = _useState4[1];
+    var _useStateAndRef = (0, _utilities_react.useStateAndRef)({}),
+      _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
+      contents = _useStateAndRef2[0],
+      set_contents = _useStateAndRef2[1],
+      contents_ref = _useStateAndRef2[2]; // the ref is necessary.
+
     var goToLineNumber = (0, _react.useRef)(null);
     var ucounter = (0, _react.useRef)(0);
     var local_id = (0, _react.useRef)(props.main_id ? props.main_id : props.library_id);
@@ -74,14 +76,14 @@ function withErrorDrawer(WrappedComponent) {
       var open = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
       if (data == null || !("main_id" in data) || data.main_id == local_id.current) {
         ucounter.current = ucounter.current + 1;
-        var newcontents = _objectSpread({}, contents);
+        var newcontents = _objectSpread({}, contents_ref.current);
         newcontents[String(ucounter.current)] = data;
         set_contents(newcontents);
         set_show_drawer(open);
       }
     }
     function _closeEntry(ukey) {
-      var newcontents = _objectSpread({}, contents);
+      var newcontents = _objectSpread({}, contents_ref.current);
       delete newcontents[ukey];
       set_contents(newcontents);
       set_show_drawer(false);
@@ -117,7 +119,7 @@ function withErrorDrawer(WrappedComponent) {
       errorDrawerFuncs: errorDrawerFuncs
     })), /*#__PURE__*/_react["default"].createElement(ErrorDrawer, {
       show_drawer: show_drawer,
-      contents: contents,
+      contents: contents_ref,
       position: lposition,
       error_drawer_size: error_drawer_size,
       local_id: local_id.current,
@@ -217,12 +219,12 @@ ErrorItem.defaultProps = {
   tile_type: null
 };
 function ErrorDrawer(props) {
-  var sorted_keys = _toConsumableArray(Object.keys(props.contents));
+  var sorted_keys = _toConsumableArray(Object.keys(props.contents.current));
   sorted_keys.sort(function (a, b) {
     return parseInt(b) - parseInt(a);
   });
   var items = sorted_keys.map(function (ukey, index) {
-    var entry = props.contents[ukey];
+    var entry = props.contents.current[ukey];
     var content_dict = {
       __html: entry.content
     };
@@ -235,6 +237,7 @@ function ErrorDrawer(props) {
       title: entry.title,
       content: entry.content,
       has_link: has_link,
+      key: ukey,
       local_id: props.local_id,
       handleCloseItem: props.handleCloseItem,
       goToLineNumberFunc: props.goToLineNumberFunc,
@@ -265,10 +268,10 @@ function ErrorDrawer(props) {
   }, items)));
 }
 ErrorDrawer = /*#__PURE__*/(0, _react.memo)(ErrorDrawer);
-_toaster.Status.propTypes = {
+ErrorDrawer.propTypes = {
   show_drawer: _propTypes["default"].bool,
   dark_theme: _propTypes["default"].bool,
-  contents: _propTypes["default"].array,
+  contents: _propTypes["default"].object,
   title: _propTypes["default"].string,
   onClose: _propTypes["default"].func,
   handleCloseItem: _propTypes["default"].func,
@@ -277,7 +280,7 @@ _toaster.Status.propTypes = {
   goToLineNumberFunc: _propTypes["default"].func,
   size: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number])
 };
-_toaster.Status.defaultProps = {
+ErrorDrawer.defaultProps = {
   show_drawer: false,
   contents: [],
   position: "right",

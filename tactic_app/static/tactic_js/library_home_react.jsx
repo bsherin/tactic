@@ -202,6 +202,7 @@ function LibraryHomeApp(props) {
             { !window.in_context &&
                 <Fragment>
                     <TacticOmnibar omniGetters={[_omniFunction]}
+                                   page_id={props.library_id}
                                    showOmnibar={showOmnibar}
                                    closeOmnibar={_closeOmnibar}
                     />

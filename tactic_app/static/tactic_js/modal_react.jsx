@@ -579,7 +579,6 @@ function SelectResourceDialog(props) {
     }, []);
 
     function _handleTypeChange(val) {
-        console.log("entering _handleTypeChange");
         let get_url = `get_${val}_names`;
         let dict_hash = `${val}_names`;
         console.log("about to postWithCallback");

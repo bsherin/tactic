@@ -2,31 +2,25 @@
 
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 require("../tactic_css/tactic.scss");
-var _react = _interopRequireDefault(require("react"));
+var _react = _interopRequireWildcard(require("react"));
 var ReactDOM = _interopRequireWildcard(require("react-dom"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
-var _merge_viewer_app = require("./merge_viewer_app.js");
-var _toaster = require("./toaster.js");
-var _communication_react = require("./communication_react.js");
-var _error_drawer = require("./error_drawer.js");
-var _utilities_react = require("./utilities_react.js");
-var _blueprint_navbar = require("./blueprint_navbar.js");
-var _tactic_socket = require("./tactic_socket.js");
+var _merge_viewer_app = require("./merge_viewer_app");
+var _toaster = require("./toaster");
+var _communication_react = require("./communication_react");
+var _error_drawer = require("./error_drawer");
+var _utilities_react = require("./utilities_react");
+var _blueprint_navbar = require("./blueprint_navbar");
+var _tactic_socket = require("./tactic_socket");
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
-function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 function tile_differ_main() {
   function gotProps(the_props) {
@@ -63,138 +57,119 @@ function tile_differ_props(data, registerDirtyMethod, finalCallback) {
     registerDirtyMethod: registerDirtyMethod
   });
 }
-var TileDifferApp = /*#__PURE__*/function (_React$Component) {
-  _inherits(TileDifferApp, _React$Component);
-  var _super = _createSuper(TileDifferApp);
-  function TileDifferApp(props) {
-    var _this;
-    _classCallCheck(this, TileDifferApp);
-    _this = _super.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
-    var self = _assertThisInitialized(_this);
-    _this.state = {
-      "edit_content": props.edit_content,
-      "right_content": "",
-      "tile_popup_val": props.second_resource_name == "none" ? props.resource_name : props.second_resource_name,
-      "tile_list": props.tile_list
-    };
-    _this.handleEditChange = _this.handleEditChange.bind(_assertThisInitialized(_this));
-    _this.handleSelectChange = _this.handleSelectChange.bind(_assertThisInitialized(_this));
-    _this.saveFromLeft = _this.saveFromLeft.bind(_assertThisInitialized(_this));
-    _this.savedContent = props.edit_content;
-    if (!props.controlled) {
-      _this.state.dark_theme = props.initial_theme === "dark";
-      _this.state.resource_name = props.resource_name;
-      window.addEventListener("beforeunload", function (e) {
-        if (self._dirty()) {
-          e.preventDefault();
-          e.returnValue = '';
-        }
-      });
-    }
-    _this.initSocket();
-    return _this;
-  }
-  _createClass(TileDifferApp, [{
-    key: "initSocket",
-    value: function initSocket() {
-      this.props.tsocket.attachListener("window-open", function (data) {
-        return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
-      });
-      this.props.tsocket.attachListener('close-user-windows', function (data) {
-        if (!(data["originator"] == window.library_id)) {
-          window.close();
-        }
-      });
-      this.props.tsocket.attachListener('doflash', _toaster.doFlash);
-      this.props.tsocket.attachListener('doflashUser', _toaster.doFlash);
-    }
-  }, {
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      if (!this.props.controlled) {
-        window.dark_theme = this.state.dark_theme;
+function TileDifferApp(props) {
+  var _useState = (0, _react.useState)(props.edit_content),
+    _useState2 = _slicedToArray(_useState, 2),
+    edit_content = _useState2[0],
+    set_edit_content = _useState2[1];
+  var _useState3 = (0, _react.useState)(""),
+    _useState4 = _slicedToArray(_useState3, 2),
+    right_content = _useState4[0],
+    set_right_content = _useState4[1];
+  var _useState5 = (0, _react.useState)(props.second_resource_name == "none" ? props.resource_name : props.second_resource_name),
+    _useState6 = _slicedToArray(_useState5, 2),
+    tile_popup_val = _useState6[0],
+    set_tile_popup_val = _useState6[1];
+  var _useState7 = (0, _react.useState)(props.tile_list),
+    _useState8 = _slicedToArray(_useState7, 2),
+    tile_list = _useState8[0],
+    set_tile_list = _useState8[1];
+  var _useState9 = (0, _react.useState)(props.initial_theme === "dark"),
+    _useState10 = _slicedToArray(_useState9, 2),
+    dark_theme = _useState10[0],
+    set_dark_theme = _useState10[1];
+  var _useState11 = (0, _react.useState)(props.resource_name),
+    _useState12 = _slicedToArray(_useState11, 2),
+    resource_name = _useState12[0],
+    set_resource_name = _useState12[1];
+  var savedContent = (0, _react.useRef)(props.edit_content);
+  var pushCallback = (0, _utilities_react.useCallbackStack)();
+  (0, _react.useEffect)(function () {
+    window.addEventListener("beforeunload", function (e) {
+      if (_dirty()) {
+        e.preventDefault();
+        e.returnValue = '';
       }
+    });
+    initSocket();
+    if (!props.controlled) {
+      window.dark_theme = dark_theme;
     }
-  }, {
-    key: "_setTheme",
-    value: function _setTheme(dark_theme) {
-      var _this2 = this;
-      this.setState({
-        dark_theme: dark_theme
-      }, function () {
-        if (!window.in_context) {
-          window.dark_theme = _this2.state.dark_theme;
-        }
-      });
-    }
-  }, {
-    key: "handleSelectChange",
-    value: function handleSelectChange(new_value) {
-      this.state.tile_popup_val = new_value;
-      var self = this;
-      (0, _communication_react.postAjaxPromise)("get_module_code/" + new_value, {}).then(function (data) {
-        self.setState({
-          "right_content": data.the_content
-        });
-      })["catch"](_toaster.doFlash);
-    }
-  }, {
-    key: "handleEditChange",
-    value: function handleEditChange(new_code) {
-      this.setState({
-        "edit_content": new_code
-      });
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme;
-      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, !this.props.controlled, " ", /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
-        is_authenticated: window.is_authenticated,
-        dark_theme: dark_theme,
-        setTheme: this._setTheme,
-        selected: null,
-        show_api_links: true,
-        page_id: this.props.resource_viewer_id,
-        user_name: window.username
-      }), /*#__PURE__*/_react["default"].createElement(_merge_viewer_app.MergeViewerApp, _extends({}, this.props.statusFuncs, {
-        setTheme: this.props.controlled ? null : this._setTheme,
-        dark_theme: dark_theme,
-        resource_viewer_id: this.props.resource_viewer_id,
-        resource_name: this.props.resource_name,
-        option_list: this.state.tile_list,
-        select_val: this.state.tile_popup_val,
-        edit_content: this.state.edit_content,
-        right_content: this.state.right_content,
-        handleSelectChange: this.handleSelectChange,
-        handleEditChange: this.handleEditChange,
-        saveHandler: this.saveFromLeft
-      })));
-    }
-  }, {
-    key: "saveFromLeft",
-    value: function saveFromLeft() {
-      var data_dict = {
-        "module_name": this.props.resource_name,
-        "module_code": this.state.edit_content
-      };
-      (0, _communication_react.postAjaxPromise)("update_from_left", data_dict).then(_toaster.doFlash)["catch"](_toaster.doFlash);
-    }
-  }, {
-    key: "dirty",
-    value: function dirty() {
-      return this.state.edit_content != this.savedContent;
-    }
-  }]);
-  return TileDifferApp;
-}(_react["default"].Component);
+    return function () {
+      tsocket.disconnect();
+    };
+  }, []);
+  function initSocket() {
+    props.tsocket.attachListener("window-open", function (data) {
+      return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
+    });
+    props.tsocket.attachListener('close-user-windows', function (data) {
+      if (!(data["originator"] == window.library_id)) {
+        window.close();
+      }
+    });
+    props.tsocket.attachListener('doflash', _toaster.doFlash);
+    props.tsocket.attachListener('doflashUser', _toaster.doFlash);
+  }
+  function _setTheme(dark_theme) {
+    set_dark_theme(dark_theme);
+    pushCallback(function () {
+      if (!window.in_context) {
+        window.dark_theme = dark_theme;
+      }
+    });
+  }
+  function handleSelectChange(new_value) {
+    set_tile_popup_val(new_value);
+    var self = this;
+    (0, _communication_react.postAjaxPromise)("get_module_code/" + new_value, {}).then(function (data) {
+      set_right_content(data.the_content);
+    })["catch"](_toaster.doFlash);
+  }
+  function handleEditChange(new_code) {
+    set_edit_content(new_code);
+  }
+  function saveFromLeft() {
+    var data_dict = {
+      "module_name": props.resource_name,
+      "module_code": edit_content
+    };
+    (0, _communication_react.postAjaxPromise)("update_from_left", data_dict).then(_toaster.doFlash)["catch"](_toaster.doFlash);
+  }
+  function dirty() {
+    return edit_content != savedContent.current;
+  }
+  var actual_dark_theme = props.controlled ? props.dark_theme : dark_theme;
+  return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, !props.controlled, " ", /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+    is_authenticated: window.is_authenticated,
+    dark_theme: actual_dark_theme,
+    setTheme: _setTheme,
+    selected: null,
+    show_api_links: true,
+    page_id: props.resource_viewer_id,
+    user_name: window.username
+  }), /*#__PURE__*/_react["default"].createElement(_merge_viewer_app.MergeViewerApp, _extends({}, props.statusFuncs, {
+    page_id: props.resource_viewer_id,
+    setTheme: props.controlled ? null : _setTheme,
+    dark_theme: actual_dark_theme,
+    resource_viewer_id: props.resource_viewer_id,
+    resource_name: props.resource_name,
+    option_list: tile_list,
+    select_val: tile_popup_val,
+    edit_content: edit_content,
+    right_content: right_content,
+    handleSelectChange: handleSelectChange,
+    handleEditChange: handleEditChange,
+    saveHandler: saveFromLeft
+  })));
+}
 TileDifferApp.propTypes = {
   resource_name: _propTypes["default"].string,
   tile_list: _propTypes["default"].array,
   edit_content: _propTypes["default"].string,
   second_resource_name: _propTypes["default"].string
 };
+TileDifferApp = /*#__PURE__*/(0, _react.memo)(TileDifferApp);
 if (!window.in_context) {
   tile_differ_main();
 }

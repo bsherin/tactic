@@ -1,25 +1,25 @@
 
 
 import PropTypes from 'prop-types';
+import { useEffect, useRef, memo } from "react";
 import React from "react";
 
-// import "../js/diff_match_patch";
-import CodeMirror from 'codemirror/lib/codemirror.js'
-import 'codemirror/mode/python/python.js'
+import CodeMirror from 'codemirror/lib/codemirror'
+import 'codemirror/mode/python/python'
 
 import 'codemirror/lib/codemirror.css'
 
-import 'codemirror/addon/merge/merge.js'
+import 'codemirror/addon/merge/merge'
 import 'codemirror/addon/merge/merge.css'
-import 'codemirror/addon/hint/show-hint.js'
+import 'codemirror/addon/hint/show-hint'
 import 'codemirror/addon/hint/show-hint.css'
 
-import 'codemirror/addon/dialog/dialog.js'
+import 'codemirror/addon/dialog/dialog'
 import 'codemirror/addon/dialog/dialog.css'
 
-import 'codemirror/addon/edit/matchbrackets.js'
-import 'codemirror/addon/edit/closebrackets.js'
-import 'codemirror/addon/search/match-highlighter.js'
+import 'codemirror/addon/edit/matchbrackets'
+import 'codemirror/addon/edit/closebrackets'
+import 'codemirror/addon/search/match-highlighter'
 
 import 'codemirror/theme/material.css'
 import 'codemirror/theme/nord.css'
@@ -34,32 +34,60 @@ import {postAjax} from "./communication_react";
 
 export {ReactCodemirrorMergeView}
 
-class ReactCodemirrorMergeView extends React.Component {
+function ReactCodemirrorMergeView(props) {
 
-    constructor(props) {
-        super(props);
-        this.code_container_ref = React.createRef();
-        this.handleChange = this.handleChange.bind(this);
-        this._current_codemirror_theme = this._current_codemirror_theme.bind(this);
-        this.mousetrap = new Mousetrap();
-        this.saved_theme = null;
+    const code_container_ref = useRef(null);
+    const mousetrap = useRef(new Mousetrap());
+    const saved_theme = useRef(null);
+    const preferred_themes = useRef(null);
+    const cmobject = useRef(null);
+
+    useEffect(()=>{
+        postAjax("get_preferred_codemirror_themes", {}, (data)=> {
+            preferred_themes.current = data;
+            cmobject.current = createMergeArea(code_container_ref.current);
+            resizeHeights(props.max_height);
+            refreshAreas();
+            create_keymap();
+            saved_theme.current = props.dark_theme
+        })
+    }, []);
+
+    useEffect(()=>{
+        if (!cmobject.current) {
+            return
+        }
+
+        if (props.dark_theme != saved_theme.current) {
+            postAjax("get_preferred_codemirror_themes", {}, (data) => {
+                preferred_themes.current = data;
+                cmobject.current.editor().setOption("theme", _current_codemirror_theme());
+                cmobject.current.rightOriginal().setOption("theme", _current_codemirror_theme());
+                saved_theme.current = props.dark_theme
+            })
+        }
+        if (cmobject.current.editor().getValue() != props.editor_content) {
+            cmobject.current.editor().setValue(props.editor_content)
+        }
+        cmobject.current.rightOriginal().setValue(props.right_content);
+        resizeHeights(props.max_height);
+    });
+
+    function _current_codemirror_theme() {
+        return props.dark_theme ? preferred_themes.current.preferred_dark_theme :
+            preferred_themes.current.preferred_light_theme;
     }
 
-    _current_codemirror_theme() {
-        return this.props.dark_theme ? this.preferred_themes.preferred_dark_theme :
-                this.preferred_themes.preferred_light_theme;
-    }
-
-    createMergeArea(codearea) {
+    function createMergeArea(codearea) {
         let cmobject = CodeMirror.MergeView(codearea, {
-            value: this.props.editor_content,
+            value: props.editor_content,
             lineNumbers: true,
             matchBrackets: true,
             highlightSelectionMatches: true,
             autoCloseBrackets: true,
             indentUnit: 4,
-            theme: this._current_codemirror_theme(),
-            origRight: this.props.right_content
+            theme: _current_codemirror_theme(),
+            origRight: props.right_content
         });
 
         cmobject.editor().setOption("extraKeys", {
@@ -70,141 +98,104 @@ class ReactCodemirrorMergeView extends React.Component {
             "Ctrl-Space": "autocomplete"
         });
 
-        cmobject.editor().on("change", this.handleChange);
+        cmobject.editor().on("change", handleChange);
         return cmobject
     }
 
-    mergeViewHeight() {
+    function mergeViewHeight() {
         function editorHeight(editor) {
             return editor ? editor.getScrollInfo().height : 0;
         }
-        return Math.max(editorHeight(this.cmobject.editor()), editorHeight(this.cmobject.rightOriginal()));
+        return Math.max(editorHeight(cmobject.current.editor()), editorHeight(cmobject.current.rightOriginal()));
     }
 
-    resizeHeights(max_height) {
-        var height = Math.min(this.mergeViewHeight(), max_height);
-        this.cmobject.editor().setSize(null, height);
-        if (this.cmobject.rightOriginal()) {
-            this.cmobject.rightOriginal().setSize(null, height);
+    function resizeHeights(max_height) {
+        var height = Math.min(mergeViewHeight(), max_height);
+        cmobject.current.editor().setSize(null, height);
+        if (cmobject.current.rightOriginal()) {
+            cmobject.current.rightOriginal().setSize(null, height);
         }
-        this.cmobject.wrap.style.height = height + "px";
+        cmobject.current.wrap.style.height = height + "px";
     }
 
-    componentDidUpdate() {
-        if (!this.cmobject) {
-            return
-        }
-        if (this.props.dark_theme != this.saved_theme) {
-            let self = this;
-            postAjax("get_preferred_codemirror_themes", {}, (data) => {
-                self.preferred_themes = data;
-                self.cmobject.editor().setOption("theme", self._current_codemirror_theme());
-                self.cmobject.rightOriginal().setOption("theme", self._current_codemirror_theme());
-                self.saved_theme = this.props.dark_theme
-            })
-        }
-        if (this.cmobject.editor().getValue() != this.props.editor_content) {
-            this.cmobject.editor().setValue(this.props.editor_content)
-        }
-        this.cmobject.rightOriginal().setValue(this.props.right_content);
-        this.resizeHeights(this.props.max_height);
+    function handleChange(cm, changeObject) {
+        props.handleEditChange(cm.getValue());
+        resizeHeights(props.max_height);
     }
 
-    componentDidMount() {
-        let self = this;
-        postAjax("get_preferred_codemirror_themes", {}, (data)=> {
-            self.preferred_themes = data;
-            self.cmobject = this.createMergeArea(this.code_container_ref.current);
-            self.resizeHeights(this.props.max_height);
-            self.refreshAreas();
-            self.create_keymap();
-            self.saved_theme = this.props.dark_theme
-        })
+    function refreshAreas() {
+        cmobject.current.editor().refresh();
+        cmobject.current.rightOriginal().refresh()
     }
 
-    handleChange(cm, changeObject) {
-        this.props.handleEditChange(cm.getValue());
-        this.resizeHeights(this.props.max_height);
-    }
-
-    refreshAreas() {
-        this.cmobject.editor().refresh();
-        this.cmobject.rightOriginal().refresh()
-    }
-
-    create_api() {
+    function create_api() {
         let self = this;
         postAjax("get_api_dict", {}, function (data) {
-            self.api_dict_by_category = data.api_dict_by_category;
-            self.api_dict_by_name = data.api_dict_by_name;
-            self.ordered_api_categories = data.ordered_api_categories;
+            let api_dict_by_category = data.api_dict_by_category;
+            let api_dict_by_name = data.api_dict_by_name;
+            let ordered_api_categories = data.ordered_api_categories;
 
-            self.api_list = [];
-            for (let cat of self.ordered_api_categories) {
-                for (let entry of self.api_dict_by_category[cat]) {
-                    self.api_list.push(entry["name"])
+            let api_list = [];
+            for (let cat of ordered_api_categories) {
+                for (let entry of api_dict_by_category[cat]) {
+                    api_list.push(entry["name"])
                 }
             }
             //noinspection JSUnresolvedVariable
             CodeMirror.commands.autocomplete = function (cm) {
                 //noinspection JSUnresolvedFunction
                 cm.showHint({
-                    hint: CodeMirror.hint.anyword, api_list: self.api_list,
-                    extra_autocomplete_list: self.extra_autocomplete_list
+                    hint: CodeMirror.hint.anyword, api_list: api_list,
+                    extra_autocomplete_list: extra_autocomplete_list
                 });
             };
         })
     }
 
-
-    searchCM() {
-        CodeMirror.commands.find(this.cmobject)
+    function searchCM() {
+        CodeMirror.commands.find(cmobject.current)
     }
 
-    clearSelections() {
-        CodeMirror.commands.clearSearch(this.cmobject.editor());
-        CodeMirror.commands.singleSelection(this.cmobject.editor());
+    function clearSelections() {
+        CodeMirror.commands.clearSearch(cmobject.current.editor());
+        CodeMirror.commands.singleSelection(cmobject.current.editor());
     }
 
-    create_keymap() {
+    function create_keymap() {
         let self = this;
-        CodeMirror.keyMap["default"]["Esc"] = function () {self.clearSelections()};
+        CodeMirror.keyMap["default"]["Esc"] = function () {clearSelections()};
         let is_mac = CodeMirror.keyMap["default"].hasOwnProperty("Cmd-S");
 
-        this.mousetrap.bind(['escape'], function (e) {
-            self.clearSelections();
+        mousetrap.current.bind(['escape'], function (e) {
+            clearSelections();
             e.preventDefault()
         });
 
         if (is_mac) {
-            CodeMirror.keyMap["default"]["Cmd-S"] = function () {self.props.saveMe()};
+            CodeMirror.keyMap["default"]["Cmd-S"] = function () {props.saveMe()};
 
-            this.mousetrap.bind(['command+f'], function (e) {
-                self.searchCM();
+            mousetrap.current.bind(['command+f'], function (e) {
+                searchCM();
                 e.preventDefault()
             });
         }
         else {
-            CodeMirror.keyMap["default"]["Ctrl-S"] = function () {self.props.saveMe()};
+            CodeMirror.keyMap["default"]["Ctrl-S"] = function () {props.saveMe()};
 
-            this.mousetrap.bind(['ctrl+f'], function (e) {
-                self.searchCM();
+            mousetrap.current.bind(['ctrl+f'], function (e) {
+                searchCM();
                 e.preventDefault()
             });
         }
     }
+    let ccstyle = {
+        "height": "100%"
+    };
+    return (
+        <div className="code-container" style={ccstyle} ref={code_container_ref}>
 
-    render() {
-        let ccstyle = {
-            "height": "100%"
-        };
-        return (
-            <div className="code-container" style={ccstyle} ref={this.code_container_ref}>
-
-            </div>
-        )
-
-    }
+        </div>
+    )
 }
 
 ReactCodemirrorMergeView.propTypes = {
@@ -214,3 +205,5 @@ ReactCodemirrorMergeView.propTypes = {
     dark_theme: PropTypes.bool,
     saveMe: PropTypes.func,
 };
+
+ReactCodemirrorMergeView = memo(ReactCodemirrorMergeView);

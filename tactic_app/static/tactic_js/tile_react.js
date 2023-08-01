@@ -1,57 +1,129 @@
 "use strict";
 
-function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.TileContainer = TileContainer;
+exports.tilesReducer = tilesReducer;
 var _react = _interopRequireWildcard(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
 var _reactTransitionGroup = require("react-transition-group");
 var _lodash = _interopRequireDefault(require("lodash"));
-var _tile_form_react = require("./tile_form_react.js");
-var _blueprint_react_widgets = require("./blueprint_react_widgets.js");
-var _resizing_layouts = require("./resizing_layouts.js");
-var _sortable_container = require("./sortable_container.js");
-var _communication_react = require("./communication_react.js");
-var _toaster = require("./toaster.js");
-var _utilities_react = require("./utilities_react.js");
-var _error_boundary = require("./error_boundary.js");
-var _menu_utilities = require("./menu_utilities.js");
+var _tile_form_react = require("./tile_form_react");
+var _blueprint_react_widgets = require("./blueprint_react_widgets");
+var _resizing_layouts = require("./resizing_layouts");
+var _sortable_container = require("./sortable_container");
+var _communication_react = require("./communication_react");
+var _toaster = require("./toaster");
+var _utilities_react = require("./utilities_react");
+var _error_boundary = require("./error_boundary");
+var _menu_utilities = require("./menu_utilities");
 var _modal_react = require("./modal_react");
 var _searchable_console = require("./searchable_console");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
+function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
 var using_touch = ("ontouchend" in document);
-var click_event;
-if (using_touch) {
-  click_event = "touchstart";
-} else {
-  click_event = "click";
-}
+var click_event = using_touch ? "touchstart" : "click";
 var TILE_DISPLAY_AREA_MARGIN = 15;
 var ANI_DURATION = 300;
 function composeObjs(base_style, new_style) {
   return Object.assign(Object.assign({}, base_style), new_style);
 }
+function tilesReducer(tile_list, action) {
+  var new_items;
+  switch (action.type) {
+    case "initialize":
+      new_items = action.new_items;
+      break;
+    case "delete_item":
+      new_items = tile_list.filter(function (t) {
+        return t.tile_id !== action.tile_id;
+      });
+      break;
+    case "change_item_value":
+      new_items = tile_list.map(function (t) {
+        if (t.tile_id === action.tile_id) {
+          var new_t = _objectSpread({}, t);
+          new_t[action.field] = action.new_value;
+          return new_t;
+        } else {
+          return t;
+        }
+      });
+      break;
+    case "change_item_state":
+      new_items = tile_list.map(function (t) {
+        if (t.tile_id === action.tile_id) {
+          var new_t = _objectSpread({}, t);
+          for (var field in action.new_state) {
+            new_t[field] = action.new_state[field];
+          }
+          return new_t;
+        } else {
+          return t;
+        }
+      });
+      break;
+    case "change_items_value":
+      new_items = tile_list.map(function (t) {
+        if (action.id_list.includes(t.tile_id)) {
+          var new_t = _objectSpread({}, t);
+          new_t[action.field] = action.new_value;
+          return new_t;
+        } else {
+          return t;
+        }
+      });
+      break;
+    case "update_items":
+      new_items = tile_list.map(function (t) {
+        if (t.unique_id in action.updates) {
+          var update_dict = action.updates[t.unique_id];
+          return _objectSpread(_objectSpread({}, t), update_dict);
+        } else {
+          return t;
+        }
+      });
+      break;
+    case "move_item":
+      var old_list = _toConsumableArray(tile_list);
+      new_items = (0, _utilities_react.arrayMove)(old_list, action.oldIndex, action.newIndex);
+      break;
+    case "add_at_index":
+      new_items = _toConsumableArray(tile_list);
+      new_items.splice(action.insert_index, 0, action.new_item);
+      break;
+    default:
+      console.log("Got Unknown action: " + action.type);
+      return _toConsumableArray(tile_list);
+  }
+  return new_items;
+}
 function TileContainer(props) {
   (0, _react.useEffect)(function () {
     initSocket();
   }, []);
+  var pushCallback = (0, _utilities_react.useCallbackStack)();
   function _handleTileFinishedLoading(data) {
     _setTileValue(data.tile_id, "finished_loading", true);
   }
@@ -63,90 +135,67 @@ function TileContainer(props) {
     props.tsocket.attachListener("tile-finished-loading", _handleTileFinishedLoading);
     props.tsocket.attachListener('tile-source-change', _handleTileSourceChange);
   }
-  function _resortTilesOld(new_sort_list) {
-    var new_tile_list = [];
-    var _iterator = _createForOfIteratorHelper(new_sort_list),
+  function _resortTiles(_ref) {
+    var destination = _ref.destination,
+      source = _ref.source;
+    props.tileDispatch({
+      type: "move_item",
+      oldIndex: source.index,
+      newIndex: destination.index
+    });
+  }
+  function _markSourceChange(tile_type) {
+    var change_list = [];
+    var _iterator = _createForOfIteratorHelper(props.tile_list.current),
       _step;
     try {
       for (_iterator.s(); !(_step = _iterator.n()).done;) {
-        var tid = _step.value;
-        var new_entry = get_tile_entry(tid);
-        new_tile_list.push(new_entry);
+        var entry = _step.value;
+        if (entry.tile_type == tile_type) {
+          change_list.push(entry.tile_id);
+        }
       }
     } catch (err) {
       _iterator.e(err);
     } finally {
       _iterator.f();
     }
-    props.setMainStateValue("tile_list", new_tile_list);
-  }
-  function _resortTiles(_ref) {
-    var destination = _ref.destination,
-      source = _ref.source;
-    var oldIndex = source.index;
-    var newIndex = destination.index;
-    var old_tile_list = _toConsumableArray(props.tile_list);
-    var new_tile_list = (0, _utilities_react.arrayMove)(old_tile_list, oldIndex, newIndex);
-    props.setMainStateValue("tile_list", new_tile_list);
-  }
-  function _markSourceChange(tile_type) {
-    var new_tile_list = _toConsumableArray(props.tile_list);
-    var change_list = [];
-    var _iterator2 = _createForOfIteratorHelper(new_tile_list),
-      _step2;
-    try {
-      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-        var entry = _step2.value;
-        if (entry.tile_type == tile_type) {
-          change_list.push(entry.tile_id);
-        }
-      }
-    } catch (err) {
-      _iterator2.e(err);
-    } finally {
-      _iterator2.f();
-    }
-    for (var _i = 0, _change_list = change_list; _i < _change_list.length; _i++) {
-      var tid = _change_list[_i];
-      _setTileValue(tid, "source_changed", true);
-    }
+    props.tileDispatch({
+      type: "change_items_value",
+      id_list: change_list,
+      field: "source_changed",
+      new_value: true
+    });
   }
   function get_tile_entry(tile_id) {
     var tindex = tileIndex(tile_id);
     if (tindex == -1) return null;
-    return _lodash["default"].cloneDeep(props.tile_list[tileIndex(tile_id)]);
-  }
-  function replace_tile_entry(tile_id, new_entry) {
-    var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-    var new_tile_list = _toConsumableArray(props.tile_list);
-    var tindex = tileIndex(tile_id);
-    new_tile_list.splice(tindex, 1, new_entry);
-    props.setMainStateValue("tile_list", new_tile_list, callback);
+    return _lodash["default"].cloneDeep(props.tile_list.current[tileIndex(tile_id)]);
   }
   function tileIndex(tile_id) {
     var counter = 0;
-    var _iterator3 = _createForOfIteratorHelper(props.tile_list),
-      _step3;
+    var _iterator2 = _createForOfIteratorHelper(props.tile_list.current),
+      _step2;
     try {
-      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-        var entry = _step3.value;
+      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+        var entry = _step2.value;
         if (entry.tile_id == tile_id) {
           return counter;
         }
         ++counter;
       }
     } catch (err) {
-      _iterator3.e(err);
+      _iterator2.e(err);
     } finally {
-      _iterator3.f();
+      _iterator2.f();
     }
     return -1;
   }
   function _closeTile(tile_id) {
-    var tindex = tileIndex(tile_id);
-    var new_tile_list = _toConsumableArray(props.tile_list);
-    new_tile_list.splice(tindex, 1);
-    props.setMainStateValue("tile_list", new_tile_list);
+    props.tileDispatch({
+      type: "delete_item",
+      tile_id: tile_id
+    });
     var data_dict = {
       main_id: props.main_id,
       tile_id: tile_id
@@ -167,19 +216,22 @@ function TileContainer(props) {
   }
   function _setTileValue(tile_id, field, value) {
     var callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
-    var entry = get_tile_entry(tile_id);
-    if (entry) {
-      entry[field] = value;
-      replace_tile_entry(tile_id, entry, callback);
-    }
+    props.tileDispatch({
+      type: "change_item_value",
+      tile_id: tile_id,
+      field: field,
+      new_value: value
+    });
+    pushCallback(callback);
   }
   function _setTileState(tile_id, new_state) {
     var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-    var entry = get_tile_entry(tile_id);
-    for (var field in new_state) {
-      entry[field] = new_state[field];
-    }
-    replace_tile_entry(tile_id, entry, callback);
+    props.tileDispatch({
+      type: "change_item_state",
+      tile_id: tile_id,
+      new_state: new_state
+    });
+    pushCallback(callback);
   }
   function _displayTileContentWithJavascript(tile_id, data) {
     _setTileState(tile_id, {
@@ -228,13 +280,11 @@ function TileContainer(props) {
     main_id: props.main_id,
     style: outer_style,
     dark_theme: props.dark_theme,
-    helperClass: props.dark_theme ? "bp5-dark" : "light-theme"
-    // container_ref={props.tile_div_ref}
-    ,
+    helperClass: props.dark_theme ? "bp5-dark" : "light-theme",
     goToModule: props.goToModule,
     ElementComponent: TileComponent,
     key_field_name: "tile_name",
-    item_list: _lodash["default"].cloneDeep(props.tile_list),
+    item_list: _lodash["default"].cloneDeep(props.tile_list.current),
     handle: ".tile-name-div",
     onSortStart: function onSortStart(_, event) {
       return event.preventDefault();
@@ -255,7 +305,7 @@ function TileContainer(props) {
 TileContainer.propTypes = {
   setMainStateValue: _propTypes["default"].func,
   table_is_shrunk: _propTypes["default"].bool,
-  tile_list: _propTypes["default"].array,
+  tile_list: _propTypes["default"].object,
   tile_div_ref: _propTypes["default"].object,
   current_doc_name: _propTypes["default"].string,
   height: _propTypes["default"].number,
@@ -300,7 +350,7 @@ function TileComponent(props) {
   var _useState7 = (0, _react.useState)(0),
     _useState8 = _slicedToArray(_useState7, 2),
     dwidth = _useState8[0],
-    set_width = _useState8[1];
+    set_dwidth = _useState8[1];
   var _useState9 = (0, _react.useState)(0),
     _useState10 = _slicedToArray(_useState9, 2),
     dheight = _useState10[0],
@@ -313,6 +363,7 @@ function TileComponent(props) {
     _useState14 = _slicedToArray(_useState13, 2),
     log_content = _useState14[0],
     set_log_content = _useState14[1];
+  var pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _react.useEffect)(function () {
     _broadcastTileSize(props.tile_width, props.tile_height);
     executeEmbeddedScripts();
@@ -343,8 +394,8 @@ function TileComponent(props) {
   // need to know the size of the display area.
   function _broadcastTileSize() {
     (0, _communication_react.postWithCallback)(props.tile_id, "TileSizeChange", {
-      width: tdaWidth,
-      height: tdaHeight
+      width: tdaWidth(),
+      height: tdaHeight()
     }, null, null, props.main_id);
   }
   function _resizeTileArea(dx, dy) {
@@ -361,35 +412,35 @@ function TileComponent(props) {
       // to avoid doubles of bokeh images
       last_front_content.current = props.front_content;
       var scripts = $("#" + props.tile_id + " .tile-display-area script").toArray();
-      var _iterator4 = _createForOfIteratorHelper(scripts),
-        _step4;
+      var _iterator3 = _createForOfIteratorHelper(scripts),
+        _step3;
       try {
-        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-          var script = _step4.value;
+        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+          var script = _step3.value;
           try {
             window.eval(script.text);
           } catch (e) {}
         }
       } catch (err) {
-        _iterator4.e(err);
+        _iterator3.e(err);
       } finally {
-        _iterator4.f();
+        _iterator3.f();
       }
     }
   }
   function makeTablesSortable() {
     var tables = $("#" + props.tile_id + " table.sortable").toArray();
-    var _iterator5 = _createForOfIteratorHelper(tables),
-      _step5;
+    var _iterator4 = _createForOfIteratorHelper(tables),
+      _step4;
     try {
-      for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-        var table = _step5.value;
+      for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+        var table = _step4.value;
         sorttable.makeSortable(table);
       }
     } catch (err) {
-      _iterator5.e(err);
+      _iterator4.e(err);
     } finally {
-      _iterator5.f();
+      _iterator4.f();
     }
   }
   function tdaWidth() {
@@ -529,17 +580,17 @@ function TileComponent(props) {
       show_spinner: true
     });
     var data = {};
-    var _iterator6 = _createForOfIteratorHelper(props.form_data),
-      _step6;
+    var _iterator5 = _createForOfIteratorHelper(props.form_data),
+      _step5;
     try {
-      for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-        var opt = _step6.value;
+      for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+        var opt = _step5.value;
         data[opt.name] = opt.starting_value;
       }
     } catch (err) {
-      _iterator6.e(err);
+      _iterator5.e(err);
     } finally {
-      _iterator6.f();
+      _iterator5.f();
     }
     data.tile_id = props.tile_id;
     props.broadcast_event("UpdateOptions", data);
@@ -795,24 +846,19 @@ function TileComponent(props) {
     (0, _communication_react.postWithCallback)(props.tile_id, "LogParams", data_dict, null, null, props.main_id);
   }
   function _startResize(e, ui, startX, startY) {
-    setState({
-      resizing: true,
-      dwidth: 0,
-      dheight: 0
-    });
+    set_resizing(true);
+    set_dwidth(0);
+    set_dheight(0);
   }
   function _onResize(e, ui, x, y, dx, dy) {
-    setState({
-      dwidth: dx,
-      dheight: dy
-    });
+    set_dwidth(dx);
+    set_dheight(dy);
   }
   function _stopResize(e, ui, x, y, dx, dy) {
-    setState({
-      resizing: false,
-      dwidth: 0,
-      dheight: 0
-    }, function () {
+    set_resizing(false);
+    set_dwidth(0);
+    set_dheight(0);
+    pushCallback(function () {
       _resizeTileArea(dx, dy);
     });
   }
@@ -958,7 +1004,7 @@ function TileComponent(props) {
       className: "tile-log-area"
     }, /*#__PURE__*/_react["default"].createElement(_searchable_console.SearchableConsole, {
       log_content: props.log_content,
-      inner_ref: inner_log_ref,
+      ref: inner_log_ref,
       setMaxConsoleLines: _setMaxConsoleLines,
       outer_style: tile_log_style,
       clearConsole: _setLogSince,

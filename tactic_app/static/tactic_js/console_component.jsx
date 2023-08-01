@@ -1,7 +1,7 @@
 // noinspection JSConstructorReturnsPrimitive
 
 import React from "react";
-import {Fragment, useState, useEffect, useRef, useCallback, memo} from "react";
+import {Fragment, useState, useEffect, useRef, useCallback, memo, useMemo} from "react";
 import PropTypes from 'prop-types';
 
 import 'codemirror/mode/markdown/markdown.js'
@@ -30,7 +30,7 @@ import {TacticMenubar} from "./menu_utilities";
 import {FilterSearchForm} from "./search_form";
 import {SearchableConsole} from "./searchable_console";
 
-import {useCallbackStack, useStateAndRef} from "./utilities_react";
+import {useCallbackStack, useStateAndRef, useConstructor} from "./utilities_react";
 
 export {ConsoleComponent, itemsReducer}
 
@@ -148,7 +148,7 @@ function ConsoleComponent(props) {
 
     const [console_item_with_focus, set_console_item_with_focus] = useState(null);
     const [console_item_saved_focus, set_console_item_saved_focus] = useState(null);
-    const [console_error_log_text, set_console_error_log_text] = useState("");
+    const [console_error_log_text, set_console_error_log_text, console_error_log_text_ref] = useStateAndRef("");
     const [console_log_showing, set_console_log_showing] = useState(null);
     const [pseudo_tile_id, set_pseudo_tile_id] = useState(null);
     const [main_log_since, set_main_log_since] = useState(null);
@@ -156,7 +156,7 @@ function ConsoleComponent(props) {
     const [pseudo_log_since, set_pseudo_log_since] = useState(null);
     const [show_console_error_log, set_show_console_error_log] = useState(false);
     const [all_selected_items, set_all_selected_items, all_selected_items_ref] = useStateAndRef([]);
-    const [search_string, set_search_string] = useState(null);
+    const [search_string, set_search_string, search_string_ref] = useStateAndRef(null);
     const [filter_console_items, set_filter_console_items] = useState(false);
     const [search_helper_text, set_search_helper_text] = useState(null);
 
@@ -170,7 +170,11 @@ function ConsoleComponent(props) {
         if (props.console_items.current.length == 0) {
             _addCodeArea("", false)
         }
-        _clear_all_selected_items();
+        _clear_all_selected_items(()=>{
+            if (props.console_items.current && props.console_items.current.length > 0) {
+                _selectConsoleItem(props.console_items.current[0].unique_id)
+            }
+        });
     }, []);
 
     function initSocket() {
@@ -281,7 +285,7 @@ function ConsoleComponent(props) {
             return
         }
         _addConsoleText("")
-    }, []);
+    }, [props.am_selected]);
 
     function _addConsoleDivider(header_text, callback = null) {
         postWithCallback("host", "print_divider_area_to_console",
@@ -299,7 +303,7 @@ function ConsoleComponent(props) {
             return
         }
         _addConsoleDivider("")
-    }, []);
+    }, [props.am_selected]);
 
     function _getSectionIds(unique_id) {
         let cindex = _consoleItemIndex(unique_id);
@@ -449,7 +453,7 @@ function ConsoleComponent(props) {
             return
         }
         _addCodeArea("");
-    }, []);
+    }, [props.am_selected]);
 
     function _addCodeArea(the_text, force_open = true) {
         postWithCallback("host", "print_code_area_to_console",
@@ -461,25 +465,25 @@ function ConsoleComponent(props) {
             }, null, props.main_id);
     }
 
-    function _resetConsole() {
+    const _resetConsole = useCallback(()=>{
         props.dispatch({type: "reset"});
         postWithCallback(props.main_id, "clear_console_namespace", {}, null, null, props.main_id)
-    }
+    }, []);
 
     function _stopAll() {
         postWithCallback(props.main_id, "stop_all_console_code", {}, null, null, props.main_id)
     }
 
 
-    function _clearConsole() {
+    const _clearConsole = useCallback(()=>{
         const confirm_text = "Are you sure that you want to erase everything in this log?";
         showConfirmDialogReact("Clear entire log", confirm_text, "do nothing", "clear", function () {
             set_all_selected_items([]);
             pushCallback(() => {
-                props.dispatch({type: "delete_all_tiems"})
+                props.dispatch({type: "delete_all_items"})
             })
         })
-    }
+    }, []);
 
     function _getContainerLog() {
         if (pseudo_tile_id == null) {
@@ -664,13 +668,13 @@ function ConsoleComponent(props) {
 
     function _shrinkConsole() {
         props.setMainStateValue("console_is_shrunk", true);
-        if (props.console_is_zoomed) {
+        if (props.mState.console_is_zoomed) {
             _unzoomConsole();
         }
     }
 
     function _toggleExports() {
-        props.setMainStateValue("show_exports_pane", !props.show_exports_pane)
+        props.setMainStateValue("show_exports_pane", !props.mState.show_exports_pane)
     }
 
     const _setConsoleItemValue = useCallback((unique_id, field, new_value, callback = null) => {
@@ -718,7 +722,8 @@ function ConsoleComponent(props) {
         set_all_selected_items([]);
         pushCallback(() => {
             props.dispatch({type: "clear_all_selected"})
-        })
+        });
+        pushCallback(callback)
     }
 
     function _reduce_to_last_selected(callback = null) {
@@ -757,9 +762,7 @@ function ConsoleComponent(props) {
                 pushCallback(callback)
             })
         } else {
-            if (callback) {
-                callback()
-            }
+            pushCallback(callBack)
         }
     }
 
@@ -767,17 +770,12 @@ function ConsoleComponent(props) {
         let updates = {};
         let shift_down = event != null && event.shiftKey;
         if (!shift_down) {
-            if (all_selected_items_ref.current.length > 0) {
-                for (let uid of all_selected_items_ref.current) {
-                    if (uid != unique_id) {
-                        updates[uid] = {am_selected: false, search_string: null};
-                    }
+            for (let uid of all_selected_items_ref.current) {
+                if (uid != unique_id) {
+                    updates[uid] = {am_selected: false, search_string: null};
                 }
-
             }
-            if (!all_selected_items_ref.current.includes(unique_id)) {
-                updates[unique_id] = {am_selected: true, search_string: search_string};
-            }
+            updates[unique_id] = {am_selected: true, search_string: search_string_ref.current};
 
             _multiple_console_item_updates(updates, () => {
                 set_all_selected_items([unique_id]);
@@ -787,7 +785,7 @@ function ConsoleComponent(props) {
             if (all_selected_items_ref.current.includes(unique_id)) {
                 _dselectOneItem(unique_id)
             } else {
-                updates[unique_id] = {am_selected: true, search_string: search_string};
+                updates[unique_id] = {am_selected: true, search_string: search_string_ref.current};
                 _multiple_console_item_updates(updates, () => {
                     let narray = _.cloneDeep(all_selected_items_ref.current);
                     narray.push(unique_id);
@@ -1069,7 +1067,7 @@ function ConsoleComponent(props) {
             } else {
                 insert_index = _consoleItemIndex(unique_id) + 1
             }
-        } else if (props.console_items.current.length == 0 || all_selected_items_ref.length == 0) {
+        } else if (props.console_items.current.length == 0 || all_selected_items_ref.current.length == 0) {
             insert_index = props.console_items.current.length
         } else {
             let current_selected_id = _currently_selected();
@@ -1138,7 +1136,6 @@ function ConsoleComponent(props) {
     }
 
     function _appendConsoleItemOutput(data) {
-        console.log(`in appendconsoleitem output with ${data.console_id}`);
         let current = get_console_item_entry(data.console_id).output_text;
         if (current != "") {
             current += "<br>"
@@ -1151,7 +1148,7 @@ function ConsoleComponent(props) {
     }
 
     function _addToLog(new_line) {
-        let log_content = console_error_log_text;
+        let log_content = console_error_log_text_ref.current;
         let log_list = log_content.split(/\r?\n/);
         let mlines = max_console_lines;
         if (log_list.length >= mlines) {
@@ -1169,15 +1166,15 @@ function ConsoleComponent(props) {
         }
     }
 
-    function _bodyWidth() {
+    const _bodyWidth = useMemo(()=>{
         if (props.console_available_width > MAX_CONSOLE_WIDTH) {
             return MAX_CONSOLE_WIDTH
         } else {
             return props.console_available_width
         }
-    }
+    }, [props.console_available_width]);
 
-    function renderContextMenu() {
+    const renderContextMenu = useMemo(()=> {
         // return a single element, or nothing to use default browser behavior
         return (
             <Menu>
@@ -1206,7 +1203,7 @@ function ConsoleComponent(props) {
                           text="Erase everything"/>
             </Menu>
         );
-    }
+    }, []);
 
     function _glif_text(show_glif_text, txt) {
         if (show_glif_text) {
@@ -1242,7 +1239,7 @@ function ConsoleComponent(props) {
         pushCallback(() => {
             if (_are_selected()) {
                 for (let uid of all_selected_items_ref.current) {
-                    updates[uid] = {search_string: search_string}
+                    updates[uid] = {search_string: search_string_ref.current}
                 }
                 _multiple_console_item_updates(updates)
             }
@@ -1262,15 +1259,16 @@ function ConsoleComponent(props) {
         for (let entry of props.console_items.current) {
             if (entry.type == "code" || entry.type == "text") {
                 updates[entry.unique_id] = {
-                    show_on_filtered: entry.console_text.toLowerCase().includes(search_string.toLowerCase())
+                    show_on_filtered: entry.console_text.toLowerCase().includes(search_string_ref.current.toLowerCase())
                 }
             } else if (entry.type == "divider") {
                 updates[entry.unique_id] = {
                     show_on_filtered: true
                 }
             }
-            _multiple_console_item_updates(updates)
+
         }
+        _multiple_console_item_updates(updates, ()=>{set_filter_console_items(true)})
     }
 
     function _searchNext() {
@@ -1299,7 +1297,7 @@ function ConsoleComponent(props) {
     }
 
     function _selectIfMatching(entry, text_field, callback = null) {
-        if (entry[text_field].toLowerCase().includes(search_string.toLowerCase())) {
+        if (entry[text_field].toLowerCase().includes(search_string_ref.current.toLowerCase())) {
             if (entry.am_shrunk) {
                 _setConsoleItemValue(entry.unique_id, "am_shrunk", false, () => {
                     _selectConsoleItem(entry.unique_id, null, callback)
@@ -1490,53 +1488,45 @@ function ConsoleComponent(props) {
     }, []);
 
     let gbstyle = {marginLeft: 1, marginTop: 2};
-    let console_class = props.console_is_shrunk ? "am-shrunk" : "not-shrunk";
-    if (props.console_is_zoomed) {
+    let console_class = props.mState.console_is_shrunk ? "am-shrunk" : "not-shrunk";
+    if (props.mState.console_is_zoomed) {
         console_class = "am-zoomed"
     }
     let outer_style = Object.assign({}, props.style);
-    outer_style.width = _bodyWidth();
+    outer_style.width = _bodyWidth;
     let show_glif_text = outer_style.width > 800;
     let header_style = {};
     if (!props.shrinkable) {
         header_style["paddingLeft"] = 10
     }
-    if (!props.console_is_shrunk) {
+    if (!props.mState.console_is_shrunk) {
         header_style["paddingRight"] = 15
     }
     let key_bindings = [[["escape"], () => {
         _clear_all_selected_items()
     }]];
-    let filtered_items = [];
+
     let in_closed_section = false;
     let in_section = false;
-    for (let entry of props.console_items.current) {
+    let filtered_items = props.console_items.current.filter((entry)=>{
         if (entry.type == "divider") {
             in_section = true;
-            filtered_items.push(entry);
-            in_closed_section = entry.am_shrunk
+            in_closed_section = entry.am_shrunk;
+            return true
         } else if (entry.type == "section-end") {
             entry.in_section = true;
-            if (!in_closed_section) {
-                filtered_items.push(entry)
-            }
+            let was_in_closed_section = in_closed_section;
             in_closed_section = false;
             in_section = false;
+            return !was_in_closed_section
         } else if (!in_closed_section) {
             entry.in_section = in_section;
-            filtered_items.push(entry)
+            return true
         }
-
-    }
+    });
 
     if (filter_console_items) {
-        let new_filtered_items = [];
-        for (let entry of filtered_items) {
-            if (entry.show_on_filtered) {
-                new_filtered_items.push(entry)
-            }
-        }
-        filtered_items = new_filtered_items;
+        filtered_items = filtered_items.filter(entry => entry.show_on_filtered);
     }
     filtered_items_ref.current = filtered_items;
     let suggestionGlyphs = [];
@@ -1544,6 +1534,9 @@ function ConsoleComponent(props) {
         suggestionGlyphs.push({intent: "primary", handleClick: _toggleMainLog, icon: "console"})
     }
 
+    const empty_style = useMemo(()=>{
+        return {}
+    }, []);
     return (
         <Card id="console-panel" className={console_class} elevation={2} style={outer_style}>
             <div className="d-flex flex-column justify-content-around">
@@ -1552,12 +1545,12 @@ function ConsoleComponent(props) {
                      style={header_style}
                      className="d-flex flex-row justify-content-between">
                     <div id="console-header-left" className="d-flex flex-row">
-                        {props.console_is_shrunk && props.shrinkable &&
+                        {props.mState.console_is_shrunk && props.shrinkable &&
                             <GlyphButton handleClick={_expandConsole}
                                          style={{marginLeft: 2}}
                                          icon="chevron-right"/>
                         }
-                        {!props.console_is_shrunk && props.shrinkable &&
+                        {!props.mState.console_is_shrunk && props.shrinkable &&
                             <GlyphButton handleClick={_shrinkConsole}
                                          style={{marginLeft: 2}}
                                          icon="chevron-down"/>
@@ -1587,20 +1580,20 @@ function ConsoleComponent(props) {
                                      handleClick={_toggleExports}
                                      icon="variable"/>
 
-                        {!props.console_is_zoomed && props.zoomable &&
+                        {!props.mState.console_is_zoomed && props.zoomable &&
                             <GlyphButton handleClick={_zoomConsole}
                                          icon="maximize"/>
                         }
-                        {props.console_is_zoomed && props.zoomable &&
+                        {props.mState.console_is_zoomed && props.zoomable &&
                             <GlyphButton handleClick={_unzoomConsole}
                                          icon="minimize"/>
                         }
                     </div>
                 </div>
             </div>
-            {!props.console_is_shrunk && !show_console_error_log &&
+            {!props.mState.console_is_shrunk && !show_console_error_log &&
                 <FilterSearchForm
-                    search_string={search_string}
+                    search_string={search_string_ref.current}
                     handleSearchFieldChange={_handleSearchFieldChange}
                     handleFilter={_handleFilter}
                     handleUnFilter={_handleUnFilter}
@@ -1609,10 +1602,10 @@ function ConsoleComponent(props) {
                     search_helper_text={search_helper_text}
                 />
             }
-            {!props.console_is_shrunk && show_console_error_log &&
-                <SearchableConsole log_content={console_error_log_text}
+            {!props.mState.console_is_shrunk && show_console_error_log &&
+                <SearchableConsole log_content={console_error_log_text_ref.current}
                                    setMaxConsoleLines={_setMaxConsoleLines}
-                                   inner_ref={body_ref}
+                                   ref={body_ref}
                                    outer_style={{
                                        overflowX: "auto",
                                        overflowY: "auto",
@@ -1624,15 +1617,16 @@ function ConsoleComponent(props) {
                                    commandExec={console_log_showing == "pseudo" ? _logExec : null}
                 />
             }
-            {!props.console_is_shrunk && !show_console_error_log &&
+            {!props.mState.console_is_shrunk && !show_console_error_log &&
                 <div id="console"
                      ref={body_ref}
                      className="contingent-scroll"
                      onClick={_clickConsoleBody}
                      style={{height: _bodyHeight()}}>
                     {!show_console_error_log &&
-                        <ContextMenu content={renderContextMenu()}>
+                        <ContextMenu content={renderContextMenu}>
                             <SortableComponent id="console-items-div"
+                                               style={empty_style}
                                                main_id={props.main_id}
                                                ElementComponent={SuperItem}
                                                key_field_name="unique_id"
@@ -1643,7 +1637,7 @@ function ConsoleComponent(props) {
                                                onDragEnd={_resortConsoleItems}
                                                setConsoleItemValue={_setConsoleItemValue}
                                                selectConsoleItem={_selectConsoleItem}
-                                               console_available_width={_bodyWidth()}
+                                               console_available_width={_bodyWidth}
                                                execution_count={0}
                                                runCodeItem={_runCodeItem}
                                                handleDelete={_closeConsoleItem}
@@ -1679,8 +1673,7 @@ ConsoleComponent = memo(ConsoleComponent);
 
 ConsoleComponent.propTypes = {
     console_items: PropTypes.object,
-    console_is_shrunk: PropTypes.bool,
-    show_exports_pane: PropTypes.bool,
+    mState: PropTypes.object,
     setMainStateValue: PropTypes.func,
     console_available_height: PropTypes.number,
     console_available_width: PropTypes.number,
@@ -1866,7 +1859,7 @@ function SectionEndItem(props) {
         props.pasteCell(props.unique_id)
     }
 
-    function selectMe(e = null, callback = null) {
+    function _selectMe(e = null, callback = null) {
         props.selectConsoleItem(props.unique_id, e, callback)
     }
 
@@ -2346,9 +2339,9 @@ function ConsoleCodeItem(props) {
         }
     });
 
-    function registerSetFocusFunc(theFunc) {
+    const registerSetFocusFunc = useCallback((theFunc)=>{
         setFocusFunc.current = theFunc;
-    }
+    }, []);
 
     function scrollMeIntoView() {
         let my_element = elRef.current;
@@ -2400,9 +2393,9 @@ function ConsoleCodeItem(props) {
         props.setConsoleItemValue(props.unique_id, "show_spinner", false)
     }
 
-    function _handleChange(new_code) {
+    const _handleChange = useCallback((new_code)=>{
         props.setConsoleItemValue(props.unique_id, "console_text", new_code)
-    }
+    }, []);
 
     function _handleSummaryTextChange(value) {
         props.setConsoleItemValue(props.unique_id, "summary_text", value)
@@ -2423,15 +2416,14 @@ function ConsoleCodeItem(props) {
         props.setConsoleItemValue(props.unique_id, "output_text", "", callback)
     }
 
-    function _extraKeys() {
-        let self = this;
+    const _extraKeys = useMemo(()=>{
         return {
             'Ctrl-Enter': () => props.runCodeItem(props.unique_id, true),
             'Cmd-Enter': () => props.runCodeItem(props.unique_id, true),
             'Ctrl-C': props.addNewCodeItem,
             'Ctrl-T': props.addNewTextItem
         }
-    }
+    }, []);
 
     function _getFirstLine() {
         let re = /^(.*)$/m;
@@ -2523,17 +2515,15 @@ function ConsoleCodeItem(props) {
     }
 
     function _consoleItemClick(e) {
-        if (!props.am_selected) {
-            _selectMe(e);
-        }
+        _selectMe(e);
         e.stopPropagation()
     }
 
-    function _handleFocus() {
+    const _handleFocus = useCallback(()=> {
         if (!props.am_selected) {
             _selectMe()
         }
-    }
+    }, []);
 
     let panel_style = props.am_shrunk ? "log-panel log-panel-invisible" : "log-panel log-panel-visible";
     if (props.am_selected) {
@@ -2610,7 +2600,7 @@ function ConsoleCodeItem(props) {
                                                      readOnly={false}
                                                      show_line_numbers={true}
                                                      code_content={props.console_text}
-                                                     extraKeys={_extraKeys()}
+                                                     extraKeys={_extraKeys}
                                                      search_term={props.search_string}
                                                      code_container_width={code_container_width}
                                                      saveMe={null}/>
@@ -2686,7 +2676,7 @@ function ResourceLinkButton(props) {
         my_view.current = view_views(false)[props.res_type];
         if (window.in_context) {
             const re = new RegExp("/$");
-            my_view.current = my_view.replace(re, "_in_context");
+            my_view.current = my_view.current.replace(re, "_in_context");
         }
     });
 
@@ -2754,9 +2744,9 @@ function ConsoleTextItem(props) {
         }
     });
 
-    function registerSetFocusFunc(theFunc) {
+    const registerSetFocusFunc = useCallback((theFunc)=>{
         setFocusFunc.current = theFunc;
-    }
+    }, []);
 
     function scrollMeIntoView() {
         let my_element = elRef.current;
@@ -2773,7 +2763,6 @@ function ConsoleTextItem(props) {
         }
     }
 
-
     function hasOnlyWhitespace() {
         return !props.console_text.trim().length
     }
@@ -2782,25 +2771,25 @@ function ConsoleTextItem(props) {
         props.setConsoleItemValue(props.unique_id, "show_markdown", true);
     }
 
-    function _toggleMarkdown() {
+    const _toggleMarkdown = useCallback(()=>{
         if (props.show_markdown) {
             _hideMarkdown()
         } else {
             _showMarkdown()
         }
-    }
+    }, [props.show_markdown]);
 
     function _hideMarkdown() {
         props.setConsoleItemValue(props.unique_id, "show_markdown", false);
     }
 
-    function _handleChange(new_text) {
+    const _handleChange = useCallback((new_text)=>{
         props.setConsoleItemValue(props.unique_id, "console_text", new_text)
-    }
+    }, []);
 
-    function _clearForceSync() {
+    const _clearForceSync = useCallback(()=> {
         props.setConsoleItemValue(props.unique_id, "force_sync_to_prop", false)
-    }
+    }, []);
 
     function _handleSummaryTextChange(value) {
         props.setConsoleItemValue(props.unique_id, "summary_text", value)
@@ -2926,11 +2915,11 @@ function ConsoleTextItem(props) {
         e.stopPropagation()
     }
 
-    function _handleFocus() {
+    const _handleFocus = useCallback(()=>{
         if (!props.am_selected) {
             _selectMe()
         }
-    }
+    }, []);
 
     function _setCMObject(cmobject) {
         cmobject.current = cmobject;
@@ -2950,15 +2939,14 @@ function ConsoleTextItem(props) {
         }
     }
 
-    function _extraKeys() {
-        let self = this;
-        return {
-            'Ctrl-Enter': () => _gotEnter(),
-            'Cmd-Enter': () => _gotEnter(),
-            'Ctrl-C': props.addNewCodeItem,
-            'Ctrl-T': props.addNewTextItem
+     const _extraKeys = useMemo(()=>{
+         return {
+                'Ctrl-Enter': () => _gotEnter(),
+                'Cmd-Enter': () => _gotEnter(),
+                'Ctrl-C': props.addNewCodeItem,
+                'Ctrl-T': props.addNewTextItem
         }
-    }
+     }, []);
 
     let really_show_markdown = hasOnlyWhitespace() && props.links.length == 0 ? false : props.show_markdown;
     var converted_markdown;
@@ -3045,7 +3033,7 @@ function ConsoleTextItem(props) {
                                                          clear_force_sync={_clearForceSync}
                                                          mode="markdown"
                                                          code_content={props.console_text}
-                                                         extraKeys={_extraKeys()}
+                                                         extraKeys={_extraKeys}
                                                          search_term={props.search_string}
                                                          code_container_width={code_container_width}
                                                          saveMe={null}/>

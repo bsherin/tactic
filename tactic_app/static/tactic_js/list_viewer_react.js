@@ -346,20 +346,9 @@ function ListViewerApp(props) {
   var actual_dark_theme = props.controlled ? props.dark_theme : dark_theme;
   var my_props = _objectSpread({}, props);
   if (!props.controlled) {
-    var _iterator2 = _createForOfIteratorHelper(controllable_props),
-      _step2;
-    try {
-      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-        var prop_name = _step2.value;
-        my_props.resource_name = resource_name;
-        my_props.usable_height = usable_height;
-        my_props.usable_width = usable_width;
-      }
-    } catch (err) {
-      _iterator2.e(err);
-    } finally {
-      _iterator2.f();
-    }
+    my_props.resource_name = resource_name;
+    my_props.usable_height = usable_height;
+    my_props.usable_width = usable_width;
   }
   var outer_style = {
     width: "100%",

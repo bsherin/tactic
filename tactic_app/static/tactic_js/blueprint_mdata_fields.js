@@ -23,17 +23,17 @@ var _icon_info = require("./icon_info");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 var mdi = (0, _markdownIt["default"])({
   html: true
@@ -92,7 +92,8 @@ function BpSelectAdvanced(_ref3) {
   var options = _ref3.options,
     value = _ref3.value,
     onChange = _ref3.onChange,
-    buttonIcon = _ref3.buttonIcon;
+    buttonIcon = _ref3.buttonIcon,
+    readOnly = _ref3.readOnly;
   function _filterSuggestion(query, item) {
     if (query.length === 0) {
       return true;
@@ -106,30 +107,12 @@ function BpSelectAdvanced(_ref3) {
     }
     return re.test(the_text.toLowerCase());
   }
-  function _getActiveItem(val) {
-    var _iterator = _createForOfIteratorHelper(options),
-      _step;
-    try {
-      for (_iterator.s(); !(_step = _iterator.n()).done;) {
-        var option = _step.value;
-        if (_lodash["default"].isEqual(option, val)) {
-          return option;
-        }
-      }
-    } catch (err) {
-      _iterator.e(err);
-    } finally {
-      _iterator.f();
-    }
-    return null;
-  }
   var display_text = "display_text" in value ? value.display_text : value.text;
-  return /*#__PURE__*/_react["default"].createElement(_select.Select2, {
-    activeItem: _getActiveItem(value),
-    onActiveItemChange: null,
+  return /*#__PURE__*/_react["default"].createElement(_select.Select, {
     itemRenderer: renderSuggestionAdvanced,
     itemPredicate: _filterSuggestion,
     items: options,
+    disabled: readOnly,
     onItemSelect: onChange,
     popoverProps: {
       minimal: true,
@@ -157,7 +140,7 @@ BpSelectAdvanced.defaultProps = {
   buttonIcon: null
 };
 function BpSelect(props) {
-  var _useState = (0, _react.useState)(null),
+  var _useState = (0, _react.useState)(props.value),
     _useState2 = _slicedToArray(_useState, 2),
     activeItem = _useState2[0],
     setActiveItem = _useState2[1];
@@ -174,20 +157,9 @@ function BpSelect(props) {
     }
     return re.test(the_text.toLowerCase());
   }
-  function _handleActiveItemChange(newActiveItem) {
-    var the_text;
-    if ((typeof item === "undefined" ? "undefined" : _typeof(item)) == "object") {
-      the_text = newActiveItem["text"];
-    } else {
-      the_text = newActiveItem;
-    }
-    setActiveItem(the_text);
-  }
-  return /*#__PURE__*/_react["default"].createElement(_select.Select2, {
+  return /*#__PURE__*/_react["default"].createElement(_select.Select, {
     className: "tile-form-menu-item",
-    activeItem: activeItem,
     filterable: props.filterable,
-    onActiveItemChange: _handleActiveItemChange,
     itemRenderer: renderSuggestion,
     itemPredicate: _filterSuggestion,
     items: _lodash["default"].cloneDeep(props.options),
@@ -479,11 +451,11 @@ for (var _i2 = 0, _cat_order = cat_order; _i2 < _cat_order.length; _i2++) {
     isgroup: true
   };
   icon_dlist.push(cat_entry);
-  var _iterator2 = _createForOfIteratorHelper(_icon_info.tile_icon_dict[category]),
-    _step2;
+  var _iterator = _createForOfIteratorHelper(_icon_info.tile_icon_dict[category]),
+    _step;
   try {
-    for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-      var entry = _step2.value;
+    for (_iterator.s(); !(_step = _iterator.n()).done;) {
+      var entry = _step.value;
       var new_entry = {
         text: entry.tags + ", " + category + ", " + entry.iconName,
         val: entry.iconName,
@@ -496,19 +468,21 @@ for (var _i2 = 0, _cat_order = cat_order; _i2 < _cat_order.length; _i2++) {
       icon_entry_dict[new_entry.val] = new_entry;
     }
   } catch (err) {
-    _iterator2.e(err);
+    _iterator.e(err);
   } finally {
-    _iterator2.f();
+    _iterator.f();
   }
 }
 function IconSelector(_ref6) {
   var handleSelectChange = _ref6.handleSelectChange,
-    icon_val = _ref6.icon_val;
+    icon_val = _ref6.icon_val,
+    readOnly = _ref6.readOnly;
   return /*#__PURE__*/_react["default"].createElement(BpSelectAdvanced, {
     options: icon_dlist,
     onChange: function onChange(item) {
       handleSelectChange(item.val);
     },
+    readOnly: readOnly,
     buttonIcon: icon_val,
     value: icon_entry_dict[icon_val]
   });
@@ -614,6 +588,7 @@ function CombinedMetadata(props) {
     label: "Icon"
   }, /*#__PURE__*/_react["default"].createElement(IconSelector, {
     icon_val: props.icon,
+    readOnly: props.readOnly,
     handleSelectChange: _handleIconChange
   })), /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: "Notes"

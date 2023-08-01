@@ -54,15 +54,15 @@ function BlueprintTable(props, passedRef) {
     _updateRowHeights();
   }, []);
   (0, _react.useEffect)(function () {
-    if (props.column_widths == null || mismatched_column_widths.current) {
+    if (props.mState.table_spec.column_widths == null || mismatched_column_widths.current) {
       computeColumnWidths();
     }
     _updateRowHeights();
   });
   function hash_value() {
     var obj = {
-      cwidths: props.column_widths,
-      nrows: props.total_rows
+      cwidths: props.mState.table_spec.column_widths,
+      nrows: props.mState.total_rows
       // sscroll: set_scroll
     };
 
@@ -77,14 +77,14 @@ function BlueprintTable(props, passedRef) {
   // }
 
   function computeColumnWidths() {
-    var cwidths = compute_initial_column_widths(props.filtered_column_names, props.data_row_dict);
+    var cwidths = compute_initial_column_widths(props.filtered_column_names, props.mState.data_row_dict);
     mismatched_column_widths.current = false;
     props.updateTableSpec({
       column_widths: cwidths
     }, true);
   }
   function haveRowData(rowIndex) {
-    return props.data_row_dict.hasOwnProperty(rowIndex);
+    return props.mState.data_row_dict.hasOwnProperty(rowIndex);
   }
   function _doScroll() {
     if (data_update_required.current != null) {
@@ -107,7 +107,7 @@ function BlueprintTable(props, passedRef) {
       if (!haveRowData(rowIndex)) {
         return "empty cell";
       }
-      return props.data_row_dict[rowIndex][fcnames[colIndex]];
+      return props.mState.data_row_dict[rowIndex][fcnames[colIndex]];
     }, {
       getNumBufferLines: 1
     });
@@ -116,7 +116,7 @@ function BlueprintTable(props, passedRef) {
     if (haveRowData(rowIndex)) {
       return /*#__PURE__*/_react["default"].createElement(_table.RowHeaderCell, {
         key: rowIndex,
-        name: props.data_row_dict[rowIndex].__id__
+        name: props.mState.data_row_dict[rowIndex].__id__
       });
     } else {
       return /*#__PURE__*/_react["default"].createElement(_table.RowHeaderCell, {
@@ -127,8 +127,8 @@ function BlueprintTable(props, passedRef) {
     }
   }
   function _text_color_dict(row_id, colname) {
-    if (props.cells_to_color_text.hasOwnProperty(row_id)) {
-      var text_color_dict = props.cells_to_color_text[row_id];
+    if (props.mState.cells_to_color_text.hasOwnProperty(row_id)) {
+      var text_color_dict = props.mState.cells_to_color_text[row_id];
       if (text_color_dict.hasOwnProperty(colname)) {
         return text_color_dict[colname];
       }
@@ -137,8 +137,8 @@ function BlueprintTable(props, passedRef) {
     return null;
   }
   function _cell_background_color(row_id, colname) {
-    if (props.cell_backgrounds.hasOwnProperty(row_id)) {
-      var cell_background_dict = props.cell_backgrounds[row_id];
+    if (props.mState.table_spec.cell_backgrounds.hasOwnProperty(row_id)) {
+      var cell_background_dict = props.mState.table_spec.cell_backgrounds[row_id];
       if (cell_background_dict.hasOwnProperty(colname)) {
         return cell_background_dict[colname];
       }
@@ -198,9 +198,9 @@ function BlueprintTable(props, passedRef) {
           }, revised_text);
         }
         cell_bg_color = _cell_background_color(rowIndex, column_name);
-        the_text = props.data_row_dict[rowIndex][column_name];
-        if (props.alt_search_text != null && props.alt_search_text != "") {
-          var regex = new RegExp(props.alt_search_text, "gi");
+        the_text = props.mState.data_row_dict[rowIndex][column_name];
+        if (props.mState.alt_search_text != null && props.mState.alt_search_text != "") {
+          var regex = new RegExp(props.mState.alt_search_text, "gi");
           the_text = String(the_text).replace(regex, function (matched) {
             return "<mark>" + matched + "</mark>";
           });
@@ -218,8 +218,8 @@ function BlueprintTable(props, passedRef) {
             dangerouslySetInnerHTML: _converted_dict
           }));
         }
-        if (props.search_text != null && props.search_text != "") {
-          var _regex = new RegExp(props.search_text, "gi");
+        if (props.mState.search_text != null && props.mState.search_text != "") {
+          var _regex = new RegExp(props.mState.search_text, "gi");
           the_text = String(the_text).replace(_regex, function (matched) {
             return "<mark>" + matched + "</mark>";
           });
@@ -237,7 +237,7 @@ function BlueprintTable(props, passedRef) {
             dangerouslySetInnerHTML: _converted_dict2
           }));
         }
-        if (!props.spreadsheet_mode) {
+        if (!props.mState.spreadsheet_mode) {
           return /*#__PURE__*/_react["default"].createElement(_table.Cell, {
             key: column_name,
             style: {
@@ -285,7 +285,7 @@ function BlueprintTable(props, passedRef) {
   }
   function _setSelectedRow(rowIndex) {
     props.setMainStateValue({
-      "selected_row": props.data_row_dict[rowIndex].__id__,
+      "selected_row": props.mState.data_row_dict[rowIndex].__id__,
       "selected_column": null
     });
   }
@@ -296,7 +296,7 @@ function BlueprintTable(props, passedRef) {
     }, null);
   }
   function _onColumnWidthChanged(index, size) {
-    var cwidths = props.column_widths;
+    var cwidths = props.mState.table_spec.column_widths;
     cwidths[index] = size;
     props.updateTableSpec({
       column_widths: cwidths
@@ -322,10 +322,10 @@ function BlueprintTable(props, passedRef) {
     });
   });
   var cwidths;
-  if (props.column_widths == null || props.column_widths.length == 0) {
+  if (props.mState.table_spec.column_widths == null || props.mState.table_spec.column_widths.length == 0) {
     cwidths = null;
   } else {
-    cwidths = props.column_widths;
+    cwidths = props.mState.table_spec.column_widths;
   }
   if (cwidths != null && cwidths.length != props.filtered_column_names.length) {
     cwidths = null;
@@ -345,17 +345,17 @@ function BlueprintTable(props, passedRef) {
     ref: table_ref,
     key: hash_value() // kludge: Having this prevents partial row rendering
     ,
-    numRows: props.total_rows,
+    numRows: props.mState.total_rows,
     enableColumnReordering: true,
     onColumnsReordered: _onColumnsReordered,
     onSelection: _onSelection,
-    selectedRegions: props.selected_regions,
+    selectedRegions: props.mState.selected_regions,
     onCompleteRender: _doScroll,
     onColumnWidthChanged: _onColumnWidthChanged,
     onFocusedCell: _onFocusedCell,
     focusedCell: focusedCell,
     enableMultipleSelection: false,
-    enableFocusedCell: props.spreadsheet_mode,
+    enableFocusedCell: props.mState.spreadsheet_mode,
     selectionModes: [_table.RegionCardinality.FULL_COLUMNS, _table.RegionCardinality.FULL_ROWS],
     minColumnWidth: 75,
     columnWidths: cwidths,

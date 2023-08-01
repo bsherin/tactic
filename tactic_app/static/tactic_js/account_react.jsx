@@ -2,14 +2,15 @@
 import "../tactic_css/tactic.scss";
 
 import React from "react";
+import {Fragment, useEffect, useState, memo} from "react";
 import * as ReactDOM from 'react-dom'
 
 import { FormGroup, InputGroup, Button, HTMLSelect } from "@blueprintjs/core";
 
-import {doFlash} from "./toaster.js"
-import {postAjax} from "./communication_react.js";
+import {doFlash} from "./toaster"
+import {postAjax} from "./communication_react";
 
-import {doBinding, guid} from "./utilities_react.js";
+import {guid, useCallbackStack, useStateAndRef} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 
 window.main_id = guid();
@@ -22,95 +23,76 @@ function _account_main() {
 
 const field_names = ["new_password", "confirm_new_password"];
 
-class AccountTextField extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this)
-    }
-
-    render() {
-        return (
-            <FormGroup key={this.props.name}
-                          inline={false}
-                          style={{padding: 5}}
-                          label={this.props.display_text}
-                          helperText={this.props.helper_text}>
-                            <InputGroup type="text"
-                                           onChange={(event)=>this.props.onFieldChange(this.props.name, event.target.value, false)}
-                                           onBlur={()=>this.props.onBlur(this.props.name, this.props.value)}
-                                           style={{width: 250}}
-                                           large={false}
-                                           fill={false}
-                                           placeholder={this.props.name}
-                                           value={this.props.value}
-                                           />
-                </FormGroup>
-        )
-    }
-
-}
-
-class AccountSelectField extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this)
-    }
-
-    render() {
-        return (
-            <FormGroup key={this.props.name}
-                       inline={false}
-                       style={{padding: 5}}
-                       label={this.props.display_text}
-                       helperText={this.props.helper_text}>
-                <HTMLSelect options={this.props.options}
-                            onChange={(e)=>{this.props.onFieldChange(this.props.name, e.currentTarget.value, true)}}
-                            value={this.props.value}/>
+function AccountTextField(props){
+    return (
+        <FormGroup key={props.name}
+                      inline={false}
+                      style={{padding: 5}}
+                      label={props.display_text}
+                      helperText={props.helper_text}>
+                        <InputGroup type="text"
+                                       onChange={(event)=>props.onFieldChange(props.name, event.target.value, false)}
+                                       onBlur={()=>props.onBlur(props.name, props.value)}
+                                       style={{width: 250}}
+                                       large={false}
+                                       fill={false}
+                                       placeholder={props.name}
+                                       value={props.value}
+                                       />
             </FormGroup>
-        )
-    }
-
+    )
 }
 
-class AccountApp extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.state = {
-            dark_theme: this.props.initial_theme == "dark"
-        };
+AccountTextField = memo(AccountTextField);
 
-        this.state.fields = [];
-        this.state.password = "";
-        this.state.confirm_password = "";
-        this.state.password_helper = null;
-    }
+function AccountSelectField(props) {
+    return (
+        <FormGroup key={props.name}
+                   inline={false}
+                   style={{padding: 5}}
+                   label={props.display_text}
+                   helperText={props.helper_text}>
+            <HTMLSelect options={props.options}
+                        onChange={(e)=>{props.onFieldChange(props.name, e.currentTarget.value, true)}}
+                        value={props.value}/>
+        </FormGroup>
+    )
+}
 
-    componentDidMount() {
-        let self = this;
+AccountSelectField = memo(AccountSelectField);
+
+function AccountApp(props) {
+
+    const [dark_theme, set_dark_theme] = useState(props.initial_theme == "dark");
+    const [fields, set_fields, fields_ref] = useStateAndRef([]);
+    const [password, set_password] = useState("");
+    const [confirm_password, set_confirm_password] = useState("");
+    const [password_helper, set_password_helper] = useState(null);
+
+    const pushCallback = useCallbackStack();
+
+    useEffect(()=>{
         postAjax("get_account_info", {}, (data)=> {
-                let new_state = {fields: data.field_list};
-                self.setState(new_state);
-                window.dark_theme = self.state.dark_theme
-            }
-        )
-    }
-
-    _setTheme(dark_theme) {
-        this.setState({dark_theme: dark_theme}, ()=> {
-            window.dark_theme = this.state.dark_theme
+            set_fields(data.field_list);
+            window.dark_theme = dark_theme
         })
+    }, []);
+
+    function _setTheme(dark_theme) {
+      set_dark_theme(dark_theme);
+      pushCallback(()=> {
+          window.dark_theme = dark_theme
+      })
     }
 
-    _submitPassword() {
-        let pwd = this.state.password;
-        let pwd2 = this.state.confirm_password;
-        if (pwd != pwd2) {
-            this.setState({password_helper: "Passwords don't match"});
+    function _submitPassword() {
+        let pwd = password;
+        if (pwd != confirm_password) {
+            set_password_helper("Passwords don't match");
             return
         }
         if (pwd == "") {
-            this.setState({password_helper: "Passwords can't be empty"});
+            set_password_helper("Passwords can't be empty");
             return
         }
         let data = {};
@@ -126,73 +108,77 @@ class AccountApp extends React.Component {
         })
     }
 
-    _onFieldChange(fname, value, submit=false) {
-        if (fname == "password" || fname == "confirm_password") {
-            let new_state = Object.assign({}, this.state);
-            new_state[fname] = value;
-            this.setState(new_state)
+    function _onFieldChange(fname, value, submit=false) {
+        if (fname == "password") {
+            set_password(value)
+        }
+        else if (fname == "confirm_password") {
+            set_confirm_password(value)
         }
         else {
-            let new_fields = [];
-            for (let fdict of this.state.fields) {
-                let ndict = Object.assign({}, fdict);
+            let new_fields = fields.map(fdict => {
                 if (fdict.name == fname) {
-                    ndict.val = value
+                    let ndict = {...fdict};
+                    ndict.val = value;
+                    return ndict
                 }
-                new_fields.push(ndict)
-            }
-            let self = this;
-            this.setState({fields: new_fields}, ()=>{
+                else {
+                    return fdict
+                }
+            });
+            set_fields(new_fields);
+            pushCallback(()=>{
                 if (submit) {
-                    this._submitUpdatedField(fname, value)
+                    _submitUpdatedField(fname, value)
                 }
             })
         }
     }
 
-    _clearHelperText(fname) {
-        this._setHelperText(fname, null);
+    function _clearHelperText(fname) {
+        _setHelperText(fname, null);
     }
 
-    _setHelperText(fname, helper_text, timeout=false) {
-        let new_fields = [];
-        for (let fdict of this.state.fields) {
-            let ndict = Object.assign({}, fdict);
+    function _setHelperText(fname, helper_text, timeout=false) {
+        // Need to use fields_ref here because of the setTimeout in which it appears.
+        let new_fields = fields_ref.current.map(fdict => {
             if (fdict.name == fname) {
-                ndict.helper_text = helper_text
+                let ndict = {...fdict};
+                ndict.helper_text = helper_text;
+                return ndict
             }
-            new_fields.push(ndict)
-        }
-        let self = this;
-        this.setState({fields: new_fields}, ()=>{
+            else {
+                return fdict
+            }
+        });
+        set_fields(new_fields);
+        pushCallback(()=>{
             if (timeout) {
-                setTimeout(()=>{self._clearHelperText(fname)}, 5000)
+                setTimeout(()=>{_clearHelperText(fname)}, 5000)
             }
         })
     }
 
-    _submitUpdatedField(fname, fvalue) {
+    function _submitUpdatedField(fname, fvalue) {
         let data = {};
         data[fname] = fvalue;
-        let self = this;
         postAjax("update_account_info", data, function (result) {
             if (result.success) {
                 if (fname == "password") {
                     doFlash({"message": "Password successfully updated", "alert_type": "alert-success"});
                 }
                 else {
-                    self._setHelperText(fname, "value updated", true)
+                    _setHelperText(fname, "value updated", true)
                 }
             }
-
             else {
                 data.alert_type = "alert-warning";
                 doFlash(data);
             }
         })
     }
-     _submit_account_info() {
-        postAjax("update_account_info", this.state.fields, function (result) {
+     function _submit_account_info() {
+        postAjax("update_account_info", fields_ref.current, function (result) {
             if (result.success) {
                 doFlash({"message": "Account successfully updated", "alert_type": "alert-success"});
             }
@@ -203,28 +189,30 @@ class AccountApp extends React.Component {
         })
     }
     
-    _getFieldItems() {
+    function _getFieldItems() {
         let info_items = [];
         let setting_items = [];
-        for (let fdict of this.state.fields) {
+        for (let fdict of fields) {
             let new_item;
             if (fdict.type == "text") {
                 new_item = (
                     <AccountTextField name={fdict.name}
+                                      key={fdict.name}
                                       value={fdict.val}
                                       display_text={fdict.display_text}
                                       helper_text={fdict.helper_text}
-                                      onBlur={this._submitUpdatedField}
-                                      onFieldChange={this._onFieldChange}/>)
+                                      onBlur={_submitUpdatedField}
+                                      onFieldChange={_onFieldChange}/>)
             }
             else {
                 new_item = (
                     <AccountSelectField name={fdict.name}
+                                        key={fdict.name}
                                         value={fdict.val}
                                         display_text={fdict.display_text}
                                         options={fdict.options}
                                         helper_text={fdict.helper_text}
-                                        onFieldChange={this._onFieldChange}/>)
+                                        onFieldChange={_onFieldChange}/>)
             }
             if (fdict.info_type == "info") {
                 info_items.push(new_item)
@@ -236,10 +224,9 @@ class AccountApp extends React.Component {
         return [info_items, setting_items]
     }
 
-    render () {
-        let field_items = this._getFieldItems();
+        let field_items = _getFieldItems();
         let outer_class = "account-settings";
-        if (this.state.dark_theme) {
+        if (dark_theme) {
             outer_class = outer_class + " bp5-dark";
         }
         else {
@@ -247,11 +234,10 @@ class AccountApp extends React.Component {
         }
         let self = this;
         return (
-
-            <React.Fragment>
+            <Fragment>
                 <TacticNavbar is_authenticated={window.is_authenticated}
-                              dark_theme={this.state.dark_theme}
-                              setTheme={this.props.controlled ? this.props.setTheme : this._setTheme}
+                              dark_theme={dark_theme}
+                              setTheme={props.controlled ? props.setTheme : _setTheme}
                               selected={null}
                               show_api_links={false}
                               page_id={window.main_id}
@@ -270,19 +256,22 @@ class AccountApp extends React.Component {
                     <div className="account-pane bp5-card">
                         <h6>Change Password</h6>
                         <AccountTextField name="password"
-                                      value={this.state.password}
-                                      helper_text={this.state.password_helper}
-                                      onFieldChange={this._onFieldChange}/>
+                                          key="password"
+                                      value={password}
+                                      helper_text={password_helper}
+                                      onFieldChange={_onFieldChange}/>
                         <AccountTextField name="confirm_password"
-                                      value={this.state.confirm_password}
-                                      helper_text={this.state.password_helper}
-                                      onFieldChange={this._onFieldChange}/>
-                        <Button icon="log-in" large={true} text="Update Password" onClick={this._submitPassword}/>
+                                          key="confirm_password"
+                                      value={confirm_password}
+                                      helper_text={password_helper}
+                                      onFieldChange={_onFieldChange}/>
+                        <Button icon="log-in" large={true} text="Update Password" onClick={_submitPassword}/>
                     </div>
                 </div>
-            </React.Fragment>
+            </Fragment>
         )
-    }
 }
+
+AccountApp = memo(AccountApp);
 
 _account_main();

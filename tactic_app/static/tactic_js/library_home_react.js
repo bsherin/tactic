@@ -225,6 +225,7 @@ function LibraryHomeApp(props) {
     style: outer_style
   }, all_pane), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_TacticOmnibar.TacticOmnibar, {
     omniGetters: [_omniFunction],
+    page_id: props.library_id,
     showOmnibar: showOmnibar,
     closeOmnibar: _closeOmnibar
   }), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {

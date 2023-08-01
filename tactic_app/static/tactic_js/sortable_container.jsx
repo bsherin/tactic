@@ -3,17 +3,7 @@ import React from "react";
 import _ from 'lodash';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
-export {SortableComponent, MySortableElement}
-
-
-function MySortableElement(WrappedComponent) {
-    const SElement = SortableElement(WrappedComponent);
-    return class extends React.PureComponent {
-        render() {
-            return <SElement {...this.props}/>
-        }
-    }
-}
+export {SortableComponent}
 
 function SortableComponent(props) {
     let WrappedComponent = props.ElementComponent;
@@ -24,7 +14,7 @@ function SortableComponent(props) {
       <DragDropContext onDragEnd={props.onDragEnd} onBeforeCapture={props.onBeforeCapture}>
         <Droppable droppableId="droppable">
           {(provided) => (
-            <div ref={provided.innerRef} {...provided.droppableProps}>
+            <div id={props.id} style={props.style} ref={provided.innerRef} {...provided.droppableProps}>
               {props.item_list.map((entry, index) => (
                   <Draggable
                       key={entry[props.key_field_name]}

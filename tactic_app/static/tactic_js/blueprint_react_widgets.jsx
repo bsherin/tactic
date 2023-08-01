@@ -1,5 +1,5 @@
 import React from "react";
-import {memo} from "react";
+import {memo, useCallback, useMemo} from "react";
 import PropTypes from 'prop-types';
 
 import {
@@ -31,21 +31,25 @@ function withTooltip(WrappedComponent) {
 
 function GlyphButton(props) {
 
-    function _handleClick(e) {
+    const _handleClick = useCallback((e)=>{
         props.handleClick(e);
         e.stopPropagation()
-    }
+    }, [props.handleClick]);
 
-    let style = props.style == null ? {paddingLeft: 2, paddingRight: 2} : props.style;
+    const pDef = useCallback((e)=>{
+        e.preventDefault()
+    }, []);
+
+    let style = useMemo(()=>{
+        return props.style == null ? {paddingLeft: 2, paddingRight: 2} : props.style;
+    }, [props.style]);
     return (
         <Button type="button"
                 minimal={props.minimal}
                 small={props.small}
                 style={style}
                 className={props.className}
-                onMouseDown={(e) => {
-                    e.preventDefault()
-                }}
+                onMouseDown={pDef}
                 onClick={_handleClick}
                 intent={props.intent}
                 icon={props.icon}>
@@ -54,7 +58,6 @@ function GlyphButton(props) {
             }
         </Button>
     );
-
 }
 
 GlyphButton = memo(GlyphButton);

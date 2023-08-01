@@ -335,11 +335,9 @@ function ListViewerApp(props) {
     let actual_dark_theme = props.controlled ? props.dark_theme : dark_theme;
     let my_props = {...props};
     if (!props.controlled) {
-        for (let prop_name of controllable_props) {
-            my_props.resource_name = resource_name;
-            my_props.usable_height = usable_height;
-            my_props.usable_width = usable_width;
-        }
+        my_props.resource_name = resource_name;
+        my_props.usable_height = usable_height;
+        my_props.usable_width = usable_width;
     }
     let outer_style = {
         width: "100%",
