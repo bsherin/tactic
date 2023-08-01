@@ -606,7 +606,6 @@ function SelectResourceDialog(props) {
     _handleTypeChange("collection");
   }, []);
   function _handleTypeChange(val) {
-    console.log("entering _handleTypeChange");
     var get_url = "get_".concat(val, "_names");
     var dict_hash = "".concat(val, "_names");
     console.log("about to postWithCallback");

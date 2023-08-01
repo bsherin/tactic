@@ -1,44 +1,46 @@
-
 import "../tactic_css/tactic.scss";
 
 import React from "react";
+import {Fragment, useState, useEffect, memo, useRef} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
-import {MergeViewerApp} from "./merge_viewer_app.js";
-import {doFlash} from "./toaster.js"
-import {postAjaxPromise} from "./communication_react.js"
-import {withErrorDrawer} from "./error_drawer.js";
-import {withStatus} from "./toaster.js";
-import {doBinding, guid} from "./utilities_react.js";
-import {TacticNavbar} from "./blueprint_navbar.js";
-import {TacticSocket} from "./tactic_socket.js";
+import {MergeViewerApp} from "./merge_viewer_app";
+import {doFlash} from "./toaster"
+import {postAjaxPromise} from "./communication_react"
+import {withErrorDrawer} from "./error_drawer";
+import {withStatus} from "./toaster";
+import {guid} from "./utilities_react";
+import {TacticNavbar} from "./blueprint_navbar";
+import {TacticSocket} from "./tactic_socket";
+import {useCallbackStack} from "./utilities_react";
 
-function tile_differ_main ()  {
+function tile_differ_main() {
     function gotProps(the_props) {
         let TileDifferAppPlus = withErrorDrawer(withStatus(TileDifferApp));
         let the_element = <TileDifferAppPlus {...the_props}
                                              controlled={false}
                                              initial_theme={window.theme}
                                              changeName={null}
-                    />;
+        />;
         let domContainer = document.querySelector('#root');
         ReactDOM.render(the_element, domContainer)
 
     }
+
     let get_url = "get_module_code";
 
     postAjaxPromise(`${get_url}/${window.resource_name}`, {})
         .then(function (data) {
-            var edit_content = data.the_content;
-            postAjaxPromise("get_tile_names")
-                .then(function (data2) {
-                    data.tile_list = data2.tile_names;
-                    data.resource_name = window.resource_name,
-                    data.second_resource_name = window.second_resource_name;
-                    tile_differ_props(data, null, gotProps)
-                })
-                .catch(doFlash)
+                var edit_content = data.the_content;
+                postAjaxPromise("get_tile_names")
+                    .then(function (data2) {
+                        data.tile_list = data2.tile_names;
+                        data.resource_name = window.resource_name,
+                            data.second_resource_name = window.second_resource_name;
+                        tile_differ_props(data, null, gotProps)
+                    })
+                    .catch(doFlash)
 
             }
         )
@@ -60,117 +62,114 @@ function tile_differ_props(data, registerDirtyMethod, finalCallback) {
     })
 }
 
-class TileDifferApp extends React.Component {
+function TileDifferApp(props) {
 
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        let self = this;
-        this.state = {
-            "edit_content": props.edit_content,
-            "right_content": "",
-            "tile_popup_val": props.second_resource_name == "none" ? props.resource_name : props.second_resource_name,
-            "tile_list": props.tile_list,
-        };
-        this.handleEditChange = this.handleEditChange.bind(this);
-        this.handleSelectChange = this.handleSelectChange.bind(this);
-        this.saveFromLeft = this.saveFromLeft.bind(this);
-        this.savedContent = props.edit_content;
+    const [edit_content, set_edit_content] = useState(props.edit_content);
+    const [right_content, set_right_content] = useState("");
+    const [tile_popup_val, set_tile_popup_val] = useState(props.second_resource_name == "none" ?
+        props.resource_name : props.second_resource_name);
+    const [tile_list, set_tile_list] = useState(props.tile_list);
 
+    const [dark_theme, set_dark_theme] = useState(props.initial_theme === "dark");
+    const [resource_name, set_resource_name] = useState(props.resource_name);
+
+    const savedContent = useRef(props.edit_content);
+
+    const pushCallback = useCallbackStack();
+
+    useEffect(() => {
+        window.addEventListener("beforeunload", function (e) {
+            if (_dirty()) {
+                e.preventDefault();
+                e.returnValue = ''
+            }
+        });
+        initSocket();
         if (!props.controlled) {
-            this.state.dark_theme = props.initial_theme === "dark";
-            this.state.resource_name = props.resource_name;
-            window.addEventListener("beforeunload", function (e) {
-                if (self._dirty()) {
-                    e.preventDefault();
-                    e.returnValue = ''
-                }
-            });
+            window.dark_theme = dark_theme
         }
-        this.initSocket()
-    }
-    initSocket() {
-        this.props.tsocket.attachListener("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
-        this.props.tsocket.attachListener('close-user-windows', (data) => {
+        return (() => {
+            tsocket.disconnect();
+        })
+    }, []);
+
+    function initSocket() {
+        props.tsocket.attachListener("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
+        props.tsocket.attachListener('close-user-windows', (data) => {
             if (!(data["originator"] == window.library_id)) {
                 window.close()
             }
         });
-        this.props.tsocket.attachListener('doflash', doFlash);
-        this.props.tsocket.attachListener('doflashUser', doFlash);
-    }
-    componentDidMount() {
-        if (!this.props.controlled) {
-            window.dark_theme = this.state.dark_theme
-        }
+        props.tsocket.attachListener('doflash', doFlash);
+        props.tsocket.attachListener('doflashUser', doFlash);
     }
 
-    _setTheme(dark_theme) {
-        this.setState({dark_theme: dark_theme}, ()=> {
+    function _setTheme(dark_theme) {
+        set_dark_theme(dark_theme);
+        pushCallback(() => {
             if (!window.in_context) {
-                window.dark_theme = this.state.dark_theme
+                window.dark_theme = dark_theme
             }
         })
     }
 
-    handleSelectChange(new_value) {
-        this.state.tile_popup_val = new_value;
+    function handleSelectChange(new_value) {
+        set_tile_popup_val(new_value);
         let self = this;
         postAjaxPromise("get_module_code/" + new_value, {})
             .then((data) => {
-                    self.setState({"right_content": data.the_content});
-                })
+                set_right_content(data.the_content);
+            })
             .catch(doFlash);
     }
 
-    handleEditChange(new_code) {
-        this.setState({"edit_content": new_code})
+    function handleEditChange(new_code) {
+        set_edit_content(new_code)
     }
 
-    render() {
-        let dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme;
-        return (
-            <React.Fragment>
-                {!this.props.controlled} {
-                    <TacticNavbar is_authenticated={window.is_authenticated}
-                                  dark_theme={dark_theme}
-                                  setTheme={this._setTheme}
-                                  selected={null}
-                                  show_api_links={true}
-                                  page_id={this.props.resource_viewer_id}
-                                  user_name={window.username}/>
-                }
-
-                <MergeViewerApp {...this.props.statusFuncs}
-                                setTheme={this.props.controlled ? null: this._setTheme}
-                                dark_theme={dark_theme}
-                                resource_viewer_id={this.props.resource_viewer_id}
-                                resource_name={this.props.resource_name}
-                                option_list={this.state.tile_list}
-                                select_val={this.state.tile_popup_val}
-                                edit_content={this.state.edit_content}
-                                right_content={this.state.right_content}
-                                handleSelectChange={this.handleSelectChange}
-                                handleEditChange={this.handleEditChange}
-                                saveHandler={this.saveFromLeft}
-                />
-            </React.Fragment>
-        )
-    }
-
-    saveFromLeft() {
+    function saveFromLeft() {
         let data_dict = {
-            "module_name": this.props.resource_name,
-            "module_code": this.state.edit_content
+            "module_name": props.resource_name,
+            "module_code": edit_content
         };
         postAjaxPromise("update_from_left", data_dict)
             .then(doFlash)
             .catch(doFlash)
     }
 
-    dirty() {
-        return this.state.edit_content != this.savedContent
+    function dirty() {
+        return edit_content != savedContent.current
     }
+
+    let actual_dark_theme = props.controlled ? props.dark_theme : dark_theme;
+    return (
+        <Fragment>
+            {!props.controlled} {
+            <TacticNavbar is_authenticated={window.is_authenticated}
+                          dark_theme={actual_dark_theme}
+                          setTheme={_setTheme}
+                          selected={null}
+                          show_api_links={true}
+                          page_id={props.resource_viewer_id}
+                          user_name={window.username}/>
+        }
+
+            <MergeViewerApp {...props.statusFuncs}
+                            page_id={props.resource_viewer_id}
+                            setTheme={props.controlled ? null : _setTheme}
+                            dark_theme={actual_dark_theme}
+                            resource_viewer_id={props.resource_viewer_id}
+                            resource_name={props.resource_name}
+                            option_list={tile_list}
+                            select_val={tile_popup_val}
+                            edit_content={edit_content}
+                            right_content={right_content}
+                            handleSelectChange={handleSelectChange}
+                            handleEditChange={handleEditChange}
+                            saveHandler={saveFromLeft}
+            />
+        </Fragment>
+    )
 }
 
 TileDifferApp.propTypes = {
@@ -179,6 +178,8 @@ TileDifferApp.propTypes = {
     edit_content: PropTypes.string,
     second_resource_name: PropTypes.string
 };
+
+TileDifferApp = memo(TileDifferApp);
 
 if (!window.in_context) {
     tile_differ_main();

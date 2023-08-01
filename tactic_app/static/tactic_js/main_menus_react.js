@@ -35,6 +35,25 @@ var mdi = (0, _markdownIt["default"])({
 });
 mdi.use(_markdownItLatex["default"]);
 function ProjectMenu(props) {
+  var save_state;
+  if (props.is_notebook) save_state = {
+    console_items: props.console_items,
+    show_exports_pane: props.mState.show_exports_pane,
+    console_width_fraction: props.mState.console_width_fraction
+  };else {
+    save_state = {
+      console_items: props.console_items,
+      tile_list: props.tile_list,
+      table_is_shrunk: props.mState.table_is_shrunk,
+      horizontal_fraction: props.mState.horizontal_fraction,
+      console_is_shrunk: props.mState.console_is_shrunk,
+      height_fraction: props.mState.height_fraction,
+      show_console_pane: props.mState.show_console_pane,
+      console_is_zoomed: props.mState.console_is_zoomed,
+      show_exports_pane: props.mState.show_exports_pane,
+      console_width_fraction: props.mState.console_width_fraction
+    };
+  }
   function _saveProjectAs() {
     props.startSpinner();
     (0, _communication_react.postWithCallback)("host", "get_project_names", {
@@ -58,7 +77,7 @@ function ProjectMenu(props) {
         "purgetiles": true,
         "lite_save": checkbox_states["lite_save"]
       };
-      result_dict.interface_state = props.interface_state;
+      result_dict.interface_state = save_state;
       if (props.is_notebook) {
         (0, _communication_react.postWithCallback)(props.main_id, "save_new_notebook_project", result_dict, save_as_success, props.postAjaxFailur, props.main_id);
       } else {
@@ -97,7 +116,7 @@ function ProjectMenu(props) {
       project_name: props.project_name,
       lite_save: lite_save
     };
-    result_dict.interface_state = props.interface_state;
+    result_dict.interface_state = save_state;
     props.startSpinner();
     (0, _communication_react.postWithCallback)(props.main_id, "update_project", result_dict, updateSuccess, props.postAjaxFailure, props.main_id);
     function updateSuccess(data) {
@@ -406,7 +425,10 @@ function ProjectMenu(props) {
   });
 }
 ProjectMenu.propTypes = {
+  is_notebook: _propTypes["default"].bool,
   console_items: _propTypes["default"].array,
+  tile_list: _propTypes["default"].array,
+  project_kind: _propTypes["default"].string,
   postAjaxFailure: _propTypes["default"].func,
   interface_state: _propTypes["default"].object,
   updateLastSave: _propTypes["default"].func,

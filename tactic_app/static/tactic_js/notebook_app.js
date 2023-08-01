@@ -29,17 +29,17 @@ var _sizing_tools = require("./sizing_tools");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
-function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
-function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
+function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
 function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 var MARGIN_SIZE = 10;
 var BOTTOM_MARGIN = 20;
@@ -169,7 +169,19 @@ function notebook_props(data, registerDirtyMethod, finalCallback, registerOmniFu
     }
   }
 }
-var save_attrs = ["console_items", "show_exports_pane", "console_width_fraction"];
+function mainReducer(mState, action) {
+  var newMstate;
+  if (action.type == "change_field") {
+    newMstate = _objectSpread({}, mState);
+    newMstate[action.field] = action.new_value;
+  } else if (action.type == "change_multiple_fields") {
+    newMstate = _objectSpread(_objectSpread({}, mState), action.newPartialState);
+  } else {
+    console.log("Got Unknown action: " + action.type);
+    newMstate = _objectSpread({}, mState);
+  }
+  return newMstate;
+}
 var controllable_props = ["is_project", "resource_name", "usable_width", "usable_height"];
 function NotebookApp(props) {
   var last_save = (0, _react.useRef)({});
@@ -177,57 +189,29 @@ function NotebookApp(props) {
   var omniGetters = (0, _react.useRef)({});
   var updateExportsList = (0, _react.useRef)(null);
   var height_adjustment = (0, _react.useRef)(props.controlled ? MENU_BAR_HEIGHT : 0);
-  var _useState = (0, _react.useState)(function () {
-      return (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
-    }),
-    _useState2 = _slicedToArray(_useState, 2),
-    usable_height = _useState2[0],
-    set_usable_height = _useState2[1];
-  var _useState3 = (0, _react.useState)(function () {
-      return (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
-    }),
-    _useState4 = _slicedToArray(_useState3, 2),
-    usable_width = _useState4[0],
-    set_usable_width = _useState4[1];
   var _useReducerAndRef = (0, _utilities_react.useReducerAndRef)(_console_component.itemsReducer, []),
     _useReducerAndRef2 = _slicedToArray(_useReducerAndRef, 3),
     console_items = _useReducerAndRef2[0],
     dispatch = _useReducerAndRef2[1],
     console_items_ref = _useReducerAndRef2[2];
-  var _useState5 = (0, _react.useState)(true),
-    _useState6 = _slicedToArray(_useState5, 2),
-    show_exports_pane = _useState6[0],
-    set_show_exports_pane = _useState6[1];
-  var _useState7 = (0, _react.useState)(.5),
-    _useState8 = _slicedToArray(_useState7, 2),
-    console_width_fraction = _useState8[0],
-    set_console_width_fraction = _useState8[1];
-
-  // These will only be used if not controlled
-  var _useState9 = (0, _react.useState)(true),
-    _useState10 = _slicedToArray(_useState9, 2),
-    sdark_theme = _useState10[0],
-    set_dark_theme = _useState10[1];
-  var _useState11 = (0, _react.useState)(""),
-    _useState12 = _slicedToArray(_useState11, 2),
-    sresource_name = _useState12[0],
-    set_sresource_name = _useState12[1];
-  var _useState13 = (0, _react.useState)(false),
-    _useState14 = _slicedToArray(_useState13, 2),
-    showOmnibar = _useState14[0],
-    setShowOmnibar = _useState14[1];
-  var _useState15 = (0, _react.useState)(false),
-    _useState16 = _slicedToArray(_useState15, 2),
-    is_project = _useState16[0],
-    set_is_project = _useState16[1];
+  var _useReducer = (0, _react.useReducer)(mainReducer, {
+      show_exports_pane: props.is_project ? props.interface_state["show_exports_pane"] : true,
+      console_width_fraction: props.is_project ? props.interface_state["console_width_fraction"] : .5,
+      console_is_zoomed: true,
+      console_is_shrunk: false,
+      dark_theme: props.initial_theme === "dark",
+      resource_name: props.resource_name,
+      showOmnibar: false,
+      is_project: props.is_project,
+      usable_height: (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom,
+      usable_width: (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170
+    }),
+    _useReducer2 = _slicedToArray(_useReducer, 2),
+    mState = _useReducer2[0],
+    mDispatch = _useReducer2[1];
   var key_bindings = [[["ctrl+space"], _showOmnibar]];
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _utilities_react.useConstructor)(function () {
-    set_show_exports_pane(props.is_project ? props.interface_state["show_exports_pane"] : true);
-    set_console_width_fraction(props.is_project ? props.interface_state["console_width_fraction"] : .5);
-    set_dark_theme(props.initial_theme === "dark");
-    set_sresource_name(props.resource_name);
-    set_is_project(props.is_project);
     dispatch({
       type: "initialize",
       new_items: props.is_project ? props.interface_state["console_items"] : []
@@ -251,8 +235,8 @@ function NotebookApp(props) {
     _updateLastSave();
     props.stopSpinner();
     if (!props.controlled) {
-      document.title = sresource_name;
-      window.dark_theme = sdark_theme;
+      document.title = mState.resource_name;
+      window.dark_theme = mState.dark_theme;
       window.addEventListener("resize", _update_window_dimensions);
       _update_window_dimensions();
     }
@@ -261,33 +245,21 @@ function NotebookApp(props) {
       delete_my_containers();
     };
   }, []);
-  var cPropGetters = {
-    usable_width: usable_width,
-    usable_height: usable_height,
-    resource_name: sresource_name,
-    is_project: is_project
-  };
-  var stateSetters = {
-    show_exports_pane: set_show_exports_pane
-  };
   function _cProp(pname) {
-    return props.controlled ? props[pname] : cPropGetters[pname];
+    return props.controlled ? props[pname] : mState[pname];
   }
-  function interface_state() {
-    return {
-      console_items: console_items,
-      show_exports_pane: show_exports_pane,
-      console_width_fraction: console_width_fraction
-    };
-  }
+  var save_state = {
+    console_items: console_items,
+    show_exports_pane: mState.show_exports_pane,
+    console_width_fraction: mState.console_width_fraction
+  };
   function _setMainStateValue(field_name, new_value) {
     var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-    // console.log(`field_name is ${field_name} new_value is ${String(new_value)}`);
-    if (!(field_name in stateSetters)) {
-      console.log("trying to set field_name ".concat(field_name, " that don't have a setter for"));
-      return;
-    }
-    stateSetters[field_name](new_value);
+    mDispatch({
+      type: "change_field",
+      field: field_name,
+      new_value: new_value
+    });
     pushCallback(callback);
   }
   function _update_window_dimensions() {
@@ -300,14 +272,19 @@ function NotebookApp(props) {
       uheight = window.innerHeight - USUAL_TOOLBAR_HEIGHT;
       uwidth = window.innerWidth - 2 * MARGIN_SIZE;
     }
-    set_usable_height(uheight);
-    set_usable_width(uwidth);
+    mDispatch({
+      type: "change_multiple_fields",
+      newPartial_state: {
+        usable_height: uheight,
+        usable_width: uwidth
+      }
+    });
   }
   function _updateLastSave() {
-    last_save.current = interface_state();
+    last_save.current = save_state;
   }
   function _dirty() {
-    var current_state = interface_state();
+    var current_state = save_state;
     for (var k in current_state) {
       if (current_state[k] != last_save.current[k]) {
         return true;
@@ -339,13 +316,13 @@ function NotebookApp(props) {
     }
   }
   function _setTheme(dark_theme) {
-    set_dark_theme(dark_theme);
+    _setMainStateValue("dark_theme", dark_theme);
     pushCallback(function () {
       window.dark_theme = dark_theme;
     });
   }
   function _handleConsoleFractionChange(left_width, right_width, new_fraction) {
-    set_console_width_fraction(new_fraction);
+    _setMainStateValue("console_width_fraction", new_fraction);
   }
   function _setProjectName(new_project_name) {
     var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
@@ -361,8 +338,13 @@ function NotebookApp(props) {
         pushCallback(callback);
       });
     } else {
-      set_sresource_name(new_project_name);
-      set_is_project(true);
+      mDispatch({
+        type: "change_multiple_fields",
+        newPartialState: {
+          resource_name: new_project_name,
+          is_project: true
+        }
+      });
       pushCallback(callback);
     }
   }
@@ -374,10 +356,10 @@ function NotebookApp(props) {
     }
   }
   function _showOmnibar() {
-    setShowOmnibar(true);
+    _setMainStateValue("show_omnibar", true);
   }
   function _closeOmnibar() {
-    setShowOmnibar(false);
+    _setMainStateValue("show_omnibar", false);
   }
   function _omniFunction() {
     var omni_items = [];
@@ -389,13 +371,13 @@ function NotebookApp(props) {
   function _registerOmniGetter(name, the_function) {
     omniGetters.current[name] = the_function;
   }
-  var actual_dark_theme = props.controlled ? props.dark_theme : sdark_theme;
+  var actual_dark_theme = props.controlled ? props.dark_theme : mState.dark_theme;
   var my_props = _objectSpread({}, props);
   if (!props.controlled) {
-    my_props.resource_name = sresource_name;
-    my_props.usable_height = usable_height;
-    my_props.usable_width = usable_width;
-    my_props.is_project = is_project;
+    my_props.resource_name = mState.resource_name;
+    my_props.usable_height = mState.usable_height;
+    my_props.usable_width = mState.usable_width;
+    my_props.is_project = mState.is_project;
   }
   var true_usable_width = my_props.usable_width;
   var console_available_height = get_zoomed_console_height() - MARGIN_ADJUSTMENT;
@@ -408,7 +390,9 @@ function NotebookApp(props) {
     setProjectName: _setProjectName,
     postAjaxFailure: props.postAjaxFailure,
     console_items: console_items_ref.current,
-    interface_state: interface_state(),
+    tile_list: [],
+    mState: mState,
+    setMainStateValue: _setMainStateValue,
     updateLastSave: _updateLastSave,
     changeCollection: null,
     disabled_items: my_props.is_project ? [] : ["Save"],
@@ -422,15 +406,12 @@ function NotebookApp(props) {
     handleCreateViewer: props.handleCreateViewer,
     controlled: props.controlled,
     am_selected: props.am_selected,
-    pushCallback: pushCallback,
     console_items: console_items_ref,
     dispatch: dispatch,
-    console_is_shrunk: false,
-    console_is_zoomed: true,
-    show_exports_pane: show_exports_pane,
+    mState: mState,
     setMainStateValue: _setMainStateValue,
     console_available_height: console_available_height - MARGIN_SIZE,
-    console_available_width: true_usable_width * console_width_fraction - 16,
+    console_available_width: true_usable_width * mState.console_width_fraction - 16,
     zoomable: false,
     shrinkable: false,
     style: {
@@ -438,7 +419,7 @@ function NotebookApp(props) {
     }
   }));
   var exports_pane;
-  if (show_exports_pane) {
+  if (mState.show_exports_pane) {
     exports_pane = /*#__PURE__*/_react["default"].createElement(_export_viewer_react.ExportsViewer, {
       main_id: props.main_id,
       tsocket: props.tsocket,
@@ -446,8 +427,8 @@ function NotebookApp(props) {
         updateExportsList.current = ufunc;
       },
       available_height: console_available_height - MARGIN_SIZE,
-      console_is_shrunk: false,
-      console_is_zoomed: true,
+      console_is_shrunk: mState.console_is_shrunk,
+      console_is_zoomed: mState.console_is_zoomed,
       style: {
         marginTop: MARGIN_SIZE
       }
@@ -486,13 +467,14 @@ function NotebookApp(props) {
     show_handle: true,
     available_height: console_available_height,
     available_width: true_usable_width,
-    initial_width_fraction: console_width_fraction,
+    initial_width_fraction: mState.console_width_fraction,
     controlled: true,
     dragIconSize: 15,
     handleSplitUpdate: _handleConsoleFractionChange
   })), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_TacticOmnibar.TacticOmnibar, {
     omniGetters: [_omniFunction],
-    showOmnibar: showOmnibar,
+    page_id: props.main_id,
+    showOmnibar: mState.showOmnibar,
     closeOmnibar: _closeOmnibar
   }), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
     global: true,

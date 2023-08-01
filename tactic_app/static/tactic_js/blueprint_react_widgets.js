@@ -39,23 +39,26 @@ function withTooltip(WrappedComponent) {
   return /*#__PURE__*/(0, _react.memo)(newFunction);
 }
 function GlyphButton(props) {
-  function _handleClick(e) {
+  var _handleClick = (0, _react.useCallback)(function (e) {
     props.handleClick(e);
     e.stopPropagation();
-  }
-  var style = props.style == null ? {
-    paddingLeft: 2,
-    paddingRight: 2
-  } : props.style;
+  }, [props.handleClick]);
+  var pDef = (0, _react.useCallback)(function (e) {
+    e.preventDefault();
+  }, []);
+  var style = (0, _react.useMemo)(function () {
+    return props.style == null ? {
+      paddingLeft: 2,
+      paddingRight: 2
+    } : props.style;
+  }, [props.style]);
   return /*#__PURE__*/_react["default"].createElement(_core.Button, {
     type: "button",
     minimal: props.minimal,
     small: props.small,
     style: style,
     className: props.className,
-    onMouseDown: function onMouseDown(e) {
-      e.preventDefault();
-    },
+    onMouseDown: pDef,
     onClick: _handleClick,
     intent: props.intent,
     icon: props.icon

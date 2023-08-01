@@ -221,7 +221,6 @@ function ExportsViewer(props) {
     }
 
     function _eval(e = null) {
-        console.log(`entering eval with selected_export ${selected_export_ref.current}`);
         _showMySpinner();
         let send_data = {
             "export_name": selected_export_ref.current,
@@ -279,7 +278,6 @@ function ExportsViewer(props) {
     }
 
     function _handleExportListChange(fullname, shortname, tilename, force_refresh = false) {
-        console.log(`entering handlexportlistchange with fullname ${fullname}`);
         if (!force_refresh && fullname == selected_export_ref.current) return;
         set_show_spinner(true);
         set_selected_export(fullname);

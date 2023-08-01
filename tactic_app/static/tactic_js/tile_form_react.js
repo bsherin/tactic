@@ -542,6 +542,7 @@ function PipeOption(props) {
     label: label
   }, /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.BpSelectAdvanced, {
     onChange: _updateMe,
+    readOnly: false,
     value: full_value,
     buttonIcon: "flow-end",
     options: create_choice_list()

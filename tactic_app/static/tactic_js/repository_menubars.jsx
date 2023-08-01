@@ -1,9 +1,8 @@
 import React from "react";
-
+import {memo} from "react";
 import PropTypes from 'prop-types';
 
 import {LibraryMenubar} from "./library_menubars.js";
-import {doBinding} from "./utilities_react";
 
 export {RepositoryCollectionMenubar, RepositoryProjectMenubar, RepositoryTileMenubar,
     RepositoryListMenubar, RepositoryCodeMenubar}
@@ -25,18 +24,12 @@ let specializedMenubarPropTypes = {
 
 const resource_icon = window.is_remote ? "globe-network" : "map-marker";
 
-class RepositoryCollectionMenubar extends React.Component {
+function RepositoryCollectionMenubar(props) {
 
-    constructor(props) {
-        super(props);
-        doBinding(this);
-    }
-
-     get menu_specs() {
-        let self = this;
+     function menu_specs() {
         let ms = {
             Transfer: [
-                {name_text: "Copy To Library", icon_name: "import", click_handler: this.props.repository_copy_func,
+                {name_text: "Copy To Library", icon_name: "import", click_handler: props.repository_copy_func,
                 multi_select: true}
             ]
 
@@ -51,38 +44,32 @@ class RepositoryCollectionMenubar extends React.Component {
 
      }
 
-     render () {
-        return <LibraryMenubar menu_specs={this.menu_specs}
-                               multi_select={this.props.multi_select}
-                               dark_theme={this.props.dark_theme}
-                               controlled={this.props.controlled}
-                               am_selected={this.props.am_selected}
-                               tsocket={this.props.tsocket}
-                               refreshTab={this.props.refresh_func}
-                               closeTab={null}
-                               resource_name=""
-                               resource_icon={resource_icon}
-                               showErrorDrawerButton={false}
-                               toggleErrorDrawer={null}
+    return <LibraryMenubar menu_specs={menu_specs()}
+                           multi_select={props.multi_select}
+                           dark_theme={props.dark_theme}
+                           controlled={props.controlled}
+                           am_selected={props.am_selected}
+                           tsocket={props.tsocket}
+                           refreshTab={props.refresh_func}
+                           closeTab={null}
+                           resource_name=""
+                           resource_icon={resource_icon}
+                           showErrorDrawerButton={false}
+                           toggleErrorDrawer={null}
 
-        />
-     }
+    />
 }
 
 RepositoryCollectionMenubar.propTypes = specializedMenubarPropTypes;
 
-class RepositoryProjectMenubar extends React.Component {
+RepositoryCollectionMenubar = memo(RepositoryCollectionMenubar);
 
-    constructor(props) {
-        super(props);
-        doBinding(this);
-    }
+function RepositoryProjectMenubar(props) {
 
-     get menu_specs() {
-        let self = this;
+     function menu_specs() {
         let ms = {
             Transfer: [
-                {name_text: "Copy To Library", icon_name: "import", click_handler: this.props.repository_copy_func,
+                {name_text: "Copy To Library", icon_name: "import", click_handler: props.repository_copy_func,
                     multi_select: true},
             ]
 
@@ -97,45 +84,39 @@ class RepositoryProjectMenubar extends React.Component {
 
      }
 
-     render () {
-        return <LibraryMenubar menu_specs={this.menu_specs}
-                               multi_select={this.props.multi_select}
-                               dark_theme={this.props.dark_theme}
-                               controlled={this.props.controlled}
-                               am_selected={this.props.am_selected}
-                               tsocket={this.props.tsocket}
-                               refreshTab={this.props.refresh_func}
-                               closeTab={null}
-                               resource_name=""
-                               resource_icon={resource_icon}
-                               showErrorDrawerButton={false}
-                               toggleErrorDrawer={null}
+    return <LibraryMenubar menu_specs={menu_specs()}
+                           multi_select={props.multi_select}
+                           dark_theme={props.dark_theme}
+                           controlled={props.controlled}
+                           am_selected={props.am_selected}
+                           tsocket={props.tsocket}
+                           refreshTab={props.refresh_func}
+                           closeTab={null}
+                           resource_name=""
+                           resource_icon={resource_icon}
+                           showErrorDrawerButton={false}
+                           toggleErrorDrawer={null}
 
-        />
-     }
+    />
 }
 
 RepositoryProjectMenubar.propTypes = specializedMenubarPropTypes;
 
-class RepositoryTileMenubar extends React.Component {
+RepositoryProjectMenubar = memo(RepositoryProjectMenubar);
 
-    constructor(props) {
-        super(props);
-        doBinding(this);
+function RepositoryTileMenubar(props) {
+
+    function _tile_view(e) {
+        props.view_func("/repository_view_module/")
     }
 
-    _tile_view(e) {
-        this.props.view_func("/repository_view_module/")
-    }
-
-     get menu_specs() {
-        let self = this;
+     function  menu_specs() {
         let ms = {
             View: [
-                {name_text: "View Tile", icon_name: "eye-open", click_handler: this._tile_view},
+                {name_text: "View Tile", icon_name: "eye-open", click_handler: _tile_view},
             ],
             Transfer: [
-                {name_text: "Copy To Library", icon_name: "import", click_handler: this.props.repository_copy_func,
+                {name_text: "Copy To Library", icon_name: "import", click_handler: props.repository_copy_func,
                     multi_select: true},
             ]
 
@@ -150,45 +131,39 @@ class RepositoryTileMenubar extends React.Component {
 
      }
 
-     render () {
-        return <LibraryMenubar menu_specs={this.menu_specs}
-                               multi_select={this.props.multi_select}
-                               dark_theme={this.props.dark_theme}
-                               controlled={this.props.controlled}
-                               am_selected={this.props.am_selected}
-                               tsocket={this.props.tsocket}
-                               refreshTab={this.props.refresh_func}
-                               closeTab={null}
-                               resource_name=""
-                               resource_icon={resource_icon}
-                               showErrorDrawerButton={false}
-                               toggleErrorDrawer={null}
+    return <LibraryMenubar menu_specs={menu_specs()}
+                           multi_select={props.multi_select}
+                           dark_theme={props.dark_theme}
+                           controlled={props.controlled}
+                           am_selected={props.am_selected}
+                           tsocket={props.tsocket}
+                           refreshTab={props.refresh_func}
+                           closeTab={null}
+                           resource_name=""
+                           resource_icon={resource_icon}
+                           showErrorDrawerButton={false}
+                           toggleErrorDrawer={null}
 
-        />
-     }
+    />
 }
 
 RepositoryTileMenubar.propTypes = specializedMenubarPropTypes;
+RepositoryTileMenubar = memo(RepositoryTileMenubar);
 
-class RepositoryListMenubar extends React.Component {
+function RepositoryListMenubar(props) {
 
-    constructor(props) {
-        super(props);
-        doBinding(this);
+    function _list_view(e) {
+        props.view_func("/repository_view_list/")
     }
 
-    _list_view(e) {
-        this.props.view_func("/repository_view_list/")
-    }
-
-     get menu_specs() {
+     function  menu_specs() {
         let self = this;
         let ms = {
             View: [
-                {name_text: "View List", icon_name: "eye-open", click_handler: this._list_view},
+                {name_text: "View List", icon_name: "eye-open", click_handler: _list_view},
             ],
             Transfer: [
-                {name_text: "Copy To Library", icon_name: "import", click_handler: this.props.repository_copy_func,
+                {name_text: "Copy To Library", icon_name: "import", click_handler: props.repository_copy_func,
                 multi_select: true},
             ]
 
@@ -203,45 +178,39 @@ class RepositoryListMenubar extends React.Component {
 
      }
 
-     render () {
-        return <LibraryMenubar menu_specs={this.menu_specs}
-                               multi_select={this.props.multi_select}
-                               dark_theme={this.props.dark_theme}
-                               controlled={this.props.controlled}
-                               am_selected={this.props.am_selected}
-                               tsocket={this.props.tsocket}
-                               refreshTab={this.props.refresh_func}
-                               closeTab={null}
-                               resource_name=""
-                               resource_icon={resource_icon}
-                               showErrorDrawerButton={false}
-                               toggleErrorDrawer={null}
+    return <LibraryMenubar menu_specs={menu_specs()}
+                           multi_select={props.multi_select}
+                           dark_theme={props.dark_theme}
+                           controlled={props.controlled}
+                           am_selected={props.am_selected}
+                           tsocket={props.tsocket}
+                           refreshTab={props.refresh_func}
+                           closeTab={null}
+                           resource_name=""
+                           resource_icon={resource_icon}
+                           showErrorDrawerButton={false}
+                           toggleErrorDrawer={null}
 
-        />
-     }
+    />
 }
 
 RepositoryListMenubar.propTypes = specializedMenubarPropTypes;
+RepositoryListMenubar = memo(RepositoryListMenubar);
 
-class RepositoryCodeMenubar extends React.Component {
+function RepositoryCodeMenubar(props) {
 
-    constructor(props) {
-        super(props);
-        doBinding(this);
+    function _code_view(e) {
+        props.view_func("/repository_view_code/")
     }
 
-    _code_view(e) {
-        this.props.view_func("/repository_view_code/")
-    }
-
-     get menu_specs() {
+     function menu_specs() {
         let self = this;
         let ms = {
             View: [
-                {name_text: "View Code", icon_name: "eye-open", click_handler: this._code_view},
+                {name_text: "View Code", icon_name: "eye-open", click_handler: _code_view},
             ],
             Transfer: [
-                {name_text: "Copy To Library", icon_name: "import", click_handler: this.props.repository_copy_func,
+                {name_text: "Copy To Library", icon_name: "import", click_handler: props.repository_copy_func,
                 multi_select: true},
             ]
 
@@ -256,22 +225,21 @@ class RepositoryCodeMenubar extends React.Component {
 
      }
 
-     render () {
-        return <LibraryMenubar menu_specs={this.menu_specs}
-                               multi_select={this.props.multi_select}
-                               dark_theme={this.props.dark_theme}
-                               controlled={this.props.controlled}
-                               am_selected={this.props.am_selected}
-                               tsocket={this.props.tsocket}
-                               refreshTab={this.props.refresh_func}
-                               closeTab={null}
-                               resource_name=""
-                               resource_icon={resource_icon}
-                               showErrorDrawerButton={false}
-                               toggleErrorDrawer={null}
+    return <LibraryMenubar menu_specs={menu_specs()}
+                           multi_select={props.multi_select}
+                           dark_theme={props.dark_theme}
+                           controlled={props.controlled}
+                           am_selected={props.am_selected}
+                           tsocket={props.tsocket}
+                           refreshTab={props.refresh_func}
+                           closeTab={null}
+                           resource_name=""
+                           resource_icon={resource_icon}
+                           showErrorDrawerButton={false}
+                           toggleErrorDrawer={null}
 
-        />
-     }
+    />
 }
 
 RepositoryCodeMenubar.propTypes = specializedMenubarPropTypes;
+RepositoryCodeMenubar = memo(RepositoryCodeMenubar);

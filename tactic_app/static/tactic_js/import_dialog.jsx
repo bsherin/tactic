@@ -1,148 +1,145 @@
 import React from "react";
+import {useState, useEffect, useRef} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 import DropzoneComponent from 'react-dropzone-component';
-import { Checkbox, Dialog, FormGroup, Classes, Button, InputGroup, ButtonGroup,
-    Intent, Collapse, Divider, Alignment} from "@blueprintjs/core";
-import { BpSelect } from "./blueprint_mdata_fields.js";
-import {doBinding} from "./utilities_react.js";
+import {
+    Checkbox, Dialog, FormGroup, Classes, Button, InputGroup, ButtonGroup,
+    Intent, Collapse, Divider, Alignment
+} from "@blueprintjs/core";
+import {BpSelect} from "./blueprint_mdata_fields.js";
+import {useConstructor} from "./utilities_react";
 import {renderToStaticMarkup} from "react-dom/server";
 import {ErrorItem} from "./error_drawer";
 
 export {showFileImportDialog}
 
 var defaultImportDialogWidth = 700;
-class FileImportDialog extends React.Component {
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        let initial_default_name = "new" + props.res_type;
-        var name_counter = 1;
-        var default_name = initial_default_name;
-        this.picker_ref = React.createRef();
-        this.existing_names = props.existing_names;
-        this.current_url = "dummy";
-        while (this._name_exists(default_name)) {
-            name_counter += 1;
-            default_name = initial_default_name + String(name_counter)
+
+function FileImportDialog(props) {
+
+    const name_counter = useRef(1);
+    const default_name = useRef("new" + props.res_type);
+    const picker_ref = useRef(null);
+    const existing_names = useRef(props.existing_names);
+    const current_url = useRef("dummy");
+
+    const myDropzone = useRef(null);
+
+    const [show, set_show] = useState(false);
+    const [current_value, set_current_value] = useState("new" + props.res_type);
+    const [checkbox_states, set_checkbox_states] = useState({});
+    const [warning_text, set_warning_text] = useState("  ");
+    const [log_open, set_log_open] = useState(false);
+    const [log_contents, set_log_contents] = useState([]);
+    const [current_picker_width, set_current_picker_width] = useState(defaultImportDialogWidth - 100);
+
+    // These will only matter if props.show_csv_options
+    const [delimiter, set_delimiter] = useState(",");
+    const [quoting, set_quoting] = useState("QUOTE_MINIMAL");
+    const [skipinitialspace, set_skipinitialspace] = useState(true);
+    const [csv_options_open, set_csv_options_open] = useState(false);
+
+    useConstructor(() => {
+        while (_name_exists(default_name)) {
+            name_counter.current += 1;
+            default_name.current = "new" + props.res_type + String(name_counter.current)
         }
-        this.state = {
-            show: false,
-            current_value: default_name,
-            checkbox_states: {},
-            warning_text: "  ",
-            log_open: false,
-            log_contents: [],
-            current_picker_width: defaultImportDialogWidth - 100
-        };
+    });
 
-        if (this.props.show_csv_options) {
-            this.state.delimiter = ",";
-            this.state.quoting = "QUOTE_MINIMAL";
-            this.state.skipinitialspace = true;
-            this.state.csv_options_open = false
+    useEffect(() => {
+        set_show(true);
+        if ((props.checkboxes != null) && (props.checkboxes.length != 0)) {
+            let lcheckbox_states = {};
+            for (let checkbox of props.checkboxes) {
+                lcheckbox_states[checkbox.checkname] = false
+            }
+            set_checkbox_states(lcheckbox_states)
         }
+        _updatePickerSize();
+        initSocket()
+    }, []);
 
-        this.myDropzone = null;
-        this.socket_counter = null
-    }
+    useEffect(() => {
+        _updatePickerSize();
+    });
 
-    _handleResponse(entry) {
+    function _handleResponse(entry) {
         if (entry.resource_name && entry["success"] in ["success", "partial"]) {
-            this.existing_names.push(entry.resource_name)
+            existing_names.current.push(entry.resource_name)
         }
-        this.setState({log_contents: [...this.state.log_contents, entry], log_open: true})
+        set_log_contents([...log_contents, entry]);
+        set_log_open(true)
     }
 
-    _handleError(file, message, xhr = null) {
-        this._handleResponse({title: `Error for ${file.name}`, "content": message})
+    function _handleError(file, message, xhr = null) {
+        _handleResponse({title: `Error for ${file.name}`, "content": message})
 
     }
 
-    _updatePickerSize() {
-        if (this.picker_ref && this.picker_ref.current) {
-            let new_width = this.picker_ref.current.offsetWidth;
-            if (new_width != this.state.current_picker_width) {
-                this.setState({current_picker_width: this.picker_ref.current.offsetWidth})
+    function _updatePickerSize() {
+        if (picker_ref && picker_ref.current) {
+            let new_width = picker_ref.current.offsetWidth;
+            if (new_width != current_picker_width) {
+                set_current_picker_width(picker_ref.current.offsetWidth)
             }
         }
     }
 
-    initSocket() {
-        this.props.tsocket.attachListener("upload-response", this._handleResponse);
+    function initSocket() {
+        props.tsocket.attachListener("upload-response", _handleResponse);
     }
 
-
-    componentDidMount() {
-        this.setState({"show": true});
-        if ((this.props.checkboxes != null) && (this.props.checkboxes.length != 0)) {
-            let checkbox_states = {};
-            for (let checkbox of this.props.checkboxes) {
-                checkbox_states[checkbox.checkname] = false
-            }
-            this.setState({checkbox_states: checkbox_states})
-        }
-        this._updatePickerSize();
-        this.initSocket()
-
-    }
-
-    componentDidUpdate() {
-        this._updatePickerSize();
-    }
-
-    _checkbox_change_handler(event) {
+    function _checkbox_change_handler(event) {
         let val = event.target.checked;
-        let new_checkbox_states = Object.assign({}, this.state.checkbox_states);
+        let new_checkbox_states = Object.assign({}, checkbox_states);
         new_checkbox_states[event.target.id] = event.target.checked;
-        this.setState({checkbox_states: new_checkbox_states})
+        set_checkbox_states(new_checkbox_states)
     }
 
-
-    _closeHandler() {
-        this.setState({"show": false});
-        this.props.handleClose()
+    function _closeHandler() {
+        set_show(false);
+        props.handleClose()
     }
 
-    _do_submit() {
+    function _do_submit() {
         let msg;
-        if (this.myDropzone.getQueuedFiles().length == 0) {
+        if (myDropzone.current.getQueuedFiles().length == 0) {
             return
         }
-        if (this.state.current_value == "") {
+        if (current_value == "") {
             msg = "An empty name is not allowed here.";
-            this.setState({"warning_text": msg})
-        } else if (this._name_exists(this.state.current_value)) {
+            set_warning_text(msg)
+        } else if (_name_exists(current_value)) {
             msg = "That name already exists";
-            this.setState({"warning_text": msg})
+            set_warning_text(msg);
         } else {
             let csv_options;
-            if (this.props.show_csv_options && this.state.csv_options_open) {
+            if (props.show_csv_options && csv_options_open) {
                 csv_options = {
-                    delimiter: this.state.delimiter,
-                    quoting: this.state.quoting,
-                    skipinitialspace: this.state.skipinitialspace
+                    delimiter: delimiter,
+                    quoting: quoting,
+                    skipinitialspace: skipinitialspace
                 }
-            }
-            else {
+            } else {
                 csv_options = null
             }
-            this.props.process_handler(this.myDropzone, this._setCurrentUrl, this.state.current_value,
-                this.state.checkbox_states, csv_options);
+            props.process_handler(myDropzone.current, _setCurrentUrl, current_value,
+                checkbox_states, csv_options);
         }
     }
 
-    _do_clear() {
-        this.myDropzone.removeAllFiles()
+    function _do_clear() {
+        myDropzone.current.removeAllFiles()
     }
 
-    _initCallback(dropzone) {
-        this.myDropzone = dropzone;
+    function _initCallback(dropzone) {
+        myDropzone.current = dropzone;
     }
 
-    _setCurrentUrl(new_url) {
-        this.myDropzone.options.url = new_url;
-        this.current_url = new_url
+    function _setCurrentUrl(new_url) {
+        myDropzone.current.options.url = new_url;
+        current_url.current = new_url
     }
 
     // There's trickiness with setting the current url in the dropzone object.
@@ -150,228 +147,220 @@ class FileImportDialog extends React.Component {
     // gets the dummy url in some cases. It's related to the component re-rendering
     // I think, perhaps when messages are shown in the dialog.
 
-    _uploadComplete(f) {
-        if (this.myDropzone.getQueuedFiles().length > 0) {
-            this.myDropzone.options.url = this.current_url;
-            this.myDropzone.processQueue()
-        }
-        else if (this.props.after_upload) {
-            this.props.after_upload()
+    function _uploadComplete(f) {
+        if (myDropzone.current.getQueuedFiles().length > 0) {
+            myDropzone.current.options.url = current_url.current;
+            myDropzone.current.processQueue()
+        } else if (props.after_upload) {
+            props.after_upload()
         }
     }
 
-    _onSending(f) {
+    function _onSending(f) {
         f.previewElement.scrollIntoView(false)
     }
 
-    _name_exists(name) {
-        return (this.existing_names.indexOf(name) > -1)
+    function _name_exists(name) {
+        return (existing_names.current.indexOf(name) > -1)
     }
 
-    _toggleLog() {
-        this.setState({log_open: !this.state.log_open});
+    function _toggleLog() {
+        set_log_open(!log_open);
     }
 
-    _clearLog() {
-        this.setState({log_contents: []})
+    function _clearLog() {
+        set_log_contents([])
     }
 
-    _handleDrop() {
-        if (this.myDropzone.getQueuedFiles().length == 0) {
-            this._do_clear()
+    function _handleDrop() {
+        if (myDropzone.current.getQueuedFiles().length == 0) {
+            _do_clear()
         }
     }
 
-    _nameChangeHandler(event) {
-        this.setState({"current_value": event.target.value, warning_text: "  "})
+    function _nameChangeHandler(event) {
+        set_current_value(event.target.value);
+        set_warning_text("  ")
     }
 
-    _updateDelimiter(event) {
-        this.setState({delimiter: event.target.value})
-    }
-    
-    _updateQuoting(val) {
-        this.setState({quoting: val})
+    function _updateDelimiter(event) {
+        set_delimiter(event.target.value)
     }
 
-    _updateSkipinitial(event) {
-        this.setState({skipinitialspace: event.target.checked})
+    function _updateSkipinitial(event) {
+        set_skipinitialspace(event.target.checked)
     }
 
-    _toggleCSVOptions() {
-        this.setState({csv_options_open: !this.state.csv_options_open})
+    function _toggleCSVOptions() {
+        set_csv_options_open(!csv_options_open)
     }
 
-    render() {
-        let half_width = .5 * this.state.current_picker_width - 10;
-        let name_style = {display: "inline-block", maxWidth: half_width};
-        let progress_style = {
-            position: "relative", width: half_width - 100, marginRight: 5,
-            marginLeft: "unset", left: "unset", right: "unset"
-        };
-        let size_style = {marginLeft: 5, width: 75};
-        var componentConfig = {
-            postUrl: this.current_url,  // Must have this even though will never be used
-            // iconFiletypes: this.props.allowed_file_types,
-            // showFiletypeIcon: true
-        };
-        var djsConfig = {
-            uploadMultiple: false,
-            parallelUploads: 1,
-            autoProcessQueue: false,
-            dictDefaultMessage: "Click or drop files here to upload",
-            acceptedFiles: this.props.allowed_file_types,
-            // addRemoveLinks: true,
-            // dictRemoveFile: "x",
-            previewTemplate: renderToStaticMarkup(
-                <div className="dz-preview dz-file-preview">
-                    <div style={name_style} data-dz-name="true"></div>
-                    <div style={{
-                        display: "flex", width: half_width, flexDirection:
-                            "row", justifyContent: "space-bewteen"
-                    }}>
-                        <div className="dz-progress" style={progress_style}>
-                            <div className="dz-upload" data-dz-uploadprogress="true"></div>
-                        </div>
-                        <div className="dz-success-mark" style={progress_style}><span>✔</span></div>
-                        <div className="dz-error-mark" style={progress_style}><span>✘</span></div>
-                        {/*<div className="dz-error-message" style={progress_style}><span data-dz-errormessage="true"></span></div>*/}
-                        <div style={size_style} data-dz-size="true"></div>
+    let half_width = .5 * current_picker_width - 10;
+    let name_style = {display: "inline-block", maxWidth: half_width};
+    let progress_style = {
+        position: "relative", width: half_width - 100, marginRight: 5,
+        marginLeft: "unset", left: "unset", right: "unset"
+    };
+    let size_style = {marginLeft: 5, width: 75};
+    var componentConfig = {
+        postUrl: current_url.current,  // Must have this even though will never be used
+    };
+    var djsConfig = {
+        uploadMultiple: false,
+        parallelUploads: 1,
+        autoProcessQueue: false,
+        dictDefaultMessage: "Click or drop files here to upload",
+        acceptedFiles: props.allowed_file_types,
+        // addRemoveLinks: true,
+        // dictRemoveFile: "x",
+        previewTemplate: renderToStaticMarkup(
+            <div className="dz-preview dz-file-preview">
+                <div style={name_style} data-dz-name="true"></div>
+                <div style={{
+                    display: "flex", width: half_width, flexDirection:
+                        "row", justifyContent: "space-bewteen"
+                }}>
+                    <div className="dz-progress" style={progress_style}>
+                        <div className="dz-upload" data-dz-uploadprogress="true"></div>
                     </div>
+                    <div className="dz-success-mark" style={progress_style}><span>✔</span></div>
+                    <div className="dz-error-mark" style={progress_style}><span>✘</span></div>
+                    {/*<div className="dz-error-message" style={progress_style}><span data-dz-errormessage="true"></span></div>*/}
+                    <div style={size_style} data-dz-size="true"></div>
                 </div>
-            ),
-            headers: {
-                'X-CSRF-TOKEN': window.csrftoken
-            }
-        };
-        var eventHandlers;
-        eventHandlers = {
-            init: this._initCallback,
-            complete: this._uploadComplete,
-            sending: this._onSending,
-            drop: this._handleDrop,
-            error: this._handleError,
-        };
-        let checkbox_items = [];
-        if ((this.props.checkboxes != null) && (this.props.checkboxes.length != 0)) {
-            for (let checkbox of this.props.checkboxes) {
-                let new_item = (
-                    <Checkbox checked={this.state.checkbox_states[checkbox.checkname]}
-                              label={checkbox.checktext}
-                              id={checkbox.checkname}
-                              key={checkbox.checkname}
-                              inline="true"
-                              alignIndicator={Alignment.RIGHT}
-                              onChange={this._checkbox_change_handler}
-                    />
-                );
-                checkbox_items.push(new_item)
-            }
+            </div>
+        ),
+        headers: {
+            'X-CSRF-TOKEN': window.csrftoken
         }
-        var log_items;
-        if (this.state.log_open) {
-            if (this.state.log_contents.length > 0) {
-                log_items = this.state.log_contents.map((entry, index) => {
-                    let content_dict = {__html: entry.content};
-                    let has_link = false;
-                    return (
-                        <ErrorItem key={index} title={entry.title} content={entry.content} has_link={has_link}/>
-                    )
-                });
-            } else {
-                log_items = <div>Log is empty</div>
-            }
+    };
+    var eventHandlers;
+    eventHandlers = {
+        init: _initCallback,
+        complete: _uploadComplete,
+        sending: _onSending,
+        drop: _handleDrop,
+        error: _handleError,
+    };
+    let checkbox_items = [];
+    if ((props.checkboxes != null) && (props.checkboxes.length != 0)) {
+        for (let checkbox of props.checkboxes) {
+            let new_item = (
+                <Checkbox checked={checkbox_states[checkbox.checkname]}
+                          label={checkbox.checktext}
+                          id={checkbox.checkname}
+                          key={checkbox.checkname}
+                          inline="true"
+                          alignIndicator={Alignment.RIGHT}
+                          onChange={_checkbox_change_handler}
+                />
+            );
+            checkbox_items.push(new_item)
         }
-        let body_style = {
-            marginTop: 25,
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-around",
-            minHeight: 101
-        };
-        let allowed_types_string = this.props.allowed_file_types.replaceAll(",", " ");
-        return (
-            <Dialog isOpen={this.state.show}
-                    className={this.props.dark_theme ? "import-dialog bp5-dark" : "import-dialog light-theme"}
-                    title={this.props.title}
-                    onClose={this._closeHandler}
-                    canOutsideClickClose={false}
-                    canEscapeKeyClose={false}>
-                <div className={Classes.DIALOG_BODY}>
-                    <FormGroup helperText={`allowed types: ${allowed_types_string}`}>
-                        <DropzoneComponent config={componentConfig}
-                                           eventHandlers={eventHandlers}
-                                           djsConfig={djsConfig}/>
-                    </FormGroup>
-                    <div style={body_style}>
-                        {this.props.combine &&
+    }
+    var log_items;
+    if (log_open) {
+        if (log_contents.length > 0) {
+            log_items = log_contents.map((entry, index) => {
+                let content_dict = {__html: entry.content};
+                let has_link = false;
+                return (
+                    <ErrorItem key={index} title={entry.title} content={entry.content} has_link={has_link}/>
+                )
+            });
+        } else {
+            log_items = <div>Log is empty</div>
+        }
+    }
+    let body_style = {
+        marginTop: 25,
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "space-around",
+        minHeight: 101
+    };
+    let allowed_types_string = props.allowed_file_types.replaceAll(",", " ");
+    return (
+        <Dialog isOpen={show}
+                className={props.dark_theme ? "import-dialog bp5-dark" : "import-dialog light-theme"}
+                title={props.title}
+                onClose={_closeHandler}
+                canOutsideClickClose={false}
+                canEscapeKeyClose={false}>
+            <div className={Classes.DIALOG_BODY}>
+                <FormGroup helperText={`allowed types: ${allowed_types_string}`}>
+                    <DropzoneComponent config={componentConfig}
+                                       eventHandlers={eventHandlers}
+                                       djsConfig={djsConfig}/>
+                </FormGroup>
+                <div style={body_style}>
+                    {props.combine &&
                         <div>
-                            <FormGroup label={`New ${this.props.res_type} name`}
+                            <FormGroup label={`New ${props.res_type} name`}
                                        labelFor="name-input"
                                        inline={true}
-                                       helperText={this.state.warning_text}>
-                                <InputGroup onChange={this._nameChangeHandler}
+                                       helperText={warning_text}>
+                                <InputGroup onChange={_nameChangeHandler}
                                             fill={false}
                                             id="name-input"
-                                            value={this.state.current_value}/>
+                                            value={current_value}/>
                             </FormGroup>
                             {(checkbox_items.length != 0) && checkbox_items}
-                            {this.props.show_csv_options &&
-                            <div>
-                                <Divider/>
-                                <Button onClick={this._toggleCSVOptions} minimal={true} intent="primary" large={true}>
-                                    csv options: {this.state.csv_options_open ? "manual" : "auto"}
-                                </Button>
-                                <Collapse isOpen={this.state.csv_options_open}>
-                                    <FormGroup label="delimiter"  inline={true} style={{marginTop: 10}}>
-                                        <InputGroup onChange={this._updateDelimiter} value={this.state.delimiter}/>
-                                    </FormGroup>
-                                    <FormGroup label="quoting" inline={true}>
-                                        <BpSelect onChange={this._updateQuoting}
-                                                  value={this.state.quoting}
-                                                  filterable={false}
-                                                  small={true}
-                                                  options={["QUOTE_MINIMAL", "QUOTE_ALL",
-                                                      "QUOTE_NONNUMERIC", "QUOTE_NONE"]}/>
-                                    </FormGroup>
-                                    <Checkbox checked={this.state.skipinitialspace}
-                                              label="skipinitialspace"
-                                              inline="true"
-                                              alignIndicator={Alignment.RIGHT}
-                                              onChange={this._updateSkipinitial}
-                                    />
+                            {props.show_csv_options &&
+                                <div>
+                                    <Divider/>
+                                    <Button onClick={_toggleCSVOptions} minimal={true} intent="primary" large={true}>
+                                        csv options: {csv_options_open ? "manual" : "auto"}
+                                    </Button>
+                                    <Collapse isOpen={csv_options_open}>
+                                        <FormGroup label="delimiter" inline={true} style={{marginTop: 10}}>
+                                            <InputGroup onChange={_updateDelimiter} value={delimiter}/>
+                                        </FormGroup>
+                                        <FormGroup label="quoting" inline={true}>
+                                            <BpSelect onChange={set_quoting}
+                                                      value={quoting}
+                                                      filterable={false}
+                                                      small={true}
+                                                      options={["QUOTE_MINIMAL", "QUOTE_ALL",
+                                                          "QUOTE_NONNUMERIC", "QUOTE_NONE"]}/>
+                                        </FormGroup>
+                                        <Checkbox checked={skipinitialspace}
+                                                  label="skipinitialspace"
+                                                  inline="true"
+                                                  alignIndicator={Alignment.RIGHT}
+                                                  onChange={_updateSkipinitial}
+                                        />
 
-                                </Collapse>
-                            </div>
-                        }
+                                    </Collapse>
+                                </div>
+                            }
                         </div>
-                        }
+                    }
 
-                        <div style={{display: "flex", flexDirection: "column", justifyContent: "space-evenly"}}>
-                            <Button intent={Intent.PRIMARY} onClick={this._do_submit}>Upload</Button>
-                            <Button onClick={this._do_clear}>Clear Files</Button>
-                        </div>
+                    <div style={{display: "flex", flexDirection: "column", justifyContent: "space-evenly"}}>
+                        <Button intent={Intent.PRIMARY} onClick={_do_submit}>Upload</Button>
+                        <Button onClick={_do_clear}>Clear Files</Button>
                     </div>
                 </div>
-                <Divider/>
-                <div className={Classes.DIALOG_FOOTER} style={{marginTop: 10}}>
-                    <ButtonGroup>
-                        <Button onClick={this._toggleLog}>
-                            {this.state.log_open ? "Hide" : "Show"} log
-                        </Button>
-                        <Button onClick={this._clearLog}>
-                            Clear log
-                        </Button>
-                    </ButtonGroup>
-                    <Collapse isOpen={this.state.log_open}>
-                        <div className="bp5-dialog-body">
-                            {log_items}
-                        </div>
-                    </Collapse>
-                </div>
-            </Dialog>
-        )
-    }
+            </div>
+            <Divider/>
+            <div className={Classes.DIALOG_FOOTER} style={{marginTop: 10}}>
+                <ButtonGroup>
+                    <Button onClick={_toggleLog}>
+                        {log_open ? "Hide" : "Show"} log
+                    </Button>
+                    <Button onClick={_clearLog}>
+                        Clear log
+                    </Button>
+                </ButtonGroup>
+                <Collapse isOpen={log_open}>
+                    <div className="bp5-dialog-body">
+                        {log_items}
+                    </div>
+                </Collapse>
+            </div>
+        </Dialog>
+    )
 }
 
 FileImportDialog.propTypes = {
@@ -398,7 +387,7 @@ FileImportDialog.defaultProps = {
 };
 
 function showFileImportDialog(res_type, allowed_file_types, checkboxes, process_handler, tsocket, dark_theme,
-                              combine=false, show_csv_options=false, after_upload=null ) {
+                              combine = false, show_csv_options = false, after_upload = null) {
 
 
     $.getJSON(`${$SCRIPT_ROOT}get_resource_names/${res_type}`, function (data) {
@@ -409,7 +398,7 @@ function showFileImportDialog(res_type, allowed_file_types, checkboxes, process_
     function showTheDialog(existing_names) {
         let domContainer = document.querySelector('#modal-area');
 
-        function handle_close () {
+        function handle_close() {
             ReactDOM.unmountComponentAtNode(domContainer)
         }
 
@@ -426,5 +415,4 @@ function showFileImportDialog(res_type, allowed_file_types, checkboxes, process_
                                           after_upload={after_upload}
                                           handleClose={handle_close}/>, domContainer);
     }
-
 }

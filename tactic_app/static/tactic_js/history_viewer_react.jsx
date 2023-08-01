@@ -5,7 +5,7 @@
 import "../tactic_css/tactic.scss";
 
 import React from "react";
-import {Fragment} from "react";
+import {Fragment, useState, useEffect, memo, useRef} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
@@ -15,9 +15,10 @@ import {postAjax, postAjaxPromise} from "./communication_react.js"
 import {withErrorDrawer} from "./error_drawer.js";
 import {withStatus} from "./toaster.js";
 
-import {doBinding, guid} from "./utilities_react.js";
+import {guid} from "./utilities_react.js";
 import {TacticNavbar} from "./blueprint_navbar";
 import {TacticSocket} from "./tactic_socket.js";
+import {useCallbackStack} from "./utilities_react";
 
 function history_viewer_main ()  {
     function gotProps(the_props) {
@@ -25,11 +26,9 @@ function history_viewer_main ()  {
         let the_element = <HistoryViewerAppPlus {...the_props}
                                              controlled={false}
                                              initial_theme={window.theme}
-                                             changeName={null}
-                    />;
+                                             changeName={null}/>;
         let domContainer = document.querySelector('#root');
         ReactDOM.render(the_element, domContainer)
-
     }
     let get_url = "get_module_code";
 
@@ -63,71 +62,64 @@ function history_viewer_props(data, registerDirtyMethod, finalCallback) {
     })
 }
 
-class HistoryViewerApp extends React.Component {
+function HistoryViewerApp(props) {
 
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        let self = this;
+    const [edit_content, set_edit_content] = useState(props.edit_content);
+    const [right_content, set_right_content] = useState("");
+    const [history_popup_val, set_history_popup_val] = useState(props.history_list[0]["updatestring"]);
+    const [history_list, set_history_list] = useState(props.history_list);
 
-        this.state = {
-            "edit_content": props.edit_content,
-            "right_content": "",
-            "history_popup_val": props.history_list[0]["updatestring"],
-            "history_list": props.history_list,
-        };
-        this.handleEditChange = this.handleEditChange.bind(this);
-        this.handleSelectChange = this.handleSelectChange.bind(this);
-        this.checkpointThenSaveFromLeft = this.checkpointThenSaveFromLeft.bind(this);
-        this.savedContent = props.edit_content;
+    const [dark_theme, set_dark_theme] = useState(props.initial_theme === "dark");
+    const [resource_name, set_resource_name] = useState(props.resource_name);
 
+    const savedContent = useRef(props.edit_content);
+
+    const pushCallback = useCallbackStack();
+
+    useEffect(()=>{
+        window.addEventListener("beforeunload", function (e) {
+            if (_dirty()) {
+                e.preventDefault();
+                e.returnValue = ''
+            }
+        });
+        initSocket();
         if (!props.controlled) {
-            this.state.dark_theme = props.initial_theme === "dark";
-            this.state.resource_name = props.resource_name;
-            window.addEventListener("beforeunload", function (e) {
-                if (self._dirty()) {
-                    e.preventDefault();
-                    e.returnValue = ''
-                }
-            });
+            window.dark_theme = dark_theme
         }
-        this.initSocket()
-    }
+        return (() => {
+            tsocket.disconnect();
+        })
+    }, []);
 
-    initSocket() {
-        this.props.tsocket.attachListener("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
-        this.props.tsocket.attachListener('close-user-windows', (data) => {
+    function initSocket() {
+        props.tsocket.attachListener("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
+        props.tsocket.attachListener('close-user-windows', (data) => {
             if (!(data["originator"] == window.library_id)) {
                 window.close()
             }
         });
-        this.props.tsocket.attachListener('doflash', doFlash);
-        this.props.tsocket.attachListener('doflashUser', doFlash);
+        props.tsocket.attachListener('doflash', doFlash);
+        props.tsocket.attachListener('doflashUser', doFlash);
     }
 
-    componentDidMount() {
-        if (!this.props.controlled) {
-            window.dark_theme = this.state.dark_theme
-        }
-    }
-
-    _setTheme(dark_theme) {
-        this.setState({dark_theme: dark_theme}, ()=> {
+    function _setTheme(dark_theme) {
+        set_dark_theme(dark_theme);
+        pushCallback(()=> {
             if (!window.in_context) {
-                window.dark_theme = this.state.dark_theme
+                window.dark_theme = dark_theme
             }
         })
     }
 
-    handleSelectChange(new_value) {
-        this.state.history_popup_val = new_value;
-        let self = this;
-        for (let item of this.state.history_list) {
+    function handleSelectChange(new_value) {
+        set_history_popup_val(new_value);
+        for (let item of history_list) {
             if (item["updatestring"] == new_value){
                 let updatestring_for_sort = item["updatestring_for_sort"];
-                postAjaxPromise("get_checkpoint_code", {"module_name": self.state.resource_name, "updatestring_for_sort": updatestring_for_sort})
+                postAjaxPromise("get_checkpoint_code", {"module_name": resource_name, "updatestring_for_sort": updatestring_for_sort})
                     .then((data) => {
-                            self.setState({"right_content": data.module_code});
+                            set_right_content(data.module_code);
                         })
                     .catch(doFlash);
                 return
@@ -135,46 +127,13 @@ class HistoryViewerApp extends React.Component {
         }
     }
 
-    handleEditChange(new_code) {
-        this.setState({"edit_content": new_code})
+    function handleEditChange(new_code) {
+        set_edit_content(new_code)
     }
 
-    render() {
-        let option_list = this.state.history_list.map((item) => item["updatestring"]);
-        let dark_theme = this.props.controlled ? this.props.dark_theme : this.state.dark_theme;
-        return (
-                <Fragment>
-                    {!this.props.controlled} {
-                        <TacticNavbar is_authenticated={window.is_authenticated}
-                                      registerOmniFunction={(register_func) => this._registerOmniFunction("navbar", register_func)}
-                                      dark_theme={dark_theme}
-                                      setTheme={this._setTheme}
-                                      selected={null}
-                                      show_api_links={true}
-                                      page_id={this.props.resource_viewer_id}
-                                      user_name={window.username}/>
-                    }
-                    <MergeViewerApp {...this.props.statusFuncs}
-                                    setTheme={this.props.controlled ? null: this._setTheme}
-                                    dark_theme={dark_theme}
-                                    resource_viewer_id={this.props.resource_viewer_id}
-                                    resource_name={this.props.resource_name}
-                                    option_list={option_list}
-                                    select_val={this.state.history_popup_val}
-                                    edit_content={this.state.edit_content}
-                                    right_content={this.state.right_content}
-                                    handleSelectChange={this.handleSelectChange}
-                                    handleEditChange={this.handleEditChange}
-                                    saveHandler={this.checkpointThenSaveFromLeft}
-                />
-            </Fragment>
-        )
-    }
-
-    doCheckpointPromise() {
-        let self = this;
+    function doCheckpointPromise() {
         return new Promise (function (resolve, reject) {
-            postAjax("checkpoint_module", {"module_name": self.props.resource_name}, function (data) {
+            postAjax("checkpoint_module", {"module_name": props.resource_name}, function (data) {
                 if (data.success) {
                     resolve(data)
                 }
@@ -185,35 +144,65 @@ class HistoryViewerApp extends React.Component {
         })
     }
 
-    checkpointThenSaveFromLeft() {
+    function checkpointThenSaveFromLeft() {
         let self = this;
-        let current_popup_val = this.state.history_popup_val;
-        this.doCheckpointPromise()
+        let current_popup_val = history_popup_val;
+        doCheckpointPromise()
             .then(function () {
-                postAjaxPromise("get_checkpoint_dates", {"module_name": self.state.resource_name})
+                postAjaxPromise("get_checkpoint_dates", {"module_name": resource_name})
                     .then((data) => {
-                        self.setState({"history_list": data.checkpoints})
+                        set_history_list(data.checkpoints)
                     })
                     .catch(doFlash);
-                self.saveFromLeft()
+                saveFromLeft()
             })
             .catch(doFlash)
     }
 
-    saveFromLeft() {
+    function saveFromLeft() {
         let data_dict = {
-            "module_name": this.props.resource_name,
-            "module_code": this.state.edit_content
+            "module_name": props.resource_name,
+            "module_code": edit_content
         };
         postAjaxPromise("update_from_left", data_dict)
             .then(doFlash)
             .catch(doFlash)
     }
 
-
-    dirty() {
-        return this.state.edit_content != this.savedContent
+    function dirty() {
+        return edit_content != savedContent.current
     }
+
+    let option_list = history_list.map((item) => item["updatestring"]);
+    let actual_dark_theme = props.controlled ? props.dark_theme : dark_theme;
+    return (
+            <Fragment>
+                {!props.controlled} {
+                    <TacticNavbar is_authenticated={window.is_authenticated}
+                                  registerOmniFunction={(register_func) => _registerOmniFunction("navbar", register_func)}
+                                  dark_theme={actual_dark_theme}
+                                  setTheme={_setTheme}
+                                  selected={null}
+                                  show_api_links={true}
+                                  page_id={props.resource_viewer_id}
+                                  user_name={window.username}/>
+                }
+                <MergeViewerApp {...props.statusFuncs}
+                                page_id={props.resource_viewer_id}
+                                setTheme={props.controlled ? null: _setTheme}
+                                dark_theme={actual_dark_theme}
+                                resource_viewer_id={props.resource_viewer_id}
+                                resource_name={props.resource_name}
+                                option_list={option_list}
+                                select_val={history_popup_val}
+                                edit_content={edit_content}
+                                right_content={right_content}
+                                handleSelectChange={handleSelectChange}
+                                handleEditChange={handleEditChange}
+                                saveHandler={checkpointThenSaveFromLeft}
+            />
+        </Fragment>
+    )
 }
 
 HistoryViewerApp.propTypes = {
@@ -221,6 +210,8 @@ HistoryViewerApp.propTypes = {
     history_list: PropTypes.array,
     edit_content: PropTypes.string,
 };
+
+HistoryViewerApp = memo(HistoryViewerApp);
 
 if (!window.in_context) {
     history_viewer_main();

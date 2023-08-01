@@ -1,12 +1,10 @@
-
-
 import React from "react";
+import {memo} from "react";
 import PropTypes from 'prop-types';
 
 import {Omnibar} from "@blueprintjs/select"
 import {MenuItem} from "@blueprintjs/core";
 
-import {doBinding} from "./utilities_react";
 import {postWithCallback} from "./communication_react";
 
 export {TacticOmnibar}
@@ -17,83 +15,81 @@ const repository_url = $SCRIPT_ROOT + '/repository';
 const account_url = $SCRIPT_ROOT + '/account_info';
 const login_url = $SCRIPT_ROOT + "/login";
 
-class TacticOmnibarItem extends React.Component{
-    constructor(props) {
-        super(props);
-        doBinding(this)
+function TacticOmnibarItem(props) {
+    function _handleClick() {
+        props.handleClick(props.item)
     }
 
-    _handleClick() {
-        this.props.handleClick(this.props.item)
-    }
-
-    render() {
-        return (
-            <MenuItem
-                icon={this.props.item.icon_name}
-                active={this.props.modifiers.active}
-                text={this.props.item.display_text}
-                label={this.props.item.category}
-                key={this.props.item.search_text}
-                onClick={this._handleClick}
-                shouldDismissPopover={true}
-            />
-        );
-    }
+    return (
+        <MenuItem
+            icon={props.item.icon_name}
+            active={props.modifiers.active}
+            text={props.item.display_text}
+            label={props.item.category}
+            key={props.item.search_text}
+            onClick={_handleClick}
+            shouldDismissPopover={true}
+        />
+    );
 }
+
 TacticOmnibarItem.propTypes = {
     item: PropTypes.object,
     modifiers: PropTypes.object,
     handleClick: PropTypes.func
 };
 
+TacticOmnibarItem = memo(TacticOmnibarItem);
 
-class TacticOmnibar extends React.Component {
+function _itemRenderer(item, {modifiers, handleClick}) {
+    return <TacticOmnibarItem modifiers={modifiers} item={item} handleClick={handleClick}/>
+}
 
-    constructor(props) {
-        super(props);
-        doBinding(this);
+function _itemPredicate(query, item) {
+    if (query.length == 0) {
+        return false
     }
+    let lquery = query.toLowerCase();
+    let re = new RegExp(query);
 
-    static _itemRenderer(item, { modifiers, handleClick}) {
-         return <TacticOmnibarItem modifiers={modifiers} item={item} handleClick={handleClick}/>
-    }
+    return re.test(item.search_text.toLowerCase()) || re.test(item.category.toLowerCase())
+}
 
-    static _itemPredicate(query, item) {
-        if (query.length == 0) {
-            return false
-        }
-        let lquery = query.toLowerCase();
-        let re = new RegExp(query);
+function TacticOmnibar(props) {
 
-        return re.test(item.search_text.toLowerCase()) || re.test(item.category.toLowerCase())
-    }
-
-    _onItemSelect(item) {
+    function _onItemSelect(item) {
         item.the_function();
-        this.props.closeOmnibar()
+        props.closeOmnibar()
     }
 
-    _globalOmniItems() {
+    function _handle_signout() {
+        window.open($SCRIPT_ROOT + "/logout/" + props.page_id, "_self");
+        return false
+    }
+
+    function _globalOmniItems() {
         function wopenfunc(the_url) {
-            return ()=>{window.open(the_url)}
+            return () => {
+                window.open(the_url)
+            }
         }
+
         let omni_funcs = [
-            ["Toggle Theme", "account", this._toggleTheme, "contrast"],
+            ["Toggle Theme", "account", _toggleTheme, "contrast"],
             ["Docs", "documentation", wopenfunc("https://tactic.readthedocs.io/en/latest/Object-Oriented-API.html"),
-                    "log-out"],
+                "log-out"],
             ["Tile Commands", "documentation", wopenfunc("https://tactic.readthedocs.io/en/latest/Tile-Commands.html"),
-                    "code-block"],
+                "code-block"],
             ["Object Api", "documentation", wopenfunc("https://tactic.readthedocs.io/en/latest/Object-Oriented-API.html"),
-                    "code-block"],
+                "code-block"],
         ];
-        if (this.props.is_authenticated) {
+        if (props.is_authenticated) {
             let new_funcs = [
                 ["New Context Tab", "window", wopenfunc(context_url), "add"],
                 ["New Tabbed Window", "window", wopenfunc(library_url), "add"],
                 ["Show Repository", "window", wopenfunc(repository_url), "database"],
                 ["Show Account Info", "account", wopenfunc(account_url), "person"],
-                ["Logout", "account", this._handle_signout, "log-out"]];
+                ["Logout", "account", _handle_signout, "log-out"]];
             omni_funcs = omni_funcs.concat(new_funcs);
 
         }
@@ -114,40 +110,36 @@ class TacticOmnibar extends React.Component {
         return omni_items
     }
 
-    _toggleTheme () {
+    function _toggleTheme() {
         const result_dict = {
             "user_id": window.user_id,
-            "theme": !this.props.dark_theme ? "dark" : "light",
+            "theme": !props.dark_theme ? "dark" : "light",
         };
         postWithCallback("host", "set_user_theme", result_dict,
-                    null, null);
-        if (this.props.setTheme) {
-            this.props.setTheme(!this.props.dark_theme)
+            null, null);
+        if (props.setTheme) {
+            props.setTheme(!props.dark_theme)
         }
-
     }
 
-    render () {
-        let the_items = [];
-        if (this.props.showOmnibar) {
-            for (let ogetter of this.props.omniGetters) {
-                the_items = the_items.concat(ogetter())
-            }
-            the_items = the_items.concat(this._globalOmniItems())
+    let the_items = [];
+    if (props.showOmnibar) {
+        for (let ogetter of props.omniGetters) {
+            the_items = the_items.concat(ogetter())
         }
-        return (
-            <Omnibar items={the_items}
-                     className={window.dark_theme ? "bp5-dark" : ""}
-                     isOpen={this.props.showOmnibar}
-                     onItemSelect={this._onItemSelect}
-                     itemRenderer={TacticOmnibar._itemRenderer}
-                     itemPredicate={TacticOmnibar._itemPredicate}
-                     resetOnSelect={true}
-                     onClose={this.props.closeOmnibar}
-                     />
-        )
+        the_items = the_items.concat(_globalOmniItems())
     }
-
+    return (
+        <Omnibar items={the_items}
+                 className={window.dark_theme ? "bp5-dark" : ""}
+                 isOpen={props.showOmnibar}
+                 onItemSelect={_onItemSelect}
+                 itemRenderer={_itemRenderer}
+                 itemPredicate={_itemPredicate}
+                 resetOnSelect={true}
+                 onClose={props.closeOmnibar}
+        />
+    )
 }
 
 TacticOmnibar.propTypes = {
@@ -162,3 +154,5 @@ TacticOmnibar.defaultProps = {
     showOmnibar: false,
     omniGetters: null
 };
+
+TacticOmnibar = memo(TacticOmnibar);

@@ -5,7 +5,7 @@ import "../tactic_css/tactic_console.scss";
 import "../tactic_css/tactic_select.scss"
 
 import React from "react";
-import {Fragment, useState, useEffect, useRef, memo} from "react";
+import {Fragment, useEffect, useRef, useReducer, memo} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
@@ -19,7 +19,7 @@ import {BlueprintTable, compute_added_column_width} from "./blueprint_table";
 import {TacticSocket} from "./tactic_socket"
 import {HorizontalPanes, VerticalPanes} from "./resizing_layouts";
 import {ProjectMenu, DocumentMenu, ColumnMenu, RowMenu, ViewMenu, MenuComponent} from "./main_menus_react";
-import {TileContainer} from "./tile_react";
+import {TileContainer, tilesReducer} from "./tile_react";
 import {ExportsViewer} from "./export_viewer_react";
 import {showModalReact, showSelectDialog} from "./modal_react";
 import {ConsoleComponent, itemsReducer} from "./console_component";
@@ -220,6 +220,56 @@ const iStateDefaults = {
     console_is_zoomed: false
 };
 
+function mainReducer(mState, action) {
+    var newMstate;
+    switch (action.type) {
+        case "change_field":
+            newMstate = {...mState};
+            newMstate[action.field] = action.new_value;
+            break;
+        case "change_multiple_fields":
+            newMstate = {...mState, ...action.newPartialState};
+            break;
+        case "update_table_spec":
+            newMstate = {...mState};
+            newMstate.table_spec = {...mState.table_spec, ...action.spec_update};
+            break;
+        case "set_cell_content":
+            newMstate = {...mState};
+            let new_data_row_dict = {...mState.data_row_dict};
+            let the_row = {...new_data_row_dict[action.row_id]};
+            the_row[action.column_header] = action.new_content;
+            new_data_row_dict[action.row_id] = the_row;
+            newMstate.data_row_dict = new_data_row_dict;
+            break;
+        case "set_cell_background":
+            newMstate = {...mState};
+            let new_cell_backgrounds = {...mState.table_spec.cell_backgrounds};
+            if (!new_cell_backgrounds.hasOwnProperty(action.row_id)) {
+                new_cell_backgrounds[action.row_id] = {}
+            }
+            new_cell_backgrounds[action.row_id][action.column_header] = color;
+            newMstate.table_spec = {...mState.table_spec, cell_backgrounds: new_cell_backgrounds};
+            break;
+        case "set_cells_to_color_text":
+            newMstate = {...mState};
+            let ccd = {...newMstate.cells_to_color_text};
+            let entry = {...ccd[action.row_id]};
+            entry[action.column_header] = {token_text: action.token_text, color_dict: action.color_dict};
+            ccd[action.row_id] = entry;
+            newMstate.cells_to_color_text = ccd;
+            break;
+        case "update_data_row_dict":
+            newMstate = {...mState};
+            newMstate.data_row_dict = {...mState.data_row_dict, ...action.new_data_row_dict};
+            break;
+        default:
+            console.log("Got Unknown action: " + action.type);
+            newMstate = {...mState};
+    }
+    return newMstate
+}
+
 const controllable_props = ["is_project", "resource_name", "usable_width", "usable_height"];
 
 function MainApp(props) {
@@ -248,67 +298,48 @@ function MainApp(props) {
 
     // These are the attributes that are saved
     const [console_items, dispatch, console_items_ref] = useReducerAndRef(itemsReducer, iStateOrDefault("console_items"));
-    const [tile_list, set_tile_list] = useState(iStateOrDefault("tile_list"));
-    const [table_is_shrunk, set_table_is_shrunk] = useState(iStateOrDefault("table_is_shrunk"));
-    const [console_width_fraction, set_console_width_fraction] = useState(iStateOrDefault("console_width_fraction"));
-    const [horizontal_fraction, set_horizontal_fraction] = useState(iStateOrDefault("horizontal_fraction"));
-    const [height_fraction, set_height_fraction] = useState(iStateOrDefault("height_fraction"));
-    const [console_is_shrunk, set_console_is_shrunk] = useState(iStateOrDefault("console_is_shrunk"));
-    const [show_exports_pane, set_show_exports_pane] = useState(iStateOrDefault("show_exports_pane"));
-    const [show_console_pane, set_show_console_pane] = useState(iStateOrDefault("show_console_pane"));
-    const [console_is_zoomed, set_console_is_zoomed] = useState(iStateOrDefault("console_is_zoomed"));
+    const [tile_list, tileDispatch, tile_list_ref] = useReducerAndRef(tilesReducer, iStateOrDefault("tile_list"));
 
-    const [table_spec, set_table_spec] = useState(props.initial_table_spec);
-    const [data_text, set_data_text] = useState(props.is_freeform ? props.initial_data_text : null);
-    const [data_row_dict, set_data_row_dict] = useState(props.is_freeform ? null : props.initial_data_row_dict);
-    const [total_rows, set_total_rows] = useState(props.is_freeform ? null : props.total_rows);
+    const [mState, mDispatch] = useReducer(mainReducer, {
+        table_is_shrunk: iStateOrDefault("table_is_shrunk"),
+        console_width_fraction: iStateOrDefault("console_width_fraction"),
+        horizontal_fraction: iStateOrDefault("console_width_fraction"),
+        height_fraction: iStateOrDefault("height_fraction"),
+        console_is_shrunk: iStateOrDefault("console_is_shrunk"),
+        console_is_zoomed: iStateOrDefault("console_is_zoomed"),
+        show_exports_pane: iStateOrDefault("show_exports_pane"),
+        show_console_pane: iStateOrDefault("show_console_pane"),
 
-    const [doc_names, set_doc_names] = useState(props.initial_doc_names);
-    const [short_collection_name, set_short_collection_name] = useState(props.short_collection_name);
+        table_spec: props.initial_table_spec,
+        data_text: props.is_freeform ? props.initial_data_text : null,
+        data_row_dict: props.is_freeform ? null : props.initial_data_row_dict,
+        total_rows: props.is_freeform ? null : props.total_rows,
+        doc_names: props.initial_doc_names,
+        short_collection_name: props.short_collection_name,
 
-    const [tile_types, set_tile_types] = useState(props.initial_tile_types);
-    const [tile_icon_dict, set_tile_icon_dict] = useState(props.initial_tile_icon_dict);
+        tile_types: props.initial_tile_types,
+        tile_icon_dict: props.initial_tile_icon_dict,
 
-    const [alt_search_text, set_alt_search_text] = useState(null);
-    const [selected_column, set_selected_column] = useState(null);
-    const [selected_row, set_selected_row] = useState(null);
-    const [selected_regions, set_selected_regions] = useState([]);
-    const [table_is_filtered, set_table_is_filtered] = useState(false);
-    const [search_text, set_search_text] = useState("");
+        alt_search_text: null,
+        selected_column: null,
+        selected_row: null,
+        selected_regions: [],
+        table_is_filtered: false,
+        search_text: "",
+        soft_wrap: false,
 
-    const [soft_wrap, set_soft_wrap] = useState(false);
+        show_table_spinner: false,
+        cells_to_color_text: {},
+        spreadsheet_mode: false,
 
-    const [show_table_spinner, set_show_table_spinner] = useState(false);
-    const [cells_to_color_text, set_cells_to_color_text] = useState({});
-    const [force_row_to_top, set_force_row_to_top] = useState(null);
-    const [spreadsheet_mode, set_spreadsheet_mode] = useState(false);
-
-    // These will maybe only be used if not controlled
-    const [is_project, set_is_project] = useState(props.is_project);
-    const [sdark_theme, set_dark_theme] = useState(props.initial_theme === "dark");
-    const [sresource_name, set_sresource_name] = useState(props.resource_name);
-    const [showOmnibar, setShowOmnibar] = useState(false);
-    const [usable_height, set_usable_height] = useState(() => {
-        return getUsableDimensions(true).usable_height_no_bottom
+        // These will maybe only be used if not controlled
+        dark_theme: props.initial_theme === "dark",
+        resource_name: props.resource_name,
+        showOmnibar: false,
+        is_project: props.is_project,
+        usable_height: getUsableDimensions(true).usable_height_no_bottom,
+        usable_width: getUsableDimensions(true).usable_width - 170
     });
-    const [usable_width, set_usable_width] = useState(() => {
-        return getUsableDimensions(true).usable_width - 170
-    });
-
-    var stateSetters = {
-        tile_list: set_tile_list,
-        table_is_shrunk: set_table_is_shrunk,
-        show_exports_pane: set_show_exports_pane,
-        console_width_fraction: set_console_width_fraction,
-        horizontal_fraction: set_horizontal_fraction,
-        console_is_shrunk: set_console_is_shrunk,
-        console_is_zoomed: set_console_is_zoomed,
-        selected_regions: set_selected_regions,
-        selected_column: set_selected_column,
-        selected_row: set_selected_row,
-        show_console_pane: set_show_console_pane,
-        table_is_filtered: set_table_is_filtered,
-    };
 
     const pushCallback = useCallbackStack();
 
@@ -331,8 +362,8 @@ function MainApp(props) {
         _updateLastSave();
         props.stopSpinner();
         if (!props.controlled) {
-            document.title = sresource_name;
-            window.dark_theme = sdark_theme;
+            document.title = mState.resource_name;
+            window.dark_theme = mState.dark_theme;
             window.addEventListener("resize", _update_window_dimensions);
             _update_window_dimensions();
         }
@@ -343,26 +374,22 @@ function MainApp(props) {
         })
     }, []);
 
-    function cPropGetters() {
-        return {
-            is_project: is_project,
-            usable_width: usable_width,
-            usable_height: usable_height,
-            resource_name: sresource_name,
-        }
-    }
-
     function _cProp(pname) {
-        return props.controlled ? props[pname] : cPropGetters()[pname]
+        return props.controlled ? props[pname] : mState[pname]
     }
 
-    function interface_state() {
-        return {
-            tile_list, table_is_shrunk, console_items, console_width_fraction,
-            horizontal_fraction, console_is_shrunk, height_fraction, show_exports_pane,
-            show_console_pane, console_is_zoomed
-        }
-    }
+    const save_state = {
+        tile_list: tile_list,
+        console_items: console_items,
+        table_is_shrunk: mState.table_is_shrunk,
+        console_width_fraction: mState.console_width_fraction,
+        horizontal_fraction: mState.horizontal_fraction,
+        console_is_shrunk: mState.console_is_shrunk,
+        height_fraction: mState.height_fraction,
+        show_exports_pane: mState.show_exports_pane,
+        show_console_pane: mState.show_console_pane,
+        console_is_zoomed: mState.console_is_zoomed
+    };
 
     // This will only be called if not controlled
     function _update_window_dimensions() {
@@ -375,17 +402,22 @@ function MainApp(props) {
             uheight = window.innerHeight - USUAL_TOOLBAR_HEIGHT;
             uwidth = window.innerWidth - 2 * MARGIN_SIZE;
         }
-        set_usable_height(uheight);
-        set_usable_width(uwidth);
+        mDispatch({
+            type: "change_multiple_fields",
+            newPartialState: {
+                usable_height: uheight,
+                usable_width: uwidth
+            }
+        });
     }
 
 
     function _updateLastSave() {
-        last_save.current = interface_state()
+        last_save.current = save_state
     }
 
     function _dirty() {
-        let current_state = interface_state();
+        let current_state = save_state;
         for (let k in current_state) {
             if (current_state[k] != last_save.current[k]) {
                 return true
@@ -401,16 +433,21 @@ function MainApp(props) {
 
     function _update_menus_listener(data) {
         postWithCallback("host", "get_tile_types", {"user_id": window.user_id}, function (data) {
-            set_tile_types(data.tile_types);
-            set_tile_icon_dict(data.icon_dict);
+            mDispatch({
+                type: "change_multiple_fields",
+                newPartialState: {
+                    type_types: data.tile_types,
+                    tile_icon_dict: data.icon_dict
+                }
+            });
         }), null, props.main_id;
     }
 
     function _change_doc_listener(data) {
         if (data.main_id == props.main_id) {
             let row_id = data.hasOwnProperty("row_id") ? data.row_id : null;
-            if (table_is_shrunk) {
-                set_table_is_shrunk(false)
+            if (mState.table_is_shrunk) {
+                _setMainStateValue("table_is_shrunk", false)
             }
             _handleChangeDoc(data.doc_name, row_id)
         }
@@ -452,7 +489,7 @@ function MainApp(props) {
     }
 
     function setTheme(dark_theme) {
-        set_dark_theme(dark_theme);
+        _setMainStateValue("dark_theme", dark_theme);
         pushCallback(() => {
             window.dark_theme = dark_theme
         })
@@ -484,33 +521,44 @@ function MainApp(props) {
 
     function _setMainStateValue(field_name, new_value = null, callback = null) {
         if (typeof (field_name) == "object") {
-            for (let f in field_name) {
-                stateSetters[f](field_name[f]);
-            }
-        } else {
-            stateSetters[field_name](new_value);
+            mDispatch({
+                type: "change_multiple_fields",
+                newPartialState: field_name
+            })
         }
-        pushCallback(callback)
+        else {
+            mDispatch({
+                type: "change_field",
+                field: field_name,
+                new_value: new_value
+            });
+            pushCallback(callback)
+        }
     }
 
     function _handleSearchFieldChange(lsearch_text) {
-        set_search_text(lsearch_text);
-        set_alt_search_text(null);
+        mDispatch({
+            type: "change_multiple_fields",
+            newPartialState: {
+                search_text: lsearch_text,
+                alt_search_text: null
+            }
+        });
         if ((lsearch_text == null) && (!props.is_freeform)) {
-            set_cells_to_color_text({})
+            _setMainStateValue("cells_to_color_text", {})
         }
     }
 
     function _handleSpreadsheetModeChange(event) {
-        set_spreadsheet_mode(event.target.checked);
+        _setMainStateValue("spreadsheet_mode", event.target.checked)
     }
 
     function _handleSoftWrapChange(event) {
-        set_soft_wrap(event.target.checked);
+        _setMainStateValue("soft_wrap", event.target.checked)
     }
 
     function _setAltSearchText(the_text) {
-        set_alt_search_text(the_text)
+        _setMainStateValue("alt_search_text", the_text)
     }
 
     function set_visible_doc(doc_name, func) {
@@ -523,7 +571,7 @@ function MainApp(props) {
     }
 
     function _handleChangeDoc(new_doc_name, row_index = 0) {
-        set_show_table_spinner(true);
+        _setMainStateValue("show_table_spinner", true);
         if (props.is_freeform) {
             postWithCallback(props.main_id, "grab_freeform_data", {
                 "doc_name": new_doc_name,
@@ -532,18 +580,24 @@ function MainApp(props) {
                 props.stopSpinner();
                 props.clearStatusMessage();
                 let new_table_spec = {"current_doc_name": new_doc_name};
-                set_data_text(data.data_text);
-                set_table_spec(new_table_spec);
-                pushCallback(() => {
-                    set_show_table_spinner(false);
+                mDispatch({
+                    type: "change_multiple_fields",
+                    newPartialState: {
+                        data_text: data.data_text,
+                        table_spec: new_table_spec,
+                        visible_doc: new_doc_name
+                    },
+
                 });
-                set_visible_doc(new_doc_name);
+                pushCallback(() => {
+                    _setMainStateValue("show_table_spinner", false)
+                });
             }, null, props.main_id)
         } else {
             const data_dict = {"doc_name": new_doc_name, "row_index": row_index, "set_visible_doc": true};
             postWithCallback(props.main_id, "grab_chunk_by_row_index", data_dict, function (data) {
                 _setStateFromDataObject(data, new_doc_name, () => {
-                    set_show_table_spinner(false);
+                    _setMainStateValue("show_table_spinner", false);
                     set_table_scroll.current = row_index;
                 });
             }, null, props.main_id);
@@ -551,15 +605,16 @@ function MainApp(props) {
     }
 
     function _handleVerticalSplitUpdate(top_height, bottom_height, top_fraction) {
-        set_height_fraction(top_fraction)
+        _setMainStateValue("height_fraction", top_fraction)
     }
 
     function _updateTableSpec(spec_update, broadcast = false) {
-        let new_tspec = _.cloneDeep(table_spec);
-        new_tspec = Object.assign(new_tspec, spec_update);
-        set_table_spec(new_tspec);
+        mDispatch({
+            type: "update_table_spec",
+            spec_update: spec_update
+        });
         if (broadcast) {
-            spec_update["doc_name"] = table_spec.current_doc_name;
+            spec_update["doc_name"] = mState.table_spec.current_doc_name;
             postWithCallback(props.main_id, "UpdateTableSpec", spec_update, null, null, props.main_id);
         }
     }
@@ -567,7 +622,7 @@ function MainApp(props) {
     function _broadcast_event_to_server(event_name, data_dict, callback) {
         data_dict.main_id = props.main_id;
         data_dict.event_name = event_name;
-        data_dict.doc_name = table_spec.current_doc_name;
+        data_dict.doc_name = mState.table_spec.current_doc_name;
         postWithCallback(props.main_id, "distribute_events_stub", data_dict, callback, null, props.main_id)
     }
 
@@ -593,9 +648,11 @@ function MainApp(props) {
                         menu_id,
                         create_data.tile_id,
                         create_data.form_data);
-                    let new_tile_list = [...tile_list];
-                    new_tile_list.push(new_tile_entry);
-                    set_tile_list(new_tile_list);
+                    tileDispatch({
+                        type: "add_at_index",
+                        insert_index: tile_list.length,
+                        new_item: new_tile_entry
+                    });
                     if (updateExportsList.current) updateExportsList.current();
                     props.clearStatusMessage();
                     props.stopSpinner()
@@ -607,11 +664,11 @@ function MainApp(props) {
     }
 
     function _showOmnibar() {
-        setShowOmnibar(true)
+        _setMainStateValue("showOmnibar", true)
     }
 
     function _closeOmnibar() {
-        setShowOmnibar(false)
+        _setMainStateValue("showOmnibar", false)
     }
 
     function _omniFunction() {
@@ -629,10 +686,10 @@ function MainApp(props) {
 
     function _getTileOmniItems() {
         let omni_items = [];
-        let sorted_categories = [...Object.keys(tile_types)];
+        let sorted_categories = [...Object.keys(mState.tile_types)];
         sorted_categories.sort();
         for (let category of sorted_categories) {
-            let sorted_types = [...tile_types[category]];
+            let sorted_types = [...mState.tile_types[category]];
             sorted_types.sort();
             for (let ttype of sorted_types) {
                 omni_items.push(
@@ -640,29 +697,27 @@ function MainApp(props) {
                         category: category,
                         display_text: ttype,
                         search_text: ttype,
-                        icon_name: tile_icon_dict[ttype],
+                        icon_name: mState.tile_icon_dict[ttype],
                         the_function: () => _tile_command(ttype)
                     }
                 )
-
             }
-
         }
         return omni_items
     }
 
     function create_tile_menus() {
         let menu_items = [];
-        let sorted_categories = [...Object.keys(tile_types)];
+        let sorted_categories = [...Object.keys(mState.tile_types)];
         sorted_categories.sort();
         for (let category of sorted_categories) {
             let option_dict = {};
             let icon_dict = {};
-            let sorted_types = [...tile_types[category]];
+            let sorted_types = [...mState.tile_types[category]];
             sorted_types.sort();
             for (let ttype of sorted_types) {
                 option_dict[ttype] = () => _tile_command(ttype);
-                icon_dict[ttype] = tile_icon_dict[ttype]
+                icon_dict[ttype] = mState.tile_icon_dict[ttype]
             }
             menu_items.push(<MenuComponent menu_name={category}
                                            option_dict={option_dict}
@@ -676,11 +731,11 @@ function MainApp(props) {
     }
 
     function _toggleTableShrink() {
-        set_table_is_shrunk(!table_is_shrunk);
+        _setMainStateValue("table_is_shrunk", !mState.table_is_shrunk)
     }
 
     function _handleHorizontalFractionChange(left_width, right_width, new_fraction) {
-        set_horizontal_fraction(new_fraction)
+        _setMainStateValue("horizontal_fraction", new_fraction)
     }
 
     function _handleResizeStart() {
@@ -692,7 +747,7 @@ function MainApp(props) {
     }
 
     function _handleConsoleFractionChange(left_width, right_width, new_fraction) {
-        set_console_width_fraction(new_fraction)
+        _setMainStateValue("console_width_fraction", new_fraction)
     }
 
     // Table doctype-only methods start here
@@ -702,14 +757,14 @@ function MainApp(props) {
             return table_available_height - 50;
         } else {
             let top_offset = tbody_ref.current.getBoundingClientRect().top - table_container_ref.current.getBoundingClientRect().top;
-            let madjust = console_is_shrunk ? 2 * MARGIN_ADJUSTMENT : MARGIN_ADJUSTMENT;
+            let madjust = mState.console_is_shrunk ? 2 * MARGIN_ADJUSTMENT : MARGIN_ADJUSTMENT;
             return table_available_height - top_offset - madjust
         }
     }
 
     function _setFreeformDoc(doc_name, new_content) {
-        if (doc_name == table_spec.current_doc_name) {
-            set_data_text(new_content)
+        if (doc_name == mState.table_spec.current_doc_name) {
+            _setMainStateValue("data_text", new_content)
         }
     }
 
@@ -731,11 +786,12 @@ function MainApp(props) {
     }
 
     function _setCellContent(row_id, column_header, new_content, broadcast = false) {
-        let new_data_row_dict = Object.assign({}, data_row_dict);
-        let the_row = Object.assign({}, new_data_row_dict[row_id]);
-        the_row[column_header] = new_content;
-        new_data_row_dict[row_id] = the_row;
-        set_data_row_dict(new_data_row_dict);
+        mDispatch({
+            type: "set_cell_content",
+            row_id: row_id,
+            column_header: column_header,
+            new_content: new_content
+        });
         let data = {id: row_id, column_header: column_header, new_content: new_content, cellchange: false};
         if (broadcast) {
             _broadcast_event_to_server("SetCellContent", data, null)
@@ -743,25 +799,21 @@ function MainApp(props) {
     }
 
     function _setCellBackgroundColor(row_id, column_header, color) {
-        let new_table_spec = _.cloneDeep(table_spec);
-        if (!new_table_spec.cell_backgrounds.hasOwnProperty(row_id)) {
-            new_table_spec.cell_backgrounds[row_id] = {}
-        }
-        new_table_spec.cell_backgrounds[row_id][column_header] = color;
-        _updateTableSpec(new_table_spec)
+        mDispatch({
+            type: "set_cell_background",
+            row_id: row_id,
+            column_header: column_header
+        })
     }
 
     function _colorTextInCell(row_id, column_header, token_text, color_dict) {
-        let ccd = Object.assign({}, cells_to_color_text);
-        let entry;
-        if (ccd.hasOwnProperty(row_id)) {
-            entry = Object.assign({}, ccd[row_id])
-        } else {
-            entry = {}
-        }
-        entry[column_header] = {token_text: token_text, color_dict: color_dict};
-        ccd[row_id] = entry;
-        set_cells_to_color_text(ccd)
+        mDispatch({
+            type: "set_cells_to_color_text",
+            row_id: row_id,
+            column_header: column_header,
+            token_text: token_text,
+            color_dict: color_dict
+        })
     }
 
     function _refill_table(data_object) {
@@ -769,7 +821,7 @@ function MainApp(props) {
     }
 
     function _moveColumn(tag_to_move, place_to_move) {
-        let colnames = [...table_spec.column_names];
+        let colnames = [...mState.table_spec.column_names];
         let start_index = colnames.indexOf(tag_to_move);
         colnames.splice(start_index, 1);
 
@@ -784,7 +836,7 @@ function MainApp(props) {
         start_index = fnames.indexOf(tag_to_move);
         fnames.splice(start_index, 1);
 
-        let cwidths = [...table_spec.column_widths];
+        let cwidths = [...mState.table_spec.column_widths];
         let width_to_move = cwidths[start_index];
         cwidths.splice(start_index, 1);
 
@@ -794,38 +846,36 @@ function MainApp(props) {
             let end_index = fnames.indexOf(place_to_move);
             cwidths.splice(end_index, 0, width_to_move);
         }
-
         _updateTableSpec({column_names: colnames, column_widths: cwidths}, true)
     }
 
 
     function _hideColumn() {
-        let hc_list = [...table_spec.hidden_columns_list];
+        let hc_list = [...mState.table_spec.hidden_columns_list];
         let fnames = _filteredColumnNames();
-        let cname = selected_column;
+        let cname = mState.selected_column;
         let col_index = fnames.indexOf(cname);
-        let cwidths = [...table_spec.column_widths];
+        let cwidths = [...mState.table_spec.column_widths];
         cwidths.splice(col_index, 1);
         hc_list.push(cname);
         _updateTableSpec({hidden_columns_list: hc_list, column_widths: cwidths}, true)
     }
 
     function _hideColumnInAll() {
-        let hc_list = [...table_spec.hidden_columns_list];
+        let hc_list = [...mState.table_spec.hidden_columns_list];
         let fnames = _filteredColumnNames();
-        let cname = selected_column;
+        let cname = mState.selected_column;
         let col_index = fnames.indexOf(cname);
-        let cwidths = [...table_spec.column_widths];
+        let cwidths = [...mState.table_spec.column_widths];
         cwidths.splice(col_index, 1);
         hc_list.push(cname);
         _updateTableSpec({hidden_columns_list: hc_list, column_widths: cwidths}, false);
-        const data_dict = {"column_name": selected_column};
+        const data_dict = {"column_name": mState.selected_column};
         _broadcast_event_to_server("HideColumnInAllDocs", data_dict)
     }
 
     function _unhideAllColumns() {
         _updateTableSpec({hidden_columns_list: ["__filename__"]}, true)
-
     }
 
     function _clearTableScroll() {
@@ -835,15 +885,15 @@ function MainApp(props) {
     function _deleteRow() {
         postWithCallback(props.main_id, "delete_row",
             {
-                "document_name": table_spec.current_doc_name,
-                "index": selected_row
+                "document_name": mState.table_spec.current_doc_name,
+                "index": mState.selected_row
             }, null)
     }
 
     function _insertRow(index) {
         postWithCallback(props.main_id, "insert_row",
             {
-                "document_name": table_spec.current_doc_name,
+                "document_name": mState.table_spec.current_doc_name,
                 "index": index,
                 "row_dict": {}
             }, null, null, props.main_id)
@@ -852,21 +902,21 @@ function MainApp(props) {
     function _duplicateRow() {
         postWithCallback(props.main_id, "insert_row",
             {
-                "document_name": table_spec.current_doc_name,
-                "index": selected_row,
-                "row_dict": data_row_dict[selected_row]
+                "document_name": mState.table_spec.current_doc_name,
+                "index": mState.selected_row,
+                "row_dict": mState.data_text[mState.selected_row]
             }, null, null, props.main_id)
     }
 
 
     function _deleteColumn(delete_in_all = false) {
         let fnames = _filteredColumnNames();
-        let cname = selected_column;
+        let cname = mState.selected_column;
         let col_index = fnames.indexOf(cname);
-        let cwidths = [...table_spec.column_widths];
+        let cwidths = [...mState.table_spec.column_widths];
         cwidths.splice(col_index, 1);
-        let hc_list = _.without(table_spec.hidden_columns_list, cname);
-        let cnames = _.without(table_spec.column_names, cname);
+        let hc_list = _.without(mState.table_spec.hidden_columns_list, cname);
+        let cnames = _.without(mState.table_spec.column_names, cname);
         _updateTableSpec({
             column_names: cnames,
             hidden_columns_list: hc_list,
@@ -874,7 +924,7 @@ function MainApp(props) {
         }, false);
         const data_dict = {
             "column_name": cname,
-            "doc_name": table_spec.current_doc_name,
+            "doc_name": mState.table_spec.current_doc_name,
             "all_docs": delete_in_all
         };
         postWithCallback(props.main_id, "DeleteColumn", data_dict, null, null, props.main_id);
@@ -885,29 +935,34 @@ function MainApp(props) {
         showModalReact(title, "New Column Name", function (new_name) {
             let cwidth = compute_added_column_width(new_name);
             _updateTableSpec({
-                column_names: [...table_spec.column_names, new_name],
-                column_widths: [...table_spec.column_widths, cwidth]
+                column_names: [...mState.table_spec.column_names, new_name],
+                column_widths: [...mState.table_spec.column_widths, cwidth]
             }, false);
             const data_dict = {
                 "column_name": new_name,
-                "doc_name": table_spec.current_doc_name,
+                "doc_name": mState.table_spec.current_doc_name,
                 "column_width": cwidth,
                 "all_docs": add_in_all
             };
             _broadcast_event_to_server("CreateColumn", data_dict);
-        }, "newcol", table_spec.column_names)
+        }, "newcol", mState.table_spec.column_names)
     }
 
     function _setStateFromDataObject(data, doc_name, func = null) {
-        set_data_row_dict(data.data_row_dict);
-        set_total_rows(data.total_rows),
-            set_table_spec({
-                column_names: data.table_spec.header_list,
-                column_widths: data.table_spec.column_widths,
-                hidden_columns_list: data.table_spec.hidden_columns_list,
-                cell_backgrounds: data.table_spec.cell_backgrounds,
-                current_doc_name: doc_name
-            });
+        mDispatch({
+            type: "change_multiple_fields",
+            newPartialState: {
+                data_row_dict: data.data_row_dict,
+                total_rows: data.total_rows,
+                table_spec: {
+                    column_names: data.table_spec.header_list,
+                    column_widths: data.table_spec.column_widths,
+                    hidden_columns_list: data.table_spec.hidden_columns_list,
+                    cell_backgrounds: data.table_spec.cell_backgrounds,
+                    current_doc_name: doc_name
+                }
+            }
+        });
         pushCallback(func)
     }
 
@@ -917,9 +972,11 @@ function MainApp(props) {
 
     function _grabNewChunkWithRow(row_index) {
         postWithCallback(props.main_id, "grab_chunk_by_row_index",
-            {doc_name: table_spec.current_doc_name, row_index: row_index}, function (data) {
-                let new_data_row_dict = Object.assign(data_row_dict, data.data_row_dict);
-                set_data_row_dict(new_data_row_dict)
+            {doc_name: mState.table_spec.current_doc_name, row_index: row_index}, function (data) {
+                mDispatch({
+                    type: "update_data_row_dict",
+                    new_data_row_dict: data.data_row_dict
+                });
             }, null, props.main_id)
     }
 
@@ -943,8 +1000,13 @@ function MainApp(props) {
                 if (data_object.success) {
                     if (!window.in_context && !_cProp("is_project")) document.title = new_collection_name;
                     window._collection_name = data_object.collection_name;
-                    set_doc_names(data_object.doc_names);
-                    set_short_collection_name(data_object.short_collection_name);
+                    mDispatch({
+                        type: "change_multiple_fields",
+                        newPartialState: {
+                            doc_names: data_object.doc_names,
+                            short_collection_name: data_object.short_collection_name
+                        }
+                    });
                     pushCallback(() => {
                         _handleChangeDoc(data_object.doc_names[0])
                     });
@@ -959,7 +1021,7 @@ function MainApp(props) {
     }
 
     function _updateDocList(doc_names, visible_doc) {
-        set_doc_names(doc_names);
+        _setMainStateValue("doc_names", doc_names);
         pushCallback(() => {
             _handleChangeDoc(visible_doc)
         })
@@ -967,10 +1029,10 @@ function MainApp(props) {
 
     function get_hp_height() {
         if (tile_div_ref.current) {
-            if (console_is_shrunk) {
+            if (mState.console_is_shrunk) {
                 return _cProp("usable_height") - CONSOLE_HEADER_HEIGHT - BOTTOM_MARGIN - height_adjustment.current;
             } else {
-                return (_cProp("usable_height") - BOTTOM_MARGIN - height_adjustment.current) * height_fraction;
+                return (_cProp("usable_height") - BOTTOM_MARGIN - height_adjustment.current) * mState.height_fraction;
             }
         } else {
             return _cProp("usable_height") - 100
@@ -994,8 +1056,8 @@ function MainApp(props) {
     }
 
     function _filteredColumnNames() {
-        return table_spec.column_names.filter((name) => {
-            return !(table_spec.hidden_columns_list.includes(name) || (name == "__id__"));
+        return mState.table_spec.column_names.filter((name) => {
+            return !(mState.table_spec.hidden_columns_list.includes(name) || (name == "__id__"));
         })
     }
 
@@ -1010,43 +1072,48 @@ function MainApp(props) {
                 pushCallback(callback)
             })
         } else {
-            set_sresource_name(new_project_name);
-            set_is_project(true);
+            mDispatch({
+                type: "change_multiple_fields",
+                newPartialState: {
+                    resource_name: new_project_name,
+                    is_project: true
+                }
+            });
             pushCallback(callback)
         }
     }
 
-    let actual_dark_theme = props.controlled ? props.dark_theme : sdark_theme;
+    let actual_dark_theme = props.controlled ? props.dark_theme : mState.dark_theme;
     let vp_height;
     let hp_height;
     let console_available_height;
     let my_props = {...props};
     if (!props.controlled) {
-        my_props.is_project = is_project;
-        my_props.resource_name = sresource_name;
-        my_props.usable_width = usable_width;
-        my_props.usable_height = usable_height
+        my_props.is_project = mState.is_project;
+        my_props.resource_name = mState.resource_name;
+        my_props.usable_width = mState.usable_width;
+        my_props.usable_height = mState.usable_height
     }
     let true_usable_width = my_props.usable_width;
-    if (console_is_zoomed) {
+    if (mState.console_is_zoomed) {
         console_available_height = get_zoomed_console_height() - MARGIN_ADJUSTMENT;
     } else {
         vp_height = get_vp_height();
         hp_height = get_hp_height();
-        if (console_is_shrunk) {
+        if (mState.console_is_shrunk) {
             console_available_height = CONSOLE_HEADER_HEIGHT;
         } else {
             console_available_height = vp_height - hp_height - MARGIN_ADJUSTMENT - 3;
         }
     }
     let disabled_column_items = [];
-    if (selected_column == null) {
+    if (mState.selected_column == null) {
         disabled_column_items = [
             "Shift Left", "Shift Right", "Hide", "Hide in All Docs", "Delete Column", "Delete Column In All Docs"
         ]
     }
     let disabled_row_items = [];
-    if (selected_row == null) {
+    if (mState.selected_row == null) {
         disabled_row_items = ["Delete Row", "Insert Row Before", "Insert Row After", "Duplicate Row"]
     }
     let project_name = my_props.is_project ? props.resource_name : "";
@@ -1057,22 +1124,23 @@ function MainApp(props) {
                          project_name={project_name}
                          is_notebook={props.is_notebook}
                          is_juptyer={props.is_jupyter}
-                         setMainStateValue={_setMainStateValue}
                          setProjectName={_setProjectName}
                          postAjaxFailure={props.postAjaxFailure}
-                         console_items={console_items}
-                         interface_state={interface_state()}
-                         changeCollection={_changeCollection}
+                         console_items={console_items_ref.current}
+                         tile_list={tile_list_ref.current}
+                         mState={mState}
+                         setMainStateValue={_setMainStateValue}
                          updateLastSave={_updateLastSave}
+                         changeCollection={_changeCollection}
                          disabled_items={my_props.is_project ? [] : ["Save"]}
                          registerOmniGetter={_registerOmniGetter}
                          hidden_items={["Export as Jupyter Notebook"]}
             />
             <DocumentMenu {...props.statusFuncs}
                           main_id={props.main_id}
-                          documentNames={doc_names}
+                          documentNames={mState.doc_names}
                           registerOmniGetter={_registerOmniGetter}
-                          currentDoc={table_spec.current_doc_name}
+                          currentDoc={mState.table_spec.current_doc_name}
 
             />
             {!props.is_freeform &&
@@ -1082,9 +1150,9 @@ function MainApp(props) {
                             is_notebook={props.is_notebook}
                             is_juptyer={props.is_jupyter}
                             moveColumn={_moveColumn}
-                            table_spec={table_spec}
+                            table_spec={mState.table_spec}
                             filtered_column_names={_filteredColumnNames()}
-                            selected_column={selected_column}
+                            selected_column={mState.selected_column}
                             disabled_items={disabled_column_items}
                             hideColumn={_hideColumn}
                             hideInAll={_hideColumnInAll}
@@ -1102,13 +1170,13 @@ function MainApp(props) {
                          is_juptyer={props.is_jupyter}
                          deleteRow={_deleteRow}
                          insertRowBefore={() => {
-                             _insertRow(selected_row)
+                             _insertRow(mState.selected_row)
                          }}
                          insertRowAfter={() => {
-                             _insertRow(selected_row + 1)
+                             _insertRow(mState.selected_row + 1)
                          }}
                          duplicateRow={_duplicateRow}
-                         selected_row={selected_row}
+                         selected_row={mState.selected_row}
                          registerOmniGetter={_registerOmniGetter}
                          disabled_items={disabled_row_items}
                 />
@@ -1118,11 +1186,11 @@ function MainApp(props) {
                       project_name={project_name}
                       is_notebook={props.is_notebook}
                       is_juptyer={props.is_jupyter}
-                      table_is_shrunk={table_is_shrunk}
+                      table_is_shrunk={mState.table_is_shrunk}
                       toggleTableShrink={_toggleTableShrink}
                       openErrorDrawer={props.openErrorDrawer}
-                      show_exports_pane={show_exports_pane}
-                      show_console_pane={show_console_pane}
+                      show_exports_pane={mState.show_exports_pane}
+                      show_console_pane={mState.show_console_pane}
                       registerOmniGetter={_registerOmniGetter}
                       setMainStateValue={_setMainStateValue}
             />
@@ -1134,20 +1202,12 @@ function MainApp(props) {
     let card_header = (
         <MainTableCardHeader main_id={props.main_id}
                              toggleShrink={_toggleTableShrink}
-                             short_collection_name={short_collection_name}
-                             handleChangeDoc={_handleChangeDoc}
-                             doc_names={doc_names}
-                             current_doc_name={table_spec.current_doc_name}
-                             show_table_spinner={show_table_spinner}
-                             selected_row={selected_row}
-                             handleSearchFieldChange={_handleSearchFieldChange}
-                             search_text={search_text}
+                             mState={mState}
                              setMainStateValue={_setMainStateValue}
-                             table_is_filtered={table_is_filtered}
+                             handleChangeDoc={_handleChangeDoc}
+                             handleSearchFieldChange={_handleSearchFieldChange}
                              show_filter_button={!props.is_freeform}
-                             spreadsheet_mode={spreadsheet_mode}
                              handleSpreadsheetModeChange={_handleSpreadsheetModeChange}
-                             soft_wrap={soft_wrap}
                              handleSoftWrapChange={_handleSoftWrapChange}
                              broadcast_event_to_server={_broadcast_event_to_server}
                              is_freeform={props.is_freeform}
@@ -1159,67 +1219,52 @@ function MainApp(props) {
         card_body = <FreeformBody main_id={props.main_id}
                                   ref={tbody_ref}
                                   dark_theme={actual_dark_theme}
-                                  document_name={table_spec.current_doc_name}
-                                  data_text={data_text}
+                                  code_container_width={mState.horizontal_fraction * true_usable_width}
                                   code_container_height={_getTableBodyHeight(table_available_height)}
-                                  search_text={search_text}
-                                  soft_wrap={soft_wrap}
+                                  mState={mState}
                                   setMainStateValue={_setMainStateValue}
-                                  code_container_width={horizontal_fraction * true_usable_width}
-                                  alt_search_text={alt_search_text}
+
         />
     } else {
         card_body = (
             <BlueprintTable main_id={props.main_id}
                             ref={tbody_ref}
-                            set_scroll={set_table_scroll.current}
                             clearScroll={_clearTableScroll}
                             initiateDataGrab={_initiateDataGrab}
                             height={_getTableBodyHeight(table_available_height)}
-                            column_names={table_spec.column_names}
                             setCellContent={_setCellContent}
                             filtered_column_names={_filteredColumnNames()}
                             moveColumn={_moveColumn}
-                            column_widths={table_spec.column_widths}
-                            hidden_columns_list={table_spec.hidden_columns_list}
                             updateTableSpec={_updateTableSpec}
                             setMainStateValue={_setMainStateValue}
-                            selected_regions={selected_regions}
-                            selected_column={selected_column}
-                            selected_row={selected_row}
-                            search_text={search_text}
-                            alt_search_text={alt_search_text}
-                            cells_to_color_text={cells_to_color_text}
-                            cell_backgrounds={table_spec.cell_backgrounds}
-                            total_rows={total_rows}
+                            mState={mState}
+                            set_scroll={set_table_scroll.current}
                             broadcast_event_to_server={_broadcast_event_to_server}
-                            spreadsheet_mode={spreadsheet_mode}
-                            data_row_dict={data_row_dict}/>
+            />
         )
-
     }
 
-    let tile_container_height = console_is_shrunk ? table_available_height - MARGIN_ADJUSTMENT : table_available_height;
+    let tile_container_height = mState.console_is_shrunk ? table_available_height - MARGIN_ADJUSTMENT : table_available_height;
     let tile_pane = (
         <div ref={tile_div_ref}>
             <TileContainer main_id={props.main_id}
                            tsocket={props.tsocket}
-                           dark_theme={props.dark_theme}
+                           dark_theme={actual_dark_theme}
                            height={tile_container_height}
-                // tile_div_ref={tile_div_ref}
-                           tile_list={_.cloneDeep(tile_list)}
-                           current_doc_name={table_spec.current_doc_name}
-                           table_is_shrunk={table_is_shrunk}
-                           selected_row={selected_row}
+                           tile_list={tile_list_ref}
+                           current_doc_name={mState.table_spec.current_doc_name}
+                           selected_row={mState.selected_row}
+                           table_is_shrunk={mState.table_is_shrunk}
                            broadcast_event={_broadcast_event_to_server}
                            goToModule={props.goToModule}
+                           tileDispatch={tileDispatch}
                            setMainStateValue={_setMainStateValue}
             />
         </div>
     );
 
     let exports_pane;
-    if (show_exports_pane) {
+    if (mState.show_exports_pane) {
         exports_pane = <ExportsViewer main_id={props.main_id}
                                       tsocket={props.tsocket}
                                       setUpdate={(ufunc) => {
@@ -1227,14 +1272,14 @@ function MainApp(props) {
                                       }}
                                       setMainStateValue={_setMainStateValue}
                                       available_height={console_available_height}
-                                      console_is_shrunk={console_is_shrunk}
-                                      console_is_zoomed={console_is_zoomed}
+                                      console_is_shrunk={mState.console_is_shrunk}
+                                      console_is_zoomed={mState.console_is_zoomed}
         />
     } else {
         exports_pane = <div></div>
     }
     let console_pane;
-    if (show_console_pane) {
+    if (mState.show_console_pane) {
         console_pane = (
             <ConsoleComponent {...props.statusFuncs}
                               main_id={props.main_id}
@@ -1243,21 +1288,18 @@ function MainApp(props) {
                               handleCreateViewer={props.handleCreateViewer}
                               controlled={props.controlled}
                               am_selected={props.am_selected}
-                              pushCallback={pushCallback}
                               console_items={console_items_ref}
                               dispatch={dispatch}
-                              console_is_shrunk={console_is_shrunk}
-                              console_is_zoomed={console_is_zoomed}
-                              show_exports_pane={show_exports_pane}
+                              mState={mState}
                               setMainStateValue={_setMainStateValue}
                               console_available_height={console_available_height}
-                              console_available_width={true_usable_width * console_width_fraction - 16}
+                              console_available_width={true_usable_width * mState.console_width_fraction - 16}
                               zoomable={true}
                               shrinkable={true}
             />
         );
     } else {
-        let console_available_width = true_usable_width * console_width_fraction - 16;
+        let console_available_width = true_usable_width * mState.console_width_fraction - 16;
         console_pane = <div style={{width: console_available_width}}></div>
     }
 
@@ -1265,10 +1307,10 @@ function MainApp(props) {
     let bottom_pane = (
         <HorizontalPanes left_pane={console_pane}
                          right_pane={exports_pane}
-                         show_handle={!console_is_shrunk}
+                         show_handle={!mState.console_is_shrunk}
                          available_height={console_available_height}
                          available_width={true_usable_width}
-                         initial_width_fraction={console_width_fraction}
+                         initial_width_fraction={mState.console_width_fraction}
                          dragIconSize={15}
                          handleSplitUpdate={_handleConsoleFractionChange}
         />
@@ -1280,7 +1322,7 @@ function MainApp(props) {
                     main_id={props.main_id}
                     card_body={card_body}
                     card_header={card_header}
-                    table_spec={table_spec}
+                    table_spec={mState.table_spec}
                     broadcast_event_to_server={_broadcast_event_to_server}
                     updateTableSpec={_updateTableSpec}
                 />
@@ -1288,13 +1330,13 @@ function MainApp(props) {
         </Fragment>
     );
     let top_pane;
-    if (table_is_shrunk) {
+    if (mState.table_is_shrunk) {
         top_pane = (
             <Fragment>
                 <div style={{paddingLeft: 10}}>
                     {tile_pane}
                 </div>
-                {console_is_shrunk && bottom_pane}
+                {mState.console_is_shrunk && bottom_pane}
             </Fragment>
         )
     } else {
@@ -1306,13 +1348,13 @@ function MainApp(props) {
                                  show_handle={true}
                                  scrollAdjustSelectors={[".bp5-table-quadrant-scroll-container", "#tile-div"]}
                                  available_width={true_usable_width}
-                                 initial_width_fraction={horizontal_fraction}
+                                 initial_width_fraction={mState.horizontal_fraction}
                                  dragIconSize={15}
                                  handleSplitUpdate={_handleHorizontalFractionChange}
                                  handleResizeStart={_handleResizeStart}
                                  handleResizeEnd={_handleResizeEnd}
                 />
-                {console_is_shrunk && bottom_pane}
+                {mState.console_is_shrunk && bottom_pane}
             </Fragment>
         );
     }
@@ -1340,7 +1382,7 @@ function MainApp(props) {
                            extraButtons={[
                                {
                                    onClick: _toggleTableShrink,
-                                   icon: table_is_shrunk ? "th" : "th-disconnect"
+                                   icon: mState.table_is_shrunk ? "th" : "th-disconnect"
                                }
                            ]}
             />
@@ -1348,19 +1390,19 @@ function MainApp(props) {
                 <div className={`main-outer ${actual_dark_theme ? "bp5-dark" : "light-theme"}`}
                      ref={main_outer_ref}
                      style={{width: "100%", height: my_props.usable_height - height_adjustment.current}}>
-                    {console_is_zoomed &&
+                    {mState.console_is_zoomed &&
                         bottom_pane
                     }
-                    {!console_is_zoomed && console_is_shrunk &&
+                    {!mState.console_is_zoomed && mState.console_is_shrunk &&
                         top_pane
                     }
-                    {!console_is_zoomed && !console_is_shrunk &&
+                    {!mState.console_is_zoomed && !mState.console_is_shrunk &&
                         <VerticalPanes top_pane={top_pane}
                                        bottom_pane={bottom_pane}
                                        show_handle={true}
                                        available_width={true_usable_width}
                                        available_height={vp_height}
-                                       initial_height_fraction={height_fraction}
+                                       initial_height_fraction={mState.height_fraction}
                                        dragIconSize={15}
                                        scrollAdjustSelectors={[".bp5-table-quadrant-scroll-container", "#tile-div"]}
                                        handleSplitUpdate={_handleVerticalSplitUpdate}
@@ -1373,7 +1415,8 @@ function MainApp(props) {
                 {!window.in_context &&
                     <Fragment>
                         <TacticOmnibar omniGetters={[_omniFunction]}
-                                       showOmnibar={showOmnibar}
+                                       page_id={props.main_id}
+                                       showOmnibar={mState.showOmnibar}
                                        closeOmnibar={_closeOmnibar}
                         />
                         <KeyTrap global={true} bindings={key_bindings}/>

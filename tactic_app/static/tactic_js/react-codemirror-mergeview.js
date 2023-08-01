@@ -1,322 +1,204 @@
 "use strict";
 
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.ReactCodemirrorMergeView = void 0;
-
+exports.ReactCodemirrorMergeView = ReactCodemirrorMergeView;
 var _propTypes = _interopRequireDefault(require("prop-types"));
-
-var _react = _interopRequireDefault(require("react"));
-
-var _codemirror = _interopRequireDefault(require("codemirror/lib/codemirror.js"));
-
-require("codemirror/mode/python/python.js");
-
+var _react = _interopRequireWildcard(require("react"));
+var _codemirror = _interopRequireDefault(require("codemirror/lib/codemirror"));
+require("codemirror/mode/python/python");
 require("codemirror/lib/codemirror.css");
-
-require("codemirror/addon/merge/merge.js");
-
+require("codemirror/addon/merge/merge");
 require("codemirror/addon/merge/merge.css");
-
-require("codemirror/addon/hint/show-hint.js");
-
+require("codemirror/addon/hint/show-hint");
 require("codemirror/addon/hint/show-hint.css");
-
-require("codemirror/addon/dialog/dialog.js");
-
+require("codemirror/addon/dialog/dialog");
 require("codemirror/addon/dialog/dialog.css");
-
-require("codemirror/addon/edit/matchbrackets.js");
-
-require("codemirror/addon/edit/closebrackets.js");
-
-require("codemirror/addon/search/match-highlighter.js");
-
+require("codemirror/addon/edit/matchbrackets");
+require("codemirror/addon/edit/closebrackets");
+require("codemirror/addon/search/match-highlighter");
 require("codemirror/theme/material.css");
-
 require("codemirror/theme/nord.css");
-
 require("codemirror/theme/oceanic-next.css");
-
 require("codemirror/theme/pastel-on-dark.css");
-
 require("codemirror/theme/elegant.css");
-
 require("codemirror/theme/neat.css");
-
 require("codemirror/theme/solarized.css");
-
 require("codemirror/theme/juejin.css");
-
 var _communication_react = require("./communication_react");
-
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-var ReactCodemirrorMergeView = /*#__PURE__*/function (_React$Component) {
-  _inherits(ReactCodemirrorMergeView, _React$Component);
-
-  var _super = _createSuper(ReactCodemirrorMergeView);
-
-  function ReactCodemirrorMergeView(props) {
-    var _this;
-
-    _classCallCheck(this, ReactCodemirrorMergeView);
-
-    _this = _super.call(this, props);
-    _this.code_container_ref = /*#__PURE__*/_react["default"].createRef();
-    _this.handleChange = _this.handleChange.bind(_assertThisInitialized(_this));
-    _this._current_codemirror_theme = _this._current_codemirror_theme.bind(_assertThisInitialized(_this));
-    _this.mousetrap = new Mousetrap();
-    _this.saved_theme = null;
-    return _this;
-  }
-
-  _createClass(ReactCodemirrorMergeView, [{
-    key: "_current_codemirror_theme",
-    value: function _current_codemirror_theme() {
-      return this.props.dark_theme ? this.preferred_themes.preferred_dark_theme : this.preferred_themes.preferred_light_theme;
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function ReactCodemirrorMergeView(props) {
+  var code_container_ref = (0, _react.useRef)(null);
+  var mousetrap = (0, _react.useRef)(new Mousetrap());
+  var saved_theme = (0, _react.useRef)(null);
+  var preferred_themes = (0, _react.useRef)(null);
+  var cmobject = (0, _react.useRef)(null);
+  (0, _react.useEffect)(function () {
+    (0, _communication_react.postAjax)("get_preferred_codemirror_themes", {}, function (data) {
+      preferred_themes.current = data;
+      cmobject.current = createMergeArea(code_container_ref.current);
+      resizeHeights(props.max_height);
+      refreshAreas();
+      create_keymap();
+      saved_theme.current = props.dark_theme;
+    });
+  }, []);
+  (0, _react.useEffect)(function () {
+    if (!cmobject.current) {
+      return;
     }
-  }, {
-    key: "createMergeArea",
-    value: function createMergeArea(codearea) {
-      var cmobject = _codemirror["default"].MergeView(codearea, {
-        value: this.props.editor_content,
-        lineNumbers: true,
-        matchBrackets: true,
-        highlightSelectionMatches: true,
-        autoCloseBrackets: true,
-        indentUnit: 4,
-        theme: this._current_codemirror_theme(),
-        origRight: this.props.right_content
-      });
-
-      cmobject.editor().setOption("extraKeys", {
-        Tab: function Tab(cm) {
-          var spaces = new Array(5).join(" ");
-          cm.replaceSelection(spaces);
-        },
-        "Ctrl-Space": "autocomplete"
-      });
-      cmobject.editor().on("change", this.handleChange);
-      return cmobject;
-    }
-  }, {
-    key: "mergeViewHeight",
-    value: function mergeViewHeight() {
-      function editorHeight(editor) {
-        return editor ? editor.getScrollInfo().height : 0;
-      }
-
-      return Math.max(editorHeight(this.cmobject.editor()), editorHeight(this.cmobject.rightOriginal()));
-    }
-  }, {
-    key: "resizeHeights",
-    value: function resizeHeights(max_height) {
-      var height = Math.min(this.mergeViewHeight(), max_height);
-      this.cmobject.editor().setSize(null, height);
-
-      if (this.cmobject.rightOriginal()) {
-        this.cmobject.rightOriginal().setSize(null, height);
-      }
-
-      this.cmobject.wrap.style.height = height + "px";
-    }
-  }, {
-    key: "componentDidUpdate",
-    value: function componentDidUpdate() {
-      var _this2 = this;
-
-      if (!this.cmobject) {
-        return;
-      }
-
-      if (this.props.dark_theme != this.saved_theme) {
-        var self = this;
-        (0, _communication_react.postAjax)("get_preferred_codemirror_themes", {}, function (data) {
-          self.preferred_themes = data;
-          self.cmobject.editor().setOption("theme", self._current_codemirror_theme());
-          self.cmobject.rightOriginal().setOption("theme", self._current_codemirror_theme());
-          self.saved_theme = _this2.props.dark_theme;
-        });
-      }
-
-      if (this.cmobject.editor().getValue() != this.props.editor_content) {
-        this.cmobject.editor().setValue(this.props.editor_content);
-      }
-
-      this.cmobject.rightOriginal().setValue(this.props.right_content);
-      this.resizeHeights(this.props.max_height);
-    }
-  }, {
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      var _this3 = this;
-
-      var self = this;
+    if (props.dark_theme != saved_theme.current) {
       (0, _communication_react.postAjax)("get_preferred_codemirror_themes", {}, function (data) {
-        self.preferred_themes = data;
-        self.cmobject = _this3.createMergeArea(_this3.code_container_ref.current);
-        self.resizeHeights(_this3.props.max_height);
-        self.refreshAreas();
-        self.create_keymap();
-        self.saved_theme = _this3.props.dark_theme;
+        preferred_themes.current = data;
+        cmobject.current.editor().setOption("theme", _current_codemirror_theme());
+        cmobject.current.rightOriginal().setOption("theme", _current_codemirror_theme());
+        saved_theme.current = props.dark_theme;
       });
     }
-  }, {
-    key: "handleChange",
-    value: function handleChange(cm, changeObject) {
-      this.props.handleEditChange(cm.getValue());
-      this.resizeHeights(this.props.max_height);
+    if (cmobject.current.editor().getValue() != props.editor_content) {
+      cmobject.current.editor().setValue(props.editor_content);
     }
-  }, {
-    key: "refreshAreas",
-    value: function refreshAreas() {
-      this.cmobject.editor().refresh();
-      this.cmobject.rightOriginal().refresh();
+    cmobject.current.rightOriginal().setValue(props.right_content);
+    resizeHeights(props.max_height);
+  });
+  function _current_codemirror_theme() {
+    return props.dark_theme ? preferred_themes.current.preferred_dark_theme : preferred_themes.current.preferred_light_theme;
+  }
+  function createMergeArea(codearea) {
+    var cmobject = _codemirror["default"].MergeView(codearea, {
+      value: props.editor_content,
+      lineNumbers: true,
+      matchBrackets: true,
+      highlightSelectionMatches: true,
+      autoCloseBrackets: true,
+      indentUnit: 4,
+      theme: _current_codemirror_theme(),
+      origRight: props.right_content
+    });
+    cmobject.editor().setOption("extraKeys", {
+      Tab: function Tab(cm) {
+        var spaces = new Array(5).join(" ");
+        cm.replaceSelection(spaces);
+      },
+      "Ctrl-Space": "autocomplete"
+    });
+    cmobject.editor().on("change", handleChange);
+    return cmobject;
+  }
+  function mergeViewHeight() {
+    function editorHeight(editor) {
+      return editor ? editor.getScrollInfo().height : 0;
     }
-  }, {
-    key: "create_api",
-    value: function create_api() {
-      var self = this;
-      (0, _communication_react.postAjax)("get_api_dict", {}, function (data) {
-        self.api_dict_by_category = data.api_dict_by_category;
-        self.api_dict_by_name = data.api_dict_by_name;
-        self.ordered_api_categories = data.ordered_api_categories;
-        self.api_list = [];
-
-        var _iterator = _createForOfIteratorHelper(self.ordered_api_categories),
-            _step;
-
-        try {
-          for (_iterator.s(); !(_step = _iterator.n()).done;) {
-            var cat = _step.value;
-
-            var _iterator2 = _createForOfIteratorHelper(self.api_dict_by_category[cat]),
-                _step2;
-
-            try {
-              for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-                var entry = _step2.value;
-                self.api_list.push(entry["name"]);
-              }
-            } catch (err) {
-              _iterator2.e(err);
-            } finally {
-              _iterator2.f();
+    return Math.max(editorHeight(cmobject.current.editor()), editorHeight(cmobject.current.rightOriginal()));
+  }
+  function resizeHeights(max_height) {
+    var height = Math.min(mergeViewHeight(), max_height);
+    cmobject.current.editor().setSize(null, height);
+    if (cmobject.current.rightOriginal()) {
+      cmobject.current.rightOriginal().setSize(null, height);
+    }
+    cmobject.current.wrap.style.height = height + "px";
+  }
+  function handleChange(cm, changeObject) {
+    props.handleEditChange(cm.getValue());
+    resizeHeights(props.max_height);
+  }
+  function refreshAreas() {
+    cmobject.current.editor().refresh();
+    cmobject.current.rightOriginal().refresh();
+  }
+  function create_api() {
+    var self = this;
+    (0, _communication_react.postAjax)("get_api_dict", {}, function (data) {
+      var api_dict_by_category = data.api_dict_by_category;
+      var api_dict_by_name = data.api_dict_by_name;
+      var ordered_api_categories = data.ordered_api_categories;
+      var api_list = [];
+      var _iterator = _createForOfIteratorHelper(ordered_api_categories),
+        _step;
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var cat = _step.value;
+          var _iterator2 = _createForOfIteratorHelper(api_dict_by_category[cat]),
+            _step2;
+          try {
+            for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+              var entry = _step2.value;
+              api_list.push(entry["name"]);
             }
-          } //noinspection JSUnresolvedVariable
-
-        } catch (err) {
-          _iterator.e(err);
-        } finally {
-          _iterator.f();
+          } catch (err) {
+            _iterator2.e(err);
+          } finally {
+            _iterator2.f();
+          }
         }
-
-        _codemirror["default"].commands.autocomplete = function (cm) {
-          //noinspection JSUnresolvedFunction
-          cm.showHint({
-            hint: _codemirror["default"].hint.anyword,
-            api_list: self.api_list,
-            extra_autocomplete_list: self.extra_autocomplete_list
-          });
-        };
-      });
-    }
-  }, {
-    key: "searchCM",
-    value: function searchCM() {
-      _codemirror["default"].commands.find(this.cmobject);
-    }
-  }, {
-    key: "clearSelections",
-    value: function clearSelections() {
-      _codemirror["default"].commands.clearSearch(this.cmobject.editor());
-
-      _codemirror["default"].commands.singleSelection(this.cmobject.editor());
-    }
-  }, {
-    key: "create_keymap",
-    value: function create_keymap() {
-      var self = this;
-
-      _codemirror["default"].keyMap["default"]["Esc"] = function () {
-        self.clearSelections();
+        //noinspection JSUnresolvedVariable
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
+      }
+      _codemirror["default"].commands.autocomplete = function (cm) {
+        //noinspection JSUnresolvedFunction
+        cm.showHint({
+          hint: _codemirror["default"].hint.anyword,
+          api_list: api_list,
+          extra_autocomplete_list: extra_autocomplete_list
+        });
       };
-
-      var is_mac = _codemirror["default"].keyMap["default"].hasOwnProperty("Cmd-S");
-
-      this.mousetrap.bind(['escape'], function (e) {
-        self.clearSelections();
+    });
+  }
+  function searchCM() {
+    _codemirror["default"].commands.find(cmobject.current);
+  }
+  function clearSelections() {
+    _codemirror["default"].commands.clearSearch(cmobject.current.editor());
+    _codemirror["default"].commands.singleSelection(cmobject.current.editor());
+  }
+  function create_keymap() {
+    var self = this;
+    _codemirror["default"].keyMap["default"]["Esc"] = function () {
+      clearSelections();
+    };
+    var is_mac = _codemirror["default"].keyMap["default"].hasOwnProperty("Cmd-S");
+    mousetrap.current.bind(['escape'], function (e) {
+      clearSelections();
+      e.preventDefault();
+    });
+    if (is_mac) {
+      _codemirror["default"].keyMap["default"]["Cmd-S"] = function () {
+        props.saveMe();
+      };
+      mousetrap.current.bind(['command+f'], function (e) {
+        searchCM();
         e.preventDefault();
       });
-
-      if (is_mac) {
-        _codemirror["default"].keyMap["default"]["Cmd-S"] = function () {
-          self.props.saveMe();
-        };
-
-        this.mousetrap.bind(['command+f'], function (e) {
-          self.searchCM();
-          e.preventDefault();
-        });
-      } else {
-        _codemirror["default"].keyMap["default"]["Ctrl-S"] = function () {
-          self.props.saveMe();
-        };
-
-        this.mousetrap.bind(['ctrl+f'], function (e) {
-          self.searchCM();
-          e.preventDefault();
-        });
-      }
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var ccstyle = {
-        "height": "100%"
+    } else {
+      _codemirror["default"].keyMap["default"]["Ctrl-S"] = function () {
+        props.saveMe();
       };
-      return /*#__PURE__*/_react["default"].createElement("div", {
-        className: "code-container",
-        style: ccstyle,
-        ref: this.code_container_ref
+      mousetrap.current.bind(['ctrl+f'], function (e) {
+        searchCM();
+        e.preventDefault();
       });
     }
-  }]);
-
-  return ReactCodemirrorMergeView;
-}(_react["default"].Component);
-
-exports.ReactCodemirrorMergeView = ReactCodemirrorMergeView;
+  }
+  var ccstyle = {
+    "height": "100%"
+  };
+  return /*#__PURE__*/_react["default"].createElement("div", {
+    className: "code-container",
+    style: ccstyle,
+    ref: code_container_ref
+  });
+}
 ReactCodemirrorMergeView.propTypes = {
   handleEditChange: _propTypes["default"].func,
   editor_content: _propTypes["default"].string,
@@ -324,3 +206,4 @@ ReactCodemirrorMergeView.propTypes = {
   dark_theme: _propTypes["default"].bool,
   saveMe: _propTypes["default"].func
 };
+exports.ReactCodemirrorMergeView = ReactCodemirrorMergeView = /*#__PURE__*/(0, _react.memo)(ReactCodemirrorMergeView);

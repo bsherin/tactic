@@ -8,7 +8,7 @@ import {
     PopoverPosition, Button, MenuDivider, MenuItem, TagInput, TextArea, FormGroup, InputGroup,
     Card, Icon, Collapse, H4
 } from "@blueprintjs/core";
-import {Select2, MultiSelect} from "@blueprintjs/select";
+import {Select, MultiSelect} from "@blueprintjs/select";
 
 import markdownIt from 'markdown-it'
 import 'markdown-it-latex/dist/index.css'
@@ -69,7 +69,7 @@ function renderSuggestionAdvanced(item, {modifiers, handleClick, index}) {
     return <SuggestionItemAdvanced item={item} key={index} modifiers={modifiers} handleClick={handleClick}/>
 }
 
-function BpSelectAdvanced({options, value, onChange, buttonIcon}) {
+function BpSelectAdvanced({options, value, onChange, buttonIcon, readOnly}) {
     function _filterSuggestion(query, item) {
         if (query.length === 0) {
             return true
@@ -85,23 +85,13 @@ function BpSelectAdvanced({options, value, onChange, buttonIcon}) {
         return re.test(the_text.toLowerCase())
     }
 
-    function _getActiveItem(val) {
-        for (let option of options) {
-            if (_.isEqual(option, val)) {
-                return option
-            }
-        }
-        return null
-    }
-
     let display_text = "display_text" in value ? value.display_text : value.text;
     return (
-        <Select2
-            activeItem={_getActiveItem(value)}
-            onActiveItemChange={null}
+        <Select
             itemRenderer={renderSuggestionAdvanced}
             itemPredicate={_filterSuggestion}
             items={options}
+            disabled={readOnly}
             onItemSelect={onChange}
             popoverProps={{
                 minimal: true,
@@ -110,7 +100,7 @@ function BpSelectAdvanced({options, value, onChange, buttonIcon}) {
                 position: PopoverPosition.BOTTOM_LEFT
             }}>
             <Button text={display_text} className="button-in-select" icon={buttonIcon}/>
-        </Select2>
+        </Select>
     )
 }
 
@@ -129,7 +119,7 @@ BpSelectAdvanced.defaultProps = {
 
 function BpSelect(props) {
 
-    const [activeItem, setActiveItem] = useState(null);
+    const [activeItem, setActiveItem] = useState(props.value);
 
     function _filterSuggestion(query, item) {
         if ((query.length === 0) || (item["isgroup"])) {
@@ -146,22 +136,10 @@ function BpSelect(props) {
         return re.test(the_text.toLowerCase())
     }
 
-    function _handleActiveItemChange(newActiveItem) {
-        let the_text;
-        if (typeof item == "object") {
-            the_text = newActiveItem["text"]
-        } else {
-            the_text = newActiveItem
-        }
-        setActiveItem(the_text);
-    }
-
     return (
-        <Select2
+        <Select
             className="tile-form-menu-item"
-            activeItem={activeItem}
             filterable={props.filterable}
-            onActiveItemChange={_handleActiveItemChange}
             itemRenderer={renderSuggestion}
             itemPredicate={_filterSuggestion}
             items={_.cloneDeep(props.options)}
@@ -177,9 +155,8 @@ function BpSelect(props) {
                     small={props.small}
                     text={props.buttonTextObject ? props.buttonTextObject : props.value}
                     icon={props.buttonIcon}/>
-        </Select2>
+        </Select>
     )
-
 }
 
 BpSelect = memo(BpSelect, (prevProps, newProps) => {
@@ -492,12 +469,13 @@ for (let category of cat_order) {
     }
 }
 
-function IconSelector({handleSelectChange, icon_val}) {
+function IconSelector({handleSelectChange, icon_val, readOnly}) {
     return (
         <BpSelectAdvanced options={icon_dlist}
                           onChange={(item) => {
                               handleSelectChange(item.val)
                           }}
+                          readOnly={readOnly}
                           buttonIcon={icon_val}
                           value={icon_entry_dict[icon_val]}/>
     )
@@ -584,6 +562,7 @@ function CombinedMetadata(props) {
             {props.icon != null &&
                 <FormGroup label="Icon">
                     <IconSelector icon_val={props.icon}
+                                  readOnly={props.readOnly}
                                   handleSelectChange={_handleIconChange}/>
                 </FormGroup>
             }

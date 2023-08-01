@@ -37,11 +37,11 @@ function FreeformBody(props, passedRef) {
     }
   }
   function _doSearch() {
-    if (props.alt_search_text && props.alt_search_text != "" && cmobject.current) {
-      overlay.current = mySearchOverlay(props.alt_search_text, true);
+    if (props.mState.alt_search_text && props.mState.alt_search_text != "" && cmobject.current) {
+      overlay.current = mySearchOverlay(props.mState.alt_search_text, true);
       cmobject.current.addOverlay(overlay.current);
-    } else if (props.search_text && props.search_text != "" && cmobject) {
-      overlay.current = mySearchOverlay(props.search_text, true);
+    } else if (props.mState.search_text && props.mState.search_text != "" && cmobject) {
+      overlay.current = mySearchOverlay(props.mState.search_text, true);
       cmobject.current.addOverlay(overlay.current);
     }
   }
@@ -67,7 +67,7 @@ function FreeformBody(props, passedRef) {
   }
   function _handleBlur(new_data_text) {
     (0, _communication_react.postWithCallback)(props.main_id, "add_freeform_document", {
-      document_name: props.document_name,
+      document_name: props.mState.table_spec.document_name,
       doc_text: new_data_text
     }, null);
   }
@@ -79,10 +79,10 @@ function FreeformBody(props, passedRef) {
   }, /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
     handleBlur: _handleBlur,
     handleChange: null,
-    code_content: props.data_text,
+    code_content: props.mState.data_text,
     sync_to_prop: true,
     dark_theme: props.dark_theme,
-    soft_wrap: props.soft_wrap,
+    soft_wrap: props.mState.soft_wrap,
     mode: "Plain Text",
     code_container_height: props.code_container_height,
     code_container_width: props.code_container_width - 30,
@@ -134,7 +134,7 @@ function MainTableCardHeader(props) {
   }
   function _handleFilter() {
     var data_dict = {
-      "text_to_find": props.search_text
+      "text_to_find": props.mState.search_text
     };
     (0, _communication_react.postWithCallback)(props.main_id, "UnfilterTable", data_dict, function () {
       if (props.search_text !== "") {
@@ -148,9 +148,9 @@ function MainTableCardHeader(props) {
   }
   function _handleUnFilter() {
     props.handleSearchFieldChange(null);
-    if (props.table_is_filtered) {
+    if (props.mState.table_is_filtered) {
       (0, _communication_react.postWithCallback)(props.main_id, "UnfilterTable", {
-        selected_row: props.selected_row
+        selected_row: props.mState.selected_row
       }, null);
       props.setMainStateValue({
         "table_is_filtered": false,
@@ -172,7 +172,7 @@ function MainTableCardHeader(props) {
   };
   var doc_button_text = /*#__PURE__*/_react["default"].createElement(_core.Text, {
     ellipsize: true
-  }, props.current_doc_name);
+  }, props.mState.table_spec.current_doc_name);
   var self = this;
   return /*#__PURE__*/_react["default"].createElement("div", {
     className: "d-flex pl-2 pr-2 justify-content-between align-baseline main-heading",
@@ -193,7 +193,7 @@ function MainTableCardHeader(props) {
   }, /*#__PURE__*/_react["default"].createElement("form", {
     className: "d-flex flex-row"
   }, /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
-    label: props.short_collection_name,
+    label: props.mState.short_collection_name,
     inline: true,
     style: {
       marginBottom: 0,
@@ -201,12 +201,12 @@ function MainTableCardHeader(props) {
       marginRight: 10
     }
   }, /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.BpSelect, {
-    options: props.doc_names,
+    options: props.mState.doc_names,
     onChange: _onChangeDoc,
     buttonStyle: select_style,
     buttonTextObject: doc_button_text,
-    value: props.current_doc_name
-  })), props.show_table_spinner && /*#__PURE__*/_react["default"].createElement(_core.Spinner, {
+    value: props.mState.table_spec.current_doc_name
+  })), props.mState.show_table_spinner && /*#__PURE__*/_react["default"].createElement(_core.Spinner, {
     size: 15
   }))))), /*#__PURE__*/_react["default"].createElement("div", {
     id: "heading-right",
@@ -225,19 +225,19 @@ function MainTableCardHeader(props) {
     label: "soft wrap",
     className: "mr-2 mb-0",
     large: false,
-    checked: props.soft_wrap,
+    checked: props.mState.soft_wrap,
     onChange: props.handleSoftWrapChange
   }), /*#__PURE__*/_react["default"].createElement(_core.Switch, {
     label: "edit",
     className: "mr-4 mb-0",
     large: false,
-    checked: props.spreadsheet_mode,
+    checked: props.mState.spreadsheet_mode,
     onChange: props.handleSpreadsheetModeChange
   }), /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
     type: "search",
     leftIcon: "search",
     placeholder: "Search",
-    value: !props.search_text ? "" : props.search_text,
+    value: !props.mState.search_text ? "" : props.mState.search_text,
     onChange: _handleSearchFieldChange,
     autoCapitalize: "none",
     autoCorrect: "off",

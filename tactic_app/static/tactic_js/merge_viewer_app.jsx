@@ -1,58 +1,52 @@
 
 import React from "react";
-import {Fragment} from "react";
+import {Fragment, useState, useEffect, useRef, memo} from "react";
 import PropTypes from 'prop-types';
 
 import {PopoverPosition} from "@blueprintjs/core";
 
-import {ReactCodemirrorMergeView} from "./react-codemirror-mergeview.js";
-import {BpSelect} from "./blueprint_mdata_fields.js";
+import {ReactCodemirrorMergeView} from "./react-codemirror-mergeview";
+import {BpSelect} from "./blueprint_mdata_fields";
 import {TacticMenubar} from "./menu_utilities";
 import {TacticOmnibar} from "./TacticOmnibar";
-import {doBinding} from "./utilities_react.js";
 import {KeyTrap} from "./key_trap";
 
 export {MergeViewerApp}
 
-class MergeViewerApp extends React.Component {
+function MergeViewerApp(props) {
 
-    constructor(props) {
-        super(props);
-        doBinding(this);
-        this.left_div_ref = React.createRef();
-        this.above_main_ref = React.createRef();
-        this.merge_element_ref = React.createRef();
-        let self = this;
+    const left_div_ref = useRef(null);
+    const above_main_ref = useRef(null);
+    const omniGetters = useRef({});
 
-        this.state = {
-            "inner_height": window.innerHeight,
-            "mounted": false,
-        };
-        this.resize_to_window = this.resize_to_window.bind(this);
-        this.omniGetters = {};
-        if (!window.in_context) {
-          this.key_bindings = [
-              [["ctrl+space"], this._showOmnibar],
-          ];
-          this.state.showOmnibar = false
-        }
-    }
+    const [inner_height, set_inner_height] = useState(window.innerHeight);
 
-    get button_groups() {
-        return [[{"name_text": "Save", "icon_name": "saved", "click_handler": this.props.saveHandler}]];
+    // These only matter if not controlled
+    const [showOmnibar, setShowOmnibar] = useState(false);
+    const key_bindings = [
+          [["ctrl+space"], _showOmnibar],
+      ];
 
-    }
+    const button_groups = [
+        [{"name_text": "Save", "icon_name": "saved", "click_handler": props.saveHandler}]
+    ];
 
-    get menu_specs() {
+    useEffect(()=>{
+        window.addEventListener("resize", resize_to_window);
+        props.handleSelectChange(props.select_val);
+        resize_to_window();
+        props.stopSpinner();
+    }, []);
+
+    function menu_specs() {
         let ms;
         ms = {
             Save: [
                 {name_text: "Save",
                 icon_name: "saved",
-                click_handler: this.props.saveHandler,
+                click_handler: props.saveHandler,
                 key_bindings: ['ctrl+s']},
             ]
-
         };
         for (const [menu_name, menu] of Object.entries(ms)) {
             for (let but of menu) {
@@ -62,60 +56,48 @@ class MergeViewerApp extends React.Component {
         return ms
     }
 
-    componentDidMount() {
-        window.addEventListener("resize", this.resize_to_window);
-        this.setState({"mounted": true});
-        // let fake_event = {currentTarget: {value: this.props.select_val}};
-        this.props.handleSelectChange(this.props.select_val);
-        this.resize_to_window();
-        this.props.stopSpinner();
+    function _showOmnibar() {
+        setShowOmnibar(true)
     }
 
-    _showOmnibar() {
-        this.setState({showOmnibar: true})
+    function _closeOmnibar() {
+        setShowOmnibar(false)
     }
 
-    _closeOmnibar() {
-        this.setState({showOmnibar: false})
-    }
-
-    _omniFunction() {
+    function _omniFunction() {
         let omni_items = [];
-        for (let ogetter in this.omniGetters) {
-            omni_items = omni_items.concat(this.omniGetters[ogetter]())
+        for (let ogetter in omniGetters.current) {
+            omni_items = omni_items.concat(mniGetters.current[ogetter]())
         }
         return omni_items
     }
 
-    _registerOmniGetter(name, the_function) {
-        this.omniGetters[name] = the_function
+    function _registerOmniGetter(name, the_function) {
+        omniGetters.current[name] = the_function
     }
 
-    resize_to_window() {
-        this.setState({
-            "inner_height": window.innerHeight,
-        });
+    function resize_to_window() {
+        set_inner_height(window.innerHeight);
     }
 
-    get_new_heights (bottom_margin) {
+    function get_new_heights (bottom_margin) {
         let new_ld_height;
         let max_merge_height;
-        if (this.state.mounted) {  // This will be true after the initial render
-            new_ld_height = this.state.inner_height - this.left_div_ref.current.offsetTop ;
+        if (left_div_ref && left_div_ref.current) {  // This will be true after the initial render
+            new_ld_height = inner_height - left_div_ref.current.offsetTop ;
             max_merge_height = new_ld_height - bottom_margin;
         }
         else {
-            new_ld_height = this.state.inner_height - 45 - bottom_margin;
+            new_ld_height = inner_height - 45 - bottom_margin;
             max_merge_height = new_ld_height- 50;
         }
         return [new_ld_height, max_merge_height]
     }
 
-    render() {
         let toolbar_holder_style = {"paddingTop": 20, paddingLeft: 50};
         let new_ld_height;
         let max_merge_height;
-        [new_ld_height, max_merge_height] = this.get_new_heights(65);
+        [new_ld_height, max_merge_height] = get_new_heights(65);
         let left_div_style = {
             "width": "100%",
             "height": new_ld_height,
@@ -125,7 +107,7 @@ class MergeViewerApp extends React.Component {
         };
 
         let outer_class = "merge-viewer-outer";
-        if (this.props.dark_theme) {
+        if (props.dark_theme) {
             outer_class = outer_class + " bp5-dark";
         }
         else {
@@ -134,52 +116,51 @@ class MergeViewerApp extends React.Component {
         let current_style = {"bottom": 0};
         return (
             <Fragment>
-                <TacticMenubar menu_specs={this.menu_specs}
+                <TacticMenubar menu_specs={menu_specs()}
                                showRefresh={false}
                                showClose={false}
-                               dark_theme={this.props.dark_theme}
+                               dark_theme={props.dark_theme}
                                refreshTab={null}
                                closeTab={null}
-                               resource_name={this.props.resource_name}
-                               toggleErrorDrawer={this.props.toggleErrorDrawer}
+                               resource_name={props.resource_name}
+                               toggleErrorDrawer={props.toggleErrorDrawer}
                                controlled={false}
                                am_selected={false}
-                               registerOmniGetter={this._registerOmniGetter}
+                               registerOmniGetter={_registerOmniGetter}
                     />
                 <div className={outer_class}>
-                    <div id="left-div" ref={this.left_div_ref} style={left_div_style}>
-                        <div id="above-main" ref={this.above_main_ref} className="d-flex flex-row justify-content-between mb-2">
+                    <div id="left-div" ref={left_div_ref} style={left_div_style}>
+                        <div id="above-main" ref={above_main_ref} className="d-flex flex-row justify-content-between mb-2">
                             <span className="align-self-end">Current</span>
-                            <BpSelect options={this.props.option_list}
-                                      onChange={this.props.handleSelectChange}
+                            <BpSelect options={props.option_list}
+                                      onChange={props.handleSelectChange}
                                       buttonIcon="application"
                                       popoverPosition={PopoverPosition.BOTTOM_RIGHT}
-                                      value={this.props.select_val}/>
+                                      value={props.select_val}/>
                         </div>
-                        <ReactCodemirrorMergeView handleEditChange={this.props.handleEditChange}
-                                                  dark_theme={this.props.dark_theme}
-                                                  editor_content={this.props.edit_content}
-                                                  right_content={this.props.right_content}
-                                                  saveMe={this.props.saveHandler}
+                        <ReactCodemirrorMergeView handleEditChange={props.handleEditChange}
+                                                  dark_theme={props.dark_theme}
+                                                  editor_content={props.edit_content}
+                                                  right_content={props.right_content}
+                                                  saveMe={props.saveHandler}
                                                   max_height={max_merge_height}
-                                                  ref={this.merge_element_ref}
 
                         />
                     </div>
                 </div>
                   <Fragment>
-                      <TacticOmnibar omniGetters={[this._omniFunction]}
-                                     showOmnibar={this.state.showOmnibar}
-                                     closeOmnibar={this._closeOmnibar}
+                      <TacticOmnibar omniGetters={[_omniFunction]}
+                                     page_id={props.page_id}
+                                     showOmnibar={showOmnibar}
+                                     closeOmnibar={_closeOmnibar}
                                      is_authenticated={window.is_authenticated}
-                                     dark_theme={this.props.dark_theme}
-                                     setTheme={this.props.setTheme}
+                                     dark_theme={props.dark_theme}
+                                     setTheme={props.setTheme}
                       />
-                      <KeyTrap global={true} bindings={this.key_bindings}/>
+                      <KeyTrap global={true} bindings={key_bindings}/>
                   </Fragment>
             </Fragment>
         )
-    }
 }
 
 MergeViewerApp.propTypes = {
@@ -193,3 +174,5 @@ MergeViewerApp.propTypes = {
     dark_theme: PropTypes.bool,
     saveHandler: PropTypes.func,
 };
+
+MergeViewerApp = memo(MergeViewerApp);

@@ -4,16 +4,17 @@ import PropTypes from 'prop-types';
 
 import {Card, Elevation, Drawer, Classes, Button} from "@blueprintjs/core";
 
-import {Status} from "./toaster.js";
-import {postWithCallback} from "./communication_react.js";
+import {postWithCallback} from "./communication_react";
 import {GlyphButton} from "./blueprint_react_widgets";
+
+import {useStateAndRef} from "./utilities_react";
 
 export {withErrorDrawer, ErrorItem}
 
 function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_size = "30%") {
     function WithErrorComponent(props) {
         const [show_drawer, set_show_drawer] = useState(false);
-        const [contents, set_contents] = useState({});
+        const [contents, set_contents, contents_ref] = useStateAndRef({}); // the ref is necessary.
 
         const goToLineNumber = useRef(null);
         const ucounter = useRef(0);
@@ -51,7 +52,7 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
         function _addEntry(data, open = true) {
             if (data == null || !("main_id" in data) || (data.main_id == local_id.current)) {
                 ucounter.current = ucounter.current + 1;
-                const newcontents = {...contents};
+                const newcontents = {...contents_ref.current};
                 newcontents[String(ucounter.current)] = data;
                 set_contents(newcontents);
                 set_show_drawer(open);
@@ -59,7 +60,7 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
         }
 
         function _closeEntry(ukey) {
-            const newcontents = {...contents};
+            const newcontents = {...contents_ref.current};
             delete newcontents[ukey];
             set_contents(newcontents);
             set_show_drawer(false)
@@ -96,7 +97,6 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
             toggleErrorDrawer: _toggle,
             setGoToLineNumber: _setGoToLineNumber
         };
-
         return (
             <Fragment>
                 <WrappedComponent {...props}
@@ -104,7 +104,7 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
                                   errorDrawerFuncs={errorDrawerFuncs}
                 />
                 <ErrorDrawer show_drawer={show_drawer}
-                             contents={contents}
+                             contents={contents_ref}
                              position={lposition}
                              error_drawer_size={error_drawer_size}
                              local_id={local_id.current}
@@ -193,12 +193,12 @@ ErrorItem.defaultProps = {
 
 function ErrorDrawer(props) {
 
-    let sorted_keys = [...Object.keys(props.contents)];
+    let sorted_keys = [...Object.keys(props.contents.current)];
     sorted_keys.sort(function (a, b) {
         return parseInt(b) - parseInt(a);
     });
     let items = sorted_keys.map((ukey, index) => {
-        let entry = props.contents[ukey];
+        let entry = props.contents.current[ukey];
         let content_dict = {__html: entry.content};
         let has_link = false;
         if (entry.hasOwnProperty("line_number")) {
@@ -206,6 +206,7 @@ function ErrorDrawer(props) {
         }
         return (
             <ErrorItem ukey={ukey} title={entry.title} content={entry.content} has_link={has_link}
+                       key={ukey}
                        local_id={props.local_id}
                        handleCloseItem={props.handleCloseItem}
                        goToLineNumberFunc={props.goToLineNumberFunc}
@@ -239,10 +240,10 @@ function ErrorDrawer(props) {
 
 ErrorDrawer = memo(ErrorDrawer);
 
-Status.propTypes = {
+ErrorDrawer.propTypes = {
     show_drawer: PropTypes.bool,
     dark_theme: PropTypes.bool,
-    contents: PropTypes.array,
+    contents: PropTypes.object,
     title: PropTypes.string,
     onClose: PropTypes.func,
     handleCloseItem: PropTypes.func,
@@ -254,7 +255,7 @@ Status.propTypes = {
         PropTypes.number])
 };
 
-Status.defaultProps = {
+ErrorDrawer.defaultProps = {
     show_drawer: false,
     contents: [],
     position: "right",

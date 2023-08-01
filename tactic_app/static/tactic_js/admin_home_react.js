@@ -1,91 +1,38 @@
 "use strict";
 
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 require("../tactic_css/tactic.scss");
-
 require("../tactic_css/tactic_table.scss");
-
 require("../tactic_css/library_home.scss");
-
-var _react = _interopRequireDefault(require("react"));
-
+var _react = _interopRequireWildcard(require("react"));
 var ReactDOM = _interopRequireWildcard(require("react-dom"));
-
 var _propTypes = _interopRequireDefault(require("prop-types"));
-
 var _core = require("@blueprintjs/core");
-
 var _table = require("@blueprintjs/table");
-
-var _tactic_socket = require("./tactic_socket.js");
-
-var _modal_react = require("./modal_react.js");
-
-var _toaster = require("./toaster.js");
-
-var _blueprint_navbar = require("./blueprint_navbar.js");
-
-var _communication_react = require("./communication_react.js");
-
-var _administer_pane = require("./administer_pane.js");
-
-var _sizing_tools = require("./sizing_tools.js");
-
-var _resource_viewer_context = require("./resource_viewer_context.js");
-
-var _error_drawer = require("./error_drawer.js");
-
-var _utilities_react = require("./utilities_react.js");
-
+var _tactic_socket = require("./tactic_socket");
+var _modal_react = require("./modal_react");
+var _toaster = require("./toaster");
+var _blueprint_navbar = require("./blueprint_navbar");
+var _communication_react = require("./communication_react");
+var _administer_pane = require("./administer_pane");
+var _sizing_tools = require("./sizing_tools");
+var _resource_viewer_context = require("./resource_viewer_context");
+var _error_drawer = require("./error_drawer");
+var _utilities_react = require("./utilities_react");
 var _library_menubars = require("./library_menubars");
-
-function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
-
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return; var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
-
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-
-function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
-
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 window.library_id = (0, _utilities_react.guid)();
 var MARGIN_SIZE = 17;
 var tsocket;
-
 function _administer_home_main() {
   (0, _blueprint_navbar.render_navbar)("library");
   tsocket = new _tactic_socket.TacticSocket("main", 5000, window.library_id);
@@ -95,354 +42,250 @@ function _administer_home_main() {
     tsocket: tsocket
   }), domContainer);
 }
-
 var res_types = ["container", "user"];
 var col_names = {
   container: ["Id", "Other_name", "Name", "Image", "Owner", "Status", "Uptime"],
   user: ["_id", "username", "full_name", "last_login", "email", "alt_id", "status"]
 };
-
 function NamesToDict(acc, item) {
   acc[item] = "";
   return acc;
 }
-
-var AdministerHomeApp = /*#__PURE__*/function (_React$Component) {
-  _inherits(AdministerHomeApp, _React$Component);
-
-  var _super = _createSuper(AdministerHomeApp);
-
-  function AdministerHomeApp(props) {
-    var _this;
-
-    _classCallCheck(this, AdministerHomeApp);
-
-    _this = _super.call(this, props);
-    var aheight = (0, _sizing_tools.getUsableDimensions)().usable_height_no_bottom;
-    var awidth = (0, _sizing_tools.getUsableDimensions)().usable_width - 170;
-    _this.state = {
-      selected_tab_id: "containers-pane",
-      usable_width: awidth,
-      usable_height: aheight,
-      pane_states: {}
+var initial_pane_states = {};
+for (var _i = 0, _res_types = res_types; _i < _res_types.length; _i++) {
+  var res_type = _res_types[_i];
+  initial_pane_states[res_type] = {
+    left_width_fraction: .65,
+    selected_resource: col_names[res_type].reduce(NamesToDict, {}),
+    tag_button_state: {
+      expanded_tags: [],
+      active_tag: "all",
+      tree: []
+    },
+    console_text: "",
+    search_from_field: false,
+    search_from_tag: false,
+    sort_field: "updated",
+    sorting_field: "updated_for_sort",
+    sort_direction: "descending",
+    multi_select: false,
+    list_of_selected: [],
+    search_string: "",
+    search_inside: false,
+    search_metadata: false,
+    selectedRegions: [_table.Regions.row(0)]
+  };
+}
+function AdministerHomeApp(props) {
+  var _useState = (0, _react.useState)(),
+    _useState2 = _slicedToArray(_useState, 2),
+    selected_tab_id = _useState2[0],
+    set_selected_tab_id = _useState2[1];
+  var _useStateAndRef = (0, _utilities_react.useStateAndRef)(initial_pane_states),
+    _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
+    pane_states = _useStateAndRef2[0],
+    set_pane_states = _useStateAndRef2[1],
+    pane_states_ref = _useStateAndRef2[2];
+  var _useState3 = (0, _react.useState)((0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom),
+    _useState4 = _slicedToArray(_useState3, 2),
+    usable_height = _useState4[0],
+    set_usable_height = _useState4[1];
+  var _useState5 = (0, _react.useState)((0, _sizing_tools.getUsableDimensions)(true).usable_width - 170),
+    _useState6 = _slicedToArray(_useState5, 2),
+    usable_width = _useState6[0],
+    set_usable_width = _useState6[1];
+  var top_ref = (0, _react.useRef)(null);
+  var pushCallback = (0, _utilities_react.useCallbackStack)();
+  (0, _react.useEffect)(function () {
+    initSocket();
+    props.stopSpinner();
+    window.addEventListener("resize", _update_window_dimensions);
+    _update_window_dimensions();
+    return function () {
+      props.tsocket.disconnect();
     };
-
-    var _iterator = _createForOfIteratorHelper(res_types),
-        _step;
-
-    try {
-      for (_iterator.s(); !(_step = _iterator.n()).done;) {
-        var res_type = _step.value;
-        _this.state.pane_states[res_type] = {
-          left_width_fraction: .65,
-          selected_resource: col_names[res_type].reduce(NamesToDict, {}),
-          tag_button_state: {
-            expanded_tags: [],
-            active_tag: "all",
-            tree: []
-          },
-          console_text: "",
-          search_from_field: false,
-          search_from_tag: false,
-          sort_field: "updated",
-          sorting_field: "updated_for_sort",
-          sort_direction: "descending",
-          multi_select: false,
-          list_of_selected: [],
-          search_string: "",
-          search_inside: false,
-          search_metadata: false,
-          selectedRegions: [_table.Regions.row(0)]
-        };
+  }, []);
+  function initSocket() {
+    props.tsocket.attachListener("window-open", function (data) {
+      return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
+    });
+    props.tsocket.attachListener('handle-callback', _communication_react.handleCallback);
+    props.tsocket.attachListener('close-user-windows', function (data) {
+      if (!(data["originator"] == window.library_id)) {
+        window.close();
       }
-    } catch (err) {
-      _iterator.e(err);
-    } finally {
-      _iterator.f();
-    }
-
-    _this.top_ref = /*#__PURE__*/_react["default"].createRef();
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this));
-
-    _this.initSocket();
-
-    return _this;
+    });
+    props.tsocket.attachListener('doflash', _toaster.doFlash);
+    props.tsocket.attachListener('doflashUser', _toaster.doFlash);
   }
-
-  _createClass(AdministerHomeApp, [{
-    key: "initSocket",
-    value: function initSocket() {
-      this.props.tsocket.attachListener("window-open", function (data) {
-        return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
-      });
-      this.props.tsocket.attachListener('handle-callback', _communication_react.handleCallback);
-      this.props.tsocket.attachListener('close-user-windows', function (data) {
-        if (!(data["originator"] == window.library_id)) {
-          window.close();
-        }
-      });
-      this.props.tsocket.attachListener('doflash', _toaster.doFlash);
-      this.props.tsocket.attachListener('doflashUser', _toaster.doFlash);
-    }
-  }, {
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      window.addEventListener("resize", this._update_window_dimensions);
-      this.setState({
-        "mounted": true
-      });
-
-      this._update_window_dimensions();
-
-      this.props.stopSpinner();
-    }
-  }, {
-    key: "_updatePaneState",
-    value: function _updatePaneState(res_type, state_update) {
-      var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-      var old_state = Object.assign({}, this.state.pane_states[res_type]);
-      var new_pane_states = Object.assign({}, this.state.pane_states);
-      new_pane_states[res_type] = Object.assign(old_state, state_update);
-      this.setState({
-        pane_states: new_pane_states
-      }, callback);
-    }
-  }, {
-    key: "_update_window_dimensions",
-    value: function _update_window_dimensions() {
-      var uwidth = window.innerWidth - 2 * _sizing_tools.SIDE_MARGIN;
-      var uheight = window.innerHeight;
-
-      if (this.top_ref && this.top_ref.current) {
-        uheight = uheight - this.top_ref.current.offsetTop;
-      } else {
-        uheight = uheight - _sizing_tools.USUAL_TOOLBAR_HEIGHT;
-      }
-
-      this.setState({
-        usable_height: uheight,
-        usable_width: uwidth
-      });
-    }
-  }, {
-    key: "_handleTabChange",
-    value: function _handleTabChange(newTabId, prevTabId, event) {
-      this.setState({
-        selected_tab_id: newTabId
-      }, this._update_window_dimensions);
-    }
-  }, {
-    key: "getIconColor",
-    value: function getIconColor(paneId) {
-      return paneId == this.state.selected_tab_id ? "white" : "#CED9E0";
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var container_pane = /*#__PURE__*/_react["default"].createElement(_administer_pane.AdminPane, _extends({}, this.props, {
-        res_type: "container",
-        allow_search_inside: false,
-        allow_search_metadata: false,
-        MenubarClass: ContainerMenubar,
-        updatePaneState: this._updatePaneState
-      }, this.state.pane_states["container"], this.props.errorDrawerFuncs, {
-        errorDrawerFuncs: this.props.errorDrawerFuncs,
-        tsocket: tsocket,
-        colnames: col_names.container,
-        id_field: "Id"
-      }));
-
-      var user_pane = /*#__PURE__*/_react["default"].createElement(_administer_pane.AdminPane, _extends({}, this.props, {
-        res_type: "user",
-        allow_search_inside: false,
-        allow_search_metadata: false,
-        MenubarClass: UserMenubar,
-        updatePaneState: this._updatePaneState
-      }, this.state.pane_states["user"], this.props.errorDrawerFuncs, {
-        errorDrawerFuncs: this.props.errorDrawerFuncs,
-        tsocket: tsocket,
-        colnames: col_names.user,
-        id_field: "_id"
-      }));
-
-      var outer_style = {
-        width: this.state.usable_width,
-        height: this.state.usable_height,
-        paddingLeft: 0
-      };
-      return /*#__PURE__*/_react["default"].createElement(_resource_viewer_context.ViewerContext.Provider, {
-        value: {
-          readOnly: false
-        }
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: "pane-holder",
-        ref: this.top_ref,
-        style: outer_style
-      }, /*#__PURE__*/_react["default"].createElement(_core.Tabs, {
-        id: "the_container",
-        style: {
-          marginTop: 100
-        },
-        selectedTabId: this.state.selected_tab_id,
-        renderActiveTabPanelOnly: true,
-        vertical: true,
-        large: true,
-        onChange: this._handleTabChange
-      }, /*#__PURE__*/_react["default"].createElement(_core.Tab, {
-        id: "containers-pane",
-        panel: container_pane
-      }, /*#__PURE__*/_react["default"].createElement(_core.Tooltip, {
-        content: "Containers",
-        position: _core.Position.RIGHT
-      }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-        icon: "box",
-        iconSize: 20,
-        tabIndex: -1,
-        color: this.getIconColor("collections-pane")
-      }))), /*#__PURE__*/_react["default"].createElement(_core.Tab, {
-        id: "users-pane",
-        panel: user_pane
-      }, /*#__PURE__*/_react["default"].createElement(_core.Tooltip, {
-        content: "users",
-        position: _core.Position.RIGHT
-      }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-        icon: "user",
-        iconSize: 20,
-        tabIndex: -1,
-        color: this.getIconColor("collections-pane")
-      }))))));
-    }
-  }]);
-
-  return AdministerHomeApp;
-}(_react["default"].Component);
-
-var ContainerMenubar = /*#__PURE__*/function (_React$Component2) {
-  _inherits(ContainerMenubar, _React$Component2);
-
-  var _super2 = _createSuper(ContainerMenubar);
-
-  function ContainerMenubar(props) {
-    var _this2;
-
-    _classCallCheck(this, ContainerMenubar);
-
-    _this2 = _super2.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this2));
-    return _this2;
+  function _updatePaneState(res_type, state_update) {
+    var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+    var old_state = Object.assign({}, pane_states_ref.current[res_type]);
+    var new_pane_states = Object.assign({}, pane_states_ref.current);
+    new_pane_states[res_type] = Object.assign(old_state, state_update);
+    set_pane_states(new_pane_states);
+    pushCallback(callback);
   }
-
-  _createClass(ContainerMenubar, [{
-    key: "_doFlashStopSpinner",
-    value: function _doFlashStopSpinner(data) {
-      this.props.stopSpinner();
-      (0, _toaster.doFlash)(data);
+  function _update_window_dimensions() {
+    var uwidth = window.innerWidth - 2 * _sizing_tools.SIDE_MARGIN;
+    var uheight = window.innerHeight;
+    if (top_ref && top_ref.current) {
+      uheight = uheight - top_ref.current.offsetTop;
+    } else {
+      uheight = uheight - _sizing_tools.USUAL_TOOLBAR_HEIGHT;
     }
-  }, {
-    key: "_container_logs",
-    value: function _container_logs() {
-      var cont_id = this.props.selected_resource.Id;
-      var self = this;
-      $.getJSON($SCRIPT_ROOT + '/container_logs/' + cont_id, function (data) {
-        self.props.setConsoleText(data.log_text);
-      });
+    set_usable_height(uheight);
+    set_usable_width(uwidth);
+  }
+  function _handleTabChange(newTabId, prevTabId, event) {
+    set_selected_tab_id(newTabId);
+    pushCallback(_update_window_dimensions);
+  }
+  function getIconColor(paneId) {
+    return paneId == selected_tab_id ? "white" : "#CED9E0";
+  }
+  var container_pane = /*#__PURE__*/_react["default"].createElement(_administer_pane.AdminPane, _extends({}, props, {
+    usable_width: usable_width,
+    usable_height: usable_height,
+    res_type: "container",
+    allow_search_inside: false,
+    allow_search_metadata: false,
+    MenubarClass: ContainerMenubar,
+    updatePaneState: _updatePaneState
+  }, pane_states_ref.current["container"], props.errorDrawerFuncs, {
+    errorDrawerFuncs: props.errorDrawerFuncs,
+    tsocket: tsocket,
+    colnames: col_names.container,
+    id_field: "Id"
+  }));
+  var user_pane = /*#__PURE__*/_react["default"].createElement(_administer_pane.AdminPane, _extends({}, props, {
+    usable_width: usable_width,
+    usable_height: usable_height,
+    res_type: "user",
+    allow_search_inside: false,
+    allow_search_metadata: false,
+    MenubarClass: UserMenubar,
+    updatePaneState: _updatePaneState
+  }, pane_states_ref.current["user"], props.errorDrawerFuncs, {
+    errorDrawerFuncs: props.errorDrawerFuncs,
+    tsocket: tsocket,
+    colnames: col_names.user,
+    id_field: "_id"
+  }));
+  var outer_style = {
+    width: usable_width,
+    height: usable_height,
+    paddingLeft: 0
+  };
+  return /*#__PURE__*/_react["default"].createElement(_resource_viewer_context.ViewerContext.Provider, {
+    value: {
+      readOnly: false
     }
-  }, {
-    key: "_clear_user_func",
-    value: function _clear_user_func(event) {
-      this.props.startSpinner();
-      $.getJSON($SCRIPT_ROOT + '/clear_user_containers/' + window.library_id, this._doFlashStopSpinner);
-    }
-  }, {
-    key: "_reset_server_func",
-    value: function _reset_server_func(event) {
-      this.props.startSpinner();
-      $.getJSON($SCRIPT_ROOT + '/reset_server/' + library_id, this._doFlashStopSpinner);
-    }
-  }, {
-    key: "_destroy_container",
-    value: function _destroy_container() {
-      this.props.startSpinner();
-      var cont_id = this.props.selected_resource.Id;
-      var self = this;
-      $.getJSON($SCRIPT_ROOT + '/kill_container/' + cont_id, function (data) {
-        self._doFlashStopSpinner(data);
-
-        if (data.success) {
-          self.props.delete_row(cont_id);
-        }
-      });
-      this.props.stopSpinner();
-    }
-  }, {
-    key: "menu_specs",
-    get: function get() {
-      var self = this;
-      var ms = {
-        Danger: [{
-          name_text: "Reset Host Container",
-          icon_name: "reset",
-          click_handler: this._reset_server_func
-        }, {
-          name_text: "Kill All User Containers",
-          icon_name: "clean",
-          click_handler: this._clear_user_func
-        }, {
-          name_text: "Kill One Container",
-          icon_name: "console",
-          click_handler: this._destroy_container
-        }],
-        Logs: [{
-          name_text: "Show Container Log",
-          icon_name: "delete",
-          click_handler: this._container_logs
-        }]
-      };
-
-      for (var _i = 0, _Object$entries = Object.entries(ms); _i < _Object$entries.length; _i++) {
-        var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
-            menu_name = _Object$entries$_i[0],
-            menu = _Object$entries$_i[1];
-
-        var _iterator2 = _createForOfIteratorHelper(menu),
-            _step2;
-
-        try {
-          for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-            var but = _step2.value;
-            but.click_handler = but.click_handler.bind(this);
-          }
-        } catch (err) {
-          _iterator2.e(err);
-        } finally {
-          _iterator2.f();
-        }
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    className: "pane-holder",
+    ref: top_ref,
+    style: outer_style
+  }, /*#__PURE__*/_react["default"].createElement(_core.Tabs, {
+    id: "the_container",
+    style: {
+      marginTop: 100
+    },
+    selectedTabId: selected_tab_id,
+    renderActiveTabPanelOnly: true,
+    vertical: true,
+    large: true,
+    onChange: _handleTabChange
+  }, /*#__PURE__*/_react["default"].createElement(_core.Tab, {
+    id: "containers-pane",
+    panel: container_pane
+  }, /*#__PURE__*/_react["default"].createElement(_core.Tooltip, {
+    content: "Containers",
+    position: _core.Position.RIGHT
+  }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+    icon: "box",
+    iconSize: 20,
+    tabIndex: -1,
+    color: getIconColor("collections-pane")
+  }))), /*#__PURE__*/_react["default"].createElement(_core.Tab, {
+    id: "users-pane",
+    panel: user_pane
+  }, /*#__PURE__*/_react["default"].createElement(_core.Tooltip, {
+    content: "users",
+    position: _core.Position.RIGHT
+  }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+    icon: "user",
+    iconSize: 20,
+    tabIndex: -1,
+    color: getIconColor("collections-pane")
+  }))))));
+}
+AdministerHomeApp = /*#__PURE__*/(0, _react.memo)(AdministerHomeApp);
+function ContainerMenubar(props) {
+  function _doFlashStopSpinner(data) {
+    props.stopSpinner();
+    (0, _toaster.doFlash)(data);
+  }
+  function _container_logs() {
+    var cont_id = props.selected_resource.Id;
+    $.getJSON($SCRIPT_ROOT + '/container_logs/' + cont_id, function (data) {
+      props.setConsoleText(data.log_text);
+    });
+  }
+  function _clear_user_func(event) {
+    props.startSpinner();
+    $.getJSON($SCRIPT_ROOT + '/clear_user_containers/' + window.library_id, _doFlashStopSpinner);
+  }
+  function _reset_server_func(event) {
+    props.startSpinner();
+    $.getJSON($SCRIPT_ROOT + '/reset_server/' + library_id, _doFlashStopSpinner);
+  }
+  function _destroy_container() {
+    props.startSpinner();
+    var cont_id = props.selected_resource.Id;
+    $.getJSON($SCRIPT_ROOT + '/kill_container/' + cont_id, function (data) {
+      _doFlashStopSpinner(data);
+      if (data.success) {
+        props.delete_row(cont_id);
       }
-
-      return ms;
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      return /*#__PURE__*/_react["default"].createElement(_library_menubars.LibraryMenubar, {
-        menu_specs: this.menu_specs,
-        context_menu_items: null,
-        multi_select: false,
-        dark_theme: false,
-        controlled: false,
-        am_selected: false,
-        refreshTab: this.props.refresh_func,
-        closeTab: null,
-        resource_name: "",
-        showErrorDrawerButton: false,
-        toggleErrorDrawer: null
-      });
-    }
-  }]);
-
-  return ContainerMenubar;
-}(_react["default"].Component);
-
+    });
+    props.stopSpinner();
+  }
+  function menu_specs() {
+    return {
+      Danger: [{
+        name_text: "Reset Host Container",
+        icon_name: "reset",
+        click_handler: _reset_server_func
+      }, {
+        name_text: "Kill All User Containers",
+        icon_name: "clean",
+        click_handler: _clear_user_func
+      }, {
+        name_text: "Kill One Container",
+        icon_name: "console",
+        click_handler: _destroy_container
+      }],
+      Logs: [{
+        name_text: "Show Container Log",
+        icon_name: "delete",
+        click_handler: _container_logs
+      }]
+    };
+  }
+  return /*#__PURE__*/_react["default"].createElement(_library_menubars.LibraryMenubar, {
+    menu_specs: menu_specs(),
+    context_menu_items: null,
+    multi_select: false,
+    dark_theme: false,
+    controlled: false,
+    am_selected: false,
+    refreshTab: props.refresh_func,
+    closeTab: null,
+    resource_name: "",
+    showErrorDrawerButton: false,
+    toggleErrorDrawer: null
+  });
+}
 ContainerMenubar.propTypes = {
   selected_resource: _propTypes["default"].object,
   list_of_selected: _propTypes["default"].array,
@@ -450,191 +293,115 @@ ContainerMenubar.propTypes = {
   delete_row: _propTypes["default"].func,
   refresh_func: _propTypes["default"].func
 };
-
-var UserMenubar = /*#__PURE__*/function (_React$Component3) {
-  _inherits(UserMenubar, _React$Component3);
-
-  var _super3 = _createSuper(UserMenubar);
-
-  function UserMenubar(props) {
-    var _this3;
-
-    _classCallCheck(this, UserMenubar);
-
-    _this3 = _super3.call(this, props);
-    (0, _utilities_react.doBinding)(_assertThisInitialized(_this3));
-    return _this3;
+ContainerMenubar = /*#__PURE__*/(0, _react.memo)(ContainerMenubar);
+function UserMenubar(props) {
+  function _delete_user() {
+    var user_id = props.selected_resource._id;
+    var confirm_text = "Are you sure that you want to delete user " + String(user_id) + "?";
+    (0, _modal_react.showConfirmDialogReact)("Delete User", confirm_text, "do nothing", "delete", function () {
+      $.getJSON($SCRIPT_ROOT + '/delete_user/' + user_id, _toaster.doFlash);
+    });
   }
-
-  _createClass(UserMenubar, [{
-    key: "_delete_user",
-    value: function _delete_user() {
-      var user_id = this.props.selected_resource._id;
-      var confirm_text = "Are you sure that you want to delete user " + String(user_id) + "?";
-      (0, _modal_react.showConfirmDialogReact)("Delete User", confirm_text, "do nothing", "delete", function () {
-        $.getJSON($SCRIPT_ROOT + '/delete_user/' + user_id, _toaster.doFlash);
-      });
-    }
-  }, {
-    key: "_bump_user_alt_id",
-    value: function _bump_user_alt_id() {
-      var user_id = this.props.selected_resource._id;
-      var confirm_text = "Are you sure that you want to bump the id for user " + String(user_id) + "?";
-      (0, _modal_react.showConfirmDialogReact)("Bump User", confirm_text, "do nothing", "bump", function () {
-        $.getJSON($SCRIPT_ROOT + '/bump_one_alt_id/' + user_id, _toaster.doFlash);
-      });
-    }
-  }, {
-    key: "_toggle_status",
-    value: function _toggle_status() {
-      var user_id = this.props.selected_resource._id;
-      $.getJSON($SCRIPT_ROOT + '/toggle_status/' + user_id, _toaster.doFlash);
-    }
-  }, {
-    key: "_bump_all_alt_ids",
-    value: function _bump_all_alt_ids() {
-      var confirm_text = "Are you sure that you want to bump all alt ids?";
-      (0, _modal_react.showConfirmDialogReact)("Bump all", confirm_text, "do nothing", "bump", function () {
-        $.getJSON($SCRIPT_ROOT + '/bump_all_alt_ids', _toaster.doFlash);
-      });
-    }
-  }, {
-    key: "_upgrade_all_users",
-    value: function _upgrade_all_users() {
-      var confirm_text = "Are you sure that you want to upgrade all users?";
-      (0, _modal_react.showConfirmDialogReact)("Bump all", confirm_text, "do nothing", "upgrade", function () {
-        $.getJSON($SCRIPT_ROOT + '/upgrade_all_users', _toaster.doFlash);
-      });
-    }
-  }, {
-    key: "_remove_all_duplicates",
-    value: function _remove_all_duplicates() {
-      var confirm_text = "Are you sure that you want to remove all duplicates?";
-      (0, _modal_react.showConfirmDialogReact)("Bump all", confirm_text, "do nothing", "remove", function () {
-        $.getJSON($SCRIPT_ROOT + '/remove_all_duplicate_collections', _toaster.doFlash);
-      });
-    }
-  }, {
-    key: "_update_user_starters",
-    value: function _update_user_starters(event) {
-      var user_id = this.props.selected_resource._id;
-      var confirm_text = "Are you sure that you want to update starter tiles for user " + String(user_id) + "?";
-      (0, _modal_react.showConfirmDialogReact)("Update User", confirm_text, "do nothing", "update", function () {
-        $.getJSON($SCRIPT_ROOT + '/update_user_starter_tiles/' + user_id, _toaster.doFlash);
-      });
-    }
-  }, {
-    key: "_migrate_user",
-    value: function _migrate_user(event) {
-      var user_id = this.props.selected_resource._id;
-      var confirm_text = "Are you sure that you want to migrate user " + String(user_id) + "?";
-      (0, _modal_react.showConfirmDialogReact)("Migrate User", confirm_text, "do nothing", "migrate", function () {
-        $.getJSON($SCRIPT_ROOT + '/migrate_user/' + user_id, _toaster.doFlash);
-      });
-    }
-  }, {
-    key: "_create_user",
-    value: function _create_user(event) {
-      window.open($SCRIPT_ROOT + '/register');
-    }
-  }, {
-    key: "_duplicate_user",
-    value: function _duplicate_user(event) {
-      var username = this.props.selected_resource.username;
-      window.open($SCRIPT_ROOT + '/user_duplicate/' + username);
-    }
-  }, {
-    key: "_update_all_collections",
-    value: function _update_all_collections(event) {
-      window.open($SCRIPT_ROOT + '/update_all_collections');
-    }
-  }, {
-    key: "button_groups",
-    get: function get() {
-      return [[["create", this._create_user, "new-object", false, "Create user"], // ["duplicate", this._duplicate_user, "duplicate", false],
-      ["delete", this._delete_user, "delete", false, "Delete user", "Delete user"], // ["update", this._update_user_starters, "automatic-updates", false, "],
-      ["refresh", this.props.refresh_func, "refresh", false, "Refresh"]]];
-    }
-  }, {
-    key: "menu_specs",
-    get: function get() {
-      var self = this;
-      var ms = {
-        Manage: [{
-          name_text: "Create User",
-          icon_name: "new-object",
-          click_handler: this._create_user
-        }, {
-          name_text: "Toggle Status",
-          icon_name: "exchange",
-          click_handler: this._toggle_status
-        }, {
-          name_text: "Delete User",
-          icon_name: "delete",
-          click_handler: this._delete_user
-        }, {
-          name_text: "Bump Alt Id",
-          icon_name: "reset",
-          click_handler: this._bump_user_alt_id
-        }, {
-          name_text: "Bump All Alt Ids",
-          icon_name: "reset",
-          click_handler: this._bump_all_alt_ids
-        }, {
-          name_text: "Upgrade all users",
-          icon_name: "reset",
-          click_handler: this._upgrade_all_users
-        }, {
-          name_text: "Remove All Duplicates",
-          icon_name: "reset",
-          click_handler: this._remove_all_duplicates
-        }]
-      };
-
-      for (var _i2 = 0, _Object$entries2 = Object.entries(ms); _i2 < _Object$entries2.length; _i2++) {
-        var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
-            menu_name = _Object$entries2$_i[0],
-            menu = _Object$entries2$_i[1];
-
-        var _iterator3 = _createForOfIteratorHelper(menu),
-            _step3;
-
-        try {
-          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-            var but = _step3.value;
-            but.click_handler = but.click_handler.bind(this);
-          }
-        } catch (err) {
-          _iterator3.e(err);
-        } finally {
-          _iterator3.f();
-        }
-      }
-
-      return ms;
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      return /*#__PURE__*/_react["default"].createElement(_library_menubars.LibraryMenubar, {
-        menu_specs: this.menu_specs,
-        context_menu_items: null,
-        multi_select: false,
-        dark_theme: false,
-        controlled: false,
-        am_selected: false,
-        refreshTab: this.props.refresh_func,
-        closeTab: null,
-        resource_name: "",
-        showErrorDrawerButton: false,
-        toggleErrorDrawer: null
-      });
-    }
-  }]);
-
-  return UserMenubar;
-}(_react["default"].Component);
-
+  function _bump_user_alt_id() {
+    var user_id = props.selected_resource._id;
+    var confirm_text = "Are you sure that you want to bump the id for user " + String(user_id) + "?";
+    (0, _modal_react.showConfirmDialogReact)("Bump User", confirm_text, "do nothing", "bump", function () {
+      $.getJSON($SCRIPT_ROOT + '/bump_one_alt_id/' + user_id, _toaster.doFlash);
+    });
+  }
+  function _toggle_status() {
+    var user_id = props.selected_resource._id;
+    $.getJSON($SCRIPT_ROOT + '/toggle_status/' + user_id, _toaster.doFlash);
+  }
+  function _bump_all_alt_ids() {
+    var confirm_text = "Are you sure that you want to bump all alt ids?";
+    (0, _modal_react.showConfirmDialogReact)("Bump all", confirm_text, "do nothing", "bump", function () {
+      $.getJSON($SCRIPT_ROOT + '/bump_all_alt_ids', _toaster.doFlash);
+    });
+  }
+  function _upgrade_all_users() {
+    var confirm_text = "Are you sure that you want to upgrade all users?";
+    (0, _modal_react.showConfirmDialogReact)("Bump all", confirm_text, "do nothing", "upgrade", function () {
+      $.getJSON($SCRIPT_ROOT + '/upgrade_all_users', _toaster.doFlash);
+    });
+  }
+  function _remove_all_duplicates() {
+    var confirm_text = "Are you sure that you want to remove all duplicates?";
+    (0, _modal_react.showConfirmDialogReact)("Bump all", confirm_text, "do nothing", "remove", function () {
+      $.getJSON($SCRIPT_ROOT + '/remove_all_duplicate_collections', _toaster.doFlash);
+    });
+  }
+  function update_user_starters(event) {
+    var user_id = props.selected_resource._id;
+    var confirm_text = "Are you sure that you want to update starter tiles for user " + String(user_id) + "?";
+    (0, _modal_react.showConfirmDialogReact)("Update User", confirm_text, "do nothing", "update", function () {
+      $.getJSON($SCRIPT_ROOT + '/update_user_starter_tiles/' + user_id, _toaster.doFlash);
+    });
+  }
+  function _migrate_user(event) {
+    var user_id = props.selected_resource._id;
+    var confirm_text = "Are you sure that you want to migrate user " + String(user_id) + "?";
+    (0, _modal_react.showConfirmDialogReact)("Migrate User", confirm_text, "do nothing", "migrate", function () {
+      $.getJSON($SCRIPT_ROOT + '/migrate_user/' + user_id, _toaster.doFlash);
+    });
+  }
+  function _create_user(event) {
+    window.open($SCRIPT_ROOT + '/register');
+  }
+  function _duplicate_user(event) {
+    var username = props.selected_resource.username;
+    window.open($SCRIPT_ROOT + '/user_duplicate/' + username);
+  }
+  function _update_all_collections(event) {
+    window.open($SCRIPT_ROOT + '/update_all_collections');
+  }
+  function menu_specs() {
+    return {
+      Manage: [{
+        name_text: "Create User",
+        icon_name: "new-object",
+        click_handler: _create_user
+      }, {
+        name_text: "Toggle Status",
+        icon_name: "exchange",
+        click_handler: _toggle_status
+      }, {
+        name_text: "Delete User",
+        icon_name: "delete",
+        click_handler: _delete_user
+      }, {
+        name_text: "Bump Alt Id",
+        icon_name: "reset",
+        click_handler: _bump_user_alt_id
+      }, {
+        name_text: "Bump All Alt Ids",
+        icon_name: "reset",
+        click_handler: _bump_all_alt_ids
+      }, {
+        name_text: "Upgrade all users",
+        icon_name: "reset",
+        click_handler: _upgrade_all_users
+      }, {
+        name_text: "Remove All Duplicates",
+        icon_name: "reset",
+        click_handler: _remove_all_duplicates
+      }]
+    };
+  }
+  return /*#__PURE__*/_react["default"].createElement(_library_menubars.LibraryMenubar, {
+    menu_specs: menu_specs(),
+    context_menu_items: null,
+    multi_select: false,
+    dark_theme: false,
+    controlled: false,
+    am_selected: false,
+    refreshTab: props.refresh_func,
+    closeTab: null,
+    resource_name: "",
+    showErrorDrawerButton: false,
+    toggleErrorDrawer: null
+  });
+}
 UserMenubar.propTypes = {
   selected_resource: _propTypes["default"].object,
   list_of_selected: _propTypes["default"].array,
@@ -642,5 +409,5 @@ UserMenubar.propTypes = {
   delete_row: _propTypes["default"].func,
   refresh_func: _propTypes["default"].func
 };
-
+UserMenubar = /*#__PURE__*/(0, _react.memo)(UserMenubar);
 _administer_home_main();

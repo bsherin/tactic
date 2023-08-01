@@ -1414,6 +1414,7 @@ function CreatorApp(props) {
     handleSplitUpdate: handleLeftPaneResize
   })), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_TacticOmnibar.TacticOmnibar, {
     omniGetters: [_omniFunction],
+    page_id: props.module_viewer_id,
     showOmnibar: showOmnibar,
     closeOmnibar: _closeOmnibar,
     is_authenticated: window.is_authenticated,
