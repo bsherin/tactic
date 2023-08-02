@@ -117,6 +117,7 @@ function MergeViewerApp(props) {
         return (
             <Fragment>
                 <TacticMenubar menu_specs={menu_specs()}
+                               connection_status={props.connection_status}
                                showRefresh={false}
                                showClose={false}
                                dark_theme={props.dark_theme}

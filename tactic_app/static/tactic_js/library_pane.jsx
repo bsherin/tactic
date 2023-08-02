@@ -1412,6 +1412,7 @@ function LibraryPane(props) {
     return (
         <Fragment>
             <MenubarClass selected_resource={selected_resource_ref.current}
+                          connection_status={props.connection_status}
                           registerOmniGetter={props.registerOmniGetter}
                           multi_select={multi_select_ref.current}
                           list_of_selected={list_of_selected_ref.current}

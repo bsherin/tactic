@@ -93,6 +93,8 @@ function TacticMenubar(props) {
     className: "bp5-navbar-group bp5-align-left"
   }, /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, menus, sug_glyphs)), props.showErrorDrawerButton && /*#__PURE__*/_react["default"].createElement(ErrorDrawerButton, {
     toggleErrorDrawer: props.toggleErrorDrawer
+  }), props.connection_status && /*#__PURE__*/_react["default"].createElement(ConnectionIndicator, {
+    connection_status: props.connection_status
   }));
 }
 exports.TacticMenubar = TacticMenubar = /*#__PURE__*/(0, _react.memo)(TacticMenubar);
@@ -111,7 +113,8 @@ TacticMenubar.propTypes = {
   am_selected: _propTypes["default"].bool,
   diabled_items: _propTypes["default"].array,
   extraButtons: _propTypes["default"].array,
-  suggestionGlyphs: _propTypes["default"].array
+  suggestionGlyphs: _propTypes["default"].array,
+  connection_status: _propTypes["default"].string
 };
 TacticMenubar.defaultProps = {
   showClose: window.in_context,
@@ -126,8 +129,25 @@ TacticMenubar.defaultProps = {
   resource_icon: null,
   disabled_items: [],
   extraButtons: null,
-  suggestionGlyphs: []
+  suggestionGlyphs: [],
+  connection_status: null
 };
+function ConnectionIndicator(props) {
+  var top_icon_style = {
+    display: "flex",
+    justifyContent: "flex-end",
+    marginTop: 3,
+    paddingTop: 3,
+    marginRight: 20,
+    opacity: .75
+  };
+  return /*#__PURE__*/_react["default"].createElement("div", {
+    style: top_icon_style
+  }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+    icon: props.connection_status == "up" ? "circle-arrow-up" : "offline",
+    iconSize: 18
+  }));
+}
 function ErrorDrawerButton(props) {
   var top_icon_style = {
     display: "flex",

@@ -10,7 +10,7 @@ import {doFlash} from "./toaster"
 import {postAjaxPromise} from "./communication_react"
 import {withErrorDrawer} from "./error_drawer";
 import {withStatus} from "./toaster";
-import {guid} from "./utilities_react";
+import {guid, useConnection} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 import {TacticSocket} from "./tactic_socket";
 import {useCallbackStack} from "./utilities_react";
@@ -72,6 +72,7 @@ function TileDifferApp(props) {
 
     const [dark_theme, set_dark_theme] = useState(props.initial_theme === "dark");
     const [resource_name, set_resource_name] = useState(props.resource_name);
+    const connection_status = useConnection(props.tsocket, initSocket);
 
     const savedContent = useRef(props.edit_content);
 
@@ -84,13 +85,9 @@ function TileDifferApp(props) {
                 e.returnValue = ''
             }
         });
-        initSocket();
         if (!props.controlled) {
             window.dark_theme = dark_theme
         }
-        return (() => {
-            tsocket.disconnect();
-        })
     }, []);
 
     function initSocket() {
@@ -155,6 +152,7 @@ function TileDifferApp(props) {
         }
 
             <MergeViewerApp {...props.statusFuncs}
+                            connection_status={connection_status}
                             page_id={props.resource_viewer_id}
                             setTheme={props.controlled ? null : _setTheme}
                             dark_theme={actual_dark_theme}

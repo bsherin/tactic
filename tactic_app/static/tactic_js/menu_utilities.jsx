@@ -67,6 +67,9 @@ function TacticMenubar(props) {
             {props.showErrorDrawerButton &&
                 <ErrorDrawerButton toggleErrorDrawer={props.toggleErrorDrawer}/>
             }
+            {props.connection_status &&
+                <ConnectionIndicator connection_status={props.connection_status} />
+            }
 
         </Navbar>
     )
@@ -90,6 +93,7 @@ TacticMenubar.propTypes = {
     diabled_items: PropTypes.array,
     extraButtons: PropTypes.array,
     suggestionGlyphs: PropTypes.array,
+    connection_status: PropTypes.string
 };
 
 TacticMenubar.defaultProps = {
@@ -105,8 +109,26 @@ TacticMenubar.defaultProps = {
     resource_icon: null,
     disabled_items: [],
     extraButtons: null,
-    suggestionGlyphs: []
+    suggestionGlyphs: [],
+    connection_status: null
 };
+
+function ConnectionIndicator(props) {
+    let top_icon_style = {
+        display: "flex",
+        justifyContent: "flex-end",
+        marginTop: 3,
+        paddingTop: 3,
+        marginRight: 20,
+        opacity: .75
+    };
+    return (
+        <div style={top_icon_style}>
+            <Icon icon={props.connection_status == "up" ? "circle-arrow-up" : "offline"}
+                  iconSize={18}/>
+        </div>
+    )
+}
 
 function ErrorDrawerButton(props) {
     let top_icon_style = {

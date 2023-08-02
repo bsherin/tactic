@@ -18,6 +18,7 @@ exports.renderSpinnerMessage = renderSpinnerMessage;
 exports.scrollMeIntoView = scrollMeIntoView;
 exports.throttle = throttle;
 exports.useCallbackStack = useCallbackStack;
+exports.useConnection = useConnection;
 exports.useConstructor = void 0;
 exports.useDebounce = useDebounce;
 exports.useReducerAndRef = useReducerAndRef;
@@ -81,11 +82,29 @@ var useConstructor = function useConstructor() {
   return returnVal;
 };
 exports.useConstructor = useConstructor;
-function useStateAndRef(initial) {
-  var _useState = (0, _react.useState)(initial),
+function useConnection(tsocket, initSocket) {
+  var _useState = (0, _react.useState)(null),
     _useState2 = _slicedToArray(_useState, 2),
-    value = _useState2[0],
-    setValue = _useState2[1];
+    connection_status = _useState2[0],
+    set_connection_status = _useState2[1];
+  function socketNotifier(connected) {
+    set_connection_status(connected ? "up" : "down");
+  }
+  (0, _react.useEffect)(function () {
+    initSocket(tsocket);
+    tsocket.notifier = socketNotifier;
+    socketNotifier(tsocket.socket.connected);
+    return function () {
+      tsocket.disconnect();
+    };
+  }, []);
+  return connection_status;
+}
+function useStateAndRef(initial) {
+  var _useState3 = (0, _react.useState)(initial),
+    _useState4 = _slicedToArray(_useState3, 2),
+    value = _useState4[0],
+    setValue = _useState4[1];
   var valueRef = (0, _react.useRef)(value);
   valueRef.current = value;
   return [value, setValue, valueRef];

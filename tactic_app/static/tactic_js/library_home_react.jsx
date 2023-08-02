@@ -18,7 +18,7 @@ import {getUsableDimensions} from "./sizing_tools";
 import {withStatus} from "./toaster";
 import {withErrorDrawer} from "./error_drawer";
 import {KeyTrap} from "./key_trap";
-import { guid, useCallbackStack, useConstructor } from "./utilities_react";
+import { guid, useCallbackStack, useConstructor, useConnection } from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 import {
     AllMenubar
@@ -50,6 +50,8 @@ function LibraryHomeApp(props) {
     const [usable_width, set_usable_width] = useState(null);
     const [dark_theme, set_dark_theme] = useState(null);
 
+    const connection_status = useConnection(props.tsocket, initSocket);
+
     const pushCallback = useCallbackStack("library_home");
 
     const top_ref = useRef(null);
@@ -72,19 +74,16 @@ function LibraryHomeApp(props) {
     });
 
     useEffect(() => {
-        initSocket();
         props.stopSpinner(null);
         if (!props.controlled) {
             window.dark_theme = dark_theme;
             window.addEventListener("resize", _handleResize);
             _handleResize();
         }
-        return (() => {
-            props.tsocket.disconnect()
-        })
     }, []);
 
     function initSocket() {
+
         props.tsocket.attachListener('handle-callback', (task_packet) => {
             handleCallback(task_packet, props.library_id)
         });
@@ -145,6 +144,7 @@ function LibraryHomeApp(props) {
     }
     let all_pane = (
         <LibraryPane {...lib_props}
+                     connection_status={connection_status}
                      columns={{
                          "icon:th": {"sort_field": "type", "first_sort": "ascending"},
                          "name": {"sort_field": "name", "first_sort": "ascending"},
