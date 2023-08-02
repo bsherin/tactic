@@ -38,6 +38,7 @@ function _repository_home_main() {
     tsocket = new TacticSocket(
         "main",
         5000,
+        "repository",
         window.library_id
     );
     let RepositoryHomeAppPlus = withErrorDrawer(withStatus(RepositoryHomeApp));

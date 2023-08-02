@@ -80,7 +80,7 @@ function main_props(data, registerDirtyMethod, finalCallback, registerOmniFuncti
     let initial_tile_types;
     let initial_tile_icon_dict;
 
-    tsocket = new TacticSocket("main", 5000, main_id, function (response) {
+    tsocket = new TacticSocket("main", 5000, "main_app", main_id, function (response) {
         tsocket.socket.on("remove-ready-block", readyListener);
         initial_tile_types = response.tile_types;
         initial_tile_icon_dict = response.icon_dict;

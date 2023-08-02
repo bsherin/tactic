@@ -50,7 +50,7 @@ function history_viewer_main ()  {
 
 function history_viewer_props(data, registerDirtyMethod, finalCallback) {
     let resource_viewer_id = guid();
-    var tsocket = new TacticSocket("main", 5000, resource_viewer_id);
+    var tsocket = new TacticSocket("main", 5000, "history_viewer", resource_viewer_id);
     finalCallback({
         resource_viewer_id: resource_viewer_id,
         tsocket: tsocket,

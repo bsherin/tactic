@@ -1,5 +1,4 @@
 // noinspection XmlDeprecatedElement
-
 import "../tactic_css/tactic.scss";
 import "../tactic_css/context.scss";
 import "../tactic_css/tactic_table.scss";
@@ -47,7 +46,7 @@ const spinner_panel = (
 
 const MIN_CONTEXT_WIDTH = 45;
 const MIN_CONTEXT_SAVED_WIDTH = 100;
-const resTypes = ["all", "collections", "projects", "tiles", "lists", "code"];
+//const resTypes = ["all", "collections", "projects", "tiles", "lists", "code"];
 const iconDict = {
     "module-viewer": "application",
     "code-viewer": "code",
@@ -86,7 +85,7 @@ const panelRootDict = {
 window.context_id = guid();
 window.main_id = window.context_id;
 
-let tsocket = new TacticSocket("main", 5000, window.context_id);
+let tsocket = new TacticSocket("main", 5000, "context", window.context_id);
 
 const LibraryHomeAppPlus = withErrorDrawer(withStatus(LibraryHomeApp));
 const ListViewerAppPlus = withStatus(ListViewerApp);

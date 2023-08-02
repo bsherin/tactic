@@ -35,7 +35,7 @@ var MARGIN_SIZE = 17;
 var tsocket;
 function _administer_home_main() {
   (0, _blueprint_navbar.render_navbar)("library");
-  tsocket = new _tactic_socket.TacticSocket("main", 5000, window.library_id);
+  tsocket = new _tactic_socket.TacticSocket("main", 5000, "admin", window.library_id);
   var AdministerHomeAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(AdministerHomeApp));
   var domContainer = document.querySelector('#library-home-root');
   ReactDOM.render( /*#__PURE__*/_react["default"].createElement(AdministerHomeAppPlus, {

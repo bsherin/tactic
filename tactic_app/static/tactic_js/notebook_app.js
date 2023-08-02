@@ -79,7 +79,7 @@ function notebook_props(data, registerDirtyMethod, finalCallback, registerOmniFu
   if (!window.in_context) {
     window.main_id = main_id;
   }
-  tsocket = new _tactic_socket.TacticSocket("main", 5000, main_id, function (response) {
+  tsocket = new _tactic_socket.TacticSocket("main", 5000, "notebook_app", main_id, function (response) {
     tsocket.socket.on("remove-ready-block", readyListener);
     tsocket.socket.emit('client-ready', {
       "room": main_id,

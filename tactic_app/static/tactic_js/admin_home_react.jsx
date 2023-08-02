@@ -34,7 +34,7 @@ let tsocket;
 
 function _administer_home_main () {
     render_navbar("library");
-    tsocket = new TacticSocket("main", 5000, window.library_id);
+    tsocket = new TacticSocket("main", 5000, "admin", window.library_id);
     let AdministerHomeAppPlus = withErrorDrawer(withStatus(AdministerHomeApp));
     let domContainer = document.querySelector('#library-home-root');
     ReactDOM.render(<AdministerHomeAppPlus tsocket={tsocket}/>, domContainer)

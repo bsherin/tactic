@@ -27,9 +27,8 @@ import {
 const TAB_BAR_WIDTH = 50;
 
 export {LibraryHomeApp}
-
 const library_id = guid();
-const tsocket = new TacticSocket("main", 5000, library_id);
+const tsocket = new TacticSocket("main", 5000, "library", library_id);
 
 function _library_home_main() {
     const LibraryHomeAppPlus = withErrorDrawer(withStatus(LibraryHomeApp));

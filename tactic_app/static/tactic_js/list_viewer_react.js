@@ -58,7 +58,7 @@ function list_viewer_main() {
 }
 function list_viewer_props(data, registerDirtyMethod, finalCallback, registerOmniFunction) {
   var resource_viewer_id = (0, _utilities_react.guid)();
-  var tsocket = new _tactic_socket.TacticSocket("main", 5000, resource_viewer_id);
+  var tsocket = new _tactic_socket.TacticSocket("main", 5000, "list_viewer", resource_viewer_id);
   finalCallback({
     resource_viewer_id: resource_viewer_id,
     main_id: resource_viewer_id,
