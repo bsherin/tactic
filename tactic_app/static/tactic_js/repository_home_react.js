@@ -42,7 +42,7 @@ var TAB_BAR_WIDTH = 50;
 var tsocket;
 function _repository_home_main() {
   window.library_id = (0, _utilities_react.guid)();
-  tsocket = new _tactic_socket.TacticSocket("main", 5000, window.library_id);
+  tsocket = new _tactic_socket.TacticSocket("main", 5000, "repository", window.library_id);
   var RepositoryHomeAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(RepositoryHomeApp));
   var domContainer = document.querySelector('#library-home-root');
   ReactDOM.render( /*#__PURE__*/_react["default"].createElement(RepositoryHomeAppPlus, _extends({}, repository_props(), {

@@ -68,7 +68,7 @@ function creator_props(data, registerDirtyMethod, finalCallback, registerOmniFun
         _everyone_ready_in_context(finalCallback);
     }
 
-    var tsocket = new TacticSocket("main", 5000, module_viewer_id, function (response) {
+    var tsocket = new TacticSocket("main", 5000, "creator", module_viewer_id, function (response) {
         tsocket.socket.on("remove-ready-block", readyListener);
         tsocket.socket.emit('client-ready', {
             "room": data.module_viewer_id, "user_id": window.user_id, "participant": "client",
@@ -270,7 +270,6 @@ function CreatorApp(props) {
                 [["ctrl+space"], _showOmnibar],
             ];
         }
-        return
     });
 
     useEffect(() => {

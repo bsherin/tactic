@@ -48,7 +48,7 @@ function list_viewer_main() {
 function list_viewer_props(data, registerDirtyMethod, finalCallback, registerOmniFunction) {
 
     let resource_viewer_id = guid();
-    var tsocket = new TacticSocket("main", 5000, resource_viewer_id);
+    var tsocket = new TacticSocket("main", 5000, "list_viewer", resource_viewer_id);
 
 
     finalCallback({

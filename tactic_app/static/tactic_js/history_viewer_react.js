@@ -50,7 +50,7 @@ function history_viewer_main() {
 }
 function history_viewer_props(data, registerDirtyMethod, finalCallback) {
   var resource_viewer_id = (0, _utilities_react.guid)();
-  var tsocket = new _tactic_socket.TacticSocket("main", 5000, resource_viewer_id);
+  var tsocket = new _tactic_socket.TacticSocket("main", 5000, "history_viewer", resource_viewer_id);
   finalCallback({
     resource_viewer_id: resource_viewer_id,
     tsocket: tsocket,

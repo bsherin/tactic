@@ -45,7 +45,7 @@ function tile_differ_main() {
 }
 function tile_differ_props(data, registerDirtyMethod, finalCallback) {
   var resource_viewer_id = (0, _utilities_react.guid)();
-  var tsocket = new _tactic_socket.TacticSocket("main", 5000, resource_viewer_id);
+  var tsocket = new _tactic_socket.TacticSocket("main", 5000, "differ", resource_viewer_id);
   finalCallback({
     resource_viewer_id: resource_viewer_id,
     tsocket: tsocket,

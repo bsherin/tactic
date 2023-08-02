@@ -82,7 +82,7 @@ function creator_props(data, registerDirtyMethod, finalCallback, registerOmniFun
   function readyListener() {
     _everyone_ready_in_context(finalCallback);
   }
-  var tsocket = new _tactic_socket.TacticSocket("main", 5000, module_viewer_id, function (response) {
+  var tsocket = new _tactic_socket.TacticSocket("main", 5000, "creator", module_viewer_id, function (response) {
     tsocket.socket.on("remove-ready-block", readyListener);
     tsocket.socket.emit('client-ready', {
       "room": data.module_viewer_id,
@@ -373,7 +373,6 @@ function CreatorApp(props) {
     if (!window.in_context) {
       key_bindings.current = [[["ctrl+space"], _showOmnibar]];
     }
-    return;
   });
   (0, _react.useEffect)(function () {
     initSocket();

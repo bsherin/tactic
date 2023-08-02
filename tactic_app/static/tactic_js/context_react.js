@@ -64,7 +64,7 @@ var spinner_panel = /*#__PURE__*/_react["default"].createElement("div", {
 }));
 var MIN_CONTEXT_WIDTH = 45;
 var MIN_CONTEXT_SAVED_WIDTH = 100;
-var resTypes = ["all", "collections", "projects", "tiles", "lists", "code"];
+//const resTypes = ["all", "collections", "projects", "tiles", "lists", "code"];
 var iconDict = {
   "module-viewer": "application",
   "code-viewer": "code",
@@ -99,7 +99,7 @@ var panelRootDict = {
 };
 window.context_id = (0, _utilities_react.guid)();
 window.main_id = window.context_id;
-var tsocket = new _tactic_socket.TacticSocket("main", 5000, window.context_id);
+var tsocket = new _tactic_socket.TacticSocket("main", 5000, "context", window.context_id);
 var LibraryHomeAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(_library_home_react.LibraryHomeApp));
 var ListViewerAppPlus = (0, _toaster.withStatus)(_list_viewer_react.ListViewerApp);
 var CodeViewerAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(_code_viewer_react.CodeViewerApp));

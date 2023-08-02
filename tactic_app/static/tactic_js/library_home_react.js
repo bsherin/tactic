@@ -40,7 +40,7 @@ function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefine
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; } // noinspection JSCheckFunctionSignatures
 var TAB_BAR_WIDTH = 50;
 var library_id = (0, _utilities_react.guid)();
-var tsocket = new _tactic_socket.TacticSocket("main", 5000, library_id);
+var tsocket = new _tactic_socket.TacticSocket("main", 5000, "library", library_id);
 function _library_home_main() {
   var LibraryHomeAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster2.withStatus)(LibraryHomeApp));
   var domContainer = document.querySelector('#library-home-root');
