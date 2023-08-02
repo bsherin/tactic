@@ -28,13 +28,13 @@ const TAB_BAR_WIDTH = 50;
 
 export {LibraryHomeApp}
 
+const library_id = guid();
+const tsocket = new TacticSocket("main", 5000, library_id);
+
 function _library_home_main() {
-    const library_id = guid();
-    const tsocket = new TacticSocket("main", 5000, library_id);
     const LibraryHomeAppPlus = withErrorDrawer(withStatus(LibraryHomeApp));
     const domContainer = document.querySelector('#library-home-root');
-    ReactDOM.render(<LibraryHomeAppPlus library_id={library_id}
-                                        tsocket={tsocket}
+    ReactDOM.render(<LibraryHomeAppPlus tsocket={tsocket}
                                         registerOmniFunction={null}
                                         controlled={false}
                                         initial_theme={window.theme}/>, domContainer)
@@ -164,7 +164,7 @@ function LibraryHomeApp(props) {
                      registerOmniGetter={_registerOmniGetter}
                      {...props.errorDrawerFuncs}
                      errorDrawerFuncs={props.errorDrawerFuncs}
-                     library_id={props.library_id}
+                     library_id={library_id}
         />
     );
 

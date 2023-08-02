@@ -750,12 +750,9 @@ function ContextApp(props) {
   if (selectedTabIdRef.current == "library") {
     bclass += " selected-tab-button";
   }
-  var library_id = (0, _utilities_react.guid)();
-  var tsocket = new _tactic_socket.TacticSocket("main", 5000, library_id);
   var library_panel = /*#__PURE__*/_react["default"].createElement("div", {
     id: "library-home-root"
   }, /*#__PURE__*/_react["default"].createElement(LibraryHomeAppPlus, {
-    library_id: library_id,
     tsocket: tsocket,
     library_style: window.library_style,
     controlled: true,

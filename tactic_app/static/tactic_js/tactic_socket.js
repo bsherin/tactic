@@ -1,6 +1,7 @@
 
 import {doFlash} from "./toaster.js"
 import io from 'socket.io-client';
+import { Manager } from 'socket.io-client';
 
 export {TacticSocket}
 
@@ -21,7 +22,14 @@ class TacticSocket {
 
     connectme() {
         var protocol = window.location.protocol;
-        this.socket = io.connect(`${protocol}//${document.domain}:${location.port}/${this.name_space}`);
+        this.manager = new Manager(`${protocol}//${document.domain}:${location.port}`, {
+            reconnectionDelayMax: 10000
+        });
+        this.socket = this.manager.socket(`/${this.name_space}`);
+
+        // this.socket = io(`${protocol}//${document.domain}:${location.port}/${this.name_space}`, {
+        //     reconnectionDelayMax: 10000
+        // });
         this.counter = 0;
     }
 
@@ -69,25 +77,41 @@ class TacticSocket {
 
     watchForDisconnect() {
         let self = this;
-        this.attachListener("disconnect", function () {
-            doFlash({"message": "lost server connection", timeout: null, "is_disconnect_message": true});
-            self.socket.close();
-            self.recInterval = setInterval(function () {
-                self.attemptReconnect();
-            }, self.retry_interval)
+        this.socket.on("reconnect", ()=>{
+            doFlash({"message": "reconnected automatically", timeout: null, "is_reconnect_message": true})
         });
+        this.attachListener("disconnect", (reason)=>{
+            if (reason == "io client disconnect") return;
+            console.log("disconnected for reason " + reason);
+            doFlash({"message": "lost server connection " + reason, timeout: null, "is_disconnect_message": true})
+            if (reason === "io server disconnect") {
+                // the disconnection was initiated by the server, you need to reconnect manually
+                self.socket.connect();
+                self.recInterval = setInterval(function () {
+                    self.attemptReconnect();
+                }, self.retry_interval)
+              }
+        })
+        // this.attachListener("disconnect", function () {
+        //     doFlash({"message": "lost server connection", timeout: null, "is_disconnect_message": true});
+        //     self.socket.close();
+        //     self.recInterval = setInterval(function () {
+        //         self.attemptReconnect();
+        //     }, self.retry_interval)
+        // });
     }
     attemptReconnect() {
         if (this.socket.connected) {
             clearInterval(this.recInterval);
             this.counter += 1;
-            this.join_rooms(true, null);
-            this.restoreListeners();
+            // this.join_rooms(true, null);
+            // this.restoreListeners();
             // this.watchForDisconnect();
             doFlash({"message": "reconnected to server", timeout: null, "is_reconnect_message": true})
         }
         else {
-            this.connectme()
+            // this.connectme()
+            this.socket.connect();
         }
     }
 }
