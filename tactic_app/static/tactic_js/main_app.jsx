@@ -204,9 +204,6 @@ function main_props(data, registerDirtyMethod, finalCallback, registerOmniFuncti
 
 }
 
-const save_attrs = ["tile_list", "table_is_shrunk", "console_width_fraction", "horizontal_fraction",
-    "console_items", "console_is_shrunk", "height_fraction", "show_exports_pane", "show_console_pane", 'console_is_zoomed'];
-
 const iStateDefaults = {
     table_is_shrunk: false,
     tile_list: [],
@@ -269,8 +266,6 @@ function mainReducer(mState, action) {
     }
     return newMstate
 }
-
-const controllable_props = ["is_project", "resource_name", "usable_width", "usable_height"];
 
 function MainApp(props) {
 
@@ -411,7 +406,6 @@ function MainApp(props) {
         });
     }
 
-
     function _updateLastSave() {
         last_save.current = save_state
     }
@@ -425,7 +419,6 @@ function MainApp(props) {
         }
         return false
     }
-
 
     function delete_my_containers() {
         postAjax("/remove_mainwindow", {"main_id": props.main_id});
@@ -525,8 +518,7 @@ function MainApp(props) {
                 type: "change_multiple_fields",
                 newPartialState: field_name
             })
-        }
-        else {
+        } else {
             mDispatch({
                 type: "change_field",
                 field: field_name,
@@ -636,12 +628,12 @@ function MainApp(props) {
         function createNewTile(tile_name) {
             props.startSpinner();
             props.statusMessage("Creating Tile " + tile_name);
-            const data_dict = {};
-            const tile_type = menu_id;
-            data_dict["tile_name"] = tile_name;
-            data_dict["tile_type"] = tile_type;
-            data_dict["user_id"] = window.user_id;
-            data_dict["parent"] = props.main_id;
+            const data_dict = {
+                tile_name: tile_name,
+                tile_type: menu_id,
+                user_id: window.user_id,
+                parent: props.main_id
+            };
             postWithCallback(props.main_id, "create_tile", data_dict, function (create_data) {
                 if (create_data.success) {
                     let new_tile_entry = _createTileEntry(tile_name,
@@ -692,15 +684,13 @@ function MainApp(props) {
             let sorted_types = [...mState.tile_types[category]];
             sorted_types.sort();
             for (let ttype of sorted_types) {
-                omni_items.push(
-                    {
-                        category: category,
-                        display_text: ttype,
-                        search_text: ttype,
-                        icon_name: mState.tile_icon_dict[ttype],
-                        the_function: () => _tile_command(ttype)
-                    }
-                )
+                omni_items.push({
+                    category: category,
+                    display_text: ttype,
+                    search_text: ttype,
+                    icon_name: mState.tile_icon_dict[ttype],
+                    the_function: () => _tile_command(ttype)
+                })
             }
         }
         return omni_items
@@ -849,7 +839,6 @@ function MainApp(props) {
         _updateTableSpec({column_names: colnames, column_widths: cwidths}, true)
     }
 
-
     function _hideColumn() {
         let hc_list = [...mState.table_spec.hidden_columns_list];
         let fnames = _filteredColumnNames();
@@ -883,31 +872,27 @@ function MainApp(props) {
     }
 
     function _deleteRow() {
-        postWithCallback(props.main_id, "delete_row",
-            {
-                "document_name": mState.table_spec.current_doc_name,
-                "index": mState.selected_row
-            }, null)
+        postWithCallback(props.main_id, "delete_row", {
+            "document_name": mState.table_spec.current_doc_name,
+            "index": mState.selected_row
+        }, null)
     }
 
     function _insertRow(index) {
-        postWithCallback(props.main_id, "insert_row",
-            {
-                "document_name": mState.table_spec.current_doc_name,
-                "index": index,
-                "row_dict": {}
-            }, null, null, props.main_id)
+        postWithCallback(props.main_id, "insert_row", {
+            "document_name": mState.table_spec.current_doc_name,
+            "index": index,
+            "row_dict": {}
+        }, null, null, props.main_id)
     }
 
     function _duplicateRow() {
-        postWithCallback(props.main_id, "insert_row",
-            {
-                "document_name": mState.table_spec.current_doc_name,
-                "index": mState.selected_row,
-                "row_dict": mState.data_text[mState.selected_row]
-            }, null, null, props.main_id)
+        postWithCallback(props.main_id, "insert_row", {
+            "document_name": mState.table_spec.current_doc_name,
+            "index": mState.selected_row,
+            "row_dict": mState.data_text[mState.selected_row]
+        }, null, null, props.main_id)
     }
-
 
     function _deleteColumn(delete_in_all = false) {
         let fnames = _filteredColumnNames();

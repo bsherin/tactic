@@ -224,7 +224,6 @@ function main_props(data, registerDirtyMethod, finalCallback, registerOmniFuncti
     }
   }
 }
-var save_attrs = ["tile_list", "table_is_shrunk", "console_width_fraction", "horizontal_fraction", "console_items", "console_is_shrunk", "height_fraction", "show_exports_pane", "show_console_pane", 'console_is_zoomed'];
 var iStateDefaults = {
   table_is_shrunk: false,
   tile_list: [],
@@ -291,7 +290,6 @@ function mainReducer(mState, action) {
   }
   return newMstate;
 }
-var controllable_props = ["is_project", "resource_name", "usable_width", "usable_height"];
 function MainApp(props) {
   function iStateOrDefault(pname) {
     if (props.is_project) {
@@ -656,12 +654,12 @@ function MainApp(props) {
     function createNewTile(tile_name) {
       props.startSpinner();
       props.statusMessage("Creating Tile " + tile_name);
-      var data_dict = {};
-      var tile_type = menu_id;
-      data_dict["tile_name"] = tile_name;
-      data_dict["tile_type"] = tile_type;
-      data_dict["user_id"] = window.user_id;
-      data_dict["parent"] = props.main_id;
+      var data_dict = {
+        tile_name: tile_name,
+        tile_type: menu_id,
+        user_id: window.user_id,
+        parent: props.main_id
+      };
       (0, _communication_react.postWithCallback)(props.main_id, "create_tile", data_dict, function (create_data) {
         if (create_data.success) {
           var new_tile_entry = _createTileEntry(tile_name, menu_id, create_data.tile_id, create_data.form_data);

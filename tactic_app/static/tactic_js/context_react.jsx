@@ -679,12 +679,9 @@ function ContextApp(props) {
         bclass += " selected-tab-button"
     }
 
-    const library_id = guid();
-    const tsocket = new TacticSocket("main", 5000, library_id);
     const library_panel = (
         <div id="library-home-root">
-            <LibraryHomeAppPlus library_id={library_id}
-                                tsocket={tsocket}
+            <LibraryHomeAppPlus tsocket={tsocket}
                                 library_style={window.library_style}
                                 controlled={true}
                                 am_selected={selectedTabIdRef.current == "library"}
