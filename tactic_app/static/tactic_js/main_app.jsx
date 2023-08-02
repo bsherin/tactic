@@ -4,7 +4,7 @@ import "../tactic_css/tactic_table.scss";
 import "../tactic_css/tactic_console.scss";
 import "../tactic_css/tactic_select.scss"
 
-import React from "react";
+import React, {useState} from "react";
 import {Fragment, useEffect, useRef, useReducer, memo} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
@@ -27,7 +27,7 @@ import {handleCallback, postWithCallback, postAjaxPromise, postAjax} from "./com
 import {doFlash} from "./toaster"
 import {withStatus} from "./toaster";
 import {withErrorDrawer} from "./error_drawer";
-import {get_ppi, renderSpinnerMessage} from "./utilities_react";
+import {get_ppi, renderSpinnerMessage, useConnection} from "./utilities_react";
 import {getUsableDimensions} from "./sizing_tools";
 import {ErrorBoundary} from "./error_boundary";
 import {TacticOmnibar} from "./TacticOmnibar";
@@ -335,11 +335,11 @@ function MainApp(props) {
         usable_height: getUsableDimensions(true).usable_height_no_bottom,
         usable_width: getUsableDimensions(true).usable_width - 170
     });
+    const connection_status = useConnection(props.tsocket, initSocket);
 
     const pushCallback = useCallbackStack();
 
     useEffect(() => {
-        initSocket();
         if (props.controlled) {
             props.registerDirtyMethod(_dirty);
             height_adjustment.current = MENU_BAR_HEIGHT;
@@ -364,7 +364,6 @@ function MainApp(props) {
         }
 
         return (() => {
-            tsocket.disconnect();
             delete_my_containers()
         })
     }, []);
@@ -1356,6 +1355,7 @@ function MainApp(props) {
                 />
             }
             <TacticMenubar dark_theme={actual_dark_theme}
+                           connection_status={connection_status}
                            menus={menus}
                            showRefresh={true}
                            showClose={true}

@@ -189,6 +189,7 @@ function NotebookApp(props) {
   var omniGetters = (0, _react.useRef)({});
   var updateExportsList = (0, _react.useRef)(null);
   var height_adjustment = (0, _react.useRef)(props.controlled ? MENU_BAR_HEIGHT : 0);
+  var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
   var _useReducerAndRef = (0, _utilities_react.useReducerAndRef)(_console_component.itemsReducer, []),
     _useReducerAndRef2 = _slicedToArray(_useReducerAndRef, 3),
     console_items = _useReducerAndRef2[0],
@@ -218,7 +219,6 @@ function NotebookApp(props) {
     });
   });
   (0, _react.useEffect)(function () {
-    initSocket();
     if (props.controlled) {
       props.registerDirtyMethod(_dirty);
     } else {
@@ -241,7 +241,6 @@ function NotebookApp(props) {
       _update_window_dimensions();
     }
     return function () {
-      tsocket.disconnect();
       delete_my_containers();
     };
   }, []);
@@ -445,6 +444,7 @@ function NotebookApp(props) {
     page_id: props.main_id
   }), /*#__PURE__*/_react["default"].createElement(_menu_utilities.TacticMenubar, {
     dark_theme: actual_dark_theme,
+    connection_status: connection_status,
     menus: menus,
     showRefresh: true,
     showClose: true,

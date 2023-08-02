@@ -17,11 +17,12 @@ class TacticSocket {
         this.join_rooms(false, on_initial_join);
         this.watchForDisconnect();
         this.counter = null;
+        this.notifier = null;
     }
 
     connectme() {
         const protocol = window.location.protocol;
-        this.socket = io(`${protocol}//${document.domain}:${location.port}/${this.name_space}`);
+        this.socket = io.connect(`${protocol}//${document.domain}:${location.port}/${this.name_space}`);
         this.counter = 0;
     }
 
@@ -67,11 +68,22 @@ class TacticSocket {
         }
     }
 
+    notify(connected){
+        if (this.notifier) {
+            this.notifier(connected)
+        }
+    }
+
     watchForDisconnect() {
         let self = this;
+        this.attachListener("connect", ()=>{
+            console.log(`tactic:${this.ident} connected`);
+            this.notify(true)
+        })
         this.attachListener("disconnect", (reason) => {
             if (reason == "io client disconnect") return;
             console.log(`tactic:${this.ident} disconnected for reason ${reason}`);
+            this.notify(false)
             // doFlash({"message": "lost server connection " + reason, timeout: null, "is_disconnect_message": true})
             self.socket.close();
             self.recInterval = setInterval(function () {
@@ -82,6 +94,7 @@ class TacticSocket {
 
     attemptReconnect() {
         if (this.socket.connected) {
+            this.notify(true);
             clearInterval(this.recInterval);
             this.counter += 1;
             this.join_rooms(true, null);
@@ -90,6 +103,7 @@ class TacticSocket {
             console.log(`tactic:${this.ident} looks to be reconnected`);
             // doFlash({"message": "reconnected to server", timeout: null, "is_reconnect_message": true})
         } else {
+            this.notify(false);
             console.log(`tactic:${this.ident} trying to reconnect`);
             this.connectme()
         }

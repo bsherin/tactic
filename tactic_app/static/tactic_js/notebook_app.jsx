@@ -2,7 +2,7 @@ import "../tactic_css/tactic.scss";
 import "../tactic_css/tactic_console.scss";
 import "../tactic_css/tactic_main.scss";
 
-import React from "react";
+import React, {useState} from "react";
 import {Fragment, useEffect, useRef, useReducer, memo} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
@@ -14,7 +14,7 @@ import {TacticSocket} from "./tactic_socket";
 import {ConsoleComponent, itemsReducer} from "./console_component";
 import {doFlash} from "./toaster"
 import {withStatus} from "./toaster";
-import {get_ppi, renderSpinnerMessage} from "./utilities_react";
+import {get_ppi, renderSpinnerMessage, useConnection} from "./utilities_react";
 import {TacticOmnibar} from "./TacticOmnibar";
 import {KeyTrap} from "./key_trap";
 
@@ -188,6 +188,7 @@ function NotebookApp(props) {
     const omniGetters = useRef({});
     const updateExportsList = useRef(null);
     const height_adjustment = useRef(props.controlled ? MENU_BAR_HEIGHT : 0);
+    const connection_status = useConnection(props.tsocket, initSocket);
 
     const [console_items, dispatch, console_items_ref] = useReducerAndRef(itemsReducer, []);
     const [mState, mDispatch] = useReducer(mainReducer, {
@@ -216,7 +217,6 @@ function NotebookApp(props) {
     });
 
     useEffect(() => {
-        initSocket();
         if (props.controlled) {
             props.registerDirtyMethod(_dirty);
         } else {
@@ -241,7 +241,6 @@ function NotebookApp(props) {
         }
 
         return (() => {
-            tsocket.disconnect();
             delete_my_containers()
         })
     }, []);
@@ -464,6 +463,7 @@ function NotebookApp(props) {
             }
 
             <TacticMenubar dark_theme={actual_dark_theme}
+                           connection_status={connection_status}
                            menus={menus}
                            showRefresh={true}
                            showClose={true}

@@ -1568,6 +1568,7 @@ function LibraryPane(props) {
   var selected_type = selected_types.length == 1 ? selected_resource_ref.current.res_type : "multi";
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(MenubarClass, _extends({
     selected_resource: selected_resource_ref.current,
+    connection_status: props.connection_status,
     registerOmniGetter: props.registerOmniGetter,
     multi_select: multi_select_ref.current,
     list_of_selected: list_of_selected_ref.current,

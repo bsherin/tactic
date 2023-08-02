@@ -12,7 +12,7 @@ import {TacticMenubar} from "./menu_utilities.js"
 import {doFlash, doFlashAlways} from "./toaster.js";
 import {SIDE_MARGIN} from "./sizing_tools.js"
 import {SearchForm} from "./library_widgets";
-import {useConstructor} from "./utilities_react";
+import {useConstructor, useConnection} from "./utilities_react";
 
 export {ResourceViewerApp, copyToLibrary, sendToRepository}
 
@@ -59,6 +59,7 @@ function ResourceViewerApp(props) {
 
     // Only used when not in context
     const [showOmnibar, setShowOmnibar] = useState(false);
+    const connection_status = useConnection(props.tsocket, initSocket);
 
     useConstructor(() => {
         if (!window.in_context) {
@@ -66,18 +67,13 @@ function ResourceViewerApp(props) {
                 [["ctrl+space"], _showOmnibar],
             ];
         }
-        return
     });
 
     useEffect(() => {
-        initSocket();
         props.stopSpinner();
         if (props.registerOmniFunction) {
             props.registerOmniFunction(_omniFunction);
         }
-        return (() => {
-            props.tsocket.disconnect()
-        })
     }, []);
 
     function initSocket() {
@@ -154,6 +150,7 @@ function ResourceViewerApp(props) {
     return (
         <Fragment>
             <TacticMenubar menu_specs={props.menu_specs}
+                           connection_status={connection_status}
                            dark_theme={props.dark_theme}
                            showRefresh={window.in_context}
                            showClose={window.in_context}

@@ -30,7 +30,7 @@ import {SearchForm} from "./library_widgets";
 import {showModalReact} from "./modal_react";
 import {ErrorBoundary} from "./error_boundary";
 import {renderAutoCompleteElement} from "./autocomplete";
-import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_react";
+import {useCallbackStack, useConstructor, useStateAndRef, useConnection} from "./utilities_react";
 
 export {creator_props, CreatorApp}
 
@@ -264,6 +264,8 @@ function CreatorApp(props) {
     });
     const [resource_name, set_resource_name] = useState(props.resource_name);
 
+    const connection_status = useConnection(props.tsocket, initSocket);
+
     useConstructor(() => {
         if (!window.in_context) {
             key_bindings.current = [
@@ -273,7 +275,6 @@ function CreatorApp(props) {
     });
 
     useEffect(() => {
-        initSocket();
         if (props.registerOmniFunction) {
             props.registerOmniFunction(_omniFunction);
         }
@@ -297,7 +298,6 @@ function CreatorApp(props) {
         props.setGoToLineNumber(_selectLineNumber);
         props.stopSpinner();
         return (() => {
-            props.tsocket.disconnect();
             delete_my_container()
         })
     }, []);
@@ -1233,6 +1233,7 @@ function CreatorApp(props) {
                               user_name={window.username}/>
             }
             <TacticMenubar menu_specs={menu_specs()}
+                           connection_status={connection_status}
                            showRefresh={window.in_context}
                            showClose={window.in_context}
                            dark_theme={dark_theme}

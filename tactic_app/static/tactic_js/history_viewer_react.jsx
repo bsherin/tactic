@@ -18,7 +18,7 @@ import {withStatus} from "./toaster.js";
 import {guid} from "./utilities_react.js";
 import {TacticNavbar} from "./blueprint_navbar";
 import {TacticSocket} from "./tactic_socket.js";
-import {useCallbackStack} from "./utilities_react";
+import {useCallbackStack, useConnection} from "./utilities_react";
 
 function history_viewer_main ()  {
     function gotProps(the_props) {
@@ -71,6 +71,7 @@ function HistoryViewerApp(props) {
 
     const [dark_theme, set_dark_theme] = useState(props.initial_theme === "dark");
     const [resource_name, set_resource_name] = useState(props.resource_name);
+    const connection_status = useConnection(props.tsocket, initSocket);
 
     const savedContent = useRef(props.edit_content);
 
@@ -83,13 +84,9 @@ function HistoryViewerApp(props) {
                 e.returnValue = ''
             }
         });
-        initSocket();
         if (!props.controlled) {
             window.dark_theme = dark_theme
         }
-        return (() => {
-            tsocket.disconnect();
-        })
     }, []);
 
     function initSocket() {
@@ -188,6 +185,7 @@ function HistoryViewerApp(props) {
                                   user_name={window.username}/>
                 }
                 <MergeViewerApp {...props.statusFuncs}
+                                connection_status={connection_status}
                                 page_id={props.resource_viewer_id}
                                 setTheme={props.controlled ? null: _setTheme}
                                 dark_theme={actual_dark_theme}

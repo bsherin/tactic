@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 import {TacticMenubar} from "./menu_utilities";
 import {icon_dict} from "./blueprint_mdata_fields";
 
-export {AllMenubar, CollectionMenubar, ProjectMenubar, TileMenubar, ListMenubar, CodeMenubar, LibraryMenubar}
+export {AllMenubar, LibraryMenubar}
 
 function LibraryMenubar(props) {
     useEffect(() => {
@@ -58,6 +58,7 @@ function LibraryMenubar(props) {
         }
     }
     return <TacticMenubar menu_specs={props.menu_specs}
+                          connection_status={props.connection_status}
                           registerOmniGetter={props.registerOmniGetter}
                           dark_theme={props.dark_theme}
                           showRefresh={true}
@@ -289,6 +290,7 @@ function AllMenubar(props) {
     }
 
     return <LibraryMenubar sendContextMenuItems={props.sendContextMenuItems}
+                           connection_status={props.connection_status}
                            registerOmniGetter={props.registerOmniGetter}
                            context_menu_items={context_menu_items()}
                            selected_rows={props.selected_rows}

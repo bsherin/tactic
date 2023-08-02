@@ -71,6 +71,7 @@ function LibraryHomeApp(props) {
     _useState8 = _slicedToArray(_useState7, 2),
     dark_theme = _useState8[0],
     set_dark_theme = _useState8[1];
+  var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
   var pushCallback = (0, _utilities_react.useCallbackStack)("library_home");
   var top_ref = (0, _react.useRef)(null);
   var key_bindings = [[["ctrl+space"], _showOmnibar]];
@@ -87,16 +88,12 @@ function LibraryHomeApp(props) {
     }
   });
   (0, _react.useEffect)(function () {
-    initSocket();
     props.stopSpinner(null);
     if (!props.controlled) {
       window.dark_theme = dark_theme;
       window.addEventListener("resize", _handleResize);
       _handleResize();
     }
-    return function () {
-      props.tsocket.disconnect();
-    };
   }, []);
   function initSocket() {
     props.tsocket.attachListener('handle-callback', function (task_packet) {
@@ -152,6 +149,7 @@ function LibraryHomeApp(props) {
     lib_props.usable_height = usable_height;
   }
   var all_pane = /*#__PURE__*/_react["default"].createElement(_library_pane.LibraryPane, _extends({}, lib_props, {
+    connection_status: connection_status,
     columns: {
       "icon:th": {
         "sort_field": "type",

@@ -369,13 +369,13 @@ function CreatorApp(props) {
     _useState30 = _slicedToArray(_useState29, 2),
     resource_name = _useState30[0],
     set_resource_name = _useState30[1];
+  var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
   (0, _utilities_react.useConstructor)(function () {
     if (!window.in_context) {
       key_bindings.current = [[["ctrl+space"], _showOmnibar]];
     }
   });
   (0, _react.useEffect)(function () {
-    initSocket();
     if (props.registerOmniFunction) {
       props.registerOmniFunction(_omniFunction);
     }
@@ -399,7 +399,6 @@ function CreatorApp(props) {
     props.setGoToLineNumber(_selectLineNumber);
     props.stopSpinner();
     return function () {
-      props.tsocket.disconnect();
       delete_my_container();
     };
   }, []);
@@ -1389,6 +1388,7 @@ function CreatorApp(props) {
     user_name: window.username
   }), /*#__PURE__*/_react["default"].createElement(_menu_utilities.TacticMenubar, {
     menu_specs: menu_specs(),
+    connection_status: connection_status,
     showRefresh: window.in_context,
     showClose: window.in_context,
     dark_theme: dark_theme,

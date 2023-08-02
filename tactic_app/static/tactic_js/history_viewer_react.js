@@ -86,6 +86,7 @@ function HistoryViewerApp(props) {
     _useState12 = _slicedToArray(_useState11, 2),
     resource_name = _useState12[0],
     set_resource_name = _useState12[1];
+  var connection_status = (0, _utilities_react2.useConnection)(props.tsocket, initSocket);
   var savedContent = (0, _react.useRef)(props.edit_content);
   var pushCallback = (0, _utilities_react2.useCallbackStack)();
   (0, _react.useEffect)(function () {
@@ -95,13 +96,9 @@ function HistoryViewerApp(props) {
         e.returnValue = '';
       }
     });
-    initSocket();
     if (!props.controlled) {
       window.dark_theme = dark_theme;
     }
-    return function () {
-      tsocket.disconnect();
-    };
   }, []);
   function initSocket() {
     props.tsocket.attachListener("window-open", function (data) {
@@ -201,6 +198,7 @@ function HistoryViewerApp(props) {
     page_id: props.resource_viewer_id,
     user_name: window.username
   }), /*#__PURE__*/_react["default"].createElement(_merge_viewer_app.MergeViewerApp, _extends({}, props.statusFuncs, {
+    connection_status: connection_status,
     page_id: props.resource_viewer_id,
     setTheme: props.controlled ? null : _setTheme,
     dark_theme: actual_dark_theme,

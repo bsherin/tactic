@@ -360,9 +360,9 @@ function MainApp(props) {
     _useReducer2 = _slicedToArray(_useReducer, 2),
     mState = _useReducer2[0],
     mDispatch = _useReducer2[1];
+  var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _react.useEffect)(function () {
-    initSocket();
     if (props.controlled) {
       props.registerDirtyMethod(_dirty);
       height_adjustment.current = MENU_BAR_HEIGHT;
@@ -386,7 +386,6 @@ function MainApp(props) {
       _update_window_dimensions();
     }
     return function () {
-      tsocket.disconnect();
       delete_my_containers();
     };
   }, []);
@@ -1394,6 +1393,7 @@ function MainApp(props) {
     page_id: props.main_id
   }), /*#__PURE__*/_react["default"].createElement(_menu_utilities.TacticMenubar, {
     dark_theme: actual_dark_theme,
+    connection_status: connection_status,
     menus: menus,
     showRefresh: true,
     showClose: true,

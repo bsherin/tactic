@@ -13,7 +13,7 @@ import {Spinner, Text} from "@blueprintjs/core";
 
 export {doBinding, propsAreEqual, arrayMove, arraysMatch, get_ppi, isInt};
 export {remove_duplicates, doSignOut, guid, scrollMeIntoView, renderSpinnerMessage};
-export {useConstructor, useCallbackStack, useStateAndRef, useReducerAndRef}
+export {useConstructor, useCallbackStack, useStateAndRef, useReducerAndRef, useConnection}
 
 export {debounce, throttle, useDebounce}
 
@@ -54,6 +54,22 @@ const useConstructor = (callback = () => {
         returnVal.current = callback();
         return returnVal
 };
+
+function useConnection(tsocket, initSocket) {
+    const [connection_status, set_connection_status] = useState(null);
+    function socketNotifier(connected) {
+        set_connection_status(connected ? "up" : "down")
+    }
+    useEffect(()=>{
+        initSocket(tsocket)
+        tsocket.notifier = socketNotifier;
+        socketNotifier(tsocket.socket.connected)
+        return (() => {
+            tsocket.disconnect();
+        })
+    }, [])
+    return connection_status
+}
 
 function useStateAndRef(initial) {
     const [value, setValue] = useState(initial);
