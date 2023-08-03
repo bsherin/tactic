@@ -10,27 +10,28 @@ var ReactDOM = _interopRequireWildcard(require("react-dom"));
 var _core = require("@blueprintjs/core");
 var _tactic_socket = require("./tactic_socket");
 var _TacticOmnibar = require("./TacticOmnibar");
-var _communication_react = require("./communication_react.js");
-var _toaster = require("./toaster.js");
+var _communication_react = require("./communication_react");
+var _toaster = require("./toaster");
 var _blueprint_navbar = require("./blueprint_navbar");
-var _error_boundary = require("./error_boundary.js");
-var _blueprint_mdata_fields = require("./blueprint_mdata_fields.js");
-var _library_home_react = require("./library_home_react.js");
-var _library_pane = require("./library_pane.js");
-var _utilities_react = require("./utilities_react.js");
-var _module_viewer_react = require("./module_viewer_react.js");
-var _tile_creator_react = require("./tile_creator_react.js");
-var _main_app = require("./main_app.js");
-var _notebook_app = require("./notebook_app.js");
-var _code_viewer_react = require("./code_viewer_react.js");
-var _list_viewer_react = require("./list_viewer_react.js");
-var _error_drawer = require("./error_drawer.js");
-var _sizing_tools = require("./sizing_tools.js");
-var _modal_react = require("./modal_react.js");
+var _error_boundary = require("./error_boundary");
+var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
+var _library_home_react = require("./library_home_react");
+var _library_pane = require("./library_pane");
+var _utilities_react = require("./utilities_react");
+var _module_viewer_react = require("./module_viewer_react");
+var _tile_creator_react = require("./tile_creator_react");
+var _tile_creator_support = require("./tile_creator_support");
+var _main_app = require("./main_app");
+var _main_support = require("./main_support");
+var _notebook_app = require("./notebook_app");
+var _notebook_support = require("./notebook_support");
+var _code_viewer_react = require("./code_viewer_react");
+var _list_viewer_react = require("./list_viewer_react");
+var _error_drawer = require("./error_drawer");
+var _sizing_tools = require("./sizing_tools");
+var _modal_react = require("./modal_react");
 var _key_trap = require("./key_trap");
-var _resizing_layouts = require("./resizing_layouts.js");
-var _library_pane2 = require("./library_pane");
-var _utilities_react2 = require("./utilities_react");
+var _resizing_layouts = require("./resizing_layouts");
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
@@ -85,9 +86,9 @@ var propDict = {
   "module-viewer": _module_viewer_react.module_viewer_props,
   "code-viewer": _code_viewer_react.code_viewer_props,
   "list-viewer": _list_viewer_react.list_viewer_props,
-  "creator-viewer": _tile_creator_react.creator_props,
-  "main-viewer": _main_app.main_props,
-  "notebook-viewer": _notebook_app.notebook_props
+  "creator-viewer": _tile_creator_support.creator_props,
+  "main-viewer": _main_support.main_props,
+  "notebook-viewer": _notebook_support.notebook_props
 };
 var panelRootDict = {
   "module-viewer": "root",
@@ -128,7 +129,7 @@ function ContextApp(props) {
     _useState2 = _slicedToArray(_useState, 2),
     didInit = _useState2[0],
     setDidInit = _useState2[1];
-  var _useStateAndRef = (0, _utilities_react2.useStateAndRef)("library"),
+  var _useStateAndRef = (0, _utilities_react.useStateAndRef)("library"),
     _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
     selectedTabId = _useStateAndRef2[0],
     setSelectedTabId = _useStateAndRef2[1],
@@ -137,13 +138,13 @@ function ContextApp(props) {
     _useState4 = _slicedToArray(_useState3, 2),
     saved_width = _useState4[0],
     set_saved_width = _useState4[1];
-  var _useStateAndRef3 = (0, _utilities_react2.useStateAndRef)({}),
+  var _useStateAndRef3 = (0, _utilities_react.useStateAndRef)({}),
     _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
     tab_panel_dict = _useStateAndRef4[0],
     set_tab_panel_dict = _useStateAndRef4[1],
     tab_panel_dict_ref = _useStateAndRef4[2];
   var library_omni_function = (0, _react.useRef)(null);
-  var _useStateAndRef5 = (0, _utilities_react2.useStateAndRef)([]),
+  var _useStateAndRef5 = (0, _utilities_react.useStateAndRef)([]),
     _useStateAndRef6 = _slicedToArray(_useStateAndRef5, 3),
     tab_ids = _useStateAndRef6[0],
     set_tab_ids = _useStateAndRef6[1],
@@ -210,7 +211,7 @@ function ContextApp(props) {
   var key_bindings = [[["tab"], _goToNextPane], [["shift+tab"], _goToPreviousPane], [["ctrl+space"], _showOmnibar], [["ctrl+w"], function () {
     _closeTab(selectedTabIdRef.current);
   }]];
-  var pushCallback = (0, _utilities_react2.useCallbackStack)("context");
+  var pushCallback = (0, _utilities_react.useCallbackStack)("context");
   (0, _react.useEffect)(function () {
     initSocket();
     return function () {
@@ -684,7 +685,7 @@ function ContextApp(props) {
   }
   function _getOpenResources() {
     var open_resources = {};
-    var _iterator2 = _createForOfIteratorHelper(_library_pane2.res_types),
+    var _iterator2 = _createForOfIteratorHelper(_library_pane.res_types),
       _step2;
     try {
       for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {

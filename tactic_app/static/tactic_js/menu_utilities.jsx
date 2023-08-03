@@ -125,6 +125,7 @@ function ConnectionIndicator(props) {
     return (
         <div style={top_icon_style}>
             <Icon icon={props.connection_status == "up" ? "circle-arrow-up" : "offline"}
+                  intent={props.connection_status == "up" ? null : "danger"}
                   iconSize={18}/>
         </div>
     )

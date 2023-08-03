@@ -4,7 +4,7 @@ import "../tactic_css/tactic_table.scss";
 import "../tactic_css/tactic_console.scss";
 import "../tactic_css/tactic_select.scss"
 
-import React, {useState} from "react";
+import React from "react";
 import {Fragment, useEffect, useRef, useReducer, memo} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
@@ -12,29 +12,30 @@ import PropTypes from 'prop-types';
 import {NavbarDivider} from "@blueprintjs/core";
 import _ from 'lodash';
 
+import {main_props, mainReducer} from "./main_support"
 import {TacticNavbar} from "./blueprint_navbar";
 import {TacticMenubar} from "./menu_utilities";
 import {MainTableCard, MainTableCardHeader, FreeformBody} from "./table_react";
 import {BlueprintTable, compute_added_column_width} from "./blueprint_table";
-import {TacticSocket} from "./tactic_socket"
 import {HorizontalPanes, VerticalPanes} from "./resizing_layouts";
 import {ProjectMenu, DocumentMenu, ColumnMenu, RowMenu, ViewMenu, MenuComponent} from "./main_menus_react";
 import {TileContainer, tilesReducer} from "./tile_react";
 import {ExportsViewer} from "./export_viewer_react";
 import {showModalReact, showSelectDialog} from "./modal_react";
-import {ConsoleComponent, itemsReducer} from "./console_component";
+import {ConsoleComponent} from "./console_component";
+import {consoleItemsReducer} from "./console_support";
 import {handleCallback, postWithCallback, postAjaxPromise, postAjax} from "./communication_react";
 import {doFlash} from "./toaster"
 import {withStatus} from "./toaster";
 import {withErrorDrawer} from "./error_drawer";
-import {get_ppi, renderSpinnerMessage, useConnection} from "./utilities_react";
+import {renderSpinnerMessage, useConnection} from "./utilities_react";
 import {getUsableDimensions} from "./sizing_tools";
 import {ErrorBoundary} from "./error_boundary";
 import {TacticOmnibar} from "./TacticOmnibar";
 import {KeyTrap} from "./key_trap";
 import {useCallbackStack, useReducerAndRef} from "./utilities_react";
 
-export {main_props, MainApp}
+export {MainApp}
 
 const MARGIN_SIZE = 0;
 const BOTTOM_MARGIN = 30;  // includes space for status messages at bottom
@@ -43,166 +44,6 @@ const CONSOLE_HEADER_HEIGHT = 35;
 const EXTRA_TABLE_AREA_SPACE = 500;
 const USUAL_TOOLBAR_HEIGHT = 50;
 const MENU_BAR_HEIGHT = 30; // will only appear when in context
-
-var tsocket;
-let ppi;
-const tstr = `some text ${MARGIN_SIZE}`;
-
-function main_main() {
-    function gotProps(the_props) {
-        let MainAppPlus = withErrorDrawer(withStatus(MainApp));
-        let the_element = <MainAppPlus {...the_props}
-                                       controlled={false}
-                                       initial_theme={window.theme}
-                                       changeName={null}
-        />;
-        const domContainer = document.querySelector('#main-root');
-        ReactDOM.render(the_element, domContainer)
-    }
-
-    renderSpinnerMessage("Starting up ...");
-    const target = window.project_name == "" ? "main_collection_in_context" : "main_project_in_context";
-    const resource_name = window.project_name == "" ? window.collection_name : window.project_name;
-
-    postAjaxPromise(target, {"resource_name": resource_name})
-        .then((data) => {
-            main_props(data, null, gotProps, null)
-        })
-}
-
-function main_props(data, registerDirtyMethod, finalCallback, registerOmniFunction) {
-
-    ppi = get_ppi();
-    let main_id = data.main_id;
-    if (!window.in_context) {
-        window.main_id = main_id;
-    }
-    let initial_tile_types;
-    let initial_tile_icon_dict;
-
-    tsocket = new TacticSocket("main", 5000, "main_app", main_id, function (response) {
-        tsocket.socket.on("remove-ready-block", readyListener);
-        initial_tile_types = response.tile_types;
-        initial_tile_icon_dict = response.icon_dict;
-        tsocket.socket.emit('client-ready', {
-            "room": main_id, "user_id": window.user_id,
-            "participant": "client", "rb_id": data.ready_block_id, "main_id": main_id
-        })
-    });
-
-    tsocket.socket.on('finish-post-load', _finish_post_load_in_context);
-
-    function readyListener() {
-        _everyone_ready_in_context(finalCallback)
-    }
-
-    window.addEventListener("unload", function sendRemove(event) {
-        navigator.sendBeacon("/remove_mainwindow", JSON.stringify({"main_id": main_id}));
-    });
-
-    function _everyone_ready_in_context() {
-        if (!window.in_context) {
-            renderSpinnerMessage("Everyone is ready, initializing...");
-        }
-        tsocket.socket.off("remove-ready-block", readyListener);
-        tsocket.attachListener('handle-callback', (task_packet) => {
-            handleCallback(task_packet, main_id)
-        });
-        window.base_figure_url = data.base_figure_url;
-        if (data.is_project) {
-            let data_dict = {
-                "project_name": data.project_name,
-                "doc_type": data.doc_type,
-                "base_figure_url": data.base_figure_url,
-                "user_id": window.user_id,
-                "ppi": ppi
-            };
-            postWithCallback(main_id, "initialize_project_mainwindow", data_dict, null, null, main_id)
-        } else {
-            let data_dict = {
-                "collection_name": data.collection_name,
-                "doc_type": data.doc_type,
-                "base_figure_url": data.base_figure_url,
-                "user_id": window.user_id,
-                "ppi": ppi
-            };
-            postWithCallback(main_id, "initialize_mainwindow", data_dict, _finish_post_load_in_context, null, main_id)
-        }
-    }
-
-    function _finish_post_load_in_context(fdata) {
-        if (!window.in_context) {
-            renderSpinnerMessage("Creating the page...");
-        }
-        tsocket.socket.off("finish-post-load", _finish_post_load_in_context);
-        var interface_state;
-        if (data.is_project) {
-            interface_state = fdata.interface_state;
-            // legacy below lines needed for older saves
-            if (!("show_exports_pane" in interface_state)) {
-                interface_state["show_exports_pane"] = true
-            }
-            if (!("show_console_pane" in interface_state)) {
-                interface_state["show_console_pane"] = true
-            }
-            for (let entry of interface_state.tile_list) {
-                entry.finished_loading = false
-            }
-        }
-        if (data.is_freeform) {
-            finalCallback({
-                is_project: data.is_project,
-                main_id: main_id,
-                is_freeform: true,
-                resource_name: data.is_project ? data.project_name : data.short_collection_name,
-                is_notebook: false,
-                is_jupyter: false,
-                tsocket: tsocket,
-                short_collection_name: data.short_collection_name,
-                initial_tile_types: initial_tile_types,
-                initial_tile_icon_dict: initial_tile_icon_dict,
-                interface_state: interface_state,
-                initial_data_text: fdata.data_text,
-                initial_table_spec: {
-                    current_doc_name: fdata.doc_names[0]
-                },
-                initial_theme: window.theme,
-                initial_doc_names: fdata.doc_names,
-                registerDirtyMethod: registerDirtyMethod,
-                registerOmniFunction: registerOmniFunction
-            })
-        } else {
-            finalCallback({
-                is_project: data.is_project,
-                main_id: main_id,
-                is_freeform: false,
-                is_notebook: false,
-                is_jupyter: false,
-                tsocket: tsocket,
-                resource_name: data.is_project ? data.project_name : data.short_collection_name,
-                short_collection_name: data.short_collection_name,
-                initial_tile_types: initial_tile_types,
-                initial_tile_icon_dict: initial_tile_icon_dict,
-                initial_table_spec: {
-                    column_names: fdata.table_spec.header_list,
-                    column_widths: fdata.table_spec.column_widths,
-                    cell_backgrounds: fdata.table_spec.cell_backgrounds,
-                    hidden_columns_list: fdata.table_spec.hidden_columns_list,
-                    current_doc_name: fdata.doc_names[0]
-                },
-                interface_state: interface_state,
-                total_rows: fdata.total_rows,
-                initial_theme: window.theme,
-                initial_data_row_dict: fdata.data_row_dict,
-                initial_doc_names: fdata.doc_names,
-                registerDirtyMethod: registerDirtyMethod,
-                registerOmniFunction: registerOmniFunction
-            });
-        }
-
-    }
-
-}
 
 const iStateDefaults = {
     table_is_shrunk: false,
@@ -216,56 +57,6 @@ const iStateDefaults = {
     show_console_pane: true,
     console_is_zoomed: false
 };
-
-function mainReducer(mState, action) {
-    var newMstate;
-    switch (action.type) {
-        case "change_field":
-            newMstate = {...mState};
-            newMstate[action.field] = action.new_value;
-            break;
-        case "change_multiple_fields":
-            newMstate = {...mState, ...action.newPartialState};
-            break;
-        case "update_table_spec":
-            newMstate = {...mState};
-            newMstate.table_spec = {...mState.table_spec, ...action.spec_update};
-            break;
-        case "set_cell_content":
-            newMstate = {...mState};
-            let new_data_row_dict = {...mState.data_row_dict};
-            let the_row = {...new_data_row_dict[action.row_id]};
-            the_row[action.column_header] = action.new_content;
-            new_data_row_dict[action.row_id] = the_row;
-            newMstate.data_row_dict = new_data_row_dict;
-            break;
-        case "set_cell_background":
-            newMstate = {...mState};
-            let new_cell_backgrounds = {...mState.table_spec.cell_backgrounds};
-            if (!new_cell_backgrounds.hasOwnProperty(action.row_id)) {
-                new_cell_backgrounds[action.row_id] = {}
-            }
-            new_cell_backgrounds[action.row_id][action.column_header] = color;
-            newMstate.table_spec = {...mState.table_spec, cell_backgrounds: new_cell_backgrounds};
-            break;
-        case "set_cells_to_color_text":
-            newMstate = {...mState};
-            let ccd = {...newMstate.cells_to_color_text};
-            let entry = {...ccd[action.row_id]};
-            entry[action.column_header] = {token_text: action.token_text, color_dict: action.color_dict};
-            ccd[action.row_id] = entry;
-            newMstate.cells_to_color_text = ccd;
-            break;
-        case "update_data_row_dict":
-            newMstate = {...mState};
-            newMstate.data_row_dict = {...mState.data_row_dict, ...action.new_data_row_dict};
-            break;
-        default:
-            console.log("Got Unknown action: " + action.type);
-            newMstate = {...mState};
-    }
-    return newMstate
-}
 
 function MainApp(props) {
 
@@ -291,8 +82,7 @@ function MainApp(props) {
     const main_outer_ref = useRef(null);
     const set_table_scroll = useRef(null);
 
-    // These are the attributes that are saved
-    const [console_items, dispatch, console_items_ref] = useReducerAndRef(itemsReducer, iStateOrDefault("console_items"));
+    const [console_items, dispatch, console_items_ref] = useReducerAndRef(consoleItemsReducer, iStateOrDefault("console_items"));
     const [tile_list, tileDispatch, tile_list_ref] = useReducerAndRef(tilesReducer, iStateOrDefault("tile_list"));
 
     const [mState, mDispatch] = useReducer(mainReducer, {
@@ -1439,6 +1229,28 @@ MainApp.defaultProps = {
     closeTab: null,
     updatePanel: null
 };
+
+function main_main() {
+    function gotProps(the_props) {
+        let MainAppPlus = withErrorDrawer(withStatus(MainApp));
+        let the_element = <MainAppPlus {...the_props}
+                                       controlled={false}
+                                       initial_theme={window.theme}
+                                       changeName={null}
+        />;
+        const domContainer = document.querySelector('#main-root');
+        ReactDOM.render(the_element, domContainer)
+    }
+
+    renderSpinnerMessage("Starting up ...");
+    const target = window.project_name == "" ? "main_collection_in_context" : "main_project_in_context";
+    const resource_name = window.project_name == "" ? window.collection_name : window.project_name;
+
+    postAjaxPromise(target, {"resource_name": resource_name})
+        .then((data) => {
+            main_props(data, null, gotProps, null)
+        })
+}
 
 if (!window.in_context) {
     main_main();

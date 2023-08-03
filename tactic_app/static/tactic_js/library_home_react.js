@@ -41,16 +41,6 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; } // noinspe
 var TAB_BAR_WIDTH = 50;
 var library_id = (0, _utilities_react.guid)();
 var tsocket = new _tactic_socket.TacticSocket("main", 5000, "library", library_id);
-function _library_home_main() {
-  var LibraryHomeAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster2.withStatus)(LibraryHomeApp));
-  var domContainer = document.querySelector('#library-home-root');
-  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(LibraryHomeAppPlus, {
-    tsocket: tsocket,
-    registerOmniFunction: null,
-    controlled: false,
-    initial_theme: window.theme
-  }), domContainer);
-}
 var tab_panes = ["all-pane", "collections-pane", "projects-pane", "tiles-pane", "lists-pane", "code-pane"];
 var controllable_props = ["usable_width", "usable_height"];
 function LibraryHomeApp(props) {
@@ -237,6 +227,16 @@ LibraryHomeApp.propTypes = {
 LibraryHomeApp.defaultProps = {
   open_resources: null
 };
+function _library_home_main() {
+  var LibraryHomeAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster2.withStatus)(LibraryHomeApp));
+  var domContainer = document.querySelector('#library-home-root');
+  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(LibraryHomeAppPlus, {
+    tsocket: tsocket,
+    registerOmniFunction: null,
+    controlled: false,
+    initial_theme: window.theme
+  }), domContainer);
+}
 if (!window.in_context) {
   _library_home_main();
 }

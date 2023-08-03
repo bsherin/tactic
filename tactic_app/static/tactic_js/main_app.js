@@ -4,7 +4,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.MainApp = MainApp;
-exports.main_props = main_props;
 require("../tactic_css/tactic.scss");
 require("../tactic_css/tactic_main.scss");
 require("../tactic_css/tactic_table.scss");
@@ -15,17 +14,18 @@ var ReactDOM = _interopRequireWildcard(require("react-dom"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
 var _lodash = _interopRequireDefault(require("lodash"));
+var _main_support = require("./main_support");
 var _blueprint_navbar = require("./blueprint_navbar");
 var _menu_utilities = require("./menu_utilities");
 var _table_react = require("./table_react");
 var _blueprint_table = require("./blueprint_table");
-var _tactic_socket = require("./tactic_socket");
 var _resizing_layouts = require("./resizing_layouts");
 var _main_menus_react = require("./main_menus_react");
 var _tile_react = require("./tile_react");
 var _export_viewer_react = require("./export_viewer_react");
 var _modal_react = require("./modal_react");
 var _console_component = require("./console_component");
+var _console_support = require("./console_support");
 var _communication_react = require("./communication_react");
 var _toaster = require("./toaster");
 var _error_drawer = require("./error_drawer");
@@ -37,24 +37,24 @@ var _key_trap = require("./key_trap");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
-function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
 function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
 function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
 function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
-function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 var MARGIN_SIZE = 0;
 var BOTTOM_MARGIN = 30; // includes space for status messages at bottom
 var MARGIN_ADJUSTMENT = 8; // This is the amount at the top of both the table and the console
@@ -63,167 +63,6 @@ var EXTRA_TABLE_AREA_SPACE = 500;
 var USUAL_TOOLBAR_HEIGHT = 50;
 var MENU_BAR_HEIGHT = 30; // will only appear when in context
 
-var tsocket;
-var ppi;
-var tstr = "some text ".concat(MARGIN_SIZE);
-function main_main() {
-  function gotProps(the_props) {
-    var MainAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(MainApp));
-    var the_element = /*#__PURE__*/_react["default"].createElement(MainAppPlus, _extends({}, the_props, {
-      controlled: false,
-      initial_theme: window.theme,
-      changeName: null
-    }));
-    var domContainer = document.querySelector('#main-root');
-    ReactDOM.render(the_element, domContainer);
-  }
-  (0, _utilities_react.renderSpinnerMessage)("Starting up ...");
-  var target = window.project_name == "" ? "main_collection_in_context" : "main_project_in_context";
-  var resource_name = window.project_name == "" ? window.collection_name : window.project_name;
-  (0, _communication_react.postAjaxPromise)(target, {
-    "resource_name": resource_name
-  }).then(function (data) {
-    main_props(data, null, gotProps, null);
-  });
-}
-function main_props(data, registerDirtyMethod, finalCallback, registerOmniFunction) {
-  ppi = (0, _utilities_react.get_ppi)();
-  var main_id = data.main_id;
-  if (!window.in_context) {
-    window.main_id = main_id;
-  }
-  var initial_tile_types;
-  var initial_tile_icon_dict;
-  tsocket = new _tactic_socket.TacticSocket("main", 5000, "main_app", main_id, function (response) {
-    tsocket.socket.on("remove-ready-block", readyListener);
-    initial_tile_types = response.tile_types;
-    initial_tile_icon_dict = response.icon_dict;
-    tsocket.socket.emit('client-ready', {
-      "room": main_id,
-      "user_id": window.user_id,
-      "participant": "client",
-      "rb_id": data.ready_block_id,
-      "main_id": main_id
-    });
-  });
-  tsocket.socket.on('finish-post-load', _finish_post_load_in_context);
-  function readyListener() {
-    _everyone_ready_in_context(finalCallback);
-  }
-  window.addEventListener("unload", function sendRemove(event) {
-    navigator.sendBeacon("/remove_mainwindow", JSON.stringify({
-      "main_id": main_id
-    }));
-  });
-  function _everyone_ready_in_context() {
-    if (!window.in_context) {
-      (0, _utilities_react.renderSpinnerMessage)("Everyone is ready, initializing...");
-    }
-    tsocket.socket.off("remove-ready-block", readyListener);
-    tsocket.attachListener('handle-callback', function (task_packet) {
-      (0, _communication_react.handleCallback)(task_packet, main_id);
-    });
-    window.base_figure_url = data.base_figure_url;
-    if (data.is_project) {
-      var data_dict = {
-        "project_name": data.project_name,
-        "doc_type": data.doc_type,
-        "base_figure_url": data.base_figure_url,
-        "user_id": window.user_id,
-        "ppi": ppi
-      };
-      (0, _communication_react.postWithCallback)(main_id, "initialize_project_mainwindow", data_dict, null, null, main_id);
-    } else {
-      var _data_dict = {
-        "collection_name": data.collection_name,
-        "doc_type": data.doc_type,
-        "base_figure_url": data.base_figure_url,
-        "user_id": window.user_id,
-        "ppi": ppi
-      };
-      (0, _communication_react.postWithCallback)(main_id, "initialize_mainwindow", _data_dict, _finish_post_load_in_context, null, main_id);
-    }
-  }
-  function _finish_post_load_in_context(fdata) {
-    if (!window.in_context) {
-      (0, _utilities_react.renderSpinnerMessage)("Creating the page...");
-    }
-    tsocket.socket.off("finish-post-load", _finish_post_load_in_context);
-    var interface_state;
-    if (data.is_project) {
-      interface_state = fdata.interface_state;
-      // legacy below lines needed for older saves
-      if (!("show_exports_pane" in interface_state)) {
-        interface_state["show_exports_pane"] = true;
-      }
-      if (!("show_console_pane" in interface_state)) {
-        interface_state["show_console_pane"] = true;
-      }
-      var _iterator = _createForOfIteratorHelper(interface_state.tile_list),
-        _step;
-      try {
-        for (_iterator.s(); !(_step = _iterator.n()).done;) {
-          var entry = _step.value;
-          entry.finished_loading = false;
-        }
-      } catch (err) {
-        _iterator.e(err);
-      } finally {
-        _iterator.f();
-      }
-    }
-    if (data.is_freeform) {
-      finalCallback({
-        is_project: data.is_project,
-        main_id: main_id,
-        is_freeform: true,
-        resource_name: data.is_project ? data.project_name : data.short_collection_name,
-        is_notebook: false,
-        is_jupyter: false,
-        tsocket: tsocket,
-        short_collection_name: data.short_collection_name,
-        initial_tile_types: initial_tile_types,
-        initial_tile_icon_dict: initial_tile_icon_dict,
-        interface_state: interface_state,
-        initial_data_text: fdata.data_text,
-        initial_table_spec: {
-          current_doc_name: fdata.doc_names[0]
-        },
-        initial_theme: window.theme,
-        initial_doc_names: fdata.doc_names,
-        registerDirtyMethod: registerDirtyMethod,
-        registerOmniFunction: registerOmniFunction
-      });
-    } else {
-      finalCallback({
-        is_project: data.is_project,
-        main_id: main_id,
-        is_freeform: false,
-        is_notebook: false,
-        is_jupyter: false,
-        tsocket: tsocket,
-        resource_name: data.is_project ? data.project_name : data.short_collection_name,
-        short_collection_name: data.short_collection_name,
-        initial_tile_types: initial_tile_types,
-        initial_tile_icon_dict: initial_tile_icon_dict,
-        initial_table_spec: {
-          column_names: fdata.table_spec.header_list,
-          column_widths: fdata.table_spec.column_widths,
-          cell_backgrounds: fdata.table_spec.cell_backgrounds,
-          hidden_columns_list: fdata.table_spec.hidden_columns_list,
-          current_doc_name: fdata.doc_names[0]
-        },
-        interface_state: interface_state,
-        total_rows: fdata.total_rows,
-        initial_theme: window.theme,
-        initial_data_row_dict: fdata.data_row_dict,
-        initial_doc_names: fdata.doc_names,
-        registerDirtyMethod: registerDirtyMethod,
-        registerOmniFunction: registerOmniFunction
-      });
-    }
-  }
-}
 var iStateDefaults = {
   table_is_shrunk: false,
   tile_list: [],
@@ -236,60 +75,6 @@ var iStateDefaults = {
   show_console_pane: true,
   console_is_zoomed: false
 };
-function mainReducer(mState, action) {
-  var newMstate;
-  switch (action.type) {
-    case "change_field":
-      newMstate = _objectSpread({}, mState);
-      newMstate[action.field] = action.new_value;
-      break;
-    case "change_multiple_fields":
-      newMstate = _objectSpread(_objectSpread({}, mState), action.newPartialState);
-      break;
-    case "update_table_spec":
-      newMstate = _objectSpread({}, mState);
-      newMstate.table_spec = _objectSpread(_objectSpread({}, mState.table_spec), action.spec_update);
-      break;
-    case "set_cell_content":
-      newMstate = _objectSpread({}, mState);
-      var new_data_row_dict = _objectSpread({}, mState.data_row_dict);
-      var the_row = _objectSpread({}, new_data_row_dict[action.row_id]);
-      the_row[action.column_header] = action.new_content;
-      new_data_row_dict[action.row_id] = the_row;
-      newMstate.data_row_dict = new_data_row_dict;
-      break;
-    case "set_cell_background":
-      newMstate = _objectSpread({}, mState);
-      var new_cell_backgrounds = _objectSpread({}, mState.table_spec.cell_backgrounds);
-      if (!new_cell_backgrounds.hasOwnProperty(action.row_id)) {
-        new_cell_backgrounds[action.row_id] = {};
-      }
-      new_cell_backgrounds[action.row_id][action.column_header] = color;
-      newMstate.table_spec = _objectSpread(_objectSpread({}, mState.table_spec), {}, {
-        cell_backgrounds: new_cell_backgrounds
-      });
-      break;
-    case "set_cells_to_color_text":
-      newMstate = _objectSpread({}, mState);
-      var ccd = _objectSpread({}, newMstate.cells_to_color_text);
-      var entry = _objectSpread({}, ccd[action.row_id]);
-      entry[action.column_header] = {
-        token_text: action.token_text,
-        color_dict: action.color_dict
-      };
-      ccd[action.row_id] = entry;
-      newMstate.cells_to_color_text = ccd;
-      break;
-    case "update_data_row_dict":
-      newMstate = _objectSpread({}, mState);
-      newMstate.data_row_dict = _objectSpread(_objectSpread({}, mState.data_row_dict), action.new_data_row_dict);
-      break;
-    default:
-      console.log("Got Unknown action: " + action.type);
-      newMstate = _objectSpread({}, mState);
-  }
-  return newMstate;
-}
 function MainApp(props) {
   function iStateOrDefault(pname) {
     if (props.is_project) {
@@ -310,9 +95,7 @@ function MainApp(props) {
   var tbody_ref = (0, _react.useRef)(null);
   var main_outer_ref = (0, _react.useRef)(null);
   var set_table_scroll = (0, _react.useRef)(null);
-
-  // These are the attributes that are saved
-  var _useReducerAndRef = (0, _utilities_react.useReducerAndRef)(_console_component.itemsReducer, iStateOrDefault("console_items")),
+  var _useReducerAndRef = (0, _utilities_react.useReducerAndRef)(_console_support.consoleItemsReducer, iStateOrDefault("console_items")),
     _useReducerAndRef2 = _slicedToArray(_useReducerAndRef, 3),
     console_items = _useReducerAndRef2[0],
     dispatch = _useReducerAndRef2[1],
@@ -322,7 +105,7 @@ function MainApp(props) {
     tile_list = _useReducerAndRef4[0],
     tileDispatch = _useReducerAndRef4[1],
     tile_list_ref = _useReducerAndRef4[2];
-  var _useReducer = (0, _react.useReducer)(mainReducer, {
+  var _useReducer = (0, _react.useReducer)(_main_support.mainReducer, {
       table_is_shrunk: iStateOrDefault("table_is_shrunk"),
       console_width_fraction: iStateOrDefault("console_width_fraction"),
       horizontal_fraction: iStateOrDefault("console_width_fraction"),
@@ -637,17 +420,17 @@ function MainApp(props) {
   }
   function _tile_command(menu_id) {
     var existing_tile_names = [];
-    var _iterator2 = _createForOfIteratorHelper(tile_list),
-      _step2;
+    var _iterator = _createForOfIteratorHelper(tile_list),
+      _step;
     try {
-      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-        var tile_entry = _step2.value;
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var tile_entry = _step.value;
         existing_tile_names.push(tile_entry.tile_name);
       }
     } catch (err) {
-      _iterator2.e(err);
+      _iterator.e(err);
     } finally {
-      _iterator2.f();
+      _iterator.f();
     }
     (0, _modal_react.showModalReact)("Create " + menu_id, "New Tile Name", createNewTile, menu_id, existing_tile_names);
     function createNewTile(tile_name) {
@@ -700,18 +483,18 @@ function MainApp(props) {
     var omni_items = [];
     var sorted_categories = _toConsumableArray(Object.keys(mState.tile_types));
     sorted_categories.sort();
-    var _iterator3 = _createForOfIteratorHelper(sorted_categories),
-      _step3;
+    var _iterator2 = _createForOfIteratorHelper(sorted_categories),
+      _step2;
     try {
-      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-        var category = _step3.value;
+      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+        var category = _step2.value;
         var sorted_types = _toConsumableArray(mState.tile_types[category]);
         sorted_types.sort();
-        var _iterator4 = _createForOfIteratorHelper(sorted_types),
-          _step4;
+        var _iterator3 = _createForOfIteratorHelper(sorted_types),
+          _step3;
         try {
           var _loop = function _loop() {
-            var ttype = _step4.value;
+            var ttype = _step3.value;
             omni_items.push({
               category: category,
               display_text: ttype,
@@ -722,19 +505,19 @@ function MainApp(props) {
               }
             });
           };
-          for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
             _loop();
           }
         } catch (err) {
-          _iterator4.e(err);
+          _iterator3.e(err);
         } finally {
-          _iterator4.f();
+          _iterator3.f();
         }
       }
     } catch (err) {
-      _iterator3.e(err);
+      _iterator2.e(err);
     } finally {
-      _iterator3.f();
+      _iterator2.f();
     }
     return omni_items;
   }
@@ -742,32 +525,32 @@ function MainApp(props) {
     var menu_items = [];
     var sorted_categories = _toConsumableArray(Object.keys(mState.tile_types));
     sorted_categories.sort();
-    var _iterator5 = _createForOfIteratorHelper(sorted_categories),
-      _step5;
+    var _iterator4 = _createForOfIteratorHelper(sorted_categories),
+      _step4;
     try {
-      for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-        var category = _step5.value;
+      for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+        var category = _step4.value;
         var option_dict = {};
         var icon_dict = {};
         var sorted_types = _toConsumableArray(mState.tile_types[category]);
         sorted_types.sort();
-        var _iterator6 = _createForOfIteratorHelper(sorted_types),
-          _step6;
+        var _iterator5 = _createForOfIteratorHelper(sorted_types),
+          _step5;
         try {
           var _loop2 = function _loop2() {
-            var ttype = _step6.value;
+            var ttype = _step5.value;
             option_dict[ttype] = function () {
               return _tile_command(ttype);
             };
             icon_dict[ttype] = mState.tile_icon_dict[ttype];
           };
-          for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+          for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
             _loop2();
           }
         } catch (err) {
-          _iterator6.e(err);
+          _iterator5.e(err);
         } finally {
-          _iterator6.f();
+          _iterator5.f();
         }
         menu_items.push( /*#__PURE__*/_react["default"].createElement(_main_menus_react.MenuComponent, {
           menu_name: category,
@@ -779,9 +562,9 @@ function MainApp(props) {
         }));
       }
     } catch (err) {
-      _iterator5.e(err);
+      _iterator4.e(err);
     } finally {
-      _iterator5.f();
+      _iterator4.f();
     }
     return menu_items;
   }
@@ -1461,6 +1244,26 @@ MainApp.defaultProps = {
   closeTab: null,
   updatePanel: null
 };
+function main_main() {
+  function gotProps(the_props) {
+    var MainAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(MainApp));
+    var the_element = /*#__PURE__*/_react["default"].createElement(MainAppPlus, _extends({}, the_props, {
+      controlled: false,
+      initial_theme: window.theme,
+      changeName: null
+    }));
+    var domContainer = document.querySelector('#main-root');
+    ReactDOM.render(the_element, domContainer);
+  }
+  (0, _utilities_react.renderSpinnerMessage)("Starting up ...");
+  var target = window.project_name == "" ? "main_collection_in_context" : "main_project_in_context";
+  var resource_name = window.project_name == "" ? window.collection_name : window.project_name;
+  (0, _communication_react.postAjaxPromise)(target, {
+    "resource_name": resource_name
+  }).then(function (data) {
+    (0, _main_support.main_props)(data, null, gotProps, null);
+  });
+}
 if (!window.in_context) {
   main_main();
 }

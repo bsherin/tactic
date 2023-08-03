@@ -25,28 +25,6 @@ import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_reac
 
 export {module_viewer_props, ModuleViewerApp}
 
-function module_viewer_main() {
-    function gotProps(the_props) {
-        let ModuleViewerAppPlus = withErrorDrawer(withStatus(ModuleViewerApp));
-        let the_element = <ModuleViewerAppPlus {...the_props}
-                                               controlled={false}
-                                               initial_theme={window.theme}
-                                               changeName={null}
-        />;
-        let domContainer = document.querySelector('#root');
-        ReactDOM.render(the_element, domContainer)
-    }
-
-    let target = window.is_repository ? "repository_view_module_in_context" : "view_module_in_context";
-    postAjaxPromise(target, {"resource_name": window.resource_name})
-        .then((data) => {
-            module_viewer_props(data, null, gotProps, null);
-
-        })
-}
-
-const controllable_props = ["resource_name", "usable_height", "usable_width"];
-
 function module_viewer_props(data, registerDirtyMethod, finalCallback, registerOmniFunction) {
 
     let resource_viewer_id = guid();
@@ -577,6 +555,26 @@ ModuleViewerApp.defaultProps = {
     closeTab: null,
     updatePanel: null
 };
+
+function module_viewer_main() {
+    function gotProps(the_props) {
+        let ModuleViewerAppPlus = withErrorDrawer(withStatus(ModuleViewerApp));
+        let the_element = <ModuleViewerAppPlus {...the_props}
+                                               controlled={false}
+                                               initial_theme={window.theme}
+                                               changeName={null}
+        />;
+        let domContainer = document.querySelector('#root');
+        ReactDOM.render(the_element, domContainer)
+    }
+
+    let target = window.is_repository ? "repository_view_module_in_context" : "view_module_in_context";
+    postAjaxPromise(target, {"resource_name": window.resource_name})
+        .then((data) => {
+            module_viewer_props(data, null, gotProps, null);
+
+        })
+}
 
 if (!window.in_context) {
     module_viewer_main();

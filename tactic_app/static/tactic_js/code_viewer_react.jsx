@@ -1,7 +1,3 @@
-/**
- * Created by bls910
- */
-
 import "../tactic_css/tactic.scss";
 
 import React from "react";
@@ -24,25 +20,6 @@ import {showModalReact} from "./modal_react.js";
 import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_react";
 
 export {code_viewer_props, CodeViewerApp}
-
-function code_viewer_main() {
-    function gotProps(the_props) {
-        let CodeViewerAppPlus = withErrorDrawer(withStatus(CodeViewerApp));
-        let the_element = <CodeViewerAppPlus {...the_props}
-                                             controlled={false}
-                                             initial_theme={window.theme}
-                                             changeName={null}
-        />;
-        let domContainer = document.querySelector('#root');
-        ReactDOM.render(the_element, domContainer)
-    }
-
-    let target = window.is_repository ? "repository_view_code_in_context" : "view_code_in_context";
-    postAjaxPromise(target, {"resource_name": window.resource_name})
-        .then((data) => {
-            code_viewer_props(data, null, gotProps, null);
-        })
-}
 
 function code_viewer_props(data, registerDirtyMethod, finalCallback, registerOmniFunction) {
 
@@ -105,9 +82,8 @@ function CodeViewerApp(props) {
             window.dark_theme = dark_theme;
             window.addEventListener("resize", _update_window_dimensions);
             _update_window_dimensions();
-        }
-        else {
-             props.registerDirtyMethod(_dirty)
+        } else {
+            props.registerDirtyMethod(_dirty)
         }
     }, []);
 
@@ -437,6 +413,25 @@ CodeViewerApp.defaultProps = {
     refreshTab: null,
     closeTab: null,
 };
+
+function code_viewer_main() {
+    function gotProps(the_props) {
+        let CodeViewerAppPlus = withErrorDrawer(withStatus(CodeViewerApp));
+        let the_element = <CodeViewerAppPlus {...the_props}
+                                             controlled={false}
+                                             initial_theme={window.theme}
+                                             changeName={null}
+        />;
+        let domContainer = document.querySelector('#root');
+        ReactDOM.render(the_element, domContainer)
+    }
+
+    let target = window.is_repository ? "repository_view_code_in_context" : "view_code_in_context";
+    postAjaxPromise(target, {"resource_name": window.resource_name})
+        .then((data) => {
+            code_viewer_props(data, null, gotProps, null);
+        })
+}
 
 
 if (!window.in_context) {

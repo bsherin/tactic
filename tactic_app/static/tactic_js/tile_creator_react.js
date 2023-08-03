@@ -5,7 +5,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.CreatorApp = CreatorApp;
-exports.creator_props = creator_props;
 require("../tactic_css/tactic.scss");
 require("../tactic_css/tactic_table.scss");
 require("../tactic_css/tile_creator.scss");
@@ -14,9 +13,9 @@ var _react = _interopRequireWildcard(require("react"));
 var ReactDOM = _interopRequireWildcard(require("react-dom"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
+var _tile_creator_support = require("./tile_creator_support");
 var _TacticOmnibar = require("./TacticOmnibar");
 var _key_trap = require("./key_trap");
-var _tactic_socket = require("./tactic_socket");
 var _menu_utilities = require("./menu_utilities");
 var _resource_viewer_react_app = require("./resource_viewer_react_app");
 var _reactCodemirror = require("./react-codemirror");
@@ -36,6 +35,7 @@ var _autocomplete = require("./autocomplete");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
 function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
@@ -52,155 +52,8 @@ function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o =
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 var BOTTOM_MARGIN = 50;
 var MARGIN_SIZE = 17;
-function tile_creator_main() {
-  function gotProps(the_props) {
-    var CreatorAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(CreatorApp));
-    var the_element = /*#__PURE__*/_react["default"].createElement(CreatorAppPlus, _extends({}, the_props, {
-      controlled: false,
-      initial_theme: window.theme,
-      changeName: null
-    }));
-    var domContainer = document.querySelector('#creator-root');
-    ReactDOM.render(the_element, domContainer);
-  }
-  (0, _utilities_react.renderSpinnerMessage)("Starting up ...", '#creator-root');
-  (0, _communication_react.postAjaxPromise)("view_in_creator_in_context", {
-    "resource_name": window.module_name
-  }).then(function (data) {
-    creator_props(data, null, gotProps, null);
-  });
-}
-function creator_props(data, registerDirtyMethod, finalCallback, registerOmniFunction) {
-  var mdata = data.mdata;
-  var split_tags = mdata.tags == "" ? [] : mdata.tags.split(" ");
-  var module_name = data.resource_name;
-  var module_viewer_id = data.module_viewer_id;
-  window.name = module_viewer_id;
-  function readyListener() {
-    _everyone_ready_in_context(finalCallback);
-  }
-  var tsocket = new _tactic_socket.TacticSocket("main", 5000, "creator", module_viewer_id, function (response) {
-    tsocket.socket.on("remove-ready-block", readyListener);
-    tsocket.socket.emit('client-ready', {
-      "room": data.module_viewer_id,
-      "user_id": window.user_id,
-      "participant": "client",
-      "rb_id": data.ready_block_id,
-      "main_id": data.module_viewer_id
-    });
-  });
-  var tile_collection_name = data.tile_collection_name;
-  function _everyone_ready_in_context(finalCallback) {
-    if (!window.in_context) {
-      (0, _utilities_react.renderSpinnerMessage)("Everyone is ready, initializing...", '#creator-root');
-    }
-    var the_content = {
-      "module_name": module_name,
-      "module_viewer_id": module_viewer_id,
-      "tile_collection_name": tile_collection_name,
-      "user_id": window.user_id,
-      "version_string": window.version_string
-    };
-    window.addEventListener("unload", function sendRemove() {
-      navigator.sendBeacon("/delete_container_on_unload", JSON.stringify({
-        "container_id": module_viewer_id,
-        "notify": false
-      }));
-    });
-    tsocket.attachListener('handle-callback', function (task_packet) {
-      (0, _communication_react.handleCallback)(task_packet, module_viewer_id);
-    });
-    (0, _communication_react.postWithCallback)(module_viewer_id, "initialize_parser", the_content, function (pdata) {
-      return got_parsed_data_in_context(pdata);
-    }, null, module_viewer_id);
-    function got_parsed_data_in_context(data_object) {
-      if (!window.in_context) {
-        (0, _utilities_react.renderSpinnerMessage)("Creating the page...", '#creator-root');
-      }
-      tsocket.socket.off("remove-ready-block", readyListener);
-      var parsed_data = data_object.the_content;
-      var category = parsed_data.category ? parsed_data.category : "basic";
-      var result_dict = {
-        "res_type": "tile",
-        "res_name": module_name,
-        "is_repository": false
-      };
-      var odict = parsed_data.option_dict;
-      var initial_line_number = !window.in_context && window.line_number ? window.line_number : null;
-      var couple_save_attrs_and_exports = !("couple_save_attrs_and_exports" in mdata.additional_mdata) || mdata.additional_mdata.couple_save_attrs_and_exports;
-      finalCallback({
-        resource_name: module_name,
-        tsocket: tsocket,
-        module_viewer_id: module_viewer_id,
-        main_id: module_viewer_id,
-        is_mpl: parsed_data.is_mpl,
-        is_d3: parsed_data.is_d3,
-        render_content_code: parsed_data.render_content_code,
-        render_content_line_number: parsed_data.render_content_line_number,
-        extra_methods_line_number: parsed_data.extra_methods_line_number,
-        draw_plot_line_number: parsed_data.draw_plot_line_number,
-        initial_line_number: initial_line_number,
-        category: category,
-        extra_functions: parsed_data.extra_functions,
-        draw_plot_code: parsed_data.draw_plot_code,
-        jscript_code: parsed_data.jscript_code,
-        tags: split_tags,
-        notes: mdata.notes,
-        icon: mdata.additional_mdata.icon,
-        initial_theme: window.theme,
-        option_list: (0, _creator_modules_react.correctOptionListTypes)(parsed_data.option_dict),
-        export_list: parsed_data.export_list,
-        additional_save_attrs: parsed_data.additional_save_attrs,
-        couple_save_attrs_and_exports: couple_save_attrs_and_exports,
-        created: mdata.datestring,
-        registerDirtyMethod: registerDirtyMethod,
-        registerOmniFunction: registerOmniFunction
-      });
-    }
-  }
-}
-function TileCreatorToolbar(props) {
-  var tstyle = {
-    "marginTop": window.in_context ? 0 : 20,
-    "paddingRight": 20,
-    "width": "100%"
-  };
-  var toolbar_outer_style = {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginBottom: 0,
-    marginTop: 7,
-    whiteSpace: "nowrap"
-  };
-  return /*#__PURE__*/_react["default"].createElement("div", {
-    style: tstyle,
-    className: "d-flex flex-row justify-content-between"
-  }, /*#__PURE__*/_react["default"].createElement(_library_widgets.SearchForm, {
-    update_search_state: props.update_search_state,
-    search_string: props.search_string,
-    field_width: 200,
-    include_search_jumper: true,
-    searchPrev: props.searchPrev,
-    searchNext: props.searchNext,
-    search_ref: props.search_ref,
-    number_matches: props.search_matches
-  }));
-}
-TileCreatorToolbar.proptypes = {
-  button_groups: _propTypes["default"].array,
-  setResourceNameState: _propTypes["default"].func,
-  resource_name: _propTypes["default"].string,
-  search_string: _propTypes["default"].string,
-  update_search_state: _propTypes["default"].func,
-  res_type: _propTypes["default"].string,
-  search_ref: _propTypes["default"].object,
-  search_matches: _propTypes["default"].number
-};
-TileCreatorToolbar.defaultProps = {};
 function CreatorApp(props) {
   var omniGetters = (0, _react.useRef)({});
   var top_ref = (0, _react.useRef)(null);
@@ -1464,6 +1317,24 @@ CreatorApp.defaultProps = {
   closeTab: null,
   updatePanel: null
 };
+function tile_creator_main() {
+  function gotProps(the_props) {
+    var CreatorAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(CreatorApp));
+    var the_element = /*#__PURE__*/_react["default"].createElement(CreatorAppPlus, _extends({}, the_props, {
+      controlled: false,
+      initial_theme: window.theme,
+      changeName: null
+    }));
+    var domContainer = document.querySelector('#creator-root');
+    ReactDOM.render(the_element, domContainer);
+  }
+  (0, _utilities_react.renderSpinnerMessage)("Starting up ...", '#creator-root');
+  (0, _communication_react.postAjaxPromise)("view_in_creator_in_context", {
+    "resource_name": window.module_name
+  }).then(function (data) {
+    (0, _tile_creator_support.creator_props)(data, null, gotProps, null);
+  });
+}
 if (!window.in_context) {
   tile_creator_main();
 }

@@ -1955,10 +1955,15 @@ class DataSupportTasksMixin:
     def HideColumnInAllDocs(self, data):
         column_name = data["column_name"]
         for doc in self.doc_dict.values():
-            if column_name in doc.table_spec.header_list and column_name not in doc.table_spec.hidden_columns_list:
-                col_index = doc.table_spec.visible_columns.index(column_name)
-                del doc.table_spec.column_widths[col_index]
-                doc.table_spec.hidden_columns_list.append(column_name)
+            try:
+                if column_name in doc.table_spec.header_list and column_name not in doc.table_spec.hidden_columns_list:
+                    if hasattr(doc.table_spec, "column_widths") and type(doc.table_spec.column_widths) == list:
+                        col_index = doc.table_spec.visible_columns.index(column_name)
+                        del doc.table_spec.column_widths[col_index]
+                    doc.table_spec.hidden_columns_list.append(column_name)
+            except Exception as ex:
+                error_string = self.get_traceback_message(ex)
+                print(error_string)
         return None
 
     @task_worthy
@@ -1990,16 +1995,26 @@ class DataSupportTasksMixin:
 
     @staticmethod
     def DeleteColumnOneDoc(doc, data):
-        print("in DeleteColumnOneDoc with " + doc.table_spec.doc_name)
-        column_name = data["column_name"]
-        if column_name in doc.table_spec.header_list:
-            doc.table_spec.header_list.remove(column_name)
-            col_index = doc.table_spec.visible_columns.index(column_name)
-            del doc.table_spec.column_widths[col_index]
-        for r in doc.data_rows.values():
-            if column_name in r:
-                del r[column_name]
-
+        try:
+            print("in DeleteColumnOneDoc new with " + doc.table_spec.doc_name)
+            column_name = data["column_name"]
+            if column_name in doc.table_spec.header_list:
+                print("got the column")
+                if hasattr(doc.table_spec, "column_widths") and type(doc.table_spec.column_widths) == list:
+                    print("going to delete from column_widths")
+                    col_index = doc.table_spec.visible_columns.index(column_name)
+                    print("got the index")
+                    del doc.table_spec.column_widths[col_index]
+                doc.table_spec.header_list.remove(column_name)
+                print("removed from header_list")
+            print("deleting from data rows")
+            for r in doc.data_rows.values():
+                if column_name in r:
+                    del r[column_name]
+        except Exception as ex:
+            error_string = self.get_traceback_message(ex)
+            print(error_string)
+        print("leaving DeleteColumnOneDoc")
         return
 
     @task_worthy
@@ -2008,6 +2023,7 @@ class DataSupportTasksMixin:
             print("just deleting in one")
             self.DeleteColumnOneDoc(self.doc_dict[data["doc_name"]], data)
         else:
+            print("deleting in all docs")
             for doc in self.doc_dict.values():
                 self.DeleteColumnOneDoc(doc, data)
         self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})

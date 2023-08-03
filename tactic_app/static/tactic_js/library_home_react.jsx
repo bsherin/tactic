@@ -30,15 +30,6 @@ export {LibraryHomeApp}
 const library_id = guid();
 const tsocket = new TacticSocket("main", 5000, "library", library_id);
 
-function _library_home_main() {
-    const LibraryHomeAppPlus = withErrorDrawer(withStatus(LibraryHomeApp));
-    const domContainer = document.querySelector('#library-home-root');
-    ReactDOM.render(<LibraryHomeAppPlus tsocket={tsocket}
-                                        registerOmniFunction={null}
-                                        controlled={false}
-                                        initial_theme={window.theme}/>, domContainer)
-}
-
 const tab_panes = ["all-pane", "collections-pane", "projects-pane", "tiles-pane", "lists-pane", "code-pane"];
 const controllable_props = ["usable_width", "usable_height"];
 
@@ -221,6 +212,15 @@ LibraryHomeApp.propTypes = {
 LibraryHomeApp.defaultProps = {
     open_resources: null
 };
+
+function _library_home_main() {
+    const LibraryHomeAppPlus = withErrorDrawer(withStatus(LibraryHomeApp));
+    const domContainer = document.querySelector('#library-home-root');
+    ReactDOM.render(<LibraryHomeAppPlus tsocket={tsocket}
+                                        registerOmniFunction={null}
+                                        controlled={false}
+                                        initial_theme={window.theme}/>, domContainer)
+}
 
 if (!window.in_context) {
     _library_home_main();
