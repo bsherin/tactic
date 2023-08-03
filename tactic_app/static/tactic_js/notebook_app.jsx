@@ -2,7 +2,7 @@ import "../tactic_css/tactic.scss";
 import "../tactic_css/tactic_console.scss";
 import "../tactic_css/tactic_main.scss";
 
-import React, {useState} from "react";
+import React from "react";
 import {Fragment, useEffect, useRef, useReducer, memo} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
@@ -10,20 +10,21 @@ import PropTypes from 'prop-types';
 import {TacticNavbar} from "./blueprint_navbar";
 import {TacticMenubar} from "./menu_utilities";
 import {ProjectMenu} from "./main_menus_react";
-import {TacticSocket} from "./tactic_socket";
-import {ConsoleComponent, itemsReducer} from "./console_component";
+import {ConsoleComponent} from "./console_component";
+import {consoleItemsReducer} from "./console_support";
 import {doFlash} from "./toaster"
 import {withStatus} from "./toaster";
-import {get_ppi, renderSpinnerMessage, useConnection} from "./utilities_react";
+import {renderSpinnerMessage, useConnection} from "./utilities_react";
 import {TacticOmnibar} from "./TacticOmnibar";
 import {KeyTrap} from "./key_trap";
 
-import {handleCallback, postWithCallback, postAjaxPromise, postAjax} from "./communication_react"
+import {postAjaxPromise, postAjax} from "./communication_react"
 import {ExportsViewer} from "./export_viewer_react";
 import {HorizontalPanes} from "./resizing_layouts";
 import {withErrorDrawer} from "./error_drawer";
 import {getUsableDimensions} from "./sizing_tools";
 import {useCallbackStack, useConstructor, useReducerAndRef} from "./utilities_react";
+import {notebook_props, notebookReducer} from "./notebook_support";
 
 const MARGIN_SIZE = 10;
 const BOTTOM_MARGIN = 20;
@@ -31,155 +32,7 @@ const MARGIN_ADJUSTMENT = 8; // This is the amount at the top of both the table 
 const USUAL_TOOLBAR_HEIGHT = 50;
 const MENU_BAR_HEIGHT = 30; // will only appear when in context
 
-var tsocket;
-var ppi;
-
-export {notebook_props, NotebookApp}
-
-function main_main() {
-    function gotProps(the_props) {
-        let NotebookAppPlus = withErrorDrawer(withStatus(NotebookApp));
-        let the_element = <NotebookAppPlus {...the_props}
-                                           controlled={false}
-                                           initial_theme={window.theme}
-                                           changeName={null}
-        />;
-        const domContainer = document.querySelector('#main-root');
-        ReactDOM.render(the_element, domContainer)
-    }
-
-    renderSpinnerMessage("Starting up ...");
-    var target = window.is_new_notebook ? "new_notebook_in_context" : "main_project_in_context";
-    var resource_name = window.is_new_notebook ? "" : window.project_name;
-
-    let post_data = {"resource_name": resource_name};
-    if (window.is_new_notebook) {
-        post_data.temp_data_id = window.temp_data_id
-    }
-
-    postAjaxPromise(target, post_data)
-        .then((data) => {
-            notebook_props(data, null, gotProps)
-        })
-}
-
-function notebook_props(data, registerDirtyMethod, finalCallback, registerOmniFunction) {
-
-    ppi = get_ppi();
-    let main_id = data.main_id;
-    if (!window.in_context) {
-        window.main_id = main_id;
-    }
-
-    tsocket = new TacticSocket("main", 5000, "notebook_app", main_id, function (response) {
-        tsocket.socket.on("remove-ready-block", readyListener);
-        tsocket.socket.emit('client-ready', {
-            "room": main_id, "user_id": window.user_id, "participant": "client",
-            "rb_id": data.ready_block_id, "main_id": main_id
-        })
-    });
-    tsocket.socket.on('finish-post-load', _finish_post_load_in_context);
-
-    function readyListener() {
-        _everyone_ready_in_context(finalCallback)
-    }
-
-    let is_totally_new = !data.is_jupyter && !data.is_project && (data.temp_data_id == "");
-    let opening_from_temp_id = data.temp_data_id != "";
-
-
-    window.addEventListener("unload", function sendRemove() {
-        console.log("got the beacon");
-        navigator.sendBeacon("/remove_mainwindow", JSON.stringify({"main_id": main_id}));
-    });
-
-    function _everyone_ready_in_context() {
-        if (!window.in_context) {
-            renderSpinnerMessage("Everyone is ready, initializing...");
-        }
-        tsocket.socket.off("remove-ready-block", readyListener);
-        tsocket.attachListener('handle-callback', (task_packet) => {
-            handleCallback(task_packet, main_id)
-        });
-        window.base_figure_url = data.base_figure_url;
-        let data_dict = {
-            "doc_type": "notebook",
-            "base_figure_url": data.base_figure_url,
-            "user_id": window.user_id,
-            "ppi": ppi
-        };
-        if (is_totally_new) {
-            postWithCallback(main_id, "initialize_mainwindow", data_dict, _finish_post_load_in_context, null, main_id)
-        } else {
-            if (data.is_jupyter) {
-                data_dict["doc_type"] = "jupyter";
-                data_dict["project_name"] = data.project_name;
-            } else if (data.is_project) {
-                data_dict["project_name"] = data.project_name;
-            } else {
-                data_dict["unique_id"] = data.temp_data_id;
-            }
-            postWithCallback(main_id, "initialize_project_mainwindow", data_dict, null, null, main_id)
-        }
-    }
-
-    function _finish_post_load_in_context(fdata) {
-        if (!window.in_context) {
-            renderSpinnerMessage("Creating the page...");
-        }
-        tsocket.socket.off("finish-post-load", _finish_post_load_in_context);
-        var interface_state;
-        if (data.is_project || opening_from_temp_id) {
-            interface_state = fdata.interface_state
-        }
-        let domContainer = document.querySelector('#main-root');
-        if (data.is_project || opening_from_temp_id) {
-            finalCallback({
-                is_project: true,
-                main_id: main_id,
-                resource_name: data.project_name,
-                tsocket: tsocket,
-                interface_state: interface_state,
-                is_notebook: true,
-                is_juptyer: data.is_jupyter,
-                initial_theme: window.theme,
-                registerDirtyMethod: registerDirtyMethod,
-                registerOmniFunction: registerOmniFunction
-            })
-        } else {
-            finalCallback({
-                is_project: false,
-                main_id: main_id,
-                resource_name: data.project_name,
-                tsocket: tsocket,
-                interface_state: null,
-                is_notebook: true,
-                is_juptyer: data.is_jupyter,
-                initial_theme: window.theme,
-                registerDirtyMethod: registerDirtyMethod,
-                registerOmniFunction: registerOmniFunction
-            })
-        }
-    }
-}
-
-function mainReducer(mState, action) {
-    var newMstate;
-    if (action.type == "change_field") {
-        newMstate = {...mState};
-        newMstate[action.field] = action.new_value;
-    }
-    else if (action.type == "change_multiple_fields") {
-        newMstate = {...mState, ...action.newPartialState};
-    }
-    else {
-        console.log("Got Unknown action: " + action.type);
-        newMstate = {...mState};
-    }
-    return newMstate
-}
-
-const controllable_props = ["is_project", "resource_name", "usable_width", "usable_height"];
+export {NotebookApp}
 
 function NotebookApp(props) {
 
@@ -190,8 +43,8 @@ function NotebookApp(props) {
     const height_adjustment = useRef(props.controlled ? MENU_BAR_HEIGHT : 0);
     const connection_status = useConnection(props.tsocket, initSocket);
 
-    const [console_items, dispatch, console_items_ref] = useReducerAndRef(itemsReducer, []);
-    const [mState, mDispatch] = useReducer(mainReducer, {
+    const [console_items, dispatch, console_items_ref] = useReducerAndRef(consoleItemsReducer, []);
+    const [mState, mDispatch] = useReducer(notebookReducer, {
         show_exports_pane: props.is_project ? props.interface_state["show_exports_pane"] : true,
         console_width_fraction: props.is_project ? props.interface_state["console_width_fraction"] : .5,
         console_is_zoomed: true,
@@ -213,7 +66,6 @@ function NotebookApp(props) {
             type: "initialize",
             new_items: props.is_project ? props.interface_state["console_items"] : []
         })
-
     });
 
     useEffect(() => {
@@ -276,7 +128,7 @@ function NotebookApp(props) {
         }
         mDispatch({
             type: "change_multiple_fields",
-            newPartial_state: {
+            newPartialState: {
                 usable_height: uheight,
                 usable_width: uwidth
             }
@@ -518,6 +370,34 @@ NotebookApp.defaultProps = {
     refreshTab: null,
     closeTab: null,
 };
+
+function main_main() {
+    function gotProps(the_props) {
+        let NotebookAppPlus = withErrorDrawer(withStatus(NotebookApp));
+        let the_element = <NotebookAppPlus {...the_props}
+                                           controlled={false}
+                                           initial_theme={window.theme}
+                                           changeName={null}
+        />;
+        const domContainer = document.querySelector('#main-root');
+        ReactDOM.render(the_element, domContainer)
+    }
+
+    renderSpinnerMessage("Starting up ...");
+    var target = window.is_new_notebook ? "new_notebook_in_context" : "main_project_in_context";
+    var resource_name = window.is_new_notebook ? "" : window.project_name;
+
+    let post_data = {"resource_name": resource_name};
+    if (window.is_new_notebook) {
+        post_data.temp_data_id = window.temp_data_id
+    }
+
+    postAjaxPromise(target, post_data)
+        .then((data) => {
+            notebook_props(data, null, gotProps)
+        })
+}
+
 
 if (!window.in_context) {
     main_main();

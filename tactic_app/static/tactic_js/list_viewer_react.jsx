@@ -1,6 +1,3 @@
-/**
- * Created by bls910
- */
 
 import "../tactic_css/tactic.scss";
 
@@ -25,25 +22,6 @@ import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_reac
 
 export {list_viewer_props, ListViewerApp}
 
-function list_viewer_main() {
-
-    function gotProps(the_props) {
-        let ListViewerAppPlus = withErrorDrawer(withStatus(ListViewerApp));
-        let the_element = <ListViewerAppPlus {...the_props}
-                                             controlled={false}
-                                             initial_theme={window.theme}
-                                             changeName={null}
-        />;
-        let domContainer = document.querySelector('#root');
-        ReactDOM.render(the_element, domContainer)
-    }
-
-    let target = window.is_repository ? "repository_view_list_in_context" : "view_list_in_context";
-    postAjaxPromise(target, {"resource_name": window.resource_name})
-        .then((data) => {
-            list_viewer_props(data, null, gotProps, null);
-        })
-}
 
 function list_viewer_props(data, registerDirtyMethod, finalCallback, registerOmniFunction) {
 
@@ -429,6 +407,25 @@ ListViewerApp.defaultProps = {
     closeTab: null,
 };
 
+function list_viewer_main() {
+
+    function gotProps(the_props) {
+        let ListViewerAppPlus = withErrorDrawer(withStatus(ListViewerApp));
+        let the_element = <ListViewerAppPlus {...the_props}
+                                             controlled={false}
+                                             initial_theme={window.theme}
+                                             changeName={null}
+        />;
+        let domContainer = document.querySelector('#root');
+        ReactDOM.render(the_element, domContainer)
+    }
+
+    let target = window.is_repository ? "repository_view_list_in_context" : "view_list_in_context";
+    postAjaxPromise(target, {"resource_name": window.resource_name})
+        .then((data) => {
+            list_viewer_props(data, null, gotProps, null);
+        })
+}
 
 if (!window.in_context) {
     list_viewer_main();

@@ -16,26 +16,29 @@ FocusStyleManager.onlyShowFocusOnTabs();
 
 import {TacticSocket} from "./tactic_socket";
 import {TacticOmnibar} from "./TacticOmnibar";
-import {handleCallback} from "./communication_react.js";
-import {doFlash, withStatus} from "./toaster.js";
+import {handleCallback} from "./communication_react";
+import {doFlash, withStatus} from "./toaster";
 import {TacticNavbar} from "./blueprint_navbar";
-import {ErrorBoundary} from "./error_boundary.js";
-import {icon_dict} from "./blueprint_mdata_fields.js";
-import {LibraryHomeApp} from "./library_home_react.js";
-import {view_views} from "./library_pane.js";
-import {guid} from "./utilities_react.js";
-import {module_viewer_props, ModuleViewerApp} from "./module_viewer_react.js";
-import {creator_props, CreatorApp} from "./tile_creator_react.js";
-import {main_props, MainApp} from "./main_app.js"
-import {notebook_props, NotebookApp} from "./notebook_app.js";
-import {code_viewer_props, CodeViewerApp} from "./code_viewer_react.js";
-import {list_viewer_props, ListViewerApp} from "./list_viewer_react.js";
-import {withErrorDrawer} from "./error_drawer.js";
-import {getUsableDimensions, USUAL_TOOLBAR_HEIGHT} from "./sizing_tools.js";
-import {showConfirmDialogReact} from "./modal_react.js";
-import {postAjaxPromise} from "./communication_react.js";
+import {ErrorBoundary} from "./error_boundary";
+import {icon_dict} from "./blueprint_mdata_fields";
+import {LibraryHomeApp} from "./library_home_react";
+import {view_views} from "./library_pane";
+import {guid} from "./utilities_react";
+import {module_viewer_props, ModuleViewerApp} from "./module_viewer_react";
+import {CreatorApp} from "./tile_creator_react";
+import {creator_props} from "./tile_creator_support"
+import {MainApp} from "./main_app"
+import {main_props} from "./main_support";
+import {NotebookApp} from "./notebook_app";
+import {notebook_props} from "./notebook_support"
+import {code_viewer_props, CodeViewerApp} from "./code_viewer_react";
+import {list_viewer_props, ListViewerApp} from "./list_viewer_react";
+import {withErrorDrawer} from "./error_drawer";
+import {getUsableDimensions, USUAL_TOOLBAR_HEIGHT} from "./sizing_tools";
+import {showConfirmDialogReact} from "./modal_react";
+import {postAjaxPromise} from "./communication_react";
 import {KeyTrap} from "./key_trap";
-import {DragHandle} from "./resizing_layouts.js";
+import {DragHandle} from "./resizing_layouts";
 import {res_types} from "./library_pane";
 import {useCallbackStack, useStateAndRef} from "./utilities_react";
 

@@ -5,7 +5,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.NotebookApp = NotebookApp;
-exports.notebook_props = notebook_props;
 require("../tactic_css/tactic.scss");
 require("../tactic_css/tactic_console.scss");
 require("../tactic_css/tactic_main.scss");
@@ -15,8 +14,8 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 var _blueprint_navbar = require("./blueprint_navbar");
 var _menu_utilities = require("./menu_utilities");
 var _main_menus_react = require("./main_menus_react");
-var _tactic_socket = require("./tactic_socket");
 var _console_component = require("./console_component");
+var _console_support = require("./console_support");
 var _toaster = require("./toaster");
 var _utilities_react = require("./utilities_react");
 var _TacticOmnibar = require("./TacticOmnibar");
@@ -26,163 +25,28 @@ var _export_viewer_react = require("./export_viewer_react");
 var _resizing_layouts = require("./resizing_layouts");
 var _error_drawer = require("./error_drawer");
 var _sizing_tools = require("./sizing_tools");
+var _notebook_support = require("./notebook_support");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
+function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
-function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
-function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
-function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 var MARGIN_SIZE = 10;
 var BOTTOM_MARGIN = 20;
 var MARGIN_ADJUSTMENT = 8; // This is the amount at the top of both the table and the conso
 var USUAL_TOOLBAR_HEIGHT = 50;
 var MENU_BAR_HEIGHT = 30; // will only appear when in context
 
-var tsocket;
-var ppi;
-function main_main() {
-  function gotProps(the_props) {
-    var NotebookAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(NotebookApp));
-    var the_element = /*#__PURE__*/_react["default"].createElement(NotebookAppPlus, _extends({}, the_props, {
-      controlled: false,
-      initial_theme: window.theme,
-      changeName: null
-    }));
-    var domContainer = document.querySelector('#main-root');
-    ReactDOM.render(the_element, domContainer);
-  }
-  (0, _utilities_react.renderSpinnerMessage)("Starting up ...");
-  var target = window.is_new_notebook ? "new_notebook_in_context" : "main_project_in_context";
-  var resource_name = window.is_new_notebook ? "" : window.project_name;
-  var post_data = {
-    "resource_name": resource_name
-  };
-  if (window.is_new_notebook) {
-    post_data.temp_data_id = window.temp_data_id;
-  }
-  (0, _communication_react.postAjaxPromise)(target, post_data).then(function (data) {
-    notebook_props(data, null, gotProps);
-  });
-}
-function notebook_props(data, registerDirtyMethod, finalCallback, registerOmniFunction) {
-  ppi = (0, _utilities_react.get_ppi)();
-  var main_id = data.main_id;
-  if (!window.in_context) {
-    window.main_id = main_id;
-  }
-  tsocket = new _tactic_socket.TacticSocket("main", 5000, "notebook_app", main_id, function (response) {
-    tsocket.socket.on("remove-ready-block", readyListener);
-    tsocket.socket.emit('client-ready', {
-      "room": main_id,
-      "user_id": window.user_id,
-      "participant": "client",
-      "rb_id": data.ready_block_id,
-      "main_id": main_id
-    });
-  });
-  tsocket.socket.on('finish-post-load', _finish_post_load_in_context);
-  function readyListener() {
-    _everyone_ready_in_context(finalCallback);
-  }
-  var is_totally_new = !data.is_jupyter && !data.is_project && data.temp_data_id == "";
-  var opening_from_temp_id = data.temp_data_id != "";
-  window.addEventListener("unload", function sendRemove() {
-    console.log("got the beacon");
-    navigator.sendBeacon("/remove_mainwindow", JSON.stringify({
-      "main_id": main_id
-    }));
-  });
-  function _everyone_ready_in_context() {
-    if (!window.in_context) {
-      (0, _utilities_react.renderSpinnerMessage)("Everyone is ready, initializing...");
-    }
-    tsocket.socket.off("remove-ready-block", readyListener);
-    tsocket.attachListener('handle-callback', function (task_packet) {
-      (0, _communication_react.handleCallback)(task_packet, main_id);
-    });
-    window.base_figure_url = data.base_figure_url;
-    var data_dict = {
-      "doc_type": "notebook",
-      "base_figure_url": data.base_figure_url,
-      "user_id": window.user_id,
-      "ppi": ppi
-    };
-    if (is_totally_new) {
-      (0, _communication_react.postWithCallback)(main_id, "initialize_mainwindow", data_dict, _finish_post_load_in_context, null, main_id);
-    } else {
-      if (data.is_jupyter) {
-        data_dict["doc_type"] = "jupyter";
-        data_dict["project_name"] = data.project_name;
-      } else if (data.is_project) {
-        data_dict["project_name"] = data.project_name;
-      } else {
-        data_dict["unique_id"] = data.temp_data_id;
-      }
-      (0, _communication_react.postWithCallback)(main_id, "initialize_project_mainwindow", data_dict, null, null, main_id);
-    }
-  }
-  function _finish_post_load_in_context(fdata) {
-    if (!window.in_context) {
-      (0, _utilities_react.renderSpinnerMessage)("Creating the page...");
-    }
-    tsocket.socket.off("finish-post-load", _finish_post_load_in_context);
-    var interface_state;
-    if (data.is_project || opening_from_temp_id) {
-      interface_state = fdata.interface_state;
-    }
-    var domContainer = document.querySelector('#main-root');
-    if (data.is_project || opening_from_temp_id) {
-      finalCallback({
-        is_project: true,
-        main_id: main_id,
-        resource_name: data.project_name,
-        tsocket: tsocket,
-        interface_state: interface_state,
-        is_notebook: true,
-        is_juptyer: data.is_jupyter,
-        initial_theme: window.theme,
-        registerDirtyMethod: registerDirtyMethod,
-        registerOmniFunction: registerOmniFunction
-      });
-    } else {
-      finalCallback({
-        is_project: false,
-        main_id: main_id,
-        resource_name: data.project_name,
-        tsocket: tsocket,
-        interface_state: null,
-        is_notebook: true,
-        is_juptyer: data.is_jupyter,
-        initial_theme: window.theme,
-        registerDirtyMethod: registerDirtyMethod,
-        registerOmniFunction: registerOmniFunction
-      });
-    }
-  }
-}
-function mainReducer(mState, action) {
-  var newMstate;
-  if (action.type == "change_field") {
-    newMstate = _objectSpread({}, mState);
-    newMstate[action.field] = action.new_value;
-  } else if (action.type == "change_multiple_fields") {
-    newMstate = _objectSpread(_objectSpread({}, mState), action.newPartialState);
-  } else {
-    console.log("Got Unknown action: " + action.type);
-    newMstate = _objectSpread({}, mState);
-  }
-  return newMstate;
-}
-var controllable_props = ["is_project", "resource_name", "usable_width", "usable_height"];
 function NotebookApp(props) {
   var last_save = (0, _react.useRef)({});
   var main_outer_ref = (0, _react.useRef)(null);
@@ -190,12 +54,12 @@ function NotebookApp(props) {
   var updateExportsList = (0, _react.useRef)(null);
   var height_adjustment = (0, _react.useRef)(props.controlled ? MENU_BAR_HEIGHT : 0);
   var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
-  var _useReducerAndRef = (0, _utilities_react.useReducerAndRef)(_console_component.itemsReducer, []),
+  var _useReducerAndRef = (0, _utilities_react.useReducerAndRef)(_console_support.consoleItemsReducer, []),
     _useReducerAndRef2 = _slicedToArray(_useReducerAndRef, 3),
     console_items = _useReducerAndRef2[0],
     dispatch = _useReducerAndRef2[1],
     console_items_ref = _useReducerAndRef2[2];
-  var _useReducer = (0, _react.useReducer)(mainReducer, {
+  var _useReducer = (0, _react.useReducer)(_notebook_support.notebookReducer, {
       show_exports_pane: props.is_project ? props.interface_state["show_exports_pane"] : true,
       console_width_fraction: props.is_project ? props.interface_state["console_width_fraction"] : .5,
       console_is_zoomed: true,
@@ -273,7 +137,7 @@ function NotebookApp(props) {
     }
     mDispatch({
       type: "change_multiple_fields",
-      newPartial_state: {
+      newPartialState: {
         usable_height: uheight,
         usable_width: uwidth
       }
@@ -494,6 +358,30 @@ NotebookApp.defaultProps = {
   refreshTab: null,
   closeTab: null
 };
+function main_main() {
+  function gotProps(the_props) {
+    var NotebookAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(NotebookApp));
+    var the_element = /*#__PURE__*/_react["default"].createElement(NotebookAppPlus, _extends({}, the_props, {
+      controlled: false,
+      initial_theme: window.theme,
+      changeName: null
+    }));
+    var domContainer = document.querySelector('#main-root');
+    ReactDOM.render(the_element, domContainer);
+  }
+  (0, _utilities_react.renderSpinnerMessage)("Starting up ...");
+  var target = window.is_new_notebook ? "new_notebook_in_context" : "main_project_in_context";
+  var resource_name = window.is_new_notebook ? "" : window.project_name;
+  var post_data = {
+    "resource_name": resource_name
+  };
+  if (window.is_new_notebook) {
+    post_data.temp_data_id = window.temp_data_id;
+  }
+  (0, _communication_react.postAjaxPromise)(target, post_data).then(function (data) {
+    (0, _notebook_support.notebook_props)(data, null, gotProps);
+  });
+}
 if (!window.in_context) {
   main_main();
 }

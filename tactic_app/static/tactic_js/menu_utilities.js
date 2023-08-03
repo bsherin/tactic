@@ -145,6 +145,7 @@ function ConnectionIndicator(props) {
     style: top_icon_style
   }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
     icon: props.connection_status == "up" ? "circle-arrow-up" : "offline",
+    intent: props.connection_status == "up" ? null : "danger",
     iconSize: 18
   }));
 }
