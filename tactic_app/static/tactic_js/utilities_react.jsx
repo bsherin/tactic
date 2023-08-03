@@ -61,13 +61,13 @@ function useConnection(tsocket, initSocket) {
         set_connection_status(connected ? "up" : "down")
     }
     useEffect(()=>{
-        initSocket(tsocket)
+        initSocket(tsocket);
         tsocket.notifier = socketNotifier;
-        socketNotifier(tsocket.socket.connected)
+        socketNotifier(tsocket.socket.connected);
         return (() => {
             tsocket.disconnect();
         })
-    }, [])
+    }, []);
     return connection_status
 }
 

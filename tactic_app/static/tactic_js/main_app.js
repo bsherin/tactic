@@ -231,7 +231,7 @@ function MainApp(props) {
       mDispatch({
         type: "change_multiple_fields",
         newPartialState: {
-          type_types: data.tile_types,
+          tile_types: data.tile_types,
           tile_icon_dict: data.icon_dict
         }
       });
@@ -1002,10 +1002,10 @@ function MainApp(props) {
     is_juptyer: props.is_jupyter,
     deleteRow: _deleteRow,
     insertRowBefore: function insertRowBefore() {
-      _insertRow(mState.selected_row);
+      _insertRow(mStateRef.current.selected_row);
     },
     insertRowAfter: function insertRowAfter() {
-      _insertRow(mState.selected_row + 1);
+      _insertRow(mStateRef.current.selected_row + 1);
     },
     duplicateRow: _duplicateRow,
     selected_row: mState.selected_row,
