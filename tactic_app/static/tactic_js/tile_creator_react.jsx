@@ -18,7 +18,7 @@ import {TacticMenubar} from "./menu_utilities"
 import {sendToRepository} from "./resource_viewer_react_app";
 import {ReactCodemirror} from "./react-codemirror";
 import {CombinedMetadata} from "./blueprint_mdata_fields";
-import {OptionModule, ExportModule, CommandsModule, correctOptionListTypes} from "./creator_modules_react";
+import {OptionModule, ExportModule, CommandsModule} from "./creator_modules_react";
 import {HorizontalPanes, VerticalPanes} from "./resizing_layouts";
 import {postAjax, postAjaxPromise, postWithCallback} from "./communication_react"
 import {withStatus, doFlash} from "./toaster"
