@@ -125,19 +125,15 @@ function _context_main() {
   }), domContainer);
 }
 function ContextApp(props) {
-  var _useState = (0, _react.useState)(false),
-    _useState2 = _slicedToArray(_useState, 2),
-    didInit = _useState2[0],
-    setDidInit = _useState2[1];
   var _useStateAndRef = (0, _utilities_react.useStateAndRef)("library"),
     _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
     selectedTabId = _useStateAndRef2[0],
     setSelectedTabId = _useStateAndRef2[1],
     selectedTabIdRef = _useStateAndRef2[2];
-  var _useState3 = (0, _react.useState)(150),
-    _useState4 = _slicedToArray(_useState3, 2),
-    saved_width = _useState4[0],
-    set_saved_width = _useState4[1];
+  var _useState = (0, _react.useState)(150),
+    _useState2 = _slicedToArray(_useState, 2),
+    saved_width = _useState2[0],
+    set_saved_width = _useState2[1];
   var _useStateAndRef3 = (0, _utilities_react.useStateAndRef)({}),
     _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
     tab_panel_dict = _useStateAndRef4[0],
@@ -149,64 +145,64 @@ function ContextApp(props) {
     tab_ids = _useStateAndRef6[0],
     set_tab_ids = _useStateAndRef6[1],
     tab_ids_ref = _useStateAndRef6[2];
+  var _useState3 = (0, _react.useState)({}),
+    _useState4 = _slicedToArray(_useState3, 2),
+    open_resources = _useState4[0],
+    set_open_resources = _useState4[1];
   var _useState5 = (0, _react.useState)({}),
     _useState6 = _slicedToArray(_useState5, 2),
-    open_resources = _useState6[0],
-    set_open_resources = _useState6[1];
-  var _useState7 = (0, _react.useState)({}),
-    _useState8 = _slicedToArray(_useState7, 2),
-    dirty_methods = _useState8[0],
-    set_dirty_methods = _useState8[1];
-  var _useState9 = (0, _react.useState)(function () {
+    dirty_methods = _useState6[0],
+    set_dirty_methods = _useState6[1];
+  var _useState7 = (0, _react.useState)(function () {
       return props.initial_theme === "dark";
     }),
+    _useState8 = _slicedToArray(_useState7, 2),
+    dark_theme = _useState8[0],
+    set_dark_theme = _useState8[1];
+  var _useState9 = (0, _react.useState)([]),
     _useState10 = _slicedToArray(_useState9, 2),
-    dark_theme = _useState10[0],
-    set_dark_theme = _useState10[1];
-  var _useState11 = (0, _react.useState)([]),
+    theme_setters = _useState10[0],
+    set_theme_setters = _useState10[1];
+  var _useState11 = (0, _react.useState)(null),
     _useState12 = _slicedToArray(_useState11, 2),
-    theme_setters = _useState12[0],
-    set_theme_setters = _useState12[1];
-  var _useState13 = (0, _react.useState)(null),
-    _useState14 = _slicedToArray(_useState13, 2),
-    lastSelectedTabId = _useState14[0],
-    setLastSelectedTabId = _useState14[1];
-  var _useState15 = (0, _react.useState)(function () {
+    lastSelectedTabId = _useState12[0],
+    setLastSelectedTabId = _useState12[1];
+  var _useState13 = (0, _react.useState)(function () {
       return (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
     }),
-    _useState16 = _slicedToArray(_useState15, 2),
-    usable_width = _useState16[0],
-    set_usable_width = _useState16[1];
-  var _useState17 = (0, _react.useState)(function () {
+    _useState14 = _slicedToArray(_useState13, 2),
+    usable_width = _useState14[0],
+    set_usable_width = _useState14[1];
+  var _useState15 = (0, _react.useState)(function () {
       return (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
     }),
+    _useState16 = _slicedToArray(_useState15, 2),
+    usable_height = _useState16[0],
+    set_usable_height = _useState16[1];
+  var _useState17 = (0, _react.useState)(150),
     _useState18 = _slicedToArray(_useState17, 2),
-    usable_height = _useState18[0],
-    set_usable_height = _useState18[1];
-  var _useState19 = (0, _react.useState)(150),
+    tabWidth = _useState18[0],
+    setTabWidth = _useState18[1];
+  var _useState19 = (0, _react.useState)(false),
     _useState20 = _slicedToArray(_useState19, 2),
-    tabWidth = _useState20[0],
-    setTabWidth = _useState20[1];
+    show_repository = _useState20[0],
+    set_show_repository = _useState20[1];
   var _useState21 = (0, _react.useState)(false),
     _useState22 = _slicedToArray(_useState21, 2),
-    show_repository = _useState22[0],
-    set_show_repository = _useState22[1];
+    dragging_over = _useState22[0],
+    set_dragging_over = _useState22[1];
   var _useState23 = (0, _react.useState)(false),
     _useState24 = _slicedToArray(_useState23, 2),
-    dragging_over = _useState24[0],
-    set_dragging_over = _useState24[1];
+    currently_dragging = _useState24[0],
+    set_currently_dragging = _useState24[1];
   var _useState25 = (0, _react.useState)(false),
     _useState26 = _slicedToArray(_useState25, 2),
-    currently_dragging = _useState26[0],
-    set_currently_dragging = _useState26[1];
-  var _useState27 = (0, _react.useState)(false),
+    showOmnibar = _useState26[0],
+    setShowOmnibar = _useState26[1];
+  var _useState27 = (0, _react.useState)(0),
     _useState28 = _slicedToArray(_useState27, 2),
-    showOmnibar = _useState28[0],
-    setShowOmnibar = _useState28[1];
-  var _useState29 = (0, _react.useState)(0),
-    _useState30 = _slicedToArray(_useState29, 2),
-    tabSelectCounter = _useState30[0],
-    setTabSelectCounter = _useState30[1];
+    tabSelectCounter = _useState28[0],
+    setTabSelectCounter = _useState28[1];
   var top_ref = (0, _react.useRef)(null);
   var key_bindings = [[["tab"], _goToNextPane], [["shift+tab"], _goToPreviousPane], [["ctrl+space"], _showOmnibar], [["ctrl+w"], function () {
     _closeTab(selectedTabIdRef.current);
