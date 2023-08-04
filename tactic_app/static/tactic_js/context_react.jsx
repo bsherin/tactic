@@ -49,7 +49,7 @@ const spinner_panel = (
 
 const MIN_CONTEXT_WIDTH = 45;
 const MIN_CONTEXT_SAVED_WIDTH = 100;
-//const resTypes = ["all", "collections", "projects", "tiles", "lists", "code"];
+
 const iconDict = {
     "module-viewer": "application",
     "code-viewer": "code",
@@ -136,8 +136,8 @@ function ContextApp(props) {
     });
     const [tabWidth, setTabWidth] = useState(150);
     const [show_repository, set_show_repository] = useState(false);
-    const [dragging_over, set_dragging_over] = useState(false);
-    const [currently_dragging, set_currently_dragging] = useState(false);
+    const [dragging_over, set_dragging_over] = useState(null);
+    const [currently_dragging, set_currently_dragging] = useState(null);
     const [showOmnibar, setShowOmnibar] = useState(false);
 
     const [tabSelectCounter, setTabSelectCounter] = useState(0);
@@ -378,7 +378,7 @@ function ContextApp(props) {
         set_tab_panel_dict(new_tab_panel_dict);
         const new_tab_ids = [...tab_ids_ref.current, new_id];
         set_tab_ids(new_tab_ids);
-        setLastSelectedTabId(selectedTabIdRef.current),
+        setLastSelectedTabId(selectedTabIdRef.current);
         setSelectedTabId(new_id);
         pushCallback(() => {
             _updateOpenResources(callback);

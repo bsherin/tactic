@@ -65,7 +65,6 @@ var spinner_panel = /*#__PURE__*/_react["default"].createElement("div", {
 }));
 var MIN_CONTEXT_WIDTH = 45;
 var MIN_CONTEXT_SAVED_WIDTH = 100;
-//const resTypes = ["all", "collections", "projects", "tiles", "lists", "code"];
 var iconDict = {
   "module-viewer": "application",
   "code-viewer": "code",
@@ -187,11 +186,11 @@ function ContextApp(props) {
     _useState20 = _slicedToArray(_useState19, 2),
     show_repository = _useState20[0],
     set_show_repository = _useState20[1];
-  var _useState21 = (0, _react.useState)(false),
+  var _useState21 = (0, _react.useState)(null),
     _useState22 = _slicedToArray(_useState21, 2),
     dragging_over = _useState22[0],
     set_dragging_over = _useState22[1];
-  var _useState23 = (0, _react.useState)(false),
+  var _useState23 = (0, _react.useState)(null),
     _useState24 = _slicedToArray(_useState23, 2),
     currently_dragging = _useState24[0],
     set_currently_dragging = _useState24[1];
@@ -425,7 +424,8 @@ function ContextApp(props) {
     set_tab_panel_dict(new_tab_panel_dict);
     var new_tab_ids = [].concat(_toConsumableArray(tab_ids_ref.current), [new_id]);
     set_tab_ids(new_tab_ids);
-    setLastSelectedTabId(selectedTabIdRef.current), setSelectedTabId(new_id);
+    setLastSelectedTabId(selectedTabIdRef.current);
+    setSelectedTabId(new_id);
     pushCallback(function () {
       _updateOpenResources(callback);
     });

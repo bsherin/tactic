@@ -1,3 +1,5 @@
+// noinspection XmlDeprecatedElement
+
 import React from "react";
 import {useState, useEffect, useRef, memo} from "react";
 import PropTypes from 'prop-types';
@@ -23,7 +25,7 @@ export {TileContainer, tilesReducer}
 
 const using_touch = "ontouchend" in document;
 
-var click_event = using_touch ? "touchstart" : "click";
+const click_event = using_touch ? "touchstart" : "click";
 
 const TILE_DISPLAY_AREA_MARGIN = 15;
 const ANI_DURATION = 300;
