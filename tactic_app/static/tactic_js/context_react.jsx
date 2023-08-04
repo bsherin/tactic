@@ -114,7 +114,6 @@ function _context_main() {
 }
 
 function ContextApp(props) {
-    const [didInit, setDidInit] = useState(false);
     const [selectedTabId, setSelectedTabId, selectedTabIdRef] = useStateAndRef("library");
     const [saved_width, set_saved_width] = useState(150);
 

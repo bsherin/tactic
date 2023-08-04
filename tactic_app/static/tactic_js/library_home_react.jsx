@@ -28,7 +28,6 @@ const TAB_BAR_WIDTH = 50;
 
 export {LibraryHomeApp}
 const library_id = guid();
-const tsocket = new TacticSocket("main", 5000, "library", library_id);
 
 const tab_panes = ["all-pane", "collections-pane", "projects-pane", "tiles-pane", "lists-pane", "code-pane"];
 const controllable_props = ["usable_width", "usable_height"];
@@ -214,6 +213,7 @@ LibraryHomeApp.defaultProps = {
 };
 
 function _library_home_main() {
+    const tsocket = new TacticSocket("main", 5000, "library", library_id);
     const LibraryHomeAppPlus = withErrorDrawer(withStatus(LibraryHomeApp));
     const domContainer = document.querySelector('#library-home-root');
     ReactDOM.render(<LibraryHomeAppPlus tsocket={tsocket}
