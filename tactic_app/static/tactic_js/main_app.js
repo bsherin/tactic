@@ -241,10 +241,12 @@ function MainApp(props) {
   function _change_doc_listener(data) {
     if (data.main_id == props.main_id) {
       var row_id = data.hasOwnProperty("row_id") ? data.row_id : null;
+      var scroll_to_row = data.hasOwnProperty("scroll_to_row") ? data.scroll_to_row : true;
+      var select_row = data.hasOwnProperty("selected_row") ? data.select_row : true;
       if (mState.table_is_shrunk) {
         _setMainStateValue("table_is_shrunk", false);
       }
-      _handleChangeDoc(data.doc_name, row_id);
+      _handleChangeDoc(data.doc_name, row_id, scroll_to_row, select_row);
     }
   }
   function initSocket() {
@@ -362,6 +364,8 @@ function MainApp(props) {
   }
   function _handleChangeDoc(new_doc_name) {
     var row_index = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+    var scroll_to_row = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
+    var select_row = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
     _setMainStateValue("show_table_spinner", true);
     if (props.is_freeform) {
       (0, _communication_react.postWithCallback)(props.main_id, "grab_freeform_data", {
@@ -393,11 +397,11 @@ function MainApp(props) {
       };
       (0, _communication_react.postWithCallback)(props.main_id, "grab_chunk_by_row_index", data_dict, function (data) {
         _setStateFromDataObject(data, new_doc_name, function () {
-          _setMainStateValue({
-            show_table_spinner: false,
-            selected_regions: [_table.Regions.row(row_index)]
-          });
-          set_table_scroll.current = row_index;
+          _setMainStateValue("show_table_spinner", false);
+          if (select_row) _setMainStateValue("selected_regions", [_table.Regions.row(row_index)]);
+          if (scroll_to_row) {
+            set_table_scroll.current = row_index;
+          }
         });
       }, null, props.main_id);
     }

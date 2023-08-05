@@ -189,10 +189,12 @@ class LibraryAccessMixin:
         self.go_to_row_in_document(doc_name, row_id)
         return
 
-    def go_to_row_in_document(self, doc_name, row_id):
+    def go_to_row_in_document(self, doc_name, row_id, scroll_to_row=True, select_row=True):
         self._save_stdout()
         data = {"doc_name": doc_name,
-                "row_id": row_id}
+                "row_id": row_id,
+                "scroll_to_row": scroll_to_row,
+                "select_row": select_row}
         self._tworker.ask_host('go_to_row_in_document', data)
         self._restore_stdout()
         return
