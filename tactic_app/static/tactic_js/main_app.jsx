@@ -229,10 +229,12 @@ function MainApp(props) {
     function _change_doc_listener(data) {
         if (data.main_id == props.main_id) {
             let row_id = data.hasOwnProperty("row_id") ? data.row_id : null;
+            let scroll_to_row = data.hasOwnProperty("scroll_to_row") ? data.scroll_to_row : true;
+            let select_row = data.hasOwnProperty("selected_row") ? data.select_row : true;
             if (mState.table_is_shrunk) {
                 _setMainStateValue("table_is_shrunk", false)
             }
-            _handleChangeDoc(data.doc_name, row_id)
+            _handleChangeDoc(data.doc_name, row_id, scroll_to_row, select_row)
         }
     }
 
@@ -352,7 +354,7 @@ function MainApp(props) {
         }
     }
 
-    function _handleChangeDoc(new_doc_name, row_index = 0) {
+    function _handleChangeDoc(new_doc_name, row_index = 0, scroll_to_row = true, select_row = true) {
         _setMainStateValue("show_table_spinner", true);
         if (props.is_freeform) {
             postWithCallback(props.main_id, "grab_freeform_data", {
@@ -379,11 +381,12 @@ function MainApp(props) {
             const data_dict = {"doc_name": new_doc_name, "row_index": row_index, "set_visible_doc": true};
             postWithCallback(props.main_id, "grab_chunk_by_row_index", data_dict, function (data) {
                 _setStateFromDataObject(data, new_doc_name, () => {
-                    _setMainStateValue({
-                        show_table_spinner: false,
-                        selected_regions: [Regions.row(row_index)]
-                    });
-                    set_table_scroll.current = row_index;
+                    _setMainStateValue("show_table_spinner", false);
+                    if (select_row)
+                        _setMainStateValue("selected_regions", [Regions.row(row_index)]);
+                    if (scroll_to_row) {
+                        set_table_scroll.current = row_index;
+                    }
                 });
             }, null, props.main_id);
         }
