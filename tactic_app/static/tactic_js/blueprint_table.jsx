@@ -82,9 +82,9 @@ function BlueprintTable(props, passedRef) {
             data_update_required.current = null;
             props.initiateDataGrab(rindex);
         }
-        else if ((props.set_scroll != null) && table_ref.current) {
+        else if ((props.set_scroll.current != null) && table_ref.current) {
             try {
-                let singleCellRegion = Regions.cell(props.set_scroll, 0);
+                let singleCellRegion = Regions.cell(props.set_scroll.current, 0);
                 table_ref.current.scrollToRegion(singleCellRegion);
                 props.clearScroll()
             }
@@ -345,11 +345,11 @@ function EnhancedEditableCell(props)  {
     }
 
     function _onChange(value, rowIndex, columnIndex) {
-        props.set_scrollprops.setCellContent(props.set_scrollprops.rowIndex, props.set_scrollprops.columnHeader, value, false)
+        props.setCellContent(props.rowIndex, props.columnHeader, value, false)
     }
 
     function _onCancel() {
-        props.set_scrollprops.setCellContent(props.set_scrollprops.rowIndex, props.set_scrollprops.columnHeader, props.set_scrollsaved_text, false);
+        props.setCellContent(props.rowIndex, props.columnHeader, saved_text, false);
         set_am_editing(false)
     }
 

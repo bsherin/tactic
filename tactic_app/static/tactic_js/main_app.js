@@ -13,6 +13,7 @@ var _react = _interopRequireWildcard(require("react"));
 var ReactDOM = _interopRequireWildcard(require("react-dom"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
+var _table = require("@blueprintjs/table");
 var _lodash = _interopRequireDefault(require("lodash"));
 var _main_support = require("./main_support");
 var _blueprint_navbar = require("./blueprint_navbar");
@@ -392,7 +393,10 @@ function MainApp(props) {
       };
       (0, _communication_react.postWithCallback)(props.main_id, "grab_chunk_by_row_index", data_dict, function (data) {
         _setStateFromDataObject(data, new_doc_name, function () {
-          _setMainStateValue("show_table_spinner", false);
+          _setMainStateValue({
+            show_table_spinner: false,
+            selected_regions: [_table.Regions.row(row_index)]
+          });
           set_table_scroll.current = row_index;
         });
       }, null, props.main_id);
@@ -1062,7 +1066,7 @@ function MainApp(props) {
       updateTableSpec: _updateTableSpec,
       setMainStateValue: _setMainStateValue,
       mState: mState,
-      set_scroll: set_table_scroll.current,
+      set_scroll: set_table_scroll,
       broadcast_event_to_server: _broadcast_event_to_server
     });
   }
