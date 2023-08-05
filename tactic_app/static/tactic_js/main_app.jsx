@@ -382,8 +382,13 @@ function MainApp(props) {
             postWithCallback(props.main_id, "grab_chunk_by_row_index", data_dict, function (data) {
                 _setStateFromDataObject(data, new_doc_name, () => {
                     _setMainStateValue("show_table_spinner", false);
-                    if (select_row)
-                        _setMainStateValue("selected_regions", [Regions.row(row_index)]);
+                    if (select_row) {
+                        _setMainStateValue({
+                            selected_regions: [Regions.row(row_index)],
+                            selected_row: row_index,
+                            selected_column: null
+                        })
+                    }
                     if (scroll_to_row) {
                         set_table_scroll.current = row_index;
                     }
