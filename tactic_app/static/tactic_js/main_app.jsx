@@ -10,6 +10,7 @@ import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
 import {NavbarDivider} from "@blueprintjs/core";
+import {Regions} from "@blueprintjs/table"
 import _ from 'lodash';
 
 import {main_props, mainReducer} from "./main_support"
@@ -378,7 +379,10 @@ function MainApp(props) {
             const data_dict = {"doc_name": new_doc_name, "row_index": row_index, "set_visible_doc": true};
             postWithCallback(props.main_id, "grab_chunk_by_row_index", data_dict, function (data) {
                 _setStateFromDataObject(data, new_doc_name, () => {
-                    _setMainStateValue("show_table_spinner", false);
+                    _setMainStateValue({
+                        show_table_spinner: false,
+                        selected_regions: [Regions.row(row_index)]
+                    });
                     set_table_scroll.current = row_index;
                 });
             }, null, props.main_id);
@@ -1012,7 +1016,7 @@ function MainApp(props) {
                             updateTableSpec={_updateTableSpec}
                             setMainStateValue={_setMainStateValue}
                             mState={mState}
-                            set_scroll={set_table_scroll.current}
+                            set_scroll={set_table_scroll}
                             broadcast_event_to_server={_broadcast_event_to_server}
             />
         )
