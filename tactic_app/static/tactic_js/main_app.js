@@ -242,7 +242,7 @@ function MainApp(props) {
     if (data.main_id == props.main_id) {
       var row_id = data.hasOwnProperty("row_id") ? data.row_id : null;
       var scroll_to_row = data.hasOwnProperty("scroll_to_row") ? data.scroll_to_row : true;
-      var select_row = data.hasOwnProperty("selected_row") ? data.select_row : true;
+      var select_row = data.hasOwnProperty("select_row") ? data.select_row : true;
       if (mState.table_is_shrunk) {
         _setMainStateValue("table_is_shrunk", false);
       }
