@@ -702,7 +702,7 @@ function CreatorApp(props) {
           rline_number.current = null;
         }
       } else {
-        if (rline_number < props.render_content_line_number) {
+        if (rline_number.current < props.render_content_line_number) {
           if (emObject.current) {
             _handleTabSelect("methods");
             _selectLine(emObject.current, rline_number.current - extra_methods_line_number_ref.current);
