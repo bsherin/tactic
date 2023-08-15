@@ -84,13 +84,12 @@ function TacticNavbar(props) {
     return false;
   }
   function _setTheme(event) {
-    if (window.user_id == undefined) {
-      var theme = event.target.checked ? "dark" : "light";
-      set_theme_cookie(theme);
-    } else {
+    var theme = event.target.checked ? "dark" : "light";
+    set_theme_cookie(theme);
+    if (window.user_id != undefined) {
       var result_dict = {
         "user_id": window.user_id,
-        "theme": event.target.checked ? "dark" : "light"
+        "theme": theme
       };
       (0, _communication_react.postWithCallback)("host", "set_user_theme", result_dict, null, null);
     }

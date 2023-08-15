@@ -269,24 +269,24 @@ function RepositoryHomeApp(props) {
                           vertical={true} large={true} onChange={_handleTabChange}>
                         <Tab id="collections-pane" panel={collection_pane}>
                             <Tooltip content="Collections" position={Position.RIGHT}>
-                                <Icon icon="box" iconSize={20} tabIndex={-1} color={getIconColor("collections-pane")}/>
+                                <Icon icon="box" size={20} tabIndex={-1} color={getIconColor("collections-pane")}/>
                             </Tooltip>
                         </Tab>
                         <Tab id="projects-pane" panel={projects_pane}>
                             <Tooltip content="Projects" position={Position.RIGHT}>
-                                <Icon icon="projects" iconSize={20} tabIndex={-1}
+                                <Icon icon="projects" size={20} tabIndex={-1}
                                       color={getIconColor("projects-pane")}/>
                             </Tooltip>
                         </Tab>
                         <Tab id="tiles-pane" panel={tiles_pane}>
                             <Tooltip content="Tiles" position={Position.RIGHT}>
-                                <Icon icon="application" iconSize={20} tabIndex={-1}
+                                <Icon icon="application" size={20} tabIndex={-1}
                                       color={getIconColor("tiles-pane")}/>
                             </Tooltip>
                         </Tab>
                         <Tab id="lists-pane" panel={lists_pane}>
                             <Tooltip content="Lists" position={Position.RIGHT}>
-                                <Icon icon="list" iconSize={20} tabIndex={-1} color={getIconColor("lists-pane")}/>
+                                <Icon icon="list" size={20} tabIndex={-1} color={getIconColor("lists-pane")}/>
                             </Tooltip>
                         </Tab>
                         <Tab id="code-pane" panel={code_pane}>

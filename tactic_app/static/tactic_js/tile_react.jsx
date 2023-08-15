@@ -289,7 +289,7 @@ TileContainer = memo(TileContainer);
 function SortHandle(props) {
     return (
         <span className="tile-name-div" {...props.dragHandleProps} ><Icon icon="drag-handle-vertical"
-                                                                          iconSize={15}/>{props.tile_name}</span>
+                                                                          size={15}/>{props.tile_name}</span>
     )
 }
 
@@ -918,7 +918,7 @@ function TileComponent(props) {
                             onDrag={_onResize}
                             dragEnd={_stopResize}
                             direction="both"
-                            iconSize={15}/>
+                            size={15}/>
             </ErrorBoundary>
         </Card>
     )

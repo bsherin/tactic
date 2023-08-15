@@ -82,7 +82,7 @@ function TacticMenubar(props) {
       marginTop: 6
     },
     icon: props.resource_icon,
-    iconSize: 16,
+    size: 16,
     tabIndex: -1
   }), props.resource_name && /*#__PURE__*/_react["default"].createElement("div", {
     style: name_style
@@ -146,7 +146,7 @@ function ConnectionIndicator(props) {
   }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
     icon: props.connection_status == "up" ? "circle-arrow-up" : "offline",
     intent: props.connection_status == "up" ? null : "danger",
-    iconSize: 18
+    size: 18
   }));
 }
 function ErrorDrawerButton(props) {
@@ -164,7 +164,7 @@ function ErrorDrawerButton(props) {
   }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
     icon: /*#__PURE__*/_react["default"].createElement(_core.Icon, {
       icon: "drawer-right",
-      iconSize: 18
+      size: 18
     }),
     style: {
       paddingLeft: 4,
@@ -194,7 +194,7 @@ function TopLeftButtons(props) {
       ebuttons.push( /*#__PURE__*/_react["default"].createElement(_core.Button, {
         icon: /*#__PURE__*/_react["default"].createElement(_core.Icon, {
           icon: but_info.icon,
-          iconSize: 14
+          size: 14
         }),
         style: {
           paddingLeft: 8
@@ -215,7 +215,7 @@ function TopLeftButtons(props) {
   }, props.showClose && /*#__PURE__*/_react["default"].createElement(_core.Button, {
     icon: /*#__PURE__*/_react["default"].createElement(_core.Icon, {
       icon: "delete",
-      iconSize: 14
+      size: 14
     }),
     style: {
       paddingLeft: 4,
@@ -232,7 +232,7 @@ function TopLeftButtons(props) {
   }), props.showRefresh && /*#__PURE__*/_react["default"].createElement(_core.Button, {
     icon: /*#__PURE__*/_react["default"].createElement(_core.Icon, {
       icon: "reset",
-      iconSize: 14
+      size: 14
     }),
     style: {
       paddingLeft: 8

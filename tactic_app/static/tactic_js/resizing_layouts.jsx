@@ -121,7 +121,7 @@ function DragHandle(props) {
     }
     else {
         wrappedElement = <Icon icon={icon_dict[props.direction]}
-                               iconSize={props.iconSize}
+                               size={props.iconSize}
                                style={style}/>
     }
     return (
@@ -144,7 +144,7 @@ DragHandle.propTypes = {
     dragStart: PropTypes.func,
     dragEnd: PropTypes.func,
     direction: PropTypes.string,
-    iconSize: PropTypes.number,
+    size: PropTypes.number,
     useThinBar: PropTypes.bool,
     barheight: PropTypes.oneOfType([
         PropTypes.string,
@@ -155,7 +155,7 @@ DragHandle.propTypes = {
 };
 DragHandle.defaultProps = {
     direction: "x",
-    iconSize: 20,
+    size: 20,
     onDrag: null,
     dragStart: null,
     dragEnd: null,
@@ -313,7 +313,7 @@ function HorizontalPanes(props) {
                             dragStart={_handleDragStart}
                             dragEnd={_handleDragEnd}
                             direction="x"
-                            iconSize={props.dragIconSize}
+                            size={props.dragIconSize}
                             useThinBar={true}
                             barHeight={props.available_height - props.bottom_margin}
 
@@ -485,7 +485,7 @@ function VerticalPanes(props) {
                 <DragHandle position_dict={position_dict}
                             onDrag={_handleDrag}
                             direction="y"
-                            iconSize={props.dragIconSize}
+                            size={props.dragIconSize}
                             dragStart={_handleDragStart}
                             dragEnd={_handleDragEnd}
                             useThinBar={true}

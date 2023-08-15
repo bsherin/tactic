@@ -1,45 +1,27 @@
 "use strict";
 
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.renderAutoCompleteElement = renderAutoCompleteElement;
-
 var _react = _interopRequireDefault(require("react"));
-
 var ReactDOM = _interopRequireWildcard(require("react-dom"));
-
 var _communication_react = require("./communication_react");
-
 var _codemirror = _interopRequireDefault(require("codemirror/lib/codemirror.js"));
-
 var _core = require("@blueprintjs/core");
-
-function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
-
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
-
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 var EXTRAWORDS_LIST = ["global_import", "Collection", "Collection", "Collection.document_names", "Collection.current_docment", "Collection.column", "Collection.tokenize", "Collection.detach", "Collection.rewind", "Library", "Library.collections", "Library.lists", "Library.functions", "Library.classes", "Settings", "Settings.names", "Tiles", "Pipes"];
 var EXTRAWORDS = [];
-
 for (var _i = 0, _EXTRAWORDS_LIST = EXTRAWORDS_LIST; _i < _EXTRAWORDS_LIST.length; _i++) {
   var w = _EXTRAWORDS_LIST[_i];
   EXTRAWORDS.push({
@@ -47,46 +29,36 @@ for (var _i = 0, _EXTRAWORDS_LIST = EXTRAWORDS_LIST; _i < _EXTRAWORDS_LIST.lengt
     render: renderAutoCompleteApiElement
   });
 }
-
 var WORD = /[\w\.$]+/;
 var RANGE = 500;
 var tactic_commands = [];
-
 function _anyWord(editor, options) {
   function ffunc(el, curWord) {
     return typeof el == "string" ? el.startsWith(curWord || '') : el.text.startsWith(curWord || '');
   }
-
   var word = options && options.word || WORD;
   var range = options && options.range || RANGE;
   var extraWords = options && options.extraWords || EXTRAWORDS;
   var commands = options && options.commands || [];
   var extra_autocomplete_list = editor.getOption("extra_autocomplete_list");
   var cur = editor.getCursor(),
-      curLine = editor.getLine(cur.line);
+    curLine = editor.getLine(cur.line);
   var end = cur.ch,
-      start = end;
-
-  while (start && word.test(curLine.charAt(start - 1))) {
-    --start;
-  }
-
+    start = end;
+  while (start && word.test(curLine.charAt(start - 1))) --start;
   var curWord = start != end && curLine.slice(start, end);
   var list = options && options.list || [],
-      seen = {};
+    seen = {};
   var re = new RegExp(word.source, "g");
-
   for (var dir = -1; dir <= 1; dir += 2) {
     var line = cur.line,
-        endLine = Math.min(Math.max(line + dir * range, editor.firstLine()), editor.lastLine()) + dir;
-
+      endLine = Math.min(Math.max(line + dir * range, editor.firstLine()), editor.lastLine()) + dir;
     for (; line != endLine; line += dir) {
       var text = editor.getLine(line),
-          m; // noinspection AssignmentResultUsedJS
-
+        m;
+      // noinspection AssignmentResultUsedJS
       while (m = re.exec(text)) {
         if (line == cur.line && m[0] === curWord) continue;
-
         if ((!curWord || m[0].lastIndexOf(curWord, 0) == 0) && !Object.prototype.hasOwnProperty.call(seen, m[0])) {
           seen[m[0]] = true;
           list.push({
@@ -98,7 +70,6 @@ function _anyWord(editor, options) {
       }
     }
   }
-
   list.push.apply(list, _toConsumableArray(extraWords.filter(function (el) {
     return ffunc(el, curWord);
   })));
@@ -114,10 +85,8 @@ function _anyWord(editor, options) {
     to: _codemirror["default"].Pos(cur.line, end)
   };
 }
-
-_codemirror["default"].registerHelper("hint", "anyword", _anyWord); //noinspection JSUnresolvedVariable
-
-
+_codemirror["default"].registerHelper("hint", "anyword", _anyWord);
+//noinspection JSUnresolvedVariable
 _codemirror["default"].commands.autocomplete = function (cm) {
   //noinspection JSUnresolvedFunction
   cm.showHint({
@@ -126,9 +95,7 @@ _codemirror["default"].commands.autocomplete = function (cm) {
     closeOnUnfocus: false
   });
 };
-
 _codemirror["default"].defineOption("extra_autocomplete_list", [], null);
-
 function tactic_icon(size) {
   return /*#__PURE__*/_react["default"].createElement("svg", {
     version: "1.1",
@@ -180,7 +147,6 @@ function tactic_icon(size) {
     strokeMiterlimit: "10"
   })));
 }
-
 function renderAutoCompleteApiElement(elt, data, cur) {
   ReactDOM.render( /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("span", {
     className: "mr-1"
@@ -192,16 +158,14 @@ function renderAutoCompleteApiElement(elt, data, cur) {
     className: "api-hint-args"
   }, cur.argString)), elt);
 }
-
 function renderAutoCompleteElement(elt, data, cur) {
   ReactDOM.render( /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("span", {
     className: "mr-1"
   }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
     icon: cur.icon,
-    iconSize: 10
+    size: 10
   })), /*#__PURE__*/_react["default"].createElement("span", null, cur.text)), elt);
 }
-
 function create_api() {
   var self = this;
   var re = /\([^\)]*?\)/g;
@@ -210,23 +174,19 @@ function create_api() {
     var api_dict_by_name = data.api_dict_by_name;
     var ordered_api_categories = data.ordered_api_categories;
     tactic_commands = [];
-
     var _iterator = _createForOfIteratorHelper(ordered_api_categories),
-        _step;
-
+      _step;
     try {
       for (_iterator.s(); !(_step = _iterator.n()).done;) {
         var cat = _step.value;
-
         var _iterator2 = _createForOfIteratorHelper(api_dict_by_category[cat]),
-            _step2;
-
+          _step2;
         try {
           for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
             var entry = _step2.value;
             var the_name = "self." + entry["name"];
-            var arg_string = (entry["signature"].match(re) || [null])[0]; // let the_sig = "self." + entry["signature"];
-
+            var arg_string = (entry["signature"].match(re) || [null])[0];
+            // let the_sig = "self." + entry["signature"];
             tactic_commands.push({
               text: the_name,
               argString: arg_string,
@@ -244,9 +204,7 @@ function create_api() {
     } finally {
       _iterator.f();
     }
-
     tactic_commands = _toConsumableArray(new Set(tactic_commands));
   });
 }
-
 create_api();

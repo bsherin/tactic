@@ -19,7 +19,8 @@ var tsocket;
 function _login_main() {
     if (window._show_message) doFlash(window._message);
     let domContainer = document.querySelector('#root');
-    ReactDOM.render(<LoginAppWithStatus tsocket={null} controlled={false}/>, domContainer)
+    let useDark = get_theme_cookie() == "dark";
+    ReactDOM.render(<LoginAppWithStatus tsocket={null} controlled={false} initial_dark={useDark}/>, domContainer)
 }
 
 function LoginApp(props) {
@@ -27,7 +28,7 @@ function LoginApp(props) {
     const [password, setPassword] = useState(null);
     const [username_warning_text, set_username_warning_text] = useState("");
     const [password_warning_text, set_password_warning_text] = useState("");
-    const [dark_theme, set_dark_theme, dark_theme_ref] = useStateAndRef(get_theme_cookie() == "dark");
+    const [dark_theme, set_dark_theme, dark_theme_ref] = useStateAndRef(props.initial_dark);
 
     const pushCallback = useCallbackStack();
 

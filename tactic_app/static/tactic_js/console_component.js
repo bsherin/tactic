@@ -1828,7 +1828,7 @@ function Shandle(props) {
       marginLeft: 0,
       marginRight: 6
     },
-    iconSize: 20,
+    size: 20,
     className: "console-sorter"
   })));
 }

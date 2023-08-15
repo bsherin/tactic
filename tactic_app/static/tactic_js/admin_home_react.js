@@ -203,7 +203,7 @@ function AdministerHomeApp(props) {
     position: _core.Position.RIGHT
   }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
     icon: "box",
-    iconSize: 20,
+    size: 20,
     tabIndex: -1,
     color: getIconColor("collections-pane")
   }))), /*#__PURE__*/_react["default"].createElement(_core.Tab, {
@@ -214,7 +214,7 @@ function AdministerHomeApp(props) {
     position: _core.Position.RIGHT
   }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
     icon: "user",
-    iconSize: 20,
+    size: 20,
     tabIndex: -1,
     color: getIconColor("collections-pane")
   }))))));

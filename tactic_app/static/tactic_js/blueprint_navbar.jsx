@@ -80,13 +80,12 @@ function TacticNavbar(props) {
     }
 
     function _setTheme(event) {
-        if (window.user_id == undefined) {
-            let theme = event.target.checked ? "dark" : "light";
-            set_theme_cookie(theme);
-        } else {
+        let theme = event.target.checked ? "dark" : "light";
+        set_theme_cookie(theme);
+        if (window.user_id != undefined) {
             const result_dict = {
                 "user_id": window.user_id,
-                "theme": event.target.checked ? "dark" : "light",
+                "theme": theme,
             };
             postWithCallback("host", "set_user_theme", result_dict,
                 null, null);

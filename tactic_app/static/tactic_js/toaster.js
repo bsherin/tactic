@@ -26,7 +26,7 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 var DEFAULT_TIMEOUT = 2000;
 var disconnect_toast_id = null;
 var reconnect_toast_id = null;
-var AppToaster = _core.Toaster.create({
+var AppToaster = _core.OverlayToaster.create({
   className: "recipe-toaster",
   position: _core.Position.TOP,
   autoFocus: false

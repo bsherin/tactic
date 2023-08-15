@@ -4,7 +4,7 @@ import React from "react";
 import {Fragment, useState, useEffect, useRef, memo} from "react";
 import PropTypes from 'prop-types';
 
-import {Toaster, Position, Spinner} from "@blueprintjs/core";
+import {OverlayToaster, Position, Spinner} from "@blueprintjs/core";
 import {GlyphButton} from "./blueprint_react_widgets";
 
 import {useCallbackStack} from "./utilities_react";
@@ -16,7 +16,7 @@ const DEFAULT_TIMEOUT = 2000;
 let disconnect_toast_id = null;
 let reconnect_toast_id = null;
 
-const AppToaster = Toaster.create({
+const AppToaster = OverlayToaster.create({
     className: "recipe-toaster",
     position: Position.TOP,
     autoFocus: false,
