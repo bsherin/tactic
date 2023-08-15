@@ -274,8 +274,16 @@ function BlueprintTable(props, passedRef) {
     if (regions[0].hasOwnProperty("cols")) {
       _setSelectedColumn(props.filtered_column_names[regions[0]["cols"][0]]);
     } else if (regions[0].hasOwnProperty("rows")) {
-      _setSelectedRow(regions[0]["rows"][0]);
+      _setSelectedRow(regions[0]["rows"][0], function () {
+        broadcast_row_select(regions[0]["rows"][0]);
+      });
     }
+  }
+  function broadcast_row_select(row_id) {
+    var data = {
+      active_row_id: row_id
+    };
+    props.broadcast_event_to_server("MainTableRowSelect", data);
   }
   function _setSelectedColumn(column_name) {
     props.setMainStateValue({
@@ -284,10 +292,12 @@ function BlueprintTable(props, passedRef) {
     });
   }
   function _setSelectedRow(rowIndex) {
+    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    console.log("Setting selected for " + String(rowIndex));
     props.setMainStateValue({
-      "selected_row": props.mState.data_row_dict[rowIndex].__id__,
-      "selected_column": null
-    });
+      selected_row: props.mState.data_row_dict[rowIndex].__id__,
+      selected_column: null
+    }, null, callback);
   }
   function broadcast_column_widths(docname, cwidths) {
     props.broadcast_event_to_server("UpdateColumnWidths", {

@@ -309,7 +309,8 @@ function MainApp(props) {
             mDispatch({
                 type: "change_multiple_fields",
                 newPartialState: field_name
-            })
+            });
+            pushCallback(callback)
         } else {
             mDispatch({
                 type: "change_field",
@@ -354,6 +355,12 @@ function MainApp(props) {
         }
     }
 
+    function broadcast_row_select(row_id, doc_name) {
+         const data = {active_row_id: row_id, doc_name: doc_name};
+         console.log("broadcasting row_id " + String(row_id));
+         _broadcast_event_to_server("MainTableRowSelect", data)
+    }
+
     function _handleChangeDoc(new_doc_name, row_index = 0, scroll_to_row = true, select_row = true) {
         _setMainStateValue("show_table_spinner", true);
         if (props.is_freeform) {
@@ -387,7 +394,7 @@ function MainApp(props) {
                             selected_regions: [Regions.row(row_index)],
                             selected_row: row_index,
                             selected_column: null
-                        })
+                        }, null, ()=>{broadcast_row_select(row_index, new_doc_name)})
                     }
                     if (scroll_to_row) {
                         set_table_scroll.current = row_index;
@@ -415,7 +422,9 @@ function MainApp(props) {
     function _broadcast_event_to_server(event_name, data_dict, callback) {
         data_dict.main_id = props.main_id;
         data_dict.event_name = event_name;
-        data_dict.doc_name = mState.table_spec.current_doc_name;
+        if (!("doc_name" in data_dict)) {
+            data_dict.doc_name = mState.table_spec.current_doc_name;
+        }
         postWithCallback(props.main_id, "distribute_events_stub", data_dict, callback, null, props.main_id)
     }
 
