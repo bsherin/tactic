@@ -1591,7 +1591,7 @@ function Shandle(props) {
                 <Icon icon="drag-handle-vertical"
                       {...props.dragHandleProps}
                       style={{marginLeft: 0, marginRight: 6}}
-                      iconSize={20}
+                      size={20}
                       className="console-sorter"/>
             </span>
     )

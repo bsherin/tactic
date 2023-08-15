@@ -797,7 +797,7 @@ function ContextApp(props) {
       verticalAlign: "middle",
       marginRight: 5
     },
-    iconSize: 16,
+    size: 16,
     tabIndex: -1
   }), /*#__PURE__*/_react["default"].createElement("span", null, "Library"))));
   var all_tabs = [ltab];
@@ -917,12 +917,12 @@ function ContextApp(props) {
           verticalAlign: "middle",
           marginRight: 5
         },
-        iconSize: 16,
+        size: 16,
         tabIndex: -1
       }), /*#__PURE__*/_react["default"].createElement("span", null, visible_title)), /*#__PURE__*/_react["default"].createElement("div", null, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
         icon: "reset",
         style: icon_style,
-        iconSize: 13,
+        size: 13,
         className: "context-close-button",
         tabIndex: -1,
         onClick: function onClick() {
@@ -931,7 +931,7 @@ function ContextApp(props) {
       }), /*#__PURE__*/_react["default"].createElement(_core.Icon, {
         icon: "delete",
         style: icon_style,
-        iconSize: 13,
+        size: 13,
         className: "context-close-button",
         tabIndex: -1,
         onClick: function onClick() {
@@ -1039,7 +1039,7 @@ function ContextApp(props) {
   }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
     icon: /*#__PURE__*/_react["default"].createElement(_core.Icon, {
       icon: pane_closed ? "drawer-left-filled" : "drawer-right-filled",
-      iconSize: 18
+      size: 18
     }),
     style: {
       paddingLeft: 4,

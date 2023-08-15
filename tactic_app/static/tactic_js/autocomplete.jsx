@@ -124,7 +124,7 @@ function renderAutoCompleteElement(elt, data, cur) {
     ReactDOM.render(
         <React.Fragment>
             <span className="mr-1">
-                <Icon icon={cur.icon} iconSize={10}/>
+                <Icon icon={cur.icon} size={10}/>
             </span>
             <span>
                 {cur.text}

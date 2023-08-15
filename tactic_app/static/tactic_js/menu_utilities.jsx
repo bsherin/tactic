@@ -53,7 +53,7 @@ function TacticMenubar(props) {
                 />
             }
             {props.resource_icon &&
-                <Icon style={{marginTop: 6}} icon={props.resource_icon} iconSize={16} tabIndex={-1}/>
+                <Icon style={{marginTop: 6}} icon={props.resource_icon} size={16} tabIndex={-1}/>
             }
             {props.resource_name &&
                 <div style={name_style}>{props.resource_name}</div>
@@ -126,7 +126,7 @@ function ConnectionIndicator(props) {
         <div style={top_icon_style}>
             <Icon icon={props.connection_status == "up" ? "circle-arrow-up" : "offline"}
                   intent={props.connection_status == "up" ? null : "danger"}
-                  iconSize={18}/>
+                  size={18}/>
         </div>
     )
 }
@@ -142,7 +142,7 @@ function ErrorDrawerButton(props) {
         right: 10
     };
     return (<div style={top_icon_style}>
-        <Button icon={<Icon icon="drawer-right" iconSize={18}/>}
+        <Button icon={<Icon icon="drawer-right" size={18}/>}
                 style={{paddingLeft: 4, paddingRight: 0}}
                 minimal={true}
                 className="context-close-button"
@@ -169,7 +169,7 @@ function TopLeftButtons(props) {
     if (props.extraButtons != null) {
         props.extraButtons.map((but_info, index) => {
             ebuttons.push(
-                <Button icon={<Icon icon={but_info.icon} iconSize={14}/>}
+                <Button icon={<Icon icon={but_info.icon} size={14}/>}
                         style={{paddingLeft: 8}}
                         minimal={true}
                         className="context-close-button"
@@ -186,7 +186,7 @@ function TopLeftButtons(props) {
     return (
         <div style={top_icon_style}>
             {props.showClose &&
-                <Button icon={<Icon icon="delete" iconSize={14}/>}
+                <Button icon={<Icon icon="delete" size={14}/>}
                         style={{paddingLeft: 4, paddingRight: 0}}
                         minimal={true}
                         className="context-close-button"
@@ -198,7 +198,7 @@ function TopLeftButtons(props) {
                         }}
                 />}
             {props.showRefresh &&
-                <Button icon={<Icon icon="reset" iconSize={14}/>}
+                <Button icon={<Icon icon="reset" size={14}/>}
                         style={{paddingLeft: 8}}
                         minimal={true}
                         className="context-close-button"

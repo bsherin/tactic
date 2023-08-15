@@ -22,9 +22,11 @@ var tsocket;
 function _login_main() {
   if (window._show_message) (0, _toaster.doFlash)(window._message);
   var domContainer = document.querySelector('#root');
+  var useDark = (0, _blueprint_navbar.get_theme_cookie)() == "dark";
   ReactDOM.render( /*#__PURE__*/_react["default"].createElement(LoginAppWithStatus, {
     tsocket: null,
-    controlled: false
+    controlled: false,
+    initial_dark: useDark
   }), domContainer);
 }
 function LoginApp(props) {
@@ -44,7 +46,7 @@ function LoginApp(props) {
     _useState8 = _slicedToArray(_useState7, 2),
     password_warning_text = _useState8[0],
     set_password_warning_text = _useState8[1];
-  var _useStateAndRef = (0, _utilities_react.useStateAndRef)((0, _blueprint_navbar.get_theme_cookie)() == "dark"),
+  var _useStateAndRef = (0, _utilities_react.useStateAndRef)(props.initial_dark),
     _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
     dark_theme = _useStateAndRef2[0],
     set_dark_theme = _useStateAndRef2[1],

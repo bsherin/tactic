@@ -189,12 +189,12 @@ function AdministerHomeApp(props) {
                          vertical={true} large={true} onChange={_handleTabChange}>
                     <Tab id="containers-pane" panel={container_pane}>
                         <Tooltip content="Containers" position={Position.RIGHT}>
-                            <Icon icon="box" iconSize={20} tabIndex={-1} color={getIconColor("collections-pane")}/>
+                            <Icon icon="box" size={20} tabIndex={-1} color={getIconColor("collections-pane")}/>
                         </Tooltip>
                     </Tab>
                     <Tab id="users-pane" panel={user_pane}>
                         <Tooltip content="users" position={Position.RIGHT}>
-                            <Icon icon="user" iconSize={20} tabIndex={-1} color={getIconColor("collections-pane")}/>
+                            <Icon icon="user" size={20} tabIndex={-1} color={getIconColor("collections-pane")}/>
                         </Tooltip>
                     </Tab>
                 </Tabs>

@@ -319,7 +319,7 @@ function SortHandle(props) {
     className: "tile-name-div"
   }, props.dragHandleProps), /*#__PURE__*/_react["default"].createElement(_core.Icon, {
     icon: "drag-handle-vertical",
-    iconSize: 15
+    size: 15
   }), props.tile_name);
 }
 SortHandle.propTypes = {
@@ -1029,7 +1029,7 @@ function TileComponent(props) {
     onDrag: _onResize,
     dragEnd: _stopResize,
     direction: "both",
-    iconSize: 15
+    size: 15
   })));
 }
 TileComponent.propTypes = {

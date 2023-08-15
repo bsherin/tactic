@@ -708,7 +708,7 @@ function ContextApp(props) {
                     }}>
                         <Icon icon={libIconDict["all"]}
                               style={{verticalAlign: "middle", marginRight: 5}}
-                              iconSize={16} tabIndex={-1}/>
+                              size={16} tabIndex={-1}/>
                         <span>Library</span>
                     </div>
                 </div>
@@ -803,15 +803,15 @@ function ContextApp(props) {
                     }}>
                         <Icon icon={iconDict[tab_entry.kind]}
                               style={{verticalAlign: "middle", marginRight: 5}}
-                              iconSize={16} tabIndex={-1}/>
+                              size={16} tabIndex={-1}/>
                         <span>{visible_title}</span>
                     </div>
                     <div>
-                        <Icon icon="reset" style={icon_style} iconSize={13} className="context-close-button"
+                        <Icon icon="reset" style={icon_style} size={13} className="context-close-button"
                               tabIndex={-1} onClick={() => {
                             _refreshTab(tab_id)
                         }}/>
-                        <Icon icon="delete" style={icon_style} iconSize={13} className="context-close-button"
+                        <Icon icon="delete" style={icon_style} size={13} className="context-close-button"
                               tabIndex={-1} onClick={() => {
                             _closeTab(tab_id)
                         }}/>
@@ -897,7 +897,7 @@ function ContextApp(props) {
             <div className={outer_class} style={outer_style} ref={top_ref}>
                 <div id="context-container" style={outer_style}>
                     <Button icon={<Icon icon={pane_closed ? "drawer-left-filled" : "drawer-right-filled"}
-                                        iconSize={18}/>}
+                                        size={18}/>}
                             style={{
                                 paddingLeft: 4, paddingRight: 0,
                                 position: "absolute", left: tabWidth - 30, bottom: 10,
