@@ -322,6 +322,7 @@ function MainApp(props) {
         type: "change_multiple_fields",
         newPartialState: field_name
       });
+      pushCallback(callback);
     } else {
       mDispatch({
         type: "change_field",
@@ -361,6 +362,14 @@ function MainApp(props) {
     } else {
       (0, _communication_react.postWithCallback)(props.main_id, "set_visible_doc", data_dict, func, null, props.main_id);
     }
+  }
+  function broadcast_row_select(row_id, doc_name) {
+    var data = {
+      active_row_id: row_id,
+      doc_name: doc_name
+    };
+    console.log("broadcasting row_id " + String(row_id));
+    _broadcast_event_to_server("MainTableRowSelect", data);
   }
   function _handleChangeDoc(new_doc_name) {
     var row_index = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
@@ -403,6 +412,8 @@ function MainApp(props) {
               selected_regions: [_table.Regions.row(row_index)],
               selected_row: row_index,
               selected_column: null
+            }, null, function () {
+              broadcast_row_select(row_index, new_doc_name);
             });
           }
           if (scroll_to_row) {
@@ -429,7 +440,9 @@ function MainApp(props) {
   function _broadcast_event_to_server(event_name, data_dict, callback) {
     data_dict.main_id = props.main_id;
     data_dict.event_name = event_name;
-    data_dict.doc_name = mState.table_spec.current_doc_name;
+    if (!("doc_name" in data_dict)) {
+      data_dict.doc_name = mState.table_spec.current_doc_name;
+    }
     (0, _communication_react.postWithCallback)(props.main_id, "distribute_events_stub", data_dict, callback, null, props.main_id);
   }
   function _tile_command(menu_id) {

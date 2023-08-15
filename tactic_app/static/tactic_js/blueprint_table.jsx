@@ -241,18 +241,25 @@ function BlueprintTable(props, passedRef) {
             _setSelectedColumn(props.filtered_column_names[regions[0]["cols"][0]])
         }
         else if (regions[0].hasOwnProperty("rows")) {
-            _setSelectedRow(regions[0]["rows"][0])
+            _setSelectedRow(regions[0]["rows"][0], ()=>{broadcast_row_select(regions[0]["rows"][0])})
         }
+    }
+
+    function broadcast_row_select(row_id) {
+         const data = {active_row_id: row_id};
+         props.broadcast_event_to_server("MainTableRowSelect", data)
     }
 
     function _setSelectedColumn(column_name) {
         props.setMainStateValue({"selected_column": column_name, "selected_row": null})
     }
 
-    function _setSelectedRow(rowIndex) {
-        props.setMainStateValue({"selected_row": props.mState.data_row_dict[rowIndex].__id__,
-            "selected_column": null}
-        )
+    function _setSelectedRow(rowIndex, callback=null) {
+        console.log("Setting selected for " + String(rowIndex));
+        props.setMainStateValue({
+            selected_row: props.mState.data_row_dict[rowIndex].__id__,
+            selected_column: null,
+        }, null, callback)
     }
 
     function broadcast_column_widths(docname, cwidths) {

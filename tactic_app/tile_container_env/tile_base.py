@@ -201,6 +201,11 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         return None
 
     @_task_worthy
+    def MainTableRowSelect(self, data):
+        self.handle_row_change(data["active_row_id"], data["doc_name"])
+        return None
+
+    @_task_worthy
     def FreeformTextChange(self, data):
         self.handle_freeform_text_change(data["new_content"], data["doc_name"])
         return None
@@ -801,6 +806,9 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         return
 
     def handle_cell_change(self, column_header, row_index, old_content, new_content, doc_name):
+        return
+
+    def handle_row_change(self, row_index, doc_name):
         return
 
     def handle_freeform_text_change(self, new_content, doc_name):
