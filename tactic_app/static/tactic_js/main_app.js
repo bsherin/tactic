@@ -173,6 +173,13 @@ function MainApp(props) {
       delete_my_containers();
     };
   }, []);
+  (0, _react.useEffect)(function () {
+    var data = {
+      active_row_id: mState.selected_row,
+      doc_name: mState.table_spec.current_doc_name
+    };
+    _broadcast_event_to_server("MainTableRowSelect", data);
+  }, [mState.selected_row]);
   function _cProp(pname) {
     return props.controlled ? props[pname] : mState[pname];
   }
@@ -353,24 +360,6 @@ function MainApp(props) {
   function _setAltSearchText(the_text) {
     _setMainStateValue("alt_search_text", the_text);
   }
-  function set_visible_doc(doc_name, func) {
-    var data_dict = {
-      "doc_name": doc_name
-    };
-    if (func === null) {
-      (0, _communication_react.postWithCallback)(props.main_id, "set_visible_doc", data_dict, null, null, props.main_id);
-    } else {
-      (0, _communication_react.postWithCallback)(props.main_id, "set_visible_doc", data_dict, func, null, props.main_id);
-    }
-  }
-  function broadcast_row_select(row_id, doc_name) {
-    var data = {
-      active_row_id: row_id,
-      doc_name: doc_name
-    };
-    console.log("broadcasting row_id " + String(row_id));
-    _broadcast_event_to_server("MainTableRowSelect", data);
-  }
   function _handleChangeDoc(new_doc_name) {
     var row_index = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
     var scroll_to_row = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
@@ -412,9 +401,7 @@ function MainApp(props) {
               selected_regions: [_table.Regions.row(row_index)],
               selected_row: row_index,
               selected_column: null
-            }, null, function () {
-              broadcast_row_select(row_index, new_doc_name);
-            });
+            }, null);
           }
           if (scroll_to_row) {
             set_table_scroll.current = row_index;
@@ -744,14 +731,15 @@ function MainApp(props) {
     var cwidths = _toConsumableArray(mState.table_spec.column_widths);
     cwidths.splice(col_index, 1);
     hc_list.push(cname);
-    _updateTableSpec({
-      hidden_columns_list: hc_list,
-      column_widths: cwidths
-    }, false);
     var data_dict = {
       "column_name": mState.selected_column
     };
-    _broadcast_event_to_server("HideColumnInAllDocs", data_dict);
+    _broadcast_event_to_server("HideColumnInAllDocs", data_dict, function () {
+      _updateTableSpec({
+        hidden_columns_list: hc_list,
+        column_widths: cwidths
+      }, false);
+    });
   }
   function _unhideAllColumns() {
     _updateTableSpec({
@@ -1062,7 +1050,6 @@ function MainApp(props) {
     show_filter_button: !props.is_freeform,
     handleSpreadsheetModeChange: _handleSpreadsheetModeChange,
     handleSoftWrapChange: _handleSoftWrapChange,
-    broadcast_event_to_server: _broadcast_event_to_server,
     is_freeform: props.is_freeform
   });
   var card_body;
@@ -1089,8 +1076,7 @@ function MainApp(props) {
       updateTableSpec: _updateTableSpec,
       setMainStateValue: _setMainStateValue,
       mState: mState,
-      set_scroll: set_table_scroll,
-      broadcast_event_to_server: _broadcast_event_to_server
+      set_scroll: set_table_scroll
     });
   }
   var tile_container_height = mState.console_is_shrunk ? table_available_height - MARGIN_ADJUSTMENT : table_available_height;
@@ -1165,12 +1151,8 @@ function MainApp(props) {
   var table_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
     ref: table_container_ref
   }, /*#__PURE__*/_react["default"].createElement(_table_react.MainTableCard, {
-    main_id: props.main_id,
     card_body: card_body,
-    card_header: card_header,
-    table_spec: mState.table_spec,
-    broadcast_event_to_server: _broadcast_event_to_server,
-    updateTableSpec: _updateTableSpec
+    card_header: card_header
   })));
   var top_pane;
   if (mState.table_is_shrunk) {

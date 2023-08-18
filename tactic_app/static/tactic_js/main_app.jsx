@@ -159,6 +159,14 @@ function MainApp(props) {
         })
     }, []);
 
+    useEffect(()=>{
+         const data = {
+            active_row_id: mState.selected_row,
+            doc_name: mState.table_spec.current_doc_name
+         };
+         _broadcast_event_to_server("MainTableRowSelect", data)
+    }, [mState.selected_row]);
+
     function _cProp(pname) {
         return props.controlled ? props[pname] : mState[pname]
     }
@@ -346,21 +354,6 @@ function MainApp(props) {
         _setMainStateValue("alt_search_text", the_text)
     }
 
-    function set_visible_doc(doc_name, func) {
-        const data_dict = {"doc_name": doc_name};
-        if (func === null) {
-            postWithCallback(props.main_id, "set_visible_doc", data_dict, null, null, props.main_id)
-        } else {
-            postWithCallback(props.main_id, "set_visible_doc", data_dict, func, null, props.main_id)
-        }
-    }
-
-    function broadcast_row_select(row_id, doc_name) {
-         const data = {active_row_id: row_id, doc_name: doc_name};
-         console.log("broadcasting row_id " + String(row_id));
-         _broadcast_event_to_server("MainTableRowSelect", data)
-    }
-
     function _handleChangeDoc(new_doc_name, row_index = 0, scroll_to_row = true, select_row = true) {
         _setMainStateValue("show_table_spinner", true);
         if (props.is_freeform) {
@@ -394,7 +387,7 @@ function MainApp(props) {
                             selected_regions: [Regions.row(row_index)],
                             selected_row: row_index,
                             selected_column: null
-                        }, null, ()=>{broadcast_row_select(row_index, new_doc_name)})
+                        }, null)
                     }
                     if (scroll_to_row) {
                         set_table_scroll.current = row_index;
@@ -668,9 +661,10 @@ function MainApp(props) {
         let cwidths = [...mState.table_spec.column_widths];
         cwidths.splice(col_index, 1);
         hc_list.push(cname);
-        _updateTableSpec({hidden_columns_list: hc_list, column_widths: cwidths}, false);
         const data_dict = {"column_name": mState.selected_column};
-        _broadcast_event_to_server("HideColumnInAllDocs", data_dict)
+        _broadcast_event_to_server("HideColumnInAllDocs", data_dict, ()=>{
+            _updateTableSpec({hidden_columns_list: hc_list, column_widths: cwidths}, false);
+        })
     }
 
     function _unhideAllColumns() {
@@ -1004,7 +998,6 @@ function MainApp(props) {
                              show_filter_button={!props.is_freeform}
                              handleSpreadsheetModeChange={_handleSpreadsheetModeChange}
                              handleSoftWrapChange={_handleSoftWrapChange}
-                             broadcast_event_to_server={_broadcast_event_to_server}
                              is_freeform={props.is_freeform}
         />
     );
@@ -1034,7 +1027,6 @@ function MainApp(props) {
                             setMainStateValue={_setMainStateValue}
                             mState={mState}
                             set_scroll={set_table_scroll}
-                            broadcast_event_to_server={_broadcast_event_to_server}
             />
         )
     }
@@ -1114,12 +1106,8 @@ function MainApp(props) {
         <Fragment>
             <div ref={table_container_ref}>
                 <MainTableCard
-                    main_id={props.main_id}
                     card_body={card_body}
                     card_header={card_header}
-                    table_spec={mState.table_spec}
-                    broadcast_event_to_server={_broadcast_event_to_server}
-                    updateTableSpec={_updateTableSpec}
                 />
             </div>
         </Fragment>

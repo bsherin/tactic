@@ -23,17 +23,17 @@ var _icon_info = require("./icon_info");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 var mdi = (0, _markdownIt["default"])({
   html: true
@@ -140,10 +140,6 @@ BpSelectAdvanced.defaultProps = {
   buttonIcon: null
 };
 function BpSelect(props) {
-  var _useState = (0, _react.useState)(props.value),
-    _useState2 = _slicedToArray(_useState, 2),
-    activeItem = _useState2[0],
-    setActiveItem = _useState2[1];
   function _filterSuggestion(query, item) {
     if (query.length === 0 || item["isgroup"]) {
       return true;
@@ -157,7 +153,25 @@ function BpSelect(props) {
     }
     return re.test(the_text.toLowerCase());
   }
+  function _getActiveItem(val) {
+    var _iterator = _createForOfIteratorHelper(props.options),
+      _step;
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var option = _step.value;
+        if (_lodash["default"].isEqual(option, val)) {
+          return option;
+        }
+      }
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
+    }
+    return null;
+  }
   return /*#__PURE__*/_react["default"].createElement(_select.Select, {
+    activeItem: _getActiveItem(props.value),
     className: "tile-form-menu-item",
     filterable: props.filterable,
     itemRenderer: renderSuggestion,
@@ -256,14 +270,14 @@ var renderCreateNewTag = function renderCreateNewTag(query, active, handleClick)
   });
 };
 function NativeTags(props) {
-  var _useState3 = (0, _react.useState)(""),
+  var _useState = (0, _react.useState)(""),
+    _useState2 = _slicedToArray(_useState, 2),
+    query = _useState2[0],
+    setQuery = _useState2[1];
+  var _useState3 = (0, _react.useState)([]),
     _useState4 = _slicedToArray(_useState3, 2),
-    query = _useState4[0],
-    setQuery = _useState4[1];
-  var _useState5 = (0, _react.useState)([]),
-    _useState6 = _slicedToArray(_useState5, 2),
-    suggestions = _useState6[0],
-    setSuggestions = _useState6[1];
+    suggestions = _useState4[0],
+    setSuggestions = _useState4[1];
   (0, _react.useEffect)(function () {
     var data_dict = {
       "pane_type": props.pane_type,
@@ -333,16 +347,16 @@ NativeTags.proptypes = {
   readOnly: _propTypes["default"].bool
 };
 function NotesField(props) {
-  var _useState7 = (0, _react.useState)(500),
-    _useState8 = _slicedToArray(_useState7, 2),
-    mdHeight = _useState8[0],
-    setMdHeight = _useState8[1];
-  var _useState9 = (0, _react.useState)(function () {
+  var _useState5 = (0, _react.useState)(500),
+    _useState6 = _slicedToArray(_useState5, 2),
+    mdHeight = _useState6[0],
+    setMdHeight = _useState6[1];
+  var _useState7 = (0, _react.useState)(function () {
       return hasOnlyWhitespace() ? false : props.show_markdown_initial;
     }),
-    _useState10 = _slicedToArray(_useState9, 2),
-    showMarkdown = _useState10[0],
-    setShowMarkdown = _useState10[1];
+    _useState8 = _slicedToArray(_useState7, 2),
+    showMarkdown = _useState8[0],
+    setShowMarkdown = _useState8[1];
   var awaitingFocus = (0, _react.useRef)(false);
   var mdRef = (0, _react.useRef)(null);
   var notesRef = (0, _react.useRef)(null);
@@ -451,11 +465,11 @@ for (var _i2 = 0, _cat_order = cat_order; _i2 < _cat_order.length; _i2++) {
     isgroup: true
   };
   icon_dlist.push(cat_entry);
-  var _iterator = _createForOfIteratorHelper(_icon_info.tile_icon_dict[category]),
-    _step;
+  var _iterator2 = _createForOfIteratorHelper(_icon_info.tile_icon_dict[category]),
+    _step2;
   try {
-    for (_iterator.s(); !(_step = _iterator.n()).done;) {
-      var entry = _step.value;
+    for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+      var entry = _step2.value;
       var new_entry = {
         text: entry.tags + ", " + category + ", " + entry.iconName,
         val: entry.iconName,
@@ -468,9 +482,9 @@ for (var _i2 = 0, _cat_order = cat_order; _i2 < _cat_order.length; _i2++) {
       icon_entry_dict[new_entry.val] = new_entry;
     }
   } catch (err) {
-    _iterator.e(err);
+    _iterator2.e(err);
   } finally {
-    _iterator.f();
+    _iterator2.f();
   }
 }
 function IconSelector(_ref6) {
@@ -493,14 +507,14 @@ IconSelector.propTypes = {
   icon_val: _propTypes["default"].string
 };
 function CombinedMetadata(props) {
-  var _useState11 = (0, _react.useState)(false),
+  var _useState9 = (0, _react.useState)(false),
+    _useState10 = _slicedToArray(_useState9, 2),
+    auxIsOpen = _useState10[0],
+    setAuxIsOpen = _useState10[1];
+  var _useState11 = (0, _react.useState)(null),
     _useState12 = _slicedToArray(_useState11, 2),
-    auxIsOpen = _useState12[0],
-    setAuxIsOpen = _useState12[1];
-  var _useState13 = (0, _react.useState)(null),
-    _useState14 = _slicedToArray(_useState13, 2),
-    tempNotes = _useState14[0],
-    setTempNotes = _useState14[1];
+    tempNotes = _useState12[0],
+    setTempNotes = _useState12[1];
   var _useDebounce = (0, _utilities_react.useDebounce)(function (newval) {
       props.handleChange({
         "notes": newval
