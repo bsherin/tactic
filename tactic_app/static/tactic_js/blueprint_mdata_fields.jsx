@@ -119,8 +119,6 @@ BpSelectAdvanced.defaultProps = {
 
 function BpSelect(props) {
 
-    const [activeItem, setActiveItem] = useState(props.value);
-
     function _filterSuggestion(query, item) {
         if ((query.length === 0) || (item["isgroup"])) {
             return true
@@ -136,8 +134,18 @@ function BpSelect(props) {
         return re.test(the_text.toLowerCase())
     }
 
+    function _getActiveItem(val) {
+        for (let option of props.options) {
+            if (_.isEqual(option, val)) {
+                return option
+            }
+        }
+        return null
+    }
+
     return (
         <Select
+            activeItem={_getActiveItem(props.value)}
             className="tile-form-menu-item"
             filterable={props.filterable}
             itemRenderer={renderSuggestion}

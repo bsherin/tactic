@@ -264,7 +264,6 @@ MainTableCardHeader.propTypes = {
   doc_names: _propTypes["default"].array,
   show_table_spinner: _propTypes["default"].bool,
   show_filter_button: _propTypes["default"].bool,
-  broadcast_event_to_server: _propTypes["default"].func,
   is_freeform: _propTypes["default"].bool,
   soft_wrap: _propTypes["default"].bool,
   handleSoftWrapChange: _propTypes["default"].func

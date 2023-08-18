@@ -370,7 +370,6 @@ function ContextApp(props) {
       delete copied_tab_panel_dict[the_id];
       delete copied_dirty_methods[the_id];
     }
-    set_tab_panel_dict(copied_tab_panel_dict);
     set_tab_ids(copied_tab_ids);
     set_dirty_methods(copied_dirty_methods);
     set_tab_panel_dict(copied_tab_panel_dict);
