@@ -357,12 +357,8 @@ function TileComponent(props) {
     set_dheight = _useState10[1];
   var _useState11 = (0, _react.useState)(null),
     _useState12 = _slicedToArray(_useState11, 2),
-    since = _useState12[0],
-    set_since = _useState12[1];
-  var _useState13 = (0, _react.useState)(null),
-    _useState14 = _slicedToArray(_useState13, 2),
-    log_content = _useState14[0],
-    set_log_content = _useState14[1];
+    log_content = _useState12[0],
+    set_log_content = _useState12[1];
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _react.useEffect)(function () {
     _broadcastTileSize(props.tile_width, props.tile_height);
@@ -388,6 +384,12 @@ function TileComponent(props) {
       }
     }
   });
+  (0, _react.useEffect)(function () {
+    _broadcastTileSize(props.tile_width, props.tile_height);
+  }, [props.tile_width, props.tile_height]);
+  (0, _utilities_react.useDidMount)(function () {
+    _stopLogStreaming(_getLogAndStartStreaming);
+  }, [props.log_since, props.max_console_lines]);
   var menu_component = _createMenu();
 
   // Broadcasting the tile size is necessary because some tiles (notably matplotlib tiles)
@@ -405,7 +407,7 @@ function TileComponent(props) {
       tile_height: props.tile_height + dy,
       tile_width: props.tile_width + dx
     };
-    props.setTileState(props.tile_id, new_state, _broadcastTileSize);
+    props.setTileState(props.tile_id, new_state);
   }
   function executeEmbeddedScripts() {
     if (props.front_content != last_front_content.current) {
@@ -469,6 +471,9 @@ function TileComponent(props) {
       _stopLogStreaming();
       return;
     }
+    _getLogAndStartStreaming();
+  }
+  function _getLogAndStartStreaming() {
     (0, _communication_react.postWithCallback)("host", "get_container_log", {
       container_id: props.tile_id,
       since: props.log_since,
@@ -479,53 +484,18 @@ function TileComponent(props) {
         show_form: false,
         log_content: res.log_text
       });
-      _startLogStreaming();
+      (0, _communication_react.postWithCallback)(props.main_id, "StartLogStreaming", {
+        tile_id: props.tile_id
+      }, null, null, props.main_id);
       _setTileBack(false);
     }, null, props.main_id);
   }
   function _setLogSince() {
     var now = new Date().getTime();
-    var self = this;
-    props.setTileValue(props.tile_id, "log_since", now, function () {
-      _stopLogStreaming(function () {
-        (0, _communication_react.postWithCallback)("host", "get_container_log", {
-          "container_id": props.tile_id,
-          "since": props.log_since,
-          "max_lines": props.max_console_lines
-        }, function (res) {
-          props.setTileState(props.tile_id, {
-            show_log: true,
-            show_form: false,
-            log_content: res.log_text
-          });
-          _startLogStreaming();
-        }, null, props.main_id);
-      });
-    });
+    props.setTileValue(props.tile_id, "log_since", now);
   }
   function _setMaxConsoleLines(max_lines) {
-    var self = this;
-    props.setTileValue(props.tile_id, "max_console_lines", max_lines, function () {
-      _stopLogStreaming(function () {
-        (0, _communication_react.postWithCallback)("host", "get_container_log", {
-          container_id: props.tile_id,
-          since: props.log_since,
-          max_lines: props.max_console_lines
-        }, function (res) {
-          props.setTileState(props.tile_id, {
-            show_log: true,
-            show_form: false,
-            log_content: res.log_text
-          });
-          _startLogStreaming();
-        }, null, props.main_id);
-      });
-    });
-  }
-  function _startLogStreaming() {
-    (0, _communication_react.postWithCallback)(props.main_id, "StartLogStreaming", {
-      tile_id: props.tile_id
-    }, null, null, props.main_id);
+    props.setTileValue(props.tile_id, "max_console_lines", max_lines);
   }
   function _stopLogStreaming() {
     var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;

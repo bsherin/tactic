@@ -15,7 +15,7 @@ import {DragHandle} from "./resizing_layouts"
 import {SortableComponent} from "./sortable_container";
 import {postWithCallback} from "./communication_react"
 import {doFlash} from "./toaster"
-import {arrayMove, useCallbackStack} from "./utilities_react";
+import {arrayMove, useCallbackStack, useDidMount} from "./utilities_react";
 import {ErrorBoundary} from "./error_boundary";
 import {MenuComponent} from "./menu_utilities"
 import {showConfirmDialogReact} from "./modal_react";
@@ -316,7 +316,6 @@ function TileComponent(props) {
     const [resizing, set_resizing] = useState(false);
     const [dwidth, set_dwidth] = useState(0);
     const [dheight, set_dheight] = useState(0);
-    const [since, set_since] = useState(null);
     const [log_content, set_log_content] = useState(null);
 
     const pushCallback = useCallbackStack();
@@ -347,6 +346,14 @@ function TileComponent(props) {
         }
     });
 
+    useEffect(()=>{
+        _broadcastTileSize(props.tile_width, props.tile_height)
+    }, [props.tile_width, props.tile_height]);
+
+    useDidMount(()=>{
+        _stopLogStreaming(_getLogAndStartStreaming)
+    }, [props.log_since, props.max_console_lines]);
+
     const menu_component = _createMenu();
 
     // Broadcasting the tile size is necessary because some tiles (notably matplotlib tiles)
@@ -364,7 +371,7 @@ function TileComponent(props) {
             tile_width: props.tile_width + dx
         };
 
-        props.setTileState(props.tile_id, new_state, _broadcastTileSize)
+        props.setTileState(props.tile_id, new_state)
     }
 
     function executeEmbeddedScripts() {
@@ -411,62 +418,26 @@ function TileComponent(props) {
             _stopLogStreaming();
             return
         }
+        _getLogAndStartStreaming()
+    }
 
-        postWithCallback("host",
-            "get_container_log",
-            {container_id: props.tile_id, since: props.log_since, max_lines: props.max_console_lines},
+    function _getLogAndStartStreaming() {
+        postWithCallback("host", "get_container_log",
+            { container_id: props.tile_id, since: props.log_since, max_lines: props.max_console_lines },
             function (res) {
                 props.setTileState(props.tile_id, {show_log: true, show_form: false, log_content: res.log_text});
-                _startLogStreaming();
+                postWithCallback(props.main_id, "StartLogStreaming", {tile_id: props.tile_id}, null, null, props.main_id);
                 _setTileBack(false);
-            },
-            null, props.main_id)
+            }, null, props.main_id)
     }
 
     function _setLogSince() {
         var now = new Date().getTime();
-        const self = this;
-        props.setTileValue(props.tile_id, "log_since", now, () => {
-            _stopLogStreaming(() => {
-                postWithCallback("host", "get_container_log",
-                    {
-                        "container_id": props.tile_id,
-                        "since": props.log_since,
-                        "max_lines": props.max_console_lines,
-                    }, function (res) {
-                        props.setTileState(props.tile_id, {
-                            show_log: true,
-                            show_form: false,
-                            log_content: res.log_text
-                        });
-                        _startLogStreaming();
-                    }, null, props.main_id)
-            })
-        })
+        props.setTileValue(props.tile_id, "log_since", now)
     }
 
     function _setMaxConsoleLines(max_lines) {
-        const self = this;
-        props.setTileValue(props.tile_id, "max_console_lines", max_lines, () => {
-            _stopLogStreaming(() => {
-                postWithCallback("host",
-                    "get_container_log",
-                    {container_id: props.tile_id, since: props.log_since, max_lines: props.max_console_lines},
-                    function (res) {
-                        props.setTileState(props.tile_id, {
-                            show_log: true,
-                            show_form: false,
-                            log_content: res.log_text
-                        });
-                        _startLogStreaming();
-                    },
-                    null, props.main_id)
-            })
-        })
-    }
-
-    function _startLogStreaming() {
-        postWithCallback(props.main_id, "StartLogStreaming", {tile_id: props.tile_id}, null, null, props.main_id);
+        props.setTileValue(props.tile_id, "max_console_lines", max_lines)
     }
 
     function _stopLogStreaming(callback = null) {

@@ -21,6 +21,7 @@ exports.useCallbackStack = useCallbackStack;
 exports.useConnection = useConnection;
 exports.useConstructor = void 0;
 exports.useDebounce = useDebounce;
+exports.useDidMount = void 0;
 exports.useReducerAndRef = useReducerAndRef;
 exports.useStateAndRef = useStateAndRef;
 var _lodash = _interopRequireDefault(require("lodash"));
@@ -134,6 +135,17 @@ function useDebounce(callback) {
     }, delay);
   }];
 }
+var useDidMount = function useDidMount(func, deps) {
+  var didMount = (0, _react.useRef)(false);
+  (0, _react.useEffect)(function () {
+    if (didMount.current) {
+      func();
+    } else {
+      didMount.current = true;
+    }
+  }, deps);
+};
+exports.useDidMount = useDidMount;
 function debounce(callback) {
   var delay = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1000;
   var time;
