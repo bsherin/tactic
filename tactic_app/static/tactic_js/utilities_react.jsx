@@ -13,9 +13,9 @@ import {Spinner, Text} from "@blueprintjs/core";
 
 export {doBinding, propsAreEqual, arrayMove, arraysMatch, get_ppi, isInt};
 export {remove_duplicates, doSignOut, guid, scrollMeIntoView, renderSpinnerMessage};
-export {useConstructor, useCallbackStack, useStateAndRef, useReducerAndRef, useConnection}
+export {useConstructor, useCallbackStack, useStateAndRef, useReducerAndRef, useConnection, useDidMount}
 
-export {debounce, throttle, useDebounce}
+export {debounce, throttle, useDebounce, }
 
 // It's necessary to have effectcount be a ref. Otherwise there can be subtle bugs
 function useCallbackStack(myId = "") {
@@ -44,23 +44,25 @@ function useCallbackStack(myId = "") {
 }
 
 const useConstructor = (callback = () => {
-    }) => {
-        const hasBeenCalled = useRef(false);
-        const returnVal = useRef(null);
-        if (hasBeenCalled.current) {
-            return returnVal.current;
-        }
-        hasBeenCalled.current = true;
-        returnVal.current = callback();
-        return returnVal
+}) => {
+    const hasBeenCalled = useRef(false);
+    const returnVal = useRef(null);
+    if (hasBeenCalled.current) {
+        return returnVal.current;
+    }
+    hasBeenCalled.current = true;
+    returnVal.current = callback();
+    return returnVal
 };
 
 function useConnection(tsocket, initSocket) {
     const [connection_status, set_connection_status] = useState(null);
+
     function socketNotifier(connected) {
         set_connection_status(connected ? "up" : "down")
     }
-    useEffect(()=>{
+
+    useEffect(() => {
         initSocket(tsocket);
         tsocket.notifier = socketNotifier;
         socketNotifier(tsocket.socket.connected);
@@ -85,7 +87,7 @@ function useReducerAndRef(reducer, initial) {
     return [value, dispatch, valueRef]
 }
 
-function useDebounce(callback, delay=500) {
+function useDebounce(callback, delay = 500) {
     const current_timer = useRef(null);
     const waiting = useRef(false);
     return [waiting, (...args) => {
@@ -97,6 +99,17 @@ function useDebounce(callback, delay=500) {
         }, delay);
     }]
 }
+
+const useDidMount = (func, deps) => {
+    const didMount = useRef(false);
+    useEffect(() => {
+        if (didMount.current) {
+            func();
+        } else {
+            didMount.current = true;
+        }
+    }, deps);
+};
 
 function debounce(callback, delay = 1000) {
     var time;

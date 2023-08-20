@@ -122,8 +122,15 @@ function ConsoleComponent(props) {
       }
     });
   }, []);
+  (0, _utilities_react.useDidMount)(function () {
+    if (console_log_showing != "main") return;
+    _stopMainPseudoLogStreaming(_getMainLogAndStartStreaming);
+  }, [main_log_since, max_console_lines]);
+  (0, _utilities_react.useDidMount)(function () {
+    if (console_log_showing == "main") return;
+    _stopMainPseudoLogStreaming(_getPseudoLogAndStartStreaming);
+  }, [pseudo_log_since, max_console_lines]);
   function initSocket() {
-    // tsocket.current = new TacticSocket("main", 5000, props.main_id);
     function _handleConsoleMessage(data) {
       if (data.main_id == props.main_id) {
         // noinspection JSUnusedGlobalSymbols
@@ -458,7 +465,31 @@ function ConsoleComponent(props) {
       });
     });
   }, []);
-  function _getContainerLog() {
+  function _toggleConsoleLog() {
+    if (show_console_error_log) {
+      set_show_console_error_log(false);
+      _stopMainPseudoLogStreaming();
+    } else {
+      _getPseudoLogAndStartStreaming();
+    }
+  }
+  function _toggleMainLog() {
+    if (show_console_error_log) {
+      set_show_console_error_log(false);
+      _stopMainPseudoLogStreaming();
+    } else {
+      _getMainLogAndStartStreaming();
+    }
+  }
+  function _setLogSince() {
+    var now = new Date().getTime();
+    if (console_log_showing == "main") {
+      set_main_log_since(now);
+    } else {
+      set_pseudo_log_since(now);
+    }
+  }
+  function _getPseudoLogAndStartStreaming() {
     if (pseudo_tile_id == null) {
       set_console_error_log_text("pseudo-tile is initializing...");
       pushCallback(function () {
@@ -478,144 +509,24 @@ function ConsoleComponent(props) {
         set_console_log_showing("pseudo");
         pushCallback(function () {
           set_show_console_error_log(true);
-          _startPseudoLogStreaming();
+          (0, _communication_react.postWithCallback)(props.main_id, "StartPseudoLogStreaming", {}, null, null, props.main_id);
         });
       }, null, props.main_id);
     }
   }
-  function _toggleConsoleLog() {
-    if (show_console_error_log) {
-      set_show_console_error_log(false);
-      _stopMainPseudoLogStreaming();
-    } else {
-      if (pseudo_tile_id == null) {
-        (0, _communication_react.postWithCallback)(props.main_id, "get_pseudo_tile_id", {
-          user_id: window.user_id
-        }, function (res) {
-          set_pseudo_tile_id(res.pseudo_tile_id);
-          pushCallback(_getContainerLog);
-        }, null, props.main_id);
-      } else {
-        _getContainerLog();
-      }
-    }
-  }
-  function _setPseudoLogSince() {
-    var now = new Date().getTime();
-    set_pseudo_log_since(now);
-    pushCallback(function () {
-      _stopMainPseudoLogStreaming(function () {
-        (0, _communication_react.postWithCallback)("host", "get_container_log", {
-          container_id: pseudo_tile_id_id,
-          since: pseudo_log_since,
-          max_lines: max_console_lines
-        }, function (res) {
-          set_console_error_log_text(res.log_text);
-          set_console_log_showing("pseudo");
-          pushCallback(function () {
-            set_show_console_error_log(true);
-            startPseudoLogStreaming();
-          });
-        }, null, props.main_id);
+  function _getMainLogAndStartStreaming() {
+    (0, _communication_react.postWithCallback)("host", "get_container_log", {
+      "container_id": props.main_id,
+      "since": main_log_since,
+      "max_lines": max_console_lines
+    }, function (res) {
+      set_console_error_log_text(res.log_text);
+      set_console_log_showing("main");
+      pushCallback(function () {
+        set_show_console_error_log(true);
+        (0, _communication_react.postWithCallback)(props.main_id, "StartMainLogStreaming", {}, null, null, props.main_id);
       });
-    });
-  }
-  function _startPseudoLogStreaming() {
-    (0, _communication_react.postWithCallback)(props.main_id, "StartPseudoLogStreaming", {}, null, null, props.main_id);
-  }
-  function _setLogSince() {
-    if (console_log_showing == "main") {
-      _setMainLogSince();
-    } else {
-      _setPseudoLogSince();
-    }
-  }
-  function _setMaxConsoleLines(max_lines) {
-    if (console_log_showing == "main") {
-      _setMainMaxConsoleLines(max_lines);
-    } else {
-      _setPseudoMaxConsoleLines(max_lines);
-    }
-  }
-  function _setMainLogSince() {
-    var now = new Date().getTime();
-    set_main_log_since(now);
-    pushCallback(function () {
-      _stopMainPseudoLogStreaming(function () {
-        (0, _communication_react.postWithCallback)("host", "get_container_log", {
-          container_id: props.main_id,
-          since: main_log_since,
-          max_lines: max_console_lines
-        }, function (res) {
-          set_console_error_log_text(rel.log_text);
-          set_console_log_showing("main");
-          pushCallback(function () {
-            _startMainLogStreaming();
-            set_show_console_error_log(true);
-          });
-        }, null, props.main_id);
-      });
-    });
-  }
-  function _setMainMaxConsoleLines(max_lines) {
-    set_max_console_lines(max_lines);
-    pushCallback(function () {
-      _stopMainPseudoLogStreaming(function () {
-        (0, _communication_react.postWithCallback)("host", "get_container_log", {
-          container_id: props.main_id,
-          since: main_log_since,
-          max_lines: max_console_lines
-        }, function (res) {
-          set_console_error_log_text(res.log_text);
-          set_console_log_showing("main");
-          pushCallback(function () {
-            _startMainLogStreaming();
-            set_show_console_error_log(true);
-          });
-        }, null, props.main_id);
-      });
-    });
-  }
-  function _setPseudoMaxConsoleLines(max_lines) {
-    set_max_console_lines(max_lines);
-    pushCallback(function () {
-      _stopMainPseudoLogStreaming(function () {
-        (0, _communication_react.postWithCallback)("host", "get_container_log", {
-          container_id: pseudo_tile_id,
-          since: pseudo_log_since,
-          max_lines: max_console_lines
-        }, function (res) {
-          set_console_error_log_text(res.log_text);
-          set_console_log_showing("pseudo");
-          pushCallback(function () {
-            _startPseudoLogStreaming();
-            set_show_console_error_log(true);
-          });
-        }, null, props.main_id);
-      });
-    });
-  }
-  function _toggleMainLog() {
-    if (show_console_error_log) {
-      set_show_console_error_log(false);
-      _stopMainPseudoLogStreaming();
-    } else {
-      (0, _communication_react.postWithCallback)("host", "get_container_log", {
-        "container_id": props.main_id,
-        "since": main_log_since,
-        "max_lines": max_console_lines
-      }, function (res) {
-        set_console_error_log_text(res.log_text);
-        set_console_log_showing("main");
-        pushCallback(function () {
-          _startMainLogStreaming();
-          set_show_console_error_log(true);
-        });
-      }, null, props.main_id);
-    }
-  }
-  function _startMainLogStreaming() {
-    (0, _communication_react.postWithCallback)(props.main_id, "StartMainLogStreaming", {}, null, null, props.main_id);
+    }, null, props.main_id);
   }
   function _stopMainPseudoLogStreaming() {
     var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
@@ -1740,7 +1651,7 @@ function ConsoleComponent(props) {
     search_helper_text: search_helper_text
   }), !props.mState.console_is_shrunk && show_console_error_log && /*#__PURE__*/_react["default"].createElement(_searchable_console.SearchableConsole, {
     log_content: console_error_log_text_ref.current,
-    setMaxConsoleLines: _setMaxConsoleLines,
+    setMaxConsoleLines: set_max_console_lines,
     ref: body_ref,
     outer_style: {
       overflowX: "auto",
