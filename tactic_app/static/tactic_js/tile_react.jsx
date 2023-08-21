@@ -15,7 +15,7 @@ import {DragHandle} from "./resizing_layouts"
 import {SortableComponent} from "./sortable_container";
 import {postWithCallback} from "./communication_react"
 import {doFlash} from "./toaster"
-import {arrayMove, useCallbackStack, useDidMount} from "./utilities_react";
+import {arrayMove, useCallbackStack} from "./utilities_react";
 import {ErrorBoundary} from "./error_boundary";
 import {MenuComponent} from "./menu_utilities"
 import {showConfirmDialogReact} from "./modal_react";
@@ -178,20 +178,6 @@ function TileContainer(props) {
         postWithCallback(props.main_id, "RemoveTile", data_dict, null, null, props.main_id);
     }
 
-    function _addToLog(tile_id, new_line) {
-        let entry = get_tile_entry(tile_id);
-        let log_content = entry["log_content"];
-        let log_list = log_content.split(/\r?\n/);
-        let mlines = entry["max_console_lines"];
-        if (log_list.length >= mlines) {
-            log_list = log_list.slice(-1 * mlines + 1);
-            log_content = log_list.join("\n")
-        }
-        let new_log = log_content + new_line;
-
-        _setTileValue(tile_id, "log_content", new_log)
-    }
-
     function _setTileValue(tile_id, field, value, callback = null) {
         props.tileDispatch({
             type: "change_item_value",
@@ -237,10 +223,10 @@ function TileContainer(props) {
                 displayTileContent: _displayTileContent,
                 displayFormContent: (tile_id, data) => _setTileValue(tile_id, "form_data", data.form_data),
                 displayTileContentWithJavascript: _displayTileContentWithJavascript,
-                updateLog: (tile_id, data) => _addToLog(tile_id, data.new_line)
             };
-
-            handlerDict[data.tile_message](tile_id, data)
+            if (data.tile_message in handlerDict) {
+                handlerDict[data.tile_message](tile_id, data)
+            }
         }
     }
 
@@ -260,6 +246,7 @@ function TileContainer(props) {
                            onDragEnd={_resortTiles}
                            handleClose={_closeTile}
                            setTileValue={_setTileValue}
+                           tsocket={props.tsocket}
                            setTileState={_setTileState}
                            table_is_shrunk={props.table_is_shrunk}
                            current_doc_name={props.current_doc_name}
@@ -316,7 +303,6 @@ function TileComponent(props) {
     const [resizing, set_resizing] = useState(false);
     const [dwidth, set_dwidth] = useState(0);
     const [dheight, set_dheight] = useState(0);
-    const [log_content, set_log_content] = useState(null);
 
     const pushCallback = useCallbackStack();
 
@@ -346,13 +332,9 @@ function TileComponent(props) {
         }
     });
 
-    useEffect(()=>{
+    useEffect(() => {
         _broadcastTileSize(props.tile_width, props.tile_height)
     }, [props.tile_width, props.tile_height]);
-
-    useDidMount(()=>{
-        _stopLogStreaming(_getLogAndStartStreaming)
-    }, [props.log_since, props.max_console_lines]);
 
     const menu_component = _createMenu();
 
@@ -413,35 +395,7 @@ function TileComponent(props) {
     }
 
     function _toggleTileLog() {
-        if (props.show_log) {
-            props.setTileState(props.tile_id, {show_log: false, show_form: false});
-            _stopLogStreaming();
-            return
-        }
-        _getLogAndStartStreaming()
-    }
-
-    function _getLogAndStartStreaming() {
-        postWithCallback("host", "get_container_log",
-            { container_id: props.tile_id, since: props.log_since, max_lines: props.max_console_lines },
-            function (res) {
-                props.setTileState(props.tile_id, {show_log: true, show_form: false, log_content: res.log_text});
-                postWithCallback(props.main_id, "StartLogStreaming", {tile_id: props.tile_id}, null, null, props.main_id);
-                _setTileBack(false);
-            }, null, props.main_id)
-    }
-
-    function _setLogSince() {
-        var now = new Date().getTime();
-        props.setTileValue(props.tile_id, "log_since", now)
-    }
-
-    function _setMaxConsoleLines(max_lines) {
-        props.setTileValue(props.tile_id, "max_console_lines", max_lines)
-    }
-
-    function _stopLogStreaming(callback = null) {
-        postWithCallback(props.main_id, "StopLogStreaming", {tile_id: props.tile_id}, callback, null, props.main_id);
+        props.setTileState(props.tile_id, {show_log: !props.show_log, show_form: false});
     }
 
     function _toggleShrunk() {
@@ -473,9 +427,6 @@ function TileComponent(props) {
     }
 
     function _toggleBack() {
-        if (props.show_log) {
-            _stopLogStreaming()
-        }
         props.setTileState(props.tile_id, {show_log: false, show_form: !props.show_form});
     }
 
@@ -789,12 +740,6 @@ function TileComponent(props) {
                 alt_button={() => (menu_button)}/>)
     }
 
-    function _logExec(command, callback = null) {
-        postWithCallback(props.tile_id, "os_command_exec", {
-            "the_code": command,
-        }, callback)
-    }
-
     let show_front = (!props.show_form) && (!props.show_log);
     let front_dict = {__html: props.front_content};
     compute_styles();
@@ -858,22 +803,18 @@ function TileComponent(props) {
                                 </div>
                             )}
                         </Transition>
-                        <Transition in={props.show_log} timeout={ANI_DURATION}>
-                            {state => (
-                                <div className="tile-log" ref={log_ref}
-                                     style={transitionFadeStyles[state]}>
-                                    <div className="tile-log-area">
-                                        <SearchableConsole log_content={props.log_content}
-                                                           ref={inner_log_ref}
-                                                           setMaxConsoleLines={_setMaxConsoleLines}
-                                                           outer_style={tile_log_style}
-                                                           clearConsole={_setLogSince}
-                                                           commandExec={_logExec}
-                                        />
-                                    </div>
+                        {props.show_log &&
+                            <div className="tile-log" ref={log_ref}>
+                                <div className="tile-log-area">
+                                    <SearchableConsole main_id={props.main_id}
+                                                       container_id={props.tile_id}
+                                                       ref={inner_log_ref}
+                                                       outer_style={tile_log_style}
+                                                       showCommandField={true}
+                                    />
                                 </div>
-                            )}
-                        </Transition>
+                            </div>
+                        }
                         <Transition in={show_front} timeout={ANI_DURATION}>
                             {state => (
                                 <div className="front" style={composeObjs(front_style, transitionStylesAltDown[state])}>

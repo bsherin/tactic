@@ -29,7 +29,6 @@ def task_worthy_manual_submit(m):
 
 
 streaming_workers = {}
-console_log_thread = None
 
 
 class StateTasksMixin:
@@ -57,27 +56,26 @@ class StateTasksMixin:
     @task_worthy
     def StartLogStreaming(self, data):
         global streaming_workers
-        tile_id = data["tile_id"]
-        if tile_id not in streaming_workers:
+        container_id = data["container_id"]
+        if container_id is not None and container_id not in streaming_workers:
             worker = docker_functions.LogStreamer(socketio)
-
             thread = socketio.start_background_task(worker.background_log_lines,
-                                                    tile_id,
+                                                    container_id,
                                                     self.mworker.my_id,
-                                                    {"tile_message": "updateLog", "tile_id": tile_id},
-                                                    "tile-message")
-            streaming_workers[tile_id] = thread
+                                                    {"message": "updateLog", "container_id": container_id},
+                                                    "searchable-console-message")
+            streaming_workers[container_id] = thread
         return None
 
     @task_worthy
     def StopLogStreaming(self, data):
         global streaming_workers
-        tile_id = data["tile_id"]
-        thread = streaming_workers[tile_id]
-        thread.kill()
-        del streaming_workers[tile_id]
+        container_id = data["container_id"]
+        if container_id in streaming_workers:
+            thread = streaming_workers[container_id]
+            thread.kill()
+            del streaming_workers[container_id]
         return None
-
 
 # noinspection PyUnusedLocal
 class LoadSaveTasksMixin:
@@ -1654,49 +1652,6 @@ class ConsoleTasksMixin:
 
         self.show_main_message("Notebook reset", 21)
         return {"success": True}
-
-    @task_worthy
-    def StartMainLogStreaming(self, data):
-        print("in start main log streaming")
-        global console_log_thread
-        self.StopMainPseudoLogStreaming()
-        print("did the stop")
-        worker = docker_functions.LogStreamer(socketio)
-        print("created a worker")
-        thread = socketio.start_background_task(worker.background_log_lines,
-                                                self.mworker.my_id,
-                                                self.mworker.my_id,
-                                                {"console_message": "updateLog", "main_id": self.mworker.my_id},
-                                                "console-message")
-        console_log_thread = thread
-        print("leaving StartMainLogStreaming")
-        return None
-
-    @task_worthy
-    def StartPseudoLogStreaming(self, data):
-        global console_log_thread
-        self.StopMainPseudoLogStreaming()
-
-        if self.pseudo_tile_id is not None:
-            worker = docker_functions.LogStreamer(socketio)
-
-            thread = socketio.start_background_task(worker.background_log_lines,
-                                                    self.pseudo_tile_id,
-                                                    self.mworker.my_id,
-                                                    {"console_message": "updateLog", "main_id": self.mworker.my_id},
-                                                    "console-message")
-            console_log_thread = thread
-        return None
-
-    @task_worthy
-    def StopMainPseudoLogStreaming(self):
-        print("entering StopMainPseudoLogStreaming")
-        global console_log_thread
-        if console_log_thread is not None:
-            print("got console_log_thread not none")
-            console_log_thread.kill()
-            console_log_thread = None
-        return None
 
 
 class DataSupportTasksMixin:

@@ -202,18 +202,6 @@ function TileContainer(props) {
     };
     (0, _communication_react.postWithCallback)(props.main_id, "RemoveTile", data_dict, null, null, props.main_id);
   }
-  function _addToLog(tile_id, new_line) {
-    var entry = get_tile_entry(tile_id);
-    var log_content = entry["log_content"];
-    var log_list = log_content.split(/\r?\n/);
-    var mlines = entry["max_console_lines"];
-    if (log_list.length >= mlines) {
-      log_list = log_list.slice(-1 * mlines + 1);
-      log_content = log_list.join("\n");
-    }
-    var new_log = log_content + new_line;
-    _setTileValue(tile_id, "log_content", new_log);
-  }
   function _setTileValue(tile_id, field, value) {
     var callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
     props.tileDispatch({
@@ -264,12 +252,11 @@ function TileContainer(props) {
         displayFormContent: function displayFormContent(tile_id, data) {
           return _setTileValue(tile_id, "form_data", data.form_data);
         },
-        displayTileContentWithJavascript: _displayTileContentWithJavascript,
-        updateLog: function updateLog(tile_id, data) {
-          return _addToLog(tile_id, data.new_line);
-        }
+        displayTileContentWithJavascript: _displayTileContentWithJavascript
       };
-      handlerDict[data.tile_message](tile_id, data);
+      if (data.tile_message in handlerDict) {
+        handlerDict[data.tile_message](tile_id, data);
+      }
     }
   }
   var outer_style = {
@@ -293,6 +280,7 @@ function TileContainer(props) {
     onDragEnd: _resortTiles,
     handleClose: _closeTile,
     setTileValue: _setTileValue,
+    tsocket: props.tsocket,
     setTileState: _setTileState,
     table_is_shrunk: props.table_is_shrunk,
     current_doc_name: props.current_doc_name,
@@ -355,10 +343,6 @@ function TileComponent(props) {
     _useState10 = _slicedToArray(_useState9, 2),
     dheight = _useState10[0],
     set_dheight = _useState10[1];
-  var _useState11 = (0, _react.useState)(null),
-    _useState12 = _slicedToArray(_useState11, 2),
-    log_content = _useState12[0],
-    set_log_content = _useState12[1];
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _react.useEffect)(function () {
     _broadcastTileSize(props.tile_width, props.tile_height);
@@ -387,9 +371,6 @@ function TileComponent(props) {
   (0, _react.useEffect)(function () {
     _broadcastTileSize(props.tile_width, props.tile_height);
   }, [props.tile_width, props.tile_height]);
-  (0, _utilities_react.useDidMount)(function () {
-    _stopLogStreaming(_getLogAndStartStreaming);
-  }, [props.log_since, props.max_console_lines]);
   var menu_component = _createMenu();
 
   // Broadcasting the tile size is necessary because some tiles (notably matplotlib tiles)
@@ -463,45 +444,10 @@ function TileComponent(props) {
     }
   }
   function _toggleTileLog() {
-    if (props.show_log) {
-      props.setTileState(props.tile_id, {
-        show_log: false,
-        show_form: false
-      });
-      _stopLogStreaming();
-      return;
-    }
-    _getLogAndStartStreaming();
-  }
-  function _getLogAndStartStreaming() {
-    (0, _communication_react.postWithCallback)("host", "get_container_log", {
-      container_id: props.tile_id,
-      since: props.log_since,
-      max_lines: props.max_console_lines
-    }, function (res) {
-      props.setTileState(props.tile_id, {
-        show_log: true,
-        show_form: false,
-        log_content: res.log_text
-      });
-      (0, _communication_react.postWithCallback)(props.main_id, "StartLogStreaming", {
-        tile_id: props.tile_id
-      }, null, null, props.main_id);
-      _setTileBack(false);
-    }, null, props.main_id);
-  }
-  function _setLogSince() {
-    var now = new Date().getTime();
-    props.setTileValue(props.tile_id, "log_since", now);
-  }
-  function _setMaxConsoleLines(max_lines) {
-    props.setTileValue(props.tile_id, "max_console_lines", max_lines);
-  }
-  function _stopLogStreaming() {
-    var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-    (0, _communication_react.postWithCallback)(props.main_id, "StopLogStreaming", {
-      tile_id: props.tile_id
-    }, callback, null, props.main_id);
+    props.setTileState(props.tile_id, {
+      show_log: !props.show_log,
+      show_form: false
+    });
   }
   function _toggleShrunk() {
     props.setTileValue(props.tile_id, "shrunk", !props.shrunk);
@@ -533,9 +479,6 @@ function TileComponent(props) {
     });
   }
   function _toggleBack() {
-    if (props.show_log) {
-      _stopLogStreaming();
-    }
     props.setTileState(props.tile_id, {
       show_log: false,
       show_form: !props.show_form
@@ -879,12 +822,6 @@ function TileComponent(props) {
       }
     });
   }
-  function _logExec(command) {
-    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-    (0, _communication_react.postWithCallback)(props.tile_id, "os_command_exec", {
-      "the_code": command
-    }, callback);
-  }
   var show_front = !props.show_form && !props.show_log;
   var front_dict = {
     __html: props.front_content
@@ -962,25 +899,18 @@ function TileComponent(props) {
       updateValue: _updateOptionValue,
       handleSubmit: _handleSubmitOptions
     }));
-  }), /*#__PURE__*/_react["default"].createElement(_reactTransitionGroup.Transition, {
-    "in": props.show_log,
-    timeout: ANI_DURATION
-  }, function (state) {
-    return /*#__PURE__*/_react["default"].createElement("div", {
-      className: "tile-log",
-      ref: log_ref,
-      style: transitionFadeStyles[state]
-    }, /*#__PURE__*/_react["default"].createElement("div", {
-      className: "tile-log-area"
-    }, /*#__PURE__*/_react["default"].createElement(_searchable_console.SearchableConsole, {
-      log_content: props.log_content,
-      ref: inner_log_ref,
-      setMaxConsoleLines: _setMaxConsoleLines,
-      outer_style: tile_log_style,
-      clearConsole: _setLogSince,
-      commandExec: _logExec
-    })));
-  }), /*#__PURE__*/_react["default"].createElement(_reactTransitionGroup.Transition, {
+  }), props.show_log && /*#__PURE__*/_react["default"].createElement("div", {
+    className: "tile-log",
+    ref: log_ref
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    className: "tile-log-area"
+  }, /*#__PURE__*/_react["default"].createElement(_searchable_console.SearchableConsole, {
+    main_id: props.main_id,
+    container_id: props.tile_id,
+    ref: inner_log_ref,
+    outer_style: tile_log_style,
+    showCommandField: true
+  }))), /*#__PURE__*/_react["default"].createElement(_reactTransitionGroup.Transition, {
     "in": show_front,
     timeout: ANI_DURATION
   }, function (state) {
