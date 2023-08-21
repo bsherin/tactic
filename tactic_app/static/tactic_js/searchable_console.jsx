@@ -3,6 +3,9 @@ import {useState, useEffect, useRef, memo, forwardRef} from "react";
 
 import {Button, ControlGroup, HTMLSelect, InputGroup, Switch} from "@blueprintjs/core";
 import {FilterSearchForm} from "./search_form";
+import {postWithCallback} from "./communication_react";
+import {useDidMount, useStateAndRef} from "./utilities_react";
+import {TacticSocket} from "./tactic_socket";
 
 export {SearchableConsole}
 
@@ -13,6 +16,14 @@ function SearchableConsole(props, inner_ref) {
     const [filter, set_filter] = useState(false);
     const [console_command_value, set_console_command_value] = useState("");
     const [livescroll, set_livescroll] = useState(true);
+    const [log_since, set_log_since] = useState(null);
+
+    // I need to have these as refs because the are accessed within the _handleUpdateMessage
+    // callback. So they would have the old value.
+    const [max_console_lines, set_max_console_lines, max_console_lines_ref] = useStateAndRef(100);
+    const [log_content, set_log_content, log_content_ref] = useStateAndRef("");
+
+    const tsocket = useRef(null);
 
     const past_commands = useRef([]);
     const past_commands_index = useRef(null);
@@ -23,32 +34,94 @@ function SearchableConsole(props, inner_ref) {
         }
     });
 
-    function _prepareText() {
-        let tlist = props.log_content.split(/\r?\n/);
+    useEffect(() => {
+        tsocket.current = new TacticSocket("main", 5000, "searchable-console", props.main_id);
+        initSocket();
+        _getLogAndStartStreaming();
+        return (() => {
+            _stopLogStreaming();
+            tsocket.current.disconnect();
+        })
+    }, []);
 
-        let the_text = "";
-        if (search_string) {
-            if (filter) {
-                let new_tlist = [];
-                for (let t of tlist) {
-                    if (t.includes(search_string)) {
-                        new_tlist.push(t)
-                    }
-                }
-                tlist = new_tlist;
+    useDidMount(() => {
+        _stopLogStreaming(_getLogAndStartStreaming)
+    }, [log_since, max_console_lines]);
 
-            }
-            for (let t of tlist) {
-                the_text = the_text + t + "<br>";
-            }
-            const regex = new RegExp(search_string, "gi");
-            the_text = String(the_text).replace(regex, function (matched) {
-                    return "<mark>" + matched + "</mark>";
-                }
-            )
+    function initSocket() {
+        tsocket.current.attachListener("searchable-console-message", _handleUpdateMessage);
+    }
+
+    function _handleUpdateMessage(data) {
+        if (data.container_id != props.container_id || data.message != "updateLog") return;
+        _addToLog(data.new_line);
+    }
+
+    function _setLogSince() {
+        var now = new Date().getTime();
+        set_log_since(now)
+    }
+
+    function _setMaxConsoleLines(event) {
+        set_max_console_lines(parseInt(event.target.value))
+    }
+
+    function _getLogAndStartStreaming() {
+        postWithCallback("host", "get_container_log",
+            {container_id: props.container_id, since: log_since, max_lines: max_console_lines_ref.current},
+            function (res) {
+                set_log_content(res.log_text);
+                postWithCallback(props.main_id, "StartLogStreaming", {container_id: props.container_id},
+                    null, null, props.main_id);
+            }, null, props.main_id)
+    }
+
+    function _stopLogStreaming(callback = null) {
+        postWithCallback(props.main_id, "StopLogStreaming", {container_id: props.container_id},
+            callback, null, props.main_id);
+    }
+
+    function _addToLog(new_line) {
+        let log_list = log_content_ref.current.split(/\r?\n/);
+        let mlines = max_console_lines_ref.current;
+        var new_log_content;
+        if (log_list.length >= mlines) {
+            log_list = log_list.slice(-1 * mlines + 1);
+            new_log_content = log_list.join("\n")
         } else {
-            for (let t of tlist) {
-                the_text = the_text + t + "<br>";
+            new_log_content = log_content_ref.current
+        }
+        new_log_content = new_log_content + new_line;
+        set_log_content(new_log_content)
+    }
+
+    function _prepareText() {
+        let the_text = "";
+        if (log_content_ref.current) { // without this can get an error if project saved with tile log showing
+            var tlist = log_content_ref.current.split(/\r?\n/);
+            if (search_string) {
+                if (filter) {
+                    let new_tlist = [];
+                    for (let t of tlist) {
+                        if (t.includes(search_string)) {
+                            new_tlist.push(t)
+                        }
+                    }
+                    tlist = new_tlist;
+
+                }
+                for (let t of tlist) {
+                    the_text = the_text + t + "<br>";
+                }
+                const regex = new RegExp(search_string, "gi");
+                the_text = String(the_text).replace(regex, function (matched) {
+                        return "<mark>" + matched + "</mark>";
+                    }
+                )
+            } else {
+                for (let t of tlist) {
+                    the_text = the_text + t + "<br>";
+                }
             }
         }
         return `<div style="white-space:pre">${the_text}</div>`
@@ -81,15 +154,17 @@ function SearchableConsole(props, inner_ref) {
 
     }
 
-    function _setMaxConsoleLines(event) {
-        props.setMaxConsoleLines(parseInt(event.target.value))
+    function _logExec(command, callback = null) {
+        postWithCallback(props.container_id, "os_command_exec", {
+            "the_code": command,
+        }, callback)
     }
 
     function _commandSubmit(e) {
         e.preventDefault();
         past_commands.current.push(console_command_value);
         past_commands_index.current = null;
-        props.commandExec(console_command_value, () => {
+        _logExec(console_command_value, () => {
             set_console_command_value("")
         })
     }
@@ -132,7 +207,7 @@ function SearchableConsole(props, inner_ref) {
 
     let the_text = {__html: _prepareText()};
     let the_style = {whiteSpace: "nowrap", fontSize: 12, fontFamily: "monospace", ...props.outer_style};
-    if (props.commandExec) {
+    if (props.showCommandField) {
         the_style.height = the_style.height - 40
     }
     let bottom_info = "575 lines";
@@ -142,13 +217,13 @@ function SearchableConsole(props, inner_ref) {
             <div className="d-flex flex-row" style={{justifyContent: "space-between"}}>
                 <ControlGroup vertical={false}
                               style={{marginLeft: 15, marginTop: 10}}>
-                    <Button onClick={props.clearConsole}
+                    <Button onClick={_setLogSince}
                             style={{height: 30}}
                             minimal={true} small={true} icon="trash"/>
                     <HTMLSelect onChange={_setMaxConsoleLines}
                                 large={false}
                                 minimal={true}
-                                value={props.max_console_lines}
+                                value={max_console_lines_ref.current}
                                 options={[100, 250, 500, 1000, 2000]}
                     />
                     <Switch label="livescroll"
@@ -171,7 +246,7 @@ function SearchableConsole(props, inner_ref) {
                 />
             </div>
             <div ref={inner_ref} style={the_style} dangerouslySetInnerHTML={the_text}/>
-            {props.commandExec && (
+            {props.showCommandField && (
                 <form onSubmit={_commandSubmit} style={{position: "relative", bottom: 8, margin: 10}}>
 
                     <InputGroup type="text"
@@ -184,8 +259,7 @@ function SearchableConsole(props, inner_ref) {
                                 onKeyDown={(e) => _handleKeyDown(e)}
                                 value={console_command_value}
                     />
-                </form>
-            )
+                </form> )
             }
 
         </div>

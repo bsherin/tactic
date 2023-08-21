@@ -30,7 +30,7 @@ import {TacticMenubar} from "./menu_utilities";
 import {FilterSearchForm} from "./search_form";
 import {SearchableConsole} from "./searchable_console";
 
-import {useCallbackStack, useStateAndRef, useConstructor, useDidMount} from "./utilities_react";
+import {useCallbackStack, useStateAndRef, useConstructor} from "./utilities_react";
 
 export {ConsoleComponent}
 
@@ -46,17 +46,16 @@ function ConsoleComponent(props) {
 
     const [console_item_with_focus, set_console_item_with_focus] = useState(null);
     const [console_item_saved_focus, set_console_item_saved_focus] = useState(null);
-    const [console_error_log_text, set_console_error_log_text, console_error_log_text_ref] = useStateAndRef("");
-    const [console_log_showing, set_console_log_showing] = useState(null);
-    const [pseudo_tile_id, set_pseudo_tile_id] = useState(null);
-    const [main_log_since, set_main_log_since] = useState(null);
-    const [max_console_lines, set_max_console_lines] = useState(100);
-    const [pseudo_log_since, set_pseudo_log_since] = useState(null);
-    const [show_console_error_log, set_show_console_error_log] = useState(false);
+
     const [all_selected_items, set_all_selected_items, all_selected_items_ref] = useStateAndRef([]);
     const [search_string, set_search_string, search_string_ref] = useStateAndRef(null);
     const [filter_console_items, set_filter_console_items] = useState(false);
     const [search_helper_text, set_search_helper_text] = useState(null);
+
+    const [show_main_log, set_show_main_log] = useState(false);
+    const [show_pseudo_log, set_show_pseudo_log] = useState(false);
+
+    const [pseudo_tile_id, set_pseudo_tile_id] = useState(null);
 
     const pushCallback = useCallbackStack();
 
@@ -66,22 +65,12 @@ function ConsoleComponent(props) {
         if (props.console_items.current.length == 0) {
             _addCodeArea("", false)
         }
-        _clear_all_selected_items(()=>{
+        _clear_all_selected_items(() => {
             if (props.console_items.current && props.console_items.current.length > 0) {
                 _selectConsoleItem(props.console_items.current[0].unique_id)
             }
         });
     }, []);
-
-    useDidMount(()=>{
-        if (console_log_showing != "main") return;
-        _stopMainPseudoLogStreaming(_getMainLogAndStartStreaming)
-    }, [main_log_since, max_console_lines]);
-
-    useDidMount(()=>{
-        if (console_log_showing == "main") return;
-        _stopMainPseudoLogStreaming(_getPseudoLogAndStartStreaming)
-    }, [pseudo_log_since, max_console_lines]);
 
     function initSocket() {
         function _handleConsoleMessage(data) {
@@ -103,7 +92,6 @@ function ConsoleComponent(props) {
                     consoleCodePrint: (data) => _appendConsoleItemOutput(data),
                     consoleCodeOverwrite: (data) => _setConsoleItemOutput(data),
                     consoleCodeRun: (data) => _startSpinner(data.console_id),
-                    updateLog: (data) => _addToLog(data.new_line)
                 };
                 handlerDict[data.console_message](data)
             }
@@ -370,7 +358,7 @@ function ConsoleComponent(props) {
             }, null, props.main_id);
     }
 
-    const _resetConsole = useCallback(()=>{
+    const _resetConsole = useCallback(() => {
         props.dispatch({type: "reset"});
         postWithCallback(props.main_id, "clear_console_namespace", {}, null, null, props.main_id)
     }, []);
@@ -379,8 +367,7 @@ function ConsoleComponent(props) {
         postWithCallback(props.main_id, "stop_all_console_code", {}, null, null, props.main_id)
     }
 
-
-    const _clearConsole = useCallback(()=>{
+    const _clearConsole = useCallback(() => {
         const confirm_text = "Are you sure that you want to erase everything in this log?";
         showConfirmDialogReact("Clear entire log", confirm_text, "do nothing", "clear", function () {
             set_all_selected_items([]);
@@ -390,73 +377,12 @@ function ConsoleComponent(props) {
         })
     }, []);
 
-    function _toggleConsoleLog() {
-        if (show_console_error_log) {
-            set_show_console_error_log(false);
-            _stopMainPseudoLogStreaming()
-        } else {
-            _getPseudoLogAndStartStreaming()
-        }
+    function _togglePseudoLog() {
+        set_show_pseudo_log(!show_pseudo_log);
     }
 
     function _toggleMainLog() {
-        if (show_console_error_log) {
-            set_show_console_error_log(false);
-            _stopMainPseudoLogStreaming()
-        } else {
-            _getMainLogAndStartStreaming()
-        }
-    }
-
-    function _setLogSince() {
-        var now = new Date().getTime();
-        if (console_log_showing == "main") {
-            set_main_log_since(now)
-        } else {
-            set_pseudo_log_since(now)
-        }
-    }
-
-    function _getPseudoLogAndStartStreaming() {
-        if (pseudo_tile_id == null) {
-            set_console_error_log_text("pseudo-tile is initializing...");
-            pushCallback(() => {
-                set_show_console_error_log(true);
-            });
-        } else {
-            postWithCallback("host", "get_container_log",
-                {"container_id": pseudo_tile_id, "since": pseudo_log_since, "max_lines": max_console_lines},
-                function (res) {
-                    let log_text = res.log_text;
-                    if (log_text == "") {
-                        log_text = "Got empty result. The pseudo-tile is probably starting up."
-                    }
-                    set_console_error_log_text(log_text);
-                    set_console_log_showing("pseudo");
-                    pushCallback(() => {
-                        set_show_console_error_log(true);
-                        postWithCallback(props.main_id, "StartPseudoLogStreaming", {}, null, null, props.main_id);
-                    });
-                }, null, props.main_id)
-        }
-    }
-
-    function _getMainLogAndStartStreaming() {
-        postWithCallback("host", "get_container_log", {
-                "container_id": props.main_id, "since": main_log_since, "max_lines": max_console_lines
-            },
-            function (res) {
-                set_console_error_log_text(res.log_text);
-                set_console_log_showing("main");
-                pushCallback(() => {
-                    set_show_console_error_log(true);
-                    postWithCallback(props.main_id, "StartMainLogStreaming", {}, null, null, props.main_id);
-                });
-            }, null, props.main_id)
-    }
-
-    function _stopMainPseudoLogStreaming(callback = null) {
-        postWithCallback(props.main_id, "StopMainPseudoLogStreaming", {}, callback, null, props.main_id);
+        set_show_main_log(!show_main_log);
     }
 
     const _setFocusedItem = useCallback((unique_id, callback = null) => {
@@ -979,7 +905,7 @@ function ConsoleComponent(props) {
         }
     }
 
-    const _bodyWidth = useMemo(()=>{
+    const _bodyWidth = useMemo(() => {
         if (props.console_available_width > MAX_CONSOLE_WIDTH) {
             return MAX_CONSOLE_WIDTH
         } else {
@@ -987,7 +913,7 @@ function ConsoleComponent(props) {
         }
     }, [props.console_available_width]);
 
-    const renderContextMenu = useMemo(()=> {
+    const renderContextMenu = useMemo(() => {
         // return a single element, or nothing to use default browser behavior
         return (
             <Menu>
@@ -1081,7 +1007,9 @@ function ConsoleComponent(props) {
             }
 
         }
-        _multiple_console_item_updates(updates, ()=>{set_filter_console_items(true)})
+        _multiple_console_item_updates(updates, () => {
+            set_filter_console_items(true)
+        })
     }
 
     function _searchNext() {
@@ -1201,19 +1129,19 @@ function ConsoleComponent(props) {
                 {name_text: "Reset All", icon_name: "reset", click_handler: _resetConsole}],
         };
 
-        if (!show_console_error_log) {
-            ms["Consoles"] = [{
-                name_text: "Show Log Console",
-                icon_name: "console",
-                click_handler: _toggleConsoleLog
-            },
+        if (!(show_pseudo_log || show_main_log)) {
+            ms["Consoles"] = [
+                {name_text: "Show Log Console", icon_name: "console", click_handler: _togglePseudoLog},
                 {name_text: "Show Main Console", icon_name: "console", click_handler: _toggleMainLog}]
         } else {
-            ms["Consoles"] = [{name_text: "Hide Console", icon_name: "console", click_handler: _toggleMainLog}]
+            ms["Consoles"] = [
+                {
+                    name_text: "Hide Console", icon_name: "console",
+                    click_handler: show_main_log ? _toggleMainLog : _togglePseudoLog
+                }]
         }
 
         return ms
-
     }
 
     function disabled_items() {
@@ -1278,12 +1206,6 @@ function ConsoleComponent(props) {
         _setConsoleItemValue(unique_id, "show_markdown", true);
     }
 
-    function _logExec(command, callback = null) {
-        postWithCallback(pseudo_tile_id, "os_command_exec", {
-            "the_code": command,
-        }, callback)
-    }
-
     function _hideNonDividers() {
         $(".in-section:not(.divider-log-panel)").css({opacity: "10%"})
     }
@@ -1321,7 +1243,7 @@ function ConsoleComponent(props) {
 
     let in_closed_section = false;
     let in_section = false;
-    let filtered_items = props.console_items.current.filter((entry)=>{
+    let filtered_items = props.console_items.current.filter((entry) => {
         if (entry.type == "divider") {
             in_section = true;
             in_closed_section = entry.am_shrunk;
@@ -1343,11 +1265,12 @@ function ConsoleComponent(props) {
     }
     filtered_items_ref.current = filtered_items;
     let suggestionGlyphs = [];
-    if (show_console_error_log) {
-        suggestionGlyphs.push({intent: "primary", handleClick: _toggleMainLog, icon: "console"})
+    if (show_pseudo_log || show_main_log) {
+        suggestionGlyphs.push(
+            {intent: "primary", icon: "console", handleClick: show_main_log ? _toggleMainLog : _togglePseudoLog})
     }
 
-    const empty_style = useMemo(()=>{
+    const empty_style = useMemo(() => {
         return {}
     }, []);
     return (
@@ -1404,7 +1327,7 @@ function ConsoleComponent(props) {
                     </div>
                 </div>
             </div>
-            {!props.mState.console_is_shrunk && !show_console_error_log &&
+            {!props.mState.console_is_shrunk && !show_pseudo_log && !show_main_log &&
                 <FilterSearchForm
                     search_string={search_string_ref.current}
                     handleSearchFieldChange={_handleSearchFieldChange}
@@ -1415,9 +1338,9 @@ function ConsoleComponent(props) {
                     search_helper_text={search_helper_text}
                 />
             }
-            {!props.mState.console_is_shrunk && show_console_error_log &&
-                <SearchableConsole log_content={console_error_log_text_ref.current}
-                                   setMaxConsoleLines={set_max_console_lines}
+            {!props.mState.console_is_shrunk && show_main_log &&
+                <SearchableConsole main_id={props.main_id}
+                                   container_id={props.main_id}
                                    ref={body_ref}
                                    outer_style={{
                                        overflowX: "auto",
@@ -1426,52 +1349,63 @@ function ConsoleComponent(props) {
                                        marginLeft: 20,
                                        marginRight: 20
                                    }}
-                                   clearConsole={_setLogSince}
-                                   commandExec={console_log_showing == "pseudo" ? _logExec : null}
+                                   showCommandField={false}
                 />
             }
-            {!props.mState.console_is_shrunk && !show_console_error_log &&
+            {!props.mState.console_is_shrunk && show_pseudo_log &&
+                <SearchableConsole main_id={props.main_id}
+                                   container_id={pseudo_tile_id}
+                                   ref={body_ref}
+                                   outer_style={{
+                                       overflowX: "auto",
+                                       overflowY: "auto",
+                                       height: _bodyHeight(),
+                                       marginLeft: 20,
+                                       marginRight: 20
+                                   }}
+                                   showCommandField={true}
+                />
+            }
+            {!props.mState.console_is_shrunk && !show_pseudo_log && !show_main_log &&
                 <div id="console"
                      ref={body_ref}
                      className="contingent-scroll"
                      onClick={_clickConsoleBody}
                      style={{height: _bodyHeight()}}>
-                    {!show_console_error_log &&
-                        <ContextMenu content={renderContextMenu}>
-                            <SortableComponent id="console-items-div"
-                                               style={empty_style}
-                                               main_id={props.main_id}
-                                               ElementComponent={SuperItem}
-                                               key_field_name="unique_id"
-                                               item_list={filtered_items}
-                                               helperClass={props.dark_theme ? "bp5-dark" : "light-theme"}
-                                               handle=".console-sorter"
-                                               onBeforeCapture={_sortStart}
-                                               onDragEnd={_resortConsoleItems}
-                                               setConsoleItemValue={_setConsoleItemValue}
-                                               selectConsoleItem={_selectConsoleItem}
-                                               console_available_width={_bodyWidth}
-                                               execution_count={0}
-                                               runCodeItem={_runCodeItem}
-                                               handleDelete={_closeConsoleItem}
-                                               goToNextCell={_goToNextCell}
-                                               setFocus={_setFocusedItem}
-                                               addNewTextItem={_addBlankText}
-                                               addNewCodeItem={_addBlankCode}
-                                               addNewDividerItem={_addBlankDivider}
-                                               copyCell={_copyCell}
-                                               pasteCell={_pasteCell}
-                                               copySection={_copySection}
-                                               deleteSection={_deleteSection}
-                                               insertResourceLink={_insertResourceLink}
-                                               useDragHandle={false}
-                                               dark_theme={props.dark_theme}
-                                               pseudo_tile_id={pseudo_tile_id}
-                                               handleCreateViewer={props.handleCreateViewer}
-                                               axis="y"
-                            />
-                        </ContextMenu>
-                    }
+                    <ContextMenu content={renderContextMenu}>
+                        <SortableComponent id="console-items-div"
+                                           style={empty_style}
+                                           main_id={props.main_id}
+                                           ElementComponent={SuperItem}
+                                           key_field_name="unique_id"
+                                           item_list={filtered_items}
+                                           helperClass={props.dark_theme ? "bp5-dark" : "light-theme"}
+                                           handle=".console-sorter"
+                                           onBeforeCapture={_sortStart}
+                                           onDragEnd={_resortConsoleItems}
+                                           setConsoleItemValue={_setConsoleItemValue}
+                                           selectConsoleItem={_selectConsoleItem}
+                                           console_available_width={_bodyWidth}
+                                           execution_count={0}
+                                           runCodeItem={_runCodeItem}
+                                           handleDelete={_closeConsoleItem}
+                                           goToNextCell={_goToNextCell}
+                                           setFocus={_setFocusedItem}
+                                           addNewTextItem={_addBlankText}
+                                           addNewCodeItem={_addBlankCode}
+                                           addNewDividerItem={_addBlankDivider}
+                                           copyCell={_copyCell}
+                                           pasteCell={_pasteCell}
+                                           copySection={_copySection}
+                                           deleteSection={_deleteSection}
+                                           insertResourceLink={_insertResourceLink}
+                                           useDragHandle={false}
+                                           dark_theme={props.dark_theme}
+                                           pseudo_tile_id={pseudo_tile_id}
+                                           handleCreateViewer={props.handleCreateViewer}
+                                           axis="y"
+                        />
+                    </ContextMenu>
                     <div id="padding-div" style={{height: 500}}></div>
                 </div>
             }
@@ -2152,7 +2086,7 @@ function ConsoleCodeItem(props) {
         }
     });
 
-    const registerSetFocusFunc = useCallback((theFunc)=>{
+    const registerSetFocusFunc = useCallback((theFunc) => {
         setFocusFunc.current = theFunc;
     }, []);
 
@@ -2206,7 +2140,7 @@ function ConsoleCodeItem(props) {
         props.setConsoleItemValue(props.unique_id, "show_spinner", false)
     }
 
-    const _handleChange = useCallback((new_code)=>{
+    const _handleChange = useCallback((new_code) => {
         props.setConsoleItemValue(props.unique_id, "console_text", new_code)
     }, []);
 
@@ -2229,7 +2163,7 @@ function ConsoleCodeItem(props) {
         props.setConsoleItemValue(props.unique_id, "output_text", "", callback)
     }
 
-    const _extraKeys = useMemo(()=>{
+    const _extraKeys = useMemo(() => {
         return {
             'Ctrl-Enter': () => props.runCodeItem(props.unique_id, true),
             'Cmd-Enter': () => props.runCodeItem(props.unique_id, true),
@@ -2332,7 +2266,7 @@ function ConsoleCodeItem(props) {
         e.stopPropagation()
     }
 
-    const _handleFocus = useCallback(()=> {
+    const _handleFocus = useCallback(() => {
         if (!props.am_selected) {
             _selectMe()
         }
@@ -2557,7 +2491,7 @@ function ConsoleTextItem(props) {
         }
     });
 
-    const registerSetFocusFunc = useCallback((theFunc)=>{
+    const registerSetFocusFunc = useCallback((theFunc) => {
         setFocusFunc.current = theFunc;
     }, []);
 
@@ -2584,7 +2518,7 @@ function ConsoleTextItem(props) {
         props.setConsoleItemValue(props.unique_id, "show_markdown", true);
     }
 
-    const _toggleMarkdown = useCallback(()=>{
+    const _toggleMarkdown = useCallback(() => {
         if (props.show_markdown) {
             _hideMarkdown()
         } else {
@@ -2596,11 +2530,11 @@ function ConsoleTextItem(props) {
         props.setConsoleItemValue(props.unique_id, "show_markdown", false);
     }
 
-    const _handleChange = useCallback((new_text)=>{
+    const _handleChange = useCallback((new_text) => {
         props.setConsoleItemValue(props.unique_id, "console_text", new_text)
     }, []);
 
-    const _clearForceSync = useCallback(()=> {
+    const _clearForceSync = useCallback(() => {
         props.setConsoleItemValue(props.unique_id, "force_sync_to_prop", false)
     }, []);
 
@@ -2728,7 +2662,7 @@ function ConsoleTextItem(props) {
         e.stopPropagation()
     }
 
-    const _handleFocus = useCallback(()=>{
+    const _handleFocus = useCallback(() => {
         if (!props.am_selected) {
             _selectMe()
         }
@@ -2752,14 +2686,14 @@ function ConsoleTextItem(props) {
         }
     }
 
-     const _extraKeys = useMemo(()=>{
-         return {
-                'Ctrl-Enter': () => _gotEnter(),
-                'Cmd-Enter': () => _gotEnter(),
-                'Ctrl-C': props.addNewCodeItem,
-                'Ctrl-T': props.addNewTextItem
+    const _extraKeys = useMemo(() => {
+        return {
+            'Ctrl-Enter': () => _gotEnter(),
+            'Cmd-Enter': () => _gotEnter(),
+            'Ctrl-C': props.addNewCodeItem,
+            'Ctrl-T': props.addNewTextItem
         }
-     }, []);
+    }, []);
 
     let really_show_markdown = hasOnlyWhitespace() && props.links.length == 0 ? false : props.show_markdown;
     var converted_markdown;

@@ -62,53 +62,36 @@ function ConsoleComponent(props) {
     _useState4 = _slicedToArray(_useState3, 2),
     console_item_saved_focus = _useState4[0],
     set_console_item_saved_focus = _useState4[1];
-  var _useStateAndRef = (0, _utilities_react.useStateAndRef)(""),
+  var _useStateAndRef = (0, _utilities_react.useStateAndRef)([]),
     _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
-    console_error_log_text = _useStateAndRef2[0],
-    set_console_error_log_text = _useStateAndRef2[1],
-    console_error_log_text_ref = _useStateAndRef2[2];
-  var _useState5 = (0, _react.useState)(null),
+    all_selected_items = _useStateAndRef2[0],
+    set_all_selected_items = _useStateAndRef2[1],
+    all_selected_items_ref = _useStateAndRef2[2];
+  var _useStateAndRef3 = (0, _utilities_react.useStateAndRef)(null),
+    _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
+    search_string = _useStateAndRef4[0],
+    set_search_string = _useStateAndRef4[1],
+    search_string_ref = _useStateAndRef4[2];
+  var _useState5 = (0, _react.useState)(false),
     _useState6 = _slicedToArray(_useState5, 2),
-    console_log_showing = _useState6[0],
-    set_console_log_showing = _useState6[1];
+    filter_console_items = _useState6[0],
+    set_filter_console_items = _useState6[1];
   var _useState7 = (0, _react.useState)(null),
     _useState8 = _slicedToArray(_useState7, 2),
-    pseudo_tile_id = _useState8[0],
-    set_pseudo_tile_id = _useState8[1];
-  var _useState9 = (0, _react.useState)(null),
+    search_helper_text = _useState8[0],
+    set_search_helper_text = _useState8[1];
+  var _useState9 = (0, _react.useState)(false),
     _useState10 = _slicedToArray(_useState9, 2),
-    main_log_since = _useState10[0],
-    set_main_log_since = _useState10[1];
-  var _useState11 = (0, _react.useState)(100),
+    show_main_log = _useState10[0],
+    set_show_main_log = _useState10[1];
+  var _useState11 = (0, _react.useState)(false),
     _useState12 = _slicedToArray(_useState11, 2),
-    max_console_lines = _useState12[0],
-    set_max_console_lines = _useState12[1];
+    show_pseudo_log = _useState12[0],
+    set_show_pseudo_log = _useState12[1];
   var _useState13 = (0, _react.useState)(null),
     _useState14 = _slicedToArray(_useState13, 2),
-    pseudo_log_since = _useState14[0],
-    set_pseudo_log_since = _useState14[1];
-  var _useState15 = (0, _react.useState)(false),
-    _useState16 = _slicedToArray(_useState15, 2),
-    show_console_error_log = _useState16[0],
-    set_show_console_error_log = _useState16[1];
-  var _useStateAndRef3 = (0, _utilities_react.useStateAndRef)([]),
-    _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
-    all_selected_items = _useStateAndRef4[0],
-    set_all_selected_items = _useStateAndRef4[1],
-    all_selected_items_ref = _useStateAndRef4[2];
-  var _useStateAndRef5 = (0, _utilities_react.useStateAndRef)(null),
-    _useStateAndRef6 = _slicedToArray(_useStateAndRef5, 3),
-    search_string = _useStateAndRef6[0],
-    set_search_string = _useStateAndRef6[1],
-    search_string_ref = _useStateAndRef6[2];
-  var _useState17 = (0, _react.useState)(false),
-    _useState18 = _slicedToArray(_useState17, 2),
-    filter_console_items = _useState18[0],
-    set_filter_console_items = _useState18[1];
-  var _useState19 = (0, _react.useState)(null),
-    _useState20 = _slicedToArray(_useState19, 2),
-    search_helper_text = _useState20[0],
-    set_search_helper_text = _useState20[1];
+    pseudo_tile_id = _useState14[0],
+    set_pseudo_tile_id = _useState14[1];
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _react.useEffect)(function () {
     initSocket();
@@ -122,14 +105,6 @@ function ConsoleComponent(props) {
       }
     });
   }, []);
-  (0, _utilities_react.useDidMount)(function () {
-    if (console_log_showing != "main") return;
-    _stopMainPseudoLogStreaming(_getMainLogAndStartStreaming);
-  }, [main_log_since, max_console_lines]);
-  (0, _utilities_react.useDidMount)(function () {
-    if (console_log_showing == "main") return;
-    _stopMainPseudoLogStreaming(_getPseudoLogAndStartStreaming);
-  }, [pseudo_log_since, max_console_lines]);
   function initSocket() {
     function _handleConsoleMessage(data) {
       if (data.main_id == props.main_id) {
@@ -159,9 +134,6 @@ function ConsoleComponent(props) {
           },
           consoleCodeRun: function consoleCodeRun(data) {
             return _startSpinner(data.console_id);
-          },
-          updateLog: function updateLog(data) {
-            return _addToLog(data.new_line);
           }
         };
         handlerDict[data.console_message](data);
@@ -465,72 +437,11 @@ function ConsoleComponent(props) {
       });
     });
   }, []);
-  function _toggleConsoleLog() {
-    if (show_console_error_log) {
-      set_show_console_error_log(false);
-      _stopMainPseudoLogStreaming();
-    } else {
-      _getPseudoLogAndStartStreaming();
-    }
+  function _togglePseudoLog() {
+    set_show_pseudo_log(!show_pseudo_log);
   }
   function _toggleMainLog() {
-    if (show_console_error_log) {
-      set_show_console_error_log(false);
-      _stopMainPseudoLogStreaming();
-    } else {
-      _getMainLogAndStartStreaming();
-    }
-  }
-  function _setLogSince() {
-    var now = new Date().getTime();
-    if (console_log_showing == "main") {
-      set_main_log_since(now);
-    } else {
-      set_pseudo_log_since(now);
-    }
-  }
-  function _getPseudoLogAndStartStreaming() {
-    if (pseudo_tile_id == null) {
-      set_console_error_log_text("pseudo-tile is initializing...");
-      pushCallback(function () {
-        set_show_console_error_log(true);
-      });
-    } else {
-      (0, _communication_react.postWithCallback)("host", "get_container_log", {
-        "container_id": pseudo_tile_id,
-        "since": pseudo_log_since,
-        "max_lines": max_console_lines
-      }, function (res) {
-        var log_text = res.log_text;
-        if (log_text == "") {
-          log_text = "Got empty result. The pseudo-tile is probably starting up.";
-        }
-        set_console_error_log_text(log_text);
-        set_console_log_showing("pseudo");
-        pushCallback(function () {
-          set_show_console_error_log(true);
-          (0, _communication_react.postWithCallback)(props.main_id, "StartPseudoLogStreaming", {}, null, null, props.main_id);
-        });
-      }, null, props.main_id);
-    }
-  }
-  function _getMainLogAndStartStreaming() {
-    (0, _communication_react.postWithCallback)("host", "get_container_log", {
-      "container_id": props.main_id,
-      "since": main_log_since,
-      "max_lines": max_console_lines
-    }, function (res) {
-      set_console_error_log_text(res.log_text);
-      set_console_log_showing("main");
-      pushCallback(function () {
-        set_show_console_error_log(true);
-        (0, _communication_react.postWithCallback)(props.main_id, "StartMainLogStreaming", {}, null, null, props.main_id);
-      });
-    }, null, props.main_id);
-  }
-  function _stopMainPseudoLogStreaming() {
-    var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-    (0, _communication_react.postWithCallback)(props.main_id, "StopMainPseudoLogStreaming", {}, callback, null, props.main_id);
+    set_show_main_log(!show_main_log);
   }
   var _setFocusedItem = (0, _react.useCallback)(function (unique_id) {
     var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
@@ -1423,11 +1334,11 @@ function ConsoleComponent(props) {
         click_handler: _resetConsole
       }]
     };
-    if (!show_console_error_log) {
+    if (!(show_pseudo_log || show_main_log)) {
       ms["Consoles"] = [{
         name_text: "Show Log Console",
         icon_name: "console",
-        click_handler: _toggleConsoleLog
+        click_handler: _togglePseudoLog
       }, {
         name_text: "Show Main Console",
         icon_name: "console",
@@ -1437,7 +1348,7 @@ function ConsoleComponent(props) {
       ms["Consoles"] = [{
         name_text: "Hide Console",
         icon_name: "console",
-        click_handler: _toggleMainLog
+        click_handler: show_main_log ? _toggleMainLog : _togglePseudoLog
       }];
     }
     return ms;
@@ -1500,12 +1411,6 @@ function ConsoleComponent(props) {
   }, []);
   function _showTextItemMarkdown(unique_id) {
     _setConsoleItemValue(unique_id, "show_markdown", true);
-  }
-  function _logExec(command) {
-    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-    (0, _communication_react.postWithCallback)(pseudo_tile_id, "os_command_exec", {
-      "the_code": command
-    }, callback);
   }
   function _hideNonDividers() {
     $(".in-section:not(.divider-log-panel)").css({
@@ -1572,11 +1477,11 @@ function ConsoleComponent(props) {
   }
   filtered_items_ref.current = filtered_items;
   var suggestionGlyphs = [];
-  if (show_console_error_log) {
+  if (show_pseudo_log || show_main_log) {
     suggestionGlyphs.push({
       intent: "primary",
-      handleClick: _toggleMainLog,
-      icon: "console"
+      icon: "console",
+      handleClick: show_main_log ? _toggleMainLog : _togglePseudoLog
     });
   }
   var empty_style = (0, _react.useMemo)(function () {
@@ -1641,7 +1546,7 @@ function ConsoleComponent(props) {
   }), props.mState.console_is_zoomed && props.zoomable && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
     handleClick: _unzoomConsole,
     icon: "minimize"
-  })))), !props.mState.console_is_shrunk && !show_console_error_log && /*#__PURE__*/_react["default"].createElement(_search_form.FilterSearchForm, {
+  })))), !props.mState.console_is_shrunk && !show_pseudo_log && !show_main_log && /*#__PURE__*/_react["default"].createElement(_search_form.FilterSearchForm, {
     search_string: search_string_ref.current,
     handleSearchFieldChange: _handleSearchFieldChange,
     handleFilter: _handleFilter,
@@ -1649,9 +1554,9 @@ function ConsoleComponent(props) {
     searchNext: _searchNext,
     searchPrevious: _searchPrevious,
     search_helper_text: search_helper_text
-  }), !props.mState.console_is_shrunk && show_console_error_log && /*#__PURE__*/_react["default"].createElement(_searchable_console.SearchableConsole, {
-    log_content: console_error_log_text_ref.current,
-    setMaxConsoleLines: set_max_console_lines,
+  }), !props.mState.console_is_shrunk && show_main_log && /*#__PURE__*/_react["default"].createElement(_searchable_console.SearchableConsole, {
+    main_id: props.main_id,
+    container_id: props.main_id,
     ref: body_ref,
     outer_style: {
       overflowX: "auto",
@@ -1660,9 +1565,20 @@ function ConsoleComponent(props) {
       marginLeft: 20,
       marginRight: 20
     },
-    clearConsole: _setLogSince,
-    commandExec: console_log_showing == "pseudo" ? _logExec : null
-  }), !props.mState.console_is_shrunk && !show_console_error_log && /*#__PURE__*/_react["default"].createElement("div", {
+    showCommandField: false
+  }), !props.mState.console_is_shrunk && show_pseudo_log && /*#__PURE__*/_react["default"].createElement(_searchable_console.SearchableConsole, {
+    main_id: props.main_id,
+    container_id: pseudo_tile_id,
+    ref: body_ref,
+    outer_style: {
+      overflowX: "auto",
+      overflowY: "auto",
+      height: _bodyHeight(),
+      marginLeft: 20,
+      marginRight: 20
+    },
+    showCommandField: true
+  }), !props.mState.console_is_shrunk && !show_pseudo_log && !show_main_log && /*#__PURE__*/_react["default"].createElement("div", {
     id: "console",
     ref: body_ref,
     className: "contingent-scroll",
@@ -1670,7 +1586,7 @@ function ConsoleComponent(props) {
     style: {
       height: _bodyHeight()
     }
-  }, !show_console_error_log && /*#__PURE__*/_react["default"].createElement(_core.ContextMenu, {
+  }, /*#__PURE__*/_react["default"].createElement(_core.ContextMenu, {
     content: renderContextMenu
   }, /*#__PURE__*/_react["default"].createElement(_sortable_container.SortableComponent, {
     id: "console-items-div",

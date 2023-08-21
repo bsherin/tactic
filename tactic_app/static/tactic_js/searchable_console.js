@@ -8,6 +8,9 @@ exports.SearchableConsole = SearchableConsole;
 var _react = _interopRequireWildcard(require("react"));
 var _core = require("@blueprintjs/core");
 var _search_form = require("./search_form");
+var _communication_react = require("./communication_react");
+var _utilities_react = require("./utilities_react");
+var _tactic_socket = require("./tactic_socket");
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
@@ -43,6 +46,24 @@ function SearchableConsole(props, inner_ref) {
     _useState10 = _slicedToArray(_useState9, 2),
     livescroll = _useState10[0],
     set_livescroll = _useState10[1];
+  var _useState11 = (0, _react.useState)(null),
+    _useState12 = _slicedToArray(_useState11, 2),
+    log_since = _useState12[0],
+    set_log_since = _useState12[1];
+
+  // I need to have these as refs because the are accessed within the _handleUpdateMessage
+  // callback. So they would have the old value.
+  var _useStateAndRef = (0, _utilities_react.useStateAndRef)(100),
+    _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
+    max_console_lines = _useStateAndRef2[0],
+    set_max_console_lines = _useStateAndRef2[1],
+    max_console_lines_ref = _useStateAndRef2[2];
+  var _useStateAndRef3 = (0, _utilities_react.useStateAndRef)(""),
+    _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
+    log_content = _useStateAndRef4[0],
+    set_log_content = _useStateAndRef4[1],
+    log_content_ref = _useStateAndRef4[2];
+  var tsocket = (0, _react.useRef)(null);
   var past_commands = (0, _react.useRef)([]);
   var past_commands_index = (0, _react.useRef)(null);
   (0, _react.useEffect)(function () {
@@ -50,56 +71,116 @@ function SearchableConsole(props, inner_ref) {
       inner_ref.current.scrollTo(0, inner_ref.current.scrollHeight);
     }
   });
+  (0, _react.useEffect)(function () {
+    tsocket.current = new _tactic_socket.TacticSocket("main", 5000, "searchable-console", props.main_id);
+    initSocket();
+    _getLogAndStartStreaming();
+    return function () {
+      _stopLogStreaming();
+      tsocket.current.disconnect();
+    };
+  }, []);
+  (0, _utilities_react.useDidMount)(function () {
+    _stopLogStreaming(_getLogAndStartStreaming);
+  }, [log_since, max_console_lines]);
+  function initSocket() {
+    tsocket.current.attachListener("searchable-console-message", _handleUpdateMessage);
+  }
+  function _handleUpdateMessage(data) {
+    if (data.container_id != props.container_id || data.message != "updateLog") return;
+    _addToLog(data.new_line);
+  }
+  function _setLogSince() {
+    var now = new Date().getTime();
+    set_log_since(now);
+  }
+  function _setMaxConsoleLines(event) {
+    set_max_console_lines(parseInt(event.target.value));
+  }
+  function _getLogAndStartStreaming() {
+    (0, _communication_react.postWithCallback)("host", "get_container_log", {
+      container_id: props.container_id,
+      since: log_since,
+      max_lines: max_console_lines_ref.current
+    }, function (res) {
+      set_log_content(res.log_text);
+      (0, _communication_react.postWithCallback)(props.main_id, "StartLogStreaming", {
+        container_id: props.container_id
+      }, null, null, props.main_id);
+    }, null, props.main_id);
+  }
+  function _stopLogStreaming() {
+    var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    (0, _communication_react.postWithCallback)(props.main_id, "StopLogStreaming", {
+      container_id: props.container_id
+    }, callback, null, props.main_id);
+  }
+  function _addToLog(new_line) {
+    var log_list = log_content_ref.current.split(/\r?\n/);
+    var mlines = max_console_lines_ref.current;
+    var new_log_content;
+    if (log_list.length >= mlines) {
+      log_list = log_list.slice(-1 * mlines + 1);
+      new_log_content = log_list.join("\n");
+    } else {
+      new_log_content = log_content_ref.current;
+    }
+    new_log_content = new_log_content + new_line;
+    set_log_content(new_log_content);
+  }
   function _prepareText() {
-    var tlist = props.log_content.split(/\r?\n/);
     var the_text = "";
-    if (search_string) {
-      if (filter) {
-        var new_tlist = [];
-        var _iterator = _createForOfIteratorHelper(tlist),
-          _step;
-        try {
-          for (_iterator.s(); !(_step = _iterator.n()).done;) {
-            var t = _step.value;
-            if (t.includes(search_string)) {
-              new_tlist.push(t);
+    if (log_content_ref.current) {
+      // without this can get an error if project saved with tile log showing
+      var tlist = log_content_ref.current.split(/\r?\n/);
+      if (search_string) {
+        if (filter) {
+          var new_tlist = [];
+          var _iterator = _createForOfIteratorHelper(tlist),
+            _step;
+          try {
+            for (_iterator.s(); !(_step = _iterator.n()).done;) {
+              var t = _step.value;
+              if (t.includes(search_string)) {
+                new_tlist.push(t);
+              }
             }
+          } catch (err) {
+            _iterator.e(err);
+          } finally {
+            _iterator.f();
+          }
+          tlist = new_tlist;
+        }
+        var _iterator2 = _createForOfIteratorHelper(tlist),
+          _step2;
+        try {
+          for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+            var _t = _step2.value;
+            the_text = the_text + _t + "<br>";
           }
         } catch (err) {
-          _iterator.e(err);
+          _iterator2.e(err);
         } finally {
-          _iterator.f();
+          _iterator2.f();
         }
-        tlist = new_tlist;
-      }
-      var _iterator2 = _createForOfIteratorHelper(tlist),
-        _step2;
-      try {
-        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-          var _t = _step2.value;
-          the_text = the_text + _t + "<br>";
+        var regex = new RegExp(search_string, "gi");
+        the_text = String(the_text).replace(regex, function (matched) {
+          return "<mark>" + matched + "</mark>";
+        });
+      } else {
+        var _iterator3 = _createForOfIteratorHelper(tlist),
+          _step3;
+        try {
+          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+            var _t2 = _step3.value;
+            the_text = the_text + _t2 + "<br>";
+          }
+        } catch (err) {
+          _iterator3.e(err);
+        } finally {
+          _iterator3.f();
         }
-      } catch (err) {
-        _iterator2.e(err);
-      } finally {
-        _iterator2.f();
-      }
-      var regex = new RegExp(search_string, "gi");
-      the_text = String(the_text).replace(regex, function (matched) {
-        return "<mark>" + matched + "</mark>";
-      });
-    } else {
-      var _iterator3 = _createForOfIteratorHelper(tlist),
-        _step3;
-      try {
-        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-          var _t2 = _step3.value;
-          the_text = the_text + _t2 + "<br>";
-        }
-      } catch (err) {
-        _iterator3.e(err);
-      } finally {
-        _iterator3.f();
       }
     }
     return "<div style=\"white-space:pre\">".concat(the_text, "</div>");
@@ -119,14 +200,17 @@ function SearchableConsole(props, inner_ref) {
   function _searchNext() {}
   function _structureText() {}
   function _searchPrevious() {}
-  function _setMaxConsoleLines(event) {
-    props.setMaxConsoleLines(parseInt(event.target.value));
+  function _logExec(command) {
+    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    (0, _communication_react.postWithCallback)(props.container_id, "os_command_exec", {
+      "the_code": command
+    }, callback);
   }
   function _commandSubmit(e) {
     e.preventDefault();
     past_commands.current.push(console_command_value);
     past_commands_index.current = null;
-    props.commandExec(console_command_value, function () {
+    _logExec(console_command_value, function () {
       set_console_command_value("");
     });
   }
@@ -171,7 +255,7 @@ function SearchableConsole(props, inner_ref) {
     fontSize: 12,
     fontFamily: "monospace"
   }, props.outer_style);
-  if (props.commandExec) {
+  if (props.showCommandField) {
     the_style.height = the_style.height - 40;
   }
   var bottom_info = "575 lines";
@@ -190,7 +274,7 @@ function SearchableConsole(props, inner_ref) {
       marginTop: 10
     }
   }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
-    onClick: props.clearConsole,
+    onClick: _setLogSince,
     style: {
       height: 30
     },
@@ -201,7 +285,7 @@ function SearchableConsole(props, inner_ref) {
     onChange: _setMaxConsoleLines,
     large: false,
     minimal: true,
-    value: props.max_console_lines,
+    value: max_console_lines_ref.current,
     options: [100, 250, 500, 1000, 2000]
   }), /*#__PURE__*/_react["default"].createElement(_core.Switch, {
     label: "livescroll",
@@ -227,7 +311,7 @@ function SearchableConsole(props, inner_ref) {
     ref: inner_ref,
     style: the_style,
     dangerouslySetInnerHTML: the_text
-  }), props.commandExec && /*#__PURE__*/_react["default"].createElement("form", {
+  }), props.showCommandField && /*#__PURE__*/_react["default"].createElement("form", {
     onSubmit: _commandSubmit,
     style: {
       position: "relative",
