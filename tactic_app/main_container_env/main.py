@@ -114,7 +114,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
 
     @property
     def am_notebook_type(self):
-        return self.doc_type in ["notebook", "juptyer"]
+        return self.doc_type in ["notebook", "jupyter"]
 
     def show_main_message(self, message, timeout=None):
         data = {"message": message, "timeout": timeout, "main_id": self.mworker.my_id}
