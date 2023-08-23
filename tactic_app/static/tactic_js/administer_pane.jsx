@@ -13,6 +13,7 @@ import {getUsableDimensions} from "./sizing_tools";
 import {useCallbackStack, useStateAndRef} from "./utilities_react";
 
 import _ from 'lodash';
+import {SearchableConsole} from "./searchable_console";
 
 export {AdminPane}
 
@@ -40,9 +41,6 @@ function AdminPane(props) {
     useEffect(() => {
         initSocket();
         _grabNewChunkWithRow(0, true, null, true, null);
-        return (() => {
-            props.tsocket.disconnect()
-        })
     }, []);
 
     function initSocket() {
@@ -296,14 +294,34 @@ function AdminPane(props) {
         additional_metadata = null
     }
 
-    let right_pane = (
+    var right_pane;
+    if (props.res_type == "container") {
+        right_pane = (
             <div className="d-flex d-inline" ref={console_text_ref}
-                 style={{
-                     overflow: "auto", verticalAlign: "top", marginTop: 12, marginLeft: 10,
-                     width: "100%", height: "100%", border: "1px solid black", padding: 10}}>
-                <pre><small>{props.console_text}</small></pre>
+                 style={{height: "100%", overflow: "hidden", marginRight: 50}}>
+                <SearchableConsole main_id={window.library_id}
+                                   streaming_host="host"
+                                   container_id={props.selected_resource.Id}
+                                   ref={null}
+                                   outer_style={{
+                                       overflowX: "auto",
+                                       overflowY: "auto",
+                                       height: "100%",
+                                       width: "100%",
+                                       marginTop: 0,
+                                       marginLeft: 5,
+                                       marginRight: 0,
+                                       padding: 15
+                                   }}
+                                   showCommandField={false}
+                />
             </div>
-    );
+        )
+    }
+    else {
+        right_pane = (<div/>)
+    }
+
     let th_style= {
         "display": "inline-block",
         "verticalAlign": "top",
@@ -342,7 +360,8 @@ function AdminPane(props) {
                          maxHeight: table_height,
                          padding: 15,
                          marginTop: 10,
-                         backgroundColor: "white"}}>
+                         // backgroundColor: "white"
+                    }}>
                     <SearchForm allow_search_inside={false}
                                 allow_search_metadata={false}
                                 update_search_state={_update_search_state}
@@ -351,8 +370,8 @@ function AdminPane(props) {
                     <BpSelectorTable data_dict={data_dict_ref.current}
                                      num_rows={num_rows}
                                      awaiting_data={awaiting_data}
-                                     enableColumnResizing={false}
-                                     maxColumnWidth={225}
+                                     enableColumnResizing={true}
+                                     // maxColumnWidth={225}
                                      sortColumn={_set_sort_state}
                                      selectedRegions={props.selectedRegions}
                                      communicateColumnWidthSum={_communicateColumnWidthSum}
@@ -384,7 +403,7 @@ function AdminPane(props) {
                             left_pane={left_pane}
                             right_pane={right_pane}
                             show_handle={true}
-                            available_width={props.usable_width - 50}
+                            available_width={props.usable_width}
                             available_height={table_height}
                             initial_width_fraction={.65}
                             handleSplitUpdate={_handleSplitResize}

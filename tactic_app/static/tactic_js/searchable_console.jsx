@@ -22,6 +22,7 @@ function SearchableConsole(props, inner_ref) {
     // callback. So they would have the old value.
     const [max_console_lines, set_max_console_lines, max_console_lines_ref] = useStateAndRef(100);
     const [log_content, set_log_content, log_content_ref] = useStateAndRef("");
+    const cont_id = useRef(props.container_id);
 
     const tsocket = useRef(null);
 
@@ -36,11 +37,16 @@ function SearchableConsole(props, inner_ref) {
 
     useEffect(() => {
         tsocket.current = new TacticSocket("main", 5000, "searchable-console", props.main_id);
-        initSocket();
-        _getLogAndStartStreaming();
-        return (() => {
+        function cleanup() {
             _stopLogStreaming();
             tsocket.current.disconnect();
+        }
+        initSocket();
+        _getLogAndStartStreaming();
+        window.addEventListener('beforeunload', cleanup);
+        return (() => {
+            cleanup();
+            window.removeEventListener('beforeunload', cleanup);
         })
     }, []);
 
@@ -48,12 +54,21 @@ function SearchableConsole(props, inner_ref) {
         _stopLogStreaming(_getLogAndStartStreaming)
     }, [log_since, max_console_lines]);
 
+    useDidMount(() => {
+        _stopLogStreaming(()=>{
+            cont_id.current = props.container_id;
+            set_log_since(null);
+            set_max_console_lines(100);
+            _getLogAndStartStreaming()
+        })
+    }, [props.container_id]);
+
     function initSocket() {
         tsocket.current.attachListener("searchable-console-message", _handleUpdateMessage);
     }
 
     function _handleUpdateMessage(data) {
-        if (data.container_id != props.container_id || data.message != "updateLog") return;
+        if (data.container_id != cont_id.current|| data.message != "updateLog") return;
         _addToLog(data.new_line);
     }
 
@@ -68,16 +83,17 @@ function SearchableConsole(props, inner_ref) {
 
     function _getLogAndStartStreaming() {
         postWithCallback("host", "get_container_log",
-            {container_id: props.container_id, since: log_since, max_lines: max_console_lines_ref.current},
+            {container_id: cont_id.current, since: log_since, max_lines: max_console_lines_ref.current},
             function (res) {
                 set_log_content(res.log_text);
-                postWithCallback(props.main_id, "StartLogStreaming", {container_id: props.container_id},
+                postWithCallback(props.streaming_host, "StartLogStreaming",
+                    {container_id: cont_id.current, main_id: props.main_id},
                     null, null, props.main_id);
             }, null, props.main_id)
     }
 
     function _stopLogStreaming(callback = null) {
-        postWithCallback(props.main_id, "StopLogStreaming", {container_id: props.container_id},
+        postWithCallback(props.streaming_host, "StopLogStreaming", {container_id: cont_id.current},
             callback, null, props.main_id);
     }
 
@@ -155,7 +171,7 @@ function SearchableConsole(props, inner_ref) {
     }
 
     function _logExec(command, callback = null) {
-        postWithCallback(props.container_id, "os_command_exec", {
+        postWithCallback(cont_id.current, "os_command_exec", {
             "the_code": command,
         }, callback)
     }
@@ -213,7 +229,7 @@ function SearchableConsole(props, inner_ref) {
     let bottom_info = "575 lines";
     let self = this;
     return (
-        <div className="searchable-console">
+        <div className="searchable-console" style={{width: "100%"}}>
             <div className="d-flex flex-row" style={{justifyContent: "space-between"}}>
                 <ControlGroup vertical={false}
                               style={{marginLeft: 15, marginTop: 10}}>

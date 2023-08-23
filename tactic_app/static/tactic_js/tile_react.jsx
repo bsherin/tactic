@@ -621,10 +621,10 @@ function TileComponent(props) {
             exited: {top: -1 * tile_height}
         };
         transitionStylesAltDown = {
-            entering: {top: header_height},
-            entered: {top: header_height},
+            entering: {top: header_height, opacity: 1},
+            entered: {top: header_height, opacity: 1},
             exiting: {top: tile_height + 50},
-            exited: {top: tile_height + 50}
+            exited: {top: tile_height + 50, opacity: 0}
         };
         tile_log_style.transition = `opacity ${ANI_DURATION}ms ease-in-out`;
         transitionFadeStyles = {
@@ -807,6 +807,7 @@ function TileComponent(props) {
                             <div className="tile-log" ref={log_ref}>
                                 <div className="tile-log-area">
                                     <SearchableConsole main_id={props.main_id}
+                                                       streaming_host={props.main_id}
                                                        container_id={props.tile_id}
                                                        ref={inner_log_ref}
                                                        outer_style={tile_log_style}

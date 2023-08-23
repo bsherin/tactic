@@ -3,7 +3,7 @@ import "../tactic_css/tactic.scss";
 import "../tactic_css/tactic_table.scss";
 import "../tactic_css/library_home.scss";
 
-import React from "react";
+import React, {Fragment} from "react";
 import {useState, useEffect, useRef, memo} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
@@ -14,7 +14,7 @@ import {Regions} from "@blueprintjs/table";
 import {TacticSocket} from "./tactic_socket"
 import {showConfirmDialogReact} from "./modal_react";
 import {doFlash} from "./toaster"
-import {render_navbar} from "./blueprint_navbar";
+import {TacticNavbar} from "./blueprint_navbar";
 import {handleCallback}  from "./communication_react"
 import {withStatus} from "./toaster";
 
@@ -23,7 +23,7 @@ import {AdminPane} from "./administer_pane"
 import {SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, getUsableDimensions} from "./sizing_tools";
 import {ViewerContext} from "./resource_viewer_context";
 import {withErrorDrawer} from "./error_drawer";
-import {guid} from "./utilities_react";
+import {guid, useConstructor} from "./utilities_react";
 import {LibraryMenubar} from "./library_menubars";
 import {useCallbackStack, useStateAndRef} from "./utilities_react";
 
@@ -33,7 +33,7 @@ const MARGIN_SIZE = 17;
 let tsocket;
 
 function _administer_home_main () {
-    render_navbar("library");
+    // render_navbar("library");
     tsocket = new TacticSocket("main", 5000, "admin", window.library_id);
     let AdministerHomeAppPlus = withErrorDrawer(withStatus(AdministerHomeApp));
     let domContainer = document.querySelector('#library-home-root');
@@ -84,9 +84,14 @@ function AdministerHomeApp(props) {
 
     const [usable_height, set_usable_height] = useState(getUsableDimensions(true).usable_height_no_bottom);
     const [usable_width, set_usable_width] = useState(getUsableDimensions(true).usable_width - 170);
+    const [dark_theme, set_dark_theme] = useState(null);
     const top_ref = useRef(null);
 
     const pushCallback = useCallbackStack();
+
+    useConstructor(() => {
+        set_dark_theme(window.theme === "dark")
+    });
 
     useEffect(() => {
         initSocket();
@@ -100,7 +105,9 @@ function AdministerHomeApp(props) {
 
     function initSocket() {
         props.tsocket.attachListener("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
-        props.tsocket.attachListener('handle-callback', handleCallback);
+        props.tsocket.attachListener('handle-callback', (task_packet) => {
+            handleCallback(task_packet, window.library_id)
+        });
         props.tsocket.attachListener('close-user-windows', (data) => {
             if (!(data["originator"] == window.library_id)) {
                 window.close()
@@ -140,6 +147,11 @@ function AdministerHomeApp(props) {
         return paneId == selected_tab_id ? "white" : "#CED9E0"
     }
 
+    function _setTheme(local_dark_theme) {
+        window.theme = local_dark_theme ? "dark" : "light";
+        set_dark_theme(local_dark_theme);
+    }
+
     let container_pane = (
         <AdminPane {...props}
                    usable_width={usable_width}
@@ -176,30 +188,48 @@ function AdministerHomeApp(props) {
 
         />
     );
-    let outer_style = {width: usable_width,
+    let outer_style = {
+        width: "100%",
         height: usable_height,
         paddingLeft: 0
     };
+    let outer_class = "pane-holder";
+    if (dark_theme) {
+        outer_class = `${outer_class} bp5-dark`;
+    } else {
+        outer_class = `${outer_class} light-theme`;
+    }
     return (
-        <ViewerContext.Provider value={{readOnly: false}}>
-            <div className="pane-holder" ref={top_ref} style={outer_style}>
-                <Tabs id="the_container" style={{marginTop: 100}}
-                         selectedTabId={selected_tab_id}
-                         renderActiveTabPanelOnly={true}
-                         vertical={true} large={true} onChange={_handleTabChange}>
-                    <Tab id="containers-pane" panel={container_pane}>
-                        <Tooltip content="Containers" position={Position.RIGHT}>
-                            <Icon icon="box" size={20} tabIndex={-1} color={getIconColor("collections-pane")}/>
-                        </Tooltip>
-                    </Tab>
-                    <Tab id="users-pane" panel={user_pane}>
-                        <Tooltip content="users" position={Position.RIGHT}>
-                            <Icon icon="user" size={20} tabIndex={-1} color={getIconColor("collections-pane")}/>
-                        </Tooltip>
-                    </Tab>
-                </Tabs>
-            </div>
-        </ViewerContext.Provider>
+        <Fragment>
+            <TacticNavbar dark_theme={dark_theme}
+                          is_authenticated={window.is_authenticated}
+                          registerOmniFunction={null}
+                          setTheme={_setTheme}
+                          selected={null}
+                          show_api_links={false}
+                          extra_text=""
+                          page_id={window.library_id}
+                          user_name={window.username}/>
+            <ViewerContext.Provider value={{readOnly: false}}>
+                <div className={outer_class} ref={top_ref} style={outer_style}>
+                    <Tabs id="the_container" style={{marginTop: 100}}
+                             selectedTabId={selected_tab_id}
+                             renderActiveTabPanelOnly={true}
+                             vertical={true} large={true} onChange={_handleTabChange}>
+                        <Tab id="containers-pane" panel={container_pane}>
+                            <Tooltip content="Containers" position={Position.RIGHT}>
+                                <Icon icon="box" size={20} tabIndex={-1} color={getIconColor("collections-pane")}/>
+                            </Tooltip>
+                        </Tab>
+                        <Tab id="users-pane" panel={user_pane}>
+                            <Tooltip content="users" position={Position.RIGHT}>
+                                <Icon icon="user" size={20} tabIndex={-1} color={getIconColor("collections-pane")}/>
+                            </Tooltip>
+                        </Tab>
+                    </Tabs>
+                </div>
+            </ViewerContext.Provider>
+        </Fragment>
     )
 }
 
@@ -253,10 +283,10 @@ function ContainerMenubar(props) {
                 {name_text: "Kill One Container", icon_name: "console",
                     click_handler: _destroy_container},
             ],
-            Logs: [
-                {name_text: "Show Container Log", icon_name: "delete",
-                    click_handler: _container_logs}
-            ],
+            // Logs: [
+            //     {name_text: "Show Container Log", icon_name: "delete",
+            //         click_handler: _container_logs}
+            // ],
 
         };
     }
@@ -289,7 +319,8 @@ function UserMenubar(props){
 
     function _delete_user () {
         let user_id = props.selected_resource._id;
-        const confirm_text = "Are you sure that you want to delete user " + String(user_id) + "?";
+        let username = props.selected_resource.username;
+        const confirm_text = "Are you sure that you want to delete user and all their data" + String(username) + "?";
         showConfirmDialogReact("Delete User", confirm_text, "do nothing", "delete", function () {
             $.getJSON($SCRIPT_ROOT + '/delete_user/' + user_id, doFlash);
         });
@@ -297,8 +328,11 @@ function UserMenubar(props){
 
     function _bump_user_alt_id () {
         let user_id = props.selected_resource._id;
-        const confirm_text = "Are you sure that you want to bump the id for user " + String(user_id) + "?";
-        showConfirmDialogReact("Bump User", confirm_text, "do nothing", "bump", function () {
+        let username = props.selected_resource.username;
+        const confirm_text = "Are you sure that you want to bump the id for user " + String(username) + "?  " +
+            "This will effectively log them out";
+        showConfirmDialogReact("Bump User",
+            confirm_text, "do nothing", "bump", function () {
             $.getJSON($SCRIPT_ROOT + '/bump_one_alt_id/' + user_id, doFlash);
         });
     }
@@ -309,18 +343,20 @@ function UserMenubar(props){
     }
 
     function _bump_all_alt_ids () {
-        const confirm_text = "Are you sure that you want to bump all alt ids?";
-        showConfirmDialogReact("Bump all", confirm_text, "do nothing", "bump", function () {
+        const confirm_text = "Are you sure that you want to bump all alt ids?" +
+            "This will effectively log them out";
+        showConfirmDialogReact("Bump all",
+            confirm_text, "do nothing", "bump", function () {
             $.getJSON($SCRIPT_ROOT + '/bump_all_alt_ids', doFlash);
         });
     }
 
-    function _upgrade_all_users () {
-        const confirm_text = "Are you sure that you want to upgrade all users?";
-        showConfirmDialogReact("Bump all", confirm_text, "do nothing", "upgrade", function () {
-            $.getJSON($SCRIPT_ROOT + '/upgrade_all_users', doFlash);
-        });
-    }
+    // function _upgrade_all_users () {
+    //     const confirm_text = "Are you sure that you want to upgrade all users?";
+    //     showConfirmDialogReact("Bump all", confirm_text, "do nothing", "upgrade", function () {
+    //         $.getJSON($SCRIPT_ROOT + '/upgrade_all_users', doFlash);
+    //     });
+    // }
 
     function _remove_all_duplicates () {
         const confirm_text = "Are you sure that you want to remove all duplicates?";
@@ -336,7 +372,6 @@ function UserMenubar(props){
             $.getJSON($SCRIPT_ROOT + '/update_user_starter_tiles/' + user_id, doFlash);
         });
     }
-
 
     function _migrate_user (event) {
         let user_id = props.selected_resource._id;
@@ -372,10 +407,10 @@ function UserMenubar(props){
                     click_handler: _bump_user_alt_id},
                 {name_text: "Bump All Alt Ids", icon_name: "reset",
                     click_handler: _bump_all_alt_ids},
-                {name_text: "Upgrade all users", icon_name: "reset",
-                    click_handler: _upgrade_all_users},
-                {name_text: "Remove All Duplicates", icon_name: "reset",
-                    click_handler: _remove_all_duplicates},
+                // {name_text: "Upgrade all users", icon_name: "reset",
+                //     click_handler: _upgrade_all_users},
+                // {name_text: "Remove All Duplicates", icon_name: "reset",
+                //     click_handler: _remove_all_duplicates},
             ]
         };
     }

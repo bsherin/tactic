@@ -9,9 +9,8 @@ from users import User, load_user
 from resource_manager import ResourceManager
 from docker_functions import cli, destroy_container, container_owner, get_log
 from docker_functions import container_id, container_memory_usage, restart_container
-from docker_functions import container_other_name, tactic_image_names
+from docker_functions import container_other_name
 from exception_mixin import generic_exception_handler
-# from docker_cleanup import do_docker_cleanup
 import tactic_app
 
 admin_user = User.get_user_by_username("admin")
@@ -35,11 +34,13 @@ class ContainerManager(ResourceManager):
                          login_required(self.grab_container_list_chunk), methods=['get', 'post'])
 
     def clear_user_containers(self, library_id):
-        tactic_image_names = ["bsherin/tactic:tile", "bsherin/tactic:main", "bsherin/tactic:module_viewer"]
+        tactic_user_image_names = ["bsherin/tactic:tile", "bsherin/tactic:main", "bsherin/tactic:module_viewer",
+                                   "bsherin/tactic:tile-arm64", "bsherin/tactic:main-arm46",
+                                   "bsherin/tactic:module_viewer-arm64"
+                                   ]
         tactic_image_ids = {}
-        for iname in tactic_image_names:
+        for iname in tactic_user_image_names:
             tactic_image_ids[iname] = cli.images.get(iname).id
-
         if not (current_user.get_id() == admin_user.get_id()):
             return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
         try:
@@ -119,12 +120,6 @@ class ContainerManager(ResourceManager):
         return jsonify({"success": True, "message": "Got Logs", "log_text": log_text, "alert_type": "alert-success"})
 
     def build_res_dict(self, cont):
-        image_id_names = {}
-        for iname in tactic_image_names:
-            try:
-                image_id_names[cli.images.get(iname).id] = iname
-            except:
-                print("no image " + iname)
         owner_id = container_owner(cont)
         if owner_id == "host":
             owner_name = "host"
@@ -133,8 +128,8 @@ class ContainerManager(ResourceManager):
         else:
             owner_name = load_user(owner_id).username
         image_id = cont.attrs["Image"]
-        if image_id in image_id_names:
-            image_name = image_id_names[image_id]
+        if image_id in self.image_id_names:
+            image_name = self.image_id_names[image_id]
         else:
             image_name = image_id
 
@@ -185,6 +180,12 @@ class ContainerManager(ResourceManager):
         all_containers = cli.containers.list(all=True)
         filtered_res = []
         match_keys = ["Other_name", "Name", "Image", "Owner", "Status"]
+        self.image_id_names = {}
+        all_images = cli.images.list(filters={"dangling": False})
+        for img in all_images:
+            if len(img.tags) > 0:
+                self.image_id_names[img.id] = img.tags[0]
+
         for cont in all_containers:
             new_row = self.build_res_dict(cont)
             for k in match_keys:

@@ -34,7 +34,7 @@ window.library_id = (0, _utilities_react.guid)();
 var MARGIN_SIZE = 17;
 var tsocket;
 function _administer_home_main() {
-  (0, _blueprint_navbar.render_navbar)("library");
+  // render_navbar("library");
   tsocket = new _tactic_socket.TacticSocket("main", 5000, "admin", window.library_id);
   var AdministerHomeAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(AdministerHomeApp));
   var domContainer = document.querySelector('#library-home-root');
@@ -94,8 +94,15 @@ function AdministerHomeApp(props) {
     _useState6 = _slicedToArray(_useState5, 2),
     usable_width = _useState6[0],
     set_usable_width = _useState6[1];
+  var _useState7 = (0, _react.useState)(null),
+    _useState8 = _slicedToArray(_useState7, 2),
+    dark_theme = _useState8[0],
+    set_dark_theme = _useState8[1];
   var top_ref = (0, _react.useRef)(null);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
+  (0, _utilities_react.useConstructor)(function () {
+    set_dark_theme(window.theme === "dark");
+  });
   (0, _react.useEffect)(function () {
     initSocket();
     props.stopSpinner();
@@ -109,7 +116,9 @@ function AdministerHomeApp(props) {
     props.tsocket.attachListener("window-open", function (data) {
       return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
     });
-    props.tsocket.attachListener('handle-callback', _communication_react.handleCallback);
+    props.tsocket.attachListener('handle-callback', function (task_packet) {
+      (0, _communication_react.handleCallback)(task_packet, window.library_id);
+    });
     props.tsocket.attachListener('close-user-windows', function (data) {
       if (!(data["originator"] == window.library_id)) {
         window.close();
@@ -144,6 +153,10 @@ function AdministerHomeApp(props) {
   function getIconColor(paneId) {
     return paneId == selected_tab_id ? "white" : "#CED9E0";
   }
+  function _setTheme(local_dark_theme) {
+    window.theme = local_dark_theme ? "dark" : "light";
+    set_dark_theme(local_dark_theme);
+  }
   var container_pane = /*#__PURE__*/_react["default"].createElement(_administer_pane.AdminPane, _extends({}, props, {
     usable_width: usable_width,
     usable_height: usable_height,
@@ -173,16 +186,32 @@ function AdministerHomeApp(props) {
     id_field: "_id"
   }));
   var outer_style = {
-    width: usable_width,
+    width: "100%",
     height: usable_height,
     paddingLeft: 0
   };
-  return /*#__PURE__*/_react["default"].createElement(_resource_viewer_context.ViewerContext.Provider, {
+  var outer_class = "pane-holder";
+  if (dark_theme) {
+    outer_class = "".concat(outer_class, " bp5-dark");
+  } else {
+    outer_class = "".concat(outer_class, " light-theme");
+  }
+  return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+    dark_theme: dark_theme,
+    is_authenticated: window.is_authenticated,
+    registerOmniFunction: null,
+    setTheme: _setTheme,
+    selected: null,
+    show_api_links: false,
+    extra_text: "",
+    page_id: window.library_id,
+    user_name: window.username
+  }), /*#__PURE__*/_react["default"].createElement(_resource_viewer_context.ViewerContext.Provider, {
     value: {
       readOnly: false
     }
   }, /*#__PURE__*/_react["default"].createElement("div", {
-    className: "pane-holder",
+    className: outer_class,
     ref: top_ref,
     style: outer_style
   }, /*#__PURE__*/_react["default"].createElement(_core.Tabs, {
@@ -217,7 +246,7 @@ function AdministerHomeApp(props) {
     size: 20,
     tabIndex: -1,
     color: getIconColor("collections-pane")
-  }))))));
+  })))))));
 }
 AdministerHomeApp = /*#__PURE__*/(0, _react.memo)(AdministerHomeApp);
 function ContainerMenubar(props) {
@@ -264,14 +293,14 @@ function ContainerMenubar(props) {
         name_text: "Kill One Container",
         icon_name: "console",
         click_handler: _destroy_container
-      }],
-      Logs: [{
-        name_text: "Show Container Log",
-        icon_name: "delete",
-        click_handler: _container_logs
       }]
+      // Logs: [
+      //     {name_text: "Show Container Log", icon_name: "delete",
+      //         click_handler: _container_logs}
+      // ],
     };
   }
+
   return /*#__PURE__*/_react["default"].createElement(_library_menubars.LibraryMenubar, {
     menu_specs: menu_specs(),
     context_menu_items: null,
@@ -297,14 +326,16 @@ ContainerMenubar = /*#__PURE__*/(0, _react.memo)(ContainerMenubar);
 function UserMenubar(props) {
   function _delete_user() {
     var user_id = props.selected_resource._id;
-    var confirm_text = "Are you sure that you want to delete user " + String(user_id) + "?";
+    var username = props.selected_resource.username;
+    var confirm_text = "Are you sure that you want to delete user and all their data" + String(username) + "?";
     (0, _modal_react.showConfirmDialogReact)("Delete User", confirm_text, "do nothing", "delete", function () {
       $.getJSON($SCRIPT_ROOT + '/delete_user/' + user_id, _toaster.doFlash);
     });
   }
   function _bump_user_alt_id() {
     var user_id = props.selected_resource._id;
-    var confirm_text = "Are you sure that you want to bump the id for user " + String(user_id) + "?";
+    var username = props.selected_resource.username;
+    var confirm_text = "Are you sure that you want to bump the id for user " + String(username) + "?  " + "This will effectively log them out";
     (0, _modal_react.showConfirmDialogReact)("Bump User", confirm_text, "do nothing", "bump", function () {
       $.getJSON($SCRIPT_ROOT + '/bump_one_alt_id/' + user_id, _toaster.doFlash);
     });
@@ -314,17 +345,19 @@ function UserMenubar(props) {
     $.getJSON($SCRIPT_ROOT + '/toggle_status/' + user_id, _toaster.doFlash);
   }
   function _bump_all_alt_ids() {
-    var confirm_text = "Are you sure that you want to bump all alt ids?";
+    var confirm_text = "Are you sure that you want to bump all alt ids?" + "This will effectively log them out";
     (0, _modal_react.showConfirmDialogReact)("Bump all", confirm_text, "do nothing", "bump", function () {
       $.getJSON($SCRIPT_ROOT + '/bump_all_alt_ids', _toaster.doFlash);
     });
   }
-  function _upgrade_all_users() {
-    var confirm_text = "Are you sure that you want to upgrade all users?";
-    (0, _modal_react.showConfirmDialogReact)("Bump all", confirm_text, "do nothing", "upgrade", function () {
-      $.getJSON($SCRIPT_ROOT + '/upgrade_all_users', _toaster.doFlash);
-    });
-  }
+
+  // function _upgrade_all_users () {
+  //     const confirm_text = "Are you sure that you want to upgrade all users?";
+  //     showConfirmDialogReact("Bump all", confirm_text, "do nothing", "upgrade", function () {
+  //         $.getJSON($SCRIPT_ROOT + '/upgrade_all_users', doFlash);
+  //     });
+  // }
+
   function _remove_all_duplicates() {
     var confirm_text = "Are you sure that you want to remove all duplicates?";
     (0, _modal_react.showConfirmDialogReact)("Bump all", confirm_text, "do nothing", "remove", function () {
@@ -377,17 +410,15 @@ function UserMenubar(props) {
         name_text: "Bump All Alt Ids",
         icon_name: "reset",
         click_handler: _bump_all_alt_ids
-      }, {
-        name_text: "Upgrade all users",
-        icon_name: "reset",
-        click_handler: _upgrade_all_users
-      }, {
-        name_text: "Remove All Duplicates",
-        icon_name: "reset",
-        click_handler: _remove_all_duplicates
-      }]
+      }
+      // {name_text: "Upgrade all users", icon_name: "reset",
+      //     click_handler: _upgrade_all_users},
+      // {name_text: "Remove All Duplicates", icon_name: "reset",
+      //     click_handler: _remove_all_duplicates},
+      ]
     };
   }
+
   return /*#__PURE__*/_react["default"].createElement(_library_menubars.LibraryMenubar, {
     menu_specs: menu_specs(),
     context_menu_items: null,
