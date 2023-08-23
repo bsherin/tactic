@@ -6,9 +6,10 @@ from users import load_user, ModuleNotFoundError, user_data_fields
 import gevent
 import pika
 from communication_utils import make_python_object_jsonizable, store_temp_data, read_temp_data, delete_temp_data
+import docker_functions
 from docker_functions import create_container, destroy_container, destroy_child_containers, destroy_user_containers
 from docker_functions import get_log, restart_container
-from docker_functions import get_matching_user_containers
+from docker_functions import get_matching_user_containers, streaming_workers
 from tactic_app import app, socketio, db
 from library_views import tile_manager, project_manager, collection_manager, list_manager, get_manager_for_type
 from library_views import code_manager
@@ -42,7 +43,6 @@ from js_source_management import _develop
 myport = os.environ.get("MYPORT")
 
 from qworker import max_pika_retries
-
 
 class HostWorker(QWorker):
     def __init__(self):
@@ -165,8 +165,8 @@ class HostWorker(QWorker):
                 try:
                     code_manager.update_selector_row(code_manager.build_res_dict(code_name, mdata, user_obj=user_obj,
                                                                                  res_type="code"), user_obj=user_obj)
-                except Exception as ex:
-                    print(self.handle_exception(ex, "Here's the error"))
+                except Exception as exc:
+                    print(self.handle_exception(exc, "Here's the error"))
                 result = {"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"}
                 self.submit_response(local_task_packet, result)
                 return
@@ -342,10 +342,8 @@ class HostWorker(QWorker):
             dt = None
         log_text = bytes_to_string(get_log(container_id, since=dt))
         if "max_lines" in data and data["max_lines"] is not None:
-            mlines = data["max_lines"]
             ltlist = log_text.split("\n")[-1 * data["max_lines"]:]
             log_text = "\n".join(ltlist)
-        print("*** returning from get_container_log in host ***")
         return {"success": True, "log_text": log_text}
 
     @task_worthy
@@ -600,11 +598,11 @@ class HostWorker(QWorker):
     @task_worthy
     def print_text_area_to_console(self, data):
         from tactic_app import socketio
-        user_id = data["user_id"]
-        user_obj = load_user(user_id)
-        user_tstring = user_obj.get_timestrings(datetime.datetime.utcnow())[0]
+        # user_id = data["user_id"]
+        # user_obj = load_user(user_id)
+        # user_tstring = user_obj.get_timestrings(datetime.datetime.utcnow())[0]
         unique_id = str(uuid.uuid4())
-        summary_text = "text item " + user_tstring
+        # summary_text = "text item " + user_tstring
         data["message"] = {"unique_id": unique_id,
                            "type": "text",
                            "am_shrunk": False,
@@ -657,11 +655,11 @@ class HostWorker(QWorker):
     @task_worthy
     def print_code_area_to_console(self, data):
         from tactic_app import socketio
-        user_id = data["user_id"]
-        user_obj = load_user(user_id)
-        user_tstring = user_obj.get_timestrings(datetime.datetime.utcnow())[0]
+        # user_id = data["user_id"]
+        # user_obj = load_user(user_id)
+        # user_tstring = user_obj.get_timestrings(datetime.datetime.utcnow())[0]
         unique_id = str(uuid.uuid4())
-        summary_text = "code item " + user_tstring
+        # summary_text = "code item " + user_tstring
         data["message"] = {"unique_id": unique_id,
                            "type": "code",
                            "am_shrunk": False,
@@ -706,16 +704,16 @@ class HostWorker(QWorker):
         socketio.emit("tile-message", data, namespace='/main', room=data["main_id"])
         return {"success": True}
 
-    @task_worthy
-    def get_empty_tile_containers(self, data):
-        tile_containers = []
-        for i in range(data["number"]):
-            tile_container_id, container_id = create_container("bsherin/tactic:tile",
-                                                               network_mode="bridge",
-                                                               owner=data["user_id"],
-                                                               parent=data["parent"])
-            tile_containers.append(tile_container_id)
-        return {"tile_containers": tile_containers}
+    # @task_worthy
+    # def get_empty_tile_containers(self, data):
+    #     tile_containers = []
+    #     for i in range(data["number"]):
+    #         tile_container_id, container_id = create_container("bsherin/tactic:tile",
+    #                                                            network_mode="bridge",
+    #                                                            owner=data["user_id"],
+    #                                                            parent=data["parent"])
+    #         tile_containers.append(tile_container_id)
+    #     return {"tile_containers": tile_containers}
 
     @task_worthy
     def get_module_code(self, data):
@@ -754,6 +752,33 @@ class HostWorker(QWorker):
     @task_worthy
     def deregister_container(self, data):
         tactic_app.health_tracker.deregister_container(data["container_id"])
+
+    @task_worthy
+    def StartLogStreaming(self, data):
+        container_id = data["container_id"]
+        if container_id is not None and container_id not in streaming_workers:
+            worker = docker_functions.LogStreamer(socketio)
+            thread = socketio.start_background_task(worker.background_log_lines,
+                                                    container_id,
+                                                    data["main_id"],
+                                                    {"message": "updateLog", "container_id": container_id},
+                                                    "searchable-console-message")
+            streaming_workers[container_id] = thread
+        return None
+
+    @task_worthy
+    def StopLogStreaming(self, data):
+        container_id = data["container_id"]
+        print("stopping log streamer " + str(container_id))
+        print(f"streaming_workers.keys() is {str(streaming_workers.keys())}")
+        if container_id in streaming_workers:
+            print("killing the threader")
+            thread = streaming_workers[container_id]
+            thread.kill()
+            print("deleting the worker")
+            del streaming_workers[container_id]
+            print(f"streaming_workers.keys() is {str(streaming_workers.keys())}")
+        return None
 
     def forward_client_post(self, task_packet):
         dest_id = task_packet["dest"]
@@ -818,16 +843,13 @@ class HealthTracker:
         return redis_ht.type(k) == "hash" and redis_ht.hexists(k, "am_health_data")
 
     def register_container(self, container_id):
-        print("in register_container in healthtracker with container_id {}".format(container_id))
         ctime = current_timestamp()
         starting_data = {
             "created": ctime,
             "last_contact": ctime,
             "am_health_data": "True"
         }
-        print("about to register in redis")
         redis_ht.hmset(container_id, starting_data)
-        print("did the register")
 
     def register_container_heartbeat(self, container_id):
         if not redis_ht.exists(container_id):
@@ -836,10 +858,8 @@ class HealthTracker:
             redis_ht.hset(container_id, "last_contact", current_timestamp())
 
     def check_health(self):
-        print("entering check_health")
         current_time = current_timestamp()
         if (current_time - self.last_health_check) > health_check_time:
-            print("doing a health check")
             if not redis_ht.exists("last_health_check"):
                 # we want to see if another worker has done a check more recently
                 last_worker_check = float(redis_ht.get("last_health_check"))
@@ -847,6 +867,10 @@ class HealthTracker:
                     return
             self.check_for_dead_containers()
             redis_ht.set("last_health_check", current_time)
+            if len(streaming_workers.keys()) == 0:
+                print("no streaming workers")
+            else:
+                print(f"***{str(len(streaming_workers.keys()))} streaming workers with ids {str(streaming_workers.keys())}***")
         return
 
     def deregister_container(self, container_id):

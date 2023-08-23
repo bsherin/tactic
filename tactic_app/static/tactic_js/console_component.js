@@ -1556,6 +1556,7 @@ function ConsoleComponent(props) {
     search_helper_text: search_helper_text
   }), !props.mState.console_is_shrunk && show_main_log && /*#__PURE__*/_react["default"].createElement(_searchable_console.SearchableConsole, {
     main_id: props.main_id,
+    streaming_host: props.main_id,
     container_id: props.main_id,
     ref: body_ref,
     outer_style: {
@@ -1568,6 +1569,7 @@ function ConsoleComponent(props) {
     showCommandField: false
   }), !props.mState.console_is_shrunk && show_pseudo_log && /*#__PURE__*/_react["default"].createElement(_searchable_console.SearchableConsole, {
     main_id: props.main_id,
+    streaming_host: props.main_id,
     container_id: pseudo_tile_id,
     ref: body_ref,
     outer_style: {

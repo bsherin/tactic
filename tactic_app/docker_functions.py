@@ -20,7 +20,8 @@ mongo_uri = os.environ.get("MONGO_URI")
 _develop = ("DEVELOP" in os.environ) and (os.environ.get("DEVELOP") == "True")
 RETRIES = os.environ.get("RETRIES")
 tactic_image_names = ["bsherin/tactic:tile", "bsherin/tactic:main",
-                      "bsherin/tactic:module_viewer", "bsherin/tactic:host"]
+                      "bsherin/tactic:module_viewer", "bsherin/tactic:host"
+                      ]
 
 if "DEBUG_MAIN_CONTAINER" in os.environ:
     DEBUG_MAIN_CONTAINER = os.environ.get("DEBUG_MAIN_CONTAINER")
@@ -76,6 +77,7 @@ if "TRUE_HOST_RESOURCES_DIR" in os.environ:
 else:
     true_host_resources_dir = None
 
+streaming_workers = {}
 
 class MainContainerTracker(object):
 
@@ -119,6 +121,8 @@ class LogStreamer(object):
     def background_log_lines(self, cont_id, room, base_data, event_name):
         cont = get_container(cont_id)
         for line in cont.logs(stream=True, tail=0):
+            # Shouldn't do anything here that will cause something to be entered in the log of a
+            # container being streamed. That will give an infinite loop.
             base_data["new_line"] = line.decode()
             self.socketio.emit(event_name, base_data, namespace="/main", room=room)
         return
@@ -370,7 +374,6 @@ def get_log(tactic_id, since=None):
 
 
 def destroy_container(tactic_id, notify=True):
-    print("in destory_container")
     try:
         cont = get_container(tactic_id)
         message = None
@@ -393,6 +396,10 @@ def destroy_container(tactic_id, notify=True):
             if cont_type == "tile":
                 cont_list.append("kill_" + tactic_id)
             delete_list_of_queues(cont_list)
+            if tactic_id in streaming_workers:
+                thread = streaming_workers[container_id]
+                thread.kill()
+                del streaming_workers[container_id]
             if notify and message is not None:
                 data = {"message": message,
                         "alert_type": "alert-warning",

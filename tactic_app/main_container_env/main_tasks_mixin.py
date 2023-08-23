@@ -10,6 +10,7 @@ from qworker import task_worthy_methods, task_worthy_manual_submit_methods
 from communication_utils import make_python_object_jsonizable, debinarize_python_object, store_temp_data
 from communication_utils import make_jsonizable_and_compress, read_project_dict, socketio
 import docker_functions
+from docker_functions import streaming_workers
 from mongo_accesser import bytes_to_string, NameExistsError
 from doc_info import docInfo, FreeformDocInfo
 from qworker import debug_log
@@ -26,9 +27,6 @@ def task_worthy(m):
 def task_worthy_manual_submit(m):
     task_worthy_manual_submit_methods[m.__name__] = "mainwindow"
     return m
-
-
-streaming_workers = {}
 
 
 class StateTasksMixin:

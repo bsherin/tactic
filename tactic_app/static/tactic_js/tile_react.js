@@ -690,16 +690,19 @@ function TileComponent(props) {
     };
     transitionStylesAltDown = {
       entering: {
-        top: header_height
+        top: header_height,
+        opacity: 1
       },
       entered: {
-        top: header_height
+        top: header_height,
+        opacity: 1
       },
       exiting: {
         top: tile_height + 50
       },
       exited: {
-        top: tile_height + 50
+        top: tile_height + 50,
+        opacity: 0
       }
     };
     tile_log_style.transition = "opacity ".concat(ANI_DURATION, "ms ease-in-out");
@@ -906,6 +909,7 @@ function TileComponent(props) {
     className: "tile-log-area"
   }, /*#__PURE__*/_react["default"].createElement(_searchable_console.SearchableConsole, {
     main_id: props.main_id,
+    streaming_host: props.main_id,
     container_id: props.tile_id,
     ref: inner_log_ref,
     outer_style: tile_log_style,

@@ -14,6 +14,7 @@ var _communication_react = require("./communication_react");
 var _sizing_tools = require("./sizing_tools");
 var _utilities_react = require("./utilities_react");
 var _lodash = _interopRequireDefault(require("lodash"));
+var _searchable_console = require("./searchable_console");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -72,9 +73,6 @@ function AdminPane(props) {
   (0, _react.useEffect)(function () {
     initSocket();
     _grabNewChunkWithRow(0, true, null, true, null);
-    return function () {
-      props.tsocket.disconnect();
-    };
   }, []);
   function initSocket() {
     if (props.tsocket != null) {
@@ -328,20 +326,36 @@ function AdminPane(props) {
   if (Object.keys(additional_metadata).length == 0) {
     additional_metadata = null;
   }
-  var right_pane = /*#__PURE__*/_react["default"].createElement("div", {
-    className: "d-flex d-inline",
-    ref: console_text_ref,
-    style: {
-      overflow: "auto",
-      verticalAlign: "top",
-      marginTop: 12,
-      marginLeft: 10,
-      width: "100%",
-      height: "100%",
-      border: "1px solid black",
-      padding: 10
-    }
-  }, /*#__PURE__*/_react["default"].createElement("pre", null, /*#__PURE__*/_react["default"].createElement("small", null, props.console_text)));
+  var right_pane;
+  if (props.res_type == "container") {
+    right_pane = /*#__PURE__*/_react["default"].createElement("div", {
+      className: "d-flex d-inline",
+      ref: console_text_ref,
+      style: {
+        height: "100%",
+        overflow: "hidden",
+        marginRight: 50
+      }
+    }, /*#__PURE__*/_react["default"].createElement(_searchable_console.SearchableConsole, {
+      main_id: window.library_id,
+      streaming_host: "host",
+      container_id: props.selected_resource.Id,
+      ref: null,
+      outer_style: {
+        overflowX: "auto",
+        overflowY: "auto",
+        height: "100%",
+        width: "100%",
+        marginTop: 0,
+        marginLeft: 5,
+        marginRight: 0,
+        padding: 15
+      },
+      showCommandField: false
+    }));
+  } else {
+    right_pane = /*#__PURE__*/_react["default"].createElement("div", null);
+  }
   var th_style = {
     "display": "inline-block",
     "verticalAlign": "top",
@@ -389,8 +403,8 @@ function AdminPane(props) {
       maxWidth: total_width,
       maxHeight: table_height,
       padding: 15,
-      marginTop: 10,
-      backgroundColor: "white"
+      marginTop: 10
+      // backgroundColor: "white"
     }
   }, /*#__PURE__*/_react["default"].createElement(_library_widgets.SearchForm, {
     allow_search_inside: false,
@@ -401,8 +415,9 @@ function AdminPane(props) {
     data_dict: data_dict_ref.current,
     num_rows: num_rows,
     awaiting_data: awaiting_data,
-    enableColumnResizing: false,
-    maxColumnWidth: 225,
+    enableColumnResizing: true
+    // maxColumnWidth={225}
+    ,
     sortColumn: _set_sort_state,
     selectedRegions: props.selectedRegions,
     communicateColumnWidthSum: _communicateColumnWidthSum,
@@ -432,7 +447,7 @@ function AdminPane(props) {
     left_pane: left_pane,
     right_pane: right_pane,
     show_handle: true,
-    available_width: props.usable_width - 50,
+    available_width: props.usable_width,
     available_height: table_height,
     initial_width_fraction: .65,
     handleSplitUpdate: _handleSplitResize
