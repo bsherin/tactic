@@ -103,7 +103,7 @@ function correctOptionListTypes(option_list) {
   }
   return copied_olist;
 }
-var option_types = ['text', 'int', 'float', 'boolean', 'textarea', 'codearea', 'column_select', 'document_select', 'list_select', 'collection_select', 'palette_select', 'pipe_select', 'custom_list', 'function_select', 'class_select', 'tile_select', 'divider'];
+var option_types = ['text', 'int', 'float', 'boolean', 'textarea', 'codearea', 'column_select', 'document_select', 'list_select', 'collection_select', 'palette_select', 'pipe_select', 'custom_list', 'function_select', 'class_select', 'tile_select', 'divider', 'pool_select'];
 var taggable_types = ["class_select", "function_select", "pipe_select", "list_select", "collection_select"];
 function OptionModuleForm(props) {
   function _setFormState(new_state) {

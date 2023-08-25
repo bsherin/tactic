@@ -71,11 +71,28 @@ if "TRUE_HOST_PERSIST_DIR" in os.environ:
 else:
     true_host_persist_dir = None
 
-
 if "TRUE_HOST_RESOURCES_DIR" in os.environ:
     true_host_resources_dir = os.environ.get("TRUE_HOST_RESOURCES_DIR")
 else:
     true_host_resources_dir = None
+
+if "TRUE_HOST_POOL_DIR" in os.environ:
+    true_host_pool_dir = os.environ.get("TRUE_HOST_POOL_DIR")
+else:
+    true_host_pool_dir = None
+
+if "TRUE_USER_HOST_POOL_DIR" in os.environ:
+    true_user_host_pool_dir = os.environ.get("TRUE_USER_HOST_POOL_DIR")
+else:
+    true_user_host_pool_dir = None
+print(f"***Got true_user_host_pool_dir {str(true_user_host_pool_dir)}***")
+
+
+def get_user_pool_dir(username):
+    if true_host_pool_dir is None or username not in os.listdir("/pool"):
+        return None
+    else:
+        return f"{true_host_pool_dir}/{username}"
 
 streaming_workers = {}
 
@@ -87,6 +104,7 @@ class MainContainerTracker(object):
         main_volume_dict[user_host_persist_dir] = {"bind": "/code/persist", "mode": "ro"}
         rb_id = str(uuid.uuid4())
         environ = {"USE_WAIT_TASKS": "True", "RB_ID": rb_id}
+        true_user_pool_dir = get_user_pool_dir(username)
         if "USE_REMOTE_DATABASE" in os.environ:
             environ["USE_REMOTE_DATABASE"] = os.environ.get("USE_REMOTE_DATABASE")
             environ["REMOTE_KEY_FILE"] = os.environ.get("REMOTE_KEY_FILE")
@@ -98,7 +116,10 @@ class MainContainerTracker(object):
                                                   volume_dict=main_volume_dict,
                                                   publish_all_ports=True,
                                                   local_true_host_persist_dir=true_host_persist_dir,
-                                                  local_true_host_resources_dir=true_host_resources_dir)
+                                                  local_true_host_resources_dir=true_host_resources_dir,
+                                                  local_true_host_pool_dir=true_host_pool_dir,
+                                                  local_true_user_host_pool_dir=true_user_pool_dir
+                                                  )
 
         return main_id, rb_id
 
@@ -151,7 +172,9 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
                      other_name="none", volume_dict=None, username=None,
                      detach=True, register_container=True, publish_all_ports=False,
                      local_true_host_persist_dir=None, restart_policy=None,
-                     local_true_host_resources_dir=None, special_unique_id=None):
+                     local_true_host_resources_dir=None,
+                     local_true_host_pool_dir=None, local_true_user_host_pool_dir=None,
+                     special_unique_id=None):
     if env_vars is None:
         env_vars = {}
     if special_unique_id is not None:
@@ -172,8 +195,14 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
                "PYTHONUNBUFFERED": "Yes",
                "USE_ARM64": USE_ARM64,
                "TRUE_HOST_PERSIST_DIR": local_true_host_persist_dir,
-               "TRUE_HOST_RESOURCES_DIR": local_true_host_resources_dir
+               "TRUE_HOST_RESOURCES_DIR": local_true_host_resources_dir,
                }
+    if local_true_host_pool_dir is not None:
+        environ["TRUE_HOST_POOL_DIR"] = local_true_host_pool_dir
+
+    if local_true_user_host_pool_dir is not None:
+        environ["TRUE_USER_HOST_POOL_DIR"] = local_true_user_host_pool_dir
+        print(f"got local_true_user_host_pool_dir {local_true_user_host_pool_dir}")
 
     if username is not None:
         environ["USERNAME"] = username

@@ -4,6 +4,7 @@ from gevent import monkey
 monkey.patch_all()
 # pydevd_pycharm.settrace('docker.for.mac.localhost', port=21000, stdoutToServer=True, stderrToServer=True,
 #                         suspend=True)
+print("at top of tile_main.py")
 import os
 import pika
 import json

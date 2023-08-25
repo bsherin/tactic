@@ -1,7 +1,7 @@
 // noinspection JSConstructorReturnsPrimitive
 
 import React from "react";
-import {Fragment, useState, useEffect, useRef, memo} from "react";
+import {Fragment, useState, useEffect, memo} from "react";
 import PropTypes from 'prop-types';
 
 import { Button, Card, Collapse, Divider, Menu, MenuItem, MenuDivider, Switch } from "@blueprintjs/core";
@@ -80,7 +80,7 @@ function correctOptionListTypes(option_list) {
 
 const option_types = ['text', 'int', 'float', 'boolean', 'textarea', 'codearea', 'column_select', 'document_select',
             'list_select', 'collection_select', 'palette_select', 'pipe_select', 'custom_list', 'function_select',
-            'class_select', 'tile_select', 'divider'];
+            'class_select', 'tile_select', 'divider', 'pool_select'];
 const taggable_types = ["class_select", "function_select", "pipe_select", "list_select", "collection_select"];
 
 function OptionModuleForm(props) {
