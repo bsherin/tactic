@@ -37,6 +37,12 @@ else:
 true_host_persist_dir = os.environ.get("TRUE_HOST_PERSIST_DIR")
 true_host_resources_dir = os.environ.get("TRUE_HOST_RESOURCES_DIR")
 
+if "TRUE_USER_HOST_POOL_DIR" in os.environ:
+    true_user_host_pool_dir = os.environ.get("TRUE_USER_HOST_POOL_DIR")
+else:
+    true_user_host_pool_dir = None
+
+print(f"got true_user_host_pool_dir {str(true_user_host_pool_dir)}")
 
 # noinspection PyPep8Naming,PyUnusedLocal,PyTypeChecker,PyMissingConstructor
 class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationTasksMixin, APISupportTasksMixin,
@@ -155,6 +161,8 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             tile_volume_dict = {}
             tile_volume_dict[user_host_persist_dir] = {"bind": "/code/persist", "mode": "rw"}
             tile_volume_dict[true_host_resources_dir] = {"bind": "/root/resources", "mode": "ro"}
+            if true_user_host_pool_dir is not None:
+                tile_volume_dict[true_user_host_pool_dir] = {"bind": "/mydisk", "mode": "rw"}
             tile_volume_dict[transformers_resource_dir] = {"bind": "/root/.cache/huggingface", "mode": "rw"}
             tile_container_id, container_id = docker_functions.create_container("bsherin/tactic:tile",
                                                                                 network_mode="bridge",

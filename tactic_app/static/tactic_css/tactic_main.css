@@ -50,6 +50,17 @@
   font-size: 15px;
 }
 
+.pool-select-tree {
+  padding: 5px;
+}
+.pool-select-tree .bp5-tree-node-label {
+  font-size: 12px;
+}
+.pool-select-tree .bp5-tree-node-icon svg {
+  height: 14px;
+  width: 14px;
+}
+
 .tile-form-menu-item.bp5-menu-item {
   font-size: 13px;
   line-height: 15px;

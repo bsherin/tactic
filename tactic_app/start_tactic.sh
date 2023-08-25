@@ -43,6 +43,10 @@ while :; do
       remote_key_file="$3"
       shift 2
       ;;
+    --pdir)
+      pool_dir="$2"
+      shift
+      ;;
     *)
       break
       ;;
@@ -57,6 +61,7 @@ mongo_uri="tactic-mongo"
 host_persist_dir="$root_dir/persist"
 host_static_dir="$root_dir/tactic_app/static"
 host_resources_dir="$root_dir/tactic_app/resources"
+host_pool_dir="$pool_dir"
 restart_policy="on-failure:5"
 echo "develop is $develop"
 if [ $use_arm64 == "True" ] ; then
@@ -174,6 +179,7 @@ for port in 5000 5001
       -p $port:5000 \
       --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock \
       --mount type=bind,source=$host_persist_dir,target=/code/persist \
+      --mount type=bind,source=$host_pool_dir,target=/pool \
       --mount type=bind,source=$host_static_dir,target=/code/static \
       --mount type=bind,source=$remote_key_file,target=$remote_key_file \
       --label my_id=host$port \
@@ -188,6 +194,7 @@ for port in 5000 5001
       -e MYPORT=$port \
       -e TRUE_HOST_PERSIST_DIR=$host_persist_dir \
       -e TRUE_HOST_RESOURCES_DIR=$host_resources_dir \
+      -e TRUE_HOST_POOL_DIR=$host_pool_dir \
       -e USE_ARM64=$use_arm64 \
       -e DEVELOP=$develop \
       -e USE_REMOTE_DATABASE=$use_remote_db \

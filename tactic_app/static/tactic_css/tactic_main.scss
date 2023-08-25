@@ -63,6 +63,18 @@
         font-weight: 700;
         font-size: 15px;
     }
+
+}
+
+.pool-select-tree {
+    padding: 5px;
+    .bp5-tree-node-label {
+        font-size: 12px
+    }
+    .bp5-tree-node-icon svg {
+        height: 14px;
+        width: 14px;
+    }
 }
 
 .tile-form-menu-item {
