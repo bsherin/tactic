@@ -91,7 +91,7 @@ def clear_and_exec_user_code(the_code):
 
 # noinspection PyMiss
 # ingConstructor
-# noinspection PyUnusedLocal
+# noinspection PyUnusedLocal,PyMissingConstructor
 class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMixin,
                OtherAPIMIxin, RefreshingMixin, ExceptionMixin):
     category = "basic"
@@ -178,57 +178,6 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
             else:
                 self.handle_size_change()
         return None
-
-    def folder_dict(self, the_id, path, basename, child_nodes=[]):
-        return {
-            "id": the_id,
-            "icon": "folder-close",
-            "isExpanded": False,
-            "basename": basename,
-            "label": basename,
-            "fullpath": path,
-            "childNodes": child_nodes,
-            "isSelected": False
-        }
-
-    def file_dict(self, the_id, path, basename):
-        return {
-            "id": the_id,
-            "icon": "document",
-            "fullpath": path,
-            "basename": basename,
-            "label": basename,
-            "isSelected": False
-        }
-
-    def get_node(self, root):
-        new_base_node = self.folder_dict(self.the_id, root, os.path.basename(root))
-        self.the_id += 1
-        child_list = []
-        for root, dirs, files in os.walk(root):
-            for f in files:
-                fpath = f"{root}/{f}"
-                if not os.path.dirname(fpath) == root or fpath in self.visited:
-                    continue
-                self.visited.append(fpath)
-                child_list.append(self.file_dict(self.the_id, fpath, f))
-                self.the_id += 1
-            for adir in dirs:
-                fpath = f"{root}/{adir}"
-                if not os.path.dirname(fpath) == root or fpath in self.visited:
-                    continue
-                self.visited.append(fpath)
-                child_list.append(self.get_node(fpath))
-        new_base_node["childNodes"] = child_list
-        return new_base_node
-
-    @_task_worthy
-    def GetPoolTree(self, data):
-        self.visited = []
-        self.the_id = 0
-        dtree = []
-        dtree.append(self.get_node("/mydisk"))
-        return {"dtree": dtree}
 
     @_task_worthy
     def RefreshTileFromSave(self, data):
@@ -496,6 +445,11 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                         form_item["option_list"] = color_palette_names
                     case "custom_list":
                         form_item["option_list"] = option["special_list"]
+                    case "pool_select":
+                        if "pool_select_type" in option:
+                            form_item["pool_select_type"] = option["pool_select_type"]
+                        else:
+                            form_item["pool_select_type"] = "both"
                     case "int":
                         if starting_value is None:
                             starting_value = 0

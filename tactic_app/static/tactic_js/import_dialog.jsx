@@ -11,6 +11,7 @@ import {BpSelect} from "./blueprint_mdata_fields.js";
 import {useConstructor} from "./utilities_react";
 import {renderToStaticMarkup} from "react-dom/server";
 import {ErrorItem} from "./error_drawer";
+import {PoolAddressSelector} from "./pool_tree";
 
 export {showFileImportDialog}
 
@@ -74,7 +75,6 @@ function FileImportDialog(props) {
 
     function _handleError(file, message, xhr = null) {
         _handleResponse({title: `Error for ${file.name}`, "content": message})
-
     }
 
     function _updatePickerSize() {
@@ -279,7 +279,13 @@ function FileImportDialog(props) {
         justifyContent: "space-around",
         minHeight: 101
     };
-    let allowed_types_string = props.allowed_file_types.replaceAll(",", " ");
+    let allowed_types_string;
+    if (props.allowed_file_types) {
+        allowed_types_string = props.allowed_file_types.replaceAll(",", " ");
+    }
+    else {
+        allowed_types_string = "any"
+    }
     return (
         <Dialog isOpen={show}
                 className={props.dark_theme ? "import-dialog bp5-dark" : "import-dialog light-theme"}
@@ -296,15 +302,23 @@ function FileImportDialog(props) {
                 <div style={body_style}>
                     {props.combine &&
                         <div>
-                            <FormGroup label={`New ${props.res_type} name`}
-                                       labelFor="name-input"
-                                       inline={true}
-                                       helperText={warning_text}>
+                            {props.show_address_selector &&
+                                <PoolAddressSelector value={current_value}
+                                    select_type="folder"
+                                    setValue={set_current_value}
+                                />
+                            }
+                            {!props.show_address_selector &&
+                                <FormGroup label={`New ${props.res_type} name`}
+                                        labelFor="name-input"
+                                        inline={true}
+                                        helperText={warning_text}>
                                 <InputGroup onChange={_nameChangeHandler}
                                             fill={false}
                                             id="name-input"
                                             value={current_value}/>
-                            </FormGroup>
+                                </FormGroup>
+                            }
                             {(checkbox_items.length != 0) && checkbox_items}
                             {props.show_csv_options &&
                                 <div>
@@ -334,6 +348,7 @@ function FileImportDialog(props) {
                                     </Collapse>
                                 </div>
                             }
+
                         </div>
                     }
 
@@ -376,14 +391,16 @@ FileImportDialog.propTypes = {
     popupoptions: PropTypes.array,
     handleClose: PropTypes.func,
     tsocket: PropTypes.object,
-    dark_theme: PropTypes.bool
+    dark_theme: PropTypes.bool,
+    show_address_selector: PropTypes.bool
 };
 
 FileImportDialog.defaultProps = {
     checkboxes: null,
     textoptions: null,
     popupoptions: null,
-    after_upload: null
+    after_upload: null,
+    show_address_selector: false
 };
 
 function showFileImportDialog(res_type, allowed_file_types, checkboxes, process_handler, tsocket, dark_theme,

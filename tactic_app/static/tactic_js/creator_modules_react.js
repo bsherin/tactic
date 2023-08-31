@@ -136,6 +136,11 @@ function OptionModuleForm(props) {
       "special_list": textRowsToArray(event.target.value)
     });
   }
+  function handlePoolTypeChange(event) {
+    _setFormState({
+      "pool_select_type": event.currentTarget.value
+    });
+  }
   function handleTypeChange(event) {
     var new_type = event.currentTarget.value;
     var updater = {
@@ -150,12 +155,16 @@ function OptionModuleForm(props) {
     if (new_type == "boolean") {
       updater["default"] = false;
     }
+    if (new_type != "pool_select") {
+      updater["pool_select_type"] = "";
+    }
     _setFormState(updater);
   }
   function handleSubmit(update) {
     var copied_state = _lodash["default"].cloneDeep(props.form_state);
     delete copied_state.default_warning_text;
     delete copied_state.name_warning_text;
+    delete copied_state.update_warning_text;
     if (!update && props.nameExists(props.form_state.name, update)) {
       _setFormState({
         name_warning_text: "Name exists"
@@ -184,13 +193,14 @@ function OptionModuleForm(props) {
       flexDirection: "column",
       padding: 25
     }
-  }, /*#__PURE__*/_react["default"].createElement("div", {
+  }, /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     style: {
       display: "flex",
       flexWrap: "wrap",
       flexDirection: "row",
       marginBottom: 20
-    }
+    },
+    helperText: props.form_state.update_warning_text
   }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
     type: "submit",
     style: {
@@ -281,6 +291,11 @@ function OptionModuleForm(props) {
     label: "Tag",
     onChange: handleTagChange,
     the_value: props.form_state.tags
+  }), props.form_state.type == "pool_select" && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.LabeledSelectList, {
+    label: "Type",
+    option_list: ["file", "folder", "both"],
+    onChange: handlePoolTypeChange,
+    the_value: props.form_state.pool_select_type
   }))));
 }
 OptionModuleForm = /*#__PURE__*/(0, _react.memo)(OptionModuleForm);
@@ -417,8 +432,15 @@ function OptionModule(props) {
       new_data_list.push(new_row);
     }
     props.handleChange(new_data_list, function () {
+      if (update) {
+        _setFormState({
+          update_warning_text: "Value Updated"
+        });
+      }
       setTimeout(function () {
         _clearHighlights(new_data_list);
+        var new_form_state = Object.assign(_lodash["default"].cloneDeep(form_state), new_state);
+        _setFormState(new_form_state);
       }, 5 * 1000);
     });
   }
@@ -457,40 +479,43 @@ function OptionModule(props) {
       special_list: "",
       tags: "",
       default_warning_text: null,
-      name_warning_text: null
+      name_warning_text: null,
+      update_warning_text: null,
+      pool_select_type: ""
     });
   }
   function _handleRowDeSelect() {
     set_active_row(null);
     pushCallback(_clearForm);
   }
-  var cols = ["name", "type", "display_text", "default", "special_list", "tags"];
+  var cols = ["name", "type", "display_text", "default", "tags"];
   var options_pane_style = {
     "marginTop": 10,
     "marginLeft": 10,
     "marginRight": 10,
     "height": props.available_height
   };
-  var copied_dlist = _lodash["default"].cloneDeep(props.data_list);
-  var _iterator7 = _createForOfIteratorHelper(copied_dlist),
-    _step7;
-  try {
-    for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
-      var option = _step7.value;
-      if (typeof option["default"] == "boolean") {
-        option["default"] = option["default"] ? "True" : "False";
+  var copied_dlist = props.data_list.map(function (opt) {
+    var new_opt = {};
+    for (var _i2 = 0, _cols = cols; _i2 < _cols.length; _i2++) {
+      var col = _cols[_i2];
+      if (col in opt) {
+        new_opt[col] = opt[col];
       }
-      for (var param in option) {
-        if (Array.isArray(option[param])) {
-          option[param] = arrayToString(option[param]);
-        }
+      if (typeof new_opt["default"] == "boolean") {
+        new_opt["default"] = new_opt["default"] ? "True" : "False";
       }
     }
-  } catch (err) {
-    _iterator7.e(err);
-  } finally {
-    _iterator7.f();
-  }
+    for (var param in new_opt) {
+      if (Array.isArray(new_opt[param])) {
+        new_opt[param] = arrayToString(new_opt[param]);
+      }
+    }
+    if ("className" in opt) {
+      new_opt.className = opt.className;
+    }
+    return new_opt;
+  });
   return /*#__PURE__*/_react["default"].createElement(_core.Card, {
     elevation: 1,
     id: "options-pane",
@@ -785,11 +810,11 @@ function CommandsModule(props) {
     set_search_string(new_state["search_string"]);
   }
   var object_items = [];
-  var _iterator8 = _createForOfIteratorHelper(ordered_object_categories),
-    _step8;
+  var _iterator7 = _createForOfIteratorHelper(ordered_object_categories),
+    _step7;
   try {
-    for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
-      var category = _step8.value;
+    for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
+      var category = _step7.value;
       var res = /*#__PURE__*/_react["default"].createElement(ObjectCategoryEntry, {
         category_name: category,
         key: category,
@@ -799,16 +824,16 @@ function CommandsModule(props) {
       object_items.push(res);
     }
   } catch (err) {
-    _iterator8.e(err);
+    _iterator7.e(err);
   } finally {
-    _iterator8.f();
+    _iterator7.f();
   }
   var command_items = [];
-  var _iterator9 = _createForOfIteratorHelper(ordered_categories),
-    _step9;
+  var _iterator8 = _createForOfIteratorHelper(ordered_categories),
+    _step8;
   try {
-    for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
-      var _category = _step9.value;
+    for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
+      var _category = _step8.value;
       var _res = /*#__PURE__*/_react["default"].createElement(CategoryEntry, {
         category_name: _category,
         key: _category,
@@ -818,9 +843,9 @@ function CommandsModule(props) {
       command_items.push(_res);
     }
   } catch (err) {
-    _iterator9.e(err);
+    _iterator8.e(err);
   } finally {
-    _iterator9.f();
+    _iterator8.f();
   }
   return /*#__PURE__*/_react["default"].createElement(_core.Card, {
     elevation: 1,
@@ -866,11 +891,11 @@ function ObjectCategoryEntry(props) {
     show_category = true;
   }
   var index = 0;
-  var _iterator10 = _createForOfIteratorHelper(props.class_list),
-    _step10;
+  var _iterator9 = _createForOfIteratorHelper(props.class_list),
+    _step9;
   try {
-    for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
-      var class_entry = _step10.value;
+    for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
+      var class_entry = _step9.value;
       var entries = [];
       var show_class = false;
       if (class_entry[2] == "class") {
@@ -880,11 +905,11 @@ function ObjectCategoryEntry(props) {
           show_category = true;
           show_class = true;
         }
-        var _iterator11 = _createForOfIteratorHelper(class_entry[1]),
-          _step11;
+        var _iterator10 = _createForOfIteratorHelper(class_entry[1]),
+          _step10;
         try {
-          for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
-            var entry = _step11.value;
+          for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
+            var entry = _step10.value;
             entry["kind"] = "class_" + entry["kind"];
             var show_entry = false;
             if (show_whole_class || stringIncludes(entry.signature, props.search_string)) {
@@ -897,9 +922,9 @@ function ObjectCategoryEntry(props) {
             }
           }
         } catch (err) {
-          _iterator11.e(err);
+          _iterator10.e(err);
         } finally {
-          _iterator11.f();
+          _iterator10.f();
         }
         if (show_class) {
           classes.push( /*#__PURE__*/_react["default"].createElement(_react.Fragment, {
@@ -925,9 +950,9 @@ function ObjectCategoryEntry(props) {
       }
     }
   } catch (err) {
-    _iterator10.e(err);
+    _iterator9.e(err);
   } finally {
-    _iterator10.f();
+    _iterator9.f();
   }
   if (show_category) {
     return /*#__PURE__*/_react["default"].createElement(_react.Fragment, {
@@ -956,11 +981,11 @@ function CategoryEntry(props) {
   }
   var entries = [];
   var index = 0;
-  var _iterator12 = _createForOfIteratorHelper(props.command_list),
-    _step12;
+  var _iterator11 = _createForOfIteratorHelper(props.command_list),
+    _step11;
   try {
-    for (_iterator12.s(); !(_step12 = _iterator12.n()).done;) {
-      var entry = _step12.value;
+    for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
+      var entry = _step11.value;
       if (show_whole_category || stringIncludes(entry.signature, props.search_string)) {
         show_category = true;
         entries.push( /*#__PURE__*/_react["default"].createElement(CommandEntry, _extends({
@@ -970,9 +995,9 @@ function CategoryEntry(props) {
       }
     }
   } catch (err) {
-    _iterator12.e(err);
+    _iterator11.e(err);
   } finally {
-    _iterator12.f();
+    _iterator11.f();
   }
   if (show_category) {
     return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("h5", {
@@ -1078,11 +1103,11 @@ function ApiMenu(props) {
   });
   function _buildMenu() {
     var choices = [];
-    var _iterator13 = _createForOfIteratorHelper(props.item_list),
-      _step13;
+    var _iterator12 = _createForOfIteratorHelper(props.item_list),
+      _step12;
     try {
-      for (_iterator13.s(); !(_step13 = _iterator13.n()).done;) {
-        var item = _step13.value;
+      for (_iterator12.s(); !(_step12 = _iterator12.n()).done;) {
+        var item = _step12.value;
         if (item.kind == "header") {
           choices.push( /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, {
             title: item.name
@@ -1094,9 +1119,9 @@ function ApiMenu(props) {
         }
       }
     } catch (err) {
-      _iterator13.e(err);
+      _iterator12.e(err);
     } finally {
-      _iterator13.f();
+      _iterator12.f();
     }
     return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, choices);
   }
@@ -1104,17 +1129,17 @@ function ApiMenu(props) {
     set_currently_selected(value);
   }
   var option_list = [];
-  var _iterator14 = _createForOfIteratorHelper(props.item_list),
-    _step14;
+  var _iterator13 = _createForOfIteratorHelper(props.item_list),
+    _step13;
   try {
-    for (_iterator14.s(); !(_step14 = _iterator14.n()).done;) {
-      var item = _step14.value;
+    for (_iterator13.s(); !(_step13 = _iterator13.n()).done;) {
+      var item = _step13.value;
       option_list.push(item.name);
     }
   } catch (err) {
-    _iterator14.e(err);
+    _iterator13.e(err);
   } finally {
-    _iterator14.f();
+    _iterator13.f();
   }
   return /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.BpSelect, {
     options: option_list,

@@ -4,12 +4,18 @@ import React from "react";
 import {Fragment, useState, useEffect, memo} from "react";
 import PropTypes from 'prop-types';
 
-import { Button, Card, Collapse, Divider, Menu, MenuItem, MenuDivider, Switch } from "@blueprintjs/core";
+import {Button, Card, Collapse, Divider, Menu, MenuItem, MenuDivider, Switch, FormGroup} from "@blueprintjs/core";
 import {RegionCardinality} from "@blueprintjs/table";
 
 import {postAjax} from "./communication_react";
 import {SearchForm} from "./library_widgets";
-import {LabeledSelectList, LabeledFormField, LabeledTextArea, BpOrderableTable, GlyphButton} from "./blueprint_react_widgets";
+import {
+    LabeledSelectList,
+    LabeledFormField,
+    LabeledTextArea,
+    BpOrderableTable,
+    GlyphButton
+} from "./blueprint_react_widgets";
 import {doFlash} from "./toaster";
 import _ from 'lodash';
 import {isInt} from "./utilities_react";
@@ -18,7 +24,7 @@ import {useCallbackStack} from "./utilities_react";
 
 export {OptionModule, ExportModule, CommandsModule, correctOptionListTypes}
 
-function correctType(type, val, error_flag="__ERROR__") {
+function correctType(type, val, error_flag = "__ERROR__") {
     let result;
     if (val == null || val.length == 0) {
         return null
@@ -27,8 +33,7 @@ function correctType(type, val, error_flag="__ERROR__") {
         case "int":
             if (isInt(val)) {
                 result = typeof val == "number" ? val : parseInt(val)
-            }
-            else {
+            } else {
                 result = error_flag
             }
             break;
@@ -42,16 +47,13 @@ function correctType(type, val, error_flag="__ERROR__") {
         case "boolean":
             if (typeof val == "boolean") {
                 result = val
-            }
-            else {
+            } else {
                 let lval = val.toLowerCase();
                 if (lval == "false") {
                     result = false
-                }
-                else if (lval == "true") {
+                } else if (lval == "true") {
                     result = true;
-                }
-                else {
+                } else {
                     result = error_flag;
                 }
             }
@@ -79,35 +81,40 @@ function correctOptionListTypes(option_list) {
 }
 
 const option_types = ['text', 'int', 'float', 'boolean', 'textarea', 'codearea', 'column_select', 'document_select',
-            'list_select', 'collection_select', 'palette_select', 'pipe_select', 'custom_list', 'function_select',
-            'class_select', 'tile_select', 'divider', 'pool_select'];
+    'list_select', 'collection_select', 'palette_select', 'pipe_select', 'custom_list', 'function_select',
+    'class_select', 'tile_select', 'divider', 'pool_select'];
 const taggable_types = ["class_select", "function_select", "pipe_select", "list_select", "collection_select"];
 
 function OptionModuleForm(props) {
 
     function _setFormState(new_state) {
-       let new_form_state = Object.assign(_.cloneDeep(props.form_state), new_state);
-       props.setFormState(new_form_state)
+        let new_form_state = Object.assign(_.cloneDeep(props.form_state), new_state);
+        props.setFormState(new_form_state)
     }
 
     function handleNameChange(event) {
-        _setFormState({ "name": event.target.value });
+        _setFormState({"name": event.target.value});
     }
 
     function handleDisplayTextChange(event) {
-        _setFormState({ "display_text": event.target.value });
+        _setFormState({"display_text": event.target.value});
     }
 
     function handleDefaultChange(event) {
         let new_val = props.form_state.type == "boolean" ? event.target.checked : event.target.value;
-        _setFormState({ "default": new_val });
+        _setFormState({"default": new_val});
     }
+
     function handleTagChange(event) {
-        _setFormState({ "tags": event.target.value });
+        _setFormState({"tags": event.target.value});
     }
 
     function handleSpecialListChange(event) {
-        _setFormState({ "special_list": textRowsToArray(event.target.value) });
+        _setFormState({"special_list": textRowsToArray(event.target.value)});
+    }
+
+    function handlePoolTypeChange(event) {
+        _setFormState({"pool_select_type": event.currentTarget.value});
     }
 
     function handleTypeChange(event) {
@@ -122,6 +129,9 @@ function OptionModuleForm(props) {
         if (new_type == "boolean") {
             updater["default"] = false
         }
+        if (new_type != "pool_select") {
+            updater["pool_select_type"] = ""
+        }
 
         _setFormState(updater)
     }
@@ -130,6 +140,7 @@ function OptionModuleForm(props) {
         let copied_state = _.cloneDeep(props.form_state);
         delete copied_state.default_warning_text;
         delete copied_state.name_warning_text;
+        delete copied_state.update_warning_text;
         if (!update && props.nameExists(props.form_state.name, update)) {
             _setFormState({name_warning_text: "Name exists"});
             return
@@ -150,56 +161,69 @@ function OptionModuleForm(props) {
     return (
         <form>
             <div style={{display: "flex", flexDirection: "column", padding: 25}}>
-                <div style={{display: "flex", flexWrap: "wrap", flexDirection: "row", marginBottom: 20}}>
+                <FormGroup style={{display: "flex", flexWrap: "wrap", flexDirection: "row", marginBottom: 20}}
+                           helperText={props.form_state.update_warning_text}>
                     <Button type="submit"
                             style={{height: "fit-content", alignSelf: "start", marginTop: 23, marginRight: 5}}
                             text="create"
                             intent="primary"
-                            onClick={e =>{
+                            onClick={e => {
                                 e.preventDefault();
-                                handleSubmit(false)}} />
+                                handleSubmit(false)
+                            }}/>
                     <Button type="submit"
                             style={{height: "fit-content", alignSelf: "start", marginTop: 23, marginRight: 5}}
                             disabled={props.active_row == null}
                             text="update"
                             intent="warning"
-                            onClick={e =>{
+                            onClick={e => {
                                 e.preventDefault();
-                                handleSubmit(true)}}/>
+                                handleSubmit(true)
+                            }}/>
                     <Button style={{height: "fit-content", alignSelf: "start", marginTop: 23, marginRight: 5}}
                             disabled={props.active_row == null}
                             text="delete"
                             intent="danger"
-                            onClick={e =>{
+                            onClick={e => {
                                 e.preventDefault();
-                                props.deleteOption()}} />
+                                props.deleteOption()
+                            }}/>
                     <Button style={{height: "fit-content", alignSelf: "start", marginTop: 23, marginRight: 5}}
                             text="clear"
-                            onClick={e =>{
+                            onClick={e => {
                                 e.preventDefault();
-                                props.clearForm()}} />
-                </div>
+                                props.clearForm()
+                            }}/>
+                </FormGroup>
                 <div style={{display: "flex", flexWrap: "wrap", flexDirection: "row"}}>
                     <LabeledFormField label="Name" onChange={handleNameChange} the_value={props.form_state.name}
                                       helperText={props.form_state.name_warning_text}
                     />
-                    <LabeledSelectList label="Type" option_list={option_types} onChange={handleTypeChange} the_value={props.form_state.type}/>
-                    <LabeledFormField label="Display Text" onChange={handleDisplayTextChange} the_value={props.form_state.display_text}
+                    <LabeledSelectList label="Type" option_list={option_types} onChange={handleTypeChange}
+                                       the_value={props.form_state.type}/>
+                    <LabeledFormField label="Display Text" onChange={handleDisplayTextChange}
+                                      the_value={props.form_state.display_text}
                                       helperText={props.form_state.display_warning_text}
                     />
                     {props.form_state.type != "divider" &&
-                        <LabeledFormField label="Default" onChange={handleDefaultChange} the_value={props.form_state.default}
+                        <LabeledFormField label="Default" onChange={handleDefaultChange}
+                                          the_value={props.form_state.default}
                                           isBool={props.form_state.type == "boolean"}
                                           helperText={props.form_state.default_warning_text}
                         />
                     }
-                {props.form_state.type == "custom_list" &&
-                    <LabeledTextArea label="Special List"
-                                     onChange={handleSpecialListChange}
-                                     the_value={arrayToTextRows(props.form_state.special_list)}/>}
-                {taggable_types.includes(props.form_state.type) &&
-                    <LabeledFormField label="Tag" onChange={handleTagChange} the_value={props.form_state.tags}/>
-                }
+                    {props.form_state.type == "custom_list" &&
+                        <LabeledTextArea label="Special List"
+                                         onChange={handleSpecialListChange}
+                                         the_value={arrayToTextRows(props.form_state.special_list)}/>}
+                    {taggable_types.includes(props.form_state.type) &&
+                        <LabeledFormField label="Tag" onChange={handleTagChange} the_value={props.form_state.tags}/>
+                    }
+                    {props.form_state.type == "pool_select" &&
+                        <LabeledSelectList label="Type" option_list={["file", "folder", "both"]}
+                                           onChange={handlePoolTypeChange}
+                                           the_value={props.form_state.pool_select_type}/>
+                    }
                 </div>
             </div>
 
@@ -257,14 +281,14 @@ function textRowsToArray(tstring) {
 }
 
 const blank_form = {
-        name: "",
-        display_text: "",
-        type: "text",
-        default: "",
-        special_list: "",
-        tags: "",
-        default_warning_text: null,
-        name_warning_text: null
+    name: "",
+    display_text: "",
+    type: "text",
+    default: "",
+    special_list: "",
+    tags: "",
+    default_warning_text: null,
+    name_warning_text: null
 };
 
 function OptionModule(props) {
@@ -278,11 +302,10 @@ function OptionModule(props) {
         let new_data_list = _.cloneDeep(props.data_list);
         new_data_list.splice(active_row, 1);
         let old_active_row = active_row;
-        props.handleChange(new_data_list, ()=>{
+        props.handleChange(new_data_list, () => {
             if (old_active_row >= props.data_list.length) {
                 _handleRowDeSelect()
-            }
-            else {
+            } else {
                 handleActiveRowChange(old_active_row)
             }
         });
@@ -295,8 +318,7 @@ function OptionModule(props) {
                 let new_option = {...option};
                 new_option.className = "";
                 newer_data_list.push(new_option)
-            }
-            else {
+            } else {
                 newer_data_list.push(option)
             }
         }
@@ -309,11 +331,19 @@ function OptionModule(props) {
         if (update) {
             new_data_list[active_row] = new_row;
 
-        }
-        else {
+        } else {
             new_data_list.push(new_row);
         }
-        props.handleChange(new_data_list, ()=>{setTimeout(()=>{_clearHighlights(new_data_list)}, 5 * 1000);})
+        props.handleChange(new_data_list, () => {
+            if (update) {
+                _setFormState({update_warning_text: "Value Updated"})
+            }
+            setTimeout(() => {
+                _clearHighlights(new_data_list);
+                let new_form_state = Object.assign(_.cloneDeep(form_state), new_state);
+                _setFormState(new_form_state)
+            }, 5 * 1000);
+        })
     }
 
     function _setFormState(new_form_state) {
@@ -345,7 +375,9 @@ function OptionModule(props) {
             special_list: "",
             tags: "",
             default_warning_text: null,
-            name_warning_text: null
+            name_warning_text: null,
+            update_warning_text: null,
+            pool_select_type: ""
         })
     }
 
@@ -354,24 +386,35 @@ function OptionModule(props) {
         pushCallback(_clearForm)
     }
 
-    var cols = ["name", "type", "display_text", "default", "special_list", "tags"];
+    var cols = ["name", "type", "display_text", "default", "tags"];
     let options_pane_style = {
         "marginTop": 10,
         "marginLeft": 10,
         "marginRight": 10,
         "height": props.available_height
     };
-    let copied_dlist = _.cloneDeep(props.data_list);
-    for (let option of copied_dlist) {
-        if (typeof option.default == "boolean") {
-            option.default = option.default ? "True" : "False"
-        }
-        for (let param in option) {
-            if (Array.isArray(option[param])) {
-                option[param] = arrayToString(option[param]);
+
+    let copied_dlist = props.data_list.map(opt => {
+        let new_opt = {};
+        for (let col of cols) {
+            if (col in opt) {
+                new_opt[col] = opt[col]
+            }
+            if (typeof new_opt.default == "boolean") {
+                new_opt.default = new_opt.default ? "True" : "False"
             }
         }
-    }
+        for (let param in new_opt) {
+            if (Array.isArray(new_opt[param])) {
+                new_opt[param] = arrayToString(new_opt[param]);
+            }
+        }
+        if ("className" in opt) {
+            new_opt.className = opt.className
+        }
+        return new_opt
+    });
+
     return (
         <Card elevation={1} id="options-pane" className="d-flex flex-column" style={options_pane_style}>
             {props.foregrounded &&
@@ -379,7 +422,9 @@ function OptionModule(props) {
                                   data_array={copied_dlist}
                                   active_row={active_row}
                                   handleActiveRowChange={handleActiveRowChange}
-                                  handleChange={(olist)=>{props.handleChange(correctOptionListTypes(olist))}}
+                                  handleChange={(olist) => {
+                                      props.handleChange(correctOptionListTypes(olist))
+                                  }}
                                   selectionModes={[RegionCardinality.FULL_ROWS]}
                                   handleDeSelect={_handleRowDeSelect}
                                   content_editable={false}
@@ -435,21 +480,23 @@ function ExportModuleForm(props) {
                             intent="primary"
                             onClick={e => {
                                 e.preventDefault();
-                                handleSubmit()}}/>
+                                handleSubmit()
+                            }}/>
                     <Button style={{height: "fit-content", alignSelf: "start", marginTop: 23, marginRight: 5}}
                             disabled={props.active_row == null}
                             text="delete"
                             intent="danger"
-                            onClick={e =>{
+                            onClick={e => {
                                 e.preventDefault();
-                                props.handleDelete()}} />
+                                props.handleDelete()
+                            }}/>
                 </div>
-            <div style={{display: "flex", flexWrap: "wrap", flexDirection: "row"}}>
-                <LabeledFormField label="Name" onChange={handleNameChange} the_value={name} />
-                {props.include_tags &&
-                    <LabeledFormField label="Tags" onChange={handleTagChange} the_value={tags}/>
-                }
-            </div>
+                <div style={{display: "flex", flexWrap: "wrap", flexDirection: "row"}}>
+                    <LabeledFormField label="Name" onChange={handleNameChange} the_value={name}/>
+                    {props.include_tags &&
+                        <LabeledFormField label="Tags" onChange={handleTagChange} the_value={tags}/>
+                    }
+                </div>
 
             </div>
         </form>
@@ -605,7 +652,7 @@ function CommandsModule(props) {
     const [object_api_dict, set_object_api_dict] = useState({});
     const [ordered_object_categories, set_ordered_object_categories] = useState([]);
 
-    useEffect(()=>{
+    useEffect(() => {
         postAjax("get_api_dict", {}, function (data) {
             set_api_dict(data.api_dict_by_category);
             set_object_api_dict(data.object_api_dict_by_category);
@@ -630,16 +677,16 @@ function CommandsModule(props) {
     for (let category of ordered_categories) {
         let res = <CategoryEntry category_name={category}
                                  key={category}
-                                  search_string={search_string}
-                                  command_list={api_dict[category]}/>;
+                                 search_string={search_string}
+                                 command_list={api_dict[category]}/>;
         command_items.push(res)
     }
     return (
 
         <Card elevation={1} id="commands-pane" className="d-flex flex-column" style={commands_pane_style}>
             <div style={{display: "flex", justifyContent: "flex-end", marginRight: 25}}>
-            <SearchForm update_search_state={_updateSearchState}
-                        search_string={search_string}/>
+                <SearchForm update_search_state={_updateSearchState}
+                            search_string={search_string}/>
             </div>
             <div ref={props.commands_ref} style={{fontSize: 13, overflow: "auto", height: props.available_height}}>
                 <h4>Object api</h4>
@@ -695,7 +742,11 @@ function ObjectCategoryEntry(props) {
             if (show_class) {
                 classes.push(
                     <Fragment key={`class_${index}`}>
-                        <h6 style={{fontStyle: "italic", marginTop: 20, fontFamily: "monospace"}}>{"class" + class_entry[0]}</h6>
+                        <h6 style={{
+                            fontStyle: "italic",
+                            marginTop: 20,
+                            fontFamily: "monospace"
+                        }}>{"class" + class_entry[0]}</h6>
                         {entries}
                     </Fragment>
                 );
@@ -703,8 +754,7 @@ function ObjectCategoryEntry(props) {
             }
 
 
-        }
-        else {
+        } else {
             let entry = class_entry[1];
             if (show_whole_category || stringIncludes(entry.signature, props.search_string)) {
                 entries.push(<CommandEntry key={`entry_${index}`} {...entry}/>);
@@ -717,7 +767,7 @@ function ObjectCategoryEntry(props) {
 
     if (show_category) {
         return (
-            <Fragment key={props.category_name} >
+            <Fragment key={props.category_name}>
                 <h5 style={{marginTop: 20}}>
                     {props.category_name}
                 </h5>
@@ -725,8 +775,7 @@ function ObjectCategoryEntry(props) {
                 <Divider/>
             </Fragment>
         )
-    }
-    else {
+    } else {
         return false
     }
 }
@@ -766,11 +815,11 @@ function CategoryEntry(props) {
                 <Divider/>
             </Fragment>
         )
-    }
-    else {
+    } else {
         return null
     }
 }
+
 CategoryEntry = memo(CategoryEntry);
 
 CategoryEntry.propTypes = {
@@ -785,12 +834,12 @@ function CommandEntry(props) {
     function _handleClick() {
         setIsOpen(!isOpen);
     }
+
     function _doCopy() {
         if (navigator.clipboard && window.isSecureContext) {
             if (props.kind == "method" || props.kind == "attribute") {
                 void navigator.clipboard.writeText("self." + props.signature)
-            }
-            else {
+            } else {
                 void navigator.clipboard.writeText(props.signature)
             }
 
@@ -804,7 +853,8 @@ function CommandEntry(props) {
     };
     let re = new RegExp("^([^(]*)");
     let bolded_command = props.signature.replace(re, function (matched) {
-        return "<span class='command-name'>" + matched + "</span>"}
+            return "<span class='command-name'>" + matched + "</span>"
+        }
     );
 
     return (
@@ -843,7 +893,7 @@ function ApiMenu(props) {
     const [currently_selected, set_currently_selected] = useState(null);
     const [menu_created, set_menu_created] = useState(null);
 
-    useEffect(()=>{
+    useEffect(() => {
         if (!menu_created && props.item_list.length > 0) {
             set_current_selected(props.item_list[0].name);
             set_menu_created(true)
@@ -855,8 +905,7 @@ function ApiMenu(props) {
         for (let item of props.item_list) {
             if (item.kind == "header") {
                 choices.push(<MenuDivider title={item.name}/>)
-            }
-            else {
+            } else {
                 choices.push(<MenuItem text={item.name}/>)
             }
         }

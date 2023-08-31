@@ -14,6 +14,7 @@ var _blueprint_mdata_fields = require("./blueprint_mdata_fields.js");
 var _utilities_react = require("./utilities_react");
 var _server = require("react-dom/server");
 var _error_drawer = require("./error_drawer");
+var _pool_tree = require("./pool_tree");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -345,7 +346,12 @@ function FileImportDialog(props) {
     justifyContent: "space-around",
     minHeight: 101
   };
-  var allowed_types_string = props.allowed_file_types.replaceAll(",", " ");
+  var allowed_types_string;
+  if (props.allowed_file_types) {
+    allowed_types_string = props.allowed_file_types.replaceAll(",", " ");
+  } else {
+    allowed_types_string = "any";
+  }
   return /*#__PURE__*/_react["default"].createElement(_core.Dialog, {
     isOpen: show,
     className: props.dark_theme ? "import-dialog bp5-dark" : "import-dialog light-theme",
@@ -363,7 +369,11 @@ function FileImportDialog(props) {
     djsConfig: djsConfig
   })), /*#__PURE__*/_react["default"].createElement("div", {
     style: body_style
-  }, props.combine && /*#__PURE__*/_react["default"].createElement("div", null, /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+  }, props.combine && /*#__PURE__*/_react["default"].createElement("div", null, props.show_address_selector && /*#__PURE__*/_react["default"].createElement(_pool_tree.PoolAddressSelector, {
+    value: current_value,
+    select_type: "folder",
+    setValue: set_current_value
+  }), !props.show_address_selector && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: "New ".concat(props.res_type, " name"),
     labelFor: "name-input",
     inline: true,
@@ -443,13 +453,15 @@ FileImportDialog.propTypes = {
   popupoptions: _propTypes["default"].array,
   handleClose: _propTypes["default"].func,
   tsocket: _propTypes["default"].object,
-  dark_theme: _propTypes["default"].bool
+  dark_theme: _propTypes["default"].bool,
+  show_address_selector: _propTypes["default"].bool
 };
 FileImportDialog.defaultProps = {
   checkboxes: null,
   textoptions: null,
   popupoptions: null,
-  after_upload: null
+  after_upload: null,
+  show_address_selector: false
 };
 function showFileImportDialog(res_type, allowed_file_types, checkboxes, process_handler, tsocket, dark_theme) {
   var combine = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : false;

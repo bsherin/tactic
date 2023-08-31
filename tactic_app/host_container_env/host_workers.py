@@ -11,7 +11,7 @@ from docker_functions import create_container, destroy_container, destroy_child_
 from docker_functions import get_log, restart_container
 from docker_functions import get_matching_user_containers, streaming_workers
 from tactic_app import app, socketio, db
-from library_views import tile_manager, project_manager, collection_manager, list_manager, get_manager_for_type
+from library_views import tile_manager, project_manager, collection_manager, list_manager, pool_manager, get_manager_for_type
 from library_views import code_manager
 from redis_tools import redis_ht, delete_ready_block_participant
 import datetime
@@ -22,6 +22,7 @@ import sys
 import copy
 import time
 import os
+import re
 
 # inactive_container_time is the max time a tile can
 # go without making active contact with the megaplex.
@@ -779,6 +780,70 @@ class HostWorker(QWorker):
             del streaming_workers[container_id]
             print(f"streaming_workers.keys() is {str(streaming_workers.keys())}")
         return None
+
+    def folder_dict(self, the_id, path, basename, child_nodes=[]):
+        return {
+            "id": the_id,
+            "icon": "folder-close",
+            "isDirectory": True,
+            "isExpanded": False,
+            "basename": basename,
+            "label": basename,
+            "fullpath": path,
+            "childNodes": child_nodes,
+            "isSelected": False
+        }
+
+    def file_dict(self, the_id, path, basename):
+        return {
+            "id": the_id,
+            "icon": "document",
+            "isDirectory": False,
+            "fullpath": path,
+            "basename": basename,
+            "label": basename,
+            "isSelected": False
+        }
+
+    def get_node(self, root, user_pool_dir):
+        ammended_root = re.sub(user_pool_dir, "/mydisk", root)
+        new_base_node = self.folder_dict(self.pool_id_counter, ammended_root, os.path.basename(root))
+        self.pool_id_counter += 1
+        child_list = []
+        for root, dirs, files in os.walk(root):
+            for f in files:
+                fpath = f"{root}/{f}"
+                if not os.path.dirname(fpath) == root or fpath in self.pool_visited:
+                    continue
+                self.pool_visited.append(fpath)
+                ammended_path = re.sub(user_pool_dir, "/mydisk", fpath)
+                child_list.append(self.file_dict(self.pool_id_counter, ammended_path, f))
+                self.pool_id_counter += 1
+            for adir in dirs:
+                fpath = f"{root}/{adir}"
+                if not os.path.dirname(fpath) == root or fpath in self.pool_visited:
+                    continue
+                self.pool_visited.append(fpath)
+                child_list.append(self.get_node(fpath, user_pool_dir))
+        new_base_node["childNodes"] = child_list
+        return new_base_node
+
+    @task_worthy
+    def GetPoolTree(self, data):
+        user_id = data["user_id"]
+        user_obj = load_user(user_id)
+        user_pool_dir = f"/pool/{user_obj.username}"
+        if not os.path.exists(user_pool_dir):
+            return {"dtree": None}
+        self.pool_visited = []
+        self.pool_id_counter = 0
+        dtree = [self.get_node(user_pool_dir, user_pool_dir)]
+        dtree[0].update({
+            "path": "/mydisk",
+            "basename": "mydisk",
+            "label": "mydisk"
+        })
+        return {"dtree": dtree}
 
     def forward_client_post(self, task_packet):
         dest_id = task_packet["dest"]
