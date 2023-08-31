@@ -3,14 +3,14 @@ import {Fragment, useState, useEffect, useRef, memo} from "react";
 import PropTypes from 'prop-types';
 
 import {FormGroup, InputGroup, Button, Divider, Switch,
-    TextArea, Collapse, Card, Elevation, Tree, Popover} from "@blueprintjs/core";
+    TextArea, Collapse, Card, Elevation, Popover} from "@blueprintjs/core";
 import _ from 'lodash';
 
 import {ReactCodemirror} from "./react-codemirror.js";
 import {BpSelect, BpSelectAdvanced} from "./blueprint_mdata_fields.js"
 import {isInt} from "./utilities_react.js";
-import {useReducerAndRef, useCallbackStack} from "./utilities_react";
-import {postWithCallback} from "./communication_react";
+
+import {PoolAddressSelector} from "./pool_tree";
 
 export {TileForm}
 
@@ -157,6 +157,7 @@ function TileForm(props) {
                                                display_text={display_text}
                                                key={att_name}
                                                value={option.starting_value}
+                                               select_type={option.pool_select_type}
                                                updateValue={_updateValue}
                 />);
                 break;
@@ -542,209 +543,20 @@ SelectOption.propTypes = {
 
 SelectOption = memo(SelectOption);
 
-function forEachNode(nodes, callback) {
-    if (nodes === undefined) {
-        return;
-    }
-
-    for (const node of nodes) {
-        callback(node);
-        forEachNode(node.childNodes, callback);
-    }
-}
-
-function treeNodesReducer(nodes, action) {
-    switch (action.type) {
-        case "REPLACE_ALL":
-            return action.new_nodes;
-        case "DESELECT_ALL":
-            const newState1 = _.cloneDeep(nodes);
-            forEachNode(newState1, node => (node.isSelected = false));
-            return newState1;
-        case "SET_IS_EXPANDED":
-            const newState2 = _.cloneDeep(nodes);
-            forEachNode(newState2, (node) => {
-                if (node.id == action.node_id) {
-                    node.isExpanded = action.isExpanded
-                }
-            });
-            return newState2;
-        case "MULTI_SET_IS_EXPANDED":
-            const newState3 = _.cloneDeep(nodes);
-            forEachNode(newState3, (node) => {
-                if (action.node_list.includes(node.id)) {
-                    node.isExpanded = action.isExpanded
-                }
-            });
-            return newState3;
-
-        case "SET_IS_SELECTED":
-            const newState4 = _.cloneDeep(nodes);
-            forEachNode(newState4, (node) => {
-                node.isSelected = node.id == action.id
-            });
-            return newState4;
-
-        case "SET_IS_SELECTED_FROM_FULLPATH":
-            const newState5 = _.cloneDeep(nodes);
-            forEachNode(newState5, (node) => {
-                node.isSelected = node.fullpath == action.fullpath
-            });
-            return newState5;
-        default:
-            return nodes;
-    }
-}
-
-function getBasename(str) {
-    return str.substring(str.lastIndexOf('/')+1);
-}
-
 function PoolOption(props) {
-    const [nodes, dispatch, nodes_ref] = useReducerAndRef(treeNodesReducer, []);
-    const [expanded, set_expanded] = useState(false);
-    const pushCallback = useCallbackStack();
-
+    const [isOpen, setIsOpen] = useState(false);
 
     function _updateMe(newval) {
         props.updateValue(props.att_name, newval)
     }
 
-    function exposeBaseNode() {
-        if (nodes.length == 0) return;
-        dispatch({
-            type: "SET_IS_EXPANDED",
-            node_id: nodes[0].id,
-            isExpanded: true
-        })
-    }
-
-    function exposeNode(fullpath) {
-        let the_path = findNodePath(fullpath);
-        if (the_path) {
-            dispatch({
-                type: "MULTI_SET_IS_EXPANDED",
-                node_list: the_path,
-                isExpanded: true
-            })
-        }
-        else {
-            exposeBaseNode()
-        }
-    }
-
-    function findNodePath(fullpath) {
-        var current_path = [];
-        return searchDown(nodes_ref.current, fullpath, current_path);
-    }
-
-    function searchDown(childNodes, fullpath, current_path) {
-        for (let node of childNodes) {
-            if (node.fullpath == fullpath) {
-                return current_path + [node.id]
-            }
-            else {
-                if ("childNodes" in node) {
-                    var the_path = searchDown(node.childNodes, fullpath, current_path + [node.id]);
-                    if (the_path) {
-                        return the_path
-                    }
-                }
-            }
-        }
-        return null
-    }
-    
-    function handleNodeExpand(node) {
-        dispatch({
-            type: "SET_IS_EXPANDED",
-            node_id: node.id,
-            isExpanded: true
-        })
-    }
-
-    function handleNodeClick(node) {
-        if (node.id != nodes[0].id) {
-            _updateMe(node.fullpath);
-        }
-        set_expanded(false)
-
-    }
-
-    function handleNodeCollapse(node) {
-        dispatch({
-            type: "SET_IS_EXPANDED",
-            node_id: node.id,
-            isExpanded: false
-        })
-    }
-
-    function doExpand() {
-        if (expanded) {
-            set_expanded(false);
-            return
-        }
-        postWithCallback(props.tile_id, "GetPoolTree", {}, function (data) {
-            dispatch({
-                type: "REPLACE_ALL",
-                new_nodes: data.dtree
-            });
-            if (props.value) {
-                pushCallback(()=> {
-                    dispatch({
-                        type: "SET_IS_SELECTED_FROM_FULLPATH",
-                        fullpath: props.value
-                    })
-                });
-                pushCallback(() => {
-                    exposeNode(props.value)
-                });
-            }
-            else {
-                pushCallback(exposeBaseNode)
-            }
-            pushCallback(()=>{
-               set_expanded(true)
-            })
-        })
-    }
-
-    function onInteract(next_state, e) {
-        if (e && e.currentTarget == document) {
-            set_expanded(false);
-        }
-    }
-
     let label = props.display_text == null ? props.att_name : props.display_text;
-    let tree_element = (
-            <Tree contents={nodes}
-                  className="pool-select-tree"
-                  onNodeClick={handleNodeClick}
-                  onNodeCollapse={handleNodeCollapse}
-                  onNodeExpand={handleNodeExpand}/>
-    );
-    let button_text;
-    if (!props.value || props.value == "") {
-        button_text = "not set"
-    }
-    else {
-        button_text = getBasename(props.value)
-    }
     return (
         <FormGroup label={label}>
-            <Popover
-                isOpen={expanded}
-                onClose={()=> {
-                    if (!expanded) {
-                        set_expanded(false)
-                    }}
-                }
-                onInteraction={onInteract}
-                position="bottom-left"
-                minimal={true}
-                content={tree_element}>
-                <Button text={button_text} onClick={doExpand}/>
-            </Popover>
+            <PoolAddressSelector value={props.value}
+                                 select_type={props.select_type}
+                                 setValue={_updateMe}
+            />
         </FormGroup>
     )
 }

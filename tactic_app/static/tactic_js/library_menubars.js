@@ -353,6 +353,10 @@ function AllMenubar(props) {
         icon_name: "cloud-upload",
         click_handler: props.showListImport
       }, {
+        name_text: "Import To Pool",
+        icon_name: "cloud-upload",
+        click_handler: props.showPoolImport
+      }, {
         name_text: "Download As Jupyter Notebook",
         icon_name: "download",
         click_handler: props.downloadJupyter,

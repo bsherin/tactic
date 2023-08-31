@@ -1336,6 +1336,15 @@ function LibraryPane(props) {
   function _showListImport() {
     (0, _import_dialog.showFileImportDialog)("list", "text/*", [], _add_list, props.tsocket, props.dark_theme, false, false);
   }
+  function _add_to_pool(myDropZone, setCurrentUrl, current_value) {
+    var new_url = "import_pool/".concat(props.library_id);
+    myDropZone.options.url = new_url;
+    setCurrentUrl(new_url);
+    myDropZone.processQueue();
+  }
+  function _showPoolImport() {
+    (0, _import_dialog.showFileImportDialog)("pool", null, [], _add_to_pool, props.tsocket, props.dark_theme, false, false);
+  }
   function _new_code(template_name) {
     $.getJSON("".concat($SCRIPT_ROOT, "/get_resource_names/code"), function (data) {
       (0, _modal_react.showModalReact)("New Code Resource", "New Code Resource Name", CreateNewCodeResource, "NewCodeResource", data["resource_names"]);
@@ -1398,6 +1407,7 @@ function LibraryPane(props) {
       compare_tiles: _compare_tiles,
       new_list: _new_list,
       showListImport: _showListImport,
+      showPoolImport: _showPoolImport,
       new_code: _new_code
     };
   }

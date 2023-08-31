@@ -12,8 +12,7 @@ var _lodash = _interopRequireDefault(require("lodash"));
 var _reactCodemirror = require("./react-codemirror.js");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields.js");
 var _utilities_react = require("./utilities_react.js");
-var _utilities_react2 = require("./utilities_react");
-var _communication_react = require("./communication_react");
+var _pool_tree = require("./pool_tree");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -173,6 +172,7 @@ function TileForm(props) {
             display_text: display_text,
             key: att_name,
             value: option.starting_value,
+            select_type: option.pool_select_type,
             updateValue: _updateValue
           }));
           break;
@@ -494,215 +494,22 @@ SelectOption.propTypes = {
   updateValue: _propTypes["default"].func
 };
 SelectOption = /*#__PURE__*/(0, _react.memo)(SelectOption);
-function forEachNode(nodes, callback) {
-  if (nodes === undefined) {
-    return;
-  }
-  var _iterator2 = _createForOfIteratorHelper(nodes),
-    _step2;
-  try {
-    for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-      var node = _step2.value;
-      callback(node);
-      forEachNode(node.childNodes, callback);
-    }
-  } catch (err) {
-    _iterator2.e(err);
-  } finally {
-    _iterator2.f();
-  }
-}
-function treeNodesReducer(nodes, action) {
-  switch (action.type) {
-    case "REPLACE_ALL":
-      return action.new_nodes;
-    case "DESELECT_ALL":
-      var newState1 = _lodash["default"].cloneDeep(nodes);
-      forEachNode(newState1, function (node) {
-        return node.isSelected = false;
-      });
-      return newState1;
-    case "SET_IS_EXPANDED":
-      var newState2 = _lodash["default"].cloneDeep(nodes);
-      forEachNode(newState2, function (node) {
-        if (node.id == action.node_id) {
-          node.isExpanded = action.isExpanded;
-        }
-      });
-      return newState2;
-    case "MULTI_SET_IS_EXPANDED":
-      var newState3 = _lodash["default"].cloneDeep(nodes);
-      forEachNode(newState3, function (node) {
-        if (action.node_list.includes(node.id)) {
-          node.isExpanded = action.isExpanded;
-        }
-      });
-      return newState3;
-    case "SET_IS_SELECTED":
-      var newState4 = _lodash["default"].cloneDeep(nodes);
-      forEachNode(newState4, function (node) {
-        node.isSelected = node.id == action.id;
-      });
-      return newState4;
-    case "SET_IS_SELECTED_FROM_FULLPATH":
-      var newState5 = _lodash["default"].cloneDeep(nodes);
-      forEachNode(newState5, function (node) {
-        node.isSelected = node.fullpath == action.fullpath;
-      });
-      return newState5;
-    default:
-      return nodes;
-  }
-}
-function getBasename(str) {
-  return str.substring(str.lastIndexOf('/') + 1);
-}
 function PoolOption(props) {
-  var _useReducerAndRef = (0, _utilities_react2.useReducerAndRef)(treeNodesReducer, []),
-    _useReducerAndRef2 = _slicedToArray(_useReducerAndRef, 3),
-    nodes = _useReducerAndRef2[0],
-    dispatch = _useReducerAndRef2[1],
-    nodes_ref = _useReducerAndRef2[2];
   var _useState11 = (0, _react.useState)(false),
     _useState12 = _slicedToArray(_useState11, 2),
-    expanded = _useState12[0],
-    set_expanded = _useState12[1];
-  var pushCallback = (0, _utilities_react2.useCallbackStack)();
+    isOpen = _useState12[0],
+    setIsOpen = _useState12[1];
   function _updateMe(newval) {
     props.updateValue(props.att_name, newval);
   }
-  function exposeBaseNode() {
-    if (nodes.length == 0) return;
-    dispatch({
-      type: "SET_IS_EXPANDED",
-      node_id: nodes[0].id,
-      isExpanded: true
-    });
-  }
-  function exposeNode(fullpath) {
-    var the_path = findNodePath(fullpath);
-    if (the_path) {
-      dispatch({
-        type: "MULTI_SET_IS_EXPANDED",
-        node_list: the_path,
-        isExpanded: true
-      });
-    } else {
-      exposeBaseNode();
-    }
-  }
-  function findNodePath(fullpath) {
-    var current_path = [];
-    return searchDown(nodes_ref.current, fullpath, current_path);
-  }
-  function searchDown(childNodes, fullpath, current_path) {
-    var _iterator3 = _createForOfIteratorHelper(childNodes),
-      _step3;
-    try {
-      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-        var node = _step3.value;
-        if (node.fullpath == fullpath) {
-          return current_path + [node.id];
-        } else {
-          if ("childNodes" in node) {
-            var the_path = searchDown(node.childNodes, fullpath, current_path + [node.id]);
-            if (the_path) {
-              return the_path;
-            }
-          }
-        }
-      }
-    } catch (err) {
-      _iterator3.e(err);
-    } finally {
-      _iterator3.f();
-    }
-    return null;
-  }
-  function handleNodeExpand(node) {
-    dispatch({
-      type: "SET_IS_EXPANDED",
-      node_id: node.id,
-      isExpanded: true
-    });
-  }
-  function handleNodeClick(node) {
-    if (node.id != nodes[0].id) {
-      _updateMe(node.fullpath);
-    }
-    set_expanded(false);
-  }
-  function handleNodeCollapse(node) {
-    dispatch({
-      type: "SET_IS_EXPANDED",
-      node_id: node.id,
-      isExpanded: false
-    });
-  }
-  function doExpand() {
-    if (expanded) {
-      set_expanded(false);
-      return;
-    }
-    (0, _communication_react.postWithCallback)(props.tile_id, "GetPoolTree", {}, function (data) {
-      dispatch({
-        type: "REPLACE_ALL",
-        new_nodes: data.dtree
-      });
-      if (props.value) {
-        pushCallback(function () {
-          dispatch({
-            type: "SET_IS_SELECTED_FROM_FULLPATH",
-            fullpath: props.value
-          });
-        });
-        pushCallback(function () {
-          exposeNode(props.value);
-        });
-      } else {
-        pushCallback(exposeBaseNode);
-      }
-      pushCallback(function () {
-        set_expanded(true);
-      });
-    });
-  }
-  function onInteract(next_state, e) {
-    if (e && e.currentTarget == document) {
-      set_expanded(false);
-    }
-  }
   var label = props.display_text == null ? props.att_name : props.display_text;
-  var tree_element = /*#__PURE__*/_react["default"].createElement(_core.Tree, {
-    contents: nodes,
-    className: "pool-select-tree",
-    onNodeClick: handleNodeClick,
-    onNodeCollapse: handleNodeCollapse,
-    onNodeExpand: handleNodeExpand
-  });
-  var button_text;
-  if (!props.value || props.value == "") {
-    button_text = "not set";
-  } else {
-    button_text = getBasename(props.value);
-  }
   return /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: label
-  }, /*#__PURE__*/_react["default"].createElement(_core.Popover, {
-    isOpen: expanded,
-    onClose: function onClose() {
-      if (!expanded) {
-        set_expanded(false);
-      }
-    },
-    onInteraction: onInteract,
-    position: "bottom-left",
-    minimal: true,
-    content: tree_element
-  }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
-    text: button_text,
-    onClick: doExpand
-  })));
+  }, /*#__PURE__*/_react["default"].createElement(_pool_tree.PoolAddressSelector, {
+    value: props.value,
+    select_type: props.select_type,
+    setValue: _updateMe
+  }));
 }
 PoolOption = /*#__PURE__*/(0, _react.memo)(PoolOption);
 function PipeOption(props) {
@@ -717,11 +524,11 @@ function PipeOption(props) {
         value: group + "_group",
         isgroup: true
       });
-      var _iterator4 = _createForOfIteratorHelper(props.pipe_dict[group]),
-        _step4;
+      var _iterator2 = _createForOfIteratorHelper(props.pipe_dict[group]),
+        _step2;
       try {
-        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-          var entry = _step4.value;
+        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+          var entry = _step2.value;
           choice_list.push({
             text: entry[1],
             value: entry[0],
@@ -729,9 +536,9 @@ function PipeOption(props) {
           });
         }
       } catch (err) {
-        _iterator4.e(err);
+        _iterator2.e(err);
       } finally {
-        _iterator4.f();
+        _iterator2.f();
       }
     }
     return choice_list;
@@ -739,17 +546,17 @@ function PipeOption(props) {
   function _value_dict() {
     var value_dict = {};
     for (var group in props.pipe_dict) {
-      var _iterator5 = _createForOfIteratorHelper(props.pipe_dict[group]),
-        _step5;
+      var _iterator3 = _createForOfIteratorHelper(props.pipe_dict[group]),
+        _step3;
       try {
-        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-          var entry = _step5.value;
+        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+          var entry = _step3.value;
           value_dict[entry[0]] = entry[1];
         }
       } catch (err) {
-        _iterator5.e(err);
+        _iterator3.e(err);
       } finally {
-        _iterator5.f();
+        _iterator3.f();
       }
     }
     return value_dict;

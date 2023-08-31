@@ -1,5 +1,5 @@
 
-import sys, copy, re, datetime
+import sys, copy, re, datetime, os
 
 from flask import render_template, request, jsonify, send_file
 from flask_login import login_required, current_user
@@ -16,6 +16,7 @@ from mongo_db_fs import repository_type, database_type
 
 from resource_manager import ResourceManager, repository_user
 from list_manager import ListManager, RepositoryListManager
+from pool_manager import PoolManager
 from collection_manager import CollectionManager, RepositoryCollectionManager
 from project_manager import ProjectManager, RepositoryProjectManager
 from tile_manager import TileManager, RepositoryTileManager
@@ -37,6 +38,7 @@ repository_project_manager = RepositoryProjectManager("project")
 collection_manager = CollectionManager("collection")
 repository_collection_manager = RepositoryCollectionManager("collection")
 list_manager = ListManager("list")
+pool_manager = PoolManager("pool")
 repository_list_manager = RepositoryListManager("list")
 
 
@@ -46,6 +48,7 @@ managers = {
     "project": [project_manager, repository_project_manager],
     "tile": [tile_manager, repository_tile_manager],
     "code": [code_manager, repository_code_manager],
+    "pool": [pool_manager, None]
 }
 
 
@@ -209,8 +212,11 @@ def on_join(data):
 @app.route('/get_resource_names/<res_type>', methods=['get', 'post'])
 @login_required
 def get_resource_names(res_type):
-    manager = managers[res_type][0]
-    resource_names = manager.get_resource_list()
+    if res_type == "pool":
+        resource_names = []
+    else:
+        manager = managers[res_type][0]
+        resource_names = manager.get_resource_list()
     return jsonify({"success": True, "resource_names": resource_names})
 
 

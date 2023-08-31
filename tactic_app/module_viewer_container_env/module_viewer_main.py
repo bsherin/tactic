@@ -108,6 +108,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
             opt_dict["default"] = str(opt_dict["default"])
             if "special_list" in opt_dict:
                 opt_dict["special_list"] = str(opt_dict["special_list"])
+
         with app.test_request_context():
             full_code = render_template("tile_creator_template.html",
                                         class_name=data_dict["module_name"],
