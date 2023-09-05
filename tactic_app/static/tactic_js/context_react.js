@@ -16,6 +16,7 @@ var _blueprint_navbar = require("./blueprint_navbar");
 var _error_boundary = require("./error_boundary");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _library_home_react = require("./library_home_react");
+var _pool_browser = require("./pool_browser");
 var _library_pane = require("./library_pane");
 var _utilities_react = require("./utilities_react");
 var _module_viewer_react = require("./module_viewer_react");
@@ -32,6 +33,7 @@ var _sizing_tools = require("./sizing_tools");
 var _modal_react = require("./modal_react");
 var _key_trap = require("./key_trap");
 var _resizing_layouts = require("./resizing_layouts");
+var _theme = require("./theme");
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
@@ -51,7 +53,7 @@ function _nonIterableRest() { throw new TypeError("Invalid attempt to destructur
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; } // noinspection XmlDeprecatedElement
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; } // noinspection XmlDeprecatedElement,JSXUnresolvedComponent
 _core.FocusStyleManager.onlyShowFocusOnTabs();
 var spinner_panel = /*#__PURE__*/_react["default"].createElement("div", {
   style: {
@@ -79,7 +81,8 @@ var libIconDict = {
   projects: _blueprint_mdata_fields.icon_dict["project"],
   tiles: _blueprint_mdata_fields.icon_dict["tile"],
   lists: _blueprint_mdata_fields.icon_dict["list"],
-  code: _blueprint_mdata_fields.icon_dict["code"]
+  code: _blueprint_mdata_fields.icon_dict["code"],
+  pool: _blueprint_mdata_fields.icon_dict["pool"]
 };
 var propDict = {
   "module-viewer": _module_viewer_react.module_viewer_props,
@@ -116,7 +119,7 @@ var classDict = {
   "notebook-viewer": NotebookAppPlus
 };
 function _context_main() {
-  var ContextAppPlus = ContextApp;
+  var ContextAppPlus = (0, _theme.withTheme)((0, _modal_react.withDialogs)(ContextApp));
   var domContainer = document.querySelector('#context-root');
   ReactDOM.render( /*#__PURE__*/_react["default"].createElement(ContextAppPlus, {
     initial_theme: window.theme,
@@ -152,56 +155,51 @@ function ContextApp(props) {
     _useState6 = _slicedToArray(_useState5, 2),
     dirty_methods = _useState6[0],
     set_dirty_methods = _useState6[1];
-  var _useState7 = (0, _react.useState)(function () {
-      return props.initial_theme === "dark";
-    }),
+  var _useState7 = (0, _react.useState)([]),
     _useState8 = _slicedToArray(_useState7, 2),
-    dark_theme = _useState8[0],
-    set_dark_theme = _useState8[1];
-  var _useState9 = (0, _react.useState)([]),
+    theme_setters = _useState8[0],
+    set_theme_setters = _useState8[1];
+  var _useState9 = (0, _react.useState)(null),
     _useState10 = _slicedToArray(_useState9, 2),
-    theme_setters = _useState10[0],
-    set_theme_setters = _useState10[1];
-  var _useState11 = (0, _react.useState)(null),
-    _useState12 = _slicedToArray(_useState11, 2),
-    lastSelectedTabId = _useState12[0],
-    setLastSelectedTabId = _useState12[1];
-  var _useState13 = (0, _react.useState)(function () {
+    lastSelectedTabId = _useState10[0],
+    setLastSelectedTabId = _useState10[1];
+  var _useState11 = (0, _react.useState)(function () {
       return (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
     }),
-    _useState14 = _slicedToArray(_useState13, 2),
-    usable_width = _useState14[0],
-    set_usable_width = _useState14[1];
-  var _useState15 = (0, _react.useState)(function () {
+    _useState12 = _slicedToArray(_useState11, 2),
+    usable_width = _useState12[0],
+    set_usable_width = _useState12[1];
+  var _useState13 = (0, _react.useState)(function () {
       return (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
     }),
+    _useState14 = _slicedToArray(_useState13, 2),
+    usable_height = _useState14[0],
+    set_usable_height = _useState14[1];
+  var _useState15 = (0, _react.useState)(150),
     _useState16 = _slicedToArray(_useState15, 2),
-    usable_height = _useState16[0],
-    set_usable_height = _useState16[1];
-  var _useState17 = (0, _react.useState)(150),
+    tabWidth = _useState16[0],
+    setTabWidth = _useState16[1];
+  var _useState17 = (0, _react.useState)(false),
     _useState18 = _slicedToArray(_useState17, 2),
-    tabWidth = _useState18[0],
-    setTabWidth = _useState18[1];
-  var _useState19 = (0, _react.useState)(false),
+    show_repository = _useState18[0],
+    set_show_repository = _useState18[1];
+  var _useState19 = (0, _react.useState)(null),
     _useState20 = _slicedToArray(_useState19, 2),
-    show_repository = _useState20[0],
-    set_show_repository = _useState20[1];
+    dragging_over = _useState20[0],
+    set_dragging_over = _useState20[1];
   var _useState21 = (0, _react.useState)(null),
     _useState22 = _slicedToArray(_useState21, 2),
-    dragging_over = _useState22[0],
-    set_dragging_over = _useState22[1];
-  var _useState23 = (0, _react.useState)(null),
+    currently_dragging = _useState22[0],
+    set_currently_dragging = _useState22[1];
+  var _useState23 = (0, _react.useState)(false),
     _useState24 = _slicedToArray(_useState23, 2),
-    currently_dragging = _useState24[0],
-    set_currently_dragging = _useState24[1];
-  var _useState25 = (0, _react.useState)(false),
+    showOmnibar = _useState24[0],
+    setShowOmnibar = _useState24[1];
+  var theme = (0, _react.useContext)(_theme.ThemeContext);
+  var _useState25 = (0, _react.useState)(0),
     _useState26 = _slicedToArray(_useState25, 2),
-    showOmnibar = _useState26[0],
-    setShowOmnibar = _useState26[1];
-  var _useState27 = (0, _react.useState)(0),
-    _useState28 = _slicedToArray(_useState27, 2),
-    tabSelectCounter = _useState28[0],
-    setTabSelectCounter = _useState28[1];
+    tabSelectCounter = _useState26[0],
+    setTabSelectCounter = _useState26[1];
   var top_ref = (0, _react.useRef)(null);
   var key_bindings = [[["tab"], _goToNextPane], [["shift+tab"], _goToPreviousPane], [["ctrl+space"], _showOmnibar], [["ctrl+w"], function () {
     _closeTab(selectedTabIdRef.current);
@@ -215,7 +213,6 @@ function ContextApp(props) {
   }, []);
   (0, _react.useEffect)(function () {
     // for mount
-    window.dark_theme = dark_theme;
     window.addEventListener("resize", function () {
       return _update_window_dimensions(null);
     });
@@ -232,10 +229,6 @@ function ContextApp(props) {
       resizeObserver.observe(tab_list_elem);
     }
   }, []);
-  function _setTheme(local_dark_theme) {
-    window.theme = local_dark_theme ? "dark" : "light";
-    set_dark_theme(local_dark_theme);
-  }
   function get_tab_list_elem() {
     return document.querySelector("#context-container .context-tab-list > .bp5-tab-list");
   }
@@ -754,8 +747,6 @@ function ContextApp(props) {
     controlled: true,
     am_selected: selectedTabIdRef.current == "library",
     open_resources: open_resources,
-    dark_theme: dark_theme,
-    setTheme: _setTheme,
     registerOmniFunction: function registerOmniFunction(register_func) {
       return _registerOmniFunction("library", register_func);
     },
@@ -800,6 +791,60 @@ function ContextApp(props) {
     tabIndex: -1
   }), /*#__PURE__*/_react["default"].createElement("span", null, "Library"))));
   var all_tabs = [ltab];
+  if (window.has_pool) {
+    var pclass = "context-tab-button-content";
+    if (selectedTabIdRef.current == "pool") {
+      pclass += " selected-tab-button";
+    }
+    var pool_panel = /*#__PURE__*/_react["default"].createElement("div", {
+      id: "pool-browser-root"
+    }, /*#__PURE__*/_react["default"].createElement(_pool_browser.PoolBrowser, {
+      tsocket: tsocket,
+      am_selected: selectedTabIdRef.current == "pool",
+      registerOmniFunction: function registerOmniFunction(register_func) {
+        return _registerOmniFunction("pool", register_func);
+      },
+      usable_width: usable_width,
+      usable_height: usable_height
+    }));
+    var ptab = /*#__PURE__*/_react["default"].createElement(_core.Tab, {
+      id: "pool",
+      tabIndex: -1,
+      key: "pool",
+      style: {
+        paddingLeft: 10,
+        marginBottom: 0
+      },
+      panelClassName: "context-tab",
+      title: "",
+      panel: pool_panel
+    }, /*#__PURE__*/_react["default"].createElement("div", {
+      className: pclass + " open-resource-tab",
+      style: {
+        display: "flex",
+        flexDirection: "row",
+        width: "100%",
+        justifyContent: "space-between"
+      }
+    }, /*#__PURE__*/_react["default"].createElement("div", {
+      style: {
+        display: "table-cell",
+        flexDirection: "row",
+        justifyContent: "flex-start",
+        textOverflow: "ellipsis",
+        overflow: "hidden"
+      }
+    }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+      icon: libIconDict["pool"],
+      style: {
+        verticalAlign: "middle",
+        marginRight: 5
+      },
+      size: 16,
+      tabIndex: -1
+    }), /*#__PURE__*/_react["default"].createElement("span", null, "Pool"))));
+    all_tabs.push(ptab);
+  }
   var _iterator4 = _createForOfIteratorHelper(tab_ids_ref.current),
     _step4;
   try {
@@ -818,10 +863,7 @@ function ContextApp(props) {
         var TheClass = classDict[tab_entry.kind];
         var the_panel = /*#__PURE__*/_react["default"].createElement(TheClass, _extends({}, tab_entry.panel, {
           controlled: true,
-          dark_theme: dark_theme // needed for error drawer and status
-          ,
           handleCreateViewer: _handleCreateViewer,
-          setTheme: _setTheme,
           am_selected: tab_id == selectedTabIdRef.current,
           changeResourceName: function changeResourceName(new_name) {
             var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
@@ -985,7 +1027,7 @@ function ContextApp(props) {
   }));
   all_tabs.push(dummy_tab);
   var outer_class = "pane-holder ";
-  if (dark_theme) {
+  if (theme.dark_theme) {
     outer_class = "".concat(outer_class, " bp5-dark");
   } else {
     outer_class = "".concat(outer_class, " light-theme");
@@ -1021,8 +1063,6 @@ function ContextApp(props) {
 
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
-    dark_theme: dark_theme,
-    setTheme: _setTheme,
     selected: null,
     show_api_links: false,
     extra_text: window.database_type == "Local" ? "" : window.database_type,
@@ -1077,9 +1117,7 @@ function ContextApp(props) {
     page_id: window.context_id,
     showOmnibar: showOmnibar,
     closeOmnibar: _closeOmnibar,
-    is_authenticated: window.is_authenticated,
-    dark_theme: dark_theme,
-    setTheme: _setTheme
+    is_authenticated: window.is_authenticated
   })), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
     global: true,
     bindings: key_bindings

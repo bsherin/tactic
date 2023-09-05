@@ -14,6 +14,7 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
 var _main_menus_react = require("./main_menus_react.js");
 var _communication_react = require("./communication_react");
+var _theme = require("./theme");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -55,6 +56,7 @@ function TacticNavbar(props) {
     old_left_width = _useState4[0],
     set_old_left_width = _useState4[1];
   var lg_ref = (0, _react.useRef)(null);
+  var theme = (0, _react.useContext)(_theme.ThemeContext);
   var overflow_items = [];
   function _update_window_dimensions() {
     set_usable_width(window.innerWidth - 2 * padding);
@@ -84,18 +86,16 @@ function TacticNavbar(props) {
     return false;
   }
   function _setTheme(event) {
-    var theme = event.target.checked ? "dark" : "light";
-    set_theme_cookie(theme);
+    var dtheme = event.target.checked ? "dark" : "light";
+    set_theme_cookie(dtheme);
     if (window.user_id != undefined) {
       var result_dict = {
         "user_id": window.user_id,
-        "theme": theme
+        "theme": dtheme
       };
       (0, _communication_react.postWithCallback)("host", "set_user_theme", result_dict, null, null);
     }
-    if (props.setTheme) {
-      props.setTheme(event.target.checked);
-    }
+    theme.setTheme(event.target.checked);
   }
   function renderNav(item) {
     return /*#__PURE__*/_react["default"].createElement(_core.Button, {
@@ -237,7 +237,7 @@ function TacticNavbar(props) {
     width: right_width
   };
   right_style.justifyContent = "flex-end";
-  var theme_class = props.dark_theme ? "bp5-dark" : "light-theme";
+  var theme_class = theme.dark_theme ? "bp5-dark" : "light-theme";
   var name_string = "Tactic";
   if (props.extra_text != null) {
     name_string += " " + props.extra_text;
@@ -267,7 +267,7 @@ function TacticNavbar(props) {
     visibleItemRenderer: renderNav,
     onOverflow: _onOverflow
   }), /*#__PURE__*/_react["default"].createElement(_core.NavbarDivider, null), /*#__PURE__*/_react["default"].createElement(_core.Switch, {
-    checked: props.dark_theme,
+    checked: theme.dark_theme,
     onChange: _setTheme,
     large: false,
     style: {
@@ -286,7 +286,6 @@ TacticNavbar.propTypes = {
   selected: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
   page_id: _propTypes["default"].string,
   extra_text: _propTypes["default"].string,
-  dark_theme: _propTypes["default"].bool,
   setTheme: _propTypes["default"].func,
   show_api_links: _propTypes["default"].bool
 };
@@ -308,7 +307,6 @@ function render_navbar() {
     is_authenticated: window.is_authenticated,
     selected: selected,
     show_api_links: show_api_links,
-    dark_theme: dark_theme,
     user_name: window.username
   }), domContainer);
 }

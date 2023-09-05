@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.LibraryHomeApp = LibraryHomeApp;
+exports.library_id = void 0;
 require("../tactic_css/tactic.scss");
 require("../tactic_css/tactic_table.scss");
 require("../tactic_css/library_home.scss");
@@ -13,7 +14,6 @@ var ReactDOM = _interopRequireWildcard(require("react-dom"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _TacticOmnibar = require("./TacticOmnibar");
 var _tactic_socket = require("./tactic_socket");
-var _communication_react = require("./communication_react");
 var _toaster = require("./toaster.js");
 var _library_pane = require("./library_pane");
 var _sizing_tools = require("./sizing_tools");
@@ -23,6 +23,7 @@ var _key_trap = require("./key_trap");
 var _utilities_react = require("./utilities_react");
 var _blueprint_navbar = require("./blueprint_navbar");
 var _library_menubars = require("./library_menubars");
+var _theme = require("./theme");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -40,6 +41,7 @@ function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefine
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; } // noinspection JSCheckFunctionSignatures
 var TAB_BAR_WIDTH = 50;
 var library_id = (0, _utilities_react.guid)();
+exports.library_id = library_id;
 var tab_panes = ["all-pane", "collections-pane", "projects-pane", "tiles-pane", "lists-pane", "code-pane"];
 var controllable_props = ["usable_width", "usable_height"];
 function LibraryHomeApp(props) {
@@ -56,10 +58,7 @@ function LibraryHomeApp(props) {
     _useState6 = _slicedToArray(_useState5, 2),
     usable_width = _useState6[0],
     set_usable_width = _useState6[1];
-  var _useState7 = (0, _react.useState)(null),
-    _useState8 = _slicedToArray(_useState7, 2),
-    dark_theme = _useState8[0],
-    set_dark_theme = _useState8[1];
+  var theme = (0, _react.useContext)(_theme.ThemeContext);
   var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
   var pushCallback = (0, _utilities_react.useCallbackStack)("library_home");
   var top_ref = (0, _react.useRef)(null);
@@ -73,21 +72,19 @@ function LibraryHomeApp(props) {
       var awidth = (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
       set_usable_height(aheight);
       set_usable_width(awidth);
-      set_dark_theme(props.initial_theme === "dark");
     }
   });
   (0, _react.useEffect)(function () {
     props.stopSpinner(null);
     if (!props.controlled) {
-      window.dark_theme = dark_theme;
       window.addEventListener("resize", _handleResize);
       _handleResize();
     }
   }, []);
   function initSocket() {
-    props.tsocket.attachListener('handle-callback', function (task_packet) {
-      (0, _communication_react.handleCallback)(task_packet, props.library_id);
-    });
+    // props.tsocket.attachListener('handle-callback', (task_packet) => {
+    //     handleCallback(task_packet, library_id)
+    // });
     props.tsocket.attachListener("window-open", function (data) {
       return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
     });
@@ -121,17 +118,10 @@ function LibraryHomeApp(props) {
   function _registerOmniGetter(name, the_function) {
     omniGetters.current[name] = the_function;
   }
-  function _setTheme(dark_theme) {
-    set_dark_theme(dark_theme);
-    pushCallback(function () {
-      window.dark_theme = dark_theme;
-    });
-  }
   function _handleResize() {
     set_usable_width(window.innerWidth - top_ref.current.offsetLeft);
     set_usable_height(window.innerHeight - top_ref.current.offsetTop);
   }
-  var real_dark_theme = props.controlled ? props.dark_theme : dark_theme;
   var lib_props = _objectSpread({}, props);
   if (!props.controlled) {
     lib_props.usable_width = usable_width - TAB_BAR_WIDTH;
@@ -187,7 +177,7 @@ function LibraryHomeApp(props) {
   var outer_class = "";
   if (!props.controlled) {
     outer_class = "library-pane-holder  ";
-    if (dark_theme) {
+    if (theme.dark_theme) {
       outer_class = "".concat(outer_class, " bp5-dark");
     } else {
       outer_class = "".concat(outer_class, " light-theme");
@@ -195,15 +185,13 @@ function LibraryHomeApp(props) {
   }
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, !props.controlled && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
-    dark_theme: dark_theme,
     registerOmniFunction: function registerOmniFunction(register_func) {
       return _registerOmniFunction("navbar", register_func);
     },
-    set_theme: props.controlled ? props.setTheme : _setTheme,
     selected: null,
     show_api_links: false,
     extra_text: window.database_type == "Local" ? "" : window.database_type,
-    page_id: props.library_id,
+    page_id: library_id,
     user_name: window.username
   }), /*#__PURE__*/_react["default"].createElement("div", {
     className: outer_class,
@@ -211,7 +199,7 @@ function LibraryHomeApp(props) {
     style: outer_style
   }, all_pane), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_TacticOmnibar.TacticOmnibar, {
     omniGetters: [_omniFunction],
-    page_id: props.library_id,
+    page_id: library_id,
     showOmnibar: showOmnibar,
     closeOmnibar: _closeOmnibar
   }), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
@@ -228,7 +216,7 @@ LibraryHomeApp.defaultProps = {
 };
 function _library_home_main() {
   var tsocket = new _tactic_socket.TacticSocket("main", 5000, "library", library_id);
-  var LibraryHomeAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster2.withStatus)(LibraryHomeApp));
+  var LibraryHomeAppPlus = (0, _theme.withTheme)(withDialogs((0, _error_drawer.withErrorDrawer)((0, _toaster2.withStatus)(LibraryHomeApp))));
   var domContainer = document.querySelector('#library-home-root');
   ReactDOM.render( /*#__PURE__*/_react["default"].createElement(LibraryHomeAppPlus, {
     tsocket: tsocket,

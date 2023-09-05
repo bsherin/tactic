@@ -119,7 +119,6 @@ function TileForm(props) {
             case "codearea":
                 option_items.push(<CodeAreaOption att_name={att_name}
                                                   display_text={display_text}
-                                                  dark_theme={props.dark_theme}
                                                   key={att_name}
                                                   value={option.starting_value}
                                                   updateValue={_updateValue}
@@ -443,7 +442,6 @@ function CodeAreaOption(props) {
     return (
         <FormGroup label={label}>
             <ReactCodemirror handleChange={_updateMe}
-                             dark_theme={props.dark_theme}
                              code_content={props.value}
                              saveMe={null}
                              code_container_height={100}
@@ -554,6 +552,7 @@ function PoolOption(props) {
     return (
         <FormGroup label={label}>
             <PoolAddressSelector value={props.value}
+                                 tsocket={null}
                                  select_type={props.select_type}
                                  setValue={_updateMe}
             />

@@ -45,7 +45,8 @@ var icon_dict = {
   project: "projects",
   tile: "application",
   list: "list",
-  code: "code"
+  code: "code",
+  pool: "folder-close"
 };
 exports.icon_dict = icon_dict;
 function SuggestionItemAdvanced(_ref) {
@@ -554,7 +555,10 @@ function CombinedMetadata(props) {
     fontSize: 14
   };
   var additional_items;
-  var current_notes = waiting.current ? tempNotes : props.notes;
+  var current_notes;
+  if (props.useNotes) {
+    current_notes = waiting.current ? tempNotes : props.notes;
+  }
   if (props.additional_metadata != null) {
     additional_items = [];
     for (var field in props.additional_metadata) {
@@ -586,7 +590,7 @@ function CombinedMetadata(props) {
       marginRight: 6,
       marginBottom: 2
     }
-  }), props.name), /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+  }), props.name), props.useTags && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: "Tags"
   }, /*#__PURE__*/_react["default"].createElement(NativeTags, {
     tags: props.tags,
@@ -604,7 +608,7 @@ function CombinedMetadata(props) {
     icon_val: props.icon,
     readOnly: props.readOnly,
     handleSelectChange: _handleIconChange
-  })), /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+  })), props.useNotes && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: "Notes"
   }, /*#__PURE__*/_react["default"].createElement(NotesField, {
     notes: current_notes,
@@ -645,6 +649,7 @@ function CombinedMetadata(props) {
 }
 exports.CombinedMetadata = CombinedMetadata = /*#__PURE__*/(0, _react.memo)(CombinedMetadata);
 CombinedMetadata.propTypes = {
+  useTags: _propTypes["default"].bool,
   outer_style: _propTypes["default"].object,
   readOnly: _propTypes["default"].bool,
   elevation: _propTypes["default"].number,
@@ -665,6 +670,8 @@ CombinedMetadata.propTypes = {
   notes_buttons: _propTypes["default"].oneOfType([_propTypes["default"].number, _propTypes["default"].func])
 };
 CombinedMetadata.defaultProps = {
+  useTags: true,
+  useNotes: true,
   outer_style: {
     marginLeft: 20,
     overflow: "auto",

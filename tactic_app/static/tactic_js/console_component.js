@@ -24,6 +24,7 @@ var _library_pane = require("./library_pane");
 var _menu_utilities = require("./menu_utilities");
 var _search_form = require("./search_form");
 var _searchable_console = require("./searchable_console");
+var _theme = require("./theme");
 var _utilities_react = require("./utilities_react");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
@@ -92,6 +93,7 @@ function ConsoleComponent(props) {
     _useState14 = _slicedToArray(_useState13, 2),
     pseudo_tile_id = _useState14[0],
     set_pseudo_tile_id = _useState14[1];
+  var theme = (0, _react.useContext)(_theme.ThemeContext);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _react.useEffect)(function () {
     initSocket();
@@ -1520,7 +1522,6 @@ function ConsoleComponent(props) {
     suggestionGlyphs: suggestionGlyphs,
     showRefresh: false,
     showClose: false,
-    dark_theme: props.dark_theme,
     refreshTab: props.refreshTab,
     closeTab: null,
     controlled: false // This doesn't matter
@@ -1597,7 +1598,7 @@ function ConsoleComponent(props) {
     ElementComponent: SuperItem,
     key_field_name: "unique_id",
     item_list: filtered_items,
-    helperClass: props.dark_theme ? "bp5-dark" : "light-theme",
+    helperClass: theme.dark_theme ? "bp5-dark" : "light-theme",
     handle: ".console-sorter",
     onBeforeCapture: _sortStart,
     onDragEnd: _resortConsoleItems,
@@ -1618,7 +1619,6 @@ function ConsoleComponent(props) {
     deleteSection: _deleteSection,
     insertResourceLink: _insertResourceLink,
     useDragHandle: false,
-    dark_theme: props.dark_theme,
     pseudo_tile_id: pseudo_tile_id,
     handleCreateViewer: props.handleCreateViewer,
     axis: "y"
@@ -2570,7 +2570,6 @@ function ConsoleCodeItem(props) {
     handleChange: _handleChange,
     handleFocus: _handleFocus,
     registerSetFocusFunc: registerSetFocusFunc,
-    dark_theme: props.dark_theme,
     am_selected: props.am_selected,
     readOnly: false,
     show_line_numbers: true,
@@ -2982,7 +2981,6 @@ function ConsoleTextItem(props) {
     className: "d-flex flex-column"
   }, !really_show_markdown && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
     handleChange: _handleChange,
-    dark_theme: props.dark_theme,
     am_selected: props.am_selected,
     readOnly: false,
     handleFocus: _handleFocus,

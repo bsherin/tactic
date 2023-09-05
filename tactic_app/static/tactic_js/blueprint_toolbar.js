@@ -7,9 +7,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.ToolbarButton = exports.Toolbar = void 0;
 var _react = _interopRequireDefault(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
-require("../css/dzcss/dropzone.css");
-require("../css/dzcss/filepicker.css");
-require("../css/dzcss/basic.css");
 var _core = require("@blueprintjs/core");
 var _key_trap = require("./key_trap.js");
 var _blueprint_react_widgets = require("./blueprint_react_widgets.js");

@@ -12,6 +12,7 @@ var _core = require("@blueprintjs/core");
 var _communication_react = require("./communication_react");
 var _blueprint_react_widgets = require("./blueprint_react_widgets");
 var _utilities_react = require("./utilities_react");
+var _theme = require("./theme");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -128,7 +129,6 @@ function withErrorDrawer(WrappedComponent) {
       goToModule: props.goToModule,
       closeErrorDrawer: _close,
       title: "Error Drawer",
-      dark_theme: props.controlled ? props.dark_theme : window.dark_theme,
       size: error_drawer_size,
       onClose: _onClose,
       clearAll: _clearAll
@@ -219,6 +219,7 @@ ErrorItem.defaultProps = {
   tile_type: null
 };
 function ErrorDrawer(props) {
+  var theme = (0, _react.useContext)(_theme.ThemeContext);
   var sorted_keys = _toConsumableArray(Object.keys(props.contents.current));
   sorted_keys.sort(function (a, b) {
     return parseInt(b) - parseInt(a);
@@ -249,7 +250,7 @@ function ErrorDrawer(props) {
   });
   return /*#__PURE__*/_react["default"].createElement(_core.Drawer, {
     icon: "console",
-    className: props.dark_theme ? "bp5-dark" : "light-theme",
+    className: theme.dark_theme ? "bp5-dark" : "light-theme",
     title: props.title,
     isOpen: props.show_drawer,
     position: props.position,
@@ -270,7 +271,6 @@ function ErrorDrawer(props) {
 ErrorDrawer = /*#__PURE__*/(0, _react.memo)(ErrorDrawer);
 ErrorDrawer.propTypes = {
   show_drawer: _propTypes["default"].bool,
-  dark_theme: _propTypes["default"].bool,
   contents: _propTypes["default"].object,
   title: _propTypes["default"].string,
   onClose: _propTypes["default"].func,

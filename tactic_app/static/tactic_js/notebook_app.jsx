@@ -3,7 +3,7 @@ import "../tactic_css/tactic_console.scss";
 import "../tactic_css/tactic_main.scss";
 
 import React from "react";
-import {Fragment, useEffect, useRef, useReducer, memo} from "react";
+import {Fragment, useEffect, useRef, useReducer, memo, useContext} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
@@ -25,6 +25,8 @@ import {withErrorDrawer} from "./error_drawer";
 import {getUsableDimensions} from "./sizing_tools";
 import {useCallbackStack, useConstructor, useReducerAndRef} from "./utilities_react";
 import {notebook_props, notebookReducer} from "./notebook_support";
+
+import {withTheme, ThemeContext} from "./theme";
 
 const MARGIN_SIZE = 10;
 const BOTTOM_MARGIN = 20;
@@ -49,13 +51,13 @@ function NotebookApp(props) {
         console_width_fraction: props.is_project ? props.interface_state["console_width_fraction"] : .5,
         console_is_zoomed: true,
         console_is_shrunk: false,
-        dark_theme: props.initial_theme === "dark",
         resource_name: props.resource_name,
         showOmnibar: false,
         is_project: props.is_project,
         usable_height: getUsableDimensions(true).usable_height_no_bottom,
         usable_width: getUsableDimensions(true).usable_width - 170
     });
+    const theme = useContext(ThemeContext);
 
     const key_bindings = [[["ctrl+space"], _showOmnibar]];
 
@@ -87,7 +89,6 @@ function NotebookApp(props) {
 
         if (!props.controlled) {
             document.title = mState.resource_name;
-            window.dark_theme = mState.dark_theme;
             window.addEventListener("resize", _update_window_dimensions);
             _update_window_dimensions();
         }
@@ -175,13 +176,6 @@ function NotebookApp(props) {
         }
     }
 
-    function _setTheme(dark_theme) {
-        _setMainStateValue("dark_theme", dark_theme);
-        pushCallback(() => {
-            window.dark_theme = dark_theme
-        })
-    }
-
     function _handleConsoleFractionChange(left_width, right_width, new_fraction) {
         _setMainStateValue("console_width_fraction", new_fraction)
     }
@@ -235,7 +229,6 @@ function NotebookApp(props) {
         omniGetters.current[name] = the_function;
     }
 
-    let actual_dark_theme = props.controlled ? props.dark_theme : mState.dark_theme;
     let my_props = {...props};
     if (!props.controlled) {
         my_props.resource_name = mState.resource_name;
@@ -271,7 +264,6 @@ function NotebookApp(props) {
         <ConsoleComponent {...props.statusFuncs}
                           main_id={props.main_id}
                           tsocket={props.tsocket}
-                          dark_theme={actual_dark_theme}
                           handleCreateViewer={props.handleCreateViewer}
                           controlled={props.controlled}
                           am_selected={props.am_selected}
@@ -306,16 +298,13 @@ function NotebookApp(props) {
         <Fragment>
             {!window.in_context &&
                 <TacticNavbar is_authenticated={window.is_authenticated}
-                              dark_theme={actual_dark_theme}
-                              setTheme={props.controlled ? props.setTheme : _setTheme}
                               user_name={window.username}
                               menus={null}
                               page_id={props.main_id}
                 />
             }
 
-            <TacticMenubar dark_theme={actual_dark_theme}
-                           connection_status={connection_status}
+            <TacticMenubar connection_status={connection_status}
                            menus={menus}
                            showRefresh={true}
                            showClose={true}
@@ -326,7 +315,7 @@ function NotebookApp(props) {
                            showErrorDrawerButton={true}
                            toggleErrorDrawer={props.toggleErrorDrawer}
             />
-            <div className={`main-outer ${actual_dark_theme ? "bp5-dark" : "light-theme"}`}
+            <div className={`main-outer ${theme.dark_theme ? "bp5-dark" : "light-theme"}`}
                  ref={main_outer_ref}
                  style={{width: "100%", height: my_props.usable_height - height_adjustment.current}}>
                 <HorizontalPanes left_pane={console_pane}
@@ -373,7 +362,7 @@ NotebookApp.defaultProps = {
 
 function main_main() {
     function gotProps(the_props) {
-        let NotebookAppPlus = withErrorDrawer(withStatus(NotebookApp));
+        let NotebookAppPlus = withTheme(withErrorDrawer(withStatus(NotebookApp)));
         let the_element = <NotebookAppPlus {...the_props}
                                            controlled={false}
                                            initial_theme={window.theme}

@@ -1,17 +1,22 @@
 import React from "react";
-import {useState, useEffect, useRef} from "react";
+import {useState, useEffect, useRef, useContext} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 import DropzoneComponent from 'react-dropzone-component';
+import "../css/dzcss/dropzone.css";
+import "../css/dzcss/filepicker.css";
+import "../css/dzcss/basic.css";
 import {
     Checkbox, Dialog, FormGroup, Classes, Button, InputGroup, ButtonGroup,
     Intent, Collapse, Divider, Alignment
 } from "@blueprintjs/core";
 import {BpSelect} from "./blueprint_mdata_fields.js";
-import {useConstructor} from "./utilities_react";
+import {useConstructor, useStateAndRef} from "./utilities_react";
 import {renderToStaticMarkup} from "react-dom/server";
 import {ErrorItem} from "./error_drawer";
 import {PoolAddressSelector} from "./pool_tree";
+
+import {withTheme, ThemeContext} from "./theme";
 
 export {showFileImportDialog}
 
@@ -28,7 +33,8 @@ function FileImportDialog(props) {
     const myDropzone = useRef(null);
 
     const [show, set_show] = useState(false);
-    const [current_value, set_current_value] = useState("new" + props.res_type);
+    const [current_value, set_current_value, current_value_ref] =
+        useStateAndRef(props.show_address_selector ? "mydisk" : "new" + props.res_type);
     const [checkbox_states, set_checkbox_states] = useState({});
     const [warning_text, set_warning_text] = useState("  ");
     const [log_open, set_log_open] = useState(false);
@@ -40,6 +46,8 @@ function FileImportDialog(props) {
     const [quoting, set_quoting] = useState("QUOTE_MINIMAL");
     const [skipinitialspace, set_skipinitialspace] = useState(true);
     const [csv_options_open, set_csv_options_open] = useState(false);
+
+    const theme = useContext(ThemeContext);
 
     useConstructor(() => {
         while (_name_exists(default_name)) {
@@ -56,6 +64,9 @@ function FileImportDialog(props) {
                 lcheckbox_states[checkbox.checkname] = false
             }
             set_checkbox_states(lcheckbox_states)
+        }
+        if ((props.show_address_selector && props.initial_address)) {
+            set_current_value(props.initial_address)
         }
         _updatePickerSize();
         initSocket()
@@ -156,8 +167,9 @@ function FileImportDialog(props) {
         }
     }
 
-    function _onSending(f) {
-        f.previewElement.scrollIntoView(false)
+    function _onSending(f, xhr, formData) {
+        f.previewElement.scrollIntoView(false);
+        formData.append("extra_value", current_value_ref.current)
     }
 
     function _name_exists(name) {
@@ -282,13 +294,12 @@ function FileImportDialog(props) {
     let allowed_types_string;
     if (props.allowed_file_types) {
         allowed_types_string = props.allowed_file_types.replaceAll(",", " ");
-    }
-    else {
+    } else {
         allowed_types_string = "any"
     }
     return (
         <Dialog isOpen={show}
-                className={props.dark_theme ? "import-dialog bp5-dark" : "import-dialog light-theme"}
+                className={theme.dark_theme ? "import-dialog bp5-dark" : "import-dialog light-theme"}
                 title={props.title}
                 onClose={_closeHandler}
                 canOutsideClickClose={false}
@@ -302,28 +313,21 @@ function FileImportDialog(props) {
                 <div style={body_style}>
                     {props.combine &&
                         <div>
-                            {props.show_address_selector &&
-                                <PoolAddressSelector value={current_value}
-                                    select_type="folder"
-                                    setValue={set_current_value}
-                                />
-                            }
-                            {!props.show_address_selector &&
-                                <FormGroup label={`New ${props.res_type} name`}
-                                        labelFor="name-input"
-                                        inline={true}
-                                        helperText={warning_text}>
+                            <FormGroup label={`New ${props.res_type} name`}
+                                       labelFor="name-input"
+                                       inline={true}
+                                       helperText={warning_text}>
                                 <InputGroup onChange={_nameChangeHandler}
                                             fill={false}
                                             id="name-input"
                                             value={current_value}/>
-                                </FormGroup>
-                            }
+                            </FormGroup>
                             {(checkbox_items.length != 0) && checkbox_items}
                             {props.show_csv_options &&
                                 <div>
                                     <Divider/>
-                                    <Button onClick={_toggleCSVOptions} minimal={true} intent="primary" large={true}>
+                                    <Button onClick={_toggleCSVOptions} minimal={true} intent="primary"
+                                            large={true}>
                                         csv options: {csv_options_open ? "manual" : "auto"}
                                     </Button>
                                     <Collapse isOpen={csv_options_open}>
@@ -352,7 +356,22 @@ function FileImportDialog(props) {
                         </div>
                     }
 
+                    {props.show_address_selector &&
+                        <div>
+                            <FormGroup label={`Target Directory`}
+                                       labelFor="name-input"
+                                       inline={true}
+                                       helperText={warning_text}>
+                                <PoolAddressSelector value={current_value}
+                                                     tsocket={props.tsocket}
+                                                     select_type="folder"
+                                                     setValue={set_current_value}
+                                />
+                            </FormGroup>
+                        </div>
+                    }
                     <div style={{display: "flex", flexDirection: "column", justifyContent: "space-evenly"}}>
+
                         <Button intent={Intent.PRIMARY} onClick={_do_submit}>Upload</Button>
                         <Button onClick={_do_clear}>Clear Files</Button>
                     </div>
@@ -391,7 +410,6 @@ FileImportDialog.propTypes = {
     popupoptions: PropTypes.array,
     handleClose: PropTypes.func,
     tsocket: PropTypes.object,
-    dark_theme: PropTypes.bool,
     show_address_selector: PropTypes.bool
 };
 
@@ -403,10 +421,11 @@ FileImportDialog.defaultProps = {
     show_address_selector: false
 };
 
-function showFileImportDialog(res_type, allowed_file_types, checkboxes, process_handler, tsocket, dark_theme,
-                              combine = false, show_csv_options = false, after_upload = null) {
+FileImportDialog = withTheme(FileImportDialog);
 
-
+function showFileImportDialog(res_type, allowed_file_types, checkboxes, process_handler, tsocket,
+                              combine = false, show_csv_options = false, after_upload = null,
+                              show_address_selector = false, initial_address = null) {
     $.getJSON(`${$SCRIPT_ROOT}get_resource_names/${res_type}`, function (data) {
             showTheDialog(data["resource_names"])
         }
@@ -428,8 +447,10 @@ function showFileImportDialog(res_type, allowed_file_types, checkboxes, process_
                                           process_handler={process_handler}
                                           combine={combine}
                                           show_csv_options={show_csv_options}
-                                          dark_theme={dark_theme}
+                                          initial_theme={window.dark_theme ? "dark" : "light"}
                                           after_upload={after_upload}
+                                          show_address_selector={show_address_selector}
+                                          initial_address={initial_address}
                                           handleClose={handle_close}/>, domContainer);
     }
 }

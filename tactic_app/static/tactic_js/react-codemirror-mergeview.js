@@ -28,6 +28,7 @@ require("codemirror/theme/neat.css");
 require("codemirror/theme/solarized.css");
 require("codemirror/theme/juejin.css");
 var _communication_react = require("./communication_react");
+var _theme = require("./theme");
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
@@ -40,6 +41,7 @@ function ReactCodemirrorMergeView(props) {
   var saved_theme = (0, _react.useRef)(null);
   var preferred_themes = (0, _react.useRef)(null);
   var cmobject = (0, _react.useRef)(null);
+  var themer = (0, _react.useContext)(_theme.ThemeContext);
   (0, _react.useEffect)(function () {
     (0, _communication_react.postAjax)("get_preferred_codemirror_themes", {}, function (data) {
       preferred_themes.current = data;
@@ -47,19 +49,19 @@ function ReactCodemirrorMergeView(props) {
       resizeHeights(props.max_height);
       refreshAreas();
       create_keymap();
-      saved_theme.current = props.dark_theme;
+      saved_theme.current = theme.dark_theme;
     });
   }, []);
   (0, _react.useEffect)(function () {
     if (!cmobject.current) {
       return;
     }
-    if (props.dark_theme != saved_theme.current) {
+    if (theme.dark_theme != saved_theme.current) {
       (0, _communication_react.postAjax)("get_preferred_codemirror_themes", {}, function (data) {
         preferred_themes.current = data;
         cmobject.current.editor().setOption("theme", _current_codemirror_theme());
         cmobject.current.rightOriginal().setOption("theme", _current_codemirror_theme());
-        saved_theme.current = props.dark_theme;
+        saved_theme.current = theme.dark_theme;
       });
     }
     if (cmobject.current.editor().getValue() != props.editor_content) {
@@ -69,7 +71,7 @@ function ReactCodemirrorMergeView(props) {
     resizeHeights(props.max_height);
   });
   function _current_codemirror_theme() {
-    return props.dark_theme ? preferred_themes.current.preferred_dark_theme : preferred_themes.current.preferred_light_theme;
+    return theme.dark_theme ? preferred_themes.current.preferred_dark_theme : preferred_themes.current.preferred_light_theme;
   }
   function createMergeArea(codearea) {
     var cmobject = _codemirror["default"].MergeView(codearea, {
@@ -203,7 +205,6 @@ ReactCodemirrorMergeView.propTypes = {
   handleEditChange: _propTypes["default"].func,
   editor_content: _propTypes["default"].string,
   right_content: _propTypes["default"].string,
-  dark_theme: _propTypes["default"].bool,
   saveMe: _propTypes["default"].func
 };
 exports.ReactCodemirrorMergeView = ReactCodemirrorMergeView = /*#__PURE__*/(0, _react.memo)(ReactCodemirrorMergeView);

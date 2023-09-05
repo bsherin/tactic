@@ -4,7 +4,7 @@ import "../tactic_css/tactic_table.scss";
 import "../tactic_css/library_home.scss";
 
 import React, {Fragment} from "react";
-import {useState, useEffect, useRef, memo} from "react";
+import {useState, useEffect, useRef, memo, useContext} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
@@ -27,17 +27,18 @@ import {guid, useConstructor} from "./utilities_react";
 import {LibraryMenubar} from "./library_menubars";
 import {useCallbackStack, useStateAndRef} from "./utilities_react";
 
+import {ThemeContext, withTheme} from "./theme";
+
 window.library_id = guid();
 const MARGIN_SIZE = 17;
 
 let tsocket;
 
 function _administer_home_main () {
-    // render_navbar("library");
     tsocket = new TacticSocket("main", 5000, "admin", window.library_id);
-    let AdministerHomeAppPlus = withErrorDrawer(withStatus(AdministerHomeApp));
+    let AdministerHomeAppPlus = withTheme(withErrorDrawer(withStatus(AdministerHomeApp)));
     let domContainer = document.querySelector('#library-home-root');
-    ReactDOM.render(<AdministerHomeAppPlus tsocket={tsocket}/>, domContainer)
+    ReactDOM.render(<AdministerHomeAppPlus tsocket={tsocket} initial_theme={window.theme}/>, domContainer)
 }
 
 var res_types = ["container", "user"];
@@ -84,14 +85,11 @@ function AdministerHomeApp(props) {
 
     const [usable_height, set_usable_height] = useState(getUsableDimensions(true).usable_height_no_bottom);
     const [usable_width, set_usable_width] = useState(getUsableDimensions(true).usable_width - 170);
-    const [dark_theme, set_dark_theme] = useState(null);
+    const theme = useContext(ThemeContext);
     const top_ref = useRef(null);
 
     const pushCallback = useCallbackStack();
 
-    useConstructor(() => {
-        set_dark_theme(window.theme === "dark")
-    });
 
     useEffect(() => {
         initSocket();
@@ -147,11 +145,6 @@ function AdministerHomeApp(props) {
         return paneId == selected_tab_id ? "white" : "#CED9E0"
     }
 
-    function _setTheme(local_dark_theme) {
-        window.theme = local_dark_theme ? "dark" : "light";
-        set_dark_theme(local_dark_theme);
-    }
-
     let container_pane = (
         <AdminPane {...props}
                    usable_width={usable_width}
@@ -194,17 +187,15 @@ function AdministerHomeApp(props) {
         paddingLeft: 0
     };
     let outer_class = "pane-holder";
-    if (dark_theme) {
+    if (theme.dark_theme) {
         outer_class = `${outer_class} bp5-dark`;
     } else {
         outer_class = `${outer_class} light-theme`;
     }
     return (
         <Fragment>
-            <TacticNavbar dark_theme={dark_theme}
-                          is_authenticated={window.is_authenticated}
+            <TacticNavbar is_authenticated={window.is_authenticated}
                           registerOmniFunction={null}
-                          setTheme={_setTheme}
                           selected={null}
                           show_api_links={false}
                           extra_text=""
@@ -293,7 +284,6 @@ function ContainerMenubar(props) {
     return <LibraryMenubar menu_specs={menu_specs()}
                            context_menu_items={null}
                            multi_select={false}
-                           dark_theme={false}
                            controlled={false}
                            am_selected={false}
                            refreshTab={props.refresh_func}
@@ -418,7 +408,6 @@ function UserMenubar(props){
     return <LibraryMenubar menu_specs={menu_specs()}
                            context_menu_items={null}
                            multi_select={false}
-                           dark_theme={false}
                            controlled={false}
                            am_selected={false}
                            refreshTab={props.refresh_func}

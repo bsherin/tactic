@@ -9,12 +9,16 @@ var _react = _interopRequireWildcard(require("react"));
 var ReactDOM = _interopRequireWildcard(require("react-dom"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _reactDropzoneComponent = _interopRequireDefault(require("react-dropzone-component"));
+require("../css/dzcss/dropzone.css");
+require("../css/dzcss/filepicker.css");
+require("../css/dzcss/basic.css");
 var _core = require("@blueprintjs/core");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields.js");
 var _utilities_react = require("./utilities_react");
 var _server = require("react-dom/server");
 var _error_drawer = require("./error_drawer");
 var _pool_tree = require("./pool_tree");
+var _theme = require("./theme");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -41,48 +45,50 @@ function FileImportDialog(props) {
     _useState2 = _slicedToArray(_useState, 2),
     show = _useState2[0],
     set_show = _useState2[1];
-  var _useState3 = (0, _react.useState)("new" + props.res_type),
+  var _useStateAndRef = (0, _utilities_react.useStateAndRef)(props.show_address_selector ? "mydisk" : "new" + props.res_type),
+    _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
+    current_value = _useStateAndRef2[0],
+    set_current_value = _useStateAndRef2[1],
+    current_value_ref = _useStateAndRef2[2];
+  var _useState3 = (0, _react.useState)({}),
     _useState4 = _slicedToArray(_useState3, 2),
-    current_value = _useState4[0],
-    set_current_value = _useState4[1];
-  var _useState5 = (0, _react.useState)({}),
+    checkbox_states = _useState4[0],
+    set_checkbox_states = _useState4[1];
+  var _useState5 = (0, _react.useState)("  "),
     _useState6 = _slicedToArray(_useState5, 2),
-    checkbox_states = _useState6[0],
-    set_checkbox_states = _useState6[1];
-  var _useState7 = (0, _react.useState)("  "),
+    warning_text = _useState6[0],
+    set_warning_text = _useState6[1];
+  var _useState7 = (0, _react.useState)(false),
     _useState8 = _slicedToArray(_useState7, 2),
-    warning_text = _useState8[0],
-    set_warning_text = _useState8[1];
-  var _useState9 = (0, _react.useState)(false),
+    log_open = _useState8[0],
+    set_log_open = _useState8[1];
+  var _useState9 = (0, _react.useState)([]),
     _useState10 = _slicedToArray(_useState9, 2),
-    log_open = _useState10[0],
-    set_log_open = _useState10[1];
-  var _useState11 = (0, _react.useState)([]),
+    log_contents = _useState10[0],
+    set_log_contents = _useState10[1];
+  var _useState11 = (0, _react.useState)(defaultImportDialogWidth - 100),
     _useState12 = _slicedToArray(_useState11, 2),
-    log_contents = _useState12[0],
-    set_log_contents = _useState12[1];
-  var _useState13 = (0, _react.useState)(defaultImportDialogWidth - 100),
-    _useState14 = _slicedToArray(_useState13, 2),
-    current_picker_width = _useState14[0],
-    set_current_picker_width = _useState14[1];
+    current_picker_width = _useState12[0],
+    set_current_picker_width = _useState12[1];
 
   // These will only matter if props.show_csv_options
-  var _useState15 = (0, _react.useState)(","),
+  var _useState13 = (0, _react.useState)(","),
+    _useState14 = _slicedToArray(_useState13, 2),
+    delimiter = _useState14[0],
+    set_delimiter = _useState14[1];
+  var _useState15 = (0, _react.useState)("QUOTE_MINIMAL"),
     _useState16 = _slicedToArray(_useState15, 2),
-    delimiter = _useState16[0],
-    set_delimiter = _useState16[1];
-  var _useState17 = (0, _react.useState)("QUOTE_MINIMAL"),
+    quoting = _useState16[0],
+    set_quoting = _useState16[1];
+  var _useState17 = (0, _react.useState)(true),
     _useState18 = _slicedToArray(_useState17, 2),
-    quoting = _useState18[0],
-    set_quoting = _useState18[1];
-  var _useState19 = (0, _react.useState)(true),
+    skipinitialspace = _useState18[0],
+    set_skipinitialspace = _useState18[1];
+  var _useState19 = (0, _react.useState)(false),
     _useState20 = _slicedToArray(_useState19, 2),
-    skipinitialspace = _useState20[0],
-    set_skipinitialspace = _useState20[1];
-  var _useState21 = (0, _react.useState)(false),
-    _useState22 = _slicedToArray(_useState21, 2),
-    csv_options_open = _useState22[0],
-    set_csv_options_open = _useState22[1];
+    csv_options_open = _useState20[0],
+    set_csv_options_open = _useState20[1];
+  var theme = (0, _react.useContext)(_theme.ThemeContext);
   (0, _utilities_react.useConstructor)(function () {
     while (_name_exists(default_name)) {
       name_counter.current += 1;
@@ -106,6 +112,9 @@ function FileImportDialog(props) {
         _iterator.f();
       }
       set_checkbox_states(lcheckbox_states);
+    }
+    if (props.show_address_selector && props.initial_address) {
+      set_current_value(props.initial_address);
     }
     _updatePickerSize();
     initSocket();
@@ -197,8 +206,9 @@ function FileImportDialog(props) {
       props.after_upload();
     }
   }
-  function _onSending(f) {
+  function _onSending(f, xhr, formData) {
     f.previewElement.scrollIntoView(false);
+    formData.append("extra_value", current_value_ref.current);
   }
   function _name_exists(name) {
     return existing_names.current.indexOf(name) > -1;
@@ -354,7 +364,7 @@ function FileImportDialog(props) {
   }
   return /*#__PURE__*/_react["default"].createElement(_core.Dialog, {
     isOpen: show,
-    className: props.dark_theme ? "import-dialog bp5-dark" : "import-dialog light-theme",
+    className: theme.dark_theme ? "import-dialog bp5-dark" : "import-dialog light-theme",
     title: props.title,
     onClose: _closeHandler,
     canOutsideClickClose: false,
@@ -369,11 +379,7 @@ function FileImportDialog(props) {
     djsConfig: djsConfig
   })), /*#__PURE__*/_react["default"].createElement("div", {
     style: body_style
-  }, props.combine && /*#__PURE__*/_react["default"].createElement("div", null, props.show_address_selector && /*#__PURE__*/_react["default"].createElement(_pool_tree.PoolAddressSelector, {
-    value: current_value,
-    select_type: "folder",
-    setValue: set_current_value
-  }), !props.show_address_selector && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+  }, props.combine && /*#__PURE__*/_react["default"].createElement("div", null, /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: "New ".concat(props.res_type, " name"),
     labelFor: "name-input",
     inline: true,
@@ -414,7 +420,17 @@ function FileImportDialog(props) {
     inline: "true",
     alignIndicator: _core.Alignment.RIGHT,
     onChange: _updateSkipinitial
-  })))), /*#__PURE__*/_react["default"].createElement("div", {
+  })))), props.show_address_selector && /*#__PURE__*/_react["default"].createElement("div", null, /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+    label: "Target Directory",
+    labelFor: "name-input",
+    inline: true,
+    helperText: warning_text
+  }, /*#__PURE__*/_react["default"].createElement(_pool_tree.PoolAddressSelector, {
+    value: current_value,
+    tsocket: props.tsocket,
+    select_type: "folder",
+    setValue: set_current_value
+  }))), /*#__PURE__*/_react["default"].createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -453,7 +469,6 @@ FileImportDialog.propTypes = {
   popupoptions: _propTypes["default"].array,
   handleClose: _propTypes["default"].func,
   tsocket: _propTypes["default"].object,
-  dark_theme: _propTypes["default"].bool,
   show_address_selector: _propTypes["default"].bool
 };
 FileImportDialog.defaultProps = {
@@ -463,10 +478,13 @@ FileImportDialog.defaultProps = {
   after_upload: null,
   show_address_selector: false
 };
-function showFileImportDialog(res_type, allowed_file_types, checkboxes, process_handler, tsocket, dark_theme) {
-  var combine = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : false;
-  var show_csv_options = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : false;
-  var after_upload = arguments.length > 8 && arguments[8] !== undefined ? arguments[8] : null;
+FileImportDialog = (0, _theme.withTheme)(FileImportDialog);
+function showFileImportDialog(res_type, allowed_file_types, checkboxes, process_handler, tsocket) {
+  var combine = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : false;
+  var show_csv_options = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : false;
+  var after_upload = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : null;
+  var show_address_selector = arguments.length > 8 && arguments[8] !== undefined ? arguments[8] : false;
+  var initial_address = arguments.length > 9 && arguments[9] !== undefined ? arguments[9] : null;
   $.getJSON("".concat($SCRIPT_ROOT, "get_resource_names/").concat(res_type), function (data) {
     showTheDialog(data["resource_names"]);
   });
@@ -485,8 +503,10 @@ function showFileImportDialog(res_type, allowed_file_types, checkboxes, process_
       process_handler: process_handler,
       combine: combine,
       show_csv_options: show_csv_options,
-      dark_theme: dark_theme,
+      initial_theme: window.dark_theme ? "dark" : "light",
       after_upload: after_upload,
+      show_address_selector: show_address_selector,
+      initial_address: initial_address,
       handleClose: handle_close
     }), domContainer);
   }

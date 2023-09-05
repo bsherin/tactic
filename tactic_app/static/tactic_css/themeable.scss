@@ -18,6 +18,9 @@ $dark-medium: $dark-gray4;
         .bp5-icon-cube {
             color: $orange3 ! important
         }
+        .bp5-icon-folder-close {
+            color: $orange3 ! important
+        }
         .bp5-icon-database, .bp5-icon-th, .bp5-icon-freeform, .bp5-icon-align-left {
             color: $blue3 !important;
         }
@@ -65,6 +68,9 @@ $dark-medium: $dark-gray4;
 .bp5-dark {
     .lib-tab-button, .context-tab-button-content, .menu-bar, .combined-metadata, .all-pane {
         .bp5-icon-cube {
+            color: $orange5 ! important
+        }
+        .bp5-icon-folder-close{
             color: $orange5 ! important
         }
         .bp5-icon-database, .bp5-icon-th, .bp5-icon-freeform, .bp5-icon-align-left  {

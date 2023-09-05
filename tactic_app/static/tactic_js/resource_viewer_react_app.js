@@ -12,7 +12,6 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 var _TacticOmnibar = require("./TacticOmnibar");
 var _key_trap = require("./key_trap");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
-var _modal_react = require("./modal_react.js");
 var _resizing_layouts = require("./resizing_layouts.js");
 var _communication_react = require("./communication_react.js");
 var _menu_utilities = require("./menu_utilities.js");
@@ -29,9 +28,18 @@ function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o =
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-function copyToLibrary(res_type, resource_name) {
+function copyToLibrary(res_type, resource_name, dialogFuncs) {
   $.getJSON($SCRIPT_ROOT + "get_resource_names/".concat(res_type), function (data) {
-    (0, _modal_react.showModalReact)("Import ".concat(res_type), "New ".concat(res_type, " Name"), ImportResource, resource_name, data["resource_names"]);
+    dialogFuncs.showModal("ModalDialog", {
+      title: "Import ".concat(res_type),
+      field_title: "New ".concat(res_type, " Name"),
+      handleSubmit: ImportResource,
+      default_value: resource_name,
+      existing_names: data.resource_names,
+      checkboxes: [],
+      handleCancel: null,
+      handleClose: dialogFuncs.hideModal
+    });
   });
   function ImportResource(new_name) {
     var result_dict = {
@@ -42,9 +50,18 @@ function copyToLibrary(res_type, resource_name) {
     (0, _communication_react.postAjax)("copy_from_repository", result_dict, _toaster.doFlashAlways);
   }
 }
-function sendToRepository(res_type, resource_name) {
+function sendToRepository(res_type, resource_name, dialogFuncs) {
   $.getJSON($SCRIPT_ROOT + "get_repository_resource_names/".concat(res_type), function (data) {
-    (0, _modal_react.showModalReact)("Share ".concat(res_type), "New ".concat(res_type, " Name"), ShareResource, resource_name, data["resource_names"]);
+    dialogFuncs.showModal("ModalDialog", {
+      title: "Share ".concat(res_type),
+      field_title: "New ".concat(res_type, " Name"),
+      handleSubmit: ShareResource,
+      default_value: resource_name,
+      existing_names: data.resource_names,
+      checkboxes: [],
+      handleCancel: null,
+      handleClose: dialogFuncs.hideModal
+    });
   });
   function ShareResource(new_name) {
     var result_dict = {
@@ -149,7 +166,6 @@ function ResourceViewerApp(props) {
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_menu_utilities.TacticMenubar, {
     menu_specs: props.menu_specs,
     connection_status: connection_status,
-    dark_theme: props.dark_theme,
     showRefresh: window.in_context,
     showClose: window.in_context,
     refreshTab: props.refreshTab,
@@ -179,7 +195,6 @@ function ResourceViewerApp(props) {
     showOmnibar: showOmnibar,
     closeOmnibar: _closeOmnibar,
     is_authenticated: window.is_authenticated,
-    dark_theme: props.dark_theme,
     setTheme: props.setTheme,
     page_id: props.resource_viewer_id
   }), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {

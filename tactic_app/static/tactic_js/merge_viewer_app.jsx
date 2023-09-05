@@ -1,6 +1,6 @@
 
 import React from "react";
-import {Fragment, useState, useEffect, useRef, memo} from "react";
+import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
 import PropTypes from 'prop-types';
 
 import {PopoverPosition} from "@blueprintjs/core";
@@ -10,6 +10,7 @@ import {BpSelect} from "./blueprint_mdata_fields";
 import {TacticMenubar} from "./menu_utilities";
 import {TacticOmnibar} from "./TacticOmnibar";
 import {KeyTrap} from "./key_trap";
+import {ThemeContext} from "./theme"
 
 export {MergeViewerApp}
 
@@ -20,6 +21,7 @@ function MergeViewerApp(props) {
     const omniGetters = useRef({});
 
     const [inner_height, set_inner_height] = useState(window.innerHeight);
+    const theme = useContext(ThemeContext);
 
     // These only matter if not controlled
     const [showOmnibar, setShowOmnibar] = useState(false);
@@ -107,7 +109,7 @@ function MergeViewerApp(props) {
         };
 
         let outer_class = "merge-viewer-outer";
-        if (props.dark_theme) {
+        if (theme.dark_theme) {
             outer_class = outer_class + " bp5-dark";
         }
         else {
@@ -120,7 +122,6 @@ function MergeViewerApp(props) {
                                connection_status={props.connection_status}
                                showRefresh={false}
                                showClose={false}
-                               dark_theme={props.dark_theme}
                                refreshTab={null}
                                closeTab={null}
                                resource_name={props.resource_name}
@@ -140,7 +141,6 @@ function MergeViewerApp(props) {
                                       value={props.select_val}/>
                         </div>
                         <ReactCodemirrorMergeView handleEditChange={props.handleEditChange}
-                                                  dark_theme={props.dark_theme}
                                                   editor_content={props.edit_content}
                                                   right_content={props.right_content}
                                                   saveMe={props.saveHandler}
@@ -155,8 +155,6 @@ function MergeViewerApp(props) {
                                      showOmnibar={showOmnibar}
                                      closeOmnibar={_closeOmnibar}
                                      is_authenticated={window.is_authenticated}
-                                     dark_theme={props.dark_theme}
-                                     setTheme={props.setTheme}
                       />
                       <KeyTrap global={true} bindings={key_bindings}/>
                   </Fragment>
@@ -172,7 +170,6 @@ MergeViewerApp.propTypes = {
     right_content: PropTypes.string,
     handleSelectChange: PropTypes.func,
     handleEditChange: PropTypes.func,
-    dark_theme: PropTypes.bool,
     saveHandler: PropTypes.func,
 };
 

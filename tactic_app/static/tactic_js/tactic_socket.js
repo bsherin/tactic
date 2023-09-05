@@ -79,11 +79,11 @@ class TacticSocket {
         this.attachListener("connect", ()=>{
             console.log(`tactic:${this.ident} connected`);
             this.notify(true)
-        })
+        });
         this.attachListener("disconnect", (reason) => {
             if (reason == "io client disconnect") return;
             console.log(`tactic:${this.ident} disconnected for reason ${reason}`);
-            this.notify(false)
+            this.notify(false);
             // doFlash({"message": "lost server connection " + reason, timeout: null, "is_disconnect_message": true})
             self.socket.close();
             self.recInterval = setInterval(function () {

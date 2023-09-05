@@ -2,7 +2,7 @@
 import "../tactic_css/tactic.scss";
 
 import React from "react";
-import { Fragment, useState, useEffect, useRef, memo } from "react";
+import { Fragment, useState, useEffect, useRef, memo, useContext } from "react";
 import * as ReactDOM from 'react-dom'
 
 import { FormGroup, InputGroup, Button } from "@blueprintjs/core";
@@ -12,6 +12,7 @@ import {postAjax} from "./communication_react";
 import {guid} from "./utilities_react";
 import {TacticNavbar, get_theme_cookie} from "./blueprint_navbar";
 import { useCallbackStack, useStateAndRef } from "./utilities_react";
+import {withTheme, ThemeContext} from "./theme";
 
 window.page_id = guid();
 var tsocket;
@@ -20,7 +21,8 @@ function _login_main() {
     if (window._show_message) doFlash(window._message);
     let domContainer = document.querySelector('#root');
     let useDark = get_theme_cookie() == "dark";
-    ReactDOM.render(<LoginAppWithStatus tsocket={null} controlled={false} initial_dark={useDark}/>, domContainer)
+    let LoginAppPlus = withTheme(withStatus(LoginApp));
+    ReactDOM.render(<LoginAppPlus tsocket={null} controlled={false} initial_dark={useDark}/>, domContainer)
 }
 
 function LoginApp(props) {
@@ -28,8 +30,7 @@ function LoginApp(props) {
     const [password, setPassword] = useState(null);
     const [username_warning_text, set_username_warning_text] = useState("");
     const [password_warning_text, set_password_warning_text] = useState("");
-    const [dark_theme, set_dark_theme, dark_theme_ref] = useStateAndRef(props.initial_dark);
-
+    const theme = useContext(ThemeContext);
     const pushCallback = useCallbackStack();
 
     const inputRef = useRef(null);
@@ -37,13 +38,6 @@ function LoginApp(props) {
     useEffect(()=>{
         inputRef.current.focus()
     }, []);
-
-    function _setTheme(local_dark_theme) {
-        set_dark_theme(local_dark_theme);
-        pushCallback(()=>{
-            window.dark_theme = dark_theme
-        })
-    }
 
     function _onUsernameChange(event) {
         setUsername(event.target.value)
@@ -88,7 +82,7 @@ function LoginApp(props) {
     }
 
     let outer_class = "login-body d-flex flex-column justify-content-center";
-    if (dark_theme) {
+    if (theme.dark_theme) {
         outer_class = outer_class + " bp5-dark";
     }
     else {
@@ -97,8 +91,6 @@ function LoginApp(props) {
     return (
         <Fragment>
                 <TacticNavbar is_authenticated={window.is_authenticated}
-                              dark_theme={dark_theme}
-                              setTheme={_setTheme}
                               selected={null}
                               show_api_links={false}
                               page_id={window.page_id}
@@ -152,7 +144,5 @@ function LoginApp(props) {
 }
 
 LoginApp = memo(LoginApp);
-
-var LoginAppWithStatus = withStatus(LoginApp);
 
 _login_main();

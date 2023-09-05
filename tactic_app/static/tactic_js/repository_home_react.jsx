@@ -3,7 +3,7 @@ import "../tactic_css/tactic_table.scss";
 import "../tactic_css/library_home.scss";
 
 import React from "react";
-import {Fragment, useState, useEffect, useRef, memo} from "react";
+import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
 import * as ReactDOM from 'react-dom'
 
 import {Tabs, Tab, Tooltip, Icon, Position} from "@blueprintjs/core";
@@ -20,6 +20,9 @@ import {useCallbackStack, useConstructor} from "./utilities_react";
 import {guid} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 import {res_types} from "./library_pane";
+
+import {ThemeContext, withTheme} from "./theme";
+import {withDialogs} from "./modal_react";
 
 import {
     RepositoryCollectionMenubar, RepositoryProjectMenubar, RepositoryTileMenubar,
@@ -41,7 +44,7 @@ function _repository_home_main() {
         "repository",
         window.library_id
     );
-    let RepositoryHomeAppPlus = withErrorDrawer(withStatus(RepositoryHomeApp));
+    let RepositoryHomeAppPlus = withTheme(withDialogs(withErrorDrawer(withStatus(RepositoryHomeApp))));
     let domContainer = document.querySelector('#library-home-root');
     ReactDOM.render(<RepositoryHomeAppPlus {...repository_props()}
                                            initial_theme={window.theme}
@@ -87,7 +90,8 @@ function RepositoryHomeApp(props) {
 
     const [usable_height, set_usable_height] = useState(getUsableDimensions(true).usable_height_no_bottom);
     const [usable_width, set_usable_width] = useState(getUsableDimensions(true).usable_width - 170);
-    const [dark_theme, set_dark_theme] = useState(props.initial_theme === "dark");
+
+    const theme = useContext(ThemeContext);
 
     const top_ref = useRef(null);
 
@@ -103,7 +107,6 @@ function RepositoryHomeApp(props) {
         initSocket();
         props.stopSpinner();
         if (!props.controlled) {
-            window.dark_theme = dark_theme;
             window.addEventListener("resize", _update_window_dimensions);
             _update_window_dimensions();
         }
@@ -156,13 +159,6 @@ function RepositoryHomeApp(props) {
         }
     }
 
-    function _setTheme(dark_theme) {
-        set_dark_theme(dark_theme);
-        pushCallback(() => {
-            window.dark_theme = dark_theme
-        })
-    }
-
     function _handleTabChange(newTabId, prevTabId, event) {
         set_selected_tab_id(newTabId);
         pushCallback(_update_window_dimensions)
@@ -173,7 +169,6 @@ function RepositoryHomeApp(props) {
     }
 
     let tsocket = props.tsocket;
-    let actual_dark_theme = props.controlled ? props.dark_theme : dark_theme;
     let lib_props = {...props};
     if (!props.controlled) {
         lib_props.usable_width = usable_width - TAB_BAR_WIDTH;
@@ -243,7 +238,7 @@ function RepositoryHomeApp(props) {
     let outer_class = "";
     if (!props.controlled) {
         outer_class = "library-pane-holder  ";
-        if (dark_theme) {
+        if (theme.dark_theme) {
             outer_class = `${outer_class} bp5-dark`;
         } else {
             outer_class = `${outer_class} light-theme`;
@@ -253,8 +248,6 @@ function RepositoryHomeApp(props) {
         <Fragment>
             {!props.controlled &&
                 <TacticNavbar is_authenticated={window.is_authenticated}
-                              dark_theme={dark_theme}
-                              setTheme={_setTheme}
                               selected={null}
                               page_id={props.library_id}
                               show_api_links={false}

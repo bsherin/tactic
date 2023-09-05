@@ -5,7 +5,7 @@ import "../tactic_css/tactic_console.scss";
 import "../tactic_css/tactic_select.scss"
 
 import React from "react";
-import {Fragment, useEffect, useRef, useReducer, memo} from "react";
+import {Fragment, useEffect, useRef, useReducer, memo, useContext} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
@@ -22,7 +22,7 @@ import {HorizontalPanes, VerticalPanes} from "./resizing_layouts";
 import {ProjectMenu, DocumentMenu, ColumnMenu, RowMenu, ViewMenu, MenuComponent} from "./main_menus_react";
 import {TileContainer, tilesReducer} from "./tile_react";
 import {ExportsViewer} from "./export_viewer_react";
-import {showModalReact, showSelectDialog} from "./modal_react";
+import {showSelectDialog} from "./modal_react";
 import {ConsoleComponent} from "./console_component";
 import {consoleItemsReducer} from "./console_support";
 import {handleCallback, postWithCallback, postAjaxPromise, postAjax} from "./communication_react";
@@ -35,6 +35,8 @@ import {ErrorBoundary} from "./error_boundary";
 import {TacticOmnibar} from "./TacticOmnibar";
 import {KeyTrap} from "./key_trap";
 import {useCallbackStack, useReducerAndRef} from "./utilities_react";
+import {ThemeContext, withTheme} from "./theme";
+import {DialogContext} from "./modal_react";
 
 export {MainApp}
 
@@ -86,6 +88,9 @@ function MainApp(props) {
     const [console_items, dispatch, console_items_ref] = useReducerAndRef(consoleItemsReducer, iStateOrDefault("console_items"));
     const [tile_list, tileDispatch, tile_list_ref] = useReducerAndRef(tilesReducer, iStateOrDefault("tile_list"));
 
+    const theme = useContext(ThemeContext);
+    const dialogFuncs = useContext(DialogContext);
+
     const [mState, mDispatch] = useReducer(mainReducer, {
         table_is_shrunk: iStateOrDefault("table_is_shrunk"),
         console_width_fraction: iStateOrDefault("console_width_fraction"),
@@ -119,7 +124,6 @@ function MainApp(props) {
         spreadsheet_mode: false,
 
         // These will maybe only be used if not controlled
-        dark_theme: props.initial_theme === "dark",
         resource_name: props.resource_name,
         showOmnibar: false,
         is_project: props.is_project,
@@ -149,7 +153,6 @@ function MainApp(props) {
         props.stopSpinner();
         if (!props.controlled) {
             document.title = mState.resource_name;
-            window.dark_theme = mState.dark_theme;
             window.addEventListener("resize", _update_window_dimensions);
             _update_window_dimensions();
         }
@@ -279,13 +282,6 @@ function MainApp(props) {
         props.tsocket.attachListener('handle-callback', (task_packet) => {
             handleCallback(task_packet, props.main_id)
         });
-    }
-
-    function setTheme(dark_theme) {
-        _setMainStateValue("dark_theme", dark_theme);
-        pushCallback(() => {
-            window.dark_theme = dark_theme
-        })
     }
 
     // Every item in tile_list is a list of this form
@@ -426,7 +422,16 @@ function MainApp(props) {
         for (let tile_entry of tile_list) {
             existing_tile_names.push(tile_entry.tile_name)
         }
-        showModalReact("Create " + menu_id, "New Tile Name", createNewTile, menu_id, existing_tile_names);
+        dialogFuncs.showModal("ModalDialog", {
+                    title: "Create " + menu_id,
+                    field_title: "New Tile Name",
+                    handleSubmit: createNewTile,
+                    default_value: menu_id,
+                    existing_names: existing_tile_names,
+                    checkboxes: [],
+                    handleCancel: null,
+                    handleClose: dialogFuncs.hideModal,
+                });
 
         function createNewTile(tile_name) {
             props.startSpinner();
@@ -721,20 +726,30 @@ function MainApp(props) {
 
     function _addColumn(add_in_all = false) {
         let title = add_in_all ? "Create Column All Documents" : "Create Column This Document";
-        showModalReact(title, "New Column Name", function (new_name) {
-            let cwidth = compute_added_column_width(new_name);
-            _updateTableSpec({
-                column_names: [...mState.table_spec.column_names, new_name],
-                column_widths: [...mState.table_spec.column_widths, cwidth]
-            }, false);
-            const data_dict = {
-                "column_name": new_name,
-                "doc_name": mState.table_spec.current_doc_name,
-                "column_width": cwidth,
-                "all_docs": add_in_all
-            };
-            _broadcast_event_to_server("CreateColumn", data_dict);
-        }, "newcol", mState.table_spec.column_names)
+        dialogFuncs.showModal("ModalDialog", {
+                    title: title,
+                    field_title: "New Column Name",
+                    handleSubmit: (new_name)=>{
+                        let cwidth = compute_added_column_width(new_name);
+                        _updateTableSpec({
+                            column_names: [...mState.table_spec.column_names, new_name],
+                            column_widths: [...mState.table_spec.column_widths, cwidth]
+                        }, false);
+                        const data_dict = {
+                            "column_name": new_name,
+                            "doc_name": mState.table_spec.current_doc_name,
+                            "column_width": cwidth,
+                            "all_docs": add_in_all
+                        };
+                        _broadcast_event_to_server("CreateColumn", data_dict);
+                    },
+                    default_value: "newcol",
+                    existing_names: mState.table_spec.column_names,
+                    checkboxes: [],
+                    handleCancel: null,
+                    handleClose: dialogFuncs.hideModal,
+                })
+
     }
 
     function _setStateFromDataObject(data, doc_name, func = null) {
@@ -872,7 +887,6 @@ function MainApp(props) {
         }
     }
 
-    let actual_dark_theme = props.controlled ? props.dark_theme : mState.dark_theme;
     let vp_height;
     let hp_height;
     let console_available_height;
@@ -1006,7 +1020,6 @@ function MainApp(props) {
     if (props.is_freeform) {
         card_body = <FreeformBody main_id={props.main_id}
                                   ref={tbody_ref}
-                                  dark_theme={actual_dark_theme}
                                   code_container_width={mState.horizontal_fraction * true_usable_width}
                                   code_container_height={_getTableBodyHeight(table_available_height)}
                                   mState={mState}
@@ -1036,7 +1049,6 @@ function MainApp(props) {
         <div ref={tile_div_ref}>
             <TileContainer main_id={props.main_id}
                            tsocket={props.tsocket}
-                           dark_theme={actual_dark_theme}
                            height={tile_container_height}
                            tile_list={tile_list_ref}
                            current_doc_name={mState.table_spec.current_doc_name}
@@ -1071,7 +1083,6 @@ function MainApp(props) {
             <ConsoleComponent {...props.statusFuncs}
                               main_id={props.main_id}
                               tsocket={props.tsocket}
-                              dark_theme={actual_dark_theme}
                               handleCreateViewer={props.handleCreateViewer}
                               controlled={props.controlled}
                               am_selected={props.am_selected}
@@ -1146,15 +1157,12 @@ function MainApp(props) {
         <ErrorBoundary>
             {!window.in_context &&
                 <TacticNavbar is_authenticated={window.is_authenticated}
-                              dark_theme={actual_dark_theme}
-                              setTheme={props.setTheme}
                               user_name={window.username}
                               menus={null}
                               page_id={props.main_id}
                 />
             }
-            <TacticMenubar dark_theme={actual_dark_theme}
-                           connection_status={connection_status}
+            <TacticMenubar connection_status={connection_status}
                            menus={menus}
                            showRefresh={true}
                            showClose={true}
@@ -1171,7 +1179,7 @@ function MainApp(props) {
                            ]}
             />
             <ErrorBoundary>
-                <div className={`main-outer ${actual_dark_theme ? "bp5-dark" : "light-theme"}`}
+                <div className={`main-outer ${theme.dark_theme ? "bp5-dark" : "light-theme"}`}
                      ref={main_outer_ref}
                      style={{width: "100%", height: my_props.usable_height - height_adjustment.current}}>
                     {mState.console_is_zoomed &&
@@ -1241,7 +1249,7 @@ MainApp.defaultProps = {
 
 function main_main() {
     function gotProps(the_props) {
-        let MainAppPlus = withErrorDrawer(withStatus(MainApp));
+        let MainAppPlus = withTheme(withDialogs(withErrorDrawer(withStatus(MainApp))));
         let the_element = <MainAppPlus {...the_props}
                                        controlled={false}
                                        initial_theme={window.theme}

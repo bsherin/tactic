@@ -9,6 +9,7 @@ var _toaster = require("./toaster");
 var _communication_react = require("./communication_react");
 var _utilities_react = require("./utilities_react");
 var _blueprint_navbar = require("./blueprint_navbar");
+var _theme = require("./theme");
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
@@ -27,7 +28,8 @@ window.main_id = (0, _utilities_react.guid)();
 function _account_main() {
   if (window._show_message) (0, _toaster.doFlash)(window._message);
   var domContainer = document.querySelector('#root');
-  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(AccountApp, {
+  var AccountAppPlus = (0, _theme.withTheme)(AccountApp);
+  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(AccountAppPlus, {
     initial_theme: window.theme,
     controlled: false
   }), domContainer);
@@ -79,40 +81,30 @@ function AccountSelectField(props) {
 }
 AccountSelectField = /*#__PURE__*/(0, _react.memo)(AccountSelectField);
 function AccountApp(props) {
-  var _useState = (0, _react.useState)(props.initial_theme == "dark"),
-    _useState2 = _slicedToArray(_useState, 2),
-    dark_theme = _useState2[0],
-    set_dark_theme = _useState2[1];
   var _useStateAndRef = (0, _utilities_react.useStateAndRef)([]),
     _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
     fields = _useStateAndRef2[0],
     set_fields = _useStateAndRef2[1],
     fields_ref = _useStateAndRef2[2];
+  var _useState = (0, _react.useState)(""),
+    _useState2 = _slicedToArray(_useState, 2),
+    password = _useState2[0],
+    set_password = _useState2[1];
   var _useState3 = (0, _react.useState)(""),
     _useState4 = _slicedToArray(_useState3, 2),
-    password = _useState4[0],
-    set_password = _useState4[1];
-  var _useState5 = (0, _react.useState)(""),
+    confirm_password = _useState4[0],
+    set_confirm_password = _useState4[1];
+  var _useState5 = (0, _react.useState)(null),
     _useState6 = _slicedToArray(_useState5, 2),
-    confirm_password = _useState6[0],
-    set_confirm_password = _useState6[1];
-  var _useState7 = (0, _react.useState)(null),
-    _useState8 = _slicedToArray(_useState7, 2),
-    password_helper = _useState8[0],
-    set_password_helper = _useState8[1];
+    password_helper = _useState6[0],
+    set_password_helper = _useState6[1];
+  var theme = (0, _react.useContext)(_theme.ThemeContext);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _react.useEffect)(function () {
     (0, _communication_react.postAjax)("get_account_info", {}, function (data) {
       set_fields(data.field_list);
-      window.dark_theme = dark_theme;
     });
   }, []);
-  function _setTheme(dark_theme) {
-    set_dark_theme(dark_theme);
-    pushCallback(function () {
-      window.dark_theme = dark_theme;
-    });
-  }
   function _submitPassword() {
     var pwd = password;
     if (pwd != confirm_password) {
@@ -262,7 +254,7 @@ function AccountApp(props) {
   }
   var field_items = _getFieldItems();
   var outer_class = "account-settings";
-  if (dark_theme) {
+  if (theme.dark_theme) {
     outer_class = outer_class + " bp5-dark";
   } else {
     outer_class = outer_class + " light-theme";
@@ -270,8 +262,6 @@ function AccountApp(props) {
   var self = this;
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
-    dark_theme: dark_theme,
-    setTheme: props.controlled ? props.setTheme : _setTheme,
     selected: null,
     show_api_links: false,
     page_id: window.main_id,

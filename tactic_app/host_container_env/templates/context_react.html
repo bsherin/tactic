@@ -26,7 +26,7 @@
         window.theme="{{theme}}";
         window.in_context = true;
         window.version_string="{{version_string}}";
-
+        window.has_pool = "{{has_pool}}" == "True";
     </script>
     <script type="module" src="{{url_for('static', filename=module_source, v=version_string)}}"></script>
 

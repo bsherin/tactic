@@ -2,6 +2,7 @@
 # This module contains the User class machinery required by flask-login
 
 import re
+import os
 import sys
 import copy
 import datetime
@@ -123,6 +124,14 @@ class User(UserMixin, MongoAccess):
     @property
     def is_active(self):
         return self.status == "active"
+
+    @property
+    def pool_dir(self):
+        return f"/pool/{self.username}"
+
+    @property
+    def has_pool(self):
+        return os.path.exists(self.pool_dir)
 
     def set_user_timezone_offset(self, tzoffset):
         self.db["user_collection"].update_one({"username": self.username},

@@ -1,7 +1,7 @@
 
 
 import PropTypes from 'prop-types';
-import { useEffect, useRef, memo } from "react";
+import { useEffect, useRef, memo, useContext } from "react";
 import React from "react";
 
 import CodeMirror from 'codemirror/lib/codemirror'
@@ -31,6 +31,7 @@ import 'codemirror/theme/solarized.css'
 import 'codemirror/theme/juejin.css'
 import {postAjax} from "./communication_react";
 
+import {ThemeContext} from "./theme"
 
 export {ReactCodemirrorMergeView}
 
@@ -42,6 +43,8 @@ function ReactCodemirrorMergeView(props) {
     const preferred_themes = useRef(null);
     const cmobject = useRef(null);
 
+    const themer = useContext(ThemeContext);
+
     useEffect(()=>{
         postAjax("get_preferred_codemirror_themes", {}, (data)=> {
             preferred_themes.current = data;
@@ -49,7 +52,7 @@ function ReactCodemirrorMergeView(props) {
             resizeHeights(props.max_height);
             refreshAreas();
             create_keymap();
-            saved_theme.current = props.dark_theme
+            saved_theme.current = theme.dark_theme
         })
     }, []);
 
@@ -58,12 +61,12 @@ function ReactCodemirrorMergeView(props) {
             return
         }
 
-        if (props.dark_theme != saved_theme.current) {
+        if (theme.dark_theme != saved_theme.current) {
             postAjax("get_preferred_codemirror_themes", {}, (data) => {
                 preferred_themes.current = data;
                 cmobject.current.editor().setOption("theme", _current_codemirror_theme());
                 cmobject.current.rightOriginal().setOption("theme", _current_codemirror_theme());
-                saved_theme.current = props.dark_theme
+                saved_theme.current = theme.dark_theme
             })
         }
         if (cmobject.current.editor().getValue() != props.editor_content) {
@@ -74,7 +77,7 @@ function ReactCodemirrorMergeView(props) {
     });
 
     function _current_codemirror_theme() {
-        return props.dark_theme ? preferred_themes.current.preferred_dark_theme :
+        return theme.dark_theme ? preferred_themes.current.preferred_dark_theme :
             preferred_themes.current.preferred_light_theme;
     }
 
@@ -202,7 +205,6 @@ ReactCodemirrorMergeView.propTypes = {
     handleEditChange: PropTypes.func,
     editor_content: PropTypes.string,
     right_content: PropTypes.string,
-    dark_theme: PropTypes.bool,
     saveMe: PropTypes.func,
 };
 

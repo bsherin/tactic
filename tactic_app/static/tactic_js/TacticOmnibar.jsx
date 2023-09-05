@@ -1,11 +1,12 @@
 import React from "react";
-import {memo} from "react";
+import {memo, useContext} from "react";
 import PropTypes from 'prop-types';
 
 import {Omnibar} from "@blueprintjs/select"
 import {MenuItem} from "@blueprintjs/core";
 
 import {postWithCallback} from "./communication_react";
+import {ThemeContext} from "./theme"
 
 export {TacticOmnibar}
 
@@ -56,6 +57,8 @@ function _itemPredicate(query, item) {
 }
 
 function TacticOmnibar(props) {
+
+    const theme = useContext(ThemeContext);
 
     function _onItemSelect(item) {
         item.the_function();
@@ -113,13 +116,11 @@ function TacticOmnibar(props) {
     function _toggleTheme() {
         const result_dict = {
             "user_id": window.user_id,
-            "theme": !props.dark_theme ? "dark" : "light",
+            "theme": !theme.dark_theme ? "dark" : "light",
         };
         postWithCallback("host", "set_user_theme", result_dict,
             null, null);
-        if (props.setTheme) {
-            props.setTheme(!props.dark_theme)
-        }
+        theme.setTheme(!dark_theme)
     }
 
     let the_items = [];
@@ -131,7 +132,7 @@ function TacticOmnibar(props) {
     }
     return (
         <Omnibar items={the_items}
-                 className={window.dark_theme ? "bp5-dark" : ""}
+                 className={theme.dark_theme ? "bp5-dark" : ""}
                  isOpen={props.showOmnibar}
                  onItemSelect={_onItemSelect}
                  itemRenderer={_itemRenderer}
@@ -146,11 +147,9 @@ TacticOmnibar.propTypes = {
     omniGetters: PropTypes.array,
     showOmniBar: PropTypes.bool,
     closeOmniBar: PropTypes.func,
-    dark_theme: PropTypes.bool,
 };
 
 TacticOmnibar.defaultProps = {
-    dark_theme: false,
     showOmnibar: false,
     omniGetters: null
 };

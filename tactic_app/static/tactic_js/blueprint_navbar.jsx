@@ -1,5 +1,5 @@
 import React from "react";
-import {Fragment, useState, useEffect, useRef, memo} from "react";
+import {Fragment, useState, useEffect, useRef, useContext, memo} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
@@ -16,6 +16,7 @@ import {
 
 import {MenuComponent} from "./main_menus_react.js";
 import {postWithCallback} from "./communication_react";
+import {ThemeContext} from "./theme"
 
 export {render_navbar, TacticNavbar, get_theme_cookie, set_theme_cookie}
 
@@ -46,6 +47,8 @@ function TacticNavbar(props) {
     });
     const [old_left_width, set_old_left_width] = useState(null);
     const lg_ref = useRef(null);
+    const theme = useContext(ThemeContext);
+
     var overflow_items = [];
 
     function _update_window_dimensions() {
@@ -80,19 +83,17 @@ function TacticNavbar(props) {
     }
 
     function _setTheme(event) {
-        let theme = event.target.checked ? "dark" : "light";
-        set_theme_cookie(theme);
+        let dtheme = event.target.checked ? "dark" : "light";
+        set_theme_cookie(dtheme);
         if (window.user_id != undefined) {
             const result_dict = {
                 "user_id": window.user_id,
-                "theme": theme,
+                "theme": dtheme,
             };
             postWithCallback("host", "set_user_theme", result_dict,
                 null, null);
         }
-        if (props.setTheme) {
-            props.setTheme(event.target.checked)
-        }
+        theme.setTheme(event.target.checked)
     }
 
     function renderNav(item) {
@@ -214,7 +215,7 @@ function TacticNavbar(props) {
     let right_width = _getRightWidth();
     let right_style = {width: right_width};
     right_style.justifyContent = "flex-end";
-    let theme_class = props.dark_theme ? "bp5-dark" : "light-theme";
+    let theme_class = theme.dark_theme ? "bp5-dark" : "light-theme";
     let name_string = "Tactic";
     if (props.extra_text != null) {
         name_string += " " + props.extra_text
@@ -244,7 +245,7 @@ function TacticNavbar(props) {
 
                 <NavbarDivider/>
                 <Switch
-                    checked={props.dark_theme}
+                    checked={theme.dark_theme}
                     onChange={_setTheme}
                     large={false}
                     style={{marginBottom: 0}}
@@ -268,7 +269,6 @@ TacticNavbar.propTypes = {
         PropTypes.number]),
     page_id: PropTypes.string,
     extra_text: PropTypes.string,
-    dark_theme: PropTypes.bool,
     setTheme: PropTypes.func,
     show_api_links: PropTypes.bool
 };
@@ -288,6 +288,5 @@ function render_navbar(selected = null, show_api_links = false, dark_theme = fal
     ReactDOM.render(<TacticNavbar is_authenticated={window.is_authenticated}
                                   selected={selected}
                                   show_api_links={show_api_links}
-                                  dark_theme={dark_theme}
                                   user_name={window.username}/>, domContainer)
 }
