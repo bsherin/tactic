@@ -81,7 +81,6 @@ function FreeformBody(props, passedRef) {
     handleChange: null,
     code_content: props.mState.data_text,
     sync_to_prop: true,
-    dark_theme: props.dark_theme,
     soft_wrap: props.mState.soft_wrap,
     mode: "Plain Text",
     code_container_height: props.code_container_height,

@@ -5,7 +5,7 @@
 import "../tactic_css/tactic.scss";
 
 import React from "react";
-import {Fragment, useState, useEffect, useRef, memo} from "react";
+import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
@@ -20,8 +20,9 @@ import {withStatus} from "./toaster";
 import {getUsableDimensions, BOTTOM_MARGIN} from "./sizing_tools";
 import {guid} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
-import {showModalReact} from "./modal_react";
 import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_react";
+import {ThemeContext, withTheme} from "./theme";
+import {DialogContext, withDialogs} from "./modal_react";
 
 export {module_viewer_props, ModuleViewerApp}
 
@@ -67,15 +68,15 @@ function ModuleViewerApp(props) {
     const [regex, set_regex] = useState(false);
     const [search_matches, set_search_matches] = useState(props.null);
 
+    const theme = useContext(ThemeContext);
+    const dialogFuncs = useContext(DialogContext);
+
     // The following only are used if not in context
     const [usable_width, set_usable_width] = useState(() => {
         return getUsableDimensions(true).usable_width - 170
     });
     const [usable_height, set_usable_height] = useState(() => {
         return getUsableDimensions(true).usable_height_no_bottom
-    });
-    const [dark_theme, set_dark_theme] = useState(() => {
-        return props.initial_theme === "dark"
     });
     const [resource_name, set_resource_name] = useState(props.resource_name);
 
@@ -85,7 +86,6 @@ function ModuleViewerApp(props) {
             cc_bounding_top.current = cc_ref.current.getBoundingClientRect().top;
         }
         if (!props.controlled) {
-            window.dark_theme = dark_theme;
             window.addEventListener("resize", _update_window_dimensions);
             _update_window_dimensions();
         } else {
@@ -137,15 +137,6 @@ function ModuleViewerApp(props) {
         }
     }
 
-    function _setTheme(dark_theme) {
-        set_dark_theme(dark_theme);
-        if (!window.in_context) {
-            pushCallback(() => {
-                window.dark_theme = dark_theme
-            })
-        }
-    }
-
     function menu_specs() {
         let ms;
         if (props.is_repository) {
@@ -153,7 +144,7 @@ function ModuleViewerApp(props) {
                 Transfer: [{
                     "name_text": "Copy to library", "icon_name": "import",
                     "click_handler": () => {
-                        copyToLibrary("tile", _cProp("resource_name"))
+                        copyToLibrary("tile", _cProp("resource_name"), dialogFuncs)
                     }, tooltip: "Copy to library"
                 }]
             }
@@ -203,7 +194,7 @@ function ModuleViewerApp(props) {
                     name_text: "Share",
                     icon_name: "share",
                     click_handler: () => {
-                        sendToRepository("list", _cProp("resource_name"))
+                        sendToRepository("list", _cProp("resource_name"), dialogFuncs)
                     },
                     tooltip: "Share to repository"
                 },]
@@ -327,8 +318,16 @@ function ModuleViewerApp(props) {
         props.startSpinner();
         postWithCallback("host", "get_tile_names", {"user_id": window.user_id}, function (data) {
             let checkboxes;
-            showModalReact("Save Module As", "New ModuleName Name", CreateNewModule,
-                "NewModule", data["tile_names"], null, doCancel)
+            dialogFuncs.showModal("ModalDialog", {
+                    title: "Save Module As",
+                    field_title: "New Module Name",
+                    handleSubmit: CreateNewModule,
+                    default_value: "NewModule",
+                    existing_names: data.tile_names,
+                    checkboxes: [],
+                    handleCancel: doCancel,
+                    handleClose: dialogFuncs.hideModal,
+                })
         }, null, props.main_id);
 
         function doCancel() {
@@ -440,7 +439,6 @@ function ModuleViewerApp(props) {
         set_search_matches(nmatches);
     }
 
-    let actual_dark_theme = props.controlled ? props.dark_theme : dark_theme;
     let my_props = {...props};
     if (!props.controlled) {
         my_props.resource_name = resource_name;
@@ -456,7 +454,7 @@ function ModuleViewerApp(props) {
     let cc_height = get_new_cc_height();
     let outer_class = "resource-viewer-holder";
     if (!props.controlled) {
-        if (actual_dark_theme) {
+        if (theme.dark_theme) {
             outer_class = outer_class + " bp5-dark";
         } else {
             outer_class = outer_class + " light-theme"
@@ -466,8 +464,6 @@ function ModuleViewerApp(props) {
         <Fragment>
             {!props.controlled &&
                 <TacticNavbar is_authenticated={window.is_authenticated}
-                              dark_theme={actual_dark_theme}
-                              setTheme={_setTheme}
                               selected={null}
                               show_api_links={true}
                               page_id={props.resource_viewer_id}
@@ -475,8 +471,6 @@ function ModuleViewerApp(props) {
             }
             <div className={outer_class} ref={top_ref} style={outer_style}>
                 <ResourceViewerApp {...my_props}
-                                   dark_theme={actual_dark_theme}
-                                   setTheme={props.controlled ? null : _setTheme}
                                    resource_viewer_id={my_props.resource_viewer_id}
                                    setResourceNameState={_setResourceNameState}
                                    refreshTab={props.refreshTab}
@@ -503,7 +497,6 @@ function ModuleViewerApp(props) {
                                    registerOmniFunction={props.registerOmniFunction}
                 >
                     <ReactCodemirror code_content={code_content}
-                                     dark_theme={actual_dark_theme}
                                      am_selected={props.am_selected}
                                      extraKeys={_extraKeys()}
                                      readOnly={props.readOnly}
@@ -537,7 +530,6 @@ ModuleViewerApp.propTypes = {
     created: PropTypes.string,
     tags: PropTypes.array,
     notes: PropTypes.string,
-    dark_theme: PropTypes.bool,
     readOnly: PropTypes.bool,
     is_repository: PropTypes.bool,
     meta_outer: PropTypes.string,
@@ -558,7 +550,7 @@ ModuleViewerApp.defaultProps = {
 
 function module_viewer_main() {
     function gotProps(the_props) {
-        let ModuleViewerAppPlus = withErrorDrawer(withStatus(ModuleViewerApp));
+        let ModuleViewerAppPlus = withTheme(withDialogs(withErrorDrawer(withStatus(ModuleViewerApp))));
         let the_element = <ModuleViewerAppPlus {...the_props}
                                                controlled={false}
                                                initial_theme={window.theme}

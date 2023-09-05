@@ -1,7 +1,7 @@
 // noinspection JSConstructorReturnsPrimitive
 
 import React from "react";
-import {Fragment, useState, useEffect, useRef, useCallback, memo, useMemo} from "react";
+import {Fragment, useState, useEffect, useRef, useCallback, memo, useMemo, useContext} from "react";
 import PropTypes from 'prop-types';
 
 import 'codemirror/mode/markdown/markdown.js'
@@ -29,6 +29,7 @@ import {view_views} from "./library_pane";
 import {TacticMenubar} from "./menu_utilities";
 import {FilterSearchForm} from "./search_form";
 import {SearchableConsole} from "./searchable_console";
+import {ThemeContext} from "./theme";
 
 import {useCallbackStack, useStateAndRef, useConstructor} from "./utilities_react";
 
@@ -57,6 +58,7 @@ function ConsoleComponent(props) {
 
     const [pseudo_tile_id, set_pseudo_tile_id] = useState(null);
 
+    const theme = useContext(ThemeContext);
     const pushCallback = useCallbackStack();
 
     useEffect(() => {
@@ -1297,7 +1299,6 @@ function ConsoleComponent(props) {
                                        suggestionGlyphs={suggestionGlyphs}
                                        showRefresh={false}
                                        showClose={false}
-                                       dark_theme={props.dark_theme}
                                        refreshTab={props.refreshTab}
                                        closeTab={null}
                                        controlled={false} // This doesn't matter
@@ -1381,7 +1382,7 @@ function ConsoleComponent(props) {
                                            ElementComponent={SuperItem}
                                            key_field_name="unique_id"
                                            item_list={filtered_items}
-                                           helperClass={props.dark_theme ? "bp5-dark" : "light-theme"}
+                                           helperClass={theme.dark_theme ? "bp5-dark" : "light-theme"}
                                            handle=".console-sorter"
                                            onBeforeCapture={_sortStart}
                                            onDragEnd={_resortConsoleItems}
@@ -1402,7 +1403,6 @@ function ConsoleComponent(props) {
                                            deleteSection={_deleteSection}
                                            insertResourceLink={_insertResourceLink}
                                            useDragHandle={false}
-                                           dark_theme={props.dark_theme}
                                            pseudo_tile_id={pseudo_tile_id}
                                            handleCreateViewer={props.handleCreateViewer}
                                            axis="y"
@@ -2344,7 +2344,6 @@ function ConsoleCodeItem(props) {
                                     <ReactCodemirror handleChange={_handleChange}
                                                      handleFocus={_handleFocus}
                                                      registerSetFocusFunc={registerSetFocusFunc}
-                                                     dark_theme={props.dark_theme}
                                                      am_selected={props.am_selected}
                                                      readOnly={false}
                                                      show_line_numbers={true}
@@ -2770,7 +2769,6 @@ function ConsoleTextItem(props) {
                                 {!really_show_markdown &&
                                     <Fragment>
                                         <ReactCodemirror handleChange={_handleChange}
-                                                         dark_theme={props.dark_theme}
                                                          am_selected={props.am_selected}
                                                          readOnly={false}
                                                          handleFocus={_handleFocus}

@@ -1,16 +1,19 @@
 import React from "react";
-import {Fragment, useEffect, memo} from "react";
+import {Fragment, useEffect, memo, useContext} from "react";
 import PropTypes from 'prop-types';
 
 import {Icon, MenuDivider, Menu, Navbar, Button, PopoverPosition, Classes} from "@blueprintjs/core";
 import {Popover2, MenuItem2} from "@blueprintjs/popover2";
 
 import {KeyTrap} from "./key_trap";
-
-export {MenuComponent, ToolMenu, TacticMenubar, TopLeftButtons}
+import {ThemeContext} from "./theme"
 import {GlyphButton} from "./blueprint_react_widgets";
 
+export {MenuComponent, ToolMenu, TacticMenubar, TopLeftButtons}
+
 function TacticMenubar(props) {
+    const theme = useContext(ThemeContext);
+
     let menus;
     if (props.menu_specs == null) {
         menus = props.menus
@@ -33,7 +36,7 @@ function TacticMenubar(props) {
                                      handleClick={sg.handleClick}
                                      icon={sg.icon}/>)
     }
-    const theme_class = props.dark_theme ? "bp5-dark" : "light-theme";
+    const theme_class = theme.dark_theme ? "bp5-dark" : "light-theme";
     const name_style = {
         marginButton: 0,
         marginLeft: 10,
@@ -85,7 +88,6 @@ TacticMenubar.propTypes = {
     showErrorDrawerButton: PropTypes.bool,
     toggleErrorDrawer: PropTypes.func,
     menu_specs: PropTypes.object,
-    dark_theme: PropTypes.bool,
     resource_name: PropTypes.string,
     resource_icon: PropTypes.string,
     controlled: PropTypes.bool,

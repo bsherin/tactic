@@ -1,17 +1,17 @@
 'use strict';
 
 import React from "react";
-import {Fragment, useState, useEffect, useRef, memo} from "react";
+import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
 import PropTypes from 'prop-types';
 
 import {OverlayToaster, Position, Spinner} from "@blueprintjs/core";
 import {GlyphButton} from "./blueprint_react_widgets";
 
 import {useCallbackStack} from "./utilities_react";
-
+import {ThemeContext} from "./theme"
 export {doFlash, doFlashAlways, withStatus, Status}
 
-const DEFAULT_TIMEOUT = 2000;
+const DEFAULT_TIMEOUT = 20000;
 
 let disconnect_toast_id = null;
 let reconnect_toast_id = null;
@@ -200,8 +200,7 @@ function withStatus(WrappedComponent) {
                         show_close={true}
                         handleClose={() => {
                             _clearStatus(null)
-                        }}
-                        dark_theme={props.controlled ? props.dark_theme : window.theme == "dark"}/>
+                        }}/>
             </Fragment>
         )
     }
@@ -210,9 +209,10 @@ function withStatus(WrappedComponent) {
 
 function Status(props) {
     const elRef = useRef(null);
+    const theme = useContext(ThemeContext);
 
     let cname = "d-flex flex-row";
-    let outer_cname = props.dark_theme ? "status-holder bp5-dark" : "status-holder light-theme";
+    let outer_cname = theme.dark_theme ? "status-holder bp5-dark" : "status-holder light-theme";
     let left = elRef && elRef.current ? elRef.current.parentNode.offsetLeft : 25;
 
     return (
@@ -243,7 +243,6 @@ Status.propTypes = {
     handleClose: PropTypes.func,
     status_message: PropTypes.string,
     spinner_size: PropTypes.number,
-    dark_theme: PropTypes.bool
 };
 
 Status.defaultProps = {
@@ -252,5 +251,4 @@ Status.defaultProps = {
     handleClose: null,
     status_message: null,
     spinner_size: 25,
-    dark_theme: false
 };

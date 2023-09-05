@@ -29,9 +29,10 @@ var _error_drawer = require("./error_drawer");
 var _utilities_react = require("./utilities_react");
 var _blueprint_navbar = require("./blueprint_navbar");
 var _library_widgets = require("./library_widgets");
-var _modal_react = require("./modal_react");
 var _error_boundary = require("./error_boundary");
 var _autocomplete = require("./autocomplete");
+var _theme = require("./theme");
+var _modal_react = require("./modal_react");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -211,17 +212,13 @@ function CreatorApp(props) {
     _useState26 = _slicedToArray(_useState25, 2),
     showOmnibar = _useState26[0],
     setShowOmnibar = _useState26[1];
+  var theme = (0, _react.useContext)(_theme.ThemeContext);
+  var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
-  var _useState27 = (0, _react.useState)(function () {
-      return props.initial_theme === "dark";
-    }),
+  var _useState27 = (0, _react.useState)(props.resource_name),
     _useState28 = _slicedToArray(_useState27, 2),
-    dark_theme = _useState28[0],
-    set_dark_theme = _useState28[1];
-  var _useState29 = (0, _react.useState)(props.resource_name),
-    _useState30 = _slicedToArray(_useState29, 2),
-    resource_name = _useState30[0],
-    set_resource_name = _useState30[1];
+    resource_name = _useState28[0],
+    set_resource_name = _useState28[1];
   var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
   (0, _utilities_react.useConstructor)(function () {
     if (!window.in_context) {
@@ -236,7 +233,6 @@ function CreatorApp(props) {
       props.registerDirtyMethod(_dirty);
       props.registerLineSetter(_selectLineNumber);
     } else {
-      window.dark_theme = dark_theme;
       window.addEventListener("beforeunload", function (e) {
         if (_dirty()) {
           e.preventDefault();
@@ -343,7 +339,7 @@ function CreatorApp(props) {
         name_text: "Share",
         icon_name: "share",
         click_handler: function click_handler() {
-          (0, _resource_viewer_react_app.sendToRepository)("tile", _cProp("resource_name"));
+          (0, _resource_viewer_react_app.sendToRepository)("tile", _cProp("resource_name"), dialogFuncs);
         }
       }]
     };
@@ -464,14 +460,6 @@ function CreatorApp(props) {
       return true;
     }
   }
-  function _setTheme(dark_theme) {
-    set_dark_theme(dark_theme);
-    if (!window.in_context) {
-      pushCallback(function () {
-        window.dark_theme = dark_theme;
-      });
-    }
-  }
   function _showHistoryViewer() {
     window.open("".concat($SCRIPT_ROOT, "/show_history_viewer/").concat(_cProp("resource_name")));
   }
@@ -548,7 +536,16 @@ function CreatorApp(props) {
       "user_id": window.user_id
     }, function (data) {
       var checkboxes;
-      (0, _modal_react.showModalReact)("Save Module As", "New ModuleName Name", CreateNewModule, "NewModule", data["tile_names"], null, doCancel);
+      dialogFuncs.showModal("ModalDialog", {
+        title: "Save Module As",
+        field_title: "New Module Name",
+        handleSubmit: CreateNewModule,
+        default_value: "NewModule",
+        existing_names: data.tile_names,
+        checkboxes: [],
+        handleCancel: doCancel,
+        handleClose: dialogFuncs.hideModal
+      });
     }, null, props.main_id);
     function doCancel() {
       props.stopSpinner();
@@ -957,7 +954,6 @@ function CreatorApp(props) {
   } finally {
     _iterator7.f();
   }
-  var actual_dark_theme = props.controlled ? props.dark_theme : dark_theme;
   var my_props = _objectSpread({}, props);
   if (!props.controlled) {
     my_props.resource_name = resource_name;
@@ -1020,7 +1016,6 @@ function CreatorApp(props) {
       alt_clear_selections: _clearAllSelections,
       first_line_number: first_line_number.current,
       code_container_height: tc_height,
-      dark_theme: actual_dark_theme,
       readOnly: props.read_only,
       regex_search: regex,
       setSearchMatches: function setSearchMatches(num) {
@@ -1079,7 +1074,6 @@ function CreatorApp(props) {
     alt_clear_selections: _clearAllSelections,
     first_line_number: render_content_line_number_ref.current + 1,
     code_container_height: rc_height,
-    dark_theme: actual_dark_theme,
     readOnly: props.read_only,
     regex_search: regex,
     setSearchMatches: function setSearchMatches(num) {
@@ -1149,7 +1143,6 @@ function CreatorApp(props) {
     show_fold_button: true,
     am_selected: props.am_selected,
     current_search_number: current_search_cm == "em" ? current_search_number : null,
-    dark_theme: dark_theme,
     extraKeys: _extraKeys(),
     readOnly: props.readOnly,
     code_content: extra_functions_ref.current,
@@ -1225,7 +1218,7 @@ function CreatorApp(props) {
   };
   var outer_class = "resource-viewer-holder pane-holder";
   if (!window.in_context) {
-    if (dark_theme) {
+    if (theme.dark_theme) {
       outer_class = outer_class + " bp5-dark";
     } else {
       outer_class = outer_class + " light-theme";
@@ -1233,8 +1226,6 @@ function CreatorApp(props) {
   }
   return /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, !window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
-    dark_theme: dark_theme,
-    setTheme: _setTheme,
     selected: null,
     show_api_links: true,
     page_id: props.module_viewer_id,
@@ -1244,7 +1235,6 @@ function CreatorApp(props) {
     connection_status: connection_status,
     showRefresh: window.in_context,
     showClose: window.in_context,
-    dark_theme: dark_theme,
     refreshTab: props.refreshTab,
     closeTab: props.closeTab,
     resource_name: _cProp("resource_name"),
@@ -1269,9 +1259,7 @@ function CreatorApp(props) {
     page_id: props.module_viewer_id,
     showOmnibar: showOmnibar,
     closeOmnibar: _closeOmnibar,
-    is_authenticated: window.is_authenticated,
-    dark_theme: dark_theme,
-    setTheme: _setTheme
+    is_authenticated: window.is_authenticated
   }), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
     global: true,
     bindings: key_bindings.current
@@ -1319,7 +1307,7 @@ CreatorApp.defaultProps = {
 };
 function tile_creator_main() {
   function gotProps(the_props) {
-    var CreatorAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(CreatorApp));
+    var CreatorAppPlus = (0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(CreatorApp))));
     var the_element = /*#__PURE__*/_react["default"].createElement(CreatorAppPlus, _extends({}, the_props, {
       controlled: false,
       initial_theme: window.theme,

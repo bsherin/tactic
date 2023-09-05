@@ -1,7 +1,13 @@
 import React from "react";
-import {Fragment, useState, useRef, useEffect, memo} from "react"
+import {Fragment, useState, useRef, useEffect, memo, useContext, createContext} from "react"
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
+
+import {useStateAndRef} from "./utilities_react";
+
+export {DialogContext, withDialogs}
+
+const DialogContext = createContext(null);
 
 import {
     Checkbox,
@@ -18,23 +24,71 @@ import {
 import {BpSelect} from "./blueprint_mdata_fields"
 import {useCallbackStack} from "./utilities_react";
 import {postWithCallback} from "./communication_react";
+import {PoolAddressSelector} from "./pool_tree";
+import {withTheme, ThemeContext} from "./theme";
 
 export {
     showModalReact, showConfirmDialogReact, showSelectDialog, SelectResourceDialog,
-    showSelectResourceDialog, showPresentationDialog, showReportDialog
+    showSelectResourceDialog, showPresentationDialog, showReportDialog, showModalAddressSelector
+}
+
+function withDialogs(WrappedComponent) {
+
+    function ModalFunc(props) {
+        // When state was dealt with in this way updates weren't getting batched and
+        // that was causinga ll sorts of problems
+        const [state, setState] = useState({
+            modalType: null,
+            dialogProps: {},
+            keyCounter: 0
+        });
+
+        function showModal(modalType, newDialogProps) {
+            setState({
+                modalType: modalType,
+                dialogProps: newDialogProps,
+                keyCounter: state.keyCounter + 1
+            })
+        }
+
+        function hideModal() {
+            setState({
+                modalType: null,
+                dialogProps: {},
+                keyCounter: 0
+            });
+        }
+
+        return (
+            <Fragment>
+                <DialogContext.Provider value={{showModal, hideModal}}>
+                    <WrappedComponent {...props}/>
+                </DialogContext.Provider>
+                <div>
+                    {state.modalType == "ModalDialog" &&
+                        <ModalDialog
+                            key={state.keyCounter}
+                            isOpen={state.modalType == "ModalDialog"}
+                            {...state.dialogProps}/>
+                    }
+                </div>
+            </Fragment>
+        )
+    }
+    return memo(ModalFunc)
 }
 
 function ModalDialog(props) {
 
-    const [show, set_show] = useState(false);
-    const [checkbox_states, set_checkbox_states] = useState({});
-    const [warning_text, set_warning_text] = useState("");
-    const [current_value, set_current_value] = useState(null);
+    const [checkbox_states, set_checkbox_states, checkbox_states_ref] = useStateAndRef({});
+    const [warning_text, set_warning_text, warning_text_ref] = useStateAndRef("");
+    const [current_value, set_current_value, current_value_ref] = useStateAndRef(null);
+
+    const theme = useContext(ThemeContext);
 
     const input_ref = useRef(null);
 
     useEffect(() => {
-        set_show(true);
         if ((props.checkboxes != null) && (props.checkboxes.length != 0)) {
             let checkbox_states = {};
             for (let checkbox of props.checkboxes) {
@@ -48,7 +102,8 @@ function ModalDialog(props) {
             name_counter += 1;
             default_name = props.default_value + String(name_counter)
         }
-        set_current_value(default_name)
+        set_current_value(default_name);
+        set_warning_text(null);
     }, []);
 
     function _changeHandler(event) {
@@ -68,21 +123,19 @@ function ModalDialog(props) {
 
     function _submitHandler(event) {
         let msg;
-        if (current_value == "") {
+        if (current_value_ref.current == "") {
             msg = "An empty name is not allowed here.";
             set_warning_text(msg)
-        } else if (_name_exists(current_value)) {
+        } else if (_name_exists(current_value_ref.current)) {
             msg = "That name already exists";
             set_warning_text(msg)
         } else {
-            set_show(false);
-            props.handleSubmit(current_value, checkbox_states);
+            props.handleSubmit(current_value_ref.current, checkbox_states);
             props.handleClose();
         }
     }
 
     function _cancelHandler() {
-        set_show(false);
         if (props.handleCancel) {
             props.handleCancel()
         }
@@ -108,8 +161,8 @@ function ModalDialog(props) {
         }
     }
     return (
-        <Dialog isOpen={show}
-                className={window.dark_theme ? "bp5-dark" : ""}
+        <Dialog isOpen={props.isOpen}
+                className={theme.dark_theme ? "bp5-dark" : ""}
                 title={props.title}
                 onClose={_cancelHandler}
                 onOpened={() => {
@@ -118,10 +171,10 @@ function ModalDialog(props) {
                 canEscapeKeyClose={true}>
             <form onSubmit={_submitHandler}>
                 <div className={Classes.DIALOG_BODY}>
-                    <FormGroup label={props.field_title} helperText={warning_text}>
+                    <FormGroup label={props.field_title} helperText={warning_text_ref.current}>
                         <InputGroup inputRef={_refHandler}
                                     onChange={_changeHandler}
-                                    value={current_value}/>
+                                    value={current_value_ref.current}/>
                     </FormGroup>
                     {(checkbox_items.length != 0) && checkbox_items}
                 </div>
@@ -171,6 +224,7 @@ function showModalReact(modal_title, field_title, submit_function, default_value
     ReactDOM.render(<ModalDialog handleSubmit={submit_function}
                                  handleCancel={cancel_function}
                                  handleClose={handle_close}
+                                 initial_theme={window.dark_theme ? "dark" : "light"}
                                  title={modal_title}
                                  field_title={field_title}
                                  default_value={default_value}
@@ -185,6 +239,8 @@ function PresentationDialog(props) {
     const [collection_name, set_collection_name] = useState(null);
     const [use_dark_theme, set_use_dark_theme] = useState(null);
     const [warning_text, set_warning_text] = useState("");
+
+    const theme = useContext(ThemeContext);
 
     const input_ref = useRef(null);
 
@@ -250,7 +306,7 @@ function PresentationDialog(props) {
 
     return (
         <Dialog isOpen={show}
-                className={window.dark_theme ? "bp5-dark" : ""}
+                className={theme.dark_theme ? "bp5-dark" : ""}
                 title="Create Presentation"
                 onClose={_cancelHandler}
                 canEscapeKeyClose={true}>
@@ -287,7 +343,7 @@ function PresentationDialog(props) {
     )
 }
 
-PresentationDialog = memo(PresentationDialog);
+PresentationDialog = memo(withTheme(PresentationDialog));
 
 PresentationDialog.propTypes = {
     handleSubmit: PropTypes.func,
@@ -317,6 +373,7 @@ function showPresentationDialog(submit_function, existing_names, cancel_function
     ReactDOM.render(<PresentationDialog handleSubmit={submit_function}
                                         handleCancel={cancel_function}
                                         handleClose={handle_close}
+                                        initial_theme={window.dark_theme ? "dark" : "light"}
                                         default_name="NewPresentation"
                                         existing_names={existing_names}/>, domContainer);
 }
@@ -329,6 +386,8 @@ function ReportDialog(props) {
     const [warning_text, set_warning_text] = useState("");
     const [collapsible, set_collapsible] = useState(false);
     const [include_summaries, set_include_summaries] = useState(false);
+
+    const theme = useContext(ThemeContext);
 
     const input_ref = useRef(null);
 
@@ -404,7 +463,7 @@ function ReportDialog(props) {
 
     return (
         <Dialog isOpen={show}
-                className={window.dark_theme ? "bp5-dark" : ""}
+                className={theme.dark_theme ? "bp5-dark" : ""}
                 title="Create Presentation"
                 onClose={_cancelHandler}
                 canEscapeKeyClose={true}>
@@ -453,7 +512,7 @@ function ReportDialog(props) {
     )
 }
 
-ReportDialog = memo(ReportDialog);
+ReportDialog = memo(withTheme(ReportDialog));
 ReportDialog.propTypes = {
     handleSubmit: PropTypes.func,
     handleClose: PropTypes.func,
@@ -482,6 +541,7 @@ function showReportDialog(submit_function, existing_names, cancel_function = nul
     ReactDOM.render(<ReportDialog handleSubmit={submit_function}
                                   handleCancel={cancel_function}
                                   handleClose={handle_close}
+                                  initial_theme={window.dark_theme ? "dark" : "light"}
                                   default_name="NewReport"
                                   existing_names={existing_names}/>, domContainer);
 }
@@ -489,6 +549,8 @@ function showReportDialog(submit_function, existing_names, cancel_function = nul
 function SelectDialog(props) {
     const [show, set_show] = useState(false);
     const [value, set_value] = useState(false);
+
+    const theme = useContext(ThemeContext);
 
     useEffect(() => {
         set_show(true);
@@ -512,7 +574,7 @@ function SelectDialog(props) {
 
     return (
         <Dialog isOpen={show}
-                className={window.dark_theme ? "bp5-dark" : ""}
+                className={theme.dark_theme ? "bp5-dark" : ""}
                 title={props.title}
                 onClose={_cancelHandler}
                 canEscapeKeyClose={true}>
@@ -531,7 +593,7 @@ function SelectDialog(props) {
     )
 }
 
-SelectDialog = memo(SelectDialog);
+SelectDialog = memo(withTheme(SelectDialog));
 
 SelectDialog.propTypes = {
     handleSubmit: PropTypes.func,
@@ -545,6 +607,7 @@ SelectDialog.propTypes = {
 
 };
 
+
 function showSelectDialog(title, select_label, cancel_text, submit_text, submit_function, option_list, dark_theme = false) {
 
     let domContainer = document.querySelector('#modal-area');
@@ -556,11 +619,99 @@ function showSelectDialog(title, select_label, cancel_text, submit_text, submit_
     ReactDOM.render(<SelectDialog handleSubmit={submit_function}
                                   handleClose={handle_close}
                                   title={title}
+                                  initial_theme={window.dark_theme ? "dark" : "light"}
                                   select_label={select_label}
                                   submit_text={submit_text}
                                   option_list={option_list}
                                   cancel_text={cancel_text}/>, domContainer);
 }
+
+function SelectAddressDialog(props) {
+    const [show, set_show] = useState(false);
+    const [new_name, set_new_name] = useState("");
+    const [path, set_path] = useState();
+
+    const theme = useContext(ThemeContext);
+
+    useEffect(() => {
+        set_show(true);
+        set_path(props.initial_address);
+        set_new_name(props.initial_name)
+    }, []);
+
+    function _changeName(event) {
+        set_new_name(event.target.value)
+    }
+
+    function _submitHandler(event) {
+        set_show(false);
+        if (props.showName) {
+            props.handleSubmit(`${path}/${new_name}`);
+        }
+        else {
+            props.handleSubmit(path)
+        }
+        props.handleClose();
+    }
+
+    function _cancelHandler() {
+        set_show(false);
+        props.handleClose()
+    }
+
+    return (
+        <Dialog isOpen={show}
+                className={theme.dark_theme ? "bp5-dark" : ""}
+                title={props.title}
+                onClose={_cancelHandler}
+                canEscapeKeyClose={true}>
+            <div className={Classes.DIALOG_BODY}>
+                <FormGroup label={`Target Directory`}
+                           inline={true}>
+                    <PoolAddressSelector value={path}
+                                         tsocket={props.tsocket}
+                                         select_type={props.selectType}
+                                         setValue={set_path}
+                    />
+                </FormGroup>
+                {props.showName &&
+                    <FormGroup label="New Name">
+                        <InputGroup onChange={_changeName}
+                                    value={new_name}/>
+                    </FormGroup>
+                }
+            </div>
+            <div className={Classes.DIALOG_FOOTER}>
+                <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+                    <Button onClick={_cancelHandler}>Cancel</Button>
+                    <Button intent={Intent.PRIMARY} onClick={_submitHandler}>Submit</Button>
+                </div>
+            </div>
+        </Dialog>
+    )
+}
+
+SelectAddressDialog = memo(withTheme(SelectAddressDialog));
+
+function showModalAddressSelector(title, submit_function, selectType = "folder", initial_address = "mydisk",
+                                  initial_name = "", showName = true) {
+    let domContainer = document.querySelector('#modal-area');
+
+    function handle_close() {
+        ReactDOM.unmountComponentAtNode(domContainer)
+    }
+
+    ReactDOM.render(<SelectAddressDialog title={title}
+                                         handleClose={handle_close}
+                                         initial_theme={window.dark_theme ? "dark" : "light"}
+                                         handleSubmit={submit_function}
+                                         showName={showName}
+                                         selectType={selectType}
+                                         initial_name={initial_name}
+                                         initial_address={initial_address}/>, domContainer)
+
+}
+
 
 var res_types = ["collection", "project", "tile", "list", "code"];
 
@@ -571,6 +722,7 @@ function SelectResourceDialog(props) {
     const [option_names, set_option_names] = useState([]);
     const [selected_resource, set_selected_resource] = useState(null);
 
+    const theme = useContext(ThemeContext);
     const pushCallback = useCallbackStack();
 
     useEffect(() => {
@@ -632,7 +784,7 @@ function SelectResourceDialog(props) {
     )
 }
 
-SelectDialog = memo(SelectDialog);
+SelectDialog = memo(withTheme(SelectDialog));
 
 SelectResourceDialog.propTypes = {
     handleSubmit: PropTypes.func,
@@ -652,6 +804,7 @@ function showSelectResourceDialog(cancel_text, submit_text, submit_function, dar
 
     let the_elem = <SelectResourceDialog handleSubmit={submit_function}
                                          handleClose={handle_close}
+                                         initial_theme={window.dark_theme ? "dark" : "light"}
                                          submit_text={submit_text}
                                          cancel_text={cancel_text}/>;
     ReactDOM.render(the_elem, domContainer);
@@ -659,6 +812,7 @@ function showSelectResourceDialog(cancel_text, submit_text, submit_function, dar
 
 function ConfirmDialog(props) {
     const [show, set_show] = useState(false);
+    const theme = useContext(ThemeContext);
 
     useEffect(() => {
         set_show(true);
@@ -680,7 +834,7 @@ function ConfirmDialog(props) {
 
     return (
         <Dialog isOpen={show}
-                className={window.dark_theme ? "bp5-dark" : ""}
+                className={theme.dark_theme ? "bp5-dark" : ""}
                 title={props.title}
                 onClose={_cancelHandler}
                 autoFocus={true}
@@ -701,7 +855,7 @@ function ConfirmDialog(props) {
     )
 }
 
-ConfirmDialog = memo(ConfirmDialog);
+ConfirmDialog = memo(withTheme(ConfirmDialog));
 
 ConfirmDialog.propTypes = {
     handleSubmit: PropTypes.func,
@@ -731,6 +885,7 @@ function showConfirmDialogReact(title, text_body, cancel_text, submit_text, subm
     ReactDOM.render(<ConfirmDialog handleSubmit={submit_function}
                                    handleCancel={cancel_function}
                                    handleClose={handle_close}
+                                   initial_theme={window.dark_theme ? "dark" : "light"}
                                    title={title}
                                    text_body={text_body}
                                    submit_text={submit_text}

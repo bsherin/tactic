@@ -14,10 +14,11 @@ import {guid, useConnection} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 import {TacticSocket} from "./tactic_socket";
 import {useCallbackStack} from "./utilities_react";
+import {withTheme} from "./theme";
 
 function tile_differ_main() {
     function gotProps(the_props) {
-        let TileDifferAppPlus = withErrorDrawer(withStatus(TileDifferApp));
+        let TileDifferAppPlus = withTheme(withErrorDrawer(withStatus(TileDifferApp)));
         let the_element = <TileDifferAppPlus {...the_props}
                                              controlled={false}
                                              initial_theme={window.theme}
@@ -70,7 +71,6 @@ function TileDifferApp(props) {
         props.resource_name : props.second_resource_name);
     const [tile_list, set_tile_list] = useState(props.tile_list);
 
-    const [dark_theme, set_dark_theme] = useState(props.initial_theme === "dark");
     const [resource_name, set_resource_name] = useState(props.resource_name);
     const connection_status = useConnection(props.tsocket, initSocket);
 
@@ -85,9 +85,6 @@ function TileDifferApp(props) {
                 e.returnValue = ''
             }
         });
-        if (!props.controlled) {
-            window.dark_theme = dark_theme
-        }
     }, []);
 
     function initSocket() {
@@ -99,15 +96,6 @@ function TileDifferApp(props) {
         });
         props.tsocket.attachListener('doflash', doFlash);
         props.tsocket.attachListener('doflashUser', doFlash);
-    }
-
-    function _setTheme(dark_theme) {
-        set_dark_theme(dark_theme);
-        pushCallback(() => {
-            if (!window.in_context) {
-                window.dark_theme = dark_theme
-            }
-        })
     }
 
     function handleSelectChange(new_value) {
@@ -138,13 +126,10 @@ function TileDifferApp(props) {
         return edit_content != savedContent.current
     }
 
-    let actual_dark_theme = props.controlled ? props.dark_theme : dark_theme;
     return (
         <Fragment>
             {!props.controlled} {
             <TacticNavbar is_authenticated={window.is_authenticated}
-                          dark_theme={actual_dark_theme}
-                          setTheme={_setTheme}
                           selected={null}
                           show_api_links={true}
                           page_id={props.resource_viewer_id}
@@ -154,8 +139,6 @@ function TileDifferApp(props) {
             <MergeViewerApp {...props.statusFuncs}
                             connection_status={connection_status}
                             page_id={props.resource_viewer_id}
-                            setTheme={props.controlled ? null : _setTheme}
-                            dark_theme={actual_dark_theme}
                             resource_viewer_id={props.resource_viewer_id}
                             resource_name={props.resource_name}
                             option_list={tile_list}

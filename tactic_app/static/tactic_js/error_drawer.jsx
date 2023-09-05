@@ -1,5 +1,5 @@
 import React from "react";
-import {Fragment, useState, useEffect, useRef, memo} from "react";
+import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
 import PropTypes from 'prop-types';
 
 import {Card, Elevation, Drawer, Classes, Button} from "@blueprintjs/core";
@@ -8,6 +8,8 @@ import {postWithCallback} from "./communication_react";
 import {GlyphButton} from "./blueprint_react_widgets";
 
 import {useStateAndRef} from "./utilities_react";
+
+import {ThemeContext} from "./theme";
 
 export {withErrorDrawer, ErrorItem}
 
@@ -113,7 +115,6 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
                              goToModule={props.goToModule}
                              closeErrorDrawer={_close}
                              title="Error Drawer"
-                             dark_theme={props.controlled ? props.dark_theme : window.dark_theme}
                              size={error_drawer_size}
                              onClose={_onClose}
                              clearAll={_clearAll}/>
@@ -193,6 +194,8 @@ ErrorItem.defaultProps = {
 
 function ErrorDrawer(props) {
 
+    const theme = useContext(ThemeContext);
+
     let sorted_keys = [...Object.keys(props.contents.current)];
     sorted_keys.sort(function (a, b) {
         return parseInt(b) - parseInt(a);
@@ -215,10 +218,11 @@ function ErrorDrawer(props) {
                        line_number={entry.line_number} tile_type={entry.tile_type}/>
         )
     });
+
     return (
         <Drawer
             icon="console"
-            className={props.dark_theme ? "bp5-dark" : "light-theme"}
+            className={theme.dark_theme ? "bp5-dark" : "light-theme"}
             title={props.title}
             isOpen={props.show_drawer}
             position={props.position}
@@ -242,7 +246,6 @@ ErrorDrawer = memo(ErrorDrawer);
 
 ErrorDrawer.propTypes = {
     show_drawer: PropTypes.bool,
-    dark_theme: PropTypes.bool,
     contents: PropTypes.object,
     title: PropTypes.string,
     onClose: PropTypes.func,

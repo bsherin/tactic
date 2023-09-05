@@ -21,6 +21,8 @@ var _sizing_tools = require("./sizing_tools");
 var _error_drawer = require("./error_drawer");
 var _utilities_react = require("./utilities_react");
 var _blueprint_navbar = require("./blueprint_navbar");
+var _theme = require("./theme");
+var _modal_react = require("./modal_react");
 var _repository_menubars = require("./repository_menubars");
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -43,7 +45,7 @@ var tsocket;
 function _repository_home_main() {
   window.library_id = (0, _utilities_react.guid)();
   tsocket = new _tactic_socket.TacticSocket("main", 5000, "repository", window.library_id);
-  var RepositoryHomeAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(RepositoryHomeApp));
+  var RepositoryHomeAppPlus = (0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(RepositoryHomeApp))));
   var domContainer = document.querySelector('#library-home-root');
   ReactDOM.render( /*#__PURE__*/_react["default"].createElement(RepositoryHomeAppPlus, _extends({}, repository_props(), {
     initial_theme: window.theme,
@@ -112,10 +114,7 @@ function RepositoryHomeApp(props) {
     _useState8 = _slicedToArray(_useState7, 2),
     usable_width = _useState8[0],
     set_usable_width = _useState8[1];
-  var _useState9 = (0, _react.useState)(props.initial_theme === "dark"),
-    _useState10 = _slicedToArray(_useState9, 2),
-    dark_theme = _useState10[0],
-    set_dark_theme = _useState10[1];
+  var theme = (0, _react.useContext)(_theme.ThemeContext);
   var top_ref = (0, _react.useRef)(null);
   (0, _utilities_react.useConstructor)(function () {
     if (props.registerLibraryTabChanger) {
@@ -127,7 +126,6 @@ function RepositoryHomeApp(props) {
     initSocket();
     props.stopSpinner();
     if (!props.controlled) {
-      window.dark_theme = dark_theme;
       window.addEventListener("resize", _update_window_dimensions);
       _update_window_dimensions();
     }
@@ -178,12 +176,6 @@ function RepositoryHomeApp(props) {
       set_usable_width(uwidth);
     }
   }
-  function _setTheme(dark_theme) {
-    set_dark_theme(dark_theme);
-    pushCallback(function () {
-      window.dark_theme = dark_theme;
-    });
-  }
   function _handleTabChange(newTabId, prevTabId, event) {
     set_selected_tab_id(newTabId);
     pushCallback(_update_window_dimensions);
@@ -192,7 +184,6 @@ function RepositoryHomeApp(props) {
     return paneId == selected_tab_id ? "white" : "#CED9E0";
   }
   var tsocket = props.tsocket;
-  var actual_dark_theme = props.controlled ? props.dark_theme : dark_theme;
   var lib_props = _objectSpread({}, props);
   if (!props.controlled) {
     lib_props.usable_width = usable_width - TAB_BAR_WIDTH;
@@ -256,7 +247,7 @@ function RepositoryHomeApp(props) {
   var outer_class = "";
   if (!props.controlled) {
     outer_class = "library-pane-holder  ";
-    if (dark_theme) {
+    if (theme.dark_theme) {
       outer_class = "".concat(outer_class, " bp5-dark");
     } else {
       outer_class = "".concat(outer_class, " light-theme");
@@ -264,8 +255,6 @@ function RepositoryHomeApp(props) {
   }
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, !props.controlled && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
-    dark_theme: dark_theme,
-    setTheme: _setTheme,
     selected: null,
     page_id: props.library_id,
     show_api_links: false,

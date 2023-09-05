@@ -35,6 +35,7 @@ var mdi = (0, _markdownIt["default"])({
 });
 mdi.use(_markdownItLatex["default"]);
 function ProjectMenu(props) {
+  var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var save_state;
   if (props.is_notebook) save_state = {
     console_items: props.console_items,
@@ -63,7 +64,16 @@ function ProjectMenu(props) {
         checkname: "lite_save",
         checktext: "create lite save"
       }];
-      (0, _modal_react.showModalReact)("Save Project As", "New Project Name", CreateNewProject, "NewProject", data["project_names"], checkboxes, doCancel);
+      dialogFuncs.showModal("ModalDialog", {
+        title: "Save Project As",
+        field_title: "New Project Name",
+        handleSubmit: CreateNewProject,
+        default_value: "NewProject",
+        existing_names: data.project_names,
+        checkboxes: checkboxes,
+        handleCancel: doCancel,
+        handleClose: dialogFuncs.hideModal
+      });
     }, null, props.main_id);
     function doCancel() {
       props.stopSpinner();
@@ -286,7 +296,16 @@ function ProjectMenu(props) {
     }, function (data) {
       var checkboxes;
       // noinspection JSUnusedAssignment
-      (0, _modal_react.showModalReact)("Export Notebook in Jupyter Format", "New Project Name", ExportJupyter, "NewJupyter", data["project_names"], checkboxes);
+      dialogFuncs.showModal("ModalDialog", {
+        title: "Export Notebook in Jupyter Format",
+        field_title: "New Project Name",
+        handleSubmit: ExportJupyter,
+        default_value: "NewJupyter",
+        existing_names: data.project_names,
+        checkboxes: [],
+        handleCancel: null,
+        handleClose: dialogFuncs.hideModal
+      });
     }, null, props.main_id);
     function ExportJupyter(new_name) {
       var cell_list = [];
@@ -331,21 +350,30 @@ function ProjectMenu(props) {
     (0, _communication_react.postWithCallback)("host", "get_collection_names", {
       "user_id": user_id
     }, function (data) {
-      (0, _modal_react.showModalReact)("Export Data", "New Collection Name", function (new_name) {
-        var result_dict = {
-          "export_name": new_name,
-          "main_id": props.main_id,
-          "user_id": window.user_id
-        };
-        $.ajax({
-          url: $SCRIPT_ROOT + "/export_data",
-          contentType: 'application/json',
-          type: 'POST',
-          async: true,
-          data: JSON.stringify(result_dict),
-          dataType: 'json'
-        });
-      }, "new collection", data.collection_names);
+      dialogFuncs.showModal("ModalDialog", {
+        title: "Export Data",
+        field_title: "New Collection NameName",
+        handleSubmit: function handleSubmit(new_name) {
+          var result_dict = {
+            "export_name": new_name,
+            "main_id": props.main_id,
+            "user_id": window.user_id
+          };
+          $.ajax({
+            url: $SCRIPT_ROOT + "/export_data",
+            contentType: 'application/json',
+            type: 'POST',
+            async: true,
+            data: JSON.stringify(result_dict),
+            dataType: 'json'
+          });
+        },
+        default_value: "new collection",
+        existing_names: data.collection_names,
+        checkboxes: [],
+        handleCancel: null,
+        handleClose: dialogFuncs.hideModal
+      });
     });
   }
   function _consoleToNotebook() {
@@ -440,7 +468,16 @@ exports.ProjectMenu = ProjectMenu = /*#__PURE__*/(0, _react.memo)(ProjectMenu);
 function DocumentMenu(props) {
   function _newDocument() {
     props.startSpinner();
-    (0, _modal_react.showModalReact)("New Document", "New Document Name", doNew, props.currentDoc, props.documentNames, null, doCancel);
+    dialogFuncs.showModal("ModalDialog", {
+      title: "New Document",
+      field_title: "New Document Name",
+      handleSubmit: doNew,
+      default_value: props.currentDoc,
+      existing_names: props.documentNames,
+      checkboxes: [],
+      handleCancel: doCancel,
+      handleClose: dialogFuncs.hideModal
+    });
     function doCancel() {
       props.stopSpinner();
     }
@@ -455,7 +492,16 @@ function DocumentMenu(props) {
   }
   function _duplicateDocument() {
     props.startSpinner();
-    (0, _modal_react.showModalReact)("Duplicate Document", "New Document Name", doDuplicate, props.currentDoc, props.documentNames, null, doCancel);
+    dialogFuncs.showModal("ModalDialog", {
+      title: "Duplicate Document",
+      field_title: "New Document Name",
+      handleSubmit: doDuplicate,
+      default_value: props.currentDoc,
+      existing_names: props.documentNames,
+      checkboxes: [],
+      handleCancel: doCancel,
+      handleClose: dialogFuncs.hideModal
+    });
     function doCancel() {
       props.stopSpinner();
     }
@@ -470,7 +516,16 @@ function DocumentMenu(props) {
   }
   function _renameDocument() {
     props.startSpinner();
-    (0, _modal_react.showModalReact)("Rename Document", "New Document Name", doRename, props.currentDoc, props.documentNames, null, doCancel);
+    dialogFuncs.showModal("ModalDialog", {
+      title: "Rename Document",
+      field_title: "New Document Name",
+      handleSubmit: doRename,
+      default_value: props.currentDoc,
+      existing_names: props.documentNames,
+      checkboxes: [],
+      handleCancel: doCancel,
+      handleClose: dialogFuncs.hideModal
+    });
     function doCancel() {
       props.stopSpinner();
     }

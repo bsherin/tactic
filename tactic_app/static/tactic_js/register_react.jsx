@@ -1,22 +1,24 @@
 import "../tactic_css/tactic.scss";
 
 import React from "react";
-import {Fragment, memo} from "react";
+import {Fragment, memo, useContext} from "react";
 import * as ReactDOM from 'react-dom'
 
 import {FormGroup, InputGroup, Button} from "@blueprintjs/core";
 
-import {render_navbar} from "./blueprint_navbar";
+import {TacticNavbar} from "./blueprint_navbar";
 import {doFlash} from "./toaster"
 import {postAjax} from "./communication_react";
 import {useStateAndRef, guid} from "./utilities_react";
 
+import {withTheme, ThemeContext} from "./theme";
+
 window.page_id = guid();
 
 function _register_main() {
-    render_navbar("account");
     let domContainer = document.querySelector('#root');
-    ReactDOM.render(<RegisterApp/>, domContainer)
+    let RegisterAppPlus = withTheme(RegisterApp);
+    ReactDOM.render(<RegisterAppPlus initial_theme={window.theme}/>, domContainer)
 }
 
 const field_names = ["username", "password", "confirm_password"];
@@ -35,6 +37,8 @@ function RegisterApp(props) {
 
     const [fields, set_fields, fields_ref] = useStateAndRef(initial_fields);
     const [helper_text, set_helper_text, helper_text_ref] = useStateAndRef(initial_helper_text);
+
+    const theme = useContext(ThemeContext);
 
     function _onFieldChange(field, value) {
         let new_fields = {...fields_ref.current};
@@ -87,13 +91,24 @@ function RegisterApp(props) {
     ));
     let outer_style = {
         textAlign: "center",
-        marginLeft: 50,
-        marginTop: 50,
+        paddingLeft: 50,
+        paddingTop: 50,
         height: "100%"
     };
+    let outer_class = "d-flex flex-column pane-holder";
+    if (theme.dark_theme) {
+        outer_class = outer_class + " bp5-dark";
+    } else {
+        outer_class = outer_class + " light-theme"
+    }
     return (
         <Fragment>
-            <div className="d-flex flex-column" style={outer_style}>
+            <TacticNavbar is_authenticated={window.is_authenticated}
+                          selected={null}
+                          show_api_links={true}
+                          page_id={window.page_id}
+                          user_name={window.username}/>
+            <div className={outer_class}  style={outer_style}>
                 <form onSubmit={e => {
                     e.preventDefault();
                     _submit_register_info();

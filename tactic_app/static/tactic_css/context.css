@@ -7,6 +7,9 @@
 .light-theme .lib-tab-button .bp5-icon-cube, .light-theme .context-tab-button-content .bp5-icon-cube, .light-theme .menu-bar .bp5-icon-cube, .light-theme .combined-metadata .bp5-icon-cube, .light-theme .all-pane .bp5-icon-cube {
   color: #c87619 !important;
 }
+.light-theme .lib-tab-button .bp5-icon-folder-close, .light-theme .context-tab-button-content .bp5-icon-folder-close, .light-theme .menu-bar .bp5-icon-folder-close, .light-theme .combined-metadata .bp5-icon-folder-close, .light-theme .all-pane .bp5-icon-folder-close {
+  color: #c87619 !important;
+}
 .light-theme .lib-tab-button .bp5-icon-database, .light-theme .lib-tab-button .bp5-icon-th, .light-theme .lib-tab-button .bp5-icon-freeform, .light-theme .lib-tab-button .bp5-icon-align-left, .light-theme .context-tab-button-content .bp5-icon-database, .light-theme .context-tab-button-content .bp5-icon-th, .light-theme .context-tab-button-content .bp5-icon-freeform, .light-theme .context-tab-button-content .bp5-icon-align-left, .light-theme .menu-bar .bp5-icon-database, .light-theme .menu-bar .bp5-icon-th, .light-theme .menu-bar .bp5-icon-freeform, .light-theme .menu-bar .bp5-icon-align-left, .light-theme .combined-metadata .bp5-icon-database, .light-theme .combined-metadata .bp5-icon-th, .light-theme .combined-metadata .bp5-icon-freeform, .light-theme .combined-metadata .bp5-icon-align-left, .light-theme .all-pane .bp5-icon-database, .light-theme .all-pane .bp5-icon-th, .light-theme .all-pane .bp5-icon-freeform, .light-theme .all-pane .bp5-icon-align-left {
   color: #2d72d2 !important;
 }
@@ -39,6 +42,9 @@
 }
 
 .bp5-dark .lib-tab-button .bp5-icon-cube, .bp5-dark .context-tab-button-content .bp5-icon-cube, .bp5-dark .menu-bar .bp5-icon-cube, .bp5-dark .combined-metadata .bp5-icon-cube, .bp5-dark .all-pane .bp5-icon-cube {
+  color: #fbb360 !important;
+}
+.bp5-dark .lib-tab-button .bp5-icon-folder-close, .bp5-dark .context-tab-button-content .bp5-icon-folder-close, .bp5-dark .menu-bar .bp5-icon-folder-close, .bp5-dark .combined-metadata .bp5-icon-folder-close, .bp5-dark .all-pane .bp5-icon-folder-close {
   color: #fbb360 !important;
 }
 .bp5-dark .lib-tab-button .bp5-icon-database, .bp5-dark .lib-tab-button .bp5-icon-th, .bp5-dark .lib-tab-button .bp5-icon-freeform, .bp5-dark .lib-tab-button .bp5-icon-align-left, .bp5-dark .context-tab-button-content .bp5-icon-database, .bp5-dark .context-tab-button-content .bp5-icon-th, .bp5-dark .context-tab-button-content .bp5-icon-freeform, .bp5-dark .context-tab-button-content .bp5-icon-align-left, .bp5-dark .menu-bar .bp5-icon-database, .bp5-dark .menu-bar .bp5-icon-th, .bp5-dark .menu-bar .bp5-icon-freeform, .bp5-dark .menu-bar .bp5-icon-align-left, .bp5-dark .combined-metadata .bp5-icon-database, .bp5-dark .combined-metadata .bp5-icon-th, .bp5-dark .combined-metadata .bp5-icon-freeform, .bp5-dark .combined-metadata .bp5-icon-align-left, .bp5-dark .all-pane .bp5-icon-database, .bp5-dark .all-pane .bp5-icon-th, .bp5-dark .all-pane .bp5-icon-freeform, .bp5-dark .all-pane .bp5-icon-align-left {

@@ -9,6 +9,7 @@ var _toaster = require("./toaster");
 var _communication_react = require("./communication_react");
 var _utilities_react = require("./utilities_react");
 var _blueprint_navbar = require("./blueprint_navbar");
+var _theme = require("./theme");
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
@@ -23,7 +24,8 @@ function _login_main() {
   if (window._show_message) (0, _toaster.doFlash)(window._message);
   var domContainer = document.querySelector('#root');
   var useDark = (0, _blueprint_navbar.get_theme_cookie)() == "dark";
-  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(LoginAppWithStatus, {
+  var LoginAppPlus = (0, _theme.withTheme)((0, _toaster.withStatus)(LoginApp));
+  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(LoginAppPlus, {
     tsocket: null,
     controlled: false,
     initial_dark: useDark
@@ -46,22 +48,12 @@ function LoginApp(props) {
     _useState8 = _slicedToArray(_useState7, 2),
     password_warning_text = _useState8[0],
     set_password_warning_text = _useState8[1];
-  var _useStateAndRef = (0, _utilities_react.useStateAndRef)(props.initial_dark),
-    _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
-    dark_theme = _useStateAndRef2[0],
-    set_dark_theme = _useStateAndRef2[1],
-    dark_theme_ref = _useStateAndRef2[2];
+  var theme = (0, _react.useContext)(_theme.ThemeContext);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   var inputRef = (0, _react.useRef)(null);
   (0, _react.useEffect)(function () {
     inputRef.current.focus();
   }, []);
-  function _setTheme(local_dark_theme) {
-    set_dark_theme(local_dark_theme);
-    pushCallback(function () {
-      window.dark_theme = dark_theme;
-    });
-  }
   function _onUsernameChange(event) {
     setUsername(event.target.value);
   }
@@ -102,15 +94,13 @@ function LoginApp(props) {
     inputRef.current = the_ref;
   }
   var outer_class = "login-body d-flex flex-column justify-content-center";
-  if (dark_theme) {
+  if (theme.dark_theme) {
     outer_class = outer_class + " bp5-dark";
   } else {
     outer_class = outer_class + " light-theme";
   }
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
-    dark_theme: dark_theme,
-    setTheme: _setTheme,
     selected: null,
     show_api_links: false,
     page_id: window.page_id,
@@ -171,5 +161,4 @@ function LoginApp(props) {
   })))));
 }
 LoginApp = /*#__PURE__*/(0, _react.memo)(LoginApp);
-var LoginAppWithStatus = (0, _toaster.withStatus)(LoginApp);
 _login_main();

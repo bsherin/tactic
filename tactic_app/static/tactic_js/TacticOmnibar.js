@@ -10,6 +10,7 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 var _select = require("@blueprintjs/select");
 var _core = require("@blueprintjs/core");
 var _communication_react = require("./communication_react");
+var _theme = require("./theme");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -59,6 +60,7 @@ function _itemPredicate(query, item) {
   return re.test(item.search_text.toLowerCase()) || re.test(item.category.toLowerCase());
 }
 function TacticOmnibar(props) {
+  var theme = (0, _react.useContext)(_theme.ThemeContext);
   function _onItemSelect(item) {
     item.the_function();
     props.closeOmnibar();
@@ -102,12 +104,10 @@ function TacticOmnibar(props) {
   function _toggleTheme() {
     var result_dict = {
       "user_id": window.user_id,
-      "theme": !props.dark_theme ? "dark" : "light"
+      "theme": !theme.dark_theme ? "dark" : "light"
     };
     (0, _communication_react.postWithCallback)("host", "set_user_theme", result_dict, null, null);
-    if (props.setTheme) {
-      props.setTheme(!props.dark_theme);
-    }
+    theme.setTheme(!dark_theme);
   }
   var the_items = [];
   if (props.showOmnibar) {
@@ -127,7 +127,7 @@ function TacticOmnibar(props) {
   }
   return /*#__PURE__*/_react["default"].createElement(_select.Omnibar, {
     items: the_items,
-    className: window.dark_theme ? "bp5-dark" : "",
+    className: theme.dark_theme ? "bp5-dark" : "",
     isOpen: props.showOmnibar,
     onItemSelect: _onItemSelect,
     itemRenderer: _itemRenderer,
@@ -139,11 +139,9 @@ function TacticOmnibar(props) {
 TacticOmnibar.propTypes = {
   omniGetters: _propTypes["default"].array,
   showOmniBar: _propTypes["default"].bool,
-  closeOmniBar: _propTypes["default"].func,
-  dark_theme: _propTypes["default"].bool
+  closeOmniBar: _propTypes["default"].func
 };
 TacticOmnibar.defaultProps = {
-  dark_theme: false,
   showOmnibar: false,
   omniGetters: null
 };

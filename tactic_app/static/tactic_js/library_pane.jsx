@@ -1,7 +1,7 @@
 // noinspection JSValidateTypes,JSDeprecatedSymbols
 
 import React from "react";
-import {Fragment, useState, useRef, useEffect, memo} from "react";
+import {Fragment, useState, useRef, useEffect, memo, useContext} from "react";
 import PropTypes from 'prop-types';
 
 import {Menu, MenuItem, MenuDivider, FormGroup, Button} from "@blueprintjs/core";
@@ -13,7 +13,7 @@ import {TagButtonList} from "./tag_buttons_react";
 import {CombinedMetadata, icon_dict} from "./blueprint_mdata_fields";
 import {SearchForm, BpSelectorTable} from "./library_widgets";
 import {HorizontalPanes} from "./resizing_layouts";
-import {showModalReact, showConfirmDialogReact} from "./modal_react";
+import {showConfirmDialogReact} from "./modal_react";
 import {postAjax, postAjaxPromise, postWithCallback} from "./communication_react"
 import {BOTTOM_MARGIN} from "./sizing_tools";
 
@@ -22,6 +22,9 @@ import {KeyTrap} from "./key_trap.js";
 import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_react";
 import {showFileImportDialog} from "./import_dialog";
 import {showSelectDialog} from "./modal_react";
+import {ThemeContext} from "./theme"
+
+import {DialogContext} from "./modal_react";
 
 export {LibraryPane, view_views, res_types}
 
@@ -127,8 +130,11 @@ function LibraryPane(props) {
     const [search_metadata, set_search_metadata, search_metadata_ref] = useStateAndRef(false);
     const [show_hidden, set_show_hidden, show_hidden_ref] = useStateAndRef(false);
     const [selectedRegions, setSelectedRegions, selectedRegionsRef] = useStateAndRef([Regions.row(0)]);
-    
+
     const [rowChanged, setRowChanged] = useState(0);
+
+    const theme = useContext(ThemeContext);
+    const dialogFuncs = useContext(DialogContext);
 
     const stateSetters = {
         data_dict: set_data_dict,
@@ -241,7 +247,7 @@ function LibraryPane(props) {
         });
     }
 
-    function clearSelected(){
+    function clearSelected() {
         set_selected_resource({"name": "", "tags": "", "notes": "", "updated": "", "created": ""});
         set_list_of_selected([]);
         set_selected_rows([]);
@@ -323,7 +329,7 @@ function LibraryPane(props) {
 
         }
 
-        let new_state = {data_dict: new_data_dict, rowChanged: rowChanged + 1 };
+        let new_state = {data_dict: new_data_dict, rowChanged: rowChanged + 1};
         if ("tags" in res_dict) {
             let res_tags = res_dict.tags.split(" ");
             let new_tag_list = _.cloneDeep(tag_list);
@@ -750,8 +756,16 @@ function LibraryPane(props) {
         let res_name = the_row.name;
         let res_type = the_row.res_type;
         $.getJSON($SCRIPT_ROOT + "get_resource_names/" + res_type, function (data) {
-                showModalReact(`Duplicate ${res_type}`, "New Name",
-                    DuplicateResource, res_name, data.resource_names)
+                dialogFuncs.showModal("ModalDialog", {
+                    title: `Duplicate ${res_type}`,
+                    field_title: "New Name",
+                    handleSubmit: DuplicateResource,
+                    default_value: res_name,
+                    existing_names: data.resource_names,
+                    checkboxes: [],
+                    handleCancel: null,
+                    handleClose: dialogFuncs.hideModal,
+                })
             }
         );
         let duplicate_view = duplicate_views()[res_type];
@@ -817,7 +831,16 @@ function LibraryPane(props) {
                 if (index >= 0) {
                     res_names.splice(index, 1);
                 }
-                showModalReact(`Rename ${res_type}`, "New Name", RenameResource, res_name, res_names)
+                dialogFuncs.showModal("ModalDialog", {
+                    title: `Rename ${res_type}`,
+                    field_title: "New Name",
+                    handleSubmit: RenameResource,
+                    handleCancel: null,
+                    handleClose: dialogFuncs.hideModal,
+                    default_value: res_name,
+                    existing_names: res_names,
+                    checkboxes: []
+                })
             }
         );
 
@@ -847,7 +870,16 @@ function LibraryPane(props) {
             let res_type = selected_resource_ref.current.res_type;
             let res_name = selected_resource_ref.current.name;
             $.getJSON($SCRIPT_ROOT + "get_resource_names/" + res_type, function (data) {
-                    showModalReact("Import " + res_type, "New Name", ImportResource, res_name, data["resource_names"])
+                    dialogFuncs.showModal("ModalDialog", {
+                        title: `Import ${res_type}`,
+                        field_title: "New Name",
+                        handleSubmit: ImportResource,
+                        default_value: res_name,
+                        existing_names: data.resource_names,
+                        checkboxes: [],
+                        handleCancel: null,
+                        handleClose: dialogFuncs.hideModal,
+                    })
                 }
             );
 
@@ -880,7 +912,16 @@ function LibraryPane(props) {
             let res_type = selected_resource_ref.current.res_type;
             let res_name = selected_resource_ref.current.name;
             $.getJSON($SCRIPT_ROOT + "get_repository_resource_names/" + res_type, function (data) {
-                    showModalReact(`Share ${res_type}`, `New ${res_type} Name`, ShareResource, res_name, data["resource_names"])
+                    dialogFuncs.showModal("ModalDialog", {
+                        title: `Share ${res_type}`,
+                        field_title: `New ${res_type} Name`,
+                        handleSubmit: ShareResource,
+                        default_value: res_name,
+                        existing_names: data.resource_names,
+                        checkboxes: [],
+                        handleCancel: null,
+                        handleClose: dialogFuncs.hideModal,
+                    })
                 }
             );
 
@@ -940,15 +981,24 @@ function LibraryPane(props) {
 
     function _downloadJupyter() {
         let res_name = selected_resource_ref.current.name;
-        showModalReact("Download Notebook as Jupyter Notebook", "New File Name", function (new_name) {
-            window.open(`${$SCRIPT_ROOT}/download_jupyter/` + res_name + "/" + new_name)
-        }, res_name + ".ipynb", [])
+        dialogFuncs.showModal("ModalDialog", {
+            title: `Download Notebook as Jupyter Notebook`,
+            field_title: "New File Name",
+            handleSubmit: (new_name) => {
+                window.open(`${$SCRIPT_ROOT}/download_jupyter/` + res_name + "/" + new_name)
+            },
+            default_value: res_name + ".ipynb",
+            existing_names: [],
+            checkboxes: [],
+            handleCancel: null,
+            handleClose: dialogFuncs.hideModal,
+        })
     }
 
     function _showJupyterImport() {
         showFileImportDialog("project", ".ipynb",
             [], _import_jupyter,
-            props.tsocket, props.dark_theme, false, false)
+            props.tsocket, false, false)
     }
 
     function _import_jupyter(myDropZone, setCurrentUrl) {
@@ -980,8 +1030,16 @@ function LibraryPane(props) {
             }
         } else {
             $.getJSON(`${$SCRIPT_ROOT}get_resource_names/collection`, function (data) {
-                showModalReact("Combine Collections", "Name for combined collection",
-                    CreateCombinedCollection, "NewCollection", data["resource_names"])
+                dialogFuncs.showModal("ModalDialog", {
+                    title: "Combine Collections",
+                    field_title: "Name for combined collection",
+                    handleSubmit: CreateCombinedCollection,
+                    default_value: "NewCollection",
+                    existing_names: data.resource_names,
+                    checkboxes: [],
+                    handleCancel: null,
+                    handleClose: dialogFuncs.hideModal,
+                })
             });
         }
 
@@ -1000,9 +1058,18 @@ function LibraryPane(props) {
 
     function _downloadCollection(resource_name = null) {
         let res_name = resource_name ? resource_name : selected_resource_ref.current.name;
-        showModalReact("Download Collection", "New File Name", function (new_name) {
-            window.open(`${$SCRIPT_ROOT}/download_collection/` + res_name + "/" + new_name)
-        }, res_name, [])
+        dialogFuncs.showModal("ModalDialog", {
+            title: "Download Collection",
+            field_title: "New File Name",
+            handleSubmit: (new_name) => {
+                window.open(`${$SCRIPT_ROOT}/download_collection/` + res_name + "/" + new_name)
+            },
+            default_value: res_name,
+            existing_names: [],
+            checkboxes: [],
+            handleCancel: null,
+            handleClose: dialogFuncs.hideModal,
+        })
     }
 
     function _displayImportResults(data) {
@@ -1026,7 +1093,7 @@ function LibraryPane(props) {
     function _showCollectionImport() {
         showFileImportDialog("collection", ".csv,.tsv,.txt,.xls,.xlsx,.html",
             [{"checkname": "import_as_freeform", "checktext": "Import as freeform"}], _import_collection,
-            props.tsocket, props.dark_theme, true, true, _refresh_func)
+            props.tsocket, true, true, _refresh_func)
     }
 
     function _import_collection(myDropZone, setCurrentUrl, new_name, check_results, csv_options = null) {
@@ -1114,7 +1181,16 @@ function LibraryPane(props) {
 
     function _new_tile(template_name) {
         $.getJSON($SCRIPT_ROOT + "get_resource_names/tile", function (data) {
-                showModalReact("New Tile", "New Tile Name", CreateNewTileModule, "NewTileModule", data["resource_names"])
+                dialogFuncs.showModal("ModalDialog", {
+                    title: "New Tile",
+                    field_title: "New Tile Name",
+                    handleSubmit: CreateNewTileModule,
+                    default_value: "NewTileModule",
+                    existing_names: data.resource_names,
+                    checkboxes: [],
+                    handleCancel: null,
+                    handleClose: dialogFuncs.hideModal,
+                })
             }
         );
 
@@ -1137,7 +1213,16 @@ function LibraryPane(props) {
 
     function _new_in_creator(template_name) {
         $.getJSON(`${$SCRIPT_ROOT}/get_resource_names/tile`, function (data) {
-                showModalReact("New Tile", "New Tile Name", CreateNewTileModule, "NewTileModule", data["resource_names"])
+                dialogFuncs.showModal("ModalDialog", {
+                    title: "New Tile",
+                    field_title: "New Tile Name",
+                    handleSubmit: CreateNewTileModule,
+                    default_value: "NewTileModule",
+                    existing_names: data.resource_names,
+                    checkboxes: [],
+                    handleCancel: null,
+                    handleClose: dialogFuncs.hideModal,
+                })
             }
         );
 
@@ -1160,7 +1245,16 @@ function LibraryPane(props) {
 
     function _new_list(template_name) {
         $.getJSON(`${$SCRIPT_ROOT}/get_resource_names/list`, function (data) {
-                showModalReact("New List Resource", "New List Resource Name", CreateNewListResource, "NewListResource", data["resource_names"])
+                dialogFuncs.showModal("ModalDialog", {
+                    title: "New List Resource",
+                    field_title: "New List Name",
+                    handleSubmit: CreateNewListResource,
+                    default_value: "NewListResource",
+                    existing_names: data.resource_names,
+                    checkboxes: [],
+                    handleCancel: null,
+                    handleClose: dialogFuncs.hideModal,
+                })
             }
         );
 
@@ -1190,7 +1284,7 @@ function LibraryPane(props) {
     function _showListImport() {
         showFileImportDialog("list", "text/*",
             [], _add_list,
-            props.tsocket, props.dark_theme, false, false)
+            props.tsocket, false, false)
     }
 
     function _add_to_pool(myDropZone, setCurrentUrl, current_value) {
@@ -1203,13 +1297,21 @@ function LibraryPane(props) {
     function _showPoolImport() {
         showFileImportDialog("pool", null,
             [], _add_to_pool,
-            props.tsocket, props.dark_theme, false, false)
+            props.tsocket, false, false, null, true)
     }
-
 
     function _new_code(template_name) {
         $.getJSON(`${$SCRIPT_ROOT}/get_resource_names/code`, function (data) {
-                showModalReact("New Code Resource", "New Code Resource Name", CreateNewCodeResource, "NewCodeResource", data["resource_names"])
+                dialogFuncs.showModal("ModalDialog", {
+                    title: "New Code Resource",
+                    field_title: "New Code Resource Name",
+                    handleSubmit: CreateNewCodeResource,
+                    default_value: "NewCodeResource",
+                    existing_names: data.resource_names,
+                    checkboxes: [],
+                    handleCancel: null,
+                    handleClose: dialogFuncs.hideModal,
+                })
             }
         );
 
@@ -1233,8 +1335,7 @@ function LibraryPane(props) {
         let left_pane_height;
         if (tr_bounding_top.current) {
             left_pane_height = window.innerHeight - tr_bounding_top.current - BOTTOM_MARGIN
-        }
-        else if (table_ref && table_ref.current) {
+        } else if (table_ref && table_ref.current) {
             left_pane_height = window.innerHeight - table_ref.current.getBoundingClientRect().top - BOTTOM_MARGIN
         } else {
             table_width = left_width - 150;
@@ -1370,7 +1471,6 @@ function LibraryPane(props) {
                          maxHeight: left_pane_height
                      }}>
                     <TagButtonList tag_list={tag_list}
-                                   dark_theme={props.dark_theme}
                                    expanded_tags={expanded_tags_ref.current}
                                    active_tag={active_tag_ref.current}
                                    updateTagState={_update_search_state}
@@ -1443,7 +1543,6 @@ function LibraryPane(props) {
                           {...props.errorDrawerFuncs}
                           handleCreateViewer={props.handleCreateViewer}
                           library_id={props.library_id}
-                          dark_theme={props.dark_theme}
                           controlled={props.controlled}
                           am_selected={props.am_selected}
                           tsocket={props.tsocket}
@@ -1511,7 +1610,6 @@ LibraryPane.defaultProps = {
     },
     is_repository: false,
     tsocket: null,
-    dark_theme: false
 };
 
 

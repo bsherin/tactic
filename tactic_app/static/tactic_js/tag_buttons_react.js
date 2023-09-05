@@ -11,6 +11,7 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
 var _modal_react = require("./modal_react");
 var _utilities_react = require("./utilities_react");
+var _theme = require("./theme");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -101,6 +102,8 @@ function TagButtonList(props) {
     _useState6 = _slicedToArray(_useState5, 2),
     contextMenuTagString = _useState6[0],
     setContextMenuTagString = _useState6[1];
+  var theme = (0, _react.useContext)(_theme.ThemeContext);
+  var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   function _renameTagPrep(old_tag, new_tag_base) {
     var old_tag_list = tag_to_list(old_tag);
     var ot_length = old_tag_list.length;
@@ -240,7 +243,16 @@ function TagButtonList(props) {
   function _rename_tag(tagstring) {
     var self = this;
     var tag_base = get_tag_base(tagstring);
-    (0, _modal_react.showModalReact)("Rename tag \"".concat(tag_base, "\""), "New name for this tag", RenameTag, tag_base, []);
+    dialogFuncs.showModal("ModalDialog", {
+      title: "Rename tag \"".concat(tag_base),
+      field_title: "New name for this tag",
+      handleSubmit: RenameTag,
+      default_value: tag_base,
+      existing_names: [],
+      checkboxes: [],
+      handleCancel: null,
+      handleClose: dialogFuncs.hideModal
+    });
     function RenameTag(new_tag_base) {
       _renameTagPrep(tagstring, new_tag_base);
     }
@@ -283,7 +295,7 @@ function TagButtonList(props) {
     ,
     content: tmenu,
     isOpen: showContextMenu,
-    isDarkTheme: props.dark_theme,
+    isDarkTheme: theme.dark_theme,
     targetOffset: contextMenuTarget
   }), /*#__PURE__*/_react["default"].createElement(_core.Tree, {
     contents: tree,

@@ -13,6 +13,7 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
 var _popover = require("@blueprintjs/popover2");
 var _key_trap = require("./key_trap");
+var _theme = require("./theme");
 var _blueprint_react_widgets = require("./blueprint_react_widgets");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
@@ -21,6 +22,7 @@ function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol 
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 function TacticMenubar(props) {
+  var theme = (0, _react.useContext)(_theme.ThemeContext);
   var menus;
   if (props.menu_specs == null) {
     menus = props.menus;
@@ -55,7 +57,7 @@ function TacticMenubar(props) {
   } finally {
     _iterator.f();
   }
-  var theme_class = props.dark_theme ? "bp5-dark" : "light-theme";
+  var theme_class = theme.dark_theme ? "bp5-dark" : "light-theme";
   var name_style = {
     marginButton: 0,
     marginLeft: 10,
@@ -106,7 +108,6 @@ TacticMenubar.propTypes = {
   showErrorDrawerButton: _propTypes["default"].bool,
   toggleErrorDrawer: _propTypes["default"].func,
   menu_specs: _propTypes["default"].object,
-  dark_theme: _propTypes["default"].bool,
   resource_name: _propTypes["default"].string,
   resource_icon: _propTypes["default"].string,
   controlled: _propTypes["default"].bool,

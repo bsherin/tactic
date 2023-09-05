@@ -26,6 +26,7 @@ var _resizing_layouts = require("./resizing_layouts");
 var _error_drawer = require("./error_drawer");
 var _sizing_tools = require("./sizing_tools");
 var _notebook_support = require("./notebook_support");
+var _theme = require("./theme");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -64,7 +65,6 @@ function NotebookApp(props) {
       console_width_fraction: props.is_project ? props.interface_state["console_width_fraction"] : .5,
       console_is_zoomed: true,
       console_is_shrunk: false,
-      dark_theme: props.initial_theme === "dark",
       resource_name: props.resource_name,
       showOmnibar: false,
       is_project: props.is_project,
@@ -74,6 +74,7 @@ function NotebookApp(props) {
     _useReducer2 = _slicedToArray(_useReducer, 2),
     mState = _useReducer2[0],
     mDispatch = _useReducer2[1];
+  var theme = (0, _react.useContext)(_theme.ThemeContext);
   var key_bindings = [[["ctrl+space"], _showOmnibar]];
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _utilities_react.useConstructor)(function () {
@@ -100,7 +101,6 @@ function NotebookApp(props) {
     props.stopSpinner();
     if (!props.controlled) {
       document.title = mState.resource_name;
-      window.dark_theme = mState.dark_theme;
       window.addEventListener("resize", _update_window_dimensions);
       _update_window_dimensions();
     }
@@ -178,12 +178,6 @@ function NotebookApp(props) {
       });
     }
   }
-  function _setTheme(dark_theme) {
-    _setMainStateValue("dark_theme", dark_theme);
-    pushCallback(function () {
-      window.dark_theme = dark_theme;
-    });
-  }
   function _handleConsoleFractionChange(left_width, right_width, new_fraction) {
     _setMainStateValue("console_width_fraction", new_fraction);
   }
@@ -234,7 +228,6 @@ function NotebookApp(props) {
   function _registerOmniGetter(name, the_function) {
     omniGetters.current[name] = the_function;
   }
-  var actual_dark_theme = props.controlled ? props.dark_theme : mState.dark_theme;
   var my_props = _objectSpread({}, props);
   if (!props.controlled) {
     my_props.resource_name = mState.resource_name;
@@ -265,7 +258,6 @@ function NotebookApp(props) {
   var console_pane = /*#__PURE__*/_react["default"].createElement(_console_component.ConsoleComponent, _extends({}, props.statusFuncs, {
     main_id: props.main_id,
     tsocket: props.tsocket,
-    dark_theme: actual_dark_theme,
     handleCreateViewer: props.handleCreateViewer,
     controlled: props.controlled,
     am_selected: props.am_selected,
@@ -301,13 +293,10 @@ function NotebookApp(props) {
   }
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, !window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
-    dark_theme: actual_dark_theme,
-    setTheme: props.controlled ? props.setTheme : _setTheme,
     user_name: window.username,
     menus: null,
     page_id: props.main_id
   }), /*#__PURE__*/_react["default"].createElement(_menu_utilities.TacticMenubar, {
-    dark_theme: actual_dark_theme,
     connection_status: connection_status,
     menus: menus,
     showRefresh: true,
@@ -319,7 +308,7 @@ function NotebookApp(props) {
     showErrorDrawerButton: true,
     toggleErrorDrawer: props.toggleErrorDrawer
   }), /*#__PURE__*/_react["default"].createElement("div", {
-    className: "main-outer ".concat(actual_dark_theme ? "bp5-dark" : "light-theme"),
+    className: "main-outer ".concat(theme.dark_theme ? "bp5-dark" : "light-theme"),
     ref: main_outer_ref,
     style: {
       width: "100%",
@@ -360,7 +349,7 @@ NotebookApp.defaultProps = {
 };
 function main_main() {
   function gotProps(the_props) {
-    var NotebookAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(NotebookApp));
+    var NotebookAppPlus = (0, _theme.withTheme)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(NotebookApp)));
     var the_element = /*#__PURE__*/_react["default"].createElement(NotebookAppPlus, _extends({}, the_props, {
       controlled: false,
       initial_theme: window.theme,

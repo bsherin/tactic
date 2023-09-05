@@ -2,7 +2,7 @@
 import "../tactic_css/tactic.scss";
 
 import React from "react";
-import {Fragment, useEffect, useState, memo} from "react";
+import {Fragment, useEffect, useState, memo, useContext} from "react";
 import * as ReactDOM from 'react-dom'
 
 import { FormGroup, InputGroup, Button, HTMLSelect } from "@blueprintjs/core";
@@ -13,12 +13,15 @@ import {postAjax} from "./communication_react";
 import {guid, useCallbackStack, useStateAndRef} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 
+import {withTheme, ThemeContext} from "./theme";
+
 window.main_id = guid();
 
 function _account_main() {
     if (window._show_message) doFlash(window._message);
     let domContainer = document.querySelector('#root');
-    ReactDOM.render(<AccountApp initial_theme={window.theme} controlled={false}/>, domContainer)
+    let AccountAppPlus = withTheme(AccountApp);
+    ReactDOM.render(<AccountAppPlus initial_theme={window.theme} controlled={false}/>, domContainer)
 }
 
 const field_names = ["new_password", "confirm_new_password"];
@@ -63,27 +66,21 @@ AccountSelectField = memo(AccountSelectField);
 
 function AccountApp(props) {
 
-    const [dark_theme, set_dark_theme] = useState(props.initial_theme == "dark");
     const [fields, set_fields, fields_ref] = useStateAndRef([]);
     const [password, set_password] = useState("");
     const [confirm_password, set_confirm_password] = useState("");
     const [password_helper, set_password_helper] = useState(null);
+
+    const theme = useContext(ThemeContext);
 
     const pushCallback = useCallbackStack();
 
     useEffect(()=>{
         postAjax("get_account_info", {}, (data)=> {
             set_fields(data.field_list);
-            window.dark_theme = dark_theme
         })
     }, []);
 
-    function _setTheme(dark_theme) {
-      set_dark_theme(dark_theme);
-      pushCallback(()=> {
-          window.dark_theme = dark_theme
-      })
-    }
 
     function _submitPassword() {
         let pwd = password;
@@ -226,7 +223,7 @@ function AccountApp(props) {
 
         let field_items = _getFieldItems();
         let outer_class = "account-settings";
-        if (dark_theme) {
+        if (theme.dark_theme) {
             outer_class = outer_class + " bp5-dark";
         }
         else {
@@ -236,8 +233,6 @@ function AccountApp(props) {
         return (
             <Fragment>
                 <TacticNavbar is_authenticated={window.is_authenticated}
-                              dark_theme={dark_theme}
-                              setTheme={props.controlled ? props.setTheme : _setTheme}
                               selected={null}
                               show_api_links={false}
                               page_id={window.main_id}

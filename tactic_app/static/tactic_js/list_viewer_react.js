@@ -19,6 +19,7 @@ var _sizing_tools = require("./sizing_tools");
 var _error_drawer = require("./error_drawer");
 var _utilities_react = require("./utilities_react");
 var _blueprint_navbar = require("./blueprint_navbar");
+var _theme = require("./theme");
 var _modal_react = require("./modal_react");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
@@ -122,23 +123,18 @@ function ListViewerApp(props) {
     _useState4 = _slicedToArray(_useState3, 2),
     usable_height = _useState4[0],
     set_usable_height = _useState4[1];
-  var _useState5 = (0, _react.useState)(function () {
-      return props.initial_theme === "dark";
-    }),
+  var _useState5 = (0, _react.useState)(props.resource_name),
     _useState6 = _slicedToArray(_useState5, 2),
-    dark_theme = _useState6[0],
-    set_dark_theme = _useState6[1];
-  var _useState7 = (0, _react.useState)(props.resource_name),
-    _useState8 = _slicedToArray(_useState7, 2),
-    resource_name = _useState8[0],
-    set_resource_name = _useState8[1];
+    resource_name = _useState6[0],
+    set_resource_name = _useState6[1];
+  var theme = (0, _react.useContext)(_theme.ThemeContext);
+  var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   (0, _react.useEffect)(function () {
     props.stopSpinner();
     if (cc_ref && cc_ref.current) {
       cc_offset_top.current = cc_ref.current.offsetTop;
     }
     if (!props.controlled) {
-      window.dark_theme = dark_theme;
       window.addEventListener("resize", _update_window_dimensions);
       _update_window_dimensions();
     } else {
@@ -156,14 +152,6 @@ function ListViewerApp(props) {
       });
     }
   });
-  function _setTheme(dark_theme) {
-    set_dark_theme(dark_theme);
-    if (!window.in_context) {
-      pushCallback(function () {
-        window.dark_theme = dark_theme;
-      });
-    }
-  }
   function cPropGetters() {
     return {
       usable_width: usable_width,
@@ -182,7 +170,7 @@ function ListViewerApp(props) {
           "name_text": "Copy to library",
           "icon_name": "import",
           "click_handler": function click_handler() {
-            (0, _resource_viewer_react_app.copyToLibrary)("list", _cProp("resource_name"));
+            (0, _resource_viewer_react_app.copyToLibrary)("list", _cProp("resource_name"), dialogFuncs);
           },
           tooltip: "Copy to library"
         }]
@@ -205,7 +193,7 @@ function ListViewerApp(props) {
           name_text: "Share",
           icon_name: "share",
           click_handler: function click_handler() {
-            (0, _resource_viewer_react_app.sendToRepository)("list", _cProp("resource_name"));
+            (0, _resource_viewer_react_app.sendToRepository)("list", _cProp("resource_name"), dialogFuncs);
           },
           tooltip: "Share to repository"
         }]
@@ -303,10 +291,20 @@ function ListViewerApp(props) {
       "user_id": window.user_id
     }, function (data) {
       var checkboxes;
-      (0, _modal_react.showModalReact)("Save List As", "New List Name", CreateNewList, "NewList", data["list_names"], null, doCancel);
+      dialogFuncs.showModal("ModalDialog", {
+        title: "Save List As",
+        field_title: "New List Name",
+        handleSubmit: CreateNewList,
+        default_value: "NewList",
+        existing_names: data.list_names,
+        checkboxes: [],
+        handleCancel: doCancel,
+        handleClose: dialogFuncs.hideModal
+      });
     }, null, props.main_id);
     function doCancel() {
       props.stopSpinner();
+      dialogFuncs.hideModal();
     }
     function CreateNewList(new_name) {
       var result_dict = {
@@ -323,7 +321,6 @@ function ListViewerApp(props) {
   function _dirty() {
     return !(list_content_ref.current == savedContent.current && tags_ref.current == savedTags.current && notes_ref.current == savedNotes.current);
   }
-  var actual_dark_theme = props.controlled ? props.dark_theme : dark_theme;
   var my_props = _objectSpread({}, props);
   if (!props.controlled) {
     my_props.resource_name = resource_name;
@@ -338,7 +335,7 @@ function ListViewerApp(props) {
   };
   var outer_class = "resource-viewer-holder";
   if (!props.controlled) {
-    if (dark_theme) {
+    if (theme.dark_theme) {
       outer_class = outer_class + " bp5-dark";
     } else {
       outer_class = outer_class + " light-theme";
@@ -346,8 +343,6 @@ function ListViewerApp(props) {
   }
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, !props.controlled && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
-    dark_theme: dark_theme,
-    setTheme: _setTheme,
     selected: null,
     show_api_links: true,
     page_id: props.resource_viewer_id,
@@ -357,8 +352,6 @@ function ListViewerApp(props) {
     ref: top_ref,
     style: outer_style
   }, /*#__PURE__*/_react["default"].createElement(_resource_viewer_react_app.ResourceViewerApp, _extends({}, my_props, {
-    dark_theme: dark_theme,
-    setTheme: props.controlled ? null : _setTheme,
     resource_viewer_id: props.resource_viewer_id,
     setResourceNameState: _setResourceNameState,
     refreshTab: props.refreshTab,
@@ -415,7 +408,7 @@ ListViewerApp.defaultProps = {
 };
 function list_viewer_main() {
   function gotProps(the_props) {
-    var ListViewerAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(ListViewerApp));
+    var ListViewerAppPlus = (0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(ListViewerApp))));
     var the_element = /*#__PURE__*/_react["default"].createElement(ListViewerAppPlus, _extends({}, the_props, {
       controlled: false,
       initial_theme: window.theme,

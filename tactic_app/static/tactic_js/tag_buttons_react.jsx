@@ -1,11 +1,14 @@
 import React from "react";
-import { memo, useState } from 'react';
+import { memo, useState, useContext } from 'react';
 import PropTypes from 'prop-types';
 
 import {Menu, MenuItem, ContextMenuPopover, Tree} from "@blueprintjs/core";
 
-import {showConfirmDialogReact, showModalReact} from "./modal_react";
+import {showConfirmDialogReact} from "./modal_react";
 import {arraysMatch, remove_duplicates} from "./utilities_react";
+
+import {ThemeContext} from "./theme"
+import {DialogContext} from "./modal_react";
 
 export {TagButtonList, get_all_parent_tags}
 
@@ -66,6 +69,9 @@ function TagButtonList(props) {
     const [showContextMenu, setShowContextMenu] = useState(false);
     const [contextMenuTarget, setContentMenuTarget] = useState({left:0, top:0});
     const [contextMenuTagString, setContextMenuTagString] = useState("");
+
+    const theme = useContext(ThemeContext);
+    const dialogFuncs = useContext(DialogContext);
 
     function _renameTagPrep(old_tag, new_tag_base) {
         let old_tag_list = tag_to_list(old_tag);
@@ -180,8 +186,16 @@ function TagButtonList(props) {
     function _rename_tag(tagstring) {
         let self = this;
         let tag_base = get_tag_base(tagstring);
-        showModalReact(`Rename tag "${tag_base}"`, `New name for this tag`, RenameTag, tag_base, []);
-
+        dialogFuncs.showModal("ModalDialog", {
+                    title: `Rename tag "${tag_base}`,
+                    field_title: `New name for this tag`,
+                    handleSubmit: RenameTag,
+                    default_value: tag_base,
+                    existing_names: [],
+                    checkboxes: [],
+                    handleCancel: null,
+                    handleClose: dialogFuncs.hideModal,
+                });
         function RenameTag(new_tag_base) {
             _renameTagPrep(tagstring, new_tag_base)
         }
@@ -219,7 +233,7 @@ function TagButtonList(props) {
             <ContextMenuPopover onClose={()=>{setShowContextMenu(false)}}  // Without this doesn't close
                                 content={tmenu}
                                 isOpen={showContextMenu}
-                                isDarkTheme={props.dark_theme}
+                                isDarkTheme={theme.dark_theme}
                                 targetOffset={contextMenuTarget} />
             <Tree contents={tree}
                   onNodeContextMenu={_showContextMenu}

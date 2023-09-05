@@ -24,6 +24,7 @@ var _toaster = require("./toaster.js");
 var _key_trap = require("./key_trap.js");
 var _utilities_react = require("./utilities_react");
 var _import_dialog = require("./import_dialog");
+var _theme = require("./theme");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -222,6 +223,8 @@ function LibraryPane(props) {
     _useState12 = _slicedToArray(_useState11, 2),
     rowChanged = _useState12[0],
     setRowChanged = _useState12[1];
+  var theme = (0, _react.useContext)(_theme.ThemeContext);
+  var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var stateSetters = {
     data_dict: set_data_dict,
     num_rows: set_num_rows,
@@ -910,7 +913,16 @@ function LibraryPane(props) {
     var res_name = the_row.name;
     var res_type = the_row.res_type;
     $.getJSON($SCRIPT_ROOT + "get_resource_names/" + res_type, function (data) {
-      (0, _modal_react.showModalReact)("Duplicate ".concat(res_type), "New Name", DuplicateResource, res_name, data.resource_names);
+      dialogFuncs.showModal("ModalDialog", {
+        title: "Duplicate ".concat(res_type),
+        field_title: "New Name",
+        handleSubmit: DuplicateResource,
+        default_value: res_name,
+        existing_names: data.resource_names,
+        checkboxes: [],
+        handleCancel: null,
+        handleClose: dialogFuncs.hideModal
+      });
     });
     var duplicate_view = duplicate_views()[res_type];
     function DuplicateResource(new_name) {
@@ -983,7 +995,16 @@ function LibraryPane(props) {
       if (index >= 0) {
         res_names.splice(index, 1);
       }
-      (0, _modal_react.showModalReact)("Rename ".concat(res_type), "New Name", RenameResource, res_name, res_names);
+      dialogFuncs.showModal("ModalDialog", {
+        title: "Rename ".concat(res_type),
+        field_title: "New Name",
+        handleSubmit: RenameResource,
+        handleCancel: null,
+        handleClose: dialogFuncs.hideModal,
+        default_value: res_name,
+        existing_names: res_names,
+        checkboxes: []
+      });
     });
     function RenameResource(new_name) {
       var the_data = {
@@ -1021,7 +1042,16 @@ function LibraryPane(props) {
       var res_type = selected_resource_ref.current.res_type;
       var res_name = selected_resource_ref.current.name;
       $.getJSON($SCRIPT_ROOT + "get_resource_names/" + res_type, function (data) {
-        (0, _modal_react.showModalReact)("Import " + res_type, "New Name", ImportResource, res_name, data["resource_names"]);
+        dialogFuncs.showModal("ModalDialog", {
+          title: "Import ".concat(res_type),
+          field_title: "New Name",
+          handleSubmit: ImportResource,
+          default_value: res_name,
+          existing_names: data.resource_names,
+          checkboxes: [],
+          handleCancel: null,
+          handleClose: dialogFuncs.hideModal
+        });
       });
       return res_name;
     } else {
@@ -1047,7 +1077,16 @@ function LibraryPane(props) {
       var res_type = selected_resource_ref.current.res_type;
       var res_name = selected_resource_ref.current.name;
       $.getJSON($SCRIPT_ROOT + "get_repository_resource_names/" + res_type, function (data) {
-        (0, _modal_react.showModalReact)("Share ".concat(res_type), "New ".concat(res_type, " Name"), ShareResource, res_name, data["resource_names"]);
+        dialogFuncs.showModal("ModalDialog", {
+          title: "Share ".concat(res_type),
+          field_title: "New ".concat(res_type, " Name"),
+          handleSubmit: ShareResource,
+          default_value: res_name,
+          existing_names: data.resource_names,
+          checkboxes: [],
+          handleCancel: null,
+          handleClose: dialogFuncs.hideModal
+        });
       });
       return res_name;
     } else {
@@ -1086,12 +1125,21 @@ function LibraryPane(props) {
   }
   function _downloadJupyter() {
     var res_name = selected_resource_ref.current.name;
-    (0, _modal_react.showModalReact)("Download Notebook as Jupyter Notebook", "New File Name", function (new_name) {
-      window.open("".concat($SCRIPT_ROOT, "/download_jupyter/") + res_name + "/" + new_name);
-    }, res_name + ".ipynb", []);
+    dialogFuncs.showModal("ModalDialog", {
+      title: "Download Notebook as Jupyter Notebook",
+      field_title: "New File Name",
+      handleSubmit: function handleSubmit(new_name) {
+        window.open("".concat($SCRIPT_ROOT, "/download_jupyter/") + res_name + "/" + new_name);
+      },
+      default_value: res_name + ".ipynb",
+      existing_names: [],
+      checkboxes: [],
+      handleCancel: null,
+      handleClose: dialogFuncs.hideModal
+    });
   }
   function _showJupyterImport() {
-    (0, _import_dialog.showFileImportDialog)("project", ".ipynb", [], _import_jupyter, props.tsocket, props.dark_theme, false, false);
+    (0, _import_dialog.showFileImportDialog)("project", ".ipynb", [], _import_jupyter, props.tsocket, false, false);
   }
   function _import_jupyter(myDropZone, setCurrentUrl) {
     var new_url = "import_jupyter/".concat(props.library_id);
@@ -1122,7 +1170,16 @@ function LibraryPane(props) {
       });
     } else {
       $.getJSON("".concat($SCRIPT_ROOT, "get_resource_names/collection"), function (data) {
-        (0, _modal_react.showModalReact)("Combine Collections", "Name for combined collection", CreateCombinedCollection, "NewCollection", data["resource_names"]);
+        dialogFuncs.showModal("ModalDialog", {
+          title: "Combine Collections",
+          field_title: "Name for combined collection",
+          handleSubmit: CreateCombinedCollection,
+          default_value: "NewCollection",
+          existing_names: data.resource_names,
+          checkboxes: [],
+          handleCancel: null,
+          handleClose: dialogFuncs.hideModal
+        });
       });
     }
     function CreateCombinedCollection(new_name) {
@@ -1143,9 +1200,18 @@ function LibraryPane(props) {
   function _downloadCollection() {
     var resource_name = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     var res_name = resource_name ? resource_name : selected_resource_ref.current.name;
-    (0, _modal_react.showModalReact)("Download Collection", "New File Name", function (new_name) {
-      window.open("".concat($SCRIPT_ROOT, "/download_collection/") + res_name + "/" + new_name);
-    }, res_name, []);
+    dialogFuncs.showModal("ModalDialog", {
+      title: "Download Collection",
+      field_title: "New File Name",
+      handleSubmit: function handleSubmit(new_name) {
+        window.open("".concat($SCRIPT_ROOT, "/download_collection/") + res_name + "/" + new_name);
+      },
+      default_value: res_name,
+      existing_names: [],
+      checkboxes: [],
+      handleCancel: null,
+      handleClose: dialogFuncs.hideModal
+    });
   }
   function _displayImportResults(data) {
     var title = "Collection Created";
@@ -1171,7 +1237,7 @@ function LibraryPane(props) {
     (0, _import_dialog.showFileImportDialog)("collection", ".csv,.tsv,.txt,.xls,.xlsx,.html", [{
       "checkname": "import_as_freeform",
       "checktext": "Import as freeform"
-    }], _import_collection, props.tsocket, props.dark_theme, true, true, _refresh_func);
+    }], _import_collection, props.tsocket, true, true, _refresh_func);
   }
   function _import_collection(myDropZone, setCurrentUrl, new_name, check_results) {
     var csv_options = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : null;
@@ -1258,7 +1324,16 @@ function LibraryPane(props) {
   }
   function _new_tile(template_name) {
     $.getJSON($SCRIPT_ROOT + "get_resource_names/tile", function (data) {
-      (0, _modal_react.showModalReact)("New Tile", "New Tile Name", CreateNewTileModule, "NewTileModule", data["resource_names"]);
+      dialogFuncs.showModal("ModalDialog", {
+        title: "New Tile",
+        field_title: "New Tile Name",
+        handleSubmit: CreateNewTileModule,
+        default_value: "NewTileModule",
+        existing_names: data.resource_names,
+        checkboxes: [],
+        handleCancel: null,
+        handleClose: dialogFuncs.hideModal
+      });
     });
     function CreateNewTileModule(new_name) {
       var result_dict = {
@@ -1282,7 +1357,16 @@ function LibraryPane(props) {
   }
   function _new_in_creator(template_name) {
     $.getJSON("".concat($SCRIPT_ROOT, "/get_resource_names/tile"), function (data) {
-      (0, _modal_react.showModalReact)("New Tile", "New Tile Name", CreateNewTileModule, "NewTileModule", data["resource_names"]);
+      dialogFuncs.showModal("ModalDialog", {
+        title: "New Tile",
+        field_title: "New Tile Name",
+        handleSubmit: CreateNewTileModule,
+        default_value: "NewTileModule",
+        existing_names: data.resource_names,
+        checkboxes: [],
+        handleCancel: null,
+        handleClose: dialogFuncs.hideModal
+      });
     });
     function CreateNewTileModule(new_name) {
       var result_dict = {
@@ -1306,7 +1390,16 @@ function LibraryPane(props) {
   }
   function _new_list(template_name) {
     $.getJSON("".concat($SCRIPT_ROOT, "/get_resource_names/list"), function (data) {
-      (0, _modal_react.showModalReact)("New List Resource", "New List Resource Name", CreateNewListResource, "NewListResource", data["resource_names"]);
+      dialogFuncs.showModal("ModalDialog", {
+        title: "New List Resource",
+        field_title: "New List Name",
+        handleSubmit: CreateNewListResource,
+        default_value: "NewListResource",
+        existing_names: data.resource_names,
+        checkboxes: [],
+        handleCancel: null,
+        handleClose: dialogFuncs.hideModal
+      });
     });
     function CreateNewListResource(new_name) {
       var result_dict = {
@@ -1334,7 +1427,7 @@ function LibraryPane(props) {
     myDropZone.processQueue();
   }
   function _showListImport() {
-    (0, _import_dialog.showFileImportDialog)("list", "text/*", [], _add_list, props.tsocket, props.dark_theme, false, false);
+    (0, _import_dialog.showFileImportDialog)("list", "text/*", [], _add_list, props.tsocket, false, false);
   }
   function _add_to_pool(myDropZone, setCurrentUrl, current_value) {
     var new_url = "import_pool/".concat(props.library_id);
@@ -1343,11 +1436,20 @@ function LibraryPane(props) {
     myDropZone.processQueue();
   }
   function _showPoolImport() {
-    (0, _import_dialog.showFileImportDialog)("pool", null, [], _add_to_pool, props.tsocket, props.dark_theme, false, false);
+    (0, _import_dialog.showFileImportDialog)("pool", null, [], _add_to_pool, props.tsocket, false, false, null, true);
   }
   function _new_code(template_name) {
     $.getJSON("".concat($SCRIPT_ROOT, "/get_resource_names/code"), function (data) {
-      (0, _modal_react.showModalReact)("New Code Resource", "New Code Resource Name", CreateNewCodeResource, "NewCodeResource", data["resource_names"]);
+      dialogFuncs.showModal("ModalDialog", {
+        title: "New Code Resource",
+        field_title: "New Code Resource Name",
+        handleSubmit: CreateNewCodeResource,
+        default_value: "NewCodeResource",
+        existing_names: data.resource_names,
+        checkboxes: [],
+        handleCancel: null,
+        handleClose: dialogFuncs.hideModal
+      });
     });
     function CreateNewCodeResource(new_name) {
       var result_dict = {
@@ -1521,7 +1623,6 @@ function LibraryPane(props) {
     }
   }, /*#__PURE__*/_react["default"].createElement(_tag_buttons_react.TagButtonList, {
     tag_list: tag_list,
-    dark_theme: props.dark_theme,
     expanded_tags: expanded_tags_ref.current,
     active_tag: active_tag_ref.current,
     updateTagState: _update_search_state,
@@ -1594,7 +1695,6 @@ function LibraryPane(props) {
   }, props.errorDrawerFuncs, {
     handleCreateViewer: props.handleCreateViewer,
     library_id: props.library_id,
-    dark_theme: props.dark_theme,
     controlled: props.controlled,
     am_selected: props.am_selected,
     tsocket: props.tsocket
@@ -1671,6 +1771,5 @@ LibraryPane.defaultProps = {
     }
   },
   is_repository: false,
-  tsocket: null,
-  dark_theme: false
+  tsocket: null
 };

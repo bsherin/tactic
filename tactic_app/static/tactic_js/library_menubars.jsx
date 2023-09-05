@@ -60,7 +60,6 @@ function LibraryMenubar(props) {
     return <TacticMenubar menu_specs={props.menu_specs}
                           connection_status={props.connection_status}
                           registerOmniGetter={props.registerOmniGetter}
-                          dark_theme={props.dark_theme}
                           showRefresh={true}
                           showClose={false}
                           refreshTab={props.refreshTab}
@@ -80,7 +79,6 @@ LibraryMenubar.propTypes = {
     menu_specs: PropTypes.object,
     multi_select: PropTypes.bool,
     selected_type: PropTypes.string,
-    dark_theme: PropTypes.bool,
     refreshTab: PropTypes.func,
     showErrorDrawerButton: PropTypes.bool,
     toggleErrorDrawer: PropTypes.func,
@@ -269,23 +267,20 @@ function AllMenubar(props) {
                 },
                 {name_text: "Import List", icon_name: "cloud-upload", click_handler: props.showListImport},
                 {name_text: "Import To Pool", icon_name: "cloud-upload", click_handler: props.showPoolImport},
-                {
-                    name_text: "Download As Jupyter Notebook", icon_name: "download",
+                {name_text: "Download As Jupyter Notebook", icon_name: "download",
                     click_handler: props.downloadJupyter, res_type: "project", reqs: {type: "jupyter"}
                 },
                 {name_text: "divider2", icon_name: null, click_handler: "divider"},
-                {
-                    name_text: "Share to repository", icon_name: "share", click_handler: props.send_repository_func,
-                    multi_select: true
-                },
+                {name_text: "Share to repository", icon_name: "share", click_handler: props.send_repository_func,
+                    multi_select: true},
             ]
         };
-        for (const [menu_name, menu] of Object.entries(ms)) {
-            for (let but of menu) {
-                if (!but.name_text.startsWith("divider")) {
-                    but.click_handler = but.click_handler.bind(this)
-                }
+        if (!window.has_pool) {
+            let new_ms = {};
+            for (const menu_name in ms) {
+                new_ms[menu_name] = ms[menu_name].filter(b => !b.name_text.toLowerCase().includes("pool"));
             }
+            ms = new_ms
         }
         return ms
     }
@@ -300,7 +295,6 @@ function AllMenubar(props) {
                            resource_icon={icon_dict["all"]}
                            menu_specs={menu_specs()}
                            multi_select={props.multi_select}
-                           dark_theme={props.dark_theme}
                            controlled={props.controlled}
                            am_selected={props.am_selected}
                            tsocket={props.tsocket}
@@ -315,3 +309,4 @@ function AllMenubar(props) {
 AllMenubar = memo(AllMenubar);
 
 AllMenubar.propTypes = specializedMenubarPropTypes;
+

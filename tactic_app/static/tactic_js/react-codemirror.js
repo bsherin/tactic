@@ -36,6 +36,7 @@ require("codemirror/theme/solarized.css");
 require("codemirror/theme/juejin.css");
 var _toaster = require("./toaster");
 var _utilities_react = require("./utilities_react");
+var _theme = require("./theme");
 require("./autocomplete");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
@@ -85,6 +86,7 @@ function ReactCodemirror(props, passedRef) {
   var search_focus_info = (0, _react.useRef)(null);
   var first_render = (0, _react.useRef)(true);
   var prevSoftWrap = (0, _react.useRef)(null);
+  var theme = (0, _react.useContext)(_theme.ThemeContext);
   (0, _react.useEffect)(function () {
     prevSoftWrap.current = props.soft_wrap;
     if (props.registerSetFocusFunc) {
@@ -99,7 +101,7 @@ function ReactCodemirror(props, passedRef) {
       if (props.setCMObject != null) {
         props.setCMObject(cmobject.current);
       }
-      saved_theme.current = props.dark_theme;
+      saved_theme.current = theme.dark_theme;
       _doHighlight();
     })["catch"](function (data) {
       (0, _toaster.doFlash)(data);
@@ -109,11 +111,11 @@ function ReactCodemirror(props, passedRef) {
     if (!cmobject.current) {
       return;
     }
-    if (props.dark_theme != saved_theme.current) {
+    if (theme.dark_theme != saved_theme.current) {
       (0, _communication_react.postAjax)("get_preferred_codemirror_themes", {}, function (data) {
         preferred_themes.current = data;
         cmobject.current.setOption("theme", _current_codemirror_theme());
-        saved_theme.current = props.dark_theme;
+        saved_theme.current = theme.dark_theme;
       });
     }
     if (props.soft_wrap != prevSoftWrap.current) {
@@ -143,7 +145,7 @@ function ReactCodemirror(props, passedRef) {
     }
   }
   function _current_codemirror_theme() {
-    return props.dark_theme ? preferred_themes.current.preferred_dark_theme : preferred_themes.current.preferred_light_theme;
+    return theme.dark_theme ? preferred_themes.current.preferred_dark_theme : preferred_themes.current.preferred_light_theme;
   }
   function createCMArea(codearea) {
     var first_line_number = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;

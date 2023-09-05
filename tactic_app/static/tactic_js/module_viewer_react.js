@@ -19,6 +19,7 @@ var _error_drawer = require("./error_drawer");
 var _sizing_tools = require("./sizing_tools");
 var _utilities_react = require("./utilities_react");
 var _blueprint_navbar = require("./blueprint_navbar");
+var _theme = require("./theme");
 var _modal_react = require("./modal_react");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
@@ -99,6 +100,8 @@ function ModuleViewerApp(props) {
     _useState6 = _slicedToArray(_useState5, 2),
     search_matches = _useState6[0],
     set_search_matches = _useState6[1];
+  var theme = (0, _react.useContext)(_theme.ThemeContext);
+  var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
 
   // The following only are used if not in context
   var _useState7 = (0, _react.useState)(function () {
@@ -113,23 +116,16 @@ function ModuleViewerApp(props) {
     _useState10 = _slicedToArray(_useState9, 2),
     usable_height = _useState10[0],
     set_usable_height = _useState10[1];
-  var _useState11 = (0, _react.useState)(function () {
-      return props.initial_theme === "dark";
-    }),
+  var _useState11 = (0, _react.useState)(props.resource_name),
     _useState12 = _slicedToArray(_useState11, 2),
-    dark_theme = _useState12[0],
-    set_dark_theme = _useState12[1];
-  var _useState13 = (0, _react.useState)(props.resource_name),
-    _useState14 = _slicedToArray(_useState13, 2),
-    resource_name = _useState14[0],
-    set_resource_name = _useState14[1];
+    resource_name = _useState12[0],
+    set_resource_name = _useState12[1];
   (0, _react.useEffect)(function () {
     props.stopSpinner();
     if (cc_ref && cc_ref.current) {
       cc_bounding_top.current = cc_ref.current.getBoundingClientRect().top;
     }
     if (!props.controlled) {
-      window.dark_theme = dark_theme;
       window.addEventListener("resize", _update_window_dimensions);
       _update_window_dimensions();
     } else {
@@ -174,14 +170,6 @@ function ModuleViewerApp(props) {
       }
     }
   }
-  function _setTheme(dark_theme) {
-    set_dark_theme(dark_theme);
-    if (!window.in_context) {
-      pushCallback(function () {
-        window.dark_theme = dark_theme;
-      });
-    }
-  }
   function menu_specs() {
     var ms;
     if (props.is_repository) {
@@ -190,7 +178,7 @@ function ModuleViewerApp(props) {
           "name_text": "Copy to library",
           "icon_name": "import",
           "click_handler": function click_handler() {
-            (0, _resource_viewer_react_app.copyToLibrary)("tile", _cProp("resource_name"));
+            (0, _resource_viewer_react_app.copyToLibrary)("tile", _cProp("resource_name"), dialogFuncs);
           },
           tooltip: "Copy to library"
         }]
@@ -242,7 +230,7 @@ function ModuleViewerApp(props) {
           name_text: "Share",
           icon_name: "share",
           click_handler: function click_handler() {
-            (0, _resource_viewer_react_app.sendToRepository)("list", _cProp("resource_name"));
+            (0, _resource_viewer_react_app.sendToRepository)("list", _cProp("resource_name"), dialogFuncs);
           },
           tooltip: "Share to repository"
         }]
@@ -369,7 +357,16 @@ function ModuleViewerApp(props) {
       "user_id": window.user_id
     }, function (data) {
       var checkboxes;
-      (0, _modal_react.showModalReact)("Save Module As", "New ModuleName Name", CreateNewModule, "NewModule", data["tile_names"], null, doCancel);
+      dialogFuncs.showModal("ModalDialog", {
+        title: "Save Module As",
+        field_title: "New Module Name",
+        handleSubmit: CreateNewModule,
+        default_value: "NewModule",
+        existing_names: data.tile_names,
+        checkboxes: [],
+        handleCancel: doCancel,
+        handleClose: dialogFuncs.hideModal
+      });
     }, null, props.main_id);
     function doCancel() {
       props.stopSpinner();
@@ -451,7 +448,6 @@ function ModuleViewerApp(props) {
   function _setSearchMatches(nmatches) {
     set_search_matches(nmatches);
   }
-  var actual_dark_theme = props.controlled ? props.dark_theme : dark_theme;
   var my_props = _objectSpread({}, props);
   if (!props.controlled) {
     my_props.resource_name = resource_name;
@@ -467,7 +463,7 @@ function ModuleViewerApp(props) {
   var cc_height = get_new_cc_height();
   var outer_class = "resource-viewer-holder";
   if (!props.controlled) {
-    if (actual_dark_theme) {
+    if (theme.dark_theme) {
       outer_class = outer_class + " bp5-dark";
     } else {
       outer_class = outer_class + " light-theme";
@@ -475,8 +471,6 @@ function ModuleViewerApp(props) {
   }
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, !props.controlled && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
-    dark_theme: actual_dark_theme,
-    setTheme: _setTheme,
     selected: null,
     show_api_links: true,
     page_id: props.resource_viewer_id,
@@ -486,8 +480,6 @@ function ModuleViewerApp(props) {
     ref: top_ref,
     style: outer_style
   }, /*#__PURE__*/_react["default"].createElement(_resource_viewer_react_app.ResourceViewerApp, _extends({}, my_props, {
-    dark_theme: actual_dark_theme,
-    setTheme: props.controlled ? null : _setTheme,
     resource_viewer_id: my_props.resource_viewer_id,
     setResourceNameState: _setResourceNameState,
     refreshTab: props.refreshTab,
@@ -514,7 +506,6 @@ function ModuleViewerApp(props) {
     registerOmniFunction: props.registerOmniFunction
   }), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
     code_content: code_content,
-    dark_theme: actual_dark_theme,
     am_selected: props.am_selected,
     extraKeys: _extraKeys(),
     readOnly: props.readOnly,
@@ -542,7 +533,6 @@ ModuleViewerApp.propTypes = {
   created: _propTypes["default"].string,
   tags: _propTypes["default"].array,
   notes: _propTypes["default"].string,
-  dark_theme: _propTypes["default"].bool,
   readOnly: _propTypes["default"].bool,
   is_repository: _propTypes["default"].bool,
   meta_outer: _propTypes["default"].string,
@@ -561,7 +551,7 @@ ModuleViewerApp.defaultProps = {
 };
 function module_viewer_main() {
   function gotProps(the_props) {
-    var ModuleViewerAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(ModuleViewerApp));
+    var ModuleViewerAppPlus = (0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(ModuleViewerApp))));
     var the_element = /*#__PURE__*/_react["default"].createElement(ModuleViewerAppPlus, _extends({}, the_props, {
       controlled: false,
       initial_theme: window.theme,

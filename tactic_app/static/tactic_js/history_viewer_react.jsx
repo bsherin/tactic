@@ -19,10 +19,11 @@ import {guid} from "./utilities_react.js";
 import {TacticNavbar} from "./blueprint_navbar";
 import {TacticSocket} from "./tactic_socket.js";
 import {useCallbackStack, useConnection} from "./utilities_react";
+import {withTheme} from "./theme";
 
 function history_viewer_main ()  {
     function gotProps(the_props) {
-        let HistoryViewerAppPlus = withErrorDrawer(withStatus(HistoryViewerApp));
+        let HistoryViewerAppPlus = withTheme(withErrorDrawer(withStatus(HistoryViewerApp)));
         let the_element = <HistoryViewerAppPlus {...the_props}
                                              controlled={false}
                                              initial_theme={window.theme}
@@ -69,7 +70,6 @@ function HistoryViewerApp(props) {
     const [history_popup_val, set_history_popup_val] = useState(props.history_list[0]["updatestring"]);
     const [history_list, set_history_list] = useState(props.history_list);
 
-    const [dark_theme, set_dark_theme] = useState(props.initial_theme === "dark");
     const [resource_name, set_resource_name] = useState(props.resource_name);
     const connection_status = useConnection(props.tsocket, initSocket);
 
@@ -84,9 +84,6 @@ function HistoryViewerApp(props) {
                 e.returnValue = ''
             }
         });
-        if (!props.controlled) {
-            window.dark_theme = dark_theme
-        }
     }, []);
 
     function initSocket() {
@@ -98,15 +95,6 @@ function HistoryViewerApp(props) {
         });
         props.tsocket.attachListener('doflash', doFlash);
         props.tsocket.attachListener('doflashUser', doFlash);
-    }
-
-    function _setTheme(dark_theme) {
-        set_dark_theme(dark_theme);
-        pushCallback(()=> {
-            if (!window.in_context) {
-                window.dark_theme = dark_theme
-            }
-        })
     }
 
     function handleSelectChange(new_value) {
@@ -171,14 +159,11 @@ function HistoryViewerApp(props) {
     }
 
     let option_list = history_list.map((item) => item["updatestring"]);
-    let actual_dark_theme = props.controlled ? props.dark_theme : dark_theme;
     return (
             <Fragment>
                 {!props.controlled} {
                     <TacticNavbar is_authenticated={window.is_authenticated}
                                   registerOmniFunction={(register_func) => _registerOmniFunction("navbar", register_func)}
-                                  dark_theme={actual_dark_theme}
-                                  setTheme={_setTheme}
                                   selected={null}
                                   show_api_links={true}
                                   page_id={props.resource_viewer_id}
@@ -187,8 +172,6 @@ function HistoryViewerApp(props) {
                 <MergeViewerApp {...props.statusFuncs}
                                 connection_status={connection_status}
                                 page_id={props.resource_viewer_id}
-                                setTheme={props.controlled ? null: _setTheme}
-                                dark_theme={actual_dark_theme}
                                 resource_viewer_id={props.resource_viewer_id}
                                 resource_name={props.resource_name}
                                 option_list={option_list}

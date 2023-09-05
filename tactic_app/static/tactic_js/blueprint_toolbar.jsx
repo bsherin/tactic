@@ -2,10 +2,6 @@
 import React from "react";
 import PropTypes from 'prop-types';
 
-import "../css/dzcss/dropzone.css";
-import "../css/dzcss/filepicker.css";
-import "../css/dzcss/basic.css";
-
 import { Button, ButtonGroup} from "@blueprintjs/core";
 
 import {KeyTrap} from "./key_trap.js";

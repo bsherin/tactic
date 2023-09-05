@@ -9,6 +9,7 @@ var _blueprint_navbar = require("./blueprint_navbar");
 var _toaster = require("./toaster");
 var _communication_react = require("./communication_react");
 var _utilities_react = require("./utilities_react");
+var _theme = require("./theme");
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
@@ -24,9 +25,11 @@ function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefine
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 window.page_id = (0, _utilities_react.guid)();
 function _register_main() {
-  (0, _blueprint_navbar.render_navbar)("account");
   var domContainer = document.querySelector('#root');
-  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(RegisterApp, null), domContainer);
+  var RegisterAppPlus = (0, _theme.withTheme)(RegisterApp);
+  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(RegisterAppPlus, {
+    initial_theme: window.theme
+  }), domContainer);
 }
 var field_names = ["username", "password", "confirm_password"];
 var initial_fields = {};
@@ -50,6 +53,7 @@ function RegisterApp(props) {
     helper_text = _useStateAndRef4[0],
     set_helper_text = _useStateAndRef4[1],
     helper_text_ref = _useStateAndRef4[2];
+  var theme = (0, _react.useContext)(_theme.ThemeContext);
   function _onFieldChange(field, value) {
     var new_fields = _objectSpread({}, fields_ref.current);
     new_fields[field] = value;
@@ -109,12 +113,24 @@ function RegisterApp(props) {
   });
   var outer_style = {
     textAlign: "center",
-    marginLeft: 50,
-    marginTop: 50,
+    paddingLeft: 50,
+    paddingTop: 50,
     height: "100%"
   };
-  return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
-    className: "d-flex flex-column",
+  var outer_class = "d-flex flex-column pane-holder";
+  if (theme.dark_theme) {
+    outer_class = outer_class + " bp5-dark";
+  } else {
+    outer_class = outer_class + " light-theme";
+  }
+  return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+    is_authenticated: window.is_authenticated,
+    selected: null,
+    show_api_links: true,
+    page_id: window.page_id,
+    user_name: window.username
+  }), /*#__PURE__*/_react["default"].createElement("div", {
+    className: outer_class,
     style: outer_style
   }, /*#__PURE__*/_react["default"].createElement("form", {
     onSubmit: function onSubmit(e) {

@@ -13,6 +13,7 @@ var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _menu_utilities = require("./menu_utilities");
 var _TacticOmnibar = require("./TacticOmnibar");
 var _key_trap = require("./key_trap");
+var _theme = require("./theme");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -31,6 +32,7 @@ function MergeViewerApp(props) {
     _useState2 = _slicedToArray(_useState, 2),
     inner_height = _useState2[0],
     set_inner_height = _useState2[1];
+  var theme = (0, _react.useContext)(_theme.ThemeContext);
 
   // These only matter if not controlled
   var _useState3 = (0, _react.useState)(false),
@@ -127,7 +129,7 @@ function MergeViewerApp(props) {
     paddingRight: 25
   };
   var outer_class = "merge-viewer-outer";
-  if (props.dark_theme) {
+  if (theme.dark_theme) {
     outer_class = outer_class + " bp5-dark";
   } else {
     outer_class = outer_class + " light-theme";
@@ -140,7 +142,6 @@ function MergeViewerApp(props) {
     connection_status: props.connection_status,
     showRefresh: false,
     showClose: false,
-    dark_theme: props.dark_theme,
     refreshTab: null,
     closeTab: null,
     resource_name: props.resource_name,
@@ -168,7 +169,6 @@ function MergeViewerApp(props) {
     value: props.select_val
   })), /*#__PURE__*/_react["default"].createElement(_reactCodemirrorMergeview.ReactCodemirrorMergeView, {
     handleEditChange: props.handleEditChange,
-    dark_theme: props.dark_theme,
     editor_content: props.edit_content,
     right_content: props.right_content,
     saveMe: props.saveHandler,
@@ -178,9 +178,7 @@ function MergeViewerApp(props) {
     page_id: props.page_id,
     showOmnibar: showOmnibar,
     closeOmnibar: _closeOmnibar,
-    is_authenticated: window.is_authenticated,
-    dark_theme: props.dark_theme,
-    setTheme: props.setTheme
+    is_authenticated: window.is_authenticated
   }), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
     global: true,
     bindings: key_bindings
@@ -194,7 +192,6 @@ MergeViewerApp.propTypes = {
   right_content: _propTypes["default"].string,
   handleSelectChange: _propTypes["default"].func,
   handleEditChange: _propTypes["default"].func,
-  dark_theme: _propTypes["default"].bool,
   saveHandler: _propTypes["default"].func
 };
 exports.MergeViewerApp = MergeViewerApp = /*#__PURE__*/(0, _react.memo)(MergeViewerApp);

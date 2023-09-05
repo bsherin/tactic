@@ -13,6 +13,7 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
 var _blueprint_react_widgets = require("./blueprint_react_widgets");
 var _utilities_react = require("./utilities_react");
+var _theme = require("./theme");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -23,7 +24,7 @@ function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o =
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-var DEFAULT_TIMEOUT = 2000;
+var DEFAULT_TIMEOUT = 20000;
 var disconnect_toast_id = null;
 var reconnect_toast_id = null;
 var AppToaster = _core.OverlayToaster.create({
@@ -200,16 +201,16 @@ function withStatus(WrappedComponent) {
       show_close: true,
       handleClose: function handleClose() {
         _clearStatus(null);
-      },
-      dark_theme: props.controlled ? props.dark_theme : window.theme == "dark"
+      }
     }));
   }
   return /*#__PURE__*/(0, _react.memo)(newFunc);
 }
 function Status(props) {
   var elRef = (0, _react.useRef)(null);
+  var theme = (0, _react.useContext)(_theme.ThemeContext);
   var cname = "d-flex flex-row";
-  var outer_cname = props.dark_theme ? "status-holder bp5-dark" : "status-holder light-theme";
+  var outer_cname = theme.dark_theme ? "status-holder bp5-dark" : "status-holder light-theme";
   var left = elRef && elRef.current ? elRef.current.parentNode.offsetLeft : 25;
   return /*#__PURE__*/_react["default"].createElement("div", {
     ref: elRef,
@@ -249,14 +250,12 @@ Status.propTypes = {
   show_close: _propTypes["default"].bool,
   handleClose: _propTypes["default"].func,
   status_message: _propTypes["default"].string,
-  spinner_size: _propTypes["default"].number,
-  dark_theme: _propTypes["default"].bool
+  spinner_size: _propTypes["default"].number
 };
 Status.defaultProps = {
   show_spinner: false,
   show_close: true,
   handleClose: null,
   status_message: null,
-  spinner_size: 25,
-  dark_theme: false
+  spinner_size: 25
 };

@@ -830,6 +830,7 @@ class HostWorker(QWorker):
 
     @task_worthy
     def GetPoolTree(self, data):
+        print("entering getpooltree")
         user_id = data["user_id"]
         user_obj = load_user(user_id)
         user_pool_dir = f"/pool/{user_obj.username}"
@@ -843,7 +844,29 @@ class HostWorker(QWorker):
             "basename": "mydisk",
             "label": "mydisk"
         })
+        print("leaving getpooltree")
         return {"dtree": dtree}
+
+    @task_worthy
+    def GetFileStats(self, data):
+        print("Entering getfilestats")
+        user_id = data["user_id"]
+        filepath = data["file_path"]
+        user_obj = load_user(user_id)
+        user_pool_dir = f"/pool/{user_obj.username}"
+        if not os.path.exists(user_pool_dir):
+            return {"stats": None}
+        truepath = re.sub("/mydisk", user_pool_dir, filepath)
+        fstat = os.stat(truepath)
+        stats = {
+            "created": datetime.datetime.utcfromtimestamp(fstat.st_ctime).strftime('%Y-%m-%d %H:%M:%S'),
+            "updated": datetime.datetime.utcfromtimestamp(fstat.st_mtime).strftime('%Y-%m-%d %H:%M:%S'),
+            "accessed": datetime.datetime.utcfromtimestamp(fstat.st_atime).strftime('%Y-%m-%d %H:%M:%S'),
+            "size": fstat.st_size
+        }
+        print("returning from getfilestats with stats" + str(stats))
+        return {"stats": stats}
+
 
     def forward_client_post(self, task_packet):
         dest_id = task_packet["dest"]

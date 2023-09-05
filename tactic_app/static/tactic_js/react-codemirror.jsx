@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Fragment, useEffect, useRef, memo, forwardRef } from "react";
+import { Fragment, useEffect, useRef, memo, forwardRef, useContext } from "react";
 import PropTypes from 'prop-types';
 
 import { Button, ButtonGroup } from "@blueprintjs/core";
@@ -40,6 +40,7 @@ import 'codemirror/theme/juejin.css'
 import {doFlash} from "./toaster";
 
 import {propsAreEqual} from "./utilities_react";
+import {ThemeContext} from "./theme"
 
 export {ReactCodemirror}
 import './autocomplete'
@@ -77,6 +78,8 @@ function ReactCodemirror(props, passedRef) {
     const first_render = useRef(true);
     const prevSoftWrap = useRef(null);
 
+    const theme = useContext(ThemeContext);
+
     useEffect(()=>{
         prevSoftWrap.current = props.soft_wrap;
         if (props.registerSetFocusFunc) {
@@ -92,7 +95,7 @@ function ReactCodemirror(props, passedRef) {
                     if (props.setCMObject != null) {
                         props.setCMObject(cmobject.current)
                     }
-                    saved_theme.current = props.dark_theme;
+                    saved_theme.current = theme.dark_theme;
                     _doHighlight()
                 }
             )
@@ -103,11 +106,11 @@ function ReactCodemirror(props, passedRef) {
         if (!cmobject.current) {
             return
         }
-        if (props.dark_theme != saved_theme.current) {
+        if (theme.dark_theme != saved_theme.current) {
             postAjax("get_preferred_codemirror_themes", {}, (data)=> {
                 preferred_themes.current = data;
                 cmobject.current.setOption("theme", _current_codemirror_theme());
-                saved_theme.current = props.dark_theme
+                saved_theme.current = theme.dark_theme
             })
         }
         if (props.soft_wrap != prevSoftWrap.current) {
@@ -136,7 +139,7 @@ function ReactCodemirror(props, passedRef) {
     }
 
     function _current_codemirror_theme() {
-        return props.dark_theme ? preferred_themes.current.preferred_dark_theme :
+        return theme.dark_theme ? preferred_themes.current.preferred_dark_theme :
                 preferred_themes.current.preferred_light_theme;
     }
 

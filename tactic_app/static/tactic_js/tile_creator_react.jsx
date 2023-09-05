@@ -5,7 +5,7 @@ import "../tactic_css/tile_creator.scss";
 import 'codemirror/mode/javascript/javascript'
 
 import React from "react";
-import {Fragment, useState, useEffect, useRef, memo} from "react";
+import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
@@ -27,10 +27,11 @@ import {withErrorDrawer} from "./error_drawer";
 import {renderSpinnerMessage} from "./utilities_react"
 import {TacticNavbar} from "./blueprint_navbar";
 import {SearchForm} from "./library_widgets";
-import {showModalReact} from "./modal_react";
 import {ErrorBoundary} from "./error_boundary";
 import {renderAutoCompleteElement} from "./autocomplete";
 import {useCallbackStack, useConstructor, useStateAndRef, useConnection} from "./utilities_react";
+import {ThemeContext, withTheme} from "./theme";
+import {DialogContext, withDialogs} from "./modal_react";
 
 export {CreatorApp}
 
@@ -105,11 +106,11 @@ function CreatorApp(props) {
 
     const [showOmnibar, setShowOmnibar] = useState(false);
 
+    const theme = useContext(ThemeContext);
+    const dialogFuncs = useContext(DialogContext);
+
     const pushCallback = useCallbackStack();
 
-    const [dark_theme, set_dark_theme] = useState(() => {
-        return props.initial_theme === "dark"
-    });
     const [resource_name, set_resource_name] = useState(props.resource_name);
 
     const connection_status = useConnection(props.tsocket, initSocket);
@@ -130,7 +131,6 @@ function CreatorApp(props) {
             props.registerDirtyMethod(_dirty);
             props.registerLineSetter(_selectLineNumber);
         } else {
-            window.dark_theme = dark_theme;
             window.addEventListener("beforeunload", function (e) {
                 if (_dirty()) {
                     e.preventDefault();
@@ -230,7 +230,7 @@ function CreatorApp(props) {
                 {
                     name_text: "Share", icon_name: "share",
                     click_handler: () => {
-                        sendToRepository("tile", _cProp("resource_name"))
+                        sendToRepository("tile", _cProp("resource_name"), dialogFuncs)
                     }
                 }
             ]
@@ -341,15 +341,6 @@ function CreatorApp(props) {
         }
     }
 
-    function _setTheme(dark_theme) {
-        set_dark_theme(dark_theme);
-        if (!window.in_context) {
-            pushCallback(() => {
-                window.dark_theme = dark_theme
-            })
-        }
-    }
-
     function _showHistoryViewer() {
         window.open(`${$SCRIPT_ROOT}/show_history_viewer/${_cProp("resource_name")}`)
     }
@@ -440,8 +431,16 @@ function CreatorApp(props) {
         props.startSpinner();
         postWithCallback("host", "get_tile_names", {"user_id": window.user_id}, function (data) {
             let checkboxes;
-            showModalReact("Save Module As", "New ModuleName Name", CreateNewModule,
-                "NewModule", data["tile_names"], null, doCancel)
+                dialogFuncs.showModal("ModalDialog", {
+                        title: "Save Module As",
+                        field_title: "New Module Name",
+                        handleSubmit: CreateNewModule,
+                        default_value: "NewModule",
+                        existing_names: data.tile_names,
+                        checkboxes: [],
+                        handleCancel: doCancel,
+                        handleClose: dialogFuncs.hideModal
+                    })
         }, null, props.main_id);
 
         function doCancel() {
@@ -838,7 +837,6 @@ function CreatorApp(props) {
         let the_text = "" + oname;
         onames_for_autocomplete.push({text: the_text, icon: "select", render: renderAutoCompleteElement});
     }
-    let actual_dark_theme = props.controlled ? props.dark_theme : dark_theme;
     let my_props = {...props};
     if (!props.controlled) {
         my_props.resource_name = resource_name;
@@ -889,7 +887,6 @@ function CreatorApp(props) {
                                  alt_clear_selections={_clearAllSelections}
                                  first_line_number={first_line_number.current}
                                  code_container_height={tc_height}
-                                 dark_theme={actual_dark_theme}
                                  readOnly={props.read_only}
                                  regex_search={regex}
                                  setSearchMatches={(num) => _setSearchMatches("tc", num)}
@@ -938,7 +935,6 @@ function CreatorApp(props) {
                              alt_clear_selections={_clearAllSelections}
                              first_line_number={render_content_line_number_ref.current + 1}
                              code_container_height={rc_height}
-                             dark_theme={actual_dark_theme}
                              readOnly={props.read_only}
                              regex_search={regex}
                              setSearchMatches={(num) => _setSearchMatches("rc", num)}
@@ -1011,7 +1007,6 @@ function CreatorApp(props) {
                              show_fold_button={true}
                              am_selected={props.am_selected}
                              current_search_number={current_search_cm == "em" ? current_search_number : null}
-                             dark_theme={dark_theme}
                              extraKeys={_extraKeys()}
                              readOnly={props.readOnly}
                              code_content={extra_functions_ref.current}
@@ -1063,7 +1058,7 @@ function CreatorApp(props) {
     };
     let outer_class = "resource-viewer-holder pane-holder";
     if (!window.in_context) {
-        if (dark_theme) {
+        if (theme.dark_theme) {
             outer_class = outer_class + " bp5-dark";
         } else {
             outer_class = outer_class + " light-theme"
@@ -1073,8 +1068,6 @@ function CreatorApp(props) {
         <ErrorBoundary>
             {!window.in_context &&
                 <TacticNavbar is_authenticated={window.is_authenticated}
-                              dark_theme={dark_theme}
-                              setTheme={_setTheme}
                               selected={null}
                               show_api_links={true}
                               page_id={props.module_viewer_id}
@@ -1084,7 +1077,6 @@ function CreatorApp(props) {
                            connection_status={connection_status}
                            showRefresh={window.in_context}
                            showClose={window.in_context}
-                           dark_theme={dark_theme}
                            refreshTab={props.refreshTab}
                            closeTab={props.closeTab}
                            resource_name={_cProp("resource_name")}
@@ -1111,8 +1103,6 @@ function CreatorApp(props) {
                                        showOmnibar={showOmnibar}
                                        closeOmnibar={_closeOmnibar}
                                        is_authenticated={window.is_authenticated}
-                                       dark_theme={dark_theme}
-                                       setTheme={_setTheme}
                         />
                         <KeyTrap global={true} bindings={key_bindings.current}/>
                     </Fragment>
@@ -1167,7 +1157,7 @@ CreatorApp.defaultProps = {
 
 function tile_creator_main() {
     function gotProps(the_props) {
-        let CreatorAppPlus = withErrorDrawer(withStatus(CreatorApp));
+        let CreatorAppPlus = withTheme(withDialogs(withErrorDrawer(withStatus(CreatorApp))));
         let the_element = <CreatorAppPlus {...the_props}
                                           controlled={false}
                                           initial_theme={window.theme}

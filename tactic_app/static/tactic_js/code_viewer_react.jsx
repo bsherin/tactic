@@ -1,7 +1,7 @@
 import "../tactic_css/tactic.scss";
 
 import React from "react";
-import {Fragment, useState, useEffect, useRef, useMemo, memo} from "react";
+import {Fragment, useState, useEffect, useRef, useMemo, memo, useContext} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
@@ -16,8 +16,10 @@ import {getUsableDimensions, BOTTOM_MARGIN} from "./sizing_tools.js";
 import {withErrorDrawer} from "./error_drawer.js";
 import {guid} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
-import {showModalReact} from "./modal_react.js";
 import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_react";
+
+import {ThemeContext, withTheme} from "./theme"
+import {DialogContext, withDialogs} from "./modal_react";
 
 export {code_viewer_props, CodeViewerApp}
 
@@ -68,10 +70,12 @@ function CodeViewerApp(props) {
     const [usable_height, set_usable_height] = useState(() => {
         return getUsableDimensions(true).usable_height_no_bottom
     });
-    const [dark_theme, set_dark_theme] = useState(() => {
-        return props.initial_theme === "dark"
-    });
+
     const [resource_name, set_resource_name] = useState(props.resource_name);
+
+    const theme = useContext(ThemeContext);
+    const dialogFuncs = useContext(DialogContext);
+
 
     useEffect(() => {
         props.stopSpinner();
@@ -79,7 +83,6 @@ function CodeViewerApp(props) {
             cc_bounding_top.current = cc_ref.current.getBoundingClientRect().top;
         }
         if (!props.controlled) {
-            window.dark_theme = dark_theme;
             window.addEventListener("resize", _update_window_dimensions);
             _update_window_dimensions();
         } else {
@@ -113,17 +116,6 @@ function CodeViewerApp(props) {
         }
     }
 
-    function _setTheme(dark_theme) {
-        set_dark_theme(dark_theme);
-
-        if (!window.in_context) {
-            pushCallback(() => {
-                window.dark_theme = dark_theme
-            })
-        }
-    }
-
-
     function cPropGetters() {
         return {
             usable_width: usable_width,
@@ -143,7 +135,7 @@ function CodeViewerApp(props) {
                 Transfer: [{
                     "name_text": "Copy to library", "icon_name": "import",
                     "click_handler": () => {
-                        copyToLibrary("list", _cProp("resource_name"))
+                        copyToLibrary("list", _cProp("resource_name"), dialogFuncs)
                     }, tooltip: "Copy to library"
                 }]
             }
@@ -170,7 +162,7 @@ function CodeViewerApp(props) {
                         name_text: "Share",
                         icon_name: "share",
                         click_handler: () => {
-                            sendToRepository("list", _cProp("resource_name"))
+                            sendToRepository("list", _cProp("resource_name"), dialogFuncs)
                         },
                         tooltip: "Share to repository"
                     },
@@ -271,8 +263,16 @@ function CodeViewerApp(props) {
         props.startSpinner();
         postWithCallback("host", "get_code_names", {"user_id": window.user_id}, function (data) {
             let checkboxes;
-            showModalReact("Save Code As", "New Code Name", CreateNewList,
-                "NewCode", data["code_names"], null, doCancel)
+            dialogFuncs.showModal("ModalDialog", {
+                    title: "Save Code As",
+                    field_title: "New Code Name",
+                    handleSubmit: CreateNewList,
+                    default_value: "NewCode",
+                    existing_names: data.code_names,
+                    checkboxes: [],
+                    handleCancel: doCancel,
+                    handleClose: dialogFuncs.hideModal,
+                })
         }, null, props.main_id);
 
         function doCancel() {
@@ -300,7 +300,6 @@ function CodeViewerApp(props) {
             (tags_ref.current == savedTags.current) && (notes_ref.current == savedNotes.current))
     }
 
-    let actual_dark_theme = props.controlled ? props.dark_theme : dark_theme;
     let my_props = {...props};
     if (!props.controlled) {
         my_props.resource_name = resource_name;
@@ -315,7 +314,7 @@ function CodeViewerApp(props) {
     };
     let outer_class = "resource-viewer-holder";
     if (!props.controlled) {
-        if (actual_dark_theme) {
+        if (theme.dark_theme) {
             outer_class = outer_class + " bp5-dark";
         } else {
             outer_class = outer_class + " light-theme"
@@ -325,8 +324,6 @@ function CodeViewerApp(props) {
         <Fragment>
             {!props.controlled &&
                 <TacticNavbar is_authenticated={window.is_authenticated}
-                              dark_theme={actual_dark_theme}
-                              setTheme={props.controlled ? props.setTheme : _setTheme}
                               selected={null}
                               show_api_links={true}
                               page_id={props.resource_viewer_id}
@@ -334,8 +331,6 @@ function CodeViewerApp(props) {
             }
             <div className={outer_class} ref={top_ref} style={outer_style}>
                 <ResourceViewerApp {...my_props}
-                                   dark_theme={actual_dark_theme}
-                                   setTheme={props.controlled ? null : _setTheme}
                                    resource_viewer_id={props.resource_viewer_id}
                                    setResourceNameState={_setResourceNameState}
                                    refreshTab={props.refreshTab}
@@ -361,7 +356,6 @@ function CodeViewerApp(props) {
                                    registerOmniFunction={props.registerOmniFunction}
                 >
                     <ReactCodemirror code_content={code_content}
-                                     dark_theme={actual_dark_theme}
                                      am_selected={props.am_selected}
                                      extraKeys={_extraKeys()}
                                      readOnly={props.readOnly}
@@ -416,7 +410,7 @@ CodeViewerApp.defaultProps = {
 
 function code_viewer_main() {
     function gotProps(the_props) {
-        let CodeViewerAppPlus = withErrorDrawer(withStatus(CodeViewerApp));
+        let CodeViewerAppPlus = withTheme(withDialogs(withErrorDrawer(withStatus(CodeViewerApp))));
         let the_element = <CodeViewerAppPlus {...the_props}
                                              controlled={false}
                                              initial_theme={window.theme}

@@ -5,7 +5,6 @@ import {Fragment, useState, useEffect, useRef, memo} from 'react';
 import {TacticOmnibar} from "./TacticOmnibar";
 import {KeyTrap} from "./key_trap";
 import {CombinedMetadata} from "./blueprint_mdata_fields";
-import {showModalReact} from "./modal_react.js";
 import {HorizontalPanes} from "./resizing_layouts.js";
 import {handleCallback, postAjax} from "./communication_react.js"
 import {TacticMenubar} from "./menu_utilities.js"
@@ -16,9 +15,18 @@ import {useConstructor, useConnection} from "./utilities_react";
 
 export {ResourceViewerApp, copyToLibrary, sendToRepository}
 
-function copyToLibrary(res_type, resource_name) {
+function copyToLibrary(res_type, resource_name, dialogFuncs) {
     $.getJSON($SCRIPT_ROOT + `get_resource_names/${res_type}`, function (data) {
-            showModalReact(`Import ${res_type}`, `New ${res_type} Name`, ImportResource, resource_name, data["resource_names"])
+            dialogFuncs.showModal("ModalDialog", {
+                        title: `Import ${res_type}`,
+                        field_title: `New ${res_type} Name`,
+                        handleSubmit: ImportResource,
+                        default_value: resource_name,
+                        existing_names: data.resource_names,
+                        checkboxes: [],
+                        handleCancel: null,
+                        handleClose: dialogFuncs.hideModal,
+                    })
         }
     );
 
@@ -32,9 +40,18 @@ function copyToLibrary(res_type, resource_name) {
     }
 }
 
-function sendToRepository(res_type, resource_name) {
+function sendToRepository(res_type, resource_name, dialogFuncs) {
     $.getJSON($SCRIPT_ROOT + `get_repository_resource_names/${res_type}`, function (data) {
-            showModalReact(`Share ${res_type}`, `New ${res_type} Name`, ShareResource, resource_name, data["resource_names"])
+            dialogFuncs.showModal("ModalDialog", {
+                        title: `Share ${res_type}`,
+                        field_title: `New ${res_type} Name`,
+                        handleSubmit: ShareResource,
+                        default_value: resource_name,
+                        existing_names: data.resource_names,
+                        checkboxes: [],
+                        handleCancel: null,
+                        handleClose: dialogFuncs.hideModal,
+                    })
         }
     );
 
@@ -151,7 +168,6 @@ function ResourceViewerApp(props) {
         <Fragment>
             <TacticMenubar menu_specs={props.menu_specs}
                            connection_status={connection_status}
-                           dark_theme={props.dark_theme}
                            showRefresh={window.in_context}
                            showClose={window.in_context}
                            refreshTab={props.refreshTab}
@@ -178,7 +194,6 @@ function ResourceViewerApp(props) {
                                    showOmnibar={showOmnibar}
                                    closeOmnibar={_closeOmnibar}
                                    is_authenticated={window.is_authenticated}
-                                   dark_theme={props.dark_theme}
                                    setTheme={props.setTheme}
                                    page_id={props.resource_viewer_id}
                     />

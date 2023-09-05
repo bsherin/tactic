@@ -35,6 +35,7 @@ var _sizing_tools = require("./sizing_tools");
 var _error_boundary = require("./error_boundary");
 var _TacticOmnibar = require("./TacticOmnibar");
 var _key_trap = require("./key_trap");
+var _theme = require("./theme");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -106,6 +107,8 @@ function MainApp(props) {
     tile_list = _useReducerAndRef4[0],
     tileDispatch = _useReducerAndRef4[1],
     tile_list_ref = _useReducerAndRef4[2];
+  var theme = (0, _react.useContext)(_theme.ThemeContext);
+  var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var _useReducer = (0, _react.useReducer)(_main_support.mainReducer, {
       table_is_shrunk: iStateOrDefault("table_is_shrunk"),
       console_width_fraction: iStateOrDefault("console_width_fraction"),
@@ -134,7 +137,6 @@ function MainApp(props) {
       cells_to_color_text: {},
       spreadsheet_mode: false,
       // These will maybe only be used if not controlled
-      dark_theme: props.initial_theme === "dark",
       resource_name: props.resource_name,
       showOmnibar: false,
       is_project: props.is_project,
@@ -165,7 +167,6 @@ function MainApp(props) {
     props.stopSpinner();
     if (!props.controlled) {
       document.title = mState.resource_name;
-      window.dark_theme = mState.dark_theme;
       window.addEventListener("resize", _update_window_dimensions);
       _update_window_dimensions();
     }
@@ -289,12 +290,6 @@ function MainApp(props) {
     props.tsocket.attachListener('change-doc', _change_doc_listener);
     props.tsocket.attachListener('handle-callback', function (task_packet) {
       (0, _communication_react.handleCallback)(task_packet, props.main_id);
-    });
-  }
-  function setTheme(dark_theme) {
-    _setMainStateValue("dark_theme", dark_theme);
-    pushCallback(function () {
-      window.dark_theme = dark_theme;
     });
   }
 
@@ -446,7 +441,16 @@ function MainApp(props) {
     } finally {
       _iterator.f();
     }
-    (0, _modal_react.showModalReact)("Create " + menu_id, "New Tile Name", createNewTile, menu_id, existing_tile_names);
+    dialogFuncs.showModal("ModalDialog", {
+      title: "Create " + menu_id,
+      field_title: "New Tile Name",
+      handleSubmit: createNewTile,
+      default_value: menu_id,
+      existing_names: existing_tile_names,
+      checkboxes: [],
+      handleCancel: null,
+      handleClose: dialogFuncs.hideModal
+    });
     function createNewTile(tile_name) {
       props.startSpinner();
       props.statusMessage("Creating Tile " + tile_name);
@@ -793,20 +797,29 @@ function MainApp(props) {
   function _addColumn() {
     var add_in_all = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
     var title = add_in_all ? "Create Column All Documents" : "Create Column This Document";
-    (0, _modal_react.showModalReact)(title, "New Column Name", function (new_name) {
-      var cwidth = (0, _blueprint_table.compute_added_column_width)(new_name);
-      _updateTableSpec({
-        column_names: [].concat(_toConsumableArray(mState.table_spec.column_names), [new_name]),
-        column_widths: [].concat(_toConsumableArray(mState.table_spec.column_widths), [cwidth])
-      }, false);
-      var data_dict = {
-        "column_name": new_name,
-        "doc_name": mState.table_spec.current_doc_name,
-        "column_width": cwidth,
-        "all_docs": add_in_all
-      };
-      _broadcast_event_to_server("CreateColumn", data_dict);
-    }, "newcol", mState.table_spec.column_names);
+    dialogFuncs.showModal("ModalDialog", {
+      title: title,
+      field_title: "New Column Name",
+      handleSubmit: function handleSubmit(new_name) {
+        var cwidth = (0, _blueprint_table.compute_added_column_width)(new_name);
+        _updateTableSpec({
+          column_names: [].concat(_toConsumableArray(mState.table_spec.column_names), [new_name]),
+          column_widths: [].concat(_toConsumableArray(mState.table_spec.column_widths), [cwidth])
+        }, false);
+        var data_dict = {
+          "column_name": new_name,
+          "doc_name": mState.table_spec.current_doc_name,
+          "column_width": cwidth,
+          "all_docs": add_in_all
+        };
+        _broadcast_event_to_server("CreateColumn", data_dict);
+      },
+      default_value: "newcol",
+      existing_names: mState.table_spec.column_names,
+      checkboxes: [],
+      handleCancel: null,
+      handleClose: dialogFuncs.hideModal
+    });
   }
   function _setStateFromDataObject(data, doc_name) {
     var func = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
@@ -941,7 +954,6 @@ function MainApp(props) {
       pushCallback(callback);
     }
   }
-  var actual_dark_theme = props.controlled ? props.dark_theme : mState.dark_theme;
   var vp_height;
   var hp_height;
   var console_available_height;
@@ -1057,7 +1069,6 @@ function MainApp(props) {
     card_body = /*#__PURE__*/_react["default"].createElement(_table_react.FreeformBody, {
       main_id: props.main_id,
       ref: tbody_ref,
-      dark_theme: actual_dark_theme,
       code_container_width: mState.horizontal_fraction * true_usable_width,
       code_container_height: _getTableBodyHeight(table_available_height),
       mState: mState,
@@ -1085,7 +1096,6 @@ function MainApp(props) {
   }, /*#__PURE__*/_react["default"].createElement(_tile_react.TileContainer, {
     main_id: props.main_id,
     tsocket: props.tsocket,
-    dark_theme: actual_dark_theme,
     height: tile_container_height,
     tile_list: tile_list_ref,
     current_doc_name: mState.table_spec.current_doc_name,
@@ -1117,7 +1127,6 @@ function MainApp(props) {
     console_pane = /*#__PURE__*/_react["default"].createElement(_console_component.ConsoleComponent, _extends({}, props.statusFuncs, {
       main_id: props.main_id,
       tsocket: props.tsocket,
-      dark_theme: actual_dark_theme,
       handleCreateViewer: props.handleCreateViewer,
       controlled: props.controlled,
       am_selected: props.am_selected,
@@ -1178,13 +1187,10 @@ function MainApp(props) {
   }
   return /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, !window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
-    dark_theme: actual_dark_theme,
-    setTheme: props.setTheme,
     user_name: window.username,
     menus: null,
     page_id: props.main_id
   }), /*#__PURE__*/_react["default"].createElement(_menu_utilities.TacticMenubar, {
-    dark_theme: actual_dark_theme,
     connection_status: connection_status,
     menus: menus,
     showRefresh: true,
@@ -1199,7 +1205,7 @@ function MainApp(props) {
       icon: mState.table_is_shrunk ? "th" : "th-disconnect"
     }]
   }), /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement("div", {
-    className: "main-outer ".concat(actual_dark_theme ? "bp5-dark" : "light-theme"),
+    className: "main-outer ".concat(theme.dark_theme ? "bp5-dark" : "light-theme"),
     ref: main_outer_ref,
     style: {
       width: "100%",
@@ -1255,7 +1261,7 @@ MainApp.defaultProps = {
 };
 function main_main() {
   function gotProps(the_props) {
-    var MainAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(MainApp));
+    var MainAppPlus = (0, _theme.withTheme)(withDialogs((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(MainApp))));
     var the_element = /*#__PURE__*/_react["default"].createElement(MainAppPlus, _extends({}, the_props, {
       controlled: false,
       initial_theme: window.theme,

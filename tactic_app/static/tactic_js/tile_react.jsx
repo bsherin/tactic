@@ -1,7 +1,7 @@
 // noinspection XmlDeprecatedElement
 
 import React from "react";
-import {useState, useEffect, useRef, memo} from "react";
+import {useState, useEffect, useRef, memo, useContext} from "react";
 import PropTypes from 'prop-types';
 
 import {Icon, Card, Button, ButtonGroup, Spinner, PopoverPosition} from "@blueprintjs/core";
@@ -20,6 +20,8 @@ import {ErrorBoundary} from "./error_boundary";
 import {MenuComponent} from "./menu_utilities"
 import {showConfirmDialogReact} from "./modal_react";
 import {SearchableConsole} from "./searchable_console";
+
+import {ThemeContext} from "./theme";
 
 export {TileContainer, tilesReducer}
 
@@ -105,6 +107,8 @@ function tilesReducer(tile_list, action) {
 }
 
 function TileContainer(props) {
+
+    const theme = useContext(ThemeContext);
 
     useEffect(() => {
         initSocket()
@@ -235,8 +239,7 @@ function TileContainer(props) {
         <SortableComponent id="tile-div"
                            main_id={props.main_id}
                            style={outer_style}
-                           dark_theme={props.dark_theme}
-                           helperClass={props.dark_theme ? "bp5-dark" : "light-theme"}
+                           helperClass={theme.dark_theme ? "bp5-dark" : "light-theme"}
                            goToModule={props.goToModule}
                            ElementComponent={TileComponent}
                            key_field_name="tile_name"
@@ -796,7 +799,6 @@ function TileComponent(props) {
                             {state => (
                                 <div className="back" style={composeObjs(back_style, transitionStylesAltUp[state])}>
                                     <TileForm options={_.cloneDeep(props.form_data)}
-                                              dark_theme={props.dark_theme}
                                               tile_id={props.tile_id}
                                               updateValue={_updateOptionValue}
                                               handleSubmit={_handleSubmitOptions}/>

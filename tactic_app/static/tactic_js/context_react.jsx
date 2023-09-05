@@ -1,4 +1,5 @@
-// noinspection XmlDeprecatedElement
+// noinspection XmlDeprecatedElement,JSXUnresolvedComponent
+
 import "../tactic_css/tactic.scss";
 import "../tactic_css/context.scss";
 import "../tactic_css/tactic_table.scss";
@@ -6,7 +7,7 @@ import "../tactic_css/library_home.scss";
 import "../tactic_css/tile_creator.scss";
 
 import React from "react";
-import {Fragment, useState, useEffect, useRef} from "react";
+import { useState, useEffect, useRef, useContext, Fragment } from "react";
 import * as ReactDOM from 'react-dom'
 
 import {Tab, Tabs, Button, Icon, Spinner} from "@blueprintjs/core";
@@ -22,6 +23,7 @@ import {TacticNavbar} from "./blueprint_navbar";
 import {ErrorBoundary} from "./error_boundary";
 import {icon_dict} from "./blueprint_mdata_fields";
 import {LibraryHomeApp} from "./library_home_react";
+import {PoolBrowser} from "./pool_browser";
 import {view_views} from "./library_pane";
 import {guid} from "./utilities_react";
 import {module_viewer_props, ModuleViewerApp} from "./module_viewer_react";
@@ -41,6 +43,9 @@ import {KeyTrap} from "./key_trap";
 import {DragHandle} from "./resizing_layouts";
 import {res_types} from "./library_pane";
 import {useCallbackStack, useStateAndRef} from "./utilities_react";
+import {ThemeContext, withTheme} from "./theme"
+
+import {withDialogs} from "./modal_react";
 
 const spinner_panel = (
     <div style={{height: "100%", position: "absolute", top: "50%", left: "50%"}}>
@@ -65,7 +70,8 @@ const libIconDict = {
     projects: icon_dict["project"],
     tiles: icon_dict["tile"],
     lists: icon_dict["list"],
-    code: icon_dict["code"]
+    code: icon_dict["code"],
+    pool: icon_dict["pool"],
 };
 const propDict = {
     "module-viewer": module_viewer_props,
@@ -108,7 +114,7 @@ const classDict = {
 };
 
 function _context_main() {
-    const ContextAppPlus = ContextApp;
+    const ContextAppPlus = withTheme(withDialogs(ContextApp));
     const domContainer = document.querySelector('#context-root');
     ReactDOM.render(<ContextAppPlus initial_theme={window.theme} tsocket={tsocket}/>, domContainer)
 }
@@ -123,9 +129,7 @@ function ContextApp(props) {
 
     const [open_resources, set_open_resources] = useState({});
     const [dirty_methods, set_dirty_methods] = useState({});
-    const [dark_theme, set_dark_theme] = useState(() => {
-        return props.initial_theme === "dark"
-    });
+
     const [theme_setters, set_theme_setters] = useState([]);
     const [lastSelectedTabId, setLastSelectedTabId] = useState(null);
     const [usable_width, set_usable_width] = useState(() => {
@@ -139,6 +143,8 @@ function ContextApp(props) {
     const [dragging_over, set_dragging_over] = useState(null);
     const [currently_dragging, set_currently_dragging] = useState(null);
     const [showOmnibar, setShowOmnibar] = useState(false);
+
+    const theme = useContext(ThemeContext);
 
     const [tabSelectCounter, setTabSelectCounter] = useState(0);
 
@@ -163,7 +169,6 @@ function ContextApp(props) {
     }, []);
 
     useEffect(() => {  // for mount
-        window.dark_theme = dark_theme;
         window.addEventListener("resize", () => _update_window_dimensions(null));
         window.addEventListener("beforeunload", function (e) {
             e.preventDefault();
@@ -179,11 +184,6 @@ function ContextApp(props) {
             resizeObserver.observe(tab_list_elem)
         }
     }, []);
-
-    function _setTheme(local_dark_theme) {
-        window.theme = local_dark_theme ? "dark" : "light";
-        set_dark_theme(local_dark_theme)
-    }
 
     function get_tab_list_elem() {
         return document.querySelector("#context-container .context-tab-list > .bp5-tab-list");
@@ -686,8 +686,6 @@ function ContextApp(props) {
                                 controlled={true}
                                 am_selected={selectedTabIdRef.current == "library"}
                                 open_resources={open_resources}
-                                dark_theme={dark_theme}
-                                setTheme={_setTheme}
                                 registerOmniFunction={(register_func) => _registerOmniFunction("library", register_func)}
                                 handleCreateViewer={_handleCreateViewer}
                                 usable_width={usable_width}
@@ -714,8 +712,43 @@ function ContextApp(props) {
             </Tab>
 
     );
-
     let all_tabs = [ltab];
+    if (window.has_pool) {
+        let pclass = "context-tab-button-content";
+        if (selectedTabIdRef.current == "pool") {
+            pclass += " selected-tab-button"
+        }
+
+        const pool_panel = (
+            <div id="pool-browser-root">
+                <PoolBrowser tsocket={tsocket}
+                             am_selected={selectedTabIdRef.current == "pool"}
+                             registerOmniFunction={(register_func) => _registerOmniFunction("pool", register_func)}
+                             usable_width={usable_width}
+                             usable_height={usable_height}/>
+
+            </div>
+        );
+
+        const ptab = (
+            <Tab id="pool" tabIndex={-1} key={"pool"} style={{paddingLeft: 10, marginBottom: 0}}
+                 panelClassName="context-tab" title="" panel={pool_panel}>
+                <div className={pclass + " open-resource-tab"}
+                     style={{display: "flex", flexDirection: "row", width: "100%", justifyContent: "space-between"}}>
+                    <div style={{
+                        display: "table-cell", flexDirection: "row", justifyContent: "flex-start",
+                        textOverflow: "ellipsis", overflow: "hidden"
+                    }}>
+                        <Icon icon={libIconDict["pool"]}
+                              style={{verticalAlign: "middle", marginRight: 5}}
+                              size={16} tabIndex={-1}/>
+                        <span>Pool</span>
+                    </div>
+                </div>
+            </Tab>
+        );
+        all_tabs.push(ptab)
+    }
 
     for (let tab_id of tab_ids_ref.current) {
         let tab_entry = tab_panel_dict_ref.current[tab_id];
@@ -731,9 +764,7 @@ function ContextApp(props) {
             let TheClass = classDict[tab_entry.kind];
             let the_panel = <TheClass {...tab_entry.panel}
                                       controlled={true}
-                                      dark_theme={dark_theme}  // needed for error drawer and status
                                       handleCreateViewer={_handleCreateViewer}
-                                      setTheme={_setTheme}
                                       am_selected={tab_id == selectedTabIdRef.current}
                                       changeResourceName={(new_name, callback = null, change_title = true) => {
                                           _changeResourceName(tab_id, new_name, change_title, callback)
@@ -850,7 +881,7 @@ function ContextApp(props) {
     all_tabs.push(dummy_tab);
 
     let outer_class = "pane-holder ";
-    if (dark_theme) {
+    if (theme.dark_theme) {
         outer_class = `${outer_class} bp5-dark`;
     } else {
         outer_class = `${outer_class} light-theme`;
@@ -886,8 +917,6 @@ function ContextApp(props) {
     return (
         <Fragment>
             <TacticNavbar is_authenticated={window.is_authenticated}
-                          dark_theme={dark_theme}
-                          setTheme={_setTheme}
                           selected={null}
                           show_api_links={false}
                           extra_text={window.database_type == "Local" ? "" : window.database_type}
@@ -929,8 +958,6 @@ function ContextApp(props) {
                                showOmnibar={showOmnibar}
                                closeOmnibar={_closeOmnibar}
                                is_authenticated={window.is_authenticated}
-                               dark_theme={dark_theme}
-                               setTheme={_setTheme}
                 />
             </div>
             <KeyTrap global={true} bindings={key_bindings}/>

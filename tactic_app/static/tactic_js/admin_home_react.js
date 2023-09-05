@@ -20,6 +20,7 @@ var _resource_viewer_context = require("./resource_viewer_context");
 var _error_drawer = require("./error_drawer");
 var _utilities_react = require("./utilities_react");
 var _library_menubars = require("./library_menubars");
+var _theme = require("./theme");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -34,12 +35,12 @@ window.library_id = (0, _utilities_react.guid)();
 var MARGIN_SIZE = 17;
 var tsocket;
 function _administer_home_main() {
-  // render_navbar("library");
   tsocket = new _tactic_socket.TacticSocket("main", 5000, "admin", window.library_id);
-  var AdministerHomeAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(AdministerHomeApp));
+  var AdministerHomeAppPlus = (0, _theme.withTheme)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(AdministerHomeApp)));
   var domContainer = document.querySelector('#library-home-root');
   ReactDOM.render( /*#__PURE__*/_react["default"].createElement(AdministerHomeAppPlus, {
-    tsocket: tsocket
+    tsocket: tsocket,
+    initial_theme: window.theme
   }), domContainer);
 }
 var res_types = ["container", "user"];
@@ -94,15 +95,9 @@ function AdministerHomeApp(props) {
     _useState6 = _slicedToArray(_useState5, 2),
     usable_width = _useState6[0],
     set_usable_width = _useState6[1];
-  var _useState7 = (0, _react.useState)(null),
-    _useState8 = _slicedToArray(_useState7, 2),
-    dark_theme = _useState8[0],
-    set_dark_theme = _useState8[1];
+  var theme = (0, _react.useContext)(_theme.ThemeContext);
   var top_ref = (0, _react.useRef)(null);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
-  (0, _utilities_react.useConstructor)(function () {
-    set_dark_theme(window.theme === "dark");
-  });
   (0, _react.useEffect)(function () {
     initSocket();
     props.stopSpinner();
@@ -153,10 +148,6 @@ function AdministerHomeApp(props) {
   function getIconColor(paneId) {
     return paneId == selected_tab_id ? "white" : "#CED9E0";
   }
-  function _setTheme(local_dark_theme) {
-    window.theme = local_dark_theme ? "dark" : "light";
-    set_dark_theme(local_dark_theme);
-  }
   var container_pane = /*#__PURE__*/_react["default"].createElement(_administer_pane.AdminPane, _extends({}, props, {
     usable_width: usable_width,
     usable_height: usable_height,
@@ -191,16 +182,14 @@ function AdministerHomeApp(props) {
     paddingLeft: 0
   };
   var outer_class = "pane-holder";
-  if (dark_theme) {
+  if (theme.dark_theme) {
     outer_class = "".concat(outer_class, " bp5-dark");
   } else {
     outer_class = "".concat(outer_class, " light-theme");
   }
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
-    dark_theme: dark_theme,
     is_authenticated: window.is_authenticated,
     registerOmniFunction: null,
-    setTheme: _setTheme,
     selected: null,
     show_api_links: false,
     extra_text: "",
@@ -305,7 +294,6 @@ function ContainerMenubar(props) {
     menu_specs: menu_specs(),
     context_menu_items: null,
     multi_select: false,
-    dark_theme: false,
     controlled: false,
     am_selected: false,
     refreshTab: props.refresh_func,
@@ -423,7 +411,6 @@ function UserMenubar(props) {
     menu_specs: menu_specs(),
     context_menu_items: null,
     multi_select: false,
-    dark_theme: false,
     controlled: false,
     am_selected: false,
     refreshTab: props.refresh_func,

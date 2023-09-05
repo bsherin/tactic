@@ -31,7 +31,8 @@ let icon_dict = {
     project: "projects",
     tile: "application",
     list: "list",
-    code: "code"
+    code: "code",
+    pool: "folder-close"
 };
 
 
@@ -530,7 +531,10 @@ function CombinedMetadata(props) {
 
     let addition_field_style = {fontSize: 14};
     let additional_items;
-    let current_notes = waiting.current ? tempNotes : props.notes;
+    let current_notes;
+    if (props.useNotes) {
+        current_notes = waiting.current ? tempNotes : props.notes;
+    }
     if (props.additional_metadata != null) {
         additional_items = [];
         for (let field in props.additional_metadata) {
@@ -555,12 +559,15 @@ function CombinedMetadata(props) {
             {props.name != null &&
                 <H4><Icon icon={icon_dict[props.res_type]}
                           style={{marginRight: 6, marginBottom: 2}}/>{props.name}</H4>}
-            <FormGroup label="Tags">
-                <NativeTags tags={props.tags}
-                            readOnly={props.readOnly}
-                            handleChange={_handleTagsChange}
-                            pane_type={props.pane_type}/>
-            </FormGroup>
+            {props.useTags &&
+                <FormGroup label="Tags">
+                    <NativeTags tags={props.tags}
+                                readOnly={props.readOnly}
+                                handleChange={_handleTagsChange}
+                                pane_type={props.pane_type}/>
+                </FormGroup>
+            }
+
             {props.category != null &&
                 <FormGroup label="Category">
                     <InputGroup onChange={_handleCategoryChange}
@@ -574,15 +581,17 @@ function CombinedMetadata(props) {
                                   handleSelectChange={_handleIconChange}/>
                 </FormGroup>
             }
-            <FormGroup label="Notes">
-                <NotesField notes={current_notes}
-                            readOnly={props.readOnly}
-                            handleChange={_handleNotesChange}
-                            show_markdown_initial={true}
-                            handleBlur={props.handleNotesBlur}
-                />
-                {props.notes_buttons && props.notes_buttons()}
-            </FormGroup>
+            {props.useNotes &&
+                <FormGroup label="Notes">
+                    <NotesField notes={current_notes}
+                                readOnly={props.readOnly}
+                                handleChange={_handleNotesChange}
+                                show_markdown_initial={true}
+                                handleBlur={props.handleNotesBlur}
+                    />
+                    {props.notes_buttons && props.notes_buttons()}
+                </FormGroup>
+            }
             <FormGroup label="Created: " className="metadata-form_group" inline={true}>
                 <span className="bp5-ui-text metadata-field">{props.created}</span>
             </FormGroup>
@@ -617,6 +626,7 @@ function CombinedMetadata(props) {
 CombinedMetadata = memo(CombinedMetadata);
 
 CombinedMetadata.propTypes = {
+    useTags: PropTypes.bool,
     outer_style: PropTypes.object,
     readOnly: PropTypes.bool,
     elevation: PropTypes.number,
@@ -640,6 +650,8 @@ CombinedMetadata.propTypes = {
 };
 
 CombinedMetadata.defaultProps = {
+    useTags: true,
+    useNotes: true,
     outer_style: {marginLeft: 20, overflow: "auto", padding: 15},
     elevation: 0,
     handleNotesBlur: null,

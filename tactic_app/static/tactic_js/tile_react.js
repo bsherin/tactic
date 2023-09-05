@@ -21,6 +21,7 @@ var _error_boundary = require("./error_boundary");
 var _menu_utilities = require("./menu_utilities");
 var _modal_react = require("./modal_react");
 var _searchable_console = require("./searchable_console");
+var _theme = require("./theme");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -120,6 +121,7 @@ function tilesReducer(tile_list, action) {
   return new_items;
 }
 function TileContainer(props) {
+  var theme = (0, _react.useContext)(_theme.ThemeContext);
   (0, _react.useEffect)(function () {
     initSocket();
   }, []);
@@ -266,8 +268,7 @@ function TileContainer(props) {
     id: "tile-div",
     main_id: props.main_id,
     style: outer_style,
-    dark_theme: props.dark_theme,
-    helperClass: props.dark_theme ? "bp5-dark" : "light-theme",
+    helperClass: theme.dark_theme ? "bp5-dark" : "light-theme",
     goToModule: props.goToModule,
     ElementComponent: TileComponent,
     key_field_name: "tile_name",
@@ -897,7 +898,6 @@ function TileComponent(props) {
       style: composeObjs(back_style, transitionStylesAltUp[state])
     }, /*#__PURE__*/_react["default"].createElement(_tile_form_react.TileForm, {
       options: _lodash["default"].cloneDeep(props.form_data),
-      dark_theme: props.dark_theme,
       tile_id: props.tile_id,
       updateValue: _updateOptionValue,
       handleSubmit: _handleSubmitOptions

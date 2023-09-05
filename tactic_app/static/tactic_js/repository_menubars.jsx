@@ -2,7 +2,7 @@ import React from "react";
 import {memo} from "react";
 import PropTypes from 'prop-types';
 
-import {LibraryMenubar} from "./library_menubars.js";
+import {LibraryMenubar} from "./library_menubars";
 
 export {RepositoryCollectionMenubar, RepositoryProjectMenubar, RepositoryTileMenubar,
     RepositoryListMenubar, RepositoryCodeMenubar}
@@ -46,7 +46,6 @@ function RepositoryCollectionMenubar(props) {
 
     return <LibraryMenubar menu_specs={menu_specs()}
                            multi_select={props.multi_select}
-                           dark_theme={props.dark_theme}
                            controlled={props.controlled}
                            am_selected={props.am_selected}
                            tsocket={props.tsocket}
@@ -86,7 +85,6 @@ function RepositoryProjectMenubar(props) {
 
     return <LibraryMenubar menu_specs={menu_specs()}
                            multi_select={props.multi_select}
-                           dark_theme={props.dark_theme}
                            controlled={props.controlled}
                            am_selected={props.am_selected}
                            tsocket={props.tsocket}
@@ -133,7 +131,6 @@ function RepositoryTileMenubar(props) {
 
     return <LibraryMenubar menu_specs={menu_specs()}
                            multi_select={props.multi_select}
-                           dark_theme={props.dark_theme}
                            controlled={props.controlled}
                            am_selected={props.am_selected}
                            tsocket={props.tsocket}
@@ -180,7 +177,6 @@ function RepositoryListMenubar(props) {
 
     return <LibraryMenubar menu_specs={menu_specs()}
                            multi_select={props.multi_select}
-                           dark_theme={props.dark_theme}
                            controlled={props.controlled}
                            am_selected={props.am_selected}
                            tsocket={props.tsocket}
@@ -227,7 +223,6 @@ function RepositoryCodeMenubar(props) {
 
     return <LibraryMenubar menu_specs={menu_specs()}
                            multi_select={props.multi_select}
-                           dark_theme={props.dark_theme}
                            controlled={props.controlled}
                            am_selected={props.am_selected}
                            tsocket={props.tsocket}
