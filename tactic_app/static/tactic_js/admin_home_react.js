@@ -96,11 +96,12 @@ function AdministerHomeApp(props) {
     set_usable_width = _useState6[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var dialogFuncs = (0, _react.useContext)(DialogContext);
+  var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   var top_ref = (0, _react.useRef)(null);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _react.useEffect)(function () {
     initSocket();
-    props.stopSpinner();
+    statusFuncs.stopSpinner();
     window.addEventListener("resize", _update_window_dimensions);
     _update_window_dimensions();
     return function () {
@@ -239,8 +240,9 @@ function AdministerHomeApp(props) {
 }
 AdministerHomeApp = /*#__PURE__*/(0, _react.memo)(AdministerHomeApp);
 function ContainerMenubar(props) {
+  var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   function _doFlashStopSpinner(data) {
-    props.stopSpinner();
+    statusFuncs.stopSpinner();
     (0, _toaster.doFlash)(data);
   }
   function _container_logs() {
@@ -250,15 +252,15 @@ function ContainerMenubar(props) {
     });
   }
   function _clear_user_func(event) {
-    props.startSpinner();
+    statusFuncs.startSpinner();
     $.getJSON($SCRIPT_ROOT + '/clear_user_containers/' + window.library_id, _doFlashStopSpinner);
   }
   function _reset_server_func(event) {
-    props.startSpinner();
+    statusFuncs.startSpinner();
     $.getJSON($SCRIPT_ROOT + '/reset_server/' + library_id, _doFlashStopSpinner);
   }
   function _destroy_container() {
-    props.startSpinner();
+    statusFuncs.startSpinner();
     var cont_id = props.selected_resource.Id;
     $.getJSON($SCRIPT_ROOT + '/kill_container/' + cont_id, function (data) {
       _doFlashStopSpinner(data);
@@ -266,7 +268,7 @@ function ContainerMenubar(props) {
         props.delete_row(cont_id);
       }
     });
-    props.stopSpinner();
+    statusFuncs.stopSpinner();
   }
   function menu_specs() {
     return {

@@ -10,7 +10,7 @@ import {ReactCodemirror} from "./react-codemirror";
 import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app";
 import {TacticSocket} from "./tactic_socket";
 import {postAjaxPromise, postWithCallback} from "./communication_react.js"
-import {doFlash, withStatus} from "./toaster.js"
+import {doFlash, withStatus, StatusContext} from "./toaster.js"
 
 import {getUsableDimensions, BOTTOM_MARGIN} from "./sizing_tools.js";
 import {withErrorDrawer} from "./error_drawer.js";
@@ -75,10 +75,10 @@ function CodeViewerApp(props) {
 
     const theme = useContext(ThemeContext);
     const dialogFuncs = useContext(DialogContext);
-
+    const statusFuncs = useContext(StatusContext);
 
     useEffect(() => {
-        props.stopSpinner();
+        statusFuncs.stopSpinner();
         if (cc_ref && cc_ref.current) {
             cc_bounding_top.current = cc_ref.current.getBoundingClientRect().top;
         }
@@ -260,7 +260,7 @@ function CodeViewerApp(props) {
     }
 
     function _saveMeAs(e) {
-        props.startSpinner();
+        statusFuncs.startSpinner();
         postWithCallback("host", "get_code_names", {"user_id": window.user_id}, function (data) {
             let checkboxes;
             dialogFuncs.showModal("ModalDialog", {
@@ -276,7 +276,7 @@ function CodeViewerApp(props) {
         }, null, props.main_id);
 
         function doCancel() {
-            props.stopSpinner()
+            statusFuncs.stopSpinner()
         }
 
         function CreateNewList(new_name) {

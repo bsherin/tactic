@@ -1,7 +1,7 @@
 'use strict';
 
 import React from "react";
-import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
+import {Fragment, useState, useEffect, useRef, memo, useContext, createContext} from "react";
 import PropTypes from 'prop-types';
 
 import {OverlayToaster, Position, Spinner} from "@blueprintjs/core";
@@ -9,7 +9,10 @@ import {GlyphButton} from "./blueprint_react_widgets";
 
 import {useCallbackStack} from "./utilities_react";
 import {ThemeContext} from "./theme"
-export {doFlash, doFlashAlways, withStatus, Status}
+
+const StatusContext = createContext(null);
+
+export {doFlash, doFlashAlways, withStatus, StatusContext}
 
 const DEFAULT_TIMEOUT = 20000;
 
@@ -184,16 +187,10 @@ function withStatus(WrappedComponent) {
 
         return (
             <Fragment>
-                <WrappedComponent {...props}
-                                  statusSocket={props.tsocket}
-                                  statusFuncs={_statusFuncs}
-                                  startSpinner={_startSpinner}
-                                  stopSpinner={_stopSpinner}
-                                  clearStatus={_clearStatus}
-                                  clearStatusMessage={_clearStatus}
-                                  statusMessage={_statusMessage}
-                                  setStatus={_setStatus}
-                />
+                <StatusContext.Provider value={_statusFuncs}>
+                    <WrappedComponent {...props}
+                    />
+                </StatusContext.Provider>
                 <Status show_spinner={show_spinner}
                         status_message={status_message}
                         spinner_size={spinner_size}

@@ -23,6 +23,7 @@ import {res_types} from "./library_pane";
 
 import {ThemeContext, withTheme} from "./theme";
 import {withDialogs} from "./modal_react";
+import {StatusContext} from "./toaster"
 
 import {
     RepositoryCollectionMenubar, RepositoryProjectMenubar, RepositoryTileMenubar,
@@ -92,6 +93,7 @@ function RepositoryHomeApp(props) {
     const [usable_width, set_usable_width] = useState(getUsableDimensions(true).usable_width - 170);
 
     const theme = useContext(ThemeContext);
+    const statusFuncs = useContext(StatusContext);
 
     const top_ref = useRef(null);
 
@@ -105,7 +107,7 @@ function RepositoryHomeApp(props) {
 
     useEffect(() => {
         initSocket();
-        props.stopSpinner();
+        statusFuncs.stopSpinner();
         if (!props.controlled) {
             window.addEventListener("resize", _update_window_dimensions);
             _update_window_dimensions();

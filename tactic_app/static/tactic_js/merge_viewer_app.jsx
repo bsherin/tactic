@@ -11,6 +11,7 @@ import {TacticMenubar} from "./menu_utilities";
 import {TacticOmnibar} from "./TacticOmnibar";
 import {KeyTrap} from "./key_trap";
 import {ThemeContext} from "./theme"
+import {StatusContext} from "./toaster";
 
 export {MergeViewerApp}
 
@@ -22,6 +23,7 @@ function MergeViewerApp(props) {
 
     const [inner_height, set_inner_height] = useState(window.innerHeight);
     const theme = useContext(ThemeContext);
+    const statusFuncs = useContext(StatusContext);
 
     // These only matter if not controlled
     const [showOmnibar, setShowOmnibar] = useState(false);
@@ -37,7 +39,7 @@ function MergeViewerApp(props) {
         window.addEventListener("resize", resize_to_window);
         props.handleSelectChange(props.select_val);
         resize_to_window();
-        props.stopSpinner();
+        statusFuncs.stopSpinner();
     }, []);
 
     function menu_specs() {

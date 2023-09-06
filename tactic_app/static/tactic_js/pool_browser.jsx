@@ -374,9 +374,6 @@ function PoolBrowser(props) {
                               registerOmniGetter={props.registerOmniGetter}
                               multi_select={multi_select_ref.current}
                               list_of_selected={list_of_selected_ref.current}
-                              startSpinner={props.startSpinner}
-                              stopSpinner={props.stopSpinner}
-                              clearStatusMessage={props.clearStatusMessage}
                               sendContextMenuItems={setContextMenuItems}
                               {...props.errorDrawerFuncs}
                               library_id={props.library_id}

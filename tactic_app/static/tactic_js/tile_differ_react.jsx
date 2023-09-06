@@ -136,8 +136,7 @@ function TileDifferApp(props) {
                           user_name={window.username}/>
         }
 
-            <MergeViewerApp {...props.statusFuncs}
-                            connection_status={connection_status}
+            <MergeViewerApp connection_status={connection_status}
                             page_id={props.resource_viewer_id}
                             resource_viewer_id={props.resource_viewer_id}
                             resource_name={props.resource_name}

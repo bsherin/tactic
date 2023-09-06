@@ -21,7 +21,7 @@ import {CombinedMetadata} from "./blueprint_mdata_fields";
 import {OptionModule, ExportModule, CommandsModule} from "./creator_modules_react";
 import {HorizontalPanes, VerticalPanes} from "./resizing_layouts";
 import {postAjax, postAjaxPromise, postWithCallback} from "./communication_react"
-import {withStatus, doFlash} from "./toaster"
+import {withStatus, doFlash, StatusContext} from "./toaster"
 import {getUsableDimensions, SIDE_MARGIN} from "./sizing_tools";
 import {withErrorDrawer} from "./error_drawer";
 import {renderSpinnerMessage} from "./utilities_react"
@@ -108,6 +108,7 @@ function CreatorApp(props) {
 
     const theme = useContext(ThemeContext);
     const dialogFuncs = useContext(DialogContext);
+    const statusFuncs = useContext(StatusContext);
 
     const pushCallback = useCallbackStack();
 
@@ -144,7 +145,7 @@ function CreatorApp(props) {
         _goToLineNumber();
         _update_saved_state();
         props.setGoToLineNumber(_selectLineNumber);
-        props.stopSpinner();
+        statusFuncs.stopSpinner();
         return (() => {
             delete_my_container()
         })
@@ -350,7 +351,7 @@ function CreatorApp(props) {
     }
 
     function _doFlashStopSpinner(data) {
-        props.clearStatus();
+        statusFuncs.clearStatus();
         doFlash(data)
     }
 
@@ -360,7 +361,7 @@ function CreatorApp(props) {
     }
 
     function _logErrorStopSpinner(title, data = {}) {
-        props.stopSpinner();
+        statusFuncs.stopSpinner();
         let entry = {title: title, content: data.message};
         if ("line_number" in data) {
             entry.line_number = data.line_number
@@ -380,10 +381,10 @@ function CreatorApp(props) {
     }
 
     function _saveAndLoadModule() {
-        props.startSpinner();
+        statusFuncs.startSpinner();
         doSavePromise()
             .then(function () {
-                props.statusMessage("Loading Module");
+                statusFuncs.statusMessage("Loading Module");
                 postWithCallback(
                     "host",
                     "load_tile_module_task",
@@ -407,8 +408,8 @@ function CreatorApp(props) {
     }
 
     function _loadModule() {
-        props.startSpinner();
-        props.statusMessage("Loading Module");
+        statusFuncs.startSpinner();
+        statusFuncs.statusMessage("Loading Module");
         postWithCallback(
             "host",
             "load_tile_module_task",
@@ -428,7 +429,7 @@ function CreatorApp(props) {
     }
 
     function _saveModuleAs() {
-        props.startSpinner();
+        statusFuncs.startSpinner();
         postWithCallback("host", "get_tile_names", {"user_id": window.user_id}, function (data) {
             let checkboxes;
                 dialogFuncs.showModal("ModalDialog", {
@@ -444,7 +445,7 @@ function CreatorApp(props) {
         }, null, props.main_id);
 
         function doCancel() {
-            props.stopSpinner()
+            statusFuncs.stopSpinner()
         }
 
         function CreateNewModule(new_name) {
@@ -468,8 +469,8 @@ function CreatorApp(props) {
         if (!props.am_selected) {
             return false
         }
-        props.startSpinner();
-        props.statusMessage("Saving Module");
+        statusFuncs.startSpinner();
+        statusFuncs.statusMessage("Saving Module");
         doSavePromise()
             .then(_doFlashStopSpinner)
             .catch((data) => {
@@ -480,10 +481,10 @@ function CreatorApp(props) {
 
 
     function _saveAndCheckpoint() {
-        props.startSpinner();
+        statusFuncs.startSpinner();
         doSavePromise()
             .then(function () {
-                props.statusMessage("Checkpointing");
+                statusFuncs.statusMessage("Checkpointing");
                 doCheckpointPromise()
                     .then(_doFlashStopSpinner)
                     .catch((data) => {

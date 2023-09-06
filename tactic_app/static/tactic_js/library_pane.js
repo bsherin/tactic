@@ -24,6 +24,7 @@ var _key_trap = require("./key_trap.js");
 var _utilities_react = require("./utilities_react");
 var _theme = require("./theme");
 var _modal_react = require("./modal_react");
+var _toaster2 = require("./toaster");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -224,6 +225,7 @@ function LibraryPane(props) {
     setRowChanged = _useState12[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
+  var statusFuncs = (0, _react.useContext)(_toaster2.StatusContext);
   var stateSetters = {
     data_dict: set_data_dict,
     num_rows: set_num_rows,
@@ -660,7 +662,7 @@ function LibraryPane(props) {
   function _handleRowDoubleClick(row_dict) {
     var view_view = view_views(props.is_repository)[row_dict.res_type];
     if (view_view == null) return;
-    props.setStatus({
+    statusFuncs.setStatus({
       show_spinner: true,
       status_message: "Opening ..."
     });
@@ -676,13 +678,13 @@ function LibraryPane(props) {
           context_id: context_id,
           resource_name: row_dict.name
         }).then(function (data) {
-          props.handleCreateViewer(data, props.clearStatus);
+          props.handleCreateViewer(data, statusFuncs.clearStatus);
         })["catch"](function (data) {
           (0, _toaster.doFlash)(data);
-          props.clearStatus();
+          statusFuncs.clearStatus();
         });
       } else {
-        props.clearStatus();
+        statusFuncs.clearStatus();
         window.open($SCRIPT_ROOT + view_view + row_dict.name);
       }
     });
@@ -848,7 +850,7 @@ function LibraryPane(props) {
     if (the_view == null) {
       the_view = view_views(props.is_repository)[selected_resource_ref.current.res_type];
     }
-    props.setStatus({
+    statusFuncs.setStatus({
       show_spinner: true,
       status_message: "Opening ..."
     });
@@ -859,23 +861,23 @@ function LibraryPane(props) {
         context_id: context_id,
         resource_name: selected_resource_ref.current.name
       }).then(function (data) {
-        props.handleCreateViewer(data, props.clearStatus);
+        props.handleCreateViewer(data, statusFuncs.clearStatus);
       })["catch"](function (data) {
         (0, _toaster.doFlash)(data);
-        props.clearstatus();
+        statusFuncs.clearstatus();
       });
     } else {
-      props.clearStatus();
+      statusFuncs.clearStatus();
       window.open($SCRIPT_ROOT + the_view + selected_resource_ref.current.name);
     }
   }
   function _open_raw(selected_resource) {
-    props.clearStatus();
+    statusFuncs.clearStatus();
     if (selected_resource.type == "freeform") {
       window.open($SCRIPT_ROOT + "/open_raw/" + selected_resource.name);
     } else {
       // doFlash("Only Freeform documents can be raw opened")
-      props.statusMessage("Only Freeform documents can be raw opened", 5);
+      statusFuncs.statusMessage("Only Freeform documents can be raw opened", 5);
     }
   }
   function _view_resource(selected_resource) {
@@ -885,7 +887,7 @@ function LibraryPane(props) {
     if (the_view == null) {
       the_view = view_views(props.is_repository)[selected_resource.res_type];
     }
-    props.setStatus({
+    statusFuncs.setStatus({
       show_spinner: true,
       status_message: "Opening ..."
     });
@@ -896,13 +898,13 @@ function LibraryPane(props) {
         context_id: context_id,
         resource_name: resource_name
       }).then(function (data) {
-        props.handleCreateViewer(data, props.clearStatus);
+        props.handleCreateViewer(data, statusFuncs.clearStatus);
       })["catch"](function (data) {
         (0, _toaster.doFlash)(data);
-        props.clearstatus();
+        statusFuncs.clearstatus();
       });
     } else {
-      props.clearStatus();
+      statusFuncs.clearStatus();
       window.open($SCRIPT_ROOT + the_view + resource_name);
     }
   }
@@ -1169,10 +1171,10 @@ function LibraryPane(props) {
     var res_name = selected_resource_ref.current.name;
     if (!multi_select_ref.current) {
       var doTheCombine = function doTheCombine(other_name) {
-        props.startSpinner(true);
+        statusFuncs.startSpinner(true);
         var target = "".concat($SCRIPT_ROOT, "/combine_collections/").concat(res_name, "/").concat(other_name);
         $.post(target, function (data) {
-          props.stopSpinner();
+          statusFuncs.stopSpinner();
           if (!data.success) {
             props.addErrorDrawerEntry({
               title: "Error combining collections",
@@ -1751,9 +1753,6 @@ function LibraryPane(props) {
     selected_rows: selected_rows_ref.current,
     selected_type: selected_type
   }, _menu_funcs(), {
-    startSpinner: props.startSpinner,
-    stopSpinner: props.stopSpinner,
-    clearStatusMessage: props.clearStatusMessage,
     sendContextMenuItems: setContextMenuItems,
     view_resource: _view_resource,
     open_raw: _open_raw

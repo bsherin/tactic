@@ -102,6 +102,7 @@ function ModuleViewerApp(props) {
     set_search_matches = _useState6[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
+  var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
 
   // The following only are used if not in context
   var _useState7 = (0, _react.useState)(function () {
@@ -121,7 +122,7 @@ function ModuleViewerApp(props) {
     resource_name = _useState12[0],
     set_resource_name = _useState12[1];
   (0, _react.useEffect)(function () {
-    props.stopSpinner();
+    statusFuncs.stopSpinner();
     if (cc_ref && cc_ref.current) {
       cc_bounding_top.current = cc_ref.current.getBoundingClientRect().top;
     }
@@ -274,8 +275,8 @@ function ModuleViewerApp(props) {
     }
   }
   function _doFlashStopSpinner(data) {
-    props.stopSpinner();
-    props.clearStatusMessage();
+    statusFuncs.stopSpinner();
+    statusFuncs.clearStatusMessage();
     (0, _toaster.doFlash)(data);
   }
   function get_new_cc_height() {
@@ -313,8 +314,8 @@ function ModuleViewerApp(props) {
     if (!props.am_selected) {
       return false;
     }
-    props.startSpinner();
-    props.statusMessage("Saving Module");
+    statusFuncs.startSpinner();
+    statusFuncs.statusMessage("Saving Module");
     doSavePromise().then(_doFlashStopSpinner)["catch"](_doFlashStopSpinner);
     return false;
   }
@@ -352,7 +353,7 @@ function ModuleViewerApp(props) {
     });
   }
   function _saveModuleAs() {
-    props.startSpinner();
+    statusFuncs.startSpinner();
     (0, _communication_react.postWithCallback)("host", "get_tile_names", {
       "user_id": window.user_id
     }, function (data) {
@@ -369,7 +370,7 @@ function ModuleViewerApp(props) {
       });
     }, null, props.main_id);
     function doCancel() {
-      props.stopSpinner();
+      statusFuncs.stopSpinner();
     }
     function CreateNewModule(new_name) {
       var result_dict = {
@@ -384,9 +385,9 @@ function ModuleViewerApp(props) {
     }
   }
   function _saveAndLoadModule() {
-    props.startSpinner();
+    statusFuncs.startSpinner();
     doSavePromise().then(function () {
-      props.statusMessage("Loading Module");
+      statusFuncs.statusMessage("Loading Module");
       (0, _communication_react.postWithCallback)("host", "load_tile_module_task", {
         "tile_module_name": _cProp("resource_name"),
         "user_id": window.user_id
@@ -401,8 +402,8 @@ function ModuleViewerApp(props) {
     }
   }
   function _loadModule() {
-    props.startSpinner();
-    props.statusMessage("Loading Module");
+    statusFuncs.startSpinner();
+    statusFuncs.statusMessage("Loading Module");
     (0, _communication_react.postWithCallback)("host", "load_tile_module_task", {
       "tile_module_name": _cProp("resource_name"),
       "user_id": window.user_id
@@ -416,9 +417,9 @@ function ModuleViewerApp(props) {
     }
   }
   function _saveAndCheckpoint() {
-    props.startSpinner();
+    statusFuncs.startSpinner();
     doSavePromise().then(function () {
-      props.statusMessage("Checkpointing");
+      statusFuncs.statusMessage("Checkpointing");
       doCheckpointPromise().then(_doFlashStopSpinner)["catch"](_doFlashStopSpinner);
     })["catch"](_doFlashStopSpinner);
     return false;

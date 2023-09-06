@@ -7,7 +7,7 @@ import * as ReactDOM from 'react-dom'
 
 import { FormGroup, InputGroup, Button } from "@blueprintjs/core";
 
-import {doFlash, withStatus} from "./toaster"
+import {doFlash, withStatus, StatusContext} from "./toaster"
 import {postAjax} from "./communication_react";
 import {guid} from "./utilities_react";
 import {TacticNavbar, get_theme_cookie} from "./blueprint_navbar";
@@ -31,6 +31,7 @@ function LoginApp(props) {
     const [username_warning_text, set_username_warning_text] = useState("");
     const [password_warning_text, set_password_warning_text] = useState("");
     const theme = useContext(ThemeContext);
+    const statusFuncs = useContext(StatusContext);
     const pushCallback = useCallbackStack();
 
     const inputRef = useRef(null);
@@ -48,7 +49,7 @@ function LoginApp(props) {
     }
 
     function _submit_login_info() {
-        props.setStatus({show_spinner: true, status_message: "Attempting login ..."});
+        statusFuncs.setStatus({show_spinner: true, status_message: "Attempting login ..."});
         const data = {};
         if (username == "") {
             set_username_warning_text("Username cannot be empty");
@@ -68,7 +69,7 @@ function LoginApp(props) {
 
     function _return_from_submit_login(data) {
         console.log("returned from attempt login with data.login " + String(data.logged_in));
-        props.clearStatus();
+        statusFuncs.clearStatus();
         if (data.logged_in) {
              window.open($SCRIPT_ROOT + window._next_view, "_self")
         }

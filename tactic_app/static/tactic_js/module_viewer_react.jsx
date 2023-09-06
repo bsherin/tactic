@@ -15,7 +15,7 @@ import {ReactCodemirror} from "./react-codemirror";
 import {postAjax, postAjaxPromise, postWithCallback} from "./communication_react"
 import {doFlash} from "./toaster"
 import {withErrorDrawer} from "./error_drawer";
-import {withStatus} from "./toaster";
+import {withStatus, StatusContext} from "./toaster";
 
 import {getUsableDimensions, BOTTOM_MARGIN} from "./sizing_tools";
 import {guid} from "./utilities_react";
@@ -70,6 +70,7 @@ function ModuleViewerApp(props) {
 
     const theme = useContext(ThemeContext);
     const dialogFuncs = useContext(DialogContext);
+    const statusFuncs = useContext(StatusContext);
 
     // The following only are used if not in context
     const [usable_width, set_usable_width] = useState(() => {
@@ -81,7 +82,7 @@ function ModuleViewerApp(props) {
     const [resource_name, set_resource_name] = useState(props.resource_name);
 
     useEffect(() => {
-        props.stopSpinner();
+        statusFuncs.stopSpinner();
         if (cc_ref && cc_ref.current) {
             cc_bounding_top.current = cc_ref.current.getBoundingClientRect().top;
         }
@@ -230,8 +231,8 @@ function ModuleViewerApp(props) {
     }
 
     function _doFlashStopSpinner(data) {
-        props.stopSpinner();
-        props.clearStatusMessage();
+        statusFuncs.stopSpinner();
+        statusFuncs.clearStatusMessage();
         doFlash(data)
     }
 
@@ -272,8 +273,8 @@ function ModuleViewerApp(props) {
         if (!props.am_selected) {
             return false
         }
-        props.startSpinner();
-        props.statusMessage("Saving Module");
+        statusFuncs.startSpinner();
+        statusFuncs.statusMessage("Saving Module");
         doSavePromise()
             .then(_doFlashStopSpinner)
             .catch(_doFlashStopSpinner);
@@ -315,7 +316,7 @@ function ModuleViewerApp(props) {
     }
 
     function _saveModuleAs() {
-        props.startSpinner();
+        statusFuncs.startSpinner();
         postWithCallback("host", "get_tile_names", {"user_id": window.user_id}, function (data) {
             let checkboxes;
             dialogFuncs.showModal("ModalDialog", {
@@ -331,7 +332,7 @@ function ModuleViewerApp(props) {
         }, null, props.main_id);
 
         function doCancel() {
-            props.stopSpinner()
+            statusFuncs.stopSpinner()
         }
 
         function CreateNewModule(new_name) {
@@ -352,10 +353,10 @@ function ModuleViewerApp(props) {
     }
 
     function _saveAndLoadModule() {
-        props.startSpinner();
+        statusFuncs.startSpinner();
         doSavePromise()
             .then(function () {
-                props.statusMessage("Loading Module");
+                statusFuncs.statusMessage("Loading Module");
                 postWithCallback(
                     "host",
                     "load_tile_module_task",
@@ -376,8 +377,8 @@ function ModuleViewerApp(props) {
     }
 
     function _loadModule() {
-        props.startSpinner();
-        props.statusMessage("Loading Module");
+        statusFuncs.startSpinner();
+        statusFuncs.statusMessage("Loading Module");
         postWithCallback(
             "host",
             "load_tile_module_task",
@@ -397,10 +398,10 @@ function ModuleViewerApp(props) {
     }
 
     function _saveAndCheckpoint() {
-        props.startSpinner();
+        statusFuncs.startSpinner();
         doSavePromise()
             .then(function () {
-                props.statusMessage("Checkpointing");
+                statusFuncs.statusMessage("Checkpointing");
                 doCheckpointPromise()
                     .then(_doFlashStopSpinner)
                     .catch(_doFlashStopSpinner)

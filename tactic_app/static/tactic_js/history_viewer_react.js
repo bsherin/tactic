@@ -85,6 +85,7 @@ function HistoryViewerApp(props) {
     set_resource_name = _useState10[1];
   var connection_status = (0, _utilities_react2.useConnection)(props.tsocket, initSocket);
   var savedContent = (0, _react.useRef)(props.edit_content);
+  var statusFuncs = useContext(_toaster.StatusContext);
   var pushCallback = (0, _utilities_react2.useCallbackStack)();
   (0, _react.useEffect)(function () {
     window.addEventListener("beforeunload", function (e) {
@@ -180,7 +181,7 @@ function HistoryViewerApp(props) {
     show_api_links: true,
     page_id: props.resource_viewer_id,
     user_name: window.username
-  }), /*#__PURE__*/_react["default"].createElement(_merge_viewer_app.MergeViewerApp, _extends({}, props.statusFuncs, {
+  }), /*#__PURE__*/_react["default"].createElement(_merge_viewer_app.MergeViewerApp, {
     connection_status: connection_status,
     page_id: props.resource_viewer_id,
     resource_viewer_id: props.resource_viewer_id,
@@ -192,7 +193,7 @@ function HistoryViewerApp(props) {
     handleSelectChange: handleSelectChange,
     handleEditChange: handleEditChange,
     saveHandler: checkpointThenSaveFromLeft
-  })));
+  }));
 }
 HistoryViewerApp.propTypes = {
   resource_name: _propTypes["default"].string,

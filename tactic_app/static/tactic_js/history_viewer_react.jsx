@@ -10,7 +10,7 @@ import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
 import {MergeViewerApp} from "./merge_viewer_app";
-import {doFlash} from "./toaster.js"
+import {doFlash, StatusContext} from "./toaster.js"
 import {postAjax, postAjaxPromise} from "./communication_react.js"
 import {withErrorDrawer} from "./error_drawer.js";
 import {withStatus} from "./toaster.js";
@@ -75,6 +75,7 @@ function HistoryViewerApp(props) {
 
     const savedContent = useRef(props.edit_content);
 
+    const statusFuncs = useContext(StatusContext);
     const pushCallback = useCallbackStack();
 
     useEffect(()=>{
@@ -169,8 +170,7 @@ function HistoryViewerApp(props) {
                                   page_id={props.resource_viewer_id}
                                   user_name={window.username}/>
                 }
-                <MergeViewerApp {...props.statusFuncs}
-                                connection_status={connection_status}
+                <MergeViewerApp connection_status={connection_status}
                                 page_id={props.resource_viewer_id}
                                 resource_viewer_id={props.resource_viewer_id}
                                 resource_name={props.resource_name}
