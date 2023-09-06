@@ -33,8 +33,8 @@ if [ $do_git == "True" ] ; then
   git config --global user.name "bsherin"
   git config --global user.password "gtoken"
   git commit -a
-  git push origin master
-  # git push "https://bsherin:${gtoken}@github.com/bsherin/tactic"
+  # git push origin master
+  git push "https://bsherin:${gtoken}@github.com/bsherin/tactic"
 fi
 
 ssh -i /Users/brucesherin/PycharmProjects/tactic/LightsailDefaultKey-us-east-2.pem centos@tactictext.net \
