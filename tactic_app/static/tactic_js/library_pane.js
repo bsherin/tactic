@@ -262,9 +262,11 @@ function LibraryPane(props) {
   }, []);
   var pushCallback = (0, _utilities_react.useCallbackStack)("library_home");
   function setState(new_state) {
+    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     for (var attr in new_state) {
       stateSetters[attr](new_state[attr]);
     }
+    pushCallback(callback);
   }
   function initSocket() {
     if (props.tsocket != null && !props.is_repository) {
