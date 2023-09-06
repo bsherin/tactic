@@ -27,6 +27,7 @@ import {LibraryMenubar} from "./library_menubars";
 import {useCallbackStack, useStateAndRef} from "./utilities_react";
 
 import {ThemeContext, withTheme} from "./theme";
+import {DialogContext} from "./modal_react";
 import {StatusContext} from "./toaster"
 
 window.library_id = guid();
