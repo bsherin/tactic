@@ -175,10 +175,11 @@ function LibraryPane(props) {
 
     const pushCallback = useCallbackStack("library_home");
 
-    function setState(new_state) {
+    function setState(new_state, callback=null) {
         for (let attr in new_state) {
             stateSetters[attr](new_state[attr])
         }
+        pushCallback(callback)
     }
 
     function initSocket() {
