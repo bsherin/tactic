@@ -24,7 +24,6 @@ var _resizing_layouts = require("./resizing_layouts");
 var _main_menus_react = require("./main_menus_react");
 var _tile_react = require("./tile_react");
 var _export_viewer_react = require("./export_viewer_react");
-var _modal_react = require("./modal_react");
 var _console_component = require("./console_component");
 var _console_support = require("./console_support");
 var _communication_react = require("./communication_react");
@@ -36,6 +35,7 @@ var _error_boundary = require("./error_boundary");
 var _TacticOmnibar = require("./TacticOmnibar");
 var _key_trap = require("./key_trap");
 var _theme = require("./theme");
+var _modal_react = require("./modal_react");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -858,8 +858,15 @@ function MainApp(props) {
     (0, _communication_react.postWithCallback)("host", "get_collection_names", {
       "user_id": user_id
     }, function (data) {
-      var option_names = data["collection_names"];
-      (0, _modal_react.showSelectDialog)("Select New Collection", "New Collection", "Cancel", "Submit", changeTheCollection, option_names);
+      dialogFuncs.showModal("SelectDialog", {
+        title: "Select New Collection",
+        select_label: "New Collection",
+        cancel_text: "Cancel",
+        submit_text: "Submit",
+        handleSubmit: changeTheCollection,
+        option_list: data.collection_names,
+        handleClose: dialogFuncs.hideModal
+      });
     }, null, props.main_id);
     function changeTheCollection(new_collection_name) {
       var result_dict = {
@@ -1029,10 +1036,10 @@ function MainApp(props) {
     is_juptyer: props.is_jupyter,
     deleteRow: _deleteRow,
     insertRowBefore: function insertRowBefore() {
-      _insertRow(mStateRef.current.selected_row);
+      _insertRow(mState.selected_row);
     },
     insertRowAfter: function insertRowAfter() {
-      _insertRow(mStateRef.current.selected_row + 1);
+      _insertRow(mState.selected_row + 1);
     },
     duplicateRow: _duplicateRow,
     selected_row: mState.selected_row,
@@ -1261,7 +1268,7 @@ MainApp.defaultProps = {
 };
 function main_main() {
   function gotProps(the_props) {
-    var MainAppPlus = (0, _theme.withTheme)(withDialogs((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(MainApp))));
+    var MainAppPlus = (0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(MainApp))));
     var the_element = /*#__PURE__*/_react["default"].createElement(MainAppPlus, _extends({}, the_props, {
       controlled: false,
       initial_theme: window.theme,

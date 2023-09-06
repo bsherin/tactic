@@ -4,9 +4,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" =
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.showFileImportDialog = showFileImportDialog;
+exports.FileImportDialog = FileImportDialog;
 var _react = _interopRequireWildcard(require("react"));
-var ReactDOM = _interopRequireWildcard(require("react-dom"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _reactDropzoneComponent = _interopRequireDefault(require("react-dropzone-component"));
 require("../css/dzcss/dropzone.css");
@@ -38,7 +37,7 @@ function FileImportDialog(props) {
   var name_counter = (0, _react.useRef)(1);
   var default_name = (0, _react.useRef)("new" + props.res_type);
   var picker_ref = (0, _react.useRef)(null);
-  var existing_names = (0, _react.useRef)(props.existing_names);
+  var existing_names = (0, _react.useRef)([]);
   var current_url = (0, _react.useRef)("dummy");
   var myDropzone = (0, _react.useRef)(null);
   var _useState = (0, _react.useState)(false),
@@ -90,13 +89,16 @@ function FileImportDialog(props) {
     set_csv_options_open = _useState20[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   (0, _utilities_react.useConstructor)(function () {
-    while (_name_exists(default_name)) {
-      name_counter.current += 1;
-      default_name.current = "new" + props.res_type + String(name_counter.current);
-    }
+    $.getJSON("".concat($SCRIPT_ROOT, "get_resource_names/").concat(props.res_type), function (data) {
+      existing_names.current = data.resource_names;
+      while (_name_exists(default_name)) {
+        name_counter.current += 1;
+        default_name.current = "new" + props.res_type + String(name_counter.current);
+      }
+      set_show(true);
+    });
   });
   (0, _react.useEffect)(function () {
-    set_show(true);
     if (props.checkboxes != null && props.checkboxes.length != 0) {
       var lcheckbox_states = {};
       var _iterator = _createForOfIteratorHelper(props.checkboxes),
@@ -367,8 +369,8 @@ function FileImportDialog(props) {
     className: theme.dark_theme ? "import-dialog bp5-dark" : "import-dialog light-theme",
     title: props.title,
     onClose: _closeHandler,
-    canOutsideClickClose: false,
-    canEscapeKeyClose: false
+    canOutsideClickClose: true,
+    canEscapeKeyClose: true
   }, /*#__PURE__*/_react["default"].createElement("div", {
     className: _core.Classes.DIALOG_BODY
   }, /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
@@ -478,36 +480,3 @@ FileImportDialog.defaultProps = {
   after_upload: null,
   show_address_selector: false
 };
-FileImportDialog = (0, _theme.withTheme)(FileImportDialog);
-function showFileImportDialog(res_type, allowed_file_types, checkboxes, process_handler, tsocket) {
-  var combine = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : false;
-  var show_csv_options = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : false;
-  var after_upload = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : null;
-  var show_address_selector = arguments.length > 8 && arguments[8] !== undefined ? arguments[8] : false;
-  var initial_address = arguments.length > 9 && arguments[9] !== undefined ? arguments[9] : null;
-  $.getJSON("".concat($SCRIPT_ROOT, "get_resource_names/").concat(res_type), function (data) {
-    showTheDialog(data["resource_names"]);
-  });
-  function showTheDialog(existing_names) {
-    var domContainer = document.querySelector('#modal-area');
-    function handle_close() {
-      ReactDOM.unmountComponentAtNode(domContainer);
-    }
-    ReactDOM.render( /*#__PURE__*/_react["default"].createElement(FileImportDialog, {
-      title: "Import ".concat(res_type),
-      tsocket: tsocket,
-      res_type: res_type,
-      allowed_file_types: allowed_file_types,
-      existing_names: existing_names,
-      checkboxes: checkboxes,
-      process_handler: process_handler,
-      combine: combine,
-      show_csv_options: show_csv_options,
-      initial_theme: window.dark_theme ? "dark" : "light",
-      after_upload: after_upload,
-      show_address_selector: show_address_selector,
-      initial_address: initial_address,
-      handleClose: handle_close
-    }), domContainer);
-  }
-}

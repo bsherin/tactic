@@ -30,10 +30,10 @@ var _code_viewer_react = require("./code_viewer_react");
 var _list_viewer_react = require("./list_viewer_react");
 var _error_drawer = require("./error_drawer");
 var _sizing_tools = require("./sizing_tools");
-var _modal_react = require("./modal_react");
 var _key_trap = require("./key_trap");
 var _resizing_layouts = require("./resizing_layouts");
 var _theme = require("./theme");
+var _modal_react = require("./modal_react");
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
@@ -196,6 +196,7 @@ function ContextApp(props) {
     showOmnibar = _useState24[0],
     setShowOmnibar = _useState24[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
+  var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var _useState25 = (0, _react.useState)(0),
     _useState26 = _slicedToArray(_useState25, 2),
     tabSelectCounter = _useState26[0],
@@ -316,7 +317,15 @@ function ContextApp(props) {
     if (!(the_id in dirty_methods) || dirty_methods[the_id]()) {
       var title = tab_panel_dict_ref.current[the_id].title;
       var confirm_text = "Are you sure that you want to reload the tab ".concat(title, "? Changes will be lost");
-      (0, _modal_react.showConfirmDialogReact)("reload the tab ".concat(title), confirm_text, "do nothing", "reload", do_the_refresh);
+      dialogFuncs.showModal("ConfirmDialog", {
+        title: "Reload the tab ".concat(title),
+        text_body: confirm_text,
+        cancel_text: "do nothing",
+        submit_text: "reload",
+        handleSubmit: do_the_refresh,
+        handleClose: dialogFuncs.hideModal,
+        handleCancel: null
+      });
     } else {
       do_the_refresh();
     }
@@ -396,8 +405,16 @@ function ContextApp(props) {
     if (!(the_id in dirty_methods) || dirty_methods[the_id]()) {
       var title = tab_panel_dict_ref.current[the_id].title;
       var confirm_text = "Are you sure that you want to close the tab ".concat(title, "? Changes will be lost");
-      (0, _modal_react.showConfirmDialogReact)("close the tab ".concat(title, "\""), confirm_text, "do nothing", "close", function () {
-        _closeATab(the_id);
+      dialogFuncs.showModal("ConfirmDialog", {
+        title: "Close the tab ".concat(title, "\""),
+        text_body: confirm_text,
+        cancel_text: "do nothing",
+        submit_text: "close",
+        handleSubmit: function handleSubmit() {
+          _closeATab(the_id);
+        },
+        handleClose: dialogFuncs.hideModal,
+        handleCancel: null
       });
     } else {
       _closeATab(the_id);

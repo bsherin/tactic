@@ -8,7 +8,6 @@ import markdownItLatex from 'markdown-it-latex'
 const mdi = markdownIt({html: true});
 mdi.use(markdownItLatex);
 
-import {showPresentationDialog, showReportDialog} from "./modal_react";
 import {postWithCallback} from "./communication_react"
 import {doFlash} from "./toaster"
 import {MenuComponent, ToolMenu} from "./menu_utilities";
@@ -140,8 +139,13 @@ function ProjectMenu(props) {
 
     function _exportAsPresentation() {
         postWithCallback("host", "get_collection_names", {"user_id": user_id}, function (data) {
-                // noinspection JSUnusedAssignment
-                showPresentationDialog(ExportPresentation, data["collection_names"])
+                dialogFuncs.showModal("PresentationDialog", {
+                    handleSubmit: ExportPresentation,
+                    default_value: "NewPresentation",
+                    existing_names: data.collection_names,
+                    handleCancel: null,
+                    handleClose: dialogFuncs.hideModal
+                })
             }, null, props.main_id);
         function ExportPresentation(use_dark_theme, save_as_collection, collection_name) {
             var cell_list = [];
@@ -208,8 +212,13 @@ function ProjectMenu(props) {
 
     function _exportAsReport() {
         postWithCallback("host", "get_collection_names", {"user_id": user_id}, function (data) {
-                // noinspection JSUnusedAssignment
-                showReportDialog(ExportRport, data["collection_names"])
+                dialogFuncs.showModal("ReportDialog", {
+                        handleSubmit: ExportRport,
+                        default_value: "NewReport",
+                        existing_names: data.collection_names,
+                        handleCancel: null,
+                        handleClose: dialogFuncs.hideModal
+                    })
             }, null, props.main_id);
         function ExportRport(collapsible, include_summaries, use_dark_theme, save_as_collection, collection_name) {
             var cell_list = [];
@@ -413,6 +422,8 @@ ProjectMenu.propTypes = {
 ProjectMenu = memo(ProjectMenu);
 
 function DocumentMenu(props) {
+
+    const dialogFuncs = useContext(DialogContext);
 
     function _newDocument() {
         props.startSpinner();

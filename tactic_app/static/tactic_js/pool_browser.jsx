@@ -10,11 +10,9 @@ import {CombinedMetadata, icon_dict} from "./blueprint_mdata_fields";
 import {PoolTree, getBasename, splitFilePath, getFileParentPath} from "./pool_tree";
 import {HorizontalPanes} from "./resizing_layouts";
 import {postAjax, postAjaxPromise, postWithCallback} from "./communication_react";
-import {showConfirmDialogReact, showModalAddressSelector} from "./modal_react";
 import {withErrorDrawer} from "./error_drawer";
 import {withStatus} from "./toaster";
 import {doFlash} from "./toaster";
-import {showFileImportDialog} from "./import_dialog";
 import {ThemeContext} from "./theme";
 
 import {DialogContext} from "./modal_react";
@@ -119,8 +117,15 @@ function PoolBrowser(props) {
         else {
             initial_address = getFileParentPath(sNode.fullpath)
         }
-        showModalAddressSelector(`Add a Pool Directory`, AddDirectory, "folder",
-            initial_address, "New Directory", true);
+        dialogFuncs.showModal("SelectAddressDialog", {
+            title: "Add a Pool Directory",
+            handleSubmit: AddDirectory,
+            selectType: "folder",
+            initial_address: initial_address,
+            initial_name: "New Directory",
+            showName: true,
+            handleClose: dialogFuncs.hideModal,
+        });
         function AddDirectory(full_path) {
             const the_data = {full_path: full_path};
             postAjax(`create_pool_directory`, the_data, addSuccess);
@@ -147,7 +152,16 @@ function PoolBrowser(props) {
         const src = sNode.fullpath;
         const [initial_address, initial_name] = splitFilePath(sNode.fullpath);
 
-        showModalAddressSelector(`Duplicate a file`, DupFile, "folder", initial_address, initial_name, true);
+        dialogFuncs.showModal("SelectAddressDialog", {
+            title: "Duplicate a file",
+            handleSubmit: DupFile,
+            selectType: "folder",
+            initial_address: initial_address,
+            initial_name: initial_name,
+            showName: true,
+            handleClose: dialogFuncs.hideModal,
+        });
+
         function DupFile(dst) {
             const the_data = {dst, src};
             postAjax(`duplicate_pool_file`, the_data, addSuccess);
@@ -176,8 +190,15 @@ function PoolBrowser(props) {
             initial_address = getFileParentPath(sNode.fullpath)
         }
 
-        showModalAddressSelector(`Select a destination for ${getBasename(src)}`, MoveResource, "folder",
-            initial_address, "", false);
+        dialogFuncs.showModal("SelectAddressDialog", {
+            title: `Select a destination for ${getBasename(src)}`,
+            handleSubmit: MoveResource,
+            selectType: "folder",
+            initial_address: initial_address,
+            initial_name: "",
+            showName: false,
+            handleClose: dialogFuncs.hideModal,
+        });
         function MoveResource(dst) {
             if (src == dst) return;
             const the_data = {dst: dst, src: src};
@@ -205,12 +226,20 @@ function PoolBrowser(props) {
         const basename = getBasename(path);
         const confirm_text = `Are you sure that you want to delete ${basename}?`;
 
-        showConfirmDialogReact(`Delete resource`, confirm_text, "do nothing", "delete", function () {
-            postAjaxPromise("delete_pool_resource", {full_path: path, is_directory: sNode.isDirectory})
-                .then(()=>{return true})
-                .catch((data)=>{
-                    props.addErrorDrawerEntry({title: "Error deleting resource", content: data.message})
-                })
+        dialogFuncs.showModal("ConfirmDialog", {
+            title: "Delete resource",
+            text_body: confirm_text,
+            cancel_text: "do nothing",
+            submit_text: "delete",
+            handleSubmit: ()=>{
+                postAjaxPromise("delete_pool_resource", {full_path: path, is_directory: sNode.isDirectory})
+                    .then(()=>{return true})
+                    .catch((data)=>{
+                        props.addErrorDrawerEntry({title: "Error deleting resource", content: data.message})
+                    })
+            },
+            handleClose: dialogFuncs.hideModal,
+            handleCancel: null
         });
     }
 
@@ -227,9 +256,20 @@ function PoolBrowser(props) {
         if (sNode && sNode.isDirectory) {
             initial_directory = sNode.fullpath
         }
-        showFileImportDialog("pool", null,
-            [], _add_to_pool,
-            props.tsocket, false, false, null, true, initial_directory)
+        dialogFuncs.showModal("FileImportDialog", {
+            res_type: "pool",
+            allowed_file_types: null,
+            checkboxes: [],
+            process_handler: _add_to_pool,
+            tsocket: props.tsocket,
+            combine: false,
+            show_csv_options: false,
+            after_upload: null,
+            show_address_selector: true,
+            initial_address: initial_directory,
+            handleClose: dialogFuncs.hideModal,
+            handleCancel: null
+        });
     }
 
     function _handleSplitResize(left_width, right_width, width_fraction) {

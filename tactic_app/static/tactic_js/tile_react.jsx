@@ -18,10 +18,10 @@ import {doFlash} from "./toaster"
 import {arrayMove, useCallbackStack} from "./utilities_react";
 import {ErrorBoundary} from "./error_boundary";
 import {MenuComponent} from "./menu_utilities"
-import {showConfirmDialogReact} from "./modal_react";
 import {SearchableConsole} from "./searchable_console";
 
 import {ThemeContext} from "./theme";
+import {DialogContext} from "./modal_react";
 
 export {TileContainer, tilesReducer}
 
@@ -308,6 +308,7 @@ function TileComponent(props) {
     const [dheight, set_dheight] = useState(0);
 
     const pushCallback = useCallbackStack();
+    const dialogFuncs = useContext(DialogContext);
 
     useEffect(() => {
         _broadcastTileSize(props.tile_width, props.tile_height);
@@ -406,8 +407,16 @@ function TileComponent(props) {
     }
 
     function _closeTile() {
-        showConfirmDialogReact("Delete Tile", `Delete tile ${props.tile_name}`, "do nothing", "delete", function () {
-            props.handleClose(props.tile_id);
+        dialogFuncs.showModal("ConfirmDialog", {
+            title: "Delete Tile",
+            text_body: `Delete tile ${props.tile_name}`,
+            cancel_text: "do nothing",
+            submit_text: "delete",
+            handleSubmit: ()=>{
+                props.handleClose(props.tile_id);
+            },
+            handleClose: dialogFuncs.hideModal,
+            handleCancel: null
         });
     }
 

@@ -13,10 +13,6 @@ function withTheme(WrappedComponent) {
             return props.initial_theme === "dark"
         });
 
-        useEffect(()=>{
-            window.dark_theme = dark_theme
-        }, [dark_theme]);
-
         const pushCallback = useCallbackStack();
 
         function setTheme(local_dark_theme) {

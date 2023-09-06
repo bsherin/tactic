@@ -9,7 +9,7 @@ import {Fragment, useState, useEffect, memo, useRef} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
-import {MergeViewerApp} from "./merge_viewer_app.js";
+import {MergeViewerApp} from "./merge_viewer_app";
 import {doFlash} from "./toaster.js"
 import {postAjax, postAjaxPromise} from "./communication_react.js"
 import {withErrorDrawer} from "./error_drawer.js";

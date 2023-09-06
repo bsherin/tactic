@@ -20,10 +20,10 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 var _markdownIt = _interopRequireDefault(require("markdown-it"));
 require("markdown-it-latex/dist/index.css");
 var _markdownItLatex = _interopRequireDefault(require("markdown-it-latex"));
-var _modal_react = require("./modal_react");
 var _communication_react = require("./communication_react");
 var _toaster = require("./toaster");
 var _menu_utilities = require("./menu_utilities");
+var _modal_react = require("./modal_react");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -147,8 +147,13 @@ function ProjectMenu(props) {
     (0, _communication_react.postWithCallback)("host", "get_collection_names", {
       "user_id": user_id
     }, function (data) {
-      // noinspection JSUnusedAssignment
-      (0, _modal_react.showPresentationDialog)(ExportPresentation, data["collection_names"]);
+      dialogFuncs.showModal("PresentationDialog", {
+        handleSubmit: ExportPresentation,
+        default_value: "NewPresentation",
+        existing_names: data.collection_names,
+        handleCancel: null,
+        handleClose: dialogFuncs.hideModal
+      });
     }, null, props.main_id);
     function ExportPresentation(use_dark_theme, save_as_collection, collection_name) {
       var cell_list = [];
@@ -220,8 +225,13 @@ function ProjectMenu(props) {
     (0, _communication_react.postWithCallback)("host", "get_collection_names", {
       "user_id": user_id
     }, function (data) {
-      // noinspection JSUnusedAssignment
-      (0, _modal_react.showReportDialog)(ExportRport, data["collection_names"]);
+      dialogFuncs.showModal("ReportDialog", {
+        handleSubmit: ExportRport,
+        default_value: "NewReport",
+        existing_names: data.collection_names,
+        handleCancel: null,
+        handleClose: dialogFuncs.hideModal
+      });
     }, null, props.main_id);
     function ExportRport(collapsible, include_summaries, use_dark_theme, save_as_collection, collection_name) {
       var cell_list = [];
@@ -466,6 +476,7 @@ ProjectMenu.propTypes = {
 };
 exports.ProjectMenu = ProjectMenu = /*#__PURE__*/(0, _react.memo)(ProjectMenu);
 function DocumentMenu(props) {
+  var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   function _newDocument() {
     props.startSpinner();
     dialogFuncs.showModal("ModalDialog", {

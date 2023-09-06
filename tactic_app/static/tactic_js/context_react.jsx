@@ -37,7 +37,6 @@ import {code_viewer_props, CodeViewerApp} from "./code_viewer_react";
 import {list_viewer_props, ListViewerApp} from "./list_viewer_react";
 import {withErrorDrawer} from "./error_drawer";
 import {getUsableDimensions, USUAL_TOOLBAR_HEIGHT} from "./sizing_tools";
-import {showConfirmDialogReact} from "./modal_react";
 import {postAjaxPromise} from "./communication_react";
 import {KeyTrap} from "./key_trap";
 import {DragHandle} from "./resizing_layouts";
@@ -45,7 +44,7 @@ import {res_types} from "./library_pane";
 import {useCallbackStack, useStateAndRef} from "./utilities_react";
 import {ThemeContext, withTheme} from "./theme"
 
-import {withDialogs} from "./modal_react";
+import {withDialogs, DialogContext} from "./modal_react";
 
 const spinner_panel = (
     <div style={{height: "100%", position: "absolute", top: "50%", left: "50%"}}>
@@ -145,6 +144,7 @@ function ContextApp(props) {
     const [showOmnibar, setShowOmnibar] = useState(false);
 
     const theme = useContext(ThemeContext);
+    const dialogFuncs = useContext(DialogContext);
 
     const [tabSelectCounter, setTabSelectCounter] = useState(0);
 
@@ -282,7 +282,15 @@ function ContextApp(props) {
         if (!(the_id in dirty_methods) || dirty_methods[the_id]()) {
             const title = tab_panel_dict_ref.current[the_id].title;
             const confirm_text = `Are you sure that you want to reload the tab ${title}? Changes will be lost`;
-            showConfirmDialogReact(`reload the tab ${title}`, confirm_text, "do nothing", "reload", do_the_refresh)
+            dialogFuncs.showModal("ConfirmDialog", {
+                title: `Reload the tab ${title}`,
+                text_body: confirm_text,
+                cancel_text: "do nothing",
+                submit_text: "reload",
+                handleSubmit: do_the_refresh,
+                handleClose: dialogFuncs.hideModal,
+                handleCancel: null
+            });
         } else {
             do_the_refresh()
         }
@@ -357,10 +365,17 @@ function ContextApp(props) {
         if (!(the_id in dirty_methods) || dirty_methods[the_id]()) {
             const title = tab_panel_dict_ref.current[the_id].title;
             const confirm_text = `Are you sure that you want to close the tab ${title}? Changes will be lost`;
-            showConfirmDialogReact(`close the tab ${title}"`, confirm_text, "do nothing",
-                "close", () => {
-                    _closeATab(the_id)
-                })
+            dialogFuncs.showModal("ConfirmDialog", {
+                title: `Close the tab ${title}"`,
+                text_body: confirm_text,
+                cancel_text: "do nothing",
+                submit_text: "close",
+                handleSubmit: ()=>{
+                     _closeATab(the_id)
+                },
+                handleClose: dialogFuncs.hideModal,
+                handleCancel: null
+            });
         } else {
             _closeATab(the_id)
         }

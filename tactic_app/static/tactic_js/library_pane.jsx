@@ -13,15 +13,12 @@ import {TagButtonList} from "./tag_buttons_react";
 import {CombinedMetadata, icon_dict} from "./blueprint_mdata_fields";
 import {SearchForm, BpSelectorTable} from "./library_widgets";
 import {HorizontalPanes} from "./resizing_layouts";
-import {showConfirmDialogReact} from "./modal_react";
 import {postAjax, postAjaxPromise, postWithCallback} from "./communication_react"
 import {BOTTOM_MARGIN} from "./sizing_tools";
 
 import {doFlash} from "./toaster.js"
 import {KeyTrap} from "./key_trap.js";
 import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_react";
-import {showFileImportDialog} from "./import_dialog";
-import {showSelectDialog} from "./modal_react";
 import {ThemeContext} from "./theme"
 
 import {DialogContext} from "./modal_react";
@@ -802,7 +799,12 @@ function LibraryPane(props) {
                 first_index = ind
             }
         }
-        showConfirmDialogReact(`Delete resources`, confirm_text, "do nothing", "delete", function () {
+        dialogFuncs.showModal("ConfirmDialog", {
+            title: "Delete resources",
+            text_body: confirm_text,
+            cancel_text: "do nothing",
+            submit_text: "delete",
+            handleSubmit: ()=>{
             postAjaxPromise("delete_resource_list", {"resource_list": res_list})
                 .then(() => {
                     let new_index = 0;
@@ -811,8 +813,10 @@ function LibraryPane(props) {
                     }
                     _grabNewChunkWithRow(new_index, true, null, true)
                 })
-            // .catch(doFlash);
-        })
+            },
+            handleClose: dialogFuncs.hideModal,
+            handleCancel: null
+        });
     }
 
     function _rename_func(row = null) {
@@ -996,9 +1000,20 @@ function LibraryPane(props) {
     }
 
     function _showJupyterImport() {
-        showFileImportDialog("project", ".ipynb",
-            [], _import_jupyter,
-            props.tsocket, false, false)
+        dialogFuncs.showModal("FileImportDialog", {
+            res_type: "project",
+            allowed_file_types: ".ipynb",
+            checkboxes: [],
+            process_handler: _import_jupyter,
+            tsocket: props.tsocket,
+            combine: false,
+            show_csv_options: false,
+            after_upload: null,
+            show_address_selector: false,
+            initial_address: null,
+            handleClose: dialogFuncs.hideModal,
+            handleCancel: null
+        });
     }
 
     function _import_jupyter(myDropZone, setCurrentUrl) {
@@ -1012,8 +1027,15 @@ function LibraryPane(props) {
         var res_name = selected_resource_ref.current.name;
         if (!multi_select_ref.current) {
             $.getJSON(`${$SCRIPT_ROOT}get_resource_names/collection`, function (data) {
-                showSelectDialog("Select a new collection to combine with " + res_name, "Collection to Combine",
-                    "Cancel", "Combine", doTheCombine, data["resource_names"])
+                dialogFuncs.showModal("SelectDialog", {
+                    title: "Select a new collection to combine with " + res_name,
+                    select_label: "Collection to Combine",
+                    cancel_text: "Cancel",
+                    submit_text: "Combine",
+                    handleSubmit: doTheCombine,
+                    option_list: data.resource_names,
+                    handleClose: dialogFuncs.hideModal,
+                })
             });
 
             function doTheCombine(other_name) {
@@ -1091,9 +1113,20 @@ function LibraryPane(props) {
     }
 
     function _showCollectionImport() {
-        showFileImportDialog("collection", ".csv,.tsv,.txt,.xls,.xlsx,.html",
-            [{"checkname": "import_as_freeform", "checktext": "Import as freeform"}], _import_collection,
-            props.tsocket, true, true, _refresh_func)
+        dialogFuncs.showModal("FileImportDialog", {
+            res_type: "collection",
+            allowed_file_types: ".csv,.tsv,.txt,.xls,.xlsx,.html",
+            checkboxes: [{"checkname": "import_as_freeform", "checktext": "Import as freeform"}],
+            process_handler: _import_collection,
+            tsocket: props.tsocket,
+            combine: true,
+            show_csv_options: true,
+            after_upload: _refresh_func,
+            show_address_selector: false,
+            initial_address: null,
+            handleClose: dialogFuncs.hideModal,
+            handleCancel: null
+        });
     }
 
     function _import_collection(myDropZone, setCurrentUrl, new_name, check_results, csv_options = null) {
@@ -1282,9 +1315,20 @@ function LibraryPane(props) {
     }
 
     function _showListImport() {
-        showFileImportDialog("list", "text/*",
-            [], _add_list,
-            props.tsocket, false, false)
+        dialogFuncs.showModal("FileImportDialog", {
+            res_type: "list",
+            allowed_file_types: "text/*",
+            checkboxes: [],
+            process_handler: _add_list,
+            tsocket: props.tsocket,
+            combine: false,
+            show_csv_options: false,
+            after_upload: null,
+            show_address_selector: false,
+            initial_address: null,
+            handleClose: dialogFuncs.hideModal,
+            handleCancel: null
+        });
     }
 
     function _add_to_pool(myDropZone, setCurrentUrl, current_value) {
@@ -1295,9 +1339,20 @@ function LibraryPane(props) {
     }
 
     function _showPoolImport() {
-        showFileImportDialog("pool", null,
-            [], _add_to_pool,
-            props.tsocket, false, false, null, true)
+        dialogFuncs.showModal("FileImportDialog", {
+            res_type: "pool",
+            allowed_file_types: null,
+            checkboxes: [],
+            process_handler: _add_to_pool,
+            tsocket: props.tsocket,
+            combine: false,
+            show_csv_options: false,
+            after_upload: null,
+            show_address_selector: true,
+            initial_address: null,
+            handleClose: dialogFuncs.hideModal,
+            handleCancel: null
+        });
     }
 
     function _new_code(template_name) {

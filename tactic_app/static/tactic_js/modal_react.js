@@ -5,24 +5,16 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.DialogContext = void 0;
-exports.SelectResourceDialog = SelectResourceDialog;
-exports.showConfirmDialogReact = showConfirmDialogReact;
-exports.showModalAddressSelector = showModalAddressSelector;
-exports.showModalReact = showModalReact;
-exports.showPresentationDialog = showPresentationDialog;
-exports.showReportDialog = showReportDialog;
-exports.showSelectDialog = showSelectDialog;
-exports.showSelectResourceDialog = showSelectResourceDialog;
 exports.withDialogs = withDialogs;
 var _react = _interopRequireWildcard(require("react"));
-var ReactDOM = _interopRequireWildcard(require("react-dom"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
-var _utilities_react = require("./utilities_react");
 var _core = require("@blueprintjs/core");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
+var _utilities_react = require("./utilities_react");
 var _communication_react = require("./communication_react");
 var _pool_tree = require("./pool_tree");
 var _theme = require("./theme");
+var _import_dialog = require("./import_dialog");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -36,6 +28,16 @@ function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefine
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 var DialogContext = /*#__PURE__*/(0, _react.createContext)(null);
 exports.DialogContext = DialogContext;
+var dialogDict = {
+  ModalDialog: ModalDialog,
+  PresentationDialog: PresentationDialog,
+  ReportDialog: ReportDialog,
+  SelectDialog: SelectDialog,
+  SelectAddressDialog: SelectAddressDialog,
+  SelectResourceDialog: SelectResourceDialog,
+  ConfirmDialog: ConfirmDialog,
+  FileImportDialog: _import_dialog.FileImportDialog
+};
 function withDialogs(WrappedComponent) {
   function ModalFunc(props) {
     // When state was dealt with in this way updates weren't getting batched and
@@ -62,14 +64,18 @@ function withDialogs(WrappedComponent) {
         keyCounter: 0
       });
     }
+    var DialogComponent = null;
+    if (state.modalType in dialogDict) {
+      DialogComponent = dialogDict[state.modalType];
+    }
     return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(DialogContext.Provider, {
       value: {
         showModal: showModal,
         hideModal: hideModal
       }
-    }, /*#__PURE__*/_react["default"].createElement(WrappedComponent, props)), /*#__PURE__*/_react["default"].createElement("div", null, state.modalType == "ModalDialog" && /*#__PURE__*/_react["default"].createElement(ModalDialog, _extends({
+    }, /*#__PURE__*/_react["default"].createElement(WrappedComponent, props)), /*#__PURE__*/_react["default"].createElement("div", null, DialogComponent && /*#__PURE__*/_react["default"].createElement(DialogComponent, _extends({
       key: state.keyCounter,
-      isOpen: state.modalType == "ModalDialog"
+      isOpen: state.modalType == state.modalType
     }, state.dialogProps))));
   }
   return /*#__PURE__*/(0, _react.memo)(ModalFunc);
@@ -220,28 +226,6 @@ ModalDialog.defaultProps = {
   default_value: "",
   checkboxes: null
 };
-function showModalReact(modal_title, field_title, submit_function, default_value, existing_names) {
-  var checkboxes = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : null;
-  var cancel_function = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : null;
-  if (typeof existing_names == "undefined") {
-    existing_names = [];
-  }
-  var domContainer = document.querySelector('#modal-area');
-  function handle_close() {
-    ReactDOM.unmountComponentAtNode(domContainer);
-  }
-  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(ModalDialog, {
-    handleSubmit: submit_function,
-    handleCancel: cancel_function,
-    handleClose: handle_close,
-    initial_theme: window.dark_theme ? "dark" : "light",
-    title: modal_title,
-    field_title: field_title,
-    default_value: default_value,
-    checkboxes: checkboxes,
-    existing_names: existing_names
-  }), domContainer);
-}
 function PresentationDialog(props) {
   var _useState3 = (0, _react.useState)(false),
     _useState4 = _slicedToArray(_useState3, 2),
@@ -251,18 +235,19 @@ function PresentationDialog(props) {
     _useState6 = _slicedToArray(_useState5, 2),
     save_as_collection = _useState6[0],
     set_save_as_collection = _useState6[1];
+  var _useStateAndRef7 = (0, _utilities_react.useStateAndRef)(null),
+    _useStateAndRef8 = _slicedToArray(_useStateAndRef7, 3),
+    collection_name = _useStateAndRef8[0],
+    set_collection_name = _useStateAndRef8[1],
+    collection_name_ref = _useStateAndRef8[2];
   var _useState7 = (0, _react.useState)(null),
     _useState8 = _slicedToArray(_useState7, 2),
-    collection_name = _useState8[0],
-    set_collection_name = _useState8[1];
-  var _useState9 = (0, _react.useState)(null),
+    use_dark_theme = _useState8[0],
+    set_use_dark_theme = _useState8[1];
+  var _useState9 = (0, _react.useState)(""),
     _useState10 = _slicedToArray(_useState9, 2),
-    use_dark_theme = _useState10[0],
-    set_use_dark_theme = _useState10[1];
-  var _useState11 = (0, _react.useState)(""),
-    _useState12 = _slicedToArray(_useState11, 2),
-    warning_text = _useState12[0],
-    set_warning_text = _useState12[1];
+    warning_text = _useState10[0],
+    set_warning_text = _useState10[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var input_ref = (0, _react.useRef)(null);
   (0, _react.useEffect)(function () {
@@ -342,7 +327,7 @@ function PresentationDialog(props) {
   }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
     inputRef: _refHandler,
     onChange: _changeName,
-    value: collection_name
+    value: collection_name_ref.current
   }))), /*#__PURE__*/_react["default"].createElement("div", {
     className: _core.Classes.DIALOG_FOOTER
   }, /*#__PURE__*/_react["default"].createElement("div", {
@@ -354,7 +339,7 @@ function PresentationDialog(props) {
     onClick: _submitHandler
   }, "Submit")))));
 }
-PresentationDialog = /*#__PURE__*/(0, _react.memo)((0, _theme.withTheme)(PresentationDialog));
+PresentationDialog = /*#__PURE__*/(0, _react.memo)(PresentationDialog);
 PresentationDialog.propTypes = {
   handleSubmit: _propTypes["default"].func,
   handleClose: _propTypes["default"].func,
@@ -365,53 +350,35 @@ PresentationDialog.defaultProps = {
   existing_names: [],
   default_name: ""
 };
-function showPresentationDialog(submit_function, existing_names) {
-  var cancel_function = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-  if (typeof existing_names == "undefined") {
-    existing_names = [];
-  }
-  var domContainer = document.querySelector('#modal-area');
-  function handle_close() {
-    ReactDOM.unmountComponentAtNode(domContainer);
-  }
-  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(PresentationDialog, {
-    handleSubmit: submit_function,
-    handleCancel: cancel_function,
-    handleClose: handle_close,
-    initial_theme: window.dark_theme ? "dark" : "light",
-    default_name: "NewPresentation",
-    existing_names: existing_names
-  }), domContainer);
-}
 function ReportDialog(props) {
+  var _useState11 = (0, _react.useState)(false),
+    _useState12 = _slicedToArray(_useState11, 2),
+    show = _useState12[0],
+    set_show = _useState12[1];
   var _useState13 = (0, _react.useState)(false),
     _useState14 = _slicedToArray(_useState13, 2),
-    show = _useState14[0],
-    set_show = _useState14[1];
-  var _useState15 = (0, _react.useState)(false),
+    save_as_collection = _useState14[0],
+    set_save_as_collection = _useState14[1];
+  var _useState15 = (0, _react.useState)(null),
     _useState16 = _slicedToArray(_useState15, 2),
-    save_as_collection = _useState16[0],
-    set_save_as_collection = _useState16[1];
+    collection_name = _useState16[0],
+    set_collection_name = _useState16[1];
   var _useState17 = (0, _react.useState)(null),
     _useState18 = _slicedToArray(_useState17, 2),
-    collection_name = _useState18[0],
-    set_collection_name = _useState18[1];
-  var _useState19 = (0, _react.useState)(null),
+    use_dark_theme = _useState18[0],
+    set_use_dark_theme = _useState18[1];
+  var _useState19 = (0, _react.useState)(""),
     _useState20 = _slicedToArray(_useState19, 2),
-    use_dark_theme = _useState20[0],
-    set_use_dark_theme = _useState20[1];
-  var _useState21 = (0, _react.useState)(""),
+    warning_text = _useState20[0],
+    set_warning_text = _useState20[1];
+  var _useState21 = (0, _react.useState)(false),
     _useState22 = _slicedToArray(_useState21, 2),
-    warning_text = _useState22[0],
-    set_warning_text = _useState22[1];
+    collapsible = _useState22[0],
+    set_collapsible = _useState22[1];
   var _useState23 = (0, _react.useState)(false),
     _useState24 = _slicedToArray(_useState23, 2),
-    collapsible = _useState24[0],
-    set_collapsible = _useState24[1];
-  var _useState25 = (0, _react.useState)(false),
-    _useState26 = _slicedToArray(_useState25, 2),
-    include_summaries = _useState26[0],
-    set_include_summaries = _useState26[1];
+    include_summaries = _useState24[0],
+    set_include_summaries = _useState24[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var input_ref = (0, _react.useRef)(null);
   (0, _react.useEffect)(function () {
@@ -472,7 +439,7 @@ function ReportDialog(props) {
   return /*#__PURE__*/_react["default"].createElement(_core.Dialog, {
     isOpen: show,
     className: theme.dark_theme ? "bp5-dark" : "",
-    title: "Create Presentation",
+    title: "Create Report",
     onClose: _cancelHandler,
     canEscapeKeyClose: true
   }, /*#__PURE__*/_react["default"].createElement("form", {
@@ -521,7 +488,7 @@ function ReportDialog(props) {
     onClick: _submitHandler
   }, "Submit")))));
 }
-ReportDialog = /*#__PURE__*/(0, _react.memo)((0, _theme.withTheme)(ReportDialog));
+ReportDialog = /*#__PURE__*/(0, _react.memo)(ReportDialog);
 ReportDialog.propTypes = {
   handleSubmit: _propTypes["default"].func,
   handleClose: _propTypes["default"].func,
@@ -532,33 +499,15 @@ ReportDialog.defaultProps = {
   existing_names: [],
   default_name: "NewReport"
 };
-function showReportDialog(submit_function, existing_names) {
-  var cancel_function = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-  if (typeof existing_names == "undefined") {
-    existing_names = [];
-  }
-  var domContainer = document.querySelector('#modal-area');
-  function handle_close() {
-    ReactDOM.unmountComponentAtNode(domContainer);
-  }
-  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(ReportDialog, {
-    handleSubmit: submit_function,
-    handleCancel: cancel_function,
-    handleClose: handle_close,
-    initial_theme: window.dark_theme ? "dark" : "light",
-    default_name: "NewReport",
-    existing_names: existing_names
-  }), domContainer);
-}
 function SelectDialog(props) {
+  var _useState25 = (0, _react.useState)(false),
+    _useState26 = _slicedToArray(_useState25, 2),
+    show = _useState26[0],
+    set_show = _useState26[1];
   var _useState27 = (0, _react.useState)(false),
     _useState28 = _slicedToArray(_useState27, 2),
-    show = _useState28[0],
-    set_show = _useState28[1];
-  var _useState29 = (0, _react.useState)(false),
-    _useState30 = _slicedToArray(_useState29, 2),
-    value = _useState30[0],
-    set_value = _useState30[1];
+    value = _useState28[0],
+    set_value = _useState28[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   (0, _react.useEffect)(function () {
     set_show(true);
@@ -601,7 +550,7 @@ function SelectDialog(props) {
     onClick: _submitHandler
   }, "Submit"))));
 }
-SelectDialog = /*#__PURE__*/(0, _react.memo)((0, _theme.withTheme)(SelectDialog));
+SelectDialog = /*#__PURE__*/(0, _react.memo)(SelectDialog);
 SelectDialog.propTypes = {
   handleSubmit: _propTypes["default"].func,
   handleClose: _propTypes["default"].func,
@@ -612,36 +561,19 @@ SelectDialog.propTypes = {
   submit_text: _propTypes["default"].string,
   cancel_text: _propTypes["default"].string
 };
-function showSelectDialog(title, select_label, cancel_text, submit_text, submit_function, option_list) {
-  var dark_theme = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : false;
-  var domContainer = document.querySelector('#modal-area');
-  function handle_close() {
-    ReactDOM.unmountComponentAtNode(domContainer);
-  }
-  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(SelectDialog, {
-    handleSubmit: submit_function,
-    handleClose: handle_close,
-    title: title,
-    initial_theme: window.dark_theme ? "dark" : "light",
-    select_label: select_label,
-    submit_text: submit_text,
-    option_list: option_list,
-    cancel_text: cancel_text
-  }), domContainer);
-}
 function SelectAddressDialog(props) {
-  var _useState31 = (0, _react.useState)(false),
+  var _useState29 = (0, _react.useState)(false),
+    _useState30 = _slicedToArray(_useState29, 2),
+    show = _useState30[0],
+    set_show = _useState30[1];
+  var _useState31 = (0, _react.useState)(""),
     _useState32 = _slicedToArray(_useState31, 2),
-    show = _useState32[0],
-    set_show = _useState32[1];
-  var _useState33 = (0, _react.useState)(""),
+    new_name = _useState32[0],
+    set_new_name = _useState32[1];
+  var _useState33 = (0, _react.useState)(),
     _useState34 = _slicedToArray(_useState33, 2),
-    new_name = _useState34[0],
-    set_new_name = _useState34[1];
-  var _useState35 = (0, _react.useState)(),
-    _useState36 = _slicedToArray(_useState35, 2),
-    path = _useState36[0],
-    set_path = _useState36[1];
+    path = _useState34[0],
+    set_path = _useState34[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   (0, _react.useEffect)(function () {
     set_show(true);
@@ -696,49 +628,29 @@ function SelectAddressDialog(props) {
     onClick: _submitHandler
   }, "Submit"))));
 }
-SelectAddressDialog = /*#__PURE__*/(0, _react.memo)((0, _theme.withTheme)(SelectAddressDialog));
-function showModalAddressSelector(title, submit_function) {
-  var selectType = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "folder";
-  var initial_address = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "mydisk";
-  var initial_name = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : "";
-  var showName = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : true;
-  var domContainer = document.querySelector('#modal-area');
-  function handle_close() {
-    ReactDOM.unmountComponentAtNode(domContainer);
-  }
-  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(SelectAddressDialog, {
-    title: title,
-    handleClose: handle_close,
-    initial_theme: window.dark_theme ? "dark" : "light",
-    handleSubmit: submit_function,
-    showName: showName,
-    selectType: selectType,
-    initial_name: initial_name,
-    initial_address: initial_address
-  }), domContainer);
-}
+SelectAddressDialog = /*#__PURE__*/(0, _react.memo)(SelectAddressDialog);
 var res_types = ["collection", "project", "tile", "list", "code"];
 function SelectResourceDialog(props) {
-  var _useState37 = (0, _react.useState)(false),
+  var _useState35 = (0, _react.useState)(false),
+    _useState36 = _slicedToArray(_useState35, 2),
+    show = _useState36[0],
+    set_show = _useState36[1];
+  var _useState37 = (0, _react.useState)(null),
     _useState38 = _slicedToArray(_useState37, 2),
-    show = _useState38[0],
-    set_show = _useState38[1];
-  var _useState39 = (0, _react.useState)(null),
+    value = _useState38[0],
+    set_value = _useState38[1];
+  var _useState39 = (0, _react.useState)("collection"),
     _useState40 = _slicedToArray(_useState39, 2),
-    value = _useState40[0],
-    set_value = _useState40[1];
-  var _useState41 = (0, _react.useState)("collection"),
+    type = _useState40[0],
+    set_type = _useState40[1];
+  var _useState41 = (0, _react.useState)([]),
     _useState42 = _slicedToArray(_useState41, 2),
-    type = _useState42[0],
-    set_type = _useState42[1];
-  var _useState43 = (0, _react.useState)([]),
+    option_names = _useState42[0],
+    set_option_names = _useState42[1];
+  var _useState43 = (0, _react.useState)(null),
     _useState44 = _slicedToArray(_useState43, 2),
-    option_names = _useState44[0],
-    set_option_names = _useState44[1];
-  var _useState45 = (0, _react.useState)(null),
-    _useState46 = _slicedToArray(_useState45, 2),
-    selected_resource = _useState46[0],
-    set_selected_resource = _useState46[1];
+    selected_resource = _useState44[0],
+    set_selected_resource = _useState44[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _react.useEffect)(function () {
@@ -780,7 +692,7 @@ function SelectResourceDialog(props) {
   }
   return /*#__PURE__*/_react["default"].createElement(_core.Dialog, {
     isOpen: show,
-    className: window.dark_theme ? "bp5-dark" : "",
+    className: theme.dark_theme ? "bp5-dark" : "",
     title: "Select a library resource",
     onClose: _cancelHandler,
     canEscapeKeyClose: true
@@ -809,7 +721,7 @@ function SelectResourceDialog(props) {
     onClick: _submitHandler
   }, "Submit"))));
 }
-SelectDialog = /*#__PURE__*/(0, _react.memo)((0, _theme.withTheme)(SelectDialog));
+SelectResourceDialog = /*#__PURE__*/(0, _react.memo)(SelectResourceDialog);
 SelectResourceDialog.propTypes = {
   handleSubmit: _propTypes["default"].func,
   handleClose: _propTypes["default"].func,
@@ -817,26 +729,11 @@ SelectResourceDialog.propTypes = {
   submit_text: _propTypes["default"].string,
   cancel_text: _propTypes["default"].string
 };
-function showSelectResourceDialog(cancel_text, submit_text, submit_function) {
-  var dark_theme = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
-  var domContainer = document.querySelector('#modal-area');
-  function handle_close() {
-    ReactDOM.unmountComponentAtNode(domContainer);
-  }
-  var the_elem = /*#__PURE__*/_react["default"].createElement(SelectResourceDialog, {
-    handleSubmit: submit_function,
-    handleClose: handle_close,
-    initial_theme: window.dark_theme ? "dark" : "light",
-    submit_text: submit_text,
-    cancel_text: cancel_text
-  });
-  ReactDOM.render(the_elem, domContainer);
-}
 function ConfirmDialog(props) {
-  var _useState47 = (0, _react.useState)(false),
-    _useState48 = _slicedToArray(_useState47, 2),
-    show = _useState48[0],
-    set_show = _useState48[1];
+  var _useState45 = (0, _react.useState)(false),
+    _useState46 = _slicedToArray(_useState45, 2),
+    show = _useState46[0],
+    set_show = _useState46[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   (0, _react.useEffect)(function () {
     set_show(true);
@@ -872,7 +769,7 @@ function ConfirmDialog(props) {
     }, props.submit_text))
   }));
 }
-ConfirmDialog = /*#__PURE__*/(0, _react.memo)((0, _theme.withTheme)(ConfirmDialog));
+ConfirmDialog = /*#__PURE__*/(0, _react.memo)(ConfirmDialog);
 ConfirmDialog.propTypes = {
   handleSubmit: _propTypes["default"].func,
   handleCancel: _propTypes["default"].func,
@@ -887,20 +784,3 @@ ConfirmDialog.defaultProps = {
   cancel_text: "Cancel",
   handleCancel: null
 };
-function showConfirmDialogReact(title, text_body, cancel_text, submit_text, submit_function) {
-  var cancel_function = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : null;
-  var domContainer = document.querySelector('#modal-area');
-  function handle_close() {
-    ReactDOM.unmountComponentAtNode(domContainer);
-  }
-  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(ConfirmDialog, {
-    handleSubmit: submit_function,
-    handleCancel: cancel_function,
-    handleClose: handle_close,
-    initial_theme: window.dark_theme ? "dark" : "light",
-    title: title,
-    text_body: text_body,
-    submit_text: submit_text,
-    cancel_text: cancel_text
-  }), domContainer);
-}

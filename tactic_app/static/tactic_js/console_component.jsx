@@ -23,13 +23,13 @@ import {SortableComponent} from "./sortable_container";
 import {KeyTrap} from "./key_trap";
 import {postAjaxPromise, postWithCallback} from "./communication_react"
 import {doFlash} from "./toaster"
-import {showConfirmDialogReact, showSelectResourceDialog} from "./modal_react";
 import {icon_dict} from "./blueprint_mdata_fields";
 import {view_views} from "./library_pane";
 import {TacticMenubar} from "./menu_utilities";
 import {FilterSearchForm} from "./search_form";
 import {SearchableConsole} from "./searchable_console";
 import {ThemeContext} from "./theme";
+import {DialogContext} from "./modal_react"
 
 import {useCallbackStack, useStateAndRef, useConstructor} from "./utilities_react";
 
@@ -59,6 +59,7 @@ function ConsoleComponent(props) {
     const [pseudo_tile_id, set_pseudo_tile_id] = useState(null);
 
     const theme = useContext(ThemeContext);
+    const dialogFuncs = useContext(DialogContext);
     const pushCallback = useCallbackStack();
 
     useEffect(() => {
@@ -216,17 +217,25 @@ function ConsoleComponent(props) {
     const _deleteSection = useCallback((unique_id) => {
         let centry = get_console_item_entry(unique_id);
         const confirm_text = `Delete section ${centry.header_text}?`;
-        showConfirmDialogReact("Delete Section", confirm_text, "do nothing", "delete", function () {
-            let id_list = _getSectionIds(unique_id);
-            let cindex = _consoleItemIndex(unique_id);
-            let new_console_items = [...props.console_items.current];
-            new_console_items.splice(cindex, id_list.length);
-            _clear_all_selected_items();
-            props.dispatch({
-                type: "delete_items",
-                id_list: id_list,
-            });
-        })
+        dialogFuncs.showModal("ConfirmDialog", {
+            title: "Delete Section",
+            text_body: confirm_text,
+            cancel_text: "do nothing",
+            submit_text: "delete",
+            handleSubmit: ()=>{
+                let id_list = _getSectionIds(unique_id);
+                let cindex = _consoleItemIndex(unique_id);
+                let new_console_items = [...props.console_items.current];
+                new_console_items.splice(cindex, id_list.length);
+                _clear_all_selected_items();
+                props.dispatch({
+                    type: "delete_items",
+                    id_list: id_list,
+                });
+            },
+            handleClose: dialogFuncs.hideModal,
+            handleCancel: null
+        });
     }, []);
 
     const _copySection = useCallback((unique_id = null) => {
@@ -336,11 +345,16 @@ function ConsoleComponent(props) {
 
     function _insertLinkInItem(unique_id) {
         let entry = get_console_item_entry(unique_id);
-        showSelectResourceDialog("cancel", "insert link", (result) => {
-            let new_links = "links" in entry ? [...entry.links] : [];
-            new_links.push({res_type: result.type, res_name: result.selected_resource});
-            _setConsoleItemValue(entry.unique_id, "links", new_links)
-        })
+        dialogFuncs.showModal("SelectResourceDialog", {
+            cancel_text: "cancel",
+            submit_text: "insert link",
+            handleSubmit: (result) => {
+                let new_links = "links" in entry ? [...entry.links] : [];
+                new_links.push({res_type: result.type, res_name: result.selected_resource});
+                _setConsoleItemValue(entry.unique_id, "links", new_links)
+            },
+            handleClose: dialogFuncs.hideModal,
+        });
     }
 
     const _addBlankCode = useCallback((e) => {
@@ -371,12 +385,20 @@ function ConsoleComponent(props) {
 
     const _clearConsole = useCallback(() => {
         const confirm_text = "Are you sure that you want to erase everything in this log?";
-        showConfirmDialogReact("Clear entire log", confirm_text, "do nothing", "clear", function () {
-            set_all_selected_items([]);
-            pushCallback(() => {
-                props.dispatch({type: "delete_all_items"})
-            })
-        })
+        dialogFuncs.showModal("ConfirmDialog", {
+            title: "Clear entire log",
+            text_body: confirm_text,
+            cancel_text: "do nothing",
+            submit_text: "clear",
+            handleSubmit: ()=>{
+                set_all_selected_items([]);
+                pushCallback(() => {
+                    props.dispatch({type: "delete_all_items"})
+                })
+            },
+            handleClose: dialogFuncs.hideModal,
+            handleCancel: null
+        });
     }, []);
 
     function _togglePseudoLog() {
@@ -745,9 +767,17 @@ function ConsoleComponent(props) {
             if (_isDividerSelected()) {
                 const confirm_text = "The selection includes section dividers. " +
                     "The sections will be completed in their entirety. Do you want to continue";
-                showConfirmDialogReact("Do Delete", confirm_text, "do nothing", "delete", function () {
-                    _doDeleteSelected();
-                })
+                dialogFuncs.showModal("ConfirmDialog", {
+                    title: "Do Delete",
+                    text_body: confirm_text,
+                    cancel_text: "do nothing",
+                    submit_text: "delete",
+                    handleSubmit: ()=>{
+                        _doDeleteSelected();
+                    },
+                    handleClose: dialogFuncs.hideModal,
+                    handleCancel: null
+                });
             } else {
                 _doDeleteSelected()
             }
@@ -2586,11 +2616,16 @@ function ConsoleTextItem(props) {
     }
 
     function _insertResourceLink() {
-        showSelectResourceDialog("cancel", "insert link", (result) => {
-            let new_links = [...props.links];
-            new_links.push({res_type: result.type, res_name: result.selected_resource});
-            props.setConsoleItemValue(props.unique_id, "links", new_links)
-        })
+        dialogFuncs.showModal("SelectResourceDialog", {
+            cancel_text: "cancel",
+            submit_text: "insert link",
+            handleSubmit: (result) => {
+                let new_links = [...props.links];
+                new_links.push({res_type: result.type, res_name: result.selected_resource});
+                props.setConsoleItemValue(props.unique_id, "links", new_links)
+            },
+            handleClose: dialogFuncs.hideModal,
+        });
     }
 
     function _deleteLinkButton(index) {
