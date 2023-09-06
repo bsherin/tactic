@@ -115,6 +115,7 @@ function RepositoryHomeApp(props) {
     usable_width = _useState8[0],
     set_usable_width = _useState8[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
+  var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   var top_ref = (0, _react.useRef)(null);
   (0, _utilities_react.useConstructor)(function () {
     if (props.registerLibraryTabChanger) {
@@ -124,7 +125,7 @@ function RepositoryHomeApp(props) {
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _react.useEffect)(function () {
     initSocket();
-    props.stopSpinner();
+    statusFuncs.stopSpinner();
     if (!props.controlled) {
       window.addEventListener("resize", _update_window_dimensions);
       _update_window_dimensions();

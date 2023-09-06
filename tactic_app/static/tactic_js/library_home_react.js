@@ -60,6 +60,7 @@ function LibraryHomeApp(props) {
     usable_width = _useState6[0],
     set_usable_width = _useState6[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
+  var statusFuncs = (0, _react.useContext)(_toaster2.StatusContext);
   var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
   var pushCallback = (0, _utilities_react.useCallbackStack)("library_home");
   var top_ref = (0, _react.useRef)(null);
@@ -76,7 +77,7 @@ function LibraryHomeApp(props) {
     }
   });
   (0, _react.useEffect)(function () {
-    props.stopSpinner(null);
+    statusFuncs.stopSpinner(null);
     if (!props.controlled) {
       window.addEventListener("resize", _handleResize);
       _handleResize();

@@ -13,12 +13,15 @@ import {doFlash} from "./toaster"
 import {MenuComponent, ToolMenu} from "./menu_utilities";
 
 import {DialogContext} from "./modal_react";
+import {StatusContext} from "./toaster"
 
 export {ProjectMenu, DocumentMenu, ColumnMenu, RowMenu, ViewMenu, MenuComponent}
 
 function ProjectMenu(props) {
 
     const dialogFuncs = useContext(DialogContext);
+    const statusFuncs = useContext(StatusContext);
+
     var save_state;
     if (props.is_notebook)
          save_state = {
@@ -42,7 +45,7 @@ function ProjectMenu(props) {
     }
 
     function _saveProjectAs() {
-        props.startSpinner();
+        statusFuncs.startSpinner();
         postWithCallback("host", "get_project_names", {"user_id": window.user_id}, function (data) {
             let checkboxes = [{checkname: "lite_save", checktext: "create lite save"}];
 
@@ -59,7 +62,7 @@ function ProjectMenu(props) {
         }, null, props.main_id);
 
         function doCancel() {
-            props.stopSpinner()
+            statusFuncs.stopSpinner()
         }
         function CreateNewProject (new_name, checkbox_states) {
             //let console_node = cleanse_bokeh(document.getElementById("console"));
@@ -88,21 +91,21 @@ function ProjectMenu(props) {
                         if (!window.in_context) {
                             document.title = new_name;
                         }
-                        props.clearStatusMessage();
+                        statusFuncs.clearStatusMessage();
                         data_object.alert_type = "alert-success";
                         data_object.timeout = 2000;
                         postWithCallback("host", "refresh_project_selector_list",
                             {'user_id': window.user_id}, null, null, props.main_id);
                         props.updateLastSave();
-                        props.stopSpinner();
+                        statusFuncs.stopSpinner();
                     });
 
                 }
                 else {
-                    props.clearStatusMessage();
+                    statusFuncs.clearStatusMessage();
                     data_object["message"] = data_object["message"];
                     data_object["alert-type"] = "alert-warning";
-                    props.stopSpinner();
+                    statusFuncs.stopSpinner();
                     doFlash(data_object)
                 }
             }
@@ -119,10 +122,10 @@ function ProjectMenu(props) {
 
         result_dict.interface_state = save_state;
 
-        props.startSpinner();
+        statusFuncs.startSpinner();
         postWithCallback(props.main_id, "update_project", result_dict, updateSuccess, props.postAjaxFailure, props.main_id);
         function updateSuccess(data) {
-            props.startSpinner();
+            statusFuncs.startSpinner();
             if (data.success) {
                 data["alert_type"] = "alert-success";
                 data.timeout = 2000;
@@ -131,8 +134,8 @@ function ProjectMenu(props) {
             else {
                 data["alert_type"] = "alert-warning";
             }
-            props.clearStatusMessage();
-            props.stopSpinner();
+            statusFuncs.clearStatusMessage();
+            statusFuncs.stopSpinner();
             doFlash(data)
         }
     }
@@ -191,7 +194,7 @@ function ProjectMenu(props) {
                 result_dict, save_as_success, props.postAjaxFailure, props.main_id);
 
             function save_as_success(data_object) {
-               props.clearStatusMessage();
+               statusFuncs.clearStatusMessage();
                if (data_object.success) {
                    if (save_as_collection) {
                        data_object.alert_type = "alert-success";
@@ -265,7 +268,7 @@ function ProjectMenu(props) {
                 result_dict, save_as_success, props.postAjaxFailure, props.main_id);
 
             function save_as_success(data_object) {
-               props.clearStatusMessage();
+               statusFuncs.clearStatusMessage();
                if (data_object.success) {
                    if (save_as_collection) {
                        data_object.alert_type = "alert-success";
@@ -285,7 +288,7 @@ function ProjectMenu(props) {
     }
 
     function _exportAsJupyter() {
-        props.startSpinner();
+        statusFuncs.startSpinner();
         postWithCallback("host", "get_project_names", {"user_id": user_id}, function (data) {
             let checkboxes;
             // noinspection JSUnusedAssignment
@@ -320,7 +323,7 @@ function ProjectMenu(props) {
                 result_dict, save_as_success, props.postAjaxFailure, props.main_id);
 
             function save_as_success(data_object) {
-               props.clearStatusMessage();
+               statusFuncs.clearStatusMessage();
                 if (data_object.success) {
                     data_object.alert_type = "alert-success";
                     data_object.timeout = 2000;
@@ -328,7 +331,7 @@ function ProjectMenu(props) {
                 else {
                     data_object["alert-type"] = "alert-warning";
                 }
-                props.stopSpinner();
+                statusFuncs.stopSpinner();
                 doFlash(data_object)
             }
         }
@@ -424,9 +427,10 @@ ProjectMenu = memo(ProjectMenu);
 function DocumentMenu(props) {
 
     const dialogFuncs = useContext(DialogContext);
+    const statusFuncs = useContext(StatusContext);
 
     function _newDocument() {
-        props.startSpinner();
+        statusFuncs.startSpinner();
         dialogFuncs.showModal("ModalDialog", {
             title: "New Document",
             field_title: "New Document Name",
@@ -439,21 +443,21 @@ function DocumentMenu(props) {
         });
 
         function doCancel() {
-            props.stopSpinner()
+            statusFuncs.stopSpinner()
         }
 
         function doNew(new_name) {
             postWithCallback(props.main_id, "new_blank_document",
                 {model_document_name: props.currentDoc,
                 new_document_name: new_name}, (result)=>{
-                props.stopSpinner()
+                statusFuncs.stopSpinner()
                 }, null, props.main_id
             )
         }
     }
 
     function _duplicateDocument() {
-        props.startSpinner();
+        statusFuncs.startSpinner();
         dialogFuncs.showModal("ModalDialog", {
             title: "Duplicate Document",
             field_title: "New Document Name",
@@ -466,14 +470,14 @@ function DocumentMenu(props) {
         });
 
         function doCancel() {
-            props.stopSpinner()
+            statusFuncs.stopSpinner()
         }
 
         function doDuplicate(new_name) {
             postWithCallback(props.main_id, "duplicate_document",
                 {original_document_name: props.currentDoc,
                 new_document_name: new_name}, (result)=>{
-                props.stopSpinner()
+                statusFuncs.stopSpinner()
                 }, null, props.main_id
             )
         }
@@ -481,7 +485,7 @@ function DocumentMenu(props) {
     }
 
     function _renameDocument() {
-        props.startSpinner();
+        statusFuncs.startSpinner();
         dialogFuncs.showModal("ModalDialog", {
             title: "Rename Document",
             field_title: "New Document Name",
@@ -494,14 +498,14 @@ function DocumentMenu(props) {
         });
 
         function doCancel() {
-            props.stopSpinner()
+            statusFuncs.stopSpinner()
         }
 
         function doRename(new_name) {
             postWithCallback(props.main_id, "rename_document",
                 {old_document_name: props.currentDoc,
                 new_document_name: new_name}, (result)=>{
-                props.stopSpinner()
+                statusFuncs.stopSpinner()
                 }, null, props.main_id
             )
         }

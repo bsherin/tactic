@@ -392,9 +392,6 @@ function AdminPane(props) {
                           setConsoleText={_setConsoleText}
                           delete_row={_delete_row}
                           refresh_func={_refresh_func}
-                          startSpinner={props.startSpinner}
-                          stopSpinner={props.stopSpinner}
-                          clearStatusMessage={props.clearStatusMessage}
                           {...props.errorDrawerFuncs}
                           />
             <div ref={top_ref} className="d-flex flex-column mt-3" >

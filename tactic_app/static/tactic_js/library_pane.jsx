@@ -22,6 +22,7 @@ import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_reac
 import {ThemeContext} from "./theme"
 
 import {DialogContext} from "./modal_react";
+import {StatusContext} from "./toaster"
 
 export {LibraryPane, view_views, res_types}
 
@@ -132,6 +133,7 @@ function LibraryPane(props) {
 
     const theme = useContext(ThemeContext);
     const dialogFuncs = useContext(DialogContext);
+    const statusFuncs = useContext(StatusContext);
 
     const stateSetters = {
         data_dict: set_data_dict,
@@ -520,7 +522,7 @@ function LibraryPane(props) {
     function _handleRowDoubleClick(row_dict) {
         let view_view = view_views(props.is_repository)[row_dict.res_type];
         if (view_view == null) return;
-        props.setStatus({show_spinner: true, status_message: "Opening ..."});
+        statusFuncs.setStatus({show_spinner: true, status_message: "Opening ..."});
         set_selected_resource(row_dict);
         set_multi_select(false);
         set_list_of_selected([row_dict.name]);
@@ -534,15 +536,15 @@ function LibraryPane(props) {
                     resource_name: row_dict.name
                 })
                     .then((data) => {
-                        props.handleCreateViewer(data, props.clearStatus);
+                        props.handleCreateViewer(data, statusFuncs.clearStatus);
                     })
                     .catch((data) => {
                             doFlash(data);
-                            props.clearStatus()
+                            statusFuncs.clearStatus()
                         }
                     );
             } else {
-                props.clearStatus();
+                statusFuncs.clearStatus();
                 window.open($SCRIPT_ROOT + view_view + row_dict.name)
             }
         });
@@ -691,7 +693,7 @@ function LibraryPane(props) {
         if (the_view == null) {
             the_view = view_views(props.is_repository)[selected_resource_ref.current.res_type]
         }
-        props.setStatus({show_spinner: true, status_message: "Opening ..."});
+        statusFuncs.setStatus({show_spinner: true, status_message: "Opening ..."});
         if (window.in_context) {
             const re = new RegExp("/$");
             the_view = the_view.replace(re, "_in_context");
@@ -700,26 +702,26 @@ function LibraryPane(props) {
                 resource_name: selected_resource_ref.current.name
             })
                 .then((data) => {
-                    props.handleCreateViewer(data, props.clearStatus);
+                    props.handleCreateViewer(data, statusFuncs.clearStatus);
                 })
                 .catch((data) => {
                         doFlash(data);
-                        props.clearstatus()
+                        statusFuncs.clearstatus()
                     }
                 );
         } else {
-            props.clearStatus();
+            statusFuncs.clearStatus();
             window.open($SCRIPT_ROOT + the_view + selected_resource_ref.current.name)
         }
     }
 
     function _open_raw(selected_resource) {
-        props.clearStatus();
+        statusFuncs.clearStatus();
         if (selected_resource.type == "freeform") {
             window.open($SCRIPT_ROOT + "/open_raw/" + selected_resource.name)
         } else {
             // doFlash("Only Freeform documents can be raw opened")
-            props.statusMessage("Only Freeform documents can be raw opened", 5);
+            statusFuncs.statusMessage("Only Freeform documents can be raw opened", 5);
         }
     }
 
@@ -728,21 +730,21 @@ function LibraryPane(props) {
         if (the_view == null) {
             the_view = view_views(props.is_repository)[selected_resource.res_type]
         }
-        props.setStatus({show_spinner: true, status_message: "Opening ..."});
+        statusFuncs.setStatus({show_spinner: true, status_message: "Opening ..."});
         if (window.in_context && !force_new_tab) {
             const re = new RegExp("/$");
             the_view = the_view.replace(re, "_in_context");
             postAjaxPromise($SCRIPT_ROOT + the_view, {context_id: context_id, resource_name: resource_name})
                 .then((data) => {
-                    props.handleCreateViewer(data, props.clearStatus);
+                    props.handleCreateViewer(data, statusFuncs.clearStatus);
                 })
                 .catch((data) => {
                         doFlash(data);
-                        props.clearstatus()
+                        statusFuncs.clearstatus()
                     }
                 );
         } else {
-            props.clearStatus();
+            statusFuncs.clearStatus();
             window.open($SCRIPT_ROOT + the_view + resource_name)
         }
 
@@ -1039,10 +1041,10 @@ function LibraryPane(props) {
             });
 
             function doTheCombine(other_name) {
-                props.startSpinner(true);
+                statusFuncs.startSpinner(true);
                 const target = `${$SCRIPT_ROOT}/combine_collections/${res_name}/${other_name}`;
                 $.post(target, (data) => {
-                    props.stopSpinner();
+                    statusFuncs.stopSpinner();
                     if (!data.success) {
                         props.addErrorDrawerEntry({title: "Error combining collections", content: data.message})
                     } else {
@@ -1589,9 +1591,6 @@ function LibraryPane(props) {
                           selected_rows={selected_rows_ref.current}
                           selected_type={selected_type}
                           {..._menu_funcs()}
-                          startSpinner={props.startSpinner}
-                          stopSpinner={props.stopSpinner}
-                          clearStatusMessage={props.clearStatusMessage}
                           sendContextMenuItems={setContextMenuItems}
                           view_resource={_view_resource}
                           open_raw={_open_raw}

@@ -79,6 +79,7 @@ function ResourceViewerApp(props) {
   var savedNotes = (0, _react.useRef)(props.notes);
   var omniGetters = (0, _react.useRef)({});
   var key_bindings = (0, _react.useRef)([]);
+  var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
 
   // Only used when not in context
   var _useState = (0, _react.useState)(false),
@@ -92,7 +93,7 @@ function ResourceViewerApp(props) {
     }
   });
   (0, _react.useEffect)(function () {
-    props.stopSpinner();
+    statusFuncs.stopSpinner();
     if (props.registerOmniFunction) {
       props.registerOmniFunction(_omniFunction);
     }

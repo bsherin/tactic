@@ -214,6 +214,7 @@ function CreatorApp(props) {
     setShowOmnibar = _useState26[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
+  var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   var _useState27 = (0, _react.useState)(props.resource_name),
     _useState28 = _slicedToArray(_useState27, 2),
@@ -246,7 +247,7 @@ function CreatorApp(props) {
     _goToLineNumber();
     _update_saved_state();
     props.setGoToLineNumber(_selectLineNumber);
-    props.stopSpinner();
+    statusFuncs.stopSpinner();
     return function () {
       delete_my_container();
     };
@@ -467,7 +468,7 @@ function CreatorApp(props) {
     window.open("".concat($SCRIPT_ROOT, "/show_tile_differ/").concat(_cProp("resource_name")));
   }
   function _doFlashStopSpinner(data) {
-    props.clearStatus();
+    statusFuncs.clearStatus();
     (0, _toaster.doFlash)(data);
   }
   function _selectLineNumber(lnumber) {
@@ -476,7 +477,7 @@ function CreatorApp(props) {
   }
   function _logErrorStopSpinner(title) {
     var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-    props.stopSpinner();
+    statusFuncs.stopSpinner();
     var entry = {
       title: title,
       content: data.message
@@ -497,9 +498,9 @@ function CreatorApp(props) {
     return false;
   }
   function _saveAndLoadModule() {
-    props.startSpinner();
+    statusFuncs.startSpinner();
     doSavePromise().then(function () {
-      props.statusMessage("Loading Module");
+      statusFuncs.statusMessage("Loading Module");
       (0, _communication_react.postWithCallback)("host", "load_tile_module_task", {
         "tile_module_name": _cProp("resource_name"),
         "user_id": window.user_id
@@ -516,8 +517,8 @@ function CreatorApp(props) {
     }
   }
   function _loadModule() {
-    props.startSpinner();
-    props.statusMessage("Loading Module");
+    statusFuncs.startSpinner();
+    statusFuncs.statusMessage("Loading Module");
     (0, _communication_react.postWithCallback)("host", "load_tile_module_task", {
       "tile_module_name": _cProp("resource_name"),
       "user_id": window.user_id
@@ -531,7 +532,7 @@ function CreatorApp(props) {
     }
   }
   function _saveModuleAs() {
-    props.startSpinner();
+    statusFuncs.startSpinner();
     (0, _communication_react.postWithCallback)("host", "get_tile_names", {
       "user_id": window.user_id
     }, function (data) {
@@ -548,7 +549,7 @@ function CreatorApp(props) {
       });
     }, null, props.main_id);
     function doCancel() {
-      props.stopSpinner();
+      statusFuncs.stopSpinner();
     }
     function CreateNewModule(new_name) {
       var result_dict = {
@@ -566,17 +567,17 @@ function CreatorApp(props) {
     if (!props.am_selected) {
       return false;
     }
-    props.startSpinner();
-    props.statusMessage("Saving Module");
+    statusFuncs.startSpinner();
+    statusFuncs.statusMessage("Saving Module");
     doSavePromise().then(_doFlashStopSpinner)["catch"](function (data) {
       _logErrorStopSpinner("Error saving module", data);
     });
     return false;
   }
   function _saveAndCheckpoint() {
-    props.startSpinner();
+    statusFuncs.startSpinner();
     doSavePromise().then(function () {
-      props.statusMessage("Checkpointing");
+      statusFuncs.statusMessage("Checkpointing");
       doCheckpointPromise().then(_doFlashStopSpinner)["catch"](function (data) {
         _logErrorStopSpinner("Error checkpointing module", data);
       });

@@ -22,6 +22,7 @@ import {TacticNavbar} from "./blueprint_navbar";
 import {AllMenubar} from "./library_menubars"
 import {ThemeContext, withTheme} from "./theme";
 import {withDialogs} from "./modal_react";
+import {StatusContext} from "./toaster"
 
 const TAB_BAR_WIDTH = 50;
 
@@ -39,6 +40,7 @@ function LibraryHomeApp(props) {
     const [usable_width, set_usable_width] = useState(null);
 
     const theme = useContext(ThemeContext);
+    const statusFuncs = useContext(StatusContext);
 
     const connection_status = useConnection(props.tsocket, initSocket);
 
@@ -63,7 +65,7 @@ function LibraryHomeApp(props) {
     });
 
     useEffect(() => {
-        props.stopSpinner(null);
+        statusFuncs.stopSpinner(null);
         if (!props.controlled) {
             window.addEventListener("resize", _handleResize);
             _handleResize();

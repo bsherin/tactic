@@ -49,6 +49,7 @@ function LoginApp(props) {
     password_warning_text = _useState8[0],
     set_password_warning_text = _useState8[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
+  var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   var inputRef = (0, _react.useRef)(null);
   (0, _react.useEffect)(function () {
@@ -61,7 +62,7 @@ function LoginApp(props) {
     setPassword(event.target.value);
   }
   function _submit_login_info() {
-    props.setStatus({
+    statusFuncs.setStatus({
       show_spinner: true,
       status_message: "Attempting login ..."
     });
@@ -83,7 +84,7 @@ function LoginApp(props) {
   }
   function _return_from_submit_login(data) {
     console.log("returned from attempt login with data.login " + String(data.logged_in));
-    props.clearStatus();
+    statusFuncs.clearStatus();
     if (data.logged_in) {
       window.open($SCRIPT_ROOT + window._next_view, "_self");
     } else {

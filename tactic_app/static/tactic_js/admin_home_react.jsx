@@ -27,6 +27,7 @@ import {LibraryMenubar} from "./library_menubars";
 import {useCallbackStack, useStateAndRef} from "./utilities_react";
 
 import {ThemeContext, withTheme} from "./theme";
+import {StatusContext} from "./toaster"
 
 window.library_id = guid();
 const MARGIN_SIZE = 17;
@@ -86,6 +87,8 @@ function AdministerHomeApp(props) {
     const [usable_width, set_usable_width] = useState(getUsableDimensions(true).usable_width - 170);
     const theme = useContext(ThemeContext);
     const dialogFuncs = useContext(DialogContext);
+    const statusFuncs = useContext(StatusContext);
+
     const top_ref = useRef(null);
 
     const pushCallback = useCallbackStack();
@@ -93,7 +96,7 @@ function AdministerHomeApp(props) {
 
     useEffect(() => {
         initSocket();
-        props.stopSpinner();
+        statusFuncs.stopSpinner();
         window.addEventListener("resize", _update_window_dimensions);
         _update_window_dimensions();
         return (() => {
@@ -228,8 +231,10 @@ AdministerHomeApp = memo(AdministerHomeApp);
 
 function ContainerMenubar(props) {
 
+    const statusFuncs = useContext(StatusContext);
+
     function _doFlashStopSpinner(data) {
-        props.stopSpinner();
+        statusFuncs.stopSpinner();
         doFlash(data)
     }
 
@@ -241,17 +246,17 @@ function ContainerMenubar(props) {
     }
 
     function _clear_user_func (event) {
-        props.startSpinner();
+        statusFuncs.startSpinner();
         $.getJSON($SCRIPT_ROOT + '/clear_user_containers/' + window.library_id, _doFlashStopSpinner);
     }
 
     function _reset_server_func (event) {
-        props.startSpinner();
+        statusFuncs.startSpinner();
         $.getJSON($SCRIPT_ROOT + '/reset_server/' + library_id, _doFlashStopSpinner);
     }
 
    function  _destroy_container () {
-        props.startSpinner();
+        statusFuncs.startSpinner();
         let cont_id = props.selected_resource.Id;
         $.getJSON($SCRIPT_ROOT + '/kill_container/' + cont_id, (data) => {
                 _doFlashStopSpinner(data);
@@ -260,7 +265,7 @@ function ContainerMenubar(props) {
                 }
             }
         );
-        props.stopSpinner();
+        statusFuncs.stopSpinner();
 
     }
 

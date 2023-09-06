@@ -76,6 +76,7 @@ function NotebookApp(props) {
     mState = _useReducer2[0],
     mDispatch = _useReducer2[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
+  var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   var key_bindings = [[["ctrl+space"], _showOmnibar]];
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _utilities_react.useConstructor)(function () {
@@ -99,7 +100,7 @@ function NotebookApp(props) {
       props.registerOmniFunction(_omniFunction);
     }
     _updateLastSave();
-    props.stopSpinner();
+    statusFuncs.stopSpinner();
     if (!props.controlled) {
       document.title = mState.resource_name;
       window.addEventListener("resize", _update_window_dimensions);
@@ -239,7 +240,7 @@ function NotebookApp(props) {
   var true_usable_width = my_props.usable_width;
   var console_available_height = get_zoomed_console_height() - MARGIN_ADJUSTMENT;
   var project_name = my_props.is_project ? props.resource_name : "";
-  var menus = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_main_menus_react.ProjectMenu, _extends({}, props.statusFuncs, {
+  var menus = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_main_menus_react.ProjectMenu, {
     main_id: props.main_id,
     project_name: project_name,
     is_notebook: true,
@@ -255,8 +256,8 @@ function NotebookApp(props) {
     disabled_items: my_props.is_project ? [] : ["Save"],
     registerOmniGetter: _registerOmniGetter,
     hidden_items: ["Open Console as Notebook", "Export Table as Collection", "divider2", "Change collection"]
-  })));
-  var console_pane = /*#__PURE__*/_react["default"].createElement(_console_component.ConsoleComponent, _extends({}, props.statusFuncs, {
+  }));
+  var console_pane = /*#__PURE__*/_react["default"].createElement(_console_component.ConsoleComponent, {
     main_id: props.main_id,
     tsocket: props.tsocket,
     handleCreateViewer: props.handleCreateViewer,
@@ -273,7 +274,7 @@ function NotebookApp(props) {
     style: {
       marginTop: MARGIN_SIZE
     }
-  }));
+  });
   var exports_pane;
   if (mState.show_exports_pane) {
     exports_pane = /*#__PURE__*/_react["default"].createElement(_export_viewer_react.ExportsViewer, {

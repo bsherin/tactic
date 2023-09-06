@@ -36,6 +36,7 @@ import {KeyTrap} from "./key_trap";
 import {useCallbackStack, useReducerAndRef} from "./utilities_react";
 import {ThemeContext, withTheme} from "./theme";
 import {DialogContext, withDialogs} from "./modal_react";
+import {StatusContext} from "./toaster"
 
 export {MainApp}
 
@@ -89,6 +90,7 @@ function MainApp(props) {
 
     const theme = useContext(ThemeContext);
     const dialogFuncs = useContext(DialogContext);
+    const statusFuncs = useContext(StatusContext);
 
     const [mState, mDispatch] = useReducer(mainReducer, {
         table_is_shrunk: iStateOrDefault("table_is_shrunk"),
@@ -149,7 +151,7 @@ function MainApp(props) {
             props.registerOmniFunction(_omniFunction);
         }
         _updateLastSave();
-        props.stopSpinner();
+        statusFuncs.stopSpinner();
         if (!props.controlled) {
             document.title = mState.resource_name;
             window.addEventListener("resize", _update_window_dimensions);
@@ -356,8 +358,8 @@ function MainApp(props) {
                 "doc_name": new_doc_name,
                 "set_visible_doc": true
             }, function (data) {
-                props.stopSpinner();
-                props.clearStatusMessage();
+                statusFuncs.stopSpinner();
+                statusFuncs.clearStatusMessage();
                 let new_table_spec = {"current_doc_name": new_doc_name};
                 mDispatch({
                     type: "change_multiple_fields",
@@ -433,8 +435,8 @@ function MainApp(props) {
                 });
 
         function createNewTile(tile_name) {
-            props.startSpinner();
-            props.statusMessage("Creating Tile " + tile_name);
+            statusFuncs.startSpinner();
+            statusFuncs.statusMessage("Creating Tile " + tile_name);
             const data_dict = {
                 tile_name: tile_name,
                 tile_type: menu_id,
@@ -453,8 +455,8 @@ function MainApp(props) {
                         new_item: new_tile_entry
                     });
                     if (updateExportsList.current) updateExportsList.current();
-                    props.clearStatusMessage();
-                    props.stopSpinner()
+                    statusFuncs.clearStatusMessage();
+                    statusFuncs.stopSpinner()
                 } else {
                     props.addErrorDrawerEntry({title: "Error creating tile", content: create_data})
                 }
@@ -784,7 +786,7 @@ function MainApp(props) {
     }
 
     function _changeCollection() {
-        props.startSpinner();
+        statusFuncs.startSpinner();
         postWithCallback("host", "get_collection_names", {"user_id": user_id}, function (data) {
             dialogFuncs.showModal("SelectDialog", {
                     title: "Select New Collection",
@@ -819,10 +821,10 @@ function MainApp(props) {
                     pushCallback(() => {
                         _handleChangeDoc(data_object.doc_names[0])
                     });
-                    props.stopSpinner();
+                    statusFuncs.stopSpinner();
                 } else {
-                    props.clearStatusMessage();
-                    props.stopSpinner();
+                    statusFuncs.clearStatusMessage();
+                    statusFuncs.stopSpinner();
                     props.addErrorDrawerEntry({title: "Error changing collection", content: data_object.message})
                 }
             }
@@ -927,8 +929,7 @@ function MainApp(props) {
     let project_name = my_props.is_project ? props.resource_name : "";
     let menus = (
         <Fragment>
-            <ProjectMenu {...props.statusFuncs}
-                         main_id={props.main_id}
+            <ProjectMenu main_id={props.main_id}
                          project_name={project_name}
                          is_notebook={props.is_notebook}
                          is_juptyer={props.is_jupyter}
@@ -944,16 +945,14 @@ function MainApp(props) {
                          registerOmniGetter={_registerOmniGetter}
                          hidden_items={["Export as Jupyter Notebook"]}
             />
-            <DocumentMenu {...props.statusFuncs}
-                          main_id={props.main_id}
+            <DocumentMenu main_id={props.main_id}
                           documentNames={mState.doc_names}
                           registerOmniGetter={_registerOmniGetter}
                           currentDoc={mState.table_spec.current_doc_name}
 
             />
             {!props.is_freeform &&
-                <ColumnMenu {...props.statusFuncs}
-                            main_id={props.main_id}
+                <ColumnMenu main_id={props.main_id}
                             project_name={project_name}
                             is_notebook={props.is_notebook}
                             is_juptyer={props.is_jupyter}
@@ -971,8 +970,7 @@ function MainApp(props) {
                 />
             }
             {!props.is_freeform &&
-                <RowMenu {...props.statusFuncs}
-                         main_id={props.main_id}
+                <RowMenu main_id={props.main_id}
                          project_name={project_name}
                          is_notebook={props.is_notebook}
                          is_juptyer={props.is_jupyter}
@@ -989,8 +987,7 @@ function MainApp(props) {
                          disabled_items={disabled_row_items}
                 />
             }
-            <ViewMenu {...props.statusFuncs}
-                      main_id={props.main_id}
+            <ViewMenu main_id={props.main_id}
                       project_name={project_name}
                       is_notebook={props.is_notebook}
                       is_juptyer={props.is_jupyter}
@@ -1085,8 +1082,7 @@ function MainApp(props) {
     let console_pane;
     if (mState.show_console_pane) {
         console_pane = (
-            <ConsoleComponent {...props.statusFuncs}
-                              main_id={props.main_id}
+            <ConsoleComponent main_id={props.main_id}
                               tsocket={props.tsocket}
                               handleCreateViewer={props.handleCreateViewer}
                               controlled={props.controlled}

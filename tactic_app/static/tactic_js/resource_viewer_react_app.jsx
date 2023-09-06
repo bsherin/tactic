@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from 'prop-types';
-import {Fragment, useState, useEffect, useRef, memo} from 'react';
+import {Fragment, useState, useEffect, useRef, memo, useContext} from 'react';
 
 import {TacticOmnibar} from "./TacticOmnibar";
 import {KeyTrap} from "./key_trap";
@@ -8,7 +8,7 @@ import {CombinedMetadata} from "./blueprint_mdata_fields";
 import {HorizontalPanes} from "./resizing_layouts.js";
 import {handleCallback, postAjax} from "./communication_react.js"
 import {TacticMenubar} from "./menu_utilities.js"
-import {doFlash, doFlashAlways} from "./toaster.js";
+import {doFlash, doFlashAlways, StatusContext} from "./toaster.js";
 import {SIDE_MARGIN} from "./sizing_tools.js"
 import {SearchForm} from "./library_widgets";
 import {useConstructor, useConnection} from "./utilities_react";
@@ -74,6 +74,8 @@ function ResourceViewerApp(props) {
     const omniGetters = useRef({});
     const key_bindings = useRef([]);
 
+    const statusFuncs = useContext(StatusContext);
+
     // Only used when not in context
     const [showOmnibar, setShowOmnibar] = useState(false);
     const connection_status = useConnection(props.tsocket, initSocket);
@@ -87,7 +89,7 @@ function ResourceViewerApp(props) {
     });
 
     useEffect(() => {
-        props.stopSpinner();
+        statusFuncs.stopSpinner();
         if (props.registerOmniFunction) {
             props.registerOmniFunction(_omniFunction);
         }

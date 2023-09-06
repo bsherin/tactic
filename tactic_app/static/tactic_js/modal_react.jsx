@@ -26,7 +26,6 @@ export {DialogContext, withDialogs}
 
 const DialogContext = createContext(null);
 
-
 const dialogDict = {ModalDialog, PresentationDialog, ReportDialog,
     SelectDialog, SelectAddressDialog, SelectResourceDialog, ConfirmDialog, FileImportDialog};
 

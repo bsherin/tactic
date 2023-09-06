@@ -12,7 +12,7 @@ import {TacticMenubar} from "./menu_utilities";
 import {ProjectMenu} from "./main_menus_react";
 import {ConsoleComponent} from "./console_component";
 import {consoleItemsReducer} from "./console_support";
-import {doFlash} from "./toaster"
+import {doFlash, StatusContext} from "./toaster"
 import {withStatus} from "./toaster";
 import {renderSpinnerMessage, useConnection} from "./utilities_react";
 import {TacticOmnibar} from "./TacticOmnibar";
@@ -59,6 +59,7 @@ function NotebookApp(props) {
         usable_width: getUsableDimensions(true).usable_width - 170
     });
     const theme = useContext(ThemeContext);
+    const statusFuncs = useContext(StatusContext);
 
     const key_bindings = [[["ctrl+space"], _showOmnibar]];
 
@@ -86,7 +87,7 @@ function NotebookApp(props) {
             props.registerOmniFunction(_omniFunction);
         }
         _updateLastSave();
-        props.stopSpinner();
+        statusFuncs.stopSpinner();
 
         if (!props.controlled) {
             document.title = mState.resource_name;
@@ -242,8 +243,7 @@ function NotebookApp(props) {
     let project_name = my_props.is_project ? props.resource_name : "";
     let menus = (
         <Fragment>
-            <ProjectMenu {...props.statusFuncs}
-                         main_id={props.main_id}
+            <ProjectMenu main_id={props.main_id}
                          project_name={project_name}
                          is_notebook={true}
                          is_juptyer={props.is_jupyter}
@@ -262,8 +262,7 @@ function NotebookApp(props) {
         </Fragment>
     );
     let console_pane = (
-        <ConsoleComponent {...props.statusFuncs}
-                          main_id={props.main_id}
+        <ConsoleComponent main_id={props.main_id}
                           tsocket={props.tsocket}
                           handleCreateViewer={props.handleCreateViewer}
                           controlled={props.controlled}

@@ -20,6 +20,7 @@ import {TacticNavbar} from "./blueprint_navbar";
 import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_react";
 import {ThemeContext, withTheme} from "./theme"
 import {DialogContext, withDialogs} from "./modal_react";
+import {StatusContext} from "./toaster"
 
 export {list_viewer_props, ListViewerApp}
 
@@ -107,9 +108,10 @@ function ListViewerApp(props) {
 
     const theme = useContext(ThemeContext);
     const dialogFuncs = useContext(DialogContext);
+    const statusFuncs = useContext(StatusContext);
 
     useEffect(() => {
-        props.stopSpinner();
+        statusFuncs.stopSpinner();
         if (cc_ref && cc_ref.current) {
             cc_offset_top.current = cc_ref.current.offsetTop;
         }
@@ -267,7 +269,7 @@ function ListViewerApp(props) {
     }
 
     function _saveMeAs(e) {
-        props.startSpinner();
+        statusFuncs.startSpinner();
         let self = this;
         postWithCallback("host", "get_list_names", {"user_id": window.user_id}, function (data) {
             let checkboxes;
@@ -284,7 +286,7 @@ function ListViewerApp(props) {
         }, null, props.main_id);
 
         function doCancel() {
-            props.stopSpinner();
+            statusFuncs.stopSpinner();
             dialogFuncs.hideModal()
         }
 

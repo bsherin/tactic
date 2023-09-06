@@ -36,6 +36,7 @@ var mdi = (0, _markdownIt["default"])({
 mdi.use(_markdownItLatex["default"]);
 function ProjectMenu(props) {
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
+  var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   var save_state;
   if (props.is_notebook) save_state = {
     console_items: props.console_items,
@@ -56,7 +57,7 @@ function ProjectMenu(props) {
     };
   }
   function _saveProjectAs() {
-    props.startSpinner();
+    statusFuncs.startSpinner();
     (0, _communication_react.postWithCallback)("host", "get_project_names", {
       "user_id": window.user_id
     }, function (data) {
@@ -76,7 +77,7 @@ function ProjectMenu(props) {
       });
     }, null, props.main_id);
     function doCancel() {
-      props.stopSpinner();
+      statusFuncs.stopSpinner();
     }
     function CreateNewProject(new_name, checkbox_states) {
       //let console_node = cleanse_bokeh(document.getElementById("console"));
@@ -100,20 +101,20 @@ function ProjectMenu(props) {
             if (!window.in_context) {
               document.title = new_name;
             }
-            props.clearStatusMessage();
+            statusFuncs.clearStatusMessage();
             data_object.alert_type = "alert-success";
             data_object.timeout = 2000;
             (0, _communication_react.postWithCallback)("host", "refresh_project_selector_list", {
               'user_id': window.user_id
             }, null, null, props.main_id);
             props.updateLastSave();
-            props.stopSpinner();
+            statusFuncs.stopSpinner();
           });
         } else {
-          props.clearStatusMessage();
+          statusFuncs.clearStatusMessage();
           data_object["message"] = data_object["message"];
           data_object["alert-type"] = "alert-warning";
-          props.stopSpinner();
+          statusFuncs.stopSpinner();
           (0, _toaster.doFlash)(data_object);
         }
       }
@@ -127,10 +128,10 @@ function ProjectMenu(props) {
       lite_save: lite_save
     };
     result_dict.interface_state = save_state;
-    props.startSpinner();
+    statusFuncs.startSpinner();
     (0, _communication_react.postWithCallback)(props.main_id, "update_project", result_dict, updateSuccess, props.postAjaxFailure, props.main_id);
     function updateSuccess(data) {
-      props.startSpinner();
+      statusFuncs.startSpinner();
       if (data.success) {
         data["alert_type"] = "alert-success";
         data.timeout = 2000;
@@ -138,8 +139,8 @@ function ProjectMenu(props) {
       } else {
         data["alert_type"] = "alert-warning";
       }
-      props.clearStatusMessage();
-      props.stopSpinner();
+      statusFuncs.clearStatusMessage();
+      statusFuncs.stopSpinner();
       (0, _toaster.doFlash)(data);
     }
   }
@@ -206,7 +207,7 @@ function ProjectMenu(props) {
       };
       (0, _communication_react.postWithCallback)(props.main_id, "export_as_presentation", result_dict, save_as_success, props.postAjaxFailure, props.main_id);
       function save_as_success(data_object) {
-        props.clearStatusMessage();
+        statusFuncs.clearStatusMessage();
         if (data_object.success) {
           if (save_as_collection) {
             data_object.alert_type = "alert-success";
@@ -284,7 +285,7 @@ function ProjectMenu(props) {
       };
       (0, _communication_react.postWithCallback)(props.main_id, "export_as_report", result_dict, save_as_success, props.postAjaxFailure, props.main_id);
       function save_as_success(data_object) {
-        props.clearStatusMessage();
+        statusFuncs.clearStatusMessage();
         if (data_object.success) {
           if (save_as_collection) {
             data_object.alert_type = "alert-success";
@@ -300,7 +301,7 @@ function ProjectMenu(props) {
     }
   }
   function _exportAsJupyter() {
-    props.startSpinner();
+    statusFuncs.startSpinner();
     (0, _communication_react.postWithCallback)("host", "get_project_names", {
       "user_id": user_id
     }, function (data) {
@@ -344,14 +345,14 @@ function ProjectMenu(props) {
       };
       (0, _communication_react.postWithCallback)(props.main_id, "export_to_jupyter_notebook", result_dict, save_as_success, props.postAjaxFailure, props.main_id);
       function save_as_success(data_object) {
-        props.clearStatusMessage();
+        statusFuncs.clearStatusMessage();
         if (data_object.success) {
           data_object.alert_type = "alert-success";
           data_object.timeout = 2000;
         } else {
           data_object["alert-type"] = "alert-warning";
         }
-        props.stopSpinner();
+        statusFuncs.stopSpinner();
         (0, _toaster.doFlash)(data_object);
       }
     }
@@ -477,8 +478,9 @@ ProjectMenu.propTypes = {
 exports.ProjectMenu = ProjectMenu = /*#__PURE__*/(0, _react.memo)(ProjectMenu);
 function DocumentMenu(props) {
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
+  var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   function _newDocument() {
-    props.startSpinner();
+    statusFuncs.startSpinner();
     dialogFuncs.showModal("ModalDialog", {
       title: "New Document",
       field_title: "New Document Name",
@@ -490,19 +492,19 @@ function DocumentMenu(props) {
       handleClose: dialogFuncs.hideModal
     });
     function doCancel() {
-      props.stopSpinner();
+      statusFuncs.stopSpinner();
     }
     function doNew(new_name) {
       (0, _communication_react.postWithCallback)(props.main_id, "new_blank_document", {
         model_document_name: props.currentDoc,
         new_document_name: new_name
       }, function (result) {
-        props.stopSpinner();
+        statusFuncs.stopSpinner();
       }, null, props.main_id);
     }
   }
   function _duplicateDocument() {
-    props.startSpinner();
+    statusFuncs.startSpinner();
     dialogFuncs.showModal("ModalDialog", {
       title: "Duplicate Document",
       field_title: "New Document Name",
@@ -514,19 +516,19 @@ function DocumentMenu(props) {
       handleClose: dialogFuncs.hideModal
     });
     function doCancel() {
-      props.stopSpinner();
+      statusFuncs.stopSpinner();
     }
     function doDuplicate(new_name) {
       (0, _communication_react.postWithCallback)(props.main_id, "duplicate_document", {
         original_document_name: props.currentDoc,
         new_document_name: new_name
       }, function (result) {
-        props.stopSpinner();
+        statusFuncs.stopSpinner();
       }, null, props.main_id);
     }
   }
   function _renameDocument() {
-    props.startSpinner();
+    statusFuncs.startSpinner();
     dialogFuncs.showModal("ModalDialog", {
       title: "Rename Document",
       field_title: "New Document Name",
@@ -538,14 +540,14 @@ function DocumentMenu(props) {
       handleClose: dialogFuncs.hideModal
     });
     function doCancel() {
-      props.stopSpinner();
+      statusFuncs.stopSpinner();
     }
     function doRename(new_name) {
       (0, _communication_react.postWithCallback)(props.main_id, "rename_document", {
         old_document_name: props.currentDoc,
         new_document_name: new_name
       }, function (result) {
-        props.stopSpinner();
+        statusFuncs.stopSpinner();
       }, null, props.main_id);
     }
   }

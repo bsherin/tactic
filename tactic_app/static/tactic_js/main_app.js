@@ -109,6 +109,7 @@ function MainApp(props) {
     tile_list_ref = _useReducerAndRef4[2];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
+  var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   var _useReducer = (0, _react.useReducer)(_main_support.mainReducer, {
       table_is_shrunk: iStateOrDefault("table_is_shrunk"),
       console_width_fraction: iStateOrDefault("console_width_fraction"),
@@ -164,7 +165,7 @@ function MainApp(props) {
       props.registerOmniFunction(_omniFunction);
     }
     _updateLastSave();
-    props.stopSpinner();
+    statusFuncs.stopSpinner();
     if (!props.controlled) {
       document.title = mState.resource_name;
       window.addEventListener("resize", _update_window_dimensions);
@@ -365,8 +366,8 @@ function MainApp(props) {
         "doc_name": new_doc_name,
         "set_visible_doc": true
       }, function (data) {
-        props.stopSpinner();
-        props.clearStatusMessage();
+        statusFuncs.stopSpinner();
+        statusFuncs.clearStatusMessage();
         var new_table_spec = {
           "current_doc_name": new_doc_name
         };
@@ -452,8 +453,8 @@ function MainApp(props) {
       handleClose: dialogFuncs.hideModal
     });
     function createNewTile(tile_name) {
-      props.startSpinner();
-      props.statusMessage("Creating Tile " + tile_name);
+      statusFuncs.startSpinner();
+      statusFuncs.statusMessage("Creating Tile " + tile_name);
       var data_dict = {
         tile_name: tile_name,
         tile_type: menu_id,
@@ -469,8 +470,8 @@ function MainApp(props) {
             new_item: new_tile_entry
           });
           if (updateExportsList.current) updateExportsList.current();
-          props.clearStatusMessage();
-          props.stopSpinner();
+          statusFuncs.clearStatusMessage();
+          statusFuncs.stopSpinner();
         } else {
           props.addErrorDrawerEntry({
             title: "Error creating tile",
@@ -854,7 +855,7 @@ function MainApp(props) {
     }, null, props.main_id);
   }
   function _changeCollection() {
-    props.startSpinner();
+    statusFuncs.startSpinner();
     (0, _communication_react.postWithCallback)("host", "get_collection_names", {
       "user_id": user_id
     }, function (data) {
@@ -888,10 +889,10 @@ function MainApp(props) {
           pushCallback(function () {
             _handleChangeDoc(data_object.doc_names[0]);
           });
-          props.stopSpinner();
+          statusFuncs.stopSpinner();
         } else {
-          props.clearStatusMessage();
-          props.stopSpinner();
+          statusFuncs.clearStatusMessage();
+          statusFuncs.stopSpinner();
           props.addErrorDrawerEntry({
             title: "Error changing collection",
             content: data_object.message
@@ -992,7 +993,7 @@ function MainApp(props) {
     disabled_row_items = ["Delete Row", "Insert Row Before", "Insert Row After", "Duplicate Row"];
   }
   var project_name = my_props.is_project ? props.resource_name : "";
-  var menus = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_main_menus_react.ProjectMenu, _extends({}, props.statusFuncs, {
+  var menus = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_main_menus_react.ProjectMenu, {
     main_id: props.main_id,
     project_name: project_name,
     is_notebook: props.is_notebook,
@@ -1008,12 +1009,12 @@ function MainApp(props) {
     disabled_items: my_props.is_project ? [] : ["Save"],
     registerOmniGetter: _registerOmniGetter,
     hidden_items: ["Export as Jupyter Notebook"]
-  })), /*#__PURE__*/_react["default"].createElement(_main_menus_react.DocumentMenu, _extends({}, props.statusFuncs, {
+  }), /*#__PURE__*/_react["default"].createElement(_main_menus_react.DocumentMenu, {
     main_id: props.main_id,
     documentNames: mState.doc_names,
     registerOmniGetter: _registerOmniGetter,
     currentDoc: mState.table_spec.current_doc_name
-  })), !props.is_freeform && /*#__PURE__*/_react["default"].createElement(_main_menus_react.ColumnMenu, _extends({}, props.statusFuncs, {
+  }), !props.is_freeform && /*#__PURE__*/_react["default"].createElement(_main_menus_react.ColumnMenu, {
     main_id: props.main_id,
     project_name: project_name,
     is_notebook: props.is_notebook,
@@ -1029,7 +1030,7 @@ function MainApp(props) {
     addColumn: _addColumn,
     registerOmniGetter: _registerOmniGetter,
     deleteColumn: _deleteColumn
-  })), !props.is_freeform && /*#__PURE__*/_react["default"].createElement(_main_menus_react.RowMenu, _extends({}, props.statusFuncs, {
+  }), !props.is_freeform && /*#__PURE__*/_react["default"].createElement(_main_menus_react.RowMenu, {
     main_id: props.main_id,
     project_name: project_name,
     is_notebook: props.is_notebook,
@@ -1045,7 +1046,7 @@ function MainApp(props) {
     selected_row: mState.selected_row,
     registerOmniGetter: _registerOmniGetter,
     disabled_items: disabled_row_items
-  })), /*#__PURE__*/_react["default"].createElement(_main_menus_react.ViewMenu, _extends({}, props.statusFuncs, {
+  }), /*#__PURE__*/_react["default"].createElement(_main_menus_react.ViewMenu, {
     main_id: props.main_id,
     project_name: project_name,
     is_notebook: props.is_notebook,
@@ -1057,7 +1058,7 @@ function MainApp(props) {
     show_console_pane: mState.show_console_pane,
     registerOmniGetter: _registerOmniGetter,
     setMainStateValue: _setMainStateValue
-  })), /*#__PURE__*/_react["default"].createElement(_core.NavbarDivider, null), create_tile_menus());
+  }), /*#__PURE__*/_react["default"].createElement(_core.NavbarDivider, null), create_tile_menus());
   var table_available_height = hp_height;
   var card_header = /*#__PURE__*/_react["default"].createElement(_table_react.MainTableCardHeader, {
     main_id: props.main_id,
@@ -1131,7 +1132,7 @@ function MainApp(props) {
   }
   var console_pane;
   if (mState.show_console_pane) {
-    console_pane = /*#__PURE__*/_react["default"].createElement(_console_component.ConsoleComponent, _extends({}, props.statusFuncs, {
+    console_pane = /*#__PURE__*/_react["default"].createElement(_console_component.ConsoleComponent, {
       main_id: props.main_id,
       tsocket: props.tsocket,
       handleCreateViewer: props.handleCreateViewer,
@@ -1145,7 +1146,7 @@ function MainApp(props) {
       console_available_width: true_usable_width * mState.console_width_fraction - 16,
       zoomable: true,
       shrinkable: true
-    }));
+    });
   } else {
     var console_available_width = true_usable_width * mState.console_width_fraction - 16;
     console_pane = /*#__PURE__*/_react["default"].createElement("div", {

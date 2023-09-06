@@ -431,10 +431,7 @@ function AdminPane(props) {
     list_of_selected: props.list_of_selected,
     setConsoleText: _setConsoleText,
     delete_row: _delete_row,
-    refresh_func: _refresh_func,
-    startSpinner: props.startSpinner,
-    stopSpinner: props.stopSpinner,
-    clearStatusMessage: props.clearStatusMessage
+    refresh_func: _refresh_func
   }, props.errorDrawerFuncs)), /*#__PURE__*/_react["default"].createElement("div", {
     ref: top_ref,
     className: "d-flex flex-column mt-3"

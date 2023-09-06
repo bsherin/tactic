@@ -128,7 +128,7 @@ function TileDifferApp(props) {
     show_api_links: true,
     page_id: props.resource_viewer_id,
     user_name: window.username
-  }), /*#__PURE__*/_react["default"].createElement(_merge_viewer_app.MergeViewerApp, _extends({}, props.statusFuncs, {
+  }), /*#__PURE__*/_react["default"].createElement(_merge_viewer_app.MergeViewerApp, {
     connection_status: connection_status,
     page_id: props.resource_viewer_id,
     resource_viewer_id: props.resource_viewer_id,
@@ -140,7 +140,7 @@ function TileDifferApp(props) {
     handleSelectChange: handleSelectChange,
     handleEditChange: handleEditChange,
     saveHandler: saveFromLeft
-  })));
+  }));
 }
 TileDifferApp.propTypes = {
   resource_name: _propTypes["default"].string,
