@@ -6,6 +6,7 @@ from flask import jsonify, request
 
 from tactic_app import app, socketio
 
+
 class PoolManager(LibraryResourceManager):
 
     def add_rules(self):
@@ -22,12 +23,23 @@ class PoolManager(LibraryResourceManager):
         app.add_url_rule('/duplicate_pool_file', "duplicate_pool_file",
                          login_required(self.duplicate_pool_file), methods=['get', "post"])
 
-
     def user_to_true(self, user_path):
         return re.sub("/mydisk", current_user.pool_dir, user_path)
 
     def true_to_user(self, true_path):
         return re.sub(current_user.pool_dir, "/mydisk", true_path)
+
+    def download_pool_file(self):
+        try:
+            data = request.json
+            new_name = data["new_name"]
+            path = data["path"]
+            true_path = self.user_to_true(old_path)
+
+        except Exception as ex:
+            emsg = self.get_traceback_message(ex, "error in rename_pool_resource")
+            print(emsg)
+            return jsonify({"success": False, "message": emsg})
 
     def rename_pool_resource(self):
         try:
@@ -94,7 +106,7 @@ class PoolManager(LibraryResourceManager):
             data = request.json
             dst = data["dst"]
             src = data["src"]
-            true_dst= self.user_to_true(dst)
+            true_dst = self.user_to_true(dst)
             true_src = self.user_to_true(src)
             shutil.move(true_src, true_dst)
             user_id = current_user.get_id()
@@ -127,8 +139,6 @@ class PoolManager(LibraryResourceManager):
 
         return jsonify({"success": True})
 
-
-
     def import_pool(self, library_id):
         try:
             fullpath = request.form.get("extra_value")
@@ -147,7 +157,7 @@ class PoolManager(LibraryResourceManager):
                     the_file.save(f"{truepath}/{the_file.filename}")
                     success_list.append(the_file.filename)
                     socketio.emit("pool-add-file", {"full_path": f"{fullpath}/{the_file.filename}"},
-                          namespace='/main', room=user_id)
+                                  namespace='/main', room=user_id)
                 except Exception as ex:
                     emsg = self.extract_short_error_message(ex, f"Error uploading file {the_file.filename}")
                     error_dict[the_file.filename] = emsg
