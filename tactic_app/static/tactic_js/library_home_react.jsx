@@ -21,6 +21,7 @@ import { guid, useCallbackStack, useConstructor, useConnection } from "./utiliti
 import {TacticNavbar} from "./blueprint_navbar";
 import {AllMenubar} from "./library_menubars"
 import {ThemeContext, withTheme} from "./theme";
+import {withDialogs} from "./modal_react";
 
 const TAB_BAR_WIDTH = 50;
 

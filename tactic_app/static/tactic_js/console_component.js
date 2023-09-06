@@ -18,13 +18,13 @@ var _sortable_container = require("./sortable_container");
 var _key_trap = require("./key_trap");
 var _communication_react = require("./communication_react");
 var _toaster = require("./toaster");
-var _modal_react = require("./modal_react");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _library_pane = require("./library_pane");
 var _menu_utilities = require("./menu_utilities");
 var _search_form = require("./search_form");
 var _searchable_console = require("./searchable_console");
 var _theme = require("./theme");
+var _modal_react = require("./modal_react");
 var _utilities_react = require("./utilities_react");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
@@ -94,6 +94,7 @@ function ConsoleComponent(props) {
     pseudo_tile_id = _useState14[0],
     set_pseudo_tile_id = _useState14[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
+  var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _react.useEffect)(function () {
     initSocket();
@@ -263,16 +264,24 @@ function ConsoleComponent(props) {
   var _deleteSection = (0, _react.useCallback)(function (unique_id) {
     var centry = get_console_item_entry(unique_id);
     var confirm_text = "Delete section ".concat(centry.header_text, "?");
-    (0, _modal_react.showConfirmDialogReact)("Delete Section", confirm_text, "do nothing", "delete", function () {
-      var id_list = _getSectionIds(unique_id);
-      var cindex = _consoleItemIndex(unique_id);
-      var new_console_items = _toConsumableArray(props.console_items.current);
-      new_console_items.splice(cindex, id_list.length);
-      _clear_all_selected_items();
-      props.dispatch({
-        type: "delete_items",
-        id_list: id_list
-      });
+    dialogFuncs.showModal("ConfirmDialog", {
+      title: "Delete Section",
+      text_body: confirm_text,
+      cancel_text: "do nothing",
+      submit_text: "delete",
+      handleSubmit: function handleSubmit() {
+        var id_list = _getSectionIds(unique_id);
+        var cindex = _consoleItemIndex(unique_id);
+        var new_console_items = _toConsumableArray(props.console_items.current);
+        new_console_items.splice(cindex, id_list.length);
+        _clear_all_selected_items();
+        props.dispatch({
+          type: "delete_items",
+          id_list: id_list
+        });
+      },
+      handleClose: dialogFuncs.hideModal,
+      handleCancel: null
     });
   }, []);
   var _copySection = (0, _react.useCallback)(function () {
@@ -391,13 +400,18 @@ function ConsoleComponent(props) {
   }, []);
   function _insertLinkInItem(unique_id) {
     var entry = get_console_item_entry(unique_id);
-    (0, _modal_react.showSelectResourceDialog)("cancel", "insert link", function (result) {
-      var new_links = "links" in entry ? _toConsumableArray(entry.links) : [];
-      new_links.push({
-        res_type: result.type,
-        res_name: result.selected_resource
-      });
-      _setConsoleItemValue(entry.unique_id, "links", new_links);
+    dialogFuncs.showModal("SelectResourceDialog", {
+      cancel_text: "cancel",
+      submit_text: "insert link",
+      handleSubmit: function handleSubmit(result) {
+        var new_links = "links" in entry ? _toConsumableArray(entry.links) : [];
+        new_links.push({
+          res_type: result.type,
+          res_name: result.selected_resource
+        });
+        _setConsoleItemValue(entry.unique_id, "links", new_links);
+      },
+      handleClose: dialogFuncs.hideModal
     });
   }
   var _addBlankCode = (0, _react.useCallback)(function (e) {
@@ -430,13 +444,21 @@ function ConsoleComponent(props) {
   }
   var _clearConsole = (0, _react.useCallback)(function () {
     var confirm_text = "Are you sure that you want to erase everything in this log?";
-    (0, _modal_react.showConfirmDialogReact)("Clear entire log", confirm_text, "do nothing", "clear", function () {
-      set_all_selected_items([]);
-      pushCallback(function () {
-        props.dispatch({
-          type: "delete_all_items"
+    dialogFuncs.showModal("ConfirmDialog", {
+      title: "Clear entire log",
+      text_body: confirm_text,
+      cancel_text: "do nothing",
+      submit_text: "clear",
+      handleSubmit: function handleSubmit() {
+        set_all_selected_items([]);
+        pushCallback(function () {
+          props.dispatch({
+            type: "delete_all_items"
+          });
         });
-      });
+      },
+      handleClose: dialogFuncs.hideModal,
+      handleCancel: null
     });
   }, []);
   function _togglePseudoLog() {
@@ -876,8 +898,16 @@ function ConsoleComponent(props) {
       var new_console_items = [];
       if (_isDividerSelected()) {
         var confirm_text = "The selection includes section dividers. " + "The sections will be completed in their entirety. Do you want to continue";
-        (0, _modal_react.showConfirmDialogReact)("Do Delete", confirm_text, "do nothing", "delete", function () {
-          _doDeleteSelected();
+        dialogFuncs.showModal("ConfirmDialog", {
+          title: "Do Delete",
+          text_body: confirm_text,
+          cancel_text: "do nothing",
+          submit_text: "delete",
+          handleSubmit: function handleSubmit() {
+            _doDeleteSelected();
+          },
+          handleClose: dialogFuncs.hideModal,
+          handleCancel: null
         });
       } else {
         _doDeleteSelected();
@@ -2781,13 +2811,18 @@ function ConsoleTextItem(props) {
     props.selectConsoleItem(props.unique_id, e, callback);
   }
   function _insertResourceLink() {
-    (0, _modal_react.showSelectResourceDialog)("cancel", "insert link", function (result) {
-      var new_links = _toConsumableArray(props.links);
-      new_links.push({
-        res_type: result.type,
-        res_name: result.selected_resource
-      });
-      props.setConsoleItemValue(props.unique_id, "links", new_links);
+    dialogFuncs.showModal("SelectResourceDialog", {
+      cancel_text: "cancel",
+      submit_text: "insert link",
+      handleSubmit: function handleSubmit(result) {
+        var new_links = _toConsumableArray(props.links);
+        new_links.push({
+          res_type: result.type,
+          res_name: result.selected_resource
+        });
+        props.setConsoleItemValue(props.unique_id, "links", new_links);
+      },
+      handleClose: dialogFuncs.hideModal
     });
   }
   function _deleteLinkButton(index) {

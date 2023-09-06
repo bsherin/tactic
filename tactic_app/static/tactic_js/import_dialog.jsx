@@ -1,6 +1,5 @@
 import React from "react";
 import {useState, useEffect, useRef, useContext} from "react";
-import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 import DropzoneComponent from 'react-dropzone-component';
 import "../css/dzcss/dropzone.css";
@@ -16,9 +15,9 @@ import {renderToStaticMarkup} from "react-dom/server";
 import {ErrorItem} from "./error_drawer";
 import {PoolAddressSelector} from "./pool_tree";
 
-import {withTheme, ThemeContext} from "./theme";
+import {ThemeContext} from "./theme";
 
-export {showFileImportDialog}
+export {FileImportDialog}
 
 var defaultImportDialogWidth = 700;
 
@@ -27,7 +26,7 @@ function FileImportDialog(props) {
     const name_counter = useRef(1);
     const default_name = useRef("new" + props.res_type);
     const picker_ref = useRef(null);
-    const existing_names = useRef(props.existing_names);
+    const existing_names = useRef([]);
     const current_url = useRef("dummy");
 
     const myDropzone = useRef(null);
@@ -50,14 +49,17 @@ function FileImportDialog(props) {
     const theme = useContext(ThemeContext);
 
     useConstructor(() => {
-        while (_name_exists(default_name)) {
-            name_counter.current += 1;
-            default_name.current = "new" + props.res_type + String(name_counter.current)
-        }
+        $.getJSON(`${$SCRIPT_ROOT}get_resource_names/${props.res_type}`, function (data) {
+            existing_names.current = data.resource_names;
+            while (_name_exists(default_name)) {
+                    name_counter.current += 1;
+                    default_name.current = "new" + props.res_type + String(name_counter.current)
+                }
+            set_show(true)
+        });
     });
 
     useEffect(() => {
-        set_show(true);
         if ((props.checkboxes != null) && (props.checkboxes.length != 0)) {
             let lcheckbox_states = {};
             for (let checkbox of props.checkboxes) {
@@ -302,8 +304,8 @@ function FileImportDialog(props) {
                 className={theme.dark_theme ? "import-dialog bp5-dark" : "import-dialog light-theme"}
                 title={props.title}
                 onClose={_closeHandler}
-                canOutsideClickClose={false}
-                canEscapeKeyClose={false}>
+                canOutsideClickClose={true}
+                canEscapeKeyClose={true}>
             <div className={Classes.DIALOG_BODY}>
                 <FormGroup helperText={`allowed types: ${allowed_types_string}`}>
                     <DropzoneComponent config={componentConfig}
@@ -420,37 +422,3 @@ FileImportDialog.defaultProps = {
     after_upload: null,
     show_address_selector: false
 };
-
-FileImportDialog = withTheme(FileImportDialog);
-
-function showFileImportDialog(res_type, allowed_file_types, checkboxes, process_handler, tsocket,
-                              combine = false, show_csv_options = false, after_upload = null,
-                              show_address_selector = false, initial_address = null) {
-    $.getJSON(`${$SCRIPT_ROOT}get_resource_names/${res_type}`, function (data) {
-            showTheDialog(data["resource_names"])
-        }
-    );
-
-    function showTheDialog(existing_names) {
-        let domContainer = document.querySelector('#modal-area');
-
-        function handle_close() {
-            ReactDOM.unmountComponentAtNode(domContainer)
-        }
-
-        ReactDOM.render(<FileImportDialog title={`Import ${res_type}`}
-                                          tsocket={tsocket}
-                                          res_type={res_type}
-                                          allowed_file_types={allowed_file_types}
-                                          existing_names={existing_names}
-                                          checkboxes={checkboxes}
-                                          process_handler={process_handler}
-                                          combine={combine}
-                                          show_csv_options={show_csv_options}
-                                          initial_theme={window.dark_theme ? "dark" : "light"}
-                                          after_upload={after_upload}
-                                          show_address_selector={show_address_selector}
-                                          initial_address={initial_address}
-                                          handleClose={handle_close}/>, domContainer);
-    }
-}

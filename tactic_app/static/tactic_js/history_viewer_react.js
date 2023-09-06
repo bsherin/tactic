@@ -5,7 +5,7 @@ require("../tactic_css/tactic.scss");
 var _react = _interopRequireWildcard(require("react"));
 var ReactDOM = _interopRequireWildcard(require("react-dom"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
-var _merge_viewer_app = require("./merge_viewer_app.js");
+var _merge_viewer_app = require("./merge_viewer_app");
 var _toaster = require("./toaster.js");
 var _communication_react = require("./communication_react.js");
 var _error_drawer = require("./error_drawer.js");

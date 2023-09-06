@@ -17,14 +17,13 @@ var _tag_buttons_react = require("./tag_buttons_react");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _library_widgets = require("./library_widgets");
 var _resizing_layouts = require("./resizing_layouts");
-var _modal_react = require("./modal_react");
 var _communication_react = require("./communication_react");
 var _sizing_tools = require("./sizing_tools");
 var _toaster = require("./toaster.js");
 var _key_trap = require("./key_trap.js");
 var _utilities_react = require("./utilities_react");
-var _import_dialog = require("./import_dialog");
 var _theme = require("./theme");
+var _modal_react = require("./modal_react");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -964,20 +963,26 @@ function LibraryPane(props) {
     } finally {
       _iterator10.f();
     }
-    (0, _modal_react.showConfirmDialogReact)("Delete resources", confirm_text, "do nothing", "delete", function () {
-      (0, _communication_react.postAjaxPromise)("delete_resource_list", {
-        "resource_list": res_list
-      }).then(function () {
-        var new_index = 0;
-        if (first_index > 0) {
-          new_index = first_index - 1;
-        }
-        _grabNewChunkWithRow(new_index, true, null, true);
-      });
-      // .catch(doFlash);
+    dialogFuncs.showModal("ConfirmDialog", {
+      title: "Delete resources",
+      text_body: confirm_text,
+      cancel_text: "do nothing",
+      submit_text: "delete",
+      handleSubmit: function handleSubmit() {
+        (0, _communication_react.postAjaxPromise)("delete_resource_list", {
+          "resource_list": res_list
+        }).then(function () {
+          var new_index = 0;
+          if (first_index > 0) {
+            new_index = first_index - 1;
+          }
+          _grabNewChunkWithRow(new_index, true, null, true);
+        });
+      },
+      handleClose: dialogFuncs.hideModal,
+      handleCancel: null
     });
   }
-
   function _rename_func() {
     var row = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     var res_type;
@@ -1139,7 +1144,20 @@ function LibraryPane(props) {
     });
   }
   function _showJupyterImport() {
-    (0, _import_dialog.showFileImportDialog)("project", ".ipynb", [], _import_jupyter, props.tsocket, false, false);
+    dialogFuncs.showModal("FileImportDialog", {
+      res_type: "project",
+      allowed_file_types: ".ipynb",
+      checkboxes: [],
+      process_handler: _import_jupyter,
+      tsocket: props.tsocket,
+      combine: false,
+      show_csv_options: false,
+      after_upload: null,
+      show_address_selector: false,
+      initial_address: null,
+      handleClose: dialogFuncs.hideModal,
+      handleCancel: null
+    });
   }
   function _import_jupyter(myDropZone, setCurrentUrl) {
     var new_url = "import_jupyter/".concat(props.library_id);
@@ -1166,7 +1184,15 @@ function LibraryPane(props) {
         });
       };
       $.getJSON("".concat($SCRIPT_ROOT, "get_resource_names/collection"), function (data) {
-        (0, _modal_react.showSelectDialog)("Select a new collection to combine with " + res_name, "Collection to Combine", "Cancel", "Combine", doTheCombine, data["resource_names"]);
+        dialogFuncs.showModal("SelectDialog", {
+          title: "Select a new collection to combine with " + res_name,
+          select_label: "Collection to Combine",
+          cancel_text: "Cancel",
+          submit_text: "Combine",
+          handleSubmit: doTheCombine,
+          option_list: data.resource_names,
+          handleClose: dialogFuncs.hideModal
+        });
       });
     } else {
       $.getJSON("".concat($SCRIPT_ROOT, "get_resource_names/collection"), function (data) {
@@ -1234,10 +1260,23 @@ function LibraryPane(props) {
     }
   }
   function _showCollectionImport() {
-    (0, _import_dialog.showFileImportDialog)("collection", ".csv,.tsv,.txt,.xls,.xlsx,.html", [{
-      "checkname": "import_as_freeform",
-      "checktext": "Import as freeform"
-    }], _import_collection, props.tsocket, true, true, _refresh_func);
+    dialogFuncs.showModal("FileImportDialog", {
+      res_type: "collection",
+      allowed_file_types: ".csv,.tsv,.txt,.xls,.xlsx,.html",
+      checkboxes: [{
+        "checkname": "import_as_freeform",
+        "checktext": "Import as freeform"
+      }],
+      process_handler: _import_collection,
+      tsocket: props.tsocket,
+      combine: true,
+      show_csv_options: true,
+      after_upload: _refresh_func,
+      show_address_selector: false,
+      initial_address: null,
+      handleClose: dialogFuncs.hideModal,
+      handleCancel: null
+    });
   }
   function _import_collection(myDropZone, setCurrentUrl, new_name, check_results) {
     var csv_options = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : null;
@@ -1427,7 +1466,20 @@ function LibraryPane(props) {
     myDropZone.processQueue();
   }
   function _showListImport() {
-    (0, _import_dialog.showFileImportDialog)("list", "text/*", [], _add_list, props.tsocket, false, false);
+    dialogFuncs.showModal("FileImportDialog", {
+      res_type: "list",
+      allowed_file_types: "text/*",
+      checkboxes: [],
+      process_handler: _add_list,
+      tsocket: props.tsocket,
+      combine: false,
+      show_csv_options: false,
+      after_upload: null,
+      show_address_selector: false,
+      initial_address: null,
+      handleClose: dialogFuncs.hideModal,
+      handleCancel: null
+    });
   }
   function _add_to_pool(myDropZone, setCurrentUrl, current_value) {
     var new_url = "import_pool/".concat(props.library_id);
@@ -1436,7 +1488,20 @@ function LibraryPane(props) {
     myDropZone.processQueue();
   }
   function _showPoolImport() {
-    (0, _import_dialog.showFileImportDialog)("pool", null, [], _add_to_pool, props.tsocket, false, false, null, true);
+    dialogFuncs.showModal("FileImportDialog", {
+      res_type: "pool",
+      allowed_file_types: null,
+      checkboxes: [],
+      process_handler: _add_to_pool,
+      tsocket: props.tsocket,
+      combine: false,
+      show_csv_options: false,
+      after_upload: null,
+      show_address_selector: true,
+      initial_address: null,
+      handleClose: dialogFuncs.hideModal,
+      handleCancel: null
+    });
   }
   function _new_code(template_name) {
     $.getJSON("".concat($SCRIPT_ROOT, "/get_resource_names/code"), function (data) {

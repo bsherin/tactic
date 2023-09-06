@@ -27,6 +27,7 @@ import {useCallbackStack, useConstructor, useReducerAndRef} from "./utilities_re
 import {notebook_props, notebookReducer} from "./notebook_support";
 
 import {withTheme, ThemeContext} from "./theme";
+import {withDialogs} from "./modal_react";
 
 const MARGIN_SIZE = 10;
 const BOTTOM_MARGIN = 20;
@@ -362,7 +363,7 @@ NotebookApp.defaultProps = {
 
 function main_main() {
     function gotProps(the_props) {
-        let NotebookAppPlus = withTheme(withErrorDrawer(withStatus(NotebookApp)));
+        let NotebookAppPlus = withTheme(withDialogs(withErrorDrawer(withStatus(NotebookApp))));
         let the_element = <NotebookAppPlus {...the_props}
                                            controlled={false}
                                            initial_theme={window.theme}

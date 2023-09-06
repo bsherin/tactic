@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 
 import {Menu, MenuItem, ContextMenuPopover, Tree} from "@blueprintjs/core";
 
-import {showConfirmDialogReact} from "./modal_react";
 import {arraysMatch, remove_duplicates} from "./utilities_react";
 
 import {ThemeContext} from "./theme"
@@ -204,10 +203,17 @@ function TagButtonList(props) {
     function _delete_tag(tagstring) {
         const confirm_text = `Are you sure that you want to delete the tag "${tagstring}" for this resource type?`;
         let self = this;
-        showConfirmDialogReact(`Delete tag "${tagstring}"`, confirm_text, "do nothing", "delete", function () {
-            props.doTagDelete(tagstring)
-        })
-
+        dialogFuncs.showModal("ConfirmDialog", {
+            title: `Delete tag "${tagstring}"`,
+            text_body: confirm_text,
+            cancel_text: "do nothing",
+            submit_text: "delete",
+            handleSubmit: ()=>{
+                props.doTagDelete(tagstring)
+            },
+            handleClose: dialogFuncs.hideModal,
+            handleCancel: null
+        });
     }
 
     function _showContextMenu(node, nodepath, e) {

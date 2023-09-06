@@ -43,7 +43,7 @@ function ReactCodemirrorMergeView(props) {
     const preferred_themes = useRef(null);
     const cmobject = useRef(null);
 
-    const themer = useContext(ThemeContext);
+    const theme = useContext(ThemeContext);
 
     useEffect(()=>{
         postAjax("get_preferred_codemirror_themes", {}, (data)=> {

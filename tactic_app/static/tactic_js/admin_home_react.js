@@ -10,7 +10,6 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
 var _table = require("@blueprintjs/table");
 var _tactic_socket = require("./tactic_socket");
-var _modal_react = require("./modal_react");
 var _toaster = require("./toaster");
 var _blueprint_navbar = require("./blueprint_navbar");
 var _communication_react = require("./communication_react");
@@ -96,6 +95,7 @@ function AdministerHomeApp(props) {
     usable_width = _useState6[0],
     set_usable_width = _useState6[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
+  var dialogFuncs = (0, _react.useContext)(DialogContext);
   var top_ref = (0, _react.useRef)(null);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _react.useEffect)(function () {
@@ -316,16 +316,32 @@ function UserMenubar(props) {
     var user_id = props.selected_resource._id;
     var username = props.selected_resource.username;
     var confirm_text = "Are you sure that you want to delete user and all their data" + String(username) + "?";
-    (0, _modal_react.showConfirmDialogReact)("Delete User", confirm_text, "do nothing", "delete", function () {
-      $.getJSON($SCRIPT_ROOT + '/delete_user/' + user_id, _toaster.doFlash);
+    dialogFuncs.showModal("ConfirmDialog", {
+      title: "Delete User",
+      text_body: "Are you sure that you want to delete user and all their data".concat(String(username), "?"),
+      cancel_text: "do nothing",
+      submit_text: "delete",
+      handleSubmit: function handleSubmit() {
+        $.getJSON($SCRIPT_ROOT + '/delete_user/' + user_id, _toaster.doFlash);
+      },
+      handleClose: dialogFuncs.hideModal,
+      handleCancel: null
     });
   }
   function _bump_user_alt_id() {
     var user_id = props.selected_resource._id;
     var username = props.selected_resource.username;
     var confirm_text = "Are you sure that you want to bump the id for user " + String(username) + "?  " + "This will effectively log them out";
-    (0, _modal_react.showConfirmDialogReact)("Bump User", confirm_text, "do nothing", "bump", function () {
-      $.getJSON($SCRIPT_ROOT + '/bump_one_alt_id/' + user_id, _toaster.doFlash);
+    dialogFuncs.showModal("ConfirmDialog", {
+      title: "Bump User",
+      text_body: confirm_text,
+      cancel_text: "do nothing",
+      submit_text: "bump",
+      handleSubmit: function handleSubmit() {
+        $.getJSON($SCRIPT_ROOT + '/bump_one_alt_id/' + user_id, _toaster.doFlash);
+      },
+      handleClose: dialogFuncs.hideModal,
+      handleCancel: null
     });
   }
   function _toggle_status() {
@@ -334,8 +350,16 @@ function UserMenubar(props) {
   }
   function _bump_all_alt_ids() {
     var confirm_text = "Are you sure that you want to bump all alt ids?" + "This will effectively log them out";
-    (0, _modal_react.showConfirmDialogReact)("Bump all", confirm_text, "do nothing", "bump", function () {
-      $.getJSON($SCRIPT_ROOT + '/bump_all_alt_ids', _toaster.doFlash);
+    dialogFuncs.showModal("ConfirmDialog", {
+      title: "Bump all",
+      text_body: confirm_text,
+      cancel_text: "do nothing",
+      submit_text: "bump",
+      handleSubmit: function handleSubmit() {
+        $.getJSON($SCRIPT_ROOT + '/bump_all_alt_ids', _toaster.doFlash);
+      },
+      handleClose: dialogFuncs.hideModal,
+      handleCancel: null
     });
   }
 
@@ -346,26 +370,29 @@ function UserMenubar(props) {
   //     });
   // }
 
-  function _remove_all_duplicates() {
-    var confirm_text = "Are you sure that you want to remove all duplicates?";
-    (0, _modal_react.showConfirmDialogReact)("Bump all", confirm_text, "do nothing", "remove", function () {
-      $.getJSON($SCRIPT_ROOT + '/remove_all_duplicate_collections', _toaster.doFlash);
-    });
-  }
-  function update_user_starters(event) {
-    var user_id = props.selected_resource._id;
-    var confirm_text = "Are you sure that you want to update starter tiles for user " + String(user_id) + "?";
-    (0, _modal_react.showConfirmDialogReact)("Update User", confirm_text, "do nothing", "update", function () {
-      $.getJSON($SCRIPT_ROOT + '/update_user_starter_tiles/' + user_id, _toaster.doFlash);
-    });
-  }
-  function _migrate_user(event) {
-    var user_id = props.selected_resource._id;
-    var confirm_text = "Are you sure that you want to migrate user " + String(user_id) + "?";
-    (0, _modal_react.showConfirmDialogReact)("Migrate User", confirm_text, "do nothing", "migrate", function () {
-      $.getJSON($SCRIPT_ROOT + '/migrate_user/' + user_id, _toaster.doFlash);
-    });
-  }
+  // function _remove_all_duplicates () {
+  //     const confirm_text = "Are you sure that you want to remove all duplicates?";
+  //     showConfirmDialogReact("Bump all", confirm_text, "do nothing", "remove", function () {
+  //         $.getJSON($SCRIPT_ROOT + '/remove_all_duplicate_collections', doFlash);
+  //     });
+  // }
+  //
+  // function update_user_starters (event) {
+  //     let user_id = props.selected_resource._id;
+  //     const confirm_text = "Are you sure that you want to update starter tiles for user " + String(user_id) + "?";
+  //     showConfirmDialogReact("Update User", confirm_text, "do nothing", "update", function () {
+  //         $.getJSON($SCRIPT_ROOT + '/update_user_starter_tiles/' + user_id, doFlash);
+  //     });
+  // }
+  //
+  // function _migrate_user (event) {
+  //     let user_id = props.selected_resource._id;
+  //     const confirm_text = "Are you sure that you want to migrate user " + String(user_id) + "?";
+  //     showConfirmDialogReact("Migrate User", confirm_text, "do nothing", "migrate", function () {
+  //         $.getJSON($SCRIPT_ROOT + '/migrate_user/' + user_id, doFlash);
+  //     });
+  // }
+
   function _create_user(event) {
     window.open($SCRIPT_ROOT + '/register');
   }

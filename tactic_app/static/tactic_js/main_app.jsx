@@ -22,7 +22,6 @@ import {HorizontalPanes, VerticalPanes} from "./resizing_layouts";
 import {ProjectMenu, DocumentMenu, ColumnMenu, RowMenu, ViewMenu, MenuComponent} from "./main_menus_react";
 import {TileContainer, tilesReducer} from "./tile_react";
 import {ExportsViewer} from "./export_viewer_react";
-import {showSelectDialog} from "./modal_react";
 import {ConsoleComponent} from "./console_component";
 import {consoleItemsReducer} from "./console_support";
 import {handleCallback, postWithCallback, postAjaxPromise, postAjax} from "./communication_react";
@@ -36,7 +35,7 @@ import {TacticOmnibar} from "./TacticOmnibar";
 import {KeyTrap} from "./key_trap";
 import {useCallbackStack, useReducerAndRef} from "./utilities_react";
 import {ThemeContext, withTheme} from "./theme";
-import {DialogContext} from "./modal_react";
+import {DialogContext, withDialogs} from "./modal_react";
 
 export {MainApp}
 
@@ -787,9 +786,15 @@ function MainApp(props) {
     function _changeCollection() {
         props.startSpinner();
         postWithCallback("host", "get_collection_names", {"user_id": user_id}, function (data) {
-            let option_names = data["collection_names"];
-            showSelectDialog("Select New Collection", "New Collection", "Cancel",
-                "Submit", changeTheCollection, option_names)
+            dialogFuncs.showModal("SelectDialog", {
+                    title: "Select New Collection",
+                    select_label: "New Collection",
+                    cancel_text: "Cancel",
+                    submit_text: "Submit",
+                    handleSubmit: changeTheCollection,
+                    option_list: data.collection_names,
+                    handleClose: dialogFuncs.hideModal,
+                })
         }, null, props.main_id);
 
         function changeTheCollection(new_collection_name) {
@@ -973,10 +978,10 @@ function MainApp(props) {
                          is_juptyer={props.is_jupyter}
                          deleteRow={_deleteRow}
                          insertRowBefore={() => {
-                             _insertRow(mStateRef.current.selected_row)
+                             _insertRow(mState.selected_row)
                          }}
                          insertRowAfter={() => {
-                             _insertRow(mStateRef.current.selected_row + 1)
+                             _insertRow(mState.selected_row + 1)
                          }}
                          duplicateRow={_duplicateRow}
                          selected_row={mState.selected_row}

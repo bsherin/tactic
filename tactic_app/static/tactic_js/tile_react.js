@@ -19,9 +19,9 @@ var _toaster = require("./toaster");
 var _utilities_react = require("./utilities_react");
 var _error_boundary = require("./error_boundary");
 var _menu_utilities = require("./menu_utilities");
-var _modal_react = require("./modal_react");
 var _searchable_console = require("./searchable_console");
 var _theme = require("./theme");
+var _modal_react = require("./modal_react");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -345,6 +345,7 @@ function TileComponent(props) {
     dheight = _useState10[0],
     set_dheight = _useState10[1];
   var pushCallback = (0, _utilities_react.useCallbackStack)();
+  var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   (0, _react.useEffect)(function () {
     _broadcastTileSize(props.tile_width, props.tile_height);
     executeEmbeddedScripts();
@@ -454,8 +455,16 @@ function TileComponent(props) {
     props.setTileValue(props.tile_id, "shrunk", !props.shrunk);
   }
   function _closeTile() {
-    (0, _modal_react.showConfirmDialogReact)("Delete Tile", "Delete tile ".concat(props.tile_name), "do nothing", "delete", function () {
-      props.handleClose(props.tile_id);
+    dialogFuncs.showModal("ConfirmDialog", {
+      title: "Delete Tile",
+      text_body: "Delete tile ".concat(props.tile_name),
+      cancel_text: "do nothing",
+      submit_text: "delete",
+      handleSubmit: function handleSubmit() {
+        props.handleClose(props.tile_id);
+      },
+      handleClose: dialogFuncs.hideModal,
+      handleCancel: null
     });
   }
   function _standard_click_data() {
