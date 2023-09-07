@@ -177,6 +177,56 @@ function PoolBrowser(props) {
         }
     }
 
+    function _downloadFile(node = null) {
+        if (!value && !node) return;
+
+        const sNode = node.constructor.name == 'SyntheticBaseEvent' ? selectedNode : node;
+        if (sNode.isDirectory) {
+            doFlash("You can't download a directory");
+            return
+        }
+        const src = sNode.fullpath;
+
+       dialogFuncs.showModal("ModalDialog", {
+            title: "Download File",
+            field_title: "New File Name",
+            handleSubmit: downloadFile,
+            default_value: getBasename(src),
+            existing_names: [],
+            checkboxes: [],
+            handleCancel: null,
+            handleClose: dialogFuncs.hideModal,
+        });
+
+        function downloadFile(new_name) {
+            const the_data = {src};
+            $.ajax({
+                url: $SCRIPT_ROOT + '/download_pool_file',
+                method: 'GET',
+                data: { src: src },
+                xhrFields: {
+                    responseType: 'blob' // Response type as blob
+                },
+                success: function(data, status, xhr) {
+                    if (xhr.status === 200) {
+                        // Create a download link and trigger the download
+                        var blob = new Blob([data], { type: 'application/octet-stream' });
+                        var url = window.URL.createObjectURL(blob);
+                        var a = document.createElement('a');
+                        a.href = url;
+                        a.download = new_name; // Set the desired file name
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    props.addErrorDrawerEntry({title: "Error Downloading From Pool", content: String(error)});
+                }
+            });
+        }
+    }
+
     function _move_resource(node = null) {
         if (!value && !node) return;
 
@@ -316,6 +366,9 @@ function PoolBrowser(props) {
                 <MenuItem icon="cloud-upload"
                           onClick={()=>{_showPoolImport(props.node)}}
                           text="Import To Pool"/>
+                <MenuItem icon="download"
+                          onClick={()=>{_downloadFile(props.node)}}
+                          text="Import To Pool"/>
             </Menu>
         );
     }
@@ -369,6 +422,7 @@ function PoolBrowser(props) {
                              add_directory={_add_directory}
                              duplicate_file={_duplicate_file}
                              move_resource={_move_resource}
+                             download_file={_downloadFile}
                              refreshFunc={treeRefreshFunc.current}
                              showPoolImport={_showPoolImport}
                               registerOmniGetter={props.registerOmniGetter}
@@ -421,7 +475,8 @@ function PoolMenubar(props) {
                 {name_text: "Delete Resource", icon_name: "trash", click_handler: props.delete_func},
             ],
             Transfer: [
-                {name_text: "Import To Pool", icon_name: "cloud-upload", click_handler: props.showPoolImport}
+                {name_text: "Import To Pool", icon_name: "cloud-upload", click_handler: props.showPoolImport},
+                {name_text: "Download File", icon_name: "download", click_handler: props.download_file}
             ]
         };
     }

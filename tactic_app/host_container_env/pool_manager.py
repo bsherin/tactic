@@ -2,7 +2,7 @@
 import os, re, shutil
 from flask_login import login_required, current_user
 from resource_manager import LibraryResourceManager
-from flask import jsonify, request
+from flask import jsonify, request, send_file
 
 from tactic_app import app, socketio
 
@@ -22,6 +22,8 @@ class PoolManager(LibraryResourceManager):
                          login_required(self.move_pool_resource), methods=['get', "post"])
         app.add_url_rule('/duplicate_pool_file', "duplicate_pool_file",
                          login_required(self.duplicate_pool_file), methods=['get', "post"])
+        app.add_url_rule('/download_pool_file', "download_pool_file",
+                         login_required(self.download_pool_file), methods=['get', "post"])
 
     def user_to_true(self, user_path):
         return re.sub("/mydisk", current_user.pool_dir, user_path)
@@ -31,13 +33,11 @@ class PoolManager(LibraryResourceManager):
 
     def download_pool_file(self):
         try:
-            data = request.json
-            new_name = data["new_name"]
-            path = data["path"]
-            true_path = self.user_to_true(old_path)
-
+            path = request.args.get("src")
+            true_path = self.user_to_true(path)
+            return send_file(true_path, as_attachment=True)
         except Exception as ex:
-            emsg = self.get_traceback_message(ex, "error in rename_pool_resource")
+            emsg = self.get_traceback_message(ex, "error in download_pool_file")
             print(emsg)
             return jsonify({"success": False, "message": emsg})
 
