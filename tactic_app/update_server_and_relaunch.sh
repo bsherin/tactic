@@ -1,4 +1,6 @@
+echo "*** doing git on server ***"
 cd /srv/tactic && sudo git pull
+echo "*** git done on server ***"
 # sudo docker pull bsherin/tactic -a
 cd /srv/tactic/tactic_app
 sudo /usr/local/bin/docker-compose build tactic_base
