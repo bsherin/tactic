@@ -141,7 +141,9 @@ class PoolManager(LibraryResourceManager):
 
     def import_pool(self, library_id):
         try:
+            print("entering import_pool")
             fullpath = request.form.get("extra_value")
+            print("got fullpath " + str(fullpath))
             error_dict = {}
             success_list = []
             if not current_user.has_pool:
@@ -150,9 +152,11 @@ class PoolManager(LibraryResourceManager):
             if len(list(request.files.keys())) == 0:
                 data = {"success": "false", "title": "Error", "content": "No files received."}
                 socketio.emit("upload-response", data, namespace='/main', room=library_id)
-            truepath = re.sub("/mydisk", current_user.pool_dir, fullpath)
+            truepath = self.user_to_true(fullpath)
+            print("got truepath " + str(truepath))
             user_id = current_user.get_id()
             for the_file in request.files.values():
+                print("got filename " + str(the_file.filename))
                 try:
                     the_file.save(f"{truepath}/{the_file.filename}")
                     success_list.append(the_file.filename)
@@ -161,6 +165,7 @@ class PoolManager(LibraryResourceManager):
                 except Exception as ex:
                     emsg = self.extract_short_error_message(ex, f"Error uploading file {the_file.filename}")
                     error_dict[the_file.filename] = emsg
+            print("done with files")
             if len(error_dict.keys()) == 0:
                 final_success = "true"
                 title = ""
@@ -177,10 +182,12 @@ class PoolManager(LibraryResourceManager):
                 "failed_reads": error_dict,
                 "successful_reads": success_list
             }
+            print("sending report")
             self.send_import_report(result, library_id)
 
         except Exception as ex:
             emsg = self.extract_short_error_message(ex, "error in import pool")
             print(emsg)
             return jsonify({"success": False, "message": emsg})
+        print("returning")
         return jsonify({"success": True})

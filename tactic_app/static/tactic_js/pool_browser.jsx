@@ -306,6 +306,9 @@ function PoolBrowser(props) {
         if (sNode && sNode.isDirectory) {
             initial_directory = sNode.fullpath
         }
+        else {
+            initial_directory = "/mydisk"
+        }
         dialogFuncs.showModal("FileImportDialog", {
             res_type: "pool",
             allowed_file_types: null,
