@@ -80,7 +80,7 @@ function PoolBrowser(props) {
     function _rename_func(node = null) {
         if (!value && !node) return;
 
-        const path = node.constructor.name == 'SyntheticBaseEvent' ? value : node.fullpath;
+        const path = "isDirectory" in node  ? node.fullpath : value;
         dialogFuncs.showModal("ModalDialog", {
                     title: "Rename Pool Resource",
                     field_title: "New Name",
@@ -109,7 +109,7 @@ function PoolBrowser(props) {
     function _add_directory(node = null) {
         if (!value && !node) return;
 
-        const sNode = node.constructor.name == 'SyntheticBaseEvent' ? selectedNode : node;
+        const sNode = "isDirectory" in node  ? node : selectedNode;
         let initial_address;
         if (sNode.isDirectory) {
             initial_address = sNode.fullpath
@@ -144,7 +144,7 @@ function PoolBrowser(props) {
     function _duplicate_file(node = null) {
         if (!value && !node) return;
 
-        const sNode = node.constructor.name == 'SyntheticBaseEvent' ? selectedNode : node;
+        const sNode = "isDirectory" in node  ? node : selectedNode;
         if (sNode.isDirectory) {
             doFlash("You can't duplicate a directory");
             return
@@ -180,12 +180,13 @@ function PoolBrowser(props) {
     function _downloadFile(node = null) {
         if (!value && !node) return;
 
-        const sNode = node.constructor.name == 'SyntheticBaseEvent' ? selectedNode : node;
+        const sNode = "isDirectory" in node  ? node : selectedNode;
         if (sNode.isDirectory) {
             doFlash("You can't download a directory");
             return
         }
         const src = sNode.fullpath;
+        console.log("Got source " + String(src));
 
        dialogFuncs.showModal("ModalDialog", {
             title: "Download File",
@@ -230,7 +231,7 @@ function PoolBrowser(props) {
     function _move_resource(node = null) {
         if (!value && !node) return;
 
-        const sNode = node.constructor.name == 'SyntheticBaseEvent' ? selectedNode : node;
+        const sNode = "isDirectory" in node  ? node : selectedNode;
         const src = sNode.fullpath;
         let initial_address;
         if (sNode.isDirectory) {
@@ -267,8 +268,8 @@ function PoolBrowser(props) {
 
     function _delete_func(node = null) {
         if (!value && !node) return;
-        const path = node.constructor.name == 'SyntheticBaseEvent' ? value : node.fullpath;
-        const sNode = node.constructor.name == 'SyntheticBaseEvent' ? selectedNode : node;
+        const path = "isDirectory" in node  ? node.fullpath : value;
+        const sNode = "isDirectory" in node  ? node : selectedNode;
         if (sNode.isDirectory && sNode.childNodes.length > 0) {
             doFlash("You can't delete a non-empty directory");
             return
@@ -302,7 +303,7 @@ function PoolBrowser(props) {
 
     function _showPoolImport(node = null) {
         var initial_directory = null;
-        const sNode = node.constructor.name == 'SyntheticBaseEvent' ? selectedNode : node;
+        const sNode = "isDirectory" in node  ? node : selectedNode;
         if (sNode && sNode.isDirectory) {
             initial_directory = sNode.fullpath
         }
