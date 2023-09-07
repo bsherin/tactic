@@ -370,8 +370,8 @@ function PoolBrowser(props) {
                           onClick={()=>{_showPoolImport(props.node)}}
                           text="Import To Pool"/>
                 <MenuItem icon="download"
-                          onClick={()=>{_downloadFile(props.node)}}
-                          text="Import To Pool"/>
+                          onClick={()=>{_downloadFile(props.node)}}n
+                          text="Download from Pool"/>
             </Menu>
         );
     }
