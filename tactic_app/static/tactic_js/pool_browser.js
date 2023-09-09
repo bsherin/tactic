@@ -267,6 +267,7 @@ function PoolBrowser(props) {
             var a = document.createElement('a');
             a.href = url;
             a.download = new_name; // Set the desired file name
+            // noinspection XHTMLIncompatabilitiesJS
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
@@ -279,6 +280,25 @@ function PoolBrowser(props) {
           });
         }
       });
+    }
+  }
+  function MoveResource(src, dst) {
+    if (src == dst) return;
+    var the_data = {
+      dst: dst,
+      src: src
+    };
+    (0, _communication_react.postAjax)("move_pool_resource", the_data, addSuccess);
+    function addSuccess(data) {
+      if (!data.success) {
+        props.addErrorDrawerEntry({
+          title: "Error Moving Resource",
+          content: data.message
+        });
+        return false;
+      } else {
+        return true;
+      }
     }
   }
   function _move_resource() {
@@ -294,32 +314,15 @@ function PoolBrowser(props) {
     }
     dialogFuncs.showModal("SelectAddressDialog", {
       title: "Select a destination for ".concat((0, _pool_tree.getBasename)(src)),
-      handleSubmit: MoveResource,
+      handleSubmit: function handleSubmit(dst) {
+        MoveResource(src, dst);
+      },
       selectType: "folder",
       initial_address: initial_address,
       initial_name: "",
       showName: false,
       handleClose: dialogFuncs.hideModal
     });
-    function MoveResource(dst) {
-      if (src == dst) return;
-      var the_data = {
-        dst: dst,
-        src: src
-      };
-      (0, _communication_react.postAjax)("move_pool_resource", the_data, addSuccess);
-      function addSuccess(data) {
-        if (!data.success) {
-          props.addErrorDrawerEntry({
-            title: "Error Moving Resource",
-            content: data.message
-          });
-          return false;
-        } else {
-          return true;
-        }
-      }
-    }
   }
   function _delete_func() {
     var node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
@@ -362,7 +365,7 @@ function PoolBrowser(props) {
   }
   function _showPoolImport() {
     var node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-    var initial_directory = null;
+    var initial_directory;
     var sNode = "isDirectory" in node ? node : selectedNode;
     if (sNode && sNode.isDirectory) {
       initial_directory = sNode.fullpath;
@@ -383,6 +386,31 @@ function PoolBrowser(props) {
       handleClose: dialogFuncs.hideModal,
       handleCancel: null
     });
+  }
+  function handleDrop(e, dst) {
+    var files = e.dataTransfer.files;
+    if (files.length != 0) {
+      dialogFuncs.showModal("FileImportDialog", {
+        res_type: "pool",
+        allowed_file_types: null,
+        checkboxes: [],
+        process_handler: _add_to_pool,
+        tsocket: props.tsocket,
+        combine: false,
+        show_csv_options: false,
+        after_upload: null,
+        show_address_selector: true,
+        initial_address: dst,
+        handleClose: dialogFuncs.hideModal,
+        handleCancel: null,
+        initialFiles: files
+      });
+    } else {
+      var src = e.dataTransfer.getData("fullpath");
+      if (src) {
+        MoveResource(src, dst);
+      }
+    }
   }
   function _handleSplitResize(left_width, right_width, width_fraction) {
     if (!resizing.current) {
@@ -458,6 +486,10 @@ function PoolBrowser(props) {
     marginRight: 0,
     height: "100%"
   };
+  var res_type = null;
+  if (selectedNode) {
+    res_type = selectedNode.isDirectory ? "poolDir" : "poolFile";
+  }
   var right_pane = /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.CombinedMetadata, {
     useTags: false,
     useNotes: false,
@@ -468,7 +500,7 @@ function PoolBrowser(props) {
     size: selected_resource_ref.current.size,
     icon: null,
     handleChange: null,
-    res_type: "pool",
+    res_type: res_type,
     pane_type: "pool",
     outer_style: outer_style,
     handleNotesBlur: null,
@@ -478,7 +510,7 @@ function PoolBrowser(props) {
     },
     readOnly: true
   });
-  var left_pane = /*#__PURE__*/_react["default"].createElement("div", {
+  var left_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
     className: "d-flex flex-row",
     style: {
       maxHeight: "100%",
@@ -492,8 +524,9 @@ function PoolBrowser(props) {
     registerTreeRefreshFunc: registerTreeRefreshFunc,
     user_id: window.user_id,
     tsocket: props.tsocket,
+    handleDrop: handleDrop,
     handleNodeClick: handleNodeClick
-  }));
+  })));
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(PoolMenubar, _extends({
     selected_resource: selected_resource_ref.current,
     connection_status: null,
@@ -584,7 +617,7 @@ function PoolMenubar(props) {
     selected_rows: props.selected_rows,
     selected_type: props.selected_type,
     selected_resource: props.selected_resource,
-    resource_icon: _blueprint_mdata_fields.icon_dict["all"],
+    resource_icon: _blueprint_mdata_fields.icon_dict["pool"],
     menu_specs: menu_specs(),
     multi_select: props.multi_select,
     controlled: props.controlled,
@@ -599,3 +632,33 @@ function PoolMenubar(props) {
   });
 }
 PoolMenubar = /*#__PURE__*/(0, _react.memo)(PoolMenubar);
+function FileDropWrapper(props) {
+  var _useState9 = (0, _react.useState)(false),
+    _useState10 = _slicedToArray(_useState9, 2),
+    isDragging = _useState10[0],
+    setIsDragging = _useState10[1];
+  var handleDragOver = function handleDragOver(e) {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+  var handleDragLeave = function handleDragLeave() {
+    setIsDragging(false);
+  };
+  var handleDrop = function handleDrop(e) {
+    e.preventDefault();
+    setIsDragging(false);
+    var files = e.dataTransfer.files;
+    if (files) {
+      if (props.processFiles) {
+        props.processFiles(files);
+      }
+    }
+  };
+  return /*#__PURE__*/_react["default"].createElement("div", {
+    id: "pool-drop-zone",
+    className: "drop-zone ".concat(isDragging ? 'drag-over' : ''),
+    onDragOver: handleDragOver,
+    onDragLeave: handleDragLeave,
+    onDrop: handleDrop
+  }, props.children);
+}

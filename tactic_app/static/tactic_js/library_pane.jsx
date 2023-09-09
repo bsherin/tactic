@@ -1341,22 +1341,22 @@ function LibraryPane(props) {
         myDropZone.processQueue();
     }
 
-    function _showPoolImport() {
-        dialogFuncs.showModal("FileImportDialog", {
-            res_type: "pool",
-            allowed_file_types: null,
-            checkboxes: [],
-            process_handler: _add_to_pool,
-            tsocket: props.tsocket,
-            combine: false,
-            show_csv_options: false,
-            after_upload: null,
-            show_address_selector: true,
-            initial_address: null,
-            handleClose: dialogFuncs.hideModal,
-            handleCancel: null
-        });
-    }
+    // function _showPoolImport() {
+    //     dialogFuncs.showModal("FileImportDialog", {
+    //         res_type: "pool",
+    //         allowed_file_types: null,
+    //         checkboxes: [],
+    //         process_handler: _add_to_pool,
+    //         tsocket: props.tsocket,
+    //         combine: false,
+    //         show_csv_options: false,
+    //         after_upload: null,
+    //         show_address_selector: true,
+    //         initial_address: "/mydisk",
+    //         handleClose: dialogFuncs.hideModal,
+    //         handleCancel: null
+    //     });
+    // }
 
     function _new_code(template_name) {
         $.getJSON(`${$SCRIPT_ROOT}/get_resource_names/code`, function (data) {
@@ -1429,7 +1429,7 @@ function LibraryPane(props) {
             compare_tiles: _compare_tiles,
             new_list: _new_list,
             showListImport: _showListImport,
-            showPoolImport: _showPoolImport,
+            // showPoolImport: _showPoolImport,
             new_code: _new_code
         }
     }

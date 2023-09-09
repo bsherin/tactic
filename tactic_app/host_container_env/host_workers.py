@@ -807,7 +807,7 @@ class HostWorker(QWorker):
 
     def get_node(self, root, user_pool_dir):
         ammended_root = re.sub(user_pool_dir, "/mydisk", root)
-        new_base_node = self.folder_dict(self.pool_id_counter, ammended_root, os.path.basename(root))
+        new_base_node = self.folder_dict(f"dir{str(self.pool_id_counter)}", ammended_root, os.path.basename(root))
         self.pool_id_counter += 1
         child_list = []
         for root, dirs, files in os.walk(root):
@@ -817,7 +817,7 @@ class HostWorker(QWorker):
                     continue
                 self.pool_visited.append(fpath)
                 ammended_path = re.sub(user_pool_dir, "/mydisk", fpath)
-                child_list.append(self.file_dict(self.pool_id_counter, ammended_path, f))
+                child_list.append(self.file_dict(f"folder{str(self.pool_id_counter)}", ammended_path, f))
                 self.pool_id_counter += 1
             for adir in dirs:
                 fpath = f"{root}/{adir}"

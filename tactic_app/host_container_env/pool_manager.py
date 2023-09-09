@@ -35,6 +35,8 @@ class PoolManager(LibraryResourceManager):
         try:
             path = request.args.get("src")
             true_path = self.user_to_true(path)
+            if not os.path.exists(true_new_path):
+                raise FileNotFoundError
             return send_file(true_path, as_attachment=True)
         except Exception as ex:
             emsg = self.get_traceback_message(ex, "error in download_pool_file")
@@ -70,7 +72,7 @@ class PoolManager(LibraryResourceManager):
             is_directory = data["is_directory"]
             true_full_path = self.user_to_true(full_path)
             if not os.path.exists(true_full_path):
-                raise FileExistsError
+                raise FileNotFoundError
             if is_directory:
                 os.rmdir(true_full_path)
             else:
@@ -90,6 +92,8 @@ class PoolManager(LibraryResourceManager):
             data = request.json
             full_path = data["full_path"]
             true_full_path = self.user_to_true(full_path)
+            if os.path.exists(true_full_path):
+                raise FileExistsError
             os.mkdir(true_full_path)
             user_id = current_user.get_id()
             socketio.emit("pool-add-directory", {"full_path": full_path},
@@ -107,6 +111,8 @@ class PoolManager(LibraryResourceManager):
             dst = data["dst"]
             src = data["src"]
             true_dst = self.user_to_true(dst)
+            if os.path.exists(dst):
+                raise FileExistsError
             true_src = self.user_to_true(src)
             shutil.move(true_src, true_dst)
             user_id = current_user.get_id()
@@ -158,7 +164,10 @@ class PoolManager(LibraryResourceManager):
             for the_file in request.files.values():
                 print("got filename " + str(the_file.filename))
                 try:
-                    the_file.save(f"{truepath}/{the_file.filename}")
+                    true_new_path = f"{truepath}/{the_file.filename}"
+                    if os.path.exists(true_new_path):
+                        raise FileExistsError
+                    the_file.save(true_new_path)
                     success_list.append(the_file.filename)
                     socketio.emit("pool-add-file", {"full_path": f"{fullpath}/{the_file.filename}"},
                                   namespace='/main', room=user_id)

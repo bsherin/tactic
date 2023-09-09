@@ -32,7 +32,9 @@ let icon_dict = {
     tile: "application",
     list: "list",
     code: "code",
-    pool: "folder-close"
+    pool: "folder-close",
+    poolDir: "folder-close",
+    poolFile: "document"
 };
 
 
