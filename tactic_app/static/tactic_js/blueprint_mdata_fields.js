@@ -46,7 +46,9 @@ var icon_dict = {
   tile: "application",
   list: "list",
   code: "code",
-  pool: "folder-close"
+  pool: "folder-close",
+  poolDir: "folder-close",
+  poolFile: "document"
 };
 exports.icon_dict = icon_dict;
 function SuggestionItemAdvanced(_ref) {

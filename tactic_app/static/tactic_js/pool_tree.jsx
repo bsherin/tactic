@@ -1,6 +1,6 @@
 import React from "react";
 import {useState, useEffect, useRef, memo, Fragment, useContext} from "react";
-import {Tree, Popover, Button, ContextMenuPopover} from "@blueprintjs/core";
+import {TreeNode, Popover, Button, ContextMenuPopover, Classes} from "@blueprintjs/core";
 
 import _ from "lodash";
 import {doFlash} from "./toaster"
@@ -14,7 +14,13 @@ export {PoolTree, PoolAddressSelector, getBasename, splitFilePath, getFileParent
 function treeNodesReducer(nodes, action) {
     switch (action.type) {
         case "REPLACE_ALL":
-            return action.new_nodes;
+            const newState0 = _.cloneDeep(action.new_nodes);
+            forEachNode(newState0, node=>{
+                if (node.isDirectory) {
+                    node.childNodes = sortNodes(node.childNodes);
+                }
+            });
+            return newState0;
         case "DESELECT_ALL":
             const newState1 = _.cloneDeep(nodes);
             forEachNode(newState1, node => (node.isSelected = false));
@@ -69,6 +75,8 @@ function treeNodesReducer(nodes, action) {
                     updateNode(node, action.new_path)
                 }
             });
+            const pNode = nodeFromPath(getFileParentPath(action.new_path), newState8[0]);
+            pNode.childNodes = sortNodes(pNode.childNodes);
             return newState8;
         case "REMOVE_NODE":
             const newState9 = _.cloneDeep(nodes);
@@ -93,6 +101,7 @@ function treeNodesReducer(nodes, action) {
                     if (node.fullpath == path) {
                         node.childNodes.push(newNode)
                     }
+                    node.childNodes = sortNodes(node.childNodes);
                 }
             });
             return newState10;
@@ -105,6 +114,7 @@ function treeNodesReducer(nodes, action) {
                     if (node.fullpath == dpath) {
                         node.childNodes.push(dnewNode)
                     }
+                    node.childNodes = sortNodes(node.childNodes);
                 }
             });
             return newState11;
@@ -128,7 +138,8 @@ function treeNodesReducer(nodes, action) {
             });
             forEachNode(newState12, (node) => {
                 if (node.isDirectory && (node.fullpath == action.dst)) {
-                    node.childNodes.push(src_node)
+                    node.childNodes.push(src_node);
+                    node.childNodes = sortNodes(node.childNodes)
                 }
             });
             return newState12;
@@ -173,7 +184,6 @@ function dirnode(path) {
     }
 }
 
-
 function forEachNode(nodes, callback) {
     if (nodes === undefined) {
         return;
@@ -202,11 +212,18 @@ function nodeFromPath(fullpath, root) {
     return null
 }
 
+function sortNodes(nlist) {
+    let newList = _.cloneDeep(nlist);
+    newList.sort((a, b)=>{return a.basename.localeCompare(b.basename)});
+    return newList
+}
+
 function PoolTree(props) {
     const [nodes, dispatch, nodes_ref] = useReducerAndRef(treeNodesReducer, []);
     const [showContextMenu, setShowContextMenu] = useState(false);
     const [contextMenuTarget, setContentMenuTarget] = useState({left:0, top:0});
     const [contextMenuNode, setContextMenuNode] = useState("");
+    const [folderOver, setFolderOver] = useState("null");
     const theme = useContext(ThemeContext);
 
     const pushCallback = useCallbackStack();
@@ -393,12 +410,13 @@ function PoolTree(props) {
                             isOpen={showContextMenu}
                             isDarkTheme={theme.dark_theme}
                             targetOffset={contextMenuTarget}/>
-                <Tree contents={nodes_ref.current}
-                          className="pool-select-tree"
-                          onNodeContextMenu={props.renderContextMenu ? displayContextMenu : null}
-                          onNodeClick={handleNodeClick}
-                          onNodeCollapse={handleNodeCollapse}
-                          onNodeExpand={handleNodeExpand}/>
+                <CustomTree contents={nodes_ref.current}
+                            className="pool-select-tree"
+                            handleDrop={props.handleDrop}
+                            onNodeContextMenu={props.renderContextMenu ? displayContextMenu : null}
+                            onNodeClick={handleNodeClick}
+                            onNodeCollapse={handleNodeCollapse}
+                            onNodeExpand={handleNodeExpand}/>
         </Fragment>
     )
 }
@@ -469,6 +487,7 @@ function PoolAddressSelector(props) {
                       select_type={props.select_type}
                       user_id={window.user_id}
                       renderContextMenu={null}
+                      handleDrop={null}
                       handleNodeClick={handleNodeClick}/>
         </div>
     );
@@ -499,3 +518,108 @@ function PoolAddressSelector(props) {
 }
 
 PoolAddressSelector = memo(PoolAddressSelector);
+
+// CustomTree is necessary to support drag-and-drop
+// This is largely copied from the blueprintjs source code
+function CustomTree(props) {
+
+    function renderNodes(treeNodes, currentPath, className) {
+        if (treeNodes == null) {
+            return null;
+        }
+
+        const nodeItems = treeNodes.map((node, i) => {
+            const elementPath = currentPath.concat(i);
+            const tnode = (
+                <TreeNode
+                    {...node}
+                    key={node.id}
+                    contentRef={props.handleContentRef}
+                    depth={elementPath.length - 1}
+                    onClick={props.onNodeClick}
+                    onContextMenu={props.onNodeContextMenu}
+                    onCollapse={props.onNodeCollapse}
+                    onDoubleClick={props.onNodeDoubleClick}
+                    onExpand={props.onNodeExpand}
+                    onMouseEnter={props.onNodeMouseEnter}
+                    onMouseLeave={props.onNodeMouseLeave}
+                    path={elementPath}
+                >
+                    {renderNodes(node.childNodes, elementPath)}
+                </TreeNode>
+            );
+            if (node.isDirectory && props.handleDrop) {
+                return (
+                    <FileDropWrapper handleDrop={props.handleDrop}
+                                     suppress={false}
+                                     fullpath={node.fullpath}>
+                        {tnode}
+                    </FileDropWrapper>
+                )
+            }
+            else if (!node.isDirectory && props.handleDrop) {
+                return (
+                    <div key={node.fullpath}
+                         draggable={true}
+                         onDragStart={(e)=>{
+                             e.dataTransfer.setData("fullpath", node.fullpath)
+                         }}
+                         onDragEnd={(e)=>{
+                         }}>
+                        {tnode}
+                    </div>
+                )
+            }
+            else {
+                return tnode
+            }
+        });
+
+        return <ul className={`bp5-tree-node-list ${props.className}`}>{nodeItems}</ul>;
+    }
+
+    return (
+        <div className="bp5-tree">
+            {renderNodes(props.contents, [], Classes.TREE_ROOT)}
+        </div>
+    );
+}
+
+CustomTree = memo(CustomTree);
+
+function FileDropWrapper(props) {
+    const [isDragging, setIsDragging] = useState(false);
+
+    const handleDragOver = (e) => {
+        if (props.suppress.current) return;
+        e.preventDefault();
+        e.stopPropagation();  // So that containing folders don't also get event;
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = () => {
+        setIsDragging(false);
+    };
+
+    const handleDrop = (e) => {
+        if (props.suppress.current) return;
+        e.preventDefault();
+        e.stopPropagation();  // So that containing folders don't also get event;
+        setIsDragging(false);
+        if (props.handleDrop) {
+            props.handleDrop(e, props.fullpath)
+        }
+    };
+
+    return (
+        <div
+            className={`drop-zone ${isDragging ? 'drag-over' : ''}`}
+            onDragOver={props.suppress.current ? null : handleDragOver}
+            onDragLeave={props.suppress.current ? null : handleDragLeave}
+            onDrop={props.suppress.current ? null : handleDrop}
+        >
+            {props.children}
+        </div>
+    );
+}
+

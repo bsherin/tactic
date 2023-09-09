@@ -189,6 +189,20 @@ function FileImportDialog(props) {
   }
   function _initCallback(dropzone) {
     myDropzone.current = dropzone;
+    if (props.initialFiles) {
+      var _iterator2 = _createForOfIteratorHelper(props.initialFiles),
+        _step2;
+      try {
+        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+          var theFile = _step2.value;
+          dropzone.addFile(theFile);
+        }
+      } catch (err) {
+        _iterator2.e(err);
+      } finally {
+        _iterator2.f();
+      }
+    }
   }
   function _setCurrentUrl(new_url) {
     myDropzone.current.options.url = new_url;
@@ -310,11 +324,11 @@ function FileImportDialog(props) {
   };
   var checkbox_items = [];
   if (props.checkboxes != null && props.checkboxes.length != 0) {
-    var _iterator2 = _createForOfIteratorHelper(props.checkboxes),
-      _step2;
+    var _iterator3 = _createForOfIteratorHelper(props.checkboxes),
+      _step3;
     try {
-      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-        var checkbox = _step2.value;
+      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+        var checkbox = _step3.value;
         var new_item = /*#__PURE__*/_react["default"].createElement(_core.Checkbox, {
           checked: checkbox_states[checkbox.checkname],
           label: checkbox.checktext,
@@ -327,9 +341,9 @@ function FileImportDialog(props) {
         checkbox_items.push(new_item);
       }
     } catch (err) {
-      _iterator2.e(err);
+      _iterator3.e(err);
     } finally {
-      _iterator2.f();
+      _iterator3.f();
     }
   }
   var log_items;
@@ -471,12 +485,14 @@ FileImportDialog.propTypes = {
   popupoptions: _propTypes["default"].array,
   handleClose: _propTypes["default"].func,
   tsocket: _propTypes["default"].object,
-  show_address_selector: _propTypes["default"].bool
+  show_address_selector: _propTypes["default"].bool,
+  initialFiles: _propTypes["default"].array
 };
 FileImportDialog.defaultProps = {
   checkboxes: null,
   textoptions: null,
   popupoptions: null,
   after_upload: null,
-  show_address_selector: false
+  show_address_selector: false,
+  initialFiles: []
 };

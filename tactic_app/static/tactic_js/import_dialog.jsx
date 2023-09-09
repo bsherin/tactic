@@ -148,6 +148,11 @@ function FileImportDialog(props) {
 
     function _initCallback(dropzone) {
         myDropzone.current = dropzone;
+        if (props.initialFiles) {
+            for (let theFile of props.initialFiles) {
+                dropzone.addFile(theFile)
+            }
+        }
     }
 
     function _setCurrentUrl(new_url) {
@@ -412,7 +417,8 @@ FileImportDialog.propTypes = {
     popupoptions: PropTypes.array,
     handleClose: PropTypes.func,
     tsocket: PropTypes.object,
-    show_address_selector: PropTypes.bool
+    show_address_selector: PropTypes.bool,
+    initialFiles: PropTypes.array
 };
 
 FileImportDialog.defaultProps = {
@@ -420,5 +426,6 @@ FileImportDialog.defaultProps = {
     textoptions: null,
     popupoptions: null,
     after_upload: null,
-    show_address_selector: false
+    show_address_selector: false,
+    initialFiles: []
 };

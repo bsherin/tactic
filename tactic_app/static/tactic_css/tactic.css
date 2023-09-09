@@ -1681,4 +1681,8 @@ table caption {
   margin: 10px;
 }
 
+.drop-zone.drag-over {
+  background-color: #47505c;
+}
+
 /*# sourceMappingURL=tactic.css.map */

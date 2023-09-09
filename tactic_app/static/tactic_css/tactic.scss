@@ -277,6 +277,21 @@ table {
     margin: 10px
 }
 
+.drop-zone {
+  //width: 300px;
+  //height: 200px;
+  //border: 2px dashed #ccc;
+  //text-align: center;
+  //padding: 20px;
+  //margin: 20px auto;
+  //transition: border 0.3s ease-in-out;
+}
+
+.drop-zone.drag-over {
+  // border: 1px dashed $gray1;
+    background-color: $dark-gray5
+}
+
 
 
 
