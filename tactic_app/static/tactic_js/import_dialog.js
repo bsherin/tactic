@@ -277,6 +277,7 @@ function FileImportDialog(props) {
   var djsConfig = {
     uploadMultiple: false,
     parallelUploads: 1,
+    maxFilesize: 2000,
     autoProcessQueue: false,
     dictDefaultMessage: "Click or drop files here to upload",
     acceptedFiles: props.allowed_file_types,
