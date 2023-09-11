@@ -326,6 +326,15 @@ function AdminPane(props) {
   if (Object.keys(additional_metadata).length == 0) {
     additional_metadata = null;
   }
+  var table_width;
+  var table_height;
+  if (table_ref && table_ref.current) {
+    table_width = left_width - table_ref.current.offsetLeft;
+    table_height = props.usable_height - table_ref.current.offsetTop;
+  } else {
+    table_width = left_width - 150;
+    table_height = props.usable_height - 75;
+  }
   var right_pane;
   if (props.res_type == "container") {
     right_pane = /*#__PURE__*/_react["default"].createElement("div", {
@@ -344,14 +353,14 @@ function AdminPane(props) {
       outer_style: {
         overflowX: "auto",
         overflowY: "auto",
-        height: "100%",
+        height: table_height - 35,
         width: "100%",
         marginTop: 0,
         marginLeft: 5,
         marginRight: 0,
         padding: 15
       },
-      showCommandField: false
+      showCommandField: true
     }));
   } else {
     right_pane = /*#__PURE__*/_react["default"].createElement("div", null);
@@ -381,15 +390,6 @@ function AdminPane(props) {
     _iterator2.e(err);
   } finally {
     _iterator2.f();
-  }
-  var table_width;
-  var table_height;
-  if (table_ref && table_ref.current) {
-    table_width = left_width - table_ref.current.offsetLeft;
-    table_height = props.usable_height - table_ref.current.offsetTop;
-  } else {
-    table_width = left_width - 150;
-    table_height = props.usable_height - 75;
   }
   var left_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
     className: "d-flex flex-row",

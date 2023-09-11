@@ -294,6 +294,17 @@ function AdminPane(props) {
         additional_metadata = null
     }
 
+    let table_width;
+    let table_height;
+    if (table_ref && table_ref.current) {
+        table_width = left_width - table_ref.current.offsetLeft;
+        table_height = props.usable_height - table_ref.current.offsetTop
+    }
+    else {
+        table_width = left_width - 150;
+        table_height = props.usable_height - 75
+    }
+
     var right_pane;
     if (props.res_type == "container") {
         right_pane = (
@@ -306,14 +317,14 @@ function AdminPane(props) {
                                    outer_style={{
                                        overflowX: "auto",
                                        overflowY: "auto",
-                                       height: "100%",
+                                       height: table_height - 35,
                                        width: "100%",
                                        marginTop: 0,
                                        marginLeft: 5,
                                        marginRight: 0,
                                        padding: 15
                                    }}
-                                   showCommandField={false}
+                                   showCommandField={true}
                 />
             </div>
         )
@@ -337,17 +348,6 @@ function AdminPane(props) {
     let column_specs = {};
     for (let col of props.colnames) {
         column_specs[col] = {"sort_field": col, "first_sort": "ascending"}
-    }
-
-    let table_width;
-    let table_height;
-    if (table_ref && table_ref.current) {
-        table_width = left_width - table_ref.current.offsetLeft;
-        table_height = props.usable_height - table_ref.current.offsetTop
-    }
-    else {
-        table_width = left_width - 150;
-        table_height = props.usable_height - 75
     }
 
     let left_pane = (

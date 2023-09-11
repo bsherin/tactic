@@ -173,7 +173,7 @@ function SearchableConsole(props, inner_ref) {
     function _logExec(command, callback = null) {
         postWithCallback(cont_id.current, "os_command_exec", {
             "the_code": command,
-        }, callback)
+        }, callback, null, props.main_id)
     }
 
     function _commandSubmit(e) {

@@ -137,6 +137,19 @@ class HostWorker(QWorker):
                 setting_dict[fdict["name"]] = user_data[fdict["name"]]
         return {"settings": setting_dict}
 
+    @task_worthy
+    def os_command_exec(self, data):
+        the_code = data["the_code"]
+        print(">> " + the_code)
+        if the_code[:3] == "cd ":
+            try:
+                os.chdir(os.path.abspath(the_code[3:]))
+            except Exception:
+                print("cd: no such file or directory: {}".format(path))
+        else:
+            exec(f"os.system('{the_code}')")
+        return
+
     @task_worthy_manual_submit
     def update_code_task(self, data_dict, task_packet):
         try:
@@ -873,23 +886,20 @@ class HostWorker(QWorker):
         task_packet["status"] = "presend"
         task_packet["reply_to"] = "host"
         task_packet["client_post"] = "Yes"
-        if dest_id == "host":
+        if dest_id == "host" or dest_id == self.my_id:
             super(HostWorker, self).handle_event(task_packet)
         else:
-
             self.post_packet(dest_id, task_packet, reply_to="host", callback_id=task_packet["callback_id"])
         tactic_app.health_tracker.check_health()
         return
 
     def handle_event(self, task_packet):
-        if "client_post" in task_packet:
-            self.handle_client_event(task_packet)
-        else:
-            super(HostWorker, self).handle_event(task_packet)
+        super(HostWorker, self).handle_event(task_packet)
         tactic_app.health_tracker.check_health()
+        return
 
     def handle_client_event(self, task_packet):
-
+        # I think I should never get here.
         task_packet["table_message"] = task_packet["task_type"]
         socketio.emit("table-message", task_packet, namespace='/main', room=task_packet["main_id"])
         return
