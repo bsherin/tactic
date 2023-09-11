@@ -219,7 +219,7 @@ function SearchableConsole(props, inner_ref) {
     var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     (0, _communication_react.postWithCallback)(cont_id.current, "os_command_exec", {
       "the_code": command
-    }, callback);
+    }, callback, null, props.main_id);
   }
   function _commandSubmit(e) {
     e.preventDefault();
