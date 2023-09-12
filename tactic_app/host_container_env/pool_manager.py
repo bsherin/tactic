@@ -35,7 +35,7 @@ class PoolManager(LibraryResourceManager):
         try:
             path = request.args.get("src")
             true_path = self.user_to_true(path)
-            if not os.path.exists(true_new_path):
+            if not os.path.exists(true_path):
                 raise FileNotFoundError
             return send_file(true_path, as_attachment=True)
         except Exception as ex:
