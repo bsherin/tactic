@@ -164,7 +164,7 @@ function ExportsViewer(props) {
     const [key_list, set_key_list] = useState(null);
     const [key_list_value, set_key_list_value] = useState(null);
     const [tail_value, set_tail_value] = useState("");
-    const [max_rows, set_max_rows] = useState(25);
+    const [max_rows, set_max_rows, max_rows_ref] = useStateAndRef(25);
     const [exports_info_value, set_exports_info_value] = useState(null);
     const [selected_export_short_name, set_selected_export_short_name] = useState(null);
     const [show_spinner, set_show_spinner] = useState(false);
@@ -200,8 +200,9 @@ function ExportsViewer(props) {
         }
     }
 
-    function _handleMaxRowsChange(new_value){
-        setState({max_rows: new_value}, _eval)
+    function _handleMaxRowsChange(new_value) {
+        set_max_rows(parseInt(new_value));
+        pushCallback(_eval)
     }
 
     function _updateExportsList() {
@@ -225,7 +226,7 @@ function ExportsViewer(props) {
         let send_data = {
             "export_name": selected_export_ref.current,
             "tail": tail_value,
-            "max_rows": max_rows
+            "max_rows": max_rows_ref.current
         };
         if (key_list) {
             send_data.key = key_list_value
@@ -412,7 +413,7 @@ function ExportsViewer(props) {
                              <FormGroup label="max rows" inline={true}>
                                  <SelectList option_list={[25, 100, 250, 500]}
                                              onChange={_handleMaxRowsChange}
-                                             the_value={max_rows}
+                                             the_value={max_rows_ref.current}
                                              minimal={true}
                                              fontSize={11}/>
                              </FormGroup>
