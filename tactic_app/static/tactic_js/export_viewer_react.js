@@ -218,38 +218,39 @@ function ExportsViewer(props) {
     _useState8 = _slicedToArray(_useState7, 2),
     tail_value = _useState8[0],
     set_tail_value = _useState8[1];
-  var _useState9 = (0, _react.useState)(25),
+  var _useStateAndRef3 = (0, _utilities_react.useStateAndRef)(25),
+    _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
+    max_rows = _useStateAndRef4[0],
+    set_max_rows = _useStateAndRef4[1],
+    max_rows_ref = _useStateAndRef4[2];
+  var _useState9 = (0, _react.useState)(null),
     _useState10 = _slicedToArray(_useState9, 2),
-    max_rows = _useState10[0],
-    set_max_rows = _useState10[1];
+    exports_info_value = _useState10[0],
+    set_exports_info_value = _useState10[1];
   var _useState11 = (0, _react.useState)(null),
     _useState12 = _slicedToArray(_useState11, 2),
-    exports_info_value = _useState12[0],
-    set_exports_info_value = _useState12[1];
-  var _useState13 = (0, _react.useState)(null),
+    selected_export_short_name = _useState12[0],
+    set_selected_export_short_name = _useState12[1];
+  var _useState13 = (0, _react.useState)(false),
     _useState14 = _slicedToArray(_useState13, 2),
-    selected_export_short_name = _useState14[0],
-    set_selected_export_short_name = _useState14[1];
+    show_spinner = _useState14[0],
+    set_show_spinner = _useState14[1];
   var _useState15 = (0, _react.useState)(false),
     _useState16 = _slicedToArray(_useState15, 2),
-    show_spinner = _useState16[0],
-    set_show_spinner = _useState16[1];
-  var _useState17 = (0, _react.useState)(false),
+    running = _useState16[0],
+    set_running = _useState16[1];
+  var _useState17 = (0, _react.useState)(""),
     _useState18 = _slicedToArray(_useState17, 2),
-    running = _useState18[0],
-    set_running = _useState18[1];
-  var _useState19 = (0, _react.useState)(""),
+    exports_body_value = _useState18[0],
+    set_exports_body_value = _useState18[1];
+  var _useState19 = (0, _react.useState)(null),
     _useState20 = _slicedToArray(_useState19, 2),
-    exports_body_value = _useState20[0],
-    set_exports_body_value = _useState20[1];
-  var _useState21 = (0, _react.useState)(null),
+    type = _useState20[0],
+    set_type = _useState20[1];
+  var _useState21 = (0, _react.useState)({}),
     _useState22 = _slicedToArray(_useState21, 2),
-    type = _useState22[0],
-    set_type = _useState22[1];
-  var _useState23 = (0, _react.useState)({}),
-    _useState24 = _slicedToArray(_useState23, 2),
-    pipe_dict = _useState24[0],
-    set_pipe_dict = _useState24[1];
+    pipe_dict = _useState22[0],
+    set_pipe_dict = _useState22[1];
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _react.useEffect)(function () {
     initSocket();
@@ -276,9 +277,8 @@ function ExportsViewer(props) {
     }
   }
   function _handleMaxRowsChange(new_value) {
-    setState({
-      max_rows: new_value
-    }, _eval);
+    set_max_rows(parseInt(new_value));
+    pushCallback(_eval);
   }
   function _updateExportsList() {
     (0, _communication_react.postWithCallback)(props.main_id, "get_full_pipe_dict", {}, function (data) {
@@ -299,7 +299,7 @@ function ExportsViewer(props) {
     var send_data = {
       "export_name": selected_export_ref.current,
       "tail": tail_value,
-      "max_rows": max_rows
+      "max_rows": max_rows_ref.current
     };
     if (key_list) {
       send_data.key = key_list_value;
@@ -499,7 +499,7 @@ function ExportsViewer(props) {
   }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.SelectList, {
     option_list: [25, 100, 250, 500],
     onChange: _handleMaxRowsChange,
-    the_value: max_rows,
+    the_value: max_rows_ref.current,
     minimal: true,
     fontSize: 11
   }))))));

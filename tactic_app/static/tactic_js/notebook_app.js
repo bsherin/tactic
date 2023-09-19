@@ -62,8 +62,8 @@ function NotebookApp(props) {
     dispatch = _useReducerAndRef2[1],
     console_items_ref = _useReducerAndRef2[2];
   var _useReducer = (0, _react.useReducer)(_notebook_support.notebookReducer, {
-      show_exports_pane: props.is_project ? props.interface_state["show_exports_pane"] : true,
-      console_width_fraction: props.is_project ? props.interface_state["console_width_fraction"] : .5,
+      show_exports_pane: props.is_project && props.interface_state ? props.interface_state["show_exports_pane"] : true,
+      console_width_fraction: props.is_project && props.interface_state ? props.interface_state["console_width_fraction"] : .5,
       console_is_zoomed: true,
       console_is_shrunk: false,
       resource_name: props.resource_name,
@@ -82,7 +82,7 @@ function NotebookApp(props) {
   (0, _utilities_react.useConstructor)(function () {
     dispatch({
       type: "initialize",
-      new_items: props.is_project ? props.interface_state["console_items"] : []
+      new_items: props.is_project && props.interface_state ? props.interface_state["console_items"] : []
     });
   });
   (0, _react.useEffect)(function () {
