@@ -38,6 +38,7 @@ export {ConsoleComponent}
 const MAX_CONSOLE_WIDTH = 1800;
 const BUTTON_CONSUMED_SPACE = 208;
 const SECTION_INDENT = 25;  // This is also hard coded into the css file at the moment
+const MAX_OUTPUT_LENGTH = 500000;
 
 function ConsoleComponent(props) {
     const header_ref = useRef(null);
@@ -911,11 +912,20 @@ function ConsoleComponent(props) {
         if (current != "") {
             current += "<br>"
         }
-        _setConsoleItemValue(data.console_id, "output_text", current + data.message)
+        current += data.message;
+        if (current.length > MAX_OUTPUT_LENGTH) {
+            current = current.slice(-1 * MAX_OUTPUT_LENGTH,)
+        }
+
+        _setConsoleItemValue(data.console_id, "output_text", current)
     }
 
     function _setConsoleItemOutput(data) {
-        _setConsoleItemValue(data.console_id, "output_text", data.message)
+        let current = data.message;
+        if (current.length > MAX_OUTPUT_LENGTH) {
+            current = current.slice(-1 * MAX_OUTPUT_LENGTH,)
+        }
+        _setConsoleItemValue(data.console_id, "output_text", current)
     }
 
     function _addToLog(new_line) {

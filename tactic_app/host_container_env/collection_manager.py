@@ -6,7 +6,7 @@ import zipfile
 from flask_login import login_required, current_user
 from flask import jsonify, render_template, url_for, request, send_file
 from users import User
-from docker_functions import create_container, main_container_info
+from docker_functions import main_container_info
 from tactic_app import app, db, repository_db, use_remote_database
 from communication_utils import make_python_object_jsonizable, debinarize_python_object, make_jsonizable_and_compress
 from communication_utils import read_temp_data, delete_temp_data

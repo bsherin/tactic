@@ -166,7 +166,7 @@ class OtherAPIMIxin:
         return res
 
     def html_table(self, data, title=None, click_type="word-clickable", sortable=True,
-                   sidebyside=False, has_header=True, max_rows=None, header_style=None, body_style=None,
+                   sidebyside=False, has_header=True, max_rows=100, header_style=None, body_style=None,
                    column_order=None, include_row_labels=True, outer_border=False):
         self._save_stdout()
         show_header = has_header
@@ -207,24 +207,26 @@ class OtherAPIMIxin:
         elif isinstance(data, _pd.Series):
             ddict = dict(data)
             dlist = [["key", "value"]]
-            for key, the_val in ddict.items():
+            for n, key, the_val in enumerate(ddict.items()):
+                if k > max_rows:
+                    break
                 dlist.append([key, the_val])
             show_header = True
         else:
             dlist = data
         self._restore_stdout()
         return self.build_html_table_from_data_list(dlist, title, click_type, sortable, sidebyside,
-                                                    show_header, header_style, body_style, outer_border)
+                                                    show_header, header_style, body_style, outer_border, max_rows=max_rows)
 
     def bht(self, data_list, title=None, click_type="word-clickable",
             sortable=True, sidebyside=False, has_header=True, header_style=None, body_style=None, outer_border=False):
         return self.build_html_table_from_data_list(data_list, title, click_type,
                                                     sortable, sidebyside, has_header,
-                                                    header_style, body_style, outer_border)
+                                                    header_style, body_style, outer_border, max_rows=100)
 
     def build_html_table_from_data_list(self, data_list, title=None, click_type="word-clickable",
                                         sortable=True, sidebyside=False, has_header=True,
-                                        header_style=None, body_style=None, outer_border=False):
+                                        header_style=None, body_style=None, outer_border=False, max_rows=100):
         self._save_stdout()
         # base_class_string = "tile-table table table-striped table-bordered table-sm"
         base_class_string = "bp5-html-table bp5-html-table-bordered bp5-html-table-condensed bp5-html-table-striped bp5-small html-table"
@@ -264,7 +266,7 @@ class OtherAPIMIxin:
             start_from = 0
         the_html += u"<tbody>"
 
-        for rnum, r in enumerate(data_list[start_from:]):
+        for rnum, r in enumerate(data_list[start_from:][:max_rows]):
             if click_type == u"row-clickable":
                 the_html += u"<tr class='row-clickable'>"
                 if iterable(r):

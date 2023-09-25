@@ -49,7 +49,7 @@ mdi.use(_markdownItLatex["default"]);
 var MAX_CONSOLE_WIDTH = 1800;
 var BUTTON_CONSUMED_SPACE = 208;
 var SECTION_INDENT = 25; // This is also hard coded into the css file at the moment
-
+var MAX_OUTPUT_LENGTH = 500000;
 function ConsoleComponent(props) {
   var header_ref = (0, _react.useRef)(null);
   var body_ref = (0, _react.useRef)(null);
@@ -1071,10 +1071,18 @@ function ConsoleComponent(props) {
     if (current != "") {
       current += "<br>";
     }
-    _setConsoleItemValue(data.console_id, "output_text", current + data.message);
+    current += data.message;
+    if (current.length > MAX_OUTPUT_LENGTH) {
+      current = current.slice(-1 * MAX_OUTPUT_LENGTH);
+    }
+    _setConsoleItemValue(data.console_id, "output_text", current);
   }
   function _setConsoleItemOutput(data) {
-    _setConsoleItemValue(data.console_id, "output_text", data.message);
+    var current = data.message;
+    if (current.length > MAX_OUTPUT_LENGTH) {
+      current = current.slice(-1 * MAX_OUTPUT_LENGTH);
+    }
+    _setConsoleItemValue(data.console_id, "output_text", current);
   }
   function _addToLog(new_line) {
     var log_content = console_error_log_text_ref.current;

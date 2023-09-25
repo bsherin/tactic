@@ -29,6 +29,8 @@ from matplotlib_utilities import MplFigure, ColorMapper
 PSEUDO_WIDTH = 300
 PSEUDO_HEIGHT = 300
 
+ROUGH_CHARS_PER_EVAL_ROW = 150
+
 Tile = None
 Collection = None
 Tiles = None
@@ -40,6 +42,8 @@ def display(txt):
     return
 
 # noinspection PyTypeChecker
+MAX_SINGLE_WRITE = 5000
+
 class ConsoleStringIO(StringIO):
     def __init__(self, tile, data, old_stdout):
         self.my_tile = tile
@@ -48,9 +52,17 @@ class ConsoleStringIO(StringIO):
         StringIO.__init__(self)
         return
 
+    def crop_output(self, s):
+        new_s = s[:150]
+        new_s = re.sub("<", "&lt;", new_s)
+        new_s = re.sub(">", "&gt;", new_s) + " ..."
+        return new_s
+
     def write(self, s):
         sv_stdout = sys.stdout
         sys.stdout = self.old_stdout  # This is necessary in case there is a print statement in post_task.
+        if len(s) > MAX_SINGLE_WRITE:
+            s = self.crop_output(s)
         StringIO.write(self, s)
         if not s == "\n":   # The print commmand automatically adds a \n. We don't want to print it.
             self.data["force_open"] = True
@@ -63,6 +75,8 @@ class ConsoleStringIO(StringIO):
 
     def overwrite(self, s):
         self.data["force_open"] = True
+        if len(s) > MAX_SINGLE_WRITE:
+            s = self.crop_output(s)
         self.data["message"] = s
         self.data["console_message"] = "consoleCodeOverwrite"
         self.my_tile.emit_console_message("consoleCodeOverwrite", self.data)
@@ -317,8 +331,9 @@ class PseudoTileClass(TileBase, MplFigure):
                                                body_style="font-size:12px",
                                                max_rows=data["max_rows"])
                 else:
+                    max_chars = data["max_rows"] * ROUGH_CHARS_PER_EVAL_ROW
                     the_html = "<div class='export-header-text'>{}</div>".format(eval_type_info["info_string"])
-                    the_html += str(eval_result)
+                    the_html += str(eval_result)[:max_chars]
             except Exception as ex:
                 succcess = False
                 print("error in _evaluate_export in tile_base")

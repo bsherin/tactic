@@ -13,6 +13,7 @@ import os
 from communication_utils import debinarize_python_object, store_temp_data, emit_direct
 from communication_utils import make_jsonizable_and_compress, read_project_dict, read_temp_data, delete_temp_data
 import docker_functions
+from docker_functions import env_or_none
 import loaded_tile_management
 # from volume_manager import VolumeManager
 from mongo_accesser import MongoAccess
@@ -36,13 +37,7 @@ else:
 
 true_host_persist_dir = os.environ.get("TRUE_HOST_PERSIST_DIR")
 true_host_resources_dir = os.environ.get("TRUE_HOST_RESOURCES_DIR")
-
-if "TRUE_USER_HOST_POOL_DIR" in os.environ:
-    true_user_host_pool_dir = os.environ.get("TRUE_USER_HOST_POOL_DIR")
-else:
-    true_user_host_pool_dir = None
-
-print(f"got true_user_host_pool_dir {str(true_user_host_pool_dir)}")
+true_user_host_pool_dir = env_or_none("TRUE_USER_HOST_POOL_DIR")
 
 # noinspection PyPep8Naming,PyUnusedLocal,PyTypeChecker,PyMissingConstructor
 class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationTasksMixin, APISupportTasksMixin,

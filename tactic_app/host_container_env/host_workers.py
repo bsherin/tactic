@@ -862,7 +862,6 @@ class HostWorker(QWorker):
 
     @task_worthy
     def GetFileStats(self, data):
-        print("Entering getfilestats")
         user_id = data["user_id"]
         filepath = data["file_path"]
         user_obj = load_user(user_id)
@@ -871,11 +870,20 @@ class HostWorker(QWorker):
             return {"stats": None}
         truepath = re.sub("/mydisk", user_pool_dir, filepath)
         fstat = os.stat(truepath)
+        raw_size = fstat.st_size
+        if raw_size > 10**9:
+            size_str = f"{round(raw_size / 10**9, 1)} GB"
+        elif raw_size > 10 ** 6:
+            size_str = f"{round(raw_size / 10**6, 1)} MB"
+        elif raw_size > 10 ** 3:
+            size_str = f"{round(raw_size / 10**3, 1)} KB"
+        else:
+            size_str = f"{raw_size} bytes"
         stats = {
-            "created": datetime.datetime.utcfromtimestamp(fstat.st_ctime).strftime('%Y-%m-%d %H:%M:%S'),
-            "updated": datetime.datetime.utcfromtimestamp(fstat.st_mtime).strftime('%Y-%m-%d %H:%M:%S'),
-            "accessed": datetime.datetime.utcfromtimestamp(fstat.st_atime).strftime('%Y-%m-%d %H:%M:%S'),
-            "size": fstat.st_size
+            "created": user_obj.get_timestrings(datetime.datetime.utcfromtimestamp(fstat.st_ctime))[0],
+            "updated": user_obj.get_timestrings(datetime.datetime.utcfromtimestamp(fstat.st_mtime))[0],
+            "accessed": user_obj.get_timestrings(datetime.datetime.utcfromtimestamp(fstat.st_atime))[0],
+            "size": size_str
         }
         print("returning from getfilestats with stats" + str(stats))
         return {"stats": stats}
