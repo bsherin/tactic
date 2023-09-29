@@ -1,6 +1,7 @@
 import sys
 import re
 import time
+# noinspection PyPackageRequirements
 from bson.binary import Binary
 # noinspection PyUnresolvedReferences
 from matplotlib_utilities import MplFigure, color_palette_names, ColorMapper
@@ -11,7 +12,6 @@ import pickle
 from pickle import UnpicklingError
 from communication_utils import is_jsonizable, make_python_object_jsonizable, debinarize_python_object
 import Levenshtein
-# from volume_manager import VolumeManager
 from redis_tools import redis_tm
 from tile_o_plex import app
 from flask import render_template
@@ -23,15 +23,13 @@ from other_api_mixin import OtherAPIMIxin
 from refreshing_mixin import RefreshingMixin
 from exception_mixin import ExceptionMixin, generic_exception_handler
 from document_object import ROWS_TO_PRINT, DetachedTacticCollection
-from qworker import debug_log
+from qworker_alt import debug_log
 import copy
-
+from qworker_alt import task_worthy_methods
 RETRIES = os.environ.get("RETRIES")
 
+
 # noinspection PyUnresolvedReferences
-from qworker import task_worthy_methods
-
-
 def _task_worthy(m):
     task_worthy_methods[m.__name__] = "tilebase"
     return m

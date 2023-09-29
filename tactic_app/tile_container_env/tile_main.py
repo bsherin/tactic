@@ -1,26 +1,26 @@
 
 # import pydevd_pycharm
-from gevent import monkey
-monkey.patch_all()
+# from gevent import monkey
+# monkey.patch_all()
 # pydevd_pycharm.settrace('docker.for.mac.localhost', port=21000, stdoutToServer=True, stderrToServer=True,
 #                         suspend=True)
-print("at top of tile_main.py")
+# print("at top of tile_main.py")
 import os
 import pika
 import json
 import base64
-print("entering tile__main")
 from flask import Flask
 import exception_mixin
 from exception_mixin import ExceptionMixin
 from threading import Lock
+import threading
 
 import copy
 # noinspection PyUnresolvedReferences
-from qworker import QWorker, task_worthy, RETRIES, debug_log, socketio, PAUSE_TIME
+from qworker_alt import QWorker, task_worthy, RETRIES, debug_log, PAUSE_TIME
 # noinspection PyUnresolvedReferences
 
-import qworker
+import qworker_alt
 import tile_env
 from tile_env import class_info
 from tile_env import exec_tile_code
@@ -32,8 +32,8 @@ from pseudo_tile_base import PseudoTileClass
 import pseudo_tile_base
 import library_object
 import settings_object
-import gevent
-from communication_utils import make_python_object_jsonizable, emit_direct
+# import gevent
+from communication_utils import make_python_object_jsonizable
 import uuid
 from rabbit_manage import sleep_until_rabbit_alive
 print("Waiting for rabbit")
@@ -77,8 +77,9 @@ class KillWorker(QWorker):
         global kill_thread
         with kill_thread_lock:
             if kill_thread is None:
-                kill_thread = socketio.start_background_task(target=self.start_background_thread)
-        debug_log('Background kill_thread started')
+                kill_thread = threading.Thread(target=self.start_background_thread)
+                kill_thread.start()
+                debug_log('Background kill_thread started')
 
 
 # noinspection PyProtectedMember,PyUnusedLocal
@@ -95,23 +96,41 @@ class TileWorker(QWorker):
     def hello(self, data_dict):
         return {"success": True, "message": 'This is a tile communicating'}
 
-    def ask_host(self, msg_type, task_data=None, callback_func=None):
+    def ask_host(self, msg_type, task_data=None, callback_func=None, alt_channel=None):
         task_data["main_id"] = self.tile_instance._main_id
-        self.post_task("host", msg_type, task_data, callback_func)
+        self.post_task("host", msg_type, task_data, callback_func, alt_channel=None)
         return
 
     def emit_tile_message(self, message, data=None):
+        print(f"in emit_tile_message with message {message}")
+        if data is None:
+            data = {}
+        data["tile_message"] = message
+        data["tile_id"] = self.my_id
+        self.ask_host("emit_tile_message", data)
+        # emit_direct("tile-message", data, namespace="/main", room=self.tile_instance.user_id)
+        # time.sleep(PAUSE_TIME)
+        return
+
+    def emit_tile_messageold(self, message, data=None):
         if data is None:
             data = {}
         data["tile_message"] = message
         data["tile_id"] = self.my_id
         emit_direct("tile-message", data, namespace="/main", room=self.tile_instance.user_id)
-        gevent.sleep(PAUSE_TIME)
+        time.sleep(PAUSE_TIME)
         return
 
-    def emit_to_client(self, message, data):
+    def emit_to_client(self, message, data, alt_channel=None):
+        print(f"in emit_to_client with message {message}")
+        data["message"] = message
+        data["main_id"] = self.tile_instance._main_id
+        self.ask_host("emit_to_client", data, alt_channel=alt_channel)
+        # time.sleep(PAUSE_TIME)
+
+    def emit_to_clientold(self, message, data):
         emit_direct(message, data, namespace="/main", room=self.tile_instance._main_id)
-        gevent.sleep(PAUSE_TIME)
+        time.sleep(PAUSE_TIME)
 
     def send_error_entry(self, title, content, line_number):
         data = {"message": "add-error-drawer-entry",

@@ -21,4 +21,5 @@ requests
 rabbitmq-admin
 WTForms
 xmltodict
+pymongo
 ssh-pymongo
