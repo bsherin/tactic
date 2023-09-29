@@ -15,7 +15,6 @@ regex
 scipy
 tweepy
 yellowbrick
-Flask-SocketIO
 kombu
 textblob
 wikipedia-api

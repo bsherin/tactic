@@ -14,21 +14,20 @@ import uuid
 import pika
 from exception_mixin import generic_exception_handler
 
+try:
+    import flask_socketio
+    from flask_socketio import SocketIO
 
-from flask_socketio import SocketIO
+    socketio = SocketIO(message_queue="megaplex")
 
-print("in communication utils")
+    def emit_direct(event_name, data, namespace, room):
+        socketio.emit(event_name, data, namespace=namespace, room=room)
+except ModuleNotFoundError as err:
+    print("no flask_socketio")
 
 RETRIES = os.environ.get("RETRIES")
 
 megaplex = None
-
-socketio = SocketIO(message_queue="megaplex")
-
-
-def emit_direct(event_name, data, namespace, room):
-    socketio.emit(event_name, data, namespace=namespace, room=room)
-
 
 def is_jsonizable(dat):
     try:

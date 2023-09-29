@@ -6,25 +6,23 @@ import os
 import re
 import types
 import pickle
+import pika
 from pickle import UnpicklingError
 from tile_base import TileBase, _task_worthy, _jsonizable_types
 from communication_utils import is_jsonizable, make_python_object_jsonizable, debinarize_python_object
-from communication_utils import emit_direct, socketio
 import document_object
 from document_object import ROWS_TO_PRINT, DetachedTacticCollection
-from qworker import debug_log
+from qworker_alt import debug_log
 
 from threading import Lock
-import gevent
+import threading
+from qworker_alt import task_worthy_methods, QWorker
+from matplotlib_utilities import MplFigure, ColorMapper
+import time
 
 ethread = None
 executing_console_id = None
 exec_queue = []
-
-# noinspection PyUnresolvedReferences
-from qworker import task_worthy_methods
-
-from matplotlib_utilities import MplFigure, ColorMapper
 
 PSEUDO_WIDTH = 300
 PSEUDO_HEIGHT = 300
@@ -41,15 +39,18 @@ def display(txt):
     sys.stdout.overwrite(txt)
     return
 
+
 # noinspection PyTypeChecker
 MAX_SINGLE_WRITE = 5000
 
+
 class ConsoleStringIO(StringIO):
-    def __init__(self, tile, data, old_stdout):
+    def __init__(self, tile, data, old_stdout, channel):
         self.my_tile = tile
         self.data = data
         self.old_stdout = old_stdout
         StringIO.__init__(self)
+        self.channel = channel
         return
 
     def crop_output(self, s):
@@ -58,9 +59,20 @@ class ConsoleStringIO(StringIO):
         new_s = re.sub(">", "&gt;", new_s) + " ..."
         return new_s
 
+    def emit_console_message(self, console_message, task_data, force_open=True):
+        print(f"emitting console_message in consolestringio {console_message}")
+        ldata = copy.copy(task_data)
+        ldata["console_message"] = console_message
+        ldata["force_open"] = force_open
+        # ldata["main_id"] = self._main_id
+        ldata["message"] = "console-message"
+        ldata["main_id"] = self.my_tile._main_id
+        self.my_tile._tworker.post_task("host", "emit_to_client", ldata, callback_func, alt_channel=self.channel)
+
     def write(self, s):
         sv_stdout = sys.stdout
         sys.stdout = self.old_stdout  # This is necessary in case there is a print statement in post_task.
+        print("entering write in console string io")
         if len(s) > MAX_SINGLE_WRITE:
             s = self.crop_output(s)
         StringIO.write(self, s)
@@ -69,7 +81,8 @@ class ConsoleStringIO(StringIO):
             self.data["message"] = s
             self.data["console_message"] = "consoleCodePrint"
             # self.my_tile._tworker.post_task(self.my_tile._main_id, "got_console_print", self.data)
-            self.my_tile.emit_console_message("consoleCodePrint", self.data)
+            self.emit_console_message("consoleCodePrint", self.data)
+        print("leaving write in console string io")
         sys.stdout = sv_stdout
         return
 
@@ -79,7 +92,7 @@ class ConsoleStringIO(StringIO):
             s = self.crop_output(s)
         self.data["message"] = s
         self.data["console_message"] = "consoleCodeOverwrite"
-        self.my_tile.emit_console_message("consoleCodeOverwrite", self.data)
+        self.emit_console_message("consoleCodeOverwrite", self.data)
 
 
 # noinspection PyUnusedLocal
@@ -101,18 +114,21 @@ class PseudoTileClass(TileBase, MplFigure):
         return
 
     # Note that task_data must contain console_id
-    def emit_console_message(self, console_message, task_data, force_open=True):
+    def emit_console_message(self, console_message, task_data, force_open=True, alt_channel=None):
+        print(f"emitting console_message {console_message}")
         ldata = copy.copy(task_data)
         ldata["console_message"] = console_message
         ldata["force_open"] = force_open
-        ldata["main_id"] = self._main_id
-        emit_direct("console-message", ldata, namespace="/main", room=self._main_id)
+        # ldata["main_id"] = self._main_id
+        self._tworker.emit_to_client("console-message", ldata, alt_channel=alt_channel)
+        # emit_direct("console-message", ldata, namespace="/main", room=self._main_id)
 
     def emit_export_viewer_message(self, export_viewer_message, task_data):
         ldata = copy.copy(task_data)
         ldata["export_viewer_message"] = export_viewer_message
-        ldata["main_id"] = self._main_id
-        emit_direct("export-viewer-message", ldata, namespace="/main", room=self._main_id)
+        # ldata["main_id"] = self._main_id
+        self._tworker.emit_to_client("export-viewer-message", ldata)
+        # emit_direct("export-viewer-message", ldata, namespace="/main", room=self._main_id)
 
     @_task_worthy
     def compile_save_dict(self, data):
@@ -300,7 +316,8 @@ class PseudoTileClass(TileBase, MplFigure):
             exec_queue.append([self._get_export_info_thread, copy.deepcopy(data)])
         else:
             executing_console_id = "export_viewer"
-            ethread = socketio.start_background_task(self._get_export_info_thread, data)
+            ethread = threading.Thread(self._get_export_info_thread, data)
+            ethread.start()
         return
 
     def _eval_thread(self, data):
@@ -419,14 +436,29 @@ class PseudoTileClass(TileBase, MplFigure):
         self._std_out_nesting = 0
         return
 
+    def get_pika_channel(self):
+        params = pika.ConnectionParameters(
+            heartbeat=600,
+            blocked_connection_timeout=300,
+            host="megaplex",
+            port=5672,
+            virtual_host='/'
+        )
+        connection = pika.BlockingConnection(params)
+        return connection.channel()
+
     def exec_thread(self, data):
+        print("in exec_thread")
         global executing_console_id
-        self.emit_console_message("consoleCodeRun", data)
+        channel = self.get_pika_channel()
+        self.emit_console_message("consoleCodeRun", data, alt_channel=channel)
         try:
+            print("entering try")
             if not Collection:
                 self._tworker.create_pseudo_tile_collection_object(data)
             self._pipe_dict = data["pipe_dict"]
-            redirected_output = ConsoleStringIO(self, data, self._base_stdout)
+            print("creating redirected output")
+            redirected_output = ConsoleStringIO(self, data, self._base_stdout, channel)
             sys.stdout = redirected_output
             the_code = data["the_code"]
             as_tree = ast.parse(the_code)
@@ -435,12 +467,17 @@ class PseudoTileClass(TileBase, MplFigure):
                 code_lines = the_code.splitlines()
                 code_to_eval = code_lines[lnumber]
                 code_to_exec = "\n".join(code_lines[:lnumber])
+                print("about to exec")
                 exec(code_to_exec, globals(), globals())
+                print("about to eval")
                 eval_res = eval(code_to_eval, globals(), globals())
+                print("finished eval")
                 if eval_res is not None:
                     print(eval_res)
             else:
+                print("about to exec")
                 exec(data["the_code"], globals(), globals())
+                print("finished exec, no eval to come")
 
             self.execution_counter += 1
             data["execution_count"] = self.execution_counter
@@ -450,6 +487,7 @@ class PseudoTileClass(TileBase, MplFigure):
             data["message"] = self._handle_exception(ex, None, print_to_console=False)
             print(data["message"])
         self._restore_base_stdout()
+        print("aobut to emit stop")
         self.emit_console_message("stopConsoleSpinner", data)
         current_globals = self.get_user_globals()
         self.check_globals()
@@ -465,7 +503,8 @@ class PseudoTileClass(TileBase, MplFigure):
         if len(exec_queue) > 0:
             thr, ndata = exec_queue.pop(0)
             executing_console_id = ndata["console_id"]
-            ethread = socketio.start_background_task(thr, ndata)
+            ethread = threading.Thread(target=thr, args=[ndata])
+            ethread.start()
         return
 
     def remove_from_queue(self, console_id):
@@ -523,12 +562,19 @@ class PseudoTileClass(TileBase, MplFigure):
 
     @_task_worthy
     def exec_console_code(self, data):
+        print("entering exec_console_code")
         global ethread
         global exec_queue
         global executing_console_id
         if ethread and not ethread.dead:
+            print("ethread exists, apending")
             exec_queue.append([self.exec_thread, copy.deepcopy(data)])
         else:
+            print("ethread doesn't exist,creating")
             executing_console_id = data["console_id"]
-            ethread = socketio.start_background_task(self.exec_thread, data)
+            print("about to create ethread")
+            ethread = threading.Thread(target=self.exec_thread, args=[data])
+            print("created ethread")
+            ethread.start()
+            print("started ethread")
         return
