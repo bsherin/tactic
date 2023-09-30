@@ -98,7 +98,7 @@ class TileWorker(QWorker):
 
     def ask_host(self, msg_type, task_data=None, callback_func=None, alt_channel=None):
         task_data["main_id"] = self.tile_instance._main_id
-        self.post_task("host", msg_type, task_data, callback_func, alt_channel=None)
+        self.post_task("host", msg_type, task_data, callback_func, alt_channel=alt_channel)
         return
 
     def emit_tile_message(self, message, data=None):

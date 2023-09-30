@@ -59,15 +59,13 @@ class ConsoleStringIO(StringIO):
         new_s = re.sub(">", "&gt;", new_s) + " ..."
         return new_s
 
-    def emit_console_message(self, console_message, task_data, force_open=True):
-        print(f"emitting console_message in consolestringio {console_message}")
-        ldata = copy.copy(task_data)
-        ldata["console_message"] = console_message
-        ldata["force_open"] = force_open
-        # ldata["main_id"] = self._main_id
-        ldata["message"] = "console-message"
-        ldata["main_id"] = self.my_tile._main_id
-        self.my_tile._tworker.post_task("host", "emit_to_client", ldata, callback_func, alt_channel=self.channel)
+    # def emit_console_message(self, console_message, task_data, force_open=True):
+    #     ldata = copy.copy(task_data)
+    #     ldata["console_message"] = console_message
+    #     ldata["force_open"] = force_open
+    #     ldata["message"] = "console-message"
+    #     ldata["main_id"] = self.my_tile._main_id
+    #     self.my_tile._tworker.post_task("host", "emit_to_client", ldata, None, alt_channel=self.channel)
 
     def write(self, s):
         sv_stdout = sys.stdout
@@ -78,10 +76,10 @@ class ConsoleStringIO(StringIO):
         StringIO.write(self, s)
         if not s == "\n":   # The print commmand automatically adds a \n. We don't want to print it.
             self.data["force_open"] = True
-            self.data["message"] = s
+            self.data["result_text"] = s
             self.data["console_message"] = "consoleCodePrint"
             # self.my_tile._tworker.post_task(self.my_tile._main_id, "got_console_print", self.data)
-            self.emit_console_message("consoleCodePrint", self.data)
+            self.my_tile._tworker.emit_console_message("consoleCodePrint", self.data, alt_channel=self.channel)
         print("leaving write in console string io")
         sys.stdout = sv_stdout
         return
@@ -92,7 +90,7 @@ class ConsoleStringIO(StringIO):
             s = self.crop_output(s)
         self.data["message"] = s
         self.data["console_message"] = "consoleCodeOverwrite"
-        self.emit_console_message("consoleCodeOverwrite", self.data)
+        self.my_tile._tworker.emit_console_message("consoleCodeOverwrite", self.data, alt_channel=self.channel)
 
 
 # noinspection PyUnusedLocal
@@ -115,20 +113,15 @@ class PseudoTileClass(TileBase, MplFigure):
 
     # Note that task_data must contain console_id
     def emit_console_message(self, console_message, task_data, force_open=True, alt_channel=None):
-        print(f"emitting console_message {console_message}")
         ldata = copy.copy(task_data)
         ldata["console_message"] = console_message
         ldata["force_open"] = force_open
-        # ldata["main_id"] = self._main_id
         self._tworker.emit_to_client("console-message", ldata, alt_channel=alt_channel)
-        # emit_direct("console-message", ldata, namespace="/main", room=self._main_id)
 
-    def emit_export_viewer_message(self, export_viewer_message, task_data):
+    def emit_export_viewer_message(self, export_viewer_message, task_data, alt_channel=None):
         ldata = copy.copy(task_data)
         ldata["export_viewer_message"] = export_viewer_message
-        # ldata["main_id"] = self._main_id
-        self._tworker.emit_to_client("export-viewer-message", ldata)
-        # emit_direct("export-viewer-message", ldata, namespace="/main", room=self._main_id)
+        self._tworker.emit_to_client("export-viewer-message", ldata, alt_channel=alt_channel)
 
     @_task_worthy
     def compile_save_dict(self, data):
@@ -291,7 +284,9 @@ class PseudoTileClass(TileBase, MplFigure):
 
     def _get_export_info_thread(self, data):
         global executing_console_id
-        self.emit_export_viewer_message("startMySpinner", data)
+        connection = self.get_pika_connection()
+        channel = connection.channel()
+        self.emit_export_viewer_message("startMySpinner", data, alt_channel=channel)
         try:
             ename = data["export_name"]
             self._pipe_dict = data["pipe_dict"]
@@ -302,9 +297,10 @@ class PseudoTileClass(TileBase, MplFigure):
             result = {"success": False,
                       "info_string": self._handle_exception(Ex, "", print_to_console=False)}
         data.update(result)
-        self.emit_export_viewer_message("got_export_info", data)
+        self.emit_export_viewer_message("got_export_info", data, alt_channel=channel)
         executing_console_id = None
-        self.post_event("check_exec_queue", {})
+        self.post_event("check_exec_queue", {}, alt_channel=channel)
+        connection.close()
         return
 
     @_task_worthy
@@ -312,7 +308,7 @@ class PseudoTileClass(TileBase, MplFigure):
         global ethread
         global exec_queue
         global executing_console_id
-        if ethread and not ethread.dead:
+        if ethread and ethread.is_alive():
             exec_queue.append([self._get_export_info_thread, copy.deepcopy(data)])
         else:
             executing_console_id = "export_viewer"
@@ -322,7 +318,9 @@ class PseudoTileClass(TileBase, MplFigure):
 
     def _eval_thread(self, data):
         global executing_console_id
-        self.emit_export_viewer_message("startMySpinner", data)
+        connection = self.get_pika_connection()
+        channel = connection.channel()
+        self.emit_export_viewer_message("startMySpinner", data, alt_channel=channel)
         self._pipe_dict = data["pipe_dict"]
         pipe_val = self.get_pipe_value(data["export_name"])
         success = True
@@ -357,9 +355,10 @@ class PseudoTileClass(TileBase, MplFigure):
                 the_html = self.get_traceback_message(ex)
 
         data.update({"success": success, "the_html": the_html})
-        self.emit_export_viewer_message("display_result", data)
+        self.emit_export_viewer_message("display_result", data, alt_channel=channel)
         executing_console_id = None
-        self.post_event("check_exec_queue", {})
+        self.post_event("check_exec_queue", {}, alt_channel=channel)
+        connection.close()
         return
 
     @_task_worthy
@@ -367,7 +366,7 @@ class PseudoTileClass(TileBase, MplFigure):
         global ethread
         global exec_queue
         global executing_console_id
-        if ethread and not ethread.dead:
+        if ethread and ethread.is_alive():
             exec_queue.append([self._eval_thread, copy.deepcopy(data)])
         else:
             executing_console_id = "export_viewer"
@@ -436,7 +435,7 @@ class PseudoTileClass(TileBase, MplFigure):
         self._std_out_nesting = 0
         return
 
-    def get_pika_channel(self):
+    def get_pika_connection(self):
         params = pika.ConnectionParameters(
             heartbeat=600,
             blocked_connection_timeout=300,
@@ -445,19 +444,17 @@ class PseudoTileClass(TileBase, MplFigure):
             virtual_host='/'
         )
         connection = pika.BlockingConnection(params)
-        return connection.channel()
+        return connection
 
     def exec_thread(self, data):
-        print("in exec_thread")
         global executing_console_id
-        channel = self.get_pika_channel()
+        connection = self.get_pika_connection()
+        channel = connection.channel()
         self.emit_console_message("consoleCodeRun", data, alt_channel=channel)
         try:
-            print("entering try")
             if not Collection:
                 self._tworker.create_pseudo_tile_collection_object(data)
             self._pipe_dict = data["pipe_dict"]
-            print("creating redirected output")
             redirected_output = ConsoleStringIO(self, data, self._base_stdout, channel)
             sys.stdout = redirected_output
             the_code = data["the_code"]
@@ -467,17 +464,12 @@ class PseudoTileClass(TileBase, MplFigure):
                 code_lines = the_code.splitlines()
                 code_to_eval = code_lines[lnumber]
                 code_to_exec = "\n".join(code_lines[:lnumber])
-                print("about to exec")
                 exec(code_to_exec, globals(), globals())
-                print("about to eval")
                 eval_res = eval(code_to_eval, globals(), globals())
-                print("finished eval")
                 if eval_res is not None:
                     print(eval_res)
             else:
-                print("about to exec")
                 exec(data["the_code"], globals(), globals())
-                print("finished exec, no eval to come")
 
             self.execution_counter += 1
             data["execution_count"] = self.execution_counter
@@ -487,12 +479,12 @@ class PseudoTileClass(TileBase, MplFigure):
             data["message"] = self._handle_exception(ex, None, print_to_console=False)
             print(data["message"])
         self._restore_base_stdout()
-        print("aobut to emit stop")
-        self.emit_console_message("stopConsoleSpinner", data)
+        self.emit_console_message("stopConsoleSpinner", data, alt_channel=channel)
         current_globals = self.get_user_globals()
         self.check_globals()
         executing_console_id = None
-        self.post_event("check_exec_queue", {})
+        self.post_event("check_exec_queue", {}, alt_channel=channel)
+        connection.close()
         return
 
     @_task_worthy
@@ -542,7 +534,7 @@ class PseudoTileClass(TileBase, MplFigure):
         global executing_console_id
         global exec_queue
         self._restore_base_stdout()
-        if ethread and not ethread.dead:
+        if ethread and ethread.is_alive():
             ethread.kill()
         if executing_console_id is not None:
             data["console_id"] = executing_console_id
@@ -562,19 +554,13 @@ class PseudoTileClass(TileBase, MplFigure):
 
     @_task_worthy
     def exec_console_code(self, data):
-        print("entering exec_console_code")
         global ethread
         global exec_queue
         global executing_console_id
-        if ethread and not ethread.dead:
-            print("ethread exists, apending")
+        if ethread and ethread.is_alive():
             exec_queue.append([self.exec_thread, copy.deepcopy(data)])
         else:
-            print("ethread doesn't exist,creating")
             executing_console_id = data["console_id"]
-            print("about to create ethread")
             ethread = threading.Thread(target=self.exec_thread, args=[data])
-            print("created ethread")
             ethread.start()
-            print("started ethread")
         return

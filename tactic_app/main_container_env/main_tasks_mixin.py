@@ -1574,7 +1574,7 @@ class ConsoleTasksMixin:
 
     @task_worthy
     def got_console_print(self, data):
-        self.mworker.emit_console_message("consoleCodePrint", {"message": data["result_string"],
+        self.mworker.emit_console_message("consoleCodePrint", {"result_text": data["result_string"],
                                                                "console_id": data["console_id"],
                                                                "force_open": True})
         return {"success": True}
