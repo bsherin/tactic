@@ -1071,7 +1071,7 @@ function ConsoleComponent(props) {
     if (current != "") {
       current += "<br>";
     }
-    current += data.message;
+    current += data.result_text;
     if (current.length > MAX_OUTPUT_LENGTH) {
       current = current.slice(-1 * MAX_OUTPUT_LENGTH);
     }

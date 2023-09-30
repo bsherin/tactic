@@ -172,7 +172,7 @@ class QWorker(ExceptionMixin):
             channel = alt_channel
         print("declaring")
         channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
-        print("pbulishing")
+        print("publishing")
         channel.basic_publish(exchange='',
                               routing_key=dest_id,
                               properties=pika.BasicProperties(
