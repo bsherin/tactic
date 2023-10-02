@@ -1078,7 +1078,7 @@ function ConsoleComponent(props) {
     _setConsoleItemValue(data.console_id, "output_text", current);
   }
   function _setConsoleItemOutput(data) {
-    var current = data.message;
+    var current = data.result_text;
     if (current.length > MAX_OUTPUT_LENGTH) {
       current = current.slice(-1 * MAX_OUTPUT_LENGTH);
     }
