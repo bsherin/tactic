@@ -1,10 +1,7 @@
 
 # import pydevd_pycharm
-# from gevent import monkey
-# monkey.patch_all()
 # pydevd_pycharm.settrace('docker.for.mac.localhost', port=21000, stdoutToServer=True, stderrToServer=True,
 #                         suspend=True)
-# print("at top of tile_main.py")
 import os
 import pika
 import json
@@ -14,12 +11,8 @@ import exception_mixin
 from exception_mixin import ExceptionMixin
 from threading import Lock
 import threading
-
 import copy
-# noinspection PyUnresolvedReferences
-from qworker_alt import QWorker, task_worthy, RETRIES, debug_log, PAUSE_TIME
-# noinspection PyUnresolvedReferences
-
+from qworker_alt import QWorker, task_worthy, RETRIES, debug_log
 import qworker_alt
 import tile_env
 from tile_env import class_info
@@ -32,37 +25,32 @@ from pseudo_tile_base import PseudoTileClass
 import pseudo_tile_base
 import library_object
 import settings_object
-# import gevent
 from communication_utils import make_python_object_jsonizable
 import uuid
 from rabbit_manage import sleep_until_rabbit_alive
+import sys, os
+import time
+
+sys.stdout = sys.stderr
 print("Waiting for rabbit")
 success = sleep_until_rabbit_alive()
 print("Done waiting for rabbit with success " + str(success))
 
-import sys, os
-sys.stdout = sys.stderr
-import time
-
 kill_thread = None
 kill_thread_lock = Lock()
 
-
-# noinspection PyUnusedLocal,PyProtectedMember
+# noinspection PyUnusedLocal,PyProtectedMember,PyMissingConstructor
 class KillWorker(QWorker):
     def __init__(self):
         self.my_id = "kill_" + os.environ.get("MY_ID")
-        # self.handler_instances = {"this_worker": self}
         self.channel = None
         self.connection = None
         self.generate_heartbeats = False
-        print("initialized killworker")
         return
 
     def handle_delivery(self, channel, method, props, body):
         try:
             task_packet = json.loads(body)
-            debug_log("***in handle_delivery in KillWorker with task_type {}".format(task_packet["task_type"]))
             if task_packet["task_type"] == "StopMe":
                 tile_base._tworker.interrupt_and_restart()
                 tile_base._tworker.emit_tile_message("stopSpinner")
@@ -108,29 +96,12 @@ class TileWorker(QWorker):
         data["tile_message"] = message
         data["tile_id"] = self.my_id
         self.ask_host("emit_tile_message", data)
-        # emit_direct("tile-message", data, namespace="/main", room=self.tile_instance.user_id)
-        # time.sleep(PAUSE_TIME)
-        return
-
-    def emit_tile_messageold(self, message, data=None):
-        if data is None:
-            data = {}
-        data["tile_message"] = message
-        data["tile_id"] = self.my_id
-        emit_direct("tile-message", data, namespace="/main", room=self.tile_instance.user_id)
-        time.sleep(PAUSE_TIME)
         return
 
     def emit_to_client(self, message, data, alt_channel=None):
-        print(f"in emit_to_client with message {message}")
         data["message"] = message
         data["main_id"] = self.tile_instance._main_id
         self.ask_host("emit_to_client", data, alt_channel=alt_channel)
-        # time.sleep(PAUSE_TIME)
-
-    def emit_to_clientold(self, message, data):
-        emit_direct(message, data, namespace="/main", room=self.tile_instance._main_id)
-        time.sleep(PAUSE_TIME)
 
     def send_error_entry(self, title, content, line_number):
         data = {"message": "add-error-drawer-entry",

@@ -79,7 +79,6 @@ def debug_log(msg):
 # noinspection PyTypeChecker,PyUnusedLocal
 class QWorker(ExceptionMixin):
     def __init__(self):
-        # gevent.Greenlet.__init__(self)
         self.my_id = os.environ.get("MY_ID")
         self.handler_instances = {"this_worker": self}
         self.channel = None
@@ -149,7 +148,6 @@ class QWorker(ExceptionMixin):
     def handle_delivery(self, channel, method, props, body):
         try:
             task_packet = json.loads(body)
-            # debug_log("in handle_delivery with task_type {}".format(task_packet["task_type"]))
             if task_packet["status"] in response_statuses:
                 self.handle_response(task_packet)
             else:

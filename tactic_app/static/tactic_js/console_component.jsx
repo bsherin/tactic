@@ -921,7 +921,7 @@ function ConsoleComponent(props) {
     }
 
     function _setConsoleItemOutput(data) {
-        let current = data.message;
+        let current = data.result_text;
         if (current.length > MAX_OUTPUT_LENGTH) {
             current = current.slice(-1 * MAX_OUTPUT_LENGTH,)
         }
