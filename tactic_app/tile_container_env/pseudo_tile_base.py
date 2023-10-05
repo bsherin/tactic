@@ -6,8 +6,6 @@ import os
 import re
 import types
 import pickle
-import ctypes
-import inspect
 import pika
 from pickle import UnpicklingError
 from tile_base import TileBase, _task_worthy, _jsonizable_types

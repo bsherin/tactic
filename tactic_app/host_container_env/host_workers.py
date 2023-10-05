@@ -121,7 +121,6 @@ class HostWorker(QWorker):
     def set_user_theme(self, data):
         user_id = data["user_id"]
         user_obj = load_user(user_id)
-        print("got user_obj")
         return user_obj.update_account({"theme": data["theme"]})
 
     @task_worthy
@@ -340,7 +339,6 @@ class HostWorker(QWorker):
 
     @task_worthy
     def remove_mainwindow_task(self, data):
-        print("in remove_mainwindow_task")
         main_id = data["main_id"]
         destroy_child_containers(main_id)
         destroy_container(main_id, notify=False)
@@ -348,7 +346,6 @@ class HostWorker(QWorker):
 
     @task_worthy
     def get_container_log(self, data):
-        print("** in get_container_log in host ***")
         container_id = data["container_id"]
         if "since" in data and data["since"] is not None:
             dt = datetime.datetime.fromtimestamp(data["since"] / 1000)
@@ -391,12 +388,9 @@ class HostWorker(QWorker):
 
     @task_worthy
     def get_collection_names(self, data):
-        print("*** in get_collection_names** ")
         user_id = data["user_id"]
         the_user = load_user(user_id)
-        print(" loaded the user ")
         cnames = the_user.data_collection_names
-        print("got collection names " + str(cnames[:10]))
         return {"collection_names": cnames}
 
     @task_worthy
@@ -621,11 +615,7 @@ class HostWorker(QWorker):
     @task_worthy
     def print_text_area_to_console(self, data):
         from tactic_app import socketio
-        # user_id = data["user_id"]
-        # user_obj = load_user(user_id)
-        # user_tstring = user_obj.get_timestrings(datetime.datetime.utcnow())[0]
         unique_id = str(uuid.uuid4())
-        # summary_text = "text item " + user_tstring
         data["message"] = {"unique_id": unique_id,
                            "type": "text",
                            "am_shrunk": False,
@@ -678,11 +668,7 @@ class HostWorker(QWorker):
     @task_worthy
     def print_code_area_to_console(self, data):
         from tactic_app import socketio
-        # user_id = data["user_id"]
-        # user_obj = load_user(user_id)
-        # user_tstring = user_obj.get_timestrings(datetime.datetime.utcnow())[0]
         unique_id = str(uuid.uuid4())
-        # summary_text = "code item " + user_tstring
         data["message"] = {"unique_id": unique_id,
                            "type": "code",
                            "am_shrunk": False,
@@ -769,7 +755,6 @@ class HostWorker(QWorker):
 
     @task_worthy
     def register_container(self, data):
-        print("registering a container")
         tactic_app.health_tracker.register_container(data["container_id"])
 
     @task_worthy
@@ -803,8 +788,8 @@ class HostWorker(QWorker):
             print(f"streaming_workers.keys() is {str(streaming_workers.keys())}")
         return None
 
-    def folder_dict(self, the_id, path, basename, child_nodes=[]):
-        return {
+    def folder_dict(self, the_id, path, basename, user_obj, child_nodes=[]):
+        base_dict = {
             "id": the_id,
             "icon": "folder-close",
             "isDirectory": True,
@@ -815,9 +800,11 @@ class HostWorker(QWorker):
             "childNodes": child_nodes,
             "isSelected": False
         }
+        base_dict.update(self.get_file_stats(path, user_obj))
+        return base_dict
 
-    def file_dict(self, the_id, path, basename):
-        return {
+    def file_dict(self, the_id, path, basename, user_obj):
+        base_dict = {
             "id": the_id,
             "icon": "document",
             "isDirectory": False,
@@ -826,10 +813,13 @@ class HostWorker(QWorker):
             "label": basename,
             "isSelected": False
         }
+        base_dict.update(self.get_file_stats(path, user_obj))
+        return base_dict
 
-    def get_node(self, root, user_pool_dir):
+    def get_node(self, root, user_pool_dir, user_obj):
         ammended_root = re.sub(user_pool_dir, "/mydisk", root)
-        new_base_node = self.folder_dict(f"dir{str(self.pool_id_counter)}", ammended_root, os.path.basename(root))
+        new_base_node = self.folder_dict(f"dir{str(self.pool_id_counter)}",
+                                         ammended_root, os.path.basename(root), user_obj)
         self.pool_id_counter += 1
         child_list = []
         for root, dirs, files in os.walk(root):
@@ -839,41 +829,38 @@ class HostWorker(QWorker):
                     continue
                 self.pool_visited.append(fpath)
                 ammended_path = re.sub(user_pool_dir, "/mydisk", fpath)
-                child_list.append(self.file_dict(f"folder{str(self.pool_id_counter)}", ammended_path, f))
+                child_list.append(self.file_dict(f"folder{str(self.pool_id_counter)}", ammended_path, f, user_obj))
                 self.pool_id_counter += 1
             for adir in dirs:
                 fpath = f"{root}/{adir}"
                 if not os.path.dirname(fpath) == root or fpath in self.pool_visited:
                     continue
                 self.pool_visited.append(fpath)
-                child_list.append(self.get_node(fpath, user_pool_dir))
+                child_list.append(self.get_node(fpath, user_pool_dir, user_obj))
         new_base_node["childNodes"] = child_list
         return new_base_node
 
     @task_worthy
     def GetPoolTree(self, data):
-        print("entering getpooltree")
-        user_id = data["user_id"]
-        user_obj = load_user(user_id)
-        user_pool_dir = f"/pool/{user_obj.username}"
-        if not os.path.exists(user_pool_dir):
-            return {"dtree": None}
-        self.pool_visited = []
-        self.pool_id_counter = 0
-        dtree = [self.get_node(user_pool_dir, user_pool_dir)]
-        dtree[0].update({
-            "path": "/mydisk",
-            "basename": "mydisk",
-            "label": "mydisk"
-        })
-        print("leaving getpooltree")
+        try:
+            user_id = data["user_id"]
+            user_obj = load_user(user_id)
+            user_pool_dir = f"/pool/{user_obj.username}"
+            if not os.path.exists(user_pool_dir):
+                return {"dtree": None}
+            self.pool_visited = []
+            self.pool_id_counter = 0
+            dtree = [self.get_node(user_pool_dir, user_pool_dir, user_obj)]
+            dtree[0].update({
+                "path": "/mydisk",
+                "basename": "mydisk",
+                "label": "mydisk"
+            })
+        except Exception as ex:
+            print(self.handle_exception(ex, "Error getting pooltree"))
         return {"dtree": dtree}
 
-    @task_worthy
-    def GetFileStats(self, data):
-        user_id = data["user_id"]
-        filepath = data["file_path"]
-        user_obj = load_user(user_id)
+    def get_file_stats(self, filepath, user_obj):
         user_pool_dir = f"/pool/{user_obj.username}"
         if not os.path.exists(user_pool_dir):
             return {"stats": None}
@@ -888,13 +875,23 @@ class HostWorker(QWorker):
             size_str = f"{round(raw_size / 10**3, 1)} KB"
         else:
             size_str = f"{raw_size} bytes"
+        updated, updated_for_sort = user_obj.get_timestrings(datetime.datetime.utcfromtimestamp(fstat.st_mtime))
         stats = {
             "created": user_obj.get_timestrings(datetime.datetime.utcfromtimestamp(fstat.st_ctime))[0],
-            "updated": user_obj.get_timestrings(datetime.datetime.utcfromtimestamp(fstat.st_mtime))[0],
+            "updated": updated,
             "accessed": user_obj.get_timestrings(datetime.datetime.utcfromtimestamp(fstat.st_atime))[0],
-            "size": size_str
+            "size": size_str,
+            "updated_for_sort": updated_for_sort,
+            "size_for_sort": raw_size
         }
-        print("returning from getfilestats with stats" + str(stats))
+        return stats
+
+    @task_worthy
+    def GetFileStats(self, data):
+        user_id = data["user_id"]
+        filepath = data["file_path"]
+        user_obj = load_user(user_id)
+        self.get_file_stats(filepath, user_obj)
         return {"stats": stats}
 
 

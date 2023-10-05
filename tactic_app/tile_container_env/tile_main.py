@@ -30,6 +30,7 @@ import uuid
 from rabbit_manage import sleep_until_rabbit_alive
 import sys, os
 import time
+import pika
 
 sys.stdout = sys.stderr
 print("Waiting for rabbit")
@@ -46,14 +47,26 @@ class KillWorker(QWorker):
         self.channel = None
         self.connection = None
         self.generate_heartbeats = False
+        params = pika.ConnectionParameters(
+            heartbeat=600,
+            blocked_connection_timeout=300,
+            host="megaplex",
+            port=5672,
+            virtual_host='/'
+        )
+        self.connection = pika.BlockingConnection(params)
+        self.channel = self.connection.channel()
         return
 
     def handle_delivery(self, channel, method, props, body):
         try:
             task_packet = json.loads(body)
             if task_packet["task_type"] == "StopMe":
+                print("** got stop me task interrupting")
                 tile_base._tworker.interrupt_and_restart()
-                tile_base._tworker.emit_tile_message("stopSpinner")
+                print("** about to emit stop spinner")
+                tile_base._tworker.emit_tile_message("stopSpinner", alt_channel=self.channel)
+                print("**e mitted")
         except Exception as ex:
             special_string = "Got error in kill handle delivery"
             debug_log(special_string)
@@ -89,13 +102,12 @@ class TileWorker(QWorker):
         self.post_task("host", msg_type, task_data, callback_func, alt_channel=alt_channel)
         return
 
-    def emit_tile_message(self, message, data=None):
-        print(f"in emit_tile_message with message {message}")
+    def emit_tile_message(self, message, data=None, alt_channel=None):
         if data is None:
             data = {}
         data["tile_message"] = message
         data["tile_id"] = self.my_id
-        self.ask_host("emit_tile_message", data)
+        self.ask_host("emit_tile_message", data, alt_channel=alt_channel)
         return
 
     def emit_to_client(self, message, data, alt_channel=None):

@@ -14,13 +14,7 @@ export {PoolTree, PoolAddressSelector, getBasename, splitFilePath, getFileParent
 function treeNodesReducer(nodes, action) {
     switch (action.type) {
         case "REPLACE_ALL":
-            const newState0 = _.cloneDeep(action.new_nodes);
-            forEachNode(newState0, node=>{
-                if (node.isDirectory) {
-                    node.childNodes = sortNodes(node.childNodes);
-                }
-            });
-            return newState0;
+            return _.cloneDeep(action.new_nodes);
         case "DESELECT_ALL":
             const newState1 = _.cloneDeep(nodes);
             forEachNode(newState1, node => (node.isSelected = false));
@@ -76,7 +70,6 @@ function treeNodesReducer(nodes, action) {
                 }
             });
             const pNode = nodeFromPath(getFileParentPath(action.new_path), newState8[0]);
-            pNode.childNodes = sortNodes(pNode.childNodes);
             return newState8;
         case "REMOVE_NODE":
             const newState9 = _.cloneDeep(nodes);
@@ -101,7 +94,6 @@ function treeNodesReducer(nodes, action) {
                     if (node.fullpath == path) {
                         node.childNodes.push(newNode)
                     }
-                    node.childNodes = sortNodes(node.childNodes);
                 }
             });
             return newState10;
@@ -114,7 +106,6 @@ function treeNodesReducer(nodes, action) {
                     if (node.fullpath == dpath) {
                         node.childNodes.push(dnewNode)
                     }
-                    node.childNodes = sortNodes(node.childNodes);
                 }
             });
             return newState11;
@@ -139,7 +130,6 @@ function treeNodesReducer(nodes, action) {
             forEachNode(newState12, (node) => {
                 if (node.isDirectory && (node.fullpath == action.dst)) {
                     node.childNodes.push(src_node);
-                    node.childNodes = sortNodes(node.childNodes)
                 }
             });
             return newState12;
@@ -194,7 +184,6 @@ function forEachNode(nodes, callback) {
     }
 }
 
-
 function nodeFromPath(fullpath, root) {
     for (const node of root.childNodes) {
         if (node.fullpath == fullpath) {
@@ -245,7 +234,7 @@ function PoolTree(props) {
             data.dtree[0].isExpanded = true;
             dispatch({
                 type: "REPLACE_ALL",
-                new_nodes: data.dtree
+                new_nodes: data.dtree,
             });
             if (props.value) {
                 pushCallback(()=> {
@@ -411,6 +400,8 @@ function PoolTree(props) {
                             isDarkTheme={theme.dark_theme}
                             targetOffset={contextMenuTarget}/>
                 <CustomTree contents={nodes_ref.current}
+                            sortField={props.sortField}
+                            sortDirection={props.sortDirection}
                             className="pool-select-tree"
                             handleDrop={props.handleDrop}
                             onNodeContextMenu={props.renderContextMenu ? displayContextMenu : null}
@@ -523,12 +514,32 @@ PoolAddressSelector = memo(PoolAddressSelector);
 // This is largely copied from the blueprintjs source code
 function CustomTree(props) {
 
+    function sortNodes(nlist) {
+        let newList = _.cloneDeep(nlist);
+        if (props.sortField == "name") {
+            newList.sort((a, b)=>{return a.basename.localeCompare(b.basename)});
+
+        }
+        else if (props.sortField == "size") {
+            newList.sort((a, b)=>{return a.size_for_sort - b.size_for_sort})
+        }
+        else {
+            newList.sort((a, b)=>{return a.updated_for_sort - b.updated_for_sort})
+        }
+
+        if (props.sortDirection == "descending") {
+            newList = newList.reverse()
+        }
+        return newList
+    }
+
     function renderNodes(treeNodes, currentPath, className) {
         if (treeNodes == null) {
             return null;
         }
 
-        const nodeItems = treeNodes.map((node, i) => {
+        let sortedNodes = sortNodes(treeNodes);
+        const nodeItems = sortedNodes.map((node, i) => {
             const elementPath = currentPath.concat(i);
             const tnode = (
                 <TreeNode
@@ -544,6 +555,7 @@ function CustomTree(props) {
                     onMouseEnter={props.onNodeMouseEnter}
                     onMouseLeave={props.onNodeMouseLeave}
                     path={elementPath}
+                    secondaryLabel={`${node.updated}   ${String(node.size)}`}
                 >
                     {renderNodes(node.childNodes, elementPath)}
                 </TreeNode>
@@ -552,6 +564,7 @@ function CustomTree(props) {
                 return (
                     <FileDropWrapper handleDrop={props.handleDrop}
                                      suppress={false}
+                                     key={node.fullpath}
                                      fullpath={node.fullpath}>
                         {tnode}
                     </FileDropWrapper>
@@ -579,7 +592,7 @@ function CustomTree(props) {
     }
 
     return (
-        <div className="bp5-tree">
+        <div className="bp5-tree" style={{width: "100%"}}>
             {renderNodes(props.contents, [], Classes.TREE_ROOT)}
         </div>
     );

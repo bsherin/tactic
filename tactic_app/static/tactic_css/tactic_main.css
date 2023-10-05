@@ -53,8 +53,11 @@
 .pool-select-tree {
   padding: 5px;
 }
-.pool-select-tree .bp5-tree-node-label {
+.pool-select-tree .bp5-tree-node-label, .pool-select-tree .bp5-tree-node-secondary-label {
   font-size: 12px;
+}
+.pool-select-tree .bp5-tree-node-secondary-label {
+  white-space: pre-wrap;
 }
 .pool-select-tree .bp5-tree-node-icon svg {
   height: 14px;
