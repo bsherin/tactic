@@ -298,12 +298,19 @@ function HorizontalPanes(props) {
 
     let dstyle = props.hide_me ? {display: "none"} : {};
 
-    let outer_style = {width: "100%"};
+    let outer_hp_style;
+    if (props.outer_style) {
+        outer_hp_style = props.outer_hp_style
+    }
+    else {
+        outer_hp_style = {}
+    }
+    outer_hp_style["width"] = "100%";
     if (props.left_margin) {
-        outer_style["marginLeft"] = props.left_margin
+        outer_hp_style["marginLeft"] = props.left_margin
     }
     return (
-        <div id={unique_id.current} className="d-flex flex-row horizontal-panes" style={outer_style} ref={top_ref}>
+        <div id={unique_id.current} className="d-flex flex-row horizontal-panes" style={outer_hp_style} ref={top_ref}>
             <div ref={left_pane_ref} style={left_div_style} className="res-viewer-resizer">
                     {props.left_pane}
             </div>

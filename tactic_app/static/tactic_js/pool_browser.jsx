@@ -9,7 +9,7 @@ import {LibraryMenubar} from "./library_menubars"
 import {CombinedMetadata, icon_dict} from "./blueprint_mdata_fields";
 import {PoolTree, getBasename, splitFilePath, getFileParentPath} from "./pool_tree";
 import {HorizontalPanes} from "./resizing_layouts";
-import {postAjax, postAjaxPromise, postWithCallback} from "./communication_react";
+import {postAjax, postAjaxPromise} from "./communication_react";
 import {withErrorDrawer} from "./error_drawer";
 import {withStatus} from "./toaster";
 import {doFlash} from "./toaster";
@@ -39,6 +39,8 @@ function PoolBrowser(props) {
     const [contextMenuItems, setContextMenuItems] = useState([]);
     const [left_width_fraction, set_left_width_fraction, left_width_fraction_ref] = useStateAndRef(.65);
     const [have_activated, set_have_activated] = useState(false);
+    const [sortField, setSortField] = useState("name");
+    const [sortDirection, setSortDirection] = useState("ascending");
 
     const theme = useContext(ThemeContext);
     const dialogFuncs = useContext(DialogContext);
@@ -58,19 +60,16 @@ function PoolBrowser(props) {
     }, [props.am_selected]);
 
     useEffect(() => {
-        if (value) {
-            postWithCallback("host", "GetFileStats", {user_id: window.user_id, file_path: value}, (data) => {
-                if (!data.stats) return;
-                set_selected_resource({
-                    name: getBasename(value),
-                    tags: "",
-                    notes: "",
-                    updated: data.stats.updated,
-                    created: data.stats.created,
-                    size: String(data.stats.size)
-
-                })
+        if (selectedNode) {
+            set_selected_resource({
+                name: getBasename(value),
+                tags: "",
+                notes: "",
+                updated: selectedNode.updated,
+                created: selectedNode.created,
+                size: String(selectedNode.size)
             })
+
         } else {
             set_selected_resource({name: "", tags: "", notes: "", updated: "", created: ""})
         }
@@ -460,9 +459,11 @@ function PoolBrowser(props) {
         <Fragment>
             {/*<FileDropWrapper processFiles={handleFileDrop}>*/}
                 <div className="d-flex flex-row"
-                     style={{maxHeight: "100%", position: "relative", padding: 15}}>
+                     style={{maxHeight: "100%", position: "relative", overflow: "scroll", padding: 15}}>
                     {(props.am_selected || have_activated) &&
                         <PoolTree value={value}
+                                  sortField={sortField}
+                                  sortDirection={sortDirection}
                                   renderContextMenu={renderContextMenu}
                                   select_type="both"
                                   registerTreeRefreshFunc={registerTreeRefreshFunc}
@@ -479,6 +480,8 @@ function PoolBrowser(props) {
         <Fragment>
             <PoolMenubar selected_resource={selected_resource_ref.current}
                          connection_status={null}
+                         sortBy={setSortField}
+                         sortDirection={setSortDirection}
                          rename_func={_rename_func}
                          delete_func={_delete_func}
                          add_directory={_add_directory}
@@ -501,6 +504,7 @@ function PoolBrowser(props) {
                     <HorizontalPanes
                         available_width={props.usable_width}
                         available_height={props.usable_height}
+                        outer_hp_style={{paddingBottom: "50px"}}
                         show_handle={true}
                         left_pane={left_pane}
                         right_pane={right_pane}
@@ -534,6 +538,19 @@ function PoolMenubar(props) {
                 {name_text: "Duplicate File", icon_name: "duplicate", click_handler: props.duplicate_file},
                 {name_text: "Create Directory", icon_name: "folder-close", click_handler: props.add_directory},
                 {name_text: "Delete Resource", icon_name: "trash", click_handler: props.delete_func},
+            ],
+            Sort: [
+                {name_text: "Name", icon_name: "sort-alphabetical",
+                    click_handler: ()=>{props.sortBy("name")}},
+                {name_text: "Size", icon_name: "sort-numerical",
+                    click_handler: ()=>{props.sortBy("size")}},
+                {name_text: "Updated", icon_name: "sort",
+                    click_handler: ()=>{props.sortBy("date")}},
+                {name_text: "divider1", icon_name: null, click_handler: "divider"},
+                {name_text: "Ascending", icon_name: "sort-asc",
+                    click_handler: ()=>{props.sortDirection("ascending")}},
+                {name_text: "Descending", icon_name: "sort-desc",
+                    click_handler: ()=>{props.sortDirection("descending")}},
             ],
             Transfer: [
                 {name_text: "Import To Pool", icon_name: "cloud-upload", click_handler: props.showPoolImport},

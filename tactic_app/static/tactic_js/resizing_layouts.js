@@ -298,16 +298,20 @@ function HorizontalPanes(props) {
   var dstyle = props.hide_me ? {
     display: "none"
   } : {};
-  var outer_style = {
-    width: "100%"
-  };
+  var outer_hp_style;
+  if (props.outer_style) {
+    outer_hp_style = props.outer_hp_style;
+  } else {
+    outer_hp_style = {};
+  }
+  outer_hp_style["width"] = "100%";
   if (props.left_margin) {
-    outer_style["marginLeft"] = props.left_margin;
+    outer_hp_style["marginLeft"] = props.left_margin;
   }
   return /*#__PURE__*/_react["default"].createElement("div", {
     id: unique_id.current,
     className: "d-flex flex-row horizontal-panes",
-    style: outer_style,
+    style: outer_hp_style,
     ref: top_ref
   }, /*#__PURE__*/_react["default"].createElement("div", {
     ref: left_pane_ref,

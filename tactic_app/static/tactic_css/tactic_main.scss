@@ -68,8 +68,11 @@
 
 .pool-select-tree {
     padding: 5px;
-    .bp5-tree-node-label {
+    .bp5-tree-node-label, .bp5-tree-node-secondary-label {
         font-size: 12px
+    }
+    .bp5-tree-node-secondary-label {
+        white-space: pre-wrap;
     }
     .bp5-tree-node-icon svg {
         height: 14px;

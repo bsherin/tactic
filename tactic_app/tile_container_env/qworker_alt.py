@@ -12,6 +12,8 @@ import communication_utils
 from exception_mixin import ExceptionMixin, MessagePostException
 from threading import Lock
 import threading
+import ctypes
+import inspect
 
 thread = None
 thread_lock = Lock()
@@ -75,7 +77,7 @@ def debug_log(msg):
 
 def stop_thread(the_thread):
     """Raises an exception in the threads with id tid"""
-    if not the_thread or not the_thread.alive():
+    if not the_thread or not the_thread.is_alive():
         return
     tid = the_thread.ident
     exctype = SystemExit
@@ -140,7 +142,8 @@ class QWorker(ExceptionMixin):
         self.connection.close()
         stop_thread(thread)
         thread = None
-        thread_lock.release()
+        if thread_lock.locked():
+            thread_lock.release()
         self.start()
         return
 
@@ -268,18 +271,7 @@ class QWorker(ExceptionMixin):
         task_packet["status"] = "submitted_response"
 
         if "client_post" in task_packet:
-
-            # if "room" in task_packet:
-            #     room = task_packet["room"]
-            # else:
-            #     room = task_packet["main_id"]
-            #     task_packet["room"] = room
-            # if "namespace" in task_packet:
-            #     namespace = task_packet["namespace"]
-            # else:
-            #     namespace = "/main"
             self.emit_to_client("handle-callback", task_packet)
-            # emit_direct("handle-callback", task_packet, namespace=namespace, room=room)
         else:
             reply_to = task_packet["reply_to"]
             self.post_packet(reply_to, task_packet, callback_id=task_packet["callback_id"])

@@ -145,6 +145,9 @@ class User(UserMixin, MongoAccess):
         return
 
     def dt_to_datestring(self, dt):
+        current_year = datetime.datetime.now().year
+        if dt.year == current_year:
+            return dt.strftime("%b %d, %H:%M")
         return dt.strftime("%b %d, %Y, %H:%M")
 
     def dt_to_sortstring(self, dt):

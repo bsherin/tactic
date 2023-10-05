@@ -72,6 +72,14 @@ function PoolBrowser(props) {
     _useState8 = _slicedToArray(_useState7, 2),
     have_activated = _useState8[0],
     set_have_activated = _useState8[1];
+  var _useState9 = (0, _react.useState)("name"),
+    _useState10 = _slicedToArray(_useState9, 2),
+    sortField = _useState10[0],
+    setSortField = _useState10[1];
+  var _useState11 = (0, _react.useState)("ascending"),
+    _useState12 = _slicedToArray(_useState11, 2),
+    sortDirection = _useState12[0],
+    setSortDirection = _useState12[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var treeRefreshFunc = (0, _react.useRef)(null);
@@ -87,20 +95,14 @@ function PoolBrowser(props) {
     }
   }, [props.am_selected]);
   (0, _react.useEffect)(function () {
-    if (value) {
-      (0, _communication_react.postWithCallback)("host", "GetFileStats", {
-        user_id: window.user_id,
-        file_path: value
-      }, function (data) {
-        if (!data.stats) return;
-        set_selected_resource({
-          name: (0, _pool_tree.getBasename)(value),
-          tags: "",
-          notes: "",
-          updated: data.stats.updated,
-          created: data.stats.created,
-          size: String(data.stats.size)
-        });
+    if (selectedNode) {
+      set_selected_resource({
+        name: (0, _pool_tree.getBasename)(value),
+        tags: "",
+        notes: "",
+        updated: selectedNode.updated,
+        created: selectedNode.created,
+        size: String(selectedNode.size)
       });
     } else {
       set_selected_resource({
@@ -515,10 +517,13 @@ function PoolBrowser(props) {
     style: {
       maxHeight: "100%",
       position: "relative",
+      overflow: "scroll",
       padding: 15
     }
   }, (props.am_selected || have_activated) && /*#__PURE__*/_react["default"].createElement(_pool_tree.PoolTree, {
     value: value,
+    sortField: sortField,
+    sortDirection: sortDirection,
     renderContextMenu: renderContextMenu,
     select_type: "both",
     registerTreeRefreshFunc: registerTreeRefreshFunc,
@@ -530,6 +535,8 @@ function PoolBrowser(props) {
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(PoolMenubar, _extends({
     selected_resource: selected_resource_ref.current,
     connection_status: null,
+    sortBy: setSortField,
+    sortDirection: setSortDirection,
     rename_func: _rename_func,
     delete_func: _delete_func,
     add_directory: _add_directory,
@@ -558,6 +565,9 @@ function PoolBrowser(props) {
   }, /*#__PURE__*/_react["default"].createElement(_resizing_layouts.HorizontalPanes, {
     available_width: props.usable_width,
     available_height: props.usable_height,
+    outer_hp_style: {
+      paddingBottom: "50px"
+    },
     show_handle: true,
     left_pane: left_pane,
     right_pane: right_pane,
@@ -598,6 +608,41 @@ function PoolMenubar(props) {
         icon_name: "trash",
         click_handler: props.delete_func
       }],
+      Sort: [{
+        name_text: "Name",
+        icon_name: "sort-alphabetical",
+        click_handler: function click_handler() {
+          props.sortBy("name");
+        }
+      }, {
+        name_text: "Size",
+        icon_name: "sort-numerical",
+        click_handler: function click_handler() {
+          props.sortBy("size");
+        }
+      }, {
+        name_text: "Updated",
+        icon_name: "sort",
+        click_handler: function click_handler() {
+          props.sortBy("date");
+        }
+      }, {
+        name_text: "divider1",
+        icon_name: null,
+        click_handler: "divider"
+      }, {
+        name_text: "Ascending",
+        icon_name: "sort-asc",
+        click_handler: function click_handler() {
+          props.sortDirection("ascending");
+        }
+      }, {
+        name_text: "Descending",
+        icon_name: "sort-desc",
+        click_handler: function click_handler() {
+          props.sortDirection("descending");
+        }
+      }],
       Transfer: [{
         name_text: "Import To Pool",
         icon_name: "cloud-upload",
@@ -633,10 +678,10 @@ function PoolMenubar(props) {
 }
 PoolMenubar = /*#__PURE__*/(0, _react.memo)(PoolMenubar);
 function FileDropWrapper(props) {
-  var _useState9 = (0, _react.useState)(false),
-    _useState10 = _slicedToArray(_useState9, 2),
-    isDragging = _useState10[0],
-    setIsDragging = _useState10[1];
+  var _useState13 = (0, _react.useState)(false),
+    _useState14 = _slicedToArray(_useState13, 2),
+    isDragging = _useState14[0],
+    setIsDragging = _useState14[1];
   var handleDragOver = function handleDragOver(e) {
     e.preventDefault();
     setIsDragging(true);
