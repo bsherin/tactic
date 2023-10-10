@@ -470,6 +470,7 @@ function PoolBrowser(props) {
                                   user_id={window.user_id}
                                   tsocket={props.tsocket}
                                   handleDrop={handleDrop}
+                                  showSecondaryLabel={true}
                                   handleNodeClick={handleNodeClick}/>
                     }
                 </div>

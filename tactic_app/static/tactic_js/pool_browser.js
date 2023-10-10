@@ -530,6 +530,7 @@ function PoolBrowser(props) {
     user_id: window.user_id,
     tsocket: props.tsocket,
     handleDrop: handleDrop,
+    showSecondaryLabel: true,
     handleNodeClick: handleNodeClick
   })));
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(PoolMenubar, _extends({
