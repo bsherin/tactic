@@ -402,6 +402,7 @@ function PoolTree(props) {
                 <CustomTree contents={nodes_ref.current}
                             sortField={props.sortField}
                             sortDirection={props.sortDirection}
+                            showSecondaryLabel={props.showSecondaryLabel}
                             className="pool-select-tree"
                             handleDrop={props.handleDrop}
                             onNodeContextMenu={props.renderContextMenu ? displayContextMenu : null}
@@ -478,6 +479,7 @@ function PoolAddressSelector(props) {
                       select_type={props.select_type}
                       user_id={window.user_id}
                       renderContextMenu={null}
+                      showSecondaryLabel={false}
                       handleDrop={null}
                       handleNodeClick={handleNodeClick}/>
         </div>
@@ -555,7 +557,7 @@ function CustomTree(props) {
                     onMouseEnter={props.onNodeMouseEnter}
                     onMouseLeave={props.onNodeMouseLeave}
                     path={elementPath}
-                    secondaryLabel={`${node.updated}   ${String(node.size)}`}
+                    secondaryLabel={props.showSecondaryLabel ? `${node.updated}   ${String(node.size)}`: null}
                 >
                     {renderNodes(node.childNodes, elementPath)}
                 </TreeNode>
