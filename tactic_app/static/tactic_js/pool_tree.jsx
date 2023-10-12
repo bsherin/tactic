@@ -310,6 +310,10 @@ function PoolTree(props) {
                 });
                 focusNode(`${data.dst}/${getBasename(data.src)}`, nodes_ref.current)
             })
+            props.tsocket.attachListener("pool-event", (data) => {
+                const event_type = data["event_type"]
+                const path = data["path"]
+            })
         }
     }
 
