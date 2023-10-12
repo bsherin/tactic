@@ -7,6 +7,7 @@ import {doFlash} from "./toaster"
 import {useCallbackStack, useReducerAndRef, useStateAndRef} from "./utilities_react";
 import {postWithCallback} from "./communication_react";
 import {ThemeContext} from "./theme";
+import {SearchForm} from "./library_widgets";
 
 export {PoolTree, PoolAddressSelector, getBasename, splitFilePath, getFileParentPath}
 
@@ -213,6 +214,7 @@ function PoolTree(props) {
     const [contextMenuTarget, setContentMenuTarget] = useState({left:0, top:0});
     const [contextMenuNode, setContextMenuNode] = useState("");
     const [folderOver, setFolderOver] = useState("null");
+    const [searchString, setSearchString, searchStringRef] = useStateAndRef("");
     const theme = useContext(ThemeContext);
 
     const pushCallback = useCallbackStack();
@@ -391,24 +393,36 @@ function PoolTree(props) {
         setContentMenuTarget({left: e.clientX, top: e.clientY});
     }
 
+    function _update_search_state(new_state) {
+        setSearchString(new_state.search_string)
+    }
+
     return (
         <Fragment>
-                <ContextMenuPopover onClose={()=>{setShowContextMenu(false)}}  // Without this doesn't close
-                            content={props.renderContextMenu != null ?
-                                props.renderContextMenu({node: contextMenuNode}) : null}
-                            isOpen={showContextMenu}
-                            isDarkTheme={theme.dark_theme}
-                            targetOffset={contextMenuTarget}/>
-                <CustomTree contents={nodes_ref.current}
-                            sortField={props.sortField}
-                            sortDirection={props.sortDirection}
-                            showSecondaryLabel={props.showSecondaryLabel}
-                            className="pool-select-tree"
-                            handleDrop={props.handleDrop}
-                            onNodeContextMenu={props.renderContextMenu ? displayContextMenu : null}
-                            onNodeClick={handleNodeClick}
-                            onNodeCollapse={handleNodeCollapse}
-                            onNodeExpand={handleNodeExpand}/>
+            <ContextMenuPopover onClose={()=>{setShowContextMenu(false)}}  // Without this doesn't close
+                        content={props.renderContextMenu != null ?
+                            props.renderContextMenu({node: contextMenuNode}) : null}
+                        isOpen={showContextMenu}
+                        isDarkTheme={theme.dark_theme}
+                        targetOffset={contextMenuTarget}/>
+            <div style={{paddingLeft: 10, paddingTop: 10}}>
+                <SearchForm allow_search_inside={false}
+                            allow_search_metadata={false}
+                            update_search_state={_update_search_state}
+                            search_string={searchStringRef.current}
+                />
+            </div>
+            <CustomTree contents={nodes_ref.current}
+                        searchString={searchStringRef.current}
+                        sortField={props.sortField}
+                        sortDirection={props.sortDirection}
+                        showSecondaryLabel={props.showSecondaryLabel}
+                        className="pool-select-tree"
+                        handleDrop={props.handleDrop}
+                        onNodeContextMenu={props.renderContextMenu ? displayContextMenu : null}
+                        onNodeClick={handleNodeClick}
+                        onNodeCollapse={handleNodeCollapse}
+                        onNodeExpand={handleNodeExpand}/>
         </Fragment>
     )
 }
@@ -475,6 +489,8 @@ function PoolAddressSelector(props) {
     let tree_element = (
         <div style={{maxHeight: maxPopoverHeightRef.current, overflowY: "scroll"}}>
             <PoolTree value={props.value}
+                      sortField="name"
+                      sortDirection="ascending"
                       tsocket={props.tsocket}
                       select_type={props.select_type}
                       user_id={window.user_id}
@@ -516,7 +532,7 @@ PoolAddressSelector = memo(PoolAddressSelector);
 // This is largely copied from the blueprintjs source code
 function CustomTree(props) {
 
-    function sortNodes(nlist) {
+    function sortFilterNodes(nlist) {
         let newList = _.cloneDeep(nlist);
         if (props.sortField == "name") {
             newList.sort((a, b)=>{return a.basename.localeCompare(b.basename)});
@@ -532,6 +548,9 @@ function CustomTree(props) {
         if (props.sortDirection == "descending") {
             newList = newList.reverse()
         }
+        if (props.searchString != "") {
+            newList = newList.filter(a => a.isDirectory || a.basename.includes(props.searchString))
+        }
         return newList
     }
 
@@ -540,7 +559,7 @@ function CustomTree(props) {
             return null;
         }
 
-        let sortedNodes = sortNodes(treeNodes);
+        let sortedNodes = sortFilterNodes(treeNodes);
         const nodeItems = sortedNodes.map((node, i) => {
             const elementPath = currentPath.concat(i);
             const tnode = (

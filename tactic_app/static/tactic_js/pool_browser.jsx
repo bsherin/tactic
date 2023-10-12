@@ -458,7 +458,7 @@ function PoolBrowser(props) {
     let left_pane = (
         <Fragment>
             {/*<FileDropWrapper processFiles={handleFileDrop}>*/}
-                <div className="d-flex flex-row"
+                <div className="d-flex flex-column"
                      style={{maxHeight: "100%", position: "relative", overflow: "scroll", padding: 15}}>
                     {(props.am_selected || have_activated) &&
                         <PoolTree value={value}

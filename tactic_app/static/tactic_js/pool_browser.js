@@ -513,7 +513,7 @@ function PoolBrowser(props) {
     readOnly: true
   });
   var left_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
-    className: "d-flex flex-row",
+    className: "d-flex flex-column",
     style: {
       maxHeight: "100%",
       position: "relative",
