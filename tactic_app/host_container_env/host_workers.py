@@ -479,6 +479,17 @@ class HostWorker(QWorker):
         return {"code_names": user_obj.code_names}
 
     @task_worthy
+    def pool_event(self, data):
+        event_type = data["event_type"]
+        path = data["path"]
+        username = re.findall("/pool/(.*?)/", path)[0]
+        user_obj = User.get_user_by_username(username)
+        new_path = re.sub("/pool/(.*?)/", "/mydisk/", path)
+        event_data = {"event_type": event_type, "path": new_path}
+        socketio.emit('pool-event', event_data, namespace='/main', room=user_obj.get_id())
+        return {"success": True}
+
+    @task_worthy
     def delete_container(self, data):
         container_id = data["container_id"]
         if "notify" in data:

@@ -18,6 +18,7 @@ import {ThemeContext} from "./theme";
 import {DialogContext} from "./modal_react";
 
 import {library_id} from "./library_home_react"
+import {res_types} from "./library_pane";
 
 export {PoolBrowser}
 
@@ -74,6 +75,10 @@ function PoolBrowser(props) {
             set_selected_resource({name: "", tags: "", notes: "", updated: "", created: ""})
         }
     }, [value]);
+
+    function handlePoolEvent() {
+        
+    }
 
     function _rename_func(node = null) {
         if (!value && !node) return;
