@@ -1,6 +1,6 @@
 import React from "react";
 import {useState, useEffect, useRef, memo, Fragment, useContext} from "react";
-import {TreeNode, Popover, Button, ContextMenuPopover, Classes} from "@blueprintjs/core";
+import {TreeNode, Popover, Button, ContextMenuPopover, Classes, HTMLSelect} from "@blueprintjs/core";
 
 import _ from "lodash";
 import {doFlash} from "./toaster"
@@ -10,7 +10,6 @@ import {ThemeContext} from "./theme";
 import {SearchForm} from "./library_widgets";
 
 export {PoolTree, PoolAddressSelector, getBasename, splitFilePath, getFileParentPath}
-
 
 function treeNodesReducer(nodes, action) {
     switch (action.type) {
@@ -268,6 +267,8 @@ function PoolTree(props) {
     const [contextMenuNode, setContextMenuNode] = useState("");
     const [folderOver, setFolderOver] = useState("null");
     const [searchString, setSearchString, searchStringRef] = useStateAndRef("");
+    const [sortBy, setSortBy] = useState("name") ;
+    const [sortDirection, setSortDirection] = useState("ascending");
     const theme = useContext(ThemeContext);
 
     const pushCallback = useCallbackStack();
@@ -360,10 +361,8 @@ function PoolTree(props) {
                     default:
                         break;
                 }
-
             });
             props.tsocket.attachListener("pool-file-event", (data) => {
-
                 const event_type = data["event_type"];
                 const path = data["path"];
                 let fileDict = data.file_dict;
@@ -496,17 +495,30 @@ function PoolTree(props) {
                         isOpen={showContextMenu}
                         isDarkTheme={theme.dark_theme}
                         targetOffset={contextMenuTarget}/>
-            <div style={{paddingLeft: 10, paddingTop: 10}}>
+            <div style={{paddingLeft: 10, paddingTop: 10,
+                display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
                 <SearchForm allow_search_inside={false}
                             allow_search_metadata={false}
                             update_search_state={_update_search_state}
                             search_string={searchStringRef.current}
                 />
+                <div style={{display: "flex", marginLeft: 15}}>
+                    <HTMLSelect options={["name", "size", "updated"]}
+                                className="tree-sort-select"
+                                onChange={(event)=>{setSortBy(event.target.value)}}
+                                minimal={true}
+                                value={sortBy}/>
+                    <HTMLSelect options={["ascending", "descending"]}
+                                className="tree-sort-select"
+                                onChange={(event)=>{setSortDirection(event.target.value)}}
+                                minimal={true}
+                                value={sortDirection}/>
+                </div>
             </div>
             <CustomTree contents={nodes_ref.current}
                         searchString={searchStringRef.current}
-                        sortField={props.sortField}
-                        sortDirection={props.sortDirection}
+                        sortField={sortBy}
+                        sortDirection={sortDirection}
                         showSecondaryLabel={props.showSecondaryLabel}
                         className="pool-select-tree"
                         handleDrop={props.handleDrop}

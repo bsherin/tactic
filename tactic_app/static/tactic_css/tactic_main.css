@@ -64,6 +64,14 @@
   width: 14px;
 }
 
+.tree-sort-select select {
+  font-size: 12px;
+}
+
+.pool-browser .res-viewer-resizer {
+  padding-bottom: 50px;
+}
+
 .tile-form-menu-item.bp5-menu-item {
   font-size: 13px;
   line-height: 15px;

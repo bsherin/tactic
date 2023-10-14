@@ -40,8 +40,6 @@ function PoolBrowser(props) {
     const [contextMenuItems, setContextMenuItems] = useState([]);
     const [left_width_fraction, set_left_width_fraction, left_width_fraction_ref] = useStateAndRef(.65);
     const [have_activated, set_have_activated] = useState(false);
-    const [sortField, setSortField] = useState("name");
-    const [sortDirection, setSortDirection] = useState("ascending");
 
     const theme = useContext(ThemeContext);
     const dialogFuncs = useContext(DialogContext);
@@ -467,8 +465,6 @@ function PoolBrowser(props) {
                      style={{maxHeight: "100%", position: "relative", overflow: "scroll", padding: 15}}>
                     {(props.am_selected || have_activated) &&
                         <PoolTree value={value}
-                                  sortField={sortField}
-                                  sortDirection={sortDirection}
                                   renderContextMenu={renderContextMenu}
                                   select_type="both"
                                   registerTreeRefreshFunc={registerTreeRefreshFunc}
@@ -486,8 +482,6 @@ function PoolBrowser(props) {
         <Fragment>
             <PoolMenubar selected_resource={selected_resource_ref.current}
                          connection_status={null}
-                         sortBy={setSortField}
-                         sortDirection={setSortDirection}
                          rename_func={_rename_func}
                          delete_func={_delete_func}
                          add_directory={_add_directory}
@@ -505,7 +499,7 @@ function PoolBrowser(props) {
                          controlled={props.controlled}
                          am_selected={props.am_selected}
                          tsocket={props.tsocket}/>
-            <div ref={top_ref} style={outer_style}>
+            <div ref={top_ref} style={outer_style} className="pool-browser">
                 <div style={{width: props.usable_width, height: props.usable_height}}>
                     <HorizontalPanes
                         available_width={props.usable_width}
@@ -544,19 +538,6 @@ function PoolMenubar(props) {
                 {name_text: "Duplicate File", icon_name: "duplicate", click_handler: props.duplicate_file},
                 {name_text: "Create Directory", icon_name: "folder-close", click_handler: props.add_directory},
                 {name_text: "Delete Resource", icon_name: "trash", click_handler: props.delete_func},
-            ],
-            Sort: [
-                {name_text: "Name", icon_name: "sort-alphabetical",
-                    click_handler: ()=>{props.sortBy("name")}},
-                {name_text: "Size", icon_name: "sort-numerical",
-                    click_handler: ()=>{props.sortBy("size")}},
-                {name_text: "Updated", icon_name: "sort",
-                    click_handler: ()=>{props.sortBy("date")}},
-                {name_text: "divider1", icon_name: null, click_handler: "divider"},
-                {name_text: "Ascending", icon_name: "sort-asc",
-                    click_handler: ()=>{props.sortDirection("ascending")}},
-                {name_text: "Descending", icon_name: "sort-desc",
-                    click_handler: ()=>{props.sortDirection("descending")}},
             ],
             Transfer: [
                 {name_text: "Import To Pool", icon_name: "cloud-upload", click_handler: props.showPoolImport},
