@@ -2,7 +2,7 @@ from qworker import QWorker, task_worthy, task_worthy_manual_submit, current_tim
 from flask import render_template, url_for
 from flask_login import current_user
 import json
-from users import load_user, ModuleNotFoundError, user_data_fields
+from users import load_user, ModuleNotFoundError, user_data_fields, User
 import gevent
 import pika
 from communication_utils import make_python_object_jsonizable, store_temp_data, read_temp_data, delete_temp_data
@@ -480,13 +480,42 @@ class HostWorker(QWorker):
 
     @task_worthy
     def pool_event(self, data):
-        event_type = data["event_type"]
-        path = data["path"]
-        username = re.findall("/pool/(.*?)/", path)[0]
-        user_obj = User.get_user_by_username(username)
-        new_path = re.sub("/pool/(.*?)/", "/mydisk/", path)
-        event_data = {"event_type": event_type, "path": new_path}
-        socketio.emit('pool-event', event_data, namespace='/main', room=user_obj.get_id())
+        try:
+            event_type = data["event_type"]
+            path = data["path"]
+            dest_path = data["dest_path"]
+            is_directory = data["is_directory"]
+            username = re.findall("/pool/(.*?)/", path)[0]
+            user_obj = User.get_user_by_username(username)
+            user_pool_dir = f"/pool/{user_obj.username}"
+            new_path = re.sub(user_pool_dir, "/mydisk", path)
+            event_data = {"event_type": event_type}
+            if is_directory:
+                new_path = new_path[:-1]
+                event_data["path"] = new_path
+                if event_type == "delete":
+                    folder_dict = {"fullpath": new_path}
+                elif dest_path is None:
+                    folder_dict = self.folder_dict(new_path, os.path.basename(new_path), user_obj)
+                else:
+                    new_dest_path = re.sub(user_pool_dir, "/mydisk", dest_path[:-1])
+                    event_data["dest_path"] = new_dest_path
+                    folder_dict = self.folder_dict(new_dest_path, os.path.basename(new_dest_path), user_obj)
+                event_data["folder_dict"] = folder_dict
+                socketio.emit('pool-directory-event', event_data, namespace='/main', room=user_obj.get_id())
+            else:
+                event_data["path"] = new_path
+                if event_type == "delete":
+                    file_dict = {"fullpath": new_path}
+                elif dest_path is None:
+                    file_dict = self.file_dict(new_path, os.path.basename(new_path), user_obj)
+                else:
+                    new_dest_path = re.sub(user_pool_dir, "/mydisk", dest_path)
+                    file_dict = self.file_dict(new_dest_path, os.path.basename(new_dest_path), user_obj)
+                event_data["file_dict"] = file_dict
+                socketio.emit('pool-file-event', event_data, namespace='/main', room=user_obj.get_id())
+        except Exception as ex:
+            print(self.handle_exception(ex, "Got error in pool_event"))
         return {"success": True}
 
     @task_worthy
@@ -799,9 +828,9 @@ class HostWorker(QWorker):
             print(f"streaming_workers.keys() is {str(streaming_workers.keys())}")
         return None
 
-    def folder_dict(self, the_id, path, basename, user_obj, child_nodes=[]):
+    def folder_dict(self, path, basename, user_obj, child_nodes=[]):
         base_dict = {
-            "id": the_id,
+            "id": path,
             "icon": "folder-close",
             "isDirectory": True,
             "isExpanded": False,
@@ -814,9 +843,9 @@ class HostWorker(QWorker):
         base_dict.update(self.get_file_stats(path, user_obj))
         return base_dict
 
-    def file_dict(self, the_id, path, basename, user_obj):
+    def file_dict(self, path, basename, user_obj):
         base_dict = {
-            "id": the_id,
+            "id": path,
             "icon": "document",
             "isDirectory": False,
             "fullpath": path,
@@ -829,9 +858,7 @@ class HostWorker(QWorker):
 
     def get_node(self, root, user_pool_dir, user_obj):
         ammended_root = re.sub(user_pool_dir, "/mydisk", root)
-        new_base_node = self.folder_dict(f"dir{str(self.pool_id_counter)}",
-                                         ammended_root, os.path.basename(root), user_obj)
-        self.pool_id_counter += 1
+        new_base_node = self.folder_dict(ammended_root, os.path.basename(root), user_obj)
         child_list = []
         for root, dirs, files in os.walk(root):
             for f in files:
@@ -840,8 +867,7 @@ class HostWorker(QWorker):
                     continue
                 self.pool_visited.append(fpath)
                 ammended_path = re.sub(user_pool_dir, "/mydisk", fpath)
-                child_list.append(self.file_dict(f"folder{str(self.pool_id_counter)}", ammended_path, f, user_obj))
-                self.pool_id_counter += 1
+                child_list.append(self.file_dict(ammended_path, f, user_obj))
             for adir in dirs:
                 fpath = f"{root}/{adir}"
                 if not os.path.dirname(fpath) == root or fpath in self.pool_visited:
@@ -860,7 +886,6 @@ class HostWorker(QWorker):
             if not os.path.exists(user_pool_dir):
                 return {"dtree": None}
             self.pool_visited = []
-            self.pool_id_counter = 0
             dtree = [self.get_node(user_pool_dir, user_pool_dir, user_obj)]
             dtree[0].update({
                 "path": "/mydisk",
