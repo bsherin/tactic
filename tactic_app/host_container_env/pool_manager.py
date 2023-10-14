@@ -55,9 +55,6 @@ class PoolManager(LibraryResourceManager):
                 raise FileExistsError
             os.rename(true_old_path, true_new_path)
             new_path = self.true_to_user(true_new_path)
-            user_id = current_user.get_id()
-            socketio.emit("pool-name-change", {"old_path": old_path, "new_path": new_path},
-                          namespace='/main', room=user_id)
         except Exception as ex:
             emsg = self.get_traceback_message(ex, "error in rename_pool_resource")
             print(emsg)
@@ -77,9 +74,6 @@ class PoolManager(LibraryResourceManager):
                 os.rmdir(true_full_path)
             else:
                 os.remove(true_full_path)
-            user_id = current_user.get_id()
-            socketio.emit("pool-remove-node", {"full_path": full_path},
-                          namespace='/main', room=user_id)
         except Exception as ex:
             emsg = self.get_traceback_message(ex, "error deleting resource")
             print(emsg)
@@ -95,9 +89,6 @@ class PoolManager(LibraryResourceManager):
             if os.path.exists(true_full_path):
                 raise FileExistsError
             os.mkdir(true_full_path)
-            user_id = current_user.get_id()
-            socketio.emit("pool-add-directory", {"full_path": full_path},
-                          namespace='/main', room=user_id)
         except Exception as ex:
             emsg = self.get_traceback_message(ex, "error deleting resource")
             print(emsg)
@@ -115,9 +106,6 @@ class PoolManager(LibraryResourceManager):
                 raise FileExistsError
             true_src = self.user_to_true(src)
             shutil.move(true_src, true_dst)
-            user_id = current_user.get_id()
-            socketio.emit("pool-move", {"src": src, "dst": dst},
-                          namespace='/main', room=user_id)
         except Exception as ex:
             emsg = self.get_traceback_message(ex, "error moving resource")
             print(emsg)
@@ -135,9 +123,6 @@ class PoolManager(LibraryResourceManager):
             if os.path.exists(true_dst):
                 raise FileExistsError
             shutil.copy2(true_src, true_dst)
-            user_id = current_user.get_id()
-            socketio.emit("pool-add-file", {"full_path": dst},
-                          namespace='/main', room=user_id)
         except Exception as ex:
             emsg = self.get_traceback_message(ex, "error duplicating file")
             print(emsg)
@@ -160,7 +145,6 @@ class PoolManager(LibraryResourceManager):
                 socketio.emit("upload-response", data, namespace='/main', room=library_id)
             truepath = self.user_to_true(fullpath)
             print("got truepath " + str(truepath))
-            user_id = current_user.get_id()
             for the_file in request.files.values():
                 print("got filename " + str(the_file.filename))
                 try:
@@ -169,8 +153,6 @@ class PoolManager(LibraryResourceManager):
                         raise FileExistsError
                     the_file.save(true_new_path)
                     success_list.append(the_file.filename)
-                    socketio.emit("pool-add-file", {"full_path": f"{fullpath}/{the_file.filename}"},
-                                  namespace='/main', room=user_id)
                 except Exception as ex:
                     emsg = self.extract_short_error_message(ex, f"Error uploading file {the_file.filename}")
                     error_dict[the_file.filename] = emsg

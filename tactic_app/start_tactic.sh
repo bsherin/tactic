@@ -79,7 +79,7 @@ fi
 
 echo "*** removing old containers ***"
 
-for image in "tile" "host" "module_viewer" "main" "nginx"
+for image in "tile" "host" "module_viewer" "main" "nginx" "pool-watcher"
   do
     num=$(sudo docker ps --filter ancestor="bsherin/tactic:$image$arm_string" -aq | wc -l)
     echo "$num containers of type bsherin/tactic:$image$arm_string to remove"
@@ -167,6 +167,19 @@ sudo docker run -d \
   -e TRUE_HOST_RESOURCES_DIR=$host_resources_dir \
   -e USERNAME= \
   bsherin/tactic:tile$arm_string
+
+echo "*** creating pool_watcher *** "
+sudo docker run -d \
+  --name pool_watcher \
+  --restart $restart_policy \
+  --label my_id=pool_watcher \
+  --label owner=host \
+  --label parent=host \
+  --label other_name=pool_watcher \
+  --network=tactic-net \
+  --init \
+  --mount type=bind,source=$host_pool_dir,target=/pool \
+  bsherin/tactic:pool-watcher$arm_string
 
 echo "*** creating the host containers ***"
 

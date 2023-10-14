@@ -129,6 +129,17 @@ services:
     environment:
       PYTHONUNBUFFERED: 0
 
+  tactic_pool_watcher:
+    build:
+      context: .
+      dockerfile: Dockerfile-pool-watcher
+    depends_on:
+      - tactic_base
+    image: bsherin/tactic:pool-watcher
+    platform: x86_64
+    environment:
+      PYTHONUNBUFFERED: 0
+
   tactic_pool_watcher_arm64:
     build:
       context: .

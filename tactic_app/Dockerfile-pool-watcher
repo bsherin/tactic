@@ -1,0 +1,7 @@
+FROM bsherin/tactic:base
+WORKDIR /code
+ADD ./pool_container_env/requirements.txt /code/requirements.txt
+RUN pip install -r requirements.txt
+ADD  ./pool_container_env /code/
+MAINTAINER "Bruce L Sherin"
+CMD ["python", "-u", "pool_watcher.py"]

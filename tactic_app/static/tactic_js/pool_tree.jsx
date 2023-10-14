@@ -72,13 +72,33 @@ function treeNodesReducer(nodes, action) {
             });
             const pNode = nodeFromPath(getFileParentPath(action.new_path), newState8[0]);
             return newState8;
+        case "MODIFY_FILE":
+            const newStateMF = _.cloneDeep(nodes);
+            forEachNode(newStateMF, (node) => {
+                if (node.fullpath == action.fileDict.fullpath) {
+                    action.fileDict.isSelected = node.isSelected;
+                    updateNode(node, action.fileDict)
+                }
+            });
+            return newStateMF;
+         case "MODIFY_DIRECTORY":
+            const newStateMD = _.cloneDeep(nodes);
+            forEachNode(newStateMD, (node) => {
+                if (node.fullpath == action.folderDict.fullpath) {
+                    action.folderDict.isSelected = node.isSelected;
+                    action.folderDict.isExpanded = node.isExpanded;
+                    action.folderDict.childNodes = node.childNodes;
+                    updateNode(node, action.folderDict)
+                }
+            });
+            return newStateMD;
         case "REMOVE_NODE":
             const newState9 = _.cloneDeep(nodes);
             forEachNode(newState9, (node) => {
                 if (node.isDirectory) {
                     var new_children = [];
                     for (const cnode of node.childNodes) {
-                        if (cnode.fullpath != action.full_path) {
+                        if (cnode.fullpath != action.fullpath) {
                             new_children.push(cnode)
                         }
                     }
@@ -88,31 +108,30 @@ function treeNodesReducer(nodes, action) {
             return newState9;
         case "ADD_FILE":
             const newState10 = _.cloneDeep(nodes);
-            const [path, fname] = splitFilePath(action.full_path);
-            const newNode = filenode(action.full_path);
+            const [path, fname] = splitFilePath(action.fileDict.fullpath);
             forEachNode(newState10, (node) => {
                 if (node.isDirectory) {
                     if (node.fullpath == path) {
-                        node.childNodes.push(newNode)
+                        node.childNodes.push(action.fileDict)
                     }
                 }
             });
-            return newState10;
+            return newState10       ;
         case "ADD_DIRECTORY":
             const newState11 = _.cloneDeep(nodes);
-            const [dpath, dfname] = splitFilePath(action.full_path);
-            const dnewNode = dirnode(action.full_path);
+            const [dpath, dfname] = splitFilePath(action.folderDict.fullpath);
             forEachNode(newState11, (node) => {
                 if (node.isDirectory) {
                     if (node.fullpath == dpath) {
-                        node.childNodes.push(dnewNode)
+                        node.childNodes.push(action.folderDict)
                     }
                 }
             });
             return newState11;
-        case "MOVE_NODE":
+        case "MOVE_FILE":
             const newState12 = _.cloneDeep(nodes);
             let src_node;
+            let found_file = false;
             forEachNode(newState12, (node) => {
                 if (node.isDirectory) {
                     var new_children = [];
@@ -121,29 +140,63 @@ function treeNodesReducer(nodes, action) {
                             new_children.push(cnode)
                         }
                         else{
-                            src_node = _.cloneDeep(cnode);
-                            updateNode(src_node, `${action.dst}/${getBasename(action.src)}`);
+                            found_file = true;
+                            action.fileDict.isSelected = cnode.isSelected;
                         }
                     }
                     node.childNodes = new_children
                 }
             });
-            forEachNode(newState12, (node) => {
-                if (node.isDirectory && (node.fullpath == action.dst)) {
-                    node.childNodes.push(src_node);
+            if (found_file) {
+                forEachNode(newState12, (node) => {
+                    if (node.isDirectory && (node.fullpath == action.dst)) {
+                        node.childNodes.push(action.fileDict);
+                    }
+                });
+            }
+            return newState12;
+        case "MOVE_DIRECTORY":
+            const newStateMDir = _.cloneDeep(nodes);
+            let src_dir;
+            let found_dir = false;
+            forEachNode(newStateMDir, (node) => {
+                if (node.isDirectory && (node.fullpath != action.src)) {
+                    var new_children = [];
+                    for (const cnode of node.childNodes) {
+                        if (cnode.fullpath != action.src) {
+                            new_children.push(cnode)
+                        }
+                        else{
+                            found_dir = true;
+                            action.folderDict.isSelected = cnode.isSelected;
+                            action.folderDict.childNodes = cnode.childNodes;
+                            action.folderDict.isExpanded = cnode.isExpanded;
+                            const newpath = `${action.dst}/${action.folderDict.basename}`;
+                            for (let ccnode of action.folderDict.childNodes) {
+                                ccnode.fullpath = `${newpath}/${ccnode.basename}`
+                            }
+                        }
+                    }
+                    node.childNodes = new_children
                 }
             });
-            return newState12;
+            if (found_dir) {
+                forEachNode(newStateMDir, (node) => {
+                    if (node.isDirectory && (node.fullpath == action.dst)) {
+                        node.childNodes.push(action.folderDict);
+                    }
+                });
+            }
+            return newStateMDir;
         default:
             return nodes;
     }
 }
 
-function updateNode(node, newPath) {
-    node.fullpath = newPath;
-    const basename = getBasename(newPath);
-    node.basename = basename;
-    node.label = basename;
+function updateNode(node, newDict) {
+    for (let key in newDict) {
+        node[key] = newDict[key]
+    }
     return
 }
 
@@ -271,48 +324,82 @@ function PoolTree(props) {
 
     function initSocket() {
         if (props.tsocket) {
-            props.tsocket.attachListener("pool-name-change", (data) => {
-                dispatch({
-                    type: "CHANGE_NODE_NAME",
-                    old_path: data.old_path,
-                    new_path: data.new_path
-                });
-                focusNode(data.new_path, nodes_ref.current)
+            props.tsocket.attachListener("pool-directory-event", (data) => {
+                const event_type = data["event_type"];
+                const path = data["path"];
+                let folderDict = data.folder_dict;
+                folderDict.id = folderDict.fullpath;
+                switch (event_type) {
+                    case "modify":
+                        dispatch({
+                            type: "MODIFY_DIRECTORY",
+                            folderDict: folderDict
+                        });
+                        break;
+                    case "create":
+                        dispatch({
+                            type: "ADD_DIRECTORY",
+                            folderDict: folderDict
+                        });
+                        focusNode(folderDict.fullpath, nodes_ref.current);
+                        break;
+                    case "delete":
+                        dispatch({
+                            type: "REMOVE_NODE",
+                            fullpath: folderDict.fullpath
+                        });
+                        break;
+                    case "move":
+                        dispatch({
+                            type: "MOVE_DIRECTORY",
+                            src: data.path,
+                            dst: getFileParentPath(folderDict.fullpath),
+                            folderDict: folderDict
+                        });
+                        break;
+                    default:
+                        break;
+                }
+
             });
-            props.tsocket.attachListener("pool-remove-node", (data) => {
-                dispatch({
-                    type: "REMOVE_NODE",
-                    full_path: data.full_path
-                });
-                dispatch({
-                    type: "DESELECT_ALL",
-                })
-            });
-            props.tsocket.attachListener("pool-add-file", (data) => {
-                dispatch({
-                    type: "ADD_FILE",
-                    full_path: data.full_path
-                });
-                focusNode(data.full_path, nodes_ref.current)
-            });
-            props.tsocket.attachListener("pool-add-directory", (data) => {
-                dispatch({
-                    type: "ADD_DIRECTORY",
-                    full_path: data.full_path
-                });
-                focusNode(data.full_path, nodes_ref.current)
-            });
-            props.tsocket.attachListener("pool-move", (data) => {
-                dispatch({
-                    type: "MOVE_NODE",
-                    src: data.src,
-                    dst: data.dst
-                });
-                focusNode(`${data.dst}/${getBasename(data.src)}`, nodes_ref.current)
-            })
-            props.tsocket.attachListener("pool-event", (data) => {
-                const event_type = data["event_type"]
-                const path = data["path"]
+            props.tsocket.attachListener("pool-file-event", (data) => {
+
+                const event_type = data["event_type"];
+                const path = data["path"];
+                let fileDict = data.file_dict;
+                fileDict.id = fileDict.fullpath;
+                switch (event_type) {
+                    case "modify":
+                        dispatch({
+                            type: "MODIFY_FILE",
+                            fileDict: fileDict
+                        });
+                        break;
+                    case "create":
+                        dispatch({
+                            type: "ADD_FILE",
+                            fileDict: fileDict
+                        });
+                        focusNode(fileDict.fullpath, nodes_ref.current);
+                        break;
+                    case "delete":
+                        dispatch({
+                            type: "REMOVE_NODE",
+                            fullpath: fileDict.fullpath
+                        });
+                        break;
+                    case "move":
+                        dispatch({
+                            type: "MOVE_FILE",
+                            src: data.path,
+                            dst: getFileParentPath(fileDict.fullpath),
+                            fileDict: fileDict
+                        });
+                        break;
+                    default:
+                        break;
+                }
+
             })
         }
     }
