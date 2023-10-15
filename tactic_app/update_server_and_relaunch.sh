@@ -1,3 +1,4 @@
+#!/bin/bash
 cd /srv/tactic && sudo git pull
 # sudo docker pull bsherin/tactic -a
 cd /srv/tactic/tactic_app
