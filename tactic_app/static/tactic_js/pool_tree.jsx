@@ -267,8 +267,8 @@ function PoolTree(props) {
     const [contextMenuNode, setContextMenuNode] = useState("");
     const [folderOver, setFolderOver] = useState("null");
     const [searchString, setSearchString, searchStringRef] = useStateAndRef("");
-    const [sortBy, setSortBy] = useState("name") ;
-    const [sortDirection, setSortDirection] = useState("ascending");
+    const [sortBy, setSortBy] = useState("updated") ;
+    const [sortDirection, setSortDirection] = useState("descending");
     const theme = useContext(ThemeContext);
 
     const pushCallback = useCallbackStack();

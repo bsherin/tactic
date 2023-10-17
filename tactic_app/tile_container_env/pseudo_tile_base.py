@@ -15,6 +15,7 @@ from document_object import ROWS_TO_PRINT, DetachedTacticCollection
 from threading import Lock
 import threading
 from qworker_alt import task_worthy_methods, QWorker, stop_thread, debug_log
+from qworker_alt import get_pika_connection, my_channel, my_connection, simple_uid, close_connection
 from matplotlib_utilities import MplFigure, ColorMapper
 import time
 
@@ -43,12 +44,11 @@ MAX_SINGLE_WRITE = 5000
 
 
 class ConsoleStringIO(StringIO):
-    def __init__(self, tile, data, old_stdout, channel):
+    def __init__(self, tile, data, old_stdout):
         self.my_tile = tile
         self.data = data
         self.old_stdout = old_stdout
         StringIO.__init__(self)
-        self.channel = channel
         return
 
     def crop_output(self, s):
@@ -67,7 +67,7 @@ class ConsoleStringIO(StringIO):
             self.data["force_open"] = True
             self.data["result_text"] = s
             self.data["console_message"] = "consoleCodePrint"
-            self.my_tile.emit_console_message("consoleCodePrint", self.data, alt_channel=self.channel)
+            self.my_tile.emit_console_message("consoleCodePrint", self.data)
         sys.stdout = sv_stdout
         return
 
@@ -77,7 +77,7 @@ class ConsoleStringIO(StringIO):
             s = self.crop_output(s)
         self.data["result_text"] = s
         self.data["console_message"] = "consoleCodeOverwrite"
-        self.my_tile.emit_console_message("consoleCodeOverwrite", self.data, alt_channel=self.channel)
+        self.my_tile.emit_console_message("consoleCodeOverwrite", self.data)
 
 # noinspection PyUnusedLocal
 class PseudoTileClass(TileBase, MplFigure):
@@ -98,16 +98,16 @@ class PseudoTileClass(TileBase, MplFigure):
         return
 
     # Note that task_data must contain console_id
-    def emit_console_message(self, console_message, task_data, force_open=True, alt_channel=None):
+    def emit_console_message(self, console_message, task_data, force_open=True):
         ldata = copy.copy(task_data)
         ldata["console_message"] = console_message
         ldata["force_open"] = force_open
-        self._tworker.emit_to_client("console-message", ldata, alt_channel=alt_channel)
+        self._tworker.emit_to_client("console-message", ldata)
 
-    def emit_export_viewer_message(self, export_viewer_message, task_data, alt_channel=None):
+    def emit_export_viewer_message(self, export_viewer_message, task_data):
         ldata = copy.copy(task_data)
         ldata["export_viewer_message"] = export_viewer_message
-        self._tworker.emit_to_client("export-viewer-message", ldata, alt_channel=alt_channel)
+        self._tworker.emit_to_client("export-viewer-message", ldata)
 
     @_task_worthy
     def compile_save_dict(self, data):
@@ -262,9 +262,8 @@ class PseudoTileClass(TileBase, MplFigure):
 
     def _get_export_info_thread(self, data):
         global executing_console_id
-        connection = self.get_pika_connection()
-        channel = connection.channel()
-        self.emit_export_viewer_message("startMySpinner", data, alt_channel=channel)
+        channel = get_pika_connection()
+        self.emit_export_viewer_message("startMySpinner", data)
         try:
             ename = data["export_name"]
             self._pipe_dict = data["pipe_dict"]
@@ -275,10 +274,10 @@ class PseudoTileClass(TileBase, MplFigure):
             result = {"success": False,
                       "info_string": self._handle_exception(Ex, "", print_to_console=False)}
         data.update(result)
-        self.emit_export_viewer_message("got_export_info", data, alt_channel=channel)
+        self.emit_export_viewer_message("got_export_info", data)
         executing_console_id = None
-        self.post_event("check_exec_queue", {}, alt_channel=channel)
-        connection.close()
+        self.post_event("check_exec_queue", {})
+        close_connection()
         return
 
     @_task_worthy
@@ -290,17 +289,16 @@ class PseudoTileClass(TileBase, MplFigure):
             exec_queue.append([self._get_export_info_thread, copy.deepcopy(data)])
         else:
             executing_console_id = "export_viewer"
-            ethread = threading.Thread(target=self._get_export_info_thread, args=[data])
+            ethread = threading.Thread(target=self._get_export_info_thread, args=[data], name=simple_uid())
             ethread.start()
         return
 
     def _eval_thread(self, data):
         global executing_console_id
-        connection = self.get_pika_connection()
-        channel = connection.channel()
-        self.emit_export_viewer_message("startMySpinner", data, alt_channel=channel)
+        channel = get_pika_connection()
+        self.emit_export_viewer_message("startMySpinner", data)
         self._pipe_dict = data["pipe_dict"]
-        pipe_val = self.get_pipe_value(data["export_name"], alt_channel=channel)
+        pipe_val = self.get_pipe_value(data["export_name"])
         success = True
         if isinstance(pipe_val, str) and pipe_val == "__none__":
             success = False
@@ -333,10 +331,10 @@ class PseudoTileClass(TileBase, MplFigure):
                 the_html = self.get_traceback_message(ex)
 
         data.update({"success": success, "the_html": the_html})
-        self.emit_export_viewer_message("display_result", data, alt_channel=channel)
+        self.emit_export_viewer_message("display_result", data)
         executing_console_id = None
-        self.post_event("check_exec_queue", {}, alt_channel=channel)
-        connection.close()
+        self.post_event("check_exec_queue", {})
+        close_connection()
         return
 
     @_task_worthy
@@ -348,7 +346,7 @@ class PseudoTileClass(TileBase, MplFigure):
             exec_queue.append([self._eval_thread, copy.deepcopy(data)])
         else:
             executing_console_id = "export_viewer"
-            ethread = threading.Thread(target=self._eval_thread, args=[data])
+            ethread = threading.Thread(target=self._eval_thread, args=[data], name=simple_uid())
             ethread.start()
         return
 
@@ -414,27 +412,15 @@ class PseudoTileClass(TileBase, MplFigure):
         self._std_out_nesting = 0
         return
 
-    def get_pika_connection(self):
-        params = pika.ConnectionParameters(
-            heartbeat=600,
-            blocked_connection_timeout=300,
-            host="megaplex",
-            port=5672,
-            virtual_host='/'
-        )
-        connection = pika.BlockingConnection(params)
-        return connection
-
     def exec_thread(self, data):
         global executing_console_id
-        connection = self.get_pika_connection()
-        channel = connection.channel()
-        self.emit_console_message("consoleCodeRun", data, alt_channel=channel)
+        channel = get_pika_connection()
+        self.emit_console_message("consoleCodeRun", data)
         try:
             if not Collection:
                 self._tworker.create_pseudo_tile_collection_object(data)
             self._pipe_dict = data["pipe_dict"]
-            redirected_output = ConsoleStringIO(self, data, self._base_stdout, channel)
+            redirected_output = ConsoleStringIO(self, data, self._base_stdout)
             sys.stdout = redirected_output
             the_code = data["the_code"]
             as_tree = ast.parse(the_code)
@@ -458,12 +444,12 @@ class PseudoTileClass(TileBase, MplFigure):
             data["message"] = self._handle_exception(ex, None, print_to_console=False)
             print(data["message"])
         self._restore_base_stdout()
-        self.emit_console_message("stopConsoleSpinner", data, alt_channel=channel)
+        self.emit_console_message("stopConsoleSpinner", data)
         current_globals = self.get_user_globals()
-        self.check_globals(alt_channel=channel)
+        self.check_globals()
         executing_console_id = None
-        self.post_event("check_exec_queue", {}, alt_channel=channel)
-        connection.close()
+        self.post_event("check_exec_queue", {})
+        close_connection()
         return
 
     @_task_worthy
@@ -474,7 +460,7 @@ class PseudoTileClass(TileBase, MplFigure):
         if len(exec_queue) > 0:
             thr, ndata = exec_queue.pop(0)
             executing_console_id = ndata["console_id"]
-            ethread = threading.Thread(target=thr, args=[ndata])
+            ethread = threading.Thread(target=thr, args=[ndata], name=simple_uid())
             ethread.start()
         return
 
@@ -483,12 +469,12 @@ class PseudoTileClass(TileBase, MplFigure):
         exec_queue = [entry for entry in exec_queue if not entry[1]["console_id"] == console_id]
         return
 
-    def check_globals(self, alt_channel=None):
+    def check_globals(self):
         current_globals = self.get_user_globals()
         if self.globals_have_changed(current_globals):
             self._last_globals = current_globals
             data = {"current_globals": current_globals, "globals_changed": True}
-            self._tworker.post_task(self._main_id, "updated_globals", data, alt_channel=alt_channel)
+            self._tworker.post_task(self._main_id, "updated_globals", data)
         return
 
     @_task_worthy
@@ -539,6 +525,6 @@ class PseudoTileClass(TileBase, MplFigure):
             exec_queue.append([self.exec_thread, copy.deepcopy(data)])
         else:
             executing_console_id = data["console_id"]
-            ethread = threading.Thread(target=self.exec_thread, args=[data])
+            ethread = threading.Thread(target=self.exec_thread, args=[data], name=simple_uid())
             ethread.start()
         return

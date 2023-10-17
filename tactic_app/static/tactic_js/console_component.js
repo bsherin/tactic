@@ -1631,6 +1631,7 @@ function ConsoleComponent(props) {
     content: renderContextMenu
   }, /*#__PURE__*/_react["default"].createElement(_sortable_container.SortableComponent, {
     id: "console-items-div",
+    direction: "vertical",
     style: empty_style,
     main_id: props.main_id,
     ElementComponent: SuperItem,

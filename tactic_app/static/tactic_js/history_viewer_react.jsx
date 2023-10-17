@@ -5,7 +5,7 @@
 import "../tactic_css/tactic.scss";
 
 import React from "react";
-import {Fragment, useState, useEffect, memo, useRef} from "react";
+import {Fragment, useState, useEffect, memo, useRef, useContext} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 

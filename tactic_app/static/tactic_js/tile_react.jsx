@@ -109,6 +109,7 @@ function tilesReducer(tile_list, action) {
 function TileContainer(props) {
 
     const theme = useContext(ThemeContext);
+    const [dragging, setDragging] = useState(false);
 
     useEffect(() => {
         initSocket()
@@ -135,7 +136,8 @@ function TileContainer(props) {
             type: "move_item",
             oldIndex: source.index,
             newIndex: destination.index
-        })
+        });
+        setDragging(false)
     }
 
     function _markSourceChange(tile_type) {
@@ -233,6 +235,9 @@ function TileContainer(props) {
             }
         }
     }
+    function beforeCapture(_, event) {
+        setDragging(true)
+    }
 
     let outer_style = {height: props.height};
     return (
@@ -247,11 +252,14 @@ function TileContainer(props) {
                            handle=".tile-name-div"
                            onSortStart={(_, event) => event.preventDefault()} // This prevents Safari weirdness
                            onDragEnd={_resortTiles}
+                           onBeforeCapture={beforeCapture}
                            handleClose={_closeTile}
                            setTileValue={_setTileValue}
                            tsocket={props.tsocket}
                            setTileState={_setTileState}
+                           direction="vertical"
                            table_is_shrunk={props.table_is_shrunk}
+                           dragging={dragging}
                            current_doc_name={props.current_doc_name}
                            selected_row={props.selected_row}
                            broadcast_event={props.broadcast_event}
@@ -755,7 +763,7 @@ function TileComponent(props) {
     let show_front = (!props.show_form) && (!props.show_log);
     let front_dict = {__html: props.front_content};
     compute_styles();
-    let tile_class = props.table_is_shrunk ? "tile-panel tile-panel-float" : "tile-panel";
+    let tile_class = props.table_is_shrunk && !props.dragging ? "tile-panel tile-panel-float" : "tile-panel";
     let tph_class = props.source_changed ? "tile-panel-heading tile-source-changed" : "tile-panel-heading";
     let draghandle_position_dict = {position: "absolute", bottom: 2, right: 1};
 
