@@ -11,7 +11,8 @@ function SortableComponent(props) {
     delete lprops.item_list;
 
     return (
-      <DragDropContext onDragEnd={props.onDragEnd} onBeforeCapture={props.onBeforeCapture}>
+      <DragDropContext onDragEnd={props.onDragEnd}
+                       onBeforeCapture={props.onBeforeCapture}>
         <Droppable droppableId="droppable">
           {(provided) => (
             <div id={props.id} style={props.style} ref={provided.innerRef} {...provided.droppableProps}>

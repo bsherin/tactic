@@ -532,8 +532,8 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
 
     # <editor-fold desc="Tile Internal Machinery">
 
-    def post_event(self, event_name, task_data=None, alt_channel=None):
-        self._tworker.post_task(self._tworker.my_id, event_name, task_data, alt_channel=alt_channel)
+    def post_event(self, event_name, task_data=None):
+        self._tworker.post_task(self._tworker.my_id, event_name, task_data)
         return
 
     @property

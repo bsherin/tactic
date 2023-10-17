@@ -65,7 +65,7 @@ class OtherAPIMIxin:
         from bokeh.resources import Resources
         return file_html(the_plot, Resources("inline"))
 
-    def get_pipe_value(self, key_or_tile_name, export_name=None, alt_channel=None):
+    def get_pipe_value(self, key_or_tile_name, export_name=None):
         self._save_stdout()
         tile_id = None
         if export_name is None:  # then assume the first argument is a pipe_key
@@ -89,8 +89,7 @@ class OtherAPIMIxin:
                                                  {"export_name": export_name,
                                                   "requester_address": self.my_address},
                                                  timeout=60,
-                                                 tries=self.RETRIES,
-                                                 alt_channel=alt_channel)
+                                                 tries=self.RETRIES)
             encoded_val = result["encoded_val"]
             val = debinarize_python_object(encoded_val)
         self._restore_stdout()

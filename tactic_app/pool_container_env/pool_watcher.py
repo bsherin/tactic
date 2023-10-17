@@ -3,6 +3,7 @@ import time
 import pika
 import json
 import traceback
+import threading
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
@@ -27,6 +28,7 @@ class Watcher:
             print("Observer stopped")
         self.observer.join()
 
+DEBOUNCE_TIME = 5
 
 class Handler(FileSystemEventHandler):
     def __init__(self):
@@ -34,6 +36,8 @@ class Handler(FileSystemEventHandler):
         self.my_id = "pool_watcher"
         connection = self.get_pika_connection()
         self.channel = connection.channel()
+        self._timers = {}
+        self._modification_times = {}
 
     def get_pika_connection(self, retries = 0):
         try:
@@ -125,9 +129,24 @@ class Handler(FileSystemEventHandler):
         return
 
     def on_modified(self, event):
+        current_time = time.time()
         src_path = self.append_slash(event.src_path, event.is_directory)
-        print(f"Modified file: {src_path}")
-        self.post_pool_event("modify", src_path, event.is_directory)
+        last_modification_time = self._modification_times.get(src_path, 0)
+        if current_time - last_modification_time < DEBOUNCE_TIME:
+            if src_path in self._timers:
+                self._timers[src_path].cancel()
+
+        def process_event():
+            print(f"Modified file: {src_path}")
+            self.post_pool_event("modify", src_path, event.is_directory)
+
+        timer = threading.Timer(DEBOUNCE_TIME, process_event)
+        timer.start()
+
+        # Update the modification time and timer for this path
+        self._modification_times[src_path] = current_time
+        self._timers[src_path] = timer
+        return
 
     def on_created(self, event):
         src_path = self.append_slash(event.src_path, event.is_directory)

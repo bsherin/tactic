@@ -13,6 +13,7 @@ from threading import Lock
 import threading
 import copy
 from qworker_alt import QWorker, task_worthy, RETRIES, debug_log
+from qworker_alt import get_pika_connection, my_channel, my_connection, simple_uid, close_connection
 import qworker_alt
 import tile_env
 from tile_env import class_info
@@ -44,18 +45,7 @@ kill_thread_lock = Lock()
 class KillWorker(QWorker):
     def __init__(self):
         self.my_id = "kill_" + os.environ.get("MY_ID")
-        self.channel = None
-        self.connection = None
-        self.generate_heartbeats = False
-        params = pika.ConnectionParameters(
-            heartbeat=600,
-            blocked_connection_timeout=300,
-            host="megaplex",
-            port=5672,
-            virtual_host='/'
-        )
-        self.connection = pika.BlockingConnection(params)
-        self.channel = self.connection.channel()
+        channel = get_pika_connection()
         return
 
     def handle_delivery(self, channel, method, props, body):
@@ -65,7 +55,7 @@ class KillWorker(QWorker):
                 print("** got stop me task interrupting")
                 tile_base._tworker.interrupt_and_restart()
                 print("** about to emit stop spinner")
-                tile_base._tworker.emit_tile_message("stopSpinner", alt_channel=self.channel)
+                tile_base._tworker.emit_tile_message("stopSpinner")
                 print("**e mitted")
         except Exception as ex:
             special_string = "Got error in kill handle delivery"
@@ -78,10 +68,9 @@ class KillWorker(QWorker):
         global kill_thread
         with kill_thread_lock:
             if kill_thread is None:
-                kill_thread = threading.Thread(target=self.start_background_thread)
+                kill_thread = threading.Thread(target=self.start_background_thread, name=simple_uid())
                 kill_thread.start()
                 debug_log('Background kill_thread started')
-
 
 # noinspection PyProtectedMember,PyUnusedLocal
 class TileWorker(QWorker):
@@ -97,23 +86,23 @@ class TileWorker(QWorker):
     def hello(self, data_dict):
         return {"success": True, "message": 'This is a tile communicating'}
 
-    def ask_host(self, msg_type, task_data=None, callback_func=None, alt_channel=None):
+    def ask_host(self, msg_type, task_data=None, callback_func=None):
         task_data["main_id"] = self.tile_instance._main_id
-        self.post_task("host", msg_type, task_data, callback_func, alt_channel=alt_channel)
+        self.post_task("host", msg_type, task_data, callback_func)
         return
 
-    def emit_tile_message(self, message, data=None, alt_channel=None):
+    def emit_tile_message(self, message, data=None):
         if data is None:
             data = {}
         data["tile_message"] = message
         data["tile_id"] = self.my_id
-        self.ask_host("emit_tile_message", data, alt_channel=alt_channel)
+        self.ask_host("emit_tile_message", data)
         return
 
-    def emit_to_client(self, message, data, alt_channel=None):
+    def emit_to_client(self, message, data):
         data["message"] = message
         data["main_id"] = self.tile_instance._main_id
-        self.ask_host("emit_to_client", data, alt_channel=alt_channel)
+        self.ask_host("emit_to_client", data)
 
     def send_error_entry(self, title, content, line_number):
         data = {"message": "add-error-drawer-entry",
@@ -228,8 +217,11 @@ class TileWorker(QWorker):
 
     @task_worthy
     def kill_me(self, data):
-        self.connection.close()
-        kill_worker.connection.close()
+        try:
+            self.connection.close()
+            kill_worker.connection.close()
+        except:
+            print("got error in kill me closing connections. exiting anyway")
         sys.exit()
 
     @task_worthy

@@ -1417,6 +1417,7 @@ function ConsoleComponent(props) {
                      style={{height: _bodyHeight()}}>
                     <ContextMenu content={renderContextMenu}>
                         <SortableComponent id="console-items-div"
+                                           direction="vertical"
                                            style={empty_style}
                                            main_id={props.main_id}
                                            ElementComponent={SuperItem}

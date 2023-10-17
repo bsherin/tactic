@@ -85,7 +85,7 @@ function HistoryViewerApp(props) {
     set_resource_name = _useState10[1];
   var connection_status = (0, _utilities_react2.useConnection)(props.tsocket, initSocket);
   var savedContent = (0, _react.useRef)(props.edit_content);
-  var statusFuncs = useContext(_toaster.StatusContext);
+  var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   var pushCallback = (0, _utilities_react2.useCallbackStack)();
   (0, _react.useEffect)(function () {
     window.addEventListener("beforeunload", function (e) {

@@ -26,12 +26,12 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "d
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
@@ -122,6 +122,10 @@ function tilesReducer(tile_list, action) {
 }
 function TileContainer(props) {
   var theme = (0, _react.useContext)(_theme.ThemeContext);
+  var _useState = (0, _react.useState)(false),
+    _useState2 = _slicedToArray(_useState, 2),
+    dragging = _useState2[0],
+    setDragging = _useState2[1];
   (0, _react.useEffect)(function () {
     initSocket();
   }, []);
@@ -145,6 +149,7 @@ function TileContainer(props) {
       oldIndex: source.index,
       newIndex: destination.index
     });
+    setDragging(false);
   }
   function _markSourceChange(tile_type) {
     var change_list = [];
@@ -261,6 +266,9 @@ function TileContainer(props) {
       }
     }
   }
+  function beforeCapture(_, event) {
+    setDragging(true);
+  }
   var outer_style = {
     height: props.height
   };
@@ -279,11 +287,14 @@ function TileContainer(props) {
     } // This prevents Safari weirdness
     ,
     onDragEnd: _resortTiles,
+    onBeforeCapture: beforeCapture,
     handleClose: _closeTile,
     setTileValue: _setTileValue,
     tsocket: props.tsocket,
     setTileState: _setTileState,
+    direction: "vertical",
     table_is_shrunk: props.table_is_shrunk,
+    dragging: dragging,
     current_doc_name: props.current_doc_name,
     selected_row: props.selected_row,
     broadcast_event: props.broadcast_event,
@@ -324,26 +335,26 @@ function TileComponent(props) {
   var left_glyphs_ref = (0, _react.useRef)(null);
   var right_glyphs_ref = (0, _react.useRef)(null);
   var last_front_content = (0, _react.useRef)("");
-  var _useState = (0, _react.useState)(34),
-    _useState2 = _slicedToArray(_useState, 2),
-    header_height = _useState2[0],
-    set_header_height = _useState2[1];
-  var _useState3 = (0, _react.useState)(1000),
+  var _useState3 = (0, _react.useState)(34),
     _useState4 = _slicedToArray(_useState3, 2),
-    max_name_width = _useState4[0],
-    set_max_name_width = _useState4[1];
-  var _useState5 = (0, _react.useState)(false),
+    header_height = _useState4[0],
+    set_header_height = _useState4[1];
+  var _useState5 = (0, _react.useState)(1000),
     _useState6 = _slicedToArray(_useState5, 2),
-    resizing = _useState6[0],
-    set_resizing = _useState6[1];
-  var _useState7 = (0, _react.useState)(0),
+    max_name_width = _useState6[0],
+    set_max_name_width = _useState6[1];
+  var _useState7 = (0, _react.useState)(false),
     _useState8 = _slicedToArray(_useState7, 2),
-    dwidth = _useState8[0],
-    set_dwidth = _useState8[1];
+    resizing = _useState8[0],
+    set_resizing = _useState8[1];
   var _useState9 = (0, _react.useState)(0),
     _useState10 = _slicedToArray(_useState9, 2),
-    dheight = _useState10[0],
-    set_dheight = _useState10[1];
+    dwidth = _useState10[0],
+    set_dwidth = _useState10[1];
+  var _useState11 = (0, _react.useState)(0),
+    _useState12 = _slicedToArray(_useState11, 2),
+    dheight = _useState12[0],
+    set_dheight = _useState12[1];
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   (0, _react.useEffect)(function () {
@@ -840,7 +851,7 @@ function TileComponent(props) {
     __html: props.front_content
   };
   compute_styles();
-  var tile_class = props.table_is_shrunk ? "tile-panel tile-panel-float" : "tile-panel";
+  var tile_class = props.table_is_shrunk && !props.dragging ? "tile-panel tile-panel-float" : "tile-panel";
   var tph_class = props.source_changed ? "tile-panel-heading tile-source-changed" : "tile-panel-heading";
   var draghandle_position_dict = {
     position: "absolute",
