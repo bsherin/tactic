@@ -219,10 +219,14 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     @_task_worthy
     def TileMessage(self, data):
         try:
-            self.handle_tile_message(data["event_name"], data["event_data"])
+            response = self.handle_tile_message(data["event_name"], data["event_data"])
         except Exception as ex:
             self._handle_exception(ex)
-        return None
+        if not response:
+            result = {"response": None}
+        else:
+            result = {"response": response}
+        return result
 
     @_task_worthy
     def TileFormSubmit(self, data):
@@ -806,7 +810,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         return
 
     def handle_tile_message(self, event_name, data):
-        return
+        return None
 
     def handle_cell_change(self, column_header, row_index, old_content, new_content, doc_name):
         return

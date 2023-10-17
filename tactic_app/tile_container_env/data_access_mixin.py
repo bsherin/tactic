@@ -177,16 +177,17 @@ class DataAccessMixin:
         self._restore_stdout()
         return
 
-    def stm(self, tile_name, event_name, data=None):
-        self.send_tile_message(tile_name, event_name, data)
+    def stm(self, tile_name, event_name, data=None, callback_func=None):
+        self.send_tile_message(tile_name, event_name, data, callback_func)
         return
 
-    def send_tile_message(self, tile_name, event_name, data=None):
+    def send_tile_message(self, tile_name, event_name, data=None, callback_func=None):
         self._save_stdout()
         task_data = {"tile_name": tile_name,
                      "event_name": event_name,
                      "event_data": data}
-        self._tworker.post_task(self._main_id, "SendTileMessage", task_data)
+        self._tworker.post_task(self._main_id, "SendTileMessage", task_data,
+                                callback_func=lambda resp: callback_func(res["response"]))
         self._restore_stdout()
         return
 

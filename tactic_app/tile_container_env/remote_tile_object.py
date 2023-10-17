@@ -85,8 +85,8 @@ class RemoteTile:
     def pipe_tags(self):
         return self._pipe_dict
 
-    def send_message(self, event_name, data=None):
-        self._tbinstance.send_tile_message(self.name, event_name, data)
+    def send_message(self, event_name, data=None, callback_func=None):
+        self._tbinstance.send_tile_message(self.name, event_name, data, callback_func=callback_func)
         return
 
     @property

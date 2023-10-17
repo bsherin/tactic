@@ -1185,10 +1185,12 @@ class APISupportTasksMixin:
         nrows = self.doc_dict[doc_name].number_of_rows
         return {"number_rows": nrows}
 
-    @task_worthy
-    def SendTileMessage(self, data):
+    @task_worthy_manual_submit
+    def SendTileMessage(self, data, task_packet):
+        def got_response(message_response):
+            self.mworker.submit_response(task_packet, message_response)
         tile_id = self.tile_id_dict[data["tile_name"]]
-        self.mworker.post_task(tile_id, "TileMessage", data)
+        self.mworker.post_task(tile_id, "TileMessage", data, got_response)
         return None
 
     @task_worthy
