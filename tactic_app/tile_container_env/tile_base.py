@@ -218,14 +218,14 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
 
     @_task_worthy
     def TileMessage(self, data):
+        print("Entering TileMessage")
         try:
             response = self.handle_tile_message(data["event_name"], data["event_data"])
         except Exception as ex:
-            self._handle_exception(ex)
-        if not response:
-            result = {"response": None}
-        else:
-            result = {"response": response}
+            print(self._handle_exception(ex, "got an error in TileMessage"))
+            response = None
+        result = {"response": response}
+        print("TileMessage returning result " + str(result))
         return result
 
     @_task_worthy
