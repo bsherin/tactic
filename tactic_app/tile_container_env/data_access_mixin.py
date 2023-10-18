@@ -185,9 +185,14 @@ class DataAccessMixin:
         self._save_stdout()
         task_data = {"tile_name": tile_name,
                      "event_name": event_name,
+                     "has_callback": callback_func is not None,
                      "event_data": data}
+        if callback_func is None:
+            cfunc = None
+        else:
+            cfunc = lambda resp: callback_func(resp["response"])
         self._tworker.post_task(self._main_id, "SendTileMessage", task_data,
-                                callback_func=lambda resp: callback_func(res["response"]))
+                                callback_func=cfunc)
         self._restore_stdout()
         return
 

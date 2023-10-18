@@ -1190,7 +1190,11 @@ class APISupportTasksMixin:
         def got_response(message_response):
             self.mworker.submit_response(task_packet, message_response)
         tile_id = self.tile_id_dict[data["tile_name"]]
-        self.mworker.post_task(tile_id, "TileMessage", data, got_response)
+        if task_packet["has_callback"]:
+            rfunc = got_response
+        else:
+            rfunc = None
+        self.mworker.post_task(tile_id, "TileMessage", data, rfunc)
         return None
 
     @task_worthy
