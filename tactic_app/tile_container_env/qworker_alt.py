@@ -196,10 +196,12 @@ class QWorker(ExceptionMixin):
         my_channel().queue_delete(queue=self.my_id)
         my_connection().close()
         stop_thread(thread)
+        print("stopped thread")
         thread = None
         if thread_lock.locked():
             thread_lock.release()
         self.start()
+        print("restarted")
         return
 
     def start(self):

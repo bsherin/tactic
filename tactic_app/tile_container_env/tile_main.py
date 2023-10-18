@@ -45,18 +45,14 @@ kill_thread_lock = Lock()
 class KillWorker(QWorker):
     def __init__(self):
         self.my_id = "kill_" + os.environ.get("MY_ID")
-        channel = get_pika_connection()
         return
 
     def handle_delivery(self, channel, method, props, body):
         try:
             task_packet = json.loads(body)
             if task_packet["task_type"] == "StopMe":
-                print("** got stop me task interrupting")
-                tile_base._tworker.interrupt_and_restart()
-                print("** about to emit stop spinner")
                 tile_base._tworker.emit_tile_message("stopSpinner")
-                print("**e mitted")
+                tile_base._tworker.interrupt_and_restart()
         except Exception as ex:
             special_string = "Got error in kill handle delivery"
             debug_log(special_string)
