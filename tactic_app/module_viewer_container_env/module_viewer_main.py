@@ -108,7 +108,9 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
             opt_dict["default"] = str(opt_dict["default"])
             if "special_list" in opt_dict:
                 opt_dict["special_list"] = str(opt_dict["special_list"])
-
+        globals_code = data_dict["globals_code"]
+        if globals_code[-1] == "\n":
+            globals_code = globals_code[:-1]
         with app.test_request_context():
             full_code = render_template("tile_creator_template.html",
                                         class_name=data_dict["module_name"],
@@ -120,6 +122,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
                                         is_mpl=data_dict["is_mpl"],
                                         is_d3=data_dict["is_d3"],
                                         jscript_code=data_dict["jscript_body"],
+                                        globals_code=globals_code,
                                         extra_methods=extra_methods,
                                         render_content_body=render_content_body,
                                         draw_plot_body=draw_plot_body,
@@ -215,6 +218,8 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
         else:
             jscript_code = ""
 
+        globals_code = self.tp.globals_code
+
         extra_functions = remove_indents(self.tp.get_extra_methods_string(), 1)
 
         render_content_line_number = self.tp.get_starting_line("render_content")
@@ -236,6 +241,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
                        "is_d3": is_d3,
                        "draw_plot_code": draw_plot_code,
                        "jscript_code": jscript_code,
+                       "globals_code": globals_code,
                        "render_content_line_number": render_content_line_number,
                        "draw_plot_line_number": draw_plot_line_number,
                        "extra_methods_line_number": extra_methods_line_number}

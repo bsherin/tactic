@@ -63,12 +63,13 @@ function CreatorApp(props) {
   var methods_ref = (0, _react.useRef)(null);
   var commands_ref = (0, _react.useRef)(null);
   var search_ref = (0, _react.useRef)(null);
+  var globals_ref = (0, _react.useRef)(null);
   var last_save = (0, _react.useRef)({});
   var dpObject = (0, _react.useRef)(null);
   var rcObject = (0, _react.useRef)(null);
   var emObject = (0, _react.useRef)(null);
   var rline_number = (0, _react.useRef)(props.initial_line_number);
-  var cm_list = (0, _react.useRef)(props.is_mpl || props.is_d3 ? ["tc", "rc", "em"] : ["rc", "em"]);
+  var cm_list = (0, _react.useRef)(props.is_mpl || props.is_d3 ? ["tc", "rc", "em", "gp"] : ["rc", "em", "gp"]);
   var search_match_numbers = (0, _react.useRef)({
     tc: 0,
     rc: 0,
@@ -129,61 +130,66 @@ function CreatorApp(props) {
     extra_functions = _useStateAndRef8[0],
     set_extra_functions = _useStateAndRef8[1],
     extra_functions_ref = _useStateAndRef8[2];
-  var _useStateAndRef9 = (0, _utilities_react.useStateAndRef)(props.option_list),
+  var _useStateAndRef9 = (0, _utilities_react.useStateAndRef)(props.globals_code),
     _useStateAndRef10 = _slicedToArray(_useStateAndRef9, 3),
-    option_list = _useStateAndRef10[0],
-    set_option_list = _useStateAndRef10[1],
-    option_list_ref = _useStateAndRef10[2];
-  var _useStateAndRef11 = (0, _utilities_react.useStateAndRef)(props.export_list),
+    globals_code = _useStateAndRef10[0],
+    set_globals_code = _useStateAndRef10[1],
+    globals_code_ref = _useStateAndRef10[2];
+  var _useStateAndRef11 = (0, _utilities_react.useStateAndRef)(props.option_list),
     _useStateAndRef12 = _slicedToArray(_useStateAndRef11, 3),
-    export_list = _useStateAndRef12[0],
-    set_export_list = _useStateAndRef12[1],
-    export_list_ref = _useStateAndRef12[2];
-  var _useStateAndRef13 = (0, _utilities_react.useStateAndRef)(props.render_content_line_number),
+    option_list = _useStateAndRef12[0],
+    set_option_list = _useStateAndRef12[1],
+    option_list_ref = _useStateAndRef12[2];
+  var _useStateAndRef13 = (0, _utilities_react.useStateAndRef)(props.export_list),
     _useStateAndRef14 = _slicedToArray(_useStateAndRef13, 3),
-    render_content_line_number = _useStateAndRef14[0],
-    set_render_content_line_number = _useStateAndRef14[1],
-    render_content_line_number_ref = _useStateAndRef14[2];
-  var _useStateAndRef15 = (0, _utilities_react.useStateAndRef)(props.draw_plot_line_number),
+    export_list = _useStateAndRef14[0],
+    set_export_list = _useStateAndRef14[1],
+    export_list_ref = _useStateAndRef14[2];
+  var _useStateAndRef15 = (0, _utilities_react.useStateAndRef)(props.render_content_line_number),
     _useStateAndRef16 = _slicedToArray(_useStateAndRef15, 3),
-    draw_plot_line_number = _useStateAndRef16[0],
-    set_draw_plot_line_number = _useStateAndRef16[1],
-    draw_plot_line_number_ref = _useStateAndRef16[2];
-  var _useStateAndRef17 = (0, _utilities_react.useStateAndRef)(props.extra_methods_line_number),
+    render_content_line_number = _useStateAndRef16[0],
+    set_render_content_line_number = _useStateAndRef16[1],
+    render_content_line_number_ref = _useStateAndRef16[2];
+  var _useStateAndRef17 = (0, _utilities_react.useStateAndRef)(props.draw_plot_line_number),
     _useStateAndRef18 = _slicedToArray(_useStateAndRef17, 3),
-    extra_methods_line_number = _useStateAndRef18[0],
-    set_extra_methods_line_number = _useStateAndRef18[1],
-    extra_methods_line_number_ref = _useStateAndRef18[2];
-  var _useStateAndRef19 = (0, _utilities_react.useStateAndRef)(props.notes),
+    draw_plot_line_number = _useStateAndRef18[0],
+    set_draw_plot_line_number = _useStateAndRef18[1],
+    draw_plot_line_number_ref = _useStateAndRef18[2];
+  var _useStateAndRef19 = (0, _utilities_react.useStateAndRef)(props.extra_methods_line_number),
     _useStateAndRef20 = _slicedToArray(_useStateAndRef19, 3),
-    notes = _useStateAndRef20[0],
-    set_notes = _useStateAndRef20[1],
-    notes_ref = _useStateAndRef20[2];
-  var _useStateAndRef21 = (0, _utilities_react.useStateAndRef)(props.tags),
+    extra_methods_line_number = _useStateAndRef20[0],
+    set_extra_methods_line_number = _useStateAndRef20[1],
+    extra_methods_line_number_ref = _useStateAndRef20[2];
+  var _useStateAndRef21 = (0, _utilities_react.useStateAndRef)(props.notes),
     _useStateAndRef22 = _slicedToArray(_useStateAndRef21, 3),
-    tags = _useStateAndRef22[0],
-    set_tags = _useStateAndRef22[1],
-    tags_ref = _useStateAndRef22[2];
-  var _useStateAndRef23 = (0, _utilities_react.useStateAndRef)(props.icon),
+    notes = _useStateAndRef22[0],
+    set_notes = _useStateAndRef22[1],
+    notes_ref = _useStateAndRef22[2];
+  var _useStateAndRef23 = (0, _utilities_react.useStateAndRef)(props.tags),
     _useStateAndRef24 = _slicedToArray(_useStateAndRef23, 3),
-    icon = _useStateAndRef24[0],
-    set_icon = _useStateAndRef24[1],
-    icon_ref = _useStateAndRef24[2];
-  var _useStateAndRef25 = (0, _utilities_react.useStateAndRef)(props.category),
+    tags = _useStateAndRef24[0],
+    set_tags = _useStateAndRef24[1],
+    tags_ref = _useStateAndRef24[2];
+  var _useStateAndRef25 = (0, _utilities_react.useStateAndRef)(props.icon),
     _useStateAndRef26 = _slicedToArray(_useStateAndRef25, 3),
-    category = _useStateAndRef26[0],
-    set_category = _useStateAndRef26[1],
-    category_ref = _useStateAndRef26[2];
-  var _useStateAndRef27 = (0, _utilities_react.useStateAndRef)(props.additional_save_attrs || []),
+    icon = _useStateAndRef26[0],
+    set_icon = _useStateAndRef26[1],
+    icon_ref = _useStateAndRef26[2];
+  var _useStateAndRef27 = (0, _utilities_react.useStateAndRef)(props.category),
     _useStateAndRef28 = _slicedToArray(_useStateAndRef27, 3),
-    additional_save_attrs = _useStateAndRef28[0],
-    set_additional_save_attrs = _useStateAndRef28[1],
-    additional_save_attrs_ref = _useStateAndRef28[2];
-  var _useStateAndRef29 = (0, _utilities_react.useStateAndRef)(props.couple_save_attrs_and_exports),
+    category = _useStateAndRef28[0],
+    set_category = _useStateAndRef28[1],
+    category_ref = _useStateAndRef28[2];
+  var _useStateAndRef29 = (0, _utilities_react.useStateAndRef)(props.additional_save_attrs || []),
     _useStateAndRef30 = _slicedToArray(_useStateAndRef29, 3),
-    couple_save_attrs_and_exports = _useStateAndRef30[0],
-    set_couple_save_attrs_and_exports = _useStateAndRef30[1],
-    couple_save_attrs_and_exports_ref = _useStateAndRef30[2];
+    additional_save_attrs = _useStateAndRef30[0],
+    set_additional_save_attrs = _useStateAndRef30[1],
+    additional_save_attrs_ref = _useStateAndRef30[2];
+  var _useStateAndRef31 = (0, _utilities_react.useStateAndRef)(props.couple_save_attrs_and_exports),
+    _useStateAndRef32 = _slicedToArray(_useStateAndRef31, 3),
+    couple_save_attrs_and_exports = _useStateAndRef32[0],
+    set_couple_save_attrs_and_exports = _useStateAndRef32[1],
+    couple_save_attrs_and_exports_ref = _useStateAndRef32[2];
   var _useState15 = (0, _react.useState)("metadata"),
     _useState16 = _slicedToArray(_useState15, 2),
     selectedTabId = _useState16[0],
@@ -376,20 +382,28 @@ function CreatorApp(props) {
   function _searchNext() {
     if (current_search_number >= search_match_numbers.current[current_search_cm] - 1) {
       var next_cm;
-      if (current_search_cm == "rc") {
-        next_cm = "em";
-        _handleTabSelect("methods");
-      } else if (current_search_cm == "tc") {
-        next_cm = "rc";
-      } else {
-        if (props.is_mpl || props.is_d3) {
-          next_cm = "tc";
-        } else {
+      switch (current_search_cm) {
+        case "rc":
+          next_cm = "em";
+          break;
+        case "tc":
           next_cm = "rc";
-        }
+          break;
+        case "em":
+          next_cm = "gp";
+          break;
+        default:
+          if (props.is_mpl || props.is_d3) {
+            next_cm = "tc";
+          } else {
+            next_cm = "rc";
+          }
+          break;
       }
       if (next_cm == "em") {
         _handleTabSelect("methods");
+      } else if (next_cm == "gp") {
+        _handleTabSelect("globals");
       }
       set_current_search_cm(next_cm);
       set_current_search_number(0);
@@ -615,6 +629,7 @@ function CreatorApp(props) {
       "couple_save_attrs_and_exports": couple_save_attrs_and_exports_ref.current,
       "options": option_list_ref.current,
       "extra_methods": extra_functions_ref.current,
+      "globals_code": globals_code_ref.current,
       "render_content_body": render_content_code_ref.current,
       "is_mpl": props.is_mpl,
       "is_d3": props.is_d3,
@@ -846,6 +861,9 @@ function CreatorApp(props) {
   }
   function handleMethodsChange(new_methods) {
     set_extra_functions(new_methods);
+  }
+  function handleGlobalsChange(new_globals) {
+    set_globals_code(new_globals);
   }
   function get_height_minus_top_offset(element_ref) {
     var min_offset = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
@@ -1161,6 +1179,33 @@ function CreatorApp(props) {
     },
     extra_autocomplete_list: onames_for_autocomplete
   }));
+  var globals_height = get_height_minus_top_offset(globals_ref, 128, 128);
+  var globals_panel = /*#__PURE__*/_react["default"].createElement("div", {
+    style: {
+      marginLeft: 5
+    }
+  }, /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
+    handleChange: handleGlobalsChange,
+    show_fold_button: true,
+    am_selected: props.am_selected,
+    current_search_number: current_search_cm == "gp" ? current_search_number : null,
+    extraKeys: _extraKeys(),
+    readOnly: props.readOnly,
+    code_content: globals_code_ref.current,
+    saveMe: _saveAndCheckpoint,
+    setCMObject: _setEmObject,
+    code_container_ref: globals_ref,
+    code_container_height: globals_height,
+    search_term: search_string,
+    update_search_state: _updateSearchState,
+    alt_clear_selections: _clearAllSelections,
+    regex_search: regex,
+    first_line_number: 1,
+    setSearchMatches: function setSearchMatches(num) {
+      return _setSearchMatches("gp", num);
+    },
+    extra_autocomplete_list: onames_for_autocomplete
+  }));
   var commands_height = get_height_minus_top_offset(commands_ref, 128, 128);
   var commands_panel = /*#__PURE__*/_react["default"].createElement(_creator_modules_react.CommandsModule, {
     foregrounded: foregrounded_panes["commands"],
@@ -1203,6 +1248,13 @@ function CreatorApp(props) {
       icon: "code"
     }), " methods"),
     panel: methods_panel
+  }), /*#__PURE__*/_react["default"].createElement(_core.Tab, {
+    id: "globals",
+    title: /*#__PURE__*/_react["default"].createElement("span", null, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+      size: 12,
+      icon: "code"
+    }), " globals"),
+    panel: globals_panel
   }), /*#__PURE__*/_react["default"].createElement(_core.Tab, {
     id: "commands",
     title: /*#__PURE__*/_react["default"].createElement("span", null, /*#__PURE__*/_react["default"].createElement(_core.Icon, {

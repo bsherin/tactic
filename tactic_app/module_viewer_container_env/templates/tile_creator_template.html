@@ -1,9 +1,11 @@
+{{globals_code|safe}}
 @user_tile
 class {{class_name}}({% if is_d3 %}D3Tile{% else %}TileBase{% if is_mpl %}, MplFigure{% endif %}{% endif %}):
     category = "{{category}}"
     exports = [{% for exp in exports %}{"name": "{{exp.name | e}}", "tags": "{{exp.tags|safe}}"}{% if not loop.last %}, {% endif %}{% endfor %}]
 
     def __init__(self, main_id, tile_id, tile_name=None):
+        import textwrap
         {% if is_d3 -%}
         D3Tile.__init__(self, main_id, tile_id, tile_name)
         {% else -%}

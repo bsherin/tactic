@@ -3,7 +3,6 @@ import re
 import ast
 from collections import OrderedDict
 
-
 indent_unit = "    "
 
 
@@ -31,6 +30,7 @@ class TileParser(object):
         self.base_classes = self.get_base_classes()
         self.is_mpl = "MplFigure" in self.base_classes
         self.is_d3 = "D3Tile" in self.base_classes
+        self.globals_code = self.get_globals()
         self.methods = self.get_methods()
         self.assignments = self.get_assignments()
         self.defaults = self.extract_defaults()
@@ -43,6 +43,7 @@ class TileParser(object):
     def reparse(self, new_module_code):
         self.module_code = new_module_code
         self.module_lines = self.module_code.splitlines()
+        self.globals_code = self.get_globals()
         self.cnode = self.get_class_node()
         self.class_name = self.cnode.name
         self.base_classes = self.get_base_classes()
@@ -56,6 +57,11 @@ class TileParser(object):
         self.type = self.extract_type()
         self.extra_methods = self.get_extra_methods()
         return
+
+    def get_globals(self):
+        pattern = re.compile(r'(.*?)@user_tile', re.DOTALL)
+        result = pattern.match(self.module_code)
+        return extract_globals_from_source(self.module_code)
 
     def get_extra_methods(self):
         extra_methods = OrderedDict()
@@ -145,7 +151,8 @@ class TileParser(object):
             return None
 
     def rebuild_in_canonical_form(self):
-        new_code = "@user_tile\n"
+        new_code = self.globals_code
+        new_code += "@user_tile\n"
         base_string = self.base_classes[0]
         for bc in self.base_classes[1:]:
             base_string += ", " + bc
