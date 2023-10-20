@@ -946,8 +946,7 @@ class TacticCollection:
     def __getitem__(self, x):
         if x not in self._doc_names:
             raise KeyError("No document named '{}'".format(x))
-        if x not in self._doc_dict:
-            self._doc_dict[x] = self._create_doc_object(x)
+        self._doc_dict[x] = self._create_doc_object(x)
         return self._doc_dict[x]
 
     def __iter__(self):

@@ -277,8 +277,11 @@ class HostWorker(QWorker):
 
             else:
                 print("posting load_source")
+                pattern = re.compile(r'.*?(@user_tile.*)', re.DOTALL)
+                result = pattern.match(tile_module)
+                tile_module_no_globals = result.groups()[0]
                 self.post_task("tile_test_container", "load_source",
-                               {"tile_code": tile_module}, loaded_source)
+                               {"tile_code": tile_module_no_globals}, loaded_source)
 
         except Exception as ex:
             if not task_packet["callback_type"] == "no_callback":

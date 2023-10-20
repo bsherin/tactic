@@ -45,7 +45,7 @@ def user_tile(tclass):
 # noinspection PyRedundantParentheses
 def exec_tile_code(tile_code):
     try:
-        exec(tile_code)
+        exec(tile_code, globals(), globals())
     except Exception as ex:
         return generic_exception_handler.get_traceback_exception_dict(ex)
     return {"success": True, "tile_name": class_info["class_name"], "category": class_info["tile_class"].category}

@@ -82,6 +82,7 @@ function creator_props(data, registerDirtyMethod, finalCallback, registerOmniFun
         extra_functions: parsed_data.extra_functions,
         draw_plot_code: parsed_data.draw_plot_code,
         jscript_code: parsed_data.jscript_code,
+        globals_code: parsed_data.globals_code,
         tags: split_tags,
         notes: mdata.notes,
         icon: mdata.additional_mdata.icon,

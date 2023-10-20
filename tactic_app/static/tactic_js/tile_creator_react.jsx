@@ -47,12 +47,13 @@ function CreatorApp(props) {
     const methods_ref = useRef(null);
     const commands_ref = useRef(null);
     const search_ref = useRef(null);
+    const globals_ref = useRef(null);
     const last_save = useRef({});
     const dpObject = useRef(null);
     const rcObject = useRef(null);
     const emObject = useRef(null);
     const rline_number = useRef(props.initial_line_number);
-    const cm_list = useRef(props.is_mpl || props.is_d3 ? ["tc", "rc", "em"] : ["rc", "em"]);
+    const cm_list = useRef(props.is_mpl || props.is_d3 ? ["tc", "rc", "em", "gp"] : ["rc", "em", "gp"]);
     const search_match_numbers = useRef({
         tc: 0,
         rc: 0,
@@ -79,6 +80,7 @@ function CreatorApp(props) {
     const [draw_plot_code, set_draw_plot_code, draw_plot_code_ref] = useStateAndRef(props.draw_plot_code);
     const [jscript_code, set_jscript_code, jscript_code_ref] = useStateAndRef(props.jscript_code);
     const [extra_functions, set_extra_functions, extra_functions_ref] = useStateAndRef(props.extra_functions);
+    const [globals_code, set_globals_code, globals_code_ref] = useStateAndRef(props.globals_code);
     const [option_list, set_option_list, option_list_ref] = useStateAndRef(props.option_list);
     const [export_list, set_export_list, export_list_ref] = useStateAndRef(props.export_list);
 
@@ -263,20 +265,29 @@ function CreatorApp(props) {
     function _searchNext() {
         if (current_search_number >= search_match_numbers.current[current_search_cm] - 1) {
             let next_cm;
-            if (current_search_cm == "rc") {
-                next_cm = "em";
-                _handleTabSelect("methods");
-            } else if (current_search_cm == "tc") {
-                next_cm = "rc"
-            } else {
-                if (props.is_mpl || props.is_d3) {
+            switch (current_search_cm) {
+                case "rc":
+                    next_cm = "em";
+                    break;
+                case "tc":
+                    next_cm = "rc";
+                    break;
+                case "em":
+                    next_cm = "gp";
+                    break;
+                default:
+                    if (props.is_mpl || props.is_d3) {
                     next_cm = "tc"
-                } else {
-                    next_cm = "rc"
-                }
+                    } else {
+                        next_cm = "rc"
+                    }
+                    break
             }
             if (next_cm == "em") {
                 _handleTabSelect("methods");
+            }
+            else if (next_cm == "gp") {
+                _handleTabSelect("globals");
             }
             set_current_search_cm(next_cm);
             set_current_search_number(0);
@@ -519,6 +530,7 @@ function CreatorApp(props) {
             "couple_save_attrs_and_exports": couple_save_attrs_and_exports_ref.current,
             "options": option_list_ref.current,
             "extra_methods": extra_functions_ref.current,
+            "globals_code": globals_code_ref.current,
             "render_content_body": render_content_code_ref.current,
             "is_mpl": props.is_mpl,
             "is_d3": props.is_d3,
@@ -738,6 +750,10 @@ function CreatorApp(props) {
 
     function handleMethodsChange(new_methods) {
         set_extra_functions(new_methods)
+    }
+
+    function handleGlobalsChange(new_globals) {
+        set_globals_code(new_globals)
     }
 
     function get_height_minus_top_offset(element_ref, min_offset = 0, default_offset = 100) {
@@ -1026,6 +1042,31 @@ function CreatorApp(props) {
         </div>
 
     );
+    let globals_height = get_height_minus_top_offset(globals_ref, 128, 128);
+    let globals_panel = (
+        <div style={{marginLeft: 5}}>
+            <ReactCodemirror handleChange={handleGlobalsChange}
+                             show_fold_button={true}
+                             am_selected={props.am_selected}
+                             current_search_number={current_search_cm == "gp" ? current_search_number : null}
+                             extraKeys={_extraKeys()}
+                             readOnly={props.readOnly}
+                             code_content={globals_code_ref.current}
+                             saveMe={_saveAndCheckpoint}
+                             setCMObject={_setEmObject}
+                             code_container_ref={globals_ref}
+                             code_container_height={globals_height}
+                             search_term={search_string}
+                             update_search_state={_updateSearchState}
+                             alt_clear_selections={_clearAllSelections}
+                             regex_search={regex}
+                             first_line_number={1}
+                             setSearchMatches={(num) => _setSearchMatches("gp", num)}
+                             extra_autocomplete_list={onames_for_autocomplete}
+            />
+        </div>
+
+    );
     let commands_height = get_height_minus_top_offset(commands_ref, 128, 128);
     let commands_panel = (
         <CommandsModule foregrounded={foregrounded_panes["commands"]}
@@ -1045,6 +1086,7 @@ function CreatorApp(props) {
                     <Tab id="exports" title={<span><Icon size={12} icon="export"/> exports</span>}
                          panel={export_panel}/>
                     <Tab id="methods" title={<span><Icon size={12} icon="code"/> methods</span>} panel={methods_panel}/>
+                    <Tab id="globals" title={<span><Icon size={12} icon="code"/> globals</span>} panel={globals_panel}/>
                     <Tab id="commands" title={<span><Icon size={12} icon="manual"/> documentation</span>}
                          panel={commands_panel}/>
                 </Tabs>
