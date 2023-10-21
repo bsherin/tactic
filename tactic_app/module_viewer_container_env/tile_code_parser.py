@@ -61,7 +61,7 @@ class TileParser(object):
     def get_globals(self):
         pattern = re.compile(r'(.*?)@user_tile', re.DOTALL)
         result = pattern.match(self.module_code)
-        return extract_globals_from_source(self.module_code)
+        return result.groups()[0]
 
     def get_extra_methods(self):
         extra_methods = OrderedDict()
