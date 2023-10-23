@@ -601,7 +601,7 @@ function ConsoleComponent(props) {
         pushCallback(callback);
       });
     } else {
-      pushCallback(callBack);
+      pushCallback(callback);
     }
   }
   var _selectConsoleItem = (0, _react.useCallback)(function (unique_id) {

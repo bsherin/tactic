@@ -420,7 +420,7 @@ function PoolBrowser(props) {
                 <MenuItem icon="download"
                           onClick={() => {
                               _downloadFile(props.node)
-                          }} n
+                          }}
                           text="Download from Pool"/>
             </Menu>
         );

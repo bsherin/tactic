@@ -19,9 +19,11 @@ function TacticMenubar(props) {
         menus = props.menus
     } else {
         menus = [];
+        let mcounter = 0;
         for (let menu_name in props.menu_specs) {
+            mcounter += 1;
             menus.push(<ToolMenu menu_name={menu_name}
-                                 key={menu_name}
+                                 key={menu_name + String(mcounter)}
                                  registerOmniGetter={props.registerOmniGetter}
                                  disabled_items={props.disabled_items}
                                  menu_items={props.menu_specs[menu_name]}

@@ -607,7 +607,7 @@ function LibraryPane(props) {
         if (search_string_ref.current != "") {
             set_search_string("")
         } else if (active_tag_ref.current != "all") {
-            _updateTagState({"active_tag": "all"})
+            _update_search_state({"active_tag": "all"})
         } else if (props.pane_type == "all" && filterTypeRef.current != "all") {
             _setFilterType("all")
         }

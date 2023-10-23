@@ -780,7 +780,8 @@ class TileCreationTasksMixin:
             self.tstart = datetime.datetime.now()
             if not instantiate_result["success"]:
                 debug_log("got an exception " + instantiate_result["message"])
-                raise Exception(instantiate_result["message"])
+                self.mworker.submit_response(local_task_packet, instantiate_result)
+               #  raise Exception(instantiate_result["message"])
 
             exports = instantiate_result["exports"]
             self.update_pipe_dict(exports, tile_container_id, tile_name)

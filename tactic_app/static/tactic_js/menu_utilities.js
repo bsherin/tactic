@@ -28,10 +28,12 @@ function TacticMenubar(props) {
     menus = props.menus;
   } else {
     menus = [];
+    var mcounter = 0;
     for (var menu_name in props.menu_specs) {
+      mcounter += 1;
       menus.push( /*#__PURE__*/_react["default"].createElement(ToolMenu, {
         menu_name: menu_name,
-        key: menu_name,
+        key: menu_name + String(mcounter),
         registerOmniGetter: props.registerOmniGetter,
         disabled_items: props.disabled_items,
         menu_items: props.menu_specs[menu_name],

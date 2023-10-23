@@ -171,15 +171,19 @@ function OptionModuleForm(props) {
       });
       return;
     }
-    var val = props.form_state["default"];
-    var fixed_val = correctType(copied_state.type, val);
-    if (fixed_val == "__ERROR__") {
-      _setFormState({
-        default_warning_text: "Invalid value"
-      });
-      return;
+    if (props.form_state.type == "divider") {
+      copied_state["default"] = "";
     } else {
-      copied_state["default"] = fixed_val;
+      var val = props.form_state["default"];
+      var fixed_val = correctType(copied_state.type, val);
+      if (fixed_val == "__ERROR__") {
+        _setFormState({
+          default_warning_text: "Invalid value"
+        });
+        return;
+      } else {
+        copied_state["default"] = fixed_val;
+      }
     }
     _setFormState({
       default_warning_text: null,
@@ -390,18 +394,22 @@ function OptionModule(props) {
     set_form_state = _useState4[1];
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   function _delete_option() {
-    var new_data_list = _lodash["default"].cloneDeep(props.data_list);
+    var new_data_list = _lodash["default"].cloneDeep(props.data_list_ref.current);
     new_data_list.splice(active_row, 1);
     var old_active_row = active_row;
     props.handleChange(new_data_list, function () {
-      if (old_active_row >= props.data_list.length) {
+      if (old_active_row >= props.data_list_ref.current.length) {
         _handleRowDeSelect();
       } else {
         handleActiveRowChange(old_active_row);
       }
     });
   }
-  function _clearHighlights(new_data_list) {
+  function _clearHighlights() {
+    var new_data_list = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    if (!new_data_list) {
+      new_data_list = props.data_list_ref.current;
+    }
     var newer_data_list = [];
     var _iterator5 = _createForOfIteratorHelper(new_data_list),
       _step5;
@@ -424,7 +432,7 @@ function OptionModule(props) {
     props.handleChange(newer_data_list);
   }
   function handleCreate(new_row, update) {
-    var new_data_list = _toConsumableArray(props.data_list);
+    var new_data_list = _toConsumableArray(props.data_list_ref.current);
     new_row.className = "option-row-highlight";
     if (update) {
       new_data_list[active_row] = new_row;
@@ -438,8 +446,10 @@ function OptionModule(props) {
         });
       }
       setTimeout(function () {
-        _clearHighlights(new_data_list);
-        var new_form_state = Object.assign(_lodash["default"].cloneDeep(form_state), new_state);
+        _clearHighlights();
+        var new_form_state = Object.assign(_lodash["default"].cloneDeep(form_state_ref), {
+          update_warning_text: null
+        });
         _setFormState(new_form_state);
       }, 5 * 1000);
     });
@@ -449,7 +459,7 @@ function OptionModule(props) {
   }
   function _nameExists(name, update) {
     var rnum = 0;
-    var _iterator6 = _createForOfIteratorHelper(props.data_list),
+    var _iterator6 = _createForOfIteratorHelper(props.data_list_ref.current),
       _step6;
     try {
       for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
@@ -467,7 +477,7 @@ function OptionModule(props) {
     return false;
   }
   function handleActiveRowChange(row_index) {
-    var new_form_state = Object.assign(_objectSpread({}, blank_form), props.data_list[row_index]);
+    var new_form_state = Object.assign(_objectSpread({}, blank_form), props.data_list_ref.current[row_index]);
     set_form_state(_objectSpread({}, new_form_state));
     set_active_row(row_index);
   }
@@ -495,7 +505,7 @@ function OptionModule(props) {
     "marginRight": 10,
     "height": props.available_height
   };
-  var copied_dlist = props.data_list.map(function (opt) {
+  var copied_dlist = props.data_list_ref.current.map(function (opt) {
     var new_opt = {};
     for (var _i2 = 0, _cols = cols; _i2 < _cols.length; _i2++) {
       var col = _cols[_i2];
@@ -511,8 +521,10 @@ function OptionModule(props) {
         new_opt[param] = arrayToString(new_opt[param]);
       }
     }
-    if ("className" in opt) {
+    if ("className" in opt && opt.className != "") {
       new_opt.className = opt.className;
+    } else if (new_opt.type == "divider") {
+      new_opt.className = "divider-option";
     }
     return new_opt;
   });
