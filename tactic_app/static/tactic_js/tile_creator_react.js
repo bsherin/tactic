@@ -68,6 +68,7 @@ function CreatorApp(props) {
   var dpObject = (0, _react.useRef)(null);
   var rcObject = (0, _react.useRef)(null);
   var emObject = (0, _react.useRef)(null);
+  var globalObject = (0, _react.useRef)(null);
   var rline_number = (0, _react.useRef)(props.initial_line_number);
   var cm_list = (0, _react.useRef)(props.is_mpl || props.is_d3 ? ["tc", "rc", "em", "gp"] : ["rc", "em", "gp"]);
   var search_match_numbers = (0, _react.useRef)({
@@ -744,6 +745,11 @@ function CreatorApp(props) {
     setSelectedTabId(newTabId);
     set_foregrounded_panes(new_fg);
     pushCallback(function () {
+      if (newTabId == "methods") {
+        emObject.current.refresh();
+      } else if (newTabId == "globals") {
+        globalObject.current.refresh();
+      }
       if (props.controlled) {
         setTabSelectCounter(tabSelectCounter + 1);
       } else {
@@ -930,6 +936,9 @@ function CreatorApp(props) {
   }
   function _setEmObject(cmobject) {
     emObject.current = cmobject;
+  }
+  function _setGlobalObject(cmobject) {
+    globalObject.current = cmobject;
   }
   function _setSearchMatches(rc_name, num) {
     search_match_numbers.current[rc_name] = num;
@@ -1137,7 +1146,7 @@ function CreatorApp(props) {
     handleChange: _handleMetadataChange
   });
   var option_panel = /*#__PURE__*/_react["default"].createElement(_creator_modules_react.OptionModule, {
-    data_list: option_list_ref.current,
+    data_list_ref: option_list_ref,
     foregrounded: foregrounded_panes["options"],
     handleChange: handleOptionsListChange,
     handleNotesAppend: _handleNotesAppend,
@@ -1193,7 +1202,7 @@ function CreatorApp(props) {
     readOnly: props.readOnly,
     code_content: globals_code_ref.current,
     saveMe: _saveAndCheckpoint,
-    setCMObject: _setEmObject,
+    setCMObject: _setGlobalObject,
     code_container_ref: globals_ref,
     code_container_height: globals_height,
     search_term: search_string,

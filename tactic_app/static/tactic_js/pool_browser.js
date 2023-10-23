@@ -468,7 +468,6 @@ function PoolBrowser(props) {
       onClick: function onClick() {
         _downloadFile(props.node);
       },
-      n: true,
       text: "Download from Pool"
     }));
   }

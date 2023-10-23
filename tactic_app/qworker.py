@@ -299,16 +299,17 @@ class QWorker(ExceptionMixin):
     def handle_event(self, task_packet):
         task_type = task_packet["task_type"]
         if task_type in task_worthy_methods:
-            if task_worthy_methods[task_type] == "tilebase" and "tilebase" not in self.handler_instances:
-                debug_log("it seems like tilebase is not ready yet. skipping event {}".format(task_type))
-                response_data = None
-            else:
-                try:
-                    response_data = getattr(self.handler_instances[task_worthy_methods[task_type]], task_type)(task_packet["task_data"])
-                except Exception as ex:
-                    special_string = "Error handling task of type {} for my_id {}".format(task_type,
-                                                                                          self.my_id)
-                    response_data = self.handle_exception(ex, special_string)
+            try:
+                response_data = getattr(self.handler_instances[task_worthy_methods[task_type]], task_type)(task_packet["task_data"])
+            except Exception as ex:
+                special_string = "Error handling task of type {} for my_id {}".format(task_type,
+                                                                                      self.my_id)
+                error_msg = self.handle_exception(ex, special_string)
+                print(error_message)
+                if task_packet["callback_id"] is not None:
+                    response_data = {"success": False, "message": error_msg}
+                    task_packet["response_data"] = response_data
+                    self.submit_response(task_packet)
 
             if task_packet["callback_id"] is not None:
                 try:
@@ -317,8 +318,11 @@ class QWorker(ExceptionMixin):
                 except Exception as ex:
                     special_string = "Error submitting response for task type {} for my_id {}".format(task_type,
                                                                                                       self.my_id)
-                    print("task packet is " + str(task_packet))
-                    debug_log(self.extract_short_error_message(ex, special_string))
+                    error_msg = self.handle_exception(ex, special_string)
+                    print(error_message)
+                    response_data = {"success": False, "message": error_msg}
+                    task_packet["response_data"] = response_data
+                    self.submit_response(task_packet)
 
         elif task_type in task_worthy_manual_submit_methods:
             try:
@@ -326,7 +330,9 @@ class QWorker(ExceptionMixin):
             except Exception as ex:
                 special_string = "Error handling task of type {} for my_id {}".format(task_type,
                                                                                       self.my_id)
-                response_data = self.handle_exception(ex, special_string)
+                error_msg = self.handle_exception(ex, special_string)
+                print(error_message)
+                response_data = {"success": False, "message": error_msg}
                 task_packet["response_data"] = response_data
                 self.submit_response(task_packet)
         else:

@@ -145,14 +145,19 @@ function OptionModuleForm(props) {
             _setFormState({name_warning_text: "Name exists"});
             return
         }
-        let val = props.form_state.default;
-        let fixed_val = correctType(copied_state.type, val);
-        if (fixed_val == "__ERROR__") {
-            _setFormState({default_warning_text: "Invalid value"});
-            return
-        } else {
-            copied_state.default = fixed_val
+        if (props.form_state.type == "divider") {
+            copied_state.default = ""
+        }
+        else {
+            let val = props.form_state.default;
+            let fixed_val = correctType(copied_state.type, val);
+            if (fixed_val == "__ERROR__") {
+                _setFormState({default_warning_text: "Invalid value"});
+                return
+            } else {
+                copied_state.default = fixed_val
 
+            }
         }
         _setFormState({default_warning_text: null, name_warning_text: null});
         props.handleCreate(copied_state, update)
@@ -299,11 +304,11 @@ function OptionModule(props) {
     const pushCallback = useCallbackStack();
 
     function _delete_option() {
-        let new_data_list = _.cloneDeep(props.data_list);
+        let new_data_list = _.cloneDeep(props.data_list_ref.current);
         new_data_list.splice(active_row, 1);
         let old_active_row = active_row;
         props.handleChange(new_data_list, () => {
-            if (old_active_row >= props.data_list.length) {
+            if (old_active_row >= props.data_list_ref.current.length) {
                 _handleRowDeSelect()
             } else {
                 handleActiveRowChange(old_active_row)
@@ -311,7 +316,10 @@ function OptionModule(props) {
         });
     }
 
-    function _clearHighlights(new_data_list) {
+    function _clearHighlights(new_data_list=null) {
+        if (!new_data_list) {
+            new_data_list = props.data_list_ref.current
+        }
         let newer_data_list = [];
         for (let option of new_data_list) {
             if ("className" in option && option.className) {
@@ -326,7 +334,7 @@ function OptionModule(props) {
     }
 
     function handleCreate(new_row, update) {
-        let new_data_list = [...props.data_list];
+        let new_data_list = [...props.data_list_ref.current];
         new_row.className = "option-row-highlight";
         if (update) {
             new_data_list[active_row] = new_row;
@@ -339,8 +347,8 @@ function OptionModule(props) {
                 _setFormState({update_warning_text: "Value Updated"})
             }
             setTimeout(() => {
-                _clearHighlights(new_data_list);
-                let new_form_state = Object.assign(_.cloneDeep(form_state), new_state);
+                _clearHighlights();
+                let new_form_state = Object.assign(_.cloneDeep(form_state_ref), {update_warning_text: null});
                 _setFormState(new_form_state)
             }, 5 * 1000);
         })
@@ -352,7 +360,7 @@ function OptionModule(props) {
 
     function _nameExists(name, update) {
         let rnum = 0;
-        for (let option of props.data_list) {
+        for (let option of props.data_list_ref.current) {
             if (option.name == name) {
                 return !(update && (rnum == active_row))
             }
@@ -362,7 +370,7 @@ function OptionModule(props) {
     }
 
     function handleActiveRowChange(row_index) {
-        let new_form_state = Object.assign({...blank_form}, props.data_list[row_index]);
+        let new_form_state = Object.assign({...blank_form}, props.data_list_ref.current[row_index]);
         set_form_state({...new_form_state});
         set_active_row(row_index)
     }
@@ -394,7 +402,7 @@ function OptionModule(props) {
         "height": props.available_height
     };
 
-    let copied_dlist = props.data_list.map(opt => {
+    let copied_dlist = props.data_list_ref.current.map(opt => {
         let new_opt = {};
         for (let col of cols) {
             if (col in opt) {
@@ -409,8 +417,11 @@ function OptionModule(props) {
                 new_opt[param] = arrayToString(new_opt[param]);
             }
         }
-        if ("className" in opt) {
+        if ("className" in opt && opt.className != "") {
             new_opt.className = opt.className
+        }
+        else if (new_opt.type == "divider") {
+            new_opt.className = "divider-option"
         }
         return new_opt
     });

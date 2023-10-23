@@ -1204,6 +1204,11 @@ pre code {
   font-weight: bold !important;
 }
 
+.light-theme .divider-option {
+  color: #2d72d2 !important;
+  font-weight: bold !important;
+  background-color: #f6f7f9 !important;
+}
 .light-theme.resource-viewer-holder, .light-theme.merge-viewer-outer .light-theme.login-body {
   background-color: white;
 }
@@ -1322,6 +1327,11 @@ pre code {
   background-color: #edeff2;
 }
 
+.bp5-dark .divider-option {
+  color: #8abbff !important;
+  font-weight: bold !important;
+  background-color: #383e47 !important;
+}
 .bp5-dark.resource-viewer-holder, .bp5-dark.merge-viewer-outer, .bp5-dark.login-body {
   background-color: #2f343c;
 }

@@ -109,7 +109,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
             if "special_list" in opt_dict:
                 opt_dict["special_list"] = str(opt_dict["special_list"])
         globals_code = data_dict["globals_code"]
-        if globals_code[-1] == "\n":
+        if len(globals_code) > 0 and globals_code[-1] == "\n":
             globals_code = globals_code[:-1]
         with app.test_request_context():
             full_code = render_template("tile_creator_template.html",

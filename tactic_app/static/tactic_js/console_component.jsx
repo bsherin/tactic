@@ -526,7 +526,7 @@ function ConsoleComponent(props) {
                 pushCallback(callback)
             })
         } else {
-            pushCallback(callBack)
+            pushCallback(callback)
         }
     }
 

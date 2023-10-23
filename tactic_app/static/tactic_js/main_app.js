@@ -475,7 +475,7 @@ function MainApp(props) {
         } else {
           props.addErrorDrawerEntry({
             title: "Error creating tile",
-            content: create_data
+            content: create_data.message
           });
         }
       }, null, props.main_id);

@@ -458,7 +458,7 @@ function MainApp(props) {
                     statusFuncs.clearStatusMessage();
                     statusFuncs.stopSpinner()
                 } else {
-                    props.addErrorDrawerEntry({title: "Error creating tile", content: create_data})
+                    props.addErrorDrawerEntry({title: "Error creating tile", content: create_data.message})
                 }
             }, null, props.main_id)
         }

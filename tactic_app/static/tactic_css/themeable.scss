@@ -129,6 +129,11 @@ $dark-medium: $dark-gray4;
 }
 
 .light-theme {
+    .divider-option {
+        color: $blue3 !important;
+        font-weight: bold !important;
+        background-color: $light-gray5 !important;
+    }
     &.resource-viewer-holder, &.merge-viewer-outer &.login-body {
       background-color: white
     }
@@ -305,6 +310,12 @@ $dark-medium: $dark-gray4;
 
 
 .bp5-dark {
+    .divider-option {
+        color: $blue5 !important;
+        font-weight: bold !important;
+        background-color: $dark-gray4 !important;
+    }
+
     &.resource-viewer-holder, &.merge-viewer-outer, &.login-body {
       background-color: $darkest-bg
     }
