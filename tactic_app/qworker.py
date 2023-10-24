@@ -305,7 +305,7 @@ class QWorker(ExceptionMixin):
                 special_string = "Error handling task of type {} for my_id {}".format(task_type,
                                                                                       self.my_id)
                 error_msg = self.handle_exception(ex, special_string)
-                print(error_message)
+                print(error_msg)
                 if task_packet["callback_id"] is not None:
                     response_data = {"success": False, "message": error_msg}
                     task_packet["response_data"] = response_data
