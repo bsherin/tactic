@@ -319,7 +319,7 @@ class QWorker(ExceptionMixin):
                     special_string = "Error submitting response for task type {} for my_id {}".format(task_type,
                                                                                                       self.my_id)
                     error_msg = self.handle_exception(ex, special_string)
-                    print(error_message)
+                    print(error_msg)
                     response_data = {"success": False, "message": error_msg}
                     task_packet["response_data"] = response_data
                     self.submit_response(task_packet)
@@ -331,7 +331,7 @@ class QWorker(ExceptionMixin):
                 special_string = "Error handling task of type {} for my_id {}".format(task_type,
                                                                                       self.my_id)
                 error_msg = self.handle_exception(ex, special_string)
-                print(error_message)
+                print(error_msg)
                 response_data = {"success": False, "message": error_msg}
                 task_packet["response_data"] = response_data
                 self.submit_response(task_packet)
