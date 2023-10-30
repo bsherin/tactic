@@ -1542,7 +1542,7 @@ function LibraryPane(props) {
                          width: table_width,
                          maxWidth: total_width,
                          maxHeight: left_pane_height - 20, // The 20 is for the marginTop and padding
-                         overflowY: "clip",
+                         overflowY: "scroll",
                          marginTop: 15,
                          padding: 5
                      }}>
