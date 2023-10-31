@@ -810,41 +810,49 @@ function TileComponent(props) {
                         </ButtonGroup>
                     </div>
                 </div>
-                {!props.shrunk &&
-                    <div ref={body_ref} style={panel_body_style} className="tile-body">
-                        <Transition in={props.show_form} timeout={ANI_DURATION}>
-                            {state => (
-                                <div className="back" style={composeObjs(back_style, transitionStylesAltUp[state])}>
-                                    <TileForm options={_.cloneDeep(props.form_data)}
-                                              tile_id={props.tile_id}
-                                              updateValue={_updateOptionValue}
-                                              handleSubmit={_handleSubmitOptions}/>
-                                </div>
-                            )}
-                        </Transition>
-                        {props.show_log &&
-                            <div className="tile-log" ref={log_ref}>
-                                <div className="tile-log-area">
-                                    <SearchableConsole main_id={props.main_id}
-                                                       streaming_host={props.main_id}
-                                                       container_id={props.tile_id}
-                                                       ref={inner_log_ref}
-                                                       outer_style={tile_log_style}
-                                                       showCommandField={true}
-                                    />
-                                </div>
-                            </div>
-                        }
-                        <Transition in={show_front} timeout={ANI_DURATION}>
-                            {state => (
-                                <div className="front" style={composeObjs(front_style, transitionStylesAltDown[state])}>
-                                    <div className="tile-display-area" style={tda_style} ref={tda_ref}
-                                         dangerouslySetInnerHTML={front_dict}></div>
-                                </div>
-                            )}
-                        </Transition>
-                    </div>
-                }
+                <ErrorBoundary>
+                    {!props.shrunk &&
+                        <div ref={body_ref} style={panel_body_style} className="tile-body">
+                            <ErrorBoundary>
+                                <Transition in={props.show_form} timeout={ANI_DURATION}>
+                                    {state => (
+                                        <div className="back" style={composeObjs(back_style, transitionStylesAltUp[state])}>
+                                            <TileForm options={_.cloneDeep(props.form_data)}
+                                                      tile_id={props.tile_id}
+                                                      updateValue={_updateOptionValue}
+                                                      handleSubmit={_handleSubmitOptions}/>
+                                        </div>
+                                    )}
+                                </Transition>
+                            </ErrorBoundary>
+                             <ErrorBoundary>
+                                {props.show_log &&
+                                    <div className="tile-log" ref={log_ref}>
+                                        <div className="tile-log-area">
+                                            <SearchableConsole main_id={props.main_id}
+                                                               streaming_host={props.main_id}
+                                                               container_id={props.tile_id}
+                                                               ref={inner_log_ref}
+                                                               outer_style={tile_log_style}
+                                                               showCommandField={true}
+                                            />
+                                        </div>
+                                    </div>
+                                }
+                            </ErrorBoundary>
+                            <ErrorBoundary>
+                                <Transition in={show_front} timeout={ANI_DURATION}>
+                                    {state => (
+                                        <div className="front" style={composeObjs(front_style, transitionStylesAltDown[state])}>
+                                            <div className="tile-display-area" style={tda_style} ref={tda_ref}
+                                                 dangerouslySetInnerHTML={front_dict}></div>
+                                        </div>
+                                    )}
+                                </Transition>
+                             </ErrorBoundary>
+                        </div>
+                    }
+                </ErrorBoundary>
                 <DragHandle position_dict={draghandle_position_dict}
                             dragStart={_startResize}
                             onDrag={_onResize}

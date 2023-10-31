@@ -905,11 +905,11 @@ function TileComponent(props) {
     icon: "stop"
   }), props.show_spinner && /*#__PURE__*/_react["default"].createElement(_core.Spinner, {
     size: 17
-  }), menu_component))), !props.shrunk && /*#__PURE__*/_react["default"].createElement("div", {
+  }), menu_component))), /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, !props.shrunk && /*#__PURE__*/_react["default"].createElement("div", {
     ref: body_ref,
     style: panel_body_style,
     className: "tile-body"
-  }, /*#__PURE__*/_react["default"].createElement(_reactTransitionGroup.Transition, {
+  }, /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement(_reactTransitionGroup.Transition, {
     "in": props.show_form,
     timeout: ANI_DURATION
   }, function (state) {
@@ -922,7 +922,7 @@ function TileComponent(props) {
       updateValue: _updateOptionValue,
       handleSubmit: _handleSubmitOptions
     }));
-  }), props.show_log && /*#__PURE__*/_react["default"].createElement("div", {
+  })), /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, props.show_log && /*#__PURE__*/_react["default"].createElement("div", {
     className: "tile-log",
     ref: log_ref
   }, /*#__PURE__*/_react["default"].createElement("div", {
@@ -934,7 +934,7 @@ function TileComponent(props) {
     ref: inner_log_ref,
     outer_style: tile_log_style,
     showCommandField: true
-  }))), /*#__PURE__*/_react["default"].createElement(_reactTransitionGroup.Transition, {
+  })))), /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement(_reactTransitionGroup.Transition, {
     "in": show_front,
     timeout: ANI_DURATION
   }, function (state) {
@@ -947,7 +947,7 @@ function TileComponent(props) {
       ref: tda_ref,
       dangerouslySetInnerHTML: front_dict
     }));
-  })), /*#__PURE__*/_react["default"].createElement(_resizing_layouts.DragHandle, {
+  })))), /*#__PURE__*/_react["default"].createElement(_resizing_layouts.DragHandle, {
     position_dict: draghandle_position_dict,
     dragStart: _startResize,
     onDrag: _onResize,
