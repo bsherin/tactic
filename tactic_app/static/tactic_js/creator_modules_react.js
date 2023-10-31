@@ -447,7 +447,7 @@ function OptionModule(props) {
       }
       setTimeout(function () {
         _clearHighlights();
-        var new_form_state = Object.assign(_lodash["default"].cloneDeep(form_state_ref), {
+        var new_form_state = Object.assign(_lodash["default"].cloneDeep(form_state), {
           update_warning_text: null
         });
         _setFormState(new_form_state);

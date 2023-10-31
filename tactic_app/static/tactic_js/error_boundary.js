@@ -39,7 +39,11 @@ var ErrorBoundary = /*#__PURE__*/function (_React$Component) {
       if (this.state.hasError) {
         if (this.props.fallback == null) {
           var the_message = "".concat(this.state.message, "\n").concat(this.state.stack, ")");
-          return /*#__PURE__*/_react["default"].createElement("pre", null, the_message);
+          return /*#__PURE__*/_react["default"].createElement("div", {
+            style: {
+              margin: 50
+            }
+          }, /*#__PURE__*/_react["default"].createElement("pre", null, the_message));
         } else {
           if (typeof this.props.fallback == "string") {
             return /*#__PURE__*/_react["default"].createElement("pre", null, this.props.fallback);
