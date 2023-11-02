@@ -138,7 +138,7 @@ class PoolManager(LibraryResourceManager):
                 socketio.emit("upload-response", data, namespace='/main', room=library_id)
                 return jsonify({"success": False})
             number_of_files = len(list(request.files.keys()))
-            print(f"go {number_of_files} files")
+            print(f"got {number_of_files} files")
             if number_of_files == 0:
                 data = {"success": "false", "title": "Error", "content": "No files received."}
                 socketio.emit("upload-response", data, namespace='/main', room=library_id)
