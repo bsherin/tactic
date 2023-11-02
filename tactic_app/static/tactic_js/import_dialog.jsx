@@ -177,6 +177,9 @@ function FileImportDialog(props) {
     function _onSending(f, xhr, formData) {
         f.previewElement.scrollIntoView(false);
         formData.append("extra_value", current_value_ref.current)
+        if (props.chunking) {
+            formData.append("dzuuid", f.upload.uuid)
+        }
     }
 
     function _name_exists(name) {
@@ -229,6 +232,9 @@ function FileImportDialog(props) {
         parallelUploads: 1,
         maxFilesize: 2000,
         timeout: 360000,
+        chunking: props.chunking,
+        forceChunking: props.forceChunking,
+        chunkSize: props.chunkSize,
         autoProcessQueue: false,
         dictDefaultMessage: "Click or drop files here to upload",
         acceptedFiles: props.allowed_file_types,
