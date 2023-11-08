@@ -28,7 +28,7 @@ import {handleCallback, postWithCallback, postAjaxPromise, postAjax} from "./com
 import {doFlash} from "./toaster"
 import {withStatus} from "./toaster";
 import {withErrorDrawer} from "./error_drawer";
-import {renderSpinnerMessage, useConnection} from "./utilities_react";
+import {renderSpinnerMessage, useConnection, useStateAndRef} from "./utilities_react";
 import {getUsableDimensions} from "./sizing_tools";
 import {ErrorBoundary} from "./error_boundary";
 import {TacticOmnibar} from "./TacticOmnibar";
@@ -85,6 +85,7 @@ function MainApp(props) {
     const main_outer_ref = useRef(null);
     const set_table_scroll = useRef(null);
 
+    const [console_selected_items, set_console_selected_items, console_selected_items_ref] = useStateAndRef([]);
     const [console_items, dispatch, console_items_ref] = useReducerAndRef(consoleItemsReducer, iStateOrDefault("console_items"));
     const [tile_list, tileDispatch, tile_list_ref] = useReducerAndRef(tilesReducer, iStateOrDefault("tile_list"));
 
@@ -1088,6 +1089,8 @@ function MainApp(props) {
                               controlled={props.controlled}
                               am_selected={props.am_selected}
                               console_items={console_items_ref}
+                              console_selected_items_ref={console_selected_items_ref}
+                              set_console_selected_items={set_console_selected_items}
                               dispatch={dispatch}
                               mState={mState}
                               setMainStateValue={_setMainStateValue}
