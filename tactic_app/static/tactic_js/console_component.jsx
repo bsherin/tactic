@@ -49,7 +49,7 @@ function ConsoleComponent(props) {
     const [console_item_with_focus, set_console_item_with_focus] = useState(null);
     const [console_item_saved_focus, set_console_item_saved_focus] = useState(null);
 
-    const [all_selected_items, set_all_selected_items, all_selected_items_ref] = useStateAndRef([]);
+    // const [all_selected_items, set_all_selected_items, all_selected_items_ref] = useStateAndRef([]);
     const [search_string, set_search_string, search_string_ref] = useStateAndRef(null);
     const [filter_console_items, set_filter_console_items] = useState(false);
     const [search_helper_text, set_search_helper_text] = useState(null);
@@ -69,11 +69,13 @@ function ConsoleComponent(props) {
         if (props.console_items.current.length == 0) {
             _addCodeArea("", false)
         }
-        _clear_all_selected_items(() => {
-            if (props.console_items.current && props.console_items.current.length > 0) {
-                _selectConsoleItem(props.console_items.current[0].unique_id)
-            }
-        });
+        if (props.console_selected_items_ref.current.length == 0) {
+            _clear_all_selected_items(() => {
+                if (props.console_items.current && props.console_items.current.length > 0) {
+                    _selectConsoleItem(props.console_items.current[0].unique_id)
+                }
+            });
+        }
     }, []);
 
     function initSocket() {
@@ -241,10 +243,10 @@ function ConsoleComponent(props) {
 
     const _copySection = useCallback((unique_id = null) => {
         if (!unique_id) {
-            if (all_selected_items_ref.current.length != 1) {
+            if (props.console_selected_items_ref.current.length != 1) {
                 return
             }
-            unique_id = all_selected_items_ref.current[0];
+            unique_id = props.console_selected_items_ref.current[0];
             let entry = get_console_item_entry(unique_id);
             if (entry.type != "divider") {
                 return
@@ -324,10 +326,10 @@ function ConsoleComponent(props) {
     }
 
     function _currently_selected() {
-        if (all_selected_items_ref.current.length == 0) {
+        if (props.console_selected_items_ref.current.length == 0) {
             return null
         } else {
-            return _.last(all_selected_items_ref.current)
+            return _.last(props.console_selected_items_ref.current)
         }
     }
 
@@ -392,7 +394,7 @@ function ConsoleComponent(props) {
             cancel_text: "do nothing",
             submit_text: "clear",
             handleSubmit: ()=>{
-                set_all_selected_items([]);
+                props.set_console_selected_items([]);
                 pushCallback(() => {
                     props.dispatch({type: "delete_all_items"})
                 })
@@ -483,7 +485,7 @@ function ConsoleComponent(props) {
     }
 
     function _clear_all_selected_items(callback = null) {
-        set_all_selected_items([]);
+        props.set_console_selected_items([]);
         pushCallback(() => {
             props.dispatch({type: "clear_all_selected"})
         });
@@ -491,18 +493,18 @@ function ConsoleComponent(props) {
     }
 
     function _reduce_to_last_selected(callback = null) {
-        if (all_selected_items_ref.current.length <= 1) {
+        if (props.console_selected_items_ref.current.length <= 1) {
             if (callback) {
                 callback()
             }
             return
         }
         let updates = {};
-        for (let uid of all_selected_items_ref.current.slice(0, -1)) {
+        for (let uid of props.console_selected_items_ref.current.slice(0, -1)) {
             updates[uid] = {am_selected: false, search_string: null};
         }
         _multiple_console_item_updates(updates, () => {
-            set_all_selected_items(all_selected_items_ref.current.slice(-1,));
+            props.set_console_selected_items(props.console_selected_items_ref.current.slice(-1,));
             pushCallback(callback)
         })
     }
@@ -513,16 +515,16 @@ function ConsoleComponent(props) {
 
     function _dselectOneItem(unique_id, callback = null) {
         let updates = {};
-        if (all_selected_items_ref.current.includes(unique_id)) {
+        if (props.console_selected_items_ref.current.includes(unique_id)) {
 
             updates[unique_id] = {am_selected: false, search_string: null};
             _multiple_console_item_updates(updates, () => {
-                let narray = _.cloneDeep(all_selected_items_ref.current);
+                let narray = _.cloneDeep(props.console_selected_items_ref.current);
                 var myIndex = narray.indexOf(unique_id);
                 if (myIndex !== -1) {
                     narray.splice(myIndex, 1);
                 }
-                set_all_selected_items(narray);
+                props.set_console_selected_items(narray);
                 pushCallback(callback)
             })
         } else {
@@ -534,7 +536,7 @@ function ConsoleComponent(props) {
         let updates = {};
         let shift_down = event != null && event.shiftKey;
         if (!shift_down) {
-            for (let uid of all_selected_items_ref.current) {
+            for (let uid of props.console_selected_items_ref.current) {
                 if (uid != unique_id) {
                     updates[uid] = {am_selected: false, search_string: null};
                 }
@@ -542,18 +544,18 @@ function ConsoleComponent(props) {
             updates[unique_id] = {am_selected: true, search_string: search_string_ref.current};
 
             _multiple_console_item_updates(updates, () => {
-                set_all_selected_items([unique_id]);
+                props.set_console_selected_items([unique_id]);
                 pushCallback(callback);
             })
         } else {
-            if (all_selected_items_ref.current.includes(unique_id)) {
+            if (props.console_selected_items_ref.current.includes(unique_id)) {
                 _dselectOneItem(unique_id)
             } else {
                 updates[unique_id] = {am_selected: true, search_string: search_string_ref.current};
                 _multiple_console_item_updates(updates, () => {
-                    let narray = _.cloneDeep(all_selected_items_ref.current);
+                    let narray = _.cloneDeep(props.console_selected_items_ref.current);
                     narray.push(unique_id);
-                    set_all_selected_items(narray);
+                    props.set_console_selected_items(narray);
                     pushCallback(callback)
                 })
             }
@@ -562,7 +564,7 @@ function ConsoleComponent(props) {
     }, []);
 
     function _sortSelectedItems() {
-        let sitems = _.cloneDeep(all_selected_items_ref.current);
+        let sitems = _.cloneDeep(props.console_selected_items_ref.current);
         sitems.sort((firstEl, secondEl) => {
             return _consoleItemIndex(firstEl) < _consoleItemIndex(secondEl) ? -1 : 1;
         });
@@ -571,12 +573,12 @@ function ConsoleComponent(props) {
 
     function _clearSelectedItem() {
         let updates = {};
-        for (let uid of all_selected_items_ref.current) {
+        for (let uid of props.console_selected_items_ref.current) {
             updates[unique_id] = {am_selected: false, search_string: null};
 
         }
         _multiple_console_item_updates(updates, () => {
-            set_all_selected_items({});
+            props.set_console_selected_items({});
             set_console_item_with_focus(null)
         })
     }
@@ -728,7 +730,7 @@ function ConsoleComponent(props) {
     }, []);
 
     function _isDividerSelected() {
-        for (let uid of all_selected_items_ref.current) {
+        for (let uid of props.console_selected_items_ref.current) {
             let centry = get_console_item_entry(uid);
             if (centry.type == "divider") {
                 return true
@@ -747,7 +749,7 @@ function ConsoleComponent(props) {
                 in_section = entry.type != "section-end";
                 continue
             }
-            if (all_selected_items_ref.current.includes(entry.unique_id)) {
+            if (props.console_selected_items_ref.current.includes(entry.unique_id)) {
                 to_delete.push(entry.unique_id);
                 if (entry.type == "divider") {
                     in_section = true
@@ -839,7 +841,7 @@ function ConsoleComponent(props) {
             } else {
                 insert_index = _consoleItemIndex(unique_id) + 1
             }
-        } else if (props.console_items.current.length == 0 || all_selected_items_ref.current.length == 0) {
+        } else if (props.console_items.current.length == 0 || props.console_selected_items_ref.current.length == 0) {
             insert_index = props.console_items.current.length
         } else {
             let current_selected_id = _currently_selected();
@@ -1010,7 +1012,7 @@ function ConsoleComponent(props) {
     }
 
     function _are_selected() {
-        return all_selected_items_ref.current.length > 0
+        return props.console_selected_items_ref.current.length > 0
     }
 
     function _setSearchString(val) {
@@ -1019,7 +1021,7 @@ function ConsoleComponent(props) {
         set_search_string(nval);
         pushCallback(() => {
             if (_are_selected()) {
-                for (let uid of all_selected_items_ref.current) {
+                for (let uid of props.console_selected_items_ref.current) {
                     updates[uid] = {search_string: search_string_ref.current}
                 }
                 _multiple_console_item_updates(updates)
@@ -1188,13 +1190,13 @@ function ConsoleComponent(props) {
 
     function disabled_items() {
         let items = [];
-        if (!_are_selected() || all_selected_items_ref.current.length != 1) {
+        if (!_are_selected() || props.console_selected_items_ref.current.length != 1) {
             items.push("Run Selected");
             items.push("Copy Section");
             items.push("Delete Section")
         }
-        if (all_selected_items_ref.current.length == 1) {
-            let unique_id = all_selected_items_ref.current[0];
+        if (props.console_selected_items_ref.current.length == 1) {
+            let unique_id = props.console_selected_items_ref.current[0];
             let entry = get_console_item_entry(unique_id);
             if (!entry) {
                 return []
@@ -1219,7 +1221,7 @@ function ConsoleComponent(props) {
         if (window.in_context && !props.am_selected) {
             return
         }
-        if (_are_selected() && all_selected_items_ref.current.length == 1) {
+        if (_are_selected() && props.console_selected_items_ref.current.length == 1) {
             let entry = get_console_item_entry(_currently_selected());
             if (entry.type == "code") {
                 _runCodeItem(_currently_selected())

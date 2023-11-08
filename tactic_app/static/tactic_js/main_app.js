@@ -97,6 +97,11 @@ function MainApp(props) {
   var tbody_ref = (0, _react.useRef)(null);
   var main_outer_ref = (0, _react.useRef)(null);
   var set_table_scroll = (0, _react.useRef)(null);
+  var _useStateAndRef = (0, _utilities_react.useStateAndRef)([]),
+    _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
+    console_selected_items = _useStateAndRef2[0],
+    set_console_selected_items = _useStateAndRef2[1],
+    console_selected_items_ref = _useStateAndRef2[2];
   var _useReducerAndRef = (0, _utilities_react.useReducerAndRef)(_console_support.consoleItemsReducer, iStateOrDefault("console_items")),
     _useReducerAndRef2 = _slicedToArray(_useReducerAndRef, 3),
     console_items = _useReducerAndRef2[0],
@@ -1139,6 +1144,8 @@ function MainApp(props) {
       controlled: props.controlled,
       am_selected: props.am_selected,
       console_items: console_items_ref,
+      console_selected_items_ref: console_selected_items_ref,
+      set_console_selected_items: set_console_selected_items,
       dispatch: dispatch,
       mState: mState,
       setMainStateValue: _setMainStateValue,

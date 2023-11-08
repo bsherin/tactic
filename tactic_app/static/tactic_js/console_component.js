@@ -63,16 +63,13 @@ function ConsoleComponent(props) {
     _useState4 = _slicedToArray(_useState3, 2),
     console_item_saved_focus = _useState4[0],
     set_console_item_saved_focus = _useState4[1];
-  var _useStateAndRef = (0, _utilities_react.useStateAndRef)([]),
+
+  // const [all_selected_items, set_all_selected_items, all_selected_items_ref] = useStateAndRef([]);
+  var _useStateAndRef = (0, _utilities_react.useStateAndRef)(null),
     _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
-    all_selected_items = _useStateAndRef2[0],
-    set_all_selected_items = _useStateAndRef2[1],
-    all_selected_items_ref = _useStateAndRef2[2];
-  var _useStateAndRef3 = (0, _utilities_react.useStateAndRef)(null),
-    _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
-    search_string = _useStateAndRef4[0],
-    set_search_string = _useStateAndRef4[1],
-    search_string_ref = _useStateAndRef4[2];
+    search_string = _useStateAndRef2[0],
+    set_search_string = _useStateAndRef2[1],
+    search_string_ref = _useStateAndRef2[2];
   var _useState5 = (0, _react.useState)(false),
     _useState6 = _slicedToArray(_useState5, 2),
     filter_console_items = _useState6[0],
@@ -102,11 +99,13 @@ function ConsoleComponent(props) {
     if (props.console_items.current.length == 0) {
       _addCodeArea("", false);
     }
-    _clear_all_selected_items(function () {
-      if (props.console_items.current && props.console_items.current.length > 0) {
-        _selectConsoleItem(props.console_items.current[0].unique_id);
-      }
-    });
+    if (props.console_selected_items_ref.current.length == 0) {
+      _clear_all_selected_items(function () {
+        if (props.console_items.current && props.console_items.current.length > 0) {
+          _selectConsoleItem(props.console_items.current[0].unique_id);
+        }
+      });
+    }
   }, []);
   function initSocket() {
     function _handleConsoleMessage(data) {
@@ -287,10 +286,10 @@ function ConsoleComponent(props) {
   var _copySection = (0, _react.useCallback)(function () {
     var unique_id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     if (!unique_id) {
-      if (all_selected_items_ref.current.length != 1) {
+      if (props.console_selected_items_ref.current.length != 1) {
         return;
       }
-      unique_id = all_selected_items_ref.current[0];
+      unique_id = props.console_selected_items_ref.current[0];
       var entry = get_console_item_entry(unique_id);
       if (entry.type != "divider") {
         return;
@@ -380,10 +379,10 @@ function ConsoleComponent(props) {
     }, null, props.main_id);
   }
   function _currently_selected() {
-    if (all_selected_items_ref.current.length == 0) {
+    if (props.console_selected_items_ref.current.length == 0) {
       return null;
     } else {
-      return _lodash["default"].last(all_selected_items_ref.current);
+      return _lodash["default"].last(props.console_selected_items_ref.current);
     }
   }
   var _insertResourceLink = (0, _react.useCallback)(function () {
@@ -450,7 +449,7 @@ function ConsoleComponent(props) {
       cancel_text: "do nothing",
       submit_text: "clear",
       handleSubmit: function handleSubmit() {
-        set_all_selected_items([]);
+        props.set_console_selected_items([]);
         pushCallback(function () {
           props.dispatch({
             type: "delete_all_items"
@@ -543,7 +542,7 @@ function ConsoleComponent(props) {
   }
   function _clear_all_selected_items() {
     var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-    set_all_selected_items([]);
+    props.set_console_selected_items([]);
     pushCallback(function () {
       props.dispatch({
         type: "clear_all_selected"
@@ -553,14 +552,14 @@ function ConsoleComponent(props) {
   }
   function _reduce_to_last_selected() {
     var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-    if (all_selected_items_ref.current.length <= 1) {
+    if (props.console_selected_items_ref.current.length <= 1) {
       if (callback) {
         callback();
       }
       return;
     }
     var updates = {};
-    var _iterator4 = _createForOfIteratorHelper(all_selected_items_ref.current.slice(0, -1)),
+    var _iterator4 = _createForOfIteratorHelper(props.console_selected_items_ref.current.slice(0, -1)),
       _step4;
     try {
       for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
@@ -576,7 +575,7 @@ function ConsoleComponent(props) {
       _iterator4.f();
     }
     _multiple_console_item_updates(updates, function () {
-      set_all_selected_items(all_selected_items_ref.current.slice(-1));
+      props.set_console_selected_items(props.console_selected_items_ref.current.slice(-1));
       pushCallback(callback);
     });
   }
@@ -586,18 +585,18 @@ function ConsoleComponent(props) {
   function _dselectOneItem(unique_id) {
     var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     var updates = {};
-    if (all_selected_items_ref.current.includes(unique_id)) {
+    if (props.console_selected_items_ref.current.includes(unique_id)) {
       updates[unique_id] = {
         am_selected: false,
         search_string: null
       };
       _multiple_console_item_updates(updates, function () {
-        var narray = _lodash["default"].cloneDeep(all_selected_items_ref.current);
+        var narray = _lodash["default"].cloneDeep(props.console_selected_items_ref.current);
         var myIndex = narray.indexOf(unique_id);
         if (myIndex !== -1) {
           narray.splice(myIndex, 1);
         }
-        set_all_selected_items(narray);
+        props.set_console_selected_items(narray);
         pushCallback(callback);
       });
     } else {
@@ -610,7 +609,7 @@ function ConsoleComponent(props) {
     var updates = {};
     var shift_down = event != null && event.shiftKey;
     if (!shift_down) {
-      var _iterator5 = _createForOfIteratorHelper(all_selected_items_ref.current),
+      var _iterator5 = _createForOfIteratorHelper(props.console_selected_items_ref.current),
         _step5;
       try {
         for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
@@ -632,11 +631,11 @@ function ConsoleComponent(props) {
         search_string: search_string_ref.current
       };
       _multiple_console_item_updates(updates, function () {
-        set_all_selected_items([unique_id]);
+        props.set_console_selected_items([unique_id]);
         pushCallback(callback);
       });
     } else {
-      if (all_selected_items_ref.current.includes(unique_id)) {
+      if (props.console_selected_items_ref.current.includes(unique_id)) {
         _dselectOneItem(unique_id);
       } else {
         updates[unique_id] = {
@@ -644,16 +643,16 @@ function ConsoleComponent(props) {
           search_string: search_string_ref.current
         };
         _multiple_console_item_updates(updates, function () {
-          var narray = _lodash["default"].cloneDeep(all_selected_items_ref.current);
+          var narray = _lodash["default"].cloneDeep(props.console_selected_items_ref.current);
           narray.push(unique_id);
-          set_all_selected_items(narray);
+          props.set_console_selected_items(narray);
           pushCallback(callback);
         });
       }
     }
   }, []);
   function _sortSelectedItems() {
-    var sitems = _lodash["default"].cloneDeep(all_selected_items_ref.current);
+    var sitems = _lodash["default"].cloneDeep(props.console_selected_items_ref.current);
     sitems.sort(function (firstEl, secondEl) {
       return _consoleItemIndex(firstEl) < _consoleItemIndex(secondEl) ? -1 : 1;
     });
@@ -661,7 +660,7 @@ function ConsoleComponent(props) {
   }
   function _clearSelectedItem() {
     var updates = {};
-    var _iterator6 = _createForOfIteratorHelper(all_selected_items_ref.current),
+    var _iterator6 = _createForOfIteratorHelper(props.console_selected_items_ref.current),
       _step6;
     try {
       for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
@@ -677,7 +676,7 @@ function ConsoleComponent(props) {
       _iterator6.f();
     }
     _multiple_console_item_updates(updates, function () {
-      set_all_selected_items({});
+      props.set_console_selected_items({});
       set_console_item_with_focus(null);
     });
   }
@@ -843,7 +842,7 @@ function ConsoleComponent(props) {
     return;
   }, []);
   function _isDividerSelected() {
-    var _iterator8 = _createForOfIteratorHelper(all_selected_items_ref.current),
+    var _iterator8 = _createForOfIteratorHelper(props.console_selected_items_ref.current),
       _step8;
     try {
       for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
@@ -874,7 +873,7 @@ function ConsoleComponent(props) {
           in_section = entry.type != "section-end";
           continue;
         }
-        if (all_selected_items_ref.current.includes(entry.unique_id)) {
+        if (props.console_selected_items_ref.current.includes(entry.unique_id)) {
           to_delete.push(entry.unique_id);
           if (entry.type == "divider") {
             in_section = true;
@@ -997,7 +996,7 @@ function ConsoleComponent(props) {
       } else {
         insert_index = _consoleItemIndex(unique_id) + 1;
       }
-    } else if (props.console_items.current.length == 0 || all_selected_items_ref.current.length == 0) {
+    } else if (props.console_items.current.length == 0 || props.console_selected_items_ref.current.length == 0) {
       insert_index = props.console_items.current.length;
     } else {
       var current_selected_id = _currently_selected();
@@ -1161,7 +1160,7 @@ function ConsoleComponent(props) {
     }
   }
   function _are_selected() {
-    return all_selected_items_ref.current.length > 0;
+    return props.console_selected_items_ref.current.length > 0;
   }
   function _setSearchString(val) {
     var nval = val == "" ? null : val;
@@ -1169,7 +1168,7 @@ function ConsoleComponent(props) {
     set_search_string(nval);
     pushCallback(function () {
       if (_are_selected()) {
-        var _iterator13 = _createForOfIteratorHelper(all_selected_items_ref.current),
+        var _iterator13 = _createForOfIteratorHelper(props.console_selected_items_ref.current),
           _step13;
         try {
           for (_iterator13.s(); !(_step13 = _iterator13.n()).done;) {
@@ -1395,13 +1394,13 @@ function ConsoleComponent(props) {
   }
   function disabled_items() {
     var items = [];
-    if (!_are_selected() || all_selected_items_ref.current.length != 1) {
+    if (!_are_selected() || props.console_selected_items_ref.current.length != 1) {
       items.push("Run Selected");
       items.push("Copy Section");
       items.push("Delete Section");
     }
-    if (all_selected_items_ref.current.length == 1) {
-      var _unique_id = all_selected_items_ref.current[0];
+    if (props.console_selected_items_ref.current.length == 1) {
+      var _unique_id = props.console_selected_items_ref.current[0];
       var entry = get_console_item_entry(_unique_id);
       if (!entry) {
         return [];
@@ -1425,7 +1424,7 @@ function ConsoleComponent(props) {
     if (window.in_context && !props.am_selected) {
       return;
     }
-    if (_are_selected() && all_selected_items_ref.current.length == 1) {
+    if (_are_selected() && props.console_selected_items_ref.current.length == 1) {
       var entry = get_console_item_entry(_currently_selected());
       if (entry.type == "code") {
         _runCodeItem(_currently_selected());
