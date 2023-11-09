@@ -8,6 +8,7 @@ import 'codemirror/mode/markdown/markdown.js'
 
 import {Icon, Card, ContextMenu, EditableText, Spinner, MenuDivider, Divider} from "@blueprintjs/core";
 import {Menu, MenuItem, ButtonGroup, Button} from "@blueprintjs/core";
+import {SelectedPaneContext} from "./utilities_react";
 import _ from 'lodash';
 
 import markdownIt from 'markdown-it'
@@ -62,6 +63,8 @@ function ConsoleComponent(props) {
     const theme = useContext(ThemeContext);
     const dialogFuncs = useContext(DialogContext);
     const pushCallback = useCallbackStack();
+
+    const selectedPane = useContext(SelectedPaneContext);
 
     useEffect(() => {
         initSocket();
@@ -179,12 +182,16 @@ function ConsoleComponent(props) {
             }, null, props.main_id);
     }
 
+    function am_selected() {
+        return !window.in_context || selectedPane.tab_id == selectedPane.selectedTabIdRef.current
+    }
+
     const _addBlankText = useCallback(() => {
-        if (window.in_context && !props.am_selected) {
+        if (window.in_context && !am_selected()) {
             return
         }
         _addConsoleText("")
-    }, [props.am_selected]);
+    }, []);
 
     function _addConsoleDivider(header_text, callback = null) {
         postWithCallback("host", "print_divider_area_to_console",
@@ -198,11 +205,11 @@ function ConsoleComponent(props) {
     }
 
     const _addBlankDivider = useCallback(() => {
-        if (window.in_context && !props.am_selected) {
+        if (window.in_context && !am_selected()) {
             return
         }
         _addConsoleDivider("")
-    }, [props.am_selected]);
+    }, []);
 
     function _getSectionIds(unique_id) {
         let cindex = _consoleItemIndex(unique_id);
@@ -361,11 +368,11 @@ function ConsoleComponent(props) {
     }
 
     const _addBlankCode = useCallback((e) => {
-        if (window.in_context && !props.am_selected) {
+        if (window.in_context && !am_selected()) {
             return
         }
         _addCodeArea("");
-    }, [props.am_selected]);
+    }, []);
 
     function _addCodeArea(the_text, force_open = true) {
         postWithCallback("host", "print_code_area_to_console",
@@ -1218,7 +1225,7 @@ function ConsoleComponent(props) {
     }
 
     function _runSelected() {
-        if (window.in_context && !props.am_selected) {
+        if (window.in_context && !am_selected()) {
             return
         }
         if (_are_selected() && props.console_selected_items_ref.current.length == 1) {
@@ -1343,8 +1350,8 @@ function ConsoleComponent(props) {
                                        showClose={false}
                                        refreshTab={props.refreshTab}
                                        closeTab={null}
-                                       controlled={false} // This doesn't matter
-                                       am_selected={false} // Also doesn't matter
+                                       controlled={window.in_context}
+                                       am_selected={am_selected()}
                         />
 
                     </div>
@@ -1455,7 +1462,7 @@ function ConsoleComponent(props) {
                 </div>
             }
             <KeyTrap global={true}
-                     active={!props.controlled || props.am_selected}
+                     active={!props.controlled || am_selected()}
                      bindings={key_bindings}/>
         </Card>
     );

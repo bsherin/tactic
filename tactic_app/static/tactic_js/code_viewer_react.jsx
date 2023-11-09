@@ -14,7 +14,7 @@ import {doFlash, withStatus, StatusContext} from "./toaster.js"
 
 import {getUsableDimensions, BOTTOM_MARGIN} from "./sizing_tools.js";
 import {withErrorDrawer} from "./error_drawer.js";
-import {guid} from "./utilities_react";
+import {guid, SelectedPaneContext} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_react";
 
@@ -102,6 +102,8 @@ function CodeViewerApp(props) {
             })
         }
     });
+
+    const selectedPane = useContext(SelectedPaneContext);
 
     function _update_search_state(nstate, callback = null) {
         for (let field in nstate) {
@@ -229,8 +231,13 @@ function CodeViewerApp(props) {
         }
     }
 
+
+    function am_selected() {
+        return !window.in_context || selectedPane.tab_id == selectedPane.selectedTabIdRef.current
+    }
+
     function _saveMe() {
-        if (!props.am_selected) {
+        if (!am_selected()) {
             return false
         }
         const new_code = code_content;
@@ -260,6 +267,9 @@ function CodeViewerApp(props) {
     }
 
     function _saveMeAs(e) {
+        if (!am_selected()) {
+            return false
+        }
         statusFuncs.startSpinner();
         postWithCallback("host", "get_code_names", {"user_id": window.user_id}, function (data) {
             let checkboxes;
@@ -356,7 +366,7 @@ function CodeViewerApp(props) {
                                    registerOmniFunction={props.registerOmniFunction}
                 >
                     <ReactCodemirror code_content={code_content}
-                                     am_selected={props.am_selected}
+                                     am_selected={am_selected()}
                                      extraKeys={_extraKeys()}
                                      readOnly={props.readOnly}
                                      handleChange={_handleCodeChange}
@@ -378,7 +388,6 @@ CodeViewerApp = memo(CodeViewerApp);
 
 CodeViewerApp.propTypes = {
     controlled: PropTypes.bool,
-    am_selected: PropTypes.bool,
     changeResourceName: PropTypes.func,
     changeResourceTitle: PropTypes.func,
     changeResourceProps: PropTypes.func,
@@ -398,7 +407,6 @@ CodeViewerApp.propTypes = {
 };
 
 CodeViewerApp.defaultProps = {
-    am_selected: true,
     controlled: false,
     changeResourceName: null,
     changeResourceTitle: null,

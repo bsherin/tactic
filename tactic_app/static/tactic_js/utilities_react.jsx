@@ -15,7 +15,9 @@ export {doBinding, propsAreEqual, arrayMove, arraysMatch, get_ppi, isInt};
 export {remove_duplicates, doSignOut, guid, scrollMeIntoView, renderSpinnerMessage};
 export {useConstructor, useCallbackStack, useStateAndRef, useReducerAndRef, useConnection, useDidMount}
 
-export {debounce, throttle, useDebounce}
+export {debounce, throttle, useDebounce, SelectedPaneContext}
+
+const SelectedPaneContext = createContext(null);
 
 // It's necessary to have effectcount be a ref. Otherwise there can be subtle bugs
 function useCallbackStack(myId = "") {

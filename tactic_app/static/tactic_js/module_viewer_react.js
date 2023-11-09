@@ -121,6 +121,7 @@ function ModuleViewerApp(props) {
     _useState12 = _slicedToArray(_useState11, 2),
     resource_name = _useState12[0],
     set_resource_name = _useState12[1];
+  var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   (0, _react.useEffect)(function () {
     statusFuncs.stopSpinner();
     if (cc_ref && cc_ref.current) {
@@ -310,8 +311,11 @@ function ModuleViewerApp(props) {
       }
     };
   }
+  function am_selected() {
+    return !window.in_context || selectedPane.tab_id == selectedPane.selectedTabIdRef.current;
+  }
   function _saveMe() {
-    if (!props.am_selected) {
+    if (!am_selected()) {
       return false;
     }
     statusFuncs.startSpinner();
@@ -385,6 +389,9 @@ function ModuleViewerApp(props) {
     }
   }
   function _saveAndLoadModule() {
+    if (!am_selected()) {
+      return false;
+    }
     statusFuncs.startSpinner();
     doSavePromise().then(function () {
       statusFuncs.statusMessage("Loading Module");
@@ -402,6 +409,9 @@ function ModuleViewerApp(props) {
     }
   }
   function _loadModule() {
+    if (!am_selected()) {
+      return false;
+    }
     statusFuncs.startSpinner();
     statusFuncs.statusMessage("Loading Module");
     (0, _communication_react.postWithCallback)("host", "load_tile_module_task", {
@@ -417,6 +427,9 @@ function ModuleViewerApp(props) {
     }
   }
   function _saveAndCheckpoint() {
+    if (!am_selected()) {
+      return false;
+    }
     statusFuncs.startSpinner();
     doSavePromise().then(function () {
       statusFuncs.statusMessage("Checkpointing");
@@ -507,7 +520,7 @@ function ModuleViewerApp(props) {
     registerOmniFunction: props.registerOmniFunction
   }), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
     code_content: code_content,
-    am_selected: props.am_selected,
+    am_selected: am_selected(),
     extraKeys: _extraKeys(),
     readOnly: props.readOnly,
     handleChange: _handleCodeChange,
@@ -523,7 +536,6 @@ function ModuleViewerApp(props) {
 exports.ModuleViewerApp = ModuleViewerApp = /*#__PURE__*/(0, _react.memo)(ModuleViewerApp);
 ModuleViewerApp.propTypes = {
   controlled: _propTypes["default"].bool,
-  am_selected: _propTypes["default"].bool,
   changeResourceName: _propTypes["default"].func,
   changeResourceTitle: _propTypes["default"].func,
   changeResourceProps: _propTypes["default"].func,
@@ -541,7 +553,6 @@ ModuleViewerApp.propTypes = {
   usable_width: _propTypes["default"].number
 };
 ModuleViewerApp.defaultProps = {
-  am_selected: true,
   controlled: false,
   changeResourceName: null,
   changeResourceTitle: null,

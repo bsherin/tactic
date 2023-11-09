@@ -8,6 +8,7 @@ var _react = _interopRequireWildcard(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 require("codemirror/mode/markdown/markdown.js");
 var _core = require("@blueprintjs/core");
+var _utilities_react = require("./utilities_react");
 var _lodash = _interopRequireDefault(require("lodash"));
 var _markdownIt = _interopRequireDefault(require("markdown-it"));
 require("markdown-it-latex/dist/index.css");
@@ -25,7 +26,6 @@ var _search_form = require("./search_form");
 var _searchable_console = require("./searchable_console");
 var _theme = require("./theme");
 var _modal_react = require("./modal_react");
-var _utilities_react = require("./utilities_react");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -93,6 +93,7 @@ function ConsoleComponent(props) {
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
+  var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   (0, _react.useEffect)(function () {
     initSocket();
     _requestPseudoTileId();
@@ -222,12 +223,15 @@ function ConsoleComponent(props) {
       }
     }, null, props.main_id);
   }
+  function am_selected() {
+    return !window.in_context || selectedPane.tab_id == selectedPane.selectedTabIdRef.current;
+  }
   var _addBlankText = (0, _react.useCallback)(function () {
-    if (window.in_context && !props.am_selected) {
+    if (window.in_context && !am_selected()) {
       return;
     }
     _addConsoleText("");
-  }, [props.am_selected]);
+  }, []);
   function _addConsoleDivider(header_text) {
     var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     (0, _communication_react.postWithCallback)("host", "print_divider_area_to_console", {
@@ -243,11 +247,11 @@ function ConsoleComponent(props) {
     }, null, props.main_id);
   }
   var _addBlankDivider = (0, _react.useCallback)(function () {
-    if (window.in_context && !props.am_selected) {
+    if (window.in_context && !am_selected()) {
       return;
     }
     _addConsoleDivider("");
-  }, [props.am_selected]);
+  }, []);
   function _getSectionIds(unique_id) {
     var cindex = _consoleItemIndex(unique_id);
     var id_list = [unique_id];
@@ -414,11 +418,11 @@ function ConsoleComponent(props) {
     });
   }
   var _addBlankCode = (0, _react.useCallback)(function (e) {
-    if (window.in_context && !props.am_selected) {
+    if (window.in_context && !am_selected()) {
       return;
     }
     _addCodeArea("");
-  }, [props.am_selected]);
+  }, []);
   function _addCodeArea(the_text) {
     var force_open = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
     (0, _communication_react.postWithCallback)("host", "print_code_area_to_console", {
@@ -1421,7 +1425,7 @@ function ConsoleComponent(props) {
     _setConsoleItemValue(unique_id, "output_text", "", callback);
   }
   function _runSelected() {
-    if (window.in_context && !props.am_selected) {
+    if (window.in_context && !am_selected()) {
       return;
     }
     if (_are_selected() && props.console_selected_items_ref.current.length == 1) {
@@ -1561,9 +1565,8 @@ function ConsoleComponent(props) {
     showClose: false,
     refreshTab: props.refreshTab,
     closeTab: null,
-    controlled: false // This doesn't matter
-    ,
-    am_selected: false // Also doesn't matter
+    controlled: window.in_context,
+    am_selected: am_selected()
   })), /*#__PURE__*/_react["default"].createElement("div", {
     id: "console-header-right",
     className: "d-flex flex-row"
@@ -1667,7 +1670,7 @@ function ConsoleComponent(props) {
     }
   })), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
     global: true,
-    active: !props.controlled || props.am_selected,
+    active: !props.controlled || am_selected(),
     bindings: key_bindings
   }));
 }

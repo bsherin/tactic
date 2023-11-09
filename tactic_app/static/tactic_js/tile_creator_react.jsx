@@ -32,6 +32,7 @@ import {renderAutoCompleteElement} from "./autocomplete";
 import {useCallbackStack, useConstructor, useStateAndRef, useConnection} from "./utilities_react";
 import {ThemeContext, withTheme} from "./theme";
 import {DialogContext, withDialogs} from "./modal_react";
+import {SelectedPaneContext} from "./utilities_react";
 
 export {CreatorApp}
 
@@ -112,6 +113,8 @@ function CreatorApp(props) {
     const theme = useContext(ThemeContext);
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
+
+    const selectedPane = useContext(SelectedPaneContext);
 
     const pushCallback = useCallbackStack();
 
@@ -393,6 +396,9 @@ function CreatorApp(props) {
     }
 
     function _saveAndLoadModule() {
+        if (!am_selected()) {
+            return false
+        }
         statusFuncs.startSpinner();
         doSavePromise()
             .then(function () {
@@ -420,6 +426,9 @@ function CreatorApp(props) {
     }
 
     function _loadModule() {
+        if (!am_selected()) {
+            return false
+        }
         statusFuncs.startSpinner();
         statusFuncs.statusMessage("Loading Module");
         postWithCallback(
@@ -477,8 +486,12 @@ function CreatorApp(props) {
 
     }
 
+    function am_selected() {
+        return !window.in_context || selectedPane.tab_id == selectedPane.selectedTabIdRef.current
+    }
+
     function _saveMe() {
-        if (!props.am_selected) {
+        if (!am_selected()) {
             return false
         }
         statusFuncs.startSpinner();
@@ -493,6 +506,9 @@ function CreatorApp(props) {
 
 
     function _saveAndCheckpoint() {
+        if (!am_selected()) {
+            return false
+        }
         statusFuncs.startSpinner();
         doSavePromise()
             .then(function () {
@@ -905,7 +921,7 @@ function CreatorApp(props) {
                 </div>
                 <ReactCodemirror code_content={code_content}
                                  mode={mode}
-                                 am_selected={props.am_selected}
+                                 am_selected={am_selected()}
                                  extraKeys={_extraKeys()}
                                  current_search_number={current_search_cm == "tc" ? current_search_number : null}
                                  handleChange={handleTopCodeChange}
@@ -954,7 +970,7 @@ function CreatorApp(props) {
             </div>
             <ReactCodemirror code_content={render_content_code_ref.current}
                              current_search_number={current_search_cm == "rc" ? current_search_number : null}
-                             am_selected={props.am_selected}
+                             am_selected={am_selected()}
                              handleChange={handleRenderContentChange}
                              extraKeys={_extraKeys()}
                              saveMe={_saveAndCheckpoint}
@@ -1034,7 +1050,7 @@ function CreatorApp(props) {
         <div style={{marginLeft: 5}}>
             <ReactCodemirror handleChange={handleMethodsChange}
                              show_fold_button={true}
-                             am_selected={props.am_selected}
+                             am_selected={am_selected()}
                              current_search_number={current_search_cm == "em" ? current_search_number : null}
                              extraKeys={_extraKeys()}
                              readOnly={props.readOnly}
@@ -1059,7 +1075,7 @@ function CreatorApp(props) {
         <div style={{marginLeft: 5}}>
             <ReactCodemirror handleChange={handleGlobalsChange}
                              show_fold_button={true}
-                             am_selected={props.am_selected}
+                             am_selected={am_selected()}
                              current_search_number={current_search_cm == "gp" ? current_search_number : null}
                              extraKeys={_extraKeys()}
                              readOnly={props.readOnly}
@@ -1139,7 +1155,7 @@ function CreatorApp(props) {
                            toggleErrorDrawer={props.toggleErrorDrawer}
                            controlled={props.controlled}
                            registerOmniGetter={_registerOmniGetter}
-                           am_selected={props.am_selected}
+                           am_selected={am_selected()}
             />
             <ErrorBoundary>
                 <div className={outer_class} ref={top_ref} style={outer_style}>
@@ -1171,7 +1187,6 @@ CreatorApp = memo(CreatorApp);
 
 CreatorApp.propTypes = {
     controlled: PropTypes.bool,
-    am_selected: PropTypes.bool,
     changeResourceName: PropTypes.func,
     changeResourceTitle: PropTypes.func,
     changeResourceProps: PropTypes.func,
@@ -1199,7 +1214,6 @@ CreatorApp.propTypes = {
 };
 
 CreatorApp.defaultProps = {
-    am_selected: true,
     controlled: false,
     changeResourceName: null,
     changeResourceTitle: null,

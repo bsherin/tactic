@@ -8,6 +8,7 @@ require("../tactic_css/tile_creator.scss");
 var _react = _interopRequireWildcard(require("react"));
 var ReactDOM = _interopRequireWildcard(require("react-dom"));
 var _core = require("@blueprintjs/core");
+var _utilities_react = require("./utilities_react");
 var _tactic_socket = require("./tactic_socket");
 var _TacticOmnibar = require("./TacticOmnibar");
 var _communication_react = require("./communication_react");
@@ -18,7 +19,6 @@ var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _library_home_react = require("./library_home_react");
 var _pool_browser = require("./pool_browser");
 var _library_pane = require("./library_pane");
-var _utilities_react = require("./utilities_react");
 var _module_viewer_react = require("./module_viewer_react");
 var _tile_creator_react = require("./tile_creator_react");
 var _tile_creator_support = require("./tile_creator_support");
@@ -878,10 +878,16 @@ function ContextApp(props) {
         wrapped_panel = spinner_panel;
       } else {
         var TheClass = classDict[tab_entry.kind];
-        var the_panel = /*#__PURE__*/_react["default"].createElement(TheClass, _extends({}, tab_entry.panel, {
+        var the_panel = /*#__PURE__*/_react["default"].createElement(_utilities_react.SelectedPaneContext.Provider, {
+          value: {
+            tab_id: tab_id,
+            selectedTabIdRef: selectedTabIdRef
+          }
+        }, /*#__PURE__*/_react["default"].createElement(TheClass, _extends({}, tab_entry.panel, {
           controlled: true,
           handleCreateViewer: _handleCreateViewer,
-          am_selected: tab_id == selectedTabIdRef.current,
+          tab_id: tab_id,
+          selectedTabIdRef: selectedTabIdRef,
           changeResourceName: function changeResourceName(new_name) {
             var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
             var change_title = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
@@ -911,7 +917,7 @@ function ContextApp(props) {
           tsocket: tab_entry.panel.tsocket,
           usable_width: usable_width,
           usable_height: usable_height
-        }));
+        })));
         wrapped_panel = /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement("div", {
           id: tab_id + "-holder",
           className: panelRootDict[tab_panel_dict_ref.current[tab_id].kind]

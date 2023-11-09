@@ -14,7 +14,7 @@ import {ConsoleComponent} from "./console_component";
 import {consoleItemsReducer} from "./console_support";
 import {doFlash, StatusContext} from "./toaster"
 import {withStatus} from "./toaster";
-import {renderSpinnerMessage, useConnection} from "./utilities_react";
+import {renderSpinnerMessage, SelectedPaneContext, useConnection} from "./utilities_react";
 import {TacticOmnibar} from "./TacticOmnibar";
 import {KeyTrap} from "./key_trap";
 
@@ -28,6 +28,7 @@ import {notebook_props, notebookReducer} from "./notebook_support";
 
 import {withTheme, ThemeContext} from "./theme";
 import {withDialogs} from "./modal_react";
+
 
 const MARGIN_SIZE = 10;
 const BOTTOM_MARGIN = 20;
@@ -64,6 +65,7 @@ function NotebookApp(props) {
     const key_bindings = [[["ctrl+space"], _showOmnibar]];
 
     const pushCallback = useCallbackStack();
+    const selectedPane = useContext(SelectedPaneContext);
 
     useConstructor(()=>{
         dispatch({
@@ -99,6 +101,10 @@ function NotebookApp(props) {
             delete_my_containers()
         })
     }, []);
+
+    function am_selected() {
+        return !window.in_context || props.tab_id == selectedPane.selectedTabIdRef.current
+    }
 
     function _cProp(pname) {
         return props.controlled ? props[pname] : mState[pname]
@@ -266,7 +272,7 @@ function NotebookApp(props) {
                           tsocket={props.tsocket}
                           handleCreateViewer={props.handleCreateViewer}
                           controlled={props.controlled}
-                          am_selected={props.am_selected}
+                          am_selected={am_selected()}
                           console_items={console_items_ref}
                           dispatch={dispatch}
                           mState={mState}

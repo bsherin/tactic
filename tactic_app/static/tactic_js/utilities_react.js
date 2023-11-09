@@ -4,6 +4,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" =
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.SelectedPaneContext = void 0;
 exports.arrayMove = arrayMove;
 exports.arraysMatch = arraysMatch;
 exports.debounce = debounce;
@@ -41,7 +42,10 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; } // noinspe
 /**
  * Created by bls910 much later
  */ /*jshint esversion: 6 */
+var SelectedPaneContext = /*#__PURE__*/(0, _react.createContext)(null);
+
 // It's necessary to have effectcount be a ref. Otherwise there can be subtle bugs
+exports.SelectedPaneContext = SelectedPaneContext;
 function useCallbackStack() {
   var myId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
   var _useStateAndRef = useStateAndRef(0),

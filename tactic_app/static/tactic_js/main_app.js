@@ -115,6 +115,7 @@ function MainApp(props) {
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
+  var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   var _useReducer = (0, _react.useReducer)(_main_support.mainReducer, {
       table_is_shrunk: iStateOrDefault("table_is_shrunk"),
       console_width_fraction: iStateOrDefault("console_width_fraction"),
@@ -189,6 +190,9 @@ function MainApp(props) {
   }, [mState.selected_row]);
   function _cProp(pname) {
     return props.controlled ? props[pname] : mState[pname];
+  }
+  function am_selected() {
+    return !window.in_context || props.tab_id == selectedPane.selectedTabIdRef.current;
   }
   var save_state = {
     tile_list: tile_list,
@@ -1142,7 +1146,7 @@ function MainApp(props) {
       tsocket: props.tsocket,
       handleCreateViewer: props.handleCreateViewer,
       controlled: props.controlled,
-      am_selected: props.am_selected,
+      am_selected: am_selected(),
       console_items: console_items_ref,
       console_selected_items_ref: console_selected_items_ref,
       set_console_selected_items: set_console_selected_items,
@@ -1252,7 +1256,6 @@ function MainApp(props) {
 exports.MainApp = MainApp = /*#__PURE__*/(0, _react.memo)(MainApp);
 MainApp.propTypes = {
   controlled: _propTypes["default"].bool,
-  am_selected: _propTypes["default"].bool,
   changeResourceName: _propTypes["default"].func,
   changeResourceTitle: _propTypes["default"].func,
   changeResourceProps: _propTypes["default"].func,
@@ -1265,7 +1268,6 @@ MainApp.propTypes = {
   doc_names: _propTypes["default"].array
 };
 MainApp.defaultProps = {
-  am_selected: true,
   controlled: false,
   changeResourceName: null,
   changeResourceTitle: null,

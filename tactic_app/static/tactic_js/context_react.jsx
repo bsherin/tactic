@@ -15,6 +15,7 @@ import {FocusStyleManager} from "@blueprintjs/core";
 
 FocusStyleManager.onlyShowFocusOnTabs();
 
+import {SelectedPaneContext} from "./utilities_react";
 import {TacticSocket} from "./tactic_socket";
 import {TacticOmnibar} from "./TacticOmnibar";
 import {handleCallback} from "./communication_react";
@@ -45,6 +46,8 @@ import {useCallbackStack, useStateAndRef} from "./utilities_react";
 import {ThemeContext, withTheme} from "./theme"
 
 import {withDialogs, DialogContext} from "./modal_react";
+
+
 
 const spinner_panel = (
     <div style={{height: "100%", position: "absolute", top: "50%", left: "50%"}}>
@@ -777,32 +780,36 @@ function ContextApp(props) {
             wrapped_panel = spinner_panel
         } else {
             let TheClass = classDict[tab_entry.kind];
-            let the_panel = <TheClass {...tab_entry.panel}
-                                      controlled={true}
-                                      handleCreateViewer={_handleCreateViewer}
-                                      am_selected={tab_id == selectedTabIdRef.current}
-                                      changeResourceName={(new_name, callback = null, change_title = true) => {
-                                          _changeResourceName(tab_id, new_name, change_title, callback)
-                                      }}
-                                      changeResourceTitle={(new_title) => _changeResourceTitle(tab_id, new_title)}
-                                      changeResourceProps={(new_props, callback = null) => {
-                                          _changeResourceProps(tab_id, new_props, callback)
-                                      }}
-                                      updatePanel={(new_panel, callback = null) => {
-                                          _updatePanel(tab_id, new_panel, callback)
-                                      }}
-                                      goToModule={_goToModule}
-                                      registerLineSetter={(rfunc) => _registerLineSetter(tab_id, rfunc)}
-                                      refreshTab={() => {
-                                          _refreshTab(tab_id)
-                                      }}
-                                      closeTab={() => {
-                                          _closeTab(tab_id)
-                                      }}
-                                      tsocket={tab_entry.panel.tsocket}
-                                      usable_width={usable_width}
-                                      usable_height={usable_height}
-            />;
+            let the_panel =
+                <SelectedPaneContext.Provider value={{tab_id, selectedTabIdRef}}>
+                    <TheClass {...tab_entry.panel}
+                                          controlled={true}
+                                          handleCreateViewer={_handleCreateViewer}
+                                          tab_id={tab_id}
+                                          selectedTabIdRef={selectedTabIdRef}
+                                          changeResourceName={(new_name, callback = null, change_title = true) => {
+                                              _changeResourceName(tab_id, new_name, change_title, callback)
+                                          }}
+                                          changeResourceTitle={(new_title) => _changeResourceTitle(tab_id, new_title)}
+                                          changeResourceProps={(new_props, callback = null) => {
+                                              _changeResourceProps(tab_id, new_props, callback)
+                                          }}
+                                          updatePanel={(new_panel, callback = null) => {
+                                              _updatePanel(tab_id, new_panel, callback)
+                                          }}
+                                          goToModule={_goToModule}
+                                          registerLineSetter={(rfunc) => _registerLineSetter(tab_id, rfunc)}
+                                          refreshTab={() => {
+                                              _refreshTab(tab_id)
+                                          }}
+                                          closeTab={() => {
+                                              _closeTab(tab_id)
+                                          }}
+                                          tsocket={tab_entry.panel.tsocket}
+                                          usable_width={usable_width}
+                                          usable_height={usable_height}
+                />
+            </SelectedPaneContext.Provider>;
             wrapped_panel = (
                 <ErrorBoundary>
                     <div id={tab_id + "-holder"} className={panelRootDict[tab_panel_dict_ref.current[tab_id].kind]}>
