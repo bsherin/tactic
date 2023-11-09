@@ -768,6 +768,10 @@ function ContextApp(props) {
         all_tabs.push(ptab)
     }
 
+    function amSelected(ltab_id, lselectedTabIdRef) {
+        return !window.in_context || ltab_id == lselectedTabIdRef.current
+    }
+
     for (let tab_id of tab_ids_ref.current) {
         let tab_entry = tab_panel_dict_ref.current[tab_id];
         let bclass = "context-tab-button-content";
@@ -781,7 +785,7 @@ function ContextApp(props) {
         } else {
             let TheClass = classDict[tab_entry.kind];
             let the_panel =
-                <SelectedPaneContext.Provider value={{tab_id, selectedTabIdRef}}>
+                <SelectedPaneContext.Provider value={{tab_id, selectedTabIdRef, amSelected}}>
                     <TheClass {...tab_entry.panel}
                                           controlled={true}
                                           handleCreateViewer={_handleCreateViewer}

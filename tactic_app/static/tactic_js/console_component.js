@@ -224,7 +224,7 @@ function ConsoleComponent(props) {
     }, null, props.main_id);
   }
   function am_selected() {
-    return !window.in_context || selectedPane.tab_id == selectedPane.selectedTabIdRef.current;
+    return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef);
   }
   var _addBlankText = (0, _react.useCallback)(function () {
     if (window.in_context && !am_selected()) {
@@ -1565,8 +1565,7 @@ function ConsoleComponent(props) {
     showClose: false,
     refreshTab: props.refreshTab,
     closeTab: null,
-    controlled: window.in_context,
-    am_selected: am_selected()
+    controlled: window.in_context
   })), /*#__PURE__*/_react["default"].createElement("div", {
     id: "console-header-right",
     className: "d-flex flex-row"
@@ -2611,7 +2610,6 @@ function ConsoleCodeItem(props) {
     handleChange: _handleChange,
     handleFocus: _handleFocus,
     registerSetFocusFunc: registerSetFocusFunc,
-    am_selected: props.am_selected,
     readOnly: false,
     show_line_numbers: true,
     code_content: props.console_text,
@@ -3027,7 +3025,6 @@ function ConsoleTextItem(props) {
     className: "d-flex flex-column"
   }, !really_show_markdown && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
     handleChange: _handleChange,
-    am_selected: props.am_selected,
     readOnly: false,
     handleFocus: _handleFocus,
     registerSetFocusFunc: registerSetFocusFunc,

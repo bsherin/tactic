@@ -260,7 +260,7 @@ function ListViewerApp(props) {
     }
   }
   function am_selected() {
-    return !window.in_context || props.tab_id == selectedPane.selectedTabIdRef.current;
+    return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef);
   }
   function _saveMe() {
     if (!am_selected()) {

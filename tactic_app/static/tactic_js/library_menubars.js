@@ -390,7 +390,6 @@ function AllMenubar(props) {
     menu_specs: menu_specs(),
     multi_select: props.multi_select,
     controlled: props.controlled,
-    am_selected: props.am_selected,
     tsocket: props.tsocket,
     refreshTab: props.refresh_func,
     closeTab: null,

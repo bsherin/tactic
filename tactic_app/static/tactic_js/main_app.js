@@ -192,7 +192,7 @@ function MainApp(props) {
     return props.controlled ? props[pname] : mState[pname];
   }
   function am_selected() {
-    return !window.in_context || props.tab_id == selectedPane.selectedTabIdRef.current;
+    return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef);
   }
   var save_state = {
     tile_list: tile_list,
@@ -1146,7 +1146,6 @@ function MainApp(props) {
       tsocket: props.tsocket,
       handleCreateViewer: props.handleCreateViewer,
       controlled: props.controlled,
-      am_selected: am_selected(),
       console_items: console_items_ref,
       console_selected_items_ref: console_selected_items_ref,
       set_console_selected_items: set_console_selected_items,

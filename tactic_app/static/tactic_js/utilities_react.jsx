@@ -17,7 +17,7 @@ export {useConstructor, useCallbackStack, useStateAndRef, useReducerAndRef, useC
 
 export {debounce, throttle, useDebounce, SelectedPaneContext}
 
-const SelectedPaneContext = createContext(null);
+const SelectedPaneContext = createContext({tab_id: "", selectedTabIdRef: "", amSelected: ()=>{return true}});
 
 // It's necessary to have effectcount be a ref. Otherwise there can be subtle bugs
 function useCallbackStack(myId = "") {

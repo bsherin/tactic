@@ -42,7 +42,13 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; } // noinspe
 /**
  * Created by bls910 much later
  */ /*jshint esversion: 6 */
-var SelectedPaneContext = /*#__PURE__*/(0, _react.createContext)(null);
+var SelectedPaneContext = /*#__PURE__*/(0, _react.createContext)({
+  tab_id: "",
+  selectedTabIdRef: "",
+  amSelected: function amSelected() {
+    return true;
+  }
+});
 
 // It's necessary to have effectcount be a ref. Otherwise there can be subtle bugs
 exports.SelectedPaneContext = SelectedPaneContext;

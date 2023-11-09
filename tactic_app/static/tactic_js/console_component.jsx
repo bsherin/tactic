@@ -183,7 +183,7 @@ function ConsoleComponent(props) {
     }
 
     function am_selected() {
-        return !window.in_context || selectedPane.tab_id == selectedPane.selectedTabIdRef.current
+        return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef)
     }
 
     const _addBlankText = useCallback(() => {
@@ -1351,7 +1351,6 @@ function ConsoleComponent(props) {
                                        refreshTab={props.refreshTab}
                                        closeTab={null}
                                        controlled={window.in_context}
-                                       am_selected={am_selected()}
                         />
 
                     </div>
@@ -2394,7 +2393,6 @@ function ConsoleCodeItem(props) {
                                     <ReactCodemirror handleChange={_handleChange}
                                                      handleFocus={_handleFocus}
                                                      registerSetFocusFunc={registerSetFocusFunc}
-                                                     am_selected={props.am_selected}
                                                      readOnly={false}
                                                      show_line_numbers={true}
                                                      code_content={props.console_text}
@@ -2824,7 +2822,6 @@ function ConsoleTextItem(props) {
                                 {!really_show_markdown &&
                                     <Fragment>
                                         <ReactCodemirror handleChange={_handleChange}
-                                                         am_selected={props.am_selected}
                                                          readOnly={false}
                                                          handleFocus={_handleFocus}
                                                          registerSetFocusFunc={registerSetFocusFunc}

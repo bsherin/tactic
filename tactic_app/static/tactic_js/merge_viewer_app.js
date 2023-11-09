@@ -149,7 +149,6 @@ function MergeViewerApp(props) {
     resource_name: props.resource_name,
     toggleErrorDrawer: props.toggleErrorDrawer,
     controlled: false,
-    am_selected: false,
     registerOmniGetter: _registerOmniGetter
   }), /*#__PURE__*/_react["default"].createElement("div", {
     className: outer_class
