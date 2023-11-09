@@ -134,6 +134,7 @@ function CodeViewerApp(props) {
       });
     }
   });
+  var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   function _update_search_state(nstate) {
     var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     for (var field in nstate) {
@@ -248,8 +249,11 @@ function CodeViewerApp(props) {
       }
     };
   }
+  function am_selected() {
+    return !window.in_context || selectedPane.tab_id == selectedPane.selectedTabIdRef.current;
+  }
   function _saveMe() {
-    if (!props.am_selected) {
+    if (!am_selected()) {
       return false;
     }
     var new_code = code_content;
@@ -276,6 +280,9 @@ function CodeViewerApp(props) {
     }
   }
   function _saveMeAs(e) {
+    if (!am_selected()) {
+      return false;
+    }
     statusFuncs.startSpinner();
     (0, _communication_react.postWithCallback)("host", "get_code_names", {
       "user_id": window.user_id
@@ -366,7 +373,7 @@ function CodeViewerApp(props) {
     registerOmniFunction: props.registerOmniFunction
   }), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
     code_content: code_content,
-    am_selected: props.am_selected,
+    am_selected: am_selected(),
     extraKeys: _extraKeys(),
     readOnly: props.readOnly,
     handleChange: _handleCodeChange,
@@ -382,7 +389,6 @@ function CodeViewerApp(props) {
 exports.CodeViewerApp = CodeViewerApp = /*#__PURE__*/(0, _react.memo)(CodeViewerApp);
 CodeViewerApp.propTypes = {
   controlled: _propTypes["default"].bool,
-  am_selected: _propTypes["default"].bool,
   changeResourceName: _propTypes["default"].func,
   changeResourceTitle: _propTypes["default"].func,
   changeResourceProps: _propTypes["default"].func,
@@ -401,7 +407,6 @@ CodeViewerApp.propTypes = {
   usable_width: _propTypes["default"].number
 };
 CodeViewerApp.defaultProps = {
-  am_selected: true,
   controlled: false,
   changeResourceName: null,
   changeResourceTitle: null,

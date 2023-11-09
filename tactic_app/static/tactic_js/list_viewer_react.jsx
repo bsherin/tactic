@@ -20,7 +20,8 @@ import {TacticNavbar} from "./blueprint_navbar";
 import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_react";
 import {ThemeContext, withTheme} from "./theme"
 import {DialogContext, withDialogs} from "./modal_react";
-import {StatusContext} from "./toaster"
+import {StatusContext} from "./toaster";
+import {SelectedPaneContext} from "./utilities_react";
 
 export {list_viewer_props, ListViewerApp}
 
@@ -109,6 +110,8 @@ function ListViewerApp(props) {
     const theme = useContext(ThemeContext);
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
+    const selectedPane = useContext(SelectedPaneContext);
+
 
     useEffect(() => {
         statusFuncs.stopSpinner();
@@ -239,8 +242,12 @@ function ListViewerApp(props) {
         }
     }
 
+    function am_selected() {
+        return !window.in_context || props.tab_id == selectedPane.selectedTabIdRef.current
+    }
+
     function _saveMe() {
-        if (!props.am_selected) {
+        if (!am_selected()) {
             return false
         }
         const new_list_as_string = list_content;
@@ -269,6 +276,9 @@ function ListViewerApp(props) {
     }
 
     function _saveMeAs(e) {
+        if (!am_selected()) {
+            return false
+        }
         statusFuncs.startSpinner();
         let self = this;
         postWithCallback("host", "get_list_names", {"user_id": window.user_id}, function (data) {
@@ -373,7 +383,6 @@ ListViewerApp = memo(ListViewerApp);
 
 ListViewerApp.propTypes = {
     controlled: PropTypes.bool,
-    am_selected: PropTypes.bool,
     changeResourceName: PropTypes.func,
     changeResourceTitle: PropTypes.func,
     changeResourceProps: PropTypes.func,
@@ -393,7 +402,6 @@ ListViewerApp.propTypes = {
 };
 
 ListViewerApp.defaultProps = {
-    am_selected: true,
     controlled: false,
     changeResourceName: null,
     changeResourceTitle: null,

@@ -130,6 +130,7 @@ function ListViewerApp(props) {
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
+  var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   (0, _react.useEffect)(function () {
     statusFuncs.stopSpinner();
     if (cc_ref && cc_ref.current) {
@@ -258,8 +259,11 @@ function ListViewerApp(props) {
       return uheight - 100;
     }
   }
+  function am_selected() {
+    return !window.in_context || props.tab_id == selectedPane.selectedTabIdRef.current;
+  }
   function _saveMe() {
-    if (!props.am_selected) {
+    if (!am_selected()) {
       return false;
     }
     var new_list_as_string = list_content;
@@ -286,6 +290,9 @@ function ListViewerApp(props) {
     }
   }
   function _saveMeAs(e) {
+    if (!am_selected()) {
+      return false;
+    }
     statusFuncs.startSpinner();
     var self = this;
     (0, _communication_react.postWithCallback)("host", "get_list_names", {
@@ -379,7 +386,6 @@ function ListViewerApp(props) {
 exports.ListViewerApp = ListViewerApp = /*#__PURE__*/(0, _react.memo)(ListViewerApp);
 ListViewerApp.propTypes = {
   controlled: _propTypes["default"].bool,
-  am_selected: _propTypes["default"].bool,
   changeResourceName: _propTypes["default"].func,
   changeResourceTitle: _propTypes["default"].func,
   changeResourceProps: _propTypes["default"].func,
@@ -398,7 +404,6 @@ ListViewerApp.propTypes = {
   usable_width: _propTypes["default"].number
 };
 ListViewerApp.defaultProps = {
-  am_selected: true,
   controlled: false,
   changeResourceName: null,
   changeResourceTitle: null,

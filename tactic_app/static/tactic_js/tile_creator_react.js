@@ -222,6 +222,7 @@ function CreatorApp(props) {
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
+  var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   var _useState27 = (0, _react.useState)(props.resource_name),
     _useState28 = _slicedToArray(_useState27, 2),
@@ -513,6 +514,9 @@ function CreatorApp(props) {
     return false;
   }
   function _saveAndLoadModule() {
+    if (!am_selected()) {
+      return false;
+    }
     statusFuncs.startSpinner();
     doSavePromise().then(function () {
       statusFuncs.statusMessage("Loading Module");
@@ -532,6 +536,9 @@ function CreatorApp(props) {
     }
   }
   function _loadModule() {
+    if (!am_selected()) {
+      return false;
+    }
     statusFuncs.startSpinner();
     statusFuncs.statusMessage("Loading Module");
     (0, _communication_react.postWithCallback)("host", "load_tile_module_task", {
@@ -578,8 +585,11 @@ function CreatorApp(props) {
       })["catch"](_toaster.doFlash);
     }
   }
+  function am_selected() {
+    return !window.in_context || selectedPane.tab_id == selectedPane.selectedTabIdRef.current;
+  }
   function _saveMe() {
-    if (!props.am_selected) {
+    if (!am_selected()) {
       return false;
     }
     statusFuncs.startSpinner();
@@ -590,6 +600,9 @@ function CreatorApp(props) {
     return false;
   }
   function _saveAndCheckpoint() {
+    if (!am_selected()) {
+      return false;
+    }
     statusFuncs.startSpinner();
     doSavePromise().then(function () {
       statusFuncs.statusMessage("Checkpointing");
@@ -1033,7 +1046,7 @@ function CreatorApp(props) {
     })), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
       code_content: code_content,
       mode: mode,
-      am_selected: props.am_selected,
+      am_selected: am_selected(),
       extraKeys: _extraKeys(),
       current_search_number: current_search_cm == "tc" ? current_search_number : null,
       handleChange: handleTopCodeChange,
@@ -1092,7 +1105,7 @@ function CreatorApp(props) {
   })), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
     code_content: render_content_code_ref.current,
     current_search_number: current_search_cm == "rc" ? current_search_number : null,
-    am_selected: props.am_selected,
+    am_selected: am_selected(),
     handleChange: handleRenderContentChange,
     extraKeys: _extraKeys(),
     saveMe: _saveAndCheckpoint,
@@ -1169,7 +1182,7 @@ function CreatorApp(props) {
   }, /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
     handleChange: handleMethodsChange,
     show_fold_button: true,
-    am_selected: props.am_selected,
+    am_selected: am_selected(),
     current_search_number: current_search_cm == "em" ? current_search_number : null,
     extraKeys: _extraKeys(),
     readOnly: props.readOnly,
@@ -1196,7 +1209,7 @@ function CreatorApp(props) {
   }, /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
     handleChange: handleGlobalsChange,
     show_fold_button: true,
-    am_selected: props.am_selected,
+    am_selected: am_selected(),
     current_search_number: current_search_cm == "gp" ? current_search_number : null,
     extraKeys: _extraKeys(),
     readOnly: props.readOnly,
@@ -1304,7 +1317,7 @@ function CreatorApp(props) {
     toggleErrorDrawer: props.toggleErrorDrawer,
     controlled: props.controlled,
     registerOmniGetter: _registerOmniGetter,
-    am_selected: props.am_selected
+    am_selected: am_selected()
   }), /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement("div", {
     className: outer_class,
     ref: top_ref,
@@ -1330,7 +1343,6 @@ function CreatorApp(props) {
 exports.CreatorApp = CreatorApp = /*#__PURE__*/(0, _react.memo)(CreatorApp);
 CreatorApp.propTypes = {
   controlled: _propTypes["default"].bool,
-  am_selected: _propTypes["default"].bool,
   changeResourceName: _propTypes["default"].func,
   changeResourceTitle: _propTypes["default"].func,
   changeResourceProps: _propTypes["default"].func,
@@ -1357,7 +1369,6 @@ CreatorApp.propTypes = {
   usable_width: _propTypes["default"].number
 };
 CreatorApp.defaultProps = {
-  am_selected: true,
   controlled: false,
   changeResourceName: null,
   changeResourceTitle: null,

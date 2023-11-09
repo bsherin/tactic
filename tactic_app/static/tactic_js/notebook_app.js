@@ -79,6 +79,7 @@ function NotebookApp(props) {
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   var key_bindings = [[["ctrl+space"], _showOmnibar]];
   var pushCallback = (0, _utilities_react.useCallbackStack)();
+  var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   (0, _utilities_react.useConstructor)(function () {
     dispatch({
       type: "initialize",
@@ -110,6 +111,9 @@ function NotebookApp(props) {
       delete_my_containers();
     };
   }, []);
+  function am_selected() {
+    return !window.in_context || props.tab_id == selectedPane.selectedTabIdRef.current;
+  }
   function _cProp(pname) {
     return props.controlled ? props[pname] : mState[pname];
   }
@@ -262,7 +266,7 @@ function NotebookApp(props) {
     tsocket: props.tsocket,
     handleCreateViewer: props.handleCreateViewer,
     controlled: props.controlled,
-    am_selected: props.am_selected,
+    am_selected: am_selected(),
     console_items: console_items_ref,
     dispatch: dispatch,
     mState: mState,

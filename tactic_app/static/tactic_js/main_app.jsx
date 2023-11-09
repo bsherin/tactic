@@ -36,7 +36,8 @@ import {KeyTrap} from "./key_trap";
 import {useCallbackStack, useReducerAndRef} from "./utilities_react";
 import {ThemeContext, withTheme} from "./theme";
 import {DialogContext, withDialogs} from "./modal_react";
-import {StatusContext} from "./toaster"
+import {StatusContext} from "./toaster";
+import {SelectedPaneContext} from "./utilities_react";
 
 export {MainApp}
 
@@ -92,6 +93,7 @@ function MainApp(props) {
     const theme = useContext(ThemeContext);
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
+    const selectedPane = useContext(SelectedPaneContext);
 
     const [mState, mDispatch] = useReducer(mainReducer, {
         table_is_shrunk: iStateOrDefault("table_is_shrunk"),
@@ -174,6 +176,10 @@ function MainApp(props) {
 
     function _cProp(pname) {
         return props.controlled ? props[pname] : mState[pname]
+    }
+
+    function am_selected() {
+        return !window.in_context || props.tab_id == selectedPane.selectedTabIdRef.current
     }
 
     const save_state = {
@@ -1087,7 +1093,7 @@ function MainApp(props) {
                               tsocket={props.tsocket}
                               handleCreateViewer={props.handleCreateViewer}
                               controlled={props.controlled}
-                              am_selected={props.am_selected}
+                              am_selected={am_selected()}
                               console_items={console_items_ref}
                               console_selected_items_ref={console_selected_items_ref}
                               set_console_selected_items={set_console_selected_items}
@@ -1227,7 +1233,6 @@ MainApp = memo(MainApp);
 
 MainApp.propTypes = {
     controlled: PropTypes.bool,
-    am_selected: PropTypes.bool,
     changeResourceName: PropTypes.func,
     changeResourceTitle: PropTypes.func,
     changeResourceProps: PropTypes.func,
@@ -1241,7 +1246,6 @@ MainApp.propTypes = {
 };
 
 MainApp.defaultProps = {
-    am_selected: true,
     controlled: false,
     changeResourceName: null,
     changeResourceTitle: null,

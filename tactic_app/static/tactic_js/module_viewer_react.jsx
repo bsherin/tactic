@@ -23,6 +23,7 @@ import {TacticNavbar} from "./blueprint_navbar";
 import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_react";
 import {ThemeContext, withTheme} from "./theme";
 import {DialogContext, withDialogs} from "./modal_react";
+import {SelectedPaneContext} from "./utilities_react";
 
 export {module_viewer_props, ModuleViewerApp}
 
@@ -80,6 +81,8 @@ function ModuleViewerApp(props) {
         return getUsableDimensions(true).usable_height_no_bottom
     });
     const [resource_name, set_resource_name] = useState(props.resource_name);
+
+    const selectedPane = useContext(SelectedPaneContext);
 
     useEffect(() => {
         statusFuncs.stopSpinner();
@@ -269,8 +272,12 @@ function ModuleViewerApp(props) {
         }
     }
 
+    function am_selected() {
+        return !window.in_context || selectedPane.tab_id == selectedPane.selectedTabIdRef.current
+    }
+
     function _saveMe() {
-        if (!props.am_selected) {
+        if (!am_selected()) {
             return false
         }
         statusFuncs.startSpinner();
@@ -353,6 +360,9 @@ function ModuleViewerApp(props) {
     }
 
     function _saveAndLoadModule() {
+        if (!am_selected()) {
+            return false
+        }
         statusFuncs.startSpinner();
         doSavePromise()
             .then(function () {
@@ -377,6 +387,9 @@ function ModuleViewerApp(props) {
     }
 
     function _loadModule() {
+        if (!am_selected()) {
+            return false
+        }
         statusFuncs.startSpinner();
         statusFuncs.statusMessage("Loading Module");
         postWithCallback(
@@ -398,6 +411,9 @@ function ModuleViewerApp(props) {
     }
 
     function _saveAndCheckpoint() {
+        if (!am_selected()) {
+            return false
+        }
         statusFuncs.startSpinner();
         doSavePromise()
             .then(function () {
@@ -498,7 +514,7 @@ function ModuleViewerApp(props) {
                                    registerOmniFunction={props.registerOmniFunction}
                 >
                     <ReactCodemirror code_content={code_content}
-                                     am_selected={props.am_selected}
+                                     am_selected={am_selected()}
                                      extraKeys={_extraKeys()}
                                      readOnly={props.readOnly}
                                      handleChange={_handleCodeChange}
@@ -520,7 +536,6 @@ ModuleViewerApp = memo(ModuleViewerApp);
 
 ModuleViewerApp.propTypes = {
     controlled: PropTypes.bool,
-    am_selected: PropTypes.bool,
     changeResourceName: PropTypes.func,
     changeResourceTitle: PropTypes.func,
     changeResourceProps: PropTypes.func,
@@ -539,7 +554,6 @@ ModuleViewerApp.propTypes = {
 };
 
 ModuleViewerApp.defaultProps = {
-    am_selected: true,
     controlled: false,
     changeResourceName: null,
     changeResourceTitle: null,
