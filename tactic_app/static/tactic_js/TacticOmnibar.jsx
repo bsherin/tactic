@@ -120,7 +120,7 @@ function TacticOmnibar(props) {
         };
         postWithCallback("host", "set_user_theme", result_dict,
             null, null);
-        theme.setTheme(!dark_theme)
+        theme.setTheme(!theme.dark_theme)
     }
 
     let the_items = [];

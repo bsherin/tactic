@@ -107,7 +107,7 @@ function TacticOmnibar(props) {
       "theme": !theme.dark_theme ? "dark" : "light"
     };
     (0, _communication_react.postWithCallback)("host", "set_user_theme", result_dict, null, null);
-    theme.setTheme(!dark_theme);
+    theme.setTheme(!theme.dark_theme);
   }
   var the_items = [];
   if (props.showOmnibar) {
