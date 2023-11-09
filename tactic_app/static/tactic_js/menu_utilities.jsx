@@ -8,6 +8,7 @@ import {Popover2, MenuItem2} from "@blueprintjs/popover2";
 import {KeyTrap} from "./key_trap";
 import {ThemeContext} from "./theme"
 import {GlyphButton} from "./blueprint_react_widgets";
+import {SelectedPaneContext} from "./utilities_react";
 
 export {MenuComponent, ToolMenu, TacticMenubar, TopLeftButtons}
 
@@ -28,7 +29,6 @@ function TacticMenubar(props) {
                                  disabled_items={props.disabled_items}
                                  menu_items={props.menu_specs[menu_name]}
                                  controlled={props.controlled}
-                                 am_selected={props.am_selected}
             />)
         }
     }
@@ -93,7 +93,6 @@ TacticMenubar.propTypes = {
     resource_name: PropTypes.string,
     resource_icon: PropTypes.string,
     controlled: PropTypes.bool,
-    am_selected: PropTypes.bool,
     diabled_items: PropTypes.array,
     extraButtons: PropTypes.array,
     suggestionGlyphs: PropTypes.array,
@@ -369,6 +368,7 @@ MenuComponent.defaultProps = {
 };
 
 function ToolMenu(props) {
+    const selectedPane = useContext(SelectedPaneContext);
     function option_dict() {
         let opt_dict = {};
         for (let but of props.menu_items) {
@@ -413,7 +413,7 @@ function ToolMenu(props) {
                            hidden_items={[]}
             />
             <KeyTrap global={true}
-                     active={!props.controlled || props.am_selected}
+                     active={selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef)}
                      bindings={key_bindings}/>
         </Fragment>
     )
@@ -425,7 +425,6 @@ ToolMenu.propTypes = {
     menu_items: PropTypes.array,
     disabled_items: PropTypes.array,
     controlled: PropTypes.bool,
-    am_selected: PropTypes.bool,
     registerOmniGetter: PropTypes.func
 };
 

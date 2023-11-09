@@ -862,6 +862,9 @@ function ContextApp(props) {
     }), /*#__PURE__*/_react["default"].createElement("span", null, "Pool"))));
     all_tabs.push(ptab);
   }
+  function amSelected(ltab_id, lselectedTabIdRef) {
+    return !window.in_context || ltab_id == lselectedTabIdRef.current;
+  }
   var _iterator4 = _createForOfIteratorHelper(tab_ids_ref.current),
     _step4;
   try {
@@ -881,7 +884,8 @@ function ContextApp(props) {
         var the_panel = /*#__PURE__*/_react["default"].createElement(_utilities_react.SelectedPaneContext.Provider, {
           value: {
             tab_id: tab_id,
-            selectedTabIdRef: selectedTabIdRef
+            selectedTabIdRef: selectedTabIdRef,
+            amSelected: amSelected
           }
         }, /*#__PURE__*/_react["default"].createElement(TheClass, _extends({}, tab_entry.panel, {
           controlled: true,

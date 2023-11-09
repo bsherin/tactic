@@ -15,6 +15,7 @@ var _popover = require("@blueprintjs/popover2");
 var _key_trap = require("./key_trap");
 var _theme = require("./theme");
 var _blueprint_react_widgets = require("./blueprint_react_widgets");
+var _utilities_react = require("./utilities_react");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -37,8 +38,7 @@ function TacticMenubar(props) {
         registerOmniGetter: props.registerOmniGetter,
         disabled_items: props.disabled_items,
         menu_items: props.menu_specs[menu_name],
-        controlled: props.controlled,
-        am_selected: props.am_selected
+        controlled: props.controlled
       }));
     }
   }
@@ -113,7 +113,6 @@ TacticMenubar.propTypes = {
   resource_name: _propTypes["default"].string,
   resource_icon: _propTypes["default"].string,
   controlled: _propTypes["default"].bool,
-  am_selected: _propTypes["default"].bool,
   diabled_items: _propTypes["default"].array,
   extraButtons: _propTypes["default"].array,
   suggestionGlyphs: _propTypes["default"].array,
@@ -395,6 +394,7 @@ MenuComponent.defaultProps = {
   registerOmniGetter: null
 };
 function ToolMenu(props) {
+  var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   function option_dict() {
     var opt_dict = {};
     var _iterator3 = _createForOfIteratorHelper(props.menu_items),
@@ -475,7 +475,7 @@ function ToolMenu(props) {
     hidden_items: []
   }), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
     global: true,
-    active: !props.controlled || props.am_selected,
+    active: selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef),
     bindings: key_bindings
   }));
 }
@@ -485,7 +485,6 @@ ToolMenu.propTypes = {
   menu_items: _propTypes["default"].array,
   disabled_items: _propTypes["default"].array,
   controlled: _propTypes["default"].bool,
-  am_selected: _propTypes["default"].bool,
   registerOmniGetter: _propTypes["default"].func
 };
 ToolMenu.defaultProps = {

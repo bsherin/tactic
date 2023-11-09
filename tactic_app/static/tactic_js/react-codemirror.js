@@ -135,6 +135,7 @@ function ReactCodemirror(props, passedRef) {
     _doHighlight();
     set_keymap();
   });
+  var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   function setFocus() {
     if (cmobject.current) {
       cmobject.current.focus();
@@ -348,7 +349,7 @@ function ReactCodemirror(props, passedRef) {
     }
   }
   function set_keymap() {
-    if (props.am_selected) {
+    if (selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef)) {
       _codemirror["default"].keyMap["default"]["Esc"] = function () {
         clearSelections();
       };
@@ -360,7 +361,7 @@ function ReactCodemirror(props, passedRef) {
     set_keymap();
     var is_mac = _codemirror["default"].keyMap["default"].hasOwnProperty("Cmd-S");
     mousetrap.current.bind(['escape'], function (e) {
-      if (!props.am_selected) {
+      if (selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef)) {
         return false;
       }
       clearSelections();
@@ -410,7 +411,6 @@ exports.ReactCodemirror = ReactCodemirror = /*#__PURE__*/(0, _react.memo)( /*#__
   (0, _utilities_react.propsAreEqual)(prevProps, newProps, ["extraKeys"]);
 });
 ReactCodemirror.propTypes = {
-  am_selected: _propTypes["default"].bool,
   handleChange: _propTypes["default"].func,
   show_line_numbers: _propTypes["default"].bool,
   show_fold_button: _propTypes["default"].bool,
@@ -438,7 +438,6 @@ ReactCodemirror.propTypes = {
   extra_autocomplete_list: _propTypes["default"].array
 };
 ReactCodemirror.defaultProps = {
-  am_selected: true,
   first_line_number: 1,
   show_line_numbers: true,
   show_fold_button: false,

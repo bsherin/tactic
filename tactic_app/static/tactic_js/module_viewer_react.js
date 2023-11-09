@@ -312,7 +312,7 @@ function ModuleViewerApp(props) {
     };
   }
   function am_selected() {
-    return !window.in_context || selectedPane.tab_id == selectedPane.selectedTabIdRef.current;
+    return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef);
   }
   function _saveMe() {
     if (!am_selected()) {
@@ -520,7 +520,6 @@ function ModuleViewerApp(props) {
     registerOmniFunction: props.registerOmniFunction
   }), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
     code_content: code_content,
-    am_selected: am_selected(),
     extraKeys: _extraKeys(),
     readOnly: props.readOnly,
     handleChange: _handleCodeChange,

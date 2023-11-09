@@ -14,7 +14,7 @@ import {ConsoleComponent} from "./console_component";
 import {consoleItemsReducer} from "./console_support";
 import {doFlash, StatusContext} from "./toaster"
 import {withStatus} from "./toaster";
-import {renderSpinnerMessage, SelectedPaneContext, useConnection} from "./utilities_react";
+import {renderSpinnerMessage, SelectedPaneContext, useConnection, useStateAndRef} from "./utilities_react";
 import {TacticOmnibar} from "./TacticOmnibar";
 import {KeyTrap} from "./key_trap";
 
@@ -46,6 +46,7 @@ function NotebookApp(props) {
     const updateExportsList = useRef(null);
     const height_adjustment = useRef(props.controlled ? MENU_BAR_HEIGHT : 0);
     const connection_status = useConnection(props.tsocket, initSocket);
+    const [console_selected_items, set_console_selected_items, console_selected_items_ref] = useStateAndRef([]);
 
     const [console_items, dispatch, console_items_ref] = useReducerAndRef(consoleItemsReducer, []);
     const [mState, mDispatch] = useReducer(notebookReducer, {
@@ -103,7 +104,7 @@ function NotebookApp(props) {
     }, []);
 
     function am_selected() {
-        return !window.in_context || props.tab_id == selectedPane.selectedTabIdRef.current
+        return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef)
     }
 
     function _cProp(pname) {
@@ -272,8 +273,9 @@ function NotebookApp(props) {
                           tsocket={props.tsocket}
                           handleCreateViewer={props.handleCreateViewer}
                           controlled={props.controlled}
-                          am_selected={am_selected()}
                           console_items={console_items_ref}
+                          console_selected_items_ref={console_selected_items_ref}
+                          set_console_selected_items={set_console_selected_items}
                           dispatch={dispatch}
                           mState={mState}
                           setMainStateValue={_setMainStateValue}

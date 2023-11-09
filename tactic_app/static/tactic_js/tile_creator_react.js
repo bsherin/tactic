@@ -586,7 +586,7 @@ function CreatorApp(props) {
     }
   }
   function am_selected() {
-    return !window.in_context || selectedPane.tab_id == selectedPane.selectedTabIdRef.current;
+    return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef);
   }
   function _saveMe() {
     if (!am_selected()) {
@@ -1046,7 +1046,6 @@ function CreatorApp(props) {
     })), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
       code_content: code_content,
       mode: mode,
-      am_selected: am_selected(),
       extraKeys: _extraKeys(),
       current_search_number: current_search_cm == "tc" ? current_search_number : null,
       handleChange: handleTopCodeChange,
@@ -1105,7 +1104,6 @@ function CreatorApp(props) {
   })), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
     code_content: render_content_code_ref.current,
     current_search_number: current_search_cm == "rc" ? current_search_number : null,
-    am_selected: am_selected(),
     handleChange: handleRenderContentChange,
     extraKeys: _extraKeys(),
     saveMe: _saveAndCheckpoint,
@@ -1182,7 +1180,6 @@ function CreatorApp(props) {
   }, /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
     handleChange: handleMethodsChange,
     show_fold_button: true,
-    am_selected: am_selected(),
     current_search_number: current_search_cm == "em" ? current_search_number : null,
     extraKeys: _extraKeys(),
     readOnly: props.readOnly,
@@ -1209,7 +1206,6 @@ function CreatorApp(props) {
   }, /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
     handleChange: handleGlobalsChange,
     show_fold_button: true,
-    am_selected: am_selected(),
     current_search_number: current_search_cm == "gp" ? current_search_number : null,
     extraKeys: _extraKeys(),
     readOnly: props.readOnly,
@@ -1316,8 +1312,7 @@ function CreatorApp(props) {
     showErrorDrawerButton: true,
     toggleErrorDrawer: props.toggleErrorDrawer,
     controlled: props.controlled,
-    registerOmniGetter: _registerOmniGetter,
-    am_selected: am_selected()
+    registerOmniGetter: _registerOmniGetter
   }), /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement("div", {
     className: outer_class,
     ref: top_ref,

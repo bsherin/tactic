@@ -1608,7 +1608,6 @@ function LibraryPane(props) {
                           handleCreateViewer={props.handleCreateViewer}
                           library_id={props.library_id}
                           controlled={props.controlled}
-                          am_selected={props.am_selected}
                           tsocket={props.tsocket}
             />
 

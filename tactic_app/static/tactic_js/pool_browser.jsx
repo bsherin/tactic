@@ -503,7 +503,6 @@ function PoolBrowser(props) {
                          {...props.errorDrawerFuncs}
                          library_id={props.library_id}
                          controlled={props.controlled}
-                         am_selected={props.am_selected}
                          tsocket={props.tsocket}/>
             <div ref={top_ref} style={outer_style} className="pool-browser">
                 <div style={{width: props.usable_width, height: props.usable_height}}>
