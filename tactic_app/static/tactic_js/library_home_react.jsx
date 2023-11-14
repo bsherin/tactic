@@ -57,10 +57,10 @@ function LibraryHomeApp(props) {
             props.registerOmniFunction(_omniFunction);
         }
         if (!window.in_context) {
-            const aheight = getUsableDimensions(true).usable_height_no_bottom;
-            const awidth = getUsableDimensions(true).usable_width - 170;
-            set_usable_height(aheight);
-            set_usable_width(awidth);
+        const aheight = getUsableDimensions(true).usable_height_no_bottom;
+        const awidth = getUsableDimensions(true).usable_width - 170;
+        set_usable_height(aheight);
+        set_usable_width(awidth);
         }
     });
 

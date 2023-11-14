@@ -4,11 +4,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" =
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RepositoryCodeMenubar = RepositoryCodeMenubar;
-exports.RepositoryCollectionMenubar = RepositoryCollectionMenubar;
-exports.RepositoryListMenubar = RepositoryListMenubar;
-exports.RepositoryProjectMenubar = RepositoryProjectMenubar;
-exports.RepositoryTileMenubar = RepositoryTileMenubar;
+exports.RepositoryAllMenubar = RepositoryAllMenubar;
 var _react = _interopRequireWildcard(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _library_menubars = require("./library_menubars");
@@ -37,6 +33,47 @@ var specializedMenubarPropTypes = {
   add_new_row: _propTypes["default"].func
 };
 var resource_icon = window.is_remote ? "globe-network" : "map-marker";
+var endpointDict = {
+  tile: "/repository_view_module/",
+  list: "/repository_view_list/",
+  code: "/repository_view_code/"
+};
+function RepositoryAllMenubar(props) {
+  function _view_resource(e) {
+    if (props.selected_type in endpointDict) {
+      props.view_func(endpointDict[props.selected_type]);
+    }
+  }
+  function menu_specs() {
+    return {
+      View: [{
+        name_text: "View",
+        icon_name: "eye-open",
+        click_handler: _view_resource
+      }],
+      Transfer: [{
+        name_text: "Copy To Library",
+        icon_name: "import",
+        click_handler: props.repository_copy_func,
+        multi_select: true
+      }]
+    };
+  }
+  return /*#__PURE__*/_react["default"].createElement(_library_menubars.LibraryMenubar, {
+    menu_specs: menu_specs(),
+    connection_status: props.connection_status,
+    multi_select: props.multi_select,
+    selected_rows: props.selected_rows,
+    selected_type: props.selected_type,
+    controlled: false,
+    tsocket: props.tsocket,
+    refreshTab: props.refresh_func,
+    closeTab: null,
+    resource_icon: resource_icon,
+    showErrorDrawerButton: false,
+    toggleErrorDrawer: null
+  });
+}
 function RepositoryCollectionMenubar(props) {
   function menu_specs() {
     var ms = {
@@ -80,7 +117,7 @@ function RepositoryCollectionMenubar(props) {
   });
 }
 RepositoryCollectionMenubar.propTypes = specializedMenubarPropTypes;
-exports.RepositoryCollectionMenubar = RepositoryCollectionMenubar = /*#__PURE__*/(0, _react.memo)(RepositoryCollectionMenubar);
+RepositoryCollectionMenubar = /*#__PURE__*/(0, _react.memo)(RepositoryCollectionMenubar);
 function RepositoryProjectMenubar(props) {
   function menu_specs() {
     var ms = {
@@ -124,7 +161,7 @@ function RepositoryProjectMenubar(props) {
   });
 }
 RepositoryProjectMenubar.propTypes = specializedMenubarPropTypes;
-exports.RepositoryProjectMenubar = RepositoryProjectMenubar = /*#__PURE__*/(0, _react.memo)(RepositoryProjectMenubar);
+RepositoryProjectMenubar = /*#__PURE__*/(0, _react.memo)(RepositoryProjectMenubar);
 function RepositoryTileMenubar(props) {
   function _tile_view(e) {
     props.view_func("/repository_view_module/");
@@ -176,7 +213,7 @@ function RepositoryTileMenubar(props) {
   });
 }
 RepositoryTileMenubar.propTypes = specializedMenubarPropTypes;
-exports.RepositoryTileMenubar = RepositoryTileMenubar = /*#__PURE__*/(0, _react.memo)(RepositoryTileMenubar);
+RepositoryTileMenubar = /*#__PURE__*/(0, _react.memo)(RepositoryTileMenubar);
 function RepositoryListMenubar(props) {
   function _list_view(e) {
     props.view_func("/repository_view_list/");
@@ -229,7 +266,7 @@ function RepositoryListMenubar(props) {
   });
 }
 RepositoryListMenubar.propTypes = specializedMenubarPropTypes;
-exports.RepositoryListMenubar = RepositoryListMenubar = /*#__PURE__*/(0, _react.memo)(RepositoryListMenubar);
+RepositoryListMenubar = /*#__PURE__*/(0, _react.memo)(RepositoryListMenubar);
 function RepositoryCodeMenubar(props) {
   function _code_view(e) {
     props.view_func("/repository_view_code/");
@@ -282,4 +319,4 @@ function RepositoryCodeMenubar(props) {
   });
 }
 RepositoryCodeMenubar.propTypes = specializedMenubarPropTypes;
-exports.RepositoryCodeMenubar = RepositoryCodeMenubar = /*#__PURE__*/(0, _react.memo)(RepositoryCodeMenubar);
+RepositoryCodeMenubar = /*#__PURE__*/(0, _react.memo)(RepositoryCodeMenubar);

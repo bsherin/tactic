@@ -1806,7 +1806,7 @@ LibraryPane.propTypes = {
   open_resources: _propTypes["default"].array,
   allow_search_inside: _propTypes["default"].bool,
   allow_search_metadata: _propTypes["default"].bool,
-  MenubarClass: _propTypes["default"].object,
+  MenubarClass: _propTypes["default"].func,
   updatePaneState: _propTypes["default"].func,
   is_repository: _propTypes["default"].bool,
   left_width_fraction: _propTypes["default"].number,
