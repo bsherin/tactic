@@ -38,13 +38,18 @@ function LibraryMenubar(props) {
             for (let menu_item of props.menu_specs[menu_name]) {
                 if (!menu_item.multi_select) {
                     disabled_items.push(menu_item.name_text)
-                } else if (menu_item.res_type && props.selected_type == "multi") {
+                } else if (menu_item.res_type && props.selectedTypeRef.current == "multi") {
                     disabled_items.push(menu_item.name_text)
                 }
             }
         } else {
             for (let menu_item of props.menu_specs[menu_name]) {
-                if (menu_item.res_type && menu_item.res_type != props.selected_type) {
+                if (menu_item.res_type && Array.isArray(menu_item.res_type)) {
+                    if (!menu_item.res_type.includes(props.selectedTypeRef.current)) {
+                        disabled_items.push(menu_item.name_text)
+                    }
+                }
+                else if (menu_item.res_type && menu_item.res_type != props.selectedTypeRef.current) {
                     disabled_items.push(menu_item.name_text)
                 } else if (menu_item.reqs) {
                     for (let param in menu_item.reqs) {
@@ -78,7 +83,7 @@ LibraryMenubar.propTypes = {
     sendContextMenuItems: PropTypes.func,
     menu_specs: PropTypes.object,
     multi_select: PropTypes.bool,
-    selected_type: PropTypes.string,
+    selectedTypeRef: PropTypes.object,
     refreshTab: PropTypes.func,
     showErrorDrawerButton: PropTypes.bool,
     toggleErrorDrawer: PropTypes.func,
@@ -290,7 +295,7 @@ function AllMenubar(props) {
                            registerOmniGetter={props.registerOmniGetter}
                            context_menu_items={context_menu_items()}
                            selected_rows={props.selected_rows}
-                           selected_type={props.selected_type}
+                           selectedTypeRef={props.selectedTypeRef}
                            selected_resource={props.selected_resource}
                            resource_icon={icon_dict["all"]}
                            menu_specs={menu_specs()}

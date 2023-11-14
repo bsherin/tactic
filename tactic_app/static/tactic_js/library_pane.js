@@ -223,6 +223,7 @@ function LibraryPane(props) {
     _useState12 = _slicedToArray(_useState11, 2),
     rowChanged = _useState12[0],
     setRowChanged = _useState12[1];
+  var selectedTypeRef = (0, _react.useRef)(null);
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var statusFuncs = (0, _react.useContext)(_toaster2.StatusContext);
@@ -1756,7 +1757,8 @@ function LibraryPane(props) {
     handleRowDoubleClick: _handleRowDoubleClick
   }))));
   var selected_types = _selectedTypes();
-  var selected_type = selected_types.length == 1 ? selected_resource_ref.current.res_type : "multi";
+  selectedTypeRef.current = selected_types.length == 1 ? selected_resource_ref.current.res_type : "multi";
+  // let selected_type = selected_types.length == 1 ? selected_resource_ref.current.res_type : "multi";
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(MenubarClass, _extends({
     selected_resource: selected_resource_ref.current,
     connection_status: props.connection_status,
@@ -1764,7 +1766,8 @@ function LibraryPane(props) {
     multi_select: multi_select_ref.current,
     list_of_selected: list_of_selected_ref.current,
     selected_rows: selected_rows_ref.current,
-    selected_type: selected_type
+    selectedTypeRef: selectedTypeRef
+    // selected_type={selected_type}
   }, _menu_funcs(), {
     sendContextMenuItems: setContextMenuItems,
     view_resource: _view_resource,

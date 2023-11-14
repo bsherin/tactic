@@ -130,6 +130,7 @@ function LibraryPane(props) {
     const [selectedRegions, setSelectedRegions, selectedRegionsRef] = useStateAndRef([Regions.row(0)]);
 
     const [rowChanged, setRowChanged] = useState(0);
+    const selectedTypeRef = useRef(null)
 
     const theme = useContext(ThemeContext);
     const dialogFuncs = useContext(DialogContext);
@@ -1590,7 +1591,8 @@ function LibraryPane(props) {
         </Fragment>
     );
     let selected_types = _selectedTypes();
-    let selected_type = selected_types.length == 1 ? selected_resource_ref.current.res_type : "multi";
+    selectedTypeRef.current = selected_types.length == 1 ? selected_resource_ref.current.res_type : "multi";
+    // let selected_type = selected_types.length == 1 ? selected_resource_ref.current.res_type : "multi";
     return (
         <Fragment>
             <MenubarClass selected_resource={selected_resource_ref.current}
@@ -1599,7 +1601,8 @@ function LibraryPane(props) {
                           multi_select={multi_select_ref.current}
                           list_of_selected={list_of_selected_ref.current}
                           selected_rows={selected_rows_ref.current}
-                          selected_type={selected_type}
+                          selectedTypeRef={selectedTypeRef}
+                          // selected_type={selected_type}
                           {..._menu_funcs()}
                           sendContextMenuItems={setContextMenuItems}
                           view_resource={_view_resource}

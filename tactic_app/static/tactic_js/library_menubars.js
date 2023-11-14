@@ -57,7 +57,7 @@ function LibraryMenubar(props) {
           var _menu_item = _step2.value;
           if (!_menu_item.multi_select) {
             disabled_items.push(_menu_item.name_text);
-          } else if (_menu_item.res_type && props.selected_type == "multi") {
+          } else if (_menu_item.res_type && props.selectedTypeRef.current == "multi") {
             disabled_items.push(_menu_item.name_text);
           }
         }
@@ -72,7 +72,11 @@ function LibraryMenubar(props) {
       try {
         for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
           var _menu_item2 = _step3.value;
-          if (_menu_item2.res_type && _menu_item2.res_type != props.selected_type) {
+          if (_menu_item2.res_type && Array.isArray(_menu_item2.res_type)) {
+            if (!_menu_item2.res_type.includes(props.selectedTypeRef.current)) {
+              disabled_items.push(_menu_item2.name_text);
+            }
+          } else if (_menu_item2.res_type && _menu_item2.res_type != props.selectedTypeRef.current) {
             disabled_items.push(_menu_item2.name_text);
           } else if (_menu_item2.reqs) {
             for (var param in _menu_item2.reqs) {
@@ -109,7 +113,7 @@ LibraryMenubar.propTypes = {
   sendContextMenuItems: _propTypes["default"].func,
   menu_specs: _propTypes["default"].object,
   multi_select: _propTypes["default"].bool,
-  selected_type: _propTypes["default"].string,
+  selectedTypeRef: _propTypes["default"].object,
   refreshTab: _propTypes["default"].func,
   showErrorDrawerButton: _propTypes["default"].bool,
   toggleErrorDrawer: _propTypes["default"].func,
@@ -384,7 +388,7 @@ function AllMenubar(props) {
     registerOmniGetter: props.registerOmniGetter,
     context_menu_items: context_menu_items(),
     selected_rows: props.selected_rows,
-    selected_type: props.selected_type,
+    selectedTypeRef: props.selectedTypeRef,
     selected_resource: props.selected_resource,
     resource_icon: _blueprint_mdata_fields.icon_dict["all"],
     menu_specs: menu_specs(),
