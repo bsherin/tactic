@@ -4,8 +4,7 @@ import PropTypes from 'prop-types';
 
 import {LibraryMenubar} from "./library_menubars";
 
-export {RepositoryCollectionMenubar, RepositoryProjectMenubar, RepositoryTileMenubar,
-    RepositoryListMenubar, RepositoryCodeMenubar}
+export {RepositoryAllMenubar}
 
 let specializedMenubarPropTypes = {
     sendContextMenuItems: PropTypes.func,
@@ -23,6 +22,48 @@ let specializedMenubarPropTypes = {
 };
 
 const resource_icon = window.is_remote ? "globe-network" : "map-marker";
+
+const endpointDict = {
+    tile: "/repository_view_module/",
+    list: "/repository_view_list/",
+    code: "/repository_view_code/"
+};
+
+function RepositoryAllMenubar(props) {
+
+    function _view_resource(e) {
+        if (props.selected_type in endpointDict) {
+            props.view_func(endpointDict[props.selected_type])
+        }
+    }
+
+    function menu_specs() {
+        return {
+            View: [
+                {name_text: "View", icon_name: "eye-open", click_handler: _view_resource},
+            ],
+            Transfer: [
+                {name_text: "Copy To Library", icon_name: "import", click_handler: props.repository_copy_func,
+                multi_select: true}
+            ]
+
+
+        }
+     }
+     return <LibraryMenubar menu_specs={menu_specs()}
+                            connection_status={props.connection_status}
+                            multi_select={props.multi_select}
+                            selected_rows={props.selected_rows}
+                            selected_type={props.selected_type}
+                            controlled={false}
+                            tsocket={props.tsocket}
+                            refreshTab={props.refresh_func}
+                            closeTab={null}
+                            resource_icon={resource_icon}
+                            showErrorDrawerButton={false}
+                            toggleErrorDrawer={null}
+    />
+}
 
 function RepositoryCollectionMenubar(props) {
 
