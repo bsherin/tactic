@@ -26,7 +26,6 @@ import {library_id} from "./library_home_react";
 export {RepositoryHomeApp}
 
 const MARGIN_SIZE = 17;
-const TAB_BAR_WIDTH = 50;
 let tsocket;
 
 const controllable_props = ["usable_height", "usable_width"];
@@ -90,7 +89,7 @@ function RepositoryHomeApp(props) {
     }
 
     let lib_props = {...props};
-    lib_props.usable_width = usable_width - TAB_BAR_WIDTH;
+    lib_props.usable_width = usable_width;
     lib_props.usable_height = usable_height;
     let all_pane = (
         <LibraryPane {...lib_props}

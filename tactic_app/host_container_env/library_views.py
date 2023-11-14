@@ -250,8 +250,7 @@ def copy_from_repository():
         rtypes = []
         for row in selected_rows:
             res_type = row["res_type"]
-            rtypes.append(res_type)
-            res_name = row["res_name"]
+            res_name = row["name"]
             manager = get_manager_for_type(res_type)
             resource_names = manager.get_resource_list()
             new_res_name = make_name_unique(res_name, resource_names)
@@ -260,8 +259,8 @@ def copy_from_repository():
                                                      source_db=repository_db, source_fs=repository_fs)
             if result.json["success"]:
                 successful_copies +=1
+                rtypes.append(res_type)
         if successful_copies > 0:
-            rtypes.push("all")
             rtypes = list(set(rtypes))
             for res_type in rtypes:
                 manager = get_manager_for_type(res_type)
