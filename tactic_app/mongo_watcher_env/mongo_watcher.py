@@ -1,4 +1,3 @@
-
 import traceback
 import pymongo
 from bson.objectid import ObjectId
@@ -13,7 +12,8 @@ pipeline = [
             "$and": [
                 {"ns.coll": {"$not": {"$eq": "fs.chunks"}}},  # Exclude 'fs.chunks' collection
                 {"ns.coll": {"$not": {"$eq": "fs.files"}}},  # Exclude 'fs.chunks' collection
-                {"operationType": {"$in": ["insert", "update", "replace"]}},  # Include insert, update, and replace operations
+                {"operationType": {"$in": ["insert", "update", "replace"]}},
+                # Include insert, update, and replace operations
             ]
         }
     },
@@ -36,16 +36,17 @@ def get_traceback_message(e, special_string=None):
     error_string += traceback.format_exc()
     return error_string
 
-try:
-    with db.watch(pipeline) as stream:
-        for change in stream:
-            print(change)
-except pymongo.errors.PyMongoError as ex:
-    # The ChangeStream encountered an unrecoverable error or the
-    # resume attempt failed to recreate the cursor.
-    print(get_traceback_message(ex, "got an unrecoverable error"))
 
-class Handler():
+kind_dict = {
+    "tiles": "tile",
+    "projects": "project",
+    "data_collections": "collection",
+    "code": "code",
+    "lists": "list"
+}
+
+
+class Handler:
     def __init__(self):
         self.my_id = "mongo_watcher"
         connection = self.get_pika_connection()
@@ -53,7 +54,7 @@ class Handler():
         self._timers = {}
         self._modification_times = {}
 
-    def get_pika_connection(self, retries = 0):
+    def get_pika_connection(self, retries=0):
         try:
             params = pika.ConnectionParameters(
                 heartbeat=600,
@@ -63,11 +64,11 @@ class Handler():
                 virtual_host='/'
             )
             connection = pika.BlockingConnection(params)
-        except Exception as ex:
+        except Exception as exc:
             print("Couldn't connect to pika")
             if retries > max_pika_retries:
                 print("giving up. No more processing of tasks by this qworker")
-                print(self.get_traceback_message(ex, "Here's the error"))
+                print(self.get_traceback_message(exc, "Here's the error"))
                 return None
             else:
                 print("trying to connect to pika, sleeping ...")
@@ -76,18 +77,27 @@ class Handler():
                 return self.get_pika_connection(retries=new_retries)
         return connection
 
-    def post_mongo_event(self, event_type, _id, collection_name):
+    def post_mongo_event(self, event_type, _id, username, collection_name):
         self.ask_host("mongo_event", {
             "event_type": event_type,
             "_id": _id,
+            "username": username,
             "collection": collection_name
         })
         return
+
+    def handle_event(self, event):
+        event_type = event["operationType"]
+        username, rescol = event["ns"]["coll"].split(".")
+        col = kind_dict["rescol"]
+        obj_id = str(event["documentKey"]["_id"])
+        self.post_mongo_event(event_type, obj_id, username, col)
 
     def ask_host(self, msg_type, task_data=None, callback_func=None):
         self.post_task("host", msg_type, task_data, callback_func)
         return
 
+    # noinspection PyUnusedLocal
     def post_task(self, dest_id, task_type, task_data=None, callback_func=None,
                   callback_data=None, expiration=None, error_handler=None, special_reply_to=None):
         try:
@@ -107,9 +117,9 @@ class Handler():
             self.post_packet(dest_id, new_packet, reply_to, callback_id)
             result = {"success": True}
 
-        except Exception as ex:
+        except Exception as exc:
             special_string = "Error handling task for task type {} for my_id {}".format(task_type, self.my_id)
-            error_string = self.get_traceback_message(ex, special_string)
+            error_string = self.get_traceback_message(exc, special_string)
             debug_log(error_string)
             result = {"success": False, "message": error_string}
         return result
@@ -126,13 +136,13 @@ class Handler():
     def post_packet(self, dest_id, task_packet, reply_to=None, callback_id=None, attempt=0):
         try:
             self.channel.basic_publish(exchange='',
-                                      routing_key=dest_id,
-                                      properties=pika.BasicProperties(
-                                          reply_to=reply_to,
-                                          correlation_id=callback_id,
-                                          delivery_mode=1
-                                      ),
-                                      body=json.dumps(task_packet))
+                                       routing_key=dest_id,
+                                       properties=pika.BasicProperties(
+                                           reply_to=reply_to,
+                                           correlation_id=callback_id,
+                                           delivery_mode=1
+                                       ),
+                                       body=json.dumps(task_packet))
         except:
             if attempt == 0:
                 connection = self.get_pika_connection()
@@ -141,45 +151,16 @@ class Handler():
                     self.post_packet(dest_id, task_packet, reply_to, callback_id, attempt=1)
         return
 
-    def on_modified(self, event):
-        current_time = time.time()
-        src_path = self.append_slash(event.src_path, event.is_directory)
-        last_modification_time = self._modification_times.get(src_path, 0)
-        if current_time - last_modification_time < DEBOUNCE_TIME:
-            if src_path in self._timers:
-                self._timers[src_path].cancel()
 
-        def process_event():
-            print(f"Modified file: {src_path}")
-            self.post_pool_event("modify", src_path, event.is_directory)
+handler = Handler()
 
-        timer = threading.Timer(DEBOUNCE_TIME, process_event)
-        timer.start()
+try:
+    with db.watch(pipeline) as stream:
+        for change in stream:
+            print(change)
+            handler.handle_event(change)
 
-        # Update the modification time and timer for this path
-        self._modification_times[src_path] = current_time
-        self._timers[src_path] = timer
-        return
-
-    def on_created(self, event):
-        src_path = self.append_slash(event.src_path, event.is_directory)
-        print(f"Created file: {src_path}")
-        self.post_pool_event("create", src_path, event.is_directory)
-
-    def on_deleted(self, event):
-        src_path = self.append_slash(event.src_path, event.is_directory)
-        print(f"Deleted file: {src_path}")
-        self.post_pool_event("delete", src_path, event.is_directory)
-        return
-
-    def append_slash(self, path, is_directory):
-        if is_directory and not path[-1] == "/":
-            path = path + "/"
-        return path
-
-    def on_moved(self, event):
-        src_path = self.append_slash(event.src_path, event.is_directory)
-        dest_path = self.append_slash(event.dest_path, event.is_directory)
-        print(f"Moved file: {src_path} to {dest_path}")
-        self.post_pool_event("move", src_path, event.is_directory, dest_path)
-        return
+except pymongo.errors.PyMongoError as ex:
+    # The ChangeStream encountered an unrecoverable error or the
+    # resume attempt failed to recreate the cursor.
+    print(get_traceback_message(ex, "got an unrecoverable error"))
