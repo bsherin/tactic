@@ -1,0 +1,10 @@
+FROM bsherin/tactic:base-arm64
+WORKDIR /code
+ADD ./mongo_watcher_env/requirements.txt /code/requirements.txt
+RUN pip install -r requirements.txt
+ADD ./mongo_watcher_env /code
+RUN pip install -r requirements.txt
+#RUN pip install pydevd-pycharm
+MAINTAINER "Bruce L Sherin"
+ADD ./mongo_db_fs.py /code/
+CMD ["python", "-u", "mongo_watcher.py"]

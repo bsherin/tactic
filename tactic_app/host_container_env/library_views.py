@@ -280,10 +280,10 @@ def send_to_repository():
         return result
     else:
         successful_copies = 0
-
-        for row in list_of_selected:
+        selected_rows = request.json["selected_rows"]
+        for row in selected_rows:
             res_type = row["res_type"]
-            res_name = row["res_name"]
+            res_name = row["name"]
             manager = get_manager_for_type(res_type, is_repository=True)
             resource_names = manager.get_resource_list()
             new_res_name = make_name_unique(res_name, resource_names)
