@@ -130,7 +130,7 @@ function LibraryPane(props) {
     const [selectedRegions, setSelectedRegions, selectedRegionsRef] = useStateAndRef([Regions.row(0)]);
 
     const [rowChanged, setRowChanged] = useState(0);
-    const selectedTypeRef = useRef(null)
+    const selectedTypeRef = useRef(null);
 
     const theme = useContext(ThemeContext);
     const dialogFuncs = useContext(DialogContext);

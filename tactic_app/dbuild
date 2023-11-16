@@ -6,6 +6,7 @@ if [ "$1" == "all" ] ; then
 	DOCKER_BUILDKIT=0 docker-compose build "tactic_module_viewer"
 	DOCKER_BUILDKIT=0 docker-compose build "tactic_tile"
 	DOCKER_BUILDKIT=0 docker-compose build "tactic_pool_watcher"
+	DOCKER_BUILDKIT=0 docker-compose build "tactic_mongo_watcher"
 else
 	DOCKER_BUILDKIT=0 docker-compose build "tactic_$1"
 fi
