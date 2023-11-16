@@ -482,6 +482,12 @@ class HostWorker(QWorker):
         return {"code_names": user_obj.code_names}
 
     @task_worthy
+    def mongo_event(self, data):
+        event_type = data["event_type"]
+        username = data["username"]
+        col = data
+
+    @task_worthy
     def pool_event(self, data):
         try:
             event_type = data["event_type"]

@@ -1,5 +1,5 @@
 #!/bin/bash
-mongo_dir="mongo-volume"
+mongo_dir=mongo-volume
 mongo_uri="tactic-mongo"
 
 sudo docker run -d \
@@ -9,3 +9,4 @@ sudo docker run -d \
   --restart always \
   --network=tactic-net \
   mongo:latest --replSet rs0
+
