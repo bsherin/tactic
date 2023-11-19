@@ -68,9 +68,6 @@ function RepositoryHomeApp(props) {
             tsocket.attachListener('handle-callback', (task_packet) => {
                 handleCallback(task_packet, window.library_id)
             });
-            tsocket.attachListener("doFlashUser", function (data) {
-                doFlash(data)
-            });
             tsocket.attachListener('close-user-windows', (data) => {
                 if (!(data["originator"] == window.library_id)) {
                     window.close()
@@ -147,6 +144,7 @@ RepositoryHomeApp = memo(RepositoryHomeApp);
 
 function _repository_home_main() {
     tsocket = new TacticSocket("main", 5000, "repository", library_id);
+    tsocket.socket.emit('join-repository', {});
     let RepositoryHomeAppPlus = withTheme(withDialogs(withErrorDrawer(withStatus(RepositoryHomeApp))));
     let domContainer = document.querySelector('#library-home-root');
     ReactDOM.render(<RepositoryHomeAppPlus initial_theme={window.theme}

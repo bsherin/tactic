@@ -109,6 +109,7 @@ function LibraryPane(props) {
     const [left_width_fraction, set_left_width_fraction, left_width_fraction_ref] = useStateAndRef(.65);
     const [selected_resource, set_selected_resource, selected_resource_ref] = useStateAndRef({
         "name": "",
+        "_id": "",
         "tags": "",
         "notes": "",
         "updated": "",
@@ -185,16 +186,12 @@ function LibraryPane(props) {
 
     function initSocket() {
         if ((props.tsocket != null) && (!props.is_repository)) {
-            if (props.pane_type == "all") {
-                for (let res_type of res_types) {
-                    props.tsocket.attachListener(`update-${res_type}-selector-row`, _handleRowUpdate);
-                    props.tsocket.attachListener(`refresh-${res_type}-selector`, _refresh_func);
-                }
-            } else {
-                props.tsocket.attachListener(`update-${props.pane_type}-selector-row`, _handleRowUpdate);
-                props.tsocket.attachListener(`refresh-${props.pane_type}-selector`, _refresh_func);
-            }
-
+                props.tsocket.attachListener(`update-selector-row`, _handleRowUpdate);
+                props.tsocket.attachListener(`refresh-selector`, _refresh_func);
+        }
+        else if ((props.tsocket != null) && (props.is_repository)) {
+            props.tsocket.attachListener(`update-repository-selector-row`, _handleRowUpdate);
+            props.tsocket.attachListener(`refresh-repository-selector`, _refresh_func);
         }
     }
 
@@ -249,7 +246,7 @@ function LibraryPane(props) {
     }
 
     function clearSelected() {
-        set_selected_resource({"name": "", "tags": "", "notes": "", "updated": "", "created": ""});
+        set_selected_resource({"name": "", "_id": "", "tags": "", "notes": "", "updated": "", "created": ""});
         set_list_of_selected([]);
         set_selected_rows([]);
     }
@@ -315,41 +312,68 @@ function LibraryPane(props) {
 
     function _handleRowUpdate(res_dict) {
         let res_name = res_dict.name;
-        let ind = get_data_dict_index(res_name, res_dict.res_type);
-        if (!ind) return;
-        let new_data_dict = _.cloneDeep(data_dict_ref.current);
-        let the_row = new_data_dict[ind];
-
-        for (let field in res_dict) {
-            if ("new_name" in res_dict && field == "name") {
-            } else if (field == "new_name") {
-                the_row["name"] = res_dict[field]
-            } else {
-                the_row[field] = res_dict[field];
-            }
-
-        }
-
-        let new_state = {data_dict: new_data_dict, rowChanged: rowChanged + 1};
-        if ("tags" in res_dict) {
-            let res_tags = res_dict.tags.split(" ");
-            let new_tag_list = _.cloneDeep(tag_list);
-            let new_tag_found = false;
-            for (let tag of res_tags) {
-                if (!new_tag_list.includes(tag)) {
-                    new_tag_list.push(tag);
-                    new_tag_found = true;
+        let ind;
+        let new_data_dict;
+        let new_state;
+        let _id;
+        let event_type = res_dict.event_type;
+        delete res_dict.event_type;
+        switch (event_type) {
+            case "update":
+                if ("_id" in res_dict) {
+                    _id = res_dict._id;
+                    ind = get_data_dict_index_from_id(res_dict._id, res_dict.res_type);
                 }
-            }
-            if (new_tag_found) {
-                new_state["tag_list"] = new_tag_list;
-            }
-        }
-        if (res_name == selected_resource_ref.current.name) {
-            set_selected_resource(the_row);
-            pushCallback(() => setState(new_state))
-        } else {
-            setState(new_state);
+                else {
+                    ind = get_data_dict_index(res_name, res_dict.res_type);
+                    _id = data_dict_ref.current[ind]._id
+                }
+                if (!ind) return;
+                new_data_dict = _.cloneDeep(data_dict_ref.current);
+                let the_row = new_data_dict[ind];
+                for (let field in res_dict) {
+                    the_row[field] = res_dict[field];
+                }
+                new_state = {data_dict: new_data_dict, rowChanged: rowChanged + 1};
+                if ("tags" in res_dict) {
+                    let res_tags = res_dict.tags.split(" ");
+                    let new_tag_list = _.cloneDeep(tag_list);
+                    let new_tag_found = false;
+                    for (let tag of res_tags) {
+                        if (!new_tag_list.includes(tag)) {
+                            new_tag_list.push(tag);
+                            new_tag_found = true;
+                        }
+                    }
+                    if (new_tag_found) {
+                        new_state["tag_list"] = new_tag_list;
+                    }
+                }
+                if (_id == selected_resource_ref.current._id) {
+                    set_selected_resource(the_row);
+                    pushCallback(() => setState(new_state))
+                } else {
+                    setState(new_state);
+                }
+                break;
+            case "insert":
+                _grabNewChunkWithRow(0, true, null, false, res_name);
+                break;
+            case "delete":
+                if ("_id" in res_dict) {
+                    ind = get_data_dict_index_from_id(res_dict._id, res_dict.res_type);
+                }
+                else {
+                    ind = get_data_dict_index(res_name, res_dict.res_type);
+                }
+                new_data_dict = _.cloneDeep(data_dict_ref.current);
+                delete new_data_dict[ind];
+                new_state = {data_dict: new_data_dict, rowChanged: rowChanged + 1};
+                setState(new_state);
+                break;
+            default:
+                return;
+
         }
     }
 
@@ -365,6 +389,10 @@ function LibraryPane(props) {
 
     function _match_row(row1, row2) {
         return row1.name == row2.name && row1.res_type == row2.res_type
+    }
+
+    function _match_row_by_id(row1, row2) {
+        return row1._id == row2._id && row1.res_type == row2.res_type
     }
 
     function _match_any_row(row1, row_list) {
@@ -392,9 +420,17 @@ function LibraryPane(props) {
     }
 
     function get_data_dict_index(name, res_type) {
-        let target = {name: name, res_type: res_type};
         for (let index in data_dict_ref.current) {
             if (_match_row(data_dict_ref.current[index], {name: name, res_type: res_type})) {
+                return index
+            }
+        }
+        return null
+    }
+
+    function get_data_dict_index_from_id(_id, res_type) {
+        for (let index in data_dict_ref.current) {
+            if (_match_row_by_id(data_dict_ref.current[index], {_id: _id, res_type: res_type})) {
                 return index
             }
         }
@@ -780,7 +816,7 @@ function LibraryPane(props) {
             };
             postAjaxPromise(duplicate_view, result_dict)
                 .then((data) => {
-                        _grabNewChunkWithRow(0, true, null, false, new_name)
+                        // _grabNewChunkWithRow(0, true, null, false, new_name)
                     }
                 )
             // .catch(doFlash)
@@ -860,14 +896,6 @@ function LibraryPane(props) {
                 if (!data.success) {
                     doFlash(data);
                     return false
-                } else {
-                    let ind = get_data_dict_index(res_name, res_type);
-                    let new_data_dict = _.cloneDeep(data_dict_ref.current);
-                    new_data_dict[ind].name = new_name;
-                    setState({data_dict: new_data_dict}, () => {
-                        _selectRow(ind)
-                    });
-                    return true
                 }
             }
         }
@@ -1131,7 +1159,7 @@ function LibraryPane(props) {
             tsocket: props.tsocket,
             combine: true,
             show_csv_options: true,
-            after_upload: _refresh_func,
+            after_upload: null,
             show_address_selector: false,
             initial_address: null,
             handleClose: dialogFuncs.hideModal,
@@ -1592,7 +1620,6 @@ function LibraryPane(props) {
     );
     let selected_types = _selectedTypes();
     selectedTypeRef.current = selected_types.length == 1 ? selected_resource_ref.current.res_type : "multi";
-    // let selected_type = selected_types.length == 1 ? selected_resource_ref.current.res_type : "multi";
     return (
         <Fragment>
             <MenubarClass selected_resource={selected_resource_ref.current}
@@ -1602,7 +1629,6 @@ function LibraryPane(props) {
                           list_of_selected={list_of_selected_ref.current}
                           selected_rows={selected_rows_ref.current}
                           selectedTypeRef={selectedTypeRef}
-                          // selected_type={selected_type}
                           {..._menu_funcs()}
                           sendContextMenuItems={setContextMenuItems}
                           view_resource={_view_resource}

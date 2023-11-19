@@ -121,18 +121,6 @@ def get_manager_for_type(res_type, is_repository=False):
         return managers[res_type][0]
 
 
-# def start_spinner(user_id=None):
-#     if user_id is None:
-#         user_id = current_user.get_id()
-#     socketio.emit('start-spinner', {}, namespace='/library', room=user_id)
-#
-#
-# def stop_spinner(user_id=None):
-#     if user_id is None:
-#         user_id = current_user.get_id()
-#     socketio.emit('stop-spinner', {}, namespace='/library', room=user_id)
-
-
 @app.route('/library')
 @login_required
 def library():
@@ -193,23 +181,6 @@ def repository():
                            )
 
 
-@socketio.on('connect', namespace='/library')
-@login_required
-def connected_msg():
-    print("client connected for user {}".format(current_user.username))
-
-
-@socketio.on('join', namespace='/library')
-@login_required
-def on_join(data):
-    room = data["user_id"]
-    join_room(room)
-    print("user joined room " + room)
-    room = data["library_id"]
-    join_room(room)
-    print("user joined room " + room)
-
-
 @app.route('/get_resource_names/<res_type>', methods=['get', 'post'])
 @login_required
 def get_resource_names(res_type):
@@ -240,14 +211,10 @@ def copy_from_repository():
         metadata, result = copy_between_accounts(repository_user, current_user,
                                                  res_type, new_res_name, res_name,
                                                  source_db=repository_db, source_fs=repository_fs)
-        if metadata is not None:
-            manager = get_manager_for_type(res_type)
-            manager.refresh_selector_list()
         return result
     else:
         selected_rows = request.json["selected_rows"]
         successful_copies = 0
-        rtypes = []
         for row in selected_rows:
             res_type = row["res_type"]
             res_name = row["name"]
@@ -259,12 +226,6 @@ def copy_from_repository():
                                                      source_db=repository_db, source_fs=repository_fs)
             if result.json["success"]:
                 successful_copies +=1
-                rtypes.append(res_type)
-        if successful_copies > 0:
-            rtypes = list(set(rtypes))
-            for res_type in rtypes:
-                manager = get_manager_for_type(res_type)
-                manager.refresh_selector_list()
         return jsonify({"success": True, "message": f"{str(successful_copies)} resources copied"})
 
 # noinspection PyBroadException
@@ -292,18 +253,6 @@ def send_to_repository():
             if result.json["success"]:
                 successful_copies +=1
         return jsonify({"success": True, "message": f"{str(successful_copies)} resources copied"})
-
-
-@app.route('/resource_list_with_metadata/<res_type>', methods=['GET', 'POST'])
-@login_required
-def get_resource_data_list(res_type):
-    return jsonify({"data_list": managers[res_type][0].get_resource_data_list()})
-
-
-@app.route('/repository_resource_list_with_metadata/<res_type>', methods=['GET', 'POST'])
-@login_required
-def get_repository_resource_data_list(res_type):
-    return jsonify({"data_list": managers[res_type][1].get_resource_data_list()})
 
 
 # Metadata views

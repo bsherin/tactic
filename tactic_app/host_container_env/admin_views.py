@@ -20,16 +20,6 @@ user_manager = UserManager("user")
 from js_source_management import js_source_dict, _develop, css_source
 
 
-@app.route('/admin_list_with_metadata/<res_type>', methods=['GET', 'POST'])
-@login_required
-def admin_list_with_metadata(res_type):
-    if res_type == "container":
-        manager = container_manager
-    else:
-        manager = user_manager
-    return jsonify({"data_list": manager.get_resource_data_list()})
-
-
 @app.route('/admin_interface', methods=['GET', 'POST'])
 @login_required
 def admin_interface():

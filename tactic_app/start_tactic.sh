@@ -79,7 +79,7 @@ fi
 
 echo "*** removing old containers ***"
 
-for image in "tile" "host" "module_viewer" "main" "nginx" "pool-watcher"
+for image in "tile" "host" "module_viewer" "main" "nginx" "pool-watcher" "mongo-watcher"
   do
     num=$(sudo docker ps --filter ancestor="bsherin/tactic:$image$arm_string" -aq | wc -l)
     echo "$num containers of type bsherin/tactic:$image$arm_string to remove"
@@ -121,7 +121,7 @@ else
     sudo docker rm $mongo_uri
   fi
   echo "mongo container doesn't exist, creating ..."
-  sudo docker run -p 27017:27017 -v $mongo_dir:/data/db --name $mongo_uri --network=tactic-net --restart always -d mongo:latest
+  sudo docker run -p 27017:27017 -v $mongo_dir:/data/db --name $mongo_uri --network=tactic-net --restart always -d mongo:latest --replSet "rs0"
 fi
 
 echo "*** creating megaplex *** "
@@ -146,6 +146,26 @@ sudo docker run -d \
   -e MY_ID=tactic-redis \
   -e OWNER=host \
   redis:alpine
+
+echo "*** creating mongo watcher ***"
+
+sudo docker run -d \
+  --name mongo_watcher \
+  --restart $restart_policy \
+  --label my_id=mongo_watcher \
+  --label owner=host \
+  --label parent=host \
+  --label other_name=mongo_watcher \
+  --network=tactic-net \
+  --init \
+  -e MONGO_URI=$mongo_uri \
+  -e USE_REMOTE_DATABASE=$use_remote_db \
+  -e USE_REMOTE_REPOSITORY=$use_remote_repo \
+  -e USE_REMOTE_REPOSITORY_KEY=$use_remote_repo_key \
+  -e REMOTE_USERNAME=$remote_username \
+  -e REMOTE_PASSWORD=$remote_password \
+  -e REMOTE_KEY_FILE=$remote_key_file \
+  bsherin/tactic:mongo-watcher$arm_string
 
 echo "*** creating tile-test-container ***"
 sudo docker run -d \

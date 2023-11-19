@@ -2,7 +2,11 @@ import traceback
 import pymongo
 from bson.objectid import ObjectId
 from mongo_db_fs import get_dbs
+import json
 import pika
+import time
+
+max_pika_retries = 100
 
 db, fs, repository_db, repository_fs, use_remote_repository, use_remote_database = get_dbs()
 
@@ -11,9 +15,8 @@ pipeline = [
         "$match": {
             "$and": [
                 {"ns.coll": {"$not": {"$eq": "fs.chunks"}}},  # Exclude 'fs.chunks' collection
-                {"ns.coll": {"$not": {"$eq": "fs.files"}}},  # Exclude 'fs.chunks' collection
-                {"operationType": {"$in": ["insert", "update", "replace"]}},
-                # Include insert, update, and replace operations
+                {"ns.coll": {"$not": {"$eq": "fs.files"}}},  # Exclude 'fs.files' collection
+                {"operationType": {"$in": ["insert", "update", "delete"]}},
             ]
         }
     },
@@ -21,11 +24,10 @@ pipeline = [
         "$project": {
             "ns": True,
             "documentKey": True,  # Include the document's _id
-            "operationType": True,  # Include the operation type (insert, update, replace)
+            "operationType": True,  # Include the operation type
         }
     }
 ]
-
 
 def get_traceback_message(e, special_string=None):
     if special_string is None:
@@ -75,23 +77,35 @@ class Handler:
                 time.sleep(3)
                 new_retries = retries + 1
                 return self.get_pika_connection(retries=new_retries)
+        print("succesful connection")
         return connection
 
-    def post_mongo_event(self, event_type, _id, username, collection_name):
+    def post_mongo_event(self, event_type, _id, username, res_type):
         self.ask_host("mongo_event", {
             "event_type": event_type,
-            "_id": _id,
+            "id": _id,
             "username": username,
-            "collection": collection_name
+            "res_type": res_type
         })
         return
 
     def handle_event(self, event):
-        event_type = event["operationType"]
-        username, rescol = event["ns"]["coll"].split(".")
-        col = kind_dict["rescol"]
-        obj_id = str(event["documentKey"]["_id"])
-        self.post_mongo_event(event_type, obj_id, username, col)
+        try:
+            event_type = event["operationType"]
+            col = event["ns"]["coll"]
+            if "." in col:
+                username, rescol = event["ns"]["coll"].split(".")
+                res_type = kind_dict[rescol]
+            else:
+                if col == "user_collection":
+                    username = ""
+                    res_type = "user"
+            obj_id = str(event["documentKey"]["_id"])
+            self.post_mongo_event(event_type, obj_id, username, res_type)
+        except Exception as exc:
+            error_string = self.get_traceback_message(exc, "Got an error in handle_event")
+            print(error_string)
+            return
 
     def ask_host(self, msg_type, task_data=None, callback_func=None):
         self.post_task("host", msg_type, task_data, callback_func)
@@ -126,11 +140,11 @@ class Handler:
 
     def get_traceback_message(self, e, special_string=None):
         if special_string is None:
-            template = "<pre>An exception of type {0} occured. Arguments:\n{1!r}\n"
+            template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
         else:
-            template = special_string + "<pre>\n" + "An exception of type {0} occurred. Arguments:\n{1!r}\n"
+            template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}\n"
         error_string = template.format(type(e).__name__, e.args)
-        error_string += traceback.format_exc() + "</pre>"
+        error_string += traceback.format_exc()
         return error_string
 
     def post_packet(self, dest_id, task_packet, reply_to=None, callback_id=None, attempt=0):
@@ -143,12 +157,16 @@ class Handler:
                                            delivery_mode=1
                                        ),
                                        body=json.dumps(task_packet))
-        except:
-            if attempt == 0:
+        except Exception as exc:
+            print(self.get_traceback_message(exc, f"Exeption in post_packet with attempt={attempt}"))
+            if attempt < 10:
                 connection = self.get_pika_connection()
                 if connection is not None:
+                    print("trying again")
                     self.channel = connection.channel()
-                    self.post_packet(dest_id, task_packet, reply_to, callback_id, attempt=1)
+                    self.post_packet(dest_id, task_packet, reply_to, callback_id, attempt + 1)
+            else:
+                print("post failed and attempt wasn't 0")
         return
 
 
@@ -157,8 +175,11 @@ handler = Handler()
 try:
     with db.watch(pipeline) as stream:
         for change in stream:
-            print(change)
-            handler.handle_event(change)
+            try:
+                print(change)
+                handler.handle_event(change)
+            except:
+                print("an error slipped through, skipping")
 
 except pymongo.errors.PyMongoError as ex:
     # The ChangeStream encountered an unrecoverable error or the

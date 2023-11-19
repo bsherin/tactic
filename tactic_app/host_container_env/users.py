@@ -62,7 +62,7 @@ def remove_user(trueid):
         user.delete_all_projects()  # have to do this because of gridfs pointers
         db.drop_collection(user.project_collection_name)
         db.user_collection.delete_one({"_id": ObjectId(trueid)})
-        return {"success": True, "message": "User successfully revmoed."}
+        return {"success": True, "message": "User successfully removed."}
     except Exception as ex:
         return generic_exception_handler.get_traceback_exception_dict(ex)
 

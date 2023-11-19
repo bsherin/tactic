@@ -16,6 +16,7 @@ import {doFlash} from "./toaster"
 import {TacticNavbar} from "./blueprint_navbar";
 import {handleCallback}  from "./communication_react"
 import {withStatus} from "./toaster";
+import {withDialogs} from "./modal_react";
 
 
 import {AdminPane} from "./administer_pane"
@@ -37,7 +38,7 @@ let tsocket;
 
 function _administer_home_main () {
     tsocket = new TacticSocket("main", 5000, "admin", window.library_id);
-    let AdministerHomeAppPlus = withTheme(withErrorDrawer(withStatus(AdministerHomeApp)));
+    let AdministerHomeAppPlus = withTheme(withDialogs(withErrorDrawer(withStatus(AdministerHomeApp))));
     let domContainer = document.querySelector('#library-home-root');
     ReactDOM.render(<AdministerHomeAppPlus tsocket={tsocket} initial_theme={window.theme}/>, domContainer)
 }
@@ -280,11 +281,6 @@ function ContainerMenubar(props) {
                 {name_text: "Kill One Container", icon_name: "console",
                     click_handler: _destroy_container},
             ],
-            // Logs: [
-            //     {name_text: "Show Container Log", icon_name: "delete",
-            //         click_handler: _container_logs}
-            // ],
-
         };
     }
     return <LibraryMenubar menu_specs={menu_specs()}
@@ -312,14 +308,15 @@ ContainerMenubar.propTypes = {
 ContainerMenubar = memo(ContainerMenubar);
 
 function UserMenubar(props){
+    const dialogFuncs = useContext(DialogContext);
 
     function _delete_user () {
         let user_id = props.selected_resource._id;
         let username = props.selected_resource.username;
-        const confirm_text = "Are you sure that you want to delete user and all their data" + String(username) + "?";
+        const confirm_text = `Are you sure that you want to delete user ${username} and all their data ?`;
         dialogFuncs.showModal("ConfirmDialog", {
             title: "Delete User",
-            text_body: `Are you sure that you want to delete user and all their data${String(username)}?`,
+            text_body: confirm_text,
             cancel_text: "do nothing",
             submit_text: "delete",
             handleSubmit: ()=>{

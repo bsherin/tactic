@@ -38,8 +38,6 @@ class ProjectManager(LibraryResourceManager):
                          "main_project_in_context",
                          login_required(self.main_project_in_context),
                          methods=['get', 'post'])
-        app.add_url_rule('/delete_project', "delete_project", login_required(self.delete_project),
-                         methods=['post'])
         app.add_url_rule('/duplicate_project', "duplicate_project",
                          login_required(self.duplicate_project), methods=['get', 'post'])
         app.add_url_rule('/import_jupyter/<library_id>', "import_jupyter",
@@ -57,9 +55,6 @@ class ProjectManager(LibraryResourceManager):
             return NotImplementedError
 
         project_dict = read_project_dict(self.fs, mdata, save_dict["file_id"])
-        # str_io = io.StringIO()
-        # str_io.write(project_dict["jupyter_text"])
-        # str_io.seek(0)
         mem = io.BytesIO()
         mem.write(project_dict["jupyter_text"].encode())
         mem.seek(0)
@@ -79,8 +74,6 @@ class ProjectManager(LibraryResourceManager):
         result = self.import_as_jupyter_full(file_list)
         if result["success"] in ["false", "partial"]:
             self.send_import_report(result, library_id)
-        if result["success"] == "true":
-            self.refresh_selector_list()
         return {"success": True}
 
     def import_as_jupyter_full(self, file_list):
@@ -139,7 +132,6 @@ class ProjectManager(LibraryResourceManager):
     def main_project_in_context(self):
         user_obj = current_user
         user_id = user_obj.get_id()
-        # context_id = request.json["context_id"]
         project_name = request.json["resource_name"]
 
         # noinspection PyTypeChecker
@@ -229,29 +221,16 @@ class ProjectManager(LibraryResourceManager):
         pdict = make_jsonizable_and_compress(project_dict)
         new_save_dict["file_id"] = self.fs.put(pdict)
         self.db[user_obj.project_collection_name].insert_one(new_save_dict)
-
-        new_row = self.build_res_dict(new_project_name, mdata, user_obj, save_dict["file_id"])
-        return jsonify({"success": True, "new_row": new_row})
+        return jsonify({"success": True})
 
     def rename_me(self, old_name):
         try:
             new_name = request.json["new_name"]
             self.db[current_user.project_collection_name].update_one({"project_name": old_name},
                                                                 {'$set': {"project_name": new_name}})
-            # self.update_selector_list()
             return jsonify({"success": True, "message": "project name changed", "alert_type": "alert-success"})
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error renaming project")
-
-    def delete_project(self):
-        try:
-            project_names = request.json["resource_names"]
-            for project_name in project_names:
-                current_user.remove_project(project_name)
-            return jsonify({"success": True})
-
-        except Exception as ex:
-            return self.get_exception_for_ajax(ex, "Error deleting collections")
 
     def grab_metadata(self, res_name):
         user_obj = current_user

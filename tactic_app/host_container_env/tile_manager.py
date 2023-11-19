@@ -54,8 +54,6 @@ class TileManager(LibraryResourceManager):
                          login_required(self.unload_all_tiles), methods=['get', 'post'])
         app.add_url_rule('/add_tile_module', "add_tile_module",
                          login_required(self.add_tile_module), methods=['get', "post"])
-        app.add_url_rule('/delete_tile_module', "delete_tile_module",
-                         login_required(self.delete_tile_module), methods=['post'])
         app.add_url_rule('/get_loaded_tile_lists', "get_loaded_tile_lists",
                          login_required(self.get_loaded_tile_lists), methods=['get', 'post'])
         app.add_url_rule('/create_tile_module', "create_tile_module",
@@ -66,18 +64,8 @@ class TileManager(LibraryResourceManager):
     def rename_me(self, old_name):
         try:
             new_name = request.json["new_name"]
-            update_selector = "update_selector" in request.json and request.json["update_selector"] == "True"
             self.db[current_user.tile_collection_name].update_one({"tile_module_name": old_name},
                                                              {'$set': {"tile_module_name": new_name}})
-            if update_selector:
-                doc = self.db[current_user.tile_collection_name].find_one({"tile_module_name": new_name})
-                if "metadata" in doc:
-                    mdata = doc["metadata"]
-                else:
-                    mdata = {}
-                res_dict = self.build_res_dict(old_name, mdata, res_type="tile")
-                res_dict["new_name"] = new_name
-                self.update_selector_row(res_dict)
             return jsonify({"success": True, "message": "Module Successfully Saved", "alert_type": "alert-success"})
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error renaming collection")
@@ -274,7 +262,6 @@ class TileManager(LibraryResourceManager):
     def view_in_creator_in_context(self):
         print("** in view_in_creator_in_context **")
         user_obj = current_user
-        # context_id = request.json["context_id"]
         module_name = request.json["resource_name"]
         self.clear_old_recent_history(module_name)
         id_info = self.initialize_module_viewer_container(module_name)
@@ -308,12 +295,11 @@ class TileManager(LibraryResourceManager):
     def unload_one_module(self, module_name):
         user_obj = current_user
         loaded_tile_management.unload_one_module(user_obj.username, module_name)
-        self.update_selector_row({"name": module_name, "icon:upload": "", "res_type": "tile"}, user_obj)
+        _id = user_obj.get_tile_dict(module_name)["_id"]
+        self.update_selector_row({"name": module_name,  "doc_id": str(_id), "event_type": "update",
+                                  "icon:upload": "", "res_type": "tile"}, user_obj)
         socketio.emit('update-menus', {}, namespace='/main', room=current_user.get_id())
         return jsonify({"success": True, "message": "Tile unloaded"})
-
-    def send_tile_source_changed_message(self, data):
-        socketio.emit('tile-source-change', data, namespace='/main', room=data["user_id"])
 
     def add_tile_module(self):
         user_obj = current_user
@@ -327,8 +313,7 @@ class TileManager(LibraryResourceManager):
         metadata["type"] = tp.type
         data_dict = {"tile_module_name": f.filename, "tile_module": the_module, "metadata": metadata}
         self.db[user_obj.tile_collection_name].insert_one(data_dict)
-        new_row = self.build_res_dict(f.filename, metadata, user_obj)
-        return jsonify({"success": True, "new_row": new_row})
+        return jsonify({"success": True})
 
     def create_duplicate_tile(self):
         user_obj = current_user
@@ -344,9 +329,7 @@ class TileManager(LibraryResourceManager):
         new_tile_dict = {"tile_module_name": new_tile_name, "tile_module": old_tile_dict["tile_module"],
                          "metadata": metadata, "last_saved": old_tile_dict["last_saved"]}
         self.db[user_obj.tile_collection_name].insert_one(new_tile_dict)
-        new_row = self.build_res_dict(new_tile_name, metadata, user_obj)
-
-        return jsonify({"success": True, "new_row": new_row})
+        return jsonify({"success": True})
 
     def create_tile_module(self):
         user_obj = current_user
@@ -365,20 +348,7 @@ class TileManager(LibraryResourceManager):
         data_dict = {"tile_module_name": new_tile_name, "tile_module": template, "metadata": metadata,
                      "last_saved": last_saved}
         self.db[current_user.tile_collection_name].insert_one(data_dict)
-        new_row = self.build_res_dict(new_tile_name, metadata, user_obj)
-        return jsonify({"success": True, "new_row": new_row})
-
-    def delete_tile_module(self):
-        try:
-            user_obj = current_user
-            tile_module_names = request.json["resource_names"]
-            for tile_module_name in tile_module_names:
-                self.db[user_obj.tile_collection_name].delete_one({"tile_module_name": tile_module_name})
-            return jsonify({"success": True, "message": "Tiles(s) successfully deleted",
-                            "alert_type": "alert-success"})
-
-        except Exception as ex:
-            return self.get_exception_for_ajax(ex, "Error deleting tiles")
+        return jsonify({"success": True})
 
     def loaded_tile_lists(self, user_obj=None):
         if user_obj is None:
@@ -393,6 +363,7 @@ class TileManager(LibraryResourceManager):
         return jsonify({"success": True, "tile_load_dict": self.loaded_tile_lists(user_obj)})
 
 
+# noinspection PyMethodOverriding
 class RepositoryTileManager(TileManager):
     rep_string = "repository-"
     is_repository = True

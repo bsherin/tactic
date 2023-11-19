@@ -49,6 +49,14 @@ def test_disconnect():
     print('Client disconnected')
 
 
+# noinspection PyUnusedLocal
+@socketio.on('join-repository', namespace='/main')
+@authenticated_only
+def on_join_repository(data):
+    join_room("repository-events")
+    print("user joined room repository-events")
+    return
+
 @socketio.on('join', namespace='/main')
 @authenticated_only
 def on_join(data):
@@ -99,16 +107,6 @@ def post_from_client():
     print("in post_from_client with task_type {}".format(task_packet["task_type"]))
     tactic_app.host_worker.forward_client_post(task_packet)
     return jsonify({"success": True})
-
-#
-# def set_mainwindow_property(main_id, prop_name, prop_value):
-#     tactic_app.host_worker.post_task(main_id, "set_property", {"property": prop_name, "val": prop_value})
-#     return
-#
-#
-# def get_mainwindow_property(main_id, prop_name, callback):
-#     tactic_app.host_worker.post_task(main_id, "get_property", {"property": prop_name}, callback)
-#     return
 
 
 @socketio.on('ready-to-begin', namespace='/main')

@@ -176,7 +176,7 @@ function FileImportDialog(props) {
 
     function _onSending(f, xhr, formData) {
         f.previewElement.scrollIntoView(false);
-        formData.append("extra_value", current_value_ref.current)
+        formData.append("extra_value", current_value_ref.current);
         if (props.chunking) {
             formData.append("dzuuid", f.upload.uuid)
         }
