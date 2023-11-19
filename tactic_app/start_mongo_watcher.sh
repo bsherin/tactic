@@ -14,10 +14,10 @@ arm_string="-arm64"
 sudo docker run -d \
   --name mongo_watcher \
   --restart $restart_policy \
-  --label my_id=pool_watcher \
+  --label my_id=mongo_watcher \
   --label owner=host \
   --label parent=host \
-  --label other_name=pool_watcher \
+  --label other_name=mongo_watcher \
   --network=tactic-net \
   --init \
   -e MONGO_URI=$mongo_uri \
