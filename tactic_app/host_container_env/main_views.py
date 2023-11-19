@@ -42,7 +42,7 @@ def authenticated_only(f):
 def connected_msg():
     print("authentication checked")
     print("client connected for user {} in main_views".format(current_user.username))
-no
+
 @socketio.on('disconnect', namespace='/main')
 @authenticated_only
 def disconnect_msg():
